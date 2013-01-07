@@ -73,6 +73,48 @@ using WebKit::WebTouchEvent;
 using WebKit::WebVector;
 using WebKit::WebWidget;
 
+namespace {
+const char* GetEventName(WebInputEvent::Type type) {
+#define CASE_TYPE(t) case WebInputEvent::t:  return #t
+  switch(type) {
+    CASE_TYPE(Undefined);
+    CASE_TYPE(MouseDown);
+    CASE_TYPE(MouseUp);
+    CASE_TYPE(MouseMove);
+    CASE_TYPE(MouseEnter);
+    CASE_TYPE(MouseLeave);
+    CASE_TYPE(ContextMenu);
+    CASE_TYPE(MouseWheel);
+    CASE_TYPE(RawKeyDown);
+    CASE_TYPE(KeyDown);
+    CASE_TYPE(KeyUp);
+    CASE_TYPE(Char);
+    CASE_TYPE(GestureScrollBegin);
+    CASE_TYPE(GestureScrollEnd);
+    CASE_TYPE(GestureScrollUpdate);
+    CASE_TYPE(GestureFlingStart);
+    CASE_TYPE(GestureFlingCancel);
+    CASE_TYPE(GestureTap);
+    CASE_TYPE(GestureTapDown);
+    CASE_TYPE(GestureTapCancel);
+    CASE_TYPE(GestureDoubleTap);
+    CASE_TYPE(GestureTwoFingerTap);
+    CASE_TYPE(GestureLongPress);
+    CASE_TYPE(GestureLongTap);
+    CASE_TYPE(GesturePinchBegin);
+    CASE_TYPE(GesturePinchEnd);
+    CASE_TYPE(GesturePinchUpdate);
+    CASE_TYPE(TouchStart);
+    CASE_TYPE(TouchMove);
+    CASE_TYPE(TouchEnd);
+    CASE_TYPE(TouchCancel);
+    // Don't include default, so that we get an error when new type is added.
+  }
+#undef CASE_TYPE
+  NOTREACHED();
+  return "Undefined";
+}
+}
 namespace content {
 
 RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
@@ -554,6 +596,25 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
     handling_input_event_ = false;
     return;
   }
+
+  base::TimeDelta now = base::TimeDelta::FromInternalValue(
+      base::TimeTicks::Now().ToInternalValue());
+
+  int64 delta = static_cast<int64>(
+      (now.InSecondsF() - input_event->timeStampSeconds) *
+          base::Time::kMicrosecondsPerSecond);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Renderer", delta, 0, 1000000, 100);
+  std::string name_for_event =
+      base::StringPrintf("Event.Latency.Renderer.%s",
+                         GetEventName(input_event->type));
+  base::Histogram* counter_for_type =
+      base::Histogram::FactoryTimeGet(
+          name_for_event,
+          base::TimeDelta::FromMilliseconds(0),
+          base::TimeDelta::FromMilliseconds(1000000),
+          100,
+          base::Histogram::kUmaTargetedHistogramFlag);
+  counter_for_type->AddTime(base::TimeDelta::FromMicroseconds(delta));
 
   bool prevent_default = false;
   if (WebInputEvent::isMouseEventType(input_event->type)) {

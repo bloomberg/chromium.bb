@@ -21,6 +21,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
 #include "ui/base/events/event.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
@@ -64,9 +65,14 @@ gfx::Rect AdjustDragImageBoundsForScaleAndOffset(
 
 void DispatchGestureEndToWindow(aura::Window* window) {
   if (window && window->delegate()) {
-    ui::GestureEvent gesture_end(ui::ET_GESTURE_END, 0, 0, 0,
-        base::Time::Now() - base::Time::FromDoubleT(0),
-        ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0), 0);
+    ui::GestureEvent gesture_end(
+        ui::ET_GESTURE_END,
+        0,
+        0,
+        0,
+        ui::EventTimeForNow(),
+        ui::GestureEventDetails(ui::ET_GESTURE_END, 0, 0),
+        0);
     window->delegate()->OnGestureEvent(&gesture_end);
   }
 }

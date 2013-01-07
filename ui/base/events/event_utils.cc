@@ -20,4 +20,9 @@ int RegisterCustomEventType() {
   return ++g_custom_event_types;
 }
 
+base::TimeDelta EventTimeForNow() {
+  return base::TimeDelta::FromInternalValue(
+      base::TimeTicks::Now().ToInternalValue());
+}
+
 }  // namespace ui

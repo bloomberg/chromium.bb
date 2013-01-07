@@ -19,6 +19,7 @@
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/events/event.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/base/gestures/gesture_types.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/image/image_skia_rep.h"
@@ -266,9 +267,14 @@ void AddViewToWidgetAndResize(views::Widget* widget, views::View* view) {
 }
 
 void DispatchGesture(ui::EventType gesture_type, gfx::Point location) {
-  ui::GestureEvent gesture_event(gesture_type, location.x(), location.y(), 0,
-      base::Time::NowFromSystemTime() - base::Time(),
-      ui::GestureEventDetails(gesture_type, 0, 0), 1);
+  ui::GestureEvent gesture_event(
+      gesture_type,
+      location.x(),
+      location.y(),
+      0,
+      ui::EventTimeForNow(),
+      ui::GestureEventDetails(gesture_type, 0, 0),
+      1);
   Shell::GetPrimaryRootWindow()->DispatchGestureEvent(&gesture_event);
 }
 

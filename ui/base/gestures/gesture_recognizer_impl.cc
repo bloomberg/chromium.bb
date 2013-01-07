@@ -9,6 +9,7 @@
 #include "base/time.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/base/gestures/gesture_configuration.h"
 #include "ui/base/gestures/gesture_sequence.h"
 #include "ui/base/gestures/gesture_types.h"
@@ -161,8 +162,10 @@ void GestureRecognizerImpl::TransferEventsTo(GestureConsumer* current_consumer,
     if (i->second != new_consumer &&
         (i->second != current_consumer || new_consumer == NULL) &&
         i->second != gesture_consumer_ignorer_.get()) {
-      TouchEvent touch_event(ui::ET_TOUCH_CANCELLED, gfx::Point(0, 0),
-            i->first, base::Time::NowFromSystemTime() - base::Time());
+      TouchEvent touch_event(ui::ET_TOUCH_CANCELLED,
+                             gfx::Point(0, 0),
+                             i->first,
+                             ui::EventTimeForNow());
       helper_->DispatchCancelTouchEvent(&touch_event);
       i->second = gesture_consumer_ignorer_.get();
     }

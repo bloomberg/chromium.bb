@@ -27,6 +27,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/events/event.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/base/gestures/gesture_configuration.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -239,7 +240,7 @@ class GestureTrackPositionDelegate : public TestWindowDelegate {
 };
 
 base::TimeDelta getTime() {
-  return base::Time::NowFromSystemTime() - base::Time();
+  return ui::EventTimeForNow();
 }
 
 class SelfEventHandlingWindowDelegate : public TestWindowDelegate {

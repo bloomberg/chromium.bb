@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/events/event.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/gfx/vector2d_conversions.h"
 
 #if defined(USE_X11)
@@ -33,8 +34,7 @@ class TestTouchEvent : public ui::TouchEvent {
   TestTouchEvent(ui::EventType type,
                  const gfx::Point& root_location,
                  int flags)
-      : TouchEvent(type, root_location, 0,
-                       base::Time::NowFromSystemTime() - base::Time()) {
+      : TouchEvent(type, root_location, 0, ui::EventTimeForNow()) {
     set_flags(flags);
   }
 
@@ -186,8 +186,10 @@ void EventGenerator::PressMoveAndReleaseTouchToCenterOf(Window* window) {
 
 void EventGenerator::GestureTapAt(const gfx::Point& location) {
   const int kTouchId = 2;
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, location, kTouchId,
-                           base::Time::NowFromSystemTime() - base::Time());
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
+                       location,
+                       kTouchId,
+                       ui::EventTimeForNow());
   Dispatch(press);
 
   ui::TouchEvent release(
@@ -198,9 +200,10 @@ void EventGenerator::GestureTapAt(const gfx::Point& location) {
 
 void EventGenerator::GestureTapDownAndUp(const gfx::Point& location) {
   const int kTouchId = 3;
-  ui::TouchEvent press(
-      ui::ET_TOUCH_PRESSED, location, kTouchId,
-      base::Time::NowFromSystemTime() - base::Time());
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
+                       location,
+                       kTouchId,
+                       ui::EventTimeForNow());
   Dispatch(press);
 
   ui::TouchEvent release(
@@ -214,7 +217,7 @@ void EventGenerator::GestureScrollSequence(const gfx::Point& start,
                                            const base::TimeDelta& step_delay,
                                            int steps) {
   const int kTouchId = 5;
-  base::TimeDelta timestamp = base::Time::NowFromSystemTime() - base::Time();
+  base::TimeDelta timestamp = ui::EventTimeForNow();
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, start, kTouchId, timestamp);
   Dispatch(press);
 
@@ -246,7 +249,7 @@ void EventGenerator::GestureMultiFingerScroll(int count,
   int delta_x = move_x / steps;
   int delta_y = move_y / steps;
 
-  base::TimeDelta press_time = base::Time::NowFromSystemTime() - base::Time();
+  base::TimeDelta press_time = ui::EventTimeForNow();
   for (int i = 0; i < count; ++i) {
     points[i] = start[i];
     ui::TouchEvent press(ui::ET_TOUCH_PRESSED, points[i], i, press_time);

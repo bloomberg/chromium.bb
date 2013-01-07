@@ -43,6 +43,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/events/event.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/base/gestures/gesture_recognizer.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
@@ -1150,12 +1151,13 @@ void RenderWidgetHostViewAura::InsertChar(char16 ch, int flags) {
   }
 
   if (host_) {
+    double now = ui::EventTimeForNow().InSecondsF();
     // Send a WebKit::WebInputEvent::Char event to |host_|.
     NativeWebKeyboardEvent webkit_event(ui::ET_KEY_PRESSED,
                                         true /* is_char */,
                                         ch,
                                         flags,
-                                        base::Time::Now().ToDoubleT());
+                                        now);
     host_->ForwardKeyboardEvent(webkit_event);
   }
 }
@@ -1458,12 +1460,13 @@ void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
       // Send a fabricated event, which is usually a VKEY_PROCESSKEY IME event.
       // For keys like VK_BACK/VK_LEFT, etc we need to send the raw keycode to
       // the renderer.
+      double now = ui::EventTimeForNow().InSecondsF();
       NativeWebKeyboardEvent webkit_event(
           event->type(),
           false /* is_char */,
           event->GetCharacter() ? event->GetCharacter() : event->key_code(),
           event->flags(),
-          base::Time::Now().ToDoubleT());
+          now);
       host_->ForwardKeyboardEvent(webkit_event);
     } else {
       NativeWebKeyboardEvent webkit_event(event);

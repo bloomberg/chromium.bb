@@ -41,6 +41,7 @@
 #include "extensions/common/constants.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/gfx/screen.h"
 
 using content::WebContents;
@@ -1720,12 +1721,13 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_Accelerator) {
       chrome::NOTIFICATION_PANEL_CLOSED,
       content::Source<Panel>(panel));
 #if defined(USE_AURA)
+  double now = ui::EventTimeForNow().InSecondsF();
   content::NativeWebKeyboardEvent key_event(
       ui::ET_KEY_PRESSED,
       false,
       ui::VKEY_W,
       ui::EF_CONTROL_DOWN,
-      base::Time::Now().ToDoubleT());
+      now);
 #elif defined(OS_WIN)
   ::MSG key_msg = { NULL, WM_KEYDOWN, ui::VKEY_W, 0 };
   content::NativeWebKeyboardEvent key_event(key_msg);

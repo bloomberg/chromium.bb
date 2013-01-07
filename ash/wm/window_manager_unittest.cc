@@ -22,6 +22,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/events/event.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/corewm/compound_event_filter.h"
@@ -31,7 +32,7 @@
 namespace {
 
 base::TimeDelta getTime() {
-  return base::Time::NowFromSystemTime() - base::Time();
+  return ui::EventTimeForNow();
 }
 
 // A slightly changed TestEventHandler which can be configured to return a

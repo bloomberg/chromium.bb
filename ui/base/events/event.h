@@ -195,7 +195,6 @@ class UI_EXPORT Event {
     delete_native_event_ = delete_native_event;
   }
   void set_cancelable(bool cancelable) { cancelable_ = cancelable; }
-  void set_time_stamp(base::TimeDelta time_stamp) { time_stamp_ = time_stamp; }
   void set_dispatch_to_hidden_targets(bool dispatch_to_hidden_targets) {
     dispatch_to_hidden_targets_ = dispatch_to_hidden_targets;
   }
