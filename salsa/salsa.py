@@ -77,11 +77,13 @@ class Submit(webapp2.RequestHandler):
         ranks = self.request.get('ranking').split('>')
         ranks = [r.split('=') for r in ranks]
 
-        if str(users.get_current_user()) in exp.participants:
-            return self.fail('You have already taken this experiment.')
-
         if treatments.count() != sum([len(r) for r in ranks]):
             return self.fail('You must rank ALL treatments to submit.')
+
+        participant = str(users.get_current_user())
+        if str(users.get_current_user()) not in exp.participants:
+            exp.participants.append(participant)
+        participant_number = exp.participants.index(participant)
 
         score = 0
         updated_treatments = []
@@ -93,18 +95,17 @@ class Submit(webapp2.RequestHandler):
                 if results.count() != 1:
                     return self.fail('Unable to find treatment: ' + treatment)
                 treatment_data = results.get()
-                treatment_data.scores.append(score)
+                if participant_number >= len(treatment_data.scores):
+                    treatment_data.scores.append(score)
+                else:
+                    treatment_data.scores[participant_number] = score
                 updated_treatments.append(treatment_data)
             score += len(same_rank)
 
-        exp.participants.append(str(users.get_current_user()))
         self.save(exp, updated_treatments)
 
         template = jinja_environment.get_template('submit.html')
-        self.response.out.write(template.render(user=users.get_current_user(),
-                                                experiment=exp,
-                                                treatments=treatments,
-                                                ranking=ranks))
+        self.response.out.write(template.render(experiment=exp))
 
     @db.transactional
     def save(self, experiment, treatments):
