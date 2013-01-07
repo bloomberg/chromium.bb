@@ -17,7 +17,7 @@ import time
 
 from pylib import android_commands
 from pylib import device_stats_monitor
-from pylib import test_options_parser
+from pylib.utils import test_options_parser
 
 
 def main(argv):

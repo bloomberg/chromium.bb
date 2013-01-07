@@ -17,9 +17,9 @@ from pylib import constants
 from pylib import ports
 from pylib import run_java_tests
 from pylib import run_python_tests
-from pylib import run_tests_helper
-from pylib import test_options_parser
 from pylib.test_result import TestResults
+from pylib.utils import run_tests_helper
+from pylib.utils import test_options_parser
 
 
 def DispatchInstrumentationTests(options):

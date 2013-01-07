@@ -51,10 +51,10 @@ from pylib import buildbot_report
 from pylib import cmd_helper
 from pylib import debug_info
 from pylib import ports
-from pylib import run_tests_helper
-from pylib import test_options_parser
 from pylib.base_test_sharder import BaseTestSharder
 from pylib.single_test_runner import SingleTestRunner
+from pylib.utils import run_tests_helper
+from pylib.utils import test_options_parser
 from pylib.utils import time_profile
 from pylib.utils import xvfb
 
@@ -344,59 +344,11 @@ def ListTestSuites():
 
 def main(argv):
   option_parser = optparse.OptionParser()
-  test_options_parser.AddTestRunnerOptions(option_parser, default_timeout=0)
-  option_parser.add_option('-s', '--suite', dest='test_suite',
-                           help='Executable name of the test suite to run '
-                           '(use -s help to list them)')
-  option_parser.add_option('--out-directory', dest='out_directory',
-                           help='Path to the out/ directory, irrespective of '
-                           'the build type. Only for non-Chromium uses.')
-  option_parser.add_option('-d', '--device', dest='test_device',
-                           help='Target device the test suite to run ')
-  option_parser.add_option('-f', '--gtest_filter', dest='gtest_filter',
-                           help='gtest filter')
-  option_parser.add_option('-a', '--test_arguments', dest='test_arguments',
-                           help='Additional arguments to pass to the test')
-  option_parser.add_option('-L', dest='log_dump',
-                           help='file name of log dump, which will be put in '
-                           'subfolder debug_info_dumps under the same '
-                           'directory in where the test_suite exists.')
-  option_parser.add_option('-e', '--emulator', dest='use_emulator',
-                           action='store_true',
-                           help='Run tests in a new instance of emulator')
-  option_parser.add_option('-n', '--emulator_count',
-                           type='int', default=1,
-                           help='Number of emulators to launch for running the '
-                           'tests.')
-  option_parser.add_option('-x', '--xvfb', dest='use_xvfb',
-                           action='store_true',
-                           help='Use Xvfb around tests (ignored if not Linux)')
-  option_parser.add_option('--webkit', action='store_true',
-                           help='Run the tests from a WebKit checkout.')
-  option_parser.add_option('--fast', '--fast_and_loose', dest='fast_and_loose',
-                           action='store_true',
-                           help='Go faster (but be less stable), '
-                           'for quick testing.  Example: when tracking down '
-                           'tests that hang to add to the disabled list, '
-                           'there is no need to redeploy the test binary '
-                           'or data to the device again.  '
-                           'Don\'t use on bots by default!')
-  option_parser.add_option('--repeat', dest='repeat', type='int',
-                           default=2,
-                           help='Repeat count on test timeout')
-  option_parser.add_option('--exit_code', action='store_true',
-                           help='If set, the exit code will be total number '
-                           'of failures.')
-  option_parser.add_option('--exe', action='store_true',
-                           help='If set, use the exe test runner instead of '
-                           'the APK.')
-
+  test_options_parser.AddGTestOptions(option_parser)
   options, args = option_parser.parse_args(argv)
 
   if len(args) > 1:
-    print 'Unknown argument:', args[1:]
-    option_parser.print_usage()
-    sys.exit(1)
+    option_parser.error('Unknown argument: %s' % args[1:])
 
   run_tests_helper.SetLogLevel(options.verbose_count)
 

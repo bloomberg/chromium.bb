@@ -10,9 +10,9 @@ import os
 import sys
 
 from pylib import android_commands
-from pylib import apk_info
 from pylib import constants
-from pylib import test_options_parser
+from pylib.utils import apk_info
+from pylib.utils import test_options_parser
 
 
 def _InstallApk(args):

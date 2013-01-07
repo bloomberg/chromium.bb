@@ -13,10 +13,10 @@ from base_test_runner import BaseTestRunner
 import constants
 import debug_info
 import perf_tests_helper
-import run_tests_helper
 from test_package_apk import TestPackageApk
 from test_package_executable import TestPackageExecutable
 from test_result import BaseTestResult, TestResults
+from utils import run_tests_helper
 
 
 class SingleTestRunner(BaseTestRunner):
