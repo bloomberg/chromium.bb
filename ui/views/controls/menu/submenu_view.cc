@@ -281,7 +281,10 @@ void SubmenuView::OnGestureEvent(ui::GestureEvent* event) {
       break;
     case ui::ET_GESTURE_TAP_DOWN:
     case ui::ET_SCROLL_FLING_CANCEL:
-      scroll_animator_->Stop();
+      if (scroll_animator_->is_scrolling())
+        scroll_animator_->Stop();
+      else
+        handled = false;
       break;
     default:
       handled = false;
