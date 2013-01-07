@@ -56,7 +56,7 @@ deps = {
     'src/third_party/hunspell_dictionaries':
         Var('git_url') + '/chromium/deps/hunspell_dictionaries.git@7bdf407adf3dfdb31425a3617e9684f6adfaf5f4',
     'src/third_party/icu':
-        Var('git_url') + '/chromium/deps/icu46.git@c48fde4c2edcd765956ff5ddd4312b0a7356f7aa',
+        Var('git_url') + '/chromium/deps/icu46.git@caccda5a040f058024da1c2d894f8914cfc40618',
     'src/third_party/jsoncpp/source/include':
         Var('git_url') + '/external/jsoncpp/jsoncpp/include.git@b0dd48e02b6e6248328db78a65b5c601f150c349',
     'src/third_party/jsoncpp/source/src/lib_json':
@@ -402,7 +402,8 @@ include_rules = [
     '+ipc',
     '+library_loaders',
     '+unicode',
-    '+testing'
+    '+testing',
+    '+third_party/icu/public'
 ]
 
 skip_child_includes = [
