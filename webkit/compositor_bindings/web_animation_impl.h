@@ -10,7 +10,7 @@
 #include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
 namespace cc {
-class ActiveAnimation;
+class Animation;
 }
 
 namespace WebKit {
@@ -33,10 +33,10 @@ public:
     virtual bool alternatesDirection() const OVERRIDE;
     virtual void setAlternatesDirection(bool) OVERRIDE;
 
-    scoped_ptr<cc::ActiveAnimation> cloneToAnimation();
+    scoped_ptr<cc::Animation> cloneToAnimation();
 
 private:
-    scoped_ptr<cc::ActiveAnimation> m_animation;
+    scoped_ptr<cc::Animation> m_animation;
 };
 
 }

@@ -37,10 +37,10 @@ public:
     int id() const { return m_id; }
 
     // These methods are virtual for testing.
-    virtual void addAnimation(scoped_ptr<ActiveAnimation>);
+    virtual void addAnimation(scoped_ptr<Animation>);
     virtual void pauseAnimation(int animationId, double timeOffset);
     virtual void removeAnimation(int animationId);
-    virtual void removeAnimation(int animationId, ActiveAnimation::TargetProperty);
+    virtual void removeAnimation(int animationId, Animation::TargetProperty);
     virtual void suspendAnimations(double monotonicTime);
     virtual void resumeAnimations(double monotonicTime);
 
@@ -52,11 +52,11 @@ public:
 
     // Returns the active animation in the given group, animating the given property, if such an
     // animation exists.
-    ActiveAnimation* getActiveAnimation(int groupId, ActiveAnimation::TargetProperty) const;
+    Animation* getAnimation(int groupId, Animation::TargetProperty) const;
 
     // Returns the active animation animating the given property that is either running, or is
     // next to run, if such an animation exists.
-    ActiveAnimation* getActiveAnimation(ActiveAnimation::TargetProperty) const;
+    Animation* getAnimation(Animation::TargetProperty) const;
 
     // Returns true if there are any animations that have neither finished nor aborted.
     bool hasActiveAnimation() const;
@@ -66,7 +66,7 @@ public:
 
     // Returns true if there is an animation currently animating the given property, or
     // if there is an animation scheduled to animate this property in the future.
-    bool isAnimatingProperty(ActiveAnimation::TargetProperty) const;
+    bool isAnimatingProperty(Animation::TargetProperty) const;
 
     // This is called in response to an animation being started on the impl thread. This
     // function updates the corresponding main thread animation's start time.
@@ -116,7 +116,7 @@ private:
 
     AnimationRegistrar* m_registrar;
     int m_id;
-    ScopedPtrVector<ActiveAnimation> m_activeAnimations;
+    ScopedPtrVector<Animation> m_activeAnimations;
 
     // This is used to ensure that we don't spam the registrar.
     bool m_isActive;

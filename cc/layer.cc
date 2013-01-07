@@ -4,7 +4,7 @@
 
 #include "cc/layer.h"
 
-#include "cc/active_animation.h"
+#include "cc/animation.h"
 #include "cc/animation_events.h"
 #include "cc/layer_animation_controller.h"
 #include "cc/layer_impl.h"
@@ -386,7 +386,7 @@ float Layer::opacity() const
 
 bool Layer::opacityIsAnimating() const
 {
-    return m_layerAnimationController->isAnimatingProperty(ActiveAnimation::Opacity);
+    return m_layerAnimationController->isAnimatingProperty(Animation::Opacity);
 }
 
 void Layer::setContentsOpaque(bool opaque)
@@ -428,7 +428,7 @@ const gfx::Transform& Layer::transform() const
 
 bool Layer::transformIsAnimating() const
 {
-    return m_layerAnimationController->isAnimatingProperty(ActiveAnimation::Transform);
+    return m_layerAnimationController->isAnimatingProperty(Animation::Transform);
 }
 
 void Layer::setScrollOffset(gfx::Vector2d scrollOffset)
@@ -753,7 +753,7 @@ bool Layer::IsActive() const
     return true;
 }
 
-bool Layer::addAnimation(scoped_ptr <ActiveAnimation> animation)
+bool Layer::addAnimation(scoped_ptr <Animation> animation)
 {
     // WebCore currently assumes that accelerated animations will start soon
     // after the animation is added. However we cannot guarantee that if we do

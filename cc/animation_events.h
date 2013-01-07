@@ -7,14 +7,14 @@
 
 #include <vector>
 
-#include "cc/active_animation.h"
+#include "cc/animation.h"
 
 namespace cc {
 
 struct AnimationEvent {
     enum Type { Started, Finished };
 
-    AnimationEvent(Type type, int layerId, int groupId, ActiveAnimation::TargetProperty targetProperty, double monotonicTime)
+    AnimationEvent(Type type, int layerId, int groupId, Animation::TargetProperty targetProperty, double monotonicTime)
         : type(type)
         , layerId(layerId)
         , groupId(groupId)
@@ -26,7 +26,7 @@ struct AnimationEvent {
     Type type;
     int layerId;
     int groupId;
-    ActiveAnimation::TargetProperty targetProperty;
+    Animation::TargetProperty targetProperty;
     double monotonicTime;
 };
 

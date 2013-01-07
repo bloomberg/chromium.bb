@@ -6,7 +6,7 @@
   'variables': {
     'chromium_code': 0,
     'cc_unit_tests_source_files': [
-      'active_animation_unittest.cc',
+      'animation_unittest.cc',
       'content_layer_unittest.cc',
       'contents_scaling_layer_unittest.cc',
       'damage_tracker_unittest.cc',

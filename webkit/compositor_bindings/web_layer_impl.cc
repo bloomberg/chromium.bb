@@ -9,7 +9,7 @@
 #undef LOG
 #endif
 #include "base/string_util.h"
-#include "cc/active_animation.h"
+#include "cc/animation.h"
 #include "cc/layer.h"
 #include "cc/region.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
@@ -18,7 +18,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
 #include "web_animation_impl.h"
 
-using cc::ActiveAnimation;
+using cc::Animation;
 using cc::Layer;
 
 namespace {
@@ -289,7 +289,7 @@ void WebLayerImpl::removeAnimation(int animationId)
 
 void WebLayerImpl::removeAnimation(int animationId, WebAnimation::TargetProperty targetProperty)
 {
-    m_layer->layerAnimationController()->removeAnimation(animationId, static_cast<ActiveAnimation::TargetProperty>(targetProperty));
+    m_layer->layerAnimationController()->removeAnimation(animationId, static_cast<Animation::TargetProperty>(targetProperty));
 }
 
 void WebLayerImpl::pauseAnimation(int animationId, double timeOffset)

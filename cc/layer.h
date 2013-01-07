@@ -33,7 +33,7 @@ class WebLayerScrollClient;
 
 namespace cc {
 
-class ActiveAnimation;
+class Animation;
 struct AnimationEvent;
 class LayerAnimationDelegate;
 class LayerImpl;
@@ -257,7 +257,7 @@ public:
     // Set the priority of all desired textures in this layer.
     virtual void setTexturePriorities(const PriorityCalculator&) { }
 
-    bool addAnimation(scoped_ptr<ActiveAnimation>);
+    bool addAnimation(scoped_ptr<Animation>);
     void pauseAnimation(int animationId, double timeOffset);
     void removeAnimation(int animationId);
 

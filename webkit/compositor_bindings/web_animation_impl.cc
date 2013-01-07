@@ -4,7 +4,7 @@
 
 #include "web_animation_impl.h"
 
-#include "cc/active_animation.h"
+#include "cc/animation.h"
 #include "cc/animation_curve.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationCurve.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAnimation.h"
@@ -12,7 +12,7 @@
 #include "web_float_animation_curve_impl.h"
 #include "web_transform_animation_curve_impl.h"
 
-using cc::ActiveAnimation;
+using cc::Animation;
 using webkit::WebAnimationIdProvider;
 
 namespace WebKit {
@@ -38,7 +38,7 @@ WebAnimationImpl::WebAnimationImpl(const WebAnimationCurve& webCurve, TargetProp
         break;
     }
     }
-    m_animation = ActiveAnimation::create(curve.Pass(), animationId, groupId, static_cast<cc::ActiveAnimation::TargetProperty>(targetProperty));
+    m_animation = Animation::create(curve.Pass(), animationId, groupId, static_cast<cc::Animation::TargetProperty>(targetProperty));
 }
 
 WebAnimationImpl::~WebAnimationImpl()
@@ -95,9 +95,9 @@ void WebAnimationImpl::setAlternatesDirection(bool alternates)
     m_animation->setAlternatesDirection(alternates);
 }
 
-scoped_ptr<cc::ActiveAnimation> WebAnimationImpl::cloneToAnimation()
+scoped_ptr<cc::Animation> WebAnimationImpl::cloneToAnimation()
 {
-    scoped_ptr<cc::ActiveAnimation> toReturn(m_animation->clone(cc::ActiveAnimation::NonControllingInstance));
+    scoped_ptr<cc::Animation> toReturn(m_animation->clone(cc::Animation::NonControllingInstance));
     toReturn->setNeedsSynchronizedStartTime(true);
     return toReturn.Pass();
 }
