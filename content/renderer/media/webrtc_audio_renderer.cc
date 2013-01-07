@@ -160,11 +160,11 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
 
   // Render side: AUDIO_PCM_LOW_LATENCY on Mac OS X is based on a callback-
   // driven Core Audio implementation. Tests have shown that 10ms is a suitable
-  // frame size to use, both for 48kHz and 44.1kHz.
+  // frame size to use for 96kHz, 48kHz and 44.1kHz.
 
   // Use different buffer sizes depending on the current hardware sample rate.
-  if (sample_rate == 48000) {
-    buffer_size = 480;
+  if (sample_rate == 96000 || sample_rate == 48000) {
+    buffer_size = (sample_rate / 100);
   } else {
     // We do run at 44.1kHz at the actual audio layer, but ask for frames
     // at 44.0kHz to ensure that we can feed them to the webrtc::VoiceEngine.
