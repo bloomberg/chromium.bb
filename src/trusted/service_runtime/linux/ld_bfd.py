@@ -54,6 +54,9 @@ def main(args):
   if '--compiler' in args:
     index = args.index('--compiler')
     cxx_bin = args[index + 1]
+    if not cxx_bin:
+      sys.stderr.write("Empty --compiler option specified\n")
+      return 1
     del args[index:index + 2]
   else:
     cxx_bin = os.getenv('CXX', 'g++')

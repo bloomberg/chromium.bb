@@ -164,7 +164,7 @@
                      # for accessing the name of the configured compiler, or
                      # even a better way to access gyp time environment
                      # variables from within a gyp file.
-                     '--compiler', '<!(echo $CXX)',
+                     '--compiler', '<!(echo ${CXX:=g++})',
                      '-m', '<(linker_emulation)',
                      '--build-id',
                      # This program is (almost) entirely
