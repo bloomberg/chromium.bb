@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import csv
 import filters
 import jinja2
 import logging
@@ -134,8 +135,50 @@ class ViewExperiment(webapp2.RequestHandler):
                                                 treatments=treatments,
                                                 properties=props))
 
+class DownloadCSV(webapp2.RequestHandler):
+    """ Download a CSV file of the results for a given experiment """
+    def get(self):
+        exp, treatments, props = load_experiment(self.request.get('exp_key'))
+        user = users.get_current_user()
+        has_access = (user == exp.owner or users.is_current_user_admin())
+        if not has_access:
+            msg = 'Sorry, you do not have permission to access these results.'
+            arguments = urllib.urlencode({'msg': msg})
+            self.redirect('error?' + arguments)
+
+        self.response.headers['Content-Type'] = 'application/csv'
+        self.response.headers['Content-Disposition'] = 'filename="results.csv"'
+        writer = csv.writer(self.response.out)
+
+        writer.writerow(['Name', exp.name])
+        writer.writerow(['Owner', exp.owner])
+
+        writer.writerow([])
+        writer.writerow(['Treatments:'])
+        for treatment in treatments:
+            properties = ['%s = %s' % (prop.name, str(prop.value))
+                          for prop in props
+                          if prop.parent_key() == treatment.key()]
+            writer.writerow([treatment.name] + properties)
+
+        writer.writerow([])
+        writer.writerow(['Raw Results:'])
+        writer.writerow([''] + [treatment.name for treatment in treatments])
+        for i, participant in enumerate(exp.participants):
+            results = [treatment.scores[i] for treatment in treatments]
+            writer.writerow([participant] + results)
+
+        writer.writerow([])
+        writer.writerow(['Sign-test P-values:'])
+        writer.writerow([''] + [treatment.name for treatment in treatments])
+        for treatment1 in treatments:
+            values = [filters.sign_test(treatment1.scores, treatment2.scores)
+                      for treatment2 in treatments]
+            writer.writerow([treatment1.name] + values)
+
 app = webapp2.WSGIApplication([
                                 ('/', MainPage),
+                                ('/csv', DownloadCSV),
                                 ('/error', Error),
                                 ('/logout', Logout),
                                 ('/participate', Participate),
