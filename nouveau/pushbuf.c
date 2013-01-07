@@ -574,13 +574,13 @@ nouveau_pushbuf_new(struct nouveau_client *client, struct nouveau_object *chan,
 	push->client = client;
 	push->channel = immediate ? chan : NULL;
 	push->flags = NOUVEAU_BO_RD;
-	if (fifo->pushbuf & NOUVEAU_GEM_DOMAIN_VRAM) {
-		push->flags |= NOUVEAU_BO_VRAM;
-		nvpb->type   = NOUVEAU_BO_VRAM;
-	}
 	if (fifo->pushbuf & NOUVEAU_GEM_DOMAIN_GART) {
 		push->flags |= NOUVEAU_BO_GART;
 		nvpb->type   = NOUVEAU_BO_GART;
+	} else
+	if (fifo->pushbuf & NOUVEAU_GEM_DOMAIN_VRAM) {
+		push->flags |= NOUVEAU_BO_VRAM;
+		nvpb->type   = NOUVEAU_BO_VRAM;
 	}
 	nvpb->type |= NOUVEAU_BO_MAP;
 
