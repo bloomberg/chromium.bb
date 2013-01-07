@@ -17,6 +17,7 @@ const char kOnTabHighlightChanged[] = "tabs.onHighlightChanged";
 const char kOnTabHighlighted[] = "tabs.onHighlighted";
 const char kOnTabMoved[] = "tabs.onMoved";
 const char kOnTabRemoved[] = "tabs.onRemoved";
+const char kOnTabReplaced[] = "tabs.onReplaced";
 const char kOnTabSelectionChanged[] = "tabs.onSelectionChanged";
 const char kOnTabUpdated[] = "tabs.onUpdated";
 

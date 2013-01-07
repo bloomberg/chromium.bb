@@ -580,7 +580,8 @@ class RestorePrerenderMode {
 class PrerenderBrowserTest : virtual public InProcessBrowserTest {
  public:
   PrerenderBrowserTest()
-      : prerender_contents_factory_(NULL),
+      : autostart_test_server_(true),
+        prerender_contents_factory_(NULL),
 #if defined(FULL_SAFE_BROWSING)
         safe_browsing_factory_(new TestSafeBrowsingServiceFactory()),
 #endif
@@ -624,7 +625,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     current_browser()->profile()->GetPrefs()->SetBoolean(
         prefs::kPromptForDownload, false);
     IncreasePrerenderMemory();
-    ASSERT_TRUE(test_server()->Start());
+    if (autostart_test_server_)
+      ASSERT_TRUE(test_server()->Start());
   }
 
   // Overload for a single expected final status
@@ -973,6 +975,9 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     // http://crbug.com/93076
     GetPrerenderManager()->mutable_config().max_bytes = 1000 * 1024 * 1024;
   }
+
+ protected:
+  bool autostart_test_server_;
 
  private:
   void PrerenderTestURLImpl(
@@ -2634,11 +2639,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLReferrerPolicy) {
   NavigateToDestURL();
 }
 
-// Test interaction of the webNavigation API with prerender.
+// Test interaction of the webNavigation and tabs API with prerender.
 class PrerenderBrowserTestWithExtensions : public PrerenderBrowserTest,
                                            public ExtensionApiTest {
  public:
-  PrerenderBrowserTestWithExtensions() {}
+  PrerenderBrowserTestWithExtensions() {
+    autostart_test_server_ = false;
+  }
   virtual ~PrerenderBrowserTestWithExtensions() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -2662,9 +2669,6 @@ class PrerenderBrowserTestWithExtensions : public PrerenderBrowserTest,
 };
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, WebNavigation) {
-  // PrerenderBrowserTest automatically started a test server. Restart it, so
-  // ExtensionApiTest can register its test parameters.
-  test_server()->Stop();
   ASSERT_TRUE(StartTestServer());
   extensions::FrameNavigationState::set_allow_extension_scheme(true);
 
@@ -2674,6 +2678,28 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, WebNavigation) {
   // Wait for the extension to set itself up and return control to us.
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_prerender.html")) << message_;
+
+  ResultCatcher catcher;
+
+  PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
+
+  ChannelDestructionWatcher channel_close_watcher;
+  channel_close_watcher.WatchChannel(
+      chrome::GetActiveWebContents(browser())->GetRenderProcessHost());
+  NavigateToDestURL();
+  channel_close_watcher.WaitForChannelClose();
+
+  ASSERT_TRUE(IsEmptyPrerenderLinkManager());
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, TabsApi) {
+  ASSERT_TRUE(StartTestServer());
+  extensions::FrameNavigationState::set_allow_extension_scheme(true);
+
+  // Wait for the extension to set itself up and return control to us.
+  ASSERT_TRUE(RunExtensionSubtest("tabs/on_replaced", "on_replaced.html"))
+      << message_;
 
   ResultCatcher catcher;
 

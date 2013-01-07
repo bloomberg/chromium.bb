@@ -85,7 +85,7 @@
         "name": "connect",
         "nocompile": true,
         "type": "function",
-        "description": "Connects to the content script(s) in the specified tab. The $ref:extension.onConnect event is fired in each content script running in the specified tab for the current extension. For more details, see <a href='content_scripts.html#messaging'>Content Script Messaging</a>.",
+        "description": "Connects to the content script(s) in the specified tab. The $ref:runtime.onConnect event is fired in each content script running in the specified tab for the current extension. For more details, see <a href='content_scripts.html#messaging'>Content Script Messaging</a>.",
         "parameters": [
           {
             "type": "integer",
@@ -102,8 +102,8 @@
           }
         ],
         "returns": {
-          "$ref": "extension.Port",
-          "description": "A port that can be used to communicate with the content scripts running in the specified tab. The port's $ref:extension.Port event is fired if the tab closes or does not exist. "
+          "$ref": "runtime.Port",
+          "description": "A port that can be used to communicate with the content scripts running in the specified tab. The port's $ref:runtime.Port event is fired if the tab closes or does not exist. "
         }
       },
       {
@@ -140,7 +140,7 @@
         "name": "sendMessage",
         "nocompile": true,
         "type": "function",
-        "description": "Sends a single message to the content script(s) in the specified tab, with an optional callback to run when a response is sent back.  The $ref:extension.onMessage event is fired in each content script running in the specified tab for the current extension.",
+        "description": "Sends a single message to the content script(s) in the specified tab, with an optional callback to run when a response is sent back.  The $ref:runtime.onMessage event is fired in each content script running in the specified tab for the current extension.",
         "parameters": [
           {
             "type": "integer",
@@ -917,6 +917,15 @@
               "isWindowClosing": {"type": "boolean", "description": "True when the tab is being closed because its window is being closed." }
             }
           }
+        ]
+      },
+      {
+        "name": "onReplaced",
+        "type": "function",
+        "description": "Fired when a tab is replaced with another tab due to prerendering or instant.",
+        "parameters": [
+          {"type": "integer", "name": "addedTabId", "minimum": 0},
+          {"type": "integer", "name": "removedTabId", "minimum": 0}
         ]
       }
     ]

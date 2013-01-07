@@ -471,8 +471,28 @@ void BrowserEventRouter::TabReplacedAt(TabStripModel* tab_strip_model,
                                        WebContents* old_contents,
                                        WebContents* new_contents,
                                        int index) {
-  TabClosingAt(tab_strip_model, old_contents, index);
-  TabInsertedAt(new_contents, index, tab_strip_model->active_index() == index);
+  // Notify listeners that the next tabs closing or being added are due to
+  // WebContents being swapped.
+  const int new_tab_id = ExtensionTabUtil::GetTabId(new_contents);
+  const int old_tab_id = ExtensionTabUtil::GetTabId(old_contents);
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Append(Value::CreateIntegerValue(new_tab_id));
+  args->Append(Value::CreateIntegerValue(old_tab_id));
+
+  DispatchEvent(Profile::FromBrowserContext(new_contents->GetBrowserContext()),
+                events::kOnTabReplaced,
+                args.Pass(),
+                EventRouter::USER_GESTURE_UNKNOWN);
+
+  // Update tab_entries_.
+  const int removed_count = tab_entries_.erase(old_tab_id);
+  DCHECK_GT(removed_count, 0);
+  UnregisterForTabNotifications(old_contents);
+
+  if (!GetTabEntry(new_contents)) {
+    tab_entries_[new_tab_id] = TabEntry();
+    RegisterForTabNotifications(new_contents);
+  }
 }
 
 void BrowserEventRouter::TabPinnedStateChanged(WebContents* contents,

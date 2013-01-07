@@ -21,6 +21,7 @@ extern const char kOnTabHighlightChanged[];
 extern const char kOnTabHighlighted[];
 extern const char kOnTabMoved[];
 extern const char kOnTabRemoved[];
+extern const char kOnTabReplaced[];
 extern const char kOnTabSelectionChanged[];
 extern const char kOnTabUpdated[];
 
