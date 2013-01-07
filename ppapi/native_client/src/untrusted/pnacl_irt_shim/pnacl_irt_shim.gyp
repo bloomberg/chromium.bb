@@ -10,9 +10,6 @@
     {
       'target_name': 'pnacl_irt_shim',
       'type': 'none',
-      # TODO(jvoung): should be able to --strip-debug
-      # this archive to reduce the size to 25% of what
-      # it is now.
       'variables': {
         'nlib_target': 'libpnacl_irt_shim.a',
         'out_newlib_arm': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate/lib-arm/libpnacl_irt_shim.a',
@@ -27,6 +24,9 @@
         ],
         'include_dirs': [
           '../../../..',
+        ],
+        'extra_args': [
+          '--strip-debug',
         ],
         'conditions': [
           ['target_arch=="arm"', {
