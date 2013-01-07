@@ -1635,37 +1635,37 @@ const ClassDecoder& Arm32DecoderState::decode_parallel_addition_and_subtraction_
   if ((inst.Bits() & 0x00300000) == 0x00200000 /* op1(21:20)=10 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000080 /* op2(7:5)=100 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_instance_;
   }
 
   if ((inst.Bits() & 0x00300000) == 0x00200000 /* op1(21:20)=10 */ &&
       (inst.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5)=111 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_instance_;
   }
 
   if ((inst.Bits() & 0x00300000) == 0x00200000 /* op1(21:20)=10 */ &&
       (inst.Bits() & 0x00000080) == 0x00000000 /* op2(7:5)=0xx */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_instance_;
   }
 
   if ((inst.Bits() & 0x00100000) == 0x00100000 /* op1(21:20)=x1 */ &&
       (inst.Bits() & 0x000000E0) == 0x00000080 /* op2(7:5)=100 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_instance_;
   }
 
   if ((inst.Bits() & 0x00100000) == 0x00100000 /* op1(21:20)=x1 */ &&
       (inst.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5)=111 */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_instance_;
   }
 
   if ((inst.Bits() & 0x00100000) == 0x00100000 /* op1(21:20)=x1 */ &&
       (inst.Bits() & 0x00000080) == 0x00000000 /* op2(7:5)=0xx */ &&
       (inst.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_instance_;
   }
 
   if (true) {

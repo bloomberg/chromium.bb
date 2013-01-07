@@ -1475,85 +1475,74 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:               = Undefined  # Note on table description.
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 # None of the instructions in the following table set NZCV flags.
 # Some do set the APSR's sticky Q bit (for saturation) or the GE bits,
 # but we don't model them.
 +-- parallel_addition_and_subtraction_unsigned (See Section A5.4.2)
+*RdRnRm
+  { cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0) }
+  baseline := Binary3RegisterOpAltBNoCondUpdates;
+  defs := {Rd};
+  uses := {Rn, Rm};
+  safety := Pc in {Rd, Rn, Rm} => UNPREDICTABLE;
+  arch := v6;
++--
 | op1(21:20) op2(7:5)
-| 01         000      = Binary3RegisterOpAltBNoCondUpdates
-                        => Defs12To15CondsDontCareRnRdRmNotPc
-                        Uadd16_Rule_233_A1_P460
-                        cccc01100101nnnndddd11110001mmmm RegsNotPc (v6)
-| 01         001      = Binary3RegisterOpAltBNoCondUpdates
-                        => Defs12To15CondsDontCareRnRdRmNotPc
-                        Uasx_Rule_235_A1_P464
-                        cccc01100101nnnndddd11110011mmmm RegsNotPc (v6)
-| 01         010      = Binary3RegisterOpAltBNoCondUpdates
-                        => Defs12To15CondsDontCareRnRdRmNotPc
-                        Usax_Rule_257_A1_P508
-                        cccc01100101nnnndddd11110101mmmm RegsNotPc (v6)
-| 01         011      = Binary3RegisterOpAltBNoCondUpdates
-                        => Defs12To15CondsDontCareRnRdRmNotPc
-                        Usub16_Rule_258_A1_P510
-                        cccc01100101nnnndddd11110111mmmm RegsNotPc (v6)
-| 01         100      = Binary3RegisterOpAltBNoCondUpdates
-                        => Defs12To15CondsDontCareRnRdRmNotPc
-                        Uadd8_Rule_234_A1_P462
-                        cccc01100101nnnndddd11111001mmmm RegsNotPc (v6)
-| 01         111      = Binary3RegisterOpAltBNoCondUpdates
-                        => Defs12To15CondsDontCareRnRdRmNotPc
-                        Usub8_Rule_259_A1_P512
-                        cccc01100101nnnndddd11111111mmmm RegsNotPc (v6)
-| 10         000      = Binary3RegisterOpAltBNoCondUpdates
-                        => Defs12To15CondsDontCareRnRdRmNotPc
-                        Uqadd16_Rule_247_A1_P488
-                        cccc01100110nnnndddd11110001mmmm RegsNotPc (v6)
-| 10         001      = Binary3RegisterOpAltBNoCondUpdates
-                        => Defs12To15CondsDontCareRnRdRmNotPc
-                        Uqasx_Rule_249_A1_P492
-                        cccc01100110nnnndddd11110011mmmm RegsNotPc (v6)
-| 10         010      = Binary3RegisterOpAltBNoCondUpdates
-                        => Defs12To15CondsDontCareRnRdRmNotPc
-                        Uqsax_Rule_250_A1_P494
-                        cccc01100110nnnndddd11110101mmmm RegsNotPc (v6)
-| 10         011      = Binary3RegisterOpAltBNoCondUpdates
-                        => Defs12To15CondsDontCareRnRdRmNotPc
-                        Uqsub16_Rule_251_A1_P496
-                        cccc01100110nnnndddd11110111mmmm RegsNotPc (v6)
-| 10         100      = Binary3RegisterOpAltBNoCondUpdates
-                        => Defs12To15CondsDontCareRnRdRmNotPc
-                        Uqadd8_Rule_248_A1_P490
-                        cccc01100110nnnndddd11111001mmmm RegsNotPc (v6)
-| 10         111      = Binary3RegisterOpAltBNoCondUpdates
-                        => Defs12To15CondsDontCareRnRdRmNotPc
-                        Uqsub8_Rule_252_A1_P498
-                        cccc01100110nnnndddd11111111mmmm RegsNotPc (v6)
-| 11         000      = Binary3RegisterOpAltBNoCondUpdates
-                        => Defs12To15CondsDontCareRnRdRmNotPc
-                        Uhadd16_Rule_238_A1_P470
-                        cccc01100111nnnndddd11110001mmmm RegsNotPc (v6)
-| 11         001      = Binary3RegisterOpAltBNoCondUpdates
-                        => Defs12To15CondsDontCareRnRdRmNotPc
-                        Uhasx_Rule_240_A1_P474
-                        cccc01100111nnnndddd11110011mmmm RegsNotPc (v6)
-| 11         010      = Binary3RegisterOpAltBNoCondUpdates
-                        => Defs12To15CondsDontCareRnRdRmNotPc
-                        Uhsax_Rule_241_A1_P476
-                        cccc01100111nnnndddd11110101mmmm RegsNotPc (v6)
-| 11         011      = Binary3RegisterOpAltBNoCondUpdates
-                        => Defs12To15CondsDontCareRnRdRmNotPc
-                        Uhsub16_Rule_242_A1_P478
-                        cccc01100111nnnndddd11110111mmmm RegsNotPc (v6)
-| 11         100      = Binary3RegisterOpAltBNoCondUpdates
-                        => Defs12To15CondsDontCareRnRdRmNotPc
-                        Uhadd8_Rule_239_A1_P472
-                        cccc01100111nnnndddd11111001mmmm RegsNotPc (v6)
-| 11         111      = Binary3RegisterOpAltBNoCondUpdates
-                        => Defs12To15CondsDontCareRnRdRmNotPc
-                        Uhsub8_Rule_243_A1_P480
-                        cccc01100111nnnndddd11111111mmmm RegsNotPc (v6)
-| else:               = Undefined  # Note on page A5-23
+| 01         000      = *RdRnRm
+                         pattern := cccc01100101nnnndddd11110001mmmm;
+                         rule := UADD16;
+| 01         001      = *RdRnRm
+                         pattern := cccc01100101nnnndddd11110011mmmm;
+                         rule := UASX;
+| 01         010      = *RdRnRm
+                         pattern := cccc01100101nnnndddd11110101mmmm;
+                         rule := USAX;
+| 01         011      = *RdRnRm
+                         pattern := cccc01100101nnnndddd11110111mmmm;
+                         rule := USUB16;
+| 01         100      = *RdRnRm
+                         pattern := cccc01100101nnnndddd11111001mmmm;
+                         rule := UADD8;
+| 01         111      = *RdRnRm
+                         pattern := cccc01100101nnnndddd11111111mmmm;
+                         rule := USUB8;
+| 10         000      = *RdRnRm
+                         pattern := cccc01100110nnnndddd11110001mmmm;
+                         rule := UQADD16;
+| 10         001      = *RdRnRm
+                         pattern := cccc01100110nnnndddd11110011mmmm;
+                         rule := UQASX;
+| 10         010      = *RdRnRm
+                         pattern := cccc01100110nnnndddd11110101mmmm;
+                         rule := UQSAX;
+| 10         011      = *RdRnRm
+                         pattern := cccc01100110nnnndddd11110111mmmm;
+                         rule := UQSUB16;
+| 10         100      = *RdRnRm
+                         pattern := cccc01100110nnnndddd11111001mmmm;
+                         rule := UQADD8;
+| 10         111      = *RdRnRm
+                         pattern := cccc01100110nnnndddd11111111mmmm;
+                         rule := UQSUB8;
+| 11         000      = *RdRnRm
+                         pattern := cccc01100111nnnndddd11110001mmmm;
+                         rule := UHADD16;
+| 11         001      = *RdRnRm
+                         pattern := cccc01100111nnnndddd11110011mmmm;
+                         rule := UHASX;
+| 11         010      = *RdRnRm
+                         pattern := cccc01100111nnnndddd11110101mmmm;
+                         rule := UHSAX;
+| 11         011      = *RdRnRm
+                         pattern := cccc01100111nnnndddd11110111mmmm;
+                         rule := UHSUB16;
+| 11         100      = *RdRnRm
+                         pattern := cccc01100111nnnndddd11111001mmmm;
+                         rule := UHADD8;
+| 11         111      = *RdRnRm
+                         pattern := cccc01100111nnnndddd11111111mmmm;
+                         rule := UHSUB8;
+| else:               = Undefined  # Note on table description.
 +--
 
 # TODO(karl): Add uses to corresponding classes.

@@ -35,21 +35,30 @@ namespace nacl_arm_test {
 // inst(21:20)=01 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(21:20)=01 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase0
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTesterCase0(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterOpAltBNoCondUpdatesTesterCase0
@@ -63,29 +72,52 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase0
   if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterCase0
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterOpAltBNoCondUpdatesTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+
+  // defs: {Rd};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
 }
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(21:20)=01 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase1
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTesterCase1(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterOpAltBNoCondUpdatesTesterCase1
@@ -99,29 +131,52 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase1
   if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterCase1
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterOpAltBNoCondUpdatesTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+
+  // defs: {Rd};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
 }
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(21:20)=01 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase2
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTesterCase2(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterOpAltBNoCondUpdatesTesterCase2
@@ -135,29 +190,52 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase2
   if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterCase2
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterOpAltBNoCondUpdatesTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+
+  // defs: {Rd};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
 }
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(21:20)=01 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase3
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTesterCase3(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterOpAltBNoCondUpdatesTesterCase3
@@ -171,29 +249,52 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase3
   if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterCase3
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterOpAltBNoCondUpdatesTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+
+  // defs: {Rd};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
 }
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(21:20)=01 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase4
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTesterCase4(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterOpAltBNoCondUpdatesTesterCase4
@@ -207,29 +308,52 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase4
   if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterCase4
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterOpAltBNoCondUpdatesTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+
+  // defs: {Rd};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
 }
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(21:20)=01 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase5
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTesterCase5(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterOpAltBNoCondUpdatesTesterCase5
@@ -243,29 +367,52 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase5
   if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterCase5
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterOpAltBNoCondUpdatesTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+
+  // defs: {Rd};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
 }
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(21:20)=10 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase6
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTesterCase6(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterOpAltBNoCondUpdatesTesterCase6
@@ -279,29 +426,52 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase6
   if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterCase6
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterOpAltBNoCondUpdatesTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+
+  // defs: {Rd};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
 }
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(21:20)=10 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase7
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTesterCase7(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterOpAltBNoCondUpdatesTesterCase7
@@ -315,29 +485,52 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase7
   if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterCase7
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterOpAltBNoCondUpdatesTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+
+  // defs: {Rd};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
 }
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(21:20)=10 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase8
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTesterCase8(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterOpAltBNoCondUpdatesTesterCase8
@@ -351,29 +544,52 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase8
   if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterCase8
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterOpAltBNoCondUpdatesTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+
+  // defs: {Rd};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
 }
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(21:20)=10 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase9
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTesterCase9(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterOpAltBNoCondUpdatesTesterCase9
@@ -387,29 +603,52 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase9
   if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterCase9
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterOpAltBNoCondUpdatesTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+
+  // defs: {Rd};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
 }
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(21:20)=10 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase10
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTesterCase10(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterOpAltBNoCondUpdatesTesterCase10
@@ -423,29 +662,52 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase10
   if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterCase10
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterOpAltBNoCondUpdatesTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+
+  // defs: {Rd};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
 }
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(21:20)=10 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase11
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTesterCase11(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterOpAltBNoCondUpdatesTesterCase11
@@ -459,29 +721,52 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase11
   if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterCase11
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterOpAltBNoCondUpdatesTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+
+  // defs: {Rd};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
 }
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(21:20)=11 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase12
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTesterCase12(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterOpAltBNoCondUpdatesTesterCase12
@@ -495,29 +780,52 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase12
   if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterCase12
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterOpAltBNoCondUpdatesTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+
+  // defs: {Rd};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
 }
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(21:20)=11 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase13
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTesterCase13(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterOpAltBNoCondUpdatesTesterCase13
@@ -531,29 +839,52 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase13
   if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterCase13
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterOpAltBNoCondUpdatesTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+
+  // defs: {Rd};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
 }
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(21:20)=11 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase14
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTesterCase14(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterOpAltBNoCondUpdatesTesterCase14
@@ -567,29 +898,52 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase14
   if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterCase14
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterOpAltBNoCondUpdatesTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+
+  // defs: {Rd};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
 }
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(21:20)=11 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase15
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTesterCase15(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterOpAltBNoCondUpdatesTesterCase15
@@ -603,29 +957,52 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase15
   if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterCase15
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterOpAltBNoCondUpdatesTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+
+  // defs: {Rd};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
 }
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(21:20)=11 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase16
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTesterCase16(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterOpAltBNoCondUpdatesTesterCase16
@@ -639,29 +1016,52 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase16
   if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterCase16
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterOpAltBNoCondUpdatesTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+
+  // defs: {Rd};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
 }
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representaive case:
 // op1(21:20)=11 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTesterCase17
-    : public Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc {
+    : public Binary3RegisterOpAltBNoCondUpdatesTester {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTesterCase17(const NamedClassDecoder& decoder)
-    : Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc(decoder) {}
+    : Binary3RegisterOpAltBNoCondUpdatesTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool Binary3RegisterOpAltBNoCondUpdatesTesterCase17
@@ -675,8 +1075,22 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase17
   if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
 
   // Check other preconditions defined for the base decoder.
-  return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
+  return Binary3RegisterOpAltBNoCondUpdatesTester::
       PassesParsePreconditions(inst, decoder);
+}
+
+bool Binary3RegisterOpAltBNoCondUpdatesTesterCase17
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary3RegisterOpAltBNoCondUpdatesTester::ApplySanityChecks(inst, decoder));
+
+  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+
+  // defs: {Rd};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+
+  return true;
 }
 
 // The following are derived class decoder testers for decoder actions
@@ -688,21 +1102,28 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase17
 // inst(21:20)=01 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       rule: 'Uadd16_Rule_233_A1_P460',
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       rule: 'UADD16',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(21:20)=01 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       rule: Uadd16_Rule_233_A1_P460,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       rule: UADD16,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case0
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase0 {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTester_Case0()
     : Binary3RegisterOpAltBNoCondUpdatesTesterCase0(
-      state_.Binary3RegisterOpAltBNoCondUpdates_Uadd16_Rule_233_A1_P460_instance_)
+      state_.Binary3RegisterOpAltBNoCondUpdates_UADD16_instance_)
   {}
 };
 
@@ -710,21 +1131,28 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case0
 // inst(21:20)=01 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       rule: 'Uasx_Rule_235_A1_P464',
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       rule: 'UASX',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(21:20)=01 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       rule: Uasx_Rule_235_A1_P464,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       rule: UASX,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case1
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase1 {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTester_Case1()
     : Binary3RegisterOpAltBNoCondUpdatesTesterCase1(
-      state_.Binary3RegisterOpAltBNoCondUpdates_Uasx_Rule_235_A1_P464_instance_)
+      state_.Binary3RegisterOpAltBNoCondUpdates_UASX_instance_)
   {}
 };
 
@@ -732,21 +1160,28 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case1
 // inst(21:20)=01 & inst(7:5)=010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       rule: 'Usax_Rule_257_A1_P508',
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       rule: 'USAX',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(21:20)=01 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       rule: Usax_Rule_257_A1_P508,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       rule: USAX,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case2
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase2 {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTester_Case2()
     : Binary3RegisterOpAltBNoCondUpdatesTesterCase2(
-      state_.Binary3RegisterOpAltBNoCondUpdates_Usax_Rule_257_A1_P508_instance_)
+      state_.Binary3RegisterOpAltBNoCondUpdates_USAX_instance_)
   {}
 };
 
@@ -754,21 +1189,28 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case2
 // inst(21:20)=01 & inst(7:5)=011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       rule: 'Usub16_Rule_258_A1_P510',
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       rule: 'USUB16',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(21:20)=01 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       rule: Usub16_Rule_258_A1_P510,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       rule: USUB16,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case3
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase3 {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTester_Case3()
     : Binary3RegisterOpAltBNoCondUpdatesTesterCase3(
-      state_.Binary3RegisterOpAltBNoCondUpdates_Usub16_Rule_258_A1_P510_instance_)
+      state_.Binary3RegisterOpAltBNoCondUpdates_USUB16_instance_)
   {}
 };
 
@@ -776,21 +1218,28 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case3
 // inst(21:20)=01 & inst(7:5)=100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       rule: 'Uadd8_Rule_234_A1_P462',
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       rule: 'UADD8',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(21:20)=01 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       rule: Uadd8_Rule_234_A1_P462,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       rule: UADD8,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case4
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase4 {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTester_Case4()
     : Binary3RegisterOpAltBNoCondUpdatesTesterCase4(
-      state_.Binary3RegisterOpAltBNoCondUpdates_Uadd8_Rule_234_A1_P462_instance_)
+      state_.Binary3RegisterOpAltBNoCondUpdates_UADD8_instance_)
   {}
 };
 
@@ -798,21 +1247,28 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case4
 // inst(21:20)=01 & inst(7:5)=111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       rule: 'Usub8_Rule_259_A1_P512',
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       rule: 'USUB8',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(21:20)=01 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       rule: Usub8_Rule_259_A1_P512,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       rule: USUB8,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case5
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase5 {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTester_Case5()
     : Binary3RegisterOpAltBNoCondUpdatesTesterCase5(
-      state_.Binary3RegisterOpAltBNoCondUpdates_Usub8_Rule_259_A1_P512_instance_)
+      state_.Binary3RegisterOpAltBNoCondUpdates_USUB8_instance_)
   {}
 };
 
@@ -820,21 +1276,28 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case5
 // inst(21:20)=10 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       rule: 'Uqadd16_Rule_247_A1_P488',
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       rule: 'UQADD16',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(21:20)=10 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       rule: Uqadd16_Rule_247_A1_P488,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       rule: UQADD16,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case6
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase6 {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTester_Case6()
     : Binary3RegisterOpAltBNoCondUpdatesTesterCase6(
-      state_.Binary3RegisterOpAltBNoCondUpdates_Uqadd16_Rule_247_A1_P488_instance_)
+      state_.Binary3RegisterOpAltBNoCondUpdates_UQADD16_instance_)
   {}
 };
 
@@ -842,21 +1305,28 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case6
 // inst(21:20)=10 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       rule: 'Uqasx_Rule_249_A1_P492',
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       rule: 'UQASX',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(21:20)=10 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       rule: Uqasx_Rule_249_A1_P492,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       rule: UQASX,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case7
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase7 {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTester_Case7()
     : Binary3RegisterOpAltBNoCondUpdatesTesterCase7(
-      state_.Binary3RegisterOpAltBNoCondUpdates_Uqasx_Rule_249_A1_P492_instance_)
+      state_.Binary3RegisterOpAltBNoCondUpdates_UQASX_instance_)
   {}
 };
 
@@ -864,21 +1334,28 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case7
 // inst(21:20)=10 & inst(7:5)=010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       rule: 'Uqsax_Rule_250_A1_P494',
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       rule: 'UQSAX',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(21:20)=10 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       rule: Uqsax_Rule_250_A1_P494,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       rule: UQSAX,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case8
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase8 {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTester_Case8()
     : Binary3RegisterOpAltBNoCondUpdatesTesterCase8(
-      state_.Binary3RegisterOpAltBNoCondUpdates_Uqsax_Rule_250_A1_P494_instance_)
+      state_.Binary3RegisterOpAltBNoCondUpdates_UQSAX_instance_)
   {}
 };
 
@@ -886,21 +1363,28 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case8
 // inst(21:20)=10 & inst(7:5)=011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       rule: 'Uqsub16_Rule_251_A1_P496',
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       rule: 'UQSUB16',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(21:20)=10 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       rule: Uqsub16_Rule_251_A1_P496,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       rule: UQSUB16,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case9
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase9 {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTester_Case9()
     : Binary3RegisterOpAltBNoCondUpdatesTesterCase9(
-      state_.Binary3RegisterOpAltBNoCondUpdates_Uqsub16_Rule_251_A1_P496_instance_)
+      state_.Binary3RegisterOpAltBNoCondUpdates_UQSUB16_instance_)
   {}
 };
 
@@ -908,21 +1392,28 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case9
 // inst(21:20)=10 & inst(7:5)=100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       rule: 'Uqadd8_Rule_248_A1_P490',
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       rule: 'UQADD8',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(21:20)=10 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       rule: Uqadd8_Rule_248_A1_P490,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       rule: UQADD8,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case10
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase10 {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTester_Case10()
     : Binary3RegisterOpAltBNoCondUpdatesTesterCase10(
-      state_.Binary3RegisterOpAltBNoCondUpdates_Uqadd8_Rule_248_A1_P490_instance_)
+      state_.Binary3RegisterOpAltBNoCondUpdates_UQADD8_instance_)
   {}
 };
 
@@ -930,21 +1421,28 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case10
 // inst(21:20)=10 & inst(7:5)=111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       rule: 'Uqsub8_Rule_252_A1_P498',
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       rule: 'UQSUB8',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(21:20)=10 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       rule: Uqsub8_Rule_252_A1_P498,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       rule: UQSUB8,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case11
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase11 {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTester_Case11()
     : Binary3RegisterOpAltBNoCondUpdatesTesterCase11(
-      state_.Binary3RegisterOpAltBNoCondUpdates_Uqsub8_Rule_252_A1_P498_instance_)
+      state_.Binary3RegisterOpAltBNoCondUpdates_UQSUB8_instance_)
   {}
 };
 
@@ -952,21 +1450,28 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case11
 // inst(21:20)=11 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       rule: 'Uhadd16_Rule_238_A1_P470',
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       rule: 'UHADD16',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(21:20)=11 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       rule: Uhadd16_Rule_238_A1_P470,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       rule: UHADD16,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case12
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase12 {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTester_Case12()
     : Binary3RegisterOpAltBNoCondUpdatesTesterCase12(
-      state_.Binary3RegisterOpAltBNoCondUpdates_Uhadd16_Rule_238_A1_P470_instance_)
+      state_.Binary3RegisterOpAltBNoCondUpdates_UHADD16_instance_)
   {}
 };
 
@@ -974,21 +1479,28 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case12
 // inst(21:20)=11 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       rule: 'Uhasx_Rule_240_A1_P474',
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       rule: 'UHASX',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(21:20)=11 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       rule: Uhasx_Rule_240_A1_P474,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       rule: UHASX,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case13
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase13 {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTester_Case13()
     : Binary3RegisterOpAltBNoCondUpdatesTesterCase13(
-      state_.Binary3RegisterOpAltBNoCondUpdates_Uhasx_Rule_240_A1_P474_instance_)
+      state_.Binary3RegisterOpAltBNoCondUpdates_UHASX_instance_)
   {}
 };
 
@@ -996,21 +1508,28 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case13
 // inst(21:20)=11 & inst(7:5)=010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       rule: 'Uhsax_Rule_241_A1_P476',
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       rule: 'UHSAX',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(21:20)=11 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       rule: Uhsax_Rule_241_A1_P476,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       rule: UHSAX,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case14
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase14 {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTester_Case14()
     : Binary3RegisterOpAltBNoCondUpdatesTesterCase14(
-      state_.Binary3RegisterOpAltBNoCondUpdates_Uhsax_Rule_241_A1_P476_instance_)
+      state_.Binary3RegisterOpAltBNoCondUpdates_UHSAX_instance_)
   {}
 };
 
@@ -1018,21 +1537,28 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case14
 // inst(21:20)=11 & inst(7:5)=011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       rule: 'Uhsub16_Rule_242_A1_P478',
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       rule: 'UHSUB16',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(21:20)=11 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       rule: Uhsub16_Rule_242_A1_P478,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       rule: UHSUB16,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case15
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase15 {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTester_Case15()
     : Binary3RegisterOpAltBNoCondUpdatesTesterCase15(
-      state_.Binary3RegisterOpAltBNoCondUpdates_Uhsub16_Rule_242_A1_P478_instance_)
+      state_.Binary3RegisterOpAltBNoCondUpdates_UHSUB16_instance_)
   {}
 };
 
@@ -1040,21 +1566,28 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case15
 // inst(21:20)=11 & inst(7:5)=100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       rule: 'Uhadd8_Rule_239_A1_P472',
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       rule: 'UHADD8',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(21:20)=11 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       rule: Uhadd8_Rule_239_A1_P472,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       rule: UHADD8,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case16
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase16 {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTester_Case16()
     : Binary3RegisterOpAltBNoCondUpdatesTesterCase16(
-      state_.Binary3RegisterOpAltBNoCondUpdates_Uhadd8_Rule_239_A1_P472_instance_)
+      state_.Binary3RegisterOpAltBNoCondUpdates_UHADD8_instance_)
   {}
 };
 
@@ -1062,21 +1595,28 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case16
 // inst(21:20)=11 & inst(7:5)=111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       rule: 'Uhsub8_Rule_243_A1_P480',
-//       safety: ["'RegsNotPc'"]}
+//       defs: {inst(15:12)},
+//       rule: 'UHSUB8',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
 // Representative case:
 // op1(21:20)=11 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
-//       rule: Uhsub8_Rule_243_A1_P480,
-//       safety: ['RegsNotPc']}
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
+//       rule: UHSUB8,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltBNoCondUpdatesTester_Case17
     : public Binary3RegisterOpAltBNoCondUpdatesTesterCase17 {
  public:
   Binary3RegisterOpAltBNoCondUpdatesTester_Case17()
     : Binary3RegisterOpAltBNoCondUpdatesTesterCase17(
-      state_.Binary3RegisterOpAltBNoCondUpdates_Uhsub8_Rule_243_A1_P480_instance_)
+      state_.Binary3RegisterOpAltBNoCondUpdates_UHSUB8_instance_)
   {}
 };
 
@@ -1091,452 +1631,542 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//    = {actual: 'Binary3RegisterOpAltBNoCondUpdates',
 //       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc01100101nnnndddd11110001mmmm',
-//       rule: 'Uadd16_Rule_233_A1_P460',
-//       safety: ["'RegsNotPc'"]}
+//       rule: 'UADD16',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op1(21:20)=01 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       actual: Binary3RegisterOpAltBNoCondUpdates,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       pattern: cccc01100101nnnndddd11110001mmmm,
-//       rule: Uadd16_Rule_233_A1_P460,
-//       safety: ['RegsNotPc']}
+//       rule: UADD16,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case0_TestCase0) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case0 baseline_tester;
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Uadd16_Rule_233_A1_P460 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc01100101nnnndddd11110001mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case0 tester;
+  tester.Test("cccc01100101nnnndddd11110001mmmm");
 }
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//    = {actual: 'Binary3RegisterOpAltBNoCondUpdates',
 //       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc01100101nnnndddd11110011mmmm',
-//       rule: 'Uasx_Rule_235_A1_P464',
-//       safety: ["'RegsNotPc'"]}
+//       rule: 'UASX',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op1(21:20)=01 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       actual: Binary3RegisterOpAltBNoCondUpdates,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       pattern: cccc01100101nnnndddd11110011mmmm,
-//       rule: Uasx_Rule_235_A1_P464,
-//       safety: ['RegsNotPc']}
+//       rule: UASX,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case1_TestCase1) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case1 baseline_tester;
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Uasx_Rule_235_A1_P464 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc01100101nnnndddd11110011mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case1 tester;
+  tester.Test("cccc01100101nnnndddd11110011mmmm");
 }
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//    = {actual: 'Binary3RegisterOpAltBNoCondUpdates',
 //       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc01100101nnnndddd11110101mmmm',
-//       rule: 'Usax_Rule_257_A1_P508',
-//       safety: ["'RegsNotPc'"]}
+//       rule: 'USAX',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op1(21:20)=01 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       actual: Binary3RegisterOpAltBNoCondUpdates,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       pattern: cccc01100101nnnndddd11110101mmmm,
-//       rule: Usax_Rule_257_A1_P508,
-//       safety: ['RegsNotPc']}
+//       rule: USAX,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case2_TestCase2) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case2 baseline_tester;
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Usax_Rule_257_A1_P508 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc01100101nnnndddd11110101mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case2 tester;
+  tester.Test("cccc01100101nnnndddd11110101mmmm");
 }
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//    = {actual: 'Binary3RegisterOpAltBNoCondUpdates',
 //       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc01100101nnnndddd11110111mmmm',
-//       rule: 'Usub16_Rule_258_A1_P510',
-//       safety: ["'RegsNotPc'"]}
+//       rule: 'USUB16',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op1(21:20)=01 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       actual: Binary3RegisterOpAltBNoCondUpdates,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       pattern: cccc01100101nnnndddd11110111mmmm,
-//       rule: Usub16_Rule_258_A1_P510,
-//       safety: ['RegsNotPc']}
+//       rule: USUB16,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case3_TestCase3) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case3 baseline_tester;
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Usub16_Rule_258_A1_P510 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc01100101nnnndddd11110111mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case3 tester;
+  tester.Test("cccc01100101nnnndddd11110111mmmm");
 }
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//    = {actual: 'Binary3RegisterOpAltBNoCondUpdates',
 //       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc01100101nnnndddd11111001mmmm',
-//       rule: 'Uadd8_Rule_234_A1_P462',
-//       safety: ["'RegsNotPc'"]}
+//       rule: 'UADD8',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op1(21:20)=01 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       actual: Binary3RegisterOpAltBNoCondUpdates,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       pattern: cccc01100101nnnndddd11111001mmmm,
-//       rule: Uadd8_Rule_234_A1_P462,
-//       safety: ['RegsNotPc']}
+//       rule: UADD8,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case4_TestCase4) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case4 baseline_tester;
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Uadd8_Rule_234_A1_P462 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc01100101nnnndddd11111001mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case4 tester;
+  tester.Test("cccc01100101nnnndddd11111001mmmm");
 }
 
 // Neutral case:
 // inst(21:20)=01 & inst(7:5)=111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//    = {actual: 'Binary3RegisterOpAltBNoCondUpdates',
 //       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc01100101nnnndddd11111111mmmm',
-//       rule: 'Usub8_Rule_259_A1_P512',
-//       safety: ["'RegsNotPc'"]}
+//       rule: 'USUB8',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op1(21:20)=01 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       actual: Binary3RegisterOpAltBNoCondUpdates,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       pattern: cccc01100101nnnndddd11111111mmmm,
-//       rule: Usub8_Rule_259_A1_P512,
-//       safety: ['RegsNotPc']}
+//       rule: USUB8,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case5_TestCase5) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case5 baseline_tester;
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Usub8_Rule_259_A1_P512 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc01100101nnnndddd11111111mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case5 tester;
+  tester.Test("cccc01100101nnnndddd11111111mmmm");
 }
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//    = {actual: 'Binary3RegisterOpAltBNoCondUpdates',
 //       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc01100110nnnndddd11110001mmmm',
-//       rule: 'Uqadd16_Rule_247_A1_P488',
-//       safety: ["'RegsNotPc'"]}
+//       rule: 'UQADD16',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op1(21:20)=10 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       actual: Binary3RegisterOpAltBNoCondUpdates,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       pattern: cccc01100110nnnndddd11110001mmmm,
-//       rule: Uqadd16_Rule_247_A1_P488,
-//       safety: ['RegsNotPc']}
+//       rule: UQADD16,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case6_TestCase6) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case6 baseline_tester;
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Uqadd16_Rule_247_A1_P488 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc01100110nnnndddd11110001mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case6 tester;
+  tester.Test("cccc01100110nnnndddd11110001mmmm");
 }
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//    = {actual: 'Binary3RegisterOpAltBNoCondUpdates',
 //       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc01100110nnnndddd11110011mmmm',
-//       rule: 'Uqasx_Rule_249_A1_P492',
-//       safety: ["'RegsNotPc'"]}
+//       rule: 'UQASX',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op1(21:20)=10 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       actual: Binary3RegisterOpAltBNoCondUpdates,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       pattern: cccc01100110nnnndddd11110011mmmm,
-//       rule: Uqasx_Rule_249_A1_P492,
-//       safety: ['RegsNotPc']}
+//       rule: UQASX,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case7_TestCase7) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case7 baseline_tester;
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Uqasx_Rule_249_A1_P492 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc01100110nnnndddd11110011mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case7 tester;
+  tester.Test("cccc01100110nnnndddd11110011mmmm");
 }
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//    = {actual: 'Binary3RegisterOpAltBNoCondUpdates',
 //       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc01100110nnnndddd11110101mmmm',
-//       rule: 'Uqsax_Rule_250_A1_P494',
-//       safety: ["'RegsNotPc'"]}
+//       rule: 'UQSAX',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op1(21:20)=10 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       actual: Binary3RegisterOpAltBNoCondUpdates,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       pattern: cccc01100110nnnndddd11110101mmmm,
-//       rule: Uqsax_Rule_250_A1_P494,
-//       safety: ['RegsNotPc']}
+//       rule: UQSAX,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case8_TestCase8) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case8 baseline_tester;
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Uqsax_Rule_250_A1_P494 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc01100110nnnndddd11110101mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case8 tester;
+  tester.Test("cccc01100110nnnndddd11110101mmmm");
 }
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//    = {actual: 'Binary3RegisterOpAltBNoCondUpdates',
 //       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc01100110nnnndddd11110111mmmm',
-//       rule: 'Uqsub16_Rule_251_A1_P496',
-//       safety: ["'RegsNotPc'"]}
+//       rule: 'UQSUB16',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op1(21:20)=10 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       actual: Binary3RegisterOpAltBNoCondUpdates,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       pattern: cccc01100110nnnndddd11110111mmmm,
-//       rule: Uqsub16_Rule_251_A1_P496,
-//       safety: ['RegsNotPc']}
+//       rule: UQSUB16,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case9_TestCase9) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case9 baseline_tester;
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Uqsub16_Rule_251_A1_P496 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc01100110nnnndddd11110111mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case9 tester;
+  tester.Test("cccc01100110nnnndddd11110111mmmm");
 }
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//    = {actual: 'Binary3RegisterOpAltBNoCondUpdates',
 //       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc01100110nnnndddd11111001mmmm',
-//       rule: 'Uqadd8_Rule_248_A1_P490',
-//       safety: ["'RegsNotPc'"]}
+//       rule: 'UQADD8',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op1(21:20)=10 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       actual: Binary3RegisterOpAltBNoCondUpdates,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       pattern: cccc01100110nnnndddd11111001mmmm,
-//       rule: Uqadd8_Rule_248_A1_P490,
-//       safety: ['RegsNotPc']}
+//       rule: UQADD8,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case10_TestCase10) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case10 baseline_tester;
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Uqadd8_Rule_248_A1_P490 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc01100110nnnndddd11111001mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case10 tester;
+  tester.Test("cccc01100110nnnndddd11111001mmmm");
 }
 
 // Neutral case:
 // inst(21:20)=10 & inst(7:5)=111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//    = {actual: 'Binary3RegisterOpAltBNoCondUpdates',
 //       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc01100110nnnndddd11111111mmmm',
-//       rule: 'Uqsub8_Rule_252_A1_P498',
-//       safety: ["'RegsNotPc'"]}
+//       rule: 'UQSUB8',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op1(21:20)=10 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       actual: Binary3RegisterOpAltBNoCondUpdates,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       pattern: cccc01100110nnnndddd11111111mmmm,
-//       rule: Uqsub8_Rule_252_A1_P498,
-//       safety: ['RegsNotPc']}
+//       rule: UQSUB8,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case11_TestCase11) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case11 baseline_tester;
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Uqsub8_Rule_252_A1_P498 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc01100110nnnndddd11111111mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case11 tester;
+  tester.Test("cccc01100110nnnndddd11111111mmmm");
 }
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=000 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//    = {actual: 'Binary3RegisterOpAltBNoCondUpdates',
 //       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc01100111nnnndddd11110001mmmm',
-//       rule: 'Uhadd16_Rule_238_A1_P470',
-//       safety: ["'RegsNotPc'"]}
+//       rule: 'UHADD16',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op1(21:20)=11 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       actual: Binary3RegisterOpAltBNoCondUpdates,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       pattern: cccc01100111nnnndddd11110001mmmm,
-//       rule: Uhadd16_Rule_238_A1_P470,
-//       safety: ['RegsNotPc']}
+//       rule: UHADD16,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case12_TestCase12) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case12 baseline_tester;
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Uhadd16_Rule_238_A1_P470 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc01100111nnnndddd11110001mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case12 tester;
+  tester.Test("cccc01100111nnnndddd11110001mmmm");
 }
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//    = {actual: 'Binary3RegisterOpAltBNoCondUpdates',
 //       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc01100111nnnndddd11110011mmmm',
-//       rule: 'Uhasx_Rule_240_A1_P474',
-//       safety: ["'RegsNotPc'"]}
+//       rule: 'UHASX',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op1(21:20)=11 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       actual: Binary3RegisterOpAltBNoCondUpdates,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       pattern: cccc01100111nnnndddd11110011mmmm,
-//       rule: Uhasx_Rule_240_A1_P474,
-//       safety: ['RegsNotPc']}
+//       rule: UHASX,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case13_TestCase13) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case13 baseline_tester;
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Uhasx_Rule_240_A1_P474 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc01100111nnnndddd11110011mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case13 tester;
+  tester.Test("cccc01100111nnnndddd11110011mmmm");
 }
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=010 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//    = {actual: 'Binary3RegisterOpAltBNoCondUpdates',
 //       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc01100111nnnndddd11110101mmmm',
-//       rule: 'Uhsax_Rule_241_A1_P476',
-//       safety: ["'RegsNotPc'"]}
+//       rule: 'UHSAX',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op1(21:20)=11 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       actual: Binary3RegisterOpAltBNoCondUpdates,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       pattern: cccc01100111nnnndddd11110101mmmm,
-//       rule: Uhsax_Rule_241_A1_P476,
-//       safety: ['RegsNotPc']}
+//       rule: UHSAX,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case14_TestCase14) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case14 baseline_tester;
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Uhsax_Rule_241_A1_P476 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc01100111nnnndddd11110101mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case14 tester;
+  tester.Test("cccc01100111nnnndddd11110101mmmm");
 }
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=011 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//    = {actual: 'Binary3RegisterOpAltBNoCondUpdates',
 //       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc01100111nnnndddd11110111mmmm',
-//       rule: 'Uhsub16_Rule_242_A1_P478',
-//       safety: ["'RegsNotPc'"]}
+//       rule: 'UHSUB16',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op1(21:20)=11 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       actual: Binary3RegisterOpAltBNoCondUpdates,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       pattern: cccc01100111nnnndddd11110111mmmm,
-//       rule: Uhsub16_Rule_242_A1_P478,
-//       safety: ['RegsNotPc']}
+//       rule: UHSUB16,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case15_TestCase15) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case15 baseline_tester;
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Uhsub16_Rule_242_A1_P478 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc01100111nnnndddd11110111mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case15 tester;
+  tester.Test("cccc01100111nnnndddd11110111mmmm");
 }
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=100 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//    = {actual: 'Binary3RegisterOpAltBNoCondUpdates',
 //       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc01100111nnnndddd11111001mmmm',
-//       rule: 'Uhadd8_Rule_239_A1_P472',
-//       safety: ["'RegsNotPc'"]}
+//       rule: 'UHADD8',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op1(21:20)=11 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       actual: Binary3RegisterOpAltBNoCondUpdates,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       pattern: cccc01100111nnnndddd11111001mmmm,
-//       rule: Uhadd8_Rule_239_A1_P472,
-//       safety: ['RegsNotPc']}
+//       rule: UHADD8,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case16_TestCase16) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case16 baseline_tester;
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Uhadd8_Rule_239_A1_P472 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc01100111nnnndddd11111001mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case16 tester;
+  tester.Test("cccc01100111nnnndddd11111001mmmm");
 }
 
 // Neutral case:
 // inst(21:20)=11 & inst(7:5)=111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: 'Defs12To15CondsDontCareRnRdRmNotPc',
+//    = {actual: 'Binary3RegisterOpAltBNoCondUpdates',
 //       baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
+//       defs: {inst(15:12)},
 //       pattern: 'cccc01100111nnnndddd11111111mmmm',
-//       rule: 'Uhsub8_Rule_243_A1_P480',
-//       safety: ["'RegsNotPc'"]}
+//       rule: 'UHSUB8',
+//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 15 == inst(3:0) => UNPREDICTABLE']}
 //
-// Representative case:
+// Representaive case:
 // op1(21:20)=11 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
-//    = {actual: Defs12To15CondsDontCareRnRdRmNotPc,
+//    = {Pc: 15,
+//       Rd: Rd(15:12),
+//       Rm: Rm(3:0),
+//       Rn: Rn(19:16),
+//       actual: Binary3RegisterOpAltBNoCondUpdates,
 //       baseline: Binary3RegisterOpAltBNoCondUpdates,
 //       constraints: ,
+//       defs: {Rd},
+//       fields: [Rn(19:16), Rd(15:12), Rm(3:0)],
 //       pattern: cccc01100111nnnndddd11111111mmmm,
-//       rule: Uhsub8_Rule_243_A1_P480,
-//       safety: ['RegsNotPc']}
+//       rule: UHSUB8,
+//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltBNoCondUpdatesTester_Case17_TestCase17) {
-  Binary3RegisterOpAltBNoCondUpdatesTester_Case17 baseline_tester;
-  NamedDefs12To15CondsDontCareRnRdRmNotPc_Uhsub8_Rule_243_A1_P480 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc01100111nnnndddd11111111mmmm");
+  Binary3RegisterOpAltBNoCondUpdatesTester_Case17 tester;
+  tester.Test("cccc01100111nnnndddd11111111mmmm");
 }
 
 }  // namespace nacl_arm_test
