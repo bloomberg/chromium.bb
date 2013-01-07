@@ -570,9 +570,22 @@ class BrowserView : public BrowserWindow,
   // Create an icon for this window in the launcher (currently only for Ash).
   void CreateLauncherIcon();
 
-  // Calls |method| which is either RenderWidgetHost::Cut, ::Copy, or ::Paste
-  // and returns true if the focus is currently on a WebContent.
-  bool DoCutCopyPaste(void (content::RenderWidgetHost::*method)());
+  // Calls |method| which is either RenderWidgetHost::Cut, ::Copy, or ::Paste,
+  // first trying the content WebContents, then the devtools WebContents, and
+  // lastly the Views::Textfield if one is focused.
+  // |windows_msg_id| is temporary until Win Aura is the default on Windows,
+  // since until then the omnibox doesn't use Views::Textfield.
+  void DoCutCopyPaste(void (content::RenderWidgetHost::*method)(),
+#if defined(OS_WIN)
+                      int windows_msg_id,
+#endif
+                      int command_id);
+
+  // Calls |method| which is either RenderWidgetHost::Cut, ::Copy, or ::Paste on
+  // the given WebContents, returning true if it consumed the event.
+  bool DoCutCopyPasteForWebContents(
+      content::WebContents* contents,
+      void (content::RenderWidgetHost::*method)());
 
   // Shows the next app-modal dialog box, if there is one to be shown, or moves
   // an existing showing one to the front.

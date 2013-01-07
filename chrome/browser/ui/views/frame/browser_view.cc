@@ -112,6 +112,7 @@
 #include "ui/gfx/safe_integer_conversions.h"
 #include "ui/gfx/sys_color_change_listener.h"
 #include "ui/views/controls/single_split_view.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/focus/view_storage.h"
@@ -1507,63 +1508,27 @@ void BrowserView::Cut() {
   // Omnibox is focused, send a Ctrl+x key event to Chrome. Using RWH interface
   // rather than the fake key event for a WebContent is important since the fake
   // event might be consumed by the web content (crbug.com/137908).
-  if (DoCutCopyPaste(&content::RenderWidgetHost::Cut))
-    return;
-
-  OmniboxView* omnibox_view = GetLocationBarView()->GetLocationEntry();
-  if (!omnibox_view->model()->has_focus())
-    return;
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-  OmniboxViewWin* omnibox_win = GetOmniboxViewWin(omnibox_view);
-  if (omnibox_win) {
-    ::SendMessage(omnibox_win->GetNativeView(), WM_CUT, 0, 0);
-    return;
-  }
+  DoCutCopyPaste(&content::RenderWidgetHost::Cut,
+#if defined(OS_WIN)
+                 WM_CUT,
 #endif
-
-  OmniboxViewViews* omnibox_views = GetOmniboxViewViews(omnibox_view);
-  omnibox_views->ExecuteCommandOnTextField(IDS_APP_CUT);
+                 IDS_APP_CUT);
 }
 
 void BrowserView::Copy() {
-  if (DoCutCopyPaste(&content::RenderWidgetHost::Copy))
-    return;
-
-  OmniboxView* omnibox_view = GetLocationBarView()->GetLocationEntry();
-  if (!omnibox_view->model()->has_focus())
-    return;
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-  OmniboxViewWin* omnibox_win = GetOmniboxViewWin(omnibox_view);
-  if (omnibox_win) {
-    ::SendMessage(omnibox_win->GetNativeView(), WM_COPY, 0, 0);
-    return;
-  }
+  DoCutCopyPaste(&content::RenderWidgetHost::Copy,
+#if defined(OS_WIN)
+                 WM_COPY,
 #endif
-
-  OmniboxViewViews* omnibox_views = GetOmniboxViewViews(omnibox_view);
-  omnibox_views->ExecuteCommandOnTextField(IDS_APP_COPY);
+                 IDS_APP_COPY);
 }
 
 void BrowserView::Paste() {
-  if (DoCutCopyPaste(&content::RenderWidgetHost::Paste))
-    return;
-
-  OmniboxView* omnibox_view = GetLocationBarView()->GetLocationEntry();
-  if (!omnibox_view->model()->has_focus())
-    return;
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-  OmniboxViewWin* omnibox_win = GetOmniboxViewWin(omnibox_view);
-  if (omnibox_win) {
-    ::SendMessage(omnibox_win->GetNativeView(), WM_PASTE, 0, 0);
-    return;
-  }
+  DoCutCopyPaste(&content::RenderWidgetHost::Paste,
+#if defined(OS_WIN)
+                 WM_PASTE,
 #endif
-
-  OmniboxViewViews* omnibox_views = GetOmniboxViewViews(omnibox_view);
-  omnibox_views->ExecuteCommandOnTextField(IDS_APP_PASTE);
+                 IDS_APP_PASTE);
 }
 
 gfx::Rect BrowserView::GetInstantBounds() {
@@ -2785,10 +2750,44 @@ void BrowserView::ShowPasswordGenerationBubble(
   bubble->Show();
 }
 
-bool BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)()) {
+void BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)(),
+#if defined(OS_WIN)
+                                 int windows_msg_id,
+#endif
+                                 int command_id) {
   WebContents* contents = chrome::GetActiveWebContents(browser_.get());
   if (!contents)
-    return false;
+    return;
+  if (DoCutCopyPasteForWebContents(contents, method))
+    return;
+
+  DevToolsWindow* devtools_window =
+      DevToolsWindow::GetDockedInstanceForInspectedTab(contents);
+  if (devtools_window &&
+      DoCutCopyPasteForWebContents(devtools_window->web_contents(), method)) {
+    return;
+  }
+
+  views::FocusManager* focus_manager = GetFocusManager();
+  views::View* focused = focus_manager->GetFocusedView();
+  if (focused->GetClassName() == views::Textfield::kViewClassName) {
+    views::Textfield* textfield = static_cast<views::Textfield*>(focused);
+    textfield->ExecuteCommand(command_id);
+    return;
+  }
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+  OmniboxView* omnibox_view = GetLocationBarView()->GetLocationEntry();
+  if (omnibox_view->model()->has_focus()) {
+    OmniboxViewWin* omnibox_win = GetOmniboxViewWin(omnibox_view);
+    ::SendMessage(omnibox_win->GetNativeView(), windows_msg_id, 0, 0);
+  }
+#endif
+}
+
+bool BrowserView::DoCutCopyPasteForWebContents(
+    WebContents* contents,
+    void (content::RenderWidgetHost::*method)()) {
   gfx::NativeView native_view = contents->GetContentNativeView();
   if (!native_view)
     return false;
