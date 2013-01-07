@@ -7,6 +7,8 @@
 
 setlocal
 
+set GIT_URL=https://chromium.googlesource.com/chromium/tools/depot_tools.git
+
 :: Will download svn and python.
 :: If you don't want to install the depot_tools version of these tools, remove
 :: the 'force' option on the next command. The tools will be installed only if
@@ -35,6 +37,15 @@ goto :EOF
 cd /d "%~dp0."
 call git config remote.origin.fetch > NUL
 if errorlevel 1 goto :GIT_SVN_UPDATE
+for /F %%x in ('git config --get remote.origin.url') DO (
+  IF not "%%x" == "%GIT_URL%" (
+    echo Your depot_tools checkout is configured to fetch from an obsolete URL
+    choice /N /T 60 /D N /M "Would you like to update it? [y/N]: "
+    IF not errorlevel 2 (
+      call git config remote.origin.url "%GIT_URL%"
+    )
+  )
+)
 call git fetch -q origin > NUL
 call git rebase -q origin/master > NUL
 goto :EOF

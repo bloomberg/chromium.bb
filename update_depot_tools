@@ -22,7 +22,7 @@ fi
 OUTPUT="$(uname | grep 'MINGW')"
 MINGW=$?
 
-CANONICAL_GIT_URL="https://chromium.googlesource.com/chromium/tools/depot_tools"
+CANONICAL_GIT_URL="https://chromium.googlesource.com/chromium/tools/depot_tools.git"
 
 SVN="svn"
 if [ -d "$base_dir/svn_bin" -a $MINGW = 0 ]; then
