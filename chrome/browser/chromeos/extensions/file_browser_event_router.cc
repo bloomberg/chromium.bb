@@ -110,7 +110,8 @@ FileBrowserEventRouter::~FileBrowserEventRouter() {
 void FileBrowserEventRouter::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DCHECK(file_watchers_.empty());
+  DLOG_IF(WARNING, !file_watchers_.empty()) << "Not all file watchers are "
+      << "removed. This can happen when Files.app is open during shutdown.";
   STLDeleteValues(&file_watchers_);
   if (!profile_) {
     NOTREACHED();
