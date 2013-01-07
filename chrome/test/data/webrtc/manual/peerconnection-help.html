@@ -35,6 +35,25 @@
     need to disconnect: that's done automatically when you close the
     page. Hanging up is NOT done automatically though.</li>
 </ol>
+
+<p>
+  To create a data channel:
+</p>
+<ol>
+  <li>Make sure Chrome is started with the --enable-data-channels flag.</li>
+  <li>Follow the instructions above to connect two tabs to a
+   peerconnection_server.</li>
+  <li>Click the Data channel: Create button in one tab. Notice the status 
+  changes to "connecting".</li>
+  <li>Click the Call:Negotiate button. You should see the status change to 
+  "open" in both tabs. </li>     
+  <li>Enter text in the textbox next to the Send data button and then click Send
+   data. Notice the text is received in the remote tab in the Received on data 
+  channel text box. Data can be sent in both direct.</li>
+  <li>To close the channel press the Close button followed by Negotiate. Notice 
+  the status change to "closed"</li>
+</ol>
+
 <p>Detailed descriptions:</p>
 <ul>
   <li>Connect - once a connection is established, you generally won't
@@ -79,6 +98,8 @@
     check the box before the call, or check the box and then re-send the
     local stream.</li>
 </ul>
+
+
 
 </body>
 </html>
