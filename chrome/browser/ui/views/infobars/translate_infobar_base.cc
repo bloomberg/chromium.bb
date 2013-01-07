@@ -20,9 +20,9 @@
 // TranslateInfoBarDelegate ---------------------------------------------------
 
 InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  if (type_ == BEFORE_TRANSLATE)
+  if (infobar_type_ == BEFORE_TRANSLATE)
     return new BeforeTranslateInfoBar(owner, this);
-  if (type_ == AFTER_TRANSLATE)
+  if (infobar_type_ == AFTER_TRANSLATE)
     return new AfterTranslateInfoBar(owner, this);
   return new TranslateMessageInfoBar(owner, this);
 }

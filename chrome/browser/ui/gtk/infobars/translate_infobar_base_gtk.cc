@@ -199,7 +199,7 @@ void TranslateInfoBarBase::OnOptionsClicked(GtkWidget* sender) {
 // TranslateInfoBarDelegate specific method:
 InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   TranslateInfoBarBase* infobar = NULL;
-  switch (type_) {
+  switch (infobar_type_) {
     case BEFORE_TRANSLATE:
       infobar = new BeforeTranslateInfoBar(owner, this);
       break;

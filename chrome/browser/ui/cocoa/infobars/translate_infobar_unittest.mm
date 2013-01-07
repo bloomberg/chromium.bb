@@ -40,9 +40,6 @@ class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
                                PrefService* prefs)
       : TranslateInfoBarDelegate(type, error, infobar_service, prefs,
                                  "en", "es") {
-    // Start out in the "Before Translate" state.
-    type_ = type;
-
   }
 
   MOCK_METHOD0(Translate, void());

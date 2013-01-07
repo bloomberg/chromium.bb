@@ -75,9 +75,9 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
     return languages_[index].second;
   }
 
-  Type type() const { return type_; }
+  Type infobar_type() const { return infobar_type_; }
 
-  TranslateErrors::Type error() const { return error_; }
+  TranslateErrors::Type error_type() const { return error_type_; }
 
   size_t original_language_index() const { return original_language_index_; }
   void set_original_language_index(size_t language_index) {
@@ -102,7 +102,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
 
   // Returns true if the current infobar indicates an error (in which case it
   // should get a yellow background instead of a blue one).
-  bool IsError() const { return type_ == TRANSLATION_ERROR; }
+  bool IsError() const { return infobar_type_ == TRANSLATION_ERROR; }
 
   // Returns what kind of background fading effect the infobar should use when
   // its is shown.
@@ -167,12 +167,12 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
  protected:
   // For testing.
   TranslateInfoBarDelegate(Type infobar_type,
-                           TranslateErrors::Type error,
+                           TranslateErrors::Type error_type,
                            InfoBarService* infobar_service,
                            PrefService* prefs,
                            const std::string& original_language,
                            const std::string& target_language);
-  Type type_;
+  Type infobar_type_;
 
  private:
   typedef std::pair<std::string, string16> LanguageNamePair;
@@ -214,7 +214,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   size_t target_language_index_;
 
   // The error that occurred when trying to translate (NONE if no error).
-  TranslateErrors::Type error_;
+  TranslateErrors::Type error_type_;
 
   // The translation related preferences.
   TranslatePrefs prefs_;

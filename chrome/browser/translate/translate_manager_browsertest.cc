@@ -366,7 +366,8 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   // We should have an infobar.
   TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE, infobar->type());
+  EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE,
+            infobar->infobar_type());
 
   // Simulate clicking translate.
   process()->sink().ClearMessages();
@@ -375,7 +376,7 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   // The "Translating..." infobar should be showing.
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATING, infobar->type());
+  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATING, infobar->infobar_type());
 
   // Simulate the translate script being retrieved (it only needs to be done
   // once in the test as it is cached).
@@ -397,7 +398,7 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   // The after translate infobar should be showing.
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate::AFTER_TRANSLATE, infobar->type());
+  EXPECT_EQ(TranslateInfoBarDelegate::AFTER_TRANSLATE, infobar->infobar_type());
 
   // Simulate changing the original language and translating.
   process()->sink().ClearMessages();
@@ -448,7 +449,8 @@ TEST_F(TranslateManagerTest, TranslateScriptNotAvailable) {
   // We should have an infobar.
   TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE, infobar->type());
+  EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE,
+            infobar->infobar_type());
 
   // Simulate clicking translate.
   process()->sink().ClearMessages();
@@ -462,7 +464,8 @@ TEST_F(TranslateManagerTest, TranslateScriptNotAvailable) {
   // And we should have an error infobar showing.
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATION_ERROR, infobar->type());
+  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATION_ERROR,
+            infobar->infobar_type());
 }
 
 // Ensures we deal correctly with pages for which the browser does not recognize
@@ -486,7 +489,8 @@ TEST_F(TranslateManagerTest, TranslateUnknownLanguage) {
   SimulateTranslateScriptURLFetch(false);
   TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATION_ERROR, infobar->type());
+  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATION_ERROR,
+            infobar->infobar_type());
   EXPECT_TRUE(infobar->IsError());
   infobar->MessageInfoBarButtonPressed();
   SimulateTranslateScriptURLFetch(true);  // This time succeed.
@@ -501,7 +505,7 @@ TEST_F(TranslateManagerTest, TranslateUnknownLanguage) {
   // The after translate infobar should be showing.
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate::AFTER_TRANSLATE, infobar->type());
+  EXPECT_EQ(TranslateInfoBarDelegate::AFTER_TRANSLATE, infobar->infobar_type());
   EXPECT_EQ("fr", infobar->original_language_code());
   EXPECT_EQ("en", infobar->target_language_code());
 
@@ -517,8 +521,9 @@ TEST_F(TranslateManagerTest, TranslateUnknownLanguage) {
           1, 0, "en", "en", TranslateErrors::IDENTICAL_LANGUAGES));
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATION_ERROR, infobar->type());
-  EXPECT_EQ(TranslateErrors::IDENTICAL_LANGUAGES, infobar->error());
+  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATION_ERROR,
+            infobar->infobar_type());
+  EXPECT_EQ(TranslateErrors::IDENTICAL_LANGUAGES, infobar->error_type());
 
   // Let's run the same steps again but this time the server fails to detect the
   // page's language (it returns an empty string).
@@ -532,8 +537,9 @@ TEST_F(TranslateManagerTest, TranslateUnknownLanguage) {
           2, 0, "", "en", TranslateErrors::UNKNOWN_LANGUAGE));
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATION_ERROR, infobar->type());
-  EXPECT_EQ(TranslateErrors::UNKNOWN_LANGUAGE, infobar->error());
+  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATION_ERROR,
+            infobar->infobar_type());
+  EXPECT_EQ(TranslateErrors::UNKNOWN_LANGUAGE, infobar->error_type());
 }
 
 // Tests that we show/don't show an info-bar for all languages the CLD can
@@ -973,7 +979,8 @@ TEST_F(TranslateManagerTest, ServerReportsUnsupportedLanguage) {
   // language.
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATION_ERROR, infobar->type());
+  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATION_ERROR,
+            infobar->infobar_type());
 
   // This infobar should have a button (so the string should not be empty).
   ASSERT_FALSE(infobar->GetMessageInfoBarButtonText().empty());
@@ -1194,7 +1201,7 @@ TEST_F(TranslateManagerTest, AlwaysTranslateLanguagePref) {
   // The translating infobar should be showing.
   TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATING, infobar->type());
+  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATING, infobar->infobar_type());
   // Simulate the translate script being retrieved.
   SimulateTranslateScriptURLFetch(true);
   int page_id = 0;
@@ -1229,7 +1236,8 @@ TEST_F(TranslateManagerTest, AlwaysTranslateLanguagePref) {
   EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
   infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE, infobar->type());
+  EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE,
+            infobar->infobar_type());
 }
 
 // Context menu.
@@ -1267,7 +1275,7 @@ TEST_F(TranslateManagerTest, ContextMenu) {
   // The "translating..." infobar should be showing.
   TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
-  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATING, infobar->type());
+  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATING, infobar->infobar_type());
   // Simulate the translate script being retrieved.
   SimulateTranslateScriptURLFetch(true);
   int page_id = 0;
@@ -1372,7 +1380,8 @@ TEST_F(TranslateManagerTest, BeforeTranslateExtraButtons) {
     SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
     infobar = GetTranslateInfoBar();
     ASSERT_TRUE(infobar != NULL);
-    EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE, infobar->type());
+    EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE,
+              infobar->infobar_type());
     if (i < 7) {
       EXPECT_FALSE(infobar->ShouldShowAlwaysTranslateButton());
       infobar->Translate();
@@ -1404,7 +1413,8 @@ TEST_F(TranslateManagerTest, BeforeTranslateExtraButtons) {
     SimulateNavigation(GURL("http://www.google.de"), "de", true);
     infobar = GetTranslateInfoBar();
     ASSERT_TRUE(infobar != NULL);
-    EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE, infobar->type());
+    EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE,
+              infobar->infobar_type());
     if (i < 7) {
       EXPECT_FALSE(infobar->ShouldShowNeverTranslateButton());
       infobar->TranslationDeclined();
