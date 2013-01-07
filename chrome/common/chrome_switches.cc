@@ -1434,6 +1434,9 @@ const char kEnableBackgroundLoader[]        = "enable-background-loader";
 const char kEnableChromeCaptivePortalDetector[] =
     "enable-chrome-captive-portal-detector";
 
+// Enables metadata prefetching in Google Drive Client for Chrome OS.
+const char kEnableDriveMetadataPrefetch[]   = "enable-drive-metadata-prefetch";
+
 // Enables touchpad three-finger-click as middle button.
 const char kEnableTouchpadThreeFingerClick[]
     = "enable-touchpad-three-finger-click";

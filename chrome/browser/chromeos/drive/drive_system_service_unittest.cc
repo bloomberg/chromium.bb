@@ -53,7 +53,7 @@ class DriveSystemServiceTest : public testing::Test {
 
 // Verify DriveFileSystem::StartInitialFeedFetch is called in initialization.
 TEST_F(DriveSystemServiceTest, InitialFeedFetch) {
-  EXPECT_CALL(*file_system_, StartInitialFeedFetch()).Times(1);
+  EXPECT_CALL(*file_system_, StartInitialFeedFetch()).Times(0);
   system_service_->Initialize();
   google_apis::test_util::RunBlockingPoolTask();
   system_service_->Shutdown();

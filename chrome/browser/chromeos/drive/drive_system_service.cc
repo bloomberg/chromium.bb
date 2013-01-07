@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive_api_service.h"
 #include "chrome/browser/chromeos/drive/drive_download_observer.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_context.h"
@@ -323,8 +325,11 @@ void DriveSystemService::OnCacheInitialized(bool success) {
 
   AddDriveMountPoint();
 
-  // Start prefetching of Drive metadata.
-  file_system_->StartInitialFeedFetch();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDriveMetadataPrefetch)) {
+    // Start prefetching of Drive metadata.
+    file_system_->StartInitialFeedFetch();
+  }
 }
 
 void DriveSystemService::DisableDrive() {
