@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_INFOBARS_ONE_CLICK_SIGNIN_INFOBAR_H_
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_ONE_CLICK_SIGNIN_INFOBAR_H_
 
-#include "chrome/browser/api/infobars/one_click_signin_infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/confirm_infobar.h"
+
+class OneClickSigninInfoBarDelegate;
 
 // A speialization of ConfirmInfoBar that allows changing the background
 // colour of the infobar as well as the colour of the OK button.  The behaviour

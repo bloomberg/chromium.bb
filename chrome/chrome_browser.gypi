@@ -110,8 +110,6 @@
         'browser/api/infobars/infobar_delegate.cc',
         'browser/api/infobars/infobar_delegate.h',
         'browser/api/infobars/infobar_service.h',
-        'browser/api/infobars/one_click_signin_infobar_delegate.cc',
-        'browser/api/infobars/one_click_signin_infobar_delegate.h',
         'browser/api/infobars/simple_alert_infobar_delegate.cc',
         'browser/api/infobars/simple_alert_infobar_delegate.h',
         'browser/api/sync/profile_sync_service_base.h',
@@ -2302,12 +2300,6 @@
             # CoreImage is iOS 5+, but iOS 4.3 is still supported.
             'xcode_settings': {'OTHER_LDFLAGS': ['-weak_framework CoreImage']},
           },
-        }],
-        ['enable_one_click_signin==0', {
-          'sources!': [
-            'browser/api/infobars/one_click_signin_infobar_delegate.cc',
-            'browser/api/infobars/one_click_signin_infobar_delegate.h',
-          ],
         }],
         ['enable_extensions==1', {
           'sources': [

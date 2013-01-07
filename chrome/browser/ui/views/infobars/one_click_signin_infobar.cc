@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/infobars/one_click_signin_infobar.h"
 
-#include "chrome/browser/api/infobars/one_click_signin_infobar_delegate.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/ui/sync/one_click_signin_infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"

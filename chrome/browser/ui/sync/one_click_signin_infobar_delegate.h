@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_API_INFOBARS_ONE_CLICK_SIGNIN_INFOBAR_DELEGATE_H_
-#define CHROME_BROWSER_API_INFOBARS_ONE_CLICK_SIGNIN_INFOBAR_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_INFOBAR_DELEGATE_H_
+#define CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_INFOBAR_DELEGATE_H_
 
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -43,4 +43,4 @@ class OneClickSigninInfoBarDelegate : public ConfirmInfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninInfoBarDelegate);
 };
 
-#endif  // CHROME_BROWSER_API_INFOBARS_ONE_CLICK_SIGNIN_INFOBAR_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_SYNC_ONE_CLICK_SIGNIN_INFOBAR_DELEGATE_H_
