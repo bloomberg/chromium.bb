@@ -3214,6 +3214,7 @@ usage(int error_code)
 		"  --width=WIDTH\t\tWidth of X window\n"
 		"  --height=HEIGHT\tHeight of X window\n"
 		"  --fullscreen\t\tRun in fullscreen mode\n"
+		"  --use-pixman\t\tUse the pixman (CPU) renderer\n"
 		"  --output-count=COUNT\tCreate multiple outputs\n"
 		"  --no-input\t\tDont create input devices\n\n");
 
