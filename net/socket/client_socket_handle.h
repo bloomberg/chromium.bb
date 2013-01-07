@@ -13,6 +13,7 @@
 #include "base/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
+#include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
@@ -106,6 +107,14 @@ class NET_EXPORT ClientSocketHandle {
   // Returns the time between Init() and when is_initialized() becomes true.
   base::TimeDelta setup_time() const { return setup_time_; }
 
+  // Sets the portion of LoadTimingInfo related to connection establishment, and
+  // the socket id.  |is_reused| is needed because the handle may not have full
+  // reuse information.  |load_timing_info| must have all default values when
+  // called. Returns false and makes no changes to |load_timing_info| when
+  // |socket_| is NULL.
+  bool GetLoadTimingInfo(bool is_reused,
+                         LoadTimingInfo* load_timing_info) const;
+
   // Used by ClientSocketPool to initialize the ClientSocketHandle.
   void set_is_reused(bool is_reused) { is_reused_ = is_reused; }
   void set_socket(StreamSocket* s) { socket_.reset(s); }
@@ -150,6 +159,12 @@ class NET_EXPORT ClientSocketHandle {
       return UNUSED_IDLE;
     }
   }
+  const LoadTimingInfo::ConnectTiming& connect_timing() const {
+    return connect_timing_;
+  }
+  void set_connect_timing(const LoadTimingInfo::ConnectTiming& connect_timing) {
+    connect_timing_ = connect_timing;
+  }
 
  private:
   // Called on asynchronous completion of an Init() request.
@@ -184,6 +199,9 @@ class NET_EXPORT ClientSocketHandle {
   base::TimeDelta setup_time_;
 
   NetLog::Source requesting_source_;
+
+  // Timing information is set when a connection is successfully established.
+  LoadTimingInfo::ConnectTiming connect_timing_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientSocketHandle);
 };

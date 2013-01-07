@@ -153,9 +153,6 @@ class SSLConnectJob : public ConnectJob {
   scoped_ptr<ClientSocketHandle> transport_socket_handle_;
   scoped_ptr<SSLClientSocket> ssl_socket_;
 
-  // The time the DoSSLConnect() method was called.
-  base::TimeTicks ssl_connect_start_time_;
-
   HttpResponseInfo error_response_info_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLConnectJob);

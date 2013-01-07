@@ -120,12 +120,6 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
   AddressList addresses_;
   State next_state_;
 
-  // The time Connect() was called.
-  base::TimeTicks start_time_;
-
-  // The time the connect was started (after DNS finished).
-  base::TimeTicks connect_start_time_;
-
   scoped_ptr<StreamSocket> transport_socket_;
 
   scoped_ptr<StreamSocket> fallback_transport_socket_;

@@ -180,6 +180,8 @@
         'base/load_flags_list.h',
         'base/load_states.h',
         'base/load_states_list.h',
+        'base/load_timing_info.cc',
+        'base/load_timing_info.h',
         'base/mapped_host_resolver.cc',
         'base/mapped_host_resolver.h',
         'base/mime_sniffer.cc',

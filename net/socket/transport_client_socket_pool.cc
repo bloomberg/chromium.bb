@@ -163,6 +163,8 @@ int TransportConnectJob::DoLoop(int result) {
 
 int TransportConnectJob::DoResolveHost() {
   next_state_ = STATE_RESOLVE_HOST_COMPLETE;
+  connect_timing_.dns_start = base::TimeTicks::Now();
+
   return resolver_.Resolve(
       params_->destination(), &addresses_,
       base::Bind(&TransportConnectJob::OnIOComplete, base::Unretained(this)),
@@ -170,6 +172,11 @@ int TransportConnectJob::DoResolveHost() {
 }
 
 int TransportConnectJob::DoResolveHostComplete(int result) {
+  connect_timing_.dns_end = base::TimeTicks::Now();
+  // Overwrite connection start time, since for connections that do not go
+  // through proxies, |connect_start| should not include dns lookup time.
+  connect_timing_.connect_start = connect_timing_.dns_end;
+
   if (result == OK) {
     // Invoke callback, and abort if it fails.
     if (!params_->host_resolution_callback().is_null())
@@ -185,7 +192,6 @@ int TransportConnectJob::DoTransportConnect() {
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
   transport_socket_.reset(client_socket_factory_->CreateTransportClientSocket(
         addresses_, net_log().net_log(), net_log().source()));
-  connect_start_time_ = base::TimeTicks::Now();
   int rv = transport_socket_->Connect(
       base::Bind(&TransportConnectJob::OnIOComplete, base::Unretained(this)));
   if (rv == ERR_IO_PENDING &&
@@ -201,10 +207,10 @@ int TransportConnectJob::DoTransportConnect() {
 int TransportConnectJob::DoTransportConnectComplete(int result) {
   if (result == OK) {
     bool is_ipv4 = addresses_.front().GetFamily() == ADDRESS_FAMILY_IPV4;
-    DCHECK(connect_start_time_ != base::TimeTicks());
-    DCHECK(start_time_ != base::TimeTicks());
+    DCHECK(!connect_timing_.connect_start.is_null());
+    DCHECK(!connect_timing_.dns_start.is_null());
     base::TimeTicks now = base::TimeTicks::Now();
-    base::TimeDelta total_duration = now - start_time_;
+    base::TimeDelta total_duration = now - connect_timing_.dns_start;
     UMA_HISTOGRAM_CUSTOM_TIMES(
         "Net.DNS_Resolution_And_TCP_Connection_Latency2",
         total_duration,
@@ -212,7 +218,7 @@ int TransportConnectJob::DoTransportConnectComplete(int result) {
         base::TimeDelta::FromMinutes(10),
         100);
 
-    base::TimeDelta connect_duration = now - connect_start_time_;
+    base::TimeDelta connect_duration = now - connect_timing_.connect_start;
     UMA_HISTOGRAM_CUSTOM_TIMES("Net.TCP_Connection_Latency",
         connect_duration,
         base::TimeDelta::FromMilliseconds(1),
@@ -288,10 +294,10 @@ void TransportConnectJob::DoIPv6FallbackTransportConnectComplete(int result) {
   DCHECK(fallback_addresses_.get());
 
   if (result == OK) {
-    DCHECK(fallback_connect_start_time_ != base::TimeTicks());
-    DCHECK(start_time_ != base::TimeTicks());
+    DCHECK(!fallback_connect_start_time_.is_null());
+    DCHECK(!connect_timing_.dns_start.is_null());
     base::TimeTicks now = base::TimeTicks::Now();
-    base::TimeDelta total_duration = now - start_time_;
+    base::TimeDelta total_duration = now - connect_timing_.dns_start;
     UMA_HISTOGRAM_CUSTOM_TIMES(
         "Net.DNS_Resolution_And_TCP_Connection_Latency2",
         total_duration,
@@ -324,7 +330,6 @@ void TransportConnectJob::DoIPv6FallbackTransportConnectComplete(int result) {
 
 int TransportConnectJob::ConnectInternal() {
   next_state_ = STATE_RESOLVE_HOST;
-  start_time_ = base::TimeTicks::Now();
   return DoLoop(OK);
 }
 

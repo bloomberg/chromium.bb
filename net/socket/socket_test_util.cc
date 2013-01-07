@@ -16,6 +16,7 @@
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
 #include "net/base/auth.h"
+#include "net/base/load_timing_info.h"
 #include "net/base/ssl_cert_request_info.h"
 #include "net/base/ssl_info.h"
 #include "net/http/http_network_session.h"
@@ -1537,6 +1538,16 @@ void MockTransportClientSocketPool::MockConnectJob::OnConnect(int rv) {
     return;
   if (rv == OK) {
     handle_->set_socket(socket_.release());
+
+    // Needed for socket pool tests that layer other sockets on top of mock
+    // sockets.
+    LoadTimingInfo::ConnectTiming connect_timing;
+    base::TimeTicks now = base::TimeTicks::Now();
+    connect_timing.dns_start = now;
+    connect_timing.dns_end = now;
+    connect_timing.connect_start = now;
+    connect_timing.connect_end = now;
+    handle_->set_connect_timing(connect_timing);
   } else {
     socket_.reset();
   }

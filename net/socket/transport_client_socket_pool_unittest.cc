@@ -11,7 +11,9 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/threading/platform_thread.h"
+#include "net/base/capturing_net_log.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/load_timing_info.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -33,6 +35,62 @@ const int kMaxSockets = 32;
 const int kMaxSocketsPerGroup = 6;
 const net::RequestPriority kDefaultPriority = LOW;
 
+// Make sure |handle| sets load times correctly when it has been assigned a
+// reused socket.
+void TestLoadTimingInfoConnectedReused(const ClientSocketHandle& handle) {
+  LoadTimingInfo load_timing_info;
+  // Only pass true in as |is_reused|, as in general, HttpStream types should
+  // have stricter concepts of reuse than socket pools.
+  EXPECT_TRUE(handle.GetLoadTimingInfo(true, &load_timing_info));
+
+  EXPECT_TRUE(load_timing_info.socket_reused);
+  EXPECT_NE(NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
+
+  EXPECT_TRUE(load_timing_info.connect_timing.connect_start.is_null());
+  EXPECT_TRUE(load_timing_info.connect_timing.connect_end.is_null());
+  EXPECT_TRUE(load_timing_info.connect_timing.dns_start.is_null());
+  EXPECT_TRUE(load_timing_info.connect_timing.dns_end.is_null());
+  EXPECT_TRUE(load_timing_info.connect_timing.ssl_start.is_null());
+  EXPECT_TRUE(load_timing_info.connect_timing.ssl_end.is_null());
+  EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
+  EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
+  EXPECT_TRUE(load_timing_info.send_start.is_null());
+  EXPECT_TRUE(load_timing_info.send_end.is_null());
+  EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
+}
+
+// Make sure |handle| sets load times correctly when it has been assigned a
+// fresh socket.  Also runs TestLoadTimingInfoConnectedReused, since the owner
+// of a connection where |is_reused| is false may consider the connection
+// reused.
+void TestLoadTimingInfoConnectedNotReused(const ClientSocketHandle& handle) {
+  EXPECT_FALSE(handle.is_reused());
+
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(handle.GetLoadTimingInfo(false, &load_timing_info));
+
+  EXPECT_FALSE(load_timing_info.socket_reused);
+  EXPECT_NE(NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
+
+  EXPECT_FALSE(load_timing_info.connect_timing.dns_start.is_null());
+  EXPECT_LE(load_timing_info.connect_timing.dns_start,
+            load_timing_info.connect_timing.dns_end);
+  EXPECT_LE(load_timing_info.connect_timing.dns_end,
+            load_timing_info.connect_timing.connect_start);
+  EXPECT_LE(load_timing_info.connect_timing.connect_start,
+            load_timing_info.connect_timing.connect_end);
+
+  EXPECT_TRUE(load_timing_info.connect_timing.ssl_start.is_null());
+  EXPECT_TRUE(load_timing_info.connect_timing.ssl_end.is_null());
+  EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
+  EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
+  EXPECT_TRUE(load_timing_info.send_start.is_null());
+  EXPECT_TRUE(load_timing_info.send_end.is_null());
+  EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
+
+  TestLoadTimingInfoConnectedReused(handle);
+}
+
 void SetIPv4Address(IPEndPoint* address) {
   IPAddressNumber number;
   CHECK(ParseIPLiteralToNumber("1.1.1.1", &number));
@@ -47,9 +105,11 @@ void SetIPv6Address(IPEndPoint* address) {
 
 class MockClientSocket : public StreamSocket {
  public:
-  MockClientSocket(const AddressList& addrlist)
+  MockClientSocket(const AddressList& addrlist, net::NetLog* net_log)
       : connected_(false),
-        addrlist_(addrlist) {}
+        addrlist_(addrlist),
+        net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)) {
+  }
 
   // StreamSocket implementation.
   virtual int Connect(const CompletionCallback& callback) {
@@ -119,7 +179,10 @@ class MockClientSocket : public StreamSocket {
 
 class MockFailingClientSocket : public StreamSocket {
  public:
-  MockFailingClientSocket(const AddressList& addrlist) : addrlist_(addrlist) {}
+  MockFailingClientSocket(const AddressList& addrlist, net::NetLog* net_log)
+      : addrlist_(addrlist),
+        net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)) {
+  }
 
   // StreamSocket implementation.
   virtual int Connect(const CompletionCallback& callback) {
@@ -190,13 +253,16 @@ class MockPendingClientSocket : public StreamSocket {
       const AddressList& addrlist,
       bool should_connect,
       bool should_stall,
-      base::TimeDelta delay)
+      base::TimeDelta delay,
+      net::NetLog* net_log)
       : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
         should_connect_(should_connect),
         should_stall_(should_stall),
         delay_(delay),
         is_connected_(false),
-        addrlist_(addrlist) {}
+        addrlist_(addrlist),
+        net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)) {
+  }
 
   // StreamSocket implementation.
   virtual int Connect(const CompletionCallback& callback) {
@@ -299,10 +365,10 @@ class MockClientSocketFactory : public ClientSocketFactory {
     MOCK_STALLED_CLIENT_SOCKET,
   };
 
-  MockClientSocketFactory()
-      : allocation_count_(0), client_socket_type_(MOCK_CLIENT_SOCKET),
-        client_socket_types_(NULL), client_socket_index_(0),
-        client_socket_index_max_(0),
+  explicit MockClientSocketFactory(NetLog* net_log)
+      : net_log_(net_log), allocation_count_(0),
+        client_socket_type_(MOCK_CLIENT_SOCKET), client_socket_types_(NULL),
+        client_socket_index_(0), client_socket_index_max_(0),
         delay_(base::TimeDelta::FromMilliseconds(
             ClientSocketPool::kMaxConnectRetryIntervalMs)) {}
 
@@ -329,23 +395,24 @@ class MockClientSocketFactory : public ClientSocketFactory {
 
     switch (type) {
       case MOCK_CLIENT_SOCKET:
-        return new MockClientSocket(addresses);
+        return new MockClientSocket(addresses, net_log_);
       case MOCK_FAILING_CLIENT_SOCKET:
-        return new MockFailingClientSocket(addresses);
+        return new MockFailingClientSocket(addresses, net_log_);
       case MOCK_PENDING_CLIENT_SOCKET:
         return new MockPendingClientSocket(
-            addresses, true, false, base::TimeDelta());
+            addresses, true, false, base::TimeDelta(), net_log_);
       case MOCK_PENDING_FAILING_CLIENT_SOCKET:
         return new MockPendingClientSocket(
-            addresses, false, false, base::TimeDelta());
+            addresses, false, false, base::TimeDelta(), net_log_);
       case MOCK_DELAYED_CLIENT_SOCKET:
-        return new MockPendingClientSocket(addresses, true, false, delay_);
+        return new MockPendingClientSocket(
+            addresses, true, false, delay_, net_log_);
       case MOCK_STALLED_CLIENT_SOCKET:
         return new MockPendingClientSocket(
-            addresses, true, true, base::TimeDelta());
+            addresses, true, true, base::TimeDelta(), net_log_);
       default:
         NOTREACHED();
-        return new MockClientSocket(addresses);
+        return new MockClientSocket(addresses, net_log_);
     }
   }
 
@@ -380,6 +447,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
   void set_delay(base::TimeDelta delay) { delay_ = delay; }
 
  private:
+  NetLog* net_log_;
   int allocation_count_;
   ClientSocketType client_socket_type_;
   ClientSocketType* client_socket_types_;
@@ -403,6 +471,7 @@ class TransportClientSocketPoolTest : public testing::Test {
                                       OnHostResolutionCallback())),
         histograms_(new ClientSocketPoolHistograms("TCPUnitTest")),
         host_resolver_(new MockHostResolver),
+        client_socket_factory_(&net_log_),
         pool_(kMaxSockets,
               kMaxSocketsPerGroup,
               histograms_.get(),
@@ -440,6 +509,7 @@ class TransportClientSocketPoolTest : public testing::Test {
   size_t completion_count() const { return test_base_.completion_count(); }
 
   bool connect_backup_jobs_enabled_;
+  CapturingNetLog net_log_;
   scoped_refptr<TransportSocketParams> params_;
   scoped_refptr<TransportSocketParams> low_params_;
   scoped_ptr<ClientSocketPoolHistograms> histograms_;
@@ -532,8 +602,7 @@ TEST_F(TransportClientSocketPoolTest, Basic) {
   EXPECT_EQ(OK, callback.WaitForResult());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
-
-  handle.Reset();
+  TestLoadTimingInfoConnectedNotReused(handle);
 }
 
 TEST_F(TransportClientSocketPoolTest, InitHostResolutionFailure) {
@@ -897,6 +966,34 @@ TEST_F(TransportClientSocketPoolTest, FailingActiveRequestWithPendingRequests) {
 
   for (int i = 0; i < kNumRequests; i++)
     EXPECT_EQ(ERR_CONNECTION_FAILED, (*requests())[i]->WaitForResult());
+}
+
+TEST_F(TransportClientSocketPoolTest, IdleSocketLoadTiming) {
+  TestCompletionCallback callback;
+  ClientSocketHandle handle;
+  int rv = handle.Init("a", low_params_, LOW, callback.callback(), &pool_,
+                       BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_FALSE(handle.is_initialized());
+  EXPECT_FALSE(handle.socket());
+
+  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_TRUE(handle.is_initialized());
+  EXPECT_TRUE(handle.socket());
+  TestLoadTimingInfoConnectedNotReused(handle);
+
+  handle.Reset();
+  // Need to run all pending to release the socket back to the pool.
+  MessageLoop::current()->RunUntilIdle();
+
+  // Now we should have 1 idle socket.
+  EXPECT_EQ(1, pool_.IdleSocketCount());
+
+  rv = handle.Init("a", low_params_, LOW, callback.callback(), &pool_,
+                   BoundNetLog());
+  EXPECT_EQ(OK, rv);
+  EXPECT_EQ(0, pool_.IdleSocketCount());
+  TestLoadTimingInfoConnectedReused(handle);
 }
 
 TEST_F(TransportClientSocketPoolTest, ResetIdleSocketsOnIPAddressChange) {

@@ -62,6 +62,7 @@ void ClientSocketHandle::ResetInternal(bool cancel) {
   idle_time_ = base::TimeDelta();
   init_time_ = base::TimeTicks();
   setup_time_ = base::TimeDelta();
+  connect_timing_ = LoadTimingInfo::ConnectTiming();
   pool_id_ = -1;
 }
 
@@ -101,6 +102,24 @@ void ClientSocketHandle::RemoveLayeredPool(LayeredPool* layered_pool) {
     pool_->RemoveLayeredPool(layered_pool);
     layered_pool_ = NULL;
   }
+}
+
+bool ClientSocketHandle::GetLoadTimingInfo(
+    bool is_reused,
+    LoadTimingInfo* load_timing_info) const {
+  // Only return load timing information when there's a socket.
+  if (!socket_)
+    return false;
+
+  load_timing_info->socket_log_id = socket_->NetLog().source().id;
+  load_timing_info->socket_reused = is_reused;
+
+  // No times if the socket is reused.
+  if (is_reused)
+    return true;
+
+  load_timing_info->connect_timing = connect_timing_;
+  return true;
 }
 
 void ClientSocketHandle::OnIOComplete(int result) {

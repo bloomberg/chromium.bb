@@ -126,10 +126,12 @@ void ConnectJob::ResetTimer(base::TimeDelta remaining_time) {
 }
 
 void ConnectJob::LogConnectStart() {
+  connect_timing_.connect_start = base::TimeTicks::Now();
   net_log().BeginEvent(NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_CONNECT);
 }
 
 void ConnectJob::LogConnectCompletion(int net_error) {
+  connect_timing_.connect_end = base::TimeTicks::Now();
   net_log().EndEventWithNetErrorCode(
       NetLog::TYPE_SOCKET_POOL_CONNECT_JOB_CONNECT, net_error);
 }
@@ -383,7 +385,8 @@ int ClientSocketPoolBaseHelper::RequestSocketInternal(
     LogBoundConnectJobToRequest(connect_job->net_log().source(), request);
     if (!preconnecting) {
       HandOutSocket(connect_job->ReleaseSocket(), false /* not reused */,
-                    handle, base::TimeDelta(), group, request->net_log());
+                    connect_job->connect_timing(), handle, base::TimeDelta(),
+                    group, request->net_log());
     } else {
       AddIdleSocket(connect_job->ReleaseSocket(), group);
     }
@@ -408,8 +411,9 @@ int ClientSocketPoolBaseHelper::RequestSocketInternal(
       error_socket = connect_job->ReleaseSocket();
     }
     if (error_socket) {
-      HandOutSocket(error_socket, false /* not reused */, handle,
-                    base::TimeDelta(), group, request->net_log());
+      HandOutSocket(error_socket, false /* not reused */,
+                    connect_job->connect_timing(), handle, base::TimeDelta(),
+                    group, request->net_log());
     } else if (group->IsEmpty()) {
       RemoveGroup(group_name);
     }
@@ -475,6 +479,7 @@ bool ClientSocketPoolBaseHelper::AssignIdleSocketToRequest(
     HandOutSocket(
         idle_socket.socket,
         idle_socket.socket->WasEverUsed(),
+        LoadTimingInfo::ConnectTiming(),
         request->handle(),
         idle_time,
         group,
@@ -855,7 +860,10 @@ void ClientSocketPoolBaseHelper::OnConnectJobComplete(
 
   scoped_ptr<StreamSocket> socket(job->ReleaseSocket());
 
+  // Copies of these are needed because |job| may be deleted before they are
+  // accessed.
   BoundNetLog job_log = job->net_log();
+  LoadTimingInfo::ConnectTiming connect_timing = job->connect_timing();
 
   if (result == OK) {
     DCHECK(socket.get());
@@ -865,8 +873,8 @@ void ClientSocketPoolBaseHelper::OnConnectJobComplete(
           group->mutable_pending_requests()->begin(), group));
       LogBoundConnectJobToRequest(job_log.source(), r.get());
       HandOutSocket(
-          socket.release(), false /* unused socket */, r->handle(),
-          base::TimeDelta(), group, r->net_log());
+          socket.release(), false /* unused socket */, connect_timing,
+          r->handle(), base::TimeDelta(), group, r->net_log());
       r->net_log().EndEvent(NetLog::TYPE_SOCKET_POOL);
       InvokeUserCallbackLater(r->handle(), r->callback(), result);
     } else {
@@ -886,11 +894,11 @@ void ClientSocketPoolBaseHelper::OnConnectJobComplete(
       RemoveConnectJob(job, group);
       if (socket.get()) {
         handed_out_socket = true;
-        HandOutSocket(socket.release(), false /* unused socket */, r->handle(),
-                      base::TimeDelta(), group, r->net_log());
+        HandOutSocket(socket.release(), false /* unused socket */,
+                      connect_timing, r->handle(), base::TimeDelta(), group,
+                      r->net_log());
       }
-      r->net_log().EndEventWithNetErrorCode(NetLog::TYPE_SOCKET_POOL,
-                                            result);
+      r->net_log().EndEventWithNetErrorCode(NetLog::TYPE_SOCKET_POOL, result);
       InvokeUserCallbackLater(r->handle(), r->callback(), result);
     } else {
       RemoveConnectJob(job, group);
@@ -977,6 +985,7 @@ void ClientSocketPoolBaseHelper::ProcessPendingRequest(
 void ClientSocketPoolBaseHelper::HandOutSocket(
     StreamSocket* socket,
     bool reused,
+    const LoadTimingInfo::ConnectTiming& connect_timing,
     ClientSocketHandle* handle,
     base::TimeDelta idle_time,
     Group* group,
@@ -986,6 +995,7 @@ void ClientSocketPoolBaseHelper::HandOutSocket(
   handle->set_is_reused(reused);
   handle->set_idle_time(idle_time);
   handle->set_pool_id(pool_generation_number_);
+  handle->set_connect_timing(connect_timing);
 
   if (reused) {
     net_log.AddEvent(
