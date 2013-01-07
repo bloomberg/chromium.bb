@@ -1182,6 +1182,63 @@ TEST(XFormTest, IntegerTranslation) {
   EXPECT_FALSE(transform.IsIdentityOrIntegerTranslation());
 }
 
+TEST(XFormTest, verifyMatrixInversion)
+{
+  {
+    // Invert a translation
+    gfx::Transform translation;
+    translation.Translate3d(2, 3, 4);
+    EXPECT_TRUE(translation.IsInvertible());
+
+    gfx::Transform inverse_translation;
+    bool is_invertible = translation.GetInverse(&inverse_translation);
+    EXPECT_TRUE(is_invertible);
+    EXPECT_ROW1_EQ(1, 0, 0, -2, inverse_translation);
+    EXPECT_ROW2_EQ(0, 1, 0, -3, inverse_translation);
+    EXPECT_ROW3_EQ(0, 0, 1, -4, inverse_translation);
+    EXPECT_ROW4_EQ(0, 0, 0,  1, inverse_translation);
+  }
+
+  {
+    // Invert a non-uniform scale
+    gfx::Transform scale;
+    scale.Scale3d(4, 10, 100);
+    EXPECT_TRUE(scale.IsInvertible());
+
+    gfx::Transform inverse_scale;
+    bool is_invertible = scale.GetInverse(&inverse_scale);
+    EXPECT_TRUE(is_invertible);
+    EXPECT_ROW1_EQ(0.25,   0,    0, 0, inverse_scale);
+    EXPECT_ROW2_EQ(0,    .1f,    0, 0, inverse_scale);
+    EXPECT_ROW3_EQ(0,      0, .01f, 0, inverse_scale);
+    EXPECT_ROW4_EQ(0,      0,    0, 1, inverse_scale);
+  }
+
+  {
+    // Try to invert a matrix that is not invertible.
+    // The inverse() function should reset the output matrix to identity.
+    gfx::Transform uninvertible;
+    uninvertible.matrix().setDouble(0, 0, 0);
+    uninvertible.matrix().setDouble(1, 1, 0);
+    uninvertible.matrix().setDouble(2, 2, 0);
+    uninvertible.matrix().setDouble(3, 3, 0);
+    EXPECT_FALSE(uninvertible.IsInvertible());
+
+    gfx::Transform inverse_of_uninvertible;
+
+    // Add a scale just to more easily ensure that inverse_of_uninvertible is
+    // reset to identity.
+    inverse_of_uninvertible.Scale3d(4, 10, 100);
+
+    bool is_invertible = uninvertible.GetInverse(&inverse_of_uninvertible);
+    EXPECT_FALSE(is_invertible);
+    EXPECT_TRUE(inverse_of_uninvertible.IsIdentity());
+    EXPECT_ROW1_EQ(1, 0, 0, 0, inverse_of_uninvertible);
+    EXPECT_ROW2_EQ(0, 1, 0, 0, inverse_of_uninvertible);
+    EXPECT_ROW3_EQ(0, 0, 1, 0, inverse_of_uninvertible);
+    EXPECT_ROW4_EQ(0, 0, 0, 1, inverse_of_uninvertible);
+  }
+}
 
 }  // namespace
 

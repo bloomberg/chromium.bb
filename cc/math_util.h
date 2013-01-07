@@ -121,7 +121,6 @@ public:
     // TODO(shawnsingh, vollick) we should phase out as much as possible of
     // these temporary functions, putting functionality into gfx::Transform.
     static void rotateEulerAngles(gfx::Transform*, double eulerX, double eulerY, double eulerZ);
-    static gfx::Transform inverse(const gfx::Transform&);
     static gfx::Transform to2dTransform(const gfx::Transform&);
     // Note carefully: the args here are labeled as per Webcore indexing conventions.
     static gfx::Transform createGfxTransform(double m11, double m12, double m13, double m14,

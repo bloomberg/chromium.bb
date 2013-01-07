@@ -325,51 +325,6 @@ TEST(MathUtilGfxTransformTest, verifyCopyConstructor)
     EXPECT_ROW4_EQ(13, 17, 21, 25, B);
 }
 
-TEST(MathUtilGfxTransformTest, verifyMatrixInversion)
-{
-    // Invert a translation
-    gfx::Transform translation;
-    translation.Translate3d(2, 3, 4);
-    EXPECT_TRUE(translation.IsInvertible());
-
-    gfx::Transform inverseTranslation = MathUtil::inverse(translation);
-    EXPECT_ROW1_EQ(1, 0, 0, -2, inverseTranslation);
-    EXPECT_ROW2_EQ(0, 1, 0, -3, inverseTranslation);
-    EXPECT_ROW3_EQ(0, 0, 1, -4, inverseTranslation);
-    EXPECT_ROW4_EQ(0, 0, 0,  1, inverseTranslation);
-
-    // Note that inversion should not have changed the original matrix.
-    EXPECT_ROW1_EQ(1, 0, 0, 2, translation);
-    EXPECT_ROW2_EQ(0, 1, 0, 3, translation);
-    EXPECT_ROW3_EQ(0, 0, 1, 4, translation);
-    EXPECT_ROW4_EQ(0, 0, 0, 1, translation);
-
-    // Invert a non-uniform scale
-    gfx::Transform scale;
-    scale.Scale3d(4, 10, 100);
-    EXPECT_TRUE(scale.IsInvertible());
-
-    gfx::Transform inverseScale = MathUtil::inverse(scale);
-    EXPECT_ROW1_EQ(0.25,   0,    0, 0, inverseScale);
-    EXPECT_ROW2_EQ(0,    .1f,    0, 0, inverseScale);
-    EXPECT_ROW3_EQ(0,      0, .01f, 0, inverseScale);
-    EXPECT_ROW4_EQ(0,      0,    0, 1, inverseScale);
-
-    // Try to invert a matrix that is not invertible.
-    // The inverse() function should simply return an identity matrix.
-    gfx::Transform notInvertible;
-    notInvertible.matrix().setDouble(0, 0, 0);
-    notInvertible.matrix().setDouble(1, 1, 0);
-    notInvertible.matrix().setDouble(2, 2, 0);
-    notInvertible.matrix().setDouble(3, 3, 0);
-    EXPECT_FALSE(notInvertible.IsInvertible());
-
-    gfx::Transform inverseOfNotInvertible;
-    initializeTestMatrix(&inverseOfNotInvertible); // initialize this to something non-identity, to make sure that assignment below actually took place.
-    inverseOfNotInvertible = MathUtil::inverse(notInvertible);
-    EXPECT_TRUE(inverseOfNotInvertible.IsIdentity());
-}
-
 TEST(MathUtilGfxTransformTest, verifyTo2DTransform)
 {
     gfx::Transform A;

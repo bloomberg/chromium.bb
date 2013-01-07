@@ -22,7 +22,17 @@ class Vector3dF;
 // copy/assign.
 class UI_EXPORT Transform {
  public:
+
+  enum SkipInitialization {
+    kSkipInitialization
+  };
+
   Transform() : matrix_(SkMatrix44::kIdentity_Constructor) {}
+
+  // Skips initializing this matrix to avoid overhead, when we know it will be
+  // initialized before use.
+  Transform(SkipInitialization)
+      : matrix_(SkMatrix44::kUninitialized_Constructor) {}
   Transform(const Transform& rhs) : matrix_(rhs.matrix_) {}
   // Initialize with the concatenation of lhs * rhs.
   Transform(const Transform& lhs, const Transform& rhs)

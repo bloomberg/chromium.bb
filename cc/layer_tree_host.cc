@@ -780,7 +780,12 @@ gfx::PointF LayerTreeHost::adjustEventPointForPinchZoom(const gfx::PointF& zoome
 
     // Scale to screen space before applying implTransform inverse.
     gfx::PointF zoomedScreenspacePoint = gfx::ScalePoint(zoomedViewportPoint, deviceScaleFactor());
-    gfx::Transform inverseImplTransform = MathUtil::inverse(m_implTransform);
+
+    gfx::Transform inverseImplTransform(gfx::Transform::kSkipInitialization);
+    if (!m_implTransform.GetInverse(&inverseImplTransform)) {
+        // TODO(shawnsingh): Either we need to handle uninvertible transforms
+        // here, or DCHECK that the transform is invertible.
+    }
 
     bool wasClipped = false;
     gfx::PointF unzoomedScreenspacePoint = MathUtil::projectPoint(inverseImplTransform, zoomedScreenspacePoint, wasClipped);

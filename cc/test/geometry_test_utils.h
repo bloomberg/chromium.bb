@@ -73,6 +73,10 @@ void ExpectTransformationMatrixEq(const WebKit::WebTransformationMatrix& expecte
         cc::ExpectTransformationMatrixEq(expected, actual);          \
     }
 
+// Should be used in test code only, for convenience. Production code should use
+// the gfx::Transform::GetInverse() API.
+gfx::Transform inverse(const gfx::Transform& transform);
+
 }  // namespace cc
 
 #endif  // CC_TEST_GEOMETRY_TEST_UTILS_H_

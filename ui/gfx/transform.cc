@@ -245,7 +245,14 @@ bool Transform::IsBackFaceVisible() const {
 }
 
 bool Transform::GetInverse(Transform* transform) const {
-  return matrix_.invert(&transform->matrix_);
+  if (!matrix_.invert(&transform->matrix_)) {
+    // Initialize the return value to identity if this matrix turned
+    // out to be un-invertible.
+    transform->MakeIdentity();
+    return false;
+  }
+
+  return true;
 }
 
 void Transform::Transpose() {

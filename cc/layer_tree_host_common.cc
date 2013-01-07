@@ -56,7 +56,12 @@ inline gfx::Rect calculateVisibleRectWithCachedLayerRect(const gfx::Rect& target
     // This bounding rectangle may be larger than it needs to be (being
     // axis-aligned), but is a reasonable filter on the space to consider.
     // Non-invertible transforms will create an empty rect here.
-    const gfx::Transform surfaceToLayer = MathUtil::inverse(transform);
+
+    gfx::Transform surfaceToLayer(gfx::Transform::kSkipInitialization);
+    if (!transform.GetInverse(&surfaceToLayer)) {
+        // TODO(shawnsingh): Either we need to handle uninvertible transforms
+        // here, or DCHECK that the transform is invertible.
+    }
     gfx::Rect layerRect = gfx::ToEnclosingRect(MathUtil::projectClippedRect(surfaceToLayer, gfx::RectF(minimalSurfaceRect)));
     layerRect.Intersect(layerBoundRect);
     return layerRect;
@@ -331,7 +336,13 @@ gfx::Transform computeScrollCompensationForThisLayer(LayerImpl* scrollingLayer, 
 
     gfx::Transform scrollCompensationForThisLayer = partialLayerOriginTransform; // Step 3
     scrollCompensationForThisLayer.Translate(scrollingLayer->scrollDelta().x(), scrollingLayer->scrollDelta().y()); // Step 2
-    scrollCompensationForThisLayer.PreconcatTransform(MathUtil::inverse(partialLayerOriginTransform)); // Step 1
+
+    gfx::Transform inversePartialLayerOriginTransform(gfx::Transform::kSkipInitialization);
+    if (!partialLayerOriginTransform.GetInverse(&inversePartialLayerOriginTransform)) {
+        // TODO(shawnsingh): Either we need to handle uninvertible transforms
+        // here, or DCHECK that the transform is invertible.
+    }
+    scrollCompensationForThisLayer.PreconcatTransform(inversePartialLayerOriginTransform); // Step 1
     return scrollCompensationForThisLayer;
 }
 
@@ -383,8 +394,14 @@ gfx::Transform computeScrollCompensationMatrixForChildren(LayerImpl* layer, cons
     //  Step 1 (right-most in the math): transform from the new surface to the original ancestor surface
     //  Step 2: apply the scroll compensation
     //  Step 3: transform back to the new surface.
-    if (layer->renderSurface() && !nextScrollCompensationMatrix.IsIdentity())
-        nextScrollCompensationMatrix = MathUtil::inverse(layer->renderSurface()->drawTransform()) * nextScrollCompensationMatrix * layer->renderSurface()->drawTransform();
+    if (layer->renderSurface() && !nextScrollCompensationMatrix.IsIdentity()) {
+        gfx::Transform inverseSurfaceDrawTransform(gfx::Transform::kSkipInitialization);
+        if (!layer->renderSurface()->drawTransform().GetInverse(&inverseSurfaceDrawTransform)) {
+            // TODO(shawnsingh): Either we need to handle uninvertible transforms
+            // here, or DCHECK that the transform is invertible.
+        }
+        nextScrollCompensationMatrix = inverseSurfaceDrawTransform * nextScrollCompensationMatrix * layer->renderSurface()->drawTransform();
+    }
 
     return nextScrollCompensationMatrix;
 }
@@ -746,7 +763,13 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
         renderSurface->setIsClipped(ancestorClipsSubtree);
         if (ancestorClipsSubtree) {
             renderSurface->setClipRect(clipRectFromAncestor);
-            clipRectForSubtreeInDescendantSpace = gfx::ToEnclosingRect(MathUtil::projectClippedRect(MathUtil::inverse(renderSurface->drawTransform()), renderSurface->clipRect()));
+
+            gfx::Transform inverseSurfaceDrawTransform(gfx::Transform::kSkipInitialization);
+            if (!renderSurface->drawTransform().GetInverse(&inverseSurfaceDrawTransform)) {
+                // TODO(shawnsingh): Either we need to handle uninvertible transforms
+                // here, or DCHECK that the transform is invertible.
+            }
+            clipRectForSubtreeInDescendantSpace = gfx::ToEnclosingRect(MathUtil::projectClippedRect(inverseSurfaceDrawTransform, renderSurface->clipRect()));
         } else {
             renderSurface->setClipRect(gfx::Rect());
             clipRectForSubtreeInDescendantSpace = clipRectFromAncestorInDescendantSpace;
@@ -1008,12 +1031,13 @@ void LayerTreeHostCommon::calculateDrawProperties(LayerImpl* rootLayer, const gf
 static bool pointHitsRect(const gfx::PointF& screenSpacePoint, const gfx::Transform& localSpaceToScreenSpaceTransform, gfx::RectF localSpaceRect)
 {
     // If the transform is not invertible, then assume that this point doesn't hit this rect.
-    if (!localSpaceToScreenSpaceTransform.IsInvertible())
+    gfx::Transform inverseLocalSpaceToScreenSpace(gfx::Transform::kSkipInitialization);
+    if (!localSpaceToScreenSpaceTransform.GetInverse(&inverseLocalSpaceToScreenSpace))
         return false;
 
     // Transform the hit test point from screen space to the local space of the given rect.
     bool clipped = false;
-    gfx::PointF hitTestPointInLocalSpace = MathUtil::projectPoint(MathUtil::inverse(localSpaceToScreenSpaceTransform), screenSpacePoint, clipped);
+    gfx::PointF hitTestPointInLocalSpace = MathUtil::projectPoint(inverseLocalSpaceToScreenSpace, screenSpacePoint, clipped);
 
     // If projectPoint could not project to a valid value, then we assume that this point doesn't hit this rect.
     if (clipped)
@@ -1025,12 +1049,13 @@ static bool pointHitsRect(const gfx::PointF& screenSpacePoint, const gfx::Transf
 static bool pointHitsRegion(gfx::PointF screenSpacePoint, const gfx::Transform& screenSpaceTransform, const Region& layerSpaceRegion, float layerContentScaleX, float layerContentScaleY)
 {
     // If the transform is not invertible, then assume that this point doesn't hit this region.
-    if (!screenSpaceTransform.IsInvertible())
+    gfx::Transform inverseScreenSpaceTransform(gfx::Transform::kSkipInitialization);
+    if (!screenSpaceTransform.GetInverse(&inverseScreenSpaceTransform))
         return false;
 
     // Transform the hit test point from screen space to the local space of the given region.
     bool clipped = false;
-    gfx::PointF hitTestPointInContentSpace = MathUtil::projectPoint(MathUtil::inverse(screenSpaceTransform), screenSpacePoint, clipped);
+    gfx::PointF hitTestPointInContentSpace = MathUtil::projectPoint(inverseScreenSpaceTransform, screenSpacePoint, clipped);
     gfx::PointF hitTestPointInLayerSpace = gfx::ScalePoint(hitTestPointInContentSpace, 1 / layerContentScaleX, 1 / layerContentScaleY);
 
     // If projectPoint could not project to a valid value, then we assume that this point doesn't hit this region.

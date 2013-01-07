@@ -245,7 +245,14 @@ InputHandlerClient::ScrollStatus LayerImpl::tryScroll(const gfx::PointF& screenS
 
     if (!nonFastScrollableRegion().IsEmpty()) {
         bool clipped = false;
-        gfx::PointF hitTestPointInContentSpace = MathUtil::projectPoint(MathUtil::inverse(screenSpaceTransform()), screenSpacePoint, clipped);
+        gfx::Transform inverseScreenSpaceTransform(gfx::Transform::kSkipInitialization);
+        if (!screenSpaceTransform().GetInverse(&inverseScreenSpaceTransform)) {
+            // TODO(shawnsingh): We shouldn't be applying a projection if screen space
+            // transform is uninvertible here. Perhaps we should be returning
+            // ScrollOnMainThread in this case?
+        }
+
+        gfx::PointF hitTestPointInContentSpace = MathUtil::projectPoint(inverseScreenSpaceTransform, screenSpacePoint, clipped);
         gfx::PointF hitTestPointInLayerSpace = gfx::ScalePoint(hitTestPointInContentSpace, 1 / contentsScaleX(), 1 / contentsScaleY());
         if (!clipped && nonFastScrollableRegion().Contains(gfx::ToRoundedPoint(hitTestPointInLayerSpace))) {
             TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed nonFastScrollableRegion");

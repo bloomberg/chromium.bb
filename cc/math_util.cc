@@ -422,18 +422,6 @@ void MathUtil::rotateEulerAngles(gfx::Transform* transform, double eulerX, doubl
     transform->PreconcatTransform(composite);
 }
 
-gfx::Transform MathUtil::inverse(const gfx::Transform& transform)
-{
-    gfx::Transform result;
-    bool invertedSuccessfully = transform.GetInverse(&result);
-
-    if (invertedSuccessfully)
-        return result;
-
-    // If transform was un-invertible, then just return identity.
-    return gfx::Transform();
-}
-
 gfx::Transform MathUtil::to2dTransform(const gfx::Transform& transform)
 {
     gfx::Transform result = transform;
