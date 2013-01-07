@@ -3568,7 +3568,7 @@ window_create_internal(struct display *display,
 	window->opaque_region = NULL;
 	window->fullscreen_method = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
 
-	if (display->dpy)
+	if (display->argb_device)
 #ifdef HAVE_CAIRO_EGL
 		window->buffer_type = WINDOW_BUFFER_TYPE_EGL_WINDOW;
 #else
@@ -4268,8 +4268,7 @@ display_create(int argc, char *argv[])
 	wl_registry_add_listener(d->registry, &registry_listener, d);
 	wl_display_dispatch(d->display);
 #ifdef HAVE_CAIRO_EGL
-	if (init_egl(d) < 0)
-		return NULL;
+	init_egl(d);
 #endif
 
 	create_cursors(d);
@@ -4325,7 +4324,8 @@ display_destroy(struct display *display)
 	destroy_cursors(display);
 
 #ifdef HAVE_CAIRO_EGL
-	fini_egl(display);
+	if (display->argb_device)
+		fini_egl(display);
 #endif
 
 	if (display->shell)
