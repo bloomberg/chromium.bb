@@ -9,34 +9,25 @@
 #include "base/synchronization/lock.h"
 #include "cc/cc_export.h"
 #include "cc/layer_impl.h"
+#include "cc/video_frame_provider.h"
 #include "media/base/video_frame.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebVideoFrameProvider.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/transform.h"
-
-namespace WebKit {
-class WebVideoFrame;
-}
 
 namespace media {
 class SkCanvasVideoRenderer;
 }
 
 namespace cc {
-
 class LayerTreeHostImpl;
-class VideoLayerImpl;
 
 class CC_EXPORT VideoLayerImpl : public LayerImpl
-                               , public WebKit::WebVideoFrameProvider::Client {
+                               , public VideoFrameProvider::Client {
 public:
-    typedef base::Callback<media::VideoFrame* (WebKit::WebVideoFrame*)> FrameUnwrapper;
-
-    static scoped_ptr<VideoLayerImpl> create(LayerTreeImpl* treeImpl, int id, WebKit::WebVideoFrameProvider* provider,
-                                             const FrameUnwrapper& unwrapper)
+    static scoped_ptr<VideoLayerImpl> create(LayerTreeImpl* treeImpl, int id, VideoFrameProvider* provider)
     {
-        return make_scoped_ptr(new VideoLayerImpl(treeImpl, id, provider, unwrapper));
+        return make_scoped_ptr(new VideoLayerImpl(treeImpl, id, provider));
     }
     virtual ~VideoLayerImpl();
 
@@ -44,10 +35,10 @@ public:
     virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
     virtual void didDraw(ResourceProvider*) OVERRIDE;
 
-    // WebKit::WebVideoFrameProvider::Client implementation.
-    virtual void stopUsingProvider(); // Callable on any thread.
-    virtual void didReceiveFrame(); // Callable on impl thread.
-    virtual void didUpdateMatrix(const float*); // Callable on impl thread.
+    // VideoFrameProvider::Client implementation.
+    virtual void StopUsingProvider() OVERRIDE; // Callable on any thread.
+    virtual void DidReceiveFrame() OVERRIDE; // Callable on impl thread.
+    virtual void DidUpdateMatrix(const float*) OVERRIDE; // Callable on impl thread.
 
     virtual void didLoseOutputSurface() OVERRIDE;
 
@@ -65,7 +56,7 @@ public:
     };
 
 private:
-    VideoLayerImpl(LayerTreeImpl*, int, WebKit::WebVideoFrameProvider*, const FrameUnwrapper&);
+    VideoLayerImpl(LayerTreeImpl*, int, VideoFrameProvider*);
 
     virtual const char* layerTypeAsString() const OVERRIDE;
 
@@ -78,12 +69,10 @@ private:
 
     // Guards the destruction of m_provider and the frame that it provides
     base::Lock m_providerLock;
-    WebKit::WebVideoFrameProvider* m_provider;
+    VideoFrameProvider* m_provider;
 
     gfx::Transform m_streamTextureMatrix;
 
-    FrameUnwrapper m_unwrapper;
-    WebKit::WebVideoFrame *m_webFrame;
     media::VideoFrame* m_frame;
     GLenum m_format;
     bool m_convertYUV;

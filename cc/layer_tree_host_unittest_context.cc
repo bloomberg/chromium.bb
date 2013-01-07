@@ -20,7 +20,6 @@
 #include "cc/test/fake_content_layer_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_scrollbar_theme_painter.h"
-#include "cc/test/fake_video_frame.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/fake_web_scrollbar.h"
@@ -611,25 +610,22 @@ class LayerTreeHostContextTestDontUseLostResources :
     content_with_mask_->setMaskLayer(mask_.get());
     root_->addChild(content_with_mask_);
 
-    VideoLayerImpl::FrameUnwrapper unwrapper =
-        base::Bind(FakeVideoFrame::ToVideoFrame);
-
     scoped_refptr<VideoLayer> video_color_ = VideoLayer::create(
-        &color_frame_provider_, unwrapper);
+        &color_frame_provider_);
     video_color_->setBounds(gfx::Size(10, 10));
     video_color_->setAnchorPoint(gfx::PointF());
     video_color_->setIsDrawable(true);
     root_->addChild(video_color_);
 
     scoped_refptr<VideoLayer> video_hw_ = VideoLayer::create(
-        &hw_frame_provider_, unwrapper);
+        &hw_frame_provider_);
     video_hw_->setBounds(gfx::Size(10, 10));
     video_hw_->setAnchorPoint(gfx::PointF());
     video_hw_->setIsDrawable(true);
     root_->addChild(video_hw_);
 
     scoped_refptr<VideoLayer> video_scaled_hw_ = VideoLayer::create(
-        &scaled_hw_frame_provider_, unwrapper);
+        &scaled_hw_frame_provider_);
     video_scaled_hw_->setBounds(gfx::Size(10, 10));
     video_scaled_hw_->setAnchorPoint(gfx::PointF());
     video_scaled_hw_->setIsDrawable(true);
@@ -707,29 +703,26 @@ class LayerTreeHostContextTestDontUseLostResources :
       delegated_impl->setRenderPasses(pass_list);
       EXPECT_TRUE(pass_list.isEmpty());
 
-      color_video_frame_ = make_scoped_ptr(new FakeVideoFrame(
-          VideoFrame::CreateColorFrame(
-              gfx::Size(4, 4), 0x80, 0x80, 0x80, base::TimeDelta())));
-      hw_video_frame_ = make_scoped_ptr(new FakeVideoFrame(
-          VideoFrame::WrapNativeTexture(
-              resource_provider->graphicsContext3D()->createTexture(),
-              GL_TEXTURE_2D,
-              gfx::Size(4, 4), gfx::Rect(0, 0, 4, 4), gfx::Size(4, 4),
-              base::TimeDelta(),
-              VideoFrame::ReadPixelsCB(),
-              base::Closure())));
-      scaled_hw_video_frame_ = make_scoped_ptr(new FakeVideoFrame(
-          VideoFrame::WrapNativeTexture(
-              resource_provider->graphicsContext3D()->createTexture(),
-              GL_TEXTURE_2D,
-              gfx::Size(4, 4), gfx::Rect(0, 0, 3, 2), gfx::Size(4, 4),
-              base::TimeDelta(),
-              VideoFrame::ReadPixelsCB(),
-              base::Closure())));
+      color_video_frame_ = VideoFrame::CreateColorFrame(
+          gfx::Size(4, 4), 0x80, 0x80, 0x80, base::TimeDelta());
+      hw_video_frame_ = VideoFrame::WrapNativeTexture(
+          resource_provider->graphicsContext3D()->createTexture(),
+          GL_TEXTURE_2D,
+          gfx::Size(4, 4), gfx::Rect(0, 0, 4, 4), gfx::Size(4, 4),
+          base::TimeDelta(),
+          VideoFrame::ReadPixelsCB(),
+          base::Closure());
+      scaled_hw_video_frame_ = VideoFrame::WrapNativeTexture(
+          resource_provider->graphicsContext3D()->createTexture(),
+          GL_TEXTURE_2D,
+          gfx::Size(4, 4), gfx::Rect(0, 0, 3, 2), gfx::Size(4, 4),
+          base::TimeDelta(),
+          VideoFrame::ReadPixelsCB(),
+          base::Closure());
 
-      color_frame_provider_.set_frame(color_video_frame_.get());
-      hw_frame_provider_.set_frame(hw_video_frame_.get());
-      scaled_hw_frame_provider_.set_frame(scaled_hw_video_frame_.get());
+      color_frame_provider_.set_frame(color_video_frame_);
+      hw_frame_provider_.set_frame(hw_video_frame_);
+      scaled_hw_frame_provider_.set_frame(scaled_hw_video_frame_);
       return;
     }
 
@@ -776,9 +769,9 @@ class LayerTreeHostContextTestDontUseLostResources :
   scoped_refptr<HeadsUpDisplayLayer> hud_;
   scoped_refptr<ScrollbarLayer> scrollbar_;
 
-  scoped_ptr<FakeVideoFrame> color_video_frame_;
-  scoped_ptr<FakeVideoFrame> hw_video_frame_;
-  scoped_ptr<FakeVideoFrame> scaled_hw_video_frame_;
+  scoped_refptr<VideoFrame> color_video_frame_;
+  scoped_refptr<VideoFrame> hw_video_frame_;
+  scoped_refptr<VideoFrame> scaled_hw_video_frame_;
 
   FakeVideoFrameProvider color_frame_provider_;
   FakeVideoFrameProvider hw_frame_provider_;

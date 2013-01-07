@@ -5,28 +5,28 @@
 #ifndef CC_TEST_FAKE_VIDEO_FRAME_PROVIDER_H_
 #define CC_TEST_FAKE_VIDEO_FRAME_PROVIDER_H_
 
-#include "base/memory/scoped_ptr.h"
-#include "cc/test/fake_video_frame.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebVideoFrameProvider.h"
+#include "cc/video_frame_provider.h"
+#include "media/base/video_frame.h"
 
 namespace cc {
 
 // Fake video frame provider that always provides the same VideoFrame.
-class FakeVideoFrameProvider: public WebKit::WebVideoFrameProvider {
+class FakeVideoFrameProvider : public VideoFrameProvider {
  public:
   FakeVideoFrameProvider();
   virtual ~FakeVideoFrameProvider();
 
-  virtual void setVideoFrameProviderClient(Client* client) OVERRIDE;
-  virtual WebKit::WebVideoFrame* getCurrentFrame() OVERRIDE;
-  virtual void putCurrentFrame(WebKit::WebVideoFrame*) OVERRIDE {}
+  virtual void SetVideoFrameProviderClient(Client* client) OVERRIDE;
+  virtual scoped_refptr<media::VideoFrame> GetCurrentFrame() OVERRIDE;
+  virtual void PutCurrentFrame(const scoped_refptr<media::VideoFrame>&)
+      OVERRIDE {}
 
-  void set_frame(FakeVideoFrame* frame) {
+  void set_frame(const scoped_refptr<media::VideoFrame>& frame) {
     frame_ = frame;
   }
 
  private:
-  FakeVideoFrame* frame_;
+  scoped_refptr<media::VideoFrame> frame_;
   Client* client_;
 };
 

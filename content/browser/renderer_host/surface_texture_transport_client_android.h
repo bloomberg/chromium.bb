@@ -7,8 +7,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebVideoFrameProvider.h"
+#include "cc/video_frame_provider.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/size.h"
 
 struct ANativeWindow;
 
@@ -20,7 +21,7 @@ class VideoLayer;
 namespace content {
 class SurfaceTextureBridge;
 
-class SurfaceTextureTransportClient : public WebKit::WebVideoFrameProvider {
+class SurfaceTextureTransportClient : public cc::VideoFrameProvider {
  public:
   SurfaceTextureTransportClient();
   virtual ~SurfaceTextureTransportClient();
@@ -29,10 +30,11 @@ class SurfaceTextureTransportClient : public WebKit::WebVideoFrameProvider {
   gfx::GLSurfaceHandle GetCompositingSurface(int surface_id);
   void SetSize(const gfx::Size& size);
 
-  // WebKit::WebVideoFrameProvider implementation.
-  virtual void setVideoFrameProviderClient(Client*) OVERRIDE {}
-  virtual WebKit::WebVideoFrame* getCurrentFrame() OVERRIDE;
-  virtual void putCurrentFrame(WebKit::WebVideoFrame* frame) OVERRIDE;
+  // cc::VideoFrameProvider implementation.
+  virtual void SetVideoFrameProviderClient(Client*) OVERRIDE {}
+  virtual scoped_refptr<media::VideoFrame> GetCurrentFrame() OVERRIDE;
+  virtual void PutCurrentFrame(const scoped_refptr<media::VideoFrame>& frame)
+      OVERRIDE;
 
  private:
   void OnSurfaceTextureFrameAvailable();
@@ -40,7 +42,7 @@ class SurfaceTextureTransportClient : public WebKit::WebVideoFrameProvider {
   scoped_refptr<cc::VideoLayer> video_layer_;
   scoped_refptr<SurfaceTextureBridge> surface_texture_;
   ANativeWindow* window_;
-  scoped_ptr<WebKit::WebVideoFrame> video_frame_;
+  scoped_refptr<media::VideoFrame> video_frame_;
   uint32 texture_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceTextureTransportClient);

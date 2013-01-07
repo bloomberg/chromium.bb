@@ -25,7 +25,6 @@
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/video_renderer_base.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebVideoFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
@@ -644,9 +643,8 @@ void WebMediaPlayerImpl::putCurrentFrame(
     UMA_HISTOGRAM_BOOLEAN("Media.AcceleratedCompositingActive", true);
   }
   if (web_video_frame) {
-    scoped_refptr<media::VideoFrame> video_frame(
-        WebVideoFrameImpl::toVideoFrame(web_video_frame));
-    proxy_->PutCurrentFrame(video_frame);
+    WebVideoFrameImpl* impl = static_cast<WebVideoFrameImpl*>(web_video_frame);
+    proxy_->PutCurrentFrame(impl->video_frame);
     delete web_video_frame;
   } else {
     proxy_->PutCurrentFrame(NULL);

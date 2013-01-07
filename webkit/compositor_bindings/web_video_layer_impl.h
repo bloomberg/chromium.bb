@@ -9,6 +9,10 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVideoLayer.h"
 #include "webkit/compositor_bindings/webkit_compositor_bindings_export.h"
 
+namespace webkit {
+class WebToCCVideoFrameProvider;
+}
+
 namespace WebKit {
 class WebLayerImpl;
 
@@ -23,6 +27,7 @@ public:
     virtual bool active() const OVERRIDE;
 
 private:
+    scoped_ptr<webkit::WebToCCVideoFrameProvider> m_providerAdapter;
     scoped_ptr<WebLayerImpl> m_layer;
 };
 

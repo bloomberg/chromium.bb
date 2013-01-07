@@ -33,6 +33,8 @@
       'web_to_ccinput_handler_adapter.h',
       'web_to_ccscrollbar_theme_painter_adapter.cc',
       'web_to_ccscrollbar_theme_painter_adapter.h',
+      'web_to_ccvideo_frame_provider.cc',
+      'web_to_ccvideo_frame_provider.h',
       'web_layer_tree_view_impl.cc',
       'web_layer_tree_view_impl.h',
       'web_scrollbar_layer_impl.cc',
@@ -76,6 +78,7 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../cc/cc.gyp:cc',
+        '../../media/media.gyp:media',
         '../../skia/skia.gyp:skia',
         '../../ui/ui.gyp:ui',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',

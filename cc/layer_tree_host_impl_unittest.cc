@@ -27,7 +27,6 @@
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"
-#include "cc/test/fake_video_frame.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/fake_web_scrollbar_theme_geometry.h"
@@ -50,6 +49,7 @@ using ::testing::Return;
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::_;
+using media::VideoFrame;
 
 namespace cc {
 namespace {
@@ -2519,13 +2519,11 @@ TEST_P(LayerTreeHostImplTest, layersFreeTextures)
     rootLayer->setBounds(gfx::Size(10, 10));
     rootLayer->setAnchorPoint(gfx::PointF(0, 0));
 
-    FakeVideoFrame softwareFrame(media::VideoFrame::CreateColorFrame(
+    scoped_refptr<VideoFrame> softwareFrame(media::VideoFrame::CreateColorFrame(
         gfx::Size(4, 4), 0x80, 0x80, 0x80, base::TimeDelta()));
-    VideoLayerImpl::FrameUnwrapper unwrapper =
-        base::Bind(FakeVideoFrame::ToVideoFrame);
     FakeVideoFrameProvider provider;
-    provider.set_frame(&softwareFrame);
-    scoped_ptr<VideoLayerImpl> videoLayer = VideoLayerImpl::create(m_hostImpl->activeTree(), 4, &provider, unwrapper);
+    provider.set_frame(softwareFrame);
+    scoped_ptr<VideoLayerImpl> videoLayer = VideoLayerImpl::create(m_hostImpl->activeTree(), 4, &provider);
     videoLayer->setBounds(gfx::Size(10, 10));
     videoLayer->setAnchorPoint(gfx::PointF(0, 0));
     videoLayer->setContentBounds(gfx::Size(10, 10));

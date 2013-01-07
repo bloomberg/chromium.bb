@@ -94,8 +94,6 @@
       'test/fake_output_surface.h',
       'test/fake_software_output_device.cc',
       'test/fake_software_output_device.h',
-      'test/fake_video_frame.cc',
-      'test/fake_video_frame.h',
       'test/fake_video_frame_provider.cc',
       'test/fake_video_frame_provider.h',
       'test/fake_web_graphics_context_3d.cc',

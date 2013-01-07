@@ -8,17 +8,13 @@
 
 namespace cc {
 
-scoped_refptr<VideoLayer> VideoLayer::create(
-    WebKit::WebVideoFrameProvider* provider,
-    const FrameUnwrapper& unwrapper)
+scoped_refptr<VideoLayer> VideoLayer::create(VideoFrameProvider* provider)
 {
-    return make_scoped_refptr(new VideoLayer(provider, unwrapper));
+    return make_scoped_refptr(new VideoLayer(provider));
 }
 
-VideoLayer::VideoLayer(WebKit::WebVideoFrameProvider* provider,
-                       const FrameUnwrapper& unwrapper)
+VideoLayer::VideoLayer(VideoFrameProvider* provider)
     : m_provider(provider)
-    , m_unwrapper(unwrapper)
 {
     DCHECK(m_provider);
 }
@@ -29,7 +25,7 @@ VideoLayer::~VideoLayer()
 
 scoped_ptr<LayerImpl> VideoLayer::createLayerImpl(LayerTreeImpl* treeImpl)
 {
-    return VideoLayerImpl::create(treeImpl, m_layerId, m_provider, m_unwrapper).PassAs<LayerImpl>();
+    return VideoLayerImpl::create(treeImpl, m_layerId, m_provider).PassAs<LayerImpl>();
 }
 
 }  // namespace cc

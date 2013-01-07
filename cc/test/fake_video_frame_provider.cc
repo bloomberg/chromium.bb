@@ -11,14 +11,14 @@ FakeVideoFrameProvider::FakeVideoFrameProvider()
 
 FakeVideoFrameProvider::~FakeVideoFrameProvider() {
   if (client_)
-    client_->stopUsingProvider();
+    client_->StopUsingProvider();
 }
 
-void FakeVideoFrameProvider::setVideoFrameProviderClient(Client* client) {
+void FakeVideoFrameProvider::SetVideoFrameProviderClient(Client* client) {
   client_ = client;
 }
 
-WebKit::WebVideoFrame* FakeVideoFrameProvider::getCurrentFrame() {
+scoped_refptr<media::VideoFrame> FakeVideoFrameProvider::GetCurrentFrame() {
   return frame_;
 }
 

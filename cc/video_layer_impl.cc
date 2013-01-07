@@ -20,12 +20,9 @@
 
 namespace cc {
 
-VideoLayerImpl::VideoLayerImpl(LayerTreeImpl* treeImpl, int id, WebKit::WebVideoFrameProvider* provider,
-                               const FrameUnwrapper& unwrapper)
+VideoLayerImpl::VideoLayerImpl(LayerTreeImpl* treeImpl, int id, VideoFrameProvider* provider)
     : LayerImpl(treeImpl, id)
     , m_provider(provider)
-    , m_unwrapper(unwrapper)
-    , m_webFrame(0)
     , m_frame(0)
     , m_format(GL_INVALID_VALUE)
     , m_convertYUV(false)
@@ -42,14 +39,14 @@ VideoLayerImpl::VideoLayerImpl(LayerTreeImpl* treeImpl, int id, WebKit::WebVideo
     // thread is blocked. That makes this a thread-safe call to set the video
     // frame provider client that does not require a lock. The same is true of
     // the call in the destructor.
-    m_provider->setVideoFrameProviderClient(this);
+    m_provider->SetVideoFrameProviderClient(this);
 }
 
 VideoLayerImpl::~VideoLayerImpl()
 {
     // See comment in constructor for why this doesn't need a lock.
     if (m_provider) {
-        m_provider->setVideoFrameProviderClient(0);
+        m_provider->SetVideoFrameProviderClient(0);
         m_provider = 0;
     }
     freePlaneData(layerTreeImpl()->resource_provider());
@@ -61,7 +58,7 @@ VideoLayerImpl::~VideoLayerImpl()
 #endif
 }
 
-void VideoLayerImpl::stopUsingProvider()
+void VideoLayerImpl::StopUsingProvider()
 {
     // Block the provider from shutting down until this client is done
     // using the frame.
@@ -143,8 +140,7 @@ void VideoLayerImpl::willDrawInternal(ResourceProvider* resourceProvider)
         return;
     }
 
-    m_webFrame = m_provider->getCurrentFrame();
-    m_frame = m_unwrapper.Run(m_webFrame);
+    m_frame = m_provider->GetCurrentFrame();
 
     if (!m_frame)
         return;
@@ -158,7 +154,7 @@ void VideoLayerImpl::willDrawInternal(ResourceProvider* resourceProvider)
     DCHECK_EQ(m_frame->visible_rect().y(), 0);
 
     if (m_format == GL_INVALID_VALUE) {
-        m_provider->putCurrentFrame(m_webFrame);
+        m_provider->PutCurrentFrame(m_frame);
         m_frame = 0;
         return;
     }
@@ -175,13 +171,13 @@ void VideoLayerImpl::willDrawInternal(ResourceProvider* resourceProvider)
         m_format = GL_RGBA;
 
     if (!allocatePlaneData(resourceProvider)) {
-        m_provider->putCurrentFrame(m_webFrame);
+        m_provider->PutCurrentFrame(m_frame);
         m_frame = 0;
         return;
     }
 
     if (!copyPlaneData(resourceProvider)) {
-        m_provider->putCurrentFrame(m_webFrame);
+        m_provider->PutCurrentFrame(m_frame);
         m_frame = 0;
         return;
     }
@@ -286,7 +282,7 @@ void VideoLayerImpl::didDraw(ResourceProvider* resourceProvider)
         m_externalTextureResource = 0;
     }
 
-    m_provider->putCurrentFrame(m_webFrame);
+    m_provider->PutCurrentFrame(m_frame);
     m_frame = 0;
 
     m_providerLock.Release();
@@ -398,12 +394,12 @@ void VideoLayerImpl::freeUnusedPlaneData(ResourceProvider* resourceProvider)
         m_framePlanes[i].freeData(resourceProvider);
 }
 
-void VideoLayerImpl::didReceiveFrame()
+void VideoLayerImpl::DidReceiveFrame()
 {
     setNeedsRedraw();
 }
 
-void VideoLayerImpl::didUpdateMatrix(const float matrix[16])
+void VideoLayerImpl::DidUpdateMatrix(const float matrix[16])
 {
     m_streamTextureMatrix = MathUtil::createGfxTransform(
         matrix[0], matrix[1], matrix[2], matrix[3],

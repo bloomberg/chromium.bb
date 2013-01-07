@@ -9,36 +9,28 @@
 #include "cc/cc_export.h"
 #include "cc/layer.h"
 
-namespace WebKit {
-class WebVideoFrame;
-class WebVideoFrameProvider;
-}
-
 namespace media {
 class VideoFrame;
 }
 
 namespace cc {
 
+class VideoFrameProvider;
 class VideoLayerImpl;
 
 // A Layer that contains a Video element.
 class CC_EXPORT VideoLayer : public Layer {
 public:
-    typedef base::Callback<media::VideoFrame* (WebKit::WebVideoFrame*)> FrameUnwrapper;
-
-    static scoped_refptr<VideoLayer> create(WebKit::WebVideoFrameProvider*,
-                                            const FrameUnwrapper&);
+    static scoped_refptr<VideoLayer> create(VideoFrameProvider*);
 
     virtual scoped_ptr<LayerImpl> createLayerImpl(LayerTreeImpl* treeImpl) OVERRIDE;
 
 private:
-    VideoLayer(WebKit::WebVideoFrameProvider*, const FrameUnwrapper&);
+    explicit VideoLayer(VideoFrameProvider*);
     virtual ~VideoLayer();
 
     // This pointer is only for passing to VideoLayerImpl's constructor. It should never be dereferenced by this class.
-    WebKit::WebVideoFrameProvider* m_provider;
-    FrameUnwrapper m_unwrapper;
+    VideoFrameProvider* m_provider;
 };
 
 }  // namespace cc

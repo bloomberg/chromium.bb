@@ -17,6 +17,7 @@
 namespace WebKit {
 class WebFrame;
 class WebMediaPlayerClient;
+class WebVideoFrame;
 }
 
 namespace media {
