@@ -688,7 +688,7 @@ void GpuProcessHost::OnDestroyCommandBuffer(int32 surface_id) {
 void GpuProcessHost::OnImageCreated(const gfx::Size size) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnImageCreated");
 
-  if (!create_image_requests_.empty())
+  if (create_image_requests_.empty())
     return;
 
   CreateImageCallback callback = create_image_requests_.front();
