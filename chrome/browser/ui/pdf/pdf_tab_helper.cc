@@ -13,7 +13,7 @@
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_details.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(PDFTabHelper)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(PDFTabHelper);
 
 PDFTabHelper::PDFTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {

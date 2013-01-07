@@ -15,7 +15,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(chrome::search::SearchTabHelper)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(chrome::search::SearchTabHelper);
 
 namespace {
 

@@ -41,7 +41,7 @@ using content::NavigationEntry;
 using content::RenderViewHost;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabSpecificContentSettings)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabSpecificContentSettings);
 
 namespace {
 

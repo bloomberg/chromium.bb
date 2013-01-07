@@ -22,7 +22,7 @@ using content::RenderViewHost;
 using content::WebContents;
 using content::WebContentsObserver;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(chrome_browser_net::NetErrorTabHelper)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(chrome_browser_net::NetErrorTabHelper);
 
 namespace chrome_browser_net {
 

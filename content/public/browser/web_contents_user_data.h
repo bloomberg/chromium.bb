@@ -25,7 +25,7 @@ namespace content {
 //   // ... more private stuff here ...
 // }
 // --- in foo_tab_helper.cc ---
-// DEFINE_WEB_CONTENTS_USER_DATA_KEY(FooTabHelper)
+// DEFINE_WEB_CONTENTS_USER_DATA_KEY(FooTabHelper);
 //
 template <typename T>
 class WebContentsUserData : public base::SupportsUserData::Data {
@@ -70,7 +70,7 @@ class WebContentsUserData : public base::SupportsUserData::Data {
 //
 #define DEFINE_WEB_CONTENTS_USER_DATA_KEY(TYPE) \
 template<>                                      \
-int content::WebContentsUserData<TYPE>::kLocatorKey = 0;
+int content::WebContentsUserData<TYPE>::kLocatorKey = 0
 
 }  // namespace content
 

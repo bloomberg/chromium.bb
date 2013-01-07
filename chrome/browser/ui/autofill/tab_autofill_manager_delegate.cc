@@ -20,7 +20,7 @@
 #include "content/public/common/password_form.h"
 #include "ui/gfx/rect.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabAutofillManagerDelegate)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabAutofillManagerDelegate);
 
 TabAutofillManagerDelegate::TabAutofillManagerDelegate(
     content::WebContents* web_contents)

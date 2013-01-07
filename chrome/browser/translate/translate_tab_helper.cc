@@ -12,7 +12,7 @@
 
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(TranslateTabHelper)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(TranslateTabHelper);
 
 TranslateTabHelper::TranslateTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),

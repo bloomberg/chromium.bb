@@ -20,7 +20,7 @@
 using WebKit::WebFindOptions;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(FindTabHelper)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(FindTabHelper);
 
 // static
 int FindTabHelper::find_request_id_counter_ = -1;

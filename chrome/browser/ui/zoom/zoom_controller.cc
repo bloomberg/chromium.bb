@@ -19,7 +19,7 @@
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(ZoomController)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(ZoomController);
 
 ZoomController::ZoomController(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),

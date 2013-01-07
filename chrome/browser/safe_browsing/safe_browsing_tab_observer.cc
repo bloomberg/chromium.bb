@@ -19,7 +19,7 @@
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #endif
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(safe_browsing::SafeBrowsingTabObserver)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(safe_browsing::SafeBrowsingTabObserver);
 
 namespace safe_browsing {
 

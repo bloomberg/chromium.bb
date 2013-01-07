@@ -35,7 +35,7 @@
 #include "chrome/browser/hang_monitor/hang_crash_dump_win.h"
 #endif
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(HungPluginTabHelper)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(HungPluginTabHelper);
 
 namespace {
 

@@ -30,8 +30,8 @@ class WebContentsAttachedClass2
   friend class WebContentsUserData<WebContentsAttachedClass2>;
 };
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(WebContentsAttachedClass1)
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(WebContentsAttachedClass2)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(WebContentsAttachedClass1);
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(WebContentsAttachedClass2);
 
 typedef RenderViewHostTestHarness WebContentsUserDataTest;
 

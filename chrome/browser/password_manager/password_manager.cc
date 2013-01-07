@@ -24,7 +24,7 @@ using content::WebContents;
 using content::PasswordForm;
 using content::PasswordFormMap;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordManager)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordManager);
 
 namespace {
 

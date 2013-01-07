@@ -60,7 +60,7 @@
 
 #include <functional>
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(OneClickSigninHelper)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(OneClickSigninHelper);
 
 namespace {
 

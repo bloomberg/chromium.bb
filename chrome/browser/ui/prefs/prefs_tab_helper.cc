@@ -35,7 +35,7 @@
 using content::WebContents;
 using webkit_glue::WebPreferences;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(PrefsTabHelper)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(PrefsTabHelper);
 
 namespace {
 

@@ -17,7 +17,7 @@
 #include "ui/views/widget/widget.h"
 #endif
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(SadTabHelper)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(SadTabHelper);
 
 SadTabHelper::~SadTabHelper() {
 }

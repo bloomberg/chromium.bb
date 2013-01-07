@@ -12,7 +12,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(ThreeDAPIObserver)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(ThreeDAPIObserver);
 
 namespace {
 

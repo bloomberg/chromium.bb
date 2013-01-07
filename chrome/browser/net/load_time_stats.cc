@@ -23,7 +23,7 @@ using content::RenderViewHost;
 using content::ResourceRequestInfo;
 using std::string;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(chrome_browser_net::LoadTimeStatsTabHelper)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(chrome_browser_net::LoadTimeStatsTabHelper);
 
 namespace {
 

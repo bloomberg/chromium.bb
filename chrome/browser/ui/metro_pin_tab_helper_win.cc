@@ -34,7 +34,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(MetroPinTabHelper)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(MetroPinTabHelper);
 
 namespace {
 

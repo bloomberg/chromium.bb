@@ -46,7 +46,7 @@ using content::PluginService;
 using content::Referrer;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(PluginObserver)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(PluginObserver);
 
 namespace {
 

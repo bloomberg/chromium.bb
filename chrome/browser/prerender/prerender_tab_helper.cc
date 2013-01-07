@@ -20,7 +20,7 @@
 
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(prerender::PrerenderTabHelper)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(prerender::PrerenderTabHelper);
 
 namespace prerender {
 

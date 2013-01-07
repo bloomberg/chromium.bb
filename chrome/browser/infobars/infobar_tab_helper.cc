@@ -16,7 +16,7 @@
 using content::NavigationController;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(InfoBarTabHelper)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(InfoBarTabHelper);
 
 void InfoBarService::CreateForWebContents(content::WebContents* web_contents) {
   return content::WebContentsUserData<InfoBarTabHelper>::CreateForWebContents(

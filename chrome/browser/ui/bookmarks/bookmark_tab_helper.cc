@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "content/public/browser/web_contents.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(BookmarkTabHelper)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(BookmarkTabHelper);
 
 namespace {
 

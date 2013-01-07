@@ -13,7 +13,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(SessionTabHelper)
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(SessionTabHelper);
 
 SessionTabHelper::SessionTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents) {
