@@ -18,9 +18,9 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "unicode/datefmt.h"
-#include "unicode/dtfmtsym.h"
-#include "unicode/uchar.h"
+#include "third_party/icu/public/common/unicode/uchar.h"
+#include "third_party/icu/public/i18n/unicode/datefmt.h"
+#include "third_party/icu/public/i18n/unicode/dtfmtsym.h"
 
 using base::StringPiece16;
 

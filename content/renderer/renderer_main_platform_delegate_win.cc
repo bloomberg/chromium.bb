@@ -16,7 +16,7 @@
 #include "sandbox/win/src/sandbox.h"
 #include "skia/ext/skia_sandbox_support_win.h"
 #include "skia/ext/vector_platform_device_emf_win.h"
-#include "unicode/timezone.h"
+#include "third_party/icu/public/i18n/unicode/timezone.h"
 
 namespace content {
 namespace {

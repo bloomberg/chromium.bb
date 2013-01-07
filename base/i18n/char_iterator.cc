@@ -4,8 +4,8 @@
 
 #include "base/i18n/char_iterator.h"
 
-#include "unicode/utf8.h"
-#include "unicode/utf16.h"
+#include "third_party/icu/public/common/unicode/utf8.h"
+#include "third_party/icu/public/common/unicode/utf16.h"
 
 namespace base {
 namespace i18n {

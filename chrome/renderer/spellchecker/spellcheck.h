@@ -18,7 +18,7 @@
 #include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
-#include "unicode/uscript.h"
+#include "third_party/icu/public/common/unicode/uscript.h"
 
 class SpellingEngine;
 struct SpellCheckResult;

@@ -35,8 +35,8 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
+#include "third_party/icu/public/common/unicode/locid.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "unicode/locid.h"
 
 using content::WebContents;
 

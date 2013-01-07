@@ -15,7 +15,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "unicode/uchar.h"
+#include "third_party/icu/public/common/unicode/uchar.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebNetworkStateNotifier;

@@ -20,8 +20,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
+#include "third_party/icu/public/common/unicode/ubidi.h"
 #include "third_party/skia/include/core/SkRect.h"
-#include "unicode/ubidi.h"
 
 using ppapi::StringVar;
 using ppapi::thunk::EnterResourceNoLock;

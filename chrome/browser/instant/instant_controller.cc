@@ -27,7 +27,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
-#include "unicode/normalizer2.h"
+#include "third_party/icu/public/common/unicode/normalizer2.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/widget/widget.h"

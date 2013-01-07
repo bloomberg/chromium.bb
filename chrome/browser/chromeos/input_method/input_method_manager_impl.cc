@@ -15,8 +15,8 @@
 #include "chrome/browser/chromeos/input_method/input_method_engine_ibus.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "third_party/icu/public/common/unicode/uloc.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "unicode/uloc.h"
 
 namespace chromeos {
 namespace input_method {

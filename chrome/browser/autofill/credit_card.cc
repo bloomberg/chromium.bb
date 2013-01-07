@@ -24,9 +24,9 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/common/form_field_data.h"
 #include "grit/generated_resources.h"
+#include "third_party/icu/public/common/unicode/uloc.h"
+#include "third_party/icu/public/i18n/unicode/dtfmtsym.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "unicode/dtfmtsym.h"
-#include "unicode/uloc.h"
 
 namespace {
 

@@ -12,10 +12,10 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "third_party/icu/public/common/unicode/uchar.h"
+#include "third_party/icu/public/i18n/unicode/coll.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/font.h"
-#include "unicode/coll.h"
-#include "unicode/uchar.h"
 
 class FilePath;
 class GURL;

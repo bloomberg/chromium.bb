@@ -57,7 +57,7 @@
 #include "printing/page_range.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_settings.h"
-#include "unicode/ulocdata.h"
+#include "third_party/icu/public/i18n/unicode/ulocdata.h"
 
 #if defined(OS_CHROMEOS)
 // TODO(kinaba): provide more non-intrusive way for handling local/remote

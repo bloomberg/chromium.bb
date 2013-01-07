@@ -38,7 +38,7 @@
 #include "sandbox/linux/services/libc_urandom_override.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 #include "skia/ext/SkFontHost_fontconfig_control.h"
-#include "unicode/timezone.h"
+#include "third_party/icu/public/i18n/unicode/timezone.h"
 
 #if defined(OS_LINUX)
 #include <sys/epoll.h>

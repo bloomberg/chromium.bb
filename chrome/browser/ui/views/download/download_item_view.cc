@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "third_party/icu/public/common/unicode/uchar.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/events/event.h"
@@ -39,7 +40,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
-#include "unicode/uchar.h"
 
 // TODO(paulg): These may need to be adjusted when download progress
 //              animation is added, and also possibly to take into account

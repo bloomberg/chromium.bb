@@ -6,8 +6,8 @@
 
 #include <algorithm>
 
+#include "third_party/icu/public/common/unicode/uchar.h"
 #include "ui/base/text/text_elider.h"
-#include "unicode/uchar.h"
 
 namespace {
 

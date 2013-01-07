@@ -31,9 +31,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/icu/public/i18n/unicode/timezone.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/events/event_utils.h"
-#include "unicode/timezone.h"
 
 namespace chromeos {
 

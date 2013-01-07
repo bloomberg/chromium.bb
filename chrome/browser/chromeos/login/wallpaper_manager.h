@@ -21,8 +21,8 @@
 #include "chromeos/dbus/root_power_manager_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "third_party/icu/public/i18n/unicode/timezone.h"
 #include "ui/gfx/image/image_skia.h"
-#include "unicode/timezone.h"
 
 class PrefServiceSimple;
 

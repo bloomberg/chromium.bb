@@ -21,7 +21,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
-#include "unicode/timezone.h"
+#include "third_party/icu/public/i18n/unicode/timezone.h"
 
 using content::BrowserThread;
 

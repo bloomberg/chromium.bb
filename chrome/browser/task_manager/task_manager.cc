@@ -43,11 +43,11 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
+#include "third_party/icu/public/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/gfx/image/image_skia.h"
-#include "unicode/coll.h"
 
 using content::BrowserThread;
 using content::OpenURLParams;

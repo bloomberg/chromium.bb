@@ -30,7 +30,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/cookies/cookie_monster.h"
-#include "unicode/regex.h"
+#include "third_party/icu/public/i18n/unicode/regex.h"
 
 using namespace signin_internals_util;
 

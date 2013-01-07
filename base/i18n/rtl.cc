@@ -9,10 +9,10 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/sys_string_conversions.h"
-#include "unicode/coll.h"
-#include "unicode/locid.h"
-#include "unicode/uchar.h"
-#include "unicode/uscript.h"
+#include "third_party/icu/public/common/unicode/locid.h"
+#include "third_party/icu/public/common/unicode/uchar.h"
+#include "third_party/icu/public/common/unicode/uscript.h"
+#include "third_party/icu/public/i18n/unicode/coll.h"
 
 #if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>

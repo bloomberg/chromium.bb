@@ -20,8 +20,8 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/url_constants.h"
+#include "third_party/icu/public/common/unicode/uloc.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "unicode/uloc.h"
 
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;

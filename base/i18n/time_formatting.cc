@@ -8,9 +8,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/time.h"
-#include "unicode/datefmt.h"
-#include "unicode/dtptngen.h"
-#include "unicode/smpdtfmt.h"
+#include "third_party/icu/public/i18n/unicode/datefmt.h"
+#include "third_party/icu/public/i18n/unicode/dtptngen.h"
+#include "third_party/icu/public/i18n/unicode/smpdtfmt.h"
 
 using base::Time;
 

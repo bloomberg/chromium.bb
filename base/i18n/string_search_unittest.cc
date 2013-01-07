@@ -9,7 +9,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "unicode/usearch.h"
+#include "third_party/icu/public/i18n/unicode/usearch.h"
 
 namespace base {
 namespace i18n {

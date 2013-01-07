@@ -29,9 +29,9 @@
 #include "grit/generated_resources.h"
 #include "net/base/cert_database.h"
 #include "net/base/nss_cert_database.h"
+#include "third_party/icu/public/i18n/unicode/coll.h"  // icu::Collator
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
-#include "unicode/coll.h"  // icu::Collator
 
 using content::BrowserThread;
 

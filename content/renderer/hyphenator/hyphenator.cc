@@ -12,7 +12,7 @@
 #include "content/common/hyphenator_messages.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/hyphen/hyphen.h"
-#include "unicode/uscript.h"
+#include "third_party/icu/public/common/unicode/uscript.h"
 
 namespace {
 

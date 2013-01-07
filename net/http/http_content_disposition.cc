@@ -12,7 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
 #include "net/http/http_util.h"
-#include "unicode/ucnv.h"
+#include "third_party/icu/public/common/unicode/ucnv.h"
 
 namespace {
 

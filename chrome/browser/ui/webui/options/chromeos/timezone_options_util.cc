@@ -15,11 +15,11 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "grit/generated_resources.h"
+#include "third_party/icu/public/common/unicode/ures.h"
+#include "third_party/icu/public/common/unicode/utypes.h"
+#include "third_party/icu/public/i18n/unicode/calendar.h"
+#include "third_party/icu/public/i18n/unicode/timezone.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "unicode/calendar.h"
-#include "unicode/timezone.h"
-#include "unicode/ures.h"
-#include "unicode/utypes.h"
 
 namespace {
 

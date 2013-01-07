@@ -19,8 +19,8 @@
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/murmurhash3_util.h"
+#include "third_party/icu/public/common/unicode/ubrk.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "unicode/ubrk.h"
 
 namespace safe_browsing {
 

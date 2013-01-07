@@ -32,9 +32,9 @@ extern "C" {
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "grit/content_resources.h"
+#include "third_party/icu/public/common/unicode/uchar.h"
 #include "ui/base/layout.h"
 #include "ui/gl/gl_surface.h"
-#include "unicode/uchar.h"
 
 namespace content {
 namespace {

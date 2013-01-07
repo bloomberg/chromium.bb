@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "grit/app_locale_settings.h"
 #include "grit/ui_strings.h"
+#include "third_party/icu/public/common/unicode/uchar.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -39,7 +40,6 @@
 #include "ui/views/ime/input_method.h"
 #include "ui/views/metrics.h"
 #include "ui/views/widget/widget.h"
-#include "unicode/uchar.h"
 
 #if defined(USE_AURA)
 #include "ui/base/cursor/cursor.h"

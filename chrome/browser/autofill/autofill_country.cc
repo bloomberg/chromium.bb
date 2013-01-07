@@ -18,14 +18,14 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "grit/generated_resources.h"
+#include "third_party/icu/public/common/unicode/locid.h"
+#include "third_party/icu/public/common/unicode/uloc.h"
+#include "third_party/icu/public/common/unicode/unistr.h"
+#include "third_party/icu/public/common/unicode/urename.h"
+#include "third_party/icu/public/common/unicode/utypes.h"
+#include "third_party/icu/public/i18n/unicode/coll.h"
+#include "third_party/icu/public/i18n/unicode/ucol.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "unicode/coll.h"
-#include "unicode/locid.h"
-#include "unicode/ucol.h"
-#include "unicode/uloc.h"
-#include "unicode/unistr.h"
-#include "unicode/urename.h"
-#include "unicode/utypes.h"
 
 using content::BrowserThread;
 

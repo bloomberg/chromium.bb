@@ -23,11 +23,11 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "third_party/icu/public/common/unicode/rbbi.h"
+#include "third_party/icu/public/common/unicode/uloc.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "unicode/rbbi.h"
-#include "unicode/uloc.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/locale_utils.h"

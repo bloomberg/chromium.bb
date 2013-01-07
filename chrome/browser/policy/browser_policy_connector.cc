@@ -38,7 +38,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
-#include "unicode/regex.h"
+#include "third_party/icu/public/i18n/unicode/regex.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/policy/policy_loader_win.h"

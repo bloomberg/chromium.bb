@@ -12,8 +12,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
+#include "third_party/icu/public/i18n/unicode/coll.h"
 #include "ui/base/ui_export.h"
-#include "unicode/coll.h"
 
 namespace l10n_util {
 

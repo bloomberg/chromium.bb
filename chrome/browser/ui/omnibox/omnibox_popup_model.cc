@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-#include "unicode/ubidi.h"
-
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
@@ -17,6 +15,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
+#include "third_party/icu/public/common/unicode/ubidi.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 

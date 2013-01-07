@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "third_party/icu/public/i18n/unicode/coll.h"
 #include "ui/base/ui_export.h"
-#include "unicode/coll.h"
 
 namespace gfx {
 class ImageSkia;

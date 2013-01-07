@@ -20,6 +20,8 @@
 #include "base/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
+#include "third_party/icu/public/i18n/unicode/fieldpos.h"
+#include "third_party/icu/public/i18n/unicode/fmtable.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -36,8 +38,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-#include "unicode/fieldpos.h"
-#include "unicode/fmtable.h"
 
 namespace ash {
 namespace internal {

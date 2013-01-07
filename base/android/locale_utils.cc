@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "jni/LocaleUtils_jni.h"
-#include "unicode/uloc.h"
+#include "third_party/icu/public/common/unicode/uloc.h"
 
 namespace base {
 namespace android {

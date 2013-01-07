@@ -14,12 +14,12 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
+#include "third_party/icu/public/common/unicode/locid.h"
+#include "third_party/icu/public/i18n/unicode/datefmt.h"
+#include "third_party/icu/public/i18n/unicode/plurfmt.h"
+#include "third_party/icu/public/i18n/unicode/plurrule.h"
+#include "third_party/icu/public/i18n/unicode/smpdtfmt.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "unicode/datefmt.h"
-#include "unicode/locid.h"
-#include "unicode/plurfmt.h"
-#include "unicode/plurrule.h"
-#include "unicode/smpdtfmt.h"
 
 using base::Time;
 using base::TimeDelta;

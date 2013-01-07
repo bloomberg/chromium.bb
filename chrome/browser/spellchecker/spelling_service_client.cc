@@ -20,7 +20,7 @@
 #include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
-#include "unicode/uloc.h"
+#include "third_party/icu/public/common/unicode/uloc.h"
 
 // Use the public URL to the Spelling service on Chromium.
 #ifndef SPELLING_SERVICE_URL

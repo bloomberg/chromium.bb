@@ -11,8 +11,8 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "unicode/numfmt.h"
-#include "unicode/ustring.h"
+#include "third_party/icu/public/common/unicode/ustring.h"
+#include "third_party/icu/public/i18n/unicode/numfmt.h"
 
 namespace base {
 

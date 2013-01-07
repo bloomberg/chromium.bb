@@ -17,9 +17,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/input_method_delegate.h"
 #include "grit/generated_resources.h"
+#include "third_party/icu/public/common/unicode/uloc.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
-#include "unicode/uloc.h"
 
 namespace {
 

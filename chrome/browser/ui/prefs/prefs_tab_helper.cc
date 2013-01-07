@@ -23,8 +23,8 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/locale_settings.h"
 #include "grit/platform_locale_settings.h"
-#include "unicode/uchar.h"
-#include "unicode/uscript.h"
+#include "third_party/icu/public/common/unicode/uchar.h"
+#include "third_party/icu/public/common/unicode/uscript.h"
 #include "webkit/glue/webpreferences.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(ENABLE_THEMES)

@@ -9,10 +9,10 @@
 #include "base/i18n/icu_string_conversions.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/thunk/thunk.h"
-#include "unicode/ucnv.h"
-#include "unicode/ucnv_cb.h"
-#include "unicode/ucnv_err.h"
-#include "unicode/ustring.h"
+#include "third_party/icu/public/common/unicode/ucnv.h"
+#include "third_party/icu/public/common/unicode/ucnv_cb.h"
+#include "third_party/icu/public/common/unicode/ucnv_err.h"
+#include "third_party/icu/public/common/unicode/ustring.h"
 
 namespace ppapi {
 

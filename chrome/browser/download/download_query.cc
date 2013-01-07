@@ -26,7 +26,7 @@
 #include "content/public/browser/download_item.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
-#include "unicode/regex.h"
+#include "third_party/icu/public/i18n/unicode/regex.h"
 
 using content::DownloadDangerType;
 using content::DownloadItem;

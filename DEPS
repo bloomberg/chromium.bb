@@ -75,7 +75,7 @@ deps = {
     "/trunk/deps/third_party/WebKit@76115",
 
   "src/third_party/icu":
-    "/trunk/deps/third_party/icu46@172827",
+    "/trunk/deps/third_party/icu46@174978",
 
   "src/third_party/libexif/sources":
     "/trunk/deps/third_party/libexif/sources@146817",
@@ -598,6 +598,7 @@ include_rules = [
   # this should probably change.
   "+unicode",
   "+testing",
+  "+third_party/icu/public",
 ]
 
 

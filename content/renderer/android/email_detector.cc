@@ -9,7 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/public/renderer/android_content_detection_prefixes.h"
 #include "net/base/escape.h"
-#include "unicode/regex.h"
+#include "third_party/icu/public/i18n/unicode/regex.h"
 
 namespace {
 
