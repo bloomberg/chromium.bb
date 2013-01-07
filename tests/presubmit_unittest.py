@@ -2177,6 +2177,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     results = presubmit_canned_checks.RunPylint(
         input_api, presubmit.OutputApi)
     self.assertEquals([], results)
+    self.checkstdout('Running pylint on 1 files.\n')
 
   def testCheckBuildbotPendingBuildsBad(self):
     input_api = self.MockInputApi(None, True)

@@ -626,21 +626,27 @@ def _FetchAllFiles(input_api, white_list, black_list):
 
 
 def RunPylint(input_api, output_api, white_list=None, black_list=None,
-              disabled_warnings=None):
+              disabled_warnings=None, extra_paths_list=None):
   """Run pylint on python files.
 
   The default white_list enforces looking only at *.py files.
   """
   white_list = tuple(white_list or ('.*\.py$',))
   black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
+  extra_paths_list = extra_paths_list or []
+
   if input_api.is_committing:
     error_type = output_api.PresubmitError
   else:
     error_type = output_api.PresubmitPromptWarning
 
   # Only trigger if there is at least one python file affected.
-  src_filter = lambda x: input_api.FilterSourceFile(x, white_list, black_list)
+  rel_path = lambda x : input_api.os_path.join(input_api.os_path.relpath(
+      input_api.PresubmitLocalPath(), input_api.change.RepositoryRoot()), x)
+  src_filter = lambda x: input_api.FilterSourceFile(
+      x, map(rel_path, white_list), map(rel_path, black_list))
   if not input_api.AffectedSourceFiles(src_filter):
+    input_api.logging.info('Skipping pylint: no matching changes.')
     return []
 
   extra_args = ['--rcfile=%s' % input_api.os_path.join(_HERE, 'pylintrc')]
@@ -651,11 +657,13 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None,
   if not files:
     return []
 
+  input_api.logging.info('Running pylint on: %s', files)
   # Copy the system path to the environment so pylint can find the right
   # imports.
   env = input_api.environ.copy()
   import sys
-  env['PYTHONPATH'] = input_api.os_path.pathsep.join(sys.path)
+  env['PYTHONPATH'] = input_api.os_path.pathsep.join(
+      extra_paths_list + sys.path)
 
   def run_lint(files):
     # We can't import pylint directly due to licensing issues, so we run
@@ -687,7 +695,11 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None,
   # different results.  input_api.verbose used to be used
   # to enable this behaviour but differing behaviour in
   # verbose mode is not desirable.
+  # Leave this unreachable code in here so users can make
+  # a quick local edit to diagnose pylint issues more
+  # easily.
   if True:
+    print('Running pylint on %d files.' % len(files))
     result = run_lint(sorted(files))
   else:
     for filename in sorted(files):
