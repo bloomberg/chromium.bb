@@ -573,7 +573,7 @@ def LoadTargetBuildFileParallel(build_file_path, data, aux_data,
             '\n'
             'Note: an error occurred while running gyp using multiprocessing.\n'
             'For more verbose output, set GYP_PARALLEL=0 in your environment.\n'
-            'If the error only occurs when GYP_PARELLEL=1, '
+            'If the error only occurs when GYP_PARALLEL=1, '
             'please report a bug!')
         break
       if not parallel_state.dependencies:
