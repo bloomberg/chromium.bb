@@ -357,6 +357,7 @@ class Rietveld(object):
 
   def _send(self, request_path, **kwargs):
     """Sends a POST/GET to Rietveld.  Returns the response body."""
+    logging.debug('POSTing to %s, args %s.', request_path, kwargs)
     try:
       # Sadly, upload.py calls ErrorExit() which does a sys.exit(1) on HTTP
       # 500 in AbstractRpcServer.Send().
