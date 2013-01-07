@@ -269,13 +269,11 @@ scoped_refptr<AcceleratedPresenter> AcceleratedPresenter::GetForWindow(
 void AcceleratedPresenter::AsyncPresentAndAcknowledge(
     const gfx::Size& size,
     int64 surface_handle,
-    const CopyCompletionTask& copy_completion_task,
-    const PresentCompletionTask& present_completion_task) {
+    const CompletionTask& completion_task) {
   if (!surface_handle) {
     TRACE_EVENT1("gpu", "EarlyOut_ZeroSurfaceHandle",
                  "surface_handle", surface_handle);
-    copy_completion_task.Run(true);
-    present_completion_task.Run(base::TimeTicks(), base::TimeDelta());
+    completion_task.Run(true, base::TimeTicks(), base::TimeDelta());
     return;
   }
 
@@ -285,8 +283,7 @@ void AcceleratedPresenter::AsyncPresentAndAcknowledge(
                  this,
                  size,
                  surface_handle,
-                 copy_completion_task,
-                 present_completion_task));
+                 completion_task));
 }
 
 void AcceleratedPresenter::Present(HDC dc) {
@@ -472,8 +469,7 @@ static base::TimeDelta GetSwapDelay() {
 void AcceleratedPresenter::DoPresentAndAcknowledge(
     const gfx::Size& size,
     int64 surface_handle,
-    const CopyCompletionTask& copy_completion_task,
-    const PresentCompletionTask& present_completion_task) {
+    const CompletionTask& completion_task) {
   TRACE_EVENT2(
       "gpu", "DoPresentAndAcknowledge",
       "width", size.width(),
@@ -487,21 +483,15 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   present_thread_->InitDevice();
 
   if (!present_thread_->device()) {
-    if (!copy_completion_task.is_null())
-      copy_completion_task.Run(false);
-    if (!present_completion_task.is_null())
-      present_completion_task.Run(base::TimeTicks(), base::TimeDelta());
+    if (!completion_task.is_null())
+      completion_task.Run(false, base::TimeTicks(), base::TimeDelta());
     TRACE_EVENT0("gpu", "EarlyOut_NoDevice");
     return;
   }
 
   // Ensure the task is always run and while the lock is taken.
-  base::ScopedClosureRunner scoped_copy_completion_runner(
-      base::Bind(copy_completion_task, true));
-  base::ScopedClosureRunner scoped_present_completion_runner(
-      base::Bind(present_completion_task,
-      base::TimeTicks(),
-      base::TimeDelta()));
+  base::ScopedClosureRunner scoped_completion_runner(
+      base::Bind(completion_task, true, base::TimeTicks(), base::TimeDelta()));
 
   // If invalidated, do nothing, the window is gone.
   if (!window_) {
@@ -604,23 +594,6 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   if (FAILED(hr))
     return;
 
-  // Wait for the StretchRect to complete before notifying the GPU process
-  // that it is safe to write to its backing store again.
-  {
-    TRACE_EVENT0("gpu", "spin");
-    do {
-      hr = present_thread_->query()->GetData(NULL, 0, D3DGETDATA_FLUSH);
-
-      if (hr == S_FALSE)
-        Sleep(1);
-    } while (hr == S_FALSE);
-  }
-
-  // Acknowledge that the copy is complete and it is safe to modify the shared
-  // texture.
-  scoped_copy_completion_runner.Release();
-  copy_completion_task.Run(true);
-
   present_size_ = size;
 
   static const base::TimeDelta swap_delay = GetSwapDelay();
@@ -686,8 +659,20 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
           1000000 / display_mode.RefreshRate);
   }
 
-  scoped_present_completion_runner.Release();
-  present_completion_task.Run(last_vsync_time, refresh_period);
+  // Wait for the StretchRect to complete before notifying the GPU process
+  // that it is safe to write to its backing store again.
+  {
+    TRACE_EVENT0("gpu", "spin");
+    do {
+      hr = present_thread_->query()->GetData(NULL, 0, D3DGETDATA_FLUSH);
+
+      if (hr == S_FALSE)
+        Sleep(1);
+    } while (hr == S_FALSE);
+  }
+
+  scoped_completion_runner.Release();
+  completion_task.Run(true, last_vsync_time, refresh_period);
 }
 
 void AcceleratedPresenter::DoSuspend() {
