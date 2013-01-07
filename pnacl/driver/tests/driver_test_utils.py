@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import os
+from os.path import dirname
 import platform
 import sys
 
@@ -31,8 +32,8 @@ def _SetupLinuxHostDir(env, nacl_dir):
 def SetupHostDir(env):
   # Some of the tools require 'BASE_HOST' to be set, because they end up
   # running one of the host binaries.
-  test_dir = os.path.abspath(os.path.dirname(__file__))
-  nacl_dir = os.path.dirname(os.path.dirname(test_dir))
+  test_dir = os.path.abspath(dirname(__file__))
+  nacl_dir = dirname(dirname(dirname(test_dir)))
   if sys.platform == 'darwin':
     os_shortname = 'mac'
     host_arch = 'x86_64'

@@ -7,6 +7,8 @@
 Import('env')
 
 node = env.CommandTest('pnacl_driver_tests.out',
-                       command=['${PYTHON}', env.File('driver_tests.py')],
+                       command=['${PYTHON}',
+                       env.File('driver_tests.py')],
                        direct_emulation=False)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_pnacl_driver_tests')
+
