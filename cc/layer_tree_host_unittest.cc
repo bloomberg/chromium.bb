@@ -7,12 +7,10 @@
 #include "base/synchronization/lock.h"
 #include "cc/content_layer.h"
 #include "cc/content_layer_client.h"
-#include "cc/frame_rate_controller.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/layer_tree_impl.h"
 #include "cc/output_surface.h"
-#include "cc/resource_update_queue.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_content_layer.h"
 #include "cc/test/fake_content_layer_client.h"
@@ -22,8 +20,8 @@
 #include "cc/test/fake_scrollbar_layer.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test_common.h"
+#include "cc/resource_update_queue.h"
 #include "cc/test/occlusion_tracker_test_common.h"
-#include "cc/thread_proxy.h"
 #include "cc/timing_function.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
@@ -2018,57 +2016,6 @@ TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndSoftwareContent)
     scoped_ptr<LayerTreeHost> host = LayerTreeHost::create(&client, settings, scoped_ptr<Thread>());
     EXPECT_TRUE(host->initializeRendererIfNeeded());
     EXPECT_EQ(0u, host->settings().maxPartialTextureUpdates);
-}
-
-class LayerTreeHostTestMaxPendingFrames : public LayerTreeHostTest {
-public:
-    LayerTreeHostTestMaxPendingFrames()
-        : LayerTreeHostTest()
-    {
-    }
-
-    virtual scoped_ptr<OutputSurface> createOutputSurface() OVERRIDE
-    {
-        if (m_delegatingRenderer)
-            return FakeOutputSurface::CreateDelegating3d().PassAs<OutputSurface>();
-        return FakeOutputSurface::Create3d().PassAs<OutputSurface>();
-    }
-
-    virtual void beginTest() OVERRIDE
-    {
-        postSetNeedsCommitToMainThread();
-    }
-
-    virtual void drawLayersOnThread(LayerTreeHostImpl* hostImpl) OVERRIDE
-    {
-        DCHECK(hostImpl->proxy()->hasImplThread());
-
-        const ThreadProxy* proxy = static_cast<ThreadProxy*>(hostImpl->proxy());
-        if (m_delegatingRenderer)
-            EXPECT_EQ(1, proxy->maxFramesPendingForTesting());
-        else
-            EXPECT_EQ(FrameRateController::kDefaultMaxFramesPending, proxy->maxFramesPendingForTesting());
-        endTest();
-    }
-
-    virtual void afterTest() OVERRIDE
-    {
-    }
-
-protected:
-    bool m_delegatingRenderer;
-};
-
-TEST_F(LayerTreeHostTestMaxPendingFrames, DelegatingRenderer)
-{
-    m_delegatingRenderer = true;
-    runTest(true);
-}
-
-TEST_F(LayerTreeHostTestMaxPendingFrames, GLRenderer)
-{
-    m_delegatingRenderer = false;
-    runTest(true);
 }
 
 }  // namespace

@@ -23,14 +23,6 @@ class FakeOutputSurface : public OutputSurface {
     return make_scoped_ptr(new FakeOutputSurface(context3d.Pass(), false));
   }
 
-  static inline scoped_ptr<FakeOutputSurface> Create3d() {
-    scoped_ptr<WebKit::WebGraphicsContext3D> context3d =
-        FakeWebGraphicsContext3D::Create(
-            WebKit::WebGraphicsContext3D::Attributes())
-        .PassAs<WebKit::WebGraphicsContext3D>();
-    return make_scoped_ptr(new FakeOutputSurface(context3d.Pass(), false));
-  }
-
   static inline scoped_ptr<FakeOutputSurface> CreateSoftware(
       scoped_ptr<SoftwareOutputDevice> software_device) {
     return make_scoped_ptr(
@@ -39,14 +31,6 @@ class FakeOutputSurface : public OutputSurface {
 
   static inline scoped_ptr<FakeOutputSurface> CreateDelegating3d(
       scoped_ptr<WebKit::WebGraphicsContext3D> context3d) {
-    return make_scoped_ptr(new FakeOutputSurface(context3d.Pass(), true));
-  }
-
-  static inline scoped_ptr<FakeOutputSurface> CreateDelegating3d() {
-    scoped_ptr<WebKit::WebGraphicsContext3D> context3d =
-        FakeWebGraphicsContext3D::Create(
-            WebKit::WebGraphicsContext3D::Attributes())
-        .PassAs<WebKit::WebGraphicsContext3D>();
     return make_scoped_ptr(new FakeOutputSurface(context3d.Pass(), true));
   }
 
