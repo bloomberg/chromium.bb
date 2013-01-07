@@ -1,5 +1,5 @@
 {
-  "description": "**THIS IS OBSOLETE, EDIT image_decoding_benchmark.json instead***",
+  "description": "A directed benchmark of image decoding performance",
   "pages": [
     {
       "url": "file:///../../../chrome/test/data/image_decoding/image_decoding.html?gif",
