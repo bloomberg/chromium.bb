@@ -21,11 +21,34 @@ namespace mediaGalleriesPrivate {
     DOMString deviceId;
   };
 
+  // A dictionary that describes the modified gallery.
+  [inline_doc] dictionary GalleryChangeDetails {
+    // Gallery identifier.
+    long galleryId;
+  };
+
   interface Events {
     // Fired when a media device gets attached.
     static void onDeviceAttached(DeviceAttachmentDetails details);
 
     // Fired when a media device gets detached.
     static void onDeviceDetached(DeviceDetachmentDetails details);
+
+    // Fired when a media gallery is changed.
+    static void onGalleryChanged(GalleryChangeDetails details);
+  };
+
+  // A dictionary that describes the add gallery watch request results.
+  dictionary AddGalleryWatchResult {
+    long galleryId;
+    boolean success;
+  };
+
+  callback AddGalleryWatchCallback = void (AddGalleryWatchResult result);
+
+  interface Functions {
+    static void addGalleryWatch(long galleryId,
+                                AddGalleryWatchCallback callback);
+    static void removeGalleryWatch(long galleryId);
   };
 };

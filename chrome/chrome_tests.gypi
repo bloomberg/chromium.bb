@@ -994,6 +994,7 @@
         'browser/extensions/api/management/management_browsertest.cc',
         'browser/extensions/api/media_galleries/media_galleries_apitest.cc',
         'browser/extensions/api/media_galleries_private/media_galleries_private_apitest.cc',
+        'browser/extensions/api/media_galleries_private/media_galleries_watch_apitest.cc',
         'browser/extensions/api/messaging/native_messaging_apitest_posix.cc',
         'browser/extensions/api/metrics/metrics_apitest.cc',
         'browser/extensions/api/module/module_apitest.cc',

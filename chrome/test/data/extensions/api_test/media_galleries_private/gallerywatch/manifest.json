@@ -1,0 +1,12 @@
+{
+  "key": "MIICeAIBADANBgkqhkiG9w0BAQEFAASCAmIwggJeAgEAAoGBAO3OlBjA3w16pm0kjJJDYIua1wEIYLjEi+VhfHw28OW+49ekz3qms9PmFfZvJCAOJEC1lPNj4ZROG3qBE4JEJ6IgeP5tF4fSdie6kL6VOH6tiDHe/ozI5gwcOMXIa9x8nyVyHwozBKMHQTT4ZNFhjbhkxyGYixhkOnk1GOHPiMxXAgMBAAECgYEA6Hrs0yoypRXDf62ccxzFVJWCHXNYQyl6bjuYnEKFzMSKL3Xik9BGuyATVoCeu2u3yz75J9v8WqTlPiTTsqT4bCeC4r1RGDmnS4gftWVKqHpl/HhVKRFvtu5wlPL9jdECnZdB7Viro0k8LqOqOUG2rPbKeK1JolKQEKp+Zc7u6SkCQQD6VWcwrgNQ3+cXFM7WgrOrNYtd4dpRVrfdMOZuNG9QeUkVUM+dypfKGt3iujbyTFOGIpcQXgrjrp1Cvg6die97AkEA8zCWdskxOZk0XsLhxqlNqwDNnOdTOCYsSODJ/0S/tY7aasjQ9l/CaO7Ewk4KFBcKfUEFxqnS43dUESQuxGox1QJBAOLwEUAcQH1MvZ47CteEXYTUYaeWW+hpCP3Imt1FQ7Rcf1iHje+p/bkGaihkT/OQJhfvu6rm1lBZt88NpQpERYkCQB1XOGAeiAzd+h6QvrK8TH2cPDJ5CmZU3LTyQgzFW6fpE1sc3XFMPmVwoVacGcUwvng8Nxkv9hyxkff7eJUEBv0CQQCzTxZw14iXKAW5vxNYE6BGSjoEk7tQ+ljHzGOZmotl3WQ+6BKdMgQIGvH+XJzrYOEdTCCL1/YzIs2533fm67md",
+  "name": "chrome.mediaGalleries.gallery_watch",
+  "version": "0.1",
+  "description": "test for chrome.mediaGalleriesPrivate.addGalleryWatch, chrome.mediaGalleriesPrivate.removeGalleryWatch and onGalleryChanged events ",
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  },
+  "permissions": [{"mediaGalleries": ["read", "allAutoDetected"]}, "mediaGalleriesPrivate"]
+}

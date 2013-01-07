@@ -83,6 +83,8 @@ const char kOnFileSynced[] = "syncFileSystem.onFileSynced";
 
 const char kOnAttachEventName[] = "mediaGalleriesPrivate.onDeviceAttached";
 const char kOnDetachEventName[] = "mediaGalleriesPrivate.onDeviceDetached";
+const char kOnGalleryChangedEventName[] =
+    "mediaGalleriesPrivate.onGalleryChanged";
 
 const char kOnNotificationDisplayed[] = "experimental.notification.onDisplayed";
 const char kOnNotificationError[] = "experimental.notification.onError";

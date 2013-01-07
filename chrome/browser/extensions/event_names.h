@@ -96,6 +96,7 @@ extern const char kOnFileSynced[];
 // MediaGalleriesPrivate.
 extern const char kOnAttachEventName[];
 extern const char kOnDetachEventName[];
+extern const char kOnGalleryChangedEventName[];
 
 // Notifications.
 extern const char kOnNotificationDisplayed[];
