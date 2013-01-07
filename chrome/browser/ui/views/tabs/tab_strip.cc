@@ -426,6 +426,11 @@ gfx::ImageSkia NewTabButton::GetBackgroundImage(
       GetThemeProvider()->GetImageSkiaNamed(IDR_NEWTAB_BUTTON_MASK);
   int height = mask->height();
   int width = mask->width();
+
+  // The canvas and mask has to use the same scale factor.
+  if (!mask->HasRepresentation(scale_factor))
+    scale_factor = ui::SCALE_FACTOR_100P;
+
   gfx::Canvas canvas(gfx::Size(width, height), scale_factor, false);
 
   // For custom images the background starts at the top of the tab strip.

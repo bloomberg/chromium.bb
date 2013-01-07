@@ -167,7 +167,6 @@ class MaskedImageSource : public gfx::ImageSkiaSource {
   virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
     ImageSkiaRep rgb_rep = rgb_.GetRepresentation(scale_factor);
     ImageSkiaRep alpha_rep = alpha_.GetRepresentation(scale_factor);
-    MatchScale(&rgb_rep, &alpha_rep);
     return ImageSkiaRep(SkBitmapOperations::CreateMaskedBitmap(
         rgb_rep.sk_bitmap(), alpha_rep.sk_bitmap()),
                         rgb_rep.scale_factor());
