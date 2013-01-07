@@ -50,7 +50,7 @@ deps = {
     'src/third_party/ffmpeg':
         Var('git_url') + '/chromium/third_party/ffmpeg.git' + Var('ffmpeg_hash'),
     'src/third_party/flac':
-        Var('git_url') + '/chromium/deps/flac.git@ef1f8298568feb7ada2531521feb7487bdc20a9a',
+        Var('git_url') + '/chromium/deps/flac.git@71cc37cbc419bccd99ba93e6325c47cd5e0353cb',
     'src/third_party/hunspell':
         Var('git_url') + '/chromium/deps/hunspell.git@61b053c9d102442e72af854d9f0a28ce60d539f5',
     'src/third_party/hunspell_dictionaries':
@@ -78,7 +78,7 @@ deps = {
     'src/third_party/libsrtp':
         Var('git_url') + '/chromium/deps/libsrtp.git@aaa7ffc69828e8202a549268f5ac7fe428232811',
     'src/third_party/libvpx':
-        Var('git_url') + '/chromium/deps/libvpx.git@ff46d66d17e2de1940de6a75dedfe3e90d34ee5a',
+        Var('git_url') + '/chromium/deps/libvpx.git@df9edc804223a96f81cf9fd4a9a9204c76a2125a',
     'src/third_party/libyuv':
         Var('git_url') + '/external/libyuv.git@f491a094c7a12863ea71f0402b6fb217b3801568',
     'src/third_party/opus/src':
@@ -108,7 +108,7 @@ deps = {
     'src/third_party/snappy/src':
         Var('git_url') + '/external/snappy.git@5a4a7d94c947c66a7608cfc38258beb32274d9c8',
     'src/third_party/speex':
-        Var('git_url') + '/chromium/deps/speex.git@afd6387d7158f048a26d2e9a76f4557bfda92d6e',
+        Var('git_url') + '/chromium/deps/speex.git@97dcb72ef299be0c8d302e449f1cea794b43faf8',
     'src/third_party/swig/Lib':
         Var('git_url') + '/chromium/deps/swig/Lib.git@549f0b084ad9c40ef42d111303d831eb8d91252e',
     'src/third_party/trace-viewer':
