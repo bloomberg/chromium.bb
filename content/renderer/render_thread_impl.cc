@@ -738,16 +738,6 @@ void RenderThreadImpl::RecordUserMetrics(const std::string& action) {
 
 scoped_ptr<base::SharedMemory>
     RenderThreadImpl::HostAllocateSharedMemoryBuffer(uint32 size) {
-  //if (!size)
-  //  return scoped_ptr<base::SharedMemory>();
-
-//#if defined(OS_WIN)
-//  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
-//  if (!shared_memory->CreateAnonymous(size))
-//    return scoped_ptr<base::SharedMemory>();
-//
-//  return scoped_ptr<base::SharedMemory>(shared_memory.release());
-//#else
   base::SharedMemoryHandle handle;
   bool success;
   IPC::Message* message =
@@ -766,7 +756,6 @@ scoped_ptr<base::SharedMemory>
     return scoped_ptr<base::SharedMemory>();
 
   return scoped_ptr<base::SharedMemory>(new base::SharedMemory(handle, false));
-//#endif  // defined(OS_WIN)
 }
 
 void RenderThreadImpl::RegisterExtension(v8::Extension* extension) {
