@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/autofill/wallet/full_wallet.h"
+#include "chrome/browser/autofill/wallet/required_action.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -275,7 +276,21 @@ const char kFullWalletWithRequiredActions[] =
     "{"
     "  \"required_action\":"
     "  ["
-    "    \"required_action\""
+    "    \"UPGRADE_MIN_ADDRESS\","
+    "    \"update_EXPIRATION_date\","
+    "    \"INVALID_form_field\","
+    "    \"cvc_risk_CHALLENGE\""
+    "  ]"
+    "}";
+
+const char kFullWalletWithInvalidRequiredActions[] =
+    "{"
+    "  \"required_action\":"
+    "  ["
+    "    \"  setup_wallet\","
+    "    \"AcCePt_ToS  \","
+    "    \"   \\tGAIA_auth   \\n\\r\","
+    "    \" 忍者の正体 \""
     "  ]"
     "}";
 
@@ -373,8 +388,13 @@ TEST_F(FullWalletTest, CreateFullWalletMalformedBillingAddress) {
 
 TEST_F(FullWalletTest, CreateFullWalletWithRequiredActions) {
   SetUpDictionary(kFullWalletWithRequiredActions);
-  std::vector<std::string> required_actions;
-  required_actions.push_back("required_action");
+
+  std::vector<RequiredAction> required_actions;
+  required_actions.push_back(UPGRADE_MIN_ADDRESS);
+  required_actions.push_back(UPDATE_EXPIRATION_DATE);
+  required_actions.push_back(INVALID_FORM_FIELD);
+  required_actions.push_back(CVC_RISK_CHALLENGE);
+
   FullWallet full_wallet(-1,
                          -1,
                          "",
@@ -383,6 +403,23 @@ TEST_F(FullWalletTest, CreateFullWalletWithRequiredActions) {
                          scoped_ptr<Address>(),
                          required_actions);
   ASSERT_EQ(full_wallet, *FullWallet::CreateFullWallet(*dict));
+
+  DCHECK(!required_actions.empty());
+  required_actions.pop_back();
+  FullWallet different_required_actions(
+      -1,
+      -1,
+      "",
+      "",
+      scoped_ptr<Address>(),
+      scoped_ptr<Address>(),
+      required_actions);
+  ASSERT_NE(full_wallet, different_required_actions);
+}
+
+TEST_F(FullWalletTest, CreateFullWalletWithInvalidRequiredActions) {
+  SetUpDictionary(kFullWalletWithInvalidRequiredActions);
+  ASSERT_EQ(NULL, FullWallet::CreateFullWallet(*dict).get());
 }
 
 TEST_F(FullWalletTest, CreateFullWallet) {
@@ -405,7 +442,7 @@ TEST_F(FullWalletTest, CreateFullWallet) {
                                                    "ship_postal_code_number",
                                                    "ship_phone_number",
                                                    "ship_id"));
-  std::vector<std::string> required_actions;
+  std::vector<RequiredAction> required_actions;
   FullWallet full_wallet(12,
                          2012,
                          "iin",

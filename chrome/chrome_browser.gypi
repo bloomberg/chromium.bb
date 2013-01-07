@@ -248,6 +248,8 @@
         'browser/autofill/wallet/cart.h',
         'browser/autofill/wallet/full_wallet.cc',
         'browser/autofill/wallet/full_wallet.h',
+        'browser/autofill/wallet/required_action.cc',
+        'browser/autofill/wallet/required_action.h',
         'browser/autofill/wallet/wallet_address.cc',
         'browser/autofill/wallet/wallet_address.h',
         'browser/autofill/wallet/wallet_client.cc',

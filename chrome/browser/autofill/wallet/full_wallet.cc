@@ -24,7 +24,7 @@ FullWallet::FullWallet(int expiration_month,
                        const std::string& encrypted_rest,
                        scoped_ptr<Address> billing_address,
                        scoped_ptr<Address> shipping_address,
-                       const std::vector<std::string>& required_actions)
+                       const std::vector<RequiredAction>& required_actions)
     : expiration_month_(expiration_month),
       expiration_year_(expiration_year),
       iin_(iin),
@@ -40,14 +40,21 @@ FullWallet::~FullWallet() {}
 scoped_ptr<FullWallet>
     FullWallet::CreateFullWallet(const DictionaryValue& dictionary) {
   const ListValue* required_actions_list;
-  std::vector<std::string> required_actions;
+  std::vector<RequiredAction> required_actions;
   if (dictionary.GetList("required_action", &required_actions_list)) {
     for (size_t i = 0; i < required_actions_list->GetSize(); ++i) {
-      std::string action;
-      if (required_actions_list->GetString(i, &action))
+      std::string action_string;
+      if (required_actions_list->GetString(i, &action_string)) {
+        RequiredAction action = ParseRequiredActionFromString(action_string);
+        if (!ActionAppliesToFullWallet(action)) {
+          DLOG(ERROR) << "Response from Google wallet with bad required action:"
+                         " \"" << action_string << "\"";
+          return scoped_ptr<FullWallet>();
+        }
         required_actions.push_back(action);
+      }
     }
-    if (required_actions.size() > 0)
+    if (required_actions.size() > 0) {
       return scoped_ptr<FullWallet>(new FullWallet(-1,
                                                    -1,
                                                    "",
@@ -55,6 +62,7 @@ scoped_ptr<FullWallet>
                                                    scoped_ptr<Address>(),
                                                    scoped_ptr<Address>(),
                                                    required_actions));
+    }
   } else {
     DVLOG(1) << "Response from Google wallet missing required actions";
   }

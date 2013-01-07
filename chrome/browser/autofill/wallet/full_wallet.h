@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/autofill/wallet/required_action.h"
 #include "chrome/browser/autofill/wallet/wallet_address.h"
 
 namespace base {
@@ -22,7 +23,10 @@ namespace wallet {
 class FullWalletTest;
 
 // FullWallet contains all the information a merchant requires from a user for
-// that user to make a purchase.
+// that user to make a purchase. This includes:
+//  - billing information
+//  - shipping information
+//  - a proxy card for the backing card selected from a user's wallet items
 class FullWallet {
  public:
   ~FullWallet();
@@ -50,7 +54,7 @@ class FullWallet {
   // |shipping_address_| might contain NULL.
   const Address* shipping_address() const { return shipping_address_.get(); }
 
-  const std::vector<std::string>& required_actions() const {
+  const std::vector<RequiredAction>& required_actions() const {
     return required_actions_;
   }
   int expiration_month() const { return expiration_month_; }
@@ -66,7 +70,7 @@ class FullWallet {
              const std::string& encrypted_rest,
              scoped_ptr<Address> billing_address,
              scoped_ptr<Address> shipping_address,
-             const std::vector<std::string>& required_actions);
+             const std::vector<RequiredAction>& required_actions);
   void DecryptCardInfo(uint8* otp, size_t length);
   int expiration_month_;
   int expiration_year_;
@@ -82,9 +86,7 @@ class FullWallet {
   scoped_ptr<Address> shipping_address_;
   // Actions that must be completed by the user before a FullWallet can be
   // issued to them by the Online Wallet service.
-  // TODO(ahutter): |required_actions_| should be members of an enum not
-  // strings. See http://crbug.com/165195.
-  std::vector<std::string> required_actions_;
+  std::vector<RequiredAction> required_actions_;
   DISALLOW_COPY_AND_ASSIGN(FullWallet);
 };
 

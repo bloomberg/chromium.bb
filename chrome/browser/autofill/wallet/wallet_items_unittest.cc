@@ -6,6 +6,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/autofill/wallet/required_action.h"
 #include "chrome/browser/autofill/wallet/wallet_items.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -213,7 +214,22 @@ const char kWalletItemsWithRequiredActions[] =
     "  \"google_transaction_id\":\"google_transaction_id\","
     "  \"required_action\":"
     "  ["
-    "    \"required_action\""
+    "    \"  setup_wallet\","
+    "    \"AcCePt_ToS  \","
+    "    \"  \\tGAIA_auth   \\n\\r\","
+    "    \"INVALID_form_field\""
+    "  ]"
+    "}";
+
+const char kWalletItemsWithInvalidRequiredActions[] =
+    "{"
+    "  \"google_transaction_id\":\"google_transaction_id\","
+    "  \"required_action\":"
+    "  ["
+    "    \"cvc_risk_CHALLENGE\","
+    "    \"UPGRADE_MIN_ADDRESS\","
+    "    \"update_EXPIRATION_date\","
+    "    \" 忍者の正体 \""
     "  ]"
     "}";
 
@@ -385,15 +401,31 @@ TEST_F(WalletItemsTest, CreateLegalDocument) {
 
 TEST_F(WalletItemsTest, CreateWalletItemsWithRequiredActions) {
   SetUpDictionary(kWalletItemsWithRequiredActions);
-  std::vector<std::string> required_actions;
-  required_actions.push_back("required_action");
+
+  std::vector<RequiredAction> required_actions;
+  required_actions.push_back(SETUP_WALLET);
+  required_actions.push_back(ACCEPT_TOS);
+  required_actions.push_back(GAIA_AUTH);
+  required_actions.push_back(INVALID_FORM_FIELD);
+
   WalletItems expected(required_actions, "google_transaction_id", "", "");
   ASSERT_EQ(expected, *WalletItems::CreateWalletItems(*dict));
+
+  DCHECK(!required_actions.empty());
+  required_actions.pop_back();
+  WalletItems different_required_actions(
+      required_actions, "google_transaction_id", "", "");
+  ASSERT_NE(expected, different_required_actions);
+}
+
+TEST_F(WalletItemsTest, CreateWalletItemsWithInvalidRequiredActions) {
+  SetUpDictionary(kWalletItemsWithInvalidRequiredActions);
+  ASSERT_EQ(NULL, WalletItems::CreateWalletItems(*dict).get());
 }
 
 TEST_F(WalletItemsTest, CreateWalletItems) {
   SetUpDictionary(kWalletItems);
-  std::vector<std::string> required_actions;
+  std::vector<RequiredAction> required_actions;
   WalletItems expected(required_actions,
                        "google_transaction_id",
                        "default_instrument_id",

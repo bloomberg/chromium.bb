@@ -243,7 +243,7 @@ bool WalletItems::LegalDocument::operator!=(const LegalDocument& other) const {
   return !(*this == other);
 }
 
-WalletItems::WalletItems(const std::vector<std::string>& required_actions,
+WalletItems::WalletItems(const std::vector<RequiredAction>& required_actions,
                          const std::string& google_transaction_id,
                          const std::string& default_instrument_id,
                          const std::string& default_address_id)
@@ -262,13 +262,20 @@ scoped_ptr<WalletItems>
     return scoped_ptr<WalletItems>();
   }
 
-  std::vector<std::string> required_action;
+  std::vector<RequiredAction> required_action;
   const ListValue* required_action_list;
   if (dictionary.GetList("required_action", &required_action_list)) {
     for (size_t i = 0; i < required_action_list->GetSize(); ++i) {
-      std::string action;
-      if (required_action_list->GetString(i, &action))
+      std::string action_string;
+      if (required_action_list->GetString(i, &action_string)) {
+        RequiredAction action = ParseRequiredActionFromString(action_string);
+        if (!ActionAppliesToWalletItems(action)) {
+          DLOG(ERROR) << "Response from Google wallet with bad required action:"
+                         " \"" << action_string << "\"";
+          return scoped_ptr<WalletItems>();
+        }
         required_action.push_back(action);
+      }
     }
   } else {
     DVLOG(1) << "Response from Google wallet missing required actions";
@@ -349,7 +356,7 @@ bool WalletItems::operator==(const WalletItems& other) const {
   return google_transaction_id_ == other.google_transaction_id_ &&
          default_instrument_id_ == other.default_instrument_id_ &&
          default_address_id_ == other.default_address_id_ &&
-         required_actions_ == required_actions_;
+         required_actions_ == other.required_actions_;
 }
 
 bool WalletItems::operator!=(const WalletItems& other) const {

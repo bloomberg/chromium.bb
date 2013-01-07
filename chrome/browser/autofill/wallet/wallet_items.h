@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "chrome/browser/autofill/wallet/required_action.h"
 #include "chrome/browser/autofill/wallet/wallet_address.h"
 
 namespace base {
@@ -23,11 +24,11 @@ namespace wallet {
 
 class WalletItemsTest;
 
-// WalletItems primarily serves as a container for the user's instruments and
-// address, however, it also provides a transaction id which must be used
-// throughout all API calls being made using this data. Additionally, user
-// actions may be required before a purchase can be completed using Online
-// Wallet and those actions are present in the object as well.
+// WalletItems is a collection of cards and addresses that a user picks from to
+// construct a full wallet. However, it also provides a transaction ID which
+// must be used throughout all API calls being made using this data.
+// Additionally, user actions may be required before a purchase can be completed
+// using Online Wallet and those actions are present in the object as well.
 class WalletItems {
  public:
   // Container for all information about a credit card except for it's card
@@ -158,7 +159,7 @@ class WalletItems {
     DCHECK(legal_document.get());
     legal_documents_.push_back(legal_document.release());
   }
-  const std::vector<std::string>& required_actions() const {
+  const std::vector<RequiredAction>& required_actions() const {
     return required_actions_;
   }
   const std::string& google_transaction_id() const {
@@ -183,15 +184,13 @@ class WalletItems {
   FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateWalletItems);
   FRIEND_TEST_ALL_PREFIXES(WalletItemsTest,
                            CreateWalletItemsWithRequiredActions);
-  WalletItems(const std::vector<std::string>& required_actions,
+  WalletItems(const std::vector<RequiredAction>& required_actions,
               const std::string& google_transaction_id,
               const std::string& default_instrument_id,
               const std::string& default_address_id);
   // Actions that must be completed by the user before a FullWallet can be
   // issued to them by the Online Wallet service.
-  // TODO(ahutter): |required_actions_| should be members of an enum not
-  // strings. See http://crbug.com/165195.
-  std::vector<std::string> required_actions_;
+  std::vector<RequiredAction> required_actions_;
   std::string google_transaction_id_;
   std::string default_instrument_id_;
   std::string default_address_id_;
