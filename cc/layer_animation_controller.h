@@ -109,6 +109,8 @@ private:
     void notifyObserversOpacityAnimated(float opacity);
     void notifyObserversTransformAnimated(const gfx::Transform& transform);
 
+    bool hasActiveObserver();
+
     // If this is true, we force a sync to the impl thread.
     bool m_forceSync;
 

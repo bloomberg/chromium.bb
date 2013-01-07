@@ -127,6 +127,9 @@ void LayerAnimationController::pushAnimationUpdatesTo(LayerAnimationController* 
 
 void LayerAnimationController::animate(double monotonicTime, AnimationEventsVector* events)
 {
+    if (!hasActiveObserver())
+        return;
+
     startAnimationsWaitingForNextTick(monotonicTime, events);
     startAnimationsWaitingForStartTime(monotonicTime, events);
     startAnimationsWaitingForTargetAvailability(monotonicTime, events);
@@ -479,6 +482,18 @@ void LayerAnimationController::notifyObserversTransformAnimated(const gfx::Trans
     FOR_EACH_OBSERVER(LayerAnimationValueObserver,
                       m_observers,
                       OnTransformAnimated(transform));
+}
+
+bool LayerAnimationController::hasActiveObserver()
+{
+    if (m_observers.might_have_observers()) {
+        ObserverListBase<LayerAnimationValueObserver>::Iterator it(m_observers);
+        LayerAnimationValueObserver* obs;
+        while ((obs = it.GetNext()) != NULL)
+            if (obs->IsActive())
+                return true;
+    }
+    return false;
 }
 
 }  // namespace cc

@@ -748,6 +748,11 @@ void Layer::OnTransformAnimated(const gfx::Transform& transform)
     m_transform = transform;
 }
 
+bool Layer::IsActive() const
+{
+    return true;
+}
+
 bool Layer::addAnimation(scoped_ptr <ActiveAnimation> animation)
 {
     // WebCore currently assumes that accelerated animations will start soon

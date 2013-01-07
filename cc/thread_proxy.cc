@@ -753,6 +753,8 @@ ScheduledActionDrawAndSwapResult ThreadProxy::scheduledActionDrawAndSwapInternal
 
     if (m_inputHandlerOnImplThread.get())
         m_inputHandlerOnImplThread->animate(monotonicTime);
+
+    // TODO(nduca): make animation happen after tree activation.
     m_layerTreeHostImpl->animate(monotonicTime, wallClockTime);
 
     // This method is called on a forced draw, regardless of whether we are able to produce a frame,

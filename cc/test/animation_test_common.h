@@ -69,6 +69,7 @@ public:
     // LayerAnimationValueObserver implementation
     virtual void OnOpacityAnimated(float) OVERRIDE;
     virtual void OnTransformAnimated(const gfx::Transform&) OVERRIDE;
+    virtual bool IsActive() const OVERRIDE;
 
     float opacity() const  { return m_opacity; }
     const gfx::Transform& transform() const { return m_transform; }

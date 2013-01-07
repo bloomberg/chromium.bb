@@ -60,6 +60,7 @@ public:
     // LayerAnimationValueObserver implementation.
     virtual void OnOpacityAnimated(float) OVERRIDE;
     virtual void OnTransformAnimated(const gfx::Transform&) OVERRIDE;
+    virtual bool IsActive() const OVERRIDE;
 
     // Tree structure.
     LayerImpl* parent() { return m_parent; }

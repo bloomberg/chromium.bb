@@ -478,6 +478,11 @@ void LayerImpl::OnTransformAnimated(const gfx::Transform& transform)
     setTransform(transform);
 }
 
+bool LayerImpl::IsActive() const
+{
+    return m_layerTreeImpl->IsActiveTree();
+}
+
 void LayerImpl::setBounds(const gfx::Size& bounds)
 {
     if (m_bounds == bounds)

@@ -165,6 +165,11 @@ void FakeLayerAnimationValueObserver::OnTransformAnimated(const gfx::Transform& 
     m_transform = transform;
 }
 
+bool FakeLayerAnimationValueObserver::IsActive() const
+{
+    return true;
+}
+
 scoped_ptr<cc::AnimationCurve> FakeFloatTransition::clone() const
 {
     return make_scoped_ptr(new FakeFloatTransition(*this)).PassAs<cc::AnimationCurve>();

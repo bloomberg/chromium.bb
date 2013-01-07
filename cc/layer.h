@@ -339,6 +339,7 @@ private:
     // LayerAnimationValueObserver implementation.
     virtual void OnOpacityAnimated(float) OVERRIDE;
     virtual void OnTransformAnimated(const gfx::Transform&) OVERRIDE;
+    virtual bool IsActive() const OVERRIDE;
 
     LayerList m_children;
     Layer* m_parent;

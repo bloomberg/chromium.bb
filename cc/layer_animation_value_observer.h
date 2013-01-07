@@ -13,6 +13,8 @@ class CC_EXPORT LayerAnimationValueObserver {
 
   virtual void OnOpacityAnimated(float) = 0;
   virtual void OnTransformAnimated(const gfx::Transform&) = 0;
+
+  virtual bool IsActive() const = 0;
 };
 
 } // namespace cc
