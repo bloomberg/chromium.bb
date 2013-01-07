@@ -2,7 +2,7 @@
   "description": "A collection of animation performance tests",
   "pages": [
     {
-      "url": "file:///animations/keyframed_animations.html",
+      "url": "file:///tough_animation_cases/keyframed_animations.html",
       "why": "Tests various keyframed animations.",
       "smoothness": {
         "action": "wait_interaction",
@@ -10,7 +10,7 @@
       }
     },
     {
-      "url": "file:///animations/transform_transitions.html",
+      "url": "file:///tough_animation_cases/transform_transitions.html",
       "why": "Tests various transitions.",
       "smoothness": {
         "action": "wait_interaction",
