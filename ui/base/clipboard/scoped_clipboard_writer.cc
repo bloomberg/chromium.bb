@@ -21,11 +21,8 @@ ScopedClipboardWriter::ScopedClipboardWriter(Clipboard* clipboard,
 }
 
 ScopedClipboardWriter::~ScopedClipboardWriter() {
-  if (!objects_.empty() && clipboard_) {
+  if (!objects_.empty() && clipboard_)
     clipboard_->WriteObjects(buffer_, objects_);
-    if (buffer_ == Clipboard::BUFFER_STANDARD && url_text_.length())
-      clipboard_->DidWriteURL(url_text_);
-  }
 }
 
 void ScopedClipboardWriter::WriteText(const string16& text) {

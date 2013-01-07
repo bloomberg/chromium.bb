@@ -229,15 +229,6 @@ void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
   SetGtkClipboard(buffer);
 }
 
-// When a URL is copied from a render view context menu (via "copy link
-// location", for example), we additionally stick it in the X clipboard. This
-// matches other linux browsers.
-void Clipboard::DidWriteURL(const std::string& utf8_text) {
-  DCHECK(CalledOnValidThread());
-  gtk_clipboard_set_text(primary_selection_, utf8_text.c_str(),
-                         utf8_text.length());
-}
-
 // Take ownership of the GTK clipboard and inform it of the targets we support.
 void Clipboard::SetGtkClipboard(Buffer buffer) {
   scoped_array<GtkTargetEntry> targets(
@@ -260,6 +251,14 @@ void Clipboard::SetGtkClipboard(Buffer buffer) {
     gtk_clipboard_set_can_store(clipboard,
                                 targets.get(),
                                 clipboard_data_->size());
+  }
+
+  if (buffer == BUFFER_STANDARD) {
+    Clipboard::TargetMap::iterator text_iter = clipboard_data_->find("TEXT");
+    if (text_iter != clipboard_data_->end()) {
+      gtk_clipboard_set_text(primary_selection_, text_iter->second.first,
+                             text_iter->second.second);
+    }
   }
 
   // clipboard_data_ now owned by the GtkClipboard.

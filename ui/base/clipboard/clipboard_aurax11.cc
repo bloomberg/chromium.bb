@@ -894,8 +894,17 @@ void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
        iter != objects.end(); ++iter) {
     DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
   }
-
   aurax11_details_->TakeOwnershipOfSelection(buffer);
+
+  if (buffer == BUFFER_STANDARD) {
+    ObjectMap::const_iterator text_iter = objects.find(CBF_TEXT);
+    if (text_iter != objects.end()) {
+      aurax11_details_->CreateNewClipboardData();
+      const ObjectMapParam& char_vector = text_iter->second[0];
+      WriteText(&char_vector.front(), char_vector.size());
+      aurax11_details_->TakeOwnershipOfSelection(BUFFER_SELECTION);
+    }
+  }
 }
 
 bool Clipboard::IsFormatAvailable(const FormatType& format,
@@ -1045,17 +1054,6 @@ void Clipboard::ReadData(const FormatType& format, std::string* result) const {
       BUFFER_STANDARD, aurax11_details_->GetAtomsForFormat(format)));
   if (data.get())
     data->AssignTo(result);
-}
-
-// When a URL is copied from a render view context menu (via "copy link
-// location", for example), we additionally stick it in the X clipboard. This
-// matches other linux browsers.
-void Clipboard::DidWriteURL(const std::string& utf8_text) {
-  DCHECK(CalledOnValidThread());
-
-  aurax11_details_->CreateNewClipboardData();
-  WriteText(utf8_text.c_str(), utf8_text.size());
-  aurax11_details_->TakeOwnershipOfSelection(BUFFER_SELECTION);
 }
 
 uint64 Clipboard::GetSequenceNumber(Buffer buffer) {
