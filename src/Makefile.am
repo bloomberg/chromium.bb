@@ -36,6 +36,7 @@ weston_SOURCES =				\
 	gl-renderer.h				\
 	gl-renderer.c				\
 	noop-renderer.c				\
+	pixman-renderer.c			\
 	../shared/matrix.c			\
 	../shared/matrix.h			\
 	weston-launch.h				\
