@@ -779,7 +779,7 @@
  "win-release/media_tests_av_perf/ttp/Wifi_roller.webm": {"reva": 17420, "revb": 174996, "type": "absolute", "better": "lower", "improve": 1316.225, "regress": 2169.3, "sha1": "51acc44f"},
  "xp-release-dual-core/dhtml/times/t": {"reva": 165061, "revb": 166315, "improve": -1337, "regress": 1227, "sha1": "1e5f0c10"},
  "xp-release-dual-core/dom_perf/Total/score": {"reva": 167358, "revb": 168252, "improve": 143, "regress": 17, "sha1": "c680a931"},
- "xp-release-dual-core/intl1/times/t": {"reva": 172659, "revb": 172684, "improve": 387.388888891, "regress": 515.316666669, "sha1": "949a7a29"},
+ "xp-release-dual-core/intl1/times/t": {"reva": 175081, "revb": 175338, "improve": 369.761111109, "regress": 589.750000004, "sha1": "1ba9c321"},
  "xp-release-dual-core/intl2/times/t": {"reva": 172499, "revb": 172644, "improve": 184.827777773, "regress": 299.133333335, "sha1": "53009d44"},
  "xp-release-dual-core/morejs/times/t": {"reva": 131574, "revb": 127228, "improve": -452, "regress": 456, "sha1": "21ef0dc0"},
  "xp-release-dual-core/moz/times/t": {"reva": 171853, "revb": 172571, "improve": 136.061111109, "regress": 189.116666665, "sha1": "e861d513"},
