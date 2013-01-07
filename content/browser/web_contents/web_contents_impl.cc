@@ -1978,6 +1978,7 @@ void WebContentsImpl::DidStartProvisionalLoadForFrame(
     bool is_main_frame,
     const GURL& url) {
   bool is_error_page = (url.spec() == kUnreachableWebDataURL);
+  bool is_iframe_srcdoc = (url.spec() == chrome::kAboutSrcDocURL);
   GURL validated_url(url);
   RenderProcessHost* render_process_host =
       render_view_host->GetProcess();
@@ -1987,7 +1988,7 @@ void WebContentsImpl::DidStartProvisionalLoadForFrame(
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidStartProvisionalLoadForFrame(frame_id, parent_frame_id,
                     is_main_frame, validated_url, is_error_page,
-                    render_view_host));
+                    is_iframe_srcdoc, render_view_host));
 
   if (is_main_frame) {
     // Notify observers about the provisional change in the main frame URL.

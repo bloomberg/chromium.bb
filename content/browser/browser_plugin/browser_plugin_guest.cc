@@ -244,6 +244,7 @@ void BrowserPluginGuest::DidStartProvisionalLoadForFrame(
     bool is_main_frame,
     const GURL& validated_url,
     bool is_error_page,
+    bool is_iframe_srcdoc,
     RenderViewHost* render_view_host) {
   // Inform the embedder of the loadStart.
   SendMessageToEmbedder(

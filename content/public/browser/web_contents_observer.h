@@ -59,6 +59,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
       bool is_main_frame,
       const GURL& validated_url,
       bool is_error_page,
+      bool is_iframe_srcdoc,
       RenderViewHost* render_view_host) {}
   virtual void ProvisionalChangeToMainFrameUrl(
       const GURL& url,

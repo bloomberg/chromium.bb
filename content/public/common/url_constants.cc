@@ -30,6 +30,7 @@ const char kSwappedOutScheme[] = "swappedout";
 const char kViewSourceScheme[] = "view-source";
 
 const char kAboutBlankURL[] = "about:blank";
+const char kAboutSrcDocURL[] = "about:srcdoc";
 const char kChromeUIAppCacheInternalsHost[] = "appcache-internals";
 const char kChromeUIBlobInternalsHost[] = "blob-internals";
 const char kChromeUIBrowserCrashHost[] = "inducebrowsercrashforrealz";

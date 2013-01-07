@@ -36,6 +36,7 @@ CONTENT_EXPORT extern const char kViewSourceScheme[];
 
 // Hosts for about URLs.
 CONTENT_EXPORT extern const char kAboutBlankURL[];
+CONTENT_EXPORT extern const char kAboutSrcDocURL[];
 CONTENT_EXPORT extern const char kChromeUIAppCacheInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUIBlobInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUIBrowserCrashHost[];
