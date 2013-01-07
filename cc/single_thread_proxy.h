@@ -33,7 +33,6 @@ public:
     virtual bool recreateOutputSurface() OVERRIDE;
     virtual void renderingStats(RenderingStats*) OVERRIDE;
     virtual const RendererCapabilities& rendererCapabilities() const OVERRIDE;
-    virtual void loseOutputSurface() OVERRIDE;
     virtual void setNeedsAnimate() OVERRIDE;
     virtual void setNeedsCommit() OVERRIDE;
     virtual void setNeedsRedraw() OVERRIDE;

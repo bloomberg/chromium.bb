@@ -218,11 +218,6 @@ scoped_ptr<FontAtlas> WebLayerTreeViewImpl::createFontAtlas()
     return FontAtlas::create(bitmap, asciiToRectTable, fontHeight).Pass();
 }
 
-void WebLayerTreeViewImpl::loseCompositorContext(int numTimes)
-{
-    m_layerTreeHost->loseOutputSurface(numTimes);
-}
-
 void WebLayerTreeViewImpl::willBeginFrame()
 {
     m_client->willBeginFrame();

@@ -76,7 +76,6 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client, const LayerTreeSetting
     , m_renderingStats()
     , m_rendererInitialized(false)
     , m_outputSurfaceLost(false)
-    , m_numTimesRecreateShouldFail(0)
     , m_numFailedRecreateAttempts(0)
     , m_settings(settings)
     , m_debugState(settings.initialDebugState)
@@ -176,13 +175,7 @@ LayerTreeHost::RecreateResult LayerTreeHost::recreateOutputSurface()
     TRACE_EVENT0("cc", "LayerTreeHost::recreateOutputSurface");
     DCHECK(m_outputSurfaceLost);
 
-    bool recreated = false;
-    if (!m_numTimesRecreateShouldFail)
-        recreated = m_proxy->recreateOutputSurface();
-    else
-        m_numTimesRecreateShouldFail--;
-
-    if (recreated) {
+    if (m_proxy->recreateOutputSurface()) {
         m_client->didRecreateOutputSurface(true);
         m_outputSurfaceLost = false;
         return RecreateSucceeded;
@@ -527,13 +520,6 @@ void LayerTreeHost::setVisible(bool visible)
 void LayerTreeHost::startPageScaleAnimation(gfx::Vector2d targetOffset, bool useAnchor, float scale, base::TimeDelta duration)
 {
     m_proxy->startPageScaleAnimation(targetOffset, useAnchor, scale, duration);
-}
-
-void LayerTreeHost::loseOutputSurface(int numTimes)
-{
-    TRACE_EVENT1("cc", "LayerTreeHost::loseCompositorOutputSurface", "numTimes", numTimes);
-    m_numTimesRecreateShouldFail = numTimes - 1;
-    m_proxy->loseOutputSurface();
 }
 
 PrioritizedResourceManager* LayerTreeHost::contentsTextureManager() const

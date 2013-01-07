@@ -97,7 +97,6 @@ public:
     virtual void acquireLayerTextures() = 0;
 
     // Testing hooks
-    virtual void loseOutputSurface() = 0;
     virtual bool commitPendingForTesting() = 0;
 
 protected:

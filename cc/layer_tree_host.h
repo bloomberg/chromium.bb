@@ -136,9 +136,6 @@ public:
 
     const RendererCapabilities& rendererCapabilities() const;
 
-    // Test only hook
-    void loseOutputSurface(int numTimes);
-
     void setNeedsAnimate();
     // virtual for testing
     virtual void setNeedsCommit();
@@ -243,7 +240,6 @@ private:
 
     bool m_rendererInitialized;
     bool m_outputSurfaceLost;
-    int m_numTimesRecreateShouldFail;
     int m_numFailedRecreateAttempts;
 
     scoped_refptr<Layer> m_rootLayer;

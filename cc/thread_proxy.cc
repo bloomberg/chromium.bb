@@ -263,11 +263,6 @@ const RendererCapabilities& ThreadProxy::rendererCapabilities() const
     return m_RendererCapabilitiesMainThreadCopy;
 }
 
-void ThreadProxy::loseOutputSurface()
-{
-    Proxy::implThread()->postTask(base::Bind(&ThreadProxy::didLoseOutputSurfaceOnImplThread, m_implThreadWeakPtr));
-}
-
 void ThreadProxy::setNeedsAnimate()
 {
     DCHECK(isMainThread());

@@ -58,7 +58,6 @@ public:
     virtual void setShowFPSCounter(bool show);
     virtual void setShowPaintRects(bool show);
     virtual void setContinuousPaintingEnabled(bool);
-    virtual void loseCompositorContext(int numTimes) OVERRIDE;
 
     // cc::LayerTreeHostClient implementation.
     virtual void willBeginFrame() OVERRIDE;

@@ -160,13 +160,6 @@ const RendererCapabilities& SingleThreadProxy::rendererCapabilities() const
     return m_RendererCapabilitiesForMainThread;
 }
 
-void SingleThreadProxy::loseOutputSurface()
-{
-    DCHECK(Proxy::isMainThread());
-    m_layerTreeHost->didLoseOutputSurface();
-    m_outputSurfaceLost = true;
-}
-
 void SingleThreadProxy::setNeedsAnimate()
 {
     // Thread-only feature
