@@ -15,6 +15,24 @@
 namespace ash {
 namespace internal {
 
+class ScrollSeparator : public views::View {
+ public:
+  ScrollSeparator() {}
+
+  virtual ~ScrollSeparator() {}
+
+ private:
+  // Overriden from views::View.
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    canvas->FillRect(gfx::Rect(0, height() / 2, width(), 1), kBorderLightColor);
+  }
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
+    return gfx::Size(1, kTrayPopupScrollSeparatorHeight);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollSeparator);
+};
+
 class ScrollBorder : public views::Border {
  public:
   ScrollBorder() {}
@@ -75,6 +93,14 @@ void TrayDetailsView::CreateScrollableList() {
   scroller_->set_border(scroll_border_);
 
   AddChildView(scroller_);
+}
+
+void TrayDetailsView::AddScrollSeparator() {
+  DCHECK(scroll_content_);
+  // Do not draw the separator if it is the very first item
+  // in the scrollable list.
+  if (scroll_content_->has_children())
+    scroll_content_->AddChildView(new ScrollSeparator);
 }
 
 void TrayDetailsView::Reset() {

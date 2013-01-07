@@ -32,6 +32,7 @@ const int kTrayPopupTextSpacingVertical = 4;
 
 const int kTrayPopupItemHeight = 48;
 const int kTrayPopupDetailsIconWidth = 25;
+const int kTrayPopupScrollSeparatorHeight = 15;
 const int kTrayRoundedBorderRadius = 2;
 const int kTrayBarButtonWidth = 39;
 

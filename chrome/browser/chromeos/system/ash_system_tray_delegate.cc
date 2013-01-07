@@ -175,6 +175,10 @@ void BluetoothDeviceDisconnectError() {
   // TODO(sad): Do something?
 }
 
+void BluetoothSetDiscoveringError() {
+  LOG(ERROR) << "BluetoothSetDiscovering failed.";
+}
+
 void BluetoothDeviceConnectError(
     device::BluetoothDevice::ConnectErrorCode error_code) {
   // TODO(sad): Do something?
@@ -477,14 +481,20 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         bluetooth_adapter_->GetDevices();
     for (size_t i = 0; i < devices.size(); ++i) {
       device::BluetoothDevice* device = devices[i];
-      if (!device->IsPaired())
-        continue;
       ash::BluetoothDeviceInfo info;
       info.address = device->address();
       info.display_name = device->GetName();
       info.connected = device->IsConnected();
+      info.paired = device->IsPaired();
+      info.visible = device->IsVisible();
       list->push_back(info);
     }
+  }
+
+  virtual void BluetoothSetDiscovering(bool value) OVERRIDE {
+    bluetooth_adapter_->SetDiscovering(value,
+        base::Bind(&base::DoNothing),
+        base::Bind(&BluetoothSetDiscoveringError));
   }
 
   virtual void ToggleBluetoothConnection(const std::string& address) OVERRIDE {

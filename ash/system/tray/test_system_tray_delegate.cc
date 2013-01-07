@@ -168,6 +168,9 @@ void TestSystemTrayDelegate::GetAvailableBluetoothDevices(
     BluetoothDeviceList* list) {
 }
 
+void TestSystemTrayDelegate::BluetoothSetDiscovering(bool value) {
+}
+
 void TestSystemTrayDelegate::ToggleBluetoothConnection(
     const std::string& address) {
 }

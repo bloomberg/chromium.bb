@@ -51,6 +51,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual void RequestLockScreen() OVERRIDE;
   virtual void RequestRestart() OVERRIDE;
   virtual void GetAvailableBluetoothDevices(BluetoothDeviceList* list) OVERRIDE;
+  virtual void BluetoothSetDiscovering(bool value) OVERRIDE;
   virtual void ToggleBluetoothConnection(const std::string& address) OVERRIDE;
   virtual void GetCurrentIME(IMEInfo* info) OVERRIDE;
   virtual void GetAvailableIMEList(IMEInfoList* list) OVERRIDE;

@@ -71,39 +71,64 @@ class BluetoothDetailedView : public TrayDetailsView,
         login_(login),
         add_device_(NULL),
         toggle_bluetooth_(NULL),
-        enable_bluetooth_(NULL) {
+        enable_bluetooth_(NULL),
+        bluetooth_discovering_(false) {
+    CreateItems();
     Update();
   }
 
-  virtual ~BluetoothDetailedView() {}
+  virtual ~BluetoothDetailedView() {
+    // Stop discovering bluetooth devices when exiting BT detailed view.
+    BluetoothSetDiscovering(false);
+  }
 
   void Update() {
+    BluetoothSetDiscovering(true);
     UpdateBlueToothDeviceList();
 
-    Reset();
-
-    add_device_ = NULL;
-    toggle_bluetooth_ = NULL;
-
-    AppendDeviceList();
-    AppendSettingsEntries();
-    AppendHeaderEntry();
-
+    // Update UI.
+    UpdateDeviceScrollList();
+    UpdateHeaderEntry();
     Layout();
   }
 
  private:
+  void CreateItems() {
+    CreateScrollableList();
+    AppendSettingsEntries();
+    AppendHeaderEntry();
+  }
+
+  void BluetoothSetDiscovering(bool discovering) {
+    ash::SystemTrayDelegate* delegate =
+        ash::Shell::GetInstance()->system_tray_delegate();
+    if (discovering) {
+      bool bluetooth_enabled = delegate->GetBluetoothEnabled();
+      if (!bluetooth_discovering_ && bluetooth_enabled)
+        delegate->BluetoothSetDiscovering(true);
+      bluetooth_discovering_ = bluetooth_enabled;
+    } else {   // Stop bluetooth discovering.
+      if (bluetooth_discovering_) {
+        bluetooth_discovering_ = false;
+        delegate->BluetoothSetDiscovering(false);
+      }
+    }
+  }
+
   void UpdateBlueToothDeviceList() {
     connected_devices_.clear();
     paired_not_connected_devices_.clear();
+    discovered_not_paired_devices_.clear();
     BluetoothDeviceList list;
     Shell::GetInstance()->system_tray_delegate()->
         GetAvailableBluetoothDevices(&list);
     for (size_t i = 0; i < list.size(); ++i) {
       if (list[i].connected)
         connected_devices_.push_back(list[i]);
-      else
+      else if (list[i].paired)
         paired_not_connected_devices_.push_back(list[i]);
+      else if (list[i].visible)
+        discovered_not_paired_devices_.push_back(list[i]);
     }
   }
 
@@ -128,16 +153,27 @@ class BluetoothDetailedView : public TrayDetailsView,
     toggle_bluetooth_->SetToggledTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH));
     footer()->AddButton(toggle_bluetooth_);
+ }
+
+  void UpdateHeaderEntry() {
+    if (toggle_bluetooth_) {
+      toggle_bluetooth_->SetToggled(
+          !ash::Shell::GetInstance()->system_tray_delegate()->
+              GetBluetoothEnabled());
+    }
   }
 
-  void AppendDeviceList() {
+  void UpdateDeviceScrollList() {
     device_map_.clear();
-    CreateScrollableList();
+    scroll_content()->RemoveAllChildViews(true);
+    enable_bluetooth_ = NULL;
 
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->system_tray_delegate();
     bool bluetooth_enabled = delegate->GetBluetoothEnabled();
-    if (delegate->GetBluetoothAvailable() && !bluetooth_enabled) {
+    bool blueooth_available = delegate->GetBluetoothAvailable();
+    if (blueooth_available && !bluetooth_enabled &&
+        toggle_bluetooth_) {
       enable_bluetooth_ =
           AddScrollListItem(
               l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH),
@@ -148,23 +184,23 @@ class BluetoothDetailedView : public TrayDetailsView,
         connected_devices_, true, true, bluetooth_enabled);
     AppendSameTypeDevicesToScrollList(
         paired_not_connected_devices_, false, false, bluetooth_enabled);
+    if (discovered_not_paired_devices_.size() > 0)
+      AddScrollSeparator();
+    AppendSameTypeDevicesToScrollList(
+        discovered_not_paired_devices_, false, false, bluetooth_enabled);
 
     // Show user Bluetooth state if there is no bluetooth devices in list.
-    if (connected_devices_.size() == 0 &&
-        paired_not_connected_devices_.size() == 0) {
-      ash::SystemTrayDelegate* delegate =
-          ash::Shell::GetInstance()->system_tray_delegate();
-      int message_id;
-      if (delegate->GetBluetoothAvailable() &&
-          delegate->GetBluetoothEnabled()) {
-        if (delegate->IsBluetoothDiscovering())
-          message_id = IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING;
-        else
-          message_id = IDS_ASH_STATUS_TRAY_BLUETOOTH_NO_DEVICE;
-        AddScrollListItem(l10n_util::GetStringUTF16(message_id),
-                          gfx::Font::NORMAL, false, true);
+    if (device_map_.size() == 0) {
+      if (blueooth_available && bluetooth_enabled) {
+        AddScrollListItem(
+            l10n_util::GetStringUTF16(
+                IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING),
+            gfx::Font::NORMAL, false, true);
       }
     }
+
+    scroll_content()->SizeToPreferredSize();
+    static_cast<views::View*>(scroller())->Layout();
   }
 
   void AppendSameTypeDevicesToScrollList(const BluetoothDeviceList& list,
@@ -224,7 +260,7 @@ class BluetoothDetailedView : public TrayDetailsView,
         delegate->ToggleBluetooth();
       delegate->AddBluetoothDevice();
     } else if (sender == enable_bluetooth_) {
-        delegate->ToggleBluetooth();
+      delegate->ToggleBluetooth();
     } else {
       std::map<views::View*, std::string>::iterator find;
       find = device_map_.find(sender);
@@ -254,6 +290,8 @@ class BluetoothDetailedView : public TrayDetailsView,
   HoverHighlightView* enable_bluetooth_;
   BluetoothDeviceList connected_devices_;
   BluetoothDeviceList paired_not_connected_devices_;
+  BluetoothDeviceList discovered_not_paired_devices_;
+  bool bluetooth_discovering_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDetailedView);
 };

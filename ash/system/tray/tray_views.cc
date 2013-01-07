@@ -244,7 +244,9 @@ views::Label* HoverHighlightView::AddLabel(const string16& text,
       views::Border::CreateEmptyBorder(5, left_margin, 5, right_margin));
   text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   text_label_->SetFont(text_label_->font().DeriveFont(0, style));
-  text_label_->SetDisabledColor(SkColorSetARGB(127, 0, 0, 0));
+  // Do not set alpha value in disable color. It will have issue with elide
+  // blending filter in disabled state for rendering label text color.
+  text_label_->SetDisabledColor(SkColorSetARGB(255, 127, 127, 127));
   if (text_default_color_)
     text_label_->SetEnabledColor(text_default_color_);
   AddChildView(text_label_);

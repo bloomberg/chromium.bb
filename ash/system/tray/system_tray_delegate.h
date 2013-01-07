@@ -40,6 +40,8 @@ struct ASH_EXPORT BluetoothDeviceInfo {
   std::string address;
   string16 display_name;
   bool connected;
+  bool paired;
+  bool visible;
 };
 
 typedef std::vector<BluetoothDeviceInfo> BluetoothDeviceList;
@@ -183,6 +185,9 @@ class SystemTrayDelegate {
 
   // Returns a list of available bluetooth devices.
   virtual void GetAvailableBluetoothDevices(BluetoothDeviceList* devices) = 0;
+
+  // Requests bluetooth start or stop discovering devices.
+  virtual void BluetoothSetDiscovering(bool value) = 0;
 
   // Toggles connection to a specific bluetooth device.
   virtual void ToggleBluetoothConnection(const std::string& address) = 0;
