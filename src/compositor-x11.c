@@ -83,7 +83,7 @@ struct x11_compositor {
 	struct xkb_keymap	*xkb_keymap;
 	unsigned int		 has_xkb;
 	uint8_t			 xkb_event_base;
-	int			 use_shm;
+	int			 use_pixman;
 
 	/* We could map multi-pointer X to multiple wayland seats, but
 	 * for now we only support core X input. */
@@ -460,7 +460,7 @@ x11_output_destroy(struct weston_output *output_base)
 	wl_list_remove(&output->base.link);
 	wl_event_source_remove(output->finish_frame_timer);
 
-	if (compositor->use_shm) {
+	if (compositor->use_pixman) {
 		pixman_renderer_output_destroy(output_base);
 		x11_output_deinit_shm(compositor, output);
 	} else
@@ -861,7 +861,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	x11_output_wait_for_map(c, output);
 
 	output->base.origin = output->base.current;
-	if (c->use_shm)
+	if (c->use_pixman)
 		output->base.repaint = x11_output_repaint_shm;
 	else
 		output->base.repaint = x11_output_repaint_gl;
@@ -876,7 +876,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	weston_output_init(&output->base, &c->base,
 			   x, y, width, height, transform);
 
-	if (c->use_shm) {
+	if (c->use_pixman) {
 		if (x11_output_init_shm(c, output, width, height) < 0)
 			return NULL;
 		if (pixman_renderer_output_create(&output->base) < 0) {
@@ -1419,7 +1419,7 @@ x11_destroy(struct weston_compositor *ec)
 
 	weston_compositor_shutdown(ec); /* destroys outputs, too */
 
-	if (compositor->use_shm)
+	if (compositor->use_pixman)
 		pixman_renderer_destroy(ec);
 	else
 		gl_renderer_destroy(ec);
@@ -1432,7 +1432,7 @@ static struct weston_compositor *
 x11_compositor_create(struct wl_display *display,
 		      int fullscreen,
 		      int no_input,
-		      int use_shm,
+		      int use_pixman,
 		      int argc, char *argv[], const char *config_file)
 {
 	struct x11_compositor *c;
@@ -1471,8 +1471,8 @@ x11_compositor_create(struct wl_display *display,
 	x11_compositor_get_resources(c);
 
 	c->base.wl_display = display;
-	c->use_shm = use_shm;
-	if (c->use_shm) {
+	c->use_pixman = use_pixman;
+	if (c->use_pixman) {
 		if (pixman_renderer_init(&c->base) < 0)
 			goto err_xdisplay;
 	}
@@ -1481,7 +1481,7 @@ x11_compositor_create(struct wl_display *display,
 				NULL) < 0)
 			goto err_xdisplay;
 	}
-	weston_log("Using %s renderer\n", use_shm ? "pixman" : "gl");
+	weston_log("Using %s renderer\n", use_pixman ? "pixman" : "gl");
 
 	c->base.destroy = x11_destroy;
 	c->base.restore = x11_restore;
@@ -1532,7 +1532,7 @@ x11_compositor_create(struct wl_display *display,
 err_x11_input:
 	x11_input_destroy(c);
 err_renderer:
-	if (c->use_shm)
+	if (c->use_pixman)
 		pixman_renderer_destroy(&c->base);
 	else
 		gl_renderer_destroy(&c->base);
@@ -1624,7 +1624,7 @@ backend_init(struct wl_display *display, int argc, char *argv[],
 {
 	int fullscreen = 0;
 	int no_input = 0;
-	int use_shm = 0;
+	int use_pixman = 0;
 
 	const struct weston_option x11_options[] = {
 		{ WESTON_OPTION_INTEGER, "width", 0, &option_width },
@@ -1632,7 +1632,7 @@ backend_init(struct wl_display *display, int argc, char *argv[],
 		{ WESTON_OPTION_BOOLEAN, "fullscreen", 'f', &fullscreen },
 		{ WESTON_OPTION_INTEGER, "output-count", 0, &option_count },
 		{ WESTON_OPTION_BOOLEAN, "no-input", 0, &no_input },
-		{ WESTON_OPTION_BOOLEAN, "use-shm", 0, &use_shm },
+		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &use_pixman },
 	};
 
 	parse_options(x11_options, ARRAY_LENGTH(x11_options), argc, argv);
@@ -1656,6 +1656,6 @@ backend_init(struct wl_display *display, int argc, char *argv[],
 	return x11_compositor_create(display,
 				     fullscreen,
 				     no_input,
-				     use_shm,
+				     use_pixman,
 				     argc, argv, config_file);
 }
