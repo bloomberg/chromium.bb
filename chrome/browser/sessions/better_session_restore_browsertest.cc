@@ -322,14 +322,7 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
       SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
 }
 
-// Flaky on Linux: http://crbug.com/163096
-#if defined(OS_LINUX)
-#define MAYBE_LocalStorageClearedOnExit DISABLED_LocalStorageClearedOnExit
-#else
-#define MAYBE_LocalStorageClearedOnExit LocalStorageClearedOnExit
-#endif
-IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
-                       MAYBE_LocalStorageClearedOnExit) {
+IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, LocalStorageClearedOnExit) {
   CheckReloadedPageNotRestored();
 }
 
@@ -502,8 +495,7 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, PRE_LocalStorageClearedOnExit) {
       SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
 }
 
-// See flakiness comment above.
-IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, MAYBE_LocalStorageClearedOnExit) {
+IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, LocalStorageClearedOnExit) {
   content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
   EXPECT_EQ(std::string(chrome::kAboutBlankURL), web_contents->GetURL().spec());
   StoreDataWithPage("local_storage.html");
