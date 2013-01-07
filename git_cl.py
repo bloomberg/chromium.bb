@@ -1053,9 +1053,9 @@ def CreateDescriptionFromLog(args):
 
 def CMDpresubmit(parser, args):
   """run presubmit tests on the current changelist"""
-  parser.add_option('--upload', action='store_true',
+  parser.add_option('-u', '--upload', action='store_true',
                     help='Run upload hook instead of the push/dcommit hook')
-  parser.add_option('--force', action='store_true',
+  parser.add_option('-f', '--force', action='store_true',
                     help='Run checks even if tree is dirty')
   (options, args) = parser.parse_args(args)
 
