@@ -107,7 +107,7 @@ class InfoBarService;
 // subclass.  Each of these subclasses overrides addAdditionalControls to
 // configure its view as necessary.
 
-@interface LinkInfoBarController : InfoBarController
+@interface AlternateNavInfoBarController : InfoBarController
 // Called when there is a click on the link in the infobar.
 - (void)linkClicked;
 @end

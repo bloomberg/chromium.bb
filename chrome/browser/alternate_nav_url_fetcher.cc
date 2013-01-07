@@ -4,9 +4,8 @@
 
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
-#include "chrome/browser/api/infobars/link_infobar_delegate.h"
+#include "chrome/browser/infobars/alternate_nav_infobar_delegate.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -15,88 +14,12 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "net/base/load_flags.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 using content::NavigationController;
-using content::OpenURLParams;
-using content::Referrer;
-
-// AlternateNavInfoBarDelegate ------------------------------------------------
-
-class AlternateNavInfoBarDelegate : public LinkInfoBarDelegate {
- public:
-  AlternateNavInfoBarDelegate(InfoBarService* owner,
-                              const GURL& alternate_nav_url);
-  virtual ~AlternateNavInfoBarDelegate();
-
- private:
-  // LinkInfoBarDelegate
-  virtual gfx::Image* GetIcon() const OVERRIDE;
-  virtual Type GetInfoBarType() const OVERRIDE;
-  virtual string16 GetMessageTextWithOffset(size_t* link_offset) const OVERRIDE;
-  virtual string16 GetLinkText() const OVERRIDE;
-  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
-
-  GURL alternate_nav_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(AlternateNavInfoBarDelegate);
-};
-
-AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
-    InfoBarService* owner,
-    const GURL& alternate_nav_url)
-    : LinkInfoBarDelegate(owner),
-      alternate_nav_url_(alternate_nav_url) {
-}
-
-AlternateNavInfoBarDelegate::~AlternateNavInfoBarDelegate() {
-}
-
-gfx::Image* AlternateNavInfoBarDelegate::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_ALT_NAV_URL);
-}
-
-InfoBarDelegate::Type AlternateNavInfoBarDelegate::GetInfoBarType() const {
-  return PAGE_ACTION_TYPE;
-}
-
-string16 AlternateNavInfoBarDelegate::GetMessageTextWithOffset(
-    size_t* link_offset) const {
-  const string16 label = l10n_util::GetStringFUTF16(
-      IDS_ALTERNATE_NAV_URL_VIEW_LABEL, string16(), link_offset);
-  return label;
-}
-
-string16 AlternateNavInfoBarDelegate::GetLinkText() const {
-  return UTF8ToUTF16(alternate_nav_url_.spec());
-}
-
-bool AlternateNavInfoBarDelegate::LinkClicked(
-    WindowOpenDisposition disposition) {
-  OpenURLParams params(
-      alternate_nav_url_, Referrer(), disposition,
-      // Pretend the user typed this URL, so that navigating to
-      // it will be the default action when it's typed again in
-      // the future.
-      content::PAGE_TRANSITION_TYPED,
-      false);
-  owner()->GetWebContents()->OpenURL(params);
-
-  // We should always close, even if the navigation did not occur within this
-  // WebContents.
-  return true;
-}
-
-
-// AlternateNavURLFetcher -----------------------------------------------------
 
 AlternateNavURLFetcher::AlternateNavURLFetcher(
     const GURL& alternate_nav_url)

@@ -11,7 +11,7 @@
 #include "grit/ui_resources.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
-#include "chrome/browser/api/infobars/link_infobar_delegate.h"
+#include "chrome/browser/infobars/alternate_nav_infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
@@ -287,9 +287,9 @@ const float kAnimateCloseDuration = 0.12;
 
 
 /////////////////////////////////////////////////////////////////////////
-// LinkInfoBarController implementation
+// AlternateNavInfoBarController implementation
 
-@implementation LinkInfoBarController
+@implementation AlternateNavInfoBarController
 
 // Link infobars have a text message, of which part is linkified.  We
 // use an NSAttributedString to display styled text, and we set a
@@ -301,7 +301,8 @@ const float kAnimateCloseDuration = 0.12;
   // No buttons.
   [self removeButtons];
 
-  LinkInfoBarDelegate* delegate = delegate_->AsLinkInfoBarDelegate();
+  AlternateNavInfoBarDelegate* delegate =
+      delegate_->AsAlternateNavInfoBarDelegate();
   DCHECK(delegate);
   size_t offset = string16::npos;
   string16 message = delegate->GetMessageTextWithOffset(&offset);
@@ -319,13 +320,13 @@ const float kAnimateCloseDuration = 0.12;
 
 // Called when someone clicks on the link in the infobar.  This method
 // is called by the InfobarTextField on its delegate (the
-// LinkInfoBarController).
+// AlternateNavInfoBarController).
 - (void)linkClicked {
   if (![self isOwned])
     return;
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  if (delegate_->AsLinkInfoBarDelegate()->LinkClicked(disposition))
+  if (delegate_->AsAlternateNavInfoBarDelegate()->LinkClicked(disposition))
     [self removeSelf];
 }
 
@@ -446,7 +447,7 @@ const float kAnimateCloseDuration = 0.12;
 
 // Called when someone clicks on the link in the infobar.  This method
 // is called by the InfobarTextField on its delegate (the
-// LinkInfoBarController).
+// AlternateNavInfoBarController).
 - (void)linkClicked {
   if (![self isOwned])
     return;
@@ -462,9 +463,9 @@ const float kAnimateCloseDuration = 0.12;
 //////////////////////////////////////////////////////////////////////////
 // CreateInfoBar() implementations
 
-InfoBar* LinkInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  LinkInfoBarController* controller =
-      [[LinkInfoBarController alloc] initWithDelegate:this owner:owner];
+InfoBar* AlternateNavInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
+  AlternateNavInfoBarController* controller =
+      [[AlternateNavInfoBarController alloc] initWithDelegate:this owner:owner];
   return new InfoBar(controller, this);
 }
 

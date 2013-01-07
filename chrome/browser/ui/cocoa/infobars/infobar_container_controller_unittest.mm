@@ -8,7 +8,6 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #include "chrome/browser/ui/cocoa/infobars/mock_confirm_infobar_delegate.h"
-#include "chrome/browser/ui/cocoa/infobars/mock_link_infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -54,29 +53,14 @@ TEST_F(InfoBarContainerControllerTest, AddAndRemoveInfoBars) {
   // After each step check to make sure we have the correct number of
   // infobar subviews.
 
-  // These delegates delete themselves when they're told their infobars have
-  // closed.
-  InfoBarDelegate* linkDelegate = new MockLinkInfoBarDelegate(NULL);
-  InfoBarDelegate* linkDelegate2 = new MockLinkInfoBarDelegate(NULL);
+  // This delegate deletes itself when they're told their infobars have closed.
   InfoBarDelegate* confirmDelegate = new MockConfirmInfoBarDelegate(NULL);
 
-  [controller_ addInfoBar:linkDelegate->CreateInfoBar(NULL) animate:NO];
-  EXPECT_EQ(1U, [[view subviews] count]);
-
   [controller_ addInfoBar:confirmDelegate->CreateInfoBar(NULL) animate:NO];
-  EXPECT_EQ(2U, [[view subviews] count]);
-
-  [controller_ addInfoBar:linkDelegate2->CreateInfoBar(NULL) animate:NO];
-  EXPECT_EQ(3U, [[view subviews] count]);
+  EXPECT_EQ(1U, [[view subviews] count]);
 
   // Just to mix things up, remove them in a different order.
   [controller_ closeInfoBarsForDelegate:confirmDelegate animate:NO];
-  EXPECT_EQ(2U, [[view subviews] count]);
-
-  [controller_ closeInfoBarsForDelegate:linkDelegate animate:NO];
-  EXPECT_EQ(1U, [[view subviews] count]);
-
-  [controller_ closeInfoBarsForDelegate:linkDelegate2 animate:NO];
   EXPECT_EQ(0U, [[view subviews] count]);
 }
 
@@ -87,19 +71,17 @@ TEST_F(InfoBarContainerControllerTest, RemoveAllInfoBars) {
 
   // removeAllInfobars does not close these, so we stack-allocate them so
   // they'll get cleaned up.
-  MockLinkInfoBarDelegate linkDelegate(NULL);
   MockConfirmInfoBarDelegate confirmDelegate(NULL);
   MockConfirmInfoBarDelegate confirmDelegate2(NULL);
-  InfoBarDelegate* linkDelegatePtr = &linkDelegate;
   InfoBarDelegate* confirmDelegatePtr = &confirmDelegate;
   InfoBarDelegate* confirmDelegate2Ptr = &confirmDelegate2;
 
-  [controller_ addInfoBar:linkDelegatePtr->CreateInfoBar(NULL) animate:NO];
   [controller_ addInfoBar:confirmDelegatePtr->CreateInfoBar(NULL) animate:NO];
   [controller_ addInfoBar:confirmDelegate2Ptr->CreateInfoBar(NULL) animate:NO];
-  EXPECT_EQ(3U, [[view subviews] count]);
+  EXPECT_EQ(2U, [[view subviews] count]);
 
   [controller_ removeAllInfoBars];
   EXPECT_EQ(0U, [[view subviews] count]);
 }
+
 }  // namespace

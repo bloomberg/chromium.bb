@@ -27,7 +27,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
-#include "chrome/browser/api/infobars/link_infobar_delegate.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
@@ -2163,10 +2162,6 @@ ListValue* TestingAutomationProvider::GetInfobarsInfo(WebContents* wc) {
         buttons_list->Append(button_label);
       }
       infobar_item->Set("buttons", buttons_list);
-    } else if (infobar->AsLinkInfoBarDelegate()) {
-      infobar_item->SetString("type", "link_infobar");
-      LinkInfoBarDelegate* link_infobar = infobar->AsLinkInfoBarDelegate();
-      infobar_item->SetString("link_text", link_infobar->GetLinkText());
     } else if (infobar->AsExtensionInfoBarDelegate()) {
       infobar_item->SetString("type", "extension_infobar");
     } else {

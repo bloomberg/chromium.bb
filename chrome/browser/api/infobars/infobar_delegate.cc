@@ -51,6 +51,10 @@ InfoBarDelegate::Type InfoBarDelegate::GetInfoBarType() const {
   return WARNING_TYPE;
 }
 
+AlternateNavInfoBarDelegate* InfoBarDelegate::AsAlternateNavInfoBarDelegate() {
+  return NULL;
+}
+
 AutoLoginInfoBarDelegate* InfoBarDelegate::AsAutoLoginInfoBarDelegate() {
   return NULL;
 }
@@ -65,10 +69,6 @@ ExtensionInfoBarDelegate* InfoBarDelegate::AsExtensionInfoBarDelegate() {
 
 InsecureContentInfoBarDelegate*
     InfoBarDelegate::AsInsecureContentInfoBarDelegate() {
-  return NULL;
-}
-
-LinkInfoBarDelegate* InfoBarDelegate::AsLinkInfoBarDelegate() {
   return NULL;
 }
 

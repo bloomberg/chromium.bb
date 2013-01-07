@@ -2,34 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/infobars/link_infobar.h"
+#include "chrome/browser/ui/views/infobars/alternate_nav_infobar_view.h"
 
 #include "base/logging.h"
-#include "chrome/browser/api/infobars/link_infobar_delegate.h"
 #include "chrome/browser/event_disposition.h"
+#include "chrome/browser/infobars/alternate_nav_infobar_delegate.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 
-// LinkInfoBarDelegate --------------------------------------------------------
+// AlternateNavInfoBarDelegate -------------------------------------------------
 
-InfoBar* LinkInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  return new LinkInfoBar(owner, this);
+InfoBar* AlternateNavInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
+  return new AlternateNavInfoBarView(owner, this);
 }
 
-// LinkInfoBar ----------------------------------------------------------------
+// AlternateNavInfoBarView -----------------------------------------------------
 
-LinkInfoBar::LinkInfoBar(InfoBarService* owner,
-                         LinkInfoBarDelegate* delegate)
+AlternateNavInfoBarView::AlternateNavInfoBarView(
+    InfoBarService* owner,
+    AlternateNavInfoBarDelegate* delegate)
     : InfoBarView(owner, delegate),
       label_1_(NULL),
       link_(NULL),
       label_2_(NULL) {
 }
 
-LinkInfoBar::~LinkInfoBar() {
+AlternateNavInfoBarView::~AlternateNavInfoBarView() {
 }
 
-void LinkInfoBar::Layout() {
+void AlternateNavInfoBarView::Layout() {
   InfoBarView::Layout();
 
   // TODO(pkasting): This isn't perfect; there are points when we should elide a
@@ -50,9 +51,11 @@ void LinkInfoBar::Layout() {
       std::min(label_2_size.width(), available_width), label_2_size.height());
 }
 
-void LinkInfoBar::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
+void AlternateNavInfoBarView::ViewHierarchyChanged(bool is_add,
+                                                   View* parent,
+                                                   View* child) {
   if (is_add && (child == this) && (label_1_ == NULL)) {
-    LinkInfoBarDelegate* delegate = GetDelegate();
+    AlternateNavInfoBarDelegate* delegate = GetDelegate();
     size_t offset;
     string16 message_text = delegate->GetMessageTextWithOffset(&offset);
     DCHECK_NE(string16::npos, offset);
@@ -71,7 +74,8 @@ void LinkInfoBar::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   InfoBarView::ViewHierarchyChanged(is_add, parent, child);
 }
 
-void LinkInfoBar::LinkClicked(views::Link* source, int event_flags) {
+void AlternateNavInfoBarView::LinkClicked(views::Link* source,
+                                          int event_flags) {
   if (!owned())
     return;  // We're closing; don't call anything, it might access the owner.
   DCHECK(link_ != NULL);
@@ -81,6 +85,6 @@ void LinkInfoBar::LinkClicked(views::Link* source, int event_flags) {
     RemoveSelf();
 }
 
-LinkInfoBarDelegate* LinkInfoBar::GetDelegate() {
-  return delegate()->AsLinkInfoBarDelegate();
+AlternateNavInfoBarDelegate* AlternateNavInfoBarView::GetDelegate() {
+  return delegate()->AsAlternateNavInfoBarDelegate();
 }

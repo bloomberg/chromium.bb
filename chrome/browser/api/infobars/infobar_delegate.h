@@ -9,13 +9,13 @@
 #include "base/string16.h"
 #include "webkit/glue/window_open_disposition.h"
 
+class AlternateNavInfoBarDelegate;
 class AutoLoginInfoBarDelegate;
 class ConfirmInfoBarDelegate;
 class ExtensionInfoBarDelegate;
 class InfoBar;
 class InfoBarService;
 class InsecureContentInfoBarDelegate;
-class LinkInfoBarDelegate;
 class MediaStreamInfoBarDelegate;
 class PluginInstallerInfoBarDelegate;
 class RegisterProtocolHandlerInfoBarDelegate;
@@ -33,9 +33,9 @@ struct LoadCommittedDetails;
 
 // An interface implemented by objects wishing to control an InfoBar.
 // Implementing this interface is not sufficient to use an InfoBar, since it
-// does not map to a specific InfoBar type. Instead, you must implement either
-// LinkInfoBarDelegate or ConfirmInfoBarDelegate, or override with your own
-// delegate for your own InfoBar variety.
+// does not map to a specific InfoBar type. Instead, you must implement
+// ConfirmInfoBarDelegate, or override with your own delegate for your own
+// InfoBar variety.
 class InfoBarDelegate {
  public:
   // The type of the infobar. It controls its appearance, such as its background
@@ -97,11 +97,11 @@ class InfoBarDelegate {
   virtual Type GetInfoBarType() const;
 
   // Type-checking downcast routines:
+  virtual AlternateNavInfoBarDelegate* AsAlternateNavInfoBarDelegate();
   virtual AutoLoginInfoBarDelegate* AsAutoLoginInfoBarDelegate();
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate();
   virtual ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate();
   virtual InsecureContentInfoBarDelegate* AsInsecureContentInfoBarDelegate();
-  virtual LinkInfoBarDelegate* AsLinkInfoBarDelegate();
   virtual MediaStreamInfoBarDelegate* AsMediaStreamInfoBarDelegate();
   virtual RegisterProtocolHandlerInfoBarDelegate*
       AsRegisterProtocolHandlerInfoBarDelegate();
