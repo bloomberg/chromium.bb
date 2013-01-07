@@ -102,13 +102,6 @@ cr.define('bmm', function() {
   BookmarkTreeItem.prototype = {
     __proto__: TreeItem.prototype,
 
-    /** @override */
-    remove: function(child) {
-      TreeItem.prototype.remove.call(this, child);
-      if (child.bookmarkNode)
-        delete treeLookup[child.bookmarkNode.id];
-    },
-
     /**
      * The ID of the bookmark this tree item represents.
      * @type {string}
