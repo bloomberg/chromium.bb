@@ -10,6 +10,7 @@ Keeps a local cache.
 
 import ctypes
 import hashlib
+import httplib
 import json
 import logging
 import logging.handlers
@@ -569,6 +570,8 @@ class Remote(object):
           # Ensure that all the data was properly decompressed.
           uncompressed_data = decompressor.flush()
           assert not uncompressed_data
+        except httplib.HTTPException as e:
+          raise IOError('Encountered an HTTPException.\n%s' % e)
         except zlib.error as e:
           # Log the first bytes to see if it's uncompressed data.
           logging.warning('%r', e[:512])
