@@ -178,6 +178,8 @@ readonly ARMEL_EXTRA_PACKAGES="\
   libpng12-0 \
   libpng12-dev \
   libselinux1 \
+  libspeechd2 \
+  libspeechd-dev \
   libudev0 \
   libudev-dev \
   libxext-dev \
@@ -211,6 +213,7 @@ readonly ARMEL_EXTRA_PACKAGES="\
   libxss-dev \
   libxtst6 \
   libxtst-dev \
+  speech-dispatcher \
   x11proto-composite-dev \
   x11proto-damage-dev \
   x11proto-fixes-dev \
@@ -262,10 +265,12 @@ DownloadOrCopy() {
   fi
 }
 
+
 # some sanity checks to make sure this script is run from the right place
 # with the right tools
 SanityCheck() {
   Banner "Sanity Checks"
+
   if [[ $(basename $(pwd)) != "native_client" ]] ; then
     echo "ERROR: run this script from the native_client/ dir"
     exit -1
@@ -288,6 +293,13 @@ SanityCheck() {
       exit 1
     fi
   done
+}
+
+
+ChangeDirectory() {
+  # Change direcotry to top 'native_client' directory.
+  cd $(dirname ${BASH_SOURCE})
+  cd ../..
 }
 
 
@@ -435,8 +447,6 @@ CleanupJailSymlinks() {
 # So instead we chose to build 32bit shared images.
 #
 
-#readonly QEMU_TARBALL=$(readlink -f ../third_party/qemu/qemu-1.0.1.tar.gz)
-#readonly QEMU_DIR=qemu-1.0.1
 readonly QEMU_TARBALL=$(readlink -f ../third_party/qemu/qemu-1.0.1.tar.gz)
 readonly QEMU_PATCH=$(readlink -f ../third_party/qemu/qemu-1.0.1.patch_arm)
 readonly QEMU_DIR=qemu-1.0.1
@@ -446,11 +456,17 @@ BuildAndInstallQemu() {
   local tmpdir="${TMP}/qemu.nacl"
 
   Banner "Building qemu in ${tmpdir}"
+
+  if [[ -z "$QEMU_TARBALL" ]] ; then
+    echo "ERROR: missing qemu tarball: ../third_party/qemu/qemu-1.0.1.tar.gz"
+    exit 1
+  fi
+
   rm -rf ${tmpdir}
   mkdir ${tmpdir}
   cd ${tmpdir}
   SubBanner "Untaring ${QEMU_TARBALL}"
-  tar zxf  ${QEMU_TARBALL}
+  tar zxf ${QEMU_TARBALL}
   cd ${QEMU_DIR}
 
   SubBanner "Patching ${QEMU_PATCH}"
@@ -548,6 +564,7 @@ elif [[ "$(type -t $1)" != "function" ]]; then
   echo "    $0 help"
   exit 1
 else
+  ChangeDirectory
   SanityCheck
   "$@"
 fi

@@ -100,6 +100,9 @@ main/p/pcre3/libpcre3-dev_8.12-4_armel.deb
 main/p/pcre3/libpcrecpp0_8.12-4_armel.deb
 main/p/pixman/libpixman-1-0_0.24.4-1_armel.deb
 main/p/pixman/libpixman-1-dev_0.24.4-1_armel.deb
+main/s/speech-dispatcher/libspeechd2_0.7.1-6ubuntu3_armel.deb
+main/s/speech-dispatcher/libspeechd-dev_0.7.1-6ubuntu3_armel.deb
+main/s/speech-dispatcher/speech-dispatcher_0.7.1-6ubuntu3_armel.deb
 main/u/udev/libudev0_175-0ubuntu9_armel.deb
 main/u/udev/libudev-dev_175-0ubuntu9_armel.deb
 main/x/x11proto-composite/x11proto-composite-dev_0.4.2-2_all.deb
