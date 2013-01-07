@@ -14,6 +14,19 @@
 namespace views {
 namespace examples {
 
+namespace {
+
+class DialogExample : public DialogDelegateView {
+ public:
+  virtual string16 GetWindowTitle() const OVERRIDE;
+};
+
+string16 DialogExample::GetWindowTitle() const {
+  return ASCIIToUTF16("Dialog Widget Example");
+}
+
+}  // namespace
+
 WidgetExample::WidgetExample() : ExampleBase("Widget") {
 }
 
@@ -34,6 +47,7 @@ void WidgetExample::BuildButton(View* container,
                                 const std::string& label,
                                 int tag) {
   TextButton* button = new TextButton(this, ASCIIToUTF16(label));
+  button->set_focusable(true);
   button->set_tag(tag);
   container->AddChildView(button);
 }
@@ -42,7 +56,7 @@ void WidgetExample::ShowWidget(View* sender, Widget::InitParams params) {
   // Setup shared Widget heirarchy and bounds parameters.
   params.parent = sender->GetWidget()->GetNativeView();
   params.bounds = gfx::Rect(sender->GetBoundsInScreen().CenterPoint(),
-                            gfx::Size(200, 100));
+                            gfx::Size(300, 200));
 
   Widget* widget = new Widget();
   widget->Init(params);
@@ -66,7 +80,9 @@ void WidgetExample::ButtonPressed(Button* sender, const ui::Event& event) {
       break;
     case DIALOG: {
       Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
-      params.delegate = new DialogDelegateView();
+      params.delegate = new DialogExample();
+      params.remove_standard_frame = true;
+      params.transparent = true;
       ShowWidget(sender, params);
       break;
     }

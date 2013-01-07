@@ -34,7 +34,7 @@ namespace {
 // Theme colors returned by GetSystemColor().
 const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
 // Dialogs:
-const SkColor kDialogBackgroundColor = SkColorSetRGB(200, 200, 200);
+const SkColor kDialogBackgroundColor = SkColorSetRGB(251, 251, 251);
 // FocusableBorder:
 const SkColor kFocusedBorderColor = SkColorSetRGB(0x4d, 0x90, 0xfe);
 const SkColor kUnfocusedBorderColor = SkColorSetRGB(0xd9, 0xd9, 0xd9);
@@ -460,9 +460,7 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
 
     // Dialogs
     case kColorId_DialogBackground:
-      // TODO(benrg): Should this use the new Windows theme functions? The old
-      // code in DialogClientView::OnPaint used GetSysColor(COLOR_3DFACE).
-      return system_colors_[COLOR_3DFACE];
+      return kDialogBackgroundColor;
 
     // FocusableBorder
     case kColorId_FocusedBorderColor:

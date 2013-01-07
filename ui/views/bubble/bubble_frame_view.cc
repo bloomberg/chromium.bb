@@ -49,11 +49,10 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& margins,
 BubbleFrameView::~BubbleFrameView() {}
 
 gfx::Rect BubbleFrameView::GetBoundsForClientView() const {
-  gfx::Insets margin = bubble_border()->GetInsets();
-  margin += content_margins();
-  return gfx::Rect(margin.left(), margin.top(),
-                   std::max(width() - margin.width(), 0),
-                   std::max(height() - margin.height(), 0));
+  gfx::Rect client_bounds = GetLocalBounds();
+  client_bounds.Inset(border()->GetInsets());
+  client_bounds.Inset(content_margins());
+  return client_bounds;
 }
 
 gfx::Rect BubbleFrameView::GetWindowBoundsForClientBounds(

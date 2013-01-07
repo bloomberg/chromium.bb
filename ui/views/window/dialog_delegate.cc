@@ -106,7 +106,7 @@ ClientView* DialogDelegate::CreateClientView(Widget* widget) {
 }
 
 NonClientFrameView* DialogDelegate::CreateNonClientFrameView(Widget* widget) {
-  return UseNewStyle() ? new DialogFrameView() :
+  return UseNewStyle() ? new DialogFrameView(GetWindowTitle()) :
       WidgetDelegate::CreateNonClientFrameView(widget);
 }
 

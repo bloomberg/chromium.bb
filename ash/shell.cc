@@ -647,7 +647,7 @@ views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
     views::Widget* widget) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kEnableNewDialogStyle)) {
-    return new views::DialogFrameView;
+    return new views::DialogFrameView(string16());
   }
   // Use translucent-style window frames for dialogs.
   CustomFrameViewAsh* frame_view = new CustomFrameViewAsh;

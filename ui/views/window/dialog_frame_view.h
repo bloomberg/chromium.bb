@@ -8,22 +8,16 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
 
-namespace gfx {
-class Font;
-}
-
 namespace views {
 
-class ImageButton;
+class Label;
+class LabelButton;
 
 // A NonClientFrameView that implements a new-style for dialogs.
 class VIEWS_EXPORT DialogFrameView : public NonClientFrameView,
                                      public ButtonListener {
  public:
-  // Internal class name.
-  static const char kViewClassName[];
-
-  DialogFrameView();
+  explicit DialogFrameView(const string16& title);
   virtual ~DialogFrameView();
 
   // Overridden from NonClientFrameView:
@@ -40,19 +34,18 @@ class VIEWS_EXPORT DialogFrameView : public NonClientFrameView,
   // Overridden from View:
   virtual std::string GetClassName() const OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from ButtonListener:
   virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
 
  private:
-  gfx::Insets GetPaddingInsets() const;
   gfx::Insets GetClientInsets() const;
 
-  scoped_ptr<gfx::Font> title_font_;
-  gfx::Rect title_display_rect_;
+  Label* title_;
+  LabelButton* close_;
 
-  ImageButton* close_button_;
+  // The margins between the content and the inside of the border.
+  gfx::Insets content_margins_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogFrameView);
 };

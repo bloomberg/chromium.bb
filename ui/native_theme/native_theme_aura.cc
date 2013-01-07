@@ -22,6 +22,8 @@ const SkColor kMenuBackgroundColor = SK_ColorWHITE;
 const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
 // Windows:
 const SkColor kWindowBackgroundColor = SK_ColorWHITE;
+// Dialogs:
+const SkColor kDialogBackgroundColor = SkColorSetRGB(251, 251, 251);
 // FocusableBorder:
 const SkColor kFocusedBorderColor = SkColorSetRGB(0x4D, 0x90, 0xFE);
 const SkColor kUnfocusedBorderColor = SkColorSetRGB(0xD9, 0xD9, 0xD9);
@@ -90,7 +92,7 @@ SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
 
     // Dialogs
     case kColorId_DialogBackground:
-      return kWindowBackgroundColor;
+      return kDialogBackgroundColor;
 
     // FocusableBorder
     case kColorId_FocusedBorderColor:

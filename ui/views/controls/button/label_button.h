@@ -60,6 +60,9 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   bool native_theme() const { return native_theme_; }
   void SetNativeTheme(bool native_theme);
 
+  // Overridden from View:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Init);
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Label);
@@ -74,7 +77,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   virtual void StateChanged() OVERRIDE;
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
