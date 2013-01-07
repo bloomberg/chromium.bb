@@ -146,6 +146,8 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
 
   // Determine if the certain permissions have been granted to a file.
   bool HasPermissionsForFile(const FilePath& file, int permissions) {
+    if (!permissions || file.empty() || !file.IsAbsolute())
+      return false;
     FilePath current_path = file.StripTrailingSeparators();
     FilePath last_path;
     int skip = 0;
