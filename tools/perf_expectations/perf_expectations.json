@@ -788,7 +788,7 @@
  "xp-release-dual-core/startup/warm/t": {"reva": 76825, "revb": 77094, "improve": -107, "regress": 141, "sha1": "e0dcf672"},
  "xp-release-dual-core/v8_benchmark/score/score": {"reva": 162937, "revb": 163288, "improve": 284, "regress": -217, "sha1": "03a976f2"},
  "xp-release-single-core/dhtml/times/t": {"reva": 98602, "revb": 99994, "improve": -2888, "regress": 3391, "sha1": "30683762"},
- "xp-release-single-core/intl1/times/t": {"reva": 162307, "revb": 162733, "improve": -134, "regress": 166, "sha1": "2ee0ca65"},
+ "xp-release-single-core/intl1/times/t": {"reva": 175081, "revb": 175338, "improve": 98.588888891, "regress": 253.750000003, "sha1": "bf75f58a"},
  "xp-release-single-core/intl2/times/t": {"reva": 161556, "revb": 161778, "improve": -72, "regress": 174, "sha1": "44316b02"},
  "xp-release-single-core/morejs/times/t": {"reva": 141097, "revb": 142602, "improve": -308, "regress": 436, "sha1": "8282a308"},
  "xp-release-single-core/moz/times/t": {"reva": 75758, "revb": 76221, "improve": -1705, "regress": 3304, "sha1": "b615a416"},
