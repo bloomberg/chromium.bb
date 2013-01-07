@@ -670,14 +670,13 @@ TEST_F(GeolocationPermissionContextTests, InfoBarUsesCommittedEntry) {
   ASSERT_EQ(1U, infobar_service()->GetInfoBarCount());
   InfoBarDelegate* infobar_0 = infobar_service()->GetInfoBarDelegateAt(0);
   ASSERT_TRUE(infobar_0);
-  // Ensure the infobar is not yet expired.
+  // Ensure the infobar wouldn't expire for a navigation to the committed entry.
   content::LoadCommittedDetails details;
   details.entry = web_contents()->GetController().GetLastCommittedEntry();
-  ASSERT_FALSE(infobar_0->ShouldExpire(details));
-  // Commit the "GoBack()" above, and ensure the infobar is now expired.
-  content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
-  details.entry = web_contents()->GetController().GetLastCommittedEntry();
-  ASSERT_TRUE(infobar_0->ShouldExpire(details));
+  EXPECT_FALSE(infobar_0->ShouldExpire(details));
+  // Ensure the infobar will expire when we commit the pending navigation.
+  details.entry = web_contents()->GetController().GetActiveEntry();
+  EXPECT_TRUE(infobar_0->ShouldExpire(details));
 
   // Delete the tab contents.
   DeleteContents();

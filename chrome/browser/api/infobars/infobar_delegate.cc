@@ -98,18 +98,21 @@ InfoBarDelegate::InfoBarDelegate(InfoBarService* infobar_service)
     : contents_unique_id_(0),
       owner_(infobar_service) {
   if (infobar_service)
-    StoreActiveEntryUniqueID(infobar_service);
+    StoreActiveEntryUniqueID();
 }
 
-void InfoBarDelegate::StoreActiveEntryUniqueID(
-    InfoBarService* infobar_service) {
+void InfoBarDelegate::StoreActiveEntryUniqueID() {
+  content::WebContents* web_contents = owner_->GetWebContents();
+  DCHECK(web_contents);
   NavigationEntry* active_entry =
-      infobar_service->GetWebContents()->GetController().GetActiveEntry();
+      web_contents->GetController().GetActiveEntry();
   contents_unique_id_ = active_entry ? active_entry->GetUniqueID() : 0;
 }
 
 bool InfoBarDelegate::ShouldExpireInternal(
     const content::LoadCommittedDetails& details) const {
+  // NOTE: If you change this, be sure to check and adjust the behavior of
+  // anyone who overrides this as necessary!
   return (contents_unique_id_ != details.entry->GetUniqueID()) ||
       (content::PageTransitionStripQualifier(
           details.entry->GetTransitionType()) ==

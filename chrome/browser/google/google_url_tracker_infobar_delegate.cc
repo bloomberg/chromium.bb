@@ -58,7 +58,7 @@ bool GoogleURLTrackerInfoBarDelegate::ShouldExpireInternal(
 }
 
 void GoogleURLTrackerInfoBarDelegate::Update(const GURL& search_url) {
-  StoreActiveEntryUniqueID(owner());
+  StoreActiveEntryUniqueID();
   search_url_ = search_url;
   pending_id_ = 0;
 }

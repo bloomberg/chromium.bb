@@ -31,7 +31,7 @@ GeolocationConfirmInfoBarDelegate::GeolocationConfirmInfoBarDelegate(
       display_languages_(display_languages) {
   const content::NavigationEntry* committed_entry = infobar_service->
       GetWebContents()->GetController().GetLastCommittedEntry();
-  set_contents_unique_id(committed_entry ? committed_entry->GetUniqueID() : 0);
+   contents_unique_id_ = committed_entry ? committed_entry->GetUniqueID() : 0;
 }
 
 gfx::Image* GeolocationConfirmInfoBarDelegate::GetIcon() const {
@@ -42,6 +42,17 @@ gfx::Image* GeolocationConfirmInfoBarDelegate::GetIcon() const {
 InfoBarDelegate::Type
     GeolocationConfirmInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
+}
+
+bool GeolocationConfirmInfoBarDelegate::ShouldExpireInternal(
+    const content::LoadCommittedDetails& details) const {
+  // This implementation matches InfoBarDelegate::ShouldExpireInternal(), but
+  // uses the unique ID we set in the constructor instead of that stored in the
+  // base class.
+  return (contents_unique_id_ != details.entry->GetUniqueID()) ||
+      (content::PageTransitionStripQualifier(
+          details.entry->GetTransitionType()) ==
+              content::PAGE_TRANSITION_RELOAD);
 }
 
 string16 GeolocationConfirmInfoBarDelegate::GetMessageText() const {

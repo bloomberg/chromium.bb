@@ -71,10 +71,10 @@ class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   // ConfirmInfoBarDelegate:
-  virtual bool ShouldExpire(
-      const content::LoadCommittedDetails& details) const OVERRIDE;
   virtual int GetButtons() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
+  virtual bool ShouldExpireInternal(
+      const content::LoadCommittedDetails& details) const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
   virtual void InfoBarDismissed() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
@@ -363,17 +363,17 @@ void ExtensionDevToolsInfoBarDelegate::DiscardClientHost() {
   client_host_ = NULL;
 }
 
-bool ExtensionDevToolsInfoBarDelegate::ShouldExpire(
-    const content::LoadCommittedDetails& details) const {
-  return false;
-}
-
 int ExtensionDevToolsInfoBarDelegate::GetButtons() const {
   return BUTTON_CANCEL;
 }
 
 InfoBarDelegate::Type ExtensionDevToolsInfoBarDelegate::GetInfoBarType() const {
   return WARNING_TYPE;
+}
+
+bool ExtensionDevToolsInfoBarDelegate::ShouldExpireInternal(
+    const content::LoadCommittedDetails& details) const {
+  return false;
 }
 
 string16 ExtensionDevToolsInfoBarDelegate::GetMessageText() const {

@@ -114,16 +114,12 @@ class InfoBarDelegate {
   // using StoreActiveEntryUniqueID automatically.
   explicit InfoBarDelegate(InfoBarService* infobar_service);
 
-  // Store the unique id for the active entry in the specified WebContents, to
-  // be used later upon navigation to determine if this InfoBarDelegate should
-  // be expired from |contents_|.
-  void StoreActiveEntryUniqueID(InfoBarService* infobar_service);
+  // Store the unique id for the active entry in our WebContents, to be used
+  // later upon navigation to determine if this InfoBarDelegate should be
+  // expired.
+  void StoreActiveEntryUniqueID();
 
-  // Direct accessors for subclasses that need to do something special.
   int contents_unique_id() const { return contents_unique_id_; }
-  void set_contents_unique_id(int contents_unique_id) {
-    contents_unique_id_ = contents_unique_id;
-  }
 
   // Returns true if the navigation is to a new URL or a reload occured.
   virtual bool ShouldExpireInternal(

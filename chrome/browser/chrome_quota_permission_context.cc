@@ -60,7 +60,7 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
           QuotaPermissionContext::QUOTA_PERMISSION_RESPONSE_CANCELLED);
   }
 
-  virtual bool ShouldExpire(
+  virtual bool ShouldExpireInternal(
       const content::LoadCommittedDetails& details)
       const OVERRIDE {
     return false;
