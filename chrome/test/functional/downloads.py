@@ -358,8 +358,7 @@ class DownloadsTest(pyauto.PyUITest):
     self._DeleteAfterShutdown(file_path)
 
     # Pause the download and assert that it is paused.
-    pause_dict = self.PerformActionOnDownload(self._GetDownloadId(),
-                                              'toggle_pause')
+    pause_dict = self.PerformActionOnDownload(self._GetDownloadId(), 'pause')
     if pause_dict['state'] == 'COMPLETE':
       logging.info('The download completed before pause. Stopping test.')
       return
@@ -368,8 +367,7 @@ class DownloadsTest(pyauto.PyUITest):
     self.assertTrue(pause_dict['state'] == 'IN_PROGRESS')
 
     # Resume the download and assert it is not paused.
-    resume_dict = self.PerformActionOnDownload(self._GetDownloadId(),
-                                               'toggle_pause')
+    resume_dict = self.PerformActionOnDownload(self._GetDownloadId(), 'resume')
     self.assertFalse(resume_dict['is_paused'])
     self.WaitForAllDownloadsToComplete(timeout=10 * 60 * 1000);
 

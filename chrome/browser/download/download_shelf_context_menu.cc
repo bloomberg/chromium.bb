@@ -112,8 +112,12 @@ void DownloadShelfContextMenu::ExecuteCommand(int command_id) {
       // It is possible for the download to complete before the user clicks the
       // menu item, recheck if the download is in progress state before toggling
       // pause.
-      if (download_item_->IsPartialDownload())
-        download_item_->TogglePause();
+      if (download_item_->IsPartialDownload()) {
+        if (download_item_->IsPaused())
+          download_item_->Resume();
+        else
+          download_item_->Pause();
+      }
       break;
     case DISCARD:
       download_item_->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);

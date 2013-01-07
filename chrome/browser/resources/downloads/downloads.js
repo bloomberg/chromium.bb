@@ -310,11 +310,11 @@ function Download(download) {
   this.nodeControls_.appendChild(this.controlRetry_);
 
   // Pause/Resume are a toggle.
-  this.controlPause_ = createLink(this.togglePause_.bind(this),
+  this.controlPause_ = createLink(this.pause_.bind(this),
       loadTimeData.getString('control_pause'));
   this.nodeControls_.appendChild(this.controlPause_);
 
-  this.controlResume_ = createLink(this.togglePause_.bind(this),
+  this.controlResume_ = createLink(this.resume_.bind(this),
       loadTimeData.getString('control_resume'));
   this.nodeControls_.appendChild(this.controlResume_);
 
@@ -611,8 +611,18 @@ Download.prototype.show_ = function() {
  * @return {boolean} Returns false to prevent the default action.
  * @private
  */
-Download.prototype.togglePause_ = function() {
-  chrome.send('togglepause', [this.id_.toString()]);
+Download.prototype.pause_ = function() {
+  chrome.send('pause', [this.id_.toString()]);
+  return false;
+};
+
+/**
+ * Tells the backend to resume this download.
+ * @return {boolean} Returns false to prevent the default action.
+ * @private
+ */
+Download.prototype.resume_ = function() {
+  chrome.send('resume', [this.id_.toString()]);
   return false;
 };
 

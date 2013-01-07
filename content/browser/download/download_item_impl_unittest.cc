@@ -422,10 +422,12 @@ TEST_F(DownloadItemTest, NotificationAfterTogglePause) {
   DownloadItemImpl* item = CreateDownloadItem();
   MockObserver observer(item);
 
-  item->TogglePause();
+  item->Pause();
   ASSERT_TRUE(observer.CheckUpdated());
 
-  item->TogglePause();
+  ASSERT_TRUE(item->IsPaused());
+
+  item->Resume();
   ASSERT_TRUE(observer.CheckUpdated());
 }
 

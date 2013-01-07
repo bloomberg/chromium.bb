@@ -119,8 +119,13 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // Called when the user has validated the download of a dangerous file.
   virtual void DangerousDownloadValidated() = 0;
 
-  // Allow the user to temporarily pause a download or resume a paused download.
-  virtual void TogglePause() = 0;
+  // Pause a download.  Will have no effect if the download is already
+  // paused.
+  virtual void Pause() = 0;
+
+  // Resume a download.  Will have no effect if the download is not
+  // paused.
+  virtual void Resume() = 0;
 
   // Cancel the download operation. We need to distinguish between cancels at
   // exit (DownloadManager destructor) from user interface initiated cancels

@@ -319,20 +319,27 @@ void DownloadItemImpl::DangerousDownloadValidated() {
   MaybeCompleteDownload();
 }
 
-void DownloadItemImpl::TogglePause() {
+void DownloadItemImpl::Pause() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(state_ == IN_PROGRESS_INTERNAL || state_ == COMPLETING_INTERNAL);
-  VLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
 
-  // Ignore pauses when we've passed the commit point.
-  if (state_ == COMPLETING_INTERNAL)
+  // Ignore irrelevant states.
+  if (state_ != IN_PROGRESS_INTERNAL || is_paused_)
     return;
 
-  if (is_paused_)
-    request_handle_->ResumeRequest();
-  else
-    request_handle_->PauseRequest();
-  is_paused_ = !is_paused_;
+  request_handle_->PauseRequest();
+  is_paused_ = true;
+  UpdateObservers();
+}
+
+void DownloadItemImpl::Resume() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Ignore irrelevant states.
+  if (state_ != IN_PROGRESS_INTERNAL || !is_paused_)
+    return;
+
+  request_handle_->ResumeRequest();
+  is_paused_ = false;
   UpdateObservers();
 }
 

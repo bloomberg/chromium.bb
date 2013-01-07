@@ -714,9 +714,10 @@ bool DownloadsPauseFunction::RunImpl() {
     // This could be due to an invalid download ID, or it could be due to the
     // download not being currently active.
     error_ = download_extension_errors::kInvalidOperationError;
-  } else if (!download_item->IsPaused()) {
-    // If download_item->IsPaused() already then we treat it as a success.
-    download_item->TogglePause();
+  } else {
+    // If the item is already paused, this is a no-op and the
+    // operation will silently succeed.
+    download_item->Pause();
   }
   if (error_.empty())
     RecordApiFunctions(DOWNLOADS_FUNCTION_PAUSE);
@@ -736,9 +737,10 @@ bool DownloadsResumeFunction::RunImpl() {
     // This could be due to an invalid download ID, or it could be due to the
     // download not being currently active.
     error_ = download_extension_errors::kInvalidOperationError;
-  } else if (download_item->IsPaused()) {
-    // If !download_item->IsPaused() already, then we treat it as a success.
-    download_item->TogglePause();
+  } else {
+    // Note that if the item isn't paused, this will be a no-op, and
+    // we will silently treat the extension call as a success.
+    download_item->Resume();
   }
   if (error_.empty())
     RecordApiFunctions(DOWNLOADS_FUNCTION_RESUME);

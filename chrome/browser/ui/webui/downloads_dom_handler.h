@@ -73,6 +73,9 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   // Callback for the "pause" message - pauses the file download.
   void HandlePause(const base::ListValue* args);
 
+  // Callback for the "resume" message - resumes the file download.
+  void HandleResume(const base::ListValue* args);
+
   // Callback for the "remove" message - removes the file download from shelf
   // and list.
   void HandleRemove(const base::ListValue* args);

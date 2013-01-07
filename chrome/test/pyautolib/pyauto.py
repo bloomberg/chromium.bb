@@ -2371,8 +2371,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                     after downloading a dangerous download (ex. an executable).
                 'save_dangerous_download': Equivalent to 'Save' option after
                     downloading a dangerous file.
-                'toggle_pause': Toggles the paused state of the download. If the
-                    download completed before this call, it's a no-op.
+                'pause': Pause the download.  If the download completed before
+                    this call or is already paused, it's a no-op.
+                'resume': Resume the download.  If the download completed before
+                    this call or was not paused, it's a no-op.
                 'cancel': Cancel the download.
       window_index: The window index, default is 0.
 

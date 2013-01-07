@@ -2652,7 +2652,7 @@ void TestingAutomationProvider::PerformActionOnDownload(
   }
 
   // We need to be IN_PROGRESS for these actions.
-  if ((action == "toggle_pause" || action == "cancel") &&
+  if ((action == "pause" || action == "resume" || action == "cancel") &&
       !selected_item->IsInProgress()) {
     AutomationJSONReply(this, reply_message)
         .SendError("Selected DownloadItem is not in progress.");
@@ -2684,11 +2684,38 @@ void TestingAutomationProvider::PerformActionOnDownload(
     selected_item->AddObserver(new AutomationProviderDownloadUpdatedObserver(
         this, reply_message, false, browser->profile()->IsOffTheRecord()));
     selected_item->DangerousDownloadValidated();
-  } else if (action == "toggle_pause") {
-    selected_item->AddObserver(new AutomationProviderDownloadUpdatedObserver(
-        this, reply_message, false, browser->profile()->IsOffTheRecord()));
-    // This will still return if download has already completed.
-    selected_item->TogglePause();
+  } else if (action == "pause") {
+    if (!selected_item->IsInProgress() || selected_item->IsPaused()) {
+      // Action would be a no-op; respond right from here.  No-op implies
+      // the test is poorly written or failing, so make it an error return.
+      if (!selected_item->IsInProgress()) {
+        AutomationJSONReply(this, reply_message)
+            .SendError("Action 'pause' called on download in termal state.");
+      } else {
+        AutomationJSONReply(this, reply_message)
+            .SendError("Action 'pause' called on already paused download.");
+      }
+    } else {
+      selected_item->AddObserver(new AutomationProviderDownloadUpdatedObserver(
+          this, reply_message, false, browser->profile()->IsOffTheRecord()));
+      selected_item->Pause();
+    }
+  } else if (action == "resume") {
+    if (!selected_item->IsInProgress() || !selected_item->IsPaused()) {
+      // Action would be a no-op; respond right from here.  No-op implies
+      // the test is poorly written or failing, so make it an error return.
+      if (!selected_item->IsInProgress()) {
+        AutomationJSONReply(this, reply_message)
+            .SendError("Action 'resume' called on download in termal state.");
+      } else {
+        AutomationJSONReply(this, reply_message)
+            .SendError("Action 'resume' called on unpaused download.");
+      }
+    } else {
+      selected_item->AddObserver(new AutomationProviderDownloadUpdatedObserver(
+          this, reply_message, false, browser->profile()->IsOffTheRecord()));
+      selected_item->Resume();
+    }
   } else if (action == "cancel") {
     selected_item->AddObserver(new AutomationProviderDownloadUpdatedObserver(
         this, reply_message, false, browser->profile()->IsOffTheRecord()));

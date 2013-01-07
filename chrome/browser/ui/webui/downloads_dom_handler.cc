@@ -70,6 +70,7 @@ enum DownloadsDOMEvent {
   DOWNLOADS_DOM_EVENT_CANCEL = 8,
   DOWNLOADS_DOM_EVENT_CLEAR_ALL = 9,
   DOWNLOADS_DOM_EVENT_OPEN_FOLDER = 10,
+  DOWNLOADS_DOM_EVENT_RESUME = 11,
   DOWNLOADS_DOM_EVENT_MAX
 };
 
@@ -250,11 +251,11 @@ void DownloadsDOMHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("show",
       base::Bind(&DownloadsDOMHandler::HandleShow,
                  weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback("togglepause",
+  web_ui()->RegisterMessageCallback("pause",
       base::Bind(&DownloadsDOMHandler::HandlePause,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback("resume",
-      base::Bind(&DownloadsDOMHandler::HandlePause,
+      base::Bind(&DownloadsDOMHandler::HandleResume,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback("remove",
       base::Bind(&DownloadsDOMHandler::HandleRemove,
@@ -374,7 +375,14 @@ void DownloadsDOMHandler::HandlePause(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_PAUSE);
   content::DownloadItem* file = GetDownloadByValue(args);
   if (file)
-    file->TogglePause();
+    file->Pause();
+}
+
+void DownloadsDOMHandler::HandleResume(const base::ListValue* args) {
+  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_RESUME);
+  content::DownloadItem* file = GetDownloadByValue(args);
+  if (file)
+    file->Resume();
 }
 
 void DownloadsDOMHandler::HandleRemove(const base::ListValue* args) {
