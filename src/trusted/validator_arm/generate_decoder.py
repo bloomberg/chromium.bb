@@ -32,6 +32,7 @@ import dgen_input
 import dgen_add_patterns
 import dgen_decoder_output
 import dgen_test_output
+import dgen_actuals
 
 def _localize_filename(filename):
   """ Strips off directories above 'native_client', returning
@@ -116,12 +117,20 @@ def main(argv):
       dgen_test_output.generate_named_decoder_h(
           decoder, decoder_name, _localize_filename(output_filename),
           f, cl_args)
+    elif output_filename.endswith('actuals.h'):
+      dgen_actuals.generate_actuals_h(
+          decoder, decoder_name, _localize_filename(output_filename),
+          f, cl_args)
     elif output_filename.endswith('.h'):
       dgen_decoder_output.generate_h(
           decoder, decoder_name, _localize_filename(output_filename),
           f, cl_args)
     elif output_filename.endswith('named.cc'):
       dgen_test_output.generate_named_cc(
+          decoder, decoder_name, _localize_filename(output_filename),
+          f, cl_args)
+    elif output_filename.endswith('actuals.cc'):
+      dgen_actuals.generate_actuals_cc(
           decoder, decoder_name, _localize_filename(output_filename),
           f, cl_args)
     elif output_filename.endswith('.cc'):

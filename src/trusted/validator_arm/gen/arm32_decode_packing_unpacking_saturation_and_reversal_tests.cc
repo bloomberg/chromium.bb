@@ -35,7 +35,7 @@ namespace nacl_arm_test {
 // inst(22:20)=000 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
 //    = {baseline: 'Binary3RegisterImmedShiftedOpRegsNotPc',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=000 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -58,10 +58,18 @@ bool Binary3RegisterImmedShiftedOpTesterCase0
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00000000 /* op1(22:20)=~000 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5)=~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16)=1111 */) return false;
-  if ((inst.Bits() & 0x00000300) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) return false;
+  // op1(22:20)=~000
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00000000) return false;
+  // op2(7:5)=~011
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x00000060) return false;
+  // A(19:16)=1111
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000F0000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
+  if ((inst.Bits() & 0x00000300)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterImmedShiftedOpTesterRegsNotPc::
@@ -72,7 +80,7 @@ bool Binary3RegisterImmedShiftedOpTesterCase0
 // inst(22:20)=000 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
 //    = {baseline: 'Unary2RegisterImmedShiftedOpRegsNotPc',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=000 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -95,10 +103,18 @@ bool Unary2RegisterImmedShiftedOpRegsNotPcTesterCase1
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00000000 /* op1(22:20)=~000 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5)=~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16)=~1111 */) return false;
-  if ((inst.Bits() & 0x00000300) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) return false;
+  // op1(22:20)=~000
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00000000) return false;
+  // op2(7:5)=~011
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x00000060) return false;
+  // A(19:16)=~1111
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x000F0000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
+  if ((inst.Bits() & 0x00000300)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterImmedShiftedOpRegsNotPcTesterRegsNotPc::
@@ -109,7 +125,7 @@ bool Unary2RegisterImmedShiftedOpRegsNotPcTesterCase1
 // inst(22:20)=000 & inst(7:5)=101 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=000 & op2(7:5)=101 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -132,9 +148,15 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase2
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00000000 /* op1(22:20)=~000 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x000000A0 /* op2(7:5)=~101 */) return false;
-  if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
+  // op1(22:20)=~000
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00000000) return false;
+  // op2(7:5)=~101
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x000000A0) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
+  if ((inst.Bits() & 0x00000F00)  !=
+          0x00000F00) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
@@ -145,7 +167,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase2
 // inst(22:20)=000 & inst(7:5)=xx0
 //    = {baseline: 'Binary3RegisterImmedShiftedOpRegsNotPc',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=000 & op2(7:5)=xx0
@@ -168,8 +190,12 @@ bool Binary3RegisterImmedShiftedOpTesterCase3
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00000000 /* op1(22:20)=~000 */) return false;
-  if ((inst.Bits() & 0x00000020) != 0x00000000 /* op2(7:5)=~xx0 */) return false;
+  // op1(22:20)=~000
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00000000) return false;
+  // op2(7:5)=~xx0
+  if ((inst.Bits() & 0x00000020)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterImmedShiftedOpTesterRegsNotPc::
@@ -180,7 +206,7 @@ bool Binary3RegisterImmedShiftedOpTesterCase3
 // inst(22:20)=010 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Unary2RegisterSatImmedShiftedOp',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=010 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -203,9 +229,15 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase4
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00200000 /* op1(22:20)=~010 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000020 /* op2(7:5)=~001 */) return false;
-  if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
+  // op1(22:20)=~010
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00200000) return false;
+  // op2(7:5)=~001
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x00000020) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
+  if ((inst.Bits() & 0x00000F00)  !=
+          0x00000F00) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterSatImmedShiftedOpTesterRegsNotPc::
@@ -216,7 +248,7 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase4
 // inst(22:20)=010 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=010 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -239,10 +271,18 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase5
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00200000 /* op1(22:20)=~010 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5)=~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16)=1111 */) return false;
-  if ((inst.Bits() & 0x00000300) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) return false;
+  // op1(22:20)=~010
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00200000) return false;
+  // op2(7:5)=~011
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x00000060) return false;
+  // A(19:16)=1111
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000F0000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
+  if ((inst.Bits() & 0x00000300)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
@@ -253,7 +293,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase5
 // inst(22:20)=010 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
 //    = {baseline: 'Unary2RegisterImmedShiftedOpRegsNotPc',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=010 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -276,10 +316,18 @@ bool Unary2RegisterImmedShiftedOpRegsNotPcTesterCase6
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00200000 /* op1(22:20)=~010 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5)=~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16)=~1111 */) return false;
-  if ((inst.Bits() & 0x00000300) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) return false;
+  // op1(22:20)=~010
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00200000) return false;
+  // op2(7:5)=~011
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x00000060) return false;
+  // A(19:16)=~1111
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x000F0000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
+  if ((inst.Bits() & 0x00000300)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterImmedShiftedOpRegsNotPcTesterRegsNotPc::
@@ -290,7 +338,7 @@ bool Unary2RegisterImmedShiftedOpRegsNotPcTesterCase6
 // inst(22:20)=011 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
 //    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=011 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
@@ -313,9 +361,15 @@ bool Unary2RegisterOpNotRmIsPcTesterCase7
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00300000 /* op1(22:20)=~011 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000020 /* op2(7:5)=~001 */) return false;
-  if ((inst.Bits() & 0x000F0F00) != 0x000F0F00 /* $pattern(31:0)=~xxxxxxxxxxxx1111xxxx1111xxxxxxxx */) return false;
+  // op1(22:20)=~011
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00300000) return false;
+  // op2(7:5)=~001
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x00000020) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxx1111xxxx1111xxxxxxxx
+  if ((inst.Bits() & 0x000F0F00)  !=
+          0x000F0F00) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterOpNotRmIsPcTesterRegsNotPc::
@@ -326,7 +380,7 @@ bool Unary2RegisterOpNotRmIsPcTesterCase7
 // inst(22:20)=011 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=011 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -349,10 +403,18 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase8
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00300000 /* op1(22:20)=~011 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5)=~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16)=1111 */) return false;
-  if ((inst.Bits() & 0x00000300) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) return false;
+  // op1(22:20)=~011
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00300000) return false;
+  // op2(7:5)=~011
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x00000060) return false;
+  // A(19:16)=1111
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000F0000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
+  if ((inst.Bits() & 0x00000300)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
@@ -363,7 +425,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase8
 // inst(22:20)=011 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
 //    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=011 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -386,10 +448,18 @@ bool Unary2RegisterOpNotRmIsPcTesterCase9
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00300000 /* op1(22:20)=~011 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5)=~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16)=~1111 */) return false;
-  if ((inst.Bits() & 0x00000300) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) return false;
+  // op1(22:20)=~011
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00300000) return false;
+  // op2(7:5)=~011
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x00000060) return false;
+  // A(19:16)=~1111
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x000F0000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
+  if ((inst.Bits() & 0x00000300)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterOpNotRmIsPcTesterRegsNotPc::
@@ -400,7 +470,7 @@ bool Unary2RegisterOpNotRmIsPcTesterCase9
 // inst(22:20)=011 & inst(7:5)=101 & inst(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
 //    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=011 & op2(7:5)=101 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
@@ -423,9 +493,15 @@ bool Unary2RegisterOpNotRmIsPcTesterCase10
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00300000 /* op1(22:20)=~011 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x000000A0 /* op2(7:5)=~101 */) return false;
-  if ((inst.Bits() & 0x000F0F00) != 0x000F0F00 /* $pattern(31:0)=~xxxxxxxxxxxx1111xxxx1111xxxxxxxx */) return false;
+  // op1(22:20)=~011
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00300000) return false;
+  // op2(7:5)=~101
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x000000A0) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxx1111xxxx1111xxxxxxxx
+  if ((inst.Bits() & 0x000F0F00)  !=
+          0x000F0F00) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterOpNotRmIsPcTesterRegsNotPc::
@@ -436,7 +512,7 @@ bool Unary2RegisterOpNotRmIsPcTesterCase10
 // inst(22:20)=100 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=100 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -459,10 +535,18 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase11
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00400000 /* op1(22:20)=~100 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5)=~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16)=1111 */) return false;
-  if ((inst.Bits() & 0x00000300) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) return false;
+  // op1(22:20)=~100
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00400000) return false;
+  // op2(7:5)=~011
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x00000060) return false;
+  // A(19:16)=1111
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000F0000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
+  if ((inst.Bits() & 0x00000300)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
@@ -473,7 +557,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase11
 // inst(22:20)=100 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
 //    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=100 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -496,10 +580,18 @@ bool Unary2RegisterOpNotRmIsPcTesterCase12
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00400000 /* op1(22:20)=~100 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5)=~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16)=~1111 */) return false;
-  if ((inst.Bits() & 0x00000300) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) return false;
+  // op1(22:20)=~100
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00400000) return false;
+  // op2(7:5)=~011
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x00000060) return false;
+  // A(19:16)=~1111
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x000F0000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
+  if ((inst.Bits() & 0x00000300)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterOpNotRmIsPcTesterRegsNotPc::
@@ -510,7 +602,7 @@ bool Unary2RegisterOpNotRmIsPcTesterCase12
 // inst(22:20)=110 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {baseline: 'Unary2RegisterSatImmedShiftedOp',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=110 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -533,9 +625,15 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase13
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00600000 /* op1(22:20)=~110 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000020 /* op2(7:5)=~001 */) return false;
-  if ((inst.Bits() & 0x00000F00) != 0x00000F00 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) return false;
+  // op1(22:20)=~110
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00600000) return false;
+  // op2(7:5)=~001
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x00000020) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
+  if ((inst.Bits() & 0x00000F00)  !=
+          0x00000F00) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterSatImmedShiftedOpTesterRegsNotPc::
@@ -546,7 +644,7 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase13
 // inst(22:20)=110 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=110 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -569,10 +667,18 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase14
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00600000 /* op1(22:20)=~110 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5)=~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16)=1111 */) return false;
-  if ((inst.Bits() & 0x00000300) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) return false;
+  // op1(22:20)=~110
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00600000) return false;
+  // op2(7:5)=~011
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x00000060) return false;
+  // A(19:16)=1111
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000F0000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
+  if ((inst.Bits() & 0x00000300)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
@@ -583,7 +689,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase14
 // inst(22:20)=110 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
 //    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=110 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -606,10 +712,18 @@ bool Unary2RegisterOpNotRmIsPcTesterCase15
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00600000 /* op1(22:20)=~110 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5)=~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16)=~1111 */) return false;
-  if ((inst.Bits() & 0x00000300) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) return false;
+  // op1(22:20)=~110
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00600000) return false;
+  // op2(7:5)=~011
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x00000060) return false;
+  // A(19:16)=~1111
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x000F0000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
+  if ((inst.Bits() & 0x00000300)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterOpNotRmIsPcTesterRegsNotPc::
@@ -620,7 +734,7 @@ bool Unary2RegisterOpNotRmIsPcTesterCase15
 // inst(22:20)=111 & inst(7:5)=001 & inst(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
 //    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=111 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
@@ -643,9 +757,15 @@ bool Unary2RegisterOpNotRmIsPcTesterCase16
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00700000 /* op1(22:20)=~111 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000020 /* op2(7:5)=~001 */) return false;
-  if ((inst.Bits() & 0x000F0F00) != 0x000F0F00 /* $pattern(31:0)=~xxxxxxxxxxxx1111xxxx1111xxxxxxxx */) return false;
+  // op1(22:20)=~111
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00700000) return false;
+  // op2(7:5)=~001
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x00000020) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxx1111xxxx1111xxxxxxxx
+  if ((inst.Bits() & 0x000F0F00)  !=
+          0x000F0F00) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterOpNotRmIsPcTesterRegsNotPc::
@@ -656,7 +776,7 @@ bool Unary2RegisterOpNotRmIsPcTesterCase16
 // inst(22:20)=111 & inst(7:5)=011 & inst(19:16)=~1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=111 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -679,10 +799,18 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase17
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00700000 /* op1(22:20)=~111 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5)=~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* A(19:16)=1111 */) return false;
-  if ((inst.Bits() & 0x00000300) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) return false;
+  // op1(22:20)=~111
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00700000) return false;
+  // op2(7:5)=~011
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x00000060) return false;
+  // A(19:16)=1111
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000F0000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
+  if ((inst.Bits() & 0x00000300)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltBNoCondUpdatesTesterRegsNotPc::
@@ -693,7 +821,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase17
 // inst(22:20)=111 & inst(7:5)=011 & inst(19:16)=1111 & inst(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
 //    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=111 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -716,10 +844,18 @@ bool Unary2RegisterOpNotRmIsPcTesterCase18
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00700000 /* op1(22:20)=~111 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000060 /* op2(7:5)=~011 */) return false;
-  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* A(19:16)=~1111 */) return false;
-  if ((inst.Bits() & 0x00000300) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx */) return false;
+  // op1(22:20)=~111
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00700000) return false;
+  // op2(7:5)=~011
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x00000060) return false;
+  // A(19:16)=~1111
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x000F0000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
+  if ((inst.Bits() & 0x00000300)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterOpNotRmIsPcTesterRegsNotPc::
@@ -730,7 +866,7 @@ bool Unary2RegisterOpNotRmIsPcTesterCase18
 // inst(22:20)=111 & inst(7:5)=101 & inst(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
 //    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=111 & op2(7:5)=101 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
@@ -753,9 +889,15 @@ bool Unary2RegisterOpNotRmIsPcTesterCase19
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00700000) != 0x00700000 /* op1(22:20)=~111 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x000000A0 /* op2(7:5)=~101 */) return false;
-  if ((inst.Bits() & 0x000F0F00) != 0x000F0F00 /* $pattern(31:0)=~xxxxxxxxxxxx1111xxxx1111xxxxxxxx */) return false;
+  // op1(22:20)=~111
+  if ((inst.Bits() & 0x00700000)  !=
+          0x00700000) return false;
+  // op2(7:5)=~101
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x000000A0) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxx1111xxxx1111xxxxxxxx
+  if ((inst.Bits() & 0x000F0F00)  !=
+          0x000F0F00) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterOpNotRmIsPcTesterRegsNotPc::
@@ -766,7 +908,7 @@ bool Unary2RegisterOpNotRmIsPcTesterCase19
 // inst(22:20)=01x & inst(7:5)=xx0
 //    = {baseline: 'Unary2RegisterSatImmedShiftedOp',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=01x & op2(7:5)=xx0
@@ -789,8 +931,12 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase20
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00600000) != 0x00200000 /* op1(22:20)=~01x */) return false;
-  if ((inst.Bits() & 0x00000020) != 0x00000000 /* op2(7:5)=~xx0 */) return false;
+  // op1(22:20)=~01x
+  if ((inst.Bits() & 0x00600000)  !=
+          0x00200000) return false;
+  // op2(7:5)=~xx0
+  if ((inst.Bits() & 0x00000020)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterSatImmedShiftedOpTesterRegsNotPc::
@@ -801,7 +947,7 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase20
 // inst(22:20)=11x & inst(7:5)=xx0
 //    = {baseline: 'Unary2RegisterSatImmedShiftedOp',
 //       constraints: ,
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representaive case:
 // op1(22:20)=11x & op2(7:5)=xx0
@@ -824,8 +970,12 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase21
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00600000) != 0x00600000 /* op1(22:20)=~11x */) return false;
-  if ((inst.Bits() & 0x00000020) != 0x00000000 /* op2(7:5)=~xx0 */) return false;
+  // op1(22:20)=~11x
+  if ((inst.Bits() & 0x00600000)  !=
+          0x00600000) return false;
+  // op2(7:5)=~xx0
+  if ((inst.Bits() & 0x00000020)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterSatImmedShiftedOpTesterRegsNotPc::
@@ -842,7 +992,7 @@ bool Unary2RegisterSatImmedShiftedOpTesterCase21
 //    = {baseline: 'Binary3RegisterImmedShiftedOpRegsNotPc',
 //       constraints: ,
 //       rule: 'Sxtab16_Rule_221_A1_P436',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -864,7 +1014,7 @@ class Binary3RegisterImmedShiftedOpRegsNotPcTester_Case0
 //    = {baseline: 'Unary2RegisterImmedShiftedOpRegsNotPc',
 //       constraints: ,
 //       rule: 'Sxtb16_Rule_224_A1_P442',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -886,7 +1036,7 @@ class Unary2RegisterImmedShiftedOpRegsNotPcTester_Case1
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
 //       rule: 'Sel_Rule_156_A1_P312',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=101 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -908,7 +1058,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case2
 //    = {baseline: 'Binary3RegisterImmedShiftedOpRegsNotPc',
 //       constraints: ,
 //       rule: 'Pkh_Rule_116_A1_P234',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=xx0
@@ -930,7 +1080,7 @@ class Binary3RegisterImmedShiftedOpRegsNotPcTester_Case3
 //    = {baseline: 'Unary2RegisterSatImmedShiftedOp',
 //       constraints: ,
 //       rule: 'Ssat16_Rule_184_A1_P364',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=010 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -952,7 +1102,7 @@ class Unary2RegisterSatImmedShiftedOpTester_Case4
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
 //       rule: 'Sxtab_Rule_220_A1_P434',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=010 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -974,7 +1124,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case5
 //    = {baseline: 'Unary2RegisterImmedShiftedOpRegsNotPc',
 //       constraints: ,
 //       rule: 'Sxtb_Rule_223_A1_P440',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=010 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -996,7 +1146,7 @@ class Unary2RegisterImmedShiftedOpRegsNotPcTester_Case6
 //    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
 //       constraints: ,
 //       rule: 'Rev_Rule_135_A1_P272',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=011 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
@@ -1018,7 +1168,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case7
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
 //       rule: 'Sxtah_Rule_222_A1_P438',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=011 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1040,7 +1190,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case8
 //    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
 //       constraints: ,
 //       rule: 'Sxth_Rule_225_A1_P444',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=011 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1062,7 +1212,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case9
 //    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
 //       constraints: ,
 //       rule: 'Rev16_Rule_136_A1_P274',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=011 & op2(7:5)=101 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
@@ -1084,7 +1234,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case10
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
 //       rule: 'Uxtab16_Rule_262_A1_P516',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=100 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1106,7 +1256,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case11
 //    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
 //       constraints: ,
 //       rule: 'Uxtb16_Rule_264_A1_P522',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=100 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1128,7 +1278,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case12
 //    = {baseline: 'Unary2RegisterSatImmedShiftedOp',
 //       constraints: ,
 //       rule: 'Usat16_Rule_256_A1_P506',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=110 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -1150,7 +1300,7 @@ class Unary2RegisterSatImmedShiftedOpTester_Case13
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
 //       rule: 'Uxtab_Rule_260_A1_P514',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=110 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1172,7 +1322,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case14
 //    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
 //       constraints: ,
 //       rule: 'Uxtb_Rule_263_A1_P520',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=110 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1194,7 +1344,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case15
 //    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
 //       constraints: ,
 //       rule: 'Rbit_Rule_134_A1_P270',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=111 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
@@ -1216,7 +1366,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case16
 //    = {baseline: 'Binary3RegisterOpAltBNoCondUpdates',
 //       constraints: ,
 //       rule: 'Uxtah_Rule_262_A1_P518',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=111 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1238,7 +1388,7 @@ class Binary3RegisterOpAltBNoCondUpdatesTester_Case17
 //    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
 //       constraints: ,
 //       rule: 'Uxth_Rule_265_A1_P524',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=111 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1260,7 +1410,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case18
 //    = {baseline: 'Unary2RegisterOpNotRmIsPcNoCondUpdates',
 //       constraints: ,
 //       rule: 'Revsh_Rule_137_A1_P276',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=111 & op2(7:5)=101 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
@@ -1282,7 +1432,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdatesTester_Case19
 //    = {baseline: 'Unary2RegisterSatImmedShiftedOp',
 //       constraints: ,
 //       rule: 'Ssat_Rule_183_A1_P362',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=01x & op2(7:5)=xx0
@@ -1304,7 +1454,7 @@ class Unary2RegisterSatImmedShiftedOpTester_Case20
 //    = {baseline: 'Unary2RegisterSatImmedShiftedOp',
 //       constraints: ,
 //       rule: 'Usat_Rule_255_A1_P504',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=11x & op2(7:5)=xx0
@@ -1337,7 +1487,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       constraints: ,
 //       pattern: 'cccc01101000nnnnddddrr000111mmmm',
 //       rule: 'Sxtab16_Rule_221_A1_P436',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1362,7 +1512,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc011010001111ddddrr000111mmmm',
 //       rule: 'Sxtb16_Rule_224_A1_P442',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1387,7 +1537,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc01101000nnnndddd11111011mmmm',
 //       rule: 'Sel_Rule_156_A1_P312',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=101 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -1412,7 +1562,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc01101000nnnnddddiiiiit01mmmm',
 //       rule: 'Pkh_Rule_116_A1_P234',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=000 & op2(7:5)=xx0
@@ -1437,7 +1587,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc01101010iiiidddd11110011nnnn',
 //       rule: 'Ssat16_Rule_184_A1_P364',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=010 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -1462,7 +1612,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc01101010nnnnddddrr000111mmmm',
 //       rule: 'Sxtab_Rule_220_A1_P434',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=010 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1487,7 +1637,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc011010101111ddddrr000111mmmm',
 //       rule: 'Sxtb_Rule_223_A1_P440',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=010 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1512,7 +1662,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc011010111111dddd11110011mmmm',
 //       rule: 'Rev_Rule_135_A1_P272',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=011 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
@@ -1537,7 +1687,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc01101011nnnnddddrr000111mmmm',
 //       rule: 'Sxtah_Rule_222_A1_P438',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=011 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1562,7 +1712,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc011010111111ddddrr000111mmmm',
 //       rule: 'Sxth_Rule_225_A1_P444',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=011 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1587,7 +1737,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc011010111111dddd11111011mmmm',
 //       rule: 'Rev16_Rule_136_A1_P274',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=011 & op2(7:5)=101 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
@@ -1612,7 +1762,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc01101100nnnnddddrr000111mmmm',
 //       rule: 'Uxtab16_Rule_262_A1_P516',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=100 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1637,7 +1787,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc011011001111ddddrr000111mmmm',
 //       rule: 'Uxtb16_Rule_264_A1_P522',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=100 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1662,7 +1812,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc01101110iiiidddd11110011nnnn',
 //       rule: 'Usat16_Rule_256_A1_P506',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=110 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
@@ -1687,7 +1837,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc01101110nnnnddddrr000111mmmm',
 //       rule: 'Uxtab_Rule_260_A1_P514',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=110 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1712,7 +1862,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc011011101111ddddrr000111mmmm',
 //       rule: 'Uxtb_Rule_263_A1_P520',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=110 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1737,7 +1887,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc011011111111dddd11110011mmmm',
 //       rule: 'Rbit_Rule_134_A1_P270',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=111 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
@@ -1762,7 +1912,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc01101111nnnnddddrr000111mmmm',
 //       rule: 'Uxtah_Rule_262_A1_P518',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=111 & op2(7:5)=011 & A(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1787,7 +1937,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc011011111111ddddrr000111mmmm',
 //       rule: 'Uxth_Rule_265_A1_P524',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=111 & op2(7:5)=011 & A(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxx00xxxxxxxx
@@ -1812,7 +1962,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc011011111111dddd11111011mmmm',
 //       rule: 'Revsh_Rule_137_A1_P276',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=111 & op2(7:5)=101 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
@@ -1837,7 +1987,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc0110101iiiiiddddiiiiis01nnnn',
 //       rule: 'Ssat_Rule_183_A1_P362',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=01x & op2(7:5)=xx0
@@ -1862,7 +2012,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc0110111iiiiiddddiiiiis01nnnn',
 //       rule: 'Usat_Rule_255_A1_P504',
-//       safety: ["'RegsNotPc'"]}
+//       safety: ['RegsNotPc']}
 //
 // Representative case:
 // op1(22:20)=11x & op2(7:5)=xx0

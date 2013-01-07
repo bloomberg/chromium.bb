@@ -36,7 +36,11 @@ namespace nacl_arm_test {
 //    = {baseline: 'VectorBinary2RegisterScalar_I16_32',
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', 'inst(21:20)=00 => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [inst(21:20)=00 => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representaive case:
 // A(11:8)=0000
@@ -47,7 +51,11 @@ namespace nacl_arm_test {
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       safety: [size(21:20)=11 => DECODER_ERROR, size(21:20)=00 => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         size(21:20)=00 => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalarTesterCase0
     : public VectorBinary2RegisterScalarTester {
@@ -67,10 +75,14 @@ bool VectorBinary2RegisterScalarTesterCase0
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000F00) != 0x00000000 /* A(11:8)=~0000 */) return false;
+  // A(11:8)=~0000
+  if ((inst.Bits() & 0x00000F00)  !=
+          0x00000000) return false;
 
   // Check pattern restrictions of row.
-  if ((inst.Bits() & 0x00300000) == 0x00300000 /* size(21:20)=11 */) return false;
+  // size(21:20)=11
+  if ((inst.Bits() & 0x00300000)  ==
+          0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
@@ -80,16 +92,26 @@ bool VectorBinary2RegisterScalarTesterCase0
 bool VectorBinary2RegisterScalarTesterCase0
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(VectorBinary2RegisterScalarTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000);
+  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
+          0x00300000);
 
   // safety: size(21:20)=00 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00000000);
+  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
+          0x00000000);
 
-  // safety: Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x01000000) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001)))));
+  // safety: Q(24)=1 &&
+  //       (Vd(0)=1 ||
+  //       Vn(0)=1) => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000)  ==
+          0x01000000) &&
+       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001) ||
+       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
+          0x00000001)))));
 
   // defs: {};
   EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
@@ -102,7 +124,12 @@ bool VectorBinary2RegisterScalarTesterCase0
 //    = {baseline: 'VectorBinary2RegisterScalar_F32',
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(21:20)=01) => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(21:20)=01) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representaive case:
 // A(11:8)=0001
@@ -113,7 +140,12 @@ bool VectorBinary2RegisterScalarTesterCase0
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || size(21:20)=01) => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            size(21:20)=01) => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalarTesterCase1
     : public VectorBinary2RegisterScalarTester {
@@ -133,10 +165,14 @@ bool VectorBinary2RegisterScalarTesterCase1
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000F00) != 0x00000100 /* A(11:8)=~0001 */) return false;
+  // A(11:8)=~0001
+  if ((inst.Bits() & 0x00000F00)  !=
+          0x00000100) return false;
 
   // Check pattern restrictions of row.
-  if ((inst.Bits() & 0x00300000) == 0x00300000 /* size(21:20)=11 */) return false;
+  // size(21:20)=11
+  if ((inst.Bits() & 0x00300000)  ==
+          0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
@@ -146,16 +182,29 @@ bool VectorBinary2RegisterScalarTesterCase1
 bool VectorBinary2RegisterScalarTesterCase1
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(VectorBinary2RegisterScalarTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000);
+  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
+          0x00300000);
 
-  // safety: (size(21:20)=00 || size(21:20)=01) => UNDEFINED
-  EXPECT_TRUE((!(((inst.Bits() & 0x00300000) == 0x00000000) || ((inst.Bits() & 0x00300000) == 0x00100000))));
+  // safety: (size(21:20)=00 ||
+  //       size(21:20)=01) => UNDEFINED
+  EXPECT_TRUE((!(((inst.Bits() & 0x00300000)  ==
+          0x00000000) ||
+       ((inst.Bits() & 0x00300000)  ==
+          0x00100000))));
 
-  // safety: Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x01000000) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001)))));
+  // safety: Q(24)=1 &&
+  //       (Vd(0)=1 ||
+  //       Vn(0)=1) => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000)  ==
+          0x01000000) &&
+       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001) ||
+       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
+          0x00000001)))));
 
   // defs: {};
   EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
@@ -168,7 +217,9 @@ bool VectorBinary2RegisterScalarTesterCase1
 //    = {baseline: 'VectorBinary2RegisterScalar_I16_32L',
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(15:12)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(15:12)(0)=1) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR]}
 //
 // Representaive case:
 // A(11:8)=0010
@@ -177,7 +228,9 @@ bool VectorBinary2RegisterScalarTesterCase1
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || Vd(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalarTesterCase2
     : public VectorBinary2RegisterScalarTester {
@@ -197,10 +250,14 @@ bool VectorBinary2RegisterScalarTesterCase2
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000F00) != 0x00000200 /* A(11:8)=~0010 */) return false;
+  // A(11:8)=~0010
+  if ((inst.Bits() & 0x00000F00)  !=
+          0x00000200) return false;
 
   // Check pattern restrictions of row.
-  if ((inst.Bits() & 0x00300000) == 0x00300000 /* size(21:20)=11 */) return false;
+  // size(21:20)=11
+  if ((inst.Bits() & 0x00300000)  ==
+          0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
@@ -210,13 +267,19 @@ bool VectorBinary2RegisterScalarTesterCase2
 bool VectorBinary2RegisterScalarTesterCase2
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(VectorBinary2RegisterScalarTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000);
+  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
+          0x00300000);
 
-  // safety: (size(21:20)=00 || Vd(0)=1) => UNDEFINED
-  EXPECT_TRUE((!(((inst.Bits() & 0x00300000) == 0x00000000) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001))));
+  // safety: (size(21:20)=00 ||
+  //       Vd(0)=1) => UNDEFINED
+  EXPECT_TRUE((!(((inst.Bits() & 0x00300000)  ==
+          0x00000000) ||
+       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001))));
 
   // defs: {};
   EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
@@ -229,7 +292,9 @@ bool VectorBinary2RegisterScalarTesterCase2
 //    = {baseline: 'VectorBinary2RegisterScalar_I16_32L',
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(15:12)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(15:12)(0)=1) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR]}
 //
 // Representaive case:
 // A(11:8)=0011 & U(24)=0
@@ -238,7 +303,9 @@ bool VectorBinary2RegisterScalarTesterCase2
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || Vd(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalarTesterCase3
     : public VectorBinary2RegisterScalarTester {
@@ -258,11 +325,17 @@ bool VectorBinary2RegisterScalarTesterCase3
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000F00) != 0x00000300 /* A(11:8)=~0011 */) return false;
-  if ((inst.Bits() & 0x01000000) != 0x00000000 /* U(24)=~0 */) return false;
+  // A(11:8)=~0011
+  if ((inst.Bits() & 0x00000F00)  !=
+          0x00000300) return false;
+  // U(24)=~0
+  if ((inst.Bits() & 0x01000000)  !=
+          0x00000000) return false;
 
   // Check pattern restrictions of row.
-  if ((inst.Bits() & 0x00300000) == 0x00300000 /* size(21:20)=11 */) return false;
+  // size(21:20)=11
+  if ((inst.Bits() & 0x00300000)  ==
+          0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
@@ -272,13 +345,19 @@ bool VectorBinary2RegisterScalarTesterCase3
 bool VectorBinary2RegisterScalarTesterCase3
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(VectorBinary2RegisterScalarTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000);
+  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
+          0x00300000);
 
-  // safety: (size(21:20)=00 || Vd(0)=1) => UNDEFINED
-  EXPECT_TRUE((!(((inst.Bits() & 0x00300000) == 0x00000000) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001))));
+  // safety: (size(21:20)=00 ||
+  //       Vd(0)=1) => UNDEFINED
+  EXPECT_TRUE((!(((inst.Bits() & 0x00300000)  ==
+          0x00000000) ||
+       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001))));
 
   // defs: {};
   EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
@@ -291,7 +370,11 @@ bool VectorBinary2RegisterScalarTesterCase3
 //    = {baseline: 'VectorBinary2RegisterScalar_I16_32',
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', 'inst(21:20)=00 => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [inst(21:20)=00 => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representaive case:
 // A(11:8)=0100
@@ -302,7 +385,11 @@ bool VectorBinary2RegisterScalarTesterCase3
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       safety: [size(21:20)=11 => DECODER_ERROR, size(21:20)=00 => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         size(21:20)=00 => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalarTesterCase4
     : public VectorBinary2RegisterScalarTester {
@@ -322,10 +409,14 @@ bool VectorBinary2RegisterScalarTesterCase4
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000F00) != 0x00000400 /* A(11:8)=~0100 */) return false;
+  // A(11:8)=~0100
+  if ((inst.Bits() & 0x00000F00)  !=
+          0x00000400) return false;
 
   // Check pattern restrictions of row.
-  if ((inst.Bits() & 0x00300000) == 0x00300000 /* size(21:20)=11 */) return false;
+  // size(21:20)=11
+  if ((inst.Bits() & 0x00300000)  ==
+          0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
@@ -335,16 +426,26 @@ bool VectorBinary2RegisterScalarTesterCase4
 bool VectorBinary2RegisterScalarTesterCase4
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(VectorBinary2RegisterScalarTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000);
+  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
+          0x00300000);
 
   // safety: size(21:20)=00 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00000000);
+  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
+          0x00000000);
 
-  // safety: Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x01000000) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001)))));
+  // safety: Q(24)=1 &&
+  //       (Vd(0)=1 ||
+  //       Vn(0)=1) => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000)  ==
+          0x01000000) &&
+       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001) ||
+       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
+          0x00000001)))));
 
   // defs: {};
   EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
@@ -357,7 +458,12 @@ bool VectorBinary2RegisterScalarTesterCase4
 //    = {baseline: 'VectorBinary2RegisterScalar_F32',
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(21:20)=01) => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(21:20)=01) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representaive case:
 // A(11:8)=0101
@@ -368,7 +474,12 @@ bool VectorBinary2RegisterScalarTesterCase4
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || size(21:20)=01) => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            size(21:20)=01) => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalarTesterCase5
     : public VectorBinary2RegisterScalarTester {
@@ -388,10 +499,14 @@ bool VectorBinary2RegisterScalarTesterCase5
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000F00) != 0x00000500 /* A(11:8)=~0101 */) return false;
+  // A(11:8)=~0101
+  if ((inst.Bits() & 0x00000F00)  !=
+          0x00000500) return false;
 
   // Check pattern restrictions of row.
-  if ((inst.Bits() & 0x00300000) == 0x00300000 /* size(21:20)=11 */) return false;
+  // size(21:20)=11
+  if ((inst.Bits() & 0x00300000)  ==
+          0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
@@ -401,16 +516,29 @@ bool VectorBinary2RegisterScalarTesterCase5
 bool VectorBinary2RegisterScalarTesterCase5
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(VectorBinary2RegisterScalarTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000);
+  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
+          0x00300000);
 
-  // safety: (size(21:20)=00 || size(21:20)=01) => UNDEFINED
-  EXPECT_TRUE((!(((inst.Bits() & 0x00300000) == 0x00000000) || ((inst.Bits() & 0x00300000) == 0x00100000))));
+  // safety: (size(21:20)=00 ||
+  //       size(21:20)=01) => UNDEFINED
+  EXPECT_TRUE((!(((inst.Bits() & 0x00300000)  ==
+          0x00000000) ||
+       ((inst.Bits() & 0x00300000)  ==
+          0x00100000))));
 
-  // safety: Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x01000000) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001)))));
+  // safety: Q(24)=1 &&
+  //       (Vd(0)=1 ||
+  //       Vn(0)=1) => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000)  ==
+          0x01000000) &&
+       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001) ||
+       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
+          0x00000001)))));
 
   // defs: {};
   EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
@@ -423,7 +551,9 @@ bool VectorBinary2RegisterScalarTesterCase5
 //    = {baseline: 'VectorBinary2RegisterScalar_I16_32L',
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(15:12)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(15:12)(0)=1) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR]}
 //
 // Representaive case:
 // A(11:8)=0110
@@ -432,7 +562,9 @@ bool VectorBinary2RegisterScalarTesterCase5
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || Vd(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalarTesterCase6
     : public VectorBinary2RegisterScalarTester {
@@ -452,10 +584,14 @@ bool VectorBinary2RegisterScalarTesterCase6
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000F00) != 0x00000600 /* A(11:8)=~0110 */) return false;
+  // A(11:8)=~0110
+  if ((inst.Bits() & 0x00000F00)  !=
+          0x00000600) return false;
 
   // Check pattern restrictions of row.
-  if ((inst.Bits() & 0x00300000) == 0x00300000 /* size(21:20)=11 */) return false;
+  // size(21:20)=11
+  if ((inst.Bits() & 0x00300000)  ==
+          0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
@@ -465,13 +601,19 @@ bool VectorBinary2RegisterScalarTesterCase6
 bool VectorBinary2RegisterScalarTesterCase6
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(VectorBinary2RegisterScalarTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000);
+  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
+          0x00300000);
 
-  // safety: (size(21:20)=00 || Vd(0)=1) => UNDEFINED
-  EXPECT_TRUE((!(((inst.Bits() & 0x00300000) == 0x00000000) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001))));
+  // safety: (size(21:20)=00 ||
+  //       Vd(0)=1) => UNDEFINED
+  EXPECT_TRUE((!(((inst.Bits() & 0x00300000)  ==
+          0x00000000) ||
+       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001))));
 
   // defs: {};
   EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
@@ -484,7 +626,9 @@ bool VectorBinary2RegisterScalarTesterCase6
 //    = {baseline: 'VectorBinary2RegisterScalar_I16_32L',
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(15:12)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(15:12)(0)=1) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR]}
 //
 // Representaive case:
 // A(11:8)=0111 & U(24)=0
@@ -493,7 +637,9 @@ bool VectorBinary2RegisterScalarTesterCase6
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || Vd(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalarTesterCase7
     : public VectorBinary2RegisterScalarTester {
@@ -513,11 +659,17 @@ bool VectorBinary2RegisterScalarTesterCase7
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000F00) != 0x00000700 /* A(11:8)=~0111 */) return false;
-  if ((inst.Bits() & 0x01000000) != 0x00000000 /* U(24)=~0 */) return false;
+  // A(11:8)=~0111
+  if ((inst.Bits() & 0x00000F00)  !=
+          0x00000700) return false;
+  // U(24)=~0
+  if ((inst.Bits() & 0x01000000)  !=
+          0x00000000) return false;
 
   // Check pattern restrictions of row.
-  if ((inst.Bits() & 0x00300000) == 0x00300000 /* size(21:20)=11 */) return false;
+  // size(21:20)=11
+  if ((inst.Bits() & 0x00300000)  ==
+          0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
@@ -527,13 +679,19 @@ bool VectorBinary2RegisterScalarTesterCase7
 bool VectorBinary2RegisterScalarTesterCase7
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(VectorBinary2RegisterScalarTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000);
+  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
+          0x00300000);
 
-  // safety: (size(21:20)=00 || Vd(0)=1) => UNDEFINED
-  EXPECT_TRUE((!(((inst.Bits() & 0x00300000) == 0x00000000) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001))));
+  // safety: (size(21:20)=00 ||
+  //       Vd(0)=1) => UNDEFINED
+  EXPECT_TRUE((!(((inst.Bits() & 0x00300000)  ==
+          0x00000000) ||
+       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001))));
 
   // defs: {};
   EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
@@ -546,7 +704,11 @@ bool VectorBinary2RegisterScalarTesterCase7
 //    = {baseline: 'VectorBinary2RegisterScalar_I16_32',
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', 'inst(21:20)=00 => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [inst(21:20)=00 => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representaive case:
 // A(11:8)=1000
@@ -557,7 +719,11 @@ bool VectorBinary2RegisterScalarTesterCase7
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       safety: [size(21:20)=11 => DECODER_ERROR, size(21:20)=00 => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         size(21:20)=00 => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalarTesterCase8
     : public VectorBinary2RegisterScalarTester {
@@ -577,10 +743,14 @@ bool VectorBinary2RegisterScalarTesterCase8
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000F00) != 0x00000800 /* A(11:8)=~1000 */) return false;
+  // A(11:8)=~1000
+  if ((inst.Bits() & 0x00000F00)  !=
+          0x00000800) return false;
 
   // Check pattern restrictions of row.
-  if ((inst.Bits() & 0x00300000) == 0x00300000 /* size(21:20)=11 */) return false;
+  // size(21:20)=11
+  if ((inst.Bits() & 0x00300000)  ==
+          0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
@@ -590,16 +760,26 @@ bool VectorBinary2RegisterScalarTesterCase8
 bool VectorBinary2RegisterScalarTesterCase8
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(VectorBinary2RegisterScalarTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000);
+  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
+          0x00300000);
 
   // safety: size(21:20)=00 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00000000);
+  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
+          0x00000000);
 
-  // safety: Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x01000000) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001)))));
+  // safety: Q(24)=1 &&
+  //       (Vd(0)=1 ||
+  //       Vn(0)=1) => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000)  ==
+          0x01000000) &&
+       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001) ||
+       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
+          0x00000001)))));
 
   // defs: {};
   EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
@@ -612,7 +792,12 @@ bool VectorBinary2RegisterScalarTesterCase8
 //    = {baseline: 'VectorBinary2RegisterScalar_F32',
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(21:20)=01) => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(21:20)=01) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representaive case:
 // A(11:8)=1001
@@ -623,7 +808,12 @@ bool VectorBinary2RegisterScalarTesterCase8
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || size(21:20)=01) => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            size(21:20)=01) => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalarTesterCase9
     : public VectorBinary2RegisterScalarTester {
@@ -643,10 +833,14 @@ bool VectorBinary2RegisterScalarTesterCase9
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000F00) != 0x00000900 /* A(11:8)=~1001 */) return false;
+  // A(11:8)=~1001
+  if ((inst.Bits() & 0x00000F00)  !=
+          0x00000900) return false;
 
   // Check pattern restrictions of row.
-  if ((inst.Bits() & 0x00300000) == 0x00300000 /* size(21:20)=11 */) return false;
+  // size(21:20)=11
+  if ((inst.Bits() & 0x00300000)  ==
+          0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
@@ -656,16 +850,29 @@ bool VectorBinary2RegisterScalarTesterCase9
 bool VectorBinary2RegisterScalarTesterCase9
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(VectorBinary2RegisterScalarTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000);
+  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
+          0x00300000);
 
-  // safety: (size(21:20)=00 || size(21:20)=01) => UNDEFINED
-  EXPECT_TRUE((!(((inst.Bits() & 0x00300000) == 0x00000000) || ((inst.Bits() & 0x00300000) == 0x00100000))));
+  // safety: (size(21:20)=00 ||
+  //       size(21:20)=01) => UNDEFINED
+  EXPECT_TRUE((!(((inst.Bits() & 0x00300000)  ==
+          0x00000000) ||
+       ((inst.Bits() & 0x00300000)  ==
+          0x00100000))));
 
-  // safety: Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x01000000) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001)))));
+  // safety: Q(24)=1 &&
+  //       (Vd(0)=1 ||
+  //       Vn(0)=1) => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000)  ==
+          0x01000000) &&
+       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001) ||
+       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
+          0x00000001)))));
 
   // defs: {};
   EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
@@ -678,7 +885,9 @@ bool VectorBinary2RegisterScalarTesterCase9
 //    = {baseline: 'VectorBinary2RegisterScalar_I16_32L',
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(15:12)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(15:12)(0)=1) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR]}
 //
 // Representaive case:
 // A(11:8)=1010
@@ -687,7 +896,9 @@ bool VectorBinary2RegisterScalarTesterCase9
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || Vd(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalarTesterCase10
     : public VectorBinary2RegisterScalarTester {
@@ -707,10 +918,14 @@ bool VectorBinary2RegisterScalarTesterCase10
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000F00) != 0x00000A00 /* A(11:8)=~1010 */) return false;
+  // A(11:8)=~1010
+  if ((inst.Bits() & 0x00000F00)  !=
+          0x00000A00) return false;
 
   // Check pattern restrictions of row.
-  if ((inst.Bits() & 0x00300000) == 0x00300000 /* size(21:20)=11 */) return false;
+  // size(21:20)=11
+  if ((inst.Bits() & 0x00300000)  ==
+          0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
@@ -720,13 +935,19 @@ bool VectorBinary2RegisterScalarTesterCase10
 bool VectorBinary2RegisterScalarTesterCase10
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(VectorBinary2RegisterScalarTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000);
+  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
+          0x00300000);
 
-  // safety: (size(21:20)=00 || Vd(0)=1) => UNDEFINED
-  EXPECT_TRUE((!(((inst.Bits() & 0x00300000) == 0x00000000) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001))));
+  // safety: (size(21:20)=00 ||
+  //       Vd(0)=1) => UNDEFINED
+  EXPECT_TRUE((!(((inst.Bits() & 0x00300000)  ==
+          0x00000000) ||
+       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001))));
 
   // defs: {};
   EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
@@ -739,7 +960,9 @@ bool VectorBinary2RegisterScalarTesterCase10
 //    = {baseline: 'VectorBinary2RegisterScalar_I16_32L',
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(15:12)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(15:12)(0)=1) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR]}
 //
 // Representaive case:
 // A(11:8)=1011 & U(24)=0
@@ -748,7 +971,9 @@ bool VectorBinary2RegisterScalarTesterCase10
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || Vd(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalarTesterCase11
     : public VectorBinary2RegisterScalarTester {
@@ -768,11 +993,17 @@ bool VectorBinary2RegisterScalarTesterCase11
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000F00) != 0x00000B00 /* A(11:8)=~1011 */) return false;
-  if ((inst.Bits() & 0x01000000) != 0x00000000 /* U(24)=~0 */) return false;
+  // A(11:8)=~1011
+  if ((inst.Bits() & 0x00000F00)  !=
+          0x00000B00) return false;
+  // U(24)=~0
+  if ((inst.Bits() & 0x01000000)  !=
+          0x00000000) return false;
 
   // Check pattern restrictions of row.
-  if ((inst.Bits() & 0x00300000) == 0x00300000 /* size(21:20)=11 */) return false;
+  // size(21:20)=11
+  if ((inst.Bits() & 0x00300000)  ==
+          0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
@@ -782,13 +1013,19 @@ bool VectorBinary2RegisterScalarTesterCase11
 bool VectorBinary2RegisterScalarTesterCase11
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(VectorBinary2RegisterScalarTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000);
+  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
+          0x00300000);
 
-  // safety: (size(21:20)=00 || Vd(0)=1) => UNDEFINED
-  EXPECT_TRUE((!(((inst.Bits() & 0x00300000) == 0x00000000) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001))));
+  // safety: (size(21:20)=00 ||
+  //       Vd(0)=1) => UNDEFINED
+  EXPECT_TRUE((!(((inst.Bits() & 0x00300000)  ==
+          0x00000000) ||
+       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001))));
 
   // defs: {};
   EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
@@ -801,7 +1038,11 @@ bool VectorBinary2RegisterScalarTesterCase11
 //    = {baseline: 'VectorBinary2RegisterScalar_I16_32',
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', 'inst(21:20)=00 => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [inst(21:20)=00 => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representaive case:
 // A(11:8)=1100
@@ -812,7 +1053,11 @@ bool VectorBinary2RegisterScalarTesterCase11
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       safety: [size(21:20)=11 => DECODER_ERROR, size(21:20)=00 => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         size(21:20)=00 => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalarTesterCase12
     : public VectorBinary2RegisterScalarTester {
@@ -832,10 +1077,14 @@ bool VectorBinary2RegisterScalarTesterCase12
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000F00) != 0x00000C00 /* A(11:8)=~1100 */) return false;
+  // A(11:8)=~1100
+  if ((inst.Bits() & 0x00000F00)  !=
+          0x00000C00) return false;
 
   // Check pattern restrictions of row.
-  if ((inst.Bits() & 0x00300000) == 0x00300000 /* size(21:20)=11 */) return false;
+  // size(21:20)=11
+  if ((inst.Bits() & 0x00300000)  ==
+          0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
@@ -845,16 +1094,26 @@ bool VectorBinary2RegisterScalarTesterCase12
 bool VectorBinary2RegisterScalarTesterCase12
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(VectorBinary2RegisterScalarTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000);
+  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
+          0x00300000);
 
   // safety: size(21:20)=00 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00000000);
+  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
+          0x00000000);
 
-  // safety: Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x01000000) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001)))));
+  // safety: Q(24)=1 &&
+  //       (Vd(0)=1 ||
+  //       Vn(0)=1) => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000)  ==
+          0x01000000) &&
+       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001) ||
+       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
+          0x00000001)))));
 
   // defs: {};
   EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
@@ -867,7 +1126,11 @@ bool VectorBinary2RegisterScalarTesterCase12
 //    = {baseline: 'VectorBinary2RegisterScalar_I16_32',
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', 'inst(21:20)=00 => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [inst(21:20)=00 => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representaive case:
 // A(11:8)=1101
@@ -878,7 +1141,11 @@ bool VectorBinary2RegisterScalarTesterCase12
 //       constraints: & size(21:20)=~11 ,
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
-//       safety: [size(21:20)=11 => DECODER_ERROR, size(21:20)=00 => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         size(21:20)=00 => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalarTesterCase13
     : public VectorBinary2RegisterScalarTester {
@@ -898,10 +1165,14 @@ bool VectorBinary2RegisterScalarTesterCase13
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000F00) != 0x00000D00 /* A(11:8)=~1101 */) return false;
+  // A(11:8)=~1101
+  if ((inst.Bits() & 0x00000F00)  !=
+          0x00000D00) return false;
 
   // Check pattern restrictions of row.
-  if ((inst.Bits() & 0x00300000) == 0x00300000 /* size(21:20)=11 */) return false;
+  // size(21:20)=11
+  if ((inst.Bits() & 0x00300000)  ==
+          0x00300000) return false;
 
   // Check other preconditions defined for the base decoder.
   return VectorBinary2RegisterScalarTester::
@@ -911,16 +1182,26 @@ bool VectorBinary2RegisterScalarTesterCase13
 bool VectorBinary2RegisterScalarTesterCase13
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(VectorBinary2RegisterScalarTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(VectorBinary2RegisterScalarTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: size(21:20)=11 => DECODER_ERROR
-  EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000);
+  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
+          0x00300000);
 
   // safety: size(21:20)=00 => UNDEFINED
-  EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00000000);
+  EXPECT_TRUE((inst.Bits() & 0x00300000)  !=
+          0x00000000);
 
-  // safety: Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED
-  EXPECT_TRUE(!(((inst.Bits() & 0x01000000) == 0x01000000) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001)))));
+  // safety: Q(24)=1 &&
+  //       (Vd(0)=1 ||
+  //       Vn(0)=1) => UNDEFINED
+  EXPECT_TRUE(!(((inst.Bits() & 0x01000000)  ==
+          0x01000000) &&
+       ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001) ||
+       ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001)  ==
+          0x00000001)))));
 
   // defs: {};
   EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
@@ -939,7 +1220,11 @@ bool VectorBinary2RegisterScalarTesterCase13
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
 //       rule: 'VMLA_by_scalar_A1',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', 'inst(21:20)=00 => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [inst(21:20)=00 => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representative case:
 // A(11:8)=0000
@@ -951,7 +1236,11 @@ bool VectorBinary2RegisterScalarTesterCase13
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       rule: VMLA_by_scalar_A1,
-//       safety: [size(21:20)=11 => DECODER_ERROR, size(21:20)=00 => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         size(21:20)=00 => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalar_I16_32Tester_Case0
     : public VectorBinary2RegisterScalarTesterCase0 {
@@ -968,7 +1257,12 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case0
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
 //       rule: 'VMLA_by_scalar_A1',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(21:20)=01) => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(21:20)=01) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representative case:
 // A(11:8)=0001
@@ -980,7 +1274,12 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case0
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       rule: VMLA_by_scalar_A1,
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || size(21:20)=01) => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            size(21:20)=01) => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalar_F32Tester_Case1
     : public VectorBinary2RegisterScalarTesterCase1 {
@@ -997,7 +1296,9 @@ class VectorBinary2RegisterScalar_F32Tester_Case1
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
 //       rule: 'VMLAL_by_scalar_A2',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(15:12)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(15:12)(0)=1) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR]}
 //
 // Representative case:
 // A(11:8)=0010
@@ -1007,7 +1308,9 @@ class VectorBinary2RegisterScalar_F32Tester_Case1
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       rule: VMLAL_by_scalar_A2,
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || Vd(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalar_I16_32LTester_Case2
     : public VectorBinary2RegisterScalarTesterCase2 {
@@ -1024,7 +1327,9 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case2
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
 //       rule: 'VQDMLAL_A1',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(15:12)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(15:12)(0)=1) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR]}
 //
 // Representative case:
 // A(11:8)=0011 & U(24)=0
@@ -1034,7 +1339,9 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case2
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       rule: VQDMLAL_A1,
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || Vd(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalar_I16_32LTester_Case3
     : public VectorBinary2RegisterScalarTesterCase3 {
@@ -1051,7 +1358,11 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case3
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
 //       rule: 'VMLS_by_scalar_A1',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', 'inst(21:20)=00 => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [inst(21:20)=00 => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representative case:
 // A(11:8)=0100
@@ -1063,7 +1374,11 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case3
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       rule: VMLS_by_scalar_A1,
-//       safety: [size(21:20)=11 => DECODER_ERROR, size(21:20)=00 => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         size(21:20)=00 => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalar_I16_32Tester_Case4
     : public VectorBinary2RegisterScalarTesterCase4 {
@@ -1080,7 +1395,12 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case4
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
 //       rule: 'VMLS_by_scalar_A1',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(21:20)=01) => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(21:20)=01) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representative case:
 // A(11:8)=0101
@@ -1092,7 +1412,12 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case4
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       rule: VMLS_by_scalar_A1,
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || size(21:20)=01) => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            size(21:20)=01) => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalar_F32Tester_Case5
     : public VectorBinary2RegisterScalarTesterCase5 {
@@ -1109,7 +1434,9 @@ class VectorBinary2RegisterScalar_F32Tester_Case5
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
 //       rule: 'VMLSL_by_scalar_A2',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(15:12)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(15:12)(0)=1) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR]}
 //
 // Representative case:
 // A(11:8)=0110
@@ -1119,7 +1446,9 @@ class VectorBinary2RegisterScalar_F32Tester_Case5
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       rule: VMLSL_by_scalar_A2,
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || Vd(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalar_I16_32LTester_Case6
     : public VectorBinary2RegisterScalarTesterCase6 {
@@ -1136,7 +1465,9 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case6
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
 //       rule: 'VQDMLSL_A1',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(15:12)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(15:12)(0)=1) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR]}
 //
 // Representative case:
 // A(11:8)=0111 & U(24)=0
@@ -1146,7 +1477,9 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case6
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       rule: VQDMLSL_A1,
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || Vd(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalar_I16_32LTester_Case7
     : public VectorBinary2RegisterScalarTesterCase7 {
@@ -1163,7 +1496,11 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case7
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
 //       rule: 'VMUL_by_scalar_A1',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', 'inst(21:20)=00 => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [inst(21:20)=00 => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representative case:
 // A(11:8)=1000
@@ -1175,7 +1512,11 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case7
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       rule: VMUL_by_scalar_A1,
-//       safety: [size(21:20)=11 => DECODER_ERROR, size(21:20)=00 => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         size(21:20)=00 => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalar_I16_32Tester_Case8
     : public VectorBinary2RegisterScalarTesterCase8 {
@@ -1192,7 +1533,12 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case8
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
 //       rule: 'VMUL_by_scalar_A1',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(21:20)=01) => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(21:20)=01) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representative case:
 // A(11:8)=1001
@@ -1204,7 +1550,12 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case8
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       rule: VMUL_by_scalar_A1,
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || size(21:20)=01) => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            size(21:20)=01) => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalar_F32Tester_Case9
     : public VectorBinary2RegisterScalarTesterCase9 {
@@ -1221,7 +1572,9 @@ class VectorBinary2RegisterScalar_F32Tester_Case9
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
 //       rule: 'VMULL_by_scalar_A2',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(15:12)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(15:12)(0)=1) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR]}
 //
 // Representative case:
 // A(11:8)=1010
@@ -1231,7 +1584,9 @@ class VectorBinary2RegisterScalar_F32Tester_Case9
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       rule: VMULL_by_scalar_A2,
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || Vd(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalar_I16_32LTester_Case10
     : public VectorBinary2RegisterScalarTesterCase10 {
@@ -1248,7 +1603,9 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case10
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
 //       rule: 'VQDMULL_A2',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(15:12)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(15:12)(0)=1) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR]}
 //
 // Representative case:
 // A(11:8)=1011 & U(24)=0
@@ -1258,7 +1615,9 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case10
 //       defs: {},
 //       fields: [size(21:20), Vd(15:12)],
 //       rule: VQDMULL_A2,
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || Vd(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalar_I16_32LTester_Case11
     : public VectorBinary2RegisterScalarTesterCase11 {
@@ -1275,7 +1634,11 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case11
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
 //       rule: 'VQDMULH_A2',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', 'inst(21:20)=00 => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [inst(21:20)=00 => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representative case:
 // A(11:8)=1100
@@ -1287,7 +1650,11 @@ class VectorBinary2RegisterScalar_I16_32LTester_Case11
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       rule: VQDMULH_A2,
-//       safety: [size(21:20)=11 => DECODER_ERROR, size(21:20)=00 => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         size(21:20)=00 => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalar_I16_32Tester_Case12
     : public VectorBinary2RegisterScalarTesterCase12 {
@@ -1304,7 +1671,11 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case12
 //       constraints: & inst(21:20)=~11 ,
 //       defs: {},
 //       rule: 'VQRDMULH',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', 'inst(21:20)=00 => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [inst(21:20)=00 => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representative case:
 // A(11:8)=1101
@@ -1316,7 +1687,11 @@ class VectorBinary2RegisterScalar_I16_32Tester_Case12
 //       defs: {},
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       rule: VQRDMULH,
-//       safety: [size(21:20)=11 => DECODER_ERROR, size(21:20)=00 => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         size(21:20)=00 => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 class VectorBinary2RegisterScalar_I16_32Tester_Case13
     : public VectorBinary2RegisterScalarTesterCase13 {
@@ -1344,7 +1719,11 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       defs: {},
 //       pattern: '1111001q1dssnnnndddd0p0fn1m0mmmm',
 //       rule: 'VMLA_by_scalar_A1',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', 'inst(21:20)=00 => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [inst(21:20)=00 => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representaive case:
 // A(11:8)=0000
@@ -1358,7 +1737,11 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLA_by_scalar_A1,
-//       safety: [size(21:20)=11 => DECODER_ERROR, size(21:20)=00 => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         size(21:20)=00 => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterScalar_I16_32Tester_Case0_TestCase0) {
@@ -1374,7 +1757,12 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {},
 //       pattern: '1111001q1dssnnnndddd0p0fn1m0mmmm',
 //       rule: 'VMLA_by_scalar_A1',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(21:20)=01) => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(21:20)=01) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representaive case:
 // A(11:8)=0001
@@ -1388,7 +1776,12 @@ TEST_F(Arm32DecoderStateTests,
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLA_by_scalar_A1,
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || size(21:20)=01) => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            size(21:20)=01) => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterScalar_F32Tester_Case1_TestCase1) {
@@ -1404,7 +1797,9 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {},
 //       pattern: '1111001u1dssnnnndddd0p10n1m0mmmm',
 //       rule: 'VMLAL_by_scalar_A2',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(15:12)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(15:12)(0)=1) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR]}
 //
 // Representaive case:
 // A(11:8)=0010
@@ -1416,7 +1811,9 @@ TEST_F(Arm32DecoderStateTests,
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 1111001u1dssnnnndddd0p10n1m0mmmm,
 //       rule: VMLAL_by_scalar_A2,
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || Vd(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterScalar_I16_32LTester_Case2_TestCase2) {
@@ -1432,7 +1829,9 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {},
 //       pattern: '111100101dssnnnndddd0p11n1m0mmmm',
 //       rule: 'VQDMLAL_A1',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(15:12)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(15:12)(0)=1) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR]}
 //
 // Representaive case:
 // A(11:8)=0011 & U(24)=0
@@ -1444,7 +1843,9 @@ TEST_F(Arm32DecoderStateTests,
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 111100101dssnnnndddd0p11n1m0mmmm,
 //       rule: VQDMLAL_A1,
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || Vd(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterScalar_I16_32LTester_Case3_TestCase3) {
@@ -1460,7 +1861,11 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {},
 //       pattern: '1111001q1dssnnnndddd0p0fn1m0mmmm',
 //       rule: 'VMLS_by_scalar_A1',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', 'inst(21:20)=00 => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [inst(21:20)=00 => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representaive case:
 // A(11:8)=0100
@@ -1474,7 +1879,11 @@ TEST_F(Arm32DecoderStateTests,
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLS_by_scalar_A1,
-//       safety: [size(21:20)=11 => DECODER_ERROR, size(21:20)=00 => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         size(21:20)=00 => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterScalar_I16_32Tester_Case4_TestCase4) {
@@ -1490,7 +1899,12 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {},
 //       pattern: '1111001q1dssnnnndddd0p0fn1m0mmmm',
 //       rule: 'VMLS_by_scalar_A1',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(21:20)=01) => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(21:20)=01) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representaive case:
 // A(11:8)=0101
@@ -1504,7 +1918,12 @@ TEST_F(Arm32DecoderStateTests,
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       pattern: 1111001q1dssnnnndddd0p0fn1m0mmmm,
 //       rule: VMLS_by_scalar_A1,
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || size(21:20)=01) => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            size(21:20)=01) => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterScalar_F32Tester_Case5_TestCase5) {
@@ -1520,7 +1939,9 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {},
 //       pattern: '1111001u1dssnnnndddd0p10n1m0mmmm',
 //       rule: 'VMLSL_by_scalar_A2',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(15:12)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(15:12)(0)=1) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR]}
 //
 // Representaive case:
 // A(11:8)=0110
@@ -1532,7 +1953,9 @@ TEST_F(Arm32DecoderStateTests,
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 1111001u1dssnnnndddd0p10n1m0mmmm,
 //       rule: VMLSL_by_scalar_A2,
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || Vd(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterScalar_I16_32LTester_Case6_TestCase6) {
@@ -1548,7 +1971,9 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {},
 //       pattern: '111100101dssnnnndddd0p11n1m0mmmm',
 //       rule: 'VQDMLSL_A1',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(15:12)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(15:12)(0)=1) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR]}
 //
 // Representaive case:
 // A(11:8)=0111 & U(24)=0
@@ -1560,7 +1985,9 @@ TEST_F(Arm32DecoderStateTests,
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 111100101dssnnnndddd0p11n1m0mmmm,
 //       rule: VQDMLSL_A1,
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || Vd(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterScalar_I16_32LTester_Case7_TestCase7) {
@@ -1576,7 +2003,11 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {},
 //       pattern: '1111001q1dssnnnndddd100fn1m0mmmm',
 //       rule: 'VMUL_by_scalar_A1',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', 'inst(21:20)=00 => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [inst(21:20)=00 => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representaive case:
 // A(11:8)=1000
@@ -1590,7 +2021,11 @@ TEST_F(Arm32DecoderStateTests,
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       pattern: 1111001q1dssnnnndddd100fn1m0mmmm,
 //       rule: VMUL_by_scalar_A1,
-//       safety: [size(21:20)=11 => DECODER_ERROR, size(21:20)=00 => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         size(21:20)=00 => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterScalar_I16_32Tester_Case8_TestCase8) {
@@ -1606,7 +2041,12 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {},
 //       pattern: '1111001q1dssnnnndddd100fn1m0mmmm',
 //       rule: 'VMUL_by_scalar_A1',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(21:20)=01) => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(21:20)=01) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representaive case:
 // A(11:8)=1001
@@ -1620,7 +2060,12 @@ TEST_F(Arm32DecoderStateTests,
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       pattern: 1111001q1dssnnnndddd100fn1m0mmmm,
 //       rule: VMUL_by_scalar_A1,
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || size(21:20)=01) => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            size(21:20)=01) => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterScalar_F32Tester_Case9_TestCase9) {
@@ -1636,7 +2081,9 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {},
 //       pattern: '1111001u1dssnnnndddd1010n1m0mmmm',
 //       rule: 'VMULL_by_scalar_A2',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(15:12)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(15:12)(0)=1) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR]}
 //
 // Representaive case:
 // A(11:8)=1010
@@ -1648,7 +2095,9 @@ TEST_F(Arm32DecoderStateTests,
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 1111001u1dssnnnndddd1010n1m0mmmm,
 //       rule: VMULL_by_scalar_A2,
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || Vd(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterScalar_I16_32LTester_Case10_TestCase10) {
@@ -1664,7 +2113,9 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {},
 //       pattern: '111100101dssnnnndddd1011n1m0mmmm',
 //       rule: 'VQDMULL_A2',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', '(inst(21:20)=00 || inst(15:12)(0)=1) => UNDEFINED']}
+//       safety: [(inst(21:20)=00 ||
+//            inst(15:12)(0)=1) => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR]}
 //
 // Representaive case:
 // A(11:8)=1011 & U(24)=0
@@ -1676,7 +2127,9 @@ TEST_F(Arm32DecoderStateTests,
 //       fields: [size(21:20), Vd(15:12)],
 //       pattern: 111100101dssnnnndddd1011n1m0mmmm,
 //       rule: VQDMULL_A2,
-//       safety: [size(21:20)=11 => DECODER_ERROR, (size(21:20)=00 || Vd(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         (size(21:20)=00 ||
+//            Vd(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterScalar_I16_32LTester_Case11_TestCase11) {
@@ -1692,7 +2145,11 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {},
 //       pattern: '1111001q1dssnnnndddd1100n1m0mmmm',
 //       rule: 'VQDMULH_A2',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', 'inst(21:20)=00 => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [inst(21:20)=00 => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representaive case:
 // A(11:8)=1100
@@ -1706,7 +2163,11 @@ TEST_F(Arm32DecoderStateTests,
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       pattern: 1111001q1dssnnnndddd1100n1m0mmmm,
 //       rule: VQDMULH_A2,
-//       safety: [size(21:20)=11 => DECODER_ERROR, size(21:20)=00 => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         size(21:20)=00 => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterScalar_I16_32Tester_Case12_TestCase12) {
@@ -1722,7 +2183,11 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {},
 //       pattern: '1111001q1dssnnnndddd1101n1m0mmmm',
 //       rule: 'VQRDMULH',
-//       safety: ['inst(21:20)=11 => DECODER_ERROR', 'inst(21:20)=00 => UNDEFINED', 'inst(24)=1 && (inst(15:12)(0)=1 || inst(19:16)(0)=1) => UNDEFINED']}
+//       safety: [inst(21:20)=00 => UNDEFINED,
+//         inst(21:20)=11 => DECODER_ERROR,
+//         inst(24)=1 &&
+//            (inst(15:12)(0)=1 ||
+//            inst(19:16)(0)=1) => UNDEFINED]}
 //
 // Representaive case:
 // A(11:8)=1101
@@ -1736,7 +2201,11 @@ TEST_F(Arm32DecoderStateTests,
 //       fields: [Q(24), size(21:20), Vn(19:16), Vd(15:12)],
 //       pattern: 1111001q1dssnnnndddd1101n1m0mmmm,
 //       rule: VQRDMULH,
-//       safety: [size(21:20)=11 => DECODER_ERROR, size(21:20)=00 => UNDEFINED, Q(24)=1 && (Vd(0)=1 || Vn(0)=1) => UNDEFINED],
+//       safety: [size(21:20)=11 => DECODER_ERROR,
+//         size(21:20)=00 => UNDEFINED,
+//         Q(24)=1 &&
+//            (Vd(0)=1 ||
+//            Vn(0)=1) => UNDEFINED],
 //       size: size(21:20)}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary2RegisterScalar_I16_32Tester_Case13_TestCase13) {

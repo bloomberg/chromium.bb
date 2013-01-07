@@ -56,9 +56,15 @@ bool UnsafeCondDecoderTesterCase0
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x02000000) != 0x00000000 /* op(25)=~0 */) return false;
-  if ((inst.Bits() & 0x01200000) != 0x00200000 /* op1(24:20)=~0xx1x */) return false;
-  if ((inst.Bits() & 0x000000F0) != 0x000000B0 /* op2(7:4)=~1011 */) return false;
+  // op(25)=~0
+  if ((inst.Bits() & 0x02000000)  !=
+          0x00000000) return false;
+  // op1(24:20)=~0xx1x
+  if ((inst.Bits() & 0x01200000)  !=
+          0x00200000) return false;
+  // op2(7:4)=~1011
+  if ((inst.Bits() & 0x000000F0)  !=
+          0x000000B0) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -90,9 +96,15 @@ bool UnsafeCondDecoderTesterCase1
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x02000000) != 0x00000000 /* op(25)=~0 */) return false;
-  if ((inst.Bits() & 0x01200000) != 0x00200000 /* op1(24:20)=~0xx1x */) return false;
-  if ((inst.Bits() & 0x000000D0) != 0x000000D0 /* op2(7:4)=~11x1 */) return false;
+  // op(25)=~0
+  if ((inst.Bits() & 0x02000000)  !=
+          0x00000000) return false;
+  // op1(24:20)=~0xx1x
+  if ((inst.Bits() & 0x01200000)  !=
+          0x00200000) return false;
+  // op2(7:4)=~11x1
+  if ((inst.Bits() & 0x000000D0)  !=
+          0x000000D0) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -103,8 +115,10 @@ bool UnsafeCondDecoderTesterCase1
 // inst(25)=1 & inst(24:20)=10000
 //    = {baseline: 'Unary1RegisterImmediateOpDynCodeReplace',
 //       constraints: ,
-//       defs: {inst(15:12),16 if inst(20) else 32},
-//       safety: ['inst(15:12)=1111 => UNPREDICTABLE']}
+//       defs: {inst(15:12), 16
+//            if inst(20)
+//            else 32},
+//       safety: [inst(15:12)=1111 => UNPREDICTABLE]}
 //
 // Representaive case:
 // op(25)=1 & op1(24:20)=10000
@@ -114,7 +128,9 @@ bool UnsafeCondDecoderTesterCase1
 //       S: S(20),
 //       baseline: Unary1RegisterImmediateOpDynCodeReplace,
 //       constraints: ,
-//       defs: {Rd,NZCV if S else None},
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
 //       fields: [S(20), Rd(15:12)],
 //       safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
 class Unary1RegisterImmediateOpTesterCase2
@@ -135,8 +151,12 @@ bool Unary1RegisterImmediateOpTesterCase2
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x02000000) != 0x02000000 /* op(25)=~1 */) return false;
-  if ((inst.Bits() & 0x01F00000) != 0x01000000 /* op1(24:20)=~10000 */) return false;
+  // op(25)=~1
+  if ((inst.Bits() & 0x02000000)  !=
+          0x02000000) return false;
+  // op1(24:20)=~10000
+  if ((inst.Bits() & 0x01F00000)  !=
+          0x01000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary1RegisterImmediateOpTester::
@@ -146,13 +166,21 @@ bool Unary1RegisterImmediateOpTesterCase2
 bool Unary1RegisterImmediateOpTesterCase2
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Unary1RegisterImmediateOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Unary1RegisterImmediateOpTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: Rd(15:12)=1111 => UNPREDICTABLE
-  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000)  !=
+          0x0000F000);
 
-  // defs: {Rd,NZCV if S else None};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12))).Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0) ? 16 : 32)))));
+  // defs: {Rd, NZCV
+  //       if S
+  //       else None};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)))));
 
   return true;
 }
@@ -161,8 +189,10 @@ bool Unary1RegisterImmediateOpTesterCase2
 // inst(25)=1 & inst(24:20)=10100
 //    = {baseline: 'Unary1RegisterImmediateOpDynCodeReplace',
 //       constraints: ,
-//       defs: {inst(15:12),16 if inst(20) else 32},
-//       safety: ['inst(15:12)=1111 => UNPREDICTABLE']}
+//       defs: {inst(15:12), 16
+//            if inst(20)
+//            else 32},
+//       safety: [inst(15:12)=1111 => UNPREDICTABLE]}
 //
 // Representaive case:
 // op(25)=1 & op1(24:20)=10100
@@ -172,7 +202,9 @@ bool Unary1RegisterImmediateOpTesterCase2
 //       S: S(20),
 //       baseline: Unary1RegisterImmediateOpDynCodeReplace,
 //       constraints: ,
-//       defs: {Rd,NZCV if S else None},
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
 //       fields: [S(20), Rd(15:12)],
 //       safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
 class Unary1RegisterImmediateOpTesterCase3
@@ -193,8 +225,12 @@ bool Unary1RegisterImmediateOpTesterCase3
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x02000000) != 0x02000000 /* op(25)=~1 */) return false;
-  if ((inst.Bits() & 0x01F00000) != 0x01400000 /* op1(24:20)=~10100 */) return false;
+  // op(25)=~1
+  if ((inst.Bits() & 0x02000000)  !=
+          0x02000000) return false;
+  // op1(24:20)=~10100
+  if ((inst.Bits() & 0x01F00000)  !=
+          0x01400000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary1RegisterImmediateOpTester::
@@ -204,13 +240,21 @@ bool Unary1RegisterImmediateOpTesterCase3
 bool Unary1RegisterImmediateOpTesterCase3
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Unary1RegisterImmediateOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Unary1RegisterImmediateOpTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: Rd(15:12)=1111 => UNPREDICTABLE
-  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000)  !=
+          0x0000F000);
 
-  // defs: {Rd,NZCV if S else None};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12))).Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0) ? 16 : 32)))));
+  // defs: {Rd, NZCV
+  //       if S
+  //       else None};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)))));
 
   return true;
 }
@@ -264,9 +308,11 @@ class ForbiddenCondDecoderTester_Case1
 // inst(25)=1 & inst(24:20)=10000
 //    = {baseline: 'Unary1RegisterImmediateOpDynCodeReplace',
 //       constraints: ,
-//       defs: {inst(15:12),16 if inst(20) else 32},
+//       defs: {inst(15:12), 16
+//            if inst(20)
+//            else 32},
 //       rule: 'MOVW',
-//       safety: ['inst(15:12)=1111 => UNPREDICTABLE']}
+//       safety: [inst(15:12)=1111 => UNPREDICTABLE]}
 //
 // Representative case:
 // op(25)=1 & op1(24:20)=10000
@@ -276,7 +322,9 @@ class ForbiddenCondDecoderTester_Case1
 //       S: S(20),
 //       baseline: Unary1RegisterImmediateOpDynCodeReplace,
 //       constraints: ,
-//       defs: {Rd,NZCV if S else None},
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
 //       fields: [S(20), Rd(15:12)],
 //       rule: MOVW,
 //       safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
@@ -293,9 +341,11 @@ class Unary1RegisterImmediateOpDynCodeReplaceTester_Case2
 // inst(25)=1 & inst(24:20)=10100
 //    = {baseline: 'Unary1RegisterImmediateOpDynCodeReplace',
 //       constraints: ,
-//       defs: {inst(15:12),16 if inst(20) else 32},
+//       defs: {inst(15:12), 16
+//            if inst(20)
+//            else 32},
 //       rule: 'MOVT',
-//       safety: ['inst(15:12)=1111 => UNPREDICTABLE']}
+//       safety: [inst(15:12)=1111 => UNPREDICTABLE]}
 //
 // Representative case:
 // op(25)=1 & op1(24:20)=10100
@@ -305,7 +355,9 @@ class Unary1RegisterImmediateOpDynCodeReplaceTester_Case2
 //       S: S(20),
 //       baseline: Unary1RegisterImmediateOpDynCodeReplace,
 //       constraints: ,
-//       defs: {Rd,NZCV if S else None},
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
 //       fields: [S(20), Rd(15:12)],
 //       rule: MOVT,
 //       safety: [Rd(15:12)=1111 => UNPREDICTABLE]}
@@ -374,10 +426,12 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'Unary1RegisterImmediateOpDynCodeReplace',
 //       baseline: 'Unary1RegisterImmediateOpDynCodeReplace',
 //       constraints: ,
-//       defs: {inst(15:12),16 if inst(20) else 32},
+//       defs: {inst(15:12), 16
+//            if inst(20)
+//            else 32},
 //       pattern: 'cccc00110000iiiiddddiiiiiiiiiiii',
 //       rule: 'MOVW',
-//       safety: ['inst(15:12)=1111 => UNPREDICTABLE']}
+//       safety: [inst(15:12)=1111 => UNPREDICTABLE]}
 //
 // Representaive case:
 // op(25)=1 & op1(24:20)=10000
@@ -388,7 +442,9 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Unary1RegisterImmediateOpDynCodeReplace,
 //       baseline: Unary1RegisterImmediateOpDynCodeReplace,
 //       constraints: ,
-//       defs: {Rd,NZCV if S else None},
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
 //       fields: [S(20), Rd(15:12)],
 //       pattern: cccc00110000iiiiddddiiiiiiiiiiii,
 //       rule: MOVW,
@@ -404,10 +460,12 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'Unary1RegisterImmediateOpDynCodeReplace',
 //       baseline: 'Unary1RegisterImmediateOpDynCodeReplace',
 //       constraints: ,
-//       defs: {inst(15:12),16 if inst(20) else 32},
+//       defs: {inst(15:12), 16
+//            if inst(20)
+//            else 32},
 //       pattern: 'cccc00110100iiiiddddiiiiiiiiiiii',
 //       rule: 'MOVT',
-//       safety: ['inst(15:12)=1111 => UNPREDICTABLE']}
+//       safety: [inst(15:12)=1111 => UNPREDICTABLE]}
 //
 // Representaive case:
 // op(25)=1 & op1(24:20)=10100
@@ -418,7 +476,9 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: Unary1RegisterImmediateOpDynCodeReplace,
 //       baseline: Unary1RegisterImmediateOpDynCodeReplace,
 //       constraints: ,
-//       defs: {Rd,NZCV if S else None},
+//       defs: {Rd, NZCV
+//            if S
+//            else None},
 //       fields: [S(20), Rd(15:12)],
 //       pattern: cccc00110100iiiiddddiiiiiiiiiiii,
 //       rule: MOVT,

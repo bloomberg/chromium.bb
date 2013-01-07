@@ -56,7 +56,9 @@ bool StoreVectorRegisterListTesterCase0
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01B00000) != 0x00800000 /* opcode(24:20)=~01x00 */) return false;
+  // opcode(24:20)=~01x00
+  if ((inst.Bits() & 0x01B00000)  !=
+          0x00800000) return false;
 
   // Check other preconditions defined for the base decoder.
   return StoreVectorRegisterListTester::
@@ -88,7 +90,9 @@ bool LoadStoreVectorRegisterListTesterCase1
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01B00000) != 0x00900000 /* opcode(24:20)=~01x01 */) return false;
+  // opcode(24:20)=~01x01
+  if ((inst.Bits() & 0x01B00000)  !=
+          0x00900000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStoreVectorRegisterListTester::
@@ -120,7 +124,9 @@ bool StoreVectorRegisterListTesterCase2
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01B00000) != 0x00A00000 /* opcode(24:20)=~01x10 */) return false;
+  // opcode(24:20)=~01x10
+  if ((inst.Bits() & 0x01B00000)  !=
+          0x00A00000) return false;
 
   // Check other preconditions defined for the base decoder.
   return StoreVectorRegisterListTester::
@@ -131,7 +137,7 @@ bool StoreVectorRegisterListTesterCase2
 // inst(24:20)=01x11 & inst(19:16)=~1101
 //    = {baseline: 'LoadVectorRegisterList',
 //       constraints: ,
-//       safety: ["'NotRnIsSp'"]}
+//       safety: ['NotRnIsSp']}
 //
 // Representaive case:
 // opcode(24:20)=01x11 & Rn(19:16)=~1101
@@ -154,8 +160,12 @@ bool LoadStoreVectorRegisterListTesterCase3
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01B00000) != 0x00B00000 /* opcode(24:20)=~01x11 */) return false;
-  if ((inst.Bits() & 0x000F0000) == 0x000D0000 /* Rn(19:16)=1101 */) return false;
+  // opcode(24:20)=~01x11
+  if ((inst.Bits() & 0x01B00000)  !=
+          0x00B00000) return false;
+  // Rn(19:16)=1101
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000D0000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStoreVectorRegisterListTesterNotRnIsSp::
@@ -187,8 +197,12 @@ bool LoadStoreVectorRegisterListTesterCase4
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01B00000) != 0x00B00000 /* opcode(24:20)=~01x11 */) return false;
-  if ((inst.Bits() & 0x000F0000) != 0x000D0000 /* Rn(19:16)=~1101 */) return false;
+  // opcode(24:20)=~01x11
+  if ((inst.Bits() & 0x01B00000)  !=
+          0x00B00000) return false;
+  // Rn(19:16)=~1101
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x000D0000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStoreVectorRegisterListTester::
@@ -199,7 +213,7 @@ bool LoadStoreVectorRegisterListTesterCase4
 // inst(24:20)=10x10 & inst(19:16)=~1101
 //    = {baseline: 'StoreVectorRegisterList',
 //       constraints: ,
-//       safety: ["'NotRnIsSp'"]}
+//       safety: ['NotRnIsSp']}
 //
 // Representaive case:
 // opcode(24:20)=10x10 & Rn(19:16)=~1101
@@ -222,8 +236,12 @@ bool StoreVectorRegisterListTesterCase5
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01B00000) != 0x01200000 /* opcode(24:20)=~10x10 */) return false;
-  if ((inst.Bits() & 0x000F0000) == 0x000D0000 /* Rn(19:16)=1101 */) return false;
+  // opcode(24:20)=~10x10
+  if ((inst.Bits() & 0x01B00000)  !=
+          0x01200000) return false;
+  // Rn(19:16)=1101
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000D0000) return false;
 
   // Check other preconditions defined for the base decoder.
   return StoreVectorRegisterListTesterNotRnIsSp::
@@ -255,8 +273,12 @@ bool StoreVectorRegisterListTesterCase6
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01B00000) != 0x01200000 /* opcode(24:20)=~10x10 */) return false;
-  if ((inst.Bits() & 0x000F0000) != 0x000D0000 /* Rn(19:16)=~1101 */) return false;
+  // opcode(24:20)=~10x10
+  if ((inst.Bits() & 0x01B00000)  !=
+          0x01200000) return false;
+  // Rn(19:16)=~1101
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x000D0000) return false;
 
   // Check other preconditions defined for the base decoder.
   return StoreVectorRegisterListTester::
@@ -288,7 +310,9 @@ bool LoadStoreVectorRegisterListTesterCase7
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01B00000) != 0x01300000 /* opcode(24:20)=~10x11 */) return false;
+  // opcode(24:20)=~10x11
+  if ((inst.Bits() & 0x01B00000)  !=
+          0x01300000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStoreVectorRegisterListTester::
@@ -320,7 +344,9 @@ bool StoreVectorRegisterTesterCase8
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01300000) != 0x01000000 /* opcode(24:20)=~1xx00 */) return false;
+  // opcode(24:20)=~1xx00
+  if ((inst.Bits() & 0x01300000)  !=
+          0x01000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return StoreVectorRegisterTester::
@@ -352,7 +378,9 @@ bool LoadStoreVectorOpTesterCase9
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01300000) != 0x01100000 /* opcode(24:20)=~1xx01 */) return false;
+  // opcode(24:20)=~1xx01
+  if ((inst.Bits() & 0x01300000)  !=
+          0x01100000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStoreVectorOpTester::
@@ -429,7 +457,7 @@ class StoreVectorRegisterListTester_Case2
 //    = {baseline: 'LoadVectorRegisterList',
 //       constraints: ,
 //       rule: 'Vldm_Rule_319_A1_A2_P626',
-//       safety: ["'NotRnIsSp'"]}
+//       safety: ['NotRnIsSp']}
 //
 // Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=~1101
@@ -471,7 +499,7 @@ class LoadVectorRegisterListTester_Case4
 //    = {baseline: 'StoreVectorRegisterList',
 //       constraints: ,
 //       rule: 'Vstm_Rule_399_A1_A2_P784',
-//       safety: ["'NotRnIsSp'"]}
+//       safety: ['NotRnIsSp']}
 //
 // Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=~1101
@@ -647,7 +675,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc11001d11nnnndddd101xiiiiiiii',
 //       rule: 'Vldm_Rule_319_A1_A2_P626',
-//       safety: ["'NotRnIsSp'"]}
+//       safety: ['NotRnIsSp']}
 //
 // Representaive case:
 // opcode(24:20)=01x11 & Rn(19:16)=~1101
@@ -691,7 +719,7 @@ TEST_F(Arm32DecoderStateTests,
 //       constraints: ,
 //       pattern: 'cccc11010d10nnnndddd101xiiiiiiii',
 //       rule: 'Vstm_Rule_399_A1_A2_P784',
-//       safety: ["'NotRnIsSp'"]}
+//       safety: ['NotRnIsSp']}
 //
 // Representaive case:
 // opcode(24:20)=10x10 & Rn(19:16)=~1101

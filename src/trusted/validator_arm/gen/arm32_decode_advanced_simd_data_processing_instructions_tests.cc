@@ -56,9 +56,15 @@ bool VectorBinary3RegisterImmOpTesterCase0
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01000000) != 0x00000000 /* U(24)=~0 */) return false;
-  if ((inst.Bits() & 0x00B00000) != 0x00B00000 /* A(23:19)=~1x11x */) return false;
-  if ((inst.Bits() & 0x00000010) != 0x00000000 /* C(7:4)=~xxx0 */) return false;
+  // U(24)=~0
+  if ((inst.Bits() & 0x01000000)  !=
+          0x00000000) return false;
+  // A(23:19)=~1x11x
+  if ((inst.Bits() & 0x00B00000)  !=
+          0x00B00000) return false;
+  // C(7:4)=~xxx0
+  if ((inst.Bits() & 0x00000010)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return VectorBinary3RegisterImmOpTester::
@@ -90,10 +96,18 @@ bool VectorUnary2RegisterDupTesterCase1
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01000000) != 0x01000000 /* U(24)=~1 */) return false;
-  if ((inst.Bits() & 0x00B00000) != 0x00B00000 /* A(23:19)=~1x11x */) return false;
-  if ((inst.Bits() & 0x00000F00) != 0x00000C00 /* B(11:8)=~1100 */) return false;
-  if ((inst.Bits() & 0x00000090) != 0x00000000 /* C(7:4)=~0xx0 */) return false;
+  // U(24)=~1
+  if ((inst.Bits() & 0x01000000)  !=
+          0x01000000) return false;
+  // A(23:19)=~1x11x
+  if ((inst.Bits() & 0x00B00000)  !=
+          0x00B00000) return false;
+  // B(11:8)=~1100
+  if ((inst.Bits() & 0x00000F00)  !=
+          0x00000C00) return false;
+  // C(7:4)=~0xx0
+  if ((inst.Bits() & 0x00000090)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return VectorUnary2RegisterDupTester::
@@ -125,10 +139,18 @@ bool VectorBinary3RegisterLookupOpTesterCase2
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01000000) != 0x01000000 /* U(24)=~1 */) return false;
-  if ((inst.Bits() & 0x00B00000) != 0x00B00000 /* A(23:19)=~1x11x */) return false;
-  if ((inst.Bits() & 0x00000C00) != 0x00000800 /* B(11:8)=~10xx */) return false;
-  if ((inst.Bits() & 0x00000010) != 0x00000000 /* C(7:4)=~xxx0 */) return false;
+  // U(24)=~1
+  if ((inst.Bits() & 0x01000000)  !=
+          0x01000000) return false;
+  // A(23:19)=~1x11x
+  if ((inst.Bits() & 0x00B00000)  !=
+          0x00B00000) return false;
+  // B(11:8)=~10xx
+  if ((inst.Bits() & 0x00000C00)  !=
+          0x00000800) return false;
+  // C(7:4)=~xxx0
+  if ((inst.Bits() & 0x00000010)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return VectorBinary3RegisterLookupOpTester::

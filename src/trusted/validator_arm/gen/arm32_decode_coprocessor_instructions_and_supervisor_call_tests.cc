@@ -56,8 +56,12 @@ bool UnsafeCondDecoderTesterCase0
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8)=101x */) return false;
-  if ((inst.Bits() & 0x03F00000) != 0x00400000 /* op1(25:20)=~000100 */) return false;
+  // coproc(11:8)=101x
+  if ((inst.Bits() & 0x00000E00)  ==
+          0x00000A00) return false;
+  // op1(25:20)=~000100
+  if ((inst.Bits() & 0x03F00000)  !=
+          0x00400000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -89,8 +93,12 @@ bool UnsafeCondDecoderTesterCase1
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8)=101x */) return false;
-  if ((inst.Bits() & 0x03F00000) != 0x00500000 /* op1(25:20)=~000101 */) return false;
+  // coproc(11:8)=101x
+  if ((inst.Bits() & 0x00000E00)  ==
+          0x00000A00) return false;
+  // op1(25:20)=~000101
+  if ((inst.Bits() & 0x03F00000)  !=
+          0x00500000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -122,9 +130,15 @@ bool UnsafeCondDecoderTesterCase2
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8)=101x */) return false;
-  if ((inst.Bits() & 0x03100000) != 0x02000000 /* op1(25:20)=~10xxx0 */) return false;
-  if ((inst.Bits() & 0x00000010) != 0x00000010 /* op(4)=~1 */) return false;
+  // coproc(11:8)=101x
+  if ((inst.Bits() & 0x00000E00)  ==
+          0x00000A00) return false;
+  // op1(25:20)=~10xxx0
+  if ((inst.Bits() & 0x03100000)  !=
+          0x02000000) return false;
+  // op(4)=~1
+  if ((inst.Bits() & 0x00000010)  !=
+          0x00000010) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -156,9 +170,15 @@ bool UnsafeCondDecoderTesterCase3
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8)=101x */) return false;
-  if ((inst.Bits() & 0x03100000) != 0x02100000 /* op1(25:20)=~10xxx1 */) return false;
-  if ((inst.Bits() & 0x00000010) != 0x00000010 /* op(4)=~1 */) return false;
+  // coproc(11:8)=101x
+  if ((inst.Bits() & 0x00000E00)  ==
+          0x00000A00) return false;
+  // op1(25:20)=~10xxx1
+  if ((inst.Bits() & 0x03100000)  !=
+          0x02100000) return false;
+  // op(4)=~1
+  if ((inst.Bits() & 0x00000010)  !=
+          0x00000010) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -190,9 +210,15 @@ bool UnsafeCondDecoderTesterCase4
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8)=101x */) return false;
-  if ((inst.Bits() & 0x02100000) != 0x00000000 /* op1(25:20)=~0xxxx0 */) return false;
-  if ((inst.Bits() & 0x03B00000) == 0x00000000 /* op1_repeated(25:20)=000x00 */) return false;
+  // coproc(11:8)=101x
+  if ((inst.Bits() & 0x00000E00)  ==
+          0x00000A00) return false;
+  // op1(25:20)=~0xxxx0
+  if ((inst.Bits() & 0x02100000)  !=
+          0x00000000) return false;
+  // op1_repeated(25:20)=000x00
+  if ((inst.Bits() & 0x03B00000)  ==
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -224,10 +250,18 @@ bool UnsafeCondDecoderTesterCase5
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8)=101x */) return false;
-  if ((inst.Bits() & 0x02100000) != 0x00100000 /* op1(25:20)=~0xxxx1 */) return false;
-  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */) return false;
-  if ((inst.Bits() & 0x03B00000) == 0x00100000 /* op1_repeated(25:20)=000x01 */) return false;
+  // coproc(11:8)=101x
+  if ((inst.Bits() & 0x00000E00)  ==
+          0x00000A00) return false;
+  // op1(25:20)=~0xxxx1
+  if ((inst.Bits() & 0x02100000)  !=
+          0x00100000) return false;
+  // Rn(19:16)=1111
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000F0000) return false;
+  // op1_repeated(25:20)=000x01
+  if ((inst.Bits() & 0x03B00000)  ==
+          0x00100000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -259,10 +293,18 @@ bool UnsafeCondDecoderTesterCase6
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8)=101x */) return false;
-  if ((inst.Bits() & 0x02100000) != 0x00100000 /* op1(25:20)=~0xxxx1 */) return false;
-  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) return false;
-  if ((inst.Bits() & 0x03B00000) == 0x00100000 /* op1_repeated(25:20)=000x01 */) return false;
+  // coproc(11:8)=101x
+  if ((inst.Bits() & 0x00000E00)  ==
+          0x00000A00) return false;
+  // op1(25:20)=~0xxxx1
+  if ((inst.Bits() & 0x02100000)  !=
+          0x00100000) return false;
+  // Rn(19:16)=~1111
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x000F0000) return false;
+  // op1_repeated(25:20)=000x01
+  if ((inst.Bits() & 0x03B00000)  ==
+          0x00100000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -294,9 +336,15 @@ bool UnsafeCondDecoderTesterCase7
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8)=101x */) return false;
-  if ((inst.Bits() & 0x03000000) != 0x02000000 /* op1(25:20)=~10xxxx */) return false;
-  if ((inst.Bits() & 0x00000010) != 0x00000000 /* op(4)=~0 */) return false;
+  // coproc(11:8)=101x
+  if ((inst.Bits() & 0x00000E00)  ==
+          0x00000A00) return false;
+  // op1(25:20)=~10xxxx
+  if ((inst.Bits() & 0x03000000)  !=
+          0x02000000) return false;
+  // op(4)=~0
+  if ((inst.Bits() & 0x00000010)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -328,7 +376,9 @@ bool UnsafeCondDecoderTesterCase8
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x03E00000) != 0x00000000 /* op1(25:20)=~00000x */) return false;
+  // op1(25:20)=~00000x
+  if ((inst.Bits() & 0x03E00000)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -360,7 +410,9 @@ bool UnsafeCondDecoderTesterCase9
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x03000000) != 0x03000000 /* op1(25:20)=~11xxxx */) return false;
+  // op1(25:20)=~11xxxx
+  if ((inst.Bits() & 0x03000000)  !=
+          0x03000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::

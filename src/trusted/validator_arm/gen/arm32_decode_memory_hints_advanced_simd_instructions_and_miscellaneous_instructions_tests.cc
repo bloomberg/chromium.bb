@@ -56,10 +56,18 @@ bool UnsafeUncondDecoderTesterCase0
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07F00000) != 0x01000000 /* op1(26:20)=~0010000 */) return false;
-  if ((inst.Bits() & 0x000000F0) != 0x00000000 /* op2(7:4)=~0000 */) return false;
-  if ((inst.Bits() & 0x00010000) != 0x00010000 /* Rn(19:16)=~xxx1 */) return false;
-  if ((inst.Bits() & 0x000EFD0F) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxx000x000000x0xxxx0000 */) return false;
+  // op1(26:20)=~0010000
+  if ((inst.Bits() & 0x07F00000)  !=
+          0x01000000) return false;
+  // op2(7:4)=~0000
+  if ((inst.Bits() & 0x000000F0)  !=
+          0x00000000) return false;
+  // Rn(19:16)=~xxx1
+  if ((inst.Bits() & 0x00010000)  !=
+          0x00010000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxx000x000000x0xxxx0000
+  if ((inst.Bits() & 0x000EFD0F)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeUncondDecoderTester::
@@ -91,10 +99,18 @@ bool UnsafeUncondDecoderTesterCase1
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07F00000) != 0x01000000 /* op1(26:20)=~0010000 */) return false;
-  if ((inst.Bits() & 0x00000020) != 0x00000000 /* op2(7:4)=~xx0x */) return false;
-  if ((inst.Bits() & 0x00010000) != 0x00000000 /* Rn(19:16)=~xxx0 */) return false;
-  if ((inst.Bits() & 0x0000FE00) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxx0000000xxxxxxxxx */) return false;
+  // op1(26:20)=~0010000
+  if ((inst.Bits() & 0x07F00000)  !=
+          0x01000000) return false;
+  // op2(7:4)=~xx0x
+  if ((inst.Bits() & 0x00000020)  !=
+          0x00000000) return false;
+  // Rn(19:16)=~xxx0
+  if ((inst.Bits() & 0x00010000)  !=
+          0x00000000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxx0000000xxxxxxxxx
+  if ((inst.Bits() & 0x0000FE00)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeUncondDecoderTester::
@@ -126,7 +142,9 @@ bool UnsafeUncondDecoderTesterCase2
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07F00000) != 0x05300000 /* op1(26:20)=~1010011 */) return false;
+  // op1(26:20)=~1010011
+  if ((inst.Bits() & 0x07F00000)  !=
+          0x05300000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeUncondDecoderTester::
@@ -158,8 +176,12 @@ bool UnsafeUncondDecoderTesterCase3
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07F00000) != 0x05700000 /* op1(26:20)=~1010111 */) return false;
-  if ((inst.Bits() & 0x000000F0) != 0x00000000 /* op2(7:4)=~0000 */) return false;
+  // op1(26:20)=~1010111
+  if ((inst.Bits() & 0x07F00000)  !=
+          0x05700000) return false;
+  // op2(7:4)=~0000
+  if ((inst.Bits() & 0x000000F0)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeUncondDecoderTester::
@@ -191,9 +213,15 @@ bool UnsafeUncondDecoderTesterCase4
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07F00000) != 0x05700000 /* op1(26:20)=~1010111 */) return false;
-  if ((inst.Bits() & 0x000000F0) != 0x00000010 /* op2(7:4)=~0001 */) return false;
-  if ((inst.Bits() & 0x000FFF0F) != 0x000FF00F /* $pattern(31:0)=~xxxxxxxxxxxx111111110000xxxx1111 */) return false;
+  // op1(26:20)=~1010111
+  if ((inst.Bits() & 0x07F00000)  !=
+          0x05700000) return false;
+  // op2(7:4)=~0001
+  if ((inst.Bits() & 0x000000F0)  !=
+          0x00000010) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxx111111110000xxxx1111
+  if ((inst.Bits() & 0x000FFF0F)  !=
+          0x000FF00F) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeUncondDecoderTester::
@@ -225,9 +253,15 @@ bool DataBarrierTesterCase5
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07F00000) != 0x05700000 /* op1(26:20)=~1010111 */) return false;
-  if ((inst.Bits() & 0x000000F0) != 0x00000040 /* op2(7:4)=~0100 */) return false;
-  if ((inst.Bits() & 0x000FFF00) != 0x000FF000 /* $pattern(31:0)=~xxxxxxxxxxxx111111110000xxxxxxxx */) return false;
+  // op1(26:20)=~1010111
+  if ((inst.Bits() & 0x07F00000)  !=
+          0x05700000) return false;
+  // op2(7:4)=~0100
+  if ((inst.Bits() & 0x000000F0)  !=
+          0x00000040) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxx111111110000xxxxxxxx
+  if ((inst.Bits() & 0x000FFF00)  !=
+          0x000FF000) return false;
 
   // Check other preconditions defined for the base decoder.
   return DataBarrierTester::
@@ -259,9 +293,15 @@ bool DataBarrierTesterCase6
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07F00000) != 0x05700000 /* op1(26:20)=~1010111 */) return false;
-  if ((inst.Bits() & 0x000000F0) != 0x00000050 /* op2(7:4)=~0101 */) return false;
-  if ((inst.Bits() & 0x000FFF00) != 0x000FF000 /* $pattern(31:0)=~xxxxxxxxxxxx111111110000xxxxxxxx */) return false;
+  // op1(26:20)=~1010111
+  if ((inst.Bits() & 0x07F00000)  !=
+          0x05700000) return false;
+  // op2(7:4)=~0101
+  if ((inst.Bits() & 0x000000F0)  !=
+          0x00000050) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxx111111110000xxxxxxxx
+  if ((inst.Bits() & 0x000FFF00)  !=
+          0x000FF000) return false;
 
   // Check other preconditions defined for the base decoder.
   return DataBarrierTester::
@@ -293,9 +333,15 @@ bool InstructionBarrierTesterCase7
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07F00000) != 0x05700000 /* op1(26:20)=~1010111 */) return false;
-  if ((inst.Bits() & 0x000000F0) != 0x00000060 /* op2(7:4)=~0110 */) return false;
-  if ((inst.Bits() & 0x000FFF00) != 0x000FF000 /* $pattern(31:0)=~xxxxxxxxxxxx111111110000xxxxxxxx */) return false;
+  // op1(26:20)=~1010111
+  if ((inst.Bits() & 0x07F00000)  !=
+          0x05700000) return false;
+  // op2(7:4)=~0110
+  if ((inst.Bits() & 0x000000F0)  !=
+          0x00000060) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxx111111110000xxxxxxxx
+  if ((inst.Bits() & 0x000FFF00)  !=
+          0x000FF000) return false;
 
   // Check other preconditions defined for the base decoder.
   return InstructionBarrierTester::
@@ -327,8 +373,12 @@ bool UnsafeUncondDecoderTesterCase8
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07F00000) != 0x05700000 /* op1(26:20)=~1010111 */) return false;
-  if ((inst.Bits() & 0x000000F0) != 0x00000070 /* op2(7:4)=~0111 */) return false;
+  // op1(26:20)=~1010111
+  if ((inst.Bits() & 0x07F00000)  !=
+          0x05700000) return false;
+  // op2(7:4)=~0111
+  if ((inst.Bits() & 0x000000F0)  !=
+          0x00000070) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeUncondDecoderTester::
@@ -360,8 +410,12 @@ bool UnsafeUncondDecoderTesterCase9
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07F00000) != 0x05700000 /* op1(26:20)=~1010111 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000020 /* op2(7:4)=~001x */) return false;
+  // op1(26:20)=~1010111
+  if ((inst.Bits() & 0x07F00000)  !=
+          0x05700000) return false;
+  // op2(7:4)=~001x
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x00000020) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeUncondDecoderTester::
@@ -393,8 +447,12 @@ bool UnsafeUncondDecoderTesterCase10
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07F00000) != 0x05700000 /* op1(26:20)=~1010111 */) return false;
-  if ((inst.Bits() & 0x00000080) != 0x00000080 /* op2(7:4)=~1xxx */) return false;
+  // op1(26:20)=~1010111
+  if ((inst.Bits() & 0x07F00000)  !=
+          0x05700000) return false;
+  // op2(7:4)=~1xxx
+  if ((inst.Bits() & 0x00000080)  !=
+          0x00000080) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeUncondDecoderTester::
@@ -426,7 +484,9 @@ bool UnsafeUncondDecoderTesterCase11
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07700000) != 0x04100000 /* op1(26:20)=~100x001 */) return false;
+  // op1(26:20)=~100x001
+  if ((inst.Bits() & 0x07700000)  !=
+          0x04100000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeUncondDecoderTester::
@@ -458,8 +518,12 @@ bool PreloadRegisterImm12OpTesterCase12
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07700000) != 0x04500000 /* op1(26:20)=~100x101 */) return false;
-  if ((inst.Bits() & 0x0000F000) != 0x0000F000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) return false;
+  // op1(26:20)=~100x101
+  if ((inst.Bits() & 0x07700000)  !=
+          0x04500000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
+  if ((inst.Bits() & 0x0000F000)  !=
+          0x0000F000) return false;
 
   // Check other preconditions defined for the base decoder.
   return PreloadRegisterImm12OpTester::
@@ -491,12 +555,20 @@ bool PreloadRegisterImm12OpTesterCase13
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07700000) != 0x05100000 /* op1(26:20)=~101x001 */) return false;
-  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */) return false;
-  if ((inst.Bits() & 0x0000F000) != 0x0000F000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) return false;
+  // op1(26:20)=~101x001
+  if ((inst.Bits() & 0x07700000)  !=
+          0x05100000) return false;
+  // Rn(19:16)=1111
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000F0000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
+  if ((inst.Bits() & 0x0000F000)  !=
+          0x0000F000) return false;
 
   // Check pattern restrictions of row.
-  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* constraint(31:0)=xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx */) return false;
+  // constraint(31:0)=xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000F0000) return false;
 
   // Check other preconditions defined for the base decoder.
   return PreloadRegisterImm12OpTester::
@@ -528,8 +600,12 @@ bool UnsafeUncondDecoderTesterCase14
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07700000) != 0x05100000 /* op1(26:20)=~101x001 */) return false;
-  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) return false;
+  // op1(26:20)=~101x001
+  if ((inst.Bits() & 0x07700000)  !=
+          0x05100000) return false;
+  // Rn(19:16)=~1111
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x000F0000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeUncondDecoderTester::
@@ -561,12 +637,20 @@ bool PreloadRegisterImm12OpTesterCase15
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07700000) != 0x05500000 /* op1(26:20)=~101x101 */) return false;
-  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16)=1111 */) return false;
-  if ((inst.Bits() & 0x0000F000) != 0x0000F000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) return false;
+  // op1(26:20)=~101x101
+  if ((inst.Bits() & 0x07700000)  !=
+          0x05500000) return false;
+  // Rn(19:16)=1111
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000F0000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
+  if ((inst.Bits() & 0x0000F000)  !=
+          0x0000F000) return false;
 
   // Check pattern restrictions of row.
-  if ((inst.Bits() & 0x000F0000) == 0x000F0000 /* constraint(31:0)=xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx */) return false;
+  // constraint(31:0)=xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000F0000) return false;
 
   // Check other preconditions defined for the base decoder.
   return PreloadRegisterImm12OpTester::
@@ -598,9 +682,15 @@ bool PreloadRegisterImm12OpTesterCase16
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07700000) != 0x05500000 /* op1(26:20)=~101x101 */) return false;
-  if ((inst.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16)=~1111 */) return false;
-  if ((inst.Bits() & 0x0000F000) != 0x0000F000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) return false;
+  // op1(26:20)=~101x101
+  if ((inst.Bits() & 0x07700000)  !=
+          0x05500000) return false;
+  // Rn(19:16)=~1111
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x000F0000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
+  if ((inst.Bits() & 0x0000F000)  !=
+          0x0000F000) return false;
 
   // Check other preconditions defined for the base decoder.
   return PreloadRegisterImm12OpTester::
@@ -632,8 +722,12 @@ bool UnsafeUncondDecoderTesterCase17
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07700000) != 0x06100000 /* op1(26:20)=~110x001 */) return false;
-  if ((inst.Bits() & 0x00000010) != 0x00000000 /* op2(7:4)=~xxx0 */) return false;
+  // op1(26:20)=~110x001
+  if ((inst.Bits() & 0x07700000)  !=
+          0x06100000) return false;
+  // op2(7:4)=~xxx0
+  if ((inst.Bits() & 0x00000010)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeUncondDecoderTester::
@@ -665,9 +759,15 @@ bool PreloadRegisterPairOpTesterCase18
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07700000) != 0x06500000 /* op1(26:20)=~110x101 */) return false;
-  if ((inst.Bits() & 0x00000010) != 0x00000000 /* op2(7:4)=~xxx0 */) return false;
-  if ((inst.Bits() & 0x0000F000) != 0x0000F000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) return false;
+  // op1(26:20)=~110x101
+  if ((inst.Bits() & 0x07700000)  !=
+          0x06500000) return false;
+  // op2(7:4)=~xxx0
+  if ((inst.Bits() & 0x00000010)  !=
+          0x00000000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
+  if ((inst.Bits() & 0x0000F000)  !=
+          0x0000F000) return false;
 
   // Check other preconditions defined for the base decoder.
   return PreloadRegisterPairOpTester::
@@ -699,9 +799,15 @@ bool PreloadRegisterPairOpTesterCase19
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07700000) != 0x07100000 /* op1(26:20)=~111x001 */) return false;
-  if ((inst.Bits() & 0x00000010) != 0x00000000 /* op2(7:4)=~xxx0 */) return false;
-  if ((inst.Bits() & 0x0000F000) != 0x0000F000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) return false;
+  // op1(26:20)=~111x001
+  if ((inst.Bits() & 0x07700000)  !=
+          0x07100000) return false;
+  // op2(7:4)=~xxx0
+  if ((inst.Bits() & 0x00000010)  !=
+          0x00000000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
+  if ((inst.Bits() & 0x0000F000)  !=
+          0x0000F000) return false;
 
   // Check other preconditions defined for the base decoder.
   return PreloadRegisterPairOpTester::
@@ -733,9 +839,15 @@ bool PreloadRegisterPairOpTesterCase20
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07700000) != 0x07500000 /* op1(26:20)=~111x101 */) return false;
-  if ((inst.Bits() & 0x00000010) != 0x00000000 /* op2(7:4)=~xxx0 */) return false;
-  if ((inst.Bits() & 0x0000F000) != 0x0000F000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) return false;
+  // op1(26:20)=~111x101
+  if ((inst.Bits() & 0x07700000)  !=
+          0x07500000) return false;
+  // op2(7:4)=~xxx0
+  if ((inst.Bits() & 0x00000010)  !=
+          0x00000000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
+  if ((inst.Bits() & 0x0000F000)  !=
+          0x0000F000) return false;
 
   // Check other preconditions defined for the base decoder.
   return PreloadRegisterPairOpTester::
@@ -767,7 +879,9 @@ bool UnsafeUncondDecoderTesterCase21
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07B00000) != 0x05B00000 /* op1(26:20)=~1011x11 */) return false;
+  // op1(26:20)=~1011x11
+  if ((inst.Bits() & 0x07B00000)  !=
+          0x05B00000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeUncondDecoderTester::
@@ -799,7 +913,9 @@ bool UnsafeUncondDecoderTesterCase22
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x07300000) != 0x04300000 /* op1(26:20)=~100xx11 */) return false;
+  // op1(26:20)=~100xx11
+  if ((inst.Bits() & 0x07300000)  !=
+          0x04300000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeUncondDecoderTester::
@@ -831,8 +947,12 @@ bool UnsafeUncondDecoderTesterCase23
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x06300000) != 0x06300000 /* op1(26:20)=~11xxx11 */) return false;
-  if ((inst.Bits() & 0x00000010) != 0x00000000 /* op2(7:4)=~xxx0 */) return false;
+  // op1(26:20)=~11xxx11
+  if ((inst.Bits() & 0x06300000)  !=
+          0x06300000) return false;
+  // op2(7:4)=~xxx0
+  if ((inst.Bits() & 0x00000010)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeUncondDecoderTester::

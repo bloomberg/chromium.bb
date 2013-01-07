@@ -47,7 +47,8 @@
         'inst_classes.cc',
         'model.cc',
         'validator.cc',
-        'gen/arm32_decode.cc'
+        'gen/arm32_decode.cc',
+        'gen/arm32_decode_actuals.cc'
       ],
     },
     # ----------------------------------------------------------------------

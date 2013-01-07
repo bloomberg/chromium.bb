@@ -35,8 +35,12 @@ namespace nacl_arm_test {
 // inst(6:4)=000 & inst(9)=0 & inst(22:21)=01 & inst(19:16)=xx00 & inst(31:0)=xxxxxxxxxxxxxxxx111100x0xxxxxxxx
 //    = {baseline: 'Unary1RegisterUse',
 //       constraints: ,
-//       defs: {16 if inst(19:18)(1)=1 else 32},
-//       safety: ['inst(19:18)=00 => UNPREDICTABLE', '15 == inst(3:0) => UNPREDICTABLE']}
+//       defs: {16
+//            if inst(19:18)(1)=1
+//            else 32},
+//       safety: [15  ==
+//               inst(3:0) => UNPREDICTABLE,
+//         inst(19:18)=00 => UNPREDICTABLE]}
 //
 // Representaive case:
 // op2(6:4)=000 & B(9)=0 & op(22:21)=01 & op1(19:16)=xx00 & $pattern(31:0)=xxxxxxxxxxxxxxxx111100x0xxxxxxxx
@@ -46,10 +50,14 @@ namespace nacl_arm_test {
 //       Rn: Rn(3:0),
 //       baseline: Unary1RegisterUse,
 //       constraints: ,
-//       defs: {NZCV if write_nzcvq else None},
+//       defs: {NZCV
+//            if write_nzcvq
+//            else None},
 //       fields: [mask(19:18), Rn(3:0)],
 //       mask: mask(19:18),
-//       safety: [mask(19:18)=00 => UNPREDICTABLE, Rn == Pc => UNPREDICTABLE],
+//       safety: [mask(19:18)=00 => UNPREDICTABLE,
+//         Rn  ==
+//               Pc => UNPREDICTABLE],
 //       write_nzcvq: mask(1)=1}
 class Unary1RegisterUseTesterCase0
     : public Unary1RegisterUseTester {
@@ -69,11 +77,21 @@ bool Unary1RegisterUseTesterCase0
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000070) != 0x00000000 /* op2(6:4)=~000 */) return false;
-  if ((inst.Bits() & 0x00000200) != 0x00000000 /* B(9)=~0 */) return false;
-  if ((inst.Bits() & 0x00600000) != 0x00200000 /* op(22:21)=~01 */) return false;
-  if ((inst.Bits() & 0x00030000) != 0x00000000 /* op1(19:16)=~xx00 */) return false;
-  if ((inst.Bits() & 0x0000FD00) != 0x0000F000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxx111100x0xxxxxxxx */) return false;
+  // op2(6:4)=~000
+  if ((inst.Bits() & 0x00000070)  !=
+          0x00000000) return false;
+  // B(9)=~0
+  if ((inst.Bits() & 0x00000200)  !=
+          0x00000000) return false;
+  // op(22:21)=~01
+  if ((inst.Bits() & 0x00600000)  !=
+          0x00200000) return false;
+  // op1(19:16)=~xx00
+  if ((inst.Bits() & 0x00030000)  !=
+          0x00000000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxx111100x0xxxxxxxx
+  if ((inst.Bits() & 0x0000FD00)  !=
+          0x0000F000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary1RegisterUseTester::
@@ -83,16 +101,25 @@ bool Unary1RegisterUseTesterCase0
 bool Unary1RegisterUseTesterCase0
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Unary1RegisterUseTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Unary1RegisterUseTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: mask(19:18)=00 => UNPREDICTABLE
-  EXPECT_TRUE((inst.Bits() & 0x000C0000) != 0x00000000);
+  EXPECT_TRUE((inst.Bits() & 0x000C0000)  !=
+          0x00000000);
 
-  // safety: Rn == Pc => UNPREDICTABLE
+  // safety: Rn  ==
+  //          Pc => UNPREDICTABLE
   EXPECT_TRUE((((inst.Bits() & 0x0000000F)) != (15)));
 
-  // defs: {NZCV if write_nzcvq else None};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((((inst.Bits() & 0x000C0000) >> 18) & 0x00000002) == 0x00000002 ? 16 : 32)))));
+  // defs: {NZCV
+  //       if write_nzcvq
+  //       else None};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
+   Add(Register(((((inst.Bits() & 0x000C0000) >> 18) & 0x00000002)  ==
+          0x00000002
+       ? 16
+       : 32)))));
 
   return true;
 }
@@ -122,11 +149,21 @@ bool UnsafeCondDecoderTesterCase1
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000070) != 0x00000000 /* op2(6:4)=~000 */) return false;
-  if ((inst.Bits() & 0x00000200) != 0x00000000 /* B(9)=~0 */) return false;
-  if ((inst.Bits() & 0x00600000) != 0x00200000 /* op(22:21)=~01 */) return false;
-  if ((inst.Bits() & 0x00030000) != 0x00010000 /* op1(19:16)=~xx01 */) return false;
-  if ((inst.Bits() & 0x0000FD00) != 0x0000F000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxx111100x0xxxxxxxx */) return false;
+  // op2(6:4)=~000
+  if ((inst.Bits() & 0x00000070)  !=
+          0x00000000) return false;
+  // B(9)=~0
+  if ((inst.Bits() & 0x00000200)  !=
+          0x00000000) return false;
+  // op(22:21)=~01
+  if ((inst.Bits() & 0x00600000)  !=
+          0x00200000) return false;
+  // op1(19:16)=~xx01
+  if ((inst.Bits() & 0x00030000)  !=
+          0x00010000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxx111100x0xxxxxxxx
+  if ((inst.Bits() & 0x0000FD00)  !=
+          0x0000F000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -158,11 +195,21 @@ bool UnsafeCondDecoderTesterCase2
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000070) != 0x00000000 /* op2(6:4)=~000 */) return false;
-  if ((inst.Bits() & 0x00000200) != 0x00000000 /* B(9)=~0 */) return false;
-  if ((inst.Bits() & 0x00600000) != 0x00200000 /* op(22:21)=~01 */) return false;
-  if ((inst.Bits() & 0x00020000) != 0x00020000 /* op1(19:16)=~xx1x */) return false;
-  if ((inst.Bits() & 0x0000FD00) != 0x0000F000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxx111100x0xxxxxxxx */) return false;
+  // op2(6:4)=~000
+  if ((inst.Bits() & 0x00000070)  !=
+          0x00000000) return false;
+  // B(9)=~0
+  if ((inst.Bits() & 0x00000200)  !=
+          0x00000000) return false;
+  // op(22:21)=~01
+  if ((inst.Bits() & 0x00600000)  !=
+          0x00200000) return false;
+  // op1(19:16)=~xx1x
+  if ((inst.Bits() & 0x00020000)  !=
+          0x00020000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxx111100x0xxxxxxxx
+  if ((inst.Bits() & 0x0000FD00)  !=
+          0x0000F000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -194,10 +241,18 @@ bool UnsafeCondDecoderTesterCase3
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000070) != 0x00000000 /* op2(6:4)=~000 */) return false;
-  if ((inst.Bits() & 0x00000200) != 0x00000000 /* B(9)=~0 */) return false;
-  if ((inst.Bits() & 0x00600000) != 0x00600000 /* op(22:21)=~11 */) return false;
-  if ((inst.Bits() & 0x0000FD00) != 0x0000F000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxx111100x0xxxxxxxx */) return false;
+  // op2(6:4)=~000
+  if ((inst.Bits() & 0x00000070)  !=
+          0x00000000) return false;
+  // B(9)=~0
+  if ((inst.Bits() & 0x00000200)  !=
+          0x00000000) return false;
+  // op(22:21)=~11
+  if ((inst.Bits() & 0x00600000)  !=
+          0x00600000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxx111100x0xxxxxxxx
+  if ((inst.Bits() & 0x0000FD00)  !=
+          0x0000F000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -209,7 +264,8 @@ bool UnsafeCondDecoderTesterCase3
 //    = {baseline: 'Unary1RegisterSet',
 //       constraints: ,
 //       defs: {inst(15:12)},
-//       safety: ['inst(22)=1 => FORBIDDEN_OPERANDS', 'inst(15:12)=1111 => UNPREDICTABLE']}
+//       safety: [inst(15:12)=1111 => UNPREDICTABLE,
+//         inst(22)=1 => FORBIDDEN_OPERANDS]}
 //
 // Representaive case:
 // op2(6:4)=000 & B(9)=0 & op(22:21)=x0 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx00x0xxxx0000
@@ -219,7 +275,8 @@ bool UnsafeCondDecoderTesterCase3
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [R(22), Rd(15:12)],
-//       safety: [R(22)=1 => FORBIDDEN_OPERANDS, Rd(15:12)=1111 => UNPREDICTABLE]}
+//       safety: [R(22)=1 => FORBIDDEN_OPERANDS,
+//         Rd(15:12)=1111 => UNPREDICTABLE]}
 class Unary1RegisterSetTesterCase4
     : public Unary1RegisterSetTester {
  public:
@@ -238,10 +295,18 @@ bool Unary1RegisterSetTesterCase4
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000070) != 0x00000000 /* op2(6:4)=~000 */) return false;
-  if ((inst.Bits() & 0x00000200) != 0x00000000 /* B(9)=~0 */) return false;
-  if ((inst.Bits() & 0x00200000) != 0x00000000 /* op(22:21)=~x0 */) return false;
-  if ((inst.Bits() & 0x000F0D0F) != 0x000F0000 /* $pattern(31:0)=~xxxxxxxxxxxx1111xxxx00x0xxxx0000 */) return false;
+  // op2(6:4)=~000
+  if ((inst.Bits() & 0x00000070)  !=
+          0x00000000) return false;
+  // B(9)=~0
+  if ((inst.Bits() & 0x00000200)  !=
+          0x00000000) return false;
+  // op(22:21)=~x0
+  if ((inst.Bits() & 0x00200000)  !=
+          0x00000000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxx1111xxxx00x0xxxx0000
+  if ((inst.Bits() & 0x000F0D0F)  !=
+          0x000F0000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary1RegisterSetTester::
@@ -251,16 +316,20 @@ bool Unary1RegisterSetTesterCase4
 bool Unary1RegisterSetTesterCase4
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Unary1RegisterSetTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Unary1RegisterSetTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: R(22)=1 => FORBIDDEN_OPERANDS
-  EXPECT_TRUE((inst.Bits() & 0x00400000) != 0x00400000);
+  EXPECT_TRUE((inst.Bits() & 0x00400000)  !=
+          0x00400000);
 
   // safety: Rd(15:12)=1111 => UNPREDICTABLE
-  EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000);
+  EXPECT_TRUE((inst.Bits() & 0x0000F000)  !=
+          0x0000F000);
 
   // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
 
   return true;
 }
@@ -290,10 +359,18 @@ bool UnsafeCondDecoderTesterCase5
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000070) != 0x00000000 /* op2(6:4)=~000 */) return false;
-  if ((inst.Bits() & 0x00000200) != 0x00000200 /* B(9)=~1 */) return false;
-  if ((inst.Bits() & 0x00200000) != 0x00000000 /* op(22:21)=~x0 */) return false;
-  if ((inst.Bits() & 0x00000C0F) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx00xxxxxx0000 */) return false;
+  // op2(6:4)=~000
+  if ((inst.Bits() & 0x00000070)  !=
+          0x00000000) return false;
+  // B(9)=~1
+  if ((inst.Bits() & 0x00000200)  !=
+          0x00000200) return false;
+  // op(22:21)=~x0
+  if ((inst.Bits() & 0x00200000)  !=
+          0x00000000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxx00xxxxxx0000
+  if ((inst.Bits() & 0x00000C0F)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -325,10 +402,18 @@ bool UnsafeCondDecoderTesterCase6
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000070) != 0x00000000 /* op2(6:4)=~000 */) return false;
-  if ((inst.Bits() & 0x00000200) != 0x00000200 /* B(9)=~1 */) return false;
-  if ((inst.Bits() & 0x00200000) != 0x00200000 /* op(22:21)=~x1 */) return false;
-  if ((inst.Bits() & 0x0000FC00) != 0x0000F000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxx111100xxxxxxxxxx */) return false;
+  // op2(6:4)=~000
+  if ((inst.Bits() & 0x00000070)  !=
+          0x00000000) return false;
+  // B(9)=~1
+  if ((inst.Bits() & 0x00000200)  !=
+          0x00000200) return false;
+  // op(22:21)=~x1
+  if ((inst.Bits() & 0x00200000)  !=
+          0x00200000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxx111100xxxxxxxxxx
+  if ((inst.Bits() & 0x0000FC00)  !=
+          0x0000F000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -340,7 +425,7 @@ bool UnsafeCondDecoderTesterCase6
 //    = {baseline: 'BranchToRegister',
 //       constraints: ,
 //       defs: {15},
-//       safety: ['inst(3:0)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: [inst(3:0)=1111 => FORBIDDEN_OPERANDS]}
 //
 // Representaive case:
 // op2(6:4)=001 & op(22:21)=01 & $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx
@@ -369,9 +454,15 @@ bool BranchToRegisterTesterCase7
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000070) != 0x00000010 /* op2(6:4)=~001 */) return false;
-  if ((inst.Bits() & 0x00600000) != 0x00200000 /* op(22:21)=~01 */) return false;
-  if ((inst.Bits() & 0x000FFF00) != 0x000FFF00 /* $pattern(31:0)=~xxxxxxxxxxxx111111111111xxxxxxxx */) return false;
+  // op2(6:4)=~001
+  if ((inst.Bits() & 0x00000070)  !=
+          0x00000010) return false;
+  // op(22:21)=~01
+  if ((inst.Bits() & 0x00600000)  !=
+          0x00200000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxx111111111111xxxxxxxx
+  if ((inst.Bits() & 0x000FFF00)  !=
+          0x000FFF00) return false;
 
   // Check other preconditions defined for the base decoder.
   return BranchToRegisterTester::
@@ -381,13 +472,16 @@ bool BranchToRegisterTesterCase7
 bool BranchToRegisterTesterCase7
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(BranchToRegisterTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(BranchToRegisterTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: Rm(3:0)=1111 => FORBIDDEN_OPERANDS
-  EXPECT_TRUE((inst.Bits() & 0x0000000F) != 0x0000000F);
+  EXPECT_TRUE((inst.Bits() & 0x0000000F)  !=
+          0x0000000F);
 
   // defs: {Pc};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(15))));
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
+   Add(Register(15))));
 
   return true;
 }
@@ -397,7 +491,10 @@ bool BranchToRegisterTesterCase7
 //    = {baseline: 'Unary2RegisterOpNotRmIsPc',
 //       constraints: ,
 //       defs: {inst(15:12)},
-//       safety: ['15 == inst(15:12) || 15 == inst(3:0) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) ||
+//            15  ==
+//               inst(3:0) => UNPREDICTABLE]}
 //
 // Representaive case:
 // op2(6:4)=001 & op(22:21)=11 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
@@ -408,7 +505,7 @@ bool BranchToRegisterTesterCase7
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
-//       safety: [Pc in {Rd,Rm} => UNPREDICTABLE]}
+//       safety: [Pc in {Rd, Rm} => UNPREDICTABLE]}
 class Unary2RegisterOpNotRmIsPcTesterCase8
     : public Unary2RegisterOpNotRmIsPcTester {
  public:
@@ -427,9 +524,15 @@ bool Unary2RegisterOpNotRmIsPcTesterCase8
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000070) != 0x00000010 /* op2(6:4)=~001 */) return false;
-  if ((inst.Bits() & 0x00600000) != 0x00600000 /* op(22:21)=~11 */) return false;
-  if ((inst.Bits() & 0x000F0F00) != 0x000F0F00 /* $pattern(31:0)=~xxxxxxxxxxxx1111xxxx1111xxxxxxxx */) return false;
+  // op2(6:4)=~001
+  if ((inst.Bits() & 0x00000070)  !=
+          0x00000010) return false;
+  // op(22:21)=~11
+  if ((inst.Bits() & 0x00600000)  !=
+          0x00600000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxx1111xxxx1111xxxxxxxx
+  if ((inst.Bits() & 0x000F0F00)  !=
+          0x000F0F00) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary2RegisterOpNotRmIsPcTester::
@@ -439,13 +542,16 @@ bool Unary2RegisterOpNotRmIsPcTesterCase8
 bool Unary2RegisterOpNotRmIsPcTesterCase8
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Unary2RegisterOpNotRmIsPcTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Unary2RegisterOpNotRmIsPcTester::
+               ApplySanityChecks(inst, decoder));
 
-  // safety: Pc in {Rd,Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+  // safety: Pc in {Rd, Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F))))));
 
   // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
 
   return true;
 }
@@ -475,9 +581,15 @@ bool UnsafeCondDecoderTesterCase9
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000070) != 0x00000020 /* op2(6:4)=~010 */) return false;
-  if ((inst.Bits() & 0x00600000) != 0x00200000 /* op(22:21)=~01 */) return false;
-  if ((inst.Bits() & 0x000FFF00) != 0x000FFF00 /* $pattern(31:0)=~xxxxxxxxxxxx111111111111xxxxxxxx */) return false;
+  // op2(6:4)=~010
+  if ((inst.Bits() & 0x00000070)  !=
+          0x00000020) return false;
+  // op(22:21)=~01
+  if ((inst.Bits() & 0x00600000)  !=
+          0x00200000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxx111111111111xxxxxxxx
+  if ((inst.Bits() & 0x000FFF00)  !=
+          0x000FFF00) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -488,8 +600,8 @@ bool UnsafeCondDecoderTesterCase9
 // inst(6:4)=011 & inst(22:21)=01 & inst(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx
 //    = {baseline: 'BranchToRegister',
 //       constraints: ,
-//       defs: {15,14},
-//       safety: ['inst(3:0)=1111 => FORBIDDEN_OPERANDS']}
+//       defs: {15, 14},
+//       safety: [inst(3:0)=1111 => FORBIDDEN_OPERANDS]}
 //
 // Representaive case:
 // op2(6:4)=011 & op(22:21)=01 & $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx
@@ -498,7 +610,7 @@ bool UnsafeCondDecoderTesterCase9
 //       Rm: Rm(3:0),
 //       baseline: BranchToRegister,
 //       constraints: ,
-//       defs: {Pc,Lr},
+//       defs: {Pc, Lr},
 //       fields: [Rm(3:0)],
 //       safety: [Rm(3:0)=1111 => FORBIDDEN_OPERANDS]}
 class BranchToRegisterTesterCase10
@@ -519,9 +631,15 @@ bool BranchToRegisterTesterCase10
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000070) != 0x00000030 /* op2(6:4)=~011 */) return false;
-  if ((inst.Bits() & 0x00600000) != 0x00200000 /* op(22:21)=~01 */) return false;
-  if ((inst.Bits() & 0x000FFF00) != 0x000FFF00 /* $pattern(31:0)=~xxxxxxxxxxxx111111111111xxxxxxxx */) return false;
+  // op2(6:4)=~011
+  if ((inst.Bits() & 0x00000070)  !=
+          0x00000030) return false;
+  // op(22:21)=~01
+  if ((inst.Bits() & 0x00600000)  !=
+          0x00200000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxx111111111111xxxxxxxx
+  if ((inst.Bits() & 0x000FFF00)  !=
+          0x000FFF00) return false;
 
   // Check other preconditions defined for the base decoder.
   return BranchToRegisterTester::
@@ -531,13 +649,17 @@ bool BranchToRegisterTesterCase10
 bool BranchToRegisterTesterCase10
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(BranchToRegisterTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(BranchToRegisterTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: Rm(3:0)=1111 => FORBIDDEN_OPERANDS
-  EXPECT_TRUE((inst.Bits() & 0x0000000F) != 0x0000000F);
+  EXPECT_TRUE((inst.Bits() & 0x0000000F)  !=
+          0x0000000F);
 
-  // defs: {Pc,Lr};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(15)).Add(Register(14))));
+  // defs: {Pc, Lr};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
+   Add(Register(15)).
+   Add(Register(14))));
 
   return true;
 }
@@ -567,9 +689,15 @@ bool UnsafeCondDecoderTesterCase11
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000070) != 0x00000060 /* op2(6:4)=~110 */) return false;
-  if ((inst.Bits() & 0x00600000) != 0x00600000 /* op(22:21)=~11 */) return false;
-  if ((inst.Bits() & 0x000FFF0F) != 0x0000000E /* $pattern(31:0)=~xxxxxxxxxxxx000000000000xxxx1110 */) return false;
+  // op2(6:4)=~110
+  if ((inst.Bits() & 0x00000070)  !=
+          0x00000060) return false;
+  // op(22:21)=~11
+  if ((inst.Bits() & 0x00600000)  !=
+          0x00600000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxx000000000000xxxx1110
+  if ((inst.Bits() & 0x000FFF0F)  !=
+          0x0000000E) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -581,7 +709,8 @@ bool UnsafeCondDecoderTesterCase11
 //    = {baseline: 'BreakPointAndConstantPoolHead',
 //       constraints: ,
 //       defs: {},
-//       safety: ['inst(31:28)=~1110 => UNPREDICTABLE', 'not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS']}
+//       safety: [inst(31:28)=~1110 => UNPREDICTABLE,
+//         not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS]}
 //
 // Representaive case:
 // op2(6:4)=111 & op(22:21)=01
@@ -591,7 +720,8 @@ bool UnsafeCondDecoderTesterCase11
 //       defs: {},
 //       fields: [cond(31:28)],
 //       inst: inst,
-//       safety: [cond(31:28)=~1110 => UNPREDICTABLE, not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS]}
+//       safety: [cond(31:28)=~1110 => UNPREDICTABLE,
+//         not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS]}
 class Immediate16UseTesterCase12
     : public Immediate16UseTester {
  public:
@@ -610,8 +740,12 @@ bool Immediate16UseTesterCase12
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000070) != 0x00000070 /* op2(6:4)=~111 */) return false;
-  if ((inst.Bits() & 0x00600000) != 0x00200000 /* op(22:21)=~01 */) return false;
+  // op2(6:4)=~111
+  if ((inst.Bits() & 0x00000070)  !=
+          0x00000070) return false;
+  // op(22:21)=~01
+  if ((inst.Bits() & 0x00600000)  !=
+          0x00200000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Immediate16UseTester::
@@ -621,10 +755,12 @@ bool Immediate16UseTesterCase12
 bool Immediate16UseTesterCase12
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Immediate16UseTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Immediate16UseTester::
+               ApplySanityChecks(inst, decoder));
 
   // safety: cond(31:28)=~1110 => UNPREDICTABLE
-  EXPECT_TRUE((inst.Bits() & 0xF0000000) == 0xE0000000);
+  EXPECT_TRUE((inst.Bits() & 0xF0000000)  ==
+          0xE0000000);
 
   // safety: not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS
   EXPECT_TRUE(nacl_arm_dec::IsBreakPointAndConstantPoolHead(inst.Bits()));
@@ -660,8 +796,12 @@ bool UnsafeCondDecoderTesterCase13
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000070) != 0x00000070 /* op2(6:4)=~111 */) return false;
-  if ((inst.Bits() & 0x00600000) != 0x00400000 /* op(22:21)=~10 */) return false;
+  // op2(6:4)=~111
+  if ((inst.Bits() & 0x00000070)  !=
+          0x00000070) return false;
+  // op(22:21)=~10
+  if ((inst.Bits() & 0x00600000)  !=
+          0x00400000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -693,9 +833,15 @@ bool UnsafeCondDecoderTesterCase14
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000070) != 0x00000070 /* op2(6:4)=~111 */) return false;
-  if ((inst.Bits() & 0x00600000) != 0x00600000 /* op(22:21)=~11 */) return false;
-  if ((inst.Bits() & 0x000FFF00) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxx000000000000xxxxxxxx */) return false;
+  // op2(6:4)=~111
+  if ((inst.Bits() & 0x00000070)  !=
+          0x00000070) return false;
+  // op(22:21)=~11
+  if ((inst.Bits() & 0x00600000)  !=
+          0x00600000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxx000000000000xxxxxxxx
+  if ((inst.Bits() & 0x000FFF00)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -711,9 +857,13 @@ bool UnsafeCondDecoderTesterCase14
 // inst(6:4)=000 & inst(9)=0 & inst(22:21)=01 & inst(19:16)=xx00 & inst(31:0)=xxxxxxxxxxxxxxxx111100x0xxxxxxxx
 //    = {baseline: 'Unary1RegisterUse',
 //       constraints: ,
-//       defs: {16 if inst(19:18)(1)=1 else 32},
+//       defs: {16
+//            if inst(19:18)(1)=1
+//            else 32},
 //       rule: 'MSR_register',
-//       safety: ['inst(19:18)=00 => UNPREDICTABLE', '15 == inst(3:0) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(3:0) => UNPREDICTABLE,
+//         inst(19:18)=00 => UNPREDICTABLE]}
 //
 // Representative case:
 // op2(6:4)=000 & B(9)=0 & op(22:21)=01 & op1(19:16)=xx00 & $pattern(31:0)=xxxxxxxxxxxxxxxx111100x0xxxxxxxx
@@ -723,11 +873,15 @@ bool UnsafeCondDecoderTesterCase14
 //       Rn: Rn(3:0),
 //       baseline: Unary1RegisterUse,
 //       constraints: ,
-//       defs: {NZCV if write_nzcvq else None},
+//       defs: {NZCV
+//            if write_nzcvq
+//            else None},
 //       fields: [mask(19:18), Rn(3:0)],
 //       mask: mask(19:18),
 //       rule: MSR_register,
-//       safety: [mask(19:18)=00 => UNPREDICTABLE, Rn == Pc => UNPREDICTABLE],
+//       safety: [mask(19:18)=00 => UNPREDICTABLE,
+//         Rn  ==
+//               Pc => UNPREDICTABLE],
 //       write_nzcvq: mask(1)=1}
 class Unary1RegisterUseTester_Case0
     : public Unary1RegisterUseTesterCase0 {
@@ -804,7 +958,8 @@ class ForbiddenCondDecoderTester_Case3
 //       constraints: ,
 //       defs: {inst(15:12)},
 //       rule: 'MRS',
-//       safety: ['inst(22)=1 => FORBIDDEN_OPERANDS', 'inst(15:12)=1111 => UNPREDICTABLE']}
+//       safety: [inst(15:12)=1111 => UNPREDICTABLE,
+//         inst(22)=1 => FORBIDDEN_OPERANDS]}
 //
 // Representative case:
 // op2(6:4)=000 & B(9)=0 & op(22:21)=x0 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx00x0xxxx0000
@@ -815,7 +970,8 @@ class ForbiddenCondDecoderTester_Case3
 //       defs: {Rd},
 //       fields: [R(22), Rd(15:12)],
 //       rule: MRS,
-//       safety: [R(22)=1 => FORBIDDEN_OPERANDS, Rd(15:12)=1111 => UNPREDICTABLE]}
+//       safety: [R(22)=1 => FORBIDDEN_OPERANDS,
+//         Rd(15:12)=1111 => UNPREDICTABLE]}
 class Unary1RegisterSetTester_Case4
     : public Unary1RegisterSetTesterCase4 {
  public:
@@ -871,7 +1027,7 @@ class ForbiddenCondDecoderTester_Case6
 //       constraints: ,
 //       defs: {15},
 //       rule: 'Bx',
-//       safety: ['inst(3:0)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: [inst(3:0)=1111 => FORBIDDEN_OPERANDS]}
 //
 // Representative case:
 // op2(6:4)=001 & op(22:21)=01 & $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx
@@ -898,7 +1054,10 @@ class BranchToRegisterTester_Case7
 //       constraints: ,
 //       defs: {inst(15:12)},
 //       rule: 'CLZ',
-//       safety: ['15 == inst(15:12) || 15 == inst(3:0) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) ||
+//            15  ==
+//               inst(3:0) => UNPREDICTABLE]}
 //
 // Representative case:
 // op2(6:4)=001 & op(22:21)=11 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
@@ -910,7 +1069,7 @@ class BranchToRegisterTester_Case7
 //       defs: {Rd},
 //       fields: [Rd(15:12), Rm(3:0)],
 //       rule: CLZ,
-//       safety: [Pc in {Rd,Rm} => UNPREDICTABLE]}
+//       safety: [Pc in {Rd, Rm} => UNPREDICTABLE]}
 class Unary2RegisterOpNotRmIsPcTester_Case8
     : public Unary2RegisterOpNotRmIsPcTesterCase8 {
  public:
@@ -944,9 +1103,9 @@ class ForbiddenCondDecoderTester_Case9
 // inst(6:4)=011 & inst(22:21)=01 & inst(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx
 //    = {baseline: 'BranchToRegister',
 //       constraints: ,
-//       defs: {15,14},
+//       defs: {15, 14},
 //       rule: 'BLX_register',
-//       safety: ['inst(3:0)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: [inst(3:0)=1111 => FORBIDDEN_OPERANDS]}
 //
 // Representative case:
 // op2(6:4)=011 & op(22:21)=01 & $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx
@@ -955,7 +1114,7 @@ class ForbiddenCondDecoderTester_Case9
 //       Rm: Rm(3:0),
 //       baseline: BranchToRegister,
 //       constraints: ,
-//       defs: {Pc,Lr},
+//       defs: {Pc, Lr},
 //       fields: [Rm(3:0)],
 //       rule: BLX_register,
 //       safety: [Rm(3:0)=1111 => FORBIDDEN_OPERANDS]}
@@ -994,7 +1153,8 @@ class ForbiddenCondDecoderTester_Case11
 //       constraints: ,
 //       defs: {},
 //       rule: 'BKPT',
-//       safety: ['inst(31:28)=~1110 => UNPREDICTABLE', 'not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS']}
+//       safety: [inst(31:28)=~1110 => UNPREDICTABLE,
+//         not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS]}
 //
 // Representative case:
 // op2(6:4)=111 & op(22:21)=01
@@ -1005,7 +1165,8 @@ class ForbiddenCondDecoderTester_Case11
 //       fields: [cond(31:28)],
 //       inst: inst,
 //       rule: BKPT,
-//       safety: [cond(31:28)=~1110 => UNPREDICTABLE, not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS]}
+//       safety: [cond(31:28)=~1110 => UNPREDICTABLE,
+//         not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS]}
 class BreakPointAndConstantPoolHeadTester_Case12
     : public Immediate16UseTesterCase12 {
  public:
@@ -1069,10 +1230,14 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //    = {actual: 'Unary1RegisterUse',
 //       baseline: 'Unary1RegisterUse',
 //       constraints: ,
-//       defs: {16 if inst(19:18)(1)=1 else 32},
+//       defs: {16
+//            if inst(19:18)(1)=1
+//            else 32},
 //       pattern: 'cccc00010010mm00111100000000nnnn',
 //       rule: 'MSR_register',
-//       safety: ['inst(19:18)=00 => UNPREDICTABLE', '15 == inst(3:0) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(3:0) => UNPREDICTABLE,
+//         inst(19:18)=00 => UNPREDICTABLE]}
 //
 // Representaive case:
 // op2(6:4)=000 & B(9)=0 & op(22:21)=01 & op1(19:16)=xx00 & $pattern(31:0)=xxxxxxxxxxxxxxxx111100x0xxxxxxxx
@@ -1083,12 +1248,16 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       actual: Unary1RegisterUse,
 //       baseline: Unary1RegisterUse,
 //       constraints: ,
-//       defs: {NZCV if write_nzcvq else None},
+//       defs: {NZCV
+//            if write_nzcvq
+//            else None},
 //       fields: [mask(19:18), Rn(3:0)],
 //       mask: mask(19:18),
 //       pattern: cccc00010010mm00111100000000nnnn,
 //       rule: MSR_register,
-//       safety: [mask(19:18)=00 => UNPREDICTABLE, Rn == Pc => UNPREDICTABLE],
+//       safety: [mask(19:18)=00 => UNPREDICTABLE,
+//         Rn  ==
+//               Pc => UNPREDICTABLE],
 //       write_nzcvq: mask(1)=1}
 TEST_F(Arm32DecoderStateTests,
        Unary1RegisterUseTester_Case0_TestCase0) {
@@ -1173,7 +1342,8 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {inst(15:12)},
 //       pattern: 'cccc00010r001111dddd000000000000',
 //       rule: 'MRS',
-//       safety: ['inst(22)=1 => FORBIDDEN_OPERANDS', 'inst(15:12)=1111 => UNPREDICTABLE']}
+//       safety: [inst(15:12)=1111 => UNPREDICTABLE,
+//         inst(22)=1 => FORBIDDEN_OPERANDS]}
 //
 // Representaive case:
 // op2(6:4)=000 & B(9)=0 & op(22:21)=x0 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx00x0xxxx0000
@@ -1186,7 +1356,8 @@ TEST_F(Arm32DecoderStateTests,
 //       fields: [R(22), Rd(15:12)],
 //       pattern: cccc00010r001111dddd000000000000,
 //       rule: MRS,
-//       safety: [R(22)=1 => FORBIDDEN_OPERANDS, Rd(15:12)=1111 => UNPREDICTABLE]}
+//       safety: [R(22)=1 => FORBIDDEN_OPERANDS,
+//         Rd(15:12)=1111 => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Unary1RegisterSetTester_Case4_TestCase4) {
   Unary1RegisterSetTester_Case4 tester;
@@ -1247,7 +1418,7 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {15},
 //       pattern: 'cccc000100101111111111110001mmmm',
 //       rule: 'Bx',
-//       safety: ['inst(3:0)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: [inst(3:0)=1111 => FORBIDDEN_OPERANDS]}
 //
 // Representaive case:
 // op2(6:4)=001 & op(22:21)=01 & $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx
@@ -1275,7 +1446,10 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {inst(15:12)},
 //       pattern: 'cccc000101101111dddd11110001mmmm',
 //       rule: 'CLZ',
-//       safety: ['15 == inst(15:12) || 15 == inst(3:0) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) ||
+//            15  ==
+//               inst(3:0) => UNPREDICTABLE]}
 //
 // Representaive case:
 // op2(6:4)=001 & op(22:21)=11 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
@@ -1289,7 +1463,7 @@ TEST_F(Arm32DecoderStateTests,
 //       fields: [Rd(15:12), Rm(3:0)],
 //       pattern: cccc000101101111dddd11110001mmmm,
 //       rule: CLZ,
-//       safety: [Pc in {Rd,Rm} => UNPREDICTABLE]}
+//       safety: [Pc in {Rd, Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Unary2RegisterOpNotRmIsPcTester_Case8_TestCase8) {
   Unary2RegisterOpNotRmIsPcTester_Case8 tester;
@@ -1324,10 +1498,10 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'BranchToRegister',
 //       baseline: 'BranchToRegister',
 //       constraints: ,
-//       defs: {15,14},
+//       defs: {15, 14},
 //       pattern: 'cccc000100101111111111110011mmmm',
 //       rule: 'BLX_register',
-//       safety: ['inst(3:0)=1111 => FORBIDDEN_OPERANDS']}
+//       safety: [inst(3:0)=1111 => FORBIDDEN_OPERANDS]}
 //
 // Representaive case:
 // op2(6:4)=011 & op(22:21)=01 & $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx
@@ -1337,7 +1511,7 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: BranchToRegister,
 //       baseline: BranchToRegister,
 //       constraints: ,
-//       defs: {Pc,Lr},
+//       defs: {Pc, Lr},
 //       fields: [Rm(3:0)],
 //       pattern: cccc000100101111111111110011mmmm,
 //       rule: BLX_register,
@@ -1379,7 +1553,8 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {},
 //       pattern: 'cccc00010010iiiiiiiiiiii0111iiii',
 //       rule: 'BKPT',
-//       safety: ['inst(31:28)=~1110 => UNPREDICTABLE', 'not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS']}
+//       safety: [inst(31:28)=~1110 => UNPREDICTABLE,
+//         not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS]}
 //
 // Representaive case:
 // op2(6:4)=111 & op(22:21)=01
@@ -1392,7 +1567,8 @@ TEST_F(Arm32DecoderStateTests,
 //       inst: inst,
 //       pattern: cccc00010010iiiiiiiiiiii0111iiii,
 //       rule: BKPT,
-//       safety: [cond(31:28)=~1110 => UNPREDICTABLE, not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS]}
+//       safety: [cond(31:28)=~1110 => UNPREDICTABLE,
+//         not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        BreakPointAndConstantPoolHeadTester_Case12_TestCase12) {
   BreakPointAndConstantPoolHeadTester_Case12 tester;

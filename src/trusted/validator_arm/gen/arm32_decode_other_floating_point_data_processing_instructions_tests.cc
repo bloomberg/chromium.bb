@@ -56,8 +56,12 @@ bool CondVfpOpTesterCase0
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x000F0000) != 0x00000000 /* opc2(19:16)=~0000 */) return false;
-  if ((inst.Bits() & 0x000000C0) != 0x00000040 /* opc3(7:6)=~01 */) return false;
+  // opc2(19:16)=~0000
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x00000000) return false;
+  // opc3(7:6)=~01
+  if ((inst.Bits() & 0x000000C0)  !=
+          0x00000040) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -89,8 +93,12 @@ bool CondVfpOpTesterCase1
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x000F0000) != 0x00000000 /* opc2(19:16)=~0000 */) return false;
-  if ((inst.Bits() & 0x000000C0) != 0x000000C0 /* opc3(7:6)=~11 */) return false;
+  // opc2(19:16)=~0000
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x00000000) return false;
+  // opc3(7:6)=~11
+  if ((inst.Bits() & 0x000000C0)  !=
+          0x000000C0) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -122,8 +130,12 @@ bool CondVfpOpTesterCase2
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x000F0000) != 0x00010000 /* opc2(19:16)=~0001 */) return false;
-  if ((inst.Bits() & 0x000000C0) != 0x00000040 /* opc3(7:6)=~01 */) return false;
+  // opc2(19:16)=~0001
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x00010000) return false;
+  // opc3(7:6)=~01
+  if ((inst.Bits() & 0x000000C0)  !=
+          0x00000040) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -155,8 +167,12 @@ bool CondVfpOpTesterCase3
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x000F0000) != 0x00010000 /* opc2(19:16)=~0001 */) return false;
-  if ((inst.Bits() & 0x000000C0) != 0x000000C0 /* opc3(7:6)=~11 */) return false;
+  // opc2(19:16)=~0001
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x00010000) return false;
+  // opc3(7:6)=~11
+  if ((inst.Bits() & 0x000000C0)  !=
+          0x000000C0) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -188,8 +204,12 @@ bool CondVfpOpTesterCase4
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x000F0000) != 0x00040000 /* opc2(19:16)=~0100 */) return false;
-  if ((inst.Bits() & 0x00000040) != 0x00000040 /* opc3(7:6)=~x1 */) return false;
+  // opc2(19:16)=~0100
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x00040000) return false;
+  // opc3(7:6)=~x1
+  if ((inst.Bits() & 0x00000040)  !=
+          0x00000040) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -221,9 +241,15 @@ bool CondVfpOpTesterCase5
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x000F0000) != 0x00050000 /* opc2(19:16)=~0101 */) return false;
-  if ((inst.Bits() & 0x00000040) != 0x00000040 /* opc3(7:6)=~x1 */) return false;
-  if ((inst.Bits() & 0x0000002F) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxxxxxx0x0000 */) return false;
+  // opc2(19:16)=~0101
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x00050000) return false;
+  // opc3(7:6)=~x1
+  if ((inst.Bits() & 0x00000040)  !=
+          0x00000040) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxxxxxx0x0000
+  if ((inst.Bits() & 0x0000002F)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -255,8 +281,12 @@ bool CondVfpOpTesterCase6
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x000F0000) != 0x00070000 /* opc2(19:16)=~0111 */) return false;
-  if ((inst.Bits() & 0x000000C0) != 0x000000C0 /* opc3(7:6)=~11 */) return false;
+  // opc2(19:16)=~0111
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x00070000) return false;
+  // opc3(7:6)=~11
+  if ((inst.Bits() & 0x000000C0)  !=
+          0x000000C0) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -288,8 +318,12 @@ bool CondVfpOpTesterCase7
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x000F0000) != 0x00080000 /* opc2(19:16)=~1000 */) return false;
-  if ((inst.Bits() & 0x00000040) != 0x00000040 /* opc3(7:6)=~x1 */) return false;
+  // opc2(19:16)=~1000
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x00080000) return false;
+  // opc3(7:6)=~x1
+  if ((inst.Bits() & 0x00000040)  !=
+          0x00000040) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -321,9 +355,15 @@ bool CondVfpOpTesterCase8
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x000E0000) != 0x00020000 /* opc2(19:16)=~001x */) return false;
-  if ((inst.Bits() & 0x00000040) != 0x00000040 /* opc3(7:6)=~x1 */) return false;
-  if ((inst.Bits() & 0x00000100) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxxx0xxxxxxxx */) return false;
+  // opc2(19:16)=~001x
+  if ((inst.Bits() & 0x000E0000)  !=
+          0x00020000) return false;
+  // opc3(7:6)=~x1
+  if ((inst.Bits() & 0x00000040)  !=
+          0x00000040) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxxx0xxxxxxxx
+  if ((inst.Bits() & 0x00000100)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -355,8 +395,12 @@ bool CondVfpOpTesterCase9
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x000E0000) != 0x000A0000 /* opc2(19:16)=~101x */) return false;
-  if ((inst.Bits() & 0x00000040) != 0x00000040 /* opc3(7:6)=~x1 */) return false;
+  // opc2(19:16)=~101x
+  if ((inst.Bits() & 0x000E0000)  !=
+          0x000A0000) return false;
+  // opc3(7:6)=~x1
+  if ((inst.Bits() & 0x00000040)  !=
+          0x00000040) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -388,8 +432,12 @@ bool CondVfpOpTesterCase10
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x000E0000) != 0x000C0000 /* opc2(19:16)=~110x */) return false;
-  if ((inst.Bits() & 0x00000040) != 0x00000040 /* opc3(7:6)=~x1 */) return false;
+  // opc2(19:16)=~110x
+  if ((inst.Bits() & 0x000E0000)  !=
+          0x000C0000) return false;
+  // opc3(7:6)=~x1
+  if ((inst.Bits() & 0x00000040)  !=
+          0x00000040) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -421,8 +469,12 @@ bool CondVfpOpTesterCase11
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x000E0000) != 0x000E0000 /* opc2(19:16)=~111x */) return false;
-  if ((inst.Bits() & 0x00000040) != 0x00000040 /* opc3(7:6)=~x1 */) return false;
+  // opc2(19:16)=~111x
+  if ((inst.Bits() & 0x000E0000)  !=
+          0x000E0000) return false;
+  // opc3(7:6)=~x1
+  if ((inst.Bits() & 0x00000040)  !=
+          0x00000040) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::
@@ -454,8 +506,12 @@ bool CondVfpOpTesterCase12
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000040) != 0x00000000 /* opc3(7:6)=~x0 */) return false;
-  if ((inst.Bits() & 0x000000A0) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxxxx0x0xxxxx */) return false;
+  // opc3(7:6)=~x0
+  if ((inst.Bits() & 0x00000040)  !=
+          0x00000000) return false;
+  // $pattern(31:0)=~xxxxxxxxxxxxxxxxxxxxxxxx0x0xxxxx
+  if ((inst.Bits() & 0x000000A0)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return CondVfpOpTester::

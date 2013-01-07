@@ -35,8 +35,18 @@ namespace nacl_arm_test {
 // inst(8)=0 & inst(7:4)=00x1
 //    = {baseline: 'MoveDoubleVfpRegisterOp',
 //       constraints: ,
-//       defs: {inst(15:12),inst(19:16)} if inst(20)=1 else {},
-//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 31 == inst(3:0):inst(5) => UNPREDICTABLE', 'inst(20)=1 && inst(15:12) == inst(19:16) => UNPREDICTABLE']}
+//       defs: {inst(15:12), inst(19:16)}
+//            if inst(20)=1
+//            else {},
+//       safety: [15  ==
+//               inst(15:12) ||
+//            15  ==
+//               inst(19:16) ||
+//            31  ==
+//               inst(3:0):inst(5) => UNPREDICTABLE,
+//         inst(20)=1 &&
+//            inst(15:12)  ==
+//               inst(19:16) => UNPREDICTABLE]}
 //
 // Representaive case:
 // C(8)=0 & op(7:4)=00x1
@@ -47,11 +57,18 @@ namespace nacl_arm_test {
 //       Vm: Vm(3:0),
 //       baseline: MoveDoubleVfpRegisterOp,
 //       constraints: ,
-//       defs: {Rt,Rt2} if to_arm_registers else {},
+//       defs: {Rt, Rt2}
+//            if to_arm_registers
+//            else {},
 //       fields: [op(20), Rt2(19:16), Rt(15:12), M(5), Vm(3:0)],
 //       m: Vm:M,
 //       op: op(20),
-//       safety: [Pc in {t,t2} || m == 31 => UNPREDICTABLE, to_arm_registers && t == t2 => UNPREDICTABLE],
+//       safety: [Pc in {t, t2} ||
+//            m  ==
+//               31 => UNPREDICTABLE,
+//         to_arm_registers &&
+//            t  ==
+//               t2 => UNPREDICTABLE],
 //       t: Rt,
 //       t2: Rt2,
 //       to_arm_registers: op(20)=1}
@@ -73,8 +90,12 @@ bool MoveDoubleVfpRegisterOpTesterCase0
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000100) != 0x00000000 /* C(8)=~0 */) return false;
-  if ((inst.Bits() & 0x000000D0) != 0x00000010 /* op(7:4)=~00x1 */) return false;
+  // C(8)=~0
+  if ((inst.Bits() & 0x00000100)  !=
+          0x00000000) return false;
+  // op(7:4)=~00x1
+  if ((inst.Bits() & 0x000000D0)  !=
+          0x00000010) return false;
 
   // Check other preconditions defined for the base decoder.
   return MoveDoubleVfpRegisterOpTester::
@@ -84,16 +105,32 @@ bool MoveDoubleVfpRegisterOpTesterCase0
 bool MoveDoubleVfpRegisterOpTesterCase0
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(MoveDoubleVfpRegisterOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(MoveDoubleVfpRegisterOpTester::
+               ApplySanityChecks(inst, decoder));
 
-  // safety: Pc in {t,t2} || m == 31 => UNPREDICTABLE
-  EXPECT_TRUE(!(((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16))))) || (((((((inst.Bits() & 0x0000000F)) << 1) | ((inst.Bits() & 0x00000020) >> 5))) == (31)))));
+  // safety: Pc in {t, t2} ||
+  //       m  ==
+  //          31 => UNPREDICTABLE
+  EXPECT_TRUE(!(((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16))))) ||
+       (((((((inst.Bits() & 0x0000000F)) << 1) | ((inst.Bits() & 0x00000020) >> 5))) == (31)))));
 
-  // safety: to_arm_registers && t == t2 => UNPREDICTABLE
-  EXPECT_TRUE(!(((inst.Bits() & 0x00100000) == 0x00100000) && (((((inst.Bits() & 0x0000F000) >> 12)) == (((inst.Bits() & 0x000F0000) >> 16))))));
+  // safety: to_arm_registers &&
+  //       t  ==
+  //          t2 => UNPREDICTABLE
+  EXPECT_TRUE(!(((inst.Bits() & 0x00100000)  ==
+          0x00100000) &&
+       (((((inst.Bits() & 0x0000F000) >> 12)) == (((inst.Bits() & 0x000F0000) >> 16))))));
 
-  // defs: {Rt,Rt2} if to_arm_registers else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(((inst.Bits() & 0x00100000) == 0x00100000 ? RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12))).Add(Register(((inst.Bits() & 0x000F0000) >> 16))) : RegisterList())));
+  // defs: {Rt, Rt2}
+  //       if to_arm_registers
+  //       else {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
+       : RegisterList())));
 
   return true;
 }
@@ -102,8 +139,16 @@ bool MoveDoubleVfpRegisterOpTesterCase0
 // inst(8)=1 & inst(7:4)=00x1
 //    = {baseline: 'MoveDoubleVfpRegisterOp',
 //       constraints: ,
-//       defs: {inst(15:12),inst(19:16)} if inst(20)=1 else {},
-//       safety: ['15 == inst(15:12) || 15 == inst(19:16) => UNPREDICTABLE', 'inst(20)=1 && inst(15:12) == inst(19:16) => UNPREDICTABLE']}
+//       defs: {inst(15:12), inst(19:16)}
+//            if inst(20)=1
+//            else {},
+//       safety: [15  ==
+//               inst(15:12) ||
+//            15  ==
+//               inst(19:16) => UNPREDICTABLE,
+//         inst(20)=1 &&
+//            inst(15:12)  ==
+//               inst(19:16) => UNPREDICTABLE]}
 //
 // Representaive case:
 // C(8)=1 & op(7:4)=00x1
@@ -112,10 +157,15 @@ bool MoveDoubleVfpRegisterOpTesterCase0
 //       Rt2: Rt2(19:16),
 //       baseline: MoveDoubleVfpRegisterOp,
 //       constraints: ,
-//       defs: {Rt,Rt2} if to_arm_registers else {},
+//       defs: {Rt, Rt2}
+//            if to_arm_registers
+//            else {},
 //       fields: [op(20), Rt2(19:16), Rt(15:12)],
 //       op: op(20),
-//       safety: [Pc in {t,t2} => UNPREDICTABLE, to_arm_registers && t == t2 => UNPREDICTABLE],
+//       safety: [Pc in {t, t2} => UNPREDICTABLE,
+//         to_arm_registers &&
+//            t  ==
+//               t2 => UNPREDICTABLE],
 //       t: Rt,
 //       t2: Rt2,
 //       to_arm_registers: op(20)=1}
@@ -137,8 +187,12 @@ bool MoveDoubleVfpRegisterOpTesterCase1
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x00000100) != 0x00000100 /* C(8)=~1 */) return false;
-  if ((inst.Bits() & 0x000000D0) != 0x00000010 /* op(7:4)=~00x1 */) return false;
+  // C(8)=~1
+  if ((inst.Bits() & 0x00000100)  !=
+          0x00000100) return false;
+  // op(7:4)=~00x1
+  if ((inst.Bits() & 0x000000D0)  !=
+          0x00000010) return false;
 
   // Check other preconditions defined for the base decoder.
   return MoveDoubleVfpRegisterOpTester::
@@ -148,16 +202,29 @@ bool MoveDoubleVfpRegisterOpTesterCase1
 bool MoveDoubleVfpRegisterOpTesterCase1
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(MoveDoubleVfpRegisterOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(MoveDoubleVfpRegisterOpTester::
+               ApplySanityChecks(inst, decoder));
 
-  // safety: Pc in {t,t2} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16))))));
+  // safety: Pc in {t, t2} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16))))));
 
-  // safety: to_arm_registers && t == t2 => UNPREDICTABLE
-  EXPECT_TRUE(!(((inst.Bits() & 0x00100000) == 0x00100000) && (((((inst.Bits() & 0x0000F000) >> 12)) == (((inst.Bits() & 0x000F0000) >> 16))))));
+  // safety: to_arm_registers &&
+  //       t  ==
+  //          t2 => UNPREDICTABLE
+  EXPECT_TRUE(!(((inst.Bits() & 0x00100000)  ==
+          0x00100000) &&
+       (((((inst.Bits() & 0x0000F000) >> 12)) == (((inst.Bits() & 0x000F0000) >> 16))))));
 
-  // defs: {Rt,Rt2} if to_arm_registers else {};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(((inst.Bits() & 0x00100000) == 0x00100000 ? RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12))).Add(Register(((inst.Bits() & 0x000F0000) >> 16))) : RegisterList())));
+  // defs: {Rt, Rt2}
+  //       if to_arm_registers
+  //       else {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))
+       : RegisterList())));
 
   return true;
 }
@@ -171,9 +238,19 @@ bool MoveDoubleVfpRegisterOpTesterCase1
 // inst(8)=0 & inst(7:4)=00x1
 //    = {baseline: 'MoveDoubleVfpRegisterOp',
 //       constraints: ,
-//       defs: {inst(15:12),inst(19:16)} if inst(20)=1 else {},
+//       defs: {inst(15:12), inst(19:16)}
+//            if inst(20)=1
+//            else {},
 //       rule: 'VMOV_between_two_ARM_core_registers_and_two_single_precision_registers',
-//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 31 == inst(3:0):inst(5) => UNPREDICTABLE', 'inst(20)=1 && inst(15:12) == inst(19:16) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) ||
+//            15  ==
+//               inst(19:16) ||
+//            31  ==
+//               inst(3:0):inst(5) => UNPREDICTABLE,
+//         inst(20)=1 &&
+//            inst(15:12)  ==
+//               inst(19:16) => UNPREDICTABLE]}
 //
 // Representative case:
 // C(8)=0 & op(7:4)=00x1
@@ -184,12 +261,19 @@ bool MoveDoubleVfpRegisterOpTesterCase1
 //       Vm: Vm(3:0),
 //       baseline: MoveDoubleVfpRegisterOp,
 //       constraints: ,
-//       defs: {Rt,Rt2} if to_arm_registers else {},
+//       defs: {Rt, Rt2}
+//            if to_arm_registers
+//            else {},
 //       fields: [op(20), Rt2(19:16), Rt(15:12), M(5), Vm(3:0)],
 //       m: Vm:M,
 //       op: op(20),
 //       rule: VMOV_between_two_ARM_core_registers_and_two_single_precision_registers,
-//       safety: [Pc in {t,t2} || m == 31 => UNPREDICTABLE, to_arm_registers && t == t2 => UNPREDICTABLE],
+//       safety: [Pc in {t, t2} ||
+//            m  ==
+//               31 => UNPREDICTABLE,
+//         to_arm_registers &&
+//            t  ==
+//               t2 => UNPREDICTABLE],
 //       t: Rt,
 //       t2: Rt2,
 //       to_arm_registers: op(20)=1}
@@ -206,9 +290,17 @@ class MoveDoubleVfpRegisterOpTester_Case0
 // inst(8)=1 & inst(7:4)=00x1
 //    = {baseline: 'MoveDoubleVfpRegisterOp',
 //       constraints: ,
-//       defs: {inst(15:12),inst(19:16)} if inst(20)=1 else {},
+//       defs: {inst(15:12), inst(19:16)}
+//            if inst(20)=1
+//            else {},
 //       rule: 'VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register',
-//       safety: ['15 == inst(15:12) || 15 == inst(19:16) => UNPREDICTABLE', 'inst(20)=1 && inst(15:12) == inst(19:16) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) ||
+//            15  ==
+//               inst(19:16) => UNPREDICTABLE,
+//         inst(20)=1 &&
+//            inst(15:12)  ==
+//               inst(19:16) => UNPREDICTABLE]}
 //
 // Representative case:
 // C(8)=1 & op(7:4)=00x1
@@ -217,11 +309,16 @@ class MoveDoubleVfpRegisterOpTester_Case0
 //       Rt2: Rt2(19:16),
 //       baseline: MoveDoubleVfpRegisterOp,
 //       constraints: ,
-//       defs: {Rt,Rt2} if to_arm_registers else {},
+//       defs: {Rt, Rt2}
+//            if to_arm_registers
+//            else {},
 //       fields: [op(20), Rt2(19:16), Rt(15:12)],
 //       op: op(20),
 //       rule: VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register,
-//       safety: [Pc in {t,t2} => UNPREDICTABLE, to_arm_registers && t == t2 => UNPREDICTABLE],
+//       safety: [Pc in {t, t2} => UNPREDICTABLE,
+//         to_arm_registers &&
+//            t  ==
+//               t2 => UNPREDICTABLE],
 //       t: Rt,
 //       t2: Rt2,
 //       to_arm_registers: op(20)=1}
@@ -248,10 +345,20 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //    = {actual: 'MoveDoubleVfpRegisterOp',
 //       baseline: 'MoveDoubleVfpRegisterOp',
 //       constraints: ,
-//       defs: {inst(15:12),inst(19:16)} if inst(20)=1 else {},
+//       defs: {inst(15:12), inst(19:16)}
+//            if inst(20)=1
+//            else {},
 //       pattern: 'cccc1100010otttttttt101000m1mmmm',
 //       rule: 'VMOV_between_two_ARM_core_registers_and_two_single_precision_registers',
-//       safety: ['15 == inst(15:12) || 15 == inst(19:16) || 31 == inst(3:0):inst(5) => UNPREDICTABLE', 'inst(20)=1 && inst(15:12) == inst(19:16) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) ||
+//            15  ==
+//               inst(19:16) ||
+//            31  ==
+//               inst(3:0):inst(5) => UNPREDICTABLE,
+//         inst(20)=1 &&
+//            inst(15:12)  ==
+//               inst(19:16) => UNPREDICTABLE]}
 //
 // Representaive case:
 // C(8)=0 & op(7:4)=00x1
@@ -263,13 +370,20 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       actual: MoveDoubleVfpRegisterOp,
 //       baseline: MoveDoubleVfpRegisterOp,
 //       constraints: ,
-//       defs: {Rt,Rt2} if to_arm_registers else {},
+//       defs: {Rt, Rt2}
+//            if to_arm_registers
+//            else {},
 //       fields: [op(20), Rt2(19:16), Rt(15:12), M(5), Vm(3:0)],
 //       m: Vm:M,
 //       op: op(20),
 //       pattern: cccc1100010otttttttt101000m1mmmm,
 //       rule: VMOV_between_two_ARM_core_registers_and_two_single_precision_registers,
-//       safety: [Pc in {t,t2} || m == 31 => UNPREDICTABLE, to_arm_registers && t == t2 => UNPREDICTABLE],
+//       safety: [Pc in {t, t2} ||
+//            m  ==
+//               31 => UNPREDICTABLE,
+//         to_arm_registers &&
+//            t  ==
+//               t2 => UNPREDICTABLE],
 //       t: Rt,
 //       t2: Rt2,
 //       to_arm_registers: op(20)=1}
@@ -284,10 +398,18 @@ TEST_F(Arm32DecoderStateTests,
 //    = {actual: 'MoveDoubleVfpRegisterOp',
 //       baseline: 'MoveDoubleVfpRegisterOp',
 //       constraints: ,
-//       defs: {inst(15:12),inst(19:16)} if inst(20)=1 else {},
+//       defs: {inst(15:12), inst(19:16)}
+//            if inst(20)=1
+//            else {},
 //       pattern: 'cccc1100010otttttttt101100m1mmmm',
 //       rule: 'VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register',
-//       safety: ['15 == inst(15:12) || 15 == inst(19:16) => UNPREDICTABLE', 'inst(20)=1 && inst(15:12) == inst(19:16) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) ||
+//            15  ==
+//               inst(19:16) => UNPREDICTABLE,
+//         inst(20)=1 &&
+//            inst(15:12)  ==
+//               inst(19:16) => UNPREDICTABLE]}
 //
 // Representaive case:
 // C(8)=1 & op(7:4)=00x1
@@ -297,12 +419,17 @@ TEST_F(Arm32DecoderStateTests,
 //       actual: MoveDoubleVfpRegisterOp,
 //       baseline: MoveDoubleVfpRegisterOp,
 //       constraints: ,
-//       defs: {Rt,Rt2} if to_arm_registers else {},
+//       defs: {Rt, Rt2}
+//            if to_arm_registers
+//            else {},
 //       fields: [op(20), Rt2(19:16), Rt(15:12)],
 //       op: op(20),
 //       pattern: cccc1100010otttttttt101100m1mmmm,
 //       rule: VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register,
-//       safety: [Pc in {t,t2} => UNPREDICTABLE, to_arm_registers && t == t2 => UNPREDICTABLE],
+//       safety: [Pc in {t, t2} => UNPREDICTABLE,
+//         to_arm_registers &&
+//            t  ==
+//               t2 => UNPREDICTABLE],
 //       t: Rt,
 //       t2: Rt2,
 //       to_arm_registers: op(20)=1}

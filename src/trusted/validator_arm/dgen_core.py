@@ -33,7 +33,7 @@ def neutral_repr(value):
       isinstance(value, RuleRestrictions)):
     return value.neutral_repr()
   elif isinstance(value, list):
-    return [ neutral_repr(v) for v in value ]
+    return '[' + ',\n    '.join([ neutral_repr(v) for v in value ]) + ']'
   else:
     return repr(value)
 
@@ -225,6 +225,9 @@ class IdRef(BitExpr):
             cmp(self._name, other._name) or
             cmp(self._value, other._value))
 
+_AND_PRINT_OP=""" &&
+       """
+
 class AndExp(BitExpr):
   """Models an anded expression."""
 
@@ -240,7 +243,7 @@ class AndExp(BitExpr):
   def to_bool(self, options={}):
     value = '(%s)' % self._args[0].to_bool(options)
     for arg in self._args[1:]:
-      value = '%s && (%s)' % (value, arg.to_bool(options))
+      value = '%s%s(%s)' % (value, _AND_PRINT_OP, arg.to_bool(options))
     return value
 
   def to_uint32(self, options={}):
@@ -259,10 +262,13 @@ class AndExp(BitExpr):
     return list(self._args)
 
   def __repr__(self):
-    return ' && '.join([repr(a) for a in self._args])
+    return _AND_PRINT_OP.join([repr(a) for a in self._args])
 
   def neutral_repr(self):
-    return ' && '.join([neutral_repr(a) for a in self._args])
+    return _AND_PRINT_OP.join([neutral_repr(a) for a in self._args])
+
+_OR_PRINT_OP=""" ||
+       """
 
 class OrExp(BitExpr):
   """Models an or-ed expression."""
@@ -279,7 +285,7 @@ class OrExp(BitExpr):
   def to_bool(self, options={}):
     value = '(%s)' % self._args[0].to_bool(options)
     for arg in self._args[1:]:
-      value = '%s || (%s)' % (value, arg.to_bool(options))
+      value = '%s%s(%s)' % (value, _OR_PRINT_OP, arg.to_bool(options))
     return value
 
   def to_register(self, options={}):
@@ -298,10 +304,10 @@ class OrExp(BitExpr):
     return list(self._args)
 
   def __repr__(self):
-    return ' || '.join([repr(a) for a in self._args])
+    return _OR_PRINT_OP.join([repr(a) for a in self._args])
 
   def neutral_repr(self):
-    return ' || '.join([neutral_repr(a) for a in self._args])
+    return _OR_PRINT_OP.join([neutral_repr(a) for a in self._args])
 
 # Defines the negated comparison operator.
 _NEGATED_COMPARE_OP = {
@@ -312,6 +318,9 @@ _NEGATED_COMPARE_OP = {
     '>=': '<',
     '>': '<=',
 }
+
+_COMPARE_OP_FORMAT=""" %s
+         """
 
 class CompareExp(BitExpr):
   """Models the comparison of two values."""
@@ -351,7 +360,7 @@ class CompareExp(BitExpr):
 
   def __repr__(self):
     return '%s %s %s' % (repr(self._args[0]),
-                         self._op,
+                         self.compare_op(),
                          repr(self._args[1]))
 
   def neutral_repr(self):
@@ -363,17 +372,24 @@ class CompareExp(BitExpr):
       # Order arguments based on comparison value.
       cmp_value = cmp(arg1, arg2)
       if cmp_value < 0:
-        return '%s %s %s' % (arg1, self._op, arg2)
+        return '%s %s %s' % (arg1, self.compare_op(), arg2)
       elif cmp_value > 0:
-        return '%s %s %s' % (arg2, self._op, arg1)
+        return '%s %s %s' % (arg2, self.compare_op(), arg1)
       else:
         # comparison against self can be simplified.
         return BoolValue(self._op == '==').neutral_repr()
     elif self._op in ['>', '>=']:
-      return '%s %s %s' % (arg2, _NEGATED_COMPARE_OP.get(self._op), arg1)
+      return '%s %s %s' % (arg2,
+                           self.compare_op(_NEGATED_COMPARE_OP.get(self._op)),
+                           arg1)
     else:
       # Assume in canonical order.
-      return '%s %s %s' % (arg1, self._op, arg2)
+      return '%s %s %s' % (arg1, self.compare_op(), arg2)
+
+  def compare_op(self, op=None):
+    if op == None: op = self._op
+    return _COMPARE_OP_FORMAT % op
+
 
 class ShiftOp(BitExpr):
   """Models a left/right shift operator."""
@@ -422,9 +438,9 @@ class AddOp(BitExpr):
   def to_register_list(self, options={}):
     rl = self._args[0].to_register_list(options)
     if self._op == '+':
-      return '%s.Add(%s)' % (rl, self._args[1].to_register(options))
+      return '%s.\n   Add(%s)' % (rl, self._args[1].to_register(options))
     elif self._op == '-':
-      return '%s.Remove(%s)' % (rl, self._args[1].to_register(options))
+      return '%s.\n   Remove(%s)' % (rl, self._args[1].to_register(options))
     else:
       raise Exception("Bad op %s" % self._op)
 
@@ -578,17 +594,17 @@ class BitSet(BitExpr):
   def to_register_list(self, options={}):
     code = 'RegisterList()'
     for value in self._values:
-      code = '%s.Add(%s)' % (code, value.to_register(options))
+      code = '%s.\n   Add(%s)' % (code, value.to_register(options))
     return code
 
   def sub_bit_exprs(self):
     return list(self._values)
 
   def __repr__(self):
-    return '{%s}' % ','.join([repr(v) for v in self._values])
+    return '{%s}' % ', '.join([repr(v) for v in self._values])
 
   def neutral_repr(self):
-    return '{%s}' % ','.join([neutral_repr(v) for v in self._values])
+    return '{%s}' % ', '.join([neutral_repr(v) for v in self._values])
 
 class FunctionCall(BitExpr):
   """Abstract class defining an (external) function call."""
@@ -716,6 +732,14 @@ class InBitSet(InSet):
   def __repr__(self):
     return "%s in bitset %s" % (repr(self._value), repr(self._bitset))
 
+_IF_THEN_ELSE_CPP_FORMAT="""(%s
+       ? %s
+       : %s)"""
+
+_IF_THEN_ELSE_DGEN_FORMAT="""%s
+       if %s
+       else %s"""
+
 class IfThenElse(BitExpr):
   """Models a conditional expression."""
 
@@ -737,30 +761,35 @@ class IfThenElse(BitExpr):
     return IfThenElse(self._test, self._else_value, self._then_value)
 
   def to_bool(self, options={}):
-    return "(%s ? %s : %s)" % (self._test.to_bool(options),
-                               self._then_value.to_bool(options),
-                               self._else_value.to_bool(options))
+    return _IF_THEN_ELSE_CPP_FORMAT % (
+        self._test.to_bool(options),
+        self._then_value.to_bool(options),
+        self._else_value.to_bool(options))
 
   def to_register_list(self, options={}):
-    return '(%s ? %s : %s)' % (self._test.to_bool(options),
-                               self._then_value.to_register_list(options),
-                               self._else_value.to_register_list(options))
+    return _IF_THEN_ELSE_CPP_FORMAT % (
+        self._test.to_bool(options),
+        self._then_value.to_register_list(options),
+        self._else_value.to_register_list(options))
 
   def to_uint32(self, options={}):
-    return "(%s ? %s : %s)" % (self._test.to_bool(options),
-                               self._then_value.to_uint32(options),
-                               self._else_value.to_uint32(options))
+    return _IF_THEN_ELSE_CPP_FORMAT % (
+        self._test.to_bool(options),
+        self._then_value.to_uint32(options),
+        self._else_value.to_uint32(options))
 
   def sub_bit_exprs(self):
     return [self._test, self._then_value, self._else_value]
 
   def __repr__(self):
-    return '%s if %s else %s' % (self._then_value, self._test, self._else_value)
+    return _IF_THEN_ELSE_DGEN_FORMAT % (
+        self._then_value, self._test, self._else_value)
 
   def neutral_repr(self):
-    return '%s if %s else %s' % (neutral_repr(self._then_value),
-                                 neutral_repr(self._test),
-                                 neutral_repr(self._else_value))
+    return _IF_THEN_ELSE_DGEN_FORMAT % (
+        neutral_repr(self._then_value),
+        neutral_repr(self._test),
+        neutral_repr(self._else_value))
 
 class ParenthesizedExp(BitExpr):
   """Models a parenthesized expression."""
@@ -1128,7 +1157,11 @@ class SymbolTable(object):
         is_first = False
       else:
         dict_rep = '%s,%s  ' % (dict_rep, NEWLINE_STR)
-      dict_rep = "%s%s: %s" % (dict_rep, k, dict[k])
+      value = dict[k]
+      # Try to better pretty-print lists.
+      if isinstance(value, list) and len(repr(value)) > 60:
+        value = '[' + ',\n    '.join([repr(v) for v in value]) + ']'
+      dict_rep = "%s%s: %s" % (dict_rep, k, value)
     dict_rep += '}'
     return dict_rep
 
@@ -1391,7 +1424,9 @@ class BitPattern(BitExpr):
       else:
         inst = self.column.name().to_uint32(options)
         value = ('(%s & 0x%08X) %s 0x%08X'
-                 % (inst, self.mask, self.op, self.value))
+                 % (inst, self.mask,
+                    _COMPARE_OP_FORMAT % self.op,
+                    self.value))
       return value
 
     def to_commented_bool(self, options={}):
@@ -1652,8 +1687,6 @@ class Table(object):
 class DecoderAction:
   """An action defining a class decoder to apply.
      Fields are:
-       baseline - Name of class decoder used in the baseline.
-       actual - Name of the class decoder to use in the validator.
        _st - Symbol table of other information stored on the decoder action.
        _neutral_st - Symbol table to use for neutral_repr. Note: This
              symbol table is the same as _st, except when method action_filter
@@ -1714,8 +1747,21 @@ class DecoderAction:
         # Copy over if defined.
         value = self._st.find(n)
       if value != None:
+        # Copy to both the copy, and the neutral form.
         action._st.define(name, value, fail_if_defined=False)
-        action._neutral_st.define(name, value, fail_if_defined=False)
+        neutral_value = value
+        if name == 'safety':
+          # To get better compression of actual decoders,
+          # merge and order alternatives.
+          neutral_value = set()
+          strs = set()
+          for v in value:
+            if isinstance(v, BitExpr):
+              neutral_value.add(v)
+            else:
+              strs.add(v)
+          neutral_value = sorted(neutral_value) + sorted(strs)
+        action._neutral_st.define(name, neutral_value, fail_if_defined=False)
         _add_if_bitexpr(value, values)
 
     # Collect sub expressions (via closure) and add names of id refs

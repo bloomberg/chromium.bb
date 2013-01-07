@@ -114,8 +114,6 @@
 #      dynamic_code_replacement_sentinel.
 # small_imm_base_wb: True if a small immediate is written back to the
 #       base register (missing implies false).
-# immediate: True if the instruction does a read/write
-#       as "base + immediate". (missing implies false).
 # is_literal_load: Checks whether the instruction is a PC-relative
 #       load plus immediate.
 # is_load_tp: Checks if r9 is used to load a thread pointer (missing

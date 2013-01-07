@@ -36,7 +36,14 @@ namespace nacl_arm_test {
 //    = {baseline: 'Binary4RegisterDualOp',
 //       constraints: ,
 //       defs: {inst(19:16)},
-//       safety: ['15 == inst(15:12) => DECODER_ERROR', '15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) => DECODER_ERROR,
+//         15  ==
+//               inst(19:16) ||
+//            15  ==
+//               inst(3:0) ||
+//            15  ==
+//               inst(11:8) => UNPREDICTABLE]}
 //
 // Representaive case:
 // op1(24:20)=11000 & op2(7:5)=000 & Rd(15:12)=~1111
@@ -49,7 +56,9 @@ namespace nacl_arm_test {
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
-//       safety: [Ra == Pc => DECODER_ERROR, Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
+//       safety: [Ra  ==
+//               Pc => DECODER_ERROR,
+//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE]}
 class Binary4RegisterDualOpTesterCase0
     : public Binary4RegisterDualOpTester {
  public:
@@ -68,9 +77,15 @@ bool Binary4RegisterDualOpTesterCase0
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01F00000) != 0x01800000 /* op1(24:20)=~11000 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000000 /* op2(7:5)=~000 */) return false;
-  if ((inst.Bits() & 0x0000F000) == 0x0000F000 /* Rd(15:12)=1111 */) return false;
+  // op1(24:20)=~11000
+  if ((inst.Bits() & 0x01F00000)  !=
+          0x01800000) return false;
+  // op2(7:5)=~000
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x00000000) return false;
+  // Rd(15:12)=1111
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary4RegisterDualOpTester::
@@ -80,16 +95,21 @@ bool Binary4RegisterDualOpTesterCase0
 bool Binary4RegisterDualOpTesterCase0
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Binary4RegisterDualOpTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Binary4RegisterDualOpTester::
+               ApplySanityChecks(inst, decoder));
 
-  // safety: Ra == Pc => DECODER_ERROR
+  // safety: Ra  ==
+  //          Pc => DECODER_ERROR
   EXPECT_TRUE(((((inst.Bits() & 0x0000F000) >> 12)) != (15)));
 
-  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))));
+  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8))))));
 
   // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x000F0000) >> 16)))));
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))));
 
   return true;
 }
@@ -99,7 +119,12 @@ bool Binary4RegisterDualOpTesterCase0
 //    = {baseline: 'Binary3RegisterOpAltA',
 //       constraints: ,
 //       defs: {inst(19:16)},
-//       safety: ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(19:16) ||
+//            15  ==
+//               inst(3:0) ||
+//            15  ==
+//               inst(11:8) => UNPREDICTABLE]}
 //
 // Representaive case:
 // op1(24:20)=11000 & op2(7:5)=000 & Rd(15:12)=1111
@@ -111,7 +136,7 @@ bool Binary4RegisterDualOpTesterCase0
 //       constraints: ,
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
-//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
+//       safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltATesterCase1
     : public Binary3RegisterOpAltATester {
  public:
@@ -130,9 +155,15 @@ bool Binary3RegisterOpAltATesterCase1
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01F00000) != 0x01800000 /* op1(24:20)=~11000 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x00000000 /* op2(7:5)=~000 */) return false;
-  if ((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=~1111 */) return false;
+  // op1(24:20)=~11000
+  if ((inst.Bits() & 0x01F00000)  !=
+          0x01800000) return false;
+  // op2(7:5)=~000
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x00000000) return false;
+  // Rd(15:12)=~1111
+  if ((inst.Bits() & 0x0000F000)  !=
+          0x0000F000) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary3RegisterOpAltATester::
@@ -142,13 +173,17 @@ bool Binary3RegisterOpAltATesterCase1
 bool Binary3RegisterOpAltATesterCase1
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Binary3RegisterOpAltATester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Binary3RegisterOpAltATester::
+               ApplySanityChecks(inst, decoder));
 
-  // safety: Pc in {Rd,Rn,Rm} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))));
+  // safety: Pc in {Rd, Rn, Rm} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8))))));
 
   // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x000F0000) >> 16)))));
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)))));
 
   return true;
 }
@@ -178,8 +213,12 @@ bool PermanentlyUndefinedTesterCase2
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01F00000) != 0x01F00000 /* op1(24:20)=~11111 */) return false;
-  if ((inst.Bits() & 0x000000E0) != 0x000000E0 /* op2(7:5)=~111 */) return false;
+  // op1(24:20)=~11111
+  if ((inst.Bits() & 0x01F00000)  !=
+          0x01F00000) return false;
+  // op2(7:5)=~111
+  if ((inst.Bits() & 0x000000E0)  !=
+          0x000000E0) return false;
 
   // Check other preconditions defined for the base decoder.
   return PermanentlyUndefinedTester::
@@ -191,7 +230,12 @@ bool PermanentlyUndefinedTesterCase2
 //    = {baseline: 'Binary2RegisterBitRangeNotRnIsPcBitfieldExtract',
 //       constraints: ,
 //       defs: {inst(15:12)},
-//       safety: ['15 == inst(15:12) || 15 == inst(3:0) => UNPREDICTABLE', '31 <= inst(11:7) + inst(20:16) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) ||
+//            15  ==
+//               inst(3:0) => UNPREDICTABLE,
+//         31  <=
+//               inst(11:7) + inst(20:16) => UNPREDICTABLE]}
 //
 // Representaive case:
 // op1(24:20)=1101x & op2(7:5)=x10
@@ -203,7 +247,9 @@ bool PermanentlyUndefinedTesterCase2
 //       defs: {Rd},
 //       fields: [widthm1(20:16), Rd(15:12), lsb(11:7), Rn(3:0)],
 //       lsb: lsb(11:7),
-//       safety: [Pc in {Rd,Rn} => UNPREDICTABLE, lsb + widthm1 > 31 => UNPREDICTABLE],
+//       safety: [Pc in {Rd, Rn} => UNPREDICTABLE,
+//         lsb + widthm1  >
+//               31 => UNPREDICTABLE],
 //       widthm1: widthm1(20:16)}
 class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase3
     : public Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester {
@@ -223,8 +269,12 @@ bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase3
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01E00000) != 0x01A00000 /* op1(24:20)=~1101x */) return false;
-  if ((inst.Bits() & 0x00000060) != 0x00000040 /* op2(7:5)=~x10 */) return false;
+  // op1(24:20)=~1101x
+  if ((inst.Bits() & 0x01E00000)  !=
+          0x01A00000) return false;
+  // op2(7:5)=~x10
+  if ((inst.Bits() & 0x00000060)  !=
+          0x00000040) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester::
@@ -234,16 +284,20 @@ bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase3
 bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase3
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester::
+               ApplySanityChecks(inst, decoder));
 
-  // safety: Pc in {Rd,Rn} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+  // safety: Pc in {Rd, Rn} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F))))));
 
-  // safety: lsb + widthm1 > 31 => UNPREDICTABLE
+  // safety: lsb + widthm1  >
+  //          31 => UNPREDICTABLE
   EXPECT_TRUE(((((inst.Bits() & 0x00000F80) >> 7) + ((inst.Bits() & 0x001F0000) >> 16)) <= (31)));
 
   // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
 
   return true;
 }
@@ -253,7 +307,12 @@ bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase3
 //    = {baseline: 'Binary2RegisterBitRangeMsbGeLsb',
 //       constraints: ,
 //       defs: {inst(15:12)},
-//       safety: ['15 == inst(3:0) => DECODER_ERROR', '15 == inst(15:12) => UNPREDICTABLE', 'inst(20:16) < inst(11:7) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) => UNPREDICTABLE,
+//         15  ==
+//               inst(3:0) => DECODER_ERROR,
+//         inst(20:16)  <
+//               inst(11:7) => UNPREDICTABLE]}
 //
 // Representaive case:
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=~1111
@@ -266,7 +325,12 @@ bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase3
 //       fields: [msb(20:16), Rd(15:12), lsb(11:7), Rn(3:0)],
 //       lsb: lsb(11:7),
 //       msb: msb(20:16),
-//       safety: [Rn == Pc => DECODER_ERROR, Rd == Pc => UNPREDICTABLE, msb < lsb => UNPREDICTABLE]}
+//       safety: [Rn  ==
+//               Pc => DECODER_ERROR,
+//         Rd  ==
+//               Pc => UNPREDICTABLE,
+//         msb  <
+//               lsb => UNPREDICTABLE]}
 class Binary2RegisterBitRangeMsbGeLsbTesterCase4
     : public Binary2RegisterBitRangeMsbGeLsbTester {
  public:
@@ -285,9 +349,15 @@ bool Binary2RegisterBitRangeMsbGeLsbTesterCase4
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01E00000) != 0x01C00000 /* op1(24:20)=~1110x */) return false;
-  if ((inst.Bits() & 0x00000060) != 0x00000000 /* op2(7:5)=~x00 */) return false;
-  if ((inst.Bits() & 0x0000000F) == 0x0000000F /* Rn(3:0)=1111 */) return false;
+  // op1(24:20)=~1110x
+  if ((inst.Bits() & 0x01E00000)  !=
+          0x01C00000) return false;
+  // op2(7:5)=~x00
+  if ((inst.Bits() & 0x00000060)  !=
+          0x00000000) return false;
+  // Rn(3:0)=1111
+  if ((inst.Bits() & 0x0000000F)  ==
+          0x0000000F) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary2RegisterBitRangeMsbGeLsbTester::
@@ -297,19 +367,24 @@ bool Binary2RegisterBitRangeMsbGeLsbTesterCase4
 bool Binary2RegisterBitRangeMsbGeLsbTesterCase4
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Binary2RegisterBitRangeMsbGeLsbTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Binary2RegisterBitRangeMsbGeLsbTester::
+               ApplySanityChecks(inst, decoder));
 
-  // safety: Rn == Pc => DECODER_ERROR
+  // safety: Rn  ==
+  //          Pc => DECODER_ERROR
   EXPECT_TRUE((((inst.Bits() & 0x0000000F)) != (15)));
 
-  // safety: Rd == Pc => UNPREDICTABLE
+  // safety: Rd  ==
+  //          Pc => UNPREDICTABLE
   EXPECT_TRUE(((((inst.Bits() & 0x0000F000) >> 12)) != (15)));
 
-  // safety: msb < lsb => UNPREDICTABLE
+  // safety: msb  <
+  //          lsb => UNPREDICTABLE
   EXPECT_TRUE(((((inst.Bits() & 0x001F0000) >> 16)) >= (((inst.Bits() & 0x00000F80) >> 7))));
 
   // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
 
   return true;
 }
@@ -319,7 +394,10 @@ bool Binary2RegisterBitRangeMsbGeLsbTesterCase4
 //    = {baseline: 'Unary1RegisterBitRangeMsbGeLsb',
 //       constraints: ,
 //       defs: {inst(15:12)},
-//       safety: ['15 == inst(15:12) => UNPREDICTABLE', 'inst(20:16) < inst(11:7) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) => UNPREDICTABLE,
+//         inst(20:16)  <
+//               inst(11:7) => UNPREDICTABLE]}
 //
 // Representaive case:
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=1111
@@ -331,7 +409,10 @@ bool Binary2RegisterBitRangeMsbGeLsbTesterCase4
 //       fields: [msb(20:16), Rd(15:12), lsb(11:7)],
 //       lsb: lsb(11:7),
 //       msb: msb(20:16),
-//       safety: [Rd == Pc => UNPREDICTABLE, msb < lsb => UNPREDICTABLE]}
+//       safety: [Rd  ==
+//               Pc => UNPREDICTABLE,
+//         msb  <
+//               lsb => UNPREDICTABLE]}
 class Unary1RegisterBitRangeMsbGeLsbTesterCase5
     : public Unary1RegisterBitRangeMsbGeLsbTester {
  public:
@@ -350,9 +431,15 @@ bool Unary1RegisterBitRangeMsbGeLsbTesterCase5
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01E00000) != 0x01C00000 /* op1(24:20)=~1110x */) return false;
-  if ((inst.Bits() & 0x00000060) != 0x00000000 /* op2(7:5)=~x00 */) return false;
-  if ((inst.Bits() & 0x0000000F) != 0x0000000F /* Rn(3:0)=~1111 */) return false;
+  // op1(24:20)=~1110x
+  if ((inst.Bits() & 0x01E00000)  !=
+          0x01C00000) return false;
+  // op2(7:5)=~x00
+  if ((inst.Bits() & 0x00000060)  !=
+          0x00000000) return false;
+  // Rn(3:0)=~1111
+  if ((inst.Bits() & 0x0000000F)  !=
+          0x0000000F) return false;
 
   // Check other preconditions defined for the base decoder.
   return Unary1RegisterBitRangeMsbGeLsbTester::
@@ -362,16 +449,20 @@ bool Unary1RegisterBitRangeMsbGeLsbTesterCase5
 bool Unary1RegisterBitRangeMsbGeLsbTesterCase5
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Unary1RegisterBitRangeMsbGeLsbTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Unary1RegisterBitRangeMsbGeLsbTester::
+               ApplySanityChecks(inst, decoder));
 
-  // safety: Rd == Pc => UNPREDICTABLE
+  // safety: Rd  ==
+  //          Pc => UNPREDICTABLE
   EXPECT_TRUE(((((inst.Bits() & 0x0000F000) >> 12)) != (15)));
 
-  // safety: msb < lsb => UNPREDICTABLE
+  // safety: msb  <
+  //          lsb => UNPREDICTABLE
   EXPECT_TRUE(((((inst.Bits() & 0x001F0000) >> 16)) >= (((inst.Bits() & 0x00000F80) >> 7))));
 
   // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
 
   return true;
 }
@@ -381,7 +472,12 @@ bool Unary1RegisterBitRangeMsbGeLsbTesterCase5
 //    = {baseline: 'Binary2RegisterBitRangeNotRnIsPcBitfieldExtract',
 //       constraints: ,
 //       defs: {inst(15:12)},
-//       safety: ['15 == inst(15:12) || 15 == inst(3:0) => UNPREDICTABLE', '31 <= inst(11:7) + inst(20:16) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) ||
+//            15  ==
+//               inst(3:0) => UNPREDICTABLE,
+//         31  <=
+//               inst(11:7) + inst(20:16) => UNPREDICTABLE]}
 //
 // Representaive case:
 // op1(24:20)=1111x & op2(7:5)=x10
@@ -393,7 +489,9 @@ bool Unary1RegisterBitRangeMsbGeLsbTesterCase5
 //       defs: {Rd},
 //       fields: [widthm1(20:16), Rd(15:12), lsb(11:7), Rn(3:0)],
 //       lsb: lsb(11:7),
-//       safety: [Pc in {Rd,Rn} => UNPREDICTABLE, lsb + widthm1 > 31 => UNPREDICTABLE],
+//       safety: [Pc in {Rd, Rn} => UNPREDICTABLE,
+//         lsb + widthm1  >
+//               31 => UNPREDICTABLE],
 //       widthm1: widthm1(20:16)}
 class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase6
     : public Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester {
@@ -413,8 +511,12 @@ bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase6
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x01E00000) != 0x01E00000 /* op1(24:20)=~1111x */) return false;
-  if ((inst.Bits() & 0x00000060) != 0x00000040 /* op2(7:5)=~x10 */) return false;
+  // op1(24:20)=~1111x
+  if ((inst.Bits() & 0x01E00000)  !=
+          0x01E00000) return false;
+  // op2(7:5)=~x10
+  if ((inst.Bits() & 0x00000060)  !=
+          0x00000040) return false;
 
   // Check other preconditions defined for the base decoder.
   return Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester::
@@ -424,16 +526,20 @@ bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase6
 bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase6
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester::ApplySanityChecks(inst, decoder));
+  NC_PRECOND(Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester::
+               ApplySanityChecks(inst, decoder));
 
-  // safety: Pc in {Rd,Rn} => UNPREDICTABLE
-  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == ((inst.Bits() & 0x0000000F))))));
+  // safety: Pc in {Rd, Rn} => UNPREDICTABLE
+  EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F))))));
 
-  // safety: lsb + widthm1 > 31 => UNPREDICTABLE
+  // safety: lsb + widthm1  >
+  //          31 => UNPREDICTABLE
   EXPECT_TRUE(((((inst.Bits() & 0x00000F80) >> 7) + ((inst.Bits() & 0x001F0000) >> 16)) <= (31)));
 
   // defs: {Rd};
-  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)))));
 
   return true;
 }
@@ -449,7 +555,14 @@ bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase6
 //       constraints: ,
 //       defs: {inst(19:16)},
 //       rule: 'USADA8',
-//       safety: ['15 == inst(15:12) => DECODER_ERROR', '15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) => DECODER_ERROR,
+//         15  ==
+//               inst(19:16) ||
+//            15  ==
+//               inst(3:0) ||
+//            15  ==
+//               inst(11:8) => UNPREDICTABLE]}
 //
 // Representative case:
 // op1(24:20)=11000 & op2(7:5)=000 & Rd(15:12)=~1111
@@ -463,7 +576,9 @@ bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase6
 //       defs: {Rd},
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //       rule: USADA8,
-//       safety: [Ra == Pc => DECODER_ERROR, Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
+//       safety: [Ra  ==
+//               Pc => DECODER_ERROR,
+//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE]}
 class Binary4RegisterDualOpTester_Case0
     : public Binary4RegisterDualOpTesterCase0 {
  public:
@@ -479,7 +594,12 @@ class Binary4RegisterDualOpTester_Case0
 //       constraints: ,
 //       defs: {inst(19:16)},
 //       rule: 'USAD8',
-//       safety: ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(19:16) ||
+//            15  ==
+//               inst(3:0) ||
+//            15  ==
+//               inst(11:8) => UNPREDICTABLE]}
 //
 // Representative case:
 // op1(24:20)=11000 & op2(7:5)=000 & Rd(15:12)=1111
@@ -492,7 +612,7 @@ class Binary4RegisterDualOpTester_Case0
 //       defs: {Rd},
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
 //       rule: USAD8,
-//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
+//       safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE]}
 class Binary3RegisterOpAltATester_Case1
     : public Binary3RegisterOpAltATesterCase1 {
  public:
@@ -528,7 +648,12 @@ class PermanentlyUndefinedTester_Case2
 //       constraints: ,
 //       defs: {inst(15:12)},
 //       rule: 'SBFX',
-//       safety: ['15 == inst(15:12) || 15 == inst(3:0) => UNPREDICTABLE', '31 <= inst(11:7) + inst(20:16) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) ||
+//            15  ==
+//               inst(3:0) => UNPREDICTABLE,
+//         31  <=
+//               inst(11:7) + inst(20:16) => UNPREDICTABLE]}
 //
 // Representative case:
 // op1(24:20)=1101x & op2(7:5)=x10
@@ -541,7 +666,9 @@ class PermanentlyUndefinedTester_Case2
 //       fields: [widthm1(20:16), Rd(15:12), lsb(11:7), Rn(3:0)],
 //       lsb: lsb(11:7),
 //       rule: SBFX,
-//       safety: [Pc in {Rd,Rn} => UNPREDICTABLE, lsb + widthm1 > 31 => UNPREDICTABLE],
+//       safety: [Pc in {Rd, Rn} => UNPREDICTABLE,
+//         lsb + widthm1  >
+//               31 => UNPREDICTABLE],
 //       widthm1: widthm1(20:16)}
 class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case3
     : public Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase3 {
@@ -558,7 +685,12 @@ class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case3
 //       constraints: ,
 //       defs: {inst(15:12)},
 //       rule: 'BFI',
-//       safety: ['15 == inst(3:0) => DECODER_ERROR', '15 == inst(15:12) => UNPREDICTABLE', 'inst(20:16) < inst(11:7) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) => UNPREDICTABLE,
+//         15  ==
+//               inst(3:0) => DECODER_ERROR,
+//         inst(20:16)  <
+//               inst(11:7) => UNPREDICTABLE]}
 //
 // Representative case:
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=~1111
@@ -572,7 +704,12 @@ class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case3
 //       lsb: lsb(11:7),
 //       msb: msb(20:16),
 //       rule: BFI,
-//       safety: [Rn == Pc => DECODER_ERROR, Rd == Pc => UNPREDICTABLE, msb < lsb => UNPREDICTABLE]}
+//       safety: [Rn  ==
+//               Pc => DECODER_ERROR,
+//         Rd  ==
+//               Pc => UNPREDICTABLE,
+//         msb  <
+//               lsb => UNPREDICTABLE]}
 class Binary2RegisterBitRangeMsbGeLsbTester_Case4
     : public Binary2RegisterBitRangeMsbGeLsbTesterCase4 {
  public:
@@ -588,7 +725,10 @@ class Binary2RegisterBitRangeMsbGeLsbTester_Case4
 //       constraints: ,
 //       defs: {inst(15:12)},
 //       rule: 'BFC',
-//       safety: ['15 == inst(15:12) => UNPREDICTABLE', 'inst(20:16) < inst(11:7) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) => UNPREDICTABLE,
+//         inst(20:16)  <
+//               inst(11:7) => UNPREDICTABLE]}
 //
 // Representative case:
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=1111
@@ -601,7 +741,10 @@ class Binary2RegisterBitRangeMsbGeLsbTester_Case4
 //       lsb: lsb(11:7),
 //       msb: msb(20:16),
 //       rule: BFC,
-//       safety: [Rd == Pc => UNPREDICTABLE, msb < lsb => UNPREDICTABLE]}
+//       safety: [Rd  ==
+//               Pc => UNPREDICTABLE,
+//         msb  <
+//               lsb => UNPREDICTABLE]}
 class Unary1RegisterBitRangeMsbGeLsbTester_Case5
     : public Unary1RegisterBitRangeMsbGeLsbTesterCase5 {
  public:
@@ -617,7 +760,12 @@ class Unary1RegisterBitRangeMsbGeLsbTester_Case5
 //       constraints: ,
 //       defs: {inst(15:12)},
 //       rule: 'UBFX',
-//       safety: ['15 == inst(15:12) || 15 == inst(3:0) => UNPREDICTABLE', '31 <= inst(11:7) + inst(20:16) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) ||
+//            15  ==
+//               inst(3:0) => UNPREDICTABLE,
+//         31  <=
+//               inst(11:7) + inst(20:16) => UNPREDICTABLE]}
 //
 // Representative case:
 // op1(24:20)=1111x & op2(7:5)=x10
@@ -630,7 +778,9 @@ class Unary1RegisterBitRangeMsbGeLsbTester_Case5
 //       fields: [widthm1(20:16), Rd(15:12), lsb(11:7), Rn(3:0)],
 //       lsb: lsb(11:7),
 //       rule: UBFX,
-//       safety: [Pc in {Rd,Rn} => UNPREDICTABLE, lsb + widthm1 > 31 => UNPREDICTABLE],
+//       safety: [Pc in {Rd, Rn} => UNPREDICTABLE,
+//         lsb + widthm1  >
+//               31 => UNPREDICTABLE],
 //       widthm1: widthm1(20:16)}
 class Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case6
     : public Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase6 {
@@ -658,7 +808,14 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       defs: {inst(19:16)},
 //       pattern: 'cccc01111000ddddaaaammmm0001nnnn',
 //       rule: 'USADA8',
-//       safety: ['15 == inst(15:12) => DECODER_ERROR', '15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) => DECODER_ERROR,
+//         15  ==
+//               inst(19:16) ||
+//            15  ==
+//               inst(3:0) ||
+//            15  ==
+//               inst(11:8) => UNPREDICTABLE]}
 //
 // Representaive case:
 // op1(24:20)=11000 & op2(7:5)=000 & Rd(15:12)=~1111
@@ -674,7 +831,9 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       fields: [Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
 //       pattern: cccc01111000ddddaaaammmm0001nnnn,
 //       rule: USADA8,
-//       safety: [Ra == Pc => DECODER_ERROR, Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
+//       safety: [Ra  ==
+//               Pc => DECODER_ERROR,
+//         Pc in {Rd, Rn, Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary4RegisterDualOpTester_Case0_TestCase0) {
   Binary4RegisterDualOpTester_Case0 tester;
@@ -689,7 +848,12 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {inst(19:16)},
 //       pattern: 'cccc01111000dddd1111mmmm0001nnnn',
 //       rule: 'USAD8',
-//       safety: ['15 == inst(19:16) || 15 == inst(3:0) || 15 == inst(11:8) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(19:16) ||
+//            15  ==
+//               inst(3:0) ||
+//            15  ==
+//               inst(11:8) => UNPREDICTABLE]}
 //
 // Representaive case:
 // op1(24:20)=11000 & op2(7:5)=000 & Rd(15:12)=1111
@@ -704,7 +868,7 @@ TEST_F(Arm32DecoderStateTests,
 //       fields: [Rd(19:16), Rm(11:8), Rn(3:0)],
 //       pattern: cccc01111000dddd1111mmmm0001nnnn,
 //       rule: USAD8,
-//       safety: [Pc in {Rd,Rn,Rm} => UNPREDICTABLE]}
+//       safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary3RegisterOpAltATester_Case1_TestCase1) {
   Binary3RegisterOpAltATester_Case1 tester;
@@ -740,7 +904,12 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {inst(15:12)},
 //       pattern: 'cccc0111101wwwwwddddlllll101nnnn',
 //       rule: 'SBFX',
-//       safety: ['15 == inst(15:12) || 15 == inst(3:0) => UNPREDICTABLE', '31 <= inst(11:7) + inst(20:16) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) ||
+//            15  ==
+//               inst(3:0) => UNPREDICTABLE,
+//         31  <=
+//               inst(11:7) + inst(20:16) => UNPREDICTABLE]}
 //
 // Representaive case:
 // op1(24:20)=1101x & op2(7:5)=x10
@@ -755,7 +924,9 @@ TEST_F(Arm32DecoderStateTests,
 //       lsb: lsb(11:7),
 //       pattern: cccc0111101wwwwwddddlllll101nnnn,
 //       rule: SBFX,
-//       safety: [Pc in {Rd,Rn} => UNPREDICTABLE, lsb + widthm1 > 31 => UNPREDICTABLE],
+//       safety: [Pc in {Rd, Rn} => UNPREDICTABLE,
+//         lsb + widthm1  >
+//               31 => UNPREDICTABLE],
 //       widthm1: widthm1(20:16)}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case3_TestCase3) {
@@ -771,7 +942,12 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {inst(15:12)},
 //       pattern: 'cccc0111110mmmmmddddlllll001nnnn',
 //       rule: 'BFI',
-//       safety: ['15 == inst(3:0) => DECODER_ERROR', '15 == inst(15:12) => UNPREDICTABLE', 'inst(20:16) < inst(11:7) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) => UNPREDICTABLE,
+//         15  ==
+//               inst(3:0) => DECODER_ERROR,
+//         inst(20:16)  <
+//               inst(11:7) => UNPREDICTABLE]}
 //
 // Representaive case:
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=~1111
@@ -787,7 +963,12 @@ TEST_F(Arm32DecoderStateTests,
 //       msb: msb(20:16),
 //       pattern: cccc0111110mmmmmddddlllll001nnnn,
 //       rule: BFI,
-//       safety: [Rn == Pc => DECODER_ERROR, Rd == Pc => UNPREDICTABLE, msb < lsb => UNPREDICTABLE]}
+//       safety: [Rn  ==
+//               Pc => DECODER_ERROR,
+//         Rd  ==
+//               Pc => UNPREDICTABLE,
+//         msb  <
+//               lsb => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterBitRangeMsbGeLsbTester_Case4_TestCase4) {
   Binary2RegisterBitRangeMsbGeLsbTester_Case4 tester;
@@ -802,7 +983,10 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {inst(15:12)},
 //       pattern: 'cccc0111110mmmmmddddlllll0011111',
 //       rule: 'BFC',
-//       safety: ['15 == inst(15:12) => UNPREDICTABLE', 'inst(20:16) < inst(11:7) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) => UNPREDICTABLE,
+//         inst(20:16)  <
+//               inst(11:7) => UNPREDICTABLE]}
 //
 // Representaive case:
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=1111
@@ -817,7 +1001,10 @@ TEST_F(Arm32DecoderStateTests,
 //       msb: msb(20:16),
 //       pattern: cccc0111110mmmmmddddlllll0011111,
 //       rule: BFC,
-//       safety: [Rd == Pc => UNPREDICTABLE, msb < lsb => UNPREDICTABLE]}
+//       safety: [Rd  ==
+//               Pc => UNPREDICTABLE,
+//         msb  <
+//               lsb => UNPREDICTABLE]}
 TEST_F(Arm32DecoderStateTests,
        Unary1RegisterBitRangeMsbGeLsbTester_Case5_TestCase5) {
   Unary1RegisterBitRangeMsbGeLsbTester_Case5 tester;
@@ -832,7 +1019,12 @@ TEST_F(Arm32DecoderStateTests,
 //       defs: {inst(15:12)},
 //       pattern: 'cccc0111111mmmmmddddlllll101nnnn',
 //       rule: 'UBFX',
-//       safety: ['15 == inst(15:12) || 15 == inst(3:0) => UNPREDICTABLE', '31 <= inst(11:7) + inst(20:16) => UNPREDICTABLE']}
+//       safety: [15  ==
+//               inst(15:12) ||
+//            15  ==
+//               inst(3:0) => UNPREDICTABLE,
+//         31  <=
+//               inst(11:7) + inst(20:16) => UNPREDICTABLE]}
 //
 // Representaive case:
 // op1(24:20)=1111x & op2(7:5)=x10
@@ -847,7 +1039,9 @@ TEST_F(Arm32DecoderStateTests,
 //       lsb: lsb(11:7),
 //       pattern: cccc0111111mmmmmddddlllll101nnnn,
 //       rule: UBFX,
-//       safety: [Pc in {Rd,Rn} => UNPREDICTABLE, lsb + widthm1 > 31 => UNPREDICTABLE],
+//       safety: [Pc in {Rd, Rn} => UNPREDICTABLE,
+//         lsb + widthm1  >
+//               31 => UNPREDICTABLE],
 //       widthm1: widthm1(20:16)}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTester_Case6_TestCase6) {

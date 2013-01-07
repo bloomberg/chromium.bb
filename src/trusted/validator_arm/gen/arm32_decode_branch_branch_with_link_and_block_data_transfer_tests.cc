@@ -56,7 +56,9 @@ bool LoadStoreRegisterListTesterCase0
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x03F00000) != 0x00900000 /* op(25:20)=~001001 */) return false;
+  // op(25:20)=~001001
+  if ((inst.Bits() & 0x03F00000)  !=
+          0x00900000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
@@ -88,8 +90,12 @@ bool LoadStoreRegisterListTesterCase1
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x03F00000) != 0x00B00000 /* op(25:20)=~001011 */) return false;
-  if ((inst.Bits() & 0x000F0000) == 0x000D0000 /* Rn(19:16)=1101 */) return false;
+  // op(25:20)=~001011
+  if ((inst.Bits() & 0x03F00000)  !=
+          0x00B00000) return false;
+  // Rn(19:16)=1101
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000D0000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
@@ -121,8 +127,12 @@ bool LoadStoreRegisterListTesterCase2
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x03F00000) != 0x00B00000 /* op(25:20)=~001011 */) return false;
-  if ((inst.Bits() & 0x000F0000) != 0x000D0000 /* Rn(19:16)=~1101 */) return false;
+  // op(25:20)=~001011
+  if ((inst.Bits() & 0x03F00000)  !=
+          0x00B00000) return false;
+  // Rn(19:16)=~1101
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x000D0000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
@@ -154,7 +164,9 @@ bool LoadStoreRegisterListTesterCase3
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x03F00000) != 0x01000000 /* op(25:20)=~010000 */) return false;
+  // op(25:20)=~010000
+  if ((inst.Bits() & 0x03F00000)  !=
+          0x01000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
@@ -186,8 +198,12 @@ bool LoadStoreRegisterListTesterCase4
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x03F00000) != 0x01200000 /* op(25:20)=~010010 */) return false;
-  if ((inst.Bits() & 0x000F0000) == 0x000D0000 /* Rn(19:16)=1101 */) return false;
+  // op(25:20)=~010010
+  if ((inst.Bits() & 0x03F00000)  !=
+          0x01200000) return false;
+  // Rn(19:16)=1101
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000D0000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
@@ -219,8 +235,12 @@ bool LoadStoreRegisterListTesterCase5
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x03F00000) != 0x01200000 /* op(25:20)=~010010 */) return false;
-  if ((inst.Bits() & 0x000F0000) != 0x000D0000 /* Rn(19:16)=~1101 */) return false;
+  // op(25:20)=~010010
+  if ((inst.Bits() & 0x03F00000)  !=
+          0x01200000) return false;
+  // Rn(19:16)=~1101
+  if ((inst.Bits() & 0x000F0000)  !=
+          0x000D0000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
@@ -252,7 +272,9 @@ bool LoadStoreRegisterListTesterCase6
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x03D00000) != 0x00000000 /* op(25:20)=~0000x0 */) return false;
+  // op(25:20)=~0000x0
+  if ((inst.Bits() & 0x03D00000)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
@@ -284,7 +306,9 @@ bool LoadStoreRegisterListTesterCase7
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x03D00000) != 0x00100000 /* op(25:20)=~0000x1 */) return false;
+  // op(25:20)=~0000x1
+  if ((inst.Bits() & 0x03D00000)  !=
+          0x00100000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
@@ -316,7 +340,9 @@ bool LoadStoreRegisterListTesterCase8
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x03D00000) != 0x00800000 /* op(25:20)=~0010x0 */) return false;
+  // op(25:20)=~0010x0
+  if ((inst.Bits() & 0x03D00000)  !=
+          0x00800000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
@@ -348,7 +374,9 @@ bool LoadStoreRegisterListTesterCase9
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x03D00000) != 0x01100000 /* op(25:20)=~0100x1 */) return false;
+  // op(25:20)=~0100x1
+  if ((inst.Bits() & 0x03D00000)  !=
+          0x01100000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
@@ -380,7 +408,9 @@ bool LoadStoreRegisterListTesterCase10
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x03D00000) != 0x01800000 /* op(25:20)=~0110x0 */) return false;
+  // op(25:20)=~0110x0
+  if ((inst.Bits() & 0x03D00000)  !=
+          0x01800000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
@@ -412,7 +442,9 @@ bool LoadStoreRegisterListTesterCase11
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x03D00000) != 0x01900000 /* op(25:20)=~0110x1 */) return false;
+  // op(25:20)=~0110x1
+  if ((inst.Bits() & 0x03D00000)  !=
+          0x01900000) return false;
 
   // Check other preconditions defined for the base decoder.
   return LoadStoreRegisterListTester::
@@ -444,8 +476,12 @@ bool UnsafeCondDecoderTesterCase12
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x02500000) != 0x00400000 /* op(25:20)=~0xx1x0 */) return false;
-  if ((inst.Bits() & 0x00200000) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx */) return false;
+  // op(25:20)=~0xx1x0
+  if ((inst.Bits() & 0x02500000)  !=
+          0x00400000) return false;
+  // $pattern(31:0)=~xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
+  if ((inst.Bits() & 0x00200000)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -477,9 +513,15 @@ bool UnsafeCondDecoderTesterCase13
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x02500000) != 0x00500000 /* op(25:20)=~0xx1x1 */) return false;
-  if ((inst.Bits() & 0x00008000) != 0x00000000 /* R(15)=~0 */) return false;
-  if ((inst.Bits() & 0x00200000) != 0x00000000 /* $pattern(31:0)=~xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx */) return false;
+  // op(25:20)=~0xx1x1
+  if ((inst.Bits() & 0x02500000)  !=
+          0x00500000) return false;
+  // R(15)=~0
+  if ((inst.Bits() & 0x00008000)  !=
+          0x00000000) return false;
+  // $pattern(31:0)=~xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
+  if ((inst.Bits() & 0x00200000)  !=
+          0x00000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -511,8 +553,12 @@ bool UnsafeCondDecoderTesterCase14
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x02500000) != 0x00500000 /* op(25:20)=~0xx1x1 */) return false;
-  if ((inst.Bits() & 0x00008000) != 0x00008000 /* R(15)=~1 */) return false;
+  // op(25:20)=~0xx1x1
+  if ((inst.Bits() & 0x02500000)  !=
+          0x00500000) return false;
+  // R(15)=~1
+  if ((inst.Bits() & 0x00008000)  !=
+          0x00008000) return false;
 
   // Check other preconditions defined for the base decoder.
   return UnsafeCondDecoderTester::
@@ -544,7 +590,9 @@ bool BranchImmediate24TesterCase15
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x03000000) != 0x02000000 /* op(25:20)=~10xxxx */) return false;
+  // op(25:20)=~10xxxx
+  if ((inst.Bits() & 0x03000000)  !=
+          0x02000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return BranchImmediate24Tester::
@@ -576,7 +624,9 @@ bool BranchImmediate24TesterCase16
      const NamedClassDecoder& decoder) {
 
   // Check that row patterns apply to pattern being checked.'
-  if ((inst.Bits() & 0x03000000) != 0x03000000 /* op(25:20)=~11xxxx */) return false;
+  // op(25:20)=~11xxxx
+  if ((inst.Bits() & 0x03000000)  !=
+          0x03000000) return false;
 
   // Check other preconditions defined for the base decoder.
   return BranchImmediate24Tester::

@@ -166,12 +166,6 @@ import dgen_output
 """The current command line arguments to use"""
 _cl_args = {}
 
-NEWLINE_STR="""
-"""
-
-COMMENTED_NEWLINE_STR="""
-//"""
-
 # The following defines naming conventions used for identifiers.
 # Note: DECODER will be replaced by 'actual' and 'baseline', defining
 # how both types of symbols are generated.
@@ -704,7 +698,8 @@ PATTERN_CONSTRAINT_RESTRICTIONS_HEADER="""
   // Check pattern restrictions of row."""
 
 CONSTRAINT_CHECK="""
-  if (%s) return false;"""
+  // %(comment)s
+  if (%(code)s) return false;"""
 
 CONSTRAINT_TESTER_CLASS_FOOTER="""
 
@@ -718,17 +713,18 @@ SAFETY_TESTER_HEADER="""
 bool %(base_tester)s
 ::ApplySanityChecks(nacl_arm_dec::Instruction inst,
                     const NamedClassDecoder& decoder) {
-  NC_PRECOND(%(base_base_tester)s::ApplySanityChecks(inst, decoder));"""
+  NC_PRECOND(%(base_base_tester)s::
+               ApplySanityChecks(inst, decoder));"""
 
 SAFETY_TESTER_CHECK="""
 
-  // safety: %s
-  EXPECT_TRUE(%s);"""
+  // safety: %(comment)s
+  EXPECT_TRUE(%(code)s);"""
 
 DEFS_SAFETY_CHECK="""
 
-  // defs: %s;
-  EXPECT_TRUE(decoder.defs(inst).IsSame(%s));"""
+  // defs: %(comment)s;
+  EXPECT_TRUE(decoder.defs(inst).IsSame(%(code)s));"""
 
 SAFETY_TESTER_FOOTER="""
 
@@ -884,10 +880,10 @@ def _install_test_row(row, decoder, values,
      actual class information is also inserted.
      """
   action = _filter_test_action(row.action, with_patterns, with_rules)
-  values['row_comment'] = (dgen_core.neutral_repr(row.copy_with_action(action)).
-                           replace(NEWLINE_STR, COMMENTED_NEWLINE_STR))
-  values['row_rep_comment'] = repr(
-      row.copy_with_action(action)).replace(NEWLINE_STR, COMMENTED_NEWLINE_STR)
+  values['row_comment'] = dgen_output.commented_string(
+      dgen_core.neutral_repr(row.copy_with_action(action)))
+  values['row_rep_comment'] = dgen_output.commented_string(
+      repr(row.copy_with_action(action)))
   _install_action(decoder, action, values)
   return action
 
@@ -937,20 +933,30 @@ def _generate_constraint_testers(decoder, values, out):
       if row.patterns:
         out.write(ROW_CONSTRAINTS_HEADER % values);
         for p in row.patterns:
-          out.write(CONSTRAINT_CHECK % p.negate().to_commented_bool())
+          not_p = p.negate()
+          values['comment'] = dgen_output.commented_string(repr(not_p), '  ')
+          values['code'] = not_p.to_bool()
+          out.write(CONSTRAINT_CHECK % values)
       if action.constraints().restrictions:
         out.write(PATTERN_CONSTRAINT_RESTRICTIONS_HEADER)
         for c in action.constraints().restrictions:
-          out.write(CONSTRAINT_CHECK %
-                    c.negate().to_commented_bool())
+          not_c = c.negate()
+          values['comment'] = dgen_output.commented_string(repr(not_c), '  ')
+          values['code'] = not_c.to_bool()
+          out.write(CONSTRAINT_CHECK % values)
       out.write(CONSTRAINT_TESTER_CLASS_FOOTER % values)
     if safety_to_check or defs_to_check:
       out.write(SAFETY_TESTER_HEADER % values)
       for check in safety_to_check:
-        out.write(SAFETY_TESTER_CHECK % (check, check.to_bool()))
+        values['comment'] = dgen_output.commented_string(
+            repr(check), '  ')
+        values['code'] = check.to_bool()
+        out.write(SAFETY_TESTER_CHECK % values)
       if defs_to_check:
-        out.write(DEFS_SAFETY_CHECK % (defs_to_check,
-                                       defs_to_check.to_register_list()))
+        values['comment'] = dgen_output.commented_string(
+            repr(defs_to_check), '  ')
+        values['code'] = defs_to_check.to_register_list()
+        out.write(DEFS_SAFETY_CHECK % values)
       out.write(SAFETY_TESTER_FOOTER % values)
 
 def _generate_rule_testers(decoder, values, out):
