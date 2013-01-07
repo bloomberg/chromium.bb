@@ -1334,7 +1334,8 @@ const char kUserDataDir[]                   = "user-data-dir";
 const char kUseWebBasedSigninFlow[]         = "use-web-based-signin-flow";
 
 // Specifies a custom URL for the server which reports variation data to the
-// client. See variations_service.cc.
+// client. Specifying this switch enables the Variations service on
+// unofficial builds. See variations_service.cc.
 const char kVariationsServerURL[]            = "variations-server-url";
 
 // Prints version information and quits.

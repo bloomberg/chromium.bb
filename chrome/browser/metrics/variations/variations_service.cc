@@ -159,6 +159,10 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
                this, &VariationsService::FetchVariationsSeed);
 }
 
+void VariationsService::SetCreateTrialsFromSeedCalledForTesting(bool called) {
+  create_trials_from_seed_called_ = called;
+}
+
 // static
 void VariationsService::RegisterPrefs(PrefServiceSimple* prefs) {
   prefs->RegisterStringPref(prefs::kVariationsSeed, std::string());
@@ -166,8 +170,17 @@ void VariationsService::RegisterPrefs(PrefServiceSimple* prefs) {
                            base::Time().ToInternalValue());
 }
 
-void VariationsService::SetCreateTrialsFromSeedCalledForTesting(bool called) {
-  create_trials_from_seed_called_ = called;
+// static
+VariationsService* VariationsService::Create() {
+// This is temporarily disabled for Android. See http://crbug.com/168224
+#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID)
+  // Unless the URL was provided, unsupported builds should return NULL to
+  // indicate that the service should not be used.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kVariationsServerURL))
+    return NULL;
+#endif
+  return new VariationsService;
 }
 
 void VariationsService::DoActualFetch() {

@@ -416,10 +416,8 @@ net::URLRequestContextGetter* BrowserProcessImpl::system_request_context() {
 
 chrome_variations::VariationsService* BrowserProcessImpl::variations_service() {
   DCHECK(CalledOnValidThread());
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_ANDROID)
   if (!variations_service_.get())
-    variations_service_.reset(new chrome_variations::VariationsService());
-#endif
+    variations_service_.reset(chrome_variations::VariationsService::Create());
   return variations_service_.get();
 }
 
