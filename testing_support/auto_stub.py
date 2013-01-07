@@ -56,8 +56,6 @@ class AutoStubMixIn(object):
 
 class SimpleMock(object):
   """Really simple manual class mock."""
-  calls = []
-
   def __init__(self, unit_test):
     """Do not call __init__ if you want to use the global call list to detect
     ordering across different instances.
