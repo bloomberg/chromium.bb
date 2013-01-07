@@ -30,6 +30,10 @@ enum AlertState {
   kAlertFalling
 };
 
+// When the window doesn't have focus then we want to draw the button with a
+// slightly lighter color. We do this by just reducing the alpha.
+const CGFloat kImageNoFocusAlpha = 0.65;
+
 }  // namespace tabs
 
 @class TabController, TabWindowController;

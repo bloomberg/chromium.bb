@@ -222,7 +222,7 @@ NSImage* ApplyMask(NSImage* image, NSImage* mask) {
 }
 
 // Paints |overlay| on top of |ground|.
-NSImage* Overlay(NSImage* ground, NSImage* overlay) {
+NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   DCHECK_EQ([ground size].width, [overlay size].width);
   DCHECK_EQ([ground size].height, [overlay size].height);
 
@@ -236,7 +236,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay) {
       [overlay drawAtPoint:NSZeroPoint
                   fromRect:NSMakeRect(0, 0, width, height)
                  operation:NSCompositeSourceOver
-                  fraction:1.0];
+                  fraction:alpha];
   }) autorelease];
 }
 
@@ -2204,20 +2204,21 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay) {
   NSImage* foreground = ApplyMask(
       theme->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND, true), mask);
 
-  [[newTabButton_ cell] setImage:Overlay(foreground, normal)
+  [[newTabButton_ cell] setImage:Overlay(foreground, normal, 1.0)
                   forButtonState:image_button_cell::kDefaultState];
-  [[newTabButton_ cell] setImage:Overlay(foreground, hover)
+  [[newTabButton_ cell] setImage:Overlay(foreground, hover, 1.0)
                   forButtonState:image_button_cell::kHoverState];
-  [[newTabButton_ cell] setImage:Overlay(foreground, pressed)
+  [[newTabButton_ cell] setImage:Overlay(foreground, pressed, 1.0)
                     forButtonState:image_button_cell::kPressedState];
 
   // IDR_THEME_TAB_BACKGROUND_INACTIVE is only used with the default theme.
   if (theme->UsingDefaultTheme()) {
+    const CGFloat alpha = tabs::kImageNoFocusAlpha;
     NSImage* background = ApplyMask(
         theme->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND_INACTIVE, true), mask);
-    [[newTabButton_ cell] setImage:Overlay(background, normal)
+    [[newTabButton_ cell] setImage:Overlay(background, normal, alpha)
                     forButtonState:image_button_cell::kDefaultStateBackground];
-    [[newTabButton_ cell] setImage:Overlay(background, hover)
+    [[newTabButton_ cell] setImage:Overlay(background, hover, alpha)
                     forButtonState:image_button_cell::kHoverStateBackground];
   } else {
     [[newTabButton_ cell] setImage:nil

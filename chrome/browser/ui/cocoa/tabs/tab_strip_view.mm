@@ -13,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -75,8 +76,11 @@
   borderRect.size.height = [image size].height;
   borderRect.origin.y = 0;
 
-  NSDrawThreePartImage(borderRect, nil, image, nil, /*vertical=*/NO,
-                       NSCompositeSourceOver, 1.0, /*flipped=*/NO);
+  BOOL focused = [[self window] isKeyWindow] || [[self window] isMainWindow];
+  NSDrawThreePartImage(borderRect, nil, image, nil, /*vertical=*/ NO,
+                       NSCompositeSourceOver,
+                       focused ?  1.0 : tabs::kImageNoFocusAlpha,
+                       /*flipped=*/ NO);
 }
 
 - (void)drawRect:(NSRect)rect {

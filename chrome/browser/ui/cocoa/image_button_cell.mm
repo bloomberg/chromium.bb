@@ -10,8 +10,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
-namespace {
-
 // Adjust the overlay position relative to the top right of the button image.
 const CGFloat kOverlayOffsetX = -3;
 const CGFloat kOverlayOffsetY = 5;
@@ -19,8 +17,6 @@ const CGFloat kOverlayOffsetY = 5;
 // When the window doesn't have focus then we want to draw the button with a
 // slightly lighter color. We do this by just reducing the alpha.
 const CGFloat kImageNoFocusAlpha = 0.65;
-
-} // namespace
 
 @interface ImageButtonCell (Private)
 - (void)sharedInit;
