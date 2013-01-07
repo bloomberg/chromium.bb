@@ -41,16 +41,15 @@ const char kVideoKey[] = "video";
 
 MediaStreamDevicesController::MediaStreamDevicesController(
     Profile* profile,
-    const content::MediaStreamRequest* request,
+    const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback)
     : profile_(profile),
-      request_(*request),
+      request_(request),
       callback_(callback),
-      has_audio_(content::IsAudioMediaType(request->audio_type) &&
+      has_audio_(content::IsAudioMediaType(request.audio_type) &&
                  !IsAudioDeviceBlockedByPolicy()),
-      has_video_(content::IsVideoMediaType(request->video_type) &&
+      has_video_(content::IsVideoMediaType(request.video_type) &&
                  !IsVideoDeviceBlockedByPolicy()) {
-  DCHECK(request);
 }
 
 MediaStreamDevicesController::~MediaStreamDevicesController() {}

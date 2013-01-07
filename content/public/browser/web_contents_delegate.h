@@ -420,7 +420,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // and/or video devices are requested, and lists of available devices).
   virtual void RequestMediaAccessPermission(
       WebContents* web_contents,
-      const MediaStreamRequest* request,
+      const MediaStreamRequest& request,
       const MediaResponseCallback& callback) {}
 
   // Requests permission to access the PPAPI broker. The delegate should return

@@ -104,7 +104,7 @@ void ProceedMediaAccessPermission(const MediaStreamRequestForUI& request,
     return;
   }
 
-  host->GetDelegate()->RequestMediaAccessPermission(&request, callback);
+  host->GetDelegate()->RequestMediaAccessPermission(request, callback);
 }
 
 }  // namespace

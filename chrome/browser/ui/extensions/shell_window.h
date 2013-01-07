@@ -157,7 +157,7 @@ class ShellWindow : public content::NotificationObserver,
       const content::WebContents* source) const OVERRIDE;
   virtual void RequestMediaAccessPermission(
       content::WebContents* web_contents,
-      const content::MediaStreamRequest* request,
+      const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) OVERRIDE;
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,

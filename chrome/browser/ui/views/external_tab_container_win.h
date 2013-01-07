@@ -176,7 +176,7 @@ class ExternalTabContainerWin : public ExternalTabContainer,
                          bool final_update) OVERRIDE;
   virtual void RequestMediaAccessPermission(
       content::WebContents* web_contents,
-      const content::MediaStreamRequest* request,
+      const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) OVERRIDE;
   virtual bool RequestPpapiBrokerPermission(
       content::WebContents* web_contents,

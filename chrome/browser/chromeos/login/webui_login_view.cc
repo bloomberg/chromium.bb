@@ -348,7 +348,7 @@ bool WebUILoginView::TakeFocus(content::WebContents* source, bool reverse) {
 
 void WebUILoginView::RequestMediaAccessPermission(
     WebContents* web_contents,
-    const content::MediaStreamRequest* request,
+    const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());

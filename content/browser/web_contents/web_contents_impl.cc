@@ -1515,7 +1515,7 @@ void WebContentsImpl::ShowContextMenu(
 }
 
 void WebContentsImpl::RequestMediaAccessPermission(
-    const MediaStreamRequest* request,
+    const MediaStreamRequest& request,
     const MediaResponseCallback& callback) {
   if (delegate_)
     delegate_->RequestMediaAccessPermission(this, request, callback);

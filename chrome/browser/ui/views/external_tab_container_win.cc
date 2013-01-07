@@ -823,7 +823,7 @@ void ExternalTabContainerWin::FindReply(WebContents* tab,
 
 void ExternalTabContainerWin::RequestMediaAccessPermission(
     content::WebContents* web_contents,
-    const content::MediaStreamRequest* request,
+    const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
   Browser::RequestMediaAccessPermissionHelper(web_contents, request, callback);
 }

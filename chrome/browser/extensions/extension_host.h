@@ -173,7 +173,7 @@ class ExtensionHost : public content::WebContentsDelegate,
       content::WebIntentsDispatcher* intents_dispatcher) OVERRIDE;
   virtual void RequestMediaAccessPermission(
       content::WebContents* web_contents,
-      const content::MediaStreamRequest* request,
+      const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) OVERRIDE;
 
   // content::NotificationObserver

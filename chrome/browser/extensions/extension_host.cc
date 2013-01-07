@@ -648,14 +648,14 @@ void ExtensionHost::RenderViewReady() {
 
 void ExtensionHost::RequestMediaAccessPermission(
     content::WebContents* web_contents,
-    const content::MediaStreamRequest* request,
+    const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
   // Get the preferred default devices for the request.
   content::MediaStreamDevices devices;
   media::GetDefaultDevicesForProfile(
       profile_,
-      content::IsAudioMediaType(request->audio_type),
-      content::IsVideoMediaType(request->video_type),
+      content::IsAudioMediaType(request.audio_type),
+      content::IsVideoMediaType(request.video_type),
       &devices);
 
   // For tab capture device, we require the tabCapture permission.

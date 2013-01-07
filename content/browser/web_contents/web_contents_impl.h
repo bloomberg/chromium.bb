@@ -414,7 +414,7 @@ class CONTENT_EXPORT WebContentsImpl
       const ContextMenuParams& params,
       ContextMenuSourceType type) OVERRIDE;
   virtual void RequestMediaAccessPermission(
-      const MediaStreamRequest* request,
+      const MediaStreamRequest& request,
       const MediaResponseCallback& callback) OVERRIDE;
 
   // RenderWidgetHostDelegate --------------------------------------------------

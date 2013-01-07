@@ -18,7 +18,7 @@ namespace extensions {
 class RequestMediaAccessPermissionHelper {
  public:
   static void AuthorizeRequest(const content::MediaStreamDevices& devices,
-                               const content::MediaStreamRequest* request,
+                               const content::MediaStreamRequest& request,
                                const content::MediaResponseCallback& callback,
                                const extensions::Extension* extension,
                                bool is_packaged_app);

@@ -975,7 +975,7 @@ void Browser::FindReplyHelper(WebContents* web_contents,
 // static
 void Browser::RequestMediaAccessPermissionHelper(
     content::WebContents* web_contents,
-    const content::MediaStreamRequest* request,
+    const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -1786,7 +1786,7 @@ void Browser::LostMouseLock() {
 
 void Browser::RequestMediaAccessPermission(
     content::WebContents* web_contents,
-    const content::MediaStreamRequest* request,
+    const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
   RequestMediaAccessPermissionHelper(web_contents, request, callback);
 }

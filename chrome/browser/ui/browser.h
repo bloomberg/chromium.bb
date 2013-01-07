@@ -411,7 +411,7 @@ class Browser : public TabStripModelObserver,
   // Helper function to handle media access requests.
   static void RequestMediaAccessPermissionHelper(
       content::WebContents* web_contents,
-      const content::MediaStreamRequest* request,
+      const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback);
 
   // Called by chrome::Navigate() when a navigation has occurred in a tab in
@@ -659,7 +659,7 @@ class Browser : public TabStripModelObserver,
   virtual void LostMouseLock() OVERRIDE;
   virtual void RequestMediaAccessPermission(
       content::WebContents* web_contents,
-      const content::MediaStreamRequest* request,
+      const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) OVERRIDE;
   virtual bool RequestPpapiBrokerPermission(
       content::WebContents* web_contents,

@@ -11,7 +11,7 @@ namespace extensions {
 // static
 void RequestMediaAccessPermissionHelper::AuthorizeRequest(
     const content::MediaStreamDevices& devices,
-    const content::MediaStreamRequest* request,
+    const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback,
     const extensions::Extension* extension,
     bool is_packaged_app) {
@@ -23,10 +23,10 @@ void RequestMediaAccessPermissionHelper::AuthorizeRequest(
     if (!accepted_an_audio_device && content::IsAudioMediaType(it->type)) {
       // Require flag and tab capture permission for tab media.
       // Require audio capture permission for packaged apps.
-      if ((request->audio_type == content::MEDIA_TAB_AUDIO_CAPTURE &&
+      if ((request.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE &&
            extensions::FeatureSwitch::tab_capture()->IsEnabled() &&
            extension->HasAPIPermission(APIPermission::kTabCapture)) ||
-          (request->audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE &&
+          (request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE &&
            is_packaged_app &&
            extension->HasAPIPermission(APIPermission::kAudioCapture))) {
         accepted_devices.push_back(*it);
@@ -36,10 +36,10 @@ void RequestMediaAccessPermissionHelper::AuthorizeRequest(
                content::IsVideoMediaType(it->type)) {
       // Require flag and tab capture permission for tab media.
       // Require video capture permission for packaged apps.
-      if ((request->video_type == content::MEDIA_TAB_VIDEO_CAPTURE &&
+      if ((request.video_type == content::MEDIA_TAB_VIDEO_CAPTURE &&
            extensions::FeatureSwitch::tab_capture()->IsEnabled() &&
            extension->HasAPIPermission(APIPermission::kTabCapture)) ||
-          (request->video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE &&
+          (request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE &&
            is_packaged_app &&
            extension->HasAPIPermission(APIPermission::kVideoCapture))) {
         accepted_devices.push_back(*it);

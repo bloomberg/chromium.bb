@@ -413,7 +413,7 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // |request|, and the client should grant or deny that permission by
   // calling |callback|.
   virtual void RequestMediaAccessPermission(
-      const MediaStreamRequest* request,
+      const MediaStreamRequest& request,
       const MediaResponseCallback& callback) {}
 
  protected:

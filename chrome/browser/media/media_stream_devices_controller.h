@@ -14,9 +14,8 @@ class Profile;
 
 class MediaStreamDevicesController {
  public:
-  // TODO(xians): Use const content::MediaStreamRequest& instead of *.
   MediaStreamDevicesController(Profile* profile,
-                               const content::MediaStreamRequest* request,
+                               const content::MediaStreamRequest& request,
                                const content::MediaResponseCallback& callback);
 
   virtual ~MediaStreamDevicesController();
