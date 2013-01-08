@@ -18,6 +18,7 @@ class MockStatisticsProvider : public system::StatisticsProvider {
   virtual ~MockStatisticsProvider();
 
   MOCK_METHOD0(Init, void());
+  MOCK_METHOD0(StartLoadingMachineStatistics, void());
   MOCK_METHOD2(GetMachineStatistic, bool(const std::string& name,
                                          std::string* result));
 

@@ -625,6 +625,11 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 }
 
 void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
+  // Start loading the machine statistics. Note: if we start loading machine
+  // statistics early in PreEarlyInitialization() then the crossystem tool
+  // sometimes hangs for unknown reasons, see http://crbug.com/167671.
+  system::StatisticsProvider::GetInstance()->StartLoadingMachineStatistics();
+
   // These are dependent on the ash::Shell singleton already having been
   // initialized.
   power_button_observer_.reset(new PowerButtonObserver);

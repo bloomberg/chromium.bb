@@ -71,6 +71,7 @@ class StatisticsProviderImpl : public StatisticsProvider {
  public:
   // StatisticsProvider implementation:
   virtual void Init() OVERRIDE;
+  virtual void StartLoadingMachineStatistics() OVERRIDE;
   virtual bool GetMachineStatistic(const std::string& name,
                                    std::string* result) OVERRIDE;
 
@@ -88,13 +89,11 @@ class StatisticsProviderImpl : public StatisticsProvider {
   // info file immediately.
   void LoadMachineOSInfoFile();
 
-  // Starts loading the machine statistcs.
-  void StartLoadingMachineStatistics();
-
   // Loads the machine statistcs by examining the system.
   void LoadMachineStatistics();
 
   bool initialized_;
+  bool load_statistics_started_;
   NameValuePairsParser::NameValueMap machine_info_;
   base::WaitableEvent on_statistics_loaded_;
 
@@ -105,15 +104,14 @@ void StatisticsProviderImpl::Init() {
   DCHECK(!initialized_);
   initialized_ = true;
 
-  // Load the machine info file immediately to get the channel info and delay
-  // loading the remaining statistics.
+  // Load the machine info file immediately to get the channel info.
   LoadMachineOSInfoFile();
-  StartLoadingMachineStatistics();
 }
 
 bool StatisticsProviderImpl::GetMachineStatistic(
     const std::string& name, std::string* result) {
   DCHECK(initialized_);
+  DCHECK(load_statistics_started_);
 
   VLOG(1) << "Statistic is requested for " << name;
   // Block if the statistics are not loaded yet. Per LOG(WARNING) below,
@@ -151,6 +149,7 @@ bool StatisticsProviderImpl::GetMachineStatistic(
 // manual_reset needs to be true, as we want to keep the signaled state.
 StatisticsProviderImpl::StatisticsProviderImpl()
     : initialized_(false),
+      load_statistics_started_(false),
       on_statistics_loaded_(true  /* manual_reset */,
                             false /* initially_signaled */) {
 }
@@ -171,6 +170,10 @@ void StatisticsProviderImpl::LoadMachineOSInfoFile() {
 }
 
 void StatisticsProviderImpl::StartLoadingMachineStatistics() {
+  DCHECK(initialized_);
+  DCHECK(!load_statistics_started_);
+  load_statistics_started_ = true;
+
   VLOG(1) << "Started loading statistics";
   BrowserThread::PostBlockingPoolTask(
       FROM_HERE,
@@ -219,8 +222,9 @@ StatisticsProviderImpl* StatisticsProviderImpl::GetInstance() {
 class StatisticsProviderStubImpl : public StatisticsProvider {
  public:
   // StatisticsProvider implementation:
-  virtual void Init() OVERRIDE {
-  }
+  virtual void Init() OVERRIDE {}
+
+  virtual void StartLoadingMachineStatistics() OVERRIDE {}
 
   virtual bool GetMachineStatistic(const std::string& name,
                                    std::string* result) OVERRIDE {
