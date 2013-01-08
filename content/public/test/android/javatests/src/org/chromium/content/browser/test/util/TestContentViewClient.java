@@ -35,11 +35,16 @@ public class TestContentViewClient extends ContentViewClient {
     }
 
     /**
-     * ATTENTION!: When overriding the following method, be sure to call
-     * the corresponding method in the super class. Otherwise
+     * ATTENTION!: When overriding the following methods, be sure to call
+     * the corresponding methods in the super class. Otherwise
      * {@link CallbackHelper#waitForCallback()} methods will
      * stop working!
      */
+    @Override
+    public void onEvaluateJavaScriptResult(int id, String jsonResult) {
+        super.onEvaluateJavaScriptResult(id, jsonResult);
+        mOnEvaluateJavaScriptResultHelper.notifyCalled(id, jsonResult);
+    }
 
     @Override
     public void onStartContentIntent(Context context, String contentUrl) {

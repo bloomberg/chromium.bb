@@ -73,6 +73,12 @@ class TestAwContentsClient extends NullContentsClient {
     }
 
     @Override
+    public void onEvaluateJavaScriptResult(int id, String jsonResult) {
+        super.onEvaluateJavaScriptResult(id, jsonResult);
+        mOnEvaluateJavaScriptResultHelper.notifyCalled(id, jsonResult);
+    }
+
+    @Override
     public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
         mAddMessageToConsoleHelper.setLevel(consoleMessage.messageLevel().ordinal());
         mAddMessageToConsoleHelper.setMessage(consoleMessage.message());

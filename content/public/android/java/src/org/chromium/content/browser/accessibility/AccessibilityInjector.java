@@ -132,7 +132,7 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
 
                 if (onDeviceScriptInjectionEnabled && js != null && mContentViewCore.isAlive()) {
                     addOrRemoveAccessibilityApisIfNecessary();
-                    mContentViewCore.evaluateJavaScript(js, null);
+                    mContentViewCore.evaluateJavaScript(js);
                     mInjectedScriptEnabled = true;
                     mScriptInjected = true;
                 }
@@ -183,7 +183,7 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
         if (mContentViewCore.isAlive()) {
             String js = String.format(TOGGLE_CHROME_VOX_JAVASCRIPT, Boolean.toString(
                     mInjectedScriptEnabled));
-            mContentViewCore.evaluateJavaScript(js, null);
+            mContentViewCore.evaluateJavaScript(js);
 
             if (!mInjectedScriptEnabled) {
                 // Stop any TTS/Vibration right now.

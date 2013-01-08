@@ -157,10 +157,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   void ContinuePendingReload(JNIEnv* env, jobject obj);
   jboolean NeedsReload(JNIEnv* env, jobject obj);
   void ClearHistory(JNIEnv* env, jobject obj);
-  void EvaluateJavaScript(JNIEnv* env,
-                          jobject obj,
-                          jstring script,
-                          jobject message);
+  jint EvaluateJavaScript(JNIEnv* env, jobject obj, jstring script);
   int GetNativeImeAdapter(JNIEnv* env, jobject obj);
   void SetFocus(JNIEnv* env, jobject obj, jboolean focused);
   void ScrollFocusedEditableNodeIntoView(JNIEnv* env, jobject obj);

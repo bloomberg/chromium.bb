@@ -18,7 +18,6 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.os.ResultReceiver;
 import android.text.Editable;
 import android.util.Log;
@@ -1050,19 +1049,17 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     }
 
     /**
-     * Injects the passed Javascript code in the current page and evaluates it.
-     * If a result is required, pass in a Message to be sent to its target.
-     * Used in automation tests.
+     * Injects the passed JavaScript code in the current page and evaluates it.
+     * Once evaluated, an asynchronous call to
+     * ContentViewClient.onJavaScriptEvaluationResult is made. Used in automation
+     * tests.
      *
-     * @param script The Javascript to execute.
-     * @param message The message to be fired off when a result is ready. The script's
-     *                result will be json encoded in the Message's {@link Message#obj} field.
-     *                If no result is required, pass null.
+     * @return an id that is passed along in the asynchronous onJavaScriptEvaluationResult callback
      * @throws IllegalStateException If the ContentView has been destroyed.
      */
-    public void evaluateJavaScript(String script, Message message) throws IllegalStateException {
+    public int evaluateJavaScript(String script) throws IllegalStateException {
         checkIsAlive();
-        nativeEvaluateJavaScript(mNativeContentViewCore, script, message);
+        return nativeEvaluateJavaScript(script);
     }
 
     /**
@@ -1993,9 +1990,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private static void onEvaluateJavaScriptResult(String jsonResult, Message message) {
-        message.obj = jsonResult;
-        message.sendToTarget();
+    private void onEvaluateJavaScriptResult(int id, String jsonResult) {
+        getContentViewClient().onEvaluateJavaScriptResult(id, jsonResult);
     }
 
     @SuppressWarnings("unused")
@@ -2506,8 +2502,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     private native void nativeClearHistory(int nativeContentViewCoreImpl);
 
-    private native void nativeEvaluateJavaScript(int nativeContentViewCoreImpl,
-            String script, Message message);
+    private native int nativeEvaluateJavaScript(String script);
 
     private native int nativeGetNativeImeAdapter(int nativeContentViewCoreImpl);
 

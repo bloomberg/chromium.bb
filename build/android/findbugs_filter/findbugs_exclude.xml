@@ -19,10 +19,4 @@ In particular, ~ at the start of a string means it's a regex.
   </Match>
   <!-- Ignore "reliance on default String encoding" warnings, as we're not multi-platform -->
   <Bug pattern="DM_DEFAULT_ENCODING" />
-  <!-- Disabled due to impossible false positives found in -->
-  <!-- https://codereview.chromium.org/11788005/ (look in comments) -->
-  <Match>
-    <Method name="handleMessage" params="android.os.Message" returns="void" />
-    <Bug pattern="BC_IMPOSSIBLE_CAST" />
-  </Match>
 </FindBugsFilter>

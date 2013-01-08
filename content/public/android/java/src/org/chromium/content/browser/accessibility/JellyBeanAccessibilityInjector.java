@@ -172,7 +172,7 @@ class JellyBeanAccessibilityInjector extends AccessibilityInjector {
             final int resultId = mResultIdCounter.getAndIncrement();
             final String js = String.format(JAVASCRIPT_ACTION_TEMPLATE, mInterfaceName, resultId,
                     code);
-            contentView.evaluateJavaScript(js, null);
+            contentView.evaluateJavaScript(js);
 
             return getResultAndClear(resultId);
         }
@@ -228,7 +228,7 @@ class JellyBeanAccessibilityInjector extends AccessibilityInjector {
          * request to a waiting (or potentially timed out) thread.
          *
          * @param id The result id of the request as a {@link String}.
-         * @param result The result of a request as a {@link String}.
+         * @param result The result o fa request as a {@link String}.
          */
         @JavascriptInterface
         @SuppressWarnings("unused")
