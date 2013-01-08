@@ -723,6 +723,9 @@
     'google_default_client_id%': '<(google_default_client_id)',
     'google_default_client_secret%': '<(google_default_client_secret)',
 
+    # Use system nspr instead of the bundled one.
+    'use_system_nspr%': 0,
+
     # Use system protobuf instead of bundled one.
     'use_system_protobuf%': 0,
 

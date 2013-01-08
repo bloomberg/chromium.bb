@@ -10,7 +10,7 @@
 
 {
   'variables': {
-    'shim_headers_path': '<(SHARED_INTERMEDIATE_DIR)/shim_headers/<(_target_name)',
+    'shim_headers_path': '<(SHARED_INTERMEDIATE_DIR)/shim_headers/<(_target_name)/<(_toolset)',
   },
   'include_dirs+++': [
     '<(shim_headers_path)',

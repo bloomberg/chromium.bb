@@ -25,7 +25,6 @@
             'sources': [
               'string16.cc',
               'sync_socket_nacl.cc',
-              'third_party/nspr/prtime.cc',
               'time_posix.cc',
             ],
           },

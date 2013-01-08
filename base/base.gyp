@@ -206,6 +206,11 @@
             }],
           ],
         }],
+        ['use_system_nspr==1', {
+          'dependencies': [
+            'third_party/nspr/nspr.gyp:nspr',
+          ],
+        }],
       ],
       'sources': [
         'third_party/nspr/prcpucfg.h',
@@ -714,6 +719,11 @@
             'debug/trace_event_win_unittest.cc',
             'time_win_unittest.cc',
             'win/win_util_unittest.cc',
+          ],
+        }],
+        ['use_system_nspr==1', {
+          'dependencies': [
+            'third_party/nspr/nspr.gyp:nspr',
           ],
         }],
       ],  # conditions

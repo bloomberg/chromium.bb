@@ -17,9 +17,17 @@
           'third_party/dmg_fp/dtoa_wrapper.cc',
           'third_party/icu/icu_utf.cc',
           'third_party/icu/icu_utf.h',
+          'third_party/nspr/prcpucfg.h',
+          'third_party/nspr/prcpucfg_freebsd.h',
+          'third_party/nspr/prcpucfg_linux.h',
+          'third_party/nspr/prcpucfg_mac.h',
+          'third_party/nspr/prcpucfg_nacl.h',
+          'third_party/nspr/prcpucfg_openbsd.h',
+          'third_party/nspr/prcpucfg_solaris.h',
+          'third_party/nspr/prcpucfg_win.h',
           'third_party/nspr/prtime.cc',
           'third_party/nspr/prtime.h',
-          'third_party/nspr/prcpucfg_linux.h',
+          'third_party/nspr/prtypes.h',
           'third_party/xdg_mime/xdgmime.h',
           'allocator/allocator_extension.cc',
           'allocator/allocator_extension.h',
@@ -726,6 +734,11 @@
           # command-line-string limitation when building NaCl on Windows.
           ['OS == "win" and >(nacl_untrusted_build)==1', {
               'sources/': [ ['exclude', '\\.h$'] ],
+          }],
+          ['<(use_system_nspr)==1 and >(nacl_untrusted_build)==0', {
+            'sources/': [
+              ['exclude', '^third_party/nspr/'],
+            ],
           }],
         ],
       }],
