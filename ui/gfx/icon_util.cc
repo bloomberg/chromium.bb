@@ -13,6 +13,7 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/gdi_util.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
 
 namespace {
@@ -282,14 +283,24 @@ SkBitmap IconUtil::CreateSkBitmapFromHICONHelper(HICON icon,
 }
 
 bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
+                                          const SkBitmap& large_bitmap,
                                           const FilePath& icon_path) {
   // Only 32 bit ARGB bitmaps are supported. We also make sure the bitmap has
   // been properly initialized.
   SkAutoLockPixels bitmap_lock(bitmap);
   if ((bitmap.config() != SkBitmap::kARGB_8888_Config) ||
       (bitmap.height() <= 0) || (bitmap.width() <= 0) ||
-      (bitmap.getPixels() == NULL))
+      (bitmap.getPixels() == NULL)) {
     return false;
+  }
+
+  // If |large_bitmap| was specified, validate its dimension and convert to PNG.
+  scoped_refptr<base::RefCountedMemory> png_bytes;
+  if (!large_bitmap.empty()) {
+    DCHECK_EQ(256, large_bitmap.width());
+    DCHECK_EQ(256, large_bitmap.height());
+    png_bytes = gfx::Image(large_bitmap).As1xPNGBytes();
+  }
 
   // We start by creating the file.
   base::win::ScopedHandle icon_file(::CreateFile(icon_path.value().c_str(),
@@ -309,21 +320,29 @@ bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
   // Computing the total size of the buffer we need in order to store the
   // images in the desired icon format.
   size_t buffer_size = ComputeIconFileBufferSize(bitmaps);
-  unsigned char* buffer = new unsigned char[buffer_size];
-  DCHECK(buffer != NULL);
-  memset(buffer, 0, buffer_size);
+  // Account for the bytes needed for the PNG entry.
+  if (png_bytes.get())
+    buffer_size += sizeof(ICONDIRENTRY) + png_bytes->size();
 
   // Setting the information in the structures residing within the buffer.
   // First, we set the information which doesn't require iterating through the
   // bitmap set and then we set the bitmap specific structures. In the latter
   // step we also copy the actual bits.
-  ICONDIR* icon_dir = reinterpret_cast<ICONDIR*>(buffer);
+  std::vector<uint8> buffer(buffer_size);
+  ICONDIR* icon_dir = reinterpret_cast<ICONDIR*>(&buffer[0]);
   icon_dir->idType = kResourceTypeIcon;
   icon_dir->idCount = bitmap_count;
   size_t icon_dir_count = bitmap_count - 1;  // Note DCHECK(!bitmaps.empty())!
+
+  // Increment counts if a PNG entry will be added.
+  if (png_bytes.get()) {
+    icon_dir->idCount++;
+    icon_dir_count++;
+  }
+
   size_t offset = sizeof(ICONDIR) + (sizeof(ICONDIRENTRY) * icon_dir_count);
   for (size_t i = 0; i < bitmap_count; i++) {
-    ICONIMAGE* image = reinterpret_cast<ICONIMAGE*>(buffer + offset);
+    ICONIMAGE* image = reinterpret_cast<ICONIMAGE*>(&buffer[offset]);
     DCHECK_LT(offset, buffer_size);
     size_t icon_image_size = 0;
     SetSingleIconImageInformation(bitmaps[i], i, icon_dir, image, offset,
@@ -331,17 +350,32 @@ bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
     DCHECK_GT(icon_image_size, 0U);
     offset += icon_image_size;
   }
+
+  // Add the PNG entry, if necessary.
+  if (png_bytes.get()) {
+    ICONDIRENTRY* entry = &icon_dir->idEntries[bitmap_count];
+    entry->bWidth = 0;
+    entry->bHeight = 0;
+    entry->wPlanes = 1;
+    entry->wBitCount = 32;
+    entry->dwBytesInRes = png_bytes->size();
+    entry->dwImageOffset = offset;
+    memcpy(&buffer[offset], png_bytes->front(), png_bytes->size());
+    offset += png_bytes->size();
+  }
+
   DCHECK_EQ(offset, buffer_size);
 
-  // Finally, writing the data info the file.
+  // Finally, write the data to the file.
   DWORD bytes_written;
   bool delete_file = false;
-  if (!WriteFile(icon_file.Get(), buffer, buffer_size, &bytes_written, NULL) ||
-      bytes_written != buffer_size)
+  if (!WriteFile(icon_file.Get(), &buffer[0], buffer_size, &bytes_written,
+                 NULL) ||
+      bytes_written != buffer_size) {
     delete_file = true;
+  }
 
   ::CloseHandle(icon_file.Take());
-  delete [] buffer;
   if (delete_file) {
     bool success = file_util::Delete(icon_path, false);
     DCHECK(success);

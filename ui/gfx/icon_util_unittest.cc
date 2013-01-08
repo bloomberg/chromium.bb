@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/gfx_paths.h"
 #include "ui/gfx/icon_util.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
 
 namespace {
@@ -41,9 +43,21 @@ class IconUtilTest : public testing::Test {
     return icon;
   }
 
+  SkBitmap CreateBlackSkBitmap(int width, int height) {
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+    bitmap.allocPixels();
+    // Setting the pixels to black.
+    memset(bitmap.getPixels(), 0, width * height * 4);
+    return bitmap;
+  }
+
  protected:
   // The root directory for test files.
   FilePath test_data_directory_;
+
+  // Directory for creating files by this test.
+  base::ScopedTempDir temp_directory_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IconUtilTest);
@@ -119,14 +133,14 @@ TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
   bitmap.reset(new SkBitmap);
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
   bitmap->setConfig(SkBitmap::kA8_Config, kSmallIconWidth, kSmallIconHeight);
-  EXPECT_FALSE(IconUtil::CreateIconFileFromSkBitmap(*bitmap,
+  EXPECT_FALSE(IconUtil::CreateIconFileFromSkBitmap(*bitmap, SkBitmap(),
                                                     valid_icon_filename));
 
   // Invalid bitmap size.
   bitmap.reset(new SkBitmap);
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
   bitmap->setConfig(SkBitmap::kARGB_8888_Config, 0, 0);
-  EXPECT_FALSE(IconUtil::CreateIconFileFromSkBitmap(*bitmap,
+  EXPECT_FALSE(IconUtil::CreateIconFileFromSkBitmap(*bitmap, SkBitmap(),
                                                     valid_icon_filename));
 
   // Bitmap with no allocated pixels.
@@ -135,14 +149,14 @@ TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
   bitmap->setConfig(SkBitmap::kARGB_8888_Config,
                     kSmallIconWidth,
                     kSmallIconHeight);
-  EXPECT_FALSE(IconUtil::CreateIconFileFromSkBitmap(*bitmap,
+  EXPECT_FALSE(IconUtil::CreateIconFileFromSkBitmap(*bitmap, SkBitmap(),
                                                     valid_icon_filename));
 
   // Invalid file name.
   bitmap->allocPixels();
   // Setting the pixels to black.
   memset(bitmap->getPixels(), 0, bitmap->width() * bitmap->height() * 4);
-  EXPECT_FALSE(IconUtil::CreateIconFileFromSkBitmap(*bitmap,
+  EXPECT_FALSE(IconUtil::CreateIconFileFromSkBitmap(*bitmap, SkBitmap(),
                                                     invalid_icon_filename));
 }
 
@@ -183,14 +197,8 @@ TEST_F(IconUtilTest, TestCreateSkBitmapFromHICON) {
 // the returned handle is valid and refers to an icon with the expected
 // dimentions color depth etc.
 TEST_F(IconUtilTest, TestBasicCreateHICONFromSkBitmap) {
-  scoped_ptr<SkBitmap> bitmap;
-  bitmap.reset(new SkBitmap);
-  ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
-  bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                    kSmallIconWidth,
-                    kSmallIconHeight);
-  bitmap->allocPixels();
-  HICON icon = IconUtil::CreateHICONFromSkBitmap(*bitmap);
+  SkBitmap bitmap = CreateBlackSkBitmap(kSmallIconWidth, kSmallIconHeight);
+  HICON icon = IconUtil::CreateHICONFromSkBitmap(bitmap);
   EXPECT_NE(icon, static_cast<HICON>(NULL));
   ICONINFO icon_info;
   ASSERT_TRUE(::GetIconInfo(icon, &icon_info));
@@ -226,21 +234,10 @@ TEST_F(IconUtilTest, TestBasicCreateHICONFromSkBitmap) {
 // The following test case makes sure IconUtil::CreateIconFileFromSkBitmap
 // creates a valid .ico file given an SkBitmap.
 TEST_F(IconUtilTest, TestCreateIconFile) {
-  scoped_ptr<SkBitmap> bitmap;
   FilePath icon_filename = test_data_directory_.AppendASCII(kTempIconFilename);
 
-  // Allocating the bitmap.
-  bitmap.reset(new SkBitmap);
-  ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
-  bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                    kSmallIconWidth,
-                    kSmallIconHeight);
-  bitmap->allocPixels();
-
-  // Setting the pixels to black.
-  memset(bitmap->getPixels(), 0, bitmap->width() * bitmap->height() * 4);
-
-  EXPECT_TRUE(IconUtil::CreateIconFileFromSkBitmap(*bitmap,
+  SkBitmap bitmap = CreateBlackSkBitmap(kSmallIconWidth, kSmallIconHeight);
+  EXPECT_TRUE(IconUtil::CreateIconFileFromSkBitmap(bitmap, SkBitmap(),
                                                    icon_filename));
 
   // We are currently only testing that it is possible to load an icon from
@@ -253,4 +250,46 @@ TEST_F(IconUtilTest, TestCreateIconFile) {
   if (icon != NULL) {
     ::DestroyIcon(icon);
   }
+}
+
+TEST_F(IconUtilTest, TestCreateIconFileWithLargeBitmap) {
+  const FilePath icon_path(temp_directory_.path().AppendASCII("test.ico"));
+  const SkBitmap bitmap_48 = CreateBlackSkBitmap(48, 48);
+  const SkBitmap bitmap_256 = CreateBlackSkBitmap(256, 256);
+
+  // First, create the icon file.
+  ASSERT_TRUE(IconUtil::CreateIconFileFromSkBitmap(bitmap_48, bitmap_256,
+                                                   icon_path));
+  ASSERT_TRUE(file_util::PathExists(icon_path));
+
+  // Then, read the file and ensure it has a valid 256x256 PNG icon entry.
+  std::string icon_data;
+  ASSERT_TRUE(file_util::ReadFileToString(icon_path, &icon_data));
+  ASSERT_GE(icon_data.length(), sizeof(IconUtil::ICONDIR));
+
+  const IconUtil::ICONDIR* icon_dir =
+      reinterpret_cast<const IconUtil::ICONDIR*>(icon_data.data());
+  ASSERT_GE(icon_data.length(),
+            sizeof(IconUtil::ICONDIR) +
+                icon_dir->idCount * sizeof(IconUtil::ICONDIRENTRY));
+  const IconUtil::ICONDIRENTRY* png_entry = NULL;
+  for (size_t i = 0; i < icon_dir->idCount; ++i) {
+    const IconUtil::ICONDIRENTRY* entry = &icon_dir->idEntries[i];
+    if (entry->bWidth == 0 && entry->bHeight == 0) {
+      EXPECT_EQ(NULL, png_entry);
+      png_entry = entry;
+    }
+  }
+  ASSERT_TRUE(png_entry);
+
+  // Convert the PNG entry data back to a SkBitmap to ensure it's valid.
+  ASSERT_GE(icon_data.length(),
+            png_entry->dwImageOffset + png_entry->dwBytesInRes);
+  const unsigned char* png_bytes = reinterpret_cast<const unsigned char*>(
+      icon_data.data() + png_entry->dwImageOffset);
+  gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(png_bytes,
+                                                      png_entry->dwBytesInRes);
+  SkBitmap bitmap = image.AsBitmap();
+  EXPECT_EQ(256, bitmap.width());
+  EXPECT_EQ(256, bitmap.height());
 }

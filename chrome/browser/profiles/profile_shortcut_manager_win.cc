@@ -92,7 +92,9 @@ FilePath CreateChromeDesktopShortcutIconForProfile(
   // Finally, write the .ico file containing this new bitmap.
   const FilePath icon_path =
       profile_path.AppendASCII(profiles::internal::kProfileIconFileName);
-  if (!IconUtil::CreateIconFileFromSkBitmap(final_bitmap, icon_path))
+  // TODO(asvitkine): Create icon with a large 256x256 bitmap.
+  if (!IconUtil::CreateIconFileFromSkBitmap(final_bitmap, SkBitmap(),
+                                            icon_path))
     return FilePath();
 
   return icon_path;

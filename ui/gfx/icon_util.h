@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
@@ -81,16 +82,19 @@ class UI_EXPORT IconUtil {
   // it when it is no longer needed.
   static SkBitmap* CreateSkBitmapFromHICON(HICON icon);
 
-  // Given an initialized SkBitmap object and a file name, this function
-  // creates a .ico file with the given name using the provided bitmap. The
-  // icon file is created with multiple icon images of varying predefined
-  // dimensions because Windows uses different image sizes when loading icons,
+  // Creates Windows .ico file at |icon_path|. The icon file is created with
+  // multiple BMP representations at varying predefined dimensions (by resizing
+  // |bitmap|) because Windows uses different image sizes when loading icons,
   // depending on where the icon is drawn (ALT+TAB window, desktop shortcut,
-  // Quick Launch, etc.). |icon_file_name| needs to specify the full path for
-  // the desired .ico file.
+  // Quick Launch, etc.).
+  //
+  // To create an icon file containing a 256x256 PNG entry, which is used by
+  // Vista+ for high res icons, specify a non-empty 256x256 SkBitmap for the
+  // |large_bitmap| parameter.
   //
   // The function returns true on success and false otherwise.
   static bool CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
+                                         const SkBitmap& large_bitmap,
                                          const FilePath& icon_path);
 
   // Creates a cursor of the specified size from the DIB passed in.
@@ -138,6 +142,8 @@ class UI_EXPORT IconUtil {
     BYTE icAND[1];
   };
 #pragma pack(pop)
+
+  FRIEND_TEST_ALL_PREFIXES(IconUtilTest, TestCreateIconFileWithLargeBitmap);
 
   // Used for indicating that the .ico contains an icon (rather than a cursor)
   // image. This value is set in the |idType| field of the ICONDIR structure.

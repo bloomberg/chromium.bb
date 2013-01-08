@@ -35,7 +35,7 @@ void GetImageCheckSum(const SkBitmap& image, base::MD5Digest* digest) {
 
 // Saves |image| as an |icon_file| with the checksum.
 bool SaveIconWithCheckSum(const FilePath& icon_file, const SkBitmap& image) {
-  if (!IconUtil::CreateIconFileFromSkBitmap(image, icon_file))
+  if (!IconUtil::CreateIconFileFromSkBitmap(image, SkBitmap(), icon_file))
     return false;
 
   base::MD5Digest digest;

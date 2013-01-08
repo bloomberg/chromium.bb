@@ -263,7 +263,7 @@ bool CreateIconFile(const SkBitmap& bitmap,
 
   // Create an icon file from the favicon attached to the given |page|, and
   // save it as the temporary file.
-  if (!IconUtil::CreateIconFileFromSkBitmap(bitmap, path))
+  if (!IconUtil::CreateIconFileFromSkBitmap(bitmap, SkBitmap(), path))
     return false;
 
   // Add this icon file to the list and return its absolute path.
