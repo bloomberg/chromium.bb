@@ -16,10 +16,6 @@ namespace content {
 class WebContents;
 }
 
-namespace gfx {
-class Font;
-}
-
 namespace views {
 class Label;
 class TextButton;
@@ -64,7 +60,6 @@ class SadTabView : public views::View,
   content::WebContents* web_contents_;
   chrome::SadTabKind kind_;
   bool painted_;
-  const gfx::Font& base_font_;
   views::Label* message_;
   views::Link* help_link_;
   views::Link* feedback_link_;

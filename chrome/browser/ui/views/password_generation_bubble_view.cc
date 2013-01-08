@@ -35,7 +35,7 @@ const int kBubbleMargin = 9;
 const int kButtonHorizontalSpacing = 4;
 const int kButtonWidth = 65;
 const int kDefaultTextFieldChars = 18;
-const int kTitleLabelVerticalOffset = -3;
+const int kTitleLabelVerticalOffset = -1;
 const int kVerticalPadding = 8;
 
 // Constants for Text fieldWrapper.
@@ -148,11 +148,9 @@ void PasswordGenerationBubbleView::Init() {
 
   // TODO(gcasto): Localize text after we have finalized the UI.
   // crbug.com/118062.
-  gfx::Font label_font =
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
-  label_font = label_font.DeriveFont(2);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_label_ = new views::Label(ASCIIToUTF16("Password Suggestion"),
-                                  label_font);
+                                  rb.GetFont(ui::ResourceBundle::MediumFont));
   AddChildView(title_label_);
 
   regenerate_button_ = new views::ImageButton(this);
@@ -167,10 +165,6 @@ void PasswordGenerationBubbleView::Init() {
       theme_provider_->GetImageSkiaNamed(IDR_RELOAD));
 
   textfield_ = new views::Textfield();
-  gfx::Font textfield_font =
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
-  textfield_font = textfield_font.DeriveFont(2, gfx::Font::BOLD);
-  textfield_->SetFont(textfield_font);
   textfield_->set_default_width_in_chars(kDefaultTextFieldChars);
   textfield_->SetText(ASCIIToUTF16(password_generator_->Generate()));
 

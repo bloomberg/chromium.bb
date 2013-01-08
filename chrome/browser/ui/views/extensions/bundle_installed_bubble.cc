@@ -32,9 +32,6 @@ const int kColumnSetId = 0;
 // The width of the left column.
 const int kLeftColumnWidth = 325;
 
-// Heading font size correction.
-const int kHeadingFontSizeDelta = 1;
-
 class BundleInstalledBubble : public views::BubbleDelegateView,
                               public views::ButtonListener {
  public:
@@ -136,10 +133,8 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
 
   void AddHeading(GridLayout* layout, const string16& heading) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    gfx::Font bold_font = rb.GetFont(ui::ResourceBundle::BaseFont).DeriveFont(
-        kHeadingFontSizeDelta, gfx::Font::BOLD);
-
-    views::Label* heading_label = new views::Label(heading, bold_font);
+    views::Label* heading_label = new views::Label(
+        heading, rb.GetFont(ui::ResourceBundle::MediumFont));
     heading_label->SetMultiLine(true);
     heading_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     heading_label->SizeToFit(kLeftColumnWidth);

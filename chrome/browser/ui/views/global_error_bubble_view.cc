@@ -78,7 +78,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   scoped_ptr<views::Label> title_label(new views::Label(title_string));
   title_label->SetMultiLine(true);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label->SetFont(title_label->font().DeriveFont(1));
+  title_label->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
 
   string16 message_string(error_->GetBubbleViewMessage());
   views::Label* message_label = new views::Label(message_string);

@@ -20,7 +20,6 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/font.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -40,10 +39,6 @@ const SkColor kKillColor = SkColorSetRGB(57, 48, 88);
 
 const char kCategoryTagCrash[] = "Crash";
 
-// Font size correction.
-const int kTitleFontSizeDelta = 2;
-const int kMessageFontSizeDelta = 1;
-
 // Name of the experiment to run.
 const char kExperiment[] = "LowMemoryMargin";
 
@@ -62,8 +57,6 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
     : web_contents_(web_contents),
       kind_(kind),
       painted_(false),
-      base_font_(ui::ResourceBundle::GetSharedInstance().GetFont(
-          ui::ResourceBundle::BaseFont)),
       message_(NULL),
       help_link_(NULL),
       feedback_link_(NULL),
@@ -161,7 +154,8 @@ void SadTabView::ViewHierarchyChanged(bool is_add,
   views::Label* title = CreateLabel(l10n_util::GetStringUTF16(
       (kind_ == chrome::SAD_TAB_KIND_CRASHED) ?
           IDS_SAD_TAB_TITLE : IDS_KILLED_TAB_TITLE));
-  title->SetFont(base_font_.DeriveFont(kTitleFontSizeDelta, gfx::Font::BOLD));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  title->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
   layout->StartRowWithPadding(0, column_set_id, 0, kPadding);
   layout->AddView(title);
 
@@ -251,7 +245,6 @@ void SadTabView::OnPaint(gfx::Canvas* canvas) {
 
 views::Label* SadTabView::CreateLabel(const string16& text) {
   views::Label* label = new views::Label(text);
-  label->SetFont(base_font_.DeriveFont(kMessageFontSizeDelta));
   label->SetBackgroundColor(background()->get_color());
   label->SetEnabledColor(kTextColor);
   return label;
@@ -259,7 +252,6 @@ views::Label* SadTabView::CreateLabel(const string16& text) {
 
 views::Link* SadTabView::CreateLink(const string16& text) {
   views::Link* link = new views::Link(text);
-  link->SetFont(base_font_.DeriveFont(kMessageFontSizeDelta));
   link->SetBackgroundColor(background()->get_color());
   link->SetEnabledColor(kTextColor);
   link->set_listener(this);

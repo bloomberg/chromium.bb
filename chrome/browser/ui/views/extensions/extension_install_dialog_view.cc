@@ -71,11 +71,6 @@ const int kBundleLeftColumnWidth = 300;
 // this case, so make it wider than normal.
 const int kExternalInstallLeftColumnWidth = 350;
 
-// Heading font size correction.
-const int kHeadingFontSizeDelta = 1;
-
-const int kRatingFontSizeDelta = -1;
-
 void AddResourceIcon(const gfx::ImageSkia* skia_image, void* data) {
   views::View* parent = static_cast<views::View*>(data);
   views::ImageView* image_view = new views::ImageView();
@@ -351,9 +346,10 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
   layout->StartRow(0, column_set_id);
 
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+
   views::Label* heading = new views::Label(prompt.GetHeading());
-  heading->SetFont(heading->font().DeriveFont(kHeadingFontSizeDelta,
-                                              gfx::Font::BOLD));
+  heading->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
   heading->SetMultiLine(true);
   heading->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   heading->SizeToFit(left_column_width);
@@ -395,8 +391,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     prompt.AppendRatingStars(AddResourceIcon, rating);
 
     views::Label* rating_count = new views::Label(prompt.GetRatingCount());
-    rating_count->SetFont(
-        rating_count->font().DeriveFont(kRatingFontSizeDelta));
+    rating_count->SetFont(rb.GetFont(ui::ResourceBundle::SmallFont));
     // Add some space between the stars and the rating count.
     rating_count->set_border(views::Border::CreateEmptyBorder(0, 2, 0, 0));
     rating->AddChildView(rating_count);
@@ -405,13 +400,13 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     views::Label* user_count = new views::Label(prompt.GetUserCount());
     user_count->SetAutoColorReadabilityEnabled(false);
     user_count->SetEnabledColor(SK_ColorGRAY);
-    user_count->SetFont(user_count->font().DeriveFont(kRatingFontSizeDelta));
+    user_count->SetFont(rb.GetFont(ui::ResourceBundle::SmallFont));
     layout->AddView(user_count);
 
     layout->StartRow(0, column_set_id);
     views::Link* store_link = new views::Link(
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_STORE_LINK));
-    store_link->SetFont(store_link->font().DeriveFont(kRatingFontSizeDelta));
+    store_link->SetFont(rb.GetFont(ui::ResourceBundle::SmallFont));
     store_link->set_listener(this);
     layout->AddView(store_link);
   }
@@ -446,13 +441,12 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     layout->StartRow(0, column_set_id);
     views::Label* permissions_header = NULL;
     if (is_bundle_install()) {
-      // We need to make the font bold like this, rather than using SetFont,
-      // because otherwise SizeToFit mis-judges the width of the line.
-      gfx::Font bold_font = ui::ResourceBundle::GetSharedInstance().GetFont(
-          ui::ResourceBundle::BaseFont).DeriveFont(
-              kHeadingFontSizeDelta, gfx::Font::BOLD);
+      // We need to pass the Font in the constructor, rather than calling
+      // SetFont later, because otherwise SizeToFit mis-judges the width
+      // of the line.
       permissions_header = new views::Label(
-          prompt.GetPermissionsHeading(), bold_font);
+          prompt.GetPermissionsHeading(),
+          rb.GetFont(ui::ResourceBundle::MediumFont));
     } else {
       permissions_header = new views::Label(prompt.GetPermissionsHeading());
     }
@@ -524,7 +518,7 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     app_launcher_opt_in_checkbox_ = new views::Checkbox(
         l10n_util::GetStringUTF16(IDS_APP_LIST_OPT_IN_TEXT));
     app_launcher_opt_in_checkbox_->SetFont(
-        app_launcher_opt_in_checkbox_->font().DeriveFont(0, gfx::Font::BOLD));
+        rb.GetFont(ui::ResourceBundle::BoldFont));
     layout->AddView(app_launcher_opt_in_checkbox_);
   }
 }

@@ -8,6 +8,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/label.h"
@@ -22,13 +23,6 @@ namespace chrome {
 
 typedef MediaGalleriesDialogController::KnownGalleryPermissions
     GalleryPermissions;
-
-namespace {
-
-// Heading font size correction.
-const int kHeadingFontSizeDelta = 1;
-
-}  // namespace
 
 MediaGalleriesDialogViews::MediaGalleriesDialogViews(
     MediaGalleriesDialogController* controller)
@@ -67,8 +61,8 @@ void MediaGalleriesDialogViews::InitChildViews() {
 
   // Header text.
   views::Label* header = new views::Label(controller_->GetHeader());
-  header->SetFont(header->font().DeriveFont(kHeadingFontSizeDelta,
-                                            gfx::Font::BOLD));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  header->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
   header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->StartRow(0, column_set_id);
   layout->AddView(header);
