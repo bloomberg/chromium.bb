@@ -79,6 +79,11 @@ RegisterList BranchImmediate24::defs(Instruction i) const {
       Add(link_flag.IsDefined(i) ? Register::Lr() : Register::None());
 }
 
+RegisterList BranchImmediate24::uses(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return RegisterList(Register::Pc());
+}
+
 bool BranchImmediate24::is_relative_branch(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return true;
@@ -860,6 +865,10 @@ RegisterList LoadRegisterList::defs(Instruction i) const {
   return register_list.registers(i).Union(LoadStoreRegisterList::defs(i));
 }
 
+RegisterList LoadRegisterList::uses(Instruction i) const {
+  return RegisterList(n.reg(i));
+}
+
 // StoreRegisterList
 SafetyLevel StoreRegisterList::safety(Instruction i) const {
   SafetyLevel level = LoadStoreRegisterList::safety(i);
@@ -872,6 +881,10 @@ SafetyLevel StoreRegisterList::safety(Instruction i) const {
     return UNPREDICTABLE;
   }
   return MAY_BE_SAFE;
+}
+
+RegisterList StoreRegisterList::uses(Instruction i) const {
+  return register_list.registers(i).Add(n.reg(i));
 }
 
 // LoadStoreVectorOp

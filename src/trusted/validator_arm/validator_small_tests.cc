@@ -249,11 +249,13 @@ static const AnnotatedInstruction examples_of_safe_stores[] = {
   { 0x01810F92, "strex r0, r2, [r1]: store exclusive" },
 
   // Store-multiple
-  { 0x0881FFFF, "stm r1, { r0-r15 }: store multiple, no writeback" },
+  // Note: It is illegal to store r9 (NaCl constraint), so it must
+  // be ommitted from the register sets.
+  { 0x0881FDFF, "stm r1, { r0-r8, r10-r15 }: store multiple, no writeback" },
   // Note: can't store registers whose number is less than Rt when there is
   //       writeback. E.g. stm r1! { r0-r15 } is unknown.
-  { 0x08A1FFFE, "stm r1!, { r1-r15 }: store multiple, writeback" },
-  { 0x08A1FFFC, "stm r1!, { r2-r15 }: store multiple, writeback" },
+  { 0x08A1FDFE, "stm r1!, { r1-r8, r10-r15 }: store multiple, writeback" },
+  { 0x08A1FDFC, "stm r1!, { r2-r8, r10-r15 }: store multiple, writeback" },
 
   // Stores from the floating point / vector register file
   // These all compile to STC instructions.

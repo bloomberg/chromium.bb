@@ -233,6 +233,9 @@ class RegisterList {
     return nacl::PopCount(gprs);
   }
 
+  // Returns the smallest GPR register in the list.
+  Register::Number SmallestGPR() const;
+
   // A list containing every possible register, even some we don't define.
   // Used exclusively as a bogus scary return value for forbidden instructions.
   static RegisterList Everything() { return RegisterList(-1); }

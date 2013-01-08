@@ -88,6 +88,20 @@ class BitExpr(object):
     # int mask.
     return BitField(self, NUM_INST_BITS - 1, 0)
 
+  def to_type(self, type, options={}):
+    """Converts the expression to the given type."""
+    if type == 'bool':
+      return self.to_bool(options)
+    if type == 'uint32':
+      return self.to_uint32(options)
+    if type == 'register':
+      return self.to_register(options)
+    if type == 'register_list':
+      return self.to_register_list(options)
+    if type == 'bitfield':
+      return self.to_bitfield(options)
+    raise Exception("to_type(%s): can't convert %s" % (type, self))
+
   def to_bool(self, options={}):
     """Returns a string describing this as a C++ boolean
        expression."""
@@ -606,6 +620,28 @@ class BitSet(BitExpr):
   def neutral_repr(self):
     return '{%s}' % ', '.join([neutral_repr(v) for v in self._values])
 
+"""Defines a map from a function name, to the list of possible signatures
+   for the funtion. The signature is a two-tuple where the first element
+   is a list of parameter types, and the second is the result type.
+   If a function does not appear in this list, all arguments are assumed
+   to be of type uint32, and return type uint32.
+   NOTE: Currently, one can't allow full polymorphism in the signatures,
+   because there is no way to test if an expression can be of a particular
+   type.
+   """
+_FUNCTION_SIGNATURE_MAP = {
+    'Add': [(['register_list', 'register'], 'register_list')],
+    'Contains': [(['register_list', 'register'], 'bool')],
+    'Union': [(['register_list', 'register_list'], 'register_list')],
+    'NumGPRs': [(['register_list'], 'uint32')],
+    'SmallestGPR': [(['register_list'], 'uint32')],
+    'Register': [(['uint32'], 'register')],
+    'RegisterList': [([], 'register_list'),
+                     (['uint32'], 'register_list'),
+                     # (['register'], 'registerlist),
+                     ],
+    }
+
 class FunctionCall(BitExpr):
   """Abstract class defining an (external) function call."""
 
@@ -623,16 +659,16 @@ class FunctionCall(BitExpr):
     raise Exception('to_bitfield not defined for %s' % self)
 
   def to_bool(self, options={}):
-    return self._to_call(self._add_namespace_option(options))
+    return self._to_call('bool', self._add_namespace_option(options))
 
   def to_register(self, options={}):
-    return self._to_call(self._add_namespace_option(options))
+    return self._to_call('register', self._add_namespace_option(options))
 
   def to_register_list(self, options={}):
-    return self._to_call(self._add_namespace_option(options))
+    return self._to_call('register_list', self._add_namespace_option(options))
 
   def to_uint32(self, options={}):
-    return self._to_call(self._add_namespace_option(options))
+    return self._to_call('uint32', self._add_namespace_option(options))
 
   def sub_bit_exprs(self):
     return list(self._args)
@@ -645,12 +681,39 @@ class FunctionCall(BitExpr):
     return "%s(%s)" % (self._name,
                        ', '.join([neutral_repr(a) for a in self._args]))
 
-  def _to_call(self, options={}):
+  def _to_call(self, return_type, options={}):
     """Generates a call to the external function."""
+    # Try (pseudo) translation functions.
+    trans_fcns = _FUNCTION_TRANSLATION_MAP.get(self._name)
+    if trans_fcns:
+      for fcn in trans_fcns:
+        exp = fcn(self, return_type, options)
+        if exp: return exp
+
+    # Convert arguments to corresponding signatures, and
+    # return corresponding call.
     namespace = (('%s::' % options.get('namespace'))
                  if options.get('namespace') else '')
-    return '%s(%s)' % ('%s%s' % (namespace, self._name),
-                       ', '.join([a.to_uint32(options) for a in self._args]))
+    signatures = _FUNCTION_SIGNATURE_MAP.get(self._name)
+    if signatures == None:
+      args = [a.to_uint32(options) for a in self.args()]
+    else:
+      good = False
+      for signature in signatures:
+        params, result = signature
+        if result != return_type:
+          continue
+        if len(params) != len(self.args()):
+          continue
+        good = True
+        args = []
+        for (type, arg) in zip(params, self.args()):
+          args.append(arg.to_type(type, options))
+        break
+      if not good:
+        raise Exception("don't know how to translate to %s: %s" %
+                        (return_type, self))
+    return '%s(%s)' % ('%s%s' % (namespace, self._name), ', '.join(args))
 
   def _add_namespace_option(self, options):
     if not options.get('namespace'):
@@ -1071,7 +1134,7 @@ class SymbolTable(object):
       st._dict[k] = self._dict[k]
     return st
 
-  def find(self, name):
+  def find(self, name, install_inheriting=True):
     value = self._dict.get(name)
     if value: return value
     inherits = self._dict.get(_INHERITS_SYMBOL)
@@ -1086,7 +1149,8 @@ class SymbolTable(object):
           "Can't copy inherited value of %s, symbol table frozen" % name)
     # Install locally before going on, so that the same
     # definition is consistently used.
-    self._dict[name] = value
+    if install_inheriting:
+      self._dict[name] = value
     return value
 
   def define(self, name, value, fail_if_defined = True):
@@ -1709,8 +1773,8 @@ class DecoderAction:
       self._st.define('actual', actual)
     self._st.define('constraints', RuleRestrictions())
 
-  def find(self, name):
-    return self._st.find(name)
+  def find(self, name, install_inheriting=True):
+    return self._st.find(name, install_inheriting)
 
   def define(self, name, value, fail_if_defined=True):
     return self._st.define(name, value, fail_if_defined)
@@ -2089,3 +2153,80 @@ class Decoder(object):
       print "%s" % tbl
     else:
       raise Exception("Can't find table %s" % table)
+
+def _TranslateSignExtend(exp, return_type, options):
+  """Implements SignExtend(x, i):
+     if i == len(x) then x else Replicate(TopBit(x), i - len(x)):x
+     where i >= len(x)
+  """
+  # Note: Returns None if not translatible.
+  args = _ExtractExtendArgs(exp, return_type)
+  if args == None: return None
+  if exp.name() != 'SignExtend': return None
+  (i, x, len_x) = args
+  value_x = x.to_uint32(options)
+  if i == len_x:
+    return value_x
+  else:
+    top_bit_mask = 1
+    for n in range(1, len_x):
+      top_bit_mask = top_bit_mask << 1
+    replicate_mask = 0
+    for n in range(0, i - len_x):
+      replicate_mask = (replicate_mask << 1) | 1
+    replicate_mask = replicate_mask << len_x
+    text = ("""(((%s) & 0x%08X)
+       ? ((%s) | 0x%08X)
+       : %s)""" %
+            (value_x, top_bit_mask, value_x, replicate_mask, value_x))
+    return text
+
+def _TranslateZeroExtend(exp, return_type, options):
+  """Implements ZeroExtend(x, i):
+       if i == len(x) then x else Replicate('0', i-len(x)):x
+  """
+  args = _ExtractExtendArgs(exp, return_type)
+  if args == None: return None
+  if exp.name() != 'ZeroExtend': return None
+  # Note: Converting to unsigned integer is the same as extending.
+  return x.to_uint32(options)
+
+def _ToBitFieldExtend(exp, return_type, options):
+  """Implements a to_bitfield conversion for ZeroExtend and
+     SignExtend.
+  """
+  args = _ExtractExtendArgs(exp, return_type)
+  if not args or exp.name() not in ['ZeroExtend', 'SignExtend']:
+    return None
+  i, x, len_x = args
+  return BitField(exp, len_x - 1, 0)
+
+def _ExtractExtendArgs(exp, return_type):
+  """Returns (i, x, len(x)) if exp is one of the following forms:
+        XXX(x, i)
+        XXX(x, i)
+     Otherwise, returns None.
+     """
+  if not isinstance(exp, FunctionCall): return None
+  if return_type != 'uint32': return None
+  if len(exp.args()) != 2: return None
+  args = exp.args()
+  x = args[0]
+  i = args[1]
+  try:
+    bf = x.to_bitfield()
+  except:
+    return None
+  if not isinstance(i, Literal): return None
+  i = i.value()
+  if i < 0 or i > NUM_INST_BITS: return None
+  len_x = bf.num_bits()
+  if i < len_x: return None
+  return (i, x, len_x)
+
+
+"""Defines special processing fuctions if the signature matches."""
+_FUNCTION_TRANSLATION_MAP = {
+    'ZeroExtend': [_TranslateZeroExtend, _ToBitFieldExtend],
+    'SignExtend': [_TranslateSignExtend, _ToBitFieldExtend]
+}

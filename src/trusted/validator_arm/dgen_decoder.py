@@ -290,7 +290,7 @@ DECODER_RELATIVE_HEADER="""
   virtual bool is_relative_branch(Instruction i) const;"""
 
 DECODER_RELATIVE_DEF="""
-bool %(decoder_name)::
+bool %(decoder_name)s::
 is_relative_branch(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // %(neutral_rep)s
@@ -310,7 +310,7 @@ DECODER_RELATIVE_OFFSET_HEADER="""
   virtual int32_t branch_target_offset(Instruction i) const;"""
 
 DECODER_RELATIVE_OFFSET_DEF="""
-int32_t %(decoder_name)::
+int32_t %(decoder_name)s::
 branch_target_offset(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // %(neutral_rep)s

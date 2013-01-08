@@ -27,7 +27,8 @@ action_option  ::= (action_actual |
 action_options_deprecated ::= (id (word (rule_restrict_deprecated id?)?)?)?
 action_other   ::= word ':=' bit_expr
 action_pattern ::= 'pattern' ':=' word rule_restrict?
-action_safety  ::= 'safety' ':=' safety_check ('&' safety_check)*
+action_safety  ::= 'safety' ':=' ('super.safety' | safety_check)
+                            ('&' safety_check)*
 action_rule    ::= 'rule' ':=' id
 arch           ::= '(' word+ ')'
 bit_expr       ::= bit_expr1 ('if' bit_expr 'else' bit_expr)?  # conditional
@@ -178,7 +179,7 @@ class Parser(object):
     # the list, and p1.startswith(p2), then p1 must appear before p2.
     self._reserved = ['class', 'else', 'pattern', 'safety', 'rule',
                       'arch', 'other', 'mod', 'if', 'not', 'in', 'bitset',
-                      'actual', 'baseline']
+                      'actual', 'baseline', 'super.safety']
     # Punctuation allowed. Must be ordered such that if p1 != p2 are in
     # the list, and p1.startswith(p2), then p1 must appear before p2.
     self._punctuation = ['=>', '->', '-', '+', '(', ')', '==', ':=', '"',
@@ -275,13 +276,23 @@ class Parser(object):
       self._rule_restrict(context)
 
   def _action_safety(self, context):
-    """action_safety  ::= 'safety' ':=' safety_check ('&' safety_check)*
+    """action_safety  ::=
+          'safety' ':=' ('super.safety' | safety_check) ('&' safety_check)*
 
        Adds safety constraints to the context.
        """
     self._read_token('safety')
     self._read_token(':=')
-    checks = [ self._safety_check(context) ]
+    if self._next_token().kind == 'super.safety':
+      # Treat as extending case of inherited safety.
+      self._read_token('super.safety')
+      checks = context.find('safety', install_inheriting=False)
+      if isinstance(checks, list):
+        checks = list(checks)
+      else:
+        self._unexpected('safety extensions not allowed, nothing to extend')
+    else:
+      checks = [ self._safety_check(context) ]
     while self._next_token().kind == '&':
       self._read_token('&')
       checks.append(self._safety_check(context))

@@ -34,7 +34,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Binary4RegisterDualResultUsesRnRm_instance_()
   , Binary4RegisterShiftedOp_instance_()
   , BinaryRegisterImmediateTest_instance_()
-  , Branch_instance_()
+  , BranchImmediate24_instance_()
   , BranchToRegister_instance_()
   , BreakPointAndConstantPoolHead_instance_()
   , DataBarrier_instance_()
@@ -53,9 +53,9 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Load3RegisterOp_instance_()
   , LoadExclusive2RegisterDoubleOp_instance_()
   , LoadExclusive2RegisterOp_instance_()
-  , LoadMultiple_instance_()
   , LoadRegisterImm8DoubleOp_instance_()
   , LoadRegisterImm8Op_instance_()
+  , LoadRegisterList_instance_()
   , LoadVectorRegister_instance_()
   , LoadVectorRegisterList_instance_()
   , MaskedBinary2RegisterImmediateOp_instance_()
@@ -493,14 +493,14 @@ const ClassDecoder& Arm32DecoderState::decode_branch_branch_with_link_and_block_
 
   if ((inst.Bits() & 0x02500000)  ==
           0x00100000 /* op(25:20)=0xx0x1 */) {
-    return LoadMultiple_instance_;
+    return LoadRegisterList_instance_;
   }
 
   if ((inst.Bits() & 0x02500000)  ==
           0x00400000 /* op(25:20)=0xx1x0 */ &&
       (inst.Bits() & 0x00200000)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx */) {
-    return Forbidden_instance_;
+    return ForbiddenCondDecoder_instance_;
   }
 
   if ((inst.Bits() & 0x02500000)  ==
@@ -509,19 +509,19 @@ const ClassDecoder& Arm32DecoderState::decode_branch_branch_with_link_and_block_
           0x00000000 /* R(15)=0 */ &&
       (inst.Bits() & 0x00200000)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx */) {
-    return Forbidden_instance_;
+    return ForbiddenCondDecoder_instance_;
   }
 
   if ((inst.Bits() & 0x02500000)  ==
           0x00500000 /* op(25:20)=0xx1x1 */ &&
       (inst.Bits() & 0x00008000)  ==
           0x00008000 /* R(15)=1 */) {
-    return Forbidden_instance_;
+    return ForbiddenCondDecoder_instance_;
   }
 
   if ((inst.Bits() & 0x02000000)  ==
           0x02000000 /* op(25:20)=1xxxxx */) {
-    return Branch_instance_;
+    return BranchImmediate24_instance_;
   }
 
   // Catch any attempt to fall though ...

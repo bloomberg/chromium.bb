@@ -17,4 +17,10 @@ const char* Instruction::ToString(Instruction::Condition cond) {
   return conditions + ((cond <= AL) ? offset : offset_to_null_char);
 }
 
+Register::Number RegisterList::SmallestGPR() const {
+  if (numGPRs() == 0) return Register::kNone;
+  return static_cast<Register::Number>(
+      nacl::CountTrailingZeroes(bits_ & Register::kGprMask));
+}
+
 }  // namespace nacl_arm_dec

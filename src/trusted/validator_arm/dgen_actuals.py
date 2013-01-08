@@ -130,6 +130,7 @@ ACTUAL_H_HEADER="""%(FILE_HEADER)s
 #define %(IFDEF_NAME)s
 
 #include "native_client/src/trusted/validator_arm/inst_classes.h"
+#include "native_client/src/trusted/validator_arm/arm_helpers.h"
 
 namespace nacl_arm_dec {
 """

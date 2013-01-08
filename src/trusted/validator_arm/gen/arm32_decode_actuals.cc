@@ -578,6 +578,113 @@ uses(Instruction inst) const {
    Add(Register((inst.Bits() & 0x0000000F)));
 }
 
+// Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1
+//
+// Actual:
+//   {defs: {15, 14},
+//    relative: true,
+//    relative_offset: SignExtend(inst(23:0):0(1:0), 32),
+//    safety: [true => MAY_BE_SAFE],
+//    uses: {15}}
+
+RegisterList Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{15, 14}'
+  return RegisterList().
+   Add(Register(15)).
+   Add(Register(14));
+}
+
+bool Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1::
+is_relative_branch(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // relative: 'true'
+  return true;
+}
+
+int32_t Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1::
+branch_target_offset(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // relative_offset: 'SignExtend(inst(23:0):0(1:0), 32)'
+  return (((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) & 0x02000000)
+       ? ((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) | 0xFC000000)
+       : ((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003)));
+}
+
+SafetyLevel Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => MAY_BE_SAFE
+  if (true)
+    return MAY_BE_SAFE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{15}'
+  return RegisterList().
+   Add(Register(15));
+}
+
+// Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1
+//
+// Actual:
+//   {defs: {15},
+//    relative: true,
+//    relative_offset: SignExtend(inst(23:0):0(1:0), 32),
+//    safety: [true => MAY_BE_SAFE],
+//    uses: {15}}
+
+RegisterList Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{15}'
+  return RegisterList().
+   Add(Register(15));
+}
+
+bool Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1::
+is_relative_branch(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // relative: 'true'
+  return true;
+}
+
+int32_t Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1::
+branch_target_offset(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // relative_offset: 'SignExtend(inst(23:0):0(1:0), 32)'
+  return (((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) & 0x02000000)
+       ? ((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) | 0xFC000000)
+       : ((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003)));
+}
+
+SafetyLevel Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => MAY_BE_SAFE
+  if (true)
+    return MAY_BE_SAFE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{15}'
+  return RegisterList().
+   Add(Register(15));
+}
+
 // Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //
 // Actual:
@@ -801,6 +908,86 @@ safety(Instruction inst) const {
   return MAY_BE_SAFE;
 }
 
+
+// Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1
+//
+// Actual:
+//   {base: inst(19:16),
+//    defs: Union({inst(19:16)
+//         if inst(21)=1
+//         else 32}, RegisterList(inst(15:0))),
+//    safety: [15  ==
+//            inst(19:16) ||
+//         NumGPRs(RegisterList(inst(15:0)))  <
+//            1 => UNPREDICTABLE,
+//      Contains(RegisterList(inst(15:0)), 15) => FORBIDDEN_OPERANDS,
+//      inst(21)=1 &&
+//         Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN],
+//    small_imm_base_wb: true,
+//    uses: {inst(19:16)}}
+
+Register Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: 'Union({inst(19:16)
+  //       if inst(21)=1
+  //       else 32}, RegisterList(inst(15:0)))'
+  return nacl_arm_dec::Union(RegisterList().
+   Add(Register(((inst.Bits() & 0x00200000)  ==
+          0x00200000
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32))), nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)));
+}
+
+SafetyLevel Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       NumGPRs(RegisterList(inst(15:0)))  <
+  //          1 => UNPREDICTABLE
+  if ((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
+       (((nacl_arm_dec::NumGPRs(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)))) < (1))))
+    return UNPREDICTABLE;
+
+  // inst(21)=1 &&
+  //       Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN
+  if (((inst.Bits() & 0x00200000)  ==
+          0x00200000) &&
+       (nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(((inst.Bits() & 0x000F0000) >> 16)))))
+    return UNKNOWN;
+
+  // Contains(RegisterList(inst(15:0)), 15) => FORBIDDEN_OPERANDS
+  if (nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(15)))
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+bool Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1::
+base_address_register_writeback_small_immediate(
+      Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // small_imm_base_wb: 'true'
+  return true;
+}
+
+RegisterList Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
 
 // Actual_LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_1
 //
@@ -3206,6 +3393,86 @@ uses(Instruction inst) const {
   return RegisterList().
    Add(Register((inst.Bits() & 0x0000000F))).
    Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1
+//
+// Actual:
+//   {base: inst(19:16),
+//    defs: {inst(19:16)
+//         if inst(21)=1
+//         else 32},
+//    safety: [15  ==
+//            inst(19:16) ||
+//         NumGPRs(RegisterList(inst(15:0)))  <
+//            1 => UNPREDICTABLE,
+//      inst(21)=1 &&
+//         Contains(RegisterList(inst(15:0)), inst(19:16)) &&
+//         SmallestGPR(RegisterList(inst(15:0)))  !=
+//            inst(19:16) => UNKNOWN],
+//    small_imm_base_wb: true,
+//    uses: Union({inst(19:16)}, RegisterList(inst(15:0)))}
+
+Register Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16)
+  //       if inst(21)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x00200000)  ==
+          0x00200000
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32)));
+}
+
+SafetyLevel Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       NumGPRs(RegisterList(inst(15:0)))  <
+  //          1 => UNPREDICTABLE
+  if ((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
+       (((nacl_arm_dec::NumGPRs(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)))) < (1))))
+    return UNPREDICTABLE;
+
+  // inst(21)=1 &&
+  //       Contains(RegisterList(inst(15:0)), inst(19:16)) &&
+  //       SmallestGPR(RegisterList(inst(15:0)))  !=
+  //          inst(19:16) => UNKNOWN
+  if (((inst.Bits() & 0x00200000)  ==
+          0x00200000) &&
+       (nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(((inst.Bits() & 0x000F0000) >> 16)))) &&
+       (((((inst.Bits() & 0x000F0000) >> 16)) != (nacl_arm_dec::SmallestGPR(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)))))))
+    return UNKNOWN;
+
+  return MAY_BE_SAFE;
+}
+
+
+bool Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1::
+base_address_register_writeback_small_immediate(
+      Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // small_imm_base_wb: 'true'
+  return true;
+}
+
+RegisterList Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: 'Union({inst(19:16)}, RegisterList(inst(15:0)))'
+  return nacl_arm_dec::Union(RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))), nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)));
 }
 
 // Actual_STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_1

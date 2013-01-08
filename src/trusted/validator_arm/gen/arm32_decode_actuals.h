@@ -10,6 +10,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_GEN_ARM32_DECODE_ACTUALS_H_
 
 #include "native_client/src/trusted/validator_arm/inst_classes.h"
+#include "native_client/src/trusted/validator_arm/arm_helpers.h"
 
 namespace nacl_arm_dec {
 
@@ -1424,6 +1425,87 @@ class Actual_BLX_register_cccc000100101111111111110011mmmm_case_1
       Actual_BLX_register_cccc000100101111111111110011mmmm_case_1);
 };
 
+// Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1
+//
+// Actual:
+//   {defs: {15, 14},
+//    relative: true,
+//    relative_offset: SignExtend(inst(23:0):0(1:0), 32),
+//    safety: [true => MAY_BE_SAFE],
+//    uses: {15}}
+//
+// Baseline:
+//   {Cond: Cond(31:28),
+//    Lr: 14,
+//    Pc: 15,
+//    baseline: BranchImmediate24,
+//    constraints: ,
+//    defs: {Pc, Lr},
+//    fields: [Cond(31:28), imm24(23:0)],
+//    imm24: imm24(23:0),
+//    imm32: SignExtend(imm24:0(1:0), 32),
+//    pattern: cccc1011iiiiiiiiiiiiiiiiiiiiiiii,
+//    relative: true,
+//    relative_offset: imm32,
+//    rule: BL_BLX_immediate,
+//    safety: [true => MAY_BE_SAFE],
+//    true: true,
+//    uses: {Pc}}
+class Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1
+     : public ClassDecoder {
+ public:
+  Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual bool is_relative_branch(Instruction i) const;
+  virtual int32_t branch_target_offset(Instruction i) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_1);
+};
+
+// Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1
+//
+// Actual:
+//   {defs: {15},
+//    relative: true,
+//    relative_offset: SignExtend(inst(23:0):0(1:0), 32),
+//    safety: [true => MAY_BE_SAFE],
+//    uses: {15}}
+//
+// Baseline:
+//   {Cond: Cond(31:28),
+//    Pc: 15,
+//    baseline: BranchImmediate24,
+//    constraints: ,
+//    defs: {Pc},
+//    fields: [Cond(31:28), imm24(23:0)],
+//    imm24: imm24(23:0),
+//    imm32: SignExtend(imm24:0(1:0), 32),
+//    pattern: cccc1010iiiiiiiiiiiiiiiiiiiiiiii,
+//    relative: true,
+//    relative_offset: imm32,
+//    rule: B,
+//    safety: [true => MAY_BE_SAFE],
+//    true: true,
+//    uses: {Pc}}
+class Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1
+     : public ClassDecoder {
+ public:
+  Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual bool is_relative_branch(Instruction i) const;
+  virtual int32_t branch_target_offset(Instruction i) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_1);
+};
+
 // Actual_Bx_cccc000100101111111111110001mmmm_case_1
 //
 // Actual:
@@ -2074,6 +2156,154 @@ class Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10ddd
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_1);
+};
+
+// Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1
+//
+// Actual:
+//   {base: inst(19:16),
+//    defs: Union({inst(19:16)
+//         if inst(21)=1
+//         else 32}, RegisterList(inst(15:0))),
+//    safety: [15  ==
+//            inst(19:16) ||
+//         NumGPRs(RegisterList(inst(15:0)))  <
+//            1 => UNPREDICTABLE,
+//      Contains(RegisterList(inst(15:0)), 15) => FORBIDDEN_OPERANDS,
+//      inst(21)=1 &&
+//         Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN],
+//    small_imm_base_wb: true,
+//    uses: {inst(19:16)}}
+//
+// Baseline:
+//   {None: 32,
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    W: W(21),
+//    base: Rn,
+//    baseline: LoadRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: Union({Rn
+//         if wback
+//         else None}, registers),
+//    fields: [cond(31:28), W(21), Rn(19:16), register_list(15:0)],
+//    pattern: cccc100000w1nnnnrrrrrrrrrrrrrrrr,
+//    register_list: register_list(15:0),
+//    registers: RegisterList(register_list),
+//    rule: LDMDA_LDMFA,
+//    safety: [Rn  ==
+//            Pc ||
+//         NumGPRs(registers)  <
+//            1 => UNPREDICTABLE,
+//      wback &&
+//         Contains(registers, Rn) => UNKNOWN,
+//      Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//    small_imm_base_wb: true,
+//    true: true,
+//    uses: {Rn},
+//    wback: W(21)=1}
+//
+// Baseline:
+//   {None: 32,
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    W: W(21),
+//    base: Rn,
+//    baseline: LoadRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: Union({Rn
+//         if wback
+//         else None}, registers),
+//    fields: [cond(31:28), W(21), Rn(19:16), register_list(15:0)],
+//    pattern: cccc100100w1nnnnrrrrrrrrrrrrrrrr,
+//    register_list: register_list(15:0),
+//    registers: RegisterList(register_list),
+//    rule: LDMDB_LDMEA,
+//    safety: [Rn  ==
+//            Pc ||
+//         NumGPRs(registers)  <
+//            1 => UNPREDICTABLE,
+//      wback &&
+//         Contains(registers, Rn) => UNKNOWN,
+//      Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//    small_imm_base_wb: true,
+//    true: true,
+//    uses: {Rn},
+//    wback: W(21)=1}
+//
+// Baseline:
+//   {None: 32,
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    W: W(21),
+//    base: Rn,
+//    baseline: LoadRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: Union({Rn
+//         if wback
+//         else None}, registers),
+//    fields: [cond(31:28), W(21), Rn(19:16), register_list(15:0)],
+//    pattern: cccc100110w1nnnnrrrrrrrrrrrrrrrr,
+//    register_list: register_list(15:0),
+//    registers: RegisterList(register_list),
+//    rule: LDMIB_LDMED,
+//    safety: [Rn  ==
+//            Pc ||
+//         NumGPRs(registers)  <
+//            1 => UNPREDICTABLE,
+//      wback &&
+//         Contains(registers, Rn) => UNKNOWN,
+//      Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//    small_imm_base_wb: true,
+//    true: true,
+//    uses: {Rn},
+//    wback: W(21)=1}
+//
+// Baseline:
+//   {None: 32,
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    W: W(21),
+//    base: Rn,
+//    baseline: LoadRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: Union({Rn
+//         if wback
+//         else None}, registers),
+//    fields: [cond(31:28), W(21), Rn(19:16), register_list(15:0)],
+//    pattern: cccc100010w1nnnnrrrrrrrrrrrrrrrr,
+//    register_list: register_list(15:0),
+//    registers: RegisterList(register_list),
+//    rule: LDM_LDMIA_LDMFD,
+//    safety: [Rn  ==
+//            Pc ||
+//         NumGPRs(registers)  <
+//            1 => UNPREDICTABLE,
+//      wback &&
+//         Contains(registers, Rn) => UNKNOWN,
+//      Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//    small_imm_base_wb: true,
+//    true: true,
+//    uses: {Rn},
+//    wback: W(21)=1}
+class Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1
+     : public ClassDecoder {
+ public:
+  Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1);
 };
 
 // Actual_LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_1
@@ -5482,6 +5712,159 @@ class Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Actual_SMULL_A1_cccc0000110shhhhllllmmmm1001nnnn_case_1);
+};
+
+// Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1
+//
+// Actual:
+//   {base: inst(19:16),
+//    defs: {inst(19:16)
+//         if inst(21)=1
+//         else 32},
+//    safety: [15  ==
+//            inst(19:16) ||
+//         NumGPRs(RegisterList(inst(15:0)))  <
+//            1 => UNPREDICTABLE,
+//      inst(21)=1 &&
+//         Contains(RegisterList(inst(15:0)), inst(19:16)) &&
+//         SmallestGPR(RegisterList(inst(15:0)))  !=
+//            inst(19:16) => UNKNOWN],
+//    small_imm_base_wb: true,
+//    uses: Union({inst(19:16)}, RegisterList(inst(15:0)))}
+//
+// Baseline:
+//   {None: 32,
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    W: W(21),
+//    base: Rn,
+//    baseline: StoreRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rn
+//         if wback
+//         else None},
+//    fields: [cond(31:28), W(21), Rn(19:16), register_list(15:0)],
+//    pattern: cccc100000w0nnnnrrrrrrrrrrrrrrrr,
+//    register_list: register_list(15:0),
+//    registers: RegisterList(register_list),
+//    rule: STMDA_STMED,
+//    safety: [Rn  ==
+//            Pc ||
+//         NumGPRs(registers)  <
+//            1 => UNPREDICTABLE,
+//      wback &&
+//         Contains(registers, Rn) &&
+//         Rn  !=
+//            SmallestGPR(registers) => UNKNOWN],
+//    small_imm_base_wb: true,
+//    true: true,
+//    uses: Union({Rn}, registers),
+//    wback: W(21)=1}
+//
+// Baseline:
+//   {None: 32,
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    W: W(21),
+//    base: Rn,
+//    baseline: StoreRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rn
+//         if wback
+//         else None},
+//    fields: [cond(31:28), W(21), Rn(19:16), register_list(15:0)],
+//    pattern: cccc100100w0nnnnrrrrrrrrrrrrrrrr,
+//    register_list: register_list(15:0),
+//    registers: RegisterList(register_list),
+//    rule: STMDB_STMFD,
+//    safety: [Rn  ==
+//            Pc ||
+//         NumGPRs(registers)  <
+//            1 => UNPREDICTABLE,
+//      wback &&
+//         Contains(registers, Rn) &&
+//         Rn  !=
+//            SmallestGPR(registers) => UNKNOWN],
+//    small_imm_base_wb: true,
+//    true: true,
+//    uses: Union({Rn}, registers),
+//    wback: W(21)=1}
+//
+// Baseline:
+//   {None: 32,
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    W: W(21),
+//    base: Rn,
+//    baseline: StoreRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rn
+//         if wback
+//         else None},
+//    fields: [cond(31:28), W(21), Rn(19:16), register_list(15:0)],
+//    pattern: cccc100110w0nnnnrrrrrrrrrrrrrrrr,
+//    register_list: register_list(15:0),
+//    registers: RegisterList(register_list),
+//    rule: STMIB_STMFA,
+//    safety: [Rn  ==
+//            Pc ||
+//         NumGPRs(registers)  <
+//            1 => UNPREDICTABLE,
+//      wback &&
+//         Contains(registers, Rn) &&
+//         Rn  !=
+//            SmallestGPR(registers) => UNKNOWN],
+//    small_imm_base_wb: true,
+//    true: true,
+//    uses: Union({Rn}, registers),
+//    wback: W(21)=1}
+//
+// Baseline:
+//   {None: 32,
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    W: W(21),
+//    base: Rn,
+//    baseline: StoreRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rn
+//         if wback
+//         else None},
+//    fields: [cond(31:28), W(21), Rn(19:16), register_list(15:0)],
+//    pattern: cccc100010w0nnnnrrrrrrrrrrrrrrrr,
+//    register_list: register_list(15:0),
+//    registers: RegisterList(register_list),
+//    rule: STM_STMIA_STMEA,
+//    safety: [Rn  ==
+//            Pc ||
+//         NumGPRs(registers)  <
+//            1 => UNPREDICTABLE,
+//      wback &&
+//         Contains(registers, Rn) &&
+//         Rn  !=
+//            SmallestGPR(registers) => UNKNOWN],
+//    small_imm_base_wb: true,
+//    true: true,
+//    uses: Union({Rn}, registers),
+//    wback: W(21)=1}
+class Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1
+     : public ClassDecoder {
+ public:
+  Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_STMDA_STMED_cccc100000w0nnnnrrrrrrrrrrrrrrrr_case_1);
 };
 
 // Actual_STRB_immediate_cccc010pu1w0nnnnttttiiiiiiiiiiii_case_1

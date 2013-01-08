@@ -279,6 +279,7 @@ class BranchImmediate24 : public ClassDecoder {
   BranchImmediate24() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
   virtual bool is_relative_branch(Instruction i) const;
   virtual int32_t branch_target_offset(Instruction i) const;
 
@@ -1259,6 +1260,7 @@ class LoadRegisterList : public LoadStoreRegisterList {
   LoadRegisterList() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadRegisterList);
@@ -1271,6 +1273,7 @@ class StoreRegisterList : public LoadStoreRegisterList {
  public:
   StoreRegisterList() {}
   virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(StoreRegisterList);

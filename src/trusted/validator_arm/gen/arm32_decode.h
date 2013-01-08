@@ -166,7 +166,7 @@ class Arm32DecoderState : DecoderState {
   const Binary4RegisterDualResultUsesRnRm Binary4RegisterDualResultUsesRnRm_instance_;
   const Binary4RegisterShiftedOp Binary4RegisterShiftedOp_instance_;
   const BinaryRegisterImmediateTest BinaryRegisterImmediateTest_instance_;
-  const Branch Branch_instance_;
+  const BranchImmediate24 BranchImmediate24_instance_;
   const BranchToRegister BranchToRegister_instance_;
   const BreakPointAndConstantPoolHead BreakPointAndConstantPoolHead_instance_;
   const DataBarrier DataBarrier_instance_;
@@ -185,9 +185,9 @@ class Arm32DecoderState : DecoderState {
   const Load3RegisterOp Load3RegisterOp_instance_;
   const LoadExclusive2RegisterDoubleOp LoadExclusive2RegisterDoubleOp_instance_;
   const LoadExclusive2RegisterOp LoadExclusive2RegisterOp_instance_;
-  const LoadMultiple LoadMultiple_instance_;
   const LoadRegisterImm8DoubleOp LoadRegisterImm8DoubleOp_instance_;
   const LoadRegisterImm8Op LoadRegisterImm8Op_instance_;
+  const LoadRegisterList LoadRegisterList_instance_;
   const LoadVectorRegister LoadVectorRegister_instance_;
   const LoadVectorRegisterList LoadVectorRegisterList_instance_;
   const MaskedBinary2RegisterImmediateOp MaskedBinary2RegisterImmediateOp_instance_;
