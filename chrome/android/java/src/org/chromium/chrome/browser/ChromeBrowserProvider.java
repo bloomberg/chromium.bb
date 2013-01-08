@@ -29,6 +29,8 @@ import android.provider.Browser.SearchColumns;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CalledByNativeUnchecked;
 import org.chromium.base.ThreadUtils;
@@ -724,8 +726,7 @@ public class ChromeBrowserProvider extends ContentProvider {
         private byte[] mThumbnail;
 
         /** Used to pass structured data back from the native code. */
-        // TODO(leandrogracia): remove public when VisibleForTesting works.
-        // @VisibleForTesting
+        @VisibleForTesting
         public BookmarkNode(long id, Type type, String name, String url, BookmarkNode parent) {
             mId = id;
             mName = name;
@@ -789,8 +790,7 @@ public class ChromeBrowserProvider extends ContentProvider {
          * <p>
          * Used solely by the native code.
          */
-        // TODO(leandrogracia): remove public when VisibleForTesting works.
-        // @VisibleForTesting
+        @VisibleForTesting
         @CalledByNativeUnchecked("BookmarkNode")
         public void addChild(BookmarkNode child) {
             mChildren.add(child);
@@ -840,14 +840,12 @@ public class ChromeBrowserProvider extends ContentProvider {
             return new BookmarkNode(id, Type.values()[type], name, url, parent);
         }
 
-        // TODO(leandrogracia): remove public when VisibleForTesting works.
-        // @VisibleForTesting
+        @VisibleForTesting
         public void setFavicon(byte[] favicon) {
             mFavicon = favicon;
         }
 
-        // TODO(leandrogracia): remove public when VisibleForTesting works.
-        // @VisibleForTesting
+        @VisibleForTesting
         public void setThumbnail(byte[] thumbnail) {
             mThumbnail = thumbnail;
         }
@@ -866,8 +864,7 @@ public class ChromeBrowserProvider extends ContentProvider {
             getHierarchyRoot().writeNodeContentsRecursive(dest);
         }
 
-        // TODO(leandrogracia): remove public when VisibleForTesting works.
-        // @VisibleForTesting
+        @VisibleForTesting
         public BookmarkNode getHierarchyRoot() {
             BookmarkNode root = this;
             while (root.parent() != null) {

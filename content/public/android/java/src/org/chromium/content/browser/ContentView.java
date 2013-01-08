@@ -21,6 +21,8 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.chromium.content.common.TraceEvent;
 import org.chromium.ui.gfx.NativeWindow;
 
@@ -211,7 +213,7 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
         mContentViewCore.setContentViewClient(client);
     }
 
-    // @VisibleForTesting
+    @VisibleForTesting
     public ContentViewClient getContentViewClient() {
         return mContentViewCore.getContentViewClient();
     }
@@ -344,18 +346,16 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     /**
      * Start profiling the update speed. You must call {@link #stopFpsProfiling}
      * to stop profiling.
-     *
-     * @VisibleForTesting
      */
+    @VisibleForTesting
     public void startFpsProfiling() {
         // TODO(nileshagrawal): Implement this.
     }
 
     /**
      * Stop profiling the update speed.
-     *
-     * @VisibleForTesting
      */
+    @VisibleForTesting
     public float stopFpsProfiling() {
         // TODO(nileshagrawal): Implement this.
         return 0.0f;
@@ -367,9 +367,8 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      * @param y Fling touch starting position
      * @param velocityX Initial velocity of the fling (X) measured in pixels per second.
      * @param velocityY Initial velocity of the fling (Y) measured in pixels per second.
-     *
-     * @VisibleForTesting
      */
+    @VisibleForTesting
     public void fling(long timeMs, int x, int y, int velocityX, int velocityY) {
         mContentViewCore.getContentViewGestureHandler().fling(timeMs, x, y, velocityX, velocityY);
     }
@@ -380,18 +379,16 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
 
     /**
      * Start pinch zoom. You must call {@link #pinchEnd} to stop.
-     *
-     * @VisibleForTesting
      */
+    @VisibleForTesting
     public void pinchBegin(long timeMs, int x, int y) {
         mContentViewCore.getContentViewGestureHandler().pinchBegin(timeMs, x, y);
     }
 
     /**
      * Stop pinch zoom.
-     *
-     * @VisibleForTesting
      */
+    @VisibleForTesting
     public void pinchEnd(long timeMs) {
         mContentViewCore.getContentViewGestureHandler().pinchEnd(timeMs);
     }
@@ -411,9 +408,8 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      *            coordinate.
      * @param anchorY The magnification anchor (Y) in the current view
      *            coordinate.
-     *
-     * @VisibleForTesting
      */
+    @VisibleForTesting
     public void pinchBy(long timeMs, int anchorX, int anchorY, float delta) {
         mContentViewCore.getContentViewGestureHandler().pinchBy(timeMs, anchorX, anchorY, delta);
     }

@@ -37,6 +37,8 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.WeakContext;
@@ -749,8 +751,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      *
      * @param url The URL being blocked by the interstitial.
      * @param delegate The delegate handling the interstitial.
-     * @VisibleForTesting
      */
+    @VisibleForTesting
     public void showInterstitialPage(
             String url, InterstitialPageDelegateAndroid delegate) {
         if (mNativeContentViewCore == 0) return;

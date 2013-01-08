@@ -284,6 +284,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../net/net.gyp:net',
+            '../third_party/guava/guava.gyp:guava_javalib',
             '../ui/ui.gyp:ui_java',
             'common_aidl',
             'content_common',
