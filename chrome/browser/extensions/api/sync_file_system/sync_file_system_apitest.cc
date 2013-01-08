@@ -12,14 +12,16 @@
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/quota/quota_manager.h"
 
+using ::testing::_;
+using ::testing::Return;
 using sync_file_system::MockRemoteFileSyncService;
 using sync_file_system::RemoteFileSyncService;
 using sync_file_system::SyncFileSystemServiceFactory;
-using ::testing::_;
 
 namespace chrome {
 
@@ -74,6 +76,12 @@ ACTION_P(NotifyOkStateAndCallback, mock_remote_service) {
 
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, DeleteFileSystem) {
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/delete_file_system"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetFileSyncStatus) {
+  EXPECT_CALL(*mock_remote_service(), IsConflicting(_)).WillOnce(Return(true));
+  ASSERT_TRUE(RunPlatformAppTest("sync_file_system/get_file_sync_status"))
       << message_;
 }
 
