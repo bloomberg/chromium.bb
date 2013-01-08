@@ -1439,8 +1439,7 @@ int Browser::GetExtraRenderViewHeight() const {
 
 void Browser::OnStartDownload(WebContents* source,
                               content::DownloadItem* download) {
-  scoped_ptr<DownloadItemModel> download_model(new DownloadItemModel(download));
-  if (!download_model->ShouldShowInShelf())
+  if (!DownloadItemModel(download).ShouldShowInShelf())
     return;
 
   WebContents* constrained = GetConstrainingWebContents(source);
@@ -1455,7 +1454,7 @@ void Browser::OnStartDownload(WebContents* source,
 
   // GetDownloadShelf creates the download shelf if it was not yet created.
   DownloadShelf* shelf = window()->GetDownloadShelf();
-  shelf->AddDownload(download_model.release());
+  shelf->AddDownload(download);
   // Don't show the animation for "Save file" downloads.
   // For non-theme extensions, we don't show the download animation.
   // Show animation in same window as the download shelf. Download shelf

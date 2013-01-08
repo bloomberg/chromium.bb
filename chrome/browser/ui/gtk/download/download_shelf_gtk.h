@@ -24,7 +24,6 @@
 class Browser;
 class CustomDrawButton;
 class DownloadItemGtk;
-class DownloadItemModel;
 class GtkThemeService;
 
 namespace content {
@@ -69,7 +68,7 @@ class DownloadShelfGtk : public DownloadShelf,
 
  protected:
   // DownloadShelf implementation.
-  virtual void DoAddDownload(DownloadItemModel* download_model) OVERRIDE;
+  virtual void DoAddDownload(content::DownloadItem* download) OVERRIDE;
   virtual void DoShow() OVERRIDE;
   virtual void DoClose() OVERRIDE;
 

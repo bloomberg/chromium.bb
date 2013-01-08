@@ -19,9 +19,9 @@
 class Browser;
 class BrowserView;
 class DownloadItemView;
-class DownloadItemModel;
 
 namespace content {
+class DownloadItem;
 class PageNavigator;
 }
 
@@ -98,7 +98,7 @@ class DownloadShelfView : public views::AccessiblePaneView,
 
  protected:
   // Implementation of DownloadShelf.
-  virtual void DoAddDownload(DownloadItemModel* download_model) OVERRIDE;
+  virtual void DoAddDownload(content::DownloadItem* download) OVERRIDE;
   virtual void DoShow() OVERRIDE;
   virtual void DoClose() OVERRIDE;
 

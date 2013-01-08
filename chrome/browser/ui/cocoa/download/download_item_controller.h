@@ -71,10 +71,10 @@ class Font;
   } state_;
 };
 
-// Takes ownership of |downloadModel|.
-- (id)initWithModel:(DownloadItemModel*)downloadModel
-              shelf:(DownloadShelfController*)shelf
-          navigator:(content::PageNavigator*)navigator;
+// Initialize controller for |downloadItem|.
+- (id)initWithDownload:(content::DownloadItem*)downloadItem
+                 shelf:(DownloadShelfController*)shelf
+             navigator:(content::PageNavigator*)navigator;
 
 // Updates the UI and menu state from |downloadModel|.
 - (void)setStateFromDownload:(DownloadItemModel*)downloadModel;

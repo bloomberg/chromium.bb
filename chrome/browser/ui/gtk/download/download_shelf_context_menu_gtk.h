@@ -12,13 +12,11 @@
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 
 class DownloadItemGtk;
-class DownloadItemModel;
 
 class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
                                     public MenuGtk::Delegate {
  public:
-  DownloadShelfContextMenuGtk(DownloadItemModel* model,
-                              DownloadItemGtk* download_item,
+  DownloadShelfContextMenuGtk(DownloadItemGtk* download_item,
                               content::PageNavigator* navigator);
   virtual ~DownloadShelfContextMenuGtk();
 

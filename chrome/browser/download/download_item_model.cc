@@ -218,10 +218,6 @@ DownloadItemModel::DownloadItemModel(DownloadItem* download)
 DownloadItemModel::~DownloadItemModel() {
 }
 
-void DownloadItemModel::CancelTask() {
-  download_->Cancel(true /* update history service */);
-}
-
 string16 DownloadItemModel::GetInterruptReasonText() const {
   if (download_->GetState() != DownloadItem::INTERRUPTED ||
       download_->GetLastReason() ==

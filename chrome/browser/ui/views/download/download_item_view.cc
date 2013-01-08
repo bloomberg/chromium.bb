@@ -82,11 +82,9 @@ static const double kDownloadItemLuminanceMod = 0.8;
 
 using content::DownloadItem;
 
-DownloadItemView::DownloadItemView(DownloadItem* download,
-    DownloadShelfView* parent,
-    DownloadItemModel* model)
+DownloadItemView::DownloadItemView(DownloadItem* download_item,
+    DownloadShelfView* parent)
   : warning_icon_(NULL),
-    download_(download),
     shelf_(parent),
     status_text_(l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING)),
     body_state_(NORMAL),
@@ -96,7 +94,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     drop_down_pressed_(false),
     dragging_(false),
     starting_drag_(false),
-    model_(model),
+    model_(download_item),
     save_button_(NULL),
     discard_button_(NULL),
     dangerous_download_label_(NULL),
@@ -104,8 +102,8 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     disabled_while_opening_(false),
     creation_time_(base::Time::Now()),
     ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-  DCHECK(download_);
-  download_->AddObserver(this);
+  DCHECK(download());
+  download()->AddObserver(this);
   set_context_menu_controller(this);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -204,13 +202,13 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
 
   set_accessibility_focusable(true);
 
-  OnDownloadUpdated(download_);
+  OnDownloadUpdated(download());
   UpdateDropDownButtonPosition();
 }
 
 DownloadItemView::~DownloadItemView() {
   StopDownloadProgress();
-  download_->RemoveObserver(this);
+  download()->RemoveObserver(this);
 }
 
 // Progress animation handlers.
@@ -243,22 +241,22 @@ void DownloadItemView::OnExtractIconComplete(gfx::Image* icon_bitmap) {
 
 // Update the progress graphic on the icon and our text status label
 // to reflect our current bytes downloaded, time remaining.
-void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
-  DCHECK_EQ(download_, download);
+void DownloadItemView::OnDownloadUpdated(DownloadItem* download_item) {
+  DCHECK_EQ(download(), download_item);
 
-  if (IsShowingWarningDialog() && !model_->IsDangerous()) {
+  if (IsShowingWarningDialog() && !model_.IsDangerous()) {
     // We have been approved.
     ClearWarningDialog();
-  } else if (!IsShowingWarningDialog() && model_->IsDangerous()) {
+  } else if (!IsShowingWarningDialog() && model_.IsDangerous()) {
     ShowWarningDialog();
     // Force the shelf to layout again as our size has changed.
     shelf_->Layout();
     SchedulePaint();
   } else {
-    string16 status_text = model_->GetStatusText();
-    switch (download_->GetState()) {
+    string16 status_text = model_.GetStatusText();
+    switch (download()->GetState()) {
       case DownloadItem::IN_PROGRESS:
-        download_->IsPaused() ?
+        download()->IsPaused() ?
             StopDownloadProgress() : StartDownloadProgress();
         LoadIconIfItemPathChanged();
         break;
@@ -272,7 +270,7 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
         LoadIcon();
         break;
       case DownloadItem::COMPLETE:
-        if (download_->GetAutoOpened()) {
+        if (download()->GetAutoOpened()) {
           shelf_->RemoveDownloadView(this);  // This will delete us!
           return;
         }
@@ -294,7 +292,7 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
     status_text_ = status_text;
   }
 
-  string16 new_tip = model_->GetTooltipText(font_, kTooltipMaxWidth);
+  string16 new_tip = model_.GetTooltipText(font_, kTooltipMaxWidth);
   if (new_tip != tooltip_text_) {
     tooltip_text_ = new_tip;
     TooltipTextChanged();
@@ -406,13 +404,13 @@ bool DownloadItemView::OnMouseDragged(const ui::MouseEvent& event) {
     drag_start_point_ = event.location();
   }
   if (dragging_) {
-    if (download_->IsComplete()) {
+    if (download()->IsComplete()) {
       IconManager* im = g_browser_process->icon_manager();
-      gfx::Image* icon = im->LookupIcon(download_->GetUserVerifiedFilePath(),
+      gfx::Image* icon = im->LookupIcon(download()->GetUserVerifiedFilePath(),
                                         IconLoader::SMALL);
       if (icon) {
         views::Widget* widget = GetWidget();
-        download_util::DragDownload(download_, icon,
+        download_util::DragDownload(download(), icon,
                                     widget ? widget->GetNativeView() : NULL);
       }
     }
@@ -484,7 +482,7 @@ bool DownloadItemView::GetTooltipText(const gfx::Point& p,
 void DownloadItemView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->name = accessible_name_;
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
-  if (model_->IsDangerous()) {
+  if (model_.IsDangerous()) {
     state->state = ui::AccessibilityTypes::STATE_UNAVAILABLE;
   } else {
     state->state = ui::AccessibilityTypes::STATE_HASPOPUP;
@@ -525,9 +523,9 @@ void DownloadItemView::ButtonPressed(
   if (sender == discard_button_) {
     UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download",
                              base::Time::Now() - creation_time_);
-    if (download_->IsPartialDownload())
-      download_->Cancel(true);
-    download_->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
+    if (download()->IsPartialDownload())
+      download()->Cancel(true);
+    download()->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
     // WARNING: we are deleted at this point.  Don't access 'this'.
   } else if (save_button_ && sender == save_button_) {
     // The user has confirmed a dangerous download.  We'd record how quickly the
@@ -535,7 +533,7 @@ void DownloadItemView::ButtonPressed(
     UMA_HISTOGRAM_LONG_TIMES("clickjacking.save_download",
                              base::Time::Now() - creation_time_);
     // This will change the state and notify us.
-    download_->DangerousDownloadValidated();
+    download()->DangerousDownloadValidated();
   }
 }
 
@@ -742,7 +740,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
   if (!IsShowingWarningDialog()) {
     string16 filename;
     if (!disabled_while_opening_) {
-      filename = ui::ElideFilename(download_->GetFileNameToReportUser(),
+      filename = ui::ElideFilename(download()->GetFileNameToReportUser(),
                                    font_, kTextWidth);
     } else {
       // First, Calculate the download status opening string width.
@@ -751,7 +749,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
       int status_string_width = font_.GetStringWidth(status_string);
       // Then, elide the file name.
       string16 filename_string =
-          ui::ElideFilename(download_->GetFileNameToReportUser(), font_,
+          ui::ElideFilename(download()->GetFileNameToReportUser(), font_,
                             kTextWidth - status_string_width);
       // Last, concat the whole string.
       filename = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING,
@@ -775,7 +773,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
 
   // Load the icon.
   IconManager* im = g_browser_process->icon_manager();
-  gfx::Image* image = im->LookupIcon(download_->GetUserVerifiedFilePath(),
+  gfx::Image* image = im->LookupIcon(download()->GetUserVerifiedFilePath(),
                                      IconLoader::SMALL);
   const gfx::ImageSkia* icon = NULL;
   if (IsShowingWarningDialog())
@@ -790,15 +788,15 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
   // triggered only when we think the status might change.
   if (icon) {
     if (!IsShowingWarningDialog()) {
-      if (download_->IsInProgress()) {
+      if (download()->IsInProgress()) {
         download_util::PaintDownloadProgress(canvas, this, 0, 0,
                                              progress_angle_,
-                                             model_->PercentComplete(),
+                                             model_.PercentComplete(),
                                              download_util::SMALL);
-      } else if (download_->IsComplete() &&
+      } else if (download()->IsComplete() &&
                  complete_animation_.get() &&
                  complete_animation_->is_animating()) {
-        if (download_->IsInterrupted()) {
+        if (download()->IsInterrupted()) {
           download_util::PaintDownloadInterrupted(canvas, this, 0, 0,
               complete_animation_->GetCurrentValue(),
               download_util::SMALL);
@@ -838,13 +836,13 @@ void DownloadItemView::OpenDownload() {
   // open downloads super quickly, we should be concerned about clickjacking.
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.open_download",
                            base::Time::Now() - creation_time_);
-  download_->OpenDownload();
+  download()->OpenDownload();
   UpdateAccessibleName();
 }
 
 void DownloadItemView::LoadIcon() {
   IconManager* im = g_browser_process->icon_manager();
-  last_download_item_path_ = download_->GetUserVerifiedFilePath();
+  last_download_item_path_ = download()->GetUserVerifiedFilePath();
   im->LoadIcon(last_download_item_path_,
                IconLoader::SMALL,
                base::Bind(&DownloadItemView::OnExtractIconComplete,
@@ -853,7 +851,7 @@ void DownloadItemView::LoadIcon() {
 }
 
 void DownloadItemView::LoadIconIfItemPathChanged() {
-  FilePath current_download_path = download_->GetUserVerifiedFilePath();
+  FilePath current_download_path = download()->GetUserVerifiedFilePath();
   if (last_download_item_path_ == current_download_path)
     return;
 
@@ -902,8 +900,7 @@ void DownloadItemView::ShowContextMenuImpl(const gfx::Point& p,
 
   if (!context_menu_.get()) {
     context_menu_.reset(
-        new DownloadShelfContextMenuView(model_.get(),
-                                         shelf_->GetNavigator()));
+        new DownloadShelfContextMenuView(download(), shelf_->GetNavigator()));
   }
   context_menu_->Run(GetWidget()->GetTopLevelWidget(),
                      gfx::Rect(point, size));
@@ -1000,8 +997,8 @@ void DownloadItemView::SetState(State new_body_state, State new_drop_state) {
 }
 
 void DownloadItemView::ClearWarningDialog() {
-  DCHECK(download_->GetSafetyState() == DownloadItem::DANGEROUS_BUT_VALIDATED &&
-         (mode_ == DANGEROUS_MODE || mode_ == MALICIOUS_MODE));
+  DCHECK(download()->GetSafetyState() == DownloadItem::DANGEROUS_BUT_VALIDATED);
+  DCHECK(mode_ == DANGEROUS_MODE || mode_ == MALICIOUS_MODE);
 
   mode_ = NORMAL_MODE;
   body_state_ = NORMAL;
@@ -1027,7 +1024,7 @@ void DownloadItemView::ClearWarningDialog() {
   UpdateAccessibleName();
   UpdateDropDownButtonPosition();
 
-  // We need to load the icon now that the download_ has the real path.
+  // We need to load the icon now that the download has the real path.
   LoadIcon();
 
   // Force the shelf to layout again as our size has changed.
@@ -1039,13 +1036,13 @@ void DownloadItemView::ClearWarningDialog() {
 
 void DownloadItemView::ShowWarningDialog() {
   DCHECK(mode_ != DANGEROUS_MODE && mode_ != MALICIOUS_MODE);
-  mode_ = ((model_->IsMalicious()) ? MALICIOUS_MODE : DANGEROUS_MODE);
+  mode_ = ((model_.IsMalicious()) ? MALICIOUS_MODE : DANGEROUS_MODE);
 
   body_state_ = NORMAL;
   drop_down_state_ = NORMAL;
   if (mode_ == DANGEROUS_MODE) {
     save_button_ = new views::NativeTextButton(
-        this, model_->GetWarningConfirmButtonText());
+        this, model_.GetWarningConfirmButtonText());
     save_button_->set_ignore_minimum_size(true);
     AddChildView(save_button_);
   }
@@ -1063,7 +1060,7 @@ void DownloadItemView::ShowWarningDialog() {
     // The download file has dangerous file type (e.g.: an executable).
     warning_icon_ = rb.GetImageSkiaNamed(IDR_WARNING);
   }
-  string16 dangerous_label = model_->GetWarningText(font_, kTextWidth);
+  string16 dangerous_label = model_.GetWarningText(font_, kTextWidth);
   dangerous_download_label_ = new views::Label(dangerous_label);
   dangerous_download_label_->SetMultiLine(true);
   dangerous_download_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -1185,7 +1182,7 @@ void DownloadItemView::UpdateAccessibleName() {
     new_name = dangerous_download_label_->text();
   } else {
     new_name = status_text_ + char16(' ') +
-        download_->GetFileNameToReportUser().LossyDisplayName();
+        download()->GetFileNameToReportUser().LossyDisplayName();
   }
 
   // If the name has changed, notify assistive technology that the name

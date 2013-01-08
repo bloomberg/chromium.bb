@@ -9,18 +9,20 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "content/public/browser/download_item.h"
 #include "ui/base/models/simple_menu_model.h"
 
-class DownloadItemModel;
-
 namespace content {
-class DownloadItem;
 class PageNavigator;
 }
 
 // This class is responsible for the download shelf context menu. Platform
 // specific subclasses are responsible for creating and running the menu.
-class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate {
+//
+// The DownloadItem corresponding to the context menu is observed for removal or
+// destruction.
+class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
+                                 public content::DownloadItem::Observer {
  public:
   enum ContextMenuCommands {
     SHOW_IN_FOLDER = 1,    // Open a folder view window with the item selected.
@@ -37,14 +39,13 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate {
   virtual ~DownloadShelfContextMenu();
 
   content::DownloadItem* download_item() const { return download_item_; }
-  void set_download_item(content::DownloadItem* item) { download_item_ = item; }
 
  protected:
-  DownloadShelfContextMenu(DownloadItemModel* download_model,
+  DownloadShelfContextMenu(content::DownloadItem* download_item,
                            content::PageNavigator* navigator);
 
-  // Returns the correct menu model depending whether the download item is
-  // completed or not.
+  // Returns the correct menu model depending on the state of the download item.
+  // Returns NULL if the download was destroyed.
   ui::SimpleMenuModel* GetMenuModel();
 
   // ui::SimpleMenuModel::Delegate:
@@ -58,6 +59,13 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate {
   virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE;
 
  private:
+  // Detaches self from |download_item_|. Called when the DownloadItem is
+  // destroyed or when this object is being destroyed.
+  void DetachFromDownloadItem();
+
+  // content::DownloadItem::Observer
+  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
+
   ui::SimpleMenuModel* GetInProgressMenuModel();
   ui::SimpleMenuModel* GetFinishedMenuModel();
   ui::SimpleMenuModel* GetInterruptedMenuModel();
@@ -69,9 +77,6 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate {
   scoped_ptr<ui::SimpleMenuModel> finished_download_menu_model_;
   scoped_ptr<ui::SimpleMenuModel> interrupted_download_menu_model_;
   scoped_ptr<ui::SimpleMenuModel> malicious_download_menu_model_;
-
-  // A model to control the cancel behavior.
-  DownloadItemModel* download_model_;
 
   // Information source.
   content::DownloadItem* download_item_;

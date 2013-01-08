@@ -16,20 +16,21 @@ using content::DownloadItem;
 
 // DownloadItemMac -------------------------------------------------------------
 
-DownloadItemMac::DownloadItemMac(DownloadItemModel* download_model,
+DownloadItemMac::DownloadItemMac(DownloadItem* download,
                                  DownloadItemController* controller)
-    : download_model_(download_model), item_controller_(controller) {
-  download_model_->download()->AddObserver(this);
+    : download_model_(download),
+      item_controller_(controller) {
+  download_model_.download()->AddObserver(this);
 }
 
 DownloadItemMac::~DownloadItemMac() {
-  download_model_->download()->RemoveObserver(this);
+  download_model_.download()->RemoveObserver(this);
 }
 
 void DownloadItemMac::OnDownloadUpdated(content::DownloadItem* download) {
-  DCHECK_EQ(download, download_model_->download());
+  DCHECK_EQ(download, download_model_.download());
 
-  if ([item_controller_ isDangerousMode] && !download_model_->IsDangerous()) {
+  if ([item_controller_ isDangerousMode] && !download_model_.IsDangerous()) {
     // We have been approved.
     [item_controller_ clearDangerousMode];
   }
@@ -53,11 +54,11 @@ void DownloadItemMac::OnDownloadUpdated(content::DownloadItem* download) {
       // fall through
     case DownloadItem::IN_PROGRESS:
     case DownloadItem::CANCELLED:
-      [item_controller_ setStateFromDownload:download_model_.get()];
+      [item_controller_ setStateFromDownload:&download_model_];
       break;
     case DownloadItem::INTERRUPTED:
       [item_controller_ updateToolTip];
-      [item_controller_ setStateFromDownload:download_model_.get()];
+      [item_controller_ setStateFromDownload:&download_model_];
       break;
     default:
       NOTREACHED();
@@ -69,7 +70,7 @@ void DownloadItemMac::OnDownloadDestroyed(content::DownloadItem* download) {
 }
 
 void DownloadItemMac::OnDownloadOpened(content::DownloadItem* download) {
-  DCHECK_EQ(download, download_model_->download());
+  DCHECK_EQ(download, download_model_.download());
   [item_controller_ downloadWasOpened];
 }
 
@@ -81,7 +82,7 @@ void DownloadItemMac::LoadIcon() {
   }
 
   // We may already have this particular image cached.
-  FilePath file = download_model_->download()->GetUserVerifiedFilePath();
+  FilePath file = download_model_.download()->GetUserVerifiedFilePath();
   gfx::Image* icon = icon_manager->LookupIcon(file, IconLoader::ALL);
   if (icon) {
     [item_controller_ setIcon:icon->ToNSImage()];

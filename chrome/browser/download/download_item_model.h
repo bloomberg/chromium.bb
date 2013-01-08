@@ -35,9 +35,6 @@ class DownloadItemModel {
   explicit DownloadItemModel(content::DownloadItem* download);
   ~DownloadItemModel();
 
-  // Cancel the task corresponding to the item.
-  void CancelTask();
-
   // Returns a long descriptive string for a download that's in the INTERRUPTED
   // state. For other downloads, the returned string will be empty.
   string16 GetInterruptReasonText() const;

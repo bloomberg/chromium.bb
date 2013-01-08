@@ -22,7 +22,7 @@ class TestDownloadShelf : public DownloadShelf {
   virtual Browser* browser() const OVERRIDE;
 
  protected:
-  virtual void DoAddDownload(DownloadItemModel* download_model) OVERRIDE;
+  virtual void DoAddDownload(content::DownloadItem* download) OVERRIDE;
   virtual void DoShow() OVERRIDE;
   virtual void DoClose() OVERRIDE;
 

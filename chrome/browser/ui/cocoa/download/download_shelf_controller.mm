@@ -292,15 +292,15 @@ const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
   [self layoutItems:NO];
 }
 
-- (void)addDownloadItem:(DownloadItemModel*)model {
+- (void)addDownloadItem:(DownloadItem*)downloadItem {
   DCHECK([NSThread isMainThread]);
   [self cancelAutoCloseAndRemoveTrackingArea];
 
   // Insert new item at the left.
   scoped_nsobject<DownloadItemController> controller(
-      [[DownloadItemController alloc] initWithModel:model
-                                              shelf:self
-                                          navigator:navigator_]);
+      [[DownloadItemController alloc] initWithDownload:downloadItem
+                                                 shelf:self
+                                             navigator:navigator_]);
 
   // Adding at index 0 in NSMutableArrays is O(1).
   [downloadItemControllers_ insertObject:controller.get() atIndex:0];

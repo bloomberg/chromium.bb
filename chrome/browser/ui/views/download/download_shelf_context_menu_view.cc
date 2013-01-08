@@ -15,16 +15,20 @@
 #include "ui/views/controls/menu/menu_runner.h"
 
 DownloadShelfContextMenuView::DownloadShelfContextMenuView(
-    DownloadItemModel* model,
+    content::DownloadItem* download_item,
     content::PageNavigator* navigator)
-    : DownloadShelfContextMenu(model, navigator) {
+    : DownloadShelfContextMenu(download_item, navigator) {
 }
 
 DownloadShelfContextMenuView::~DownloadShelfContextMenuView() {}
 
 void DownloadShelfContextMenuView::Run(views::Widget* parent_widget,
                                        const gfx::Rect& rect) {
-  views::MenuModelAdapter menu_model_adapter(GetMenuModel());
+  ui::MenuModel* menu_model = GetMenuModel();
+  // Run() should not be getting called if the DownloadItem was destroyed.
+  DCHECK(menu_model);
+
+  views::MenuModelAdapter menu_model_adapter(menu_model);
   menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
 
   // The menu's alignment is determined based on the UI layout.
