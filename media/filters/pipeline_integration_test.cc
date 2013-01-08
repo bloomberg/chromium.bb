@@ -32,6 +32,15 @@ static const uint8 kSecretKey[] = {
 
 static const int kAppendWholeFile = -1;
 
+// Constants for the Media Source config change tests.
+static const int kAppendTimeSec = 1;
+static const int kAppendTimeMs = kAppendTimeSec * 1000;
+static const int k320WebMFileDurationMs = 2737;
+static const int k640WebMFileDurationMs = 2763;
+static const int k1280IsoFileDurationMs = 2736;
+
+// Note: Tests using this class only exercise the DecryptingDemuxerStream path.
+// They do not exercise the Decrypting{Audio|Video}Decoder path.
 class FakeEncryptedMedia {
  public:
   FakeEncryptedMedia()
@@ -309,11 +318,11 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource) {
   MockMediaSource source("bear-320x240.webm", kWebM, 219229);
   StartPipelineWithMediaSource(&source);
   source.EndOfStream();
-  ASSERT_EQ(pipeline_status_, PIPELINE_OK);
 
-  EXPECT_EQ(pipeline_->GetBufferedTimeRanges().size(), 1u);
-  EXPECT_EQ(pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds(), 0);
-  EXPECT_EQ(pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds(), 2737);
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(k320WebMFileDurationMs,
+            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   Play();
 
@@ -330,21 +339,106 @@ TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_WebM) {
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-640x360.webm");
 
-  source.AppendAtTime(base::TimeDelta::FromSeconds(2),
+  source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->GetData(), second_file->GetDataSize());
 
   source.EndOfStream();
-  ASSERT_EQ(pipeline_status_, PIPELINE_OK);
 
-  EXPECT_EQ(pipeline_->GetBufferedTimeRanges().size(), 1u);
-  EXPECT_EQ(pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds(), 0);
-  EXPECT_EQ(pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds(), 4763);
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(kAppendTimeMs + k640WebMFileDurationMs,
+            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   Play();
 
-  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_TRUE(WaitUntilOnEnded());
   source.Abort();
   Stop();
+}
+
+TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_Encrypted_WebM) {
+  MockMediaSource source("bear-320x240-16x9-aspect-av-enc_av.webm", kWebM,
+                         kAppendWholeFile);
+  FakeEncryptedMedia encrypted_media;
+  StartPipelineWithEncryptedMedia(&source, &encrypted_media);
+
+  scoped_refptr<DecoderBuffer> second_file =
+      ReadTestDataFile("bear-640x360-av-enc_av.webm");
+
+  source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
+                      second_file->GetData(), second_file->GetDataSize());
+
+  source.EndOfStream();
+
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(kAppendTimeMs + k640WebMFileDurationMs,
+            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+
+  Play();
+
+  EXPECT_TRUE(WaitUntilOnEnded());
+  source.Abort();
+  Stop();
+}
+
+// Config changes from encrypted to clear are not currently supported.
+TEST_F(PipelineIntegrationTest,
+       MediaSource_ConfigChange_ClearThenEncrypted_WebM) {
+  MockMediaSource source("bear-320x240-16x9-aspect.webm", kWebM,
+                         kAppendWholeFile);
+  FakeEncryptedMedia encrypted_media;
+  StartPipelineWithEncryptedMedia(&source, &encrypted_media);
+
+  scoped_refptr<DecoderBuffer> second_file =
+      ReadTestDataFile("bear-640x360-av-enc_av.webm");
+
+  source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
+                      second_file->GetData(), second_file->GetDataSize());
+
+  source.EndOfStream();
+
+  message_loop_.Run();
+  EXPECT_EQ(PIPELINE_ERROR_DECODE, pipeline_status_);
+
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  // The second video was not added, so its time has not been added.
+  EXPECT_EQ(k320WebMFileDurationMs,
+            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+
+  Play();
+
+  EXPECT_EQ(PIPELINE_ERROR_DECODE, WaitUntilEndedOrError());
+  source.Abort();
+}
+
+// Config changes from clear to encrypted are not currently supported.
+TEST_F(PipelineIntegrationTest,
+       MediaSource_ConfigChange_EncryptedThenClear_WebM) {
+  MockMediaSource source("bear-320x240-16x9-aspect-av-enc_av.webm", kWebM,
+                         kAppendWholeFile);
+  FakeEncryptedMedia encrypted_media;
+  StartPipelineWithEncryptedMedia(&source, &encrypted_media);
+
+  scoped_refptr<DecoderBuffer> second_file =
+      ReadTestDataFile("bear-640x360.webm");
+
+  source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
+                      second_file->GetData(), second_file->GetDataSize());
+
+  source.EndOfStream();
+
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  // The second video was not added, so its time has not been added.
+  EXPECT_EQ(k320WebMFileDurationMs,
+            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+
+  Play();
+
+  EXPECT_EQ(PIPELINE_ERROR_DECODE, WaitUntilEndedOrError());
+  source.Abort();
 }
 
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
@@ -355,19 +449,19 @@ TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_MP4) {
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear.1280x720_dash.mp4");
 
-  source.AppendAtTime(base::TimeDelta::FromSeconds(2),
+  source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->GetData(), second_file->GetDataSize());
 
   source.EndOfStream();
-  ASSERT_EQ(pipeline_status_, PIPELINE_OK);
 
-  EXPECT_EQ(pipeline_->GetBufferedTimeRanges().size(), 1u);
-  EXPECT_EQ(pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds(), 0);
-  EXPECT_EQ(pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds(), 4736);
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(kAppendTimeMs + k1280IsoFileDurationMs,
+            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   Play();
 
-  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_TRUE(WaitUntilOnEnded());
   source.Abort();
   Stop();
 }
