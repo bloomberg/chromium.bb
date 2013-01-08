@@ -574,6 +574,8 @@ TEST_F(HttpPipelinedConnectionImplTest, ConnectionSuddenlyClosedAfterResponse) {
   MockRead reads[] = {
     MockRead(SYNCHRONOUS, 3, "HTTP/1.1 200 OK\r\n\r\n"),
     MockRead(SYNCHRONOUS, 4, "ok.html"),
+    MockRead(ASYNC, OK, 6),  // Connection closed message.  Not read before the
+                             // ERR_SOCKET_NOT_CONNECTED.
   };
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
 
@@ -940,20 +942,25 @@ TEST_F(HttpPipelinedConnectionImplTest, CloseCalledBeforeReadCallback) {
 
 class StreamDeleter {
  public:
-  StreamDeleter(HttpStream* stream) :
-      stream_(stream),
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
-          base::Bind(&StreamDeleter::OnIOComplete, base::Unretained(this)))) {
+  StreamDeleter(HttpStream* stream)
+      : stream_(stream),
+        ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
+            base::Bind(&StreamDeleter::OnIOComplete, base::Unretained(this)))) {
+  }
+
+  ~StreamDeleter() {
+    EXPECT_FALSE(stream_);
   }
 
   const CompletionCallback& callback() { return callback_; }
 
  private:
   void OnIOComplete(int result) {
-    delete stream_;
+    stream_->Close(true);
+    stream_.reset();
   }
 
-  HttpStream* stream_;
+  scoped_ptr<HttpStream> stream_;
   CompletionCallback callback_;
 };
 
