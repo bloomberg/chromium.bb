@@ -321,7 +321,7 @@ TEST_F(BrowserLauncherItemControllerTest, PanelItem) {
         std::string());
     updater.Init();
     ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
-    EXPECT_EQ(ash::TYPE_APP_PANEL, GetItem(&updater).type);
+    EXPECT_EQ(ash::TYPE_PLATFORM_APP, GetItem(&updater).type);
     EXPECT_NE(static_cast<void*>(NULL), updater.favicon_loader_.get());
   }
 }
