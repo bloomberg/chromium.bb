@@ -95,6 +95,10 @@ FcMakeTempfile (char *template)
 	fcntl(fd, F_SETFD, fcntl(fd, F_GETFD) | FD_CLOEXEC);
     }
 #  endif
+#elif HAVE__MKTEMP_S
+   if (_mktemp_s(template, strlen(template) + 1) != 0)
+       return -1;
+   fd = FcOpen(template, O_RDWR | O_EXCL | O_CREAT, 0600);
 #else
 #error no secure functions to create a temporary file
 #endif
