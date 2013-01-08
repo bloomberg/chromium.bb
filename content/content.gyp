@@ -284,7 +284,6 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../net/net.gyp:net',
-            '../third_party/guava/guava.gyp:guava_javalib',
             '../ui/ui.gyp:ui_java',
             'common_aidl',
             'content_common',
@@ -301,6 +300,7 @@
             ['android_build_type == 0', {
               'dependencies': [
                 '../third_party/eyesfree/eyesfree.gyp:eyesfree_java',
+                '../third_party/guava/guava.gyp:guava_javalib',
               ],
             }],
           ],
