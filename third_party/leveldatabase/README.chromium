@@ -16,3 +16,5 @@ Local Additions:
   of primitives used by leveldb.  E.g. threading, file handling, etc.
 * chromium_logger.h was copied from src/util/posix_logger.h and updated to use
   chrome primitives in place of some posix primitives
+* env_idb.h allows IndexedDB to emit uma stats under separate histograms from
+  other LevelDB consumers.

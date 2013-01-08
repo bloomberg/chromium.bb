@@ -49,6 +49,7 @@
         'include_dirs': [
           'src/include/',
           'src/',
+          '.',
         ],
         'conditions': [
           ['OS == "win"', {
@@ -69,6 +70,7 @@
         # Include and then exclude so that all files show up in IDEs, even if
         # they don't build.
         'env_chromium.cc',
+        'env_idb.h',
         'port/port_chromium.cc',
         'port/port_chromium.h',
         'src/db/builder.cc',
