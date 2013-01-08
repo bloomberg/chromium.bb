@@ -12,8 +12,11 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
@@ -79,7 +82,11 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
     : controller_(controller),
       did_submit_(false),
       window_(NULL),
-      contents_(NULL) {
+      contents_(NULL),
+      email_(SECTION_EMAIL),
+      cc_(SECTION_CC),
+      billing_(SECTION_BILLING),
+      shipping_(SECTION_SHIPPING) {
   DCHECK(controller);
 }
 
@@ -110,10 +117,8 @@ void AutofillDialogViews::UpdateSection(DialogSection section) {
 
     input->second->SetText(iter->autofilled_value);
   }
-}
 
-int AutofillDialogViews::GetSuggestionSelection(DialogSection section) {
-  return GroupForSection(section)->suggested_input->selected_index();
+  UpdateDetailsGroupState(*group);
 }
 
 void AutofillDialogViews::GetUserInput(DialogSection section,
@@ -122,13 +127,6 @@ void AutofillDialogViews::GetUserInput(DialogSection section,
   for (TextfieldMap::iterator it = group->textfields.begin();
        it != group->textfields.end(); ++it) {
     output->insert(std::make_pair(it->first, it->second->text()));
-  }
-  for (ComboboxMap::iterator it = group->comboboxes.begin();
-       it != group->comboboxes.end(); ++it) {
-    views::Combobox* combobox = it->second;
-    output->insert(std::make_pair(
-        it->first,
-        combobox->model()->GetItemAt(combobox->selected_index())));
   }
 }
 
@@ -189,15 +187,25 @@ void AutofillDialogViews::ButtonPressed(views::Button* sender,
   GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
 }
 
-void AutofillDialogViews::OnSelectedIndexChanged(views::Combobox* combobox) {
+void AutofillDialogViews::OnMenuButtonClicked(views::View* source,
+                                              const gfx::Point& point) {
   DetailsGroup* group =
-      combobox == email_.suggested_input ? &email_ :
-      combobox == cc_.suggested_input ? &cc_ :
-      combobox == billing_.suggested_input ? &billing_ :
-      combobox == shipping_.suggested_input ? &shipping_ : NULL;
+      source == email_.suggested_button ? &email_ :
+      source == cc_.suggested_button ? &cc_ :
+      source == billing_.suggested_button ? &billing_ :
+      source == shipping_.suggested_button ? &shipping_ : NULL;
   DCHECK(group);
-  UpdateDetailsGroupState(*group);
-  GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
+  views::MenuModelAdapter adapter(
+      controller_->MenuModelForSection(group->section));
+  menu_runner_.reset(new views::MenuRunner(adapter.CreateMenu()));
+
+  // Ignore the result since we don't need to handle a deleted menu specially.
+  ignore_result(
+      menu_runner_->RunMenuAt(source->GetWidget(),
+                              group->suggested_button,
+                              gfx::Rect(point, gfx::Size()),
+                              views::MenuItemView::TOPRIGHT,
+                              0));
 }
 
 void AutofillDialogViews::ContentsChanged(views::Textfield* sender,
@@ -362,18 +370,46 @@ void AutofillDialogViews::CreateBillingSection() {
 
 views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
   views::View* inputs_container = new views::View();
-  inputs_container->SetLayoutManager(
+  views::GridLayout* layout = new views::GridLayout(inputs_container);
+  inputs_container->SetLayoutManager(layout);
+
+  int kColumnSetId = 0;
+  views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
+  column_set->AddColumn(views::GridLayout::FILL,
+                        views::GridLayout::LEADING,
+                        1,
+                        views::GridLayout::USE_PREF,
+                        0,
+                        0);
+  column_set->AddColumn(views::GridLayout::CENTER,
+                        views::GridLayout::LEADING,
+                        0,
+                        views::GridLayout::USE_PREF,
+                        0,
+                        0);
+  layout->StartRow(0, kColumnSetId);
+
+  // The |info_view| holds |manual_inputs| and |suggested_info|, allowing the
+  // dialog toggle which is shown.
+  views::View* info_view = new views::View();
+  info_view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   views::View* manual_inputs = InitInputsView(section);
-  inputs_container->AddChildView(manual_inputs);
-  views::Combobox* combobox =
-      new views::Combobox(controller_->ComboboxModelForSection(section));
-  combobox->set_listener(this);
-  inputs_container->AddChildView(combobox);
+  info_view->AddChildView(manual_inputs);
+  views::Label* suggested_info = new views::Label();
+  suggested_info->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  info_view->AddChildView(suggested_info);
+  layout->AddView(info_view);
+
+  // TODO(estade): Fix the appearance of this button.
+  views::MenuButton* menu_button =
+      new views::MenuButton(NULL, string16(), this, true);
+  layout->AddView(menu_button);
 
   DetailsGroup* group = GroupForSection(section);
-  group->suggested_input = combobox;
+  group->suggested_button = menu_button;
   group->manual_input = manual_inputs;
+  group->suggested_info = suggested_info;
   UpdateDetailsGroupState(*group);
   return inputs_container;
 }
@@ -444,13 +480,13 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
 }
 
 void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
-  views::Combobox* combobox = group.suggested_input;
-  int suggestion_count = combobox->model()->GetItemCount();
-  bool show_combobox = suggestion_count > 1 &&
-      combobox->selected_index() != suggestion_count - 1;
-
-  combobox->SetVisible(show_combobox);
-  group.manual_input->SetVisible(!show_combobox);
+  string16 suggestion_text =
+      controller_->SuggestionTextForSection(group.section);
+  group.manual_input->SetVisible(suggestion_text.empty());
+  group.suggested_info->SetVisible(!suggestion_text.empty());
+  group.suggested_info->SetText(suggestion_text);
+  if (GetWidget())
+    GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
 }
 
 AutofillDialogViews::DetailsGroup* AutofillDialogViews::
@@ -470,10 +506,12 @@ AutofillDialogViews::DetailsGroup* AutofillDialogViews::
   return NULL;
 }
 
-AutofillDialogViews::DetailsGroup::DetailsGroup()
-    : container(NULL),
-      suggested_input(NULL),
-      manual_input(NULL) {}
+AutofillDialogViews::DetailsGroup::DetailsGroup(DialogSection section)
+    : section(section),
+      container(NULL),
+      manual_input(NULL),
+      suggested_info(NULL),
+      suggested_button(NULL) {}
 
 AutofillDialogViews::DetailsGroup::~DetailsGroup() {}
 

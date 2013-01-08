@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_COMBOBOXES_H_
-#define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_COMBOBOXES_H_
+#ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_MODELS_H_
+#define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_MODELS_H_
 
 #include <string>
 #include <vector>
@@ -12,25 +12,44 @@
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/base/models/simple_menu_model.h"
 
 namespace autofill {
 
-// A model for the comboboxes that allow the user to select from different sets
-// of known data.
-class SuggestionsComboboxModel : public ui::ComboboxModel {
+class SuggestionsMenuModel;
+
+class SuggestionsMenuModelDelegate {
  public:
-  SuggestionsComboboxModel();
-  virtual ~SuggestionsComboboxModel();
+  virtual ~SuggestionsMenuModelDelegate();
+
+  // Called when a menu item has been activated.
+  virtual void SuggestionItemSelected(const SuggestionsMenuModel& model) = 0;
+};
+
+// A model for the dropdowns that allow the user to select from different
+// sets of known data. It wraps a SimpleMenuModel, providing a mapping between
+// index and item GUID.
+class SuggestionsMenuModel : public ui::SimpleMenuModel,
+                             public ui::SimpleMenuModel::Delegate {
+ public:
+  explicit SuggestionsMenuModel(SuggestionsMenuModelDelegate* delegate);
+  virtual ~SuggestionsMenuModel();
 
   // Adds an item and its identifying key to the model.
-  void AddItem(const std::string& key, const string16& display_label);
+  void AddKeyedItem(const std::string& key, const string16& display_label);
 
   // Returns the ID key for the item at |index|.
   std::string GetItemKeyAt(int index) const;
 
-  // ui::Combobox implementation:
-  virtual int GetItemCount() const OVERRIDE;
-  virtual string16 GetItemAt(int index) OVERRIDE;
+  int checked_item() { return checked_item_; }
+
+  // ui::SimpleMenuModel::Delegate implementation.
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
+  virtual void ExecuteCommand(int command_id) OVERRIDE;
 
  private:
   // The items this model represents, in presentation order. The first
@@ -38,7 +57,12 @@ class SuggestionsComboboxModel : public ui::ComboboxModel {
   // display string for the item.
   std::vector<std::pair<std::string, string16> > items_;
 
-  DISALLOW_COPY_AND_ASSIGN(SuggestionsComboboxModel);
+  SuggestionsMenuModelDelegate* delegate_;
+
+  // The command id (and index) of the item which is currently checked.
+  int checked_item_;
+
+  DISALLOW_COPY_AND_ASSIGN(SuggestionsMenuModel);
 };
 
 // A model for possible months in the Gregorian calendar.
@@ -74,4 +98,4 @@ class YearComboboxModel : public ui::ComboboxModel {
 
 }  // autofill
 
-#endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_COMBOBOXES_H_
+#endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_MODELS_H_

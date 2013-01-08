@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/autofill/autofill_dialog_comboboxes.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
@@ -11,27 +11,47 @@
 
 namespace autofill {
 
-// SuggestionsComboboxModel ----------------------------------------------------
+SuggestionsMenuModelDelegate::~SuggestionsMenuModelDelegate() {}
 
-SuggestionsComboboxModel::SuggestionsComboboxModel() {}
+// SuggestionsMenuModel ----------------------------------------------------
 
-SuggestionsComboboxModel::~SuggestionsComboboxModel() {}
+SuggestionsMenuModel::SuggestionsMenuModel(
+    SuggestionsMenuModelDelegate* delegate)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
+      delegate_(delegate),
+      checked_item_(0) {}
 
-void SuggestionsComboboxModel::AddItem(
+SuggestionsMenuModel::~SuggestionsMenuModel() {}
+
+void SuggestionsMenuModel::AddKeyedItem(
     const std::string& key, const string16& item) {
   items_.push_back(std::make_pair(key, item));
+  AddCheckItem(items_.size() - 1, item);
 }
 
-std::string SuggestionsComboboxModel::GetItemKeyAt(int index) const {
+std::string SuggestionsMenuModel::GetItemKeyAt(int index) const {
   return items_[index].first;
 }
 
-int SuggestionsComboboxModel::GetItemCount() const {
-  return items_.size();
+bool SuggestionsMenuModel::IsCommandIdChecked(
+    int command_id) const {
+  return checked_item_ == command_id;
 }
 
-string16 SuggestionsComboboxModel::GetItemAt(int index) {
-  return items_[index].second;
+bool SuggestionsMenuModel::IsCommandIdEnabled(
+    int command_id) const {
+  return true;
+}
+
+bool SuggestionsMenuModel::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator) {
+  return false;
+}
+
+void SuggestionsMenuModel::ExecuteCommand(int command_id) {
+  checked_item_ = command_id;
+  delegate_->SuggestionItemSelected(*this);
 }
 
 // MonthComboboxModel ----------------------------------------------------------

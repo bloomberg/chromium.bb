@@ -119,6 +119,10 @@ AutofillDialogController::AutofillDialogController(
       source_url_(source_url),
       ssl_status_(ssl_status),
       callback_(callback),
+      ALLOW_THIS_IN_INITIALIZER_LIST(suggested_email_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(suggested_cc_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(suggested_billing_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(suggested_shipping_(this)),
       popup_controller_(NULL) {
   // TODO(estade): |this| should observe PersonalDataManager.
   // TODO(estade): remove duplicates from |form|?
@@ -192,7 +196,7 @@ void AutofillDialogController::Show() {
                arraysize(kShippingInputs),
                &requested_shipping_fields_);
 
-  GenerateComboboxModels();
+  GenerateSuggestionsModels();
 
   // TODO(estade): don't show the dialog if the site didn't specify the right
   // fields. First we must figure out what the "right" fields are.
@@ -320,9 +324,36 @@ ui::ComboboxModel* AutofillDialogController::ComboboxModelForAutofillType(
   }
 }
 
-ui::ComboboxModel* AutofillDialogController::ComboboxModelForSection(
+ui::MenuModel* AutofillDialogController::MenuModelForSection(
     DialogSection section) {
-  return SuggestionsModelForSection(section);
+  return SuggestionsMenuModelForSection(section);
+}
+
+string16 AutofillDialogController::SuggestionTextForSection(
+    DialogSection section) {
+  SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
+  std::string item_key = model->GetItemKeyAt(model->checked_item());
+  if (item_key.empty())
+    return string16();
+
+  // TODO(estade): This doesn't display as much info as it should (for example,
+  // it should show full addresses rather than just a summary).
+  if (section == SECTION_CC) {
+    CreditCard* card = GetManager()->GetCreditCardByGUID(item_key);
+    if (card)
+      return card->Label();
+  } else {
+    AutofillProfile* profile = GetManager()->GetProfileByGUID(item_key);
+    if (profile) {
+      const std::string app_locale = AutofillCountry::ApplicationLocale();
+      return section == SECTION_EMAIL ?
+          profile->GetInfo(EMAIL_ADDRESS, app_locale) : profile->Label();
+    }
+  }
+
+  // TODO(estade): The FormGroup was likely deleted while menu was showing. We
+  // should not let this happen.
+  return string16();
 }
 
 void AutofillDialogController::ViewClosed(DialogAction action) {
@@ -428,13 +459,18 @@ void AutofillDialogController::ControllerDestroyed() {
   popup_controller_ = NULL;
 }
 
-void AutofillDialogController::GenerateComboboxModels() {
+void AutofillDialogController::SuggestionItemSelected(
+    const SuggestionsMenuModel& model) {
+  view_->UpdateSection(SectionForSuggestionsMenuModel(model));
+}
+
+void AutofillDialogController::GenerateSuggestionsModels() {
   PersonalDataManager* manager = GetManager();
   const std::vector<CreditCard*>& cards = manager->credit_cards();
   for (size_t i = 0; i < cards.size(); ++i) {
-    suggested_cc_.AddItem(cards[i]->guid(), cards[i]->Label());
+    suggested_cc_.AddKeyedItem(cards[i]->guid(), cards[i]->Label());
   }
-  suggested_cc_.AddItem("", ASCIIToUTF16("Enter new card"));
+  suggested_cc_.AddKeyedItem("", ASCIIToUTF16("Enter new card"));
 
   const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
   const std::string app_locale = AutofillCountry::ApplicationLocale();
@@ -445,15 +481,14 @@ void AutofillDialogController::GenerateComboboxModels() {
 
     string16 email = profiles[i]->GetInfo(EMAIL_ADDRESS, app_locale);
     if (!email.empty())
-      suggested_email_.AddItem(profiles[i]->guid(), email);
-    suggested_billing_.AddItem(profiles[i]->guid(), profiles[i]->Label());
-    suggested_shipping_.AddItem(profiles[i]->guid(), profiles[i]->Label());
+      suggested_email_.AddKeyedItem(profiles[i]->guid(), email);
+    suggested_billing_.AddKeyedItem(profiles[i]->guid(), profiles[i]->Label());
+    suggested_shipping_.AddKeyedItem(profiles[i]->guid(), profiles[i]->Label());
   }
-  suggested_billing_.AddItem("", ASCIIToUTF16("Enter new billing"));
-  suggested_email_.AddItem("", ASCIIToUTF16("Enter new email"));
-  suggested_shipping_.AddItem("", ASCIIToUTF16("Enter new shipping"));
+  suggested_billing_.AddKeyedItem("", ASCIIToUTF16("Enter new billing"));
+  suggested_email_.AddKeyedItem("", ASCIIToUTF16("Enter new email"));
+  suggested_shipping_.AddKeyedItem("", ASCIIToUTF16("Enter new shipping"));
 }
-
 
 bool AutofillDialogController::IsCompleteProfile(
     const AutofillProfile& profile) {
@@ -470,11 +505,10 @@ bool AutofillDialogController::IsCompleteProfile(
 
 void AutofillDialogController::FillOutputForSectionWithComparator(
     DialogSection section, const InputFieldComparator& compare) {
-  int suggestion_selection = view_->GetSuggestionSelection(section);
-  SuggestionsComboboxModel* model = SuggestionsModelForSection(section);
+  SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
+  std::string guid = model->GetItemKeyAt(model->checked_item());
   PersonalDataManager* manager = GetManager();
-  if (suggestion_selection < model->GetItemCount() - 1) {
-    std::string guid = model->GetItemKeyAt(suggestion_selection);
+  if (!guid.empty()) {
     FormGroup* form_group = section == SECTION_CC ?
         static_cast<FormGroup*>(manager->GetCreditCardByGUID(guid)) :
         static_cast<FormGroup*>(manager->GetProfileByGUID(guid));
@@ -541,7 +575,7 @@ void AutofillDialogController::FillFormStructureForSection(
   }
 }
 
-SuggestionsComboboxModel* AutofillDialogController::SuggestionsModelForSection(
+SuggestionsMenuModel* AutofillDialogController::SuggestionsMenuModelForSection(
     DialogSection section) {
   switch (section) {
     case SECTION_EMAIL:
@@ -556,6 +590,21 @@ SuggestionsComboboxModel* AutofillDialogController::SuggestionsModelForSection(
 
   NOTREACHED();
   return NULL;
+}
+
+DialogSection AutofillDialogController::SectionForSuggestionsMenuModel(
+    const SuggestionsMenuModel& model) {
+  if (&model == &suggested_email_)
+    return SECTION_EMAIL;
+
+  if (&model == &suggested_cc_)
+    return SECTION_CC;
+
+  if (&model == &suggested_billing_)
+    return SECTION_BILLING;
+
+  DCHECK_EQ(&model, &suggested_shipping_);
+  return SECTION_SHIPPING;
 }
 
 PersonalDataManager* AutofillDialogController::GetManager() {

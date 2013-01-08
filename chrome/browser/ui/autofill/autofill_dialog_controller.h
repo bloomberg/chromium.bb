@@ -16,11 +16,12 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_comboboxes.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_popup_delegate.h"
 #include "content/public/common/ssl_status.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/native_widget_types.h"
 
 class AutofillPopupControllerImpl;
@@ -80,7 +81,8 @@ typedef std::map<const DetailInput*, string16> DetailOutputMap;
 
 // This class drives the dialog that appears when a site uses the imperative
 // autocomplete API to fill out a form.
-class AutofillDialogController : public AutofillPopupDelegate {
+class AutofillDialogController : public AutofillPopupDelegate,
+                                 public SuggestionsMenuModelDelegate {
  public:
   AutofillDialogController(
       content::WebContents* contents,
@@ -109,9 +111,12 @@ class AutofillDialogController : public AutofillPopupDelegate {
   // Returns the set of inputs the page has requested which fall under
   // |section|.
   const DetailInputs& RequestedFieldsForSection(DialogSection section) const;
+  // Returns the combobox model for inputs of type |type|, or NULL if the input
+  // should be a text field.
   ui::ComboboxModel* ComboboxModelForAutofillType(AutofillFieldType type);
   // Returns the model for suggestions for fields that fall under |section|.
-  ui::ComboboxModel* ComboboxModelForSection(DialogSection section);
+  ui::MenuModel* MenuModelForSection(DialogSection section);
+  string16 SuggestionTextForSection(DialogSection section);
 
   // Called when the view has been closed. The value for |action| indicates
   // whether the Autofill operation should be aborted.
@@ -135,6 +140,10 @@ class AutofillDialogController : public AutofillPopupDelegate {
   virtual void ClearPreviewedForm() OVERRIDE;
   virtual void ControllerDestroyed() OVERRIDE;
 
+  // SuggestionsMenuModelDelegate implementation.
+  virtual void SuggestionItemSelected(const SuggestionsMenuModel& model)
+      OVERRIDE;
+
   content::WebContents* web_contents() { return contents_; }
 
  private:
@@ -149,7 +158,7 @@ class AutofillDialogController : public AutofillPopupDelegate {
   bool ShouldShowSecurityWarning() const;
 
   // Initializes |suggested_email_| et al.
-  void GenerateComboboxModels();
+  void GenerateSuggestionsModels();
 
   // Returns whether |profile| is complete, i.e. can fill out all the relevant
   // address info. Incomplete profiles will not be displayed in the dropdown
@@ -170,8 +179,11 @@ class AutofillDialogController : public AutofillPopupDelegate {
                                    DialogSection section,
                                    const InputFieldComparator& compare);
 
-  // Gets the SuggestionsComboboxModel for |section|.
-  SuggestionsComboboxModel* SuggestionsModelForSection(DialogSection section);
+  // Gets the SuggestionsMenuModel for |section|.
+  SuggestionsMenuModel* SuggestionsMenuModelForSection(DialogSection section);
+  // And the reverse.
+  DialogSection SectionForSuggestionsMenuModel(
+      const SuggestionsMenuModel& model);
 
   // Loads profiles that can suggest data for |type|. |field_contents| is the
   // part the user has already typed. |inputs| is the rest of section.
@@ -215,10 +227,10 @@ class AutofillDialogController : public AutofillPopupDelegate {
   YearComboboxModel cc_exp_year_combobox_model_;
 
   // Models for the suggestion views.
-  SuggestionsComboboxModel suggested_email_;
-  SuggestionsComboboxModel suggested_cc_;
-  SuggestionsComboboxModel suggested_billing_;
-  SuggestionsComboboxModel suggested_shipping_;
+  SuggestionsMenuModel suggested_email_;
+  SuggestionsMenuModel suggested_cc_;
+  SuggestionsMenuModel suggested_billing_;
+  SuggestionsMenuModel suggested_shipping_;
 
   // The GUIDs for the currently showing unverified profiles popup.
   std::vector<PersonalDataManager::GUIDPair> popup_guids_;

@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/combobox/combobox_listener.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -17,6 +17,10 @@ class ConstrainedWindowViews;
 
 namespace views {
 class Checkbox;
+class Combobox;
+class Label;
+class MenuButton;
+class MenuRunner;
 class Textfield;
 }
 
@@ -34,7 +38,7 @@ struct DetailInput;
 class AutofillDialogViews : public AutofillDialogView,
                             public views::DialogDelegate,
                             public views::ButtonListener,
-                            public views::ComboboxListener,
+                            public views::MenuButtonListener,
                             public views::TextfieldController,
                             public views::FocusChangeListener {
  public:
@@ -44,7 +48,6 @@ class AutofillDialogViews : public AutofillDialogView,
   // AutofillDialogView implementation:
   virtual void Show() OVERRIDE;
   virtual void UpdateSection(DialogSection section) OVERRIDE;
-  virtual int GetSuggestionSelection(DialogSection section) OVERRIDE;
   virtual void GetUserInput(DialogSection section,
                             DetailOutputMap* output) OVERRIDE;
   virtual bool UseBillingForShipping() OVERRIDE;
@@ -65,8 +68,9 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  // views::ComboboxListener implementation:
-  virtual void OnSelectedIndexChanged(views::Combobox* combobox) OVERRIDE;
+  // views::MenuButtonListener implementation:
+  virtual void OnMenuButtonClicked(views::View* source,
+                                   const gfx::Point& point) OVERRIDE;
 
   // views::TextfieldController implementation:
   virtual void ContentsChanged(views::Textfield* sender,
@@ -87,19 +91,24 @@ class AutofillDialogViews : public AutofillDialogView,
   // A convenience struct for holding pointers to views within each detail
   // section. None of the member pointers are owned.
   struct DetailsGroup {
-    DetailsGroup();
+    explicit DetailsGroup(DialogSection section);
     ~DetailsGroup();
 
+    // The section this group is associated with.
+    const DialogSection section;
     // The view that contains the entire section (label + input).
     views::View* container;
-    // The combobox that holds suggested values.
-    views::Combobox* suggested_input;
     // The view that allows manual input.
     views::View* manual_input;
     // The textfields in |manual_input|, tracked by their DetailInput.
     TextfieldMap textfields;
     // The comboboxes in |manual_input|, tracked by their DetailInput.
     ComboboxMap comboboxes;
+    // The label that holds the text of the suggested data. This will be
+    // visible IFF |manual_input| is not visible.
+    views::Label* suggested_info;
+    // The view that allows selecting other data suggestions.
+    views::MenuButton* suggested_button;
   };
 
   void InitChildViews();
@@ -157,6 +166,9 @@ class AutofillDialogViews : public AutofillDialogView,
   // The checkbox that controls whether to use the billing details for shipping
   // as well.
   views::Checkbox* use_billing_for_shipping_;
+
+  // Runs the suggestion menu (triggered by each section's |suggested_button|.
+  scoped_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogViews);
 };

@@ -21,9 +21,6 @@ class AutofillDialogView {
   // Called when the contents of a section have changed.
   virtual void UpdateSection(DialogSection section) = 0;
 
-  // Returns the index into the suggestion model for |section|.
-  virtual int GetSuggestionSelection(DialogSection section) = 0;
-
   // Fills |output| with data the user manually input.
   virtual void GetUserInput(DialogSection section, DetailOutputMap* output) = 0;
 
