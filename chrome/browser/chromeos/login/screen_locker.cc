@@ -95,13 +95,15 @@ class ScreenLockObserver : public chromeos::SessionManagerClient::Observer,
 
   virtual void LockScreen() OVERRIDE {
     VLOG(1) << "Received LockScreen D-Bus signal from session manager";
-    if (session_started_) {
+    if (session_started_ &&
+        chromeos::UserManager::Get()->CanCurrentUserLock()) {
       chromeos::ScreenLocker::Show();
     } else {
-      // If the user has not completed the sign in we will log them out. This
-      // avoids complications with displaying the lock screen over the login
-      // screen while remaining secure in the case that they walk away during
-      // the signin steps. See crbug.com/112225 and crbug.com/110933.
+      // If the current user's session cannot be locked or the user has not
+      // completed all sign-in steps yet, log out instead. The latter is done to
+      // avoid complications with displaying the lock screen over the login
+      // screen while remaining secure in the case the user walks away during
+      // the sign-in steps. See crbug.com/112225 and crbug.com/110933.
       VLOG(1) << "Calling session manager's StopSession D-Bus method";
       chromeos::DBusThreadManager::Get()->
           GetSessionManagerClient()->StopSession();
