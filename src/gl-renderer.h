@@ -20,7 +20,12 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include  "compositor.h"
+
+#ifdef ENABLE_EGL
 
 #include <EGL/egl.h>
 
@@ -45,3 +50,57 @@ gl_renderer_set_border(struct weston_compositor *ec, int32_t width, int32_t heig
 
 void
 gl_renderer_print_egl_error_state(void);
+#else
+
+typedef int EGLint;
+typedef int EGLDisplay;
+typedef int EGLSurface;
+typedef long int EGLNativeDisplayType;
+typedef long int EGLNativeWindowType;
+
+static const EGLint gl_renderer_opaque_attribs[];
+static const EGLint gl_renderer_alpha_attribs[];
+
+inline static int
+gl_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
+	const EGLint *attribs, const EGLint *visual_id)
+{
+	return -1;
+}
+
+inline static EGLDisplay
+gl_renderer_display(struct weston_compositor *ec)
+{
+	return 0;
+}
+
+inline static int
+gl_renderer_output_create(struct weston_output *output,
+				    EGLNativeWindowType window)
+{
+	return -1;
+}
+
+inline static void
+gl_renderer_output_destroy(struct weston_output *output)
+{
+}
+
+inline static EGLSurface
+gl_renderer_output_surface(struct weston_output *output)
+{
+	return 0;
+}
+
+inline static void
+gl_renderer_set_border(struct weston_compositor *ec, int32_t width, int32_t height, void *data,
+			  int32_t *edges)
+{
+}
+
+inline static void
+gl_renderer_print_egl_error_state(void)
+{
+}
+
+#endif

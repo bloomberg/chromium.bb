@@ -33,9 +33,17 @@ AC_CHECK_HEADERS([execinfo.h])
 
 AC_CHECK_FUNCS([mkostemp strchrnul])
 
-PKG_CHECK_MODULES(COMPOSITOR,
-		  [wayland-server egl >= 7.10 glesv2 xkbcommon pixman-1])
+COMPOSITOR_MODULES="wayland-server xkbcommon pixman-1"
 
+AC_ARG_ENABLE(egl, [ --disable-egl],,
+              enable_egl=yes)
+AM_CONDITIONAL(ENABLE_EGL, test x$enable_egl = xyes)
+if test x$enable_egl = xyes; then
+	AC_DEFINE([ENABLE_EGL], [1], [Build Weston with EGL support])
+	COMPOSITOR_MODULES="$COMPOSITOR_MODULES egl >= 7.10 glesv2"
+fi
+
+PKG_CHECK_MODULES(COMPOSITOR, [$COMPOSITOR_MODULES])
 
 AC_ARG_ENABLE(setuid-install, [  --enable-setuid-install],,
 	      enable_setuid_install=yes)
@@ -94,8 +102,8 @@ fi
 
 AC_ARG_ENABLE(drm-compositor, [  --enable-drm-compositor],,
 	      enable_drm_compositor=yes)
-AM_CONDITIONAL(ENABLE_DRM_COMPOSITOR, test x$enable_drm_compositor = xyes)
-if test x$enable_drm_compositor = xyes; then
+AM_CONDITIONAL(ENABLE_DRM_COMPOSITOR, test x$enable_drm_compositor = xyes -a x$enable_egl = xyes)
+if test x$enable_drm_compositor = xyes -a x$enable_egl = xyes; then
   AC_DEFINE([BUILD_DRM_COMPOSITOR], [1], [Build the DRM compositor])
   PKG_CHECK_MODULES(DRM_COMPOSITOR, [libudev >= 136 libdrm >= 2.4.30 gbm mtdev >= 1.1.0])
 fi
@@ -104,8 +112,8 @@ fi
 AC_ARG_ENABLE(wayland-compositor, [  --enable-wayland-compositor],,
 	      enable_wayland_compositor=yes)
 AM_CONDITIONAL(ENABLE_WAYLAND_COMPOSITOR,
-	       test x$enable_wayland_compositor = xyes)
-if test x$enable_wayland_compositor = xyes; then
+	       test x$enable_wayland_compositor = xyes -a x$enable_egl = xyes)
+if test x$enable_wayland_compositor = xyes -a x$enable_egl = xyes; then
   AC_DEFINE([BUILD_WAYLAND_COMPOSITOR], [1],
 	    [Build the Wayland (nested) compositor])
   PKG_CHECK_MODULES(WAYLAND_COMPOSITOR, [wayland-client wayland-egl])
@@ -122,8 +130,8 @@ AC_ARG_ENABLE(android-compositor,
 	      AS_HELP_STRING([--disable-android-compositor],
 	                     [do not build-test the Android 4.0 backend]),,
 	      enable_android_compositor=yes)
-AM_CONDITIONAL(ENABLE_ANDROID_COMPOSITOR, test x$enable_android_compositor = xyes)
-if test x$enable_android_compositor = xyes; then
+AM_CONDITIONAL(ENABLE_ANDROID_COMPOSITOR, test x$enable_android_compositor = xyes -a x$enable_egl = xyes)
+if test x$enable_android_compositor = xyes -a x$enable_egl = xyes; then
   AC_DEFINE([BUILD_ANDROID_COMPOSITOR], [1], [Build the compositor for Android 4.0])
   PKG_CHECK_MODULES(ANDROID_COMPOSITOR, [mtdev >= 1.1.0])
 fi
@@ -133,9 +141,9 @@ AC_ARG_ENABLE(rpi-compositor,
 	      AS_HELP_STRING([--disable-rpi-compositor],
 	                     [do not build the Raspberry Pi backend]),,
 	      enable_rpi_compositor=yes)
-AM_CONDITIONAL(ENABLE_RPI_COMPOSITOR, test "x$enable_rpi_compositor" = "xyes")
+AM_CONDITIONAL(ENABLE_RPI_COMPOSITOR, test "x$enable_rpi_compositor" = "xyes" -a "x$enable_egl" = "xyes")
 have_bcm_host="no"
-if test x$enable_rpi_compositor = xyes; then
+if test x$enable_rpi_compositor = xyes -a x$enable_egl = xyes; then
   AC_DEFINE([BUILD_RPI_COMPOSITOR], [1], [Build the compositor for Raspberry Pi])
   PKG_CHECK_MODULES(RPI_COMPOSITOR, [libudev >= 136 mtdev >= 1.1.0])
   PKG_CHECK_MODULES(RPI_BCM_HOST, [bcm_host],
@@ -185,8 +193,8 @@ AC_ARG_ENABLE(simple-egl-clients,
               AS_HELP_STRING([--disable-simple-egl-clients],
                              [do not build the simple EGL clients]),,
               enable_simple_egl_clients=yes)
-AM_CONDITIONAL(BUILD_SIMPLE_EGL_CLIENTS, test "x$enable_simple_egl_clients" = "xyes")
-if test x$enable_simple_egl_clients = xyes; then
+AM_CONDITIONAL(BUILD_SIMPLE_EGL_CLIENTS, test "x$enable_simple_egl_clients" = "xyes" -a "x$enable_egl" = "xyes")
+if test x$enable_simple_egl_clients = xyes -a x$enable_egl = xyes; then
   PKG_CHECK_MODULES(SIMPLE_EGL_CLIENT,
                     [egl >= 7.10 glesv2 wayland-client wayland-egl wayland-cursor])
 fi
@@ -224,14 +232,16 @@ if test x$enable_weston_launch == xyes; then
   WESTON_LAUNCH_LIBS="$WESTON_LAUNCH_LIBS -lpam"
 fi
 
-PKG_CHECK_MODULES(GLU, [glu], [have_glu=yes], [have_glu=no])
-AM_CONDITIONAL(HAVE_GLU, test "x$have_glu" = "xyes")
+AM_CONDITIONAL(HAVE_GLU, test "x$have_glu" = "xyes" -a "$xenable_egl" = "xyes")
+if test x$enable_egl = xyes; then
+  PKG_CHECK_MODULES(GLU, [glu], [have_glu=yes], [have_glu=no])
+fi
 
 
 AM_CONDITIONAL(HAVE_POPPLER, test "x$have_poppler" = "xyes")
 
 AM_CONDITIONAL(BUILD_FULL_GL_CLIENTS,
-	       test x$cairo_modules = "xcairo-gl" -a "x$have_cairo_egl" = "xyes")
+	       test x$cairo_modules = "xcairo-gl" -a "x$have_cairo_egl" = "xyes" -a "x$enable_egl" = "xyes")
 
 AM_CONDITIONAL(ENABLE_DESKTOP_SHELL, true)
 

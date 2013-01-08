@@ -884,7 +884,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 			return NULL;
 		}
 	} else {
-		if (gl_renderer_output_create(&output->base, output->window) < 0)
+		if (gl_renderer_output_create(&output->base, (EGLNativeWindowType)output->window) < 0)
 			return NULL;
 	}
 
@@ -1474,7 +1474,7 @@ x11_compositor_create(struct wl_display *display,
 			goto err_xdisplay;
 	}
 	else {
-		if (gl_renderer_create(&c->base, c->dpy, gl_renderer_opaque_attribs,
+		if (gl_renderer_create(&c->base, (EGLNativeDisplayType)c->dpy, gl_renderer_opaque_attribs,
 				NULL) < 0)
 			goto err_xdisplay;
 	}

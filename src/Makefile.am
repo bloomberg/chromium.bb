@@ -34,7 +34,6 @@ weston_SOURCES =				\
 	workspaces-server-protocol.h		\
 	util.c					\
 	gl-renderer.h				\
-	gl-renderer.c				\
 	noop-renderer.c				\
 	pixman-renderer.c			\
 	pixman-renderer.h			\
@@ -42,6 +41,11 @@ weston_SOURCES =				\
 	../shared/matrix.h			\
 	weston-launch.h				\
 	weston-egl-ext.h
+
+if ENABLE_EGL
+weston_SOURCES +=				\
+	gl-renderer.c
+endif
 
 git-version.h : .FORCE
 	$(AM_V_GEN)(echo "#define BUILD_ID \"$(shell git --work-tree=$(top_srcdir) describe --always --dirty) $(shell git --work-tree=$(top_srcdir) log -1 --format='%s (%ci)')\"" > $@-new; \
