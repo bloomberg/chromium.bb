@@ -882,6 +882,66 @@ TEST_P(LayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPage
     expectContains(*scrollInfo, scrollLayer->id(), scaledTarget);
 }
 
+TEST_P(LayerTreeHostImplTest, compositorFrameMetadata)
+{
+    setupScrollAndContentsLayers(gfx::Size(100, 100));
+    m_hostImpl->setViewportSize(gfx::Size(50, 50), gfx::Size(50, 50));
+    m_hostImpl->setPageScaleFactorAndLimits(1.0f, 0.5f, 4.0f);
+    initializeRendererAndDrawFrame();
+
+    {
+        CompositorFrameMetadata metadata = m_hostImpl->makeCompositorFrameMetadata();
+        EXPECT_EQ(gfx::Vector2dF(0.0f, 0.0f), metadata.root_scroll_offset);
+        EXPECT_EQ(1.0f, metadata.page_scale_factor);
+        EXPECT_EQ(gfx::SizeF(50.0f, 50.0f), metadata.viewport_size);
+        EXPECT_EQ(gfx::SizeF(100.0f, 100.0f), metadata.root_layer_size);
+        EXPECT_EQ(0.5f, metadata.min_page_scale_factor);
+        EXPECT_EQ(4.0f, metadata.max_page_scale_factor);
+    }
+
+    // Scrolling should update metadata immediately.
+    EXPECT_EQ(m_hostImpl->scrollBegin(gfx::Point(0, 0), InputHandlerClient::Wheel), InputHandlerClient::ScrollStarted);
+    m_hostImpl->scrollBy(gfx::Point(), gfx::Vector2d(0, 10));
+    {
+        CompositorFrameMetadata metadata = m_hostImpl->makeCompositorFrameMetadata();
+        EXPECT_EQ(gfx::Vector2dF(0.0f, 10.0f), metadata.root_scroll_offset);
+    }
+    m_hostImpl->scrollEnd();
+
+    {
+        CompositorFrameMetadata metadata = m_hostImpl->makeCompositorFrameMetadata();
+        EXPECT_EQ(gfx::Vector2dF(0.0f, 10.0f), metadata.root_scroll_offset);
+    }
+
+    // Page scale should update metadata correctly (shrinking only the viewport).
+    m_hostImpl->pinchGestureBegin();
+    m_hostImpl->pinchGestureUpdate(2.0f, gfx::Point(0, 0));
+    m_hostImpl->pinchGestureEnd();
+
+    {
+        CompositorFrameMetadata metadata = m_hostImpl->makeCompositorFrameMetadata();
+        EXPECT_EQ(gfx::Vector2dF(0.0f, 10.0f), metadata.root_scroll_offset);
+        EXPECT_EQ(2, metadata.page_scale_factor);
+        EXPECT_EQ(gfx::SizeF(25.0f, 25.0f), metadata.viewport_size);
+        EXPECT_EQ(gfx::SizeF(100.0f, 100.0f), metadata.root_layer_size);
+        EXPECT_EQ(0.5f, metadata.min_page_scale_factor);
+        EXPECT_EQ(4.0f, metadata.max_page_scale_factor);
+    }
+
+    // Likewise if set from the main thread.
+    m_hostImpl->processScrollDeltas();
+    m_hostImpl->setPageScaleFactorAndLimits(4.0f, 0.5f, 4.0f);
+    {
+        CompositorFrameMetadata metadata = m_hostImpl->makeCompositorFrameMetadata();
+        EXPECT_EQ(gfx::Vector2dF(0.0f, 10.0f), metadata.root_scroll_offset);
+        EXPECT_EQ(4.0f, metadata.page_scale_factor);
+        EXPECT_EQ(gfx::SizeF(12.5f, 12.5f), metadata.viewport_size);
+        EXPECT_EQ(gfx::SizeF(100.0f, 100.0f), metadata.root_layer_size);
+        EXPECT_EQ(0.5f, metadata.min_page_scale_factor);
+        EXPECT_EQ(4.0f, metadata.max_page_scale_factor);
+    }
+}
+
 class DidDrawCheckLayer : public TiledLayerImpl {
 public:
     static scoped_ptr<LayerImpl> create(LayerTreeImpl* treeImpl, int id) { return scoped_ptr<LayerImpl>(new DidDrawCheckLayer(treeImpl, id)); }

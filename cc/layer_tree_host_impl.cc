@@ -863,15 +863,13 @@ CompositorFrameMetadata LayerTreeHostImpl::makeCompositorFrameMetadata() const
 
     CompositorFrameMetadata metadata;
     metadata.root_scroll_offset = rootScrollLayer()->scrollOffset() + rootScrollLayer()->scrollDelta();
+    if (!m_settings.pageScalePinchZoomEnabled)
+        metadata.root_scroll_offset.Scale(1 / m_pinchZoomViewport.pageScaleFactor());
     metadata.page_scale_factor = m_pinchZoomViewport.totalPageScaleFactor();
     metadata.viewport_size = m_pinchZoomViewport.bounds().size();
-    metadata.root_layer_size = rootScrollLayer()->bounds();
+    metadata.root_layer_size = contentSize();
     metadata.min_page_scale_factor = m_pinchZoomViewport.minPageScaleFactor();
     metadata.max_page_scale_factor = m_pinchZoomViewport.maxPageScaleFactor();
-    if (!m_settings.pageScalePinchZoomEnabled) {
-        metadata.root_scroll_offset.Scale(1 / m_pinchZoomViewport.pageScaleFactor());
-        metadata.root_layer_size.Scale(1 / m_pinchZoomViewport.pageScaleFactor());
-    }
 
     return metadata;
 }
