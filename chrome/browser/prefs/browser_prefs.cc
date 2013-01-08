@@ -270,7 +270,6 @@ void RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
 #endif
 
 #if defined(OS_ANDROID)
-  geolocation::RegisterUserPrefs(user_prefs);
   PromoHandler::RegisterUserPrefs(user_prefs);
 #endif
 

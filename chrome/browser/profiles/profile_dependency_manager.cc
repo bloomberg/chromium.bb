@@ -37,6 +37,7 @@
 #include "chrome/browser/extensions/app_restore_service_factory.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/shortcuts_backend_factory.h"
@@ -234,6 +235,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   captive_portal::CaptivePortalServiceFactory::GetInstance();
 #endif
+  ChromeGeolocationPermissionContextFactory::GetInstance();
   ChromeURLDataManagerFactory::GetInstance();
 #if defined(ENABLE_PRINTING)
   CloudPrintProxyServiceFactory::GetInstance();

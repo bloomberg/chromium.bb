@@ -330,8 +330,6 @@ class TestingProfile : public Profile {
   bool last_session_exited_cleanly_;
 
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
-  scoped_refptr<content::GeolocationPermissionContext>
-      geolocation_permission_context_;
 
   FilePath last_selected_directory_;
   scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.

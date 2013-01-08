@@ -5,20 +5,33 @@
 #ifndef CHROME_BROWSER_GEOLOCATION_CHROME_GEOLOCATION_PERMISSION_CONTEXT_FACTORY_H_
 #define CHROME_BROWSER_GEOLOCATION_CHROME_GEOLOCATION_PERMISSION_CONTEXT_FACTORY_H_
 
+#include "base/memory/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class ChromeGeolocationPermissionContext;
 class Profile;
 
-class ChromeGeolocationPermissionContextFactory {
+class ChromeGeolocationPermissionContextFactory
+    : public ProfileKeyedServiceFactory {
  public:
-  ChromeGeolocationPermissionContextFactory() {}
-  ~ChromeGeolocationPermissionContextFactory() {}
-  static ChromeGeolocationPermissionContext* Create(Profile* profile);
-  static void RegisterUserPrefs(PrefServiceSyncable* user_prefs);
+  static ChromeGeolocationPermissionContext* GetForProfile(Profile* profile);
+
+  static ChromeGeolocationPermissionContextFactory* GetInstance();
 
  private:
+  friend struct
+      DefaultSingletonTraits<ChromeGeolocationPermissionContextFactory>;
+
+  ChromeGeolocationPermissionContextFactory();
+  virtual ~ChromeGeolocationPermissionContextFactory();
+
+  // |ProfileKeyedBaseFactory| methods:
+  virtual ProfileKeyedService*
+      BuildServiceInstanceFor(Profile* profile) const OVERRIDE;
+  virtual void RegisterUserPrefs(PrefServiceSyncable* user_prefs) OVERRIDE;
+  virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeGeolocationPermissionContextFactory);
 };

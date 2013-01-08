@@ -13,8 +13,4 @@ void RegisterPrefs(PrefServiceSimple* prefs) {
   ChromeAccessTokenStore::RegisterPrefs(prefs);
 }
 
-void RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
-  ChromeGeolocationPermissionContextFactory::RegisterUserPrefs(user_prefs);
-}
-
 }  // namespace geolocation

@@ -851,11 +851,7 @@ HostContentSettingsMap* ProfileImpl::GetHostContentSettingsMap() {
 
 content::GeolocationPermissionContext*
     ProfileImpl::GetGeolocationPermissionContext() {
-  if (!geolocation_permission_context_.get()) {
-    geolocation_permission_context_ =
-        ChromeGeolocationPermissionContextFactory::Create(this);
-  }
-  return geolocation_permission_context_.get();
+  return ChromeGeolocationPermissionContextFactory::GetForProfile(this);
 }
 
 content::SpeechRecognitionPreferences*

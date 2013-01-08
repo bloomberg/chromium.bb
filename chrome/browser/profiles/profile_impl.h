@@ -227,8 +227,6 @@ class ProfileImpl : public Profile,
   scoped_ptr<NetPrefObserver> net_pref_observer_;
   scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
-  scoped_refptr<content::GeolocationPermissionContext>
-      geolocation_permission_context_;
   scoped_refptr<history::ShortcutsBackend> shortcuts_backend_;
 
   // Exit type the last time the profile was opened. This is set only once from

@@ -264,7 +264,7 @@ void GeolocationPermissionContextTests::SetUp() {
   MockGoogleLocationSettingsHelper::SetLocationStatus(true, true);
 #endif
   geolocation_permission_context_ =
-      ChromeGeolocationPermissionContextFactory::Create(profile());
+      ChromeGeolocationPermissionContextFactory::GetForProfile(profile());
 }
 
 void GeolocationPermissionContextTests::TearDown() {
