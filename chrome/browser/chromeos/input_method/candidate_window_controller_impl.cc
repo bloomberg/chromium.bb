@@ -102,6 +102,9 @@ CandidateWindowControllerImpl::CandidateWindowControllerImpl()
 }
 
 CandidateWindowControllerImpl::~CandidateWindowControllerImpl() {
+  if (DBusThreadManager::Get()->GetIBusPanelService())
+    DBusThreadManager::Get()->GetIBusPanelService()->
+        SetUpCandidateWindowHandler(NULL);
   ibus_ui_controller_->RemoveObserver(this);
   candidate_window_->RemoveObserver(this);
   // ibus_ui_controller_'s destructor will close the connection.
