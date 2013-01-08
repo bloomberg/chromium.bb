@@ -550,6 +550,20 @@ TEST_P(LayerTreeHostImplTest, maxScrollOffsetChangedByDeviceScaleFactor)
     EXPECT_EQ(m_hostImpl->rootLayer()->maxScrollOffset(), gfx::Vector2d(75, 75));
 }
 
+TEST_P(LayerTreeHostImplTest, clearRootRenderSurfaceAndHitTestTouchHandlerRegion)
+{
+    setupScrollAndContentsLayers(gfx::Size(100, 100));
+    m_hostImpl->setViewportSize(gfx::Size(50, 50), gfx::Size(50, 50));
+    initializeRendererAndDrawFrame();
+
+    // We should be able to hit test for touch event handlers even if the root layer loses
+    // its render surface after the most recent render.
+    m_hostImpl->rootLayer()->clearRenderSurface();
+    m_hostImpl->setNeedsUpdateDrawProperties();
+
+    EXPECT_EQ(m_hostImpl->haveTouchEventHandlersAt(gfx::Point(0, 0)), false);
+}
+
 TEST_P(LayerTreeHostImplTest, implPinchZoom)
 {
     // This test is specific to the page-scale based pinch zoom.
