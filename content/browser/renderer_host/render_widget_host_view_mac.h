@@ -477,6 +477,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase {
   // selected text on the renderer.
   std::string selected_text_;
 
+  // The window used for popup widgets.
+  scoped_nsobject<NSWindow> popup_window_;
+
   // The fullscreen window used for pepper flash.
   scoped_nsobject<NSWindow> pepper_fullscreen_window_;
   scoped_nsobject<FullscreenWindowManager> fullscreen_window_manager_;

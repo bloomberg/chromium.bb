@@ -146,7 +146,6 @@ static float ScaleFactor(NSView* view) {
 - (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right;
 - (void)setHasHorizontalScrollbar:(BOOL)has_horizontal_scrollbar;
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv;
-- (void)cancelChildPopups;
 - (void)windowDidChangeBackingProperties:(NSNotification*)notification;
 - (void)windowChangedGlobalFrame:(NSNotification*)notification;
 - (void)checkForPluginImeCancellation;
@@ -172,6 +171,78 @@ static const short kIOHIDEventTypeScroll = 6;
 
 - (BOOL)canBecomeMainWindow {
   return YES;
+}
+
+@end
+
+@interface RenderWidgetPopupWindow : NSWindow {
+   // The event tap that allows monitoring of all events, to properly close with
+   // a click outside the bounds of the window.
+  id clickEventTap_;
+}
+@end
+
+@implementation RenderWidgetPopupWindow
+
+- (id)initWithContentRect:(NSRect)contentRect
+                styleMask:(NSUInteger)windowStyle
+                  backing:(NSBackingStoreType)bufferingType
+                    defer:(BOOL)deferCreation {
+  if (self = [super initWithContentRect:contentRect
+                              styleMask:windowStyle
+                                backing:bufferingType
+                                  defer:deferCreation]) {
+    [self setOpaque:NO];
+    [self setBackgroundColor:[NSColor clearColor]];
+    [self startObservingClicks];
+  }
+  return self;
+}
+
+- (void)close {
+  [self stopObservingClicks];
+  [super close];
+}
+
+// Gets called when the menubar is clicked.
+// Needed because the local event monitor doesn't see the click on the menubar.
+- (void)beganTracking:(NSNotification*)notification {
+  [self close];
+}
+
+// Install the callback.
+- (void)startObservingClicks {
+  clickEventTap_ = [NSEvent addLocalMonitorForEventsMatchingMask:NSAnyEventMask
+      handler:^NSEvent* (NSEvent* event) {
+          if ([event window] == self)
+            return event;
+          NSEventType eventType = [event type];
+          if (eventType == NSLeftMouseDown || eventType == NSRightMouseDown)
+            [self close];
+          return event;
+  }];
+
+  NSNotificationCenter* notificationCenter =
+      [NSNotificationCenter defaultCenter];
+  [notificationCenter addObserver:self
+         selector:@selector(beganTracking:)
+             name:NSMenuDidBeginTrackingNotification
+           object:[NSApp mainMenu]];
+}
+
+// Remove the callback.
+- (void)stopObservingClicks {
+  if (!clickEventTap_)
+    return;
+
+  [NSEvent removeMonitor:clickEventTap_];
+   clickEventTap_ = nil;
+
+  NSNotificationCenter* notificationCenter =
+      [NSNotificationCenter defaultCenter];
+  [notificationCenter removeObserver:self
+                name:NSMenuDidBeginTrackingNotification
+              object:[NSApp mainMenu]];
 }
 
 @end
@@ -343,22 +414,30 @@ void RenderWidgetHostViewMac::InitAsPopup(
   bool activatable = popup_type_ == WebKit::WebPopupTypeNone;
   [cocoa_view_ setCloseOnDeactivate:YES];
   [cocoa_view_ setCanBeKeyView:activatable ? YES : NO];
-  [parent_host_view->GetNativeView() addSubview:cocoa_view_];
 
   NSPoint origin_global = NSPointFromCGPoint(pos.origin().ToCGPoint());
   if ([[NSScreen screens] count] > 0) {
     origin_global.y = [[[NSScreen screens] objectAtIndex:0] frame].size.height -
         pos.height() - origin_global.y;
   }
-  NSPoint origin_window =
-      [[cocoa_view_ window] convertScreenToBase:origin_global];
-  NSPoint origin_view =
-      [cocoa_view_ convertPoint:origin_window fromView:nil];
-  NSRect initial_frame = NSMakeRect(origin_view.x,
-                                    origin_view.y,
-                                    pos.width(),
-                                    pos.height());
-  [cocoa_view_ setFrame:initial_frame];
+
+  popup_window_.reset([[RenderWidgetPopupWindow alloc]
+      initWithContentRect:NSMakeRect(origin_global.x, origin_global.y,
+                                     pos.width(), pos.height())
+                styleMask:NSBorderlessWindowMask
+                  backing:NSBackingStoreBuffered
+                    defer:NO]);
+  [popup_window_ setLevel:NSPopUpMenuWindowLevel];
+  [popup_window_ setReleasedWhenClosed:NO];
+  [popup_window_ makeKeyAndOrderFront:nil];
+  [[popup_window_ contentView] addSubview:cocoa_view_];
+  [cocoa_view_ setFrame:[[popup_window_ contentView] bounds]];
+  [cocoa_view_ setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:cocoa_view_
+         selector:@selector(popupWindowWillClose:)
+             name:NSWindowWillCloseNotification
+           object:popup_window_];
 }
 
 // This function creates the fullscreen window and hides the dock and menubar if
@@ -467,24 +546,17 @@ void RenderWidgetHostViewMac::SetBounds(const gfx::Rect& rect) {
     // The position of |rect| is screen coordinate system and we have to
     // consider Cocoa coordinate system is upside-down and also multi-screen.
     NSPoint origin_global = NSPointFromCGPoint(rect.origin().ToCGPoint());
+    NSSize size = NSMakeSize(rect.width(), rect.height());
+    size = [cocoa_view_ convertSize:size toView:nil];
     if ([[NSScreen screens] count] > 0) {
-      NSSize size = NSMakeSize(rect.width(), rect.height());
-      size = [cocoa_view_ convertSize:size toView:nil];
       NSScreen* screen =
           static_cast<NSScreen*>([[NSScreen screens] objectAtIndex:0]);
       origin_global.y =
           NSHeight([screen frame]) - size.height - origin_global.y;
     }
-
-    // Then |origin_global| is converted to client coordinate system.
-    DCHECK([cocoa_view_ window]);
-    NSPoint origin_window =
-        [[cocoa_view_ window] convertScreenToBase:origin_global];
-    NSPoint origin_view =
-        [[cocoa_view_ superview] convertPoint:origin_window fromView:nil];
-    NSRect frame = NSMakeRect(origin_view.x, origin_view.y,
-                              rect.width(), rect.height());
-    [cocoa_view_ setFrame:frame];
+    [popup_window_ setFrame:NSMakeRect(origin_global.x, origin_global.y,
+                                       size.width, size.height)
+                    display:YES];
   } else {
     DCHECK([[cocoa_view_ superview] isKindOfClass:[BaseView class]]);
     BaseView* superview = static_cast<BaseView*>([cocoa_view_ superview]);
@@ -714,30 +786,25 @@ void RenderWidgetHostViewMac::RenderViewGone(base::TerminationStatus status,
 void RenderWidgetHostViewMac::Destroy() {
   AckPendingSwapBuffers();
 
-  // On Windows, popups are implemented with a popup window style, so that when
-  // an event comes in that would "cancel" it, it receives the OnCancelMode
-  // message and can kill itself. Alas, on the Mac, views cannot capture events
-  // outside of themselves. On Windows, if Destroy is being called on a view,
-  // then the event causing the destroy had also cancelled any popups by the
-  // time Destroy() was called. On the Mac we have to destroy all the popups
-  // ourselves.
-
-  // Depth-first destroy all popups. Use ShutdownHost() to enforce
-  // deepest-first ordering.
   for (NSView* subview in [cocoa_view_ subviews]) {
-    if ([subview isKindOfClass:[RenderWidgetHostViewCocoa class]]) {
-      [static_cast<RenderWidgetHostViewCocoa*>(subview)
-          renderWidgetHostViewMac]->ShutdownHost();
-    } else if ([subview isKindOfClass:[AcceleratedPluginView class]]) {
+    if ([subview isKindOfClass:[AcceleratedPluginView class]]) {
       [static_cast<AcceleratedPluginView*>(subview)
           onRenderWidgetHostViewGone];
     }
   }
 
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:cocoa_view_
+                name:NSWindowWillCloseNotification
+              object:popup_window_];
+
   // We've been told to destroy.
   [cocoa_view_ retain];
   [cocoa_view_ removeFromSuperview];
   [cocoa_view_ autorelease];
+
+  [popup_window_ close];
+  popup_window_.autorelease();
 
   [fullscreen_window_manager_ exitFullscreenMode];
   fullscreen_window_manager_.reset();
@@ -2116,10 +2183,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 }
 
 - (void)scrollWheel:(NSEvent*)event {
-  // Cancel popups before calling the delegate because even if the delegate eats
-  // the event, it's still an explicit user action outside the popup.
-  [self cancelChildPopups];
-
   if (delegate_ && [delegate_ respondsToSelector:@selector(handleEvent:)]) {
     BOOL handled = [delegate_ handleEvent:event];
     if (handled)
@@ -2144,23 +2207,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     const WebMouseWheelEvent& webEvent =
         WebInputEventFactory::mouseWheelEvent(event, self);
     renderWidgetHostView_->render_widget_host_->ForwardWheelEvent(webEvent);
-  }
-}
-
-// See the comment in RenderWidgetHostViewMac::Destroy() about cancellation
-// events. On the Mac we must kill popups on outside events, thus this lovely
-// case of filicide caused by events on parent views.
-- (void)cancelChildPopups {
-  // If this view can be the key view, it is not a popup. Therefore, if it has
-  // any children, they are popups that need to be canceled.
-  if (canBeKeyView_) {
-    for (NSView* subview in [self subviews]) {
-      if (![subview isKindOfClass:[RenderWidgetHostViewCocoa class]])
-        continue;  // Skip plugin views.
-
-      [static_cast<RenderWidgetHostViewCocoa*>(subview)
-          renderWidgetHostViewMac]->KillSelf();
-    }
   }
 }
 
@@ -3380,6 +3426,10 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
   currentCursor_.reset(cursor, base::scoped_policy::RETAIN);
   [[self window] invalidateCursorRectsForView:self];
+}
+
+- (void)popupWindowWillClose:(NSNotification *)notification {
+  renderWidgetHostView_->KillSelf();
 }
 
 @end
