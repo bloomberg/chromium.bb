@@ -327,12 +327,12 @@ void DriveFileSyncService::UnregisterOriginForTrackingChanges(
     return;
   }
 
-  URLToChange::iterator found = url_to_change_.find(origin);
-  if (found != url_to_change_.end()) {
-    for (PathToChange::iterator itr = found->second.begin();
+  OriginToChangesMap::iterator found = origin_to_changes_map_.find(origin);
+  if (found != origin_to_changes_map_.end()) {
+    for (PathToChangeMap::iterator itr = found->second.begin();
          itr != found->second.end(); ++itr)
       pending_changes_.erase(itr->second.position_in_queue);
-    url_to_change_.erase(found);
+    origin_to_changes_map_.erase(found);
   }
 
   metadata_store_->RemoveOrigin(origin, base::Bind(
@@ -371,8 +371,8 @@ void DriveFileSyncService::ProcessRemoteChange(
   const fileapi::FileSystemURL& url = pending_changes_.begin()->url;
   const GURL& origin = url.origin();
   const FilePath& path = url.path();
-  DCHECK(ContainsKey(url_to_change_, origin));
-  PathToChange* path_to_change = &url_to_change_[origin];
+  DCHECK(ContainsKey(origin_to_changes_map_, origin));
+  PathToChangeMap* path_to_change = &origin_to_changes_map_[origin];
   DCHECK(ContainsKey(*path_to_change, path));
   const RemoteChange& remote_change = (*path_to_change)[path];
 
@@ -885,6 +885,12 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
             &DriveFileSyncService::DidGetDirectoryContentForBatchSync,
             AsWeakPtr(), base::Passed(&token), origin, largest_changestamp));
     return;
+  }
+
+  // Move |origin| to the incremental sync origin set if the origin has no file.
+  if (metadata_store_->IsBatchSyncOrigin(origin) &&
+      !ContainsKey(origin_to_changes_map_, origin)) {
+    metadata_store_->MoveBatchSyncOriginToIncremental(origin);
   }
 
   NotifyTaskDone(fileapi::SYNC_STATUS_OK, token.Pass());
@@ -1488,8 +1494,8 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
     const std::string& resource_id,
     int64 changestamp,
     RemoteSyncType sync_type) {
-  PathToChange* path_to_change = &url_to_change_[origin];
-  PathToChange::iterator found = path_to_change->find(path);
+  PathToChangeMap* path_to_change = &origin_to_changes_map_[origin];
+  PathToChangeMap::iterator found = path_to_change->find(path);
   if (found != path_to_change->end()) {
     if (found->second.changestamp >= changestamp)
       return false;
@@ -1527,22 +1533,23 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
 
 void DriveFileSyncService::RemoveRemoteChange(
     const fileapi::FileSystemURL& url) {
-  URLToChange::iterator found_origin = url_to_change_.find(url.origin());
-  if (found_origin == url_to_change_.end())
+  OriginToChangesMap::iterator found_origin =
+      origin_to_changes_map_.find(url.origin());
+  if (found_origin == origin_to_changes_map_.end())
     return;
 
-  PathToChange* path_to_change = &found_origin->second;
-  PathToChange::iterator found_change = path_to_change->find(url.path());
+  PathToChangeMap* path_to_change = &found_origin->second;
+  PathToChangeMap::iterator found_change = path_to_change->find(url.path());
   if (found_change == path_to_change->end())
     return;
 
   pending_changes_.erase(found_change->second.position_in_queue);
   path_to_change->erase(found_change);
   if (path_to_change->empty())
-    url_to_change_.erase(found_origin);
+    origin_to_changes_map_.erase(found_origin);
 
   if (metadata_store_->IsBatchSyncOrigin(url.origin()) &&
-      !ContainsKey(url_to_change_, url.origin())) {
+      !ContainsKey(origin_to_changes_map_, url.origin())) {
     metadata_store_->MoveBatchSyncOriginToIncremental(url.origin());
   }
 }
@@ -1551,11 +1558,12 @@ bool DriveFileSyncService::GetPendingChangeForFileSystemURL(
     const fileapi::FileSystemURL& url,
     RemoteChange* change) const {
   DCHECK(change);
-  URLToChange::const_iterator found_url = url_to_change_.find(url.origin());
-  if (found_url == url_to_change_.end())
+  OriginToChangesMap::const_iterator found_url =
+      origin_to_changes_map_.find(url.origin());
+  if (found_url == origin_to_changes_map_.end())
     return false;
-  const PathToChange& path_to_change = found_url->second;
-  PathToChange::const_iterator found_path = path_to_change.find(url.path());
+  const PathToChangeMap& path_to_change = found_url->second;
+  PathToChangeMap::const_iterator found_path = path_to_change.find(url.path());
   if (found_path == path_to_change.end())
     return false;
   *change = found_path->second;

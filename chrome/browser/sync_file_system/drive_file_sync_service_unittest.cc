@@ -187,8 +187,8 @@ class DriveFileSyncServiceTest : public testing::Test {
             ChangeQueueItem(changestamp, sync_type, url));
     DCHECK(inserted_to_queue.second);
 
-    DriveFileSyncService::PathToChange* path_to_change =
-        &sync_service_->url_to_change_[url.origin()];
+    DriveFileSyncService::PathToChangeMap* path_to_change =
+        &sync_service_->origin_to_changes_map_[url.origin()];
     (*path_to_change)[url.path()] = DriveFileSyncService::RemoteChange(
         changestamp, resource_id, sync_type, url, file_change,
         inserted_to_queue.first);
@@ -548,8 +548,8 @@ TEST_F(DriveFileSyncServiceTest, RegisterNewOrigin) {
   message_loop()->RunUntilIdle();
   EXPECT_TRUE(done);
 
-  EXPECT_EQ(1u, metadata_store()->batch_sync_origins().size());
-  EXPECT_TRUE(metadata_store()->incremental_sync_origins().empty());
+  EXPECT_TRUE(metadata_store()->batch_sync_origins().empty());
+  EXPECT_EQ(1u, metadata_store()->incremental_sync_origins().size());
   EXPECT_TRUE(pending_changes().empty());
 }
 

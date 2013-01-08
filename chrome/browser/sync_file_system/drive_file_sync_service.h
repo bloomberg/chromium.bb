@@ -142,8 +142,8 @@ class DriveFileSyncService
 
   // TODO(tzik): Consider using std::pair<FilePath, FileType> as the key below
   // to support directories and custom conflict handling.
-  typedef std::map<FilePath, RemoteChange> PathToChange;
-  typedef std::map<GURL, PathToChange> URLToChange;
+  typedef std::map<FilePath, RemoteChange> PathToChangeMap;
+  typedef std::map<GURL, PathToChangeMap> OriginToChangesMap;
 
   // Task types; used for task token handling.
   enum TaskType {
@@ -346,7 +346,7 @@ class DriveFileSyncService
   int64 largest_fetched_changestamp_;
 
   PendingChangeQueue pending_changes_;
-  URLToChange url_to_change_;
+  OriginToChangesMap origin_to_changes_map_;
 
   std::set<GURL> pending_batch_sync_origins_;
 
