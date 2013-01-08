@@ -6,7 +6,6 @@
 
 import os
 import pprint
-import socket
 
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
@@ -40,7 +39,8 @@ def _UseGoloMirror():
   This function returns whether or not we should use the mirrors from
   golo.chromium.org, which are only accessible from within that subdomain.
   """
-  return socket.getfqdn().endswith('.golo.chromium.org')
+  return cros_build_lib.GetHostName(fully_qualified=True).endswith(
+      '.golo.chromium.org')
 
 
 def GetBaseURLs():
