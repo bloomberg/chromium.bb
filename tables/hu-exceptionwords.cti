@@ -255,6 +255,7 @@ partword magánnyel 134-1-1245-4-1345-1246-15-123	For example magánnyelvmestere
 partword oroszlánnyo 135-1235-135-156-123-4-1345-1246-135	For example oroszlánnyom word
 partword önnyom 12345-1345-1246-135-134	For example önnyomása, önnyomatú words
 partword dizájnny 145-24-126-4-245-1345-1246	For example dizájnnyelv word
+partword nnyilat 1345-1246-24-123-1-2345	For example sablonnyilatkozat word
 
 #ly related exceptions
 #This exception parts need marking ly letters with two single l and y letter combination
