@@ -53,7 +53,7 @@ void *f3(void *arg) {
    * inside a syscall, then give GDB a chance to break.
    */
   int rc;
-  rc = usleep(100);
+  rc = usleep(100000); /* Sleep for 0.1 seconds */
   assert(rc == 0);
   inside_f3();
   return NULL;
