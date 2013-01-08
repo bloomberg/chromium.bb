@@ -15,8 +15,9 @@
 # Shell escaping and ${} substitution are provided.
 # See "class Environment" defined later for the implementation.
 
-from shelltools import shell
 from driver_log import Log, DriverExit
+from shelltools import shell
+import types
 
 INITIAL_ENV = {
   # Set by DriverMain
@@ -506,4 +507,12 @@ class Environment(object):
     (rightpart, k) = self.eval_expr(s, j+1, terminators)
     return (leftpart + middlepart + rightpart, k)
 
+
 env = Environment()
+
+def override_env(meth_name, func):
+  """Override a method in the global |env|, given the method name
+  and the new function.
+  """
+  global env
+  setattr(env, meth_name, types.MethodType(func, env, Environment))

@@ -29,11 +29,7 @@ import unittest
 class TestHelpMessages(unittest.TestCase):
 
   def setUp(self):
-    # Some of the tools run the host binary to grab its --help message.
-    # NOTE: This doesn't work some hosts (e.g., on ARM hosts, since we only
-    # have x86 host binaries).
-    if driver_test_utils.CanRunHost():
-      driver_test_utils.SetupHostDir(env)
+    driver_test_utils.ApplyTestEnvOverrides(env)
     # get_help() currently expects an argv, even though most of the time
     # it doesn't do anything.  Sometimes it looks at argv to see if the
     # argv is "--help" or "--help-hidden" / "--help-full", but perhaps

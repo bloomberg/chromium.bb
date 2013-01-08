@@ -182,6 +182,10 @@ def FindBasePNaCl():
   return shell.escape(basedir)
 
 def ReadConfig():
+  # Mock out ReadConfig if running unittests.  Settings are applied directly
+  # by DriverTestEnv rather than reading this configuration file.
+  if env.has('PNACL_RUNNING_UNITTESTS'):
+    return
   driver_bin = env.getone('DRIVER_BIN')
   driver_conf = pathtools.join(driver_bin, 'driver.conf')
   fp = DriverOpen(driver_conf, 'r')

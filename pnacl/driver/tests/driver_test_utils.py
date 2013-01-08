@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import driver_env
 import os
 from os.path import dirname
 import platform
@@ -47,3 +48,24 @@ def SetupHostDir(env):
                           'pnacl_%s_x86' % os_shortname,
                           'host_%s' % host_arch)
   env.set('BASE_HOST', host_dir)
+
+
+# A collection of override methods that mock driver_env.Environment.
+
+# One thing is we prevent having to read a driver.conf file,
+# so instead we have a base group of variables set for testing.
+def TestEnvReset(self):
+  # Call to "super" class method (assumed to be driver_env.Environment).
+  # TODO(jvoung): We may want a different way of overriding things.
+  driver_env.Environment.reset(self)
+  # The overrides.
+  self.set('LIBMODE', 'newlib')
+  self.set('PNACL_RUNNING_UNITTESTS', '1')
+  SetupHostDir(self)
+
+
+def ApplyTestEnvOverrides(env):
+  """Register all the override methods and reset the env to a testable state.
+  """
+  driver_env.override_env('reset', TestEnvReset)
+  env.reset()
