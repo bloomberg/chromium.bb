@@ -598,6 +598,9 @@ if test "$os_win32" = no; then
 	AX_PTHREAD([have_pthread=true])
 fi
 if $have_pthread; then
+	LIBS="$PTHREAD_LIBS $LIBS"
+	CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+	CC="$PTHREAD_CC"
 	AC_DEFINE(HAVE_PTHREAD, 1, [Have POSIX threads])
 fi
 AM_CONDITIONAL(HAVE_PTHREAD, $have_pthread)
