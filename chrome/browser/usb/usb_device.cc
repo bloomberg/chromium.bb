@@ -7,7 +7,7 @@
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/usb/usb_service.h"
-#include "third_party/libusb/libusb.h"
+#include "third_party/libusb/src/libusb/libusb.h"
 
 namespace {
 

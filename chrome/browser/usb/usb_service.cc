@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/usb/usb_device.h"
-#include "third_party/libusb/libusb.h"
+#include "third_party/libusb/src/libusb/libusb.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"

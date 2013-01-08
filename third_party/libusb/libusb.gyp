@@ -10,12 +10,18 @@
     {
       'target_name': 'libusb',
       'conditions': [
-        ['OS == "linux" and use_system_libusb', {
+        ['OS == "linux" and use_system_libusb==1', {
           'type': 'none',
-          'direct_dependent_settings': {
-            'defines': [
-              'USE_SYSTEM_LIBUSB',
+          'variables': {
+            'headers_root_path': 'src/libusb',
+            'header_filenames': [
+              'libusb.h',
             ],
+          },
+          'includes': [
+            '../../build/shim_headers.gypi',
+          ],
+          'direct_dependent_settings': {
             'cflags': [
               '<!@(pkg-config --cflags libusb-1.0)',
             ],
@@ -43,7 +49,7 @@
           ],
           'direct_dependent_settings': {
             'include_dirs': [
-              '.',
+              'src/libusb',
             ],
           },
           'conditions': [

@@ -13,7 +13,7 @@
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/usb/usb_device.h"
-#include "third_party/libusb/libusb.h"
+#include "third_party/libusb/src/libusb/libusb.h"
 
 class UsbEventHandler;
 typedef libusb_context* PlatformUsbContext;
