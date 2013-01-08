@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_export.h"
@@ -100,6 +101,9 @@ class GL_EXPORT AsyncPixelTransferDelegate {
       AsyncPixelTransferState* state,
       const AsyncTexSubImage2DParams& tex_params,
       const AsyncMemoryParams& mem_params) = 0;
+
+  virtual uint32 GetTextureUploadCount() = 0;
+  virtual base::TimeDelta GetTotalTextureUploadTime() = 0;
 
  protected:
   AsyncPixelTransferDelegate() {}

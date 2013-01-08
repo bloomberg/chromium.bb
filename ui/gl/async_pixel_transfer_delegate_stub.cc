@@ -62,7 +62,8 @@ void AsyncTransferStateStub::BindTransfer(AsyncTexImage2DParams* out_params) {
   needs_late_bind_ = false;
 }
 
-AsyncPixelTransferDelegateStub::AsyncPixelTransferDelegateStub() {
+AsyncPixelTransferDelegateStub::AsyncPixelTransferDelegateStub()
+    : texture_upload_count_(0) {
 }
 
 AsyncPixelTransferDelegateStub::~AsyncPixelTransferDelegateStub() {
@@ -122,6 +123,7 @@ void AsyncPixelTransferDelegateStub::AsyncTexSubImage2D(
   AsyncTransferStateStub* state =
       static_cast<AsyncTransferStateStub*>(transfer_state);
   DCHECK(!state->needs_late_bind_);
+  base::TimeTicks begin_time(base::TimeTicks::HighResNow());
   glTexSubImage2D(
       tex_params.target,
       tex_params.level,
@@ -132,6 +134,17 @@ void AsyncPixelTransferDelegateStub::AsyncTexSubImage2D(
       tex_params.format,
       tex_params.type,
       data);
+  texture_upload_count_++;
+  total_texture_upload_time_ += base::TimeTicks::HighResNow() - begin_time;
 }
+
+uint32 AsyncPixelTransferDelegateStub::GetTextureUploadCount() {
+  return texture_upload_count_;
+}
+
+base::TimeDelta AsyncPixelTransferDelegateStub::GetTotalTextureUploadTime() {
+  return total_texture_upload_time_;
+}
+
 }  // namespace gfx
 

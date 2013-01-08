@@ -2967,11 +2967,13 @@ bool GLES2DecoderImpl::GetServiceTextureId(uint32 client_texture_id,
 }
 
 uint32 GLES2DecoderImpl::GetTextureUploadCount() {
-  return texture_upload_count_;
+  return texture_upload_count_ +
+      async_pixel_transfer_delegate_->GetTextureUploadCount();
 }
 
 base::TimeDelta GLES2DecoderImpl::GetTotalTextureUploadTime() {
-  return total_texture_upload_time_;
+  return total_texture_upload_time_ +
+      async_pixel_transfer_delegate_->GetTotalTextureUploadTime();
 }
 
 base::TimeDelta GLES2DecoderImpl::GetTotalProcessingCommandsTime() {
