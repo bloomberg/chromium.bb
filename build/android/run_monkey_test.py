@@ -11,10 +11,10 @@ import sys
 import time
 
 from pylib import android_commands
-from pylib import test_options_parser
 from pylib import test_result
 from pylib.host_driven import python_test_base
 from pylib.host_driven import python_test_sharder
+from pylib.utils import test_options_parser
 
 
 class MonkeyTest(python_test_base.PythonTestBase):
