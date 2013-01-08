@@ -110,7 +110,7 @@ TEST_F(GamepadProviderTest, PollingAccess) {
 }
 
 // Tests that waiting for a user gesture works properly.
-TEST_F(GamepadProviderTest, DISABLED_UserGesture) {
+TEST_F(GamepadProviderTest, UserGesture) {
   WebGamepads no_button_data;
   no_button_data.length = 1;
   no_button_data.items[0].connected = true;
