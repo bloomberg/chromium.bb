@@ -25,7 +25,7 @@ TEST(FrameNavigationStateTest, TrackFrame) {
   // Create a main frame.
   EXPECT_FALSE(navigation_state.CanSendEvents(frame_id1));
   EXPECT_FALSE(navigation_state.IsValidFrame(frame_id1));
-  navigation_state.TrackFrame(frame_id1, frame_id0, url1, true, false);
+  navigation_state.TrackFrame(frame_id1, frame_id0, url1, true, false, false);
   navigation_state.SetNavigationCommitted(frame_id1);
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id1));
   EXPECT_TRUE(navigation_state.IsValidFrame(frame_id1));
@@ -33,7 +33,7 @@ TEST(FrameNavigationStateTest, TrackFrame) {
   // Add a sub frame.
   EXPECT_FALSE(navigation_state.CanSendEvents(frame_id2));
   EXPECT_FALSE(navigation_state.IsValidFrame(frame_id2));
-  navigation_state.TrackFrame(frame_id2, frame_id1, url2, false, false);
+  navigation_state.TrackFrame(frame_id2, frame_id1, url2, false, false, false);
   navigation_state.SetNavigationCommitted(frame_id2);
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id2));
   EXPECT_TRUE(navigation_state.IsValidFrame(frame_id2));
@@ -62,7 +62,7 @@ TEST(FrameNavigationStateTest, ErrorState) {
   const FrameNavigationState::FrameID frame_id1(42, fake_rvh);
   const GURL url("http://www.google.com/");
 
-  navigation_state.TrackFrame(frame_id1, frame_id0, url, true, false);
+  navigation_state.TrackFrame(frame_id1, frame_id0, url, true, false, false);
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id1));
   EXPECT_FALSE(navigation_state.GetErrorOccurredInFrame(frame_id1));
 
@@ -72,12 +72,12 @@ TEST(FrameNavigationStateTest, ErrorState) {
   EXPECT_TRUE(navigation_state.GetErrorOccurredInFrame(frame_id1));
 
   // Navigations to a network error page should be ignored.
-  navigation_state.TrackFrame(frame_id1, frame_id0, GURL(), true, true);
+  navigation_state.TrackFrame(frame_id1, frame_id0, GURL(), true, true, false);
   EXPECT_FALSE(navigation_state.CanSendEvents(frame_id1));
   EXPECT_TRUE(navigation_state.GetErrorOccurredInFrame(frame_id1));
 
   // However, when the frame navigates again, it should send events again.
-  navigation_state.TrackFrame(frame_id1, frame_id0, url, true, false);
+  navigation_state.TrackFrame(frame_id1, frame_id0, url, true, false, false);
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id1));
   EXPECT_FALSE(navigation_state.GetErrorOccurredInFrame(frame_id1));
 }
@@ -91,8 +91,8 @@ TEST(FrameNavigationStateTest, ErrorStateFrame) {
   const FrameNavigationState::FrameID frame_id2(42, fake_rvh);
   const GURL url("http://www.google.com/");
 
-  navigation_state.TrackFrame(frame_id1, frame_id0, url, true, false);
-  navigation_state.TrackFrame(frame_id2, frame_id1, url, false, false);
+  navigation_state.TrackFrame(frame_id1, frame_id0, url, true, false, false);
+  navigation_state.TrackFrame(frame_id2, frame_id1, url, false, false, false);
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id1));
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id2));
 
@@ -102,12 +102,12 @@ TEST(FrameNavigationStateTest, ErrorStateFrame) {
   EXPECT_FALSE(navigation_state.CanSendEvents(frame_id2));
 
   // Navigations to a network error page should be ignored.
-  navigation_state.TrackFrame(frame_id2, frame_id1, GURL(), false, true);
+  navigation_state.TrackFrame(frame_id2, frame_id1, GURL(), false, true, false);
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id1));
   EXPECT_FALSE(navigation_state.CanSendEvents(frame_id2));
 
   // However, when the frame navigates again, it should send events again.
-  navigation_state.TrackFrame(frame_id2, frame_id1, url, false, false);
+  navigation_state.TrackFrame(frame_id2, frame_id1, url, false, false, false);
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id1));
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id2));
 }
@@ -119,7 +119,7 @@ TEST(FrameNavigationStateTest, WebSafeScheme) {
   const FrameNavigationState::FrameID frame_id1(23, fake_rvh);
   const GURL url("unsafe://www.google.com/");
 
-  navigation_state.TrackFrame(frame_id1, frame_id0, url, true, false);
+  navigation_state.TrackFrame(frame_id1, frame_id0, url, true, false, false);
   EXPECT_FALSE(navigation_state.CanSendEvents(frame_id1));
 }
 
@@ -131,13 +131,34 @@ TEST(FrameNavigationStateTest, ParentFrameID) {
   const FrameNavigationState::FrameID frame_id2(42, fake_rvh);
   const GURL url("http://www.google.com/");
 
-  navigation_state.TrackFrame(frame_id1, frame_id0, url, true, false);
-  navigation_state.TrackFrame(frame_id2, frame_id1, url, false, false);
+  navigation_state.TrackFrame(frame_id1, frame_id0, url, true, false, false);
+  navigation_state.TrackFrame(frame_id2, frame_id1, url, false, false, false);
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id1));
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id2));
 
   EXPECT_TRUE(navigation_state.GetParentFrameID(frame_id1) == frame_id0);
   EXPECT_TRUE(navigation_state.GetParentFrameID(frame_id2) == frame_id1);
+}
+
+// Test for <iframe srcdoc=""> frames.
+TEST(FrameNavigationStateTest, SrcDoc) {
+  FrameNavigationState navigation_state;
+  const FrameNavigationState::FrameID frame_id0(-1, fake_rvh);
+  const FrameNavigationState::FrameID frame_id1(23, fake_rvh);
+  const FrameNavigationState::FrameID frame_id2(42, fake_rvh);
+  const GURL url("http://www.google.com/");
+  const GURL blank("about:blank");
+  const GURL srcdoc("about:srcdoc");
+
+  navigation_state.TrackFrame(frame_id1, frame_id0, url, true, false, false);
+  navigation_state.TrackFrame(frame_id2, frame_id1, blank, false, false, true);
+  EXPECT_TRUE(navigation_state.CanSendEvents(frame_id1));
+  EXPECT_TRUE(navigation_state.CanSendEvents(frame_id2));
+
+  EXPECT_TRUE(navigation_state.GetUrl(frame_id1) == url);
+  EXPECT_TRUE(navigation_state.GetUrl(frame_id2) == srcdoc);
+
+  EXPECT_TRUE(navigation_state.IsValidUrl(srcdoc));
 }
 
 }  // namespace extensions

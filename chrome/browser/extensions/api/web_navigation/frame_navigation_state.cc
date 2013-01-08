@@ -55,6 +55,8 @@ bool FrameNavigationState::FrameID::operator!=(
   return !(*this == other);
 }
 
+FrameNavigationState::FrameState::FrameState() {}
+
 // static
 bool FrameNavigationState::allow_extension_scheme_ = false;
 
@@ -77,9 +79,11 @@ bool FrameNavigationState::IsValidUrl(const GURL& url) const {
     if (url.scheme() == kValidSchemes[i])
       return true;
   }
-  // Allow about:blank.
-  if (url.spec() == chrome::kAboutBlankURL)
+  // Allow about:blank and about:srcdoc.
+  if (url.spec() == chrome::kAboutBlankURL ||
+      url.spec() == chrome::kAboutSrcDocURL) {
     return true;
+  }
   if (allow_extension_scheme_ && url.scheme() == extensions::kExtensionScheme)
     return true;
   return false;
@@ -89,11 +93,14 @@ void FrameNavigationState::TrackFrame(FrameID frame_id,
                                       FrameID parent_frame_id,
                                       const GURL& url,
                                       bool is_main_frame,
-                                      bool is_error_page) {
+                                      bool is_error_page,
+                                      bool is_iframe_srcdoc) {
   FrameState& frame_state = frame_state_map_[frame_id];
   frame_state.error_occurred = is_error_page;
   frame_state.url = url;
   frame_state.is_main_frame = is_main_frame;
+  frame_state.is_iframe_srcdoc = is_iframe_srcdoc;
+  DCHECK(!is_iframe_srcdoc || url == GURL(chrome::kAboutBlankURL));
   frame_state.is_navigating = true;
   frame_state.is_committed = false;
   frame_state.is_server_redirected = false;
@@ -146,6 +153,8 @@ GURL FrameNavigationState::GetUrl(FrameID frame_id) const {
     NOTREACHED();
     return GURL();
   }
+  if (frame_state->second.is_iframe_srcdoc)
+    return GURL(chrome::kAboutSrcDocURL);
   return frame_state->second.url;
 }
 

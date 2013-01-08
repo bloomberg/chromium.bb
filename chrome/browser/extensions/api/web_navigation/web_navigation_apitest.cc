@@ -444,6 +444,11 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, IFrame) {
       RunExtensionSubtest("webnavigation", "test_iframe.html")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, SrcDoc) {
+  ASSERT_TRUE(
+      RunExtensionSubtest("webnavigation", "test_srcdoc.html")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, OpenTab) {
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_openTab.html")) << message_;

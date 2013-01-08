@@ -26,6 +26,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/net_errors.h"
 
 namespace GetFrame = extensions::api::web_navigation::GetFrame;
@@ -376,7 +377,9 @@ void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
                                parent_frame_id,
                                validated_url,
                                is_main_frame,
-                               is_error_page);
+                               is_error_page,
+                               is_iframe_srcdoc);
+
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
 
@@ -387,7 +390,7 @@ void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
       is_main_frame,
       parent_frame_num,
       navigation_state_.IsMainFrame(parent_frame_id),
-      validated_url);
+      navigation_state_.GetUrl(frame_id));
 }
 
 void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
@@ -441,7 +444,7 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
         web_contents(),
         frame_num,
         is_main_frame,
-        url,
+        navigation_state_.GetUrl(frame_id),
         transition_type);
   } else if (is_history_state_modification) {
     helpers::DispatchOnCommitted(
@@ -449,7 +452,7 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
         web_contents(),
         frame_num,
         is_main_frame,
-        url,
+        navigation_state_.GetUrl(frame_id),
         transition_type);
   } else {
     if (navigation_state_.GetIsServerRedirected(frame_id)) {
@@ -461,7 +464,7 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
         web_contents(),
         frame_num,
         is_main_frame,
-        url,
+        navigation_state_.GetUrl(frame_id),
         transition_type);
   }
 }
@@ -485,8 +488,12 @@ void WebNavigationTabObserver::DidFailProvisionalLoad(
   FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
   if (navigation_state_.CanSendEvents(frame_id)) {
     helpers::DispatchOnErrorOccurred(
-        web_contents(), render_view_host->GetProcess()->GetID(), validated_url,
-        frame_num, is_main_frame, error_code);
+        web_contents(),
+        render_view_host->GetProcess()->GetID(),
+        navigation_state_.GetUrl(frame_id),
+        frame_num,
+        is_main_frame,
+        error_code);
   }
   navigation_state_.SetErrorOccurredInFrame(frame_id);
   if (stop_tracking_frames) {
@@ -524,10 +531,12 @@ void WebNavigationTabObserver::DidFinishLoad(
   navigation_state_.SetNavigationCompleted(frame_id);
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
-  DCHECK_EQ(navigation_state_.GetUrl(frame_id), validated_url);
+  DCHECK(navigation_state_.GetUrl(frame_id) == validated_url ||
+         (navigation_state_.GetUrl(frame_id) == GURL(chrome::kAboutSrcDocURL) &&
+          validated_url == GURL(chrome::kAboutBlankURL)));
   DCHECK_EQ(navigation_state_.IsMainFrame(frame_id), is_main_frame);
   helpers::DispatchOnCompleted(web_contents(),
-                               validated_url,
+                               navigation_state_.GetUrl(frame_id),
                                is_main_frame,
                                frame_num);
 }
@@ -548,8 +557,12 @@ void WebNavigationTabObserver::DidFailLoad(
     return;
   if (navigation_state_.CanSendEvents(frame_id)) {
     helpers::DispatchOnErrorOccurred(
-        web_contents(), render_view_host->GetProcess()->GetID(), validated_url,
-        frame_num, is_main_frame, error_code);
+        web_contents(),
+        render_view_host->GetProcess()->GetID(),
+        navigation_state_.GetUrl(frame_id),
+        frame_num,
+        is_main_frame,
+        error_code);
   }
   navigation_state_.SetErrorOccurredInFrame(frame_id);
 }
