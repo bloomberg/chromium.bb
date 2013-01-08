@@ -418,7 +418,9 @@ mode-buildbot-x86() {
 # mode-buildbot-arm-hw
 mode-buildbot-arm() {
   FAIL_FAST=false
-  local qemuflags="-j8 -k do_not_run_tests=1"
+  # "force_emulator=" disables use of QEMU, which enables building
+  # tests which don't work under QEMU.
+  local qemuflags="-j8 -k do_not_run_tests=1 force_emulator="
 
   clobber
 

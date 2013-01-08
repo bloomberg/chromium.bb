@@ -717,10 +717,11 @@ pre_base_env.AddMethod(GetPlatformString)
 
 
 tests_to_disable_qemu = set([
-    # These tests do not work under QEMU but do work on hardware. They should
-    # not be marked as 'broken' because then they would not get built as part
-    # of a test target (e.g. small_tests) with do_not_run_tests=1. They
-    # should be skipped instead, so that they build but do not run.
+    # These tests do not work under QEMU but do work on ARM hardware.
+    #
+    # You should use the is_broken argument in preference to adding
+    # tests to this list.
+    #
     # TODO(dschuff) some of these tests appear to work with the new QEMU.
     # find out which
     # http://code.google.com/p/nativeclient/issues/detail?id=2437
