@@ -59,11 +59,9 @@ class FakeDriveService : public google_apis::DummyDriveService {
 
   virtual void GetAccountMetadata(
       const google_apis::GetAccountMetadataCallback& callback) OVERRIDE {
-    // Make some sample data.
-    scoped_ptr<Value> data = google_apis::test_util::LoadJSONFile(
-        "gdata/account_metadata.json");
-    scoped_ptr<google_apis::AccountMetadataFeed> account_metadata
-        = google_apis::AccountMetadataFeed::CreateFrom(*data);
+    // The contents don't matter here, so just return empty metadata.
+    scoped_ptr<google_apis::AccountMetadataFeed> account_metadata(
+        new google_apis::AccountMetadataFeed);
 
     base::MessageLoopProxy::current()->PostTask(FROM_HERE,
         base::Bind(callback,
@@ -73,8 +71,8 @@ class FakeDriveService : public google_apis::DummyDriveService {
 
   virtual void GetApplicationInfo(
       const google_apis::GetDataCallback& callback) OVERRIDE {
-    scoped_ptr<Value> data = google_apis::test_util::LoadJSONFile(
-        "gdata/account_metadata.json");
+    // The contents don't matter here, so just return an empty dictionary.
+    scoped_ptr<base::Value> data(new base::DictionaryValue);
 
     base::MessageLoopProxy::current()->PostTask(FROM_HERE,
         base::Bind(callback,
