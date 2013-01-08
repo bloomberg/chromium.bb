@@ -17,6 +17,14 @@
  * region.
  */
 
+        /*
+         * This is code, but it is not code that is actually part of the
+         * program/library being linked.  Marking it as read-only data
+         * instead ensures that nothing like linker code-rewriting will
+         * be applied to this code.
+         */
+        NACL_RODATA
+
 /*
  * NaCl_springboard is used for syscall return and any time we want
  * to do an upcall into NaCl application.

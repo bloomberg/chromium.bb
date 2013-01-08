@@ -288,6 +288,16 @@
 
 #endif /* NACL_ARCH(NACL_BUILD_ARCH) */
 
+#ifdef __ASSEMBLER__
+# if NACL_WINDOWS
+#  define NACL_RODATA           .section .rdata, "dr"
+# elif NACL_OSX
+#  define NACL_RODATA           .section __TEXT, __const
+# else
+#  define NACL_RODATA           .section .rodata, "a"
+# endif
+#endif
+
 /*
  * Android linker doesn't support __thread variables - for development purposes
  * one could enable using unsafe pthread API for TLS, before real fix based on
