@@ -16,6 +16,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "grit/ash_resources.h"
@@ -27,6 +28,8 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -93,34 +96,37 @@ class Launcher::DelegateView : public views::WidgetDelegate,
 // Class used to slightly dim shelf items when maximized and visible. It also
 // makes sure the widget changes size to always be of the same size as the
 // shelf.
-class DimmerView : public views::WidgetDelegateView,
+class Launcher::DimmerView : public views::WidgetDelegateView,
                    public aura::WindowObserver {
  public:
-  explicit DimmerView(views::Widget* launcher)
+  explicit DimmerView(Launcher* launcher)
       : launcher_(launcher) {
-    launcher_->GetNativeWindow()->AddObserver(this);
+    launcher_->widget()->GetNativeWindow()->AddObserver(this);
   }
 
   ~DimmerView() {
     if (launcher_)
-      launcher_->GetNativeWindow()->RemoveObserver(this);
+      launcher_->widget()->GetNativeWindow()->RemoveObserver(this);
   }
 
  private:
   // views::View overrides:
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    const gfx::ImageSkia* launcher_background = rb.GetImageSkiaNamed(
-        internal::ShelfLayoutManager::ForLauncher(
-            launcher_->GetNativeView())->
-        SelectValueForShelfAlignment(IDR_AURA_LAUNCHER_DIMMING_BOTTOM,
-                                     IDR_AURA_LAUNCHER_DIMMING_LEFT,
-                                     IDR_AURA_LAUNCHER_DIMMING_RIGHT));
+    gfx::ImageSkia background_image =
+        *rb.GetImageSkiaNamed(IDR_AURA_LAUNCHER_DIMMING);
+    if (SHELF_ALIGNMENT_BOTTOM != launcher_->alignment_)
+      background_image = gfx::ImageSkiaOperations::CreateRotatedImage(
+          background_image,
+          (SHELF_ALIGNMENT_LEFT == launcher_->alignment_ ?
+              SkBitmapOperations::ROTATION_90_CW :
+              SkBitmapOperations::ROTATION_270_CW));
+
     SkPaint paint;
     paint.setAlpha(kDimAlpha);
     canvas->DrawImageInt(
-        *launcher_background,
-        0, 0, launcher_background->width(), launcher_background->height(),
+        background_image,
+        0, 0, background_image.width(), background_image.height(),
         0, 0, width(), height(),
         false,
         paint);
@@ -130,17 +136,17 @@ class DimmerView : public views::WidgetDelegateView,
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) OVERRIDE {
-    CHECK_EQ(window, launcher_->GetNativeWindow());
+    CHECK_EQ(window, launcher_->widget()->GetNativeWindow());
     GetWidget()->GetNativeWindow()->SetBounds(window->bounds());
   }
 
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
-    CHECK_EQ(window, launcher_->GetNativeWindow());
-    launcher_->GetNativeWindow()->RemoveObserver(this);
+    CHECK_EQ(window, launcher_->widget()->GetNativeWindow());
+    launcher_->widget()->GetNativeWindow()->RemoveObserver(this);
     launcher_ = NULL;
   }
 
-  views::Widget* launcher_;
+  Launcher* launcher_;
   DISALLOW_COPY_AND_ASSIGN(DimmerView);
 };
 
@@ -172,30 +178,33 @@ void Launcher::DelegateView::Layout() {
 }
 
 void Launcher::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
-  if (launcher_->alignment_ == SHELF_ALIGNMENT_BOTTOM) {
-    SkPaint paint;
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    const gfx::ImageSkia* launcher_background = rb.GetImageSkiaNamed(
-        internal::ShelfLayoutManager::ForLauncher(
-            launcher_->widget()->GetNativeView())->
-        SelectValueForShelfAlignment(IDR_AURA_LAUNCHER_BACKGROUND_BOTTOM,
-                                     IDR_AURA_LAUNCHER_BACKGROUND_LEFT,
-                                     IDR_AURA_LAUNCHER_BACKGROUND_RIGHT));
-    paint.setAlpha(alpha_);
-    canvas->DrawImageInt(
-        *launcher_background,
-        0, 0, launcher_background->width(), launcher_background->height(),
-        0, 0, width(), height(),
-        false,
-        paint);
-    canvas->FillRect(
-        gfx::Rect(0, height() - kNumBlackPixels, width(), kNumBlackPixels),
-        SK_ColorBLACK);
-  } else {
-    // TODO(davemoore): when we get an image for the side launcher background
-    // use it, and handle black border.
-    canvas->DrawColor(SkColorSetARGB(alpha_, 0, 0, 0));
-  }
+  ash::internal::ShelfLayoutManager* shelf = ash::GetRootWindowController(
+          GetWidget()->GetNativeView()->GetRootWindow())->shelf();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  gfx::ImageSkia launcher_background =
+      *rb.GetImageSkiaNamed(IDR_AURA_LAUNCHER_BACKGROUND);
+  if (launcher_->alignment_ != SHELF_ALIGNMENT_BOTTOM)
+    launcher_background = gfx::ImageSkiaOperations::CreateRotatedImage(
+        launcher_background,
+        shelf->SelectValueForShelfAlignment(
+            SkBitmapOperations::ROTATION_90_CW,
+            SkBitmapOperations::ROTATION_90_CW,
+            SkBitmapOperations::ROTATION_270_CW));
+
+  gfx::Rect black_rect = shelf->SelectValueForShelfAlignment(
+    gfx::Rect(0, height() - kNumBlackPixels, width(), kNumBlackPixels),
+    gfx::Rect(0, 0, kNumBlackPixels, height()),
+    gfx::Rect(width() - kNumBlackPixels, 0, kNumBlackPixels, height()));
+
+  SkPaint paint;
+  paint.setAlpha(alpha_);
+  canvas->DrawImageInt(
+      launcher_background,
+      0, 0, launcher_background.width(), launcher_background.height(),
+      0, 0, width(), height(),
+      false,
+      paint);
+  canvas->FillRect(black_rect, SK_ColorBLACK);
 }
 
 void Launcher::DelegateView::UpdateBackground(int alpha) {
@@ -274,6 +283,7 @@ internal::FocusCycler* Launcher::GetFocusCycler() {
 
 void Launcher::SetAlignment(ShelfAlignment alignment) {
   alignment_ = alignment;
+  delegate_view_->SchedulePaint();
   launcher_view_->OnShelfAlignmentChanged();
   // ShelfLayoutManager will resize the launcher.
 }
@@ -308,7 +318,7 @@ void Launcher::SetDimsShelf(bool value) {
   dimmer_->SetBounds(widget_->GetWindowBoundsInScreen());
   // The launcher should not take focus when it is initially shown.
   dimmer_->set_focus_on_creation(false);
-  dimmer_->SetContentsView(new DimmerView(widget_.get()));
+  dimmer_->SetContentsView(new DimmerView(this));
   dimmer_->GetNativeView()->SetName("LauncherDimmerView");
   dimmer_->GetNativeView()->SetProperty(internal::kStayInSameRootWindowKey,
                                         true);

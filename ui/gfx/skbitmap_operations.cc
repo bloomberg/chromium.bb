@@ -837,6 +837,7 @@ SkBitmap SkBitmapOperations::Rotate(const SkBitmap& source,
   }
   result.allocPixels();
   SkCanvas canvas(result);
+  canvas.clear(SkColorSetARGB(0, 0, 0, 0));
 
   canvas.translate(SkFloatToScalar(result.width() * 0.5f),
                    SkFloatToScalar(result.height() * 0.5f));

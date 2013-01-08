@@ -135,6 +135,7 @@ class ASH_EXPORT Launcher: public views::WidgetObserver  {
 
  private:
   class DelegateView;
+  class DimmerView;
 
   // Widget hosting the view.
   scoped_ptr<views::Widget> widget_;

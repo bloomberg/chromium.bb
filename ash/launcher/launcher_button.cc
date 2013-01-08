@@ -20,6 +20,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/controls/image_view.h"
 
 namespace {
@@ -362,23 +363,22 @@ void LauncherButton::UpdateState() {
   } else {
     int bar_id;
     if (state_ & STATE_ACTIVE) {
-      bar_id = shelf_layout_manager_->SelectValueForShelfAlignment(
-          IDR_AURA_LAUNCHER_UNDERLINE_BOTTOM_ACTIVE,
-          IDR_AURA_LAUNCHER_UNDERLINE_LEFT_ACTIVE,
-          IDR_AURA_LAUNCHER_UNDERLINE_RIGHT_ACTIVE);
+      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE;
     } else if (state_ & (STATE_HOVERED | STATE_FOCUSED | STATE_ATTENTION)) {
-      bar_id = shelf_layout_manager_->SelectValueForShelfAlignment(
-          IDR_AURA_LAUNCHER_UNDERLINE_BOTTOM_HOVER,
-          IDR_AURA_LAUNCHER_UNDERLINE_LEFT_HOVER,
-          IDR_AURA_LAUNCHER_UNDERLINE_RIGHT_HOVER);
+      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_HOVER;
     } else {
-      bar_id = shelf_layout_manager_->SelectValueForShelfAlignment(
-          IDR_AURA_LAUNCHER_UNDERLINE_BOTTOM_RUNNING,
-          IDR_AURA_LAUNCHER_UNDERLINE_LEFT_RUNNING,
-          IDR_AURA_LAUNCHER_UNDERLINE_RIGHT_RUNNING);
+      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_RUNNING;
     }
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    bar_->SetImage(rb.GetImageNamed(bar_id).ToImageSkia());
+    const gfx::ImageSkia* image = rb.GetImageNamed(bar_id).ToImageSkia();
+    if(SHELF_ALIGNMENT_BOTTOM == shelf_layout_manager_->GetAlignment())
+      bar_->SetImage(*image);
+    else
+      bar_->SetImage(gfx::ImageSkiaOperations::CreateRotatedImage(*image,
+          shelf_layout_manager_->SelectValueForShelfAlignment(
+              SkBitmapOperations::ROTATION_270_CW,
+              SkBitmapOperations::ROTATION_270_CW,
+              SkBitmapOperations::ROTATION_90_CW)));
     bar_->SetVisible(true);
   }
   bool rtl = base::i18n::IsRTL();
