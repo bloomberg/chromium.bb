@@ -30,7 +30,6 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool npot_ok;
     bool enable_texture_float_linear;
     bool enable_texture_half_float_linear;
-    bool chromium_webglsl;
     bool chromium_stream_texture;
     bool angle_translated_shader_source;
     bool angle_pack_reverse_row_order;
@@ -68,9 +67,8 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   bool Initialize(const DisallowedFeatures& disallowed_features,
                   const char* allowed_features);
 
-  // Turns on certain features if they can be turned on. NULL turns on
-  // all available features.
-  void AddFeatures(const char* desired_features);
+  // Turns on certain features if they can be turned on.
+  void AddFeatures();
 
   const Validators* validators() const {
     return &validators_;

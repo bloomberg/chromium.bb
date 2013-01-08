@@ -2118,13 +2118,9 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
   // The shader translator is used for WebGL even when running on EGL
   // because additional restrictions are needed (like only enabling
   // GL_OES_standard_derivatives on demand).  It is used for the unit
-  // tests because
-  // GLES2DecoderWithShaderTest.GetShaderInfoLogValidArgs passes the
-  // empty string to CompileShader and this is not a valid shader.
-  // TODO(apatrick): fix this test.
-  if ((gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
-       !features().chromium_webglsl && !force_webgl_glsl_validation_) ||
-      gfx::GetGLImplementation() == gfx::kGLImplementationMockGL ||
+  // tests because GLES2DecoderWithShaderTest.GetShaderInfoLogValidArgs passes
+  // the empty string to CompileShader and this is not a valid shader.
+  if (gfx::GetGLImplementation() == gfx::kGLImplementationMockGL ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGLSLTranslator)) {
     use_shader_translator_ = false;
@@ -2453,12 +2449,6 @@ void GLES2DecoderImpl::UpdateCapabilities() {
 bool GLES2DecoderImpl::InitializeShaderTranslator() {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::InitializeShaderTranslator");
 
-  // Re-check the state of use_shader_translator_ each time this is called.
-  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
-      (features().chromium_webglsl || force_webgl_glsl_validation_) &&
-      !use_shader_translator_) {
-    use_shader_translator_ = true;
-  }
   if (!use_shader_translator_) {
     return true;
   }
@@ -2491,7 +2481,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     resources.HashFunction = &CityHashForAngle;
 
   ShShaderSpec shader_spec = force_webgl_glsl_validation_ ||
-      features().chromium_webglsl ? SH_WEBGL_SPEC : SH_GLES2_SPEC;
+      force_webgl_glsl_validation_ ? SH_WEBGL_SPEC : SH_GLES2_SPEC;
   ShaderTranslatorInterface::GlslImplementationType implementation_type =
       gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 ?
           ShaderTranslatorInterface::kGlslES : ShaderTranslatorInterface::kGlsl;
@@ -8753,25 +8743,18 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
     return error::kInvalidArguments;
   }
 
-  bool std_derivatives_enabled = features().oes_standard_derivatives;
-  bool webglsl_enabled = features().chromium_webglsl;
-
-  feature_info_->AddFeatures(feature_str.c_str());
-
-  bool initialization_required = false;
-  if (force_webgl_glsl_validation_ && !derivatives_explicitly_enabled_) {
-    size_t derivatives_offset = feature_str.find(kOESDerivativeExtension);
-    if (std::string::npos != derivatives_offset) {
-      derivatives_explicitly_enabled_ = true;
-      initialization_required = true;
-    }
+  bool desire_webgl_glsl_validation =
+      feature_str.find("GL_CHROMIUM_webglsl") != std::string::npos;
+  bool desire_standard_derivatives = false;
+  if (force_webgl_glsl_validation_) {
+    desire_standard_derivatives =
+        feature_str.find("GL_OES_standard_derivatives") != std::string::npos;
   }
 
-  // If we just enabled a feature which affects the shader translator,
-  // we may need to re-initialize it.
-  if (std_derivatives_enabled != features().oes_standard_derivatives ||
-      webglsl_enabled != features().chromium_webglsl ||
-      initialization_required) {
+  if (desire_webgl_glsl_validation != force_webgl_glsl_validation_ ||
+      desire_standard_derivatives != derivatives_explicitly_enabled_) {
+    force_webgl_glsl_validation_ = desire_webgl_glsl_validation;
+    derivatives_explicitly_enabled_ = desire_standard_derivatives;
     InitializeShaderTranslator();
   }
 

@@ -77,7 +77,6 @@ TEST_F(FeatureInfoTest, Basic) {
   EXPECT_FALSE(info_->feature_flags().npot_ok);
   EXPECT_FALSE(info_->feature_flags().enable_texture_float_linear);
   EXPECT_FALSE(info_->feature_flags().enable_texture_half_float_linear);
-  EXPECT_FALSE(info_->feature_flags().chromium_webglsl);
   EXPECT_FALSE(info_->feature_flags().oes_egl_image_external);
   EXPECT_FALSE(info_->feature_flags().chromium_stream_texture);
   EXPECT_FALSE(info_->feature_flags().angle_translated_shader_source);
@@ -199,7 +198,6 @@ TEST_F(FeatureInfoTest, InitializeNoExtensions) {
               HasSubstr("GL_ANGLE_translated_shader_source"));
 
   // Check a couple of random extensions that should not be there.
-  EXPECT_THAT(info_->extensions(), Not(HasSubstr("GL_CHROMIUM_webglsl")));
   EXPECT_THAT(info_->extensions(), Not(HasSubstr("GL_OES_texture_npot")));
   EXPECT_THAT(info_->extensions(),
               Not(HasSubstr("GL_EXT_texture_compression_dxt1")));
@@ -214,7 +212,6 @@ TEST_F(FeatureInfoTest, InitializeNoExtensions) {
   EXPECT_THAT(info_->extensions(),
               Not(HasSubstr("GL_OES_compressed_ETC1_RGB8_texture")));
   EXPECT_FALSE(info_->feature_flags().npot_ok);
-  EXPECT_FALSE(info_->feature_flags().chromium_webglsl);
   EXPECT_FALSE(info_->validators()->compressed_texture_format.IsValid(
       GL_COMPRESSED_RGB_S3TC_DXT1_EXT));
   EXPECT_FALSE(info_->validators()->compressed_texture_format.IsValid(
@@ -675,13 +672,6 @@ TEST_F(FeatureInfoTest, InitializeOES_standard_derivatives) {
       GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES));
   EXPECT_TRUE(info_->validators()->g_l_state.IsValid(
       GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES));
-}
-
-TEST_F(FeatureInfoTest, InitializeCHROMIUM_webglsl) {
-  SetupInitExpectations("");
-  info_->Initialize("GL_CHROMIUM_webglsl");
-  EXPECT_THAT(info_->extensions(), HasSubstr("GL_CHROMIUM_webglsl"));
-  EXPECT_TRUE(info_->feature_flags().chromium_webglsl);
 }
 
 TEST_F(FeatureInfoTest, InitializeOES_rgb8_rgba8) {
