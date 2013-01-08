@@ -7636,8 +7636,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ACCNAME_RELOAD" desc="The accessible name for the reload/stop button.">
         Reload
       </message>
-      <message name="IDS_ACCNAME_LOCATION" desc="The accessible name for the location bar edit field.">
-        Address
+      <message name="IDS_ACCNAME_LOCATION" desc="The accessible name for the editable-text portion of the omnibox.">
+        Address and search bar
       </message>
       <message name="IDS_ACCNAME_SCRIPT_BUBBLE" desc="The accessible name for the script bubble.">
         Script Bubble
