@@ -342,7 +342,13 @@ class DragDropControllerTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(DragDropControllerTest);
 };
 
-TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
+// TODO(win_aura) http://crbug.com/154081
+#if defined(OS_WIN)
+#define MAYBE_DragDropInSingleViewTest DISABLED_DragDropInSingleViewTest
+#else
+#define MAYBE_DragDropInSingleViewTest DragDropInSingleViewTest
+#endif
+TEST_F(DragDropControllerTest, MAYBE_DragDropInSingleViewTest) {
   scoped_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
@@ -426,7 +432,13 @@ TEST_F(DragDropControllerTest, DragDropWithZeroDragUpdates) {
   EXPECT_TRUE(drag_view->drag_done_received_);
 }
 
-TEST_F(DragDropControllerTest, DragDropInMultipleViewsSingleWidgetTest) {
+// TODO(win_aura) http://crbug.com/154081
+#if defined(OS_WIN)
+#define MAYBE_DragDropInMultipleViewsSingleWidgetTest DISABLED_DragDropInMultipleViewsSingleWidgetTest
+#else
+#define MAYBE_DragDropInMultipleViewsSingleWidgetTest DragDropInMultipleViewsSingleWidgetTest
+#endif
+TEST_F(DragDropControllerTest, MAYBE_DragDropInMultipleViewsSingleWidgetTest) {
   scoped_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view1 = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view1);
@@ -481,7 +493,13 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsSingleWidgetTest) {
   EXPECT_FALSE(drag_view2->drag_done_received_);
 }
 
-TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
+// TODO(win_aura) http://crbug.com/154081
+#if defined(OS_WIN)
+#define MAYBE_DragDropInMultipleViewsMultipleWidgetsTest DISABLED_DragDropInMultipleViewsMultipleWidgetsTest
+#else
+#define MAYBE_DragDropInMultipleViewsMultipleWidgetsTest DragDropInMultipleViewsMultipleWidgetsTest
+#endif
+TEST_F(DragDropControllerTest, MAYBE_DragDropInMultipleViewsMultipleWidgetsTest) {
   scoped_ptr<views::Widget> widget1(CreateNewWidget());
   DragTestView* drag_view1 = new DragTestView;
   AddViewToWidgetAndResize(widget1.get(), drag_view1);
@@ -540,7 +558,13 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
   EXPECT_FALSE(drag_view2->drag_done_received_);
 }
 
-TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
+// TODO(win_aura) http://crbug.com/154081
+#if defined(OS_WIN)
+#define MAYBE_ViewRemovedWhileInDragDropTest DISABLED_ViewRemovedWhileInDragDropTest
+#else
+#define MAYBE_ViewRemovedWhileInDragDropTest ViewRemovedWhileInDragDropTest
+#endif
+TEST_F(DragDropControllerTest, MAYBE_ViewRemovedWhileInDragDropTest) {
   scoped_ptr<views::Widget> widget(CreateNewWidget());
   scoped_ptr<DragTestView> drag_view(new DragTestView);
   AddViewToWidgetAndResize(widget.get(), drag_view.get());
@@ -725,7 +749,13 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
   EXPECT_TRUE(drag_view->drag_done_received_);
 }
 
-TEST_F(DragDropControllerTest, PressingEscapeCancelsDragDrop) {
+// TODO(win_aura) http://crbug.com/154081
+#if defined(OS_WIN)
+#define MAYBE_PressingEscapeCancelsDragDrop DISABLED_PressingEscapeCancelsDragDrop
+#else
+#define MAYBE_PressingEscapeCancelsDragDrop PressingEscapeCancelsDragDrop
+#endif
+TEST_F(DragDropControllerTest, MAYBE_PressingEscapeCancelsDragDrop) {
   scoped_ptr<views::Widget> widget(CreateNewWidget());
   DragTestView* drag_view = new DragTestView;
   AddViewToWidgetAndResize(widget.get(), drag_view);
