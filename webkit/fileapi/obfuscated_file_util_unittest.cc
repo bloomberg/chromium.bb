@@ -229,6 +229,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   }
 
   int64 SizeInUsageFile() {
+    MessageLoop::current()->RunUntilIdle();
     return FileSystemUsageCache::GetUsage(test_helper_.GetUsageCachePath());
   }
 
@@ -353,6 +354,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
           expected_usage_(expected_usage) {}
 
     ~UsageVerifyHelper() {
+      MessageLoop::current()->RunUntilIdle();
       Check();
     }
 

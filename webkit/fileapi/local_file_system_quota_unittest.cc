@@ -88,6 +88,7 @@ class LocalFileSystemQuotaTest
   }
 
   int64 SizeByQuotaUtil() {
+    MessageLoop::current()->RunUntilIdle();
     return test_helper_.GetCachedOriginUsage();
   }
 

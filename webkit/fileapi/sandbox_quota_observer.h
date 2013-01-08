@@ -5,12 +5,16 @@
 #ifndef WEBKIT_FILEAPI_SANDBOX_QUOTA_OBSERVER_H_
 #define WEBKIT_FILEAPI_SANDBOX_QUOTA_OBSERVER_H_
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "webkit/fileapi/file_observers.h"
+#include "webkit/fileapi/file_system_url.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -29,6 +33,8 @@ class SandboxQuotaObserver
     : public FileUpdateObserver,
       public FileAccessObserver {
  public:
+  typedef std::map<FilePath, int64> PendingUpdateNotificationMap;
+
   SandboxQuotaObserver(
       quota::QuotaManagerProxy* quota_manager_proxy,
       base::SequencedTaskRunner* update_notify_runner,
@@ -44,6 +50,9 @@ class SandboxQuotaObserver
   virtual void OnAccess(const FileSystemURL& url) OVERRIDE;
 
  private:
+  void ApplyPendingUsageUpdate();
+  void UpdateUsageCacheFile(const FilePath& usage_file_path, int64 delta);
+
   FilePath GetUsageCachePath(const FileSystemURL& url);
 
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
@@ -51,6 +60,11 @@ class SandboxQuotaObserver
 
   // Not owned; sandbox_file_util_ should have identical lifetime with this.
   ObfuscatedFileUtil* sandbox_file_util_;
+
+  PendingUpdateNotificationMap pending_update_notification_;
+  bool running_delayed_cache_update_;
+
+  base::WeakPtrFactory<SandboxQuotaObserver> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxQuotaObserver);
 };
