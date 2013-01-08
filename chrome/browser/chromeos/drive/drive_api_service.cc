@@ -218,6 +218,7 @@ void DriveAPIService::GetFilelist(
       new google_apis::GetFilelistOperation(
           operation_registry(),
           url_request_context_getter_,
+          url_generator_,
           url,
           search_query,
           base::Bind(&ParseResourceListAndRun, callback)));
@@ -234,6 +235,7 @@ void DriveAPIService::GetChangelist(
       new google_apis::GetChangelistOperation(
           operation_registry(),
           url_request_context_getter_,
+          url_generator_,
           url,
           start_changestamp,
           base::Bind(&ParseResourceListAndRun, callback)));
@@ -248,6 +250,7 @@ void DriveAPIService::GetResourceEntry(
   runner_->StartOperationWithRetry(new google_apis::GetFileOperation(
       operation_registry(),
       url_request_context_getter_,
+      url_generator_,
       resource_id,
       base::Bind(&ParseResourceEntryAndRun, callback)));
 }
@@ -261,6 +264,7 @@ void DriveAPIService::GetAccountMetadata(
       new google_apis::GetAboutOperation(
           operation_registry(),
           url_request_context_getter_,
+          url_generator_,
           base::Bind(&ParseAccounetMetadataAndRun, callback)));
 }
 
@@ -272,6 +276,7 @@ void DriveAPIService::GetApplicationInfo(
   runner_->StartOperationWithRetry(
       new google_apis::GetApplistOperation(operation_registry(),
                                            url_request_context_getter_,
+                                           url_generator_,
                                            callback));
 }
 

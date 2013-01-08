@@ -671,6 +671,8 @@
         'browser/google_apis/drive_api_operations.h',
         'browser/google_apis/drive_api_parser.cc',
         'browser/google_apis/drive_api_parser.h',
+        'browser/google_apis/drive_api_url_generator.cc',
+        'browser/google_apis/drive_api_url_generator.h',
         'browser/google_apis/drive_api_util.cc',
         'browser/google_apis/drive_api_util.h',
         'browser/google_apis/drive_entry_kinds.h',

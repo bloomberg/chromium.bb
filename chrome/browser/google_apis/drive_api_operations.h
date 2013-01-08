@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome/browser/google_apis/base_operations.h"
+#include "chrome/browser/google_apis/drive_api_url_generator.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -22,6 +23,7 @@ class GetAboutOperation : public GetDataOperation {
  public:
   GetAboutOperation(OperationRegistry* registry,
                     net::URLRequestContextGetter* url_request_context_getter,
+                    const DriveApiUrlGenerator& url_generator,
                     const GetDataCallback& callback);
   virtual ~GetAboutOperation();
 
@@ -30,6 +32,8 @@ class GetAboutOperation : public GetDataOperation {
   virtual GURL GetURL() const OVERRIDE;
 
  private:
+  const DriveApiUrlGenerator url_generator_;
+
   DISALLOW_COPY_AND_ASSIGN(GetAboutOperation);
 };
 
@@ -40,6 +44,7 @@ class GetApplistOperation : public GetDataOperation {
  public:
   GetApplistOperation(OperationRegistry* registry,
                       net::URLRequestContextGetter* url_request_context_getter,
+                      const DriveApiUrlGenerator& url_generator,
                       const GetDataCallback& callback);
   virtual ~GetApplistOperation();
 
@@ -48,6 +53,8 @@ class GetApplistOperation : public GetDataOperation {
   virtual GURL GetURL() const OVERRIDE;
 
  private:
+  const DriveApiUrlGenerator url_generator_;
+
   DISALLOW_COPY_AND_ASSIGN(GetApplistOperation);
 };
 
@@ -64,6 +71,7 @@ class GetChangelistOperation : public GetDataOperation {
   GetChangelistOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
+      const DriveApiUrlGenerator& url_generator,
       const GURL& url,
       int64 start_changestamp,
       const GetDataCallback& callback);
@@ -74,6 +82,7 @@ class GetChangelistOperation : public GetDataOperation {
   virtual GURL GetURL() const OVERRIDE;
 
  private:
+  const DriveApiUrlGenerator url_generator_;
   GURL url_;
   int64 start_changestamp_;
 
@@ -88,6 +97,7 @@ class GetFilelistOperation : public GetDataOperation {
   GetFilelistOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
+      const DriveApiUrlGenerator& url_generator,
       const GURL& url,
       const std::string& search_string,
       const GetDataCallback& callback);
@@ -98,6 +108,7 @@ class GetFilelistOperation : public GetDataOperation {
   virtual GURL GetURL() const OVERRIDE;
 
  private:
+  const DriveApiUrlGenerator url_generator_;
   GURL url_;
   std::string search_string_;
 
@@ -111,6 +122,7 @@ class GetFileOperation : public GetDataOperation {
  public:
   GetFileOperation(OperationRegistry* registry,
                    net::URLRequestContextGetter* url_request_context_getter,
+                   const DriveApiUrlGenerator& url_generator,
                    const std::string& file_id,
                    const GetDataCallback& callback);
   virtual ~GetFileOperation();
@@ -120,6 +132,7 @@ class GetFileOperation : public GetDataOperation {
   virtual GURL GetURL() const OVERRIDE;
 
  private:
+  const DriveApiUrlGenerator url_generator_;
   std::string file_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GetFileOperation);

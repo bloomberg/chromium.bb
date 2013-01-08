@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/auth_service_observer.h"
+#include "chrome/browser/google_apis/drive_api_url_generator.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 
 class FilePath;
@@ -154,6 +155,7 @@ class DriveAPIService : public google_apis::DriveServiceInterface,
   Profile* profile_;
   scoped_ptr<google_apis::OperationRunner> runner_;
   ObserverList<google_apis::DriveServiceObserver> observers_;
+  google_apis::DriveApiUrlGenerator url_generator_;
   const std::string custom_user_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveAPIService);
