@@ -215,10 +215,10 @@ def PrintTestResults(results):
 def main():
   parser = optparse.OptionParser()
   parser.add_option(
-      '', '--chromedriver_path', type='string', default=None,
+      '', '--chromedriver', type='string', default=None,
       help='Path to a build of the chromedriver library(REQUIRED!)')
   parser.add_option(
-      '', '--chrome_path', type='string', default=None,
+      '', '--chrome', type='string', default=None,
       help='Path to a build of the chrome binary')
   parser.add_option(
       '', '--filter', type='string', default=None,
@@ -226,9 +226,8 @@ def main():
            'AppCacheTest,ElementFindingTest#testShouldReturnTitleOfPageIfSet.')
   options, args = parser.parse_args()
 
-  if (options.chromedriver_path is None or
-      not os.path.exists(options.chromedriver_path)):
-    parser.error('chromedriver_path is required or the given path is invalid.' +
+  if (options.chromedriver is None or not os.path.exists(options.chromedriver)):
+    parser.error('chromedriver is required or the given path is invalid.' +
                  'Please run "%s --help" for help' % __file__)
 
   # Run passed tests when filter is not provided.
@@ -252,8 +251,8 @@ def main():
       src_dir=chrome_paths.GetSrc(),
       java_tests_src_dir=java_tests_src_dir,
       test_filter=test_filter,
-      chromedriver_path=options.chromedriver_path,
-      chrome_path=options.chrome_path))
+      chromedriver_path=options.chromedriver,
+      chrome_path=options.chrome))
 
 
 if __name__ == '__main__':

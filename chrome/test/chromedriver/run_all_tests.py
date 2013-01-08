@@ -74,12 +74,12 @@ def Main():
   print '@@@BUILD_STEP chromedriver2_python_tests@@@'
   cmd = [
     sys.executable,
-    os.path.join(_THIS_DIR, 'test.py'),
-    os.path.join(build_dir, chromedriver),
+    os.path.join(_THIS_DIR, 'run_py_tests.py'),
+    '--chromedriver=' + os.path.join(build_dir, chromedriver),
   ]
   # Set the built chrome binary.
   if chrome_binary is not None:
-    cmd.append(chrome_binary)
+    cmd.append('--chrome=' + chrome_binary)
   if util.IsMac():
     # In Mac, chromedriver2.so is a 32-bit build, so run with the 32-bit python.
     os.environ['VERSIONER_PYTHON_PREFER_32_BIT'] = 'yes'
@@ -92,11 +92,11 @@ def Main():
   cmd = [
     sys.executable,
     os.path.join(_THIS_DIR, 'run_java_tests.py'),
-    '--chromedriver_path=' + os.path.join(build_dir, chromedriver),
+    '--chromedriver=' + os.path.join(build_dir, chromedriver),
   ]
   # Set the built chrome binary.
   if chrome_binary is not None:
-    cmd.append('--chrome_path=' + chrome_binary)
+    cmd.append('--chrome=' + chrome_binary)
   code2 = util.RunCommand(cmd)
   if code2 != 0:
     print '@@@STEP_FAILURE@@@'
