@@ -385,7 +385,8 @@ class DwarfCUToModule::FuncHandler: public GenericDIEHandler {
   FuncHandler(CUContext *cu_context, DIEContext *parent_context,
               uint64 offset)
       : GenericDIEHandler(cu_context, parent_context, offset),
-        low_pc_(0), high_pc_(0), abstract_origin_(NULL), inline_(false) { }
+        low_pc_(0), high_pc_(0), high_pc_form_(dwarf2reader::DW_FORM_addr),
+        abstract_origin_(NULL), inline_(false) { }
   void ProcessAttributeUnsigned(enum DwarfAttribute attr,
                                 enum DwarfForm form,
                                 uint64 data);
@@ -404,6 +405,7 @@ class DwarfCUToModule::FuncHandler: public GenericDIEHandler {
   // specification_, parent_context_.  Computed in EndAttributes.
   string name_;
   uint64 low_pc_, high_pc_; // DW_AT_low_pc, DW_AT_high_pc
+  DwarfForm high_pc_form_; // DW_AT_high_pc can be length or address.
   const AbstractOrigin* abstract_origin_;
   bool inline_;
 };
@@ -419,7 +421,11 @@ void DwarfCUToModule::FuncHandler::ProcessAttributeUnsigned(
     case dwarf2reader::DW_AT_inline:      inline_  = true; break;
 
     case dwarf2reader::DW_AT_low_pc:      low_pc_  = data; break;
-    case dwarf2reader::DW_AT_high_pc:     high_pc_ = data; break;
+    case dwarf2reader::DW_AT_high_pc:
+      high_pc_form_ = form;
+      high_pc_ = data;
+      break;
+
     default:
       GenericDIEHandler::ProcessAttributeUnsigned(attr, form, data);
       break;
@@ -473,6 +479,11 @@ bool DwarfCUToModule::FuncHandler::EndAttributes() {
 }
 
 void DwarfCUToModule::FuncHandler::Finish() {
+  // Make high_pc_ an address, if it isn't already.
+  if (high_pc_form_ != dwarf2reader::DW_FORM_addr) {
+    high_pc_ += low_pc_;
+  }
+
   // Did we collect the information we need?  Not all DWARF function
   // entries have low and high addresses (for example, inlined
   // functions that were never used), but all the ones we're

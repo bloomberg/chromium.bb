@@ -193,12 +193,15 @@ class CUFixtureBase {
   DIEHandler *StartSpecifiedDIE(DIEHandler *parent, DwarfTag tag,
                                 uint64 specification, const char *name = NULL);
  
-  // Define a function as a child of PARENT with the given name,
-  // address, and size. Call EndAttributes and Finish; one cannot
-  // define children of the defined function's DIE.
+  // Define a function as a child of PARENT with the given name, address, and
+  // size. If high_pc_form is DW_FORM_addr then the DW_AT_high_pc attribute
+  // will be written as an address; otherwise it will be written as the
+  // function's size. Call EndAttributes and Finish; one cannot define
+  // children of the defined function's DIE.
   void DefineFunction(DIEHandler *parent, const string &name,
                       Module::Address address, Module::Address size,
-                      const char* mangled_name);
+                      const char* mangled_name,
+                      DwarfForm high_pc_form = dwarf2reader::DW_FORM_addr);
 
   // Create a declaration DIE as a child of PARENT with the given
   // offset, tag and name. If NAME is the empty string, don't provide
@@ -414,7 +417,8 @@ DIEHandler *CUFixtureBase::StartSpecifiedDIE(DIEHandler *parent,
 void CUFixtureBase::DefineFunction(dwarf2reader::DIEHandler *parent,
                                    const string &name, Module::Address address,
                                    Module::Address size,
-                                   const char* mangled_name) {
+                                   const char* mangled_name,
+                                   DwarfForm high_pc_form) {
   dwarf2reader::DIEHandler *func
       = parent->FindChildHandler(0xe34797c7e68590a8LL,
                                  dwarf2reader::DW_TAG_subprogram);
@@ -425,9 +429,15 @@ void CUFixtureBase::DefineFunction(dwarf2reader::DIEHandler *parent,
   func->ProcessAttributeUnsigned(dwarf2reader::DW_AT_low_pc,
                                  dwarf2reader::DW_FORM_addr,
                                  address);
+
+  Module::Address high_pc = size;
+  if (high_pc_form == dwarf2reader::DW_FORM_addr) {
+    high_pc += address;
+  }
   func->ProcessAttributeUnsigned(dwarf2reader::DW_AT_high_pc,
-                                 dwarf2reader::DW_FORM_addr,
-                                 address + size);
+                                 high_pc_form,
+                                 high_pc);
+
   if (mangled_name)
     func->ProcessAttributeString(dwarf2reader::DW_AT_MIPS_linkage_name,
                                  dwarf2reader::DW_FORM_strp,
@@ -598,16 +608,20 @@ void CUFixtureBase::TestLine(int i, int j,
 
 // Include caller locations for our test subroutines.
 #define TRACE(call) do { SCOPED_TRACE("called from here"); call; } while (0)
-#define PushLine(a,b,c,d)          TRACE(PushLine((a),(b),(c),(d)))
-#define SetLanguage(a)             TRACE(SetLanguage(a))
-#define StartCU()                  TRACE(StartCU())
-#define DefineFunction(a,b,c,d,e)  TRACE(DefineFunction((a),(b),(c),(d),(e)))
-#define DeclarationDIE(a,b,c,d,e)  TRACE(DeclarationDIE((a),(b),(c),(d),(e)))
-#define DefinitionDIE(a,b,c,d,e,f) TRACE(DefinitionDIE((a),(b),(c),(d),(e),(f)))
-#define TestFunctionCount(a)       TRACE(TestFunctionCount(a))
-#define TestFunction(a,b,c,d)      TRACE(TestFunction((a),(b),(c),(d)))
-#define TestLineCount(a,b)         TRACE(TestLineCount((a),(b)))
-#define TestLine(a,b,c,d,e,f)      TRACE(TestLine((a),(b),(c),(d),(e),(f)))
+#define PushLine(a,b,c,d)         TRACE(PushLine((a),(b),(c),(d)))
+#define SetLanguage(a)            TRACE(SetLanguage(a))
+#define StartCU()                 TRACE(StartCU())
+#define DefineFunction(a,b,c,d,e) TRACE(DefineFunction((a),(b),(c),(d),(e)))
+// (DefineFunction) instead of DefineFunction to avoid macro expansion.
+#define DefineFunction6(a,b,c,d,e,f) \
+    TRACE((DefineFunction)((a),(b),(c),(d),(e),(f)))
+#define DeclarationDIE(a,b,c,d,e) TRACE(DeclarationDIE((a),(b),(c),(d),(e)))
+#define DefinitionDIE(a,b,c,d,e,f) \
+    TRACE(DefinitionDIE((a),(b),(c),(d),(e),(f)))
+#define TestFunctionCount(a)      TRACE(TestFunctionCount(a))
+#define TestFunction(a,b,c,d)     TRACE(TestFunction((a),(b),(c),(d)))
+#define TestLineCount(a,b)        TRACE(TestLineCount((a),(b)))
+#define TestLine(a,b,c,d,e,f)     TRACE(TestLine((a),(b),(c),(d),(e),(f)))
 
 class SimpleCU: public CUFixtureBase, public Test {
 };
@@ -618,6 +632,23 @@ TEST_F(SimpleCU, OneFunc) {
   StartCU();
   DefineFunction(&root_handler_, "function1",
                  0x938cf8c07def4d34ULL, 0x55592d727f6cd01fLL, NULL);
+  root_handler_.Finish();
+
+  TestFunctionCount(1);
+  TestFunction(0, "function1", 0x938cf8c07def4d34ULL, 0x55592d727f6cd01fLL);
+  TestLineCount(0, 1);
+  TestLine(0, 0, 0x938cf8c07def4d34ULL, 0x55592d727f6cd01fLL, "line-file",
+           246571772);
+}
+
+// As above, only DW_AT_high_pc is a length rather than an address.
+TEST_F(SimpleCU, OneFuncHighPcIsLength) {
+  PushLine(0x938cf8c07def4d34ULL, 0x55592d727f6cd01fLL, "line-file", 246571772);
+
+  StartCU();
+  DefineFunction6(&root_handler_, "function1",
+                  0x938cf8c07def4d34ULL, 0x55592d727f6cd01fLL, NULL,
+                  dwarf2reader::DW_FORM_udata);
   root_handler_.Finish();
 
   TestFunctionCount(1);
