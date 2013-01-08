@@ -596,6 +596,10 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
     case IDC_TASK_MANAGER:
       *accelerator = ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN);
       return true;
+    case IDC_FEEDBACK:
+      *accelerator = ui::Accelerator(ui::VKEY_I,
+                                     ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+      return true;
 #endif
   }
   // Else, we retrieve the accelerator information from the frame.
