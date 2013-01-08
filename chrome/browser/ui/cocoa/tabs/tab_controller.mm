@@ -63,11 +63,12 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 }  // TabControllerInternal namespace
 
-// The min widths match the windows values and are sums of left + right
-// padding, of which we have no comparable constants (we draw using paths, not
-// images). The selected tab width includes the close button width.
-+ (CGFloat)minTabWidth { return 31; }
-+ (CGFloat)minSelectedTabWidth { return 46; }
+// The min widths is the smallest number at which the right edge of the right
+// tab border image is not visibly clipped.  It is a bit smaller than the sum
+// of the two tab edge bitmaps because these bitmaps have a few transparent
+// pixels on the side.  The selected tab width includes the close button width.
++ (CGFloat)minTabWidth { return 35; }
++ (CGFloat)minSelectedTabWidth { return 52; }
 + (CGFloat)maxTabWidth { return 214; }
 + (CGFloat)miniTabWidth { return 58; }
 + (CGFloat)appTabWidth { return 66; }
