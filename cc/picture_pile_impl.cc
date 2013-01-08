@@ -15,7 +15,8 @@ scoped_refptr<PicturePileImpl> PicturePileImpl::Create() {
   return make_scoped_refptr(new PicturePileImpl());
 }
 
-PicturePileImpl::PicturePileImpl() {
+PicturePileImpl::PicturePileImpl()
+    : min_contents_scale_(1) {
 }
 
 PicturePileImpl::~PicturePileImpl() {
@@ -40,6 +41,7 @@ scoped_refptr<PicturePileImpl> PicturePileImpl::CloneForDrawing() const {
   for (PicturePile::Pile::const_iterator i = pile_.begin();
        i != pile_.end(); ++i)
     clone->pile_.push_back((*i)->Clone());
+  clone->min_contents_scale_ = min_contents_scale_;
 
   return clone;
 }
@@ -49,26 +51,32 @@ void PicturePileImpl::Raster(
     gfx::Rect content_rect,
     float contents_scale,
     RenderingStats* stats) {
+
+  if (!pile_.size())
+    return;
+
+  DCHECK(contents_scale >= min_contents_scale_);
+
   base::TimeTicks rasterizeBeginTime = base::TimeTicks::Now();
 
   // TODO(enne): do this more efficiently, i.e. top down with Skia clips
   canvas->save();
   canvas->translate(-content_rect.x(), -content_rect.y());
-  SkRect layer_skrect = SkRect::MakeXYWH(
-      content_rect.x(),
-      content_rect.y(),
-      content_rect.width(),
-      content_rect.height());
-  canvas->clipRect(layer_skrect);
-  canvas->scale(contents_scale, contents_scale);
-
-  gfx::Rect layer_rect = gfx::ToEnclosedRect(gfx::ScaleRect(gfx::RectF(content_rect), 1 / contents_scale));
+  canvas->clipRect(gfx::RectToSkRect(content_rect));
 
   for (PicturePile::Pile::const_iterator i = pile_.begin();
        i != pile_.end(); ++i) {
-    if (!(*i)->LayerRect().Intersects(layer_rect))
+    // This is intentionally *enclosed* rect, so that the clip is aligned on
+    // integral post-scale content pixels and does not extend past the edges of
+    // the picture's layer rect.  The min_contents_scale enforces that enough
+    // buffer pixels have been added such that the enclosed rect encompasses all
+    // invalidated pixels at any larger scale level.
+    gfx::Rect content_clip = gfx::ToEnclosedRect(
+        gfx::ScaleRect((*i)->LayerRect(), contents_scale));
+    if (!content_rect.Intersects(content_clip))
       continue;
-    (*i)->Raster(canvas);
+
+    (*i)->Raster(canvas, content_clip, contents_scale);
 
     SkISize deviceSize = canvas->getDeviceSize();
     stats->totalPixelsRasterized += deviceSize.width() * deviceSize.height();

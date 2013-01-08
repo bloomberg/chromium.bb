@@ -17,8 +17,8 @@ class ResourceUpdateQueue;
 struct RenderingStats;
 
 class CC_EXPORT PictureLayer : public ContentsScalingLayer {
-public:
-  static scoped_refptr<PictureLayer> create(ContentLayerClient*);
+ public:
+  static scoped_refptr<PictureLayer> create(ContentLayerClient* client);
 
   void clearClient() { client_ = 0; }
 
@@ -26,17 +26,20 @@ public:
   virtual bool drawsContent() const OVERRIDE;
   virtual scoped_ptr<LayerImpl> createLayerImpl(
       LayerTreeImpl* treeImpl) OVERRIDE;
-  virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
+  virtual void setLayerTreeHost(LayerTreeHost* host) OVERRIDE;
+  virtual void pushPropertiesTo(LayerImpl* layer) OVERRIDE;
   virtual void setNeedsDisplayRect(const gfx::RectF& layerRect) OVERRIDE;
-  virtual void update(ResourceUpdateQueue&, const OcclusionTracker*,
-                      RenderingStats&) OVERRIDE;
+  virtual void update(
+      ResourceUpdateQueue& queue,
+      const OcclusionTracker* occlusion,
+      RenderingStats& stats) OVERRIDE;
   virtual void setIsMask(bool is_mask) OVERRIDE;
 
-protected:
-  explicit PictureLayer(ContentLayerClient*);
+ protected:
+  explicit PictureLayer(ContentLayerClient* client);
   virtual ~PictureLayer();
 
-private:
+ private:
   ContentLayerClient* client_;
   PicturePile pile_;
   // Invalidation to use the next time update is called.

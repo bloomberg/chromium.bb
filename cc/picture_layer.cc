@@ -43,6 +43,12 @@ void PictureLayer::pushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->SyncFromActiveLayer();
 }
 
+void PictureLayer::setLayerTreeHost(LayerTreeHost* host) {
+  Layer::setLayerTreeHost(host);
+  if (host)
+      pile_.SetMinContentsScale(host->settings().minimumContentsScale);
+}
+
 void PictureLayer::setNeedsDisplayRect(const gfx::RectF& layer_rect) {
   gfx::Rect rect = gfx::ToEnclosedRect(layer_rect);
   pending_invalidation_.Union(rect);

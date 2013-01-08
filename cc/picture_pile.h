@@ -29,6 +29,8 @@ public:
   void Resize(gfx::Size);
   gfx::Size size() const { return size_; }
 
+  void SetMinContentsScale(float min_contents_scale);
+
   // Re-record parts of the picture that are invalid.
   // Invalidations are in layer space.
   void Update(
@@ -48,6 +50,8 @@ private:
   typedef std::list<scoped_refptr<Picture> > Pile;
   Pile pile_;
   gfx::Size size_;
+  float min_contents_scale_;
+  int buffer_pixels_;
 
   DISALLOW_COPY_AND_ASSIGN(PicturePile);
 };

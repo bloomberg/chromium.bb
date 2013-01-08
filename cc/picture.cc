@@ -10,6 +10,7 @@
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
 #include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/skia_util.h"
 
 namespace {
 // URI label for a lazily decoded SkPixelRef.
@@ -88,10 +89,16 @@ void Picture::Record(ContentLayerClient* painter,
   opaque_rect_ = gfx::ToEnclosedRect(opaque_layer_rect);
 }
 
-void Picture::Raster(SkCanvas* canvas) {
+void Picture::Raster(
+    SkCanvas* canvas,
+    gfx::Rect content_rect,
+    float contents_scale) {
   TRACE_EVENT0("cc", "Picture::Raster");
   DCHECK(picture_);
+
   canvas->save();
+  canvas->clipRect(gfx::RectToSkRect(content_rect));
+  canvas->scale(contents_scale, contents_scale);
   canvas->translate(layer_rect_.x(), layer_rect_.y());
   canvas->drawPicture(*picture_);
   canvas->restore();

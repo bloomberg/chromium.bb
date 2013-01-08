@@ -30,6 +30,7 @@ class CC_EXPORT LayerTreeSettings {
   bool canUseLCDText;
   bool shouldClearRootRenderPass;
   bool useLinearFadeScrollbarAnimator;
+  float minimumContentsScale;
   double refreshRate;
   size_t maxPartialTextureUpdates;
   size_t numRasterThreads;

@@ -169,6 +169,9 @@ void PictureLayerImpl::calculateContentsScale(
     return;
   }
 
+  float min_contents_scale = layerTreeImpl()->settings().minimumContentsScale;
+  ideal_contents_scale = std::max(ideal_contents_scale, min_contents_scale);
+
   ManageTilings(ideal_contents_scale);
 
   // The content scale and bounds for a PictureLayerImpl is somewhat fictitious.
@@ -177,7 +180,7 @@ void PictureLayerImpl::calculateContentsScale(
   // In order to guarantee that we can fill this integer space with any set of
   // tilings (and then map back to floating point texture coordinates), the
   // contents scale must be at least as large as the largest of the tilings.
-  float max_contents_scale = 1.f;
+  float max_contents_scale = min_contents_scale;
   for (size_t i = 0; i < tilings_.num_tilings(); ++i) {
     const PictureLayerTiling* tiling = tilings_.tiling_at(i);
     max_contents_scale = std::max(max_contents_scale, tiling->contents_scale());
@@ -251,6 +254,9 @@ ResourceProvider::ResourceId PictureLayerImpl::contentsResourceId() const {
 }
 
 void PictureLayerImpl::AddTiling(float contents_scale, gfx::Size tile_size) {
+  if (contents_scale < layerTreeImpl()->settings().minimumContentsScale)
+    return;
+
   const PictureLayerTiling* tiling = tilings_.AddTiling(
       contents_scale,
       tile_size);

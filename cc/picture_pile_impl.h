@@ -48,6 +48,7 @@ private:
   ~PicturePileImpl();
 
   PicturePile::Pile pile_;
+  float min_contents_scale_;
 
   typedef std::map<base::PlatformThreadId, scoped_refptr<PicturePileImpl> >
       CloneMap;
