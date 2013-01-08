@@ -6350,15 +6350,12 @@
    Memcheck:Leak
    fun:malloc
    fun:g_malloc
-   fun:g_dir_open
-   fun:get_file_formats
-   fun:_gdk_pixbuf_get_module
+   ...
    fun:gdk_pixbuf_loader_load_module
    fun:gdk_pixbuf_loader_close
    fun:_ZN2ui12_GLOBAL__N_110LoadPixbufEPN4base22RefCountedStaticMemoryEb
    fun:_ZN2ui14ResourceBundle19GetNativeImageNamedEiNS0_8ImageRTLE
    fun:_ZN2ui14ResourceBundle19GetNativeImageNamedEi
-   fun:_ZN14TabRendererGtk13InitResourcesEv
 }
 {
    bug_166819
