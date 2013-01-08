@@ -679,6 +679,12 @@ const char kExtensionProcess[]              = "extension-process";
 // Frequency in seconds for Extensions auto-update.
 const char kExtensionsUpdateFrequency[]     = "extensions-update-frequency";
 
+// Fakes the channel of the browser for purposes of Variations filtering. This
+// is to be used for testing only. Possible values are "stable", "beta", "dev"
+// and "canary". Note that this only applies if the browser's reported channel
+// is UNKNOWN.
+const char kFakeVariationsChannel[] =       "fake-variations-channel";
+
 // These two flags are added around the switches about:flags adds to the
 // command line. This is useful to see which switches were added by about:flags
 // on about:version. They don't have any effect.

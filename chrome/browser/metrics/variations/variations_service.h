@@ -99,11 +99,13 @@ class VariationsService
                      PrefService* local_prefs);
 
   // Returns whether |study| should be disabled according to its restriction
-  // parameters. Uses |version_info| for min / max version checks and
-  // |reference_date| for the start date check.
+  // parameters. Uses |version_info| for min / max version checks,
+  // |reference_date| for the start date check and |channel| for channel
+  // checks.
   static bool ShouldAddStudy(const Study& study,
                              const chrome::VersionInfo& version_info,
-                             const base::Time& reference_date);
+                             const base::Time& reference_date,
+                             chrome::VersionInfo::Channel channel);
 
   // Checks whether a study is applicable for the given |channel| per |filter|.
   static bool CheckStudyChannel(const Study_Filter& filter,

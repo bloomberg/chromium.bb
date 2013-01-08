@@ -60,6 +60,31 @@ chrome::VersionInfo::Channel ConvertStudyChannelToVersionChannel(
   return chrome::VersionInfo::CHANNEL_UNKNOWN;
 }
 
+// Wrapper around channel checking, used to enable channel mocking for
+// testing. If the current browser channel is not UNKNOWN, this will return
+// that channel value. Otherwise, if the fake channel flag is provided, this
+// will return the fake channel. Failing that, this will return the UNKNOWN
+// channel.
+chrome::VersionInfo::Channel GetChannelForVariations() {
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel != chrome::VersionInfo::CHANNEL_UNKNOWN)
+    return channel;
+  std::string forced_channel =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kFakeVariationsChannel);
+  if (forced_channel == "stable")
+    channel = chrome::VersionInfo::CHANNEL_STABLE;
+  else if (forced_channel == "beta")
+    channel = chrome::VersionInfo::CHANNEL_BETA;
+  else if (forced_channel == "dev")
+    channel = chrome::VersionInfo::CHANNEL_DEV;
+  else if (forced_channel == "canary")
+    channel = chrome::VersionInfo::CHANNEL_CANARY;
+  else
+    DVLOG(1) << "Invalid channel provided: " << forced_channel;
+  return channel;
+}
+
 Study_Platform GetCurrentPlatform() {
 #if defined(OS_WIN)
   return Study_Platform_PLATFORM_WINDOWS;
@@ -136,9 +161,12 @@ bool VariationsService::CreateTrialsFromSeed(PrefService* local_prefs) {
   if (!current_version_info.is_valid())
     return false;
 
+  chrome::VersionInfo::Channel channel = GetChannelForVariations();
   for (int i = 0; i < seed.study_size(); ++i) {
-    if (ShouldAddStudy(seed.study(i), current_version_info, reference_date))
+    if (ShouldAddStudy(seed.study(i), current_version_info, reference_date,
+                       channel)) {
       CreateTrialFromStudy(seed.study(i), reference_date);
+    }
   }
 
   return true;
@@ -293,9 +321,10 @@ bool VariationsService::StoreSeedData(const std::string& seed_data,
 bool VariationsService::ShouldAddStudy(
     const Study& study,
     const chrome::VersionInfo& version_info,
-    const base::Time& reference_date) {
+    const base::Time& reference_date,
+    const chrome::VersionInfo::Channel channel) {
   if (study.has_filter()) {
-    if (!CheckStudyChannel(study.filter(), chrome::VersionInfo::GetChannel())) {
+    if (!CheckStudyChannel(study.filter(), channel)) {
       DVLOG(1) << "Filtered out study " << study.name() << " due to channel.";
       return false;
     }
