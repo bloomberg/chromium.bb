@@ -69,39 +69,35 @@ void WillLoadPluginsCallback(
     CHECK(false) << "Plugin loading should happen out-of-process.";
   }
 }
-}  // namespace
 
 #if defined(OS_MACOSX)
-static void NotifyPluginsOfActivation() {
+void NotifyPluginsOfActivation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   for (PluginProcessHostIterator iter; !iter.Done(); ++iter)
     iter->OnAppActivation();
 }
 #endif
-#if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)
-// Delegate class for monitoring directories.
-class PluginDirWatcherDelegate : public FilePathWatcher::Delegate {
-  virtual void OnFilePathChanged(const FilePath& path) OVERRIDE {
-    VLOG(1) << "Watched path changed: " << path.value();
-    // Make the plugin list update itself
-    webkit::npapi::PluginList::Singleton()->RefreshPlugins();
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&PluginService::PurgePluginListCache,
-                   static_cast<BrowserContext*>(NULL), false));
-  }
 
-  virtual void OnFilePathError(const FilePath& path) OVERRIDE {
+#if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)
+void NotifyPluginDirChanged(const FilePath& path, bool error) {
+  if (error) {
     // TODO(pastarmovj): Add some sensible error handling. Maybe silently
     // stopping the watcher would be enough. Or possibly restart it.
     NOTREACHED();
+    return;
   }
-
- protected:
-  virtual ~PluginDirWatcherDelegate() {}
-};
+  VLOG(1) << "Watched path changed: " << path.value();
+  // Make the plugin list update itself
+  webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PluginService::PurgePluginListCache,
+                 static_cast<BrowserContext*>(NULL), false));
+}
 #endif
+
+}  // namespace
 
 // static
 PluginService* PluginService::GetInstance() {
@@ -188,7 +184,7 @@ void PluginServiceImpl::StartWatchingPlugins() {
 #if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)
 // On ChromeOS the user can't install plugins anyway and on Windows all
 // important plugins register themselves in the registry so no need to do that.
-  file_watcher_delegate_ = new PluginDirWatcherDelegate();
+
   // Get the list of all paths for registering the FilePathWatchers
   // that will track and if needed reload the list of plugins on runtime.
   std::vector<FilePath> plugin_dirs;
@@ -207,7 +203,7 @@ void PluginServiceImpl::StartWatchingPlugins() {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&PluginServiceImpl::RegisterFilePathWatcher, watcher,
-                   plugin_dirs[i], file_watcher_delegate_));
+                   plugin_dirs[i]));
     file_watchers_.push_back(watcher);
   }
 #endif
@@ -601,11 +597,10 @@ PepperPluginInfo* PluginServiceImpl::GetRegisteredPpapiPluginInfo(
 
 #if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)
 // static
-void PluginServiceImpl::RegisterFilePathWatcher(
-    FilePathWatcher* watcher,
-    const FilePath& path,
-    FilePathWatcher::Delegate* delegate) {
-  bool result = watcher->Watch(path, delegate);
+void PluginServiceImpl::RegisterFilePathWatcher(FilePathWatcher* watcher,
+                                                const FilePath& path) {
+  bool result = watcher->Watch(path, false,
+                               base::Bind(&NotifyPluginDirChanged));
   DCHECK(result);
 }
 #endif
@@ -695,7 +690,7 @@ void PluginServiceImpl::SetPluginListForTesting(
 #if defined(OS_MACOSX)
 void PluginServiceImpl::AppActivated() {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&NotifyPluginsOfActivation));
+                          base::Bind(&NotifyPluginsOfActivation));
 }
 #endif
 
