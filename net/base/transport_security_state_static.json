@@ -184,10 +184,7 @@
     { "name": "chromiumcodereview.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "codereview.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "codereview.chromium.org", "include_subdomains": true, "mode": "force-https", "pins": "google" },
-    // TODO(palmer): include_subdomains must be set to true when the
-    // certificate for uploads.code.google.com is corrected. See
-    // https://code.google.com/p/chromium/issues/detail?id=158594.
-    { "name": "code.google.com", "include_subdomains": false, "mode": "force-https", "pins": "google" },
+    { "name": "code.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "googlecode.com", "include_subdomains": true, "pins": "google" },
 
     // chart.apis.google.com is *not* HSTS because the certificate doesn't match
