@@ -356,7 +356,8 @@ BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
   // and any children. If not, that means we have a serious bug somewhere,
   // like the same child is reachable from two places in the same tree.
   if (instance && (instance->parent() != NULL || instance->child_count() > 0)) {
-    NOTREACHED();
+    // TODO(dmazzoni): investigate this: http://crbug.com/161726
+    LOG(WARNING) << "Reusing node that wasn't detached from parent";
     instance = NULL;
   }
 
