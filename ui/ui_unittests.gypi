@@ -188,6 +188,7 @@
         }],
         ['OS == "linux"', {
           'sources': [
+            'base/x/x11_util_unittest.cc',
             'gfx/platform_font_pango_unittest.cc',
           ],
         }],

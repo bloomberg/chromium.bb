@@ -276,6 +276,29 @@ UI_EXPORT bool GetOutputDeviceData(XID output,
                                    uint32* serial_number,
                                    std::string* human_readable_name);
 
+// Gets the overscan flag from |output| and stores to |flag|. Returns true if
+// the flag is found. Otherwise returns false and doesn't touch |flag|. The
+// output will produce overscan if |flag| is set to true, but the output may
+// still produce overscan even though it returns true and |flag| is set to
+// false.
+UI_EXPORT bool GetOutputOverscanFlag(XID output, bool* flag);
+
+// Parses |prop| as EDID data and stores extracted data into |manufacturer_id|,
+// |serial_number|, and |human_readable_name| and returns true. NULL can be
+// passed for unwanted output parameters. This is exported for
+// x11_util_unittest.cc.
+UI_EXPORT bool ParseOutputDeviceData(const unsigned char* prop,
+                                     unsigned long nitems,
+                                     uint16* manufacturer_id,
+                                     uint32* serial_number,
+                                     std::string* human_readable_name);
+
+// Parses |prop| as EDID data and stores the overscan flag to |flag|. Returns
+// true if the flag is found. This is exported for x11_util_unittest.cc.
+UI_EXPORT bool ParseOutputOverscanFlag(const unsigned char* prop,
+                                       unsigned long nitems,
+                                       bool* flag);
+
 // Gets the names of the all displays physically connected to the system.
 UI_EXPORT std::vector<std::string> GetDisplayNames(
     const std::vector<XID>& output_id);

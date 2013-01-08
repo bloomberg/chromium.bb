@@ -331,6 +331,53 @@ bool IsShapeAvailable() {
 
 }
 
+// Get the EDID data from the |output| and stores to |prop|. |nitem| will store
+// the number of characters |prop| will have. It doesn't take the ownership of
+// |prop|, so caller must release it by XFree().
+// Returns true if EDID property is successfully obtained. Otherwise returns
+// false and does not touch |prop| and |nitems|.
+bool GetEDIDProperty(XID output, unsigned long* nitems, unsigned char** prop) {
+  if (!IsRandRAvailable())
+    return false;
+
+  static Atom edid_property = GetAtom(RR_PROPERTY_RANDR_EDID);
+
+  Display* display = GetXDisplay();
+
+  bool has_edid_property = false;
+  int num_properties = 0;
+  Atom* properties = XRRListOutputProperties(display, output, &num_properties);
+  for (int i = 0; i < num_properties; ++i) {
+    if (properties[i] == edid_property) {
+      has_edid_property = true;
+      break;
+    }
+  }
+  XFree(properties);
+  if (!has_edid_property)
+    return false;
+
+  Atom actual_type;
+  int actual_format;
+  unsigned long bytes_after;
+  XRRGetOutputProperty(display,
+                       output,
+                       edid_property,
+                       0,                // offset
+                       128,              // length
+                       false,            // _delete
+                       false,            // pending
+                       AnyPropertyType,  // req_type
+                       &actual_type,
+                       &actual_format,
+                       nitems,
+                       &bytes_after,
+                       prop);
+  DCHECK_EQ(XA_INTEGER, actual_type);
+  DCHECK_EQ(8, actual_format);
+  return true;
+}
+
 }  // namespace
 
 bool XDisplayExists() {
@@ -1248,47 +1295,22 @@ bool GetOutputDeviceData(XID output,
                          uint16* manufacturer_id,
                          uint32* serial_number,
                          std::string* human_readable_name) {
-  if (!IsRandRAvailable())
+  unsigned long nitems = 0;
+  unsigned char *prop = NULL;
+  if (!GetEDIDProperty(output, &nitems, &prop))
     return false;
 
-  static Atom edid_property = GetAtom(RR_PROPERTY_RANDR_EDID);
+  bool result = ParseOutputDeviceData(
+      prop, nitems, manufacturer_id, serial_number, human_readable_name);
+  XFree(prop);
+  return result;
+}
 
-  Display* display = GetXDisplay();
-
-  bool has_edid_property = false;
-  int num_properties = 0;
-  Atom* properties = XRRListOutputProperties(display, output, &num_properties);
-  for (int i = 0; i < num_properties; ++i) {
-    if (properties[i] == edid_property) {
-      has_edid_property = true;
-      break;
-    }
-  }
-  XFree(properties);
-  if (!has_edid_property)
-    return false;
-
-  Atom actual_type;
-  int actual_format;
-  unsigned long nitems;
-  unsigned long bytes_after;
-  unsigned char *prop;
-  XRRGetOutputProperty(display,
-                       output,
-                       edid_property,
-                       0,                // offset
-                       128,              // length
-                       false,            // _delete
-                       false,            // pending
-                       AnyPropertyType,  // req_type
-                       &actual_type,
-                       &actual_format,
-                       &nitems,
-                       &bytes_after,
-                       &prop);
-  DCHECK_EQ(XA_INTEGER, actual_type);
-  DCHECK_EQ(8, actual_format);
-
+bool ParseOutputDeviceData(const unsigned char* prop,
+                           unsigned long nitems,
+                           uint16* manufacturer_id,
+                           uint32* serial_number,
+                           std::string* human_readable_name) {
   // See http://en.wikipedia.org/wiki/Extended_display_identification_data
   // for the details of EDID data format.  We use the following data:
   //   bytes 8-9: manufacturer EISA ID, in big-endian
@@ -1306,37 +1328,34 @@ bool GetOutputDeviceData(XID output,
   const unsigned char kMonitorNameDescriptor = 0xfc;
 
   if (manufacturer_id) {
-    if (nitems < kManufacturerOffset + kManufacturerLength) {
-      XFree(prop);
+    if (nitems < kManufacturerOffset + kManufacturerLength)
       return false;
-    }
-    *manufacturer_id = *reinterpret_cast<uint16*>(prop + kManufacturerOffset);
+
+    *manufacturer_id =
+        *reinterpret_cast<const uint16*>(prop + kManufacturerOffset);
 #if defined(ARCH_CPU_LITTLE_ENDIAN)
     *manufacturer_id = base::ByteSwap(*manufacturer_id);
 #endif
   }
 
   if (serial_number) {
-    if (nitems < kSerialNumberOffset + kSerialNumberLength) {
-      XFree(prop);
+    if (nitems < kSerialNumberOffset + kSerialNumberLength)
       return false;
-    }
+
     *serial_number = base::ByteSwapToLE32(
-        *reinterpret_cast<uint32*>(prop + kSerialNumberOffset));
+        *reinterpret_cast<const uint32*>(prop + kSerialNumberOffset));
   }
 
-  if (!human_readable_name) {
-    XFree(prop);
+  if (!human_readable_name)
     return true;
-  }
 
   human_readable_name->clear();
   for (unsigned int i = 0; i < kNumDescriptors; ++i) {
-    if (nitems < kDescriptorOffset + (i + 1) * kDescriptorLength) {
+    if (nitems < kDescriptorOffset + (i + 1) * kDescriptorLength)
       break;
-    }
 
-    unsigned char* desc_buf = prop + kDescriptorOffset + i * kDescriptorLength;
+    const unsigned char* desc_buf =
+        prop + kDescriptorOffset + i * kDescriptorLength;
     // If the descriptor contains the display name, it has the following
     // structure:
     //   bytes 0-2, 4: \0
@@ -1348,14 +1367,12 @@ bool GetOutputDeviceData(XID output,
         desc_buf[4] == 0) {
       if (desc_buf[3] == kMonitorNameDescriptor) {
         std::string found_name(
-            reinterpret_cast<char*>(desc_buf + 5), kDescriptorLength - 5);
+            reinterpret_cast<const char*>(desc_buf + 5), kDescriptorLength - 5);
         TrimWhitespaceASCII(found_name, TRIM_TRAILING, human_readable_name);
         break;
       }
     }
   }
-
-  XFree(prop);
 
   if (human_readable_name->empty())
     return false;
@@ -1370,6 +1387,96 @@ bool GetOutputDeviceData(XID output,
   }
 
   return true;
+}
+
+bool GetOutputOverscanFlag(XID output, bool* flag) {
+  unsigned long nitems = 0;
+  unsigned char *prop = NULL;
+  if (!GetEDIDProperty(output, &nitems, &prop))
+    return false;
+
+  bool found = ParseOutputOverscanFlag(prop, nitems, flag);
+  XFree(prop);
+  return found;
+}
+
+bool ParseOutputOverscanFlag(const unsigned char* prop,
+                             unsigned long nitems,
+                             bool *flag) {
+  // See http://en.wikipedia.org/wiki/Extended_display_identification_data
+  // for the extension format of EDID.  Also see EIA/CEA-861 spec for
+  // the format of the extensions and how video capability is encoded.
+  //  - byte 0: tag.  should be 02h.
+  //  - byte 1: revision.  only cares revision 3 (03h).
+  //  - byte 4-: data block.
+  const unsigned int kExtensionBase = 128;
+  const unsigned int kExtensionSize = 128;
+  const unsigned int kNumExtensionsOffset = 126;
+  const unsigned int kDataBlockOffset = 4;
+  const unsigned char kCEAExtensionTag = '\x02';
+  const unsigned char kExpectedExtensionRevision = '\x03';
+  const unsigned char kExtendedTag = 7;
+  const unsigned char kExtendedVideoCapabilityTag = 0;
+  const unsigned int kPTOverscan = 4;
+  const unsigned int kITOverscan = 2;
+  const unsigned int kCEOverscan = 0;
+
+  if (nitems <= kNumExtensionsOffset)
+    return false;
+
+  unsigned char num_extensions = prop[kNumExtensionsOffset];
+
+  for (size_t i = 0; i < num_extensions; ++i) {
+    // Skip parsing the whole extension if size is not enough.
+    if (nitems <= kExtensionBase + (i + 1) * kExtensionSize)
+      break;
+
+    const unsigned char* extension = prop + kExtensionBase + i * kExtensionSize;
+    unsigned char tag = extension[0];
+    unsigned char revision = extension[1];
+    if (tag != kCEAExtensionTag || revision != kExpectedExtensionRevision)
+      continue;
+
+    unsigned char timing_descriptors_start =
+        std::min(extension[2], static_cast<unsigned char>(kExtensionSize));
+    const unsigned char* data_block = extension + kDataBlockOffset;
+    while (data_block < extension + timing_descriptors_start) {
+      // A data block is encoded as:
+      // - byte 1 high 3 bits: tag. '07' for extended tags.
+      // - byte 1 remaining bits: the length of data block.
+      // - byte 2: the extended tag.  '0' for video capability.
+      // - byte 3: the capability.
+      unsigned char tag = data_block[0] >> 5;
+      unsigned char payload_length = data_block[0] & 0x1f;
+      if (static_cast<unsigned long>(data_block + payload_length - prop) >
+          nitems)
+        break;
+
+      if (tag != kExtendedTag && payload_length < 2) {
+        data_block += payload_length + 1;
+        continue;
+      }
+
+      unsigned char extended_tag_code = data_block[1];
+      if (extended_tag_code != kExtendedVideoCapabilityTag) {
+        data_block += payload_length;
+        continue;
+      }
+
+      // The difference between preferred, IT, and CE video formats
+      // doesn't matter. Sets |flag| to true if any of these flags are true.
+      if ((data_block[2] & (1 << kPTOverscan)) ||
+          (data_block[2] & (1 << kITOverscan)) ||
+          (data_block[2] & (1 << kCEOverscan))) {
+        *flag = true;
+      } else {
+        *flag = false;
+      }
+      return true;
+    }
+  }
+
+  return false;
 }
 
 std::vector<std::string> GetDisplayNames(const std::vector<XID>& output_ids) {
