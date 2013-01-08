@@ -6,6 +6,9 @@
 
 namespace switches {
 
+// Disables new menu UI.
+const char kDisableNewMenuStyle[] = "disable-new-menu-style";
+
 // Disable touch adjustment.
 const char kDisableTouchAdjustment[] = "disable-touch-adjustment";
 
@@ -14,9 +17,6 @@ const char kEnableBezelTouch[] = "enable-bezel-touch";
 
 // Enables the new dialog style wherever it is available.
 const char kEnableNewDialogStyle[] = "enable-new-dialog-style";
-
-// Enables new menu UI.
-const char kEnableNewMenuStyle[] = "enable-new-menu-style";
 
 const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";
 

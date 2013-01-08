@@ -23,8 +23,8 @@ void NativeTheme::SetScrollbarColors(unsigned inactive_color,
 // static
 bool NativeTheme::IsNewMenuStyleEnabled() {
   static bool enable_new_menu_style =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNewMenuStyle);
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableNewMenuStyle);
   return enable_new_menu_style;
 }
 
