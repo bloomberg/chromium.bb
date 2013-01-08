@@ -1506,7 +1506,8 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
       }
 
       // Forward event to renderer.
-      if (CanRendererHandleEvent(event))
+      if (CanRendererHandleEvent(event) &&
+          !(event->flags() & ui::EF_FROM_TOUCH))
         host_->ForwardMouseEvent(mouse_event);
     }
     return;
@@ -1533,7 +1534,8 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
         MakeWebMouseWheelEvent(static_cast<ui::MouseWheelEvent*>(event));
     if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0)
       host_->ForwardWheelEvent(mouse_wheel_event);
-  } else if (CanRendererHandleEvent(event)) {
+  } else if (CanRendererHandleEvent(event) &&
+             !(event->flags() & ui::EF_FROM_TOUCH)) {
     WebKit::WebMouseEvent mouse_event = MakeWebMouseEvent(event);
     ModifyEventMovementAndCoords(&mouse_event);
     host_->ForwardMouseEvent(mouse_event);
@@ -1555,7 +1557,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
 
   // Needed to propagate mouse event to native_tab_contents_view_aura.
   // TODO(pkotwicz): Find a better way of doing this.
-  if (window_->parent()->delegate())
+  if (window_->parent()->delegate() && !(event->flags() & ui::EF_FROM_TOUCH))
     window_->parent()->delegate()->OnMouseEvent(event);
 
   event->SetHandled();

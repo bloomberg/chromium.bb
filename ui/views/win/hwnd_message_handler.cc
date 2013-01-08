@@ -295,6 +295,10 @@ const int kCustomObjectID = 1;
 // The thickness of an auto-hide taskbar in pixels.
 const int kAutoHideTaskbarThicknessPx = 2;
 
+// The touch id to be used for touch events coming in from Windows Aura
+// Desktop.
+const int kDesktopChromeAuraTouchId = 9;
+
 }  // namespace
 
 // A scoping class that prevents a window from being able to redraw in response
@@ -1463,6 +1467,12 @@ LRESULT HWNDMessageHandler::OnMouseActivate(UINT message,
 LRESULT HWNDMessageHandler::OnMouseRange(UINT message,
                                          WPARAM w_param,
                                          LPARAM l_param) {
+#if defined(USE_AURA)
+  // We handle touch events on Windows Aura. Ignore synthesized mouse messages
+  // from Windows.
+  if (!touch_ids_.empty() || ui::IsMouseEventFromTouch(message))
+    return 0;
+#endif
   if (message == WM_RBUTTONUP && is_right_mouse_pressed_on_caption_) {
     is_right_mouse_pressed_on_caption_ = false;
     ReleaseCapture();
@@ -1974,10 +1984,34 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
   if (GetTouchInputInfo(reinterpret_cast<HTOUCHINPUT>(l_param),
                         num_points, input.get(), sizeof(TOUCHINPUT))) {
     for (int i = 0; i < num_points; ++i) {
-      if (input[i].dwFlags & TOUCHEVENTF_DOWN)
+      ui::EventType touch_event_type = ui::ET_UNKNOWN;
+
+      if (input[i].dwFlags & TOUCHEVENTF_DOWN) {
         touch_ids_.insert(input[i].dwID);
-      if (input[i].dwFlags & TOUCHEVENTF_UP)
+        touch_event_type = ui::ET_TOUCH_PRESSED;
+      } else if (input[i].dwFlags & TOUCHEVENTF_UP) {
         touch_ids_.erase(input[i].dwID);
+        touch_event_type = ui::ET_TOUCH_RELEASED;
+      } else if (input[i].dwFlags & TOUCHEVENTF_MOVE) {
+        touch_event_type = ui::ET_TOUCH_MOVED;
+      }
+      // Handle touch events only on Aura for now.
+#if defined(USE_AURA)
+      if (touch_event_type != ui::ET_UNKNOWN) {
+        POINT point;
+        point.x = TOUCH_COORD_TO_PIXEL(input[i].x);
+        point.y = TOUCH_COORD_TO_PIXEL(input[i].y);
+
+        ScreenToClient(hwnd(), &point);
+
+        ui::TouchEvent event(
+            touch_event_type,
+            gfx::Point(point.x, point.y),
+            kDesktopChromeAuraTouchId,
+            base::TimeDelta::FromMilliseconds(input[i].dwTime));
+        delegate_->HandleTouchEvent(event);
+      }
+#endif
     }
   }
   CloseTouchInputHandle(reinterpret_cast<HTOUCHINPUT>(l_param));

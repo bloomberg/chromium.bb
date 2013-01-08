@@ -680,6 +680,12 @@ bool DesktopRootWindowHostWin::HandleUntranslatedKeyEvent(
       OnHostKeyEvent(duplicate_event.get());
 }
 
+bool DesktopRootWindowHostWin::HandleTouchEvent(
+    const ui::TouchEvent& event) {
+  return root_window_host_delegate_->OnHostTouchEvent(
+      const_cast<ui::TouchEvent*>(&event));
+}
+
 bool DesktopRootWindowHostWin::HandleIMEMessage(UINT message,
                                                 WPARAM w_param,
                                                 LPARAM l_param,

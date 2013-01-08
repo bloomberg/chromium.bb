@@ -19,6 +19,7 @@ namespace ui {
 class Accelerator;
 class KeyEvent;
 class MouseEvent;
+class TouchEvent;
 }
 
 namespace views {
@@ -170,6 +171,10 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // Called when an untranslated key event is received (i.e. pre-IME
   // translation). Returns true if the event was sent to the input method.
   virtual bool HandleUntranslatedKeyEvent(const ui::KeyEvent& event) = 0;
+
+  // Called when a touch event is received. Returns true if the event was
+  // handled by the delegate.
+  virtual bool HandleTouchEvent(const ui::TouchEvent& event) = 0;
 
   // Called when an IME message needs to be processed by the delegate. Returns
   // true if the event was handled and no default processing should be
