@@ -85,9 +85,9 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // Allows the delegate to delay completion of the download.  This function
   // will either return true (in which case the download may complete)
   // or will call the callback passed when the download is ready for
-  // completion.  This routine may be called multiple times; once it has
-  // returned true for a particular download it should continue to return
-  // true for that download.
+  // completion.  This routine may be called multiple times; once the callback
+  // has been called or the function has returned true for a particular
+  // download it should continue to return true for that download.
   virtual bool ShouldCompleteDownload(
       DownloadItem* item,
       const base::Closure& complete_callback);

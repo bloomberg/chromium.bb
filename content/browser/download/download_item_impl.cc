@@ -596,9 +596,9 @@ DownloadItem::SafetyState DownloadItemImpl::GetSafetyState() const {
 }
 
 bool DownloadItemImpl::IsDangerous() const {
+#ifdef OS_WIN
   // TODO(noelutz): At this point only the windows views UI supports
   // warnings based on dangerous content.
-#ifdef OS_WIN
   return (danger_type_ == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
           danger_type_ == DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
           danger_type_ == DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT ||
