@@ -9,11 +9,13 @@ import sys
 import tempfile
 import time
 
-import android_commands
-import constants
-from android_commands import errors
-from test_package import TestPackage
+from pylib import android_commands
+from pylib import constants
 from pylib import pexpect
+from pylib.android_commands import errors
+
+from test_package import TestPackage
+
 
 class TestPackageApk(TestPackage):
   """A helper class for running APK-based native tests.

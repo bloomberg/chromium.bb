@@ -10,7 +10,8 @@ import os
 import pickle
 import re
 
-import cmd_helper
+from pylib import cmd_helper
+
 
 # If you change the cached output of proguard, increment this number
 PICKLE_FORMAT_VERSION = 1

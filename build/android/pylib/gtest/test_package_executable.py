@@ -9,10 +9,11 @@ import shutil
 import sys
 import tempfile
 
-import cmd_helper
-import constants
-from test_package import TestPackage
+from pylib import cmd_helper
+from pylib import constants
 from pylib import pexpect
+
+from test_package import TestPackage
 
 
 class TestPackageExecutable(TestPackage):

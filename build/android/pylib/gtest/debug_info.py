@@ -13,7 +13,7 @@ import string
 import subprocess
 import tempfile
 
-import cmd_helper
+from pylib import cmd_helper
 
 
 TOMBSTONE_DIR = '/data/tombstones/'

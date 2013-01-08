@@ -8,10 +8,11 @@ import copy
 import logging
 import multiprocessing
 
+from pylib import sharded_tests_queue
+from pylib.instrumentation.run_java_tests import FatalTestException
+from pylib.test_result import TestResults
+
 from python_test_caller import CallPythonTest
-from run_java_tests import FatalTestException
-import sharded_tests_queue
-from test_result import TestResults
 
 
 def SetTestsContainer(tests_container):

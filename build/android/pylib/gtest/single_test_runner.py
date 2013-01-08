@@ -7,16 +7,17 @@ import logging
 import os
 import sys
 
-import android_commands
-from android_commands import errors
-from base_test_runner import BaseTestRunner
-import constants
+from pylib import android_commands
+from pylib import constants
+from pylib import perf_tests_helper
+from pylib.android_commands import errors
+from pylib.base_test_runner import BaseTestRunner
+from pylib.test_result import BaseTestResult, TestResults
+from pylib.utils import run_tests_helper
+
 import debug_info
-import perf_tests_helper
 from test_package_apk import TestPackageApk
 from test_package_executable import TestPackageExecutable
-from test_result import BaseTestResult, TestResults
-from utils import run_tests_helper
 
 
 class SingleTestRunner(BaseTestRunner):

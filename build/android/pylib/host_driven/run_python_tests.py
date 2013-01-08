@@ -9,16 +9,17 @@ import os
 import sys
 import types
 
-import android_commands
-import apk_info
-import constants
+from pylib import android_commands
+from pylib import constants
+from pylib.instrumentation import apk_info
+from pylib.instrumentation import run_java_tests
+from pylib.instrumentation.run_java_tests import FatalTestException
+from pylib.test_result import TestResults
+
 import python_test_base
 from python_test_caller import CallPythonTest
 from python_test_sharder import PythonTestSharder
-import run_java_tests
-from run_java_tests import FatalTestException
 from test_info_collection import TestInfoCollection
-from test_result import TestResults
 
 
 def _GetPythonFiles(root, files):

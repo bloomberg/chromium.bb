@@ -49,10 +49,10 @@ import emulator
 from pylib import android_commands
 from pylib import buildbot_report
 from pylib import cmd_helper
-from pylib import debug_info
 from pylib import ports
 from pylib.base_test_sharder import BaseTestSharder
-from pylib.single_test_runner import SingleTestRunner
+from pylib.gtest import debug_info
+from pylib.gtest.single_test_runner import SingleTestRunner
 from pylib.utils import run_tests_helper
 from pylib.utils import test_options_parser
 from pylib.utils import time_profile
