@@ -7,19 +7,35 @@
 #include "cc/layer_tree_host.h"
 #include "cc/texture_layer_client.h"
 #include "cc/texture_layer_impl.h"
+#include "cc/thread.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
-#include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
 
-scoped_refptr<TextureLayer> TextureLayer::create(TextureLayerClient* client)
+static void runCallbackOnMainThread(const TextureLayer::MailboxCallback& callback, unsigned syncPoint)
 {
-    return scoped_refptr<TextureLayer>(new TextureLayer(client));
+    callback.Run(syncPoint);
 }
 
-TextureLayer::TextureLayer(TextureLayerClient* client)
+static void postCallbackToMainThread(Thread *mainThread, const TextureLayer::MailboxCallback& callback, unsigned syncPoint)
+{
+    mainThread->postTask(base::Bind(&runCallbackOnMainThread, callback, syncPoint));
+}
+
+scoped_refptr<TextureLayer> TextureLayer::create(TextureLayerClient* client)
+{
+    return scoped_refptr<TextureLayer>(new TextureLayer(client, false));
+}
+
+scoped_refptr<TextureLayer> TextureLayer::createForMailbox()
+{
+    return scoped_refptr<TextureLayer>(new TextureLayer(0, true));
+}
+
+TextureLayer::TextureLayer(TextureLayerClient* client, bool usesMailbox)
     : Layer()
     , m_client(client)
+    , m_usesMailbox(usesMailbox)
     , m_flipped(true)
     , m_uvRect(0, 0, 1, 1)
     , m_premultipliedAlpha(true)
@@ -42,11 +58,13 @@ TextureLayer::~TextureLayer()
         if (m_rateLimitContext && m_client)
             layerTreeHost()->stopRateLimiter(m_client->context());
     }
+    if (!m_contentCommitted && !m_mailboxName.empty())
+        m_mailboxReleaseCallback.Run(0);
 }
 
 scoped_ptr<LayerImpl> TextureLayer::createLayerImpl(LayerTreeImpl* treeImpl)
 {
-    return TextureLayerImpl::create(treeImpl, m_layerId).PassAs<LayerImpl>();
+    return TextureLayerImpl::create(treeImpl, m_layerId, m_usesMailbox).PassAs<LayerImpl>();
 }
 
 void TextureLayer::setFlipped(bool flipped)
@@ -92,11 +110,27 @@ void TextureLayer::setRateLimitContext(bool rateLimit)
 
 void TextureLayer::setTextureId(unsigned id)
 {
+    DCHECK(!m_usesMailbox);
     if (m_textureId == id)
         return;
     if (m_textureId && layerTreeHost())
         layerTreeHost()->acquireLayerTextures();
     m_textureId = id;
+    setNeedsCommit();
+}
+
+void TextureLayer::setTextureMailbox(const std::string& mailboxName, const MailboxCallback& callback)
+{
+    DCHECK(m_usesMailbox);
+    DCHECK(mailboxName.empty() == callback.is_null());
+    if (m_mailboxName.compare(mailboxName) == 0)
+        return;
+    // If we never commited the mailbox, we need to release it here
+    if (!m_contentCommitted && !m_mailboxName.empty())
+        m_mailboxReleaseCallback.Run(0);
+    m_mailboxReleaseCallback = callback;
+    m_mailboxName = mailboxName;
+
     setNeedsCommit();
 }
 
@@ -125,7 +159,7 @@ void TextureLayer::setLayerTreeHost(LayerTreeHost* host)
 
 bool TextureLayer::drawsContent() const
 {
-    return (m_client || m_textureId) && !m_contextLost && Layer::drawsContent();
+    return (m_client || m_textureId || !m_mailboxName.empty()) && !m_contextLost && Layer::drawsContent();
 }
 
 void TextureLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker*, RenderingStats&)
@@ -147,7 +181,12 @@ void TextureLayer::pushPropertiesTo(LayerImpl* layer)
     textureLayer->setUVRect(m_uvRect);
     textureLayer->setVertexOpacity(m_vertexOpacity);
     textureLayer->setPremultipliedAlpha(m_premultipliedAlpha);
-    textureLayer->setTextureId(m_textureId);
+    if (m_usesMailbox) {
+        Thread* mainThread = layerTreeHost()->proxy()->mainThread();
+        textureLayer->setTextureMailbox(m_mailboxName, base::Bind(&postCallbackToMainThread, mainThread, m_mailboxReleaseCallback));
+    } else {
+        textureLayer->setTextureId(m_textureId);
+    }
     m_contentCommitted = drawsContent();
 }
 

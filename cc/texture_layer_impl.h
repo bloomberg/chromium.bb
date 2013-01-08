@@ -5,6 +5,9 @@
 #ifndef CC_TEXTURE_LAYER_IMPL_H_
 #define CC_TEXTURE_LAYER_IMPL_H_
 
+#include <string>
+
+#include "base/callback.h"
 #include "cc/cc_export.h"
 #include "cc/layer_impl.h"
 
@@ -12,9 +15,9 @@ namespace cc {
 
 class CC_EXPORT TextureLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<TextureLayerImpl> create(LayerTreeImpl* treeImpl, int id)
+    static scoped_ptr<TextureLayerImpl> create(LayerTreeImpl* treeImpl, int id, bool usesMailbox)
     {
-        return make_scoped_ptr(new TextureLayerImpl(treeImpl, id));
+        return make_scoped_ptr(new TextureLayerImpl(treeImpl, id, usesMailbox));
     }
     virtual ~TextureLayerImpl();
 
@@ -37,8 +40,10 @@ public:
     // 0--3
     void setVertexOpacity(const float vertexOpacity[4]);
 
+    void setTextureMailbox(const std::string& mailboxName, const base::Callback<void(unsigned)>& releaseCallback);
+
 private:
-    TextureLayerImpl(LayerTreeImpl* treeImpl, int id);
+    TextureLayerImpl(LayerTreeImpl* treeImpl, int id, bool usesMailbox);
 
     virtual const char* layerTypeAsString() const OVERRIDE;
 
@@ -48,6 +53,11 @@ private:
     bool m_flipped;
     gfx::RectF m_uvRect;
     float m_vertexOpacity[4];
+
+    bool m_hasPendingMailbox;
+    std::string m_pendingMailboxName;
+    base::Callback<void(unsigned)> m_pendingMailboxReleaseCallback;
+    bool m_usesMailbox;
 };
 
 }

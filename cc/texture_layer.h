@@ -5,6 +5,9 @@
 #ifndef CC_TEXTURE_LAYER_H_
 #define CC_TEXTURE_LAYER_H_
 
+#include <string>
+
+#include "base/callback.h"
 #include "cc/cc_export.h"
 #include "cc/layer.h"
 
@@ -19,10 +22,15 @@ class TextureLayerClient;
 // A Layer containing a the rendered output of a plugin instance.
 class CC_EXPORT TextureLayer : public Layer {
 public:
+    typedef base::Callback<void(unsigned)> MailboxCallback;
+
     // If this texture layer requires special preparation logic for each frame driven by
     // the compositor, pass in a non-nil client. Pass in a nil client pointer if texture updates
     // are driven by an external process.
     static scoped_refptr<TextureLayer> create(TextureLayerClient*);
+
+    // Used when mailbox names are specified instead of texture IDs.
+    static scoped_refptr<TextureLayer> createForMailbox();
 
     void clearClient() { m_client = 0; }
 
@@ -48,6 +56,9 @@ public:
     // Code path for plugins which supply their own texture ID.
     void setTextureId(unsigned);
 
+    // Code path for plugins which supply their own texture ID.
+    void setTextureMailbox(const std::string&, const MailboxCallback&);
+
     void willModifyTexture();
 
     virtual void setNeedsDisplayRect(const gfx::RectF&) OVERRIDE;
@@ -59,11 +70,13 @@ public:
     virtual bool blocksPendingCommit() const OVERRIDE;
 
 protected:
-    explicit TextureLayer(TextureLayerClient*);
+    TextureLayer(TextureLayerClient*, bool usesMailbox);
     virtual ~TextureLayer();
 
 private:
     TextureLayerClient* m_client;
+    bool m_usesMailbox;
+    MailboxCallback m_mailboxReleaseCallback;
 
     bool m_flipped;
     gfx::RectF m_uvRect;
@@ -75,6 +88,7 @@ private:
     bool m_contentCommitted;
 
     unsigned m_textureId;
+    std::string m_mailboxName;
 };
 
 }
