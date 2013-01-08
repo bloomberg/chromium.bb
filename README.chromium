@@ -2,6 +2,7 @@ Name: hunspell dictionaries
 URL: http://bgoffice.sourceforge.net/
      http://code.google.com/p/tr-spell/
      http://extensions.services.openoffice.org/dictionary
+     http://extensions.services.openoffice.org/en/project/dict_et
      http://extensions.services.openoffice.org/en/project/dict_lv_LV
      http://extensions.services.openoffice.org/en/project/dict-nl
      http://extensions.services.openoffice.org/project/dict_ru_RU
@@ -12,6 +13,7 @@ URL: http://bgoffice.sourceforge.net/
      http://openoffice.rs/dict-sr/
      https://addons.mozilla.org/en-US/firefox/addon/albanian-dictionary/
      https://addons.mozilla.org/en-US/firefox/addon/thamizha-solthiruthi/
+     https://addons.mozilla.org/en-US/firefox/addon/turkce-imla-denetimi/
      https://dsso.googlecode.com/files/sv-2.12.zip
      http://sourceforge.net/projects/magyarispell/
      https://spellcheck-ko.googlecode.com/files/ko-aff-dic-0.5.6.zip
@@ -165,3 +167,7 @@ en_GB.dic_delta so these locales would get the same additional words.
 On Dec 26, 2012, we reran convert_dict on all dictionaries to add MD5 checksum
 to the .bdic files, added sq, ta, and ko dictionaries, and bumped the versions
 up to 3-0.
+
+On Jan 8, 2013, we added back et_EE and tr_TR .dic and .aff files to add MD5
+checksums to their .bdic files. We used version 3-0 again, because these files
+were not updated with the rest of the dictionaries on Dec 26, 2012.
