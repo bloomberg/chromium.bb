@@ -20,6 +20,8 @@
 #include "base/win/scoped_comptr.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/ui_export.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/vector2d.h"
 
 namespace ui {
 
@@ -186,10 +188,22 @@ class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
   virtual bool HasCustomFormat(OSExchangeData::CustomFormat format) const;
   virtual void SetDownloadFileInfo(
       const OSExchangeData::DownloadFileInfo& download_info);
+#if defined(USE_AURA)
+  virtual void SetDragImage(const gfx::ImageSkia& image,
+                            const gfx::Vector2d& cursor_offset) OVERRIDE;
+  virtual const gfx::ImageSkia& GetDragImage() const OVERRIDE;
+  virtual const gfx::Vector2d& GetDragImageOffset() const OVERRIDE;
+#endif
 
  private:
   scoped_refptr<DataObjectImpl> data_;
   base::win::ScopedComPtr<IDataObject> source_object_;
+
+#if defined(USE_AURA)
+  // Drag image and offset data. Only used for Ash.
+  gfx::ImageSkia drag_image_;
+  gfx::Vector2d drag_image_offset_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(OSExchangeDataProviderWin);
 };

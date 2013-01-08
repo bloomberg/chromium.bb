@@ -29,6 +29,11 @@
 class GURL;
 class Pickle;
 
+namespace gfx {
+class ImageSkia;
+class Vector2d;
+}
+
 namespace ui {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -136,6 +141,13 @@ class UI_EXPORT OSExchangeData {
     virtual void SetHtml(const string16& html, const GURL& base_url) = 0;
     virtual bool GetHtml(string16* html, GURL* base_url) const = 0;
     virtual bool HasHtml() const = 0;
+#endif
+
+#if defined(USE_AURA)
+    virtual void SetDragImage(const gfx::ImageSkia& image,
+                              const gfx::Vector2d& cursor_offset) = 0;
+    virtual const gfx::ImageSkia& GetDragImage() const = 0;
+    virtual const gfx::Vector2d& GetDragImageOffset() const = 0;
 #endif
   };
 

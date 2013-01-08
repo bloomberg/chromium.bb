@@ -57,16 +57,10 @@ class UI_EXPORT OSExchangeDataProviderAura : public OSExchangeData::Provider {
   virtual void SetHtml(const string16& html, const GURL& base_url) OVERRIDE;
   virtual bool GetHtml(string16* html, GURL* base_url) const OVERRIDE;
   virtual bool HasHtml() const OVERRIDE;
-
-  void set_drag_image(const gfx::ImageSkia& drag_image) {
-      drag_image_ = drag_image;
-  }
-
-  const gfx::ImageSkia& drag_image() const { return drag_image_; }
-  void set_drag_image_offset(const gfx::Vector2d& drag_image_offset) {
-    drag_image_offset_ = drag_image_offset;
-  }
-  const gfx::Vector2d& drag_image_offset() const { return drag_image_offset_; }
+  virtual void SetDragImage(const gfx::ImageSkia& image,
+                            const gfx::Vector2d& cursor_offset) OVERRIDE;
+  virtual const gfx::ImageSkia& GetDragImage() const OVERRIDE;
+  virtual const gfx::Vector2d& GetDragImageOffset() const OVERRIDE;
 
  private:
   typedef std::map<OSExchangeData::CustomFormat, Pickle>  PickleData;

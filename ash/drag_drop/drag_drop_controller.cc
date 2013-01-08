@@ -19,7 +19,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/animation/linear_animation.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/gfx/point.h"
@@ -112,22 +112,10 @@ int DragDropController::StartDragAndDrop(
   if (IsDragDropInProgress())
     return 0;
 
-#if defined(OS_WIN)
-  // TODO(win_ash): need to figure out how this will work in Metro, since
-  // OSExchangeDataProviderAura isn't used in Windows builds. Two alternatives:
-  // 1) Use OSExchangeDataProviderAura in Ash and OSExchangeDataProviderWin
-  //    elsewhere. This will complicate creating an ui::OSExchangeData to pass
-  //    in more context.
-  // 2) Add methods to get the image and offset in the base interface of these
-  //    implementations to get to this data here.
-  NOTIMPLEMENTED();
-  return 0;
-#else
-  const ui::OSExchangeDataProviderAura& provider =
-      static_cast<const ui::OSExchangeDataProviderAura&>(data.provider());
+  const ui::OSExchangeData::Provider* provider = &data.provider();
   // We do not support touch drag/drop without a drag image.
   if (source == ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH &&
-      provider.drag_image().size().IsEmpty())
+      provider->GetDragImage().size().IsEmpty())
     return 0;
 
   current_drag_event_source_ = source;
@@ -162,11 +150,11 @@ int DragDropController::StartDragAndDrop(
   gfx::Point start_location = root_location;
   ash::wm::ConvertPointToScreen(root_window, &start_location);
   drag_image_final_bounds_for_cancel_animation_ = gfx::Rect(
-      start_location - provider.drag_image_offset(),
-      provider.drag_image().size());
+      start_location - provider->GetDragImageOffset(),
+      provider->GetDragImage().size());
   drag_image_.reset(new DragImageView);
-  drag_image_->SetImage(provider.drag_image());
-  drag_image_offset_ = provider.drag_image_offset();
+  drag_image_->SetImage(provider->GetDragImage());
+  drag_image_offset_ = provider->GetDragImageOffset();
   gfx::Rect drag_image_bounds(start_location, drag_image_->GetPreferredSize());
   drag_image_bounds = AdjustDragImageBoundsForScaleAndOffset(drag_image_bounds,
       drag_image_vertical_offset, drag_image_scale, &drag_image_offset_);
@@ -197,7 +185,6 @@ int DragDropController::StartDragAndDrop(
       drag_source_window_->RemoveObserver(this);
     drag_source_window_ = NULL;
   }
-#endif
 
   return drag_operation_;
 }

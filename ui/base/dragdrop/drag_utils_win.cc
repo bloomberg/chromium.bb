@@ -68,6 +68,14 @@ void SetDragImageOnDataObject(const gfx::ImageSkia& image_skia,
   // Attach 'bitmap' to the data_object.
   SetDragImageOnDataObject(bitmap, size, cursor_offset,
       ui::OSExchangeDataProviderWin::GetIDataObject(*data_object));
+
+#if defined(USE_AURA)
+  // TODO: the above code is used in non-Ash, while below is used in Ash. If we
+  // could figure this context out then we wouldn't do unnecessary work. However
+  // as it stands getting this information in ui/base would be a layering
+  // violation.
+  data_object->provider().SetDragImage(image_skia, cursor_offset);
+#endif
 }
 
 }  // namespace drag_utils

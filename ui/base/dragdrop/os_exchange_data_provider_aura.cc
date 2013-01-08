@@ -162,6 +162,21 @@ bool OSExchangeDataProviderAura::HasHtml() const {
   return ((formats_ & OSExchangeData::HTML) != 0);
 }
 
+void OSExchangeDataProviderAura::SetDragImage(
+    const gfx::ImageSkia& image,
+    const gfx::Vector2d& cursor_offset) {
+  drag_image_ = image;
+  drag_image_offset_ = cursor_offset;
+}
+
+const gfx::ImageSkia& OSExchangeDataProviderAura::GetDragImage() const {
+  return drag_image_;
+}
+
+const gfx::Vector2d& OSExchangeDataProviderAura::GetDragImageOffset() const {
+  return drag_image_offset_;
+}
+
 bool OSExchangeDataProviderAura::GetPlainTextURL(GURL* url) const {
   if ((formats_ & OSExchangeData::STRING) == 0)
     return false;

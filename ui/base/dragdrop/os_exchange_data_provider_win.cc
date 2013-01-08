@@ -499,6 +499,25 @@ void OSExchangeDataProviderWin::SetDownloadFileInfo(
   data_->contents_.push_back(info);
 }
 
+#if defined(USE_AURA)
+
+void OSExchangeDataProviderWin::SetDragImage(
+    const gfx::ImageSkia& image,
+    const gfx::Vector2d& cursor_offset) {
+  drag_image_ = image;
+  drag_image_offset_ = cursor_offset;
+}
+
+const gfx::ImageSkia& OSExchangeDataProviderWin::GetDragImage() const {
+  return drag_image_;
+}
+
+const gfx::Vector2d& OSExchangeDataProviderWin::GetDragImageOffset() const {
+  return drag_image_offset_;
+}
+
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // DataObjectImpl, IDataObject implementation:
 

@@ -233,8 +233,12 @@ class TestNativeWidgetAura : public views::NativeWidgetAura {
 
 // TODO(sky): this is for debugging, remove when track down failure.
 void SetCheckIfCaptureLost(views::Widget* widget, bool value) {
+  // On Windows, the DCHECK triggers when running on bot or locally through RDP,
+  // but not when logged in locally.
+#if !defined(OS_WIN)
   static_cast<TestNativeWidgetAura*>(widget->native_widget())->
       set_check_if_capture_lost(value);
+#endif
 }
 
 views::Widget* CreateNewWidget() {
