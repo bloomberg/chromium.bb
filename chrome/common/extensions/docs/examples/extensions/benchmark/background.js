@@ -412,7 +412,7 @@ function Benchmark() {
   };
 }
 
-chrome.extension.onConnect.addListener(function(port) {
+chrome.runtime.onConnect.addListener(function(port) {
   port.onMessage.addListener(function(data) {
     if (data.message == "load") {
       var benchmark = findBenchmark(data.url);

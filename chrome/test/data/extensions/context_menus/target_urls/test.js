@@ -6,7 +6,7 @@ window.onload = function() {
   var patterns = [ "http://*.google.com/*" ];
   chrome.contextMenus.create({"title":"item1", "contexts": ["link"],
                               "targetUrlPatterns": patterns}, function() {
-    if (!chrome.extension.lastError) {
+    if (!chrome.runtime.lastError) {
       chrome.test.sendMessage("created items");
     }
   });

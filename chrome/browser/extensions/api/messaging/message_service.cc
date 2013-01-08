@@ -211,7 +211,7 @@ void MessageService::OpenChannelToNativeApp(
                                                  source_extension_id));
 
   NativeMessageProcessHost::MessageType type =
-      channel_name == "chrome.extension.sendNativeMessage" ?
+      channel_name == "chrome.runtime.sendNativeMessage" ?
       NativeMessageProcessHost::TYPE_SEND_MESSAGE_REQUEST :
       NativeMessageProcessHost::TYPE_CONNECT;
 

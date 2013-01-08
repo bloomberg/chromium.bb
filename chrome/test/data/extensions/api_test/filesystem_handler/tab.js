@@ -46,7 +46,7 @@ function errorCallback(error) {
     };
   }
 
-  chrome.extension.sendMessage(fileBrowserExtensionId,
+  chrome.runtime.sendMessage(fileBrowserExtensionId,
                                {fileContent: null,
                                 error: {message: "File handler error: " + msg}},
                                function(response) {});
@@ -57,14 +57,14 @@ function onGotEntryByUrl(entry) {
   var reader = new FileReader();
   reader.onloadend = function(e) {
     if (reader.result != expectedContent) {
-      chrome.extension.sendMessage(
+      chrome.runtime.sendMessage(
           fileBrowserExtensionId,
           {fileContent: null,
            error: {message: "File content does not match."}},
           function(response) {});
     } else {
       // Send data back to the file browser extension
-      chrome.extension.sendMessage(
+      chrome.runtime.sendMessage(
           fileBrowserExtensionId,
           {fileContent: reader.result, error: null},
           function(response) {});
@@ -117,7 +117,7 @@ function tryReadingReceivedFile(entry, evt) {
 
 function runFileSystemHandlerTest(entries) {
   if (!entries || entries.length != 1 || !entries[0]) {
-    chrome.extension.sendMessage(
+    chrome.runtime.sendMessage(
         fileBrowserExtensionId,
         {fileContent: null, error: "Invalid file entries."},
         function(response) {});

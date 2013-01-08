@@ -22,13 +22,13 @@ For example:</p>
 <h2 id="howToStart">How to start speech recognition</h2>
 <p>To start recognizing speech an extension must call the <code>start()</code>
 method. If provided, your callback will be called once recording has
-successfully started. In case of error <code>chrome.extension.lastError</code>
+successfully started. In case of error <code>chrome.runtime.lastError</code>
 will be set.</p>
 
 <p>This API provides exclusive access to the default recording device to the
 first extension requesting it. Consequently, any calls to <code>start()</code>
 when the device is being used by another extension or web page will fail and set
-<code>chrome.extension.lastError</code>. The message <code>requestDenied</code>
+<code>chrome.runtime.lastError</code>. The message <code>requestDenied</code>
 will be set if another extension in the same profile is making use of the API.
 Otherwise <code>noRecordingDeviceFound</code>, <code>recordingDeviceInUse</code>
 or <code>unableToStart</code> will be set depending on the situation.</p>
@@ -71,7 +71,7 @@ It is safe to call <code>start()</code> again from the error callback.</p>
 <h2 id="howToStop">How to stop recording</h2>
 <p>To stop speech recognition call the <code>stop()</code> method. If provided,
 the callback function will be called once recording has successfully stopped.
-In case of error <code>chrome.extension.lastError</code> will be set.
+In case of error <code>chrome.runtime.lastError</code> will be set.
 </p>
 
 
@@ -90,8 +90,8 @@ continued period of silence).
 most likely recognition result.</p>
 <pre>
 function checkStart() {
-  if (chrome.extension.lastError) {
-    alert("Couldn't start speech input: " + chrome.extension.lastError.message);
+  if (chrome.runtime.lastError) {
+    alert("Couldn't start speech input: " + chrome.runtime.lastError.message);
   }
 }
 

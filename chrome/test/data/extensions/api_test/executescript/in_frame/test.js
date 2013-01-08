@@ -17,7 +17,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
   chrome.test.runTests([
     function executeJavaScriptCodeInAllFramesShouldSucceed() {
       var script_file = {};
-      script_file.code = "var extensionPort = chrome.extension.connect();";
+      script_file.code = "var extensionPort = chrome.runtime.connect();";
       script_file.code = script_file.code +
           "extensionPort.postMessage({message: document.title});";
       script_file.allFrames = true;
@@ -29,11 +29,11 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
           totalTitles += data.message;
         });
       };
-      chrome.extension.onConnect.addListener(eventListener);
+      chrome.runtime.onConnect.addListener(eventListener);
       chrome.tabs.executeScript(tabId, script_file, pass(function() {
         assertEq(counter, 5);
         assertEq(totalTitles, 'frametest0test1test2test3');
-        chrome.extension.onConnect.removeListener(eventListener);
+        chrome.runtime.onConnect.removeListener(eventListener);
       }));
     },
 
@@ -49,7 +49,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
           newStyle += data.message;
         });
       };
-      chrome.extension.onConnect.addListener(eventListener);
+      chrome.runtime.onConnect.addListener(eventListener);
       chrome.tabs.insertCSS(tabId, css_file, function() {
         var script_file = {};
         script_file.file = 'script.js';
@@ -58,7 +58,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
           pass(function() {
             assertEq(newStyle, 'nonenonenonenone');
             assertEq(counter, 4);
-            chrome.extension.onConnect.removeListener(eventListener);
+            chrome.runtime.onConnect.removeListener(eventListener);
         }));
       });
     }

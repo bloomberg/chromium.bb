@@ -342,7 +342,7 @@ button.addEventListener("click", function() {
 <p>An example can be accomplished using window.postMessage (or window.webkitPostMessage for Transferable objects):</p>
 <pre>contentscript.js
 ================
-var port = chrome.extension.connect();
+var port = chrome.runtime.connect();
 
 window.addEventListener("message", function(event) {
     // We only accept messages from ourselves

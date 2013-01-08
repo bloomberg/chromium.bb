@@ -5,10 +5,10 @@
 // Inject an image.
 var img = document.createElement('img');
 img.onload = function () {
-  chrome.extension.connect().postMessage(true);
+  chrome.runtime.connect().postMessage(true);
 };
 img.onerror = function () {
-  chrome.extension.connect().postMessage(false);
+  chrome.runtime.connect().postMessage(false);
 };
 img.src = 'icon3.png';
 document.body.appendChild(img);

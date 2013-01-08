@@ -71,7 +71,7 @@ function TryStart() {
     var reportDir = dirname(dirname(window.location.pathname)) + "/common";
     config["reportUrl"] = "file://" + reportDir + "/report.html";
     config["isRecordMode"] = isRecordMode;
-    var port = chrome.extension.connect();
+    var port = chrome.runtime.connect();
     port.postMessage({message: "start", benchmark: config});
     console.log("sending start message: page count, " +
                 config["pageSets"].length);

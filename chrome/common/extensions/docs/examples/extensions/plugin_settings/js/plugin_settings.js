@@ -51,7 +51,7 @@ cr.define('pluginSettings', function() {
      * @private
      */
     didClearRules_: function(callback) {
-      if (chrome.extension.lastError) {
+      if (chrome.runtime.lastError) {
         console.error('Error clearing rules');
         callback();
         return;
@@ -95,10 +95,10 @@ cr.define('pluginSettings', function() {
      * @private
      */
     didSetContentSetting_: function(plugin, pattern, key, counter, callback) {
-      if (chrome.extension.lastError) {
+      if (chrome.runtime.lastError) {
         console.error(
             'Error restoring [' + key + ': ' + value + ']: ' +
-                chrome.extension.lastError.message);
+                chrome.runtime.lastError.message);
         window.localStorage.removeItem(key);
       }
       counter.value--;
@@ -124,8 +124,8 @@ cr.define('pluginSettings', function() {
         'resourceIdentifier': { 'id': plugin },
         'setting': setting,
       }, function() {
-        if (chrome.extension.lastError) {
-          callback(chrome.extension.lastError.message);
+        if (chrome.runtime.lastError) {
+          callback(chrome.runtime.lastError.message);
         } else {
           window.localStorage.setItem(JSON.stringify([plugin, pattern]),
                                       setting);

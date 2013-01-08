@@ -26,7 +26,7 @@
 // Message passing API example (in a content script):
 // var extension =
 //    new chrome.Extension('00123456789abcdef0123456789abcdef0123456');
-// var port = extension.connect();
+// var port = runtime.connect();
 // port.postMessage('Can you hear me now?');
 // port.onmessage.addListener(function(msg, port) {
 //   alert('response=' + msg);

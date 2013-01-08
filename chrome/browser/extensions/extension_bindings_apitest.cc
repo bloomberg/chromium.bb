@@ -20,7 +20,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ExceptionInHandlerShouldNotCrash) {
 }
 
 // Tests that an error raised during an async function still fires
-// the callback, but sets chrome.extension.lastError.
+// the callback, but sets chrome.runtime.lastError.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("browsertest").AppendASCII("last_error")));

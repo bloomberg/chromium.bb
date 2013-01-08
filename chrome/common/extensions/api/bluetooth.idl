@@ -156,7 +156,7 @@ namespace bluetooth {
     DeviceCallback deviceCallback;
   };
 
-  // These functions all report failures via chrome.extension.lastError.
+  // These functions all report failures via chrome.runtime.lastError.
   interface Functions {
     // Get information about the Bluetooth adapter.
     // |callback| : Called with an AdapterState object describing the adapter

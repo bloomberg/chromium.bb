@@ -12,7 +12,7 @@ function onclick(info) {
 window.onload = function() {
   chrome.contextMenus.create({title: "item " + incognitoStr,
                               onclick: onclick}, function() {
-    if (!chrome.extension.lastError) {
+    if (!chrome.runtime.lastError) {
       chrome.test.sendMessage("created item " + incognitoStr);
     }
   });

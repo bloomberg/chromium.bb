@@ -318,7 +318,7 @@ function Run() {
   sessionLoader.run();
 }
 
-chrome.extension.onConnect.addListener(function(port) {
+chrome.runtime.onConnect.addListener(function(port) {
   port.onMessage.addListener(function(data) {
     if (data.message == "start") {
       window.benchmarkConfiguration = data.benchmark;

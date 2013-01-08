@@ -87,8 +87,8 @@ to see if there were any errors.</p>
     utterance,
     options,
     function() {
-      if (chrome.extension.lastError) {
-        console.log('Error: ' + chrome.extension.lastError.message);
+      if (chrome.runtime.lastError) {
+        console.log('Error: ' + chrome.runtime.lastError.message);
       }
     });</pre>
 

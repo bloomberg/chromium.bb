@@ -19,7 +19,7 @@ Object.prototype.toJSON = function() {
 };
 
 // For complex connect tests.
-chrome.extension.onConnect.addListener(function(port) {
+chrome.runtime.onConnect.addListener(function(port) {
   console.log('connected');
   port.onMessage.addListener(function(msg) {
     console.log('got ' + msg);
@@ -46,7 +46,7 @@ chrome.extension.onConnect.addListener(function(port) {
 // Tests that postMessage to the extension and its response works.
 function testPostMessageFromTab(origPort) {
   var portName = "peter";
-  var port = chrome.extension.connect({name: portName});
+  var port = chrome.runtime.connect({name: portName});
   port.postMessage({testPostMessageFromTab: true});
   port.onMessage.addListener(function(msg) {
     origPort.postMessage({success: (msg.success && (msg.portName == portName))});
@@ -57,10 +57,10 @@ function testPostMessageFromTab(origPort) {
 
 // For test onMessage.
 function testSendMessageFromTab() {
-  chrome.extension.sendMessage({step: 1}, function(response) {
+  chrome.runtime.sendMessage({step: 1}, function(response) {
     if (response.nextStep) {
       console.log('testSendMessageFromTab sent');
-      chrome.extension.sendMessage({step: 2});
+      chrome.runtime.sendMessage({step: 2});
     }
   });
 }
@@ -68,22 +68,22 @@ function testSendMessageFromTab() {
 // Tests sendMessage to an invalid extension.
 function testSendMessageFromTabError() {
   // try sending a request to a bad extension id
-  chrome.extension.sendMessage("bad-extension-id", {m: 1}, function(response) {
-    var success = (response === undefined && chrome.extension.lastError);
-    chrome.extension.sendMessage({success: success});
+  chrome.runtime.sendMessage("bad-extension-id", {m: 1}, function(response) {
+    var success = (response === undefined && chrome.runtime.lastError);
+    chrome.runtime.sendMessage({success: success});
   });
 }
 
 // Tests connecting to an invalid extension.
 function testConnectFromTabError() {
-  var port = chrome.extension.connect("bad-extension-id");
+  var port = chrome.runtime.connect("bad-extension-id");
   port.onDisconnect.addListener(function() {
-    var success = (chrome.extension.lastError ? true : false);
-    chrome.extension.sendMessage({success: success});
+    var success = (chrome.runtime.lastError ? true : false);
+    chrome.runtime.sendMessage({success: success});
   });
 }
 
 // For test sendMessage.
-chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   sendResponse({success: (request.step2 == 1)});
 });

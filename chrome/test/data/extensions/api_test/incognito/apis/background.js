@@ -92,7 +92,7 @@ chrome.test.getConfig(function(config) {
           chrome.tabs.executeScript(tab.id,
             {code: 'document.title = chrome.extension.inIncognitoContext'},
             pass(function() {
-              assertEq(undefined, chrome.extension.lastError);
+              assertEq(undefined, chrome.runtime.lastError);
               chrome.tabs.get(tab.id, pass(function(tab) {
                   assertEq("true", tab.title);
                 }));
@@ -105,7 +105,7 @@ chrome.test.getConfig(function(config) {
           chrome.tabs.executeScript(tab.id,
             {code: 'document.title = chrome.extension.inIncognitoContext'},
             pass(function() {
-              assertEq(undefined, chrome.extension.lastError);
+              assertEq(undefined, chrome.runtime.lastError);
               chrome.tabs.get(tab.id, pass(function(tab) {
                   assertEq("false", tab.title);
                 }));

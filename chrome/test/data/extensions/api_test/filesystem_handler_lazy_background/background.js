@@ -43,7 +43,7 @@ function errorCallback(error) {
   // The ID of the extension we want to talk to.
   var fileBrowserExtensionId = "ddammdhioacbehjngdmkjcjbnfginlla";
 
-  chrome.extension.sendMessage(fileBrowserExtensionId,
+  chrome.runtime.sendMessage(fileBrowserExtensionId,
                                {fileContent: null,
                                 error: {message: "File handler error: " + msg}},
                                function(response) {});

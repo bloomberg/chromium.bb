@@ -7,7 +7,7 @@ chrome.test.getConfig(function(config) {
 
       function sendMessageWithCallback() {
         var message = {"text": "Hi there!", "number": 3};
-        chrome.extension.sendNativeMessage(
+        chrome.runtime.sendNativeMessage(
             'echo.py', message,
             chrome.test.callbackPass(function(nativeResponse) {
           var expectedResponse = {"id": 1, "echo": message};
@@ -18,7 +18,7 @@ chrome.test.getConfig(function(config) {
       // The goal of this test, is just not to crash.
       function sendMessageWithoutCallback() {
         var message = {"text": "Hi there!", "number": 3};
-        chrome.extension.sendNativeMessage('echo.py', message);
+        chrome.runtime.sendNativeMessage('echo.py', message);
         chrome.test.succeed(); // Mission Complete
       },
 
@@ -31,7 +31,7 @@ chrome.test.getConfig(function(config) {
                                  {"id": 3, "echo": messagesToSend[2]}];
         var currentMessage = 0;
 
-        port = chrome.extension.connectNative('echo.py',
+        port = chrome.runtime.connectNative('echo.py',
                                               messagesToSend[currentMessage]);
         port.onMessage.addListener(function(message) {
           chrome.test.assertEq(expectedResponses[currentMessage], message);

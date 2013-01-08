@@ -48,8 +48,8 @@ chrome.test.runTests([
 
   function sendCommand() {
     function onResponse() {
-      if (chrome.extension.lastError &&
-          chrome.extension.lastError.message.indexOf("invalidMethod") != -1)
+      if (chrome.runtime.lastError &&
+          chrome.runtime.lastError.message.indexOf("invalidMethod") != -1)
         chrome.test.succeed();
       else
         chrome.test.fail();

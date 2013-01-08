@@ -40,7 +40,7 @@ chrome.test.runTests([
 
         // Stopping should fail since we're in the idle state again.
         chrome.experimental.speechInput.stop(function() {
-          chrome.test.assertEq(chrome.extension.lastError.message,
+          chrome.test.assertEq(chrome.runtime.lastError.message,
               "invalidOperation");
           chrome.test.succeed();
         });

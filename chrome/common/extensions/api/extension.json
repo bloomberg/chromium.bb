@@ -16,24 +16,6 @@
           "tab": {"$ref": "tabs.Tab", "optional": true, "description":"This property will <b>only</b> be present when the connection was opened from a tab or content script."},
           "id": {"type": "string", "description": "The extension ID of the extension that opened the connection."}
         }
-      },
-      {
-        "id": "Port",
-        "nodoc": true,
-        "type": "object",
-        "description": "(Deprecated - use runtime.Port instead) An object which allows two way communication with other pages.",
-        "properties": {
-          "name": {"type": "string"},
-          "onDisconnect": { "$ref": "events.Event" },
-          "onMessage": { "$ref": "events.Event" },
-          "postMessage": {"type": "function"},
-          "sender": {
-            "$ref": "MessageSender",
-            "optional": true,
-            "description": "This property will <b>only</b> be present on ports passed to onConnect/onConnectExternal listeners."
-          }
-        },
-        "additionalProperties": { "type": "any"}
       }
     ],
     "properties": {
@@ -55,55 +37,6 @@
     },
     "functions": [
       {
-        "name": "connect",
-        "nodoc": true,
-        "nocompile": true,
-        "type": "function",
-        "unprivileged": true,
-        "description": "(Deprecated - use runtime.connect) Attempts to connect to other listeners within the extension (such as the extension's background page). This is primarily useful for content scripts connecting to their extension processes. Note that this does not connect to any listeners in a content script. Extensions may connect to content scripts embedded in tabs via $ref:tabs.connect.",
-        "parameters": [
-          {"type": "string", "name": "extensionId", "optional": true, "description": "The extension ID of the extension you want to connect to. If omitted, default is your own extension."},
-          {
-            "type": "object",
-            "name": "connectInfo",
-            "properties": {
-              "name": { "type": "string", "optional": true, "description": "Will be passed into onConnect for extension processes that are listening for the connection event." }
-            },
-            "optional": true
-          }
-        ],
-        "returns": {
-          "$ref": "Port",
-          "description": "Port through which messages can be sent and received with the extension. The port's $ref:extension.Port event is fired if extension does not exist. "
-        }
-      },
-      {
-        "name": "connectNative",
-        "nodoc": true,
-        "nocompile": true,
-        "type": "function",
-        "description": "(Deprecated - use runtime.connectNative instead) Attempts to connect a native application in the host machine. The native application must have already registered itself in the proper directory.",
-        "parameters": [
-          {
-            "type": "string",
-            "name": "appName",
-            "description": "The name of the registered app to connect to."
-          },
-          {
-            "name": "connectionMessage",
-            "description": "The object that will be passed to the registered native app on connection.",
-            "type": "object",
-            "additionalProperties": {
-              "type": "any"
-            }
-          }
-        ],
-        "returns": {
-          "$ref": "Port",
-          "description": "Port through which messages can be sent and received with the application"
-        }
-      },
-      {
         "name": "sendRequest",
         "nodoc": true,
         "type": "function",
@@ -122,69 +55,6 @@
                 "name": "response",
                 "type": "any",
                 "description": "The JSON response object sent by the handler of the request. If an error occurs while connecting to the extension, the callback will be called with no arguments and $ref:runtime.lastError will be set to the error message."
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "sendMessage",
-        "nodoc": true,
-        "nocompile": true,
-        "type": "function",
-        "allowAmbiguousOptionalArguments": true,
-        "unprivileged": true,
-        "description": "Sends a single message to other listeners within the extension. Similar to chrome.extension.connect, but only sends a single message with an optional response. The $ref:extension.onMessage event is fired in each extension page of the extension. Note that extensions cannot send messages to content scripts using this method. To send messages to content scripts, use $ref:tabs.sendMessage.",
-        "parameters": [
-          {"type": "string", "name": "extensionId", "optional": true, "description": "The extension ID of the extension you want to connect to. If omitted, default is your own extension."},
-          { "type": "any", "name": "message" },
-          {
-            "type": "function",
-            "name": "responseCallback",
-            "optional": true,
-            "parameters": [
-              {
-                "name": "response",
-                "type": "any",
-                "description": "The JSON response object sent by the handler of the message. If an error occurs while connecting to the extension, the callback will be called with no arguments and $ref:runtime.lastError will be set to the error message."
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "sendNativeMessage",
-        "nodoc": true,
-        "nocompile": true,
-        "type": "function",
-        "description": "(Deprecated - use runtime.sendNativeMessage) Send a single message to a registered native application.",
-        "parameters": [
-          {
-            "name": "registeredNativeApp",
-            "description": "The name of the registered native application.",
-            "type": "string"
-          },
-          {
-            "name": "message",
-            "description": "The message that will be passed to the registered native application.",
-            "type": "object",
-            "additionalProperties": {
-              "type": "any"
-            }
-          },
-          {
-            "type": "function",
-            "name": "callback",
-            "optional": true,
-            "description": "Called with the response from the native application.",
-            "parameters": [
-              {
-                "name": "nativeResponse",
-                "type": "object",
-                "description": "Whatever the native application responds with.",
-                "additionalProperties": {
-                  "type": "any"
-                }
               }
             ]
           }
@@ -310,29 +180,6 @@
     ],
     "events": [
       {
-        "name": "onConnect",
-        "nodoc": true,
-        "nocompile": true,
-        "type": "function",
-        "unprivileged": true,
-        "anonymous": true,
-        "description": "Fired when a connection is made from either an extension process or a content script.",
-        "parameters": [
-          {"$ref": "Port", "name": "port"}
-        ]
-      },
-      {
-        "name": "onConnectExternal",
-        "nodoc": true,
-        "nocompile": true,
-        "type": "function",
-        "anonymous": true,
-        "description": "Fired when a connection is made from another extension.",
-        "parameters": [
-          {"$ref": "Port", "name": "port"}
-        ]
-      },
-      {
         "name": "onRequest",
         "nodoc": true,
         "type": "function",
@@ -356,43 +203,6 @@
           {"name": "sender", "$ref": "MessageSender" },
           {"name": "sendResponse", "type": "function", "description": "Function to call when you have a response. The argument should be any JSON-ifiable object, or undefined if there is no response." }
         ]
-      },
-      {
-        "name": "onMessage",
-        "nodoc": true,
-        "nocompile": true,
-        "type": "function",
-        "anonymous": true,
-        "unprivileged": true,
-        "description": "(Deprecated - use runtime.onMessage instead) Fired when a message is sent from either an extension process or a content script.",
-        "parameters": [
-          {"name": "message", "type": "any", "description": "The message sent by the calling script."},
-          {"name": "sender", "$ref": "MessageSender" },
-          {"name": "sendResponse", "type": "function", "description": "Function to call (at most once) when you have a response. The argument should be any JSON-ifiable object. If you have more than one <code>onMessage</code> listener in the same document, then only one may send a response. This function becomes invalid when the event listener returns, unless you return true from the event listener to indicate you wish to send a response asynchronously (this will keep the message channel open to the other end until <code>sendResponse</code> is called)." }
-        ],
-        "returns": {
-          "type": "boolean",
-          "optional": "true",
-          "description": "Return true from the event listener if you wish to call <code>sendResponse</code> after the event listener returns."
-        }
-      },
-      {
-        "name": "onMessageExternal",
-        "nodoc": true,
-        "nocompile": true,
-        "type": "function",
-        "anonymous": true,
-        "description": "(Deprecated - use runtime.onMessageExternal instead) Fired when a message is sent from another extension. Cannot be used in a content script.",
-        "parameters": [
-          {"name": "message", "type": "any", "description": "The message sent by the calling script."},
-          {"name": "sender", "$ref": "MessageSender" },
-          {"name": "sendResponse", "type": "function", "description": "Function to call (at most once) when you have a response. The argument should be any JSON-ifiable object. If you have more than one <code>onMessage</code> listener in the same document, then only one may send a response. This function becomes invalid when the event listener returns, unless you return true from the event listener to indicate you wish to send a response asynchronously (this will keep the message channel open to the other end until <code>sendResponse</code> is called)." }
-        ],
-        "returns": {
-          "type": "boolean",
-          "optional": "true",
-          "description": "Return true from the event listener if you wish to call <code>sendResponse</code> after the event listener returns."
-        }
       }
     ]
   }

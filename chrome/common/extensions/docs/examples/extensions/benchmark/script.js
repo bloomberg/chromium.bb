@@ -1,5 +1,9 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // The port for communicating back to the extension.
-var benchmarkExtensionPort = chrome.extension.connect();
+var benchmarkExtensionPort = chrome.runtime.connect();
 
 // The url is what this page is known to the benchmark as.
 // The benchmark uses this id to differentiate the benchmark's

@@ -18,11 +18,11 @@ chrome.contentSettings.plugins = {
     var pattern = details.primaryPattern;
     var setting = details.setting;
     if (pattern == '__invalid_pattern') {
-      chrome.extension.lastError = {'message': 'Invalid pattern'};
+      chrome.runtime.lastError = {'message': 'Invalid pattern'};
     } else if (setting == '__invalid_setting') {
       throw Error('Invalid setting');
     } else {
-      chrome.extension.lastError = undefined;
+      chrome.runtime.lastError = undefined;
       _rules[pattern] = setting;
     }
     callback();

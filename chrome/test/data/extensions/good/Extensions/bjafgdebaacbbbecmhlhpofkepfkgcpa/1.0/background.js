@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-chrome.extension.onConnectExternal.addListener(function(port) {
+chrome.runtime.onConnectExternal.addListener(function(port) {
   port.onMessage.addListener(function(msg) {
     if (msg.testConnectExternal) {
       port.postMessage({success: true, senderId: port.sender.id});

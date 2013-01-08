@@ -97,11 +97,11 @@ TEST(ExtensionAPI, IsPrivileged) {
   scoped_ptr<ExtensionAPI> extension_api(
       ExtensionAPI::CreateWithDefaultConfiguration());
 
-  EXPECT_FALSE(extension_api->IsPrivileged("extension.connect"));
-  EXPECT_FALSE(extension_api->IsPrivileged("extension.onConnect"));
+  EXPECT_FALSE(extension_api->IsPrivileged("runtime.connect"));
+  EXPECT_FALSE(extension_api->IsPrivileged("runtime.onConnect"));
 
   // Properties are not supported yet.
-  EXPECT_TRUE(extension_api->IsPrivileged("extension.lastError"));
+  EXPECT_TRUE(extension_api->IsPrivileged("runtime.lastError"));
 
   // Default unknown names to privileged for paranoia's sake.
   EXPECT_TRUE(extension_api->IsPrivileged(""));

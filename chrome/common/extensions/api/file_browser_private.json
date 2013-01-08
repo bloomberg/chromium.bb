@@ -837,7 +837,7 @@
             "name": "callback",
             "type": "function",
             "optional": true,
-            "description": "Completion callback. chrome.extension.lastError will be set if there was an error.",
+            "description": "Completion callback. chrome.runtime.lastError will be set if there was an error.",
             "parameters": []
           }
         ]
@@ -884,7 +884,7 @@
             "name": "callback",
             "type": "function",
             "optional": true,
-            "description": "Completion callback. chrome.extension.lastError will be set if there was an error.",
+            "description": "Completion callback. chrome.runtime.lastError will be set if there was an error.",
             "parameters": []
           }
         ]

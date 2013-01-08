@@ -255,7 +255,7 @@
     }
   };
 
-  // Shared implementation used by tabs.sendMessage and extension.sendMessage.
+  // Shared implementation used by tabs.sendMessage and runtime.sendMessage.
   chromeHidden.Port.sendMessageImpl = function(port, request,
                                                responseCallback) {
     if (port.name != chromeHidden.kNativeMessageChannel)

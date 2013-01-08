@@ -64,7 +64,7 @@ chrome.test.getConfig(function(config) {
 
     // Tests that postMessage from the tab and its response works.
     function postMessageFromTab() {
-      chrome.extension.onConnect.addListener(function(port) {
+      chrome.runtime.onConnect.addListener(function(port) {
         chrome.test.assertTrue(Boolean(port.sender.tab.url));
         chrome.test.assertTrue(Boolean(port.sender.tab.title));
         chrome.test.assertTrue(Boolean(port.sender.tab.id));
@@ -87,7 +87,7 @@ chrome.test.getConfig(function(config) {
     // Tests receiving a request from a content script and responding.
     function sendMessageFromTab() {
       var doneListening = chrome.test.listenForever(
-        chrome.extension.onMessage,
+        chrome.runtime.onMessage,
         function(request, sender, sendResponse) {
           chrome.test.assertTrue("url" in sender.tab, "no tab available.");
           chrome.test.assertEq(sender.id, location.host);
@@ -113,7 +113,7 @@ chrome.test.getConfig(function(config) {
     // invalid extension.
     function sendMessageFromTabError() {
       chrome.test.listenOnce(
-        chrome.extension.onMessage,
+        chrome.runtime.onMessage,
         function(request, sender, sendResponse) {
           if (!request.success)
             chrome.test.fail();
@@ -130,7 +130,7 @@ chrome.test.getConfig(function(config) {
     // content script.
     function connectFromTabError() {
       chrome.test.listenOnce(
-        chrome.extension.onMessage,
+        chrome.runtime.onMessage,
         function(request, sender, sendResponse) {
           if (!request.success)
             chrome.test.fail();

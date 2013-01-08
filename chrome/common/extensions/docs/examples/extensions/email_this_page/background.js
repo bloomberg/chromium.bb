@@ -42,7 +42,7 @@ function executeMailto(tab_id, subject, body, selection) {
   }
 }
 
-chrome.extension.onConnect.addListener(function(port) {
+chrome.runtime.onConnect.addListener(function(port) {
   var tab = port.sender.tab;
 
   // This will get called by the content script we execute in

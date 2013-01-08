@@ -1,3 +1,7 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 function output(msg) {
   chrome.devtools.inspectedWindow.eval("console.log(unescape('" +
       escape(msg) + "'));")
@@ -38,7 +42,7 @@ function step3() {
     assertEquals("port.onMessage: foo", message);
     completeTest();
   }
-  var port = chrome.extension.connect();
+  var port = chrome.runtime.connect();
   port.onMessage.addListener(onMessage);
   port.postMessage("foo");
 }

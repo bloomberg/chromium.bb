@@ -16,9 +16,9 @@ chrome.test.getConfig(function(config) {
         // Generally, the tab navigation hasn't happened by the time we execute
         // the script, so it's still showing a.com, where we don't have
         // permission to run it.
-        if (chrome.extension.lastError) {
+        if (chrome.runtime.lastError) {
           chrome.test.assertTrue(
-              chrome.extension.lastError.message.indexOf(
+              chrome.runtime.lastError.message.indexOf(
                   'Cannot access contents of url "http://a.com:') == 0);
           chrome.test.notifyPass();
         } else {

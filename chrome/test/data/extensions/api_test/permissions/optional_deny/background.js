@@ -41,7 +41,7 @@ chrome.test.getConfig(function(config) {
           pass(function(granted) {
             // They were not granted, and there should be no error.
             assertFalse(granted);
-            assertTrue(chrome.extension.lastError === undefined);
+            assertTrue(chrome.runtime.lastError === undefined);
 
             // Make sure they weren't granted...
             chrome.permissions.contains(

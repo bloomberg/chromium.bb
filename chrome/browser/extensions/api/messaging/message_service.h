@@ -34,7 +34,7 @@ class LazyBackgroundTaskQueue;
 // Messaging works this way:
 // - An extension-owned script context (like a background page or a content
 //   script) adds an event listener to the "onConnect" event.
-// - Another context calls "extension.connect()" to open a channel to the
+// - Another context calls "runtime.connect()" to open a channel to the
 // extension process, or an extension context calls "tabs.connect(tabId)" to
 // open a channel to the content scripts for the given tab.  The EMS notifies
 // the target process/tab, which then calls the onConnect event in every

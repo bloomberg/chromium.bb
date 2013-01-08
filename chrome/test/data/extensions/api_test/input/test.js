@@ -9,7 +9,7 @@ chrome.test.runTests([
   function sendKeyboardEvent() {
     var e = { 'type': 'keydown', 'keyIdentifier': 'A' };
     chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
-      if (chrome.extension.lastError) {
+      if (chrome.runtime.lastError) {
         // this is expected for now: no one is handling keys yet
         // chrome.test.fail();
       }
@@ -22,7 +22,7 @@ chrome.test.runTests([
   function badKeyIdentifier() {
     var e = { 'type': 'keydown', 'keyIdentifier': 'BogusId' };
     chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
-      if (!chrome.extension.lastError) {
+      if (!chrome.runtime.lastError) {
         chrome.test.fail();
       }
       chrome.test.succeed();
@@ -32,7 +32,7 @@ chrome.test.runTests([
   function badEventType() {
     var e = { 'type': 'BAD', 'keyIdentifier': 'A' };
     chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
-      if (!chrome.extension.lastError) {
+      if (!chrome.runtime.lastError) {
         chrome.test.fail();
       }
       chrome.test.succeed();
@@ -42,7 +42,7 @@ chrome.test.runTests([
   function unmappedKeyIdentifier() {
     var e = { 'type': 'keydown', 'keyIdentifier': 'Again' };
     chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
-      if (!chrome.extension.lastError) {
+      if (!chrome.runtime.lastError) {
         chrome.test.fail();
       }
       chrome.test.succeed();
@@ -53,7 +53,7 @@ chrome.test.runTests([
     // U+00E1: LATIN SMALL LATTER A WITH ACUTE.
     var e = { 'type': 'keydown', 'keyIdentifier': 'U+00E1' };
     chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
-      if (chrome.extension.lastError) {
+      if (chrome.runtime.lastError) {
         // this is expected for now. See sendKeyboardEvent().
         // chrome.test.fail();
       }
@@ -66,7 +66,7 @@ chrome.test.runTests([
     var e = { 'type': 'keydown',
               'keyIdentifier': 'U+043a' };  // lower case is also ok.
     chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
-      if (chrome.extension.lastError) {
+      if (chrome.runtime.lastError) {
         // this is expected for now. See sendKeyboardEvent().
         // chrome.test.fail();
       }
@@ -77,7 +77,7 @@ chrome.test.runTests([
   function sendKeyboardEventBadUnicode1() {
     var e = { 'type': 'keydown', 'keyIdentifier': 'U+' };
     chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
-      if (!chrome.extension.lastError) {
+      if (!chrome.runtime.lastError) {
         chrome.test.fail();
       }
       chrome.test.succeed();
@@ -87,7 +87,7 @@ chrome.test.runTests([
   function sendKeyboardEventBadUnicode2() {
     var e = { 'type': 'keydown', 'keyIdentifier': 'U+1' };
     chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
-      if (!chrome.extension.lastError) {
+      if (!chrome.runtime.lastError) {
         chrome.test.fail();
       }
       chrome.test.succeed();
@@ -97,7 +97,7 @@ chrome.test.runTests([
   function sendKeyboardEventBadUnicode3() {
     var e = { 'type': 'keydown', 'keyIdentifier': 'U+111g' };
     chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
-      if (!chrome.extension.lastError) {
+      if (!chrome.runtime.lastError) {
         chrome.test.fail();
       }
       chrome.test.succeed();
@@ -107,7 +107,7 @@ chrome.test.runTests([
   function sendKeyboardEventBadUnicode4() {
     var e = { 'type': 'keydown', 'keyIdentifier': 'U+11111' };
     chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
-      if (!chrome.extension.lastError) {
+      if (!chrome.runtime.lastError) {
         chrome.test.fail();
       }
       chrome.test.succeed();

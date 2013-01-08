@@ -116,7 +116,7 @@ TestRunner.prototype.runExecuteReadTask = function() {
   // Add listener to be invoked when filesystem handler extension sends us
   // response.
   this.listener_ = this.onHandlerRequest_.bind(this);
-  chrome.extension.onMessageExternal.addListener(this.listener_);
+  chrome.runtime.onMessageExternal.addListener(this.listener_);
 
   var self = this;
   var fileURL = this.fileEntry_.toURL();
@@ -185,7 +185,7 @@ TestRunner.prototype.runCancelTest = function(fileName, type) {
 TestRunner.prototype.onHandlerRequest_ =
     function(request, sender, sendResponse) {
   // We don't have to listen for a response anymore.
-  chrome.extension.onMessageExternal.removeListener(this.listener_);
+  chrome.runtime.onMessageExternal.removeListener(this.listener_);
 
   this.verifyHandlerRequest(request,
       chrome.test.succeed,

@@ -916,9 +916,9 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
 
       function onFileTransferCompleted() {
         self.cancelCallback_ = null;
-        if (chrome.extension.lastError) {
+        if (chrome.runtime.lastError) {
           onFailTransfer({
-            code: chrome.extension.lastError.message,
+            code: chrome.runtime.lastError.message,
             toGDrive: task.targetOnGData,
             sourceFileUrl: sourceFileUrl
           });

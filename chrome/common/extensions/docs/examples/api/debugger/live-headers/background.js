@@ -15,8 +15,8 @@ function actionClicked(tab) {
 }
 
 function onAttach(tabId) {
-  if (chrome.extension.lastError) {
-    alert(chrome.extension.lastError.message);
+  if (chrome.runtime.lastError) {
+    alert(chrome.runtime.lastError.message);
     return;
   }
 

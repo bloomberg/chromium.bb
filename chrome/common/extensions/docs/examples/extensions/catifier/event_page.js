@@ -47,8 +47,8 @@ function registerRules() {
   };
 
   var callback = function() {
-    if (chrome.extension.lastError) {
-      console.error('Error adding rules: ' + chrome.extension.lastError);
+    if (chrome.runtime.lastError) {
+      console.error('Error adding rules: ' + chrome.runtime.lastError);
     } else {
       console.info('Rules successfully installed');
       chrome.declarativeWebRequest.onRequest.getRules(null,
@@ -70,8 +70,8 @@ function setup() {
   chrome.declarativeWebRequest.onRequest.removeRules(
     null,
     function() {
-      if (chrome.extension.lastError) {
-        console.error('Error clearing rules: ' + chrome.extension.lastError);
+      if (chrome.runtime.lastError) {
+        console.error('Error clearing rules: ' + chrome.runtime.lastError);
       } else {
         registerRules();
       }

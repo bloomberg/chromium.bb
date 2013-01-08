@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-chrome.extension.onConnect.addListener(function(port) {
+chrome.runtime.onConnect.addListener(function(port) {
   chrome.test.log("got connect");
   port.onMessage.addListener(function(msg) {
     chrome.test.log("got message: " + msg);

@@ -14,9 +14,9 @@ chrome.browserAction.onClicked.addListener(function(tab) {
   chrome.experimental.speechInput.isRecording(function(recording) {
     if (!recording) {
       chrome.experimental.speechInput.start({}, function() {
-        if (chrome.extension.lastError) {
+        if (chrome.runtime.lastError) {
           alert("Couldn't start speech input: " +
-              chrome.extension.lastError.message);
+              chrome.runtime.lastError.message);
           setStartIcon();
         } else {
           setStopIcon();

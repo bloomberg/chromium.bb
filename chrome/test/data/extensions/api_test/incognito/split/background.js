@@ -100,7 +100,7 @@ chrome.test.getConfig(function(config) {
                    '  inIncognitoContext: chrome.extension.inIncognitoContext' +
                    '});'},
             pass(function() {
-              assertEq(undefined, chrome.extension.lastError);
+              assertEq(undefined, chrome.runtime.lastError);
             }));
         }));
 

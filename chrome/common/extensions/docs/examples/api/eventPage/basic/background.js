@@ -56,7 +56,7 @@ chrome.experimental.keybinding.onCommand.addListener(function(command) {
   chrome.tabs.create({url: "http://www.google.com/"});
 });
 
-chrome.extension.onMessage.addListener(function(msg, _, sendResponse) {
+chrome.runtime.onMessage.addListener(function(msg, _, sendResponse) {
   if (msg.setAlarm) {
     chrome.alarms.create({delayInMinutes: 0.1});
   } else if (msg.delayedResponse) {

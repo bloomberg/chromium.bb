@@ -56,7 +56,7 @@
           {
             "name": "callback",
             "type": "function",
-            "description": "Called when the install process completes. Upon failures, chrome.extension.lastError will be set to 'user_canceled' or 'unknown_error'.",
+            "description": "Called when the install process completes. Upon failures, chrome.runtime.lastError will be set to 'user_canceled' or 'unknown_error'.",
             "optional": "true",
             "parameters": []
           }

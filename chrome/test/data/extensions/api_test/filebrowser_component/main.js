@@ -78,7 +78,7 @@ var TestRunner = function(expectations) {
 TestRunner.prototype.runTest = function() {
   // Get local FS, create dir with a file in it.
   console.log('Requesting local file system...');
-  chrome.extension.onMessageExternal.addListener(this.listener_);
+  chrome.runtime.onMessageExternal.addListener(this.listener_);
   chrome.fileBrowserPrivate.requestLocalFileSystem(
       this.onFileSystemFetched_.bind(this));
 };
@@ -191,7 +191,7 @@ TestRunner.prototype.onHandlerRequest_ =
   this.expectations_.verifyHandlerRequest(
       request,
       this.verifyRequestCallback_.bind(this, sendResponse));
-  chrome.extension.onMessageExternal.removeListener(this.listener_);
+  chrome.runtime.onMessageExternal.removeListener(this.listener_);
 };
 
 TestRunner.prototype.verifyRequestCallback_ = function(sendResponse, error) {

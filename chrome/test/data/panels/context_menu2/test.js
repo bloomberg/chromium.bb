@@ -8,7 +8,7 @@ function onclick(info) {
 
 chrome.contextMenus.create({"title":"Extension Item Bogey",
                             "onclick": onclick}, function() {
-  if (!chrome.extension.lastError) {
+  if (!chrome.runtime.lastError) {
     chrome.test.sendMessage("created bogey item");
   }
 });

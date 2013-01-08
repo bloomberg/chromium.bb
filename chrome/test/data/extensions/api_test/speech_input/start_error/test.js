@@ -17,7 +17,7 @@ chrome.test.runTests([
 
     // Start should fail because no devices are available.
     function started() {
-      chrome.test.assertEq(chrome.extension.lastError.message,
+      chrome.test.assertEq(chrome.runtime.lastError.message,
           "noRecordingDeviceFound");
 
       // Recording shouldn't have started.
@@ -27,7 +27,7 @@ chrome.test.runTests([
 
         // Stopping should fail since we're back in the idle state.
         chrome.experimental.speechInput.stop(function() {
-          chrome.test.assertEq(chrome.extension.lastError.message,
+          chrome.test.assertEq(chrome.runtime.lastError.message,
               "invalidOperation");
           chrome.test.succeed();
         });

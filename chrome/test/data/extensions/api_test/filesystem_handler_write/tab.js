@@ -43,14 +43,14 @@ function errorCallback(error) {
     };
   }
 
-  chrome.extension.sendMessage(fileBrowserExtensionId,
+  chrome.runtime.sendMessage(fileBrowserExtensionId,
                                {fileContent: null,
                                 error: {message: "File handler error: " + msg}},
                                 function(response) {});
 };
 
 function onSuccess(text) {
-  chrome.extension.sendMessage(
+  chrome.runtime.sendMessage(
       fileBrowserExtensionId,
       {fileContent: text, error: null},
       function(response) {});
@@ -71,7 +71,7 @@ function writeToFile(entry, text) {
 
 function runFileSystemHandlerTest(entries) {
   if (!entries || entries.length != 1 || !entries[0]) {
-    chrome.extension.sendMessage(
+    chrome.runtime.sendMessage(
         fileBrowserExtensionId,
         {fileContent: null, error: 'Invalid file entries.'},
         function(response) {});

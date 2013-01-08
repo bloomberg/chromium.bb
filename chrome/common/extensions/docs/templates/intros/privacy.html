@@ -73,10 +73,10 @@
 <pre>chrome.privacy.services.autofillEnabled.get({}, function(details) {
   if (details.levelOfControl === 'controllable_by_this_extension') {
     chrome.privacy.services.autofillEnabled.set({ value: true }, function() {
-      if (chrome.extension.lastError === undefined)
+      if (chrome.runtime.lastError === undefined)
         console.log("Hooray, it worked!");
       else
-        console.log("Sadness!", chrome.extension.lastError);
+        console.log("Sadness!", chrome.runtime.lastError);
     }
   }
 });</pre>
@@ -179,10 +179,10 @@
 <pre>chrome.privacy.services.autofillEnabled.get({}, function(details) {
   if (details.levelOfControl === 'controllable_by_this_extension') {
     chrome.privacy.services.autofillEnabled.set({ value: true }, function() {
-      if (chrome.extension.lastError === undefined)
+      if (chrome.runtime.lastError === undefined)
         console.log("Hooray, it worked!");
       else
-        console.log("Sadness!", chrome.extension.lastError);
+        console.log("Sadness!", chrome.runtime.lastError);
     }
   }
 });</pre>

@@ -6,11 +6,11 @@ window.onload = function() {
   chrome.contextMenus.create(
       {"title":"Page item", contexts: ["page"]},
       function() {
-        if (!chrome.extension.lastError) {
+        if (!chrome.runtime.lastError) {
           chrome.contextMenus.create(
           {"title":"Frame item", contexts: ["frame"]},
           function() {
-            if (!chrome.extension.lastError) {
+            if (!chrome.runtime.lastError) {
               chrome.test.sendMessage("created items");
             }
           });

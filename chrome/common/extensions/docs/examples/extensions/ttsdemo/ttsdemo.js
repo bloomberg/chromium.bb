@@ -86,8 +86,8 @@ function speak(str, options, highlightText) {
   };
   chrome.tts.speak(
       str, options, function() {
-    if (chrome.extension.lastError) {
-      console.log('TTS Error: ' + chrome.extension.lastError.message);
+    if (chrome.runtime.lastError) {
+      console.log('TTS Error: ' + chrome.runtime.lastError.message);
     }
   });
   ttsStatus.innerHTML = 'Busy';

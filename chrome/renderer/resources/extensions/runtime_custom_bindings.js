@@ -47,7 +47,7 @@ chromeHidden.registerCustomHook('runtime', function(bindings, id, contextType) {
 
   apiFunctions.setHandleRequest('sendNativeMessage',
                                 function(targetId, message, responseCallback) {
-    var port = chrome.extension.connectNative(
+    var port = chrome.runtime.connectNative(
         targetId, message, chromeHidden.kNativeMessageChannel);
     chromeHidden.Port.sendMessageImpl(port, '', responseCallback);
   });

@@ -36,8 +36,8 @@ function testLastError() {
     // Now ask for the next highest tabId.
     chrome.tabs.get(maxTabId + 1, function(tab) {
       // Make sure lastError *is* set and tab is not.
-      if (!chrome.extension.lastError ||
-          !chrome.extension.lastError.message ||
+      if (!chrome.runtime.lastError ||
+          !chrome.runtime.lastError.message ||
           tab)
         fail();
 

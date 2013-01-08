@@ -9,9 +9,9 @@
 
 document.addEventListener('DOMContentLoaded', function() {
   chrome.contentSettings.plugins.getResourceIdentifiers(function(r) {
-    if (chrome.extension.lastError) {
+    if (chrome.runtime.lastError) {
       $('error').textContent =
-          'Error: ' + chrome.extension.lastError.message;
+          'Error: ' + chrome.runtime.lastError.message;
       return;
     }
     var pluginList = $('plugin-list');

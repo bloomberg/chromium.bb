@@ -32,7 +32,7 @@ function errorCallback(error) {
     };
   }
 
-  chrome.extension.sendMessage(fileBrowserExtensionId,
+  chrome.runtime.sendMessage(fileBrowserExtensionId,
                                {fileContent: null,
                                 error: {message: "File handler error: " + msg}},
                                function(response) {});
@@ -42,7 +42,7 @@ function onGotEntryByUrl(entry) {
   var reader = new FileReader();
   reader.onloadend = function(e) {
     // Send data back to the file browser extension
-    chrome.extension.sendMessage(
+    chrome.runtime.sendMessage(
         fileBrowserExtensionId,
         {fileContent: reader.result, error: null},
         function(response) {});

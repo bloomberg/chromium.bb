@@ -6,7 +6,7 @@ var panelWindowId = 0;
 
 chrome.test.runTests([
   function openPanelThatConnectsToExtension() {
-    chrome.test.listenOnce(chrome.extension.onConnect, function(port) {
+    chrome.test.listenOnce(chrome.runtime.onConnect, function(port) {
       chrome.test.assertEq(panelWindowId, port.sender.tab.windowId);
       chrome.test.assertTrue(port.sender.tab.id > 0);
     });

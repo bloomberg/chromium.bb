@@ -13,8 +13,8 @@ window.onload = function() {
         // Try launching a non-app extension, which should fail.
         var expected_error = "Extension " + item.id + " is not an App";
         chrome.management.launchApp(item.id, function() {
-          if (chrome.extension.lastError &&
-              chrome.extension.lastError.message == expected_error) {
+          if (chrome.runtime.lastError &&
+              chrome.runtime.lastError.message == expected_error) {
             chrome.test.sendMessage("got_expected_error");
           }
         });

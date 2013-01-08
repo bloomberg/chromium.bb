@@ -9,7 +9,7 @@ function onclick(info) {
 window.onload = function() {
   chrome.contextMenus.create({"title":"Extension Item 1",
                               "onclick": onclick}, function() {
-    if (!chrome.extension.lastError) {
+    if (!chrome.runtime.lastError) {
       chrome.test.sendMessage("created item");
     }
   });

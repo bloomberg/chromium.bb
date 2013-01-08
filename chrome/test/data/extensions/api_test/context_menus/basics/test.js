@@ -11,7 +11,7 @@ var tests = [
 
   function no_properties() {
     chrome.contextMenus.create({}, function(id) {
-      chrome.test.assertTrue(chrome.extension.lastError != null);
+      chrome.test.assertTrue(chrome.runtime.lastError != null);
       chrome.test.succeed();
     });
   },

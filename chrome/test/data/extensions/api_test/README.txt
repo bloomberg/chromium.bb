@@ -61,7 +61,7 @@ chrome.test.runTests([
 
 Note that chrome.test.callbackFail takes an argument which is the error message
 that it expects to get when the callback fails
-(chrome.extension.lastError.message).
+(chrome.runtime.lastError.message).
 
 Here's what the output of this test might look like:
 [==========] Running 1 test from 1 test case.

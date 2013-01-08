@@ -42,8 +42,8 @@ function addRules(testServerPort) {
       actions: [new chrome.declarativeWebRequest.CancelRequest()]
      }],
     function(rules) {
-      if (chrome.extension.lastError)
-        chrome.test.fail(chrome.extension.lastError);
+      if (chrome.runtime.lastError)
+        chrome.test.fail(chrome.runtime.lastError);
       chrome.test.sendMessage("rules all registered");
     }
   );

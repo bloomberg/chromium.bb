@@ -31,7 +31,7 @@ chrome.test.getConfig(function(config) {
         waitForCurrentTabLoaded(function() {
           chrome.pageCapture.saveAsMHTML({ "tabId": tab.id },
               function(data) {
-            assertEq(undefined, chrome.extension.lastError);
+            assertEq(undefined, chrome.runtime.lastError);
             assertTrue(data != null);
             // It should contain few KBs of data.
             assertTrue(data.size > 100);

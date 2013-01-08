@@ -13,13 +13,16 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     function() {
       // Tests that we can still execute scripts after a frame has loaded after
       // the main document has completed.
-      var injectFrameCode = 'var frame = document.createElement("iframe");' +
-          'frame.src = "' + baseUrl + 'inner.html";' +
-          'frame.onload = function() {chrome.extension.connect().postMessage("loaded")};' +
-          'document.body.appendChild(frame)';
-      var postFrameCode = 'chrome.extension.connect().postMessage("done");';
+      var injectFrameCode =
+          'var frame = document.createElement("iframe");\n' +
+          'frame.src = "' + baseUrl + 'inner.html";\n' +
+          'frame.onload = function() {\n' +
+          '  chrome.runtime.connect().postMessage("loaded");\n' +
+          '};\n' +
+          'document.body.appendChild(frame);';
+      var postFrameCode = 'chrome.runtime.connect().postMessage("done");';
 
-      chrome.extension.onConnect.addListener(function(port) {
+      chrome.runtime.onConnect.addListener(function(port) {
         port.onMessage.addListener(function(data) {
           if (data == 'loaded') {
             chrome.tabs.executeScript(tabId, {code: postFrameCode});

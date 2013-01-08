@@ -7,7 +7,7 @@ if (typeof(contentWindow) != 'undefined') {
   win = contentWindow;
 }
 
-chrome.extension.onConnect.addListener(function(port) {
+chrome.runtime.onConnect.addListener(function(port) {
   console.log('connected');
   port.onMessage.addListener(function(msg) {
     console.log('got ' + msg);
@@ -30,7 +30,7 @@ chrome.extension.onConnect.addListener(function(port) {
 function testPostMessageFromTab(origPort) {
   console.log('testPostMessageFromTab');
   var portName = "peter";
-  var port = chrome.extension.connect({name: portName});
+  var port = chrome.runtime.connect({name: portName});
   port.postMessage({testPostMessageFromTab: true});
   port.onMessage.addListener(function(msg) {
     origPort.postMessage({success: (msg.success && (msg.portName == portName))});

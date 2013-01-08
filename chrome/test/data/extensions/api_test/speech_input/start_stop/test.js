@@ -44,7 +44,7 @@ chrome.test.runTests([
   function testSpeechInputInvalidOperation() {
     // Calling start once recording should generate an invalid operation error.
     chrome.experimental.speechInput.stop(function() {
-      chrome.test.assertEq(chrome.extension.lastError.message,
+      chrome.test.assertEq(chrome.runtime.lastError.message,
           "invalidOperation");
       chrome.experimental.speechInput.start({}, started);
     });
@@ -53,7 +53,7 @@ chrome.test.runTests([
     function started() {
       chrome.test.assertNoLastError();
       chrome.experimental.speechInput.start({}, function() {
-        chrome.test.assertEq(chrome.extension.lastError.message,
+        chrome.test.assertEq(chrome.runtime.lastError.message,
             "invalidOperation");
         chrome.test.succeed();
       });
