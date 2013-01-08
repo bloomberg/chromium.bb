@@ -1,5 +1,4 @@
 # This file contains known failures in the LLVM regression tests for PNaCl.
-MC/ARM/arm_instructions.s
 
 # Failures only on windows
 SemaObjC/method-def-2.m win
