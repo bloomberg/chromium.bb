@@ -33,6 +33,8 @@ remoting.OAuth2.prototype.KEY_REFRESH_TOKEN_REVOKABLE_ =
 /** @private */
 remoting.OAuth2.prototype.KEY_ACCESS_TOKEN_ = 'oauth2-access-token';
 /** @private */
+remoting.OAuth2.prototype.KEY_XSRF_TOKEN_ = 'oauth2-xsrf-token';
+/** @private */
 remoting.OAuth2.prototype.KEY_EMAIL_ = 'remoting-email';
 
 // Constants for parameters used in retrieving the OAuth2 credentials.
@@ -262,16 +264,29 @@ remoting.OAuth2.prototype.refreshAccessToken_ = function(onDone) {
 };
 
 /**
+ * @private
+ * @return {string} A URL-Safe Base64-encoded 128-bit random value. */
+remoting.OAuth2.prototype.generateXsrfToken_ = function() {
+  var random = new Uint8Array(16);
+  window.crypto.getRandomValues(random);
+  var base64Token = window.btoa(String.fromCharCode.apply(null, random));
+  return base64Token.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+};
+
+/**
  * Redirect page to get a new OAuth2 Refresh Token.
  *
  * @return {void} Nothing.
  */
 remoting.OAuth2.prototype.doAuthRedirect = function() {
+  var xsrf_token = this.generateXsrfToken_();
+  window.localStorage.setItem(this.KEY_XSRF_TOKEN_, xsrf_token);
   var GET_CODE_URL = 'https://accounts.google.com/o/oauth2/auth?' +
     remoting.xhr.urlencodeParamHash({
           'client_id': this.CLIENT_ID_,
           'redirect_uri': this.REDIRECT_URI_,
           'scope': this.SCOPE_,
+          'state': xsrf_token,
           'response_type': 'code',
           'access_type': 'offline',
           'approval_prompt': 'force'
@@ -283,11 +298,18 @@ remoting.OAuth2.prototype.doAuthRedirect = function() {
  * Asynchronously exchanges an authorization code for a refresh token.
  *
  * @param {string} code The new refresh token.
+ * @param {string} state The state parameter received from the OAuth redirect.
  * @param {function(XMLHttpRequest):void} onDone Callback to invoke on
  *     completion.
  * @return {void} Nothing.
  */
-remoting.OAuth2.prototype.exchangeCodeForToken = function(code, onDone) {
+remoting.OAuth2.prototype.exchangeCodeForToken = function(code, state, onDone) {
+  var xsrf_token = window.localStorage.getItem(this.KEY_XSRF_TOKEN_);
+  window.localStorage.removeItem(this.KEY_XSRF_TOKEN_);
+  if (xsrf_token == undefined || state != xsrf_token) {
+    // Invalid XSRF token, or unexpected OAuth2 redirect. Abort.
+    onDone(null);
+  }
   var parameters = {
     'client_id': this.CLIENT_ID_,
     'client_secret': this.CLIENT_SECRET_,

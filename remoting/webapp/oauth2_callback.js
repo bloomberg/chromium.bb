@@ -21,11 +21,13 @@ function retrieveRefreshToken() {
     var pair = parts[i].split('=');
     queryArgs[pair[0]] = pair[1];
   }
-  if ('code' in queryArgs) {
+
+  if ('code' in queryArgs && 'state' in queryArgs) {
     var oauth2 = new remoting.OAuth2();
-    oauth2.exchangeCodeForToken(queryArgs['code'], function() {
-      window.location.replace(chrome.extension.getURL('main.html'));
-    });
+    oauth2.exchangeCodeForToken(queryArgs['code'], queryArgs['state'],
+      function() {
+        window.location.replace(chrome.extension.getURL('main.html'));
+      });
   } else {
     window.location.replace(chrome.extension.getURL('main.html'));
   }

@@ -31,7 +31,7 @@ Element.ALLOW_KEYBOARD_INPUT;
 /** @return {void} Nothing. */
 Element.prototype.webkitRequestFullScreen = function(flags) {};
 
-/** @type {{getRandomValues: function(Uint16Array):void}} */
+/** @type {{getRandomValues: function((Uint16Array|Uint8Array)):void}} */
 Window.prototype.crypto;
 
 /** @constructor
