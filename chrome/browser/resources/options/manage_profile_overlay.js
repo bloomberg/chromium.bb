@@ -41,23 +41,13 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
 
       var self = this;
-      var iconGrid = $('manage-profile-icon-grid');
-      var createIconGrid = $('create-profile-icon-grid');
-      options.ProfilesIconGrid.decorate(iconGrid);
-      options.ProfilesIconGrid.decorate(createIconGrid);
-      iconGrid.addEventListener('change', function(e) {
-        self.onIconGridSelectionChanged_('manage');
-      });
-      createIconGrid.addEventListener('change', function(e) {
-        self.onIconGridSelectionChanged_('create');
-      });
+      options.ProfilesIconGrid.decorate($('manage-profile-icon-grid'));
+      options.ProfilesIconGrid.decorate($('create-profile-icon-grid'));
+      self.registerCommonEventHandlers_('create',
+                                        self.submitCreateProfile_.bind(self));
+      self.registerCommonEventHandlers_('manage',
+                                        self.submitManageChanges_.bind(self));
 
-      $('manage-profile-name').oninput = function(event) {
-        self.onNameChanged_(event, 'manage');
-      };
-      $('create-profile-name').oninput = function(event) {
-        self.onNameChanged_(event, 'create');
-      };
       if (loadTimeData.getBoolean('managedUsersEnabled')) {
         $('create-profile-managed-container').hidden = false;
         $('managed-user-settings-button').onclick = function(event) {
@@ -71,26 +61,9 @@ cr.define('options', function() {
               $('create-profile-cancel').onclick = function(event) {
         OptionsPage.closeOverlay();
       };
-      $('manage-profile-ok').onclick = function(event) {
-        OptionsPage.closeOverlay();
-        self.submitManageChanges_();
-      };
       $('delete-profile-ok').onclick = function(event) {
         OptionsPage.closeOverlay();
         chrome.send('deleteProfile', [self.profileInfo_.filePath]);
-      };
-      $('create-profile-ok').onclick = function(event) {
-        OptionsPage.closeOverlay();
-        // Get the user's chosen name and icon, or default if they do not
-        // wish to customize their profile.
-        var name = $('create-profile-name').value;
-        var icon_url = createIconGrid.selectedItem;
-        var create_shortcut = false;
-        if ($('create-shortcut'))
-          create_shortcut = $('create-shortcut').checked;
-        var is_managed = $('create-profile-managed').checked;
-        chrome.send('createProfile',
-                    [name, icon_url, create_shortcut, is_managed]);
       };
     },
 
@@ -106,6 +79,37 @@ cr.define('options', function() {
         ManageProfileOverlay.getInstance().prepareForManageDialog_();
 
       $('manage-profile-name').focus();
+    },
+
+    /**
+     * Registers event handlers that are common between create and manage modes.
+     * @param {String} mode A label that specifies the type of dialog
+     *     box which is currently being viewed (i.e. 'create' or
+     *     'manage').
+     * @param {function()} submitFunction The function that should be called
+     *     when the user chooses to submit (e.g. by clicking the OK button).
+     * @private
+     */
+    registerCommonEventHandlers_: function(mode, submitFunction) {
+      var self = this;
+      $(mode + '-profile-icon-grid').addEventListener('change', function(e) {
+        self.onIconGridSelectionChanged_(mode);
+      });
+      $(mode + '-profile-name').oninput = function(event) {
+        self.onNameChanged_(event, mode);
+      };
+      $(mode + '-profile-ok').onclick = function(event) {
+        OptionsPage.closeOverlay();
+        submitFunction();
+      };
+      $(mode + '-profile-name').onkeydown =
+          $(mode + '-profile-icon-grid').onkeydown = function(event) {
+        // Submit if the OK button is enabled and we hit enter.
+        if (!$(mode + '-profile-ok').disabled && event.keyCode == 13) {
+          OptionsPage.closeOverlay();
+          submitFunction();
+        }
+      };
     },
 
     /**
@@ -240,7 +244,8 @@ cr.define('options', function() {
     },
 
     /**
-     * Called when the user clicks "OK". Saves the newly changed profile info.
+     * Called when the user clicks "OK" or hits enter. Saves the newly changed
+     * profile info.
      * @private
      */
     submitManageChanges_: function() {
@@ -252,6 +257,24 @@ cr.define('options', function() {
       chrome.send('setProfileNameAndIcon',
                   [this.profileInfo_.filePath, name, iconURL,
                   manage_checkbox]);
+    },
+
+    /**
+     * Called when the user clicks "OK" or hits enter. Creates the profile
+     * using the information in the dialog.
+     * @private
+     */
+    submitCreateProfile_: function() {
+      // Get the user's chosen name and icon, or default if they do not
+      // wish to customize their profile.
+      var name = $('create-profile-name').value;
+      var icon_url = $('create-profile-icon-grid').selectedItem;
+      var create_shortcut = false;
+      if ($('create-shortcut'))
+        create_checkbox = $('create-shortcut').checked;
+      var is_managed = $('create-profile-managed').checked;
+      chrome.send('createProfile',
+                  [name, icon_url, create_shortcut, is_managed]);
     },
 
     /**

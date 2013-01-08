@@ -64,6 +64,11 @@
   padding: 2px;
 }
 
+#create-profile-ok,
+#manage-profile-ok {
+  border-color: rgba(0, 0, 0, 0.5);
+}
+
 /* Adds a grey horizontal line below content area.  */
 #create-profile-content::after,
 #manage-profile-content::after {
