@@ -58,4 +58,10 @@ Status ExecuteExecuteScript(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+// Changes the targeted frame for the given session.
+Status ExecuteSwitchToFrame(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 #endif  // CHROME_TEST_CHROMEDRIVER_COMMANDS_H_

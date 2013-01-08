@@ -102,57 +102,83 @@ class FakeDevToolsClient : public DevToolsClient {
 };
 
 void AssertEvalFails(const base::DictionaryValue& command_result) {
-  scoped_ptr<base::Value> result;
+  scoped_ptr<base::DictionaryValue> result;
   FakeDevToolsClient client;
   client.set_result(command_result);
-  Status status = internal::EvaluateScript(&client, "", &result);
+  Status status = internal::EvaluateScript(&client, 0, "",
+                                           internal::ReturnByValue, &result);
   ASSERT_EQ(kUnknownError, status.code());
   ASSERT_FALSE(result);
 }
 
 }  // namespace
 
-TEST(ChromeImplEvaluateScript, CommandError) {
-  scoped_ptr<base::Value> result;
+TEST(EvaluateScript, CommandError) {
+  scoped_ptr<base::DictionaryValue> result;
   FakeDevToolsClient client;
   client.set_status(Status(kUnknownError));
-  Status status = internal::EvaluateScript(&client, "", &result);
+  Status status = internal::EvaluateScript(&client, 0, "",
+                                           internal::ReturnByValue, &result);
   ASSERT_EQ(kUnknownError, status.code());
   ASSERT_FALSE(result);
 }
 
-TEST(ChromeImplEvaluateScript, MissingResult) {
+TEST(EvaluateScript, MissingWasThrown) {
   base::DictionaryValue dict;
   ASSERT_NO_FATAL_FAILURE(AssertEvalFails(dict));
 }
 
-TEST(ChromeImplEvaluateScript, Throws) {
+TEST(EvaluateScript, MissingResult) {
+  base::DictionaryValue dict;
+  dict.SetBoolean("wasThrown", false);
+  ASSERT_NO_FATAL_FAILURE(AssertEvalFails(dict));
+}
+
+TEST(EvaluateScript, Throws) {
   base::DictionaryValue dict;
   dict.SetBoolean("wasThrown", true);
   dict.SetString("result.type", "undefined");
   ASSERT_NO_FATAL_FAILURE(AssertEvalFails(dict));
 }
 
-TEST(ChromeImplEvaluateScript, MissingType) {
+TEST(EvaluateScript, Ok) {
+  scoped_ptr<base::DictionaryValue> result;
+  base::DictionaryValue dict;
+  dict.SetBoolean("wasThrown", false);
+  dict.SetInteger("result.key", 100);
+  FakeDevToolsClient client;
+  client.set_result(dict);
+  ASSERT_TRUE(internal::EvaluateScript(
+      &client, 0, "", internal::ReturnByValue, &result).IsOk());
+  ASSERT_TRUE(result);
+  ASSERT_TRUE(result->HasKey("key"));
+}
+
+TEST(EvaluateScriptAndGetValue, MissingType) {
+  scoped_ptr<base::Value> result;
+  FakeDevToolsClient client;
   base::DictionaryValue dict;
   dict.SetBoolean("wasThrown", false);
   dict.SetInteger("result.value", 1);
-  ASSERT_NO_FATAL_FAILURE(AssertEvalFails(dict));
+  client.set_result(dict);
+  ASSERT_TRUE(internal::EvaluateScriptAndGetValue(
+      &client, 0, "", &result).IsError());
 }
 
-TEST(ChromeImplEvaluateScript, Undefined) {
+TEST(EvaluateScriptAndGetValue, Undefined) {
   scoped_ptr<base::Value> result;
   FakeDevToolsClient client;
   base::DictionaryValue dict;
   dict.SetBoolean("wasThrown", false);
   dict.SetString("result.type", "undefined");
   client.set_result(dict);
-  Status status = internal::EvaluateScript(&client, "", &result);
+  Status status = internal::EvaluateScriptAndGetValue(
+      &client, 0, "", &result);
   ASSERT_EQ(kOk, status.code());
   ASSERT_TRUE(result && result->IsType(base::Value::TYPE_NULL));
 }
 
-TEST(ChromeImplEvaluateScript, Value) {
+TEST(EvaluateScriptAndGetValue, Ok) {
   scoped_ptr<base::Value> result;
   FakeDevToolsClient client;
   base::DictionaryValue dict;
@@ -161,14 +187,15 @@ TEST(ChromeImplEvaluateScript, Value) {
   dict.SetInteger("result.value.status", 0);
   dict.SetInteger("result.value.value", 1);
   client.set_result(dict);
-  Status status = internal::EvaluateScript(&client, "", &result);
+  Status status = internal::EvaluateScriptAndGetValue(
+      &client, 0, "", &result);
   ASSERT_EQ(kOk, status.code());
   int value;
   ASSERT_TRUE(result && result->GetAsInteger(&value));
   ASSERT_EQ(1, value);
 }
 
-TEST(ChromeImplEvaluateScript, ScriptError) {
+TEST(EvaluateScriptAndGetValue, ScriptError) {
   scoped_ptr<base::Value> result;
   FakeDevToolsClient client;
   base::DictionaryValue dict;
@@ -177,7 +204,32 @@ TEST(ChromeImplEvaluateScript, ScriptError) {
   dict.SetInteger("result.value.status", 1);
   dict.SetInteger("result.value.value", 1);
   client.set_result(dict);
-  Status status = internal::EvaluateScript(&client, "", &result);
+  Status status = internal::EvaluateScriptAndGetValue(
+      &client, 0, "", &result);
   ASSERT_EQ(1, status.code());
   ASSERT_FALSE(result);
+}
+
+TEST(EvaluateScriptAndGetObject, NoObject) {
+  FakeDevToolsClient client;
+  base::DictionaryValue dict;
+  dict.SetBoolean("wasThrown", false);
+  dict.SetString("result.type", "integer");
+  client.set_result(dict);
+  std::string object_id;
+  ASSERT_TRUE(internal::EvaluateScriptAndGetObject(
+      &client, 0, "", &object_id).IsError());
+  ASSERT_TRUE(object_id.empty());
+}
+
+TEST(EvaluateScriptAndGetObject, Ok) {
+  FakeDevToolsClient client;
+  base::DictionaryValue dict;
+  dict.SetBoolean("wasThrown", false);
+  dict.SetString("result.objectId", "id");
+  client.set_result(dict);
+  std::string object_id;
+  ASSERT_TRUE(internal::EvaluateScriptAndGetObject(
+      &client, 0, "", &object_id).IsOk());
+  ASSERT_STREQ("id", object_id.c_str());
 }

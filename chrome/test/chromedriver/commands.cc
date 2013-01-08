@@ -103,5 +103,48 @@ Status ExecuteExecuteScript(
     return Status(kUnknownError, "'args' must be a list");
 
   return session->chrome->CallFunction(
-      "function(){" + script + "}", *args, value);
+      session->frame, "function(){" + script + "}", *args, value);
+}
+
+Status ExecuteSwitchToFrame(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  const base::Value* id;
+  if (!params.Get("id", &id))
+    return Status(kUnknownError, "missing 'id'");
+
+  if (id->IsType(base::Value::TYPE_NULL)) {
+    session->frame = "";
+    return Status(kOk);
+  }
+
+  std::string evaluate_xpath_script =
+      "function(xpath) {"
+      "  return document.evaluate(xpath, document, null, "
+      "      XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;"
+      "}";
+  std::string xpath = "(/html/body//iframe|/html/frameset/frame)";
+  std::string id_string;
+  int id_int;
+  if (id->GetAsString(&id_string)) {
+    xpath += base::StringPrintf(
+        "[@name=\"%s\" or @id=\"%s\"]", id_string.c_str(), id_string.c_str());
+  } else if (id->GetAsInteger(&id_int)) {
+    xpath += base::StringPrintf("[%d]", id_int + 1);
+  } else if (id->IsType(base::Value::TYPE_DICTIONARY)) {
+    // TODO(kkania): Implement.
+    return Status(kUnknownError, "frame switching by element not implemented");
+  } else {
+    return Status(kUnknownError, "invalid 'id'");
+  }
+  base::ListValue args;
+  args.Append(new base::StringValue(xpath));
+  std::string frame;
+  Status status = session->chrome->GetFrameByFunction(
+      session->frame, evaluate_xpath_script, args, &frame);
+  if (status.IsError())
+    return status;
+  session->frame = frame;
+  return Status(kOk);
 }

@@ -52,6 +52,26 @@ class ChromeDriverTest(unittest.TestCase):
                       driver.ExecuteScript, '{{{')
     driver.Quit()
 
+  def testSwitchToFrame(self):
+    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB, _CHROME_BINARY)
+    driver.ExecuteScript(
+        'var frame = document.createElement("iframe");'
+        'frame.id="id";'
+        'frame.name="name";'
+        'document.body.appendChild(frame);')
+    self.assertTrue(driver.ExecuteScript('return window.top == window'))
+    driver.SwitchToFrame('id')
+    self.assertTrue(driver.ExecuteScript('return window.top != window'))
+    driver.SwitchToMainFrame()
+    self.assertTrue(driver.ExecuteScript('return window.top == window'))
+    driver.SwitchToFrame('name')
+    self.assertTrue(driver.ExecuteScript('return window.top != window'))
+    driver.SwitchToMainFrame()
+    self.assertTrue(driver.ExecuteScript('return window.top == window'))
+    driver.SwitchToFrameByIndex(0)
+    self.assertTrue(driver.ExecuteScript('return window.top != window'))
+    driver.Quit()
+
 
 if __name__ == '__main__':
   parser = optparse.OptionParser()

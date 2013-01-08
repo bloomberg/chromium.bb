@@ -75,6 +75,15 @@ class ChromeDriver(object):
     return self._ExecuteSessionCommand(
          'executeScript', {'script': script, 'args': args})
 
+  def SwitchToFrame(self, id_or_name):
+    self._ExecuteSessionCommand('switchToFrame', {'id': id_or_name})
+
+  def SwitchToFrameByIndex(self, index):
+    self.SwitchToFrame(index)
+
+  def SwitchToMainFrame(self):
+    self.SwitchToFrame(None)
+
   def Quit(self):
     """Quits the browser and ends the session."""
     self._ExecuteSessionCommand('quit')

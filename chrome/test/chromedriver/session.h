@@ -21,6 +21,7 @@ struct Session {
 
   const std::string id;
   scoped_ptr<Chrome> chrome;
+  std::string frame;
 };
 
 class SessionAccessor : public base::RefCountedThreadSafe<SessionAccessor> {
