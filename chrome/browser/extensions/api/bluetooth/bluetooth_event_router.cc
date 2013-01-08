@@ -41,13 +41,8 @@ ExtensionBluetoothEventRouter::~ExtensionBluetoothEventRouter() {
   }
 }
 
-scoped_refptr<const device::BluetoothAdapter>
-ExtensionBluetoothEventRouter::adapter() {
-  return GetMutableAdapter();
-}
-
 scoped_refptr<device::BluetoothAdapter>
-ExtensionBluetoothEventRouter::GetMutableAdapter() {
+ExtensionBluetoothEventRouter::GetAdapter() {
   if (adapter_)
     return adapter_;
 
@@ -183,7 +178,7 @@ void ExtensionBluetoothEventRouter::DeviceAdded(
 
 void ExtensionBluetoothEventRouter::InitializeAdapterIfNeeded() {
   if (!adapter_) {
-    adapter_ = GetMutableAdapter();
+    adapter_ = GetAdapter();
     adapter_->AddObserver(this);
   }
 }

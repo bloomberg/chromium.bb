@@ -23,13 +23,9 @@ class ExtensionBluetoothEventRouter
   explicit ExtensionBluetoothEventRouter(Profile* profile);
   virtual ~ExtensionBluetoothEventRouter();
 
-  // adapter() will return NULL if the bluetooth adapter is not supported in the
-  // current platform.
-  scoped_refptr<const device::BluetoothAdapter> adapter();
-
-  // GetMutableAdapter will return NULL if the bluetooth adapter is not
+  // GetAdapter will return NULL if the bluetooth adapter is not
   // supported in the current platform.
-  scoped_refptr<device::BluetoothAdapter> GetMutableAdapter();
+  scoped_refptr<device::BluetoothAdapter> GetAdapter();
 
   // Called when a bluetooth event listener is added.
   void OnListenerAdded();

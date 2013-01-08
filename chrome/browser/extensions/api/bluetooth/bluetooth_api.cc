@@ -43,18 +43,6 @@ extensions::ExtensionBluetoothEventRouter* GetEventRouter(Profile* profile) {
   return extensions::BluetoothAPI::Get(profile)->bluetooth_event_router();
 }
 
-const BluetoothAdapter* GetAdapter(Profile* profile) {
-  return GetEventRouter(profile)->adapter();
-}
-
-BluetoothAdapter* GetMutableAdapter(Profile* profile) {
-  return GetEventRouter(profile)->GetMutableAdapter();
-}
-
-bool IsBluetoothSupported(Profile* profile) {
-  return GetAdapter(profile) != NULL;
-}
-
 }  // namespace
 
 namespace {
@@ -121,15 +109,12 @@ void BluetoothAPI::OnListenerRemoved(const EventListenerInfo& details) {
 
 namespace api {
 
-bool BluetoothGetAdapterStateFunction::RunImpl() {
-  if (!IsBluetoothSupported(profile())) {
-    SetError(kPlatformNotSupported);
-    return false;
-  }
-
+bool BluetoothGetAdapterStateFunction::DoWork(
+    scoped_refptr<BluetoothAdapter> adapter) {
   bluetooth::AdapterState state;
-  PopulateAdapterState(*GetAdapter(profile()), &state);
+  PopulateAdapterState(*adapter, &state);
   SetResult(state.ToValue().release());
+  SendResponse(true);
   return true;
 }
 
@@ -175,12 +160,8 @@ void BluetoothGetDevicesFunction::FinishDeviceSearch() {
   SendResponse(true);
 }
 
-bool BluetoothGetDevicesFunction::RunImpl() {
-  if (!IsBluetoothSupported(profile())) {
-    SetError(kPlatformNotSupported);
-    return false;
-  }
-
+bool BluetoothGetDevicesFunction::DoWork(
+    scoped_refptr<BluetoothAdapter> adapter) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   scoped_ptr<GetDevices::Params> params(GetDevices::Params::Create(*args_));
@@ -192,14 +173,14 @@ bool BluetoothGetDevicesFunction::RunImpl() {
     uuid = device::bluetooth_utils::CanonicalUuid(*options.uuid.get());
     if (uuid.empty()) {
       SetError(kInvalidUuid);
+      SendResponse(false);
       return false;
     }
   }
 
   CHECK_EQ(0, callbacks_pending_);
 
-  BluetoothAdapter::DeviceList devices =
-      GetMutableAdapter(profile())->GetDevices();
+  BluetoothAdapter::DeviceList devices = adapter->GetDevices();
   for (BluetoothAdapter::DeviceList::iterator i = devices.begin();
       i != devices.end(); ++i) {
     BluetoothDevice* device = *i;
@@ -252,20 +233,16 @@ void BluetoothGetServicesFunction::OnErrorCallback() {
   SendResponse(false);
 }
 
-bool BluetoothGetServicesFunction::RunImpl() {
-  if (!IsBluetoothSupported(profile())) {
-    SetError(kPlatformNotSupported);
-    return false;
-  }
-
+bool BluetoothGetServicesFunction::DoWork(
+    scoped_refptr<BluetoothAdapter> adapter) {
   scoped_ptr<GetServices::Params> params(GetServices::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
   const bluetooth::GetServicesOptions& options = params->options;
 
-  BluetoothDevice* device =
-      GetMutableAdapter(profile())->GetDevice(options.device_address);
+  BluetoothDevice* device = adapter->GetDevice(options.device_address);
   if (!device) {
     SetError(kInvalidDevice);
+    SendResponse(false);
     return false;
   }
 
@@ -301,12 +278,7 @@ void BluetoothConnectFunction::ConnectToServiceCallback(
   }
 }
 
-bool BluetoothConnectFunction::RunImpl() {
-  if (!IsBluetoothSupported(profile())) {
-    SetError(kPlatformNotSupported);
-    return false;
-  }
-
+bool BluetoothConnectFunction::DoWork(scoped_refptr<BluetoothAdapter> adapter) {
   scoped_ptr<Connect::Params> params(Connect::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
   const bluetooth::ConnectOptions& options = params->options;
@@ -315,6 +287,7 @@ bool BluetoothConnectFunction::RunImpl() {
   if (!GetExtension()->CheckAPIPermissionWithParam(
         APIPermission::kBluetoothDevice, &param)) {
     SetError(kDevicePermissionDenied);
+    SendResponse(false);
     return false;
   }
 
@@ -322,13 +295,14 @@ bool BluetoothConnectFunction::RunImpl() {
       options.service_uuid);
   if (uuid.empty()) {
     SetError(kInvalidUuid);
+    SendResponse(false);
     return false;
   }
 
-  BluetoothDevice* device =
-      GetMutableAdapter(profile())->GetDevice(options.device_address);
+  BluetoothDevice* device = adapter->GetDevice(options.device_address);
   if (!device) {
     SetError(kInvalidDevice);
+    SendResponse(false);
     return false;
   }
 
@@ -337,6 +311,7 @@ bool BluetoothConnectFunction::RunImpl() {
                  this,
                  device,
                  uuid));
+
   return true;
 }
 
@@ -476,12 +451,8 @@ void BluetoothSetOutOfBandPairingDataFunction::OnErrorCallback() {
   SendResponse(false);
 }
 
-bool BluetoothSetOutOfBandPairingDataFunction::RunImpl() {
-  if (!IsBluetoothSupported(profile())) {
-    SetError(kPlatformNotSupported);
-    return false;
-  }
-
+bool BluetoothSetOutOfBandPairingDataFunction::DoWork(
+    scoped_refptr<BluetoothAdapter> adapter) {
   // TODO(bryeung): update to new-style parameter passing when ArrayBuffer
   // support is added
   DictionaryValue* options;
@@ -489,9 +460,10 @@ bool BluetoothSetOutOfBandPairingDataFunction::RunImpl() {
   std::string address;
   EXTENSION_FUNCTION_VALIDATE(options->GetString("deviceAddress", &address));
 
-  BluetoothDevice* device = GetMutableAdapter(profile())->GetDevice(address);
+  BluetoothDevice* device = adapter->GetDevice(address);
   if (!device) {
     SetError(kInvalidDevice);
+    SendResponse(false);
     return false;
   }
 
@@ -558,17 +530,14 @@ void BluetoothGetLocalOutOfBandPairingDataFunction::ErrorCallback() {
   SendResponse(false);
 }
 
-bool BluetoothGetLocalOutOfBandPairingDataFunction::RunImpl() {
-  if (!IsBluetoothSupported(profile())) {
-    SetError(kPlatformNotSupported);
-    return false;
-  }
-
-  GetMutableAdapter(profile())->ReadLocalOutOfBandPairingData(
+bool BluetoothGetLocalOutOfBandPairingDataFunction::DoWork(
+    scoped_refptr<BluetoothAdapter> adapter) {
+  adapter->ReadLocalOutOfBandPairingData(
       base::Bind(&BluetoothGetLocalOutOfBandPairingDataFunction::ReadCallback,
           this),
       base::Bind(&BluetoothGetLocalOutOfBandPairingDataFunction::ErrorCallback,
           this));
+
   return true;
 }
 
@@ -582,23 +551,20 @@ void BluetoothStartDiscoveryFunction::OnErrorCallback() {
   SendResponse(false);
 }
 
-bool BluetoothStartDiscoveryFunction::RunImpl() {
-  if (!IsBluetoothSupported(profile())) {
-    SetError(kPlatformNotSupported);
-    return false;
-  }
-
+bool BluetoothStartDiscoveryFunction::DoWork(
+    scoped_refptr<BluetoothAdapter> adapter) {
   GetEventRouter(profile())->SetSendDiscoveryEvents(true);
 
   // If the adapter is already discovering, there is nothing else to do.
-  if (GetAdapter(profile())->IsDiscovering()) {
+  if (adapter->IsDiscovering()) {
     SendResponse(true);
     return true;
   }
 
-  GetMutableAdapter(profile())->SetDiscovering(true,
+  adapter->SetDiscovering(true,
       base::Bind(&BluetoothStartDiscoveryFunction::OnSuccessCallback, this),
       base::Bind(&BluetoothStartDiscoveryFunction::OnErrorCallback, this));
+
   return true;
 }
 
@@ -611,18 +577,15 @@ void BluetoothStopDiscoveryFunction::OnErrorCallback() {
   SendResponse(false);
 }
 
-bool BluetoothStopDiscoveryFunction::RunImpl() {
-  if (!IsBluetoothSupported(profile())) {
-    SetError(kPlatformNotSupported);
-    return false;
-  }
-
+bool BluetoothStopDiscoveryFunction::DoWork(
+    scoped_refptr<BluetoothAdapter> adapter) {
   GetEventRouter(profile())->SetSendDiscoveryEvents(false);
   if (GetEventRouter(profile())->IsResponsibleForDiscovery()) {
-    GetMutableAdapter(profile())->SetDiscovering(false,
+    adapter->SetDiscovering(false,
         base::Bind(&BluetoothStopDiscoveryFunction::OnSuccessCallback, this),
         base::Bind(&BluetoothStopDiscoveryFunction::OnErrorCallback, this));
   }
+
   return true;
 }
 
