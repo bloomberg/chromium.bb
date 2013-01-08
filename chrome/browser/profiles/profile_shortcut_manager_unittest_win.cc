@@ -236,6 +236,26 @@ TEST_F(ProfileShortcutManagerTest, ShortcutFilename) {
                                                               distribution_));
 }
 
+TEST_F(ProfileShortcutManagerTest, ShortcutLongFilenameIsTrimmed) {
+  const string16 kLongProfileName = L"Harry Harry Harry Harry Harry Harry Harry"
+      L"Harry Harry Harry Harry Harry Harry Harry Harry Harry Harry Harry"
+      L"Harry Harry Harry Harry Harry Harry Harry Harry Harry Harry Harry";
+  string16 file_name =
+      profiles::internal::GetShortcutFilenameForProfile(
+          kLongProfileName, distribution_);
+  EXPECT_LT(file_name.size(), kLongProfileName.size());
+}
+
+TEST_F(ProfileShortcutManagerTest, ShortcutFilenameStripsReservedCharacters) {
+  const string16 kProfileName = L"<Harry/>";
+  const string16 kSanitizedProfileName = L"Harry";
+  const string16 expected_name = kSanitizedProfileName + L" - " +
+    distribution_->GetAppShortCutName() + installer::kLnkExt;
+  EXPECT_EQ(expected_name,
+    profiles::internal::GetShortcutFilenameForProfile(kProfileName,
+    distribution_));
+}
+
 TEST_F(ProfileShortcutManagerTest, UnbadgedShortcutFilename) {
   EXPECT_EQ(distribution_->GetAppShortCutName() + installer::kLnkExt,
             profiles::internal::GetShortcutFilenameForProfile(string16(),

@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string16.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/shortcut.h"
@@ -33,6 +34,18 @@
 using content::BrowserThread;
 
 namespace {
+
+// Characters that are not allowed in Windows filenames. Taken from
+// http://msdn.microsoft.com/en-us/library/aa365247.aspx
+const char16 kReservedCharacters[] = L"<>:\"/\\|?*\x01\x02\x03\x04\x05\x06\x07"
+    L"\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19"
+    L"\x1A\x1B\x1C\x1D\x1E\x1F";
+
+// The maximum number of characters allowed in profile shortcuts' file names.
+// Warning: migration code will be needed if this is changed later, since
+// existing shortcuts might no longer be found if the name is generated
+// differently than it was when a shortcut was originally created.
+const int kMaxProfileShortcutFileNameLength = 64;
 
 const int kProfileAvatarShortcutBadgeWidth = 28;
 const int kProfileAvatarShortcutBadgeHeight = 28;
@@ -280,6 +293,28 @@ void DeleteDesktopShortcutsAndIconFile(const FilePath& profile_path,
   file_util::Delete(icon_path, false);
 }
 
+// Replaces any reserved characters with spaces, and trims the resulting string
+// to prevent any leading and trailing spaces. Also makes sure that the
+// resulting filename doesn't exceed |kMaxProfileShortcutFileNameLength|.
+// TODO(macourteau): find a way to limit the total path's length to MAX_PATH
+// instead of limiting the profile's name to |kMaxProfileShortcutFileNameLength|
+// characters.
+string16 SanitizeShortcutProfileNameString(const string16& profile_name) {
+  string16 sanitized = profile_name;
+  size_t pos = sanitized.find_first_of(kReservedCharacters);
+  while (pos != string16::npos) {
+    sanitized[pos] = L' ';
+    pos = sanitized.find_first_of(kReservedCharacters, pos + 1);
+  }
+
+  TrimWhitespace(sanitized, TRIM_LEADING, &sanitized);
+  if (sanitized.size() > kMaxProfileShortcutFileNameLength)
+    sanitized.erase(kMaxProfileShortcutFileNameLength);
+  TrimWhitespace(sanitized, TRIM_TRAILING, &sanitized);
+
+  return sanitized;
+}
+
 }  // namespace
 
 namespace profiles {
@@ -291,7 +326,7 @@ string16 GetShortcutFilenameForProfile(const string16& profile_name,
                                        BrowserDistribution* distribution) {
   string16 shortcut_name;
   if (!profile_name.empty()) {
-    shortcut_name.append(profile_name);
+    shortcut_name.append(SanitizeShortcutProfileNameString(profile_name));
     shortcut_name.append(L" - ");
   }
   shortcut_name.append(distribution->GetAppShortCutName());
