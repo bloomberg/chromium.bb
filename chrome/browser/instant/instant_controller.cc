@@ -870,6 +870,12 @@ void InstantController::InstantLoaderRenderViewGone() {
 }
 
 void InstantController::InstantLoaderAboutToNavigateMainFrame(const GURL& url) {
+  // If the page does not yet support instant, we allow redirects and other
+  // navigations to go through since the instant URL can redirect - e.g. to
+  // country specific pages.
+  if (!loader_->supports_instant())
+    return;
+
   GURL instant_url(loader_->instant_url());
 
   // If we are navigating to the instant URL, do nothing.
