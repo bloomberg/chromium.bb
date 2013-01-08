@@ -83,6 +83,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNetworkStateNotifier.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenu.h"
@@ -584,6 +585,8 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebKit::initialize(webkit_platform_support_.get());
   WebKit::setSharedWorkerRepository(
       webkit_platform_support_.get()->sharedWorkerRepository());
+  WebKit::setIDBFactory(
+      webkit_platform_support_.get()->idbFactory());
 
   WebKit::WebCompositorSupport* compositor_support =
       WebKit::Platform::current()->compositorSupport();

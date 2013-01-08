@@ -18,6 +18,7 @@
 #include "ipc/ipc_sync_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebBlobRegistry.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "webkit/glue/webkit_glue.h"
@@ -33,6 +34,8 @@ WorkerThread::WorkerThread() {
   lazy_tls.Pointer()->Set(this);
   webkit_platform_support_.reset(new WorkerWebKitPlatformSupportImpl);
   WebKit::initialize(webkit_platform_support_.get());
+  WebKit::setIDBFactory(
+      webkit_platform_support_.get()->idbFactory());
 
   appcache_dispatcher_.reset(new AppCacheDispatcher(this));
 
