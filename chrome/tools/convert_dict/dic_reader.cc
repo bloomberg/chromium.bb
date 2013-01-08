@@ -117,13 +117,10 @@ bool PopulateWordSet(WordSet* word_set, FILE* file, AffReader* aff_reader,
     std::set<int> affix_vector;
     affix_vector.insert(affix_index);
 
-    if (found == word_set->end()) {
+    if (found == word_set->end())
       word_set->insert(std::make_pair(utf8word, affix_vector));
-    } else {
-      // The affixes of the delta file should override those in the
-      // dictionary file.
-      found->second.swap(affix_vector);
-    }
+    else
+      found->second.insert(affix_index);
   }
 
   return true;
@@ -170,7 +167,6 @@ bool DicReader::Read(AffReader* aff_reader) {
     PopulateWordSet(&word_set, additional_words_file_, aff_reader, "dic delta",
                     "UTF-8", false);
   }
-
   // Make sure the words are sorted, they may be unsorted in the input.
   for (WordSet::iterator word = word_set.begin(); word != word_set.end();
        ++word) {
@@ -182,6 +178,7 @@ bool DicReader::Read(AffReader* aff_reader) {
     // Double check that the affixes are sorted. This isn't strictly necessary
     // but it's nice for the file to have a fixed layout.
     std::sort(affixes.begin(), affixes.end());
+    std::reverse(affixes.begin(), affixes.end());
     words_.push_back(std::make_pair(word->first, affixes));
   }
 

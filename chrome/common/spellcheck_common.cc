@@ -21,7 +21,7 @@ struct LanguageVersion {
 
 static const LanguageRegion g_supported_spellchecker_languages[] = {
   // Several languages are not to be included in the spellchecker list:
-  // th-TH
+  // th-TH, vi-VI.
   {"af", "af-ZA"},
   {"bg", "bg-BG"},
   {"ca", "ca-ES"},
@@ -43,6 +43,7 @@ static const LanguageRegion g_supported_spellchecker_languages[] = {
   {"hu", "hu-HU"},
   {"id", "id-ID"},
   {"it", "it-IT"},
+  {"ko", "ko"},
   {"lt", "lt-LT"},
   {"lv", "lv-LV"},
   {"nb", "nb-NO"},
@@ -52,11 +53,13 @@ static const LanguageRegion g_supported_spellchecker_languages[] = {
   {"pt-PT", "pt-PT"},
   {"ro", "ro-RO"},
   {"ru", "ru-RU"},
+  {"sh", "sh"},
   {"sk", "sk-SK"},
   {"sl", "sl-SI"},
-  {"sh", "sh"},
+  {"sq", "sq"},
   {"sr", "sr"},
   {"sv", "sv-SE"},
+  {"ta", "ta-IN"},
   {"tr", "tr-TR"},
   {"uk", "uk-UA"},
   {"vi", "vi-VN"},
@@ -87,40 +90,17 @@ std::string GetSpellCheckLanguageRegion(const std::string& input_language) {
 
 FilePath GetVersionedFileName(const std::string& input_language,
                               const FilePath& dict_dir) {
-  // The default dictionary version is 1-2. These versions have been augmented
-  // with additional words found by the translation team.
-  static const char kDefaultVersionString[] = "-1-2";
+  // The default dictionary version is 3-0. This version indicates that the bdic
+  // file contains a checksum.
+  static const char kDefaultVersionString[] = "-3-0";
 
+  // Add non-default version strings here. Use the same version for all the
+  // dictionaries that you add at the same time. Increment the major version
+  // number if you're updating either dic or aff files. Increment the minor
+  // version number if you're updating only dic_delta files.
   static LanguageVersion special_version_string[] = {
-    {"es-ES", "-1-1"},  // 1-1: Have not been augmented with addtional words.
-    {"nl-NL", "-1-1"},
-    {"sv-SE", "-1-1"},
-    {"he-IL", "-1-1"},
-    {"el-GR", "-1-1"},
-    {"hi-IN", "-1-1"},
-    {"tr-TR", "-1-1"},
-    {"et-EE", "-1-1"},
-    {"lt-LT", "-1-3"},  // 1-3 (Feb 2009): new words, as well as an upgraded
-                        // dictionary.
-    {"pl-PL", "-1-3"},
-    {"fr-FR", "-2-0"},  // 2-0 (2010): upgraded dictionaries.
-    {"hu-HU", "-2-0"},
-    {"ro-RO", "-2-0"},
-    {"ru-RU", "-2-0"},
-    {"bg-BG", "-2-0"},
-    {"sr",    "-2-0"},
-    {"uk-UA", "-2-0"},
-    {"pt-BR", "-2-2"},  // 2-2 (Mar 2011): upgraded a dictionary.
-    {"sh",    "-2-2"},  // 2-2 (Mar 2011): added a dictionary.
-    {"ca-ES", "-2-3"},  // 2-3 (May 2012): upgraded a dictionary.
-    {"sv-SE", "-2-3"},  // 2-3 (May 2012): upgraded a dictionary.
-    {"af-ZA", "-2-3"},  // 2-3 (May 2012): added a dictionary.
-    {"fo-FO", "-2-3"},  // 2-3 (May 2012): added a dictionary.
-    {"en-US", "-2-4"},  // 2-4 (October 2012): add more words.
-    {"en-CA", "-2-4"},
-    {"en-GB", "-2-5"},  // 2-5 (Nov 2012): Added NOSUGGEST flag = !.
-    {"en-AU", "-2-5"},  // Marked 1 word in each.
-
+    {"et-EE", "-1-1"},  // No dic/aff files
+    {"tr-TR", "-1-1"},  // No dic/aff files
   };
 
   // Generate the bdict file name using default version string or special

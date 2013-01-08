@@ -122,7 +122,7 @@ bool AffReader::Read() {
       exit(1);
     } else if (StringBeginsWith(line, "COMPLEXPREFIXES ")) {
       printf("We don't support the COMPLEXPREFIXES command yet. This would "
-        "mean we have to insert words backwords as well (I think)\n");
+        "mean we have to insert words backwards as well (I think)\n");
       exit(1);
     } else {
       // All other commands get stored in the other commands list.
@@ -241,7 +241,7 @@ void AffReader::AddAffix(std::string* rule) {
           // so that means that this prefix would be a compound one.
           //
           // It expects these rules to use the same alias rules as the .dic
-          // file. We've forced it to use aliases, which is a numberical index
+          // file. We've forced it to use aliases, which is a numerical index
           // instead of these character flags, and this needs to be consistent.
 
           std::string before_flags = part.substr(0, slash_index + 1);
@@ -250,13 +250,21 @@ void AffReader::AddAffix(std::string* rule) {
           // that tells us what to strip.
           std::vector<std::string> after_slash;
           base::SplitString(part.substr(slash_index + 1), ' ', &after_slash);
-          if (after_slash.size() < 2) {
-            // Note that we may get a third term here which is the
-            // morphological description of this rule. This happens in the tests
-            // only, so we can just ignore it.
-            printf("ERROR: Didn't get enough after the slash\n");
+          if (after_slash.size() == 0) {
+            printf("ERROR: Found 0 terms after slash in affix rule '%s', "
+                      "but need at least 2.\n",
+                   part.c_str());
             return;
           }
+          if (after_slash.size() == 1) {
+            printf("WARNING: Found 1 term after slash in affix rule '%s', "
+                      "but expected at least 2. Adding '.'.\n",
+                   part.c_str());
+            after_slash.push_back(".");
+          }
+          // Note that we may get a third term here which is the morphological
+          // description of this rule. This happens in the tests only, so we can
+          // just ignore it.
 
           part = base::StringPrintf("%s%d %s",
                                     before_flags.c_str(),
@@ -266,8 +274,11 @@ void AffReader::AddAffix(std::string* rule) {
 
         // Reencode from here
         std::string reencoded;
-        if (!EncodingToUTF8(part, &reencoded))
+        if (!EncodingToUTF8(part, &reencoded)) {
+          printf("ERROR: Cannot encode affix rule part '%s' to utf8.\n",
+                 part.c_str());
           break;
+        }
 
         *rule = rule->substr(0, part_start) + reencoded;
         break;
@@ -283,19 +294,26 @@ void AffReader::AddAffix(std::string* rule) {
 
 void AffReader::AddReplacement(std::string* rule) {
   TrimLine(rule);
+  CollapseDuplicateSpaces(rule);
 
   std::string utf8rule;
-  if (!EncodingToUTF8(*rule, &utf8rule))
+  if (!EncodingToUTF8(*rule, &utf8rule)) {
+    printf("ERROR: Cannot encode replacement rule '%s' to utf8.\n",
+           rule->c_str());
     return;
+  }
 
+  // The first space separates key and value.
+  size_t space_index = utf8rule.find(' ');
+  if (space_index == std::string::npos) {
+    printf("ERROR: Did not find a space in '%s'.\n", utf8rule.c_str());
+    return;
+  }
   std::vector<std::string> split;
-  base::SplitString(utf8rule, ' ', &split);
+  split.push_back(utf8rule.substr(0, space_index));
+  split.push_back(utf8rule.substr(space_index + 1));
 
-  // There should be two parts.
-  if (split.size() != 2)
-    return;
-
-  // Underscores are used to represent spaces
+  // Underscores are used to represent spaces in most aff files
   // (since the line is parsed on spaces).
   std::replace(split[0].begin(), split[0].end(), '_', ' ');
   std::replace(split[1].begin(), split[1].end(), '_', ' ');
@@ -309,8 +327,11 @@ void AffReader::HandleRawCommand(const std::string& line) {
 
 void AffReader::HandleEncodedCommand(const std::string& line) {
   std::string utf8;
-  if (EncodingToUTF8(line, &utf8))
-    other_commands_.push_back(utf8);
+  if (!EncodingToUTF8(line, &utf8)) {
+    printf("ERROR: Cannot encode command '%s' to utf8.\n", line.c_str());
+    return;
+  }
+  other_commands_.push_back(utf8);
 }
 
 }  // namespace convert_dict

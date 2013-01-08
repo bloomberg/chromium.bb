@@ -18,6 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -136,14 +137,14 @@ class MockTextCheckingCompletion : public WebKit::WebTextCheckingCompletion {
 //     space character;
 //   * Tests for the function with an invalid English word with a preceding
 //     non-English word;
-//   * Tests for the function with2 an invalid English word with a following
+//   * Tests for the function with an invalid English word with a following
 //     space character;
 //   * Tests for the function with an invalid English word with a following
 //     non-English word, and;
 //   * Tests for the function with two invalid English words concatenated
 //     with space characters or non-English words.
 // A test with a "[ROBUSTNESS]" mark shows it is a robustness test and it uses
-// grammartically incorrect string.
+// grammatically incorrect string.
 // TODO(hbono): Please feel free to add more tests.
 TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
   static const struct {
@@ -165,7 +166,7 @@ TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
 
     // A valid English word "hello".
     {L"hello", true},
-    // A valid Chinese word (meaning "hello") consisiting of two CJKV
+    // A valid Chinese word (meaning "hello") consisting of two CJKV
     // ideographs
     {L"\x4F60\x597D", true},
     // A valid Korean word (meaning "hello") consisting of five hangul
@@ -184,7 +185,7 @@ TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
     // Two valid Greek words (meaning "hello") consisting of seven Greek
     // letters
     {L"\x03B3\x03B5\x03B9\x03AC" L" " L"\x03C3\x03BF\x03C5", true},
-    // A valid Russian word (meainng "hello") consisting of twelve Cyrillic
+    // A valid Russian word (meaning "hello") consisting of twelve Cyrillic
     // letters
     {L"\x0437\x0434\x0440\x0430\x0432\x0441"
      L"\x0442\x0432\x0443\x0439\x0442\x0435", true},
@@ -747,6 +748,31 @@ TEST_F(SpellCheckTest, SpellCheckText) {
       L"c\x00E1\x0063 th\x00F4ng tin c\x1EE7\x0061 "
       L"th\x1EBF gi\x1EDBi va l\x00E0m cho n\x00F3 universal c\x00F3 "
       L"th\x1EC3 truy c\x1EADp va h\x1EEFu d\x1EE5ng h\x01A1n."
+    }, {
+      // Korean
+      "ko",
+      L"Google\xC758 \xBAA9\xD45C\xB294 \xC804\xC138\xACC4\xC758 "
+      L"\xC815\xBCF4\xB97C \xCCB4\xACC4\xD654\xD558\xC5EC \xBAA8\xB450\xAC00 "
+      L"\xD3B8\xB9AC\xD558\xAC8C \xC774\xC6A9\xD560 \xC218 "
+      L"\xC788\xB3C4\xB85D \xD558\xB294 \xAC83\xC785\xB2C8\xB2E4."
+    }, {
+      // Albanian
+      "sq",
+      L"Misioni i Google \x00EBsht\x00EB q\x00EB t\x00EB organizoj\x00EB "
+      L"informacionin e bot\x00EBs dhe t\x00EB b\x00EBjn\x00EB at\x00EB "
+      L"universalisht t\x00EB arritshme dhe t\x00EB dobishme."
+    }, {
+      // Tamil
+      "ta",
+      L"Google \x0B87\x0BA9\x0BCD "
+      L"\x0BA8\x0BC7\x0BBE\x0B95\x0BCD\x0B95\x0BAE\x0BCD "
+      L"\x0B89\x0BB2\x0B95\x0BBF\x0BA9\x0BCD \x0BA4\x0B95\x0BB5\x0BB2\x0BCD "
+      L"\x0B8F\x0BB1\x0BCD\x0BAA\x0BBE\x0B9F\x0BC1 \x0B87\x0BA4\x0BC1 "
+      L"\u0B89\u0BB2\u0B95\u0BB3\u0BBE\u0BB5\u0BBF\u0BAF "
+      L"\x0B85\x0BA3\x0BC1\x0B95\x0B95\x0BCD \x0B95\x0BC2\x0B9F\x0BBF\x0BAF "
+      L"\x0BAE\x0BB1\x0BCD\x0BB1\x0BC1\x0BAE\x0BCD "
+      L"\x0BAA\x0BAF\x0BA9\x0BC1\x0BB3\x0BCD\x0BB3 "
+      L"\x0B9A\x0BC6\x0BAF\x0BCD\x0BAF \x0B89\x0BB3\x0BCD\x0BB3\x0BA4\x0BC1."
     },
   };
 
@@ -765,7 +791,13 @@ TEST_F(SpellCheckTest, SpellCheckText) {
         &misspelling_start,
         &misspelling_length, NULL);
 
-    EXPECT_TRUE(result) << kTestCases[i].language;
+    EXPECT_TRUE(result)
+        << "\""
+        << std::wstring(kTestCases[i].input).substr(
+               misspelling_start, misspelling_length)
+        << "\" is misspelled in "
+        << kTestCases[i].language
+        << ".";
     EXPECT_EQ(0, misspelling_start);
     EXPECT_EQ(0, misspelling_length);
   }
@@ -1156,61 +1188,90 @@ TEST_F(SpellCheckTest, EnglishWords) {
 // Checks that NOSUGGEST works in English dictionaries.
 TEST_F(SpellCheckTest, NoSuggest) {
   static const struct {
+    const char* misspelling;
     const char* input;
+    const char* locale;
     bool should_pass;
   } kTestCases[] = {
-    {"cocksucker", true},
-    {"cocksuckers", true},
+    {"suckerbert", "cocksucker",  "en-GB", true},
+    {"suckerbert", "cocksucker",  "en-US", true},
+    {"suckerbert", "cocksucker",  "en-CA", true},
+    {"suckerbert", "cocksucker",  "en-AU", true},
+    {"suckerbert", "cocksuckers", "en-GB", true},
+    {"suckerbert", "cocksuckers", "en-US", true},
+    {"suckerbert", "cocksuckers", "en-CA", true},
+    {"suckerbert", "cocksuckers", "en-AU", true},
+    {"Batasunaa",  "Batasuna",    "ca-ES", true},
+    {"pornoo",     "porno",       "it-IT", true},
+    {"catass",     "catas",       "lt-LT", true},
+    {"kuracc",     "kurac",       "sl-SI", true},
+    {"pittt",      "pitt",        "sv-SE", true},
   };
 
-  static const char* kLocales[] = { "en-GB", "en-US", "en-CA", "en-AU" };
-
-  // First check that the NOSUGGEST flag didn't mark these words as not
-  // being in the dictionary.
   size_t test_cases_size = ARRAYSIZE_UNSAFE(kTestCases);
-  for (size_t j = 0; j < arraysize(kLocales); ++j) {
-    ReinitializeSpellCheck(kLocales[j]);
-    for (size_t i = 0; i < test_cases_size; ++i) {
-      size_t input_length = 0;
-      if (kTestCases[i].input != NULL)
-        input_length = strlen(kTestCases[i].input);
+  for (size_t i = 0; i < test_cases_size; ++i) {
+    ReinitializeSpellCheck(kTestCases[i].locale);
+    size_t input_length = 0;
+    if (kTestCases[i].input != NULL)
+      input_length = strlen(kTestCases[i].input);
 
-      int misspelling_start = 0;
-      int misspelling_length = 0;
-      bool result = spell_check()->SpellCheckWord(
-          ASCIIToUTF16(kTestCases[i].input).c_str(),
-          static_cast<int>(input_length),
-          0,
-          &misspelling_start,
-          &misspelling_length, NULL);
+    // First check that the NOSUGGEST flag didn't mark this word as not being in
+    // the dictionary.
+    int misspelling_start = 0;
+    int misspelling_length = 0;
+    bool result = spell_check()->SpellCheckWord(
+        ASCIIToUTF16(kTestCases[i].input).c_str(),
+        static_cast<int>(input_length),
+        0,
+        &misspelling_start,
+        &misspelling_length, NULL);
 
-      EXPECT_EQ(kTestCases[i].should_pass, result) << kTestCases[i].input <<
-          " in " << kLocales[j];
-    }
-  }
+    EXPECT_EQ(kTestCases[i].should_pass, result) << kTestCases[i].input <<
+        " in " << kTestCases[i].input;
 
-  // Now verify that neither of testCases show up as suggestions.
-  for (size_t d = 0; d < arraysize(kLocales); ++d) {
-    ReinitializeSpellCheck(kLocales[d]);
-    int misspelling_start;
-    int misspelling_length;
+    // Now verify that this test case does not show up as a suggestion.
     std::vector<string16> suggestions;
-    spell_check()->SpellCheckWord(
-        ASCIIToUTF16("suckerbert").c_str(),
-        10,
+    input_length = 0;
+    if (kTestCases[i].misspelling != NULL)
+      input_length = strlen(kTestCases[i].misspelling);
+    result = spell_check()->SpellCheckWord(
+        ASCIIToUTF16(kTestCases[i].misspelling).c_str(),
+        static_cast<int>(input_length),
         0,
         &misspelling_start,
         &misspelling_length,
         &suggestions);
     // Check if the suggested words occur.
+    EXPECT_FALSE(result) << kTestCases[i].misspelling
+                         << " is not a misspelling in "
+                         << kTestCases[i].locale;
     for (int j = 0; j < static_cast<int>(suggestions.size()); j++) {
       for (size_t t = 0; t < test_cases_size; t++) {
         int compare_result =
             suggestions.at(j).compare(ASCIIToUTF16(kTestCases[t].input));
         EXPECT_FALSE(compare_result == 0) << kTestCases[t].input <<
-            " in " << kLocales[d];
+            " in " << kTestCases[i].locale;
       }
     }
+  }
+}
+
+// Check that the correct dictionary files are checked in.
+TEST_F(SpellCheckTest, DictionaryFiles) {
+  std::vector<std::string> locale_codes;
+  l10n_util::GetAcceptLanguagesForLocale("C", &locale_codes);
+  EXPECT_FALSE(locale_codes.empty());
+
+  std::vector<std::string> spellcheck_languages;
+  chrome::spellcheck_common::SpellCheckLanguages(&spellcheck_languages);
+  EXPECT_FALSE(spellcheck_languages.empty());
+  EXPECT_LE(spellcheck_languages.size(), locale_codes.size());
+
+  FilePath hunspell = GetHunspellDirectory();
+  for (size_t i = 0; i < spellcheck_languages.size(); ++i) {
+    FilePath dict = chrome::spellcheck_common::GetVersionedFileName(
+        spellcheck_languages[i], hunspell);
+    EXPECT_TRUE(file_util::PathExists(dict)) << dict.value() << " not found";
   }
 }
 
