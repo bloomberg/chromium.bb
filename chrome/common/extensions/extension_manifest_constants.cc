@@ -17,6 +17,8 @@ const char kBackgroundScripts[] = "background.scripts";
 const char kBrowserAction[] = "browser_action";
 const char kChromeURLOverrides[] = "chrome_url_overrides";
 const char kCommands[] = "commands";
+const char kContentPack[] = "content_pack";
+const char kContentPackSites[] = "sites";
 const char kContentScripts[] = "content_scripts";
 const char kContentSecurityPolicy[] = "content_security_policy";
 const char kConvertedFromUserScript[] = "converted_from_user_script";
@@ -218,6 +220,10 @@ const char kInvalidChromeURLOverrides[] =
     "Invalid value for 'chrome_url_overrides'.";
 const char kInvalidCommandsKey[] =
     "Invalid value for 'commands'.";
+const char kInvalidContentPack[] =
+    "Invalid value for 'content_pack'.";
+const char kInvalidContentPackSites[] =
+    "Invalid value for Content Pack sites - files must be strings.";
 const char kInvalidContentScript[] =
     "Invalid value for 'content_scripts[*]'.";
 const char kInvalidContentSecurityPolicy[] =

@@ -76,6 +76,10 @@
     "extension_types": ["extension", "packaged_app", "platform_app"],
     "min_manifest_version": 2
   },
+  "content_pack": {
+    "channel": "dev",
+    "extension_types": ["extension"]
+  },
   "content_security_policy": {
     "channel": "stable",
     // Platform apps have a restricted content security policy that cannot be

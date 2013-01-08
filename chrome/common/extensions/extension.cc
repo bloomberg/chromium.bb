@@ -1341,6 +1341,13 @@ bool Extension::is_theme() const {
   return manifest()->is_theme();
 }
 
+ExtensionResource Extension::GetContentPackSiteList() const {
+  if (content_pack_site_list_.empty())
+    return ExtensionResource();
+
+  return GetResource(content_pack_site_list_);
+}
+
 GURL Extension::GetBackgroundURL() const {
   if (background_scripts_.empty())
     return background_url_;
@@ -1444,6 +1451,47 @@ FilePath Extension::MaybeNormalizePath(const FilePath& path) {
 #else
   return path;
 #endif
+}
+
+bool Extension::LoadManagedModeFeatures(string16* error) {
+  if (!manifest_->HasKey(keys::kContentPack))
+    return true;
+  DictionaryValue* content_pack_value = NULL;
+  if (!manifest_->GetDictionary(keys::kContentPack, &content_pack_value)) {
+    *error = ASCIIToUTF16(errors::kInvalidContentPack);
+    return false;
+  }
+
+  if (!LoadManagedModeSites(content_pack_value, error))
+    return false;
+  if (!LoadManagedModeConfigurations(content_pack_value, error))
+    return false;
+
+  return true;
+}
+
+bool Extension::LoadManagedModeSites(
+    const DictionaryValue* content_pack_value,
+    string16* error) {
+  if (!content_pack_value->HasKey(keys::kContentPackSites))
+    return true;
+
+  FilePath::StringType site_list_str;
+  if (!content_pack_value->GetString(keys::kContentPackSites, &site_list_str)) {
+    *error = ASCIIToUTF16(errors::kInvalidContentPackSites);
+    return false;
+  }
+
+  content_pack_site_list_ = FilePath(site_list_str);
+
+  return true;
+}
+
+bool Extension::LoadManagedModeConfigurations(
+    const DictionaryValue* content_pack_value,
+    string16* error) {
+  NOTIMPLEMENTED();
+  return true;
 }
 
 // static
@@ -1570,6 +1618,9 @@ bool Extension::InitFromValue(int flags, string16* error) {
     return false;
 
   if (!LoadThemeFeatures(error))
+    return false;
+
+  if (!LoadManagedModeFeatures(error))
     return false;
 
   if (HasMultipleUISurfaces()) {

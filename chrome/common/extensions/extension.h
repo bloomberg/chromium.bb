@@ -794,6 +794,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     return content_security_policy_;
   }
 
+  // Content pack related.
+  ExtensionResource GetContentPackSiteList() const;
+
   GURL GetBackgroundURL() const;
 
  private:
@@ -938,6 +941,14 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                       string16* error);
   bool LoadThemeDisplayProperties(const base::DictionaryValue* theme_value,
                                   string16* error);
+
+  bool LoadManagedModeFeatures(string16* error);
+  bool LoadManagedModeSites(
+      const base::DictionaryValue* content_pack_value,
+      string16* error);
+  bool LoadManagedModeConfigurations(
+      const base::DictionaryValue* content_pack_value,
+      string16* error);
 
   // Helper function for implementing HasCachedImage/GetCachedImage. A return
   // value of NULL means there is no matching image cached (we allow caching an
@@ -1146,6 +1157,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // A map of display properties.
   scoped_ptr<base::DictionaryValue> theme_display_properties_;
+
+  // A file containing a list of sites for Managed Mode.
+  FilePath content_pack_site_list_;
 
   // The homepage for this extension. Useful if it is not hosted by Google and
   // therefore does not have a Gallery URL.

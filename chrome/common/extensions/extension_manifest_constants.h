@@ -24,6 +24,8 @@ namespace extension_manifest_keys {
   extern const char kBrowseURLs[];
   extern const char kChromeURLOverrides[];
   extern const char kCommands[];
+  extern const char kContentPack[];
+  extern const char kContentPackSites[];
   extern const char kContentScripts[];
   extern const char kContentSecurityPolicy[];
   extern const char kConvertedFromUserScript[];
@@ -197,6 +199,8 @@ namespace extension_manifest_errors {
   extern const char kInvalidBrowseURLs[];
   extern const char kInvalidChromeURLOverrides[];
   extern const char kInvalidCommandsKey[];
+  extern const char kInvalidContentPack[];
+  extern const char kInvalidContentPackSites[];
   extern const char kInvalidContentScript[];
   extern const char kInvalidContentScriptsList[];
   extern const char kInvalidContentSecurityPolicy[];
