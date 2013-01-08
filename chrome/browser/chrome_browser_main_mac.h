@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 
 namespace chrome {
-class ImageCaptureDeviceManager;
 class RemovableDeviceNotificationsMac;
 }
 
@@ -31,8 +30,6 @@ class ChromeBrowserMainPartsMac : public ChromeBrowserMainPartsPosix {
  private:
   scoped_refptr<chrome::RemovableDeviceNotificationsMac>
       removable_device_notifications_mac_;
-
-  scoped_ptr<chrome::ImageCaptureDeviceManager> image_capture_device_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsMac);
 };
