@@ -144,6 +144,7 @@ ANativeWindow* SurfaceTextureBridge::CreateSurface() {
           env, j_surface_texture_.obj()));
   DCHECK(!jsurface.is_null());
   ANativeWindow* native_window = ANativeWindow_fromSurface(env, jsurface.obj());
+  JNI_Surface::Java_Surface_release(env, jsurface.obj());
   return native_window;
 }
 
