@@ -11,7 +11,7 @@ import sys
 
 from pylib import android_commands
 from pylib import constants
-from pylib.utils import apk_info
+from pylib.instrumentation import apk_info
 from pylib.utils import test_options_parser
 
 
