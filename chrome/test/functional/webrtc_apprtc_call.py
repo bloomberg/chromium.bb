@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import random
+
 # Note: pyauto_functional must come before pyauto.
 import pyauto_functional
 import pyauto
@@ -25,12 +27,30 @@ class WebrtcApprtcCallTest(webrtc_test_base.WebrtcTestBase):
     self.assertEquals('', self.CheckErrorsAndCrashes(),
                       'Chrome crashed or hit a critical error during test.')
 
-  def testApprtcLoopbackVideoAudioCall(self):
+  def testApprtcLoopbackCall(self):
     self.NavigateToURL('http://apprtc.appspot.com/?debug=loopback')
     self.WaitForInfobarCount(1, tab_index=0)
     self.PerformActionOnInfobar('accept', infobar_index=0, tab_index=0)
 
     self._WaitForCallEstablishment(tab_index=0)
+
+  def testApprtcTabToTabCall(self):
+    # Randomize the call session id. If we would use the same id we would risk
+    # getting problems with hung calls and lingering state in AppRTC.
+    random_call_id = 'pyauto%d' % random.randint(0, 65536)
+    apprtc_url = 'http://apprtc.appspot.com/?r=%s' % random_call_id
+
+    self.NavigateToURL(apprtc_url)
+    self.AppendTab(pyauto.GURL(apprtc_url))
+
+    self.WaitForInfobarCount(1, tab_index=0)
+    self.WaitForInfobarCount(1, tab_index=1)
+
+    self.PerformActionOnInfobar('accept', infobar_index=0, tab_index=0)
+    self.PerformActionOnInfobar('accept', infobar_index=0, tab_index=1)
+
+    self._WaitForCallEstablishment(tab_index=0)
+    self._WaitForCallEstablishment(tab_index=1)
 
   def _WaitForCallEstablishment(self, tab_index):
     # AppRTC will set opacity to 1 for remote video when the call is up.
