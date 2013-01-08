@@ -17,13 +17,30 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::UserMetricsAction;
 
-RegisterProtocolHandlerInfoBarDelegate::RegisterProtocolHandlerInfoBarDelegate(
+// static
+void RegisterProtocolHandlerInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     ProtocolHandlerRegistry* registry,
-    const ProtocolHandler& handler)
-    : ConfirmInfoBarDelegate(infobar_service),
-      registry_(registry),
-      handler_(handler) {
+    const ProtocolHandler& handler) {
+  content::RecordAction(
+      content::UserMetricsAction("RegisterProtocolHandler.InfoBar_Shown"));
+
+  scoped_ptr<InfoBarDelegate> infobar(
+      new RegisterProtocolHandlerInfoBarDelegate(infobar_service, registry,
+                                                 handler));
+
+  for (size_t i = 0; i < infobar_service->GetInfoBarCount(); ++i) {
+    RegisterProtocolHandlerInfoBarDelegate* existing_delegate =
+        infobar_service->GetInfoBarDelegateAt(i)->
+            AsRegisterProtocolHandlerInfoBarDelegate();
+    if ((existing_delegate != NULL) &&
+        existing_delegate->handler_.IsEquivalent(handler)) {
+      infobar_service->ReplaceInfoBar(existing_delegate, infobar.Pass());
+      return;
+    }
+  }
+
+  infobar_service->AddInfoBar(infobar.Pass());
 }
 
 InfoBarDelegate::InfoBarAutomationType
@@ -45,6 +62,15 @@ string16 RegisterProtocolHandlerInfoBarDelegate::GetMessageText() const {
       l10n_util::GetStringFUTF16(IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM,
           handler_.title(), UTF8ToUTF16(handler_.url().host()),
           GetProtocolName(handler_));
+}
+
+RegisterProtocolHandlerInfoBarDelegate::RegisterProtocolHandlerInfoBarDelegate(
+    InfoBarService* infobar_service,
+    ProtocolHandlerRegistry* registry,
+    const ProtocolHandler& handler)
+    : ConfirmInfoBarDelegate(infobar_service),
+      registry_(registry),
+      handler_(handler) {
 }
 
 string16 RegisterProtocolHandlerInfoBarDelegate::GetProtocolName(
@@ -99,11 +125,6 @@ bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
       false);
   owner()->GetWebContents()->OpenURL(params);
   return false;
-}
-
-bool RegisterProtocolHandlerInfoBarDelegate::IsReplacedBy(
-    RegisterProtocolHandlerInfoBarDelegate* delegate) {
-  return handler_.IsEquivalent(delegate->handler_);
 }
 
 RegisterProtocolHandlerInfoBarDelegate*

@@ -26,24 +26,6 @@
 #include "net/url_request/url_request_status.h"
 
 
-namespace {
-
-GoogleURLTrackerInfoBarDelegate* CreateInfoBar(
-    InfoBarService* infobar_service,
-    GoogleURLTracker* google_url_tracker,
-    const GURL& search_url) {
-  GoogleURLTrackerInfoBarDelegate* infobar =
-      new GoogleURLTrackerInfoBarDelegate(infobar_service, google_url_tracker,
-                                          search_url);
-  // AddInfoBar() takes ownership; it will delete |infobar| if it fails.
-  return infobar_service->AddInfoBar(infobar) ? infobar : NULL;
-}
-
-}  // namespace
-
-
-// GoogleURLTracker -----------------------------------------------------------
-
 const char GoogleURLTracker::kDefaultGoogleHomepage[] =
     "http://www.google.com/";
 const char GoogleURLTracker::kSearchDomainCheckURL[] =
@@ -51,7 +33,7 @@ const char GoogleURLTracker::kSearchDomainCheckURL[] =
 
 GoogleURLTracker::GoogleURLTracker(Profile* profile, Mode mode)
     : profile_(profile),
-      infobar_creator_(base::Bind(&CreateInfoBar)),
+      infobar_creator_(base::Bind(&GoogleURLTrackerInfoBarDelegate::Create)),
       google_url_(mode == UNIT_TEST_MODE ? kDefaultGoogleHomepage :
           profile->GetPrefs()->GetString(prefs::kLastKnownGoogleURL)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),

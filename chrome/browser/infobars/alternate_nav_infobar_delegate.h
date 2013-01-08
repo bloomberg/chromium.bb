@@ -12,15 +12,19 @@
 
 class AlternateNavInfoBarDelegate : public InfoBarDelegate {
  public:
-  AlternateNavInfoBarDelegate(InfoBarService* owner,
-                              const GURL& alternate_nav_url);
-  virtual ~AlternateNavInfoBarDelegate();
+  // Creates an alternate nav delegate and adds it to |infobar_service|.
+  static void Create(InfoBarService* infobar_service,
+                     const GURL& alternate_nav_url);
 
   string16 GetMessageTextWithOffset(size_t* link_offset) const;
   string16 GetLinkText() const;
   bool LinkClicked(WindowOpenDisposition disposition);
 
  private:
+  AlternateNavInfoBarDelegate(InfoBarService* owner,
+                              const GURL& alternate_nav_url);
+  virtual ~AlternateNavInfoBarDelegate();
+
   // InfoBarDelegate:
   virtual InfoBar* CreateInfoBar(InfoBarService* owner) OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;

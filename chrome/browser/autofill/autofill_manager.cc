@@ -869,12 +869,8 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   // it.
   scoped_ptr<const CreditCard> scoped_credit_card(imported_credit_card);
   if (imported_credit_card && web_contents()) {
-    InfoBarService* infobar_service = manager_delegate_->GetInfoBarService();
-    infobar_service->AddInfoBar(
-        new AutofillCCInfoBarDelegate(infobar_service,
-                                      scoped_credit_card.release(),
-                                      personal_data_,
-                                      metric_logger_.get()));
+    AutofillCCInfoBarDelegate::Create(manager_delegate_->GetInfoBarService(),
+        scoped_credit_card.release(), personal_data_, metric_logger_.get());
   }
 }
 

@@ -379,10 +379,8 @@ ContentSettingCookiesBubbleModel::ContentSettingCookiesBubbleModel(
 
 ContentSettingCookiesBubbleModel::~ContentSettingCookiesBubbleModel() {
   if (settings_changed()) {
-    InfoBarService* infobar_service =
-        InfoBarService::FromWebContents(web_contents());
-    infobar_service->AddInfoBar(
-        new CollectedCookiesInfoBarDelegate(infobar_service));
+    CollectedCookiesInfoBarDelegate::Create(
+        InfoBarService::FromWebContents(web_contents()));
   }
 }
 

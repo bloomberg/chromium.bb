@@ -22,6 +22,7 @@
 #include "base/string_split.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -59,7 +60,7 @@
 #include "chrome/browser/ui/startup/autolaunch_prompt.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
-#include "chrome/browser/ui/startup/obsolete_os_prompt.h"
+#include "chrome/browser/ui/startup/obsolete_os_info_bar.h"
 #include "chrome/browser/ui/startup/session_crashed_prompt.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
@@ -856,7 +857,7 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
     return;
 
   if (HasPendingUncleanExit(browser->profile()))
-    chrome::ShowSessionCrashedPrompt(browser);
+    SessionCrashedInfoBarDelegate::Create(browser);
 
   // The bad flags info bar and the obsolete system info bar are only added to
   // the first profile which is launched. Other profiles might be restoring the
@@ -864,7 +865,8 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
   // focused tabs here.
   if (is_process_startup == chrome::startup::IS_PROCESS_STARTUP) {
     chrome::ShowBadFlagsPrompt(browser);
-    chrome::ShowObsoleteOSPrompt(browser);
+    chrome::ObsoleteOSInfoBar::Create(
+        InfoBarService::FromWebContents(chrome::GetActiveWebContents(browser)));
 
     if (browser_defaults::kOSSupportsOtherBrowsers &&
         !command_line_.HasSwitch(switches::kNoDefaultBrowserCheck)) {

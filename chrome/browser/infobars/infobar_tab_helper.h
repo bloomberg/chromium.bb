@@ -31,10 +31,12 @@ class InfoBarTabHelper : public InfoBarService,
 
   // InfoBarService:
   virtual void SetInfoBarsEnabled(bool enabled) OVERRIDE;
-  virtual bool AddInfoBar(InfoBarDelegate* delegate) OVERRIDE;
+  virtual InfoBarDelegate* AddInfoBar(
+      scoped_ptr<InfoBarDelegate> delegate) OVERRIDE;
   virtual void RemoveInfoBar(InfoBarDelegate* delegate) OVERRIDE;
-  virtual bool ReplaceInfoBar(InfoBarDelegate* old_delegate,
-                              InfoBarDelegate* new_delegate) OVERRIDE;
+  virtual InfoBarDelegate* ReplaceInfoBar(
+      InfoBarDelegate* old_delegate,
+      scoped_ptr<InfoBarDelegate> new_delegate) OVERRIDE;
   virtual size_t GetInfoBarCount() const OVERRIDE;
   virtual InfoBarDelegate* GetInfoBarDelegateAt(size_t index) OVERRIDE;
   virtual content::WebContents* GetWebContents() OVERRIDE;

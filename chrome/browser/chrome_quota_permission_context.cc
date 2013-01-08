@@ -38,6 +38,16 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   typedef QuotaPermissionContext::PermissionCallback PermissionCallback;
 
+  // Creates a request quota infobar delegate and adds it to |infobar_service|.
+  static void Create(
+      InfoBarService* infobar_service,
+      ChromeQuotaPermissionContext* context,
+      const GURL& origin_url,
+      int64 requested_quota,
+      const std::string& display_languages,
+      const PermissionCallback& callback);
+
+ private:
   RequestQuotaInfoBarDelegate(
       InfoBarService* infobar_service,
       ChromeQuotaPermissionContext* context,
@@ -52,7 +62,6 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
         requested_quota_(requested_quota),
         callback_(callback) {}
 
- private:
   virtual ~RequestQuotaInfoBarDelegate() {
     if (!callback_.is_null())
       context_->DispatchCallbackOnIOThread(
@@ -77,6 +86,20 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
   PermissionCallback callback_;
   DISALLOW_COPY_AND_ASSIGN(RequestQuotaInfoBarDelegate);
 };
+
+// static
+void RequestQuotaInfoBarDelegate::Create(
+    InfoBarService* infobar_service,
+    ChromeQuotaPermissionContext* context,
+    const GURL& origin_url,
+    int64 requested_quota,
+    const std::string& display_languages,
+    const QuotaPermissionContext::PermissionCallback& callback) {
+  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new RequestQuotaInfoBarDelegate(infobar_service, context, origin_url,
+                                      requested_quota, display_languages,
+                                      callback)));
+}
 
 string16 RequestQuotaInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
@@ -148,10 +171,10 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
   }
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  infobar_service->AddInfoBar(new RequestQuotaInfoBarDelegate(
+  RequestQuotaInfoBarDelegate::Create(
       infobar_service, this, origin_url, requested_quota,
       profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
-      callback));
+      callback);
 }
 
 void ChromeQuotaPermissionContext::DispatchCallbackOnIOThread(

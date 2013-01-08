@@ -29,12 +29,16 @@ enum ThreeDInfobarDismissalHistogram {
 
 class ThreeDAPIInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
+  // Creates a 3D API delegate and adds it to |infobar_service|.
+  static void Create(InfoBarService* infobar_service,
+                     const GURL& url,
+                     content::ThreeDAPIType requester);
+
+ private:
   ThreeDAPIInfoBarDelegate(
       InfoBarService* owner,
       const GURL& url,
       content::ThreeDAPIType requester);
-
- private:
   virtual ~ThreeDAPIInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
@@ -56,6 +60,14 @@ class ThreeDAPIInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(ThreeDAPIInfoBarDelegate);
 };
+
+// static
+void ThreeDAPIInfoBarDelegate::Create(InfoBarService* infobar_service,
+                                      const GURL& url,
+                                      content::ThreeDAPIType requester) {
+  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new ThreeDAPIInfoBarDelegate(infobar_service, url, requester)));
+}
 
 ThreeDAPIInfoBarDelegate::ThreeDAPIInfoBarDelegate(
     InfoBarService* owner,
@@ -157,6 +169,6 @@ ThreeDAPIObserver::~ThreeDAPIObserver() {}
 
 void ThreeDAPIObserver::DidBlock3DAPIs(const GURL& url,
                                        content::ThreeDAPIType requester) {
-  InfoBarService* service = InfoBarService::FromWebContents(web_contents());
-  service->AddInfoBar(new ThreeDAPIInfoBarDelegate(service, url, requester));
+  ThreeDAPIInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents()), url, requester);
 }

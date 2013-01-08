@@ -17,6 +17,17 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+// static
+void AutofillCCInfoBarDelegate::Create(
+    InfoBarService* infobar_service,
+    const CreditCard* credit_card,
+    PersonalDataManager* personal_data,
+    const AutofillMetrics* metric_logger) {
+  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new AutofillCCInfoBarDelegate(infobar_service, credit_card, personal_data,
+                                    metric_logger)));
+}
+
 AutofillCCInfoBarDelegate::AutofillCCInfoBarDelegate(
     InfoBarService* infobar_service,
     const CreditCard* credit_card,

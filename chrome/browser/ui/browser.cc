@@ -885,11 +885,9 @@ void Browser::JSOutOfMemoryHelper(WebContents* web_contents) {
   if (!infobar_service)
     return;
 
-  infobar_service->AddInfoBar(new SimpleAlertInfoBarDelegate(
-      infobar_service,
-      NULL,
-      l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT),
-      true));
+  SimpleAlertInfoBarDelegate::Create(
+      infobar_service, NULL,
+      l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT), true);
 }
 
 // static
@@ -929,29 +927,8 @@ void Browser::RegisterProtocolHandlerHelper(WebContents* web_contents,
     window->GetLocationBar()->UpdateContentSettingsIcons();
   }
 
-  content::RecordAction(
-      UserMetricsAction("RegisterProtocolHandler.InfoBar_Shown"));
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-
-  RegisterProtocolHandlerInfoBarDelegate* rph_delegate =
-      new RegisterProtocolHandlerInfoBarDelegate(infobar_service,
-                                                 registry,
-                                                 handler);
-
-  for (size_t i = 0; i < infobar_service->GetInfoBarCount(); i++) {
-    InfoBarDelegate* delegate = infobar_service->GetInfoBarDelegateAt(i);
-    RegisterProtocolHandlerInfoBarDelegate* cast_delegate =
-        delegate->AsRegisterProtocolHandlerInfoBarDelegate();
-    if (cast_delegate != NULL && cast_delegate->IsReplacedBy(rph_delegate)) {
-      infobar_service->ReplaceInfoBar(cast_delegate, rph_delegate);
-      rph_delegate = NULL;
-      break;
-    }
-  }
-
-  if (rph_delegate != NULL)
-    infobar_service->AddInfoBar(rph_delegate);
+  RegisterProtocolHandlerInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents), registry, handler);
 }
 
 // static
@@ -970,38 +947,6 @@ void Browser::FindReplyHelper(WebContents* web_contents,
                                    selection_rect,
                                    active_match_ordinal,
                                    final_update);
-}
-
-// static
-void Browser::RequestMediaAccessPermissionHelper(
-    content::WebContents* web_contents,
-    const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-
-  scoped_ptr<MediaStreamDevicesController>
-      controller(new MediaStreamDevicesController(profile,
-                                                  request,
-                                                  callback));
-  if (!controller->DismissInfoBarAndTakeActionOnSettings()) {
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-    InfoBarDelegate* old_infobar = NULL;
-    for (size_t i = 0; i < infobar_service->GetInfoBarCount(); ++i) {
-      old_infobar = infobar_service->GetInfoBarDelegateAt(i)->
-          AsMediaStreamInfoBarDelegate();
-      if (old_infobar)
-        break;
-    }
-
-    InfoBarDelegate* infobar =
-        new MediaStreamInfoBarDelegate(infobar_service, controller.release());
-    if (old_infobar)
-      infobar_service->ReplaceInfoBar(old_infobar, infobar);
-    else
-      infobar_service->AddInfoBar(infobar);
-  }
 }
 
 void Browser::UpdateUIForNavigationInTab(WebContents* contents,
@@ -1606,13 +1551,9 @@ void Browser::RendererResponsive(WebContents* source) {
 }
 
 void Browser::WorkerCrashed(WebContents* source) {
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(source);
-  infobar_service->AddInfoBar(new SimpleAlertInfoBarDelegate(
-      infobar_service,
-      NULL,
-      l10n_util::GetStringUTF16(IDS_WEBWORKER_CRASHED_PROMPT),
-      true));
+  SimpleAlertInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(source), NULL,
+      l10n_util::GetStringUTF16(IDS_WEBWORKER_CRASHED_PROMPT), true);
 }
 
 void Browser::DidNavigateMainFramePostCommit(WebContents* web_contents) {
@@ -1692,7 +1633,7 @@ void Browser::RegisterIntentHandler(
     WebContents* web_contents,
     const webkit_glue::WebIntentServiceData& data,
     bool user_gesture) {
-  RegisterIntentHandlerHelper(web_contents, data, user_gesture);
+  RegisterIntentHandlerInfoBarDelegate::Create(web_contents, data);
 }
 
 void Browser::WebIntentDispatch(
@@ -1788,7 +1729,7 @@ void Browser::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  RequestMediaAccessPermissionHelper(web_contents, request, callback);
+  MediaStreamInfoBarDelegate::Create(web_contents, request, callback);
 }
 
 bool Browser::RequestPpapiBrokerPermission(
@@ -1796,7 +1737,7 @@ bool Browser::RequestPpapiBrokerPermission(
     const GURL& url,
     const FilePath& plugin_path,
     const base::Callback<void(bool)>& callback) {
-  PepperBrokerInfoBarDelegate::Show(web_contents, url, plugin_path, callback);
+  PepperBrokerInfoBarDelegate::Create(web_contents, url, plugin_path, callback);
   return true;
 }
 

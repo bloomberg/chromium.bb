@@ -55,11 +55,15 @@ void SetChromeAsDefaultBrowser(bool interactive_flow, PrefService* prefs) {
 // The delegate for the infobar shown when Chrome is not the default browser.
 class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
+  // Creates a default browser delegate and adds it to |infobar_service|.
+  static void Create(InfoBarService* infobar_service,
+                     PrefService* prefs,
+                     bool interactive_flow_required);
+
+ private:
   DefaultBrowserInfoBarDelegate(InfoBarService* infobar_service,
                                 PrefService* prefs,
                                 bool interactive_flow_required);
-
- private:
   virtual ~DefaultBrowserInfoBarDelegate();
 
   void AllowExpiry() { should_expire_ = true; }
@@ -92,6 +96,15 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(DefaultBrowserInfoBarDelegate);
 };
+
+// static
+void DefaultBrowserInfoBarDelegate::Create(InfoBarService* infobar_service,
+                                           PrefService* prefs,
+                                           bool interactive_flow_required) {
+  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new DefaultBrowserInfoBarDelegate(infobar_service, prefs,
+                                        interactive_flow_required)));
+}
 
 DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(
     InfoBarService* infobar_service,
@@ -171,20 +184,13 @@ void NotifyNotDefaultBrowserCallback(chrome::HostDesktopType desktop_type) {
   if (!web_contents)
     return;
 
-  // Don't show the info-bar if there are already info-bars showing.
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  if (infobar_service->GetInfoBarCount() > 0)
-    return;
-
   bool interactive_flow = ShellIntegration::CanSetAsDefaultBrowser() ==
       ShellIntegration::SET_DEFAULT_INTERACTIVE;
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  infobar_service->AddInfoBar(
-      new DefaultBrowserInfoBarDelegate(infobar_service,
-                                        profile->GetPrefs(),
-                                        interactive_flow));
+  DefaultBrowserInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents), profile->GetPrefs(),
+      interactive_flow);
 }
 
 void CheckDefaultBrowserCallback(chrome::HostDesktopType desktop_type) {

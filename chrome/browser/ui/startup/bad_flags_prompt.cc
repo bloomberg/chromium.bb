@@ -43,15 +43,11 @@ void ShowBadFlagsPrompt(Browser* browser) {
     content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
     if (!web_contents)
       return;
-    InfoBarService* infobar_service =
-        InfoBarService::FromWebContents(web_contents);
-    infobar_service->AddInfoBar(
-        new SimpleAlertInfoBarDelegate(
-            infobar_service, NULL,
-            l10n_util::GetStringFUTF16(
-            IDS_BAD_FLAGS_WARNING_MESSAGE,
-            UTF8ToUTF16(std::string("--") + bad_flag)),
-            false));
+    SimpleAlertInfoBarDelegate::Create(
+        InfoBarService::FromWebContents(web_contents), NULL,
+        l10n_util::GetStringFUTF16(IDS_BAD_FLAGS_WARNING_MESSAGE,
+                                    UTF8ToUTF16(std::string("--") + bad_flag)),
+        false);
   }
 }
 

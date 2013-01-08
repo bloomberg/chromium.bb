@@ -465,16 +465,14 @@ void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
       if (error) {
         Profile* profile =
             Profile::FromBrowserContext(web_contents->GetBrowserContext());
-        InfoBarService* infobar_service =
-            InfoBarService::FromWebContents(web_contents);
-        ShowInfoBar(
-            web_contents,
-            TranslateInfoBarDelegate::CreateErrorDelegate(
-                TranslateErrors::NETWORK,
-                infobar_service,
-                profile->GetPrefs(),
-                request.source_lang,
-                request.target_lang));
+        TranslateInfoBarDelegate::Create(
+            InfoBarService::FromWebContents(web_contents),
+            true,
+            TranslateInfoBarDelegate::TRANSLATION_ERROR,
+            TranslateErrors::NETWORK,
+            profile->GetPrefs(),
+            request.source_lang,
+            request.target_lang);
       } else {
         // Translate the page.
         DoTranslatePage(web_contents, translate_script_,
@@ -493,11 +491,6 @@ void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
       VLOG(9) << "Failed to Fetch languages from: " << kLanguageListFetchURL;
     }
   }
-}
-
-// static
-bool TranslateManager::IsShowingTranslateInfobar(WebContents* web_contents) {
-  return GetTranslateInfoBarDelegate(web_contents) != NULL;
 }
 
 TranslateManager::TranslateManager()
@@ -538,10 +531,6 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
     // This can happen for popups created with window.open("").
     return;
   }
-
-  // If there is already a translate infobar showing, don't show another one.
-  if (GetTranslateInfoBarDelegate(web_contents))
-    return;
 
   std::string target_lang = GetTargetLanguage(prefs);
   std::string language_code = GetLanguageCode(page_lang);
@@ -592,13 +581,11 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
     return;
   }
 
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
   // Prompts the user if he/she wants the page translated.
-  infobar_service->AddInfoBar(
-      TranslateInfoBarDelegate::CreateDelegate(
-          TranslateInfoBarDelegate::BEFORE_TRANSLATE, infobar_service,
-          profile->GetPrefs(), language_code, target_lang));
+  TranslateInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents), false,
+      TranslateInfoBarDelegate::BEFORE_TRANSLATE, TranslateErrors::NONE,
+      profile->GetPrefs(), language_code, target_lang);
 }
 
 void TranslateManager::InitiateTranslationPosted(
@@ -628,11 +615,10 @@ void TranslateManager::TranslatePage(WebContents* web_contents,
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  ShowInfoBar(web_contents, TranslateInfoBarDelegate::CreateDelegate(
-      TranslateInfoBarDelegate::TRANSLATING, infobar_service,
-      profile->GetPrefs(), source_lang, target_lang));
+  TranslateInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents), true,
+      TranslateInfoBarDelegate::TRANSLATING, TranslateErrors::NONE,
+      profile->GetPrefs(), source_lang, target_lang);
 
   if (!translate_script_.empty()) {
     DoTranslatePage(web_contents, translate_script_, source_lang, target_lang);
@@ -721,35 +707,24 @@ void TranslateManager::DoTranslatePage(WebContents* web_contents,
 
 void TranslateManager::PageTranslated(WebContents* web_contents,
                                       PageTranslatedDetails* details) {
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  PrefService* prefs = profile->GetPrefs();
-
-  // Create the new infobar to display.
-  TranslateInfoBarDelegate* infobar;
-  if (details->error_type != TranslateErrors::NONE) {
-    infobar = TranslateInfoBarDelegate::CreateErrorDelegate(
-        details->error_type,
-        infobar_service,
-        prefs,
-        details->source_language,
-        details->target_language);
-  } else if (!IsSupportedLanguage(details->source_language)) {
+  if ((details->error_type == TranslateErrors::NONE) &&
+      !IsSupportedLanguage(details->source_language)) {
     // TODO(jcivelli): http://crbug.com/9390 We should change the "after
     //                 translate" infobar to support unknown as the original
     //                 language.
     UMA_HISTOGRAM_COUNTS("Translate.ServerReportedUnsupportedLanguage", 1);
-    infobar = TranslateInfoBarDelegate::CreateErrorDelegate(
-        TranslateErrors::UNSUPPORTED_LANGUAGE, infobar_service,
-        prefs, details->source_language, details->target_language);
-  } else {
-    infobar = TranslateInfoBarDelegate::CreateDelegate(
-        TranslateInfoBarDelegate::AFTER_TRANSLATE, infobar_service,
-        prefs, details->source_language, details->target_language);
+    details->error_type = TranslateErrors::UNSUPPORTED_LANGUAGE;
   }
-  ShowInfoBar(web_contents, infobar);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  PrefService* prefs = profile->GetPrefs();
+  TranslateInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents), true,
+      (details->error_type == TranslateErrors::NONE) ?
+          TranslateInfoBarDelegate::AFTER_TRANSLATE :
+          TranslateInfoBarDelegate::TRANSLATION_ERROR,
+      details->error_type, prefs, details->source_language,
+      details->target_language);
 }
 
 bool TranslateManager::IsAcceptLanguage(WebContents* web_contents,
@@ -868,24 +843,6 @@ void TranslateManager::RequestTranslateScript() {
   translate_script_request_pending_->Start();
 }
 
-void TranslateManager::ShowInfoBar(content::WebContents* web_contents,
-                                   TranslateInfoBarDelegate* infobar) {
-  DCHECK(infobar != NULL);
-  TranslateInfoBarDelegate* old_infobar =
-      GetTranslateInfoBarDelegate(web_contents);
-  infobar->UpdateBackgroundAnimation(old_infobar);
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  if (!infobar_service)
-    return;
-  if (old_infobar) {
-    // There already is a translate infobar, simply replace it.
-    infobar_service->ReplaceInfoBar(old_infobar, infobar);
-  } else {
-    infobar_service->AddInfoBar(infobar);
-  }
-}
-
 // static
 std::string TranslateManager::GetTargetLanguage(PrefService* prefs) {
   std::string ui_lang =
@@ -909,22 +866,4 @@ std::string TranslateManager::GetTargetLanguage(PrefService* prefs) {
       return lang_code;
   }
   return std::string();
-}
-
-// static
-TranslateInfoBarDelegate* TranslateManager::GetTranslateInfoBarDelegate(
-    WebContents* web_contents) {
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  if (!infobar_service)
-    return NULL;
-
-  for (size_t i = 0; i < infobar_service->GetInfoBarCount(); ++i) {
-    TranslateInfoBarDelegate* delegate =
-        infobar_service->GetInfoBarDelegateAt(i)->
-            AsTranslateInfoBarDelegate();
-    if (delegate)
-      return delegate;
-  }
-  return NULL;
 }

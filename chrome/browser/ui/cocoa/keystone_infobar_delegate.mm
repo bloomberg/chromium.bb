@@ -38,10 +38,13 @@ namespace {
 
 class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  KeystonePromotionInfoBarDelegate(InfoBarService* infobar_service,
-                                   PrefService* prefs);
+  // If there's an active tab, creates a keystone promotion delegate and adds it
+  // to the InfoBarService associated with that tab.
+  static void Create();
 
  private:
+  KeystonePromotionInfoBarDelegate(InfoBarService* infobar_service,
+                                   PrefService* prefs);
   virtual ~KeystonePromotionInfoBarDelegate();
 
   // Sets this info bar to be able to expire.  Called a predetermined amount
@@ -68,6 +71,24 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(KeystonePromotionInfoBarDelegate);
 };
+
+// static
+void KeystonePromotionInfoBarDelegate::Create() {
+  Browser* browser = chrome::GetLastActiveBrowser();
+  if (browser) {
+    content::WebContents* webContents = chrome::GetActiveWebContents(browser);
+
+    if (webContents) {
+      InfoBarService* infobar_service =
+          InfoBarService::FromWebContents(webContents);
+      infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+          new KeystonePromotionInfoBarDelegate(
+              infobar_service,
+              Profile::FromBrowserContext(
+                  webContents->GetBrowserContext())->GetPrefs())));
+    }
+  }
+}
 
 KeystonePromotionInfoBarDelegate::KeystonePromotionInfoBarDelegate(
     InfoBarService* infobar_service,
@@ -189,24 +210,7 @@ bool KeystonePromotionInfoBarDelegate::ShouldExpireInternal(
 
   if (status != kAutoupdateRegisterFailed &&
       [[KeystoneGlue defaultKeystoneGlue] needsPromotion]) {
-    Browser* browser = chrome::GetLastActiveBrowser();
-    if (browser) {
-      content::WebContents* webContents = chrome::GetActiveWebContents(browser);
-
-      // Only show if no other info bars are showing, because that's how the
-      // default browser info bar works.
-      if (webContents) {
-        InfoBarService* infobarService =
-            InfoBarService::FromWebContents(webContents);
-        if (infobarService->GetInfoBarCount() == 0) {
-          infobarService->AddInfoBar(
-              new KeystonePromotionInfoBarDelegate(
-                  infobarService,
-                  Profile::FromBrowserContext(
-                      webContents->GetBrowserContext())->GetPrefs()));
-        }
-      }
-    }
+    KeystonePromotionInfoBarDelegate::Create();
   }
 
   [self release];

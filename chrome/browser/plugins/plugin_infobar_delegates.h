@@ -53,12 +53,17 @@ class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
 // Infobar that's shown when a plug-in requires user authorization to run.
 class UnauthorizedPluginInfoBarDelegate : public PluginInfoBarDelegate {
  public:
+  // Creates an unauthorized plugin delegate and adds it to |infobar_service|.
+  static void Create(InfoBarService* infobar_service,
+                     HostContentSettingsMap* content_settings,
+                     const string16& name,
+                     const std::string& identifier);
+
+ private:
   UnauthorizedPluginInfoBarDelegate(InfoBarService* infobar_service,
                                     HostContentSettingsMap* content_settings,
                                     const string16& name,
                                     const std::string& identifier);
-
- private:
   virtual ~UnauthorizedPluginInfoBarDelegate();
 
   // PluginInfoBarDelegate:
@@ -80,12 +85,13 @@ class UnauthorizedPluginInfoBarDelegate : public PluginInfoBarDelegate {
 class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,
                                       public WeakPluginInstallerObserver {
  public:
-  static InfoBarDelegate* Create(content::WebContents* web_contents,
-                                 PluginInstaller* installer,
-                                 scoped_ptr<PluginMetadata> metadata);
+  // Creates an outdated plugin delegate and adds it to |infobar_service|.
+  static void Create(InfoBarService* infobar_service,
+                     PluginInstaller* installer,
+                     scoped_ptr<PluginMetadata> metadata);
 
  private:
-  OutdatedPluginInfoBarDelegate(content::WebContents* web_contents,
+  OutdatedPluginInfoBarDelegate(InfoBarService* infobar_service,
                                 PluginInstaller* installer,
                                 scoped_ptr<PluginMetadata> metadata,
                                 const string16& message);
@@ -131,14 +137,20 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
   // |installer|. When the user accepts, |callback| is called.
   // During installation of the plug-in, the infobar will change to reflect the
   // installation state.
-  static InfoBarDelegate* Create(InfoBarService* infobar_service,
-                                 PluginInstaller* installer,
-                                 scoped_ptr<PluginMetadata> plugin_metadata,
-                                 const InstallCallback& callback);
+  static void Create(InfoBarService* infobar_service,
+                     PluginInstaller* installer,
+                     scoped_ptr<PluginMetadata> plugin_metadata,
+                     const InstallCallback& callback);
+
+  // Replaces |infobar|, which must currently be owned, with an infobar asking
+  // the user to install or update a particular plugin.
+  static void Replace(InfoBarDelegate* infobar,
+                      PluginInstaller* installer,
+                      scoped_ptr<PluginMetadata> metadata,
+                      bool new_install,
+                      const string16& message);
 
  private:
-  friend class OutdatedPluginInfoBarDelegate;
-
   PluginInstallerInfoBarDelegate(InfoBarService* infobar_service,
                                  PluginInstaller* installer,
                                  scoped_ptr<PluginMetadata> plugin_metadata,
@@ -193,11 +205,16 @@ class PluginMetroModeInfoBarDelegate : public ConfirmInfoBarDelegate {
     DESKTOP_MODE_REQUIRED,
   };
 
+  // Creates a metro mode infobar and delegate and adds the infobar to
+  // |infobar_service|.
+  static void Create(InfoBarService* infobar_service,
+                     Mode mode,
+                     const string16& name);
+
+ private:
   PluginMetroModeInfoBarDelegate(InfoBarService* infobar_service,
                                  Mode mode,
                                  const string16& name);
-
- private:
   virtual ~PluginMetroModeInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:

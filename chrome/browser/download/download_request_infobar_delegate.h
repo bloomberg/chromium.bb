@@ -17,16 +17,28 @@ class InfoBarService;
 // on an unsuspecting user.
 class DownloadRequestInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  DownloadRequestInfoBarDelegate(
-      InfoBarService* infobar_service,
-      DownloadRequestLimiter::TabDownloadState* host);
+  virtual ~DownloadRequestInfoBarDelegate();
+
+  // Creates a download request delegate and adds it to |infobar_service|.
+  static void Create(InfoBarService* infobar_service,
+                     DownloadRequestLimiter::TabDownloadState* host);
+
+#if defined(UNIT_TEST)
+  static scoped_ptr<DownloadRequestInfoBarDelegate> Create(
+      DownloadRequestLimiter::TabDownloadState* host) {
+    return scoped_ptr<DownloadRequestInfoBarDelegate>(
+        new DownloadRequestInfoBarDelegate(NULL, host));
+  }
+#endif
 
   void set_host(DownloadRequestLimiter::TabDownloadState* host) {
     host_ = host;
   }
 
  private:
-  virtual ~DownloadRequestInfoBarDelegate();
+  DownloadRequestInfoBarDelegate(
+      InfoBarService* infobar_service,
+      DownloadRequestLimiter::TabDownloadState* host);
 
   // ConfirmInfoBarDelegate:
   virtual gfx::Image* GetIcon() const OVERRIDE;

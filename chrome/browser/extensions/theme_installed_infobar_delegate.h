@@ -14,6 +14,7 @@
 
 class ExtensionService;
 class InfoBarService;
+class Profile;
 class ThemeService;
 
 namespace extensions {
@@ -25,26 +26,28 @@ class Extension;
 class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
                                       public content::NotificationObserver {
  public:
-  ThemeInstalledInfoBarDelegate(InfoBarService* infobar_service,
-                                ExtensionService* extension_service,
-                                ThemeService* theme_service,
-                                const extensions::Extension* new_theme,
-                                const std::string& previous_theme_id,
-                                bool previous_using_native_theme);
-
-  // Returns true if the given theme is the same as the one associated with this
-  // info bar.
-  bool MatchesTheme(const extensions::Extension* theme) const;
+  // Creates a theme installed delegate and adds it to the last active tab on
+  // |profile|.
+  static void Create(const extensions::Extension* new_theme,
+                     Profile* profile,
+                     const std::string& previous_theme_id,
+                     bool previous_using_native_theme);
 
  protected:
-  virtual ~ThemeInstalledInfoBarDelegate();
-
   ThemeService* theme_service() { return theme_service_; }
 
   // ConfirmInfoBarDelegate:
   virtual bool Cancel() OVERRIDE;
 
  private:
+  ThemeInstalledInfoBarDelegate(InfoBarService* infobar_service,
+                                ExtensionService* extension_service,
+                                ThemeService* theme_service,
+                                const extensions::Extension* new_theme,
+                                const std::string& previous_theme_id,
+                                bool previous_using_native_theme);
+  virtual ~ThemeInstalledInfoBarDelegate();
+
   // ConfirmInfoBarDelegate:
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;

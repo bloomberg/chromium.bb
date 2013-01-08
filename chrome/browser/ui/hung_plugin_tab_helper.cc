@@ -124,11 +124,12 @@ void KillPluginOnIOThread(int child_id) {
 
 class HungPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  HungPluginInfoBarDelegate(HungPluginTabHelper* helper,
-                            InfoBarService* infobar_service,
-                            int plugin_child_id,
-                            const string16& plugin_name);
-  virtual ~HungPluginInfoBarDelegate();
+  // Creates a hung plugin delegate and adds it to |infobar_service|.  Returns
+  // the delegate if it was successfully added.
+  static HungPluginInfoBarDelegate* Create(InfoBarService* infobar_service,
+                                           HungPluginTabHelper* helper,
+                                           int plugin_child_id,
+                                           const string16& plugin_name);
 
   // ConfirmInfoBarDelegate:
   virtual gfx::Image* GetIcon() const OVERRIDE;
@@ -138,6 +139,12 @@ class HungPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() OVERRIDE;
 
  private:
+  HungPluginInfoBarDelegate(HungPluginTabHelper* helper,
+                            InfoBarService* infobar_service,
+                            int plugin_child_id,
+                            const string16& plugin_name);
+  virtual ~HungPluginInfoBarDelegate();
+
   HungPluginTabHelper* helper_;
   int plugin_child_id_;
 
@@ -145,6 +152,17 @@ class HungPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
   string16 button_text_;
   gfx::Image* icon_;
 };
+
+// static
+HungPluginInfoBarDelegate* HungPluginInfoBarDelegate::Create(
+    InfoBarService* infobar_service,
+    HungPluginTabHelper* helper,
+    int plugin_child_id,
+    const string16& plugin_name) {
+  return static_cast<HungPluginInfoBarDelegate*>(infobar_service->AddInfoBar(
+      scoped_ptr<InfoBarDelegate>(new HungPluginInfoBarDelegate(
+          helper, infobar_service, plugin_child_id, plugin_name))));
+}
 
 HungPluginInfoBarDelegate::HungPluginInfoBarDelegate(
     HungPluginTabHelper* helper,
@@ -362,9 +380,9 @@ void HungPluginTabHelper::ShowBar(int child_id, PluginState* state) {
     return;
 
   DCHECK(!state->info_bar);
-  state->info_bar = new HungPluginInfoBarDelegate(this, infobar_service,
-                                                  child_id, state->name);
-  infobar_service->AddInfoBar(state->info_bar);
+  state->info_bar =
+      HungPluginInfoBarDelegate::Create(infobar_service, this, child_id,
+                                        state->name);
 }
 
 void HungPluginTabHelper::CloseBar(PluginState* state) {

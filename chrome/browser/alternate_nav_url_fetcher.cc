@@ -142,10 +142,9 @@ void AlternateNavURLFetcher::SetStatusFromURLFetch(
 
 void AlternateNavURLFetcher::ShowInfobarIfPossible() {
   if (navigated_to_entry_ && (state_ == SUCCEEDED)) {
-    InfoBarService* infobar_service =
-        InfoBarService::FromWebContents(controller_->GetWebContents());
-    infobar_service->AddInfoBar(
-        new AlternateNavInfoBarDelegate(infobar_service, alternate_nav_url_));
+    AlternateNavInfoBarDelegate::Create(
+        InfoBarService::FromWebContents(controller_->GetWebContents()),
+        alternate_nav_url_);
   } else if (state_ != FAILED) {
     return;
   }

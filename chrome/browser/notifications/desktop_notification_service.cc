@@ -59,6 +59,17 @@ const ContentSetting kDefaultSetting = CONTENT_SETTING_ASK;
 // permissions.
 class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
+  // Creates a notification permission delegate and adds it to
+  // |infobar_service|.
+  static void Create(InfoBarService* infobar_service,
+                     DesktopNotificationService* notification_service,
+                     const GURL& origin,
+                     const string16& display_name,
+                     int process_id,
+                     int route_id,
+                     int callback_context);
+
+ private:
   NotificationPermissionInfoBarDelegate(
       InfoBarService* infobar_service,
       DesktopNotificationService* notification_service,
@@ -67,8 +78,6 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
       int process_id,
       int route_id,
       int callback_context);
-
- private:
   virtual ~NotificationPermissionInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
@@ -100,6 +109,21 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(NotificationPermissionInfoBarDelegate);
 };
+
+// static
+void NotificationPermissionInfoBarDelegate::Create(
+    InfoBarService* infobar_service,
+    DesktopNotificationService* notification_service,
+    const GURL& origin,
+    const string16& display_name,
+    int process_id,
+    int route_id,
+    int callback_context) {
+  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new NotificationPermissionInfoBarDelegate(
+          infobar_service, notification_service, origin, display_name,
+          process_id, route_id, callback_context)));
+}
 
 NotificationPermissionInfoBarDelegate::NotificationPermissionInfoBarDelegate(
     InfoBarService* infobar_service,
@@ -416,7 +440,7 @@ void DesktopNotificationService::RequestPermission(
     // browser action popup, extension background page, or any HTML that runs
     // outside of a tab.
     if (infobar_service) {
-      infobar_service->AddInfoBar(new NotificationPermissionInfoBarDelegate(
+      NotificationPermissionInfoBarDelegate::Create(
           infobar_service,
           DesktopNotificationServiceFactory::GetForProfile(
               Profile::FromBrowserContext(contents->GetBrowserContext())),
@@ -424,7 +448,7 @@ void DesktopNotificationService::RequestPermission(
           DisplayNameForOrigin(origin),
           process_id,
           route_id,
-          callback_context));
+          callback_context);
       return;
     }
   }

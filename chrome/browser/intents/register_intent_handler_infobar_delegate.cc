@@ -10,23 +10,41 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
+#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-RegisterIntentHandlerInfoBarDelegate::RegisterIntentHandlerInfoBarDelegate(
-    InfoBarService* infobar_service,
-    WebIntentsRegistry* registry,
-    const webkit_glue::WebIntentServiceData& service,
-    FaviconService* favicon_service,
-    const GURL& origin_url)
-    : ConfirmInfoBarDelegate(infobar_service),
-      registry_(registry),
-      service_(service),
-      favicon_service_(favicon_service),
-      origin_url_(origin_url) {
+
+// static
+void RegisterIntentHandlerInfoBarDelegate::Create(
+    content::WebContents* web_contents,
+    const webkit_glue::WebIntentServiceData& data) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (profile->IsOffTheRecord())
+    return;
+
+  if (!web_intents::IsWebIntentsEnabledForProfile(profile))
+    return;
+
+  FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
+      profile, Profile::EXPLICIT_ACCESS);
+
+  WebIntentsRegistry* registry =
+      WebIntentsRegistryFactory::GetForProfile(profile);
+  registry->IntentServiceExists(
+      data, base::Bind(
+          &CreateContinuation,
+          base::Unretained(InfoBarService::FromWebContents(web_contents)),
+          registry,
+          data,
+          favicon_service,
+          web_contents->GetURL()));
 }
 
 InfoBarDelegate::Type
@@ -74,37 +92,30 @@ bool RegisterIntentHandlerInfoBarDelegate::LinkClicked(
   return false;
 }
 
-namespace {
-
-// Helper continuation for MaybeShowIntentInfoBar.
-void CheckProvider(InfoBarService* infobar_service,
-                   WebIntentsRegistry* registry,
-                   const webkit_glue::WebIntentServiceData& service,
-                   FaviconService* favicon_service,
-                   const GURL& origin_url,
-                   bool provider_exists) {
-  if (!provider_exists) {
-    infobar_service->AddInfoBar(new RegisterIntentHandlerInfoBarDelegate(
-        infobar_service, registry, service, favicon_service, origin_url));
-  }
-}
-
-}  // namespace
-
-// static
-void RegisterIntentHandlerInfoBarDelegate::MaybeShowIntentInfoBar(
+RegisterIntentHandlerInfoBarDelegate::RegisterIntentHandlerInfoBarDelegate(
     InfoBarService* infobar_service,
     WebIntentsRegistry* registry,
     const webkit_glue::WebIntentServiceData& service,
     FaviconService* favicon_service,
-    const GURL& origin_url) {
-  DCHECK(infobar_service);
-  DCHECK(registry);
-  registry->IntentServiceExists(service,
-                                base::Bind(&CheckProvider,
-                                           base::Unretained(infobar_service),
-                                           registry,
-                                           service,
-                                           favicon_service,
-                                           origin_url));
+    const GURL& origin_url)
+    : ConfirmInfoBarDelegate(infobar_service),
+      registry_(registry),
+      service_(service),
+      favicon_service_(favicon_service),
+      origin_url_(origin_url) {
+}
+
+// static
+void RegisterIntentHandlerInfoBarDelegate::CreateContinuation(
+    InfoBarService* infobar_service,
+    WebIntentsRegistry* registry,
+    const webkit_glue::WebIntentServiceData& service,
+    FaviconService* favicon_service,
+    const GURL& origin_url,
+    bool provider_exists) {
+  if (!provider_exists) {
+    infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+        new RegisterIntentHandlerInfoBarDelegate(
+            infobar_service, registry, service, favicon_service, origin_url)));
+  }
 }

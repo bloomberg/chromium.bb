@@ -93,9 +93,6 @@ class TranslateManager : public content::NotificationObserver,
         base::TimeDelta::FromMilliseconds(delay_ms);
   }
 
-  // Convenience method to know if a tab is showing a translate infobar.
-  static bool IsShowingTranslateInfobar(content::WebContents* web_contents);
-
   // Returns true if the URL can be translated.
   static bool IsTranslatableURL(const GURL& url);
 
@@ -174,11 +171,6 @@ class TranslateManager : public content::NotificationObserver,
   // to translate it).
   void RequestTranslateScript();
 
-  // Shows the specified translate |infobar| in the given |tab|.  If a current
-  // translate infobar is showing, it just replaces it with the new one.
-  void ShowInfoBar(content::WebContents* web_contents,
-                   TranslateInfoBarDelegate* infobar);
-
   // Returns the language to translate to. The language returned is the
   // first language found in the following list that is supported by the
   // translation service:
@@ -186,10 +178,6 @@ class TranslateManager : public content::NotificationObserver,
   //     the accept-language list
   // If no language is found then an empty string is returned.
   static std::string GetTargetLanguage(PrefService* prefs);
-
-  // Returns the translate info bar showing in |tab| or NULL if none is showing.
-  static TranslateInfoBarDelegate* GetTranslateInfoBarDelegate(
-      content::WebContents* web_contents);
 
   content::NotificationRegistrar notification_registrar_;
 

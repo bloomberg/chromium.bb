@@ -25,48 +25,51 @@ using content::NavigationEntry;
 // static
 const size_t TranslateInfoBarDelegate::kNoIndex = static_cast<size_t>(-1);
 
-// static
-TranslateInfoBarDelegate* TranslateInfoBarDelegate::CreateDelegate(
-    Type infobar_type,
-    InfoBarService* infobar_service,
-    PrefService* prefs,
-    const std::string& original_language,
-    const std::string& target_language) {
-  DCHECK_NE(TRANSLATION_ERROR, infobar_type);
-  // These must be validated by our callers.
-  DCHECK(TranslateManager::IsSupportedLanguage(target_language));
-  // The original language can only be "unknown" for the "translating"
-  // infobar, which is the case when the user started a translation from the
-  // context menu.
-  DCHECK(TranslateManager::IsSupportedLanguage(original_language) ||
-         ((infobar_type == TRANSLATING) &&
-          (original_language == chrome::kUnknownLanguageCode)));
-  TranslateInfoBarDelegate* delegate =
-      new TranslateInfoBarDelegate(infobar_type,
-                                   TranslateErrors::NONE,
-                                   infobar_service,
-                                   prefs,
-                                   original_language,
-                                   target_language);
-  DCHECK_NE(kNoIndex, delegate->target_language_index());
-  return delegate;
-}
-
-TranslateInfoBarDelegate* TranslateInfoBarDelegate::CreateErrorDelegate(
-    TranslateErrors::Type error_type,
-    InfoBarService* infobar_service,
-    PrefService* prefs,
-    const std::string& original_language,
-    const std::string& target_language) {
-  return new TranslateInfoBarDelegate(TRANSLATION_ERROR,
-                                      error_type,
-                                      infobar_service,
-                                      prefs,
-                                      original_language,
-                                      target_language);
-}
-
 TranslateInfoBarDelegate::~TranslateInfoBarDelegate() {
+}
+
+// static
+void TranslateInfoBarDelegate::Create(InfoBarService* infobar_service,
+                                      bool replace_existing_infobar,
+                                      Type infobar_type,
+                                      TranslateErrors::Type error_type,
+                                      PrefService* prefs,
+                                      const std::string& original_language,
+                                      const std::string& target_language) {
+  // Check preconditions.
+  if (infobar_type != TRANSLATION_ERROR) {
+    DCHECK(TranslateManager::IsSupportedLanguage(target_language));
+    if (!TranslateManager::IsSupportedLanguage(original_language)) {
+      // The original language can only be "unknown" for the "translating"
+      // infobar, which is the case when the user started a translation from the
+      // context menu.
+      DCHECK_EQ(TRANSLATING, infobar_type);
+      DCHECK_EQ(chrome::kUnknownLanguageCode, original_language);
+    }
+  }
+
+  // Find any existing translate infobar delegate.
+  TranslateInfoBarDelegate* old_delegate = NULL;
+  for (size_t i = 0; i < infobar_service->GetInfoBarCount(); ++i) {
+    old_delegate =
+        infobar_service->GetInfoBarDelegateAt(i)->AsTranslateInfoBarDelegate();
+    if (old_delegate)
+      break;
+  }
+
+  // Create the new delegate.
+  scoped_ptr<TranslateInfoBarDelegate> infobar(
+      new TranslateInfoBarDelegate(infobar_type, error_type, infobar_service,
+                                   prefs, original_language, target_language));
+  infobar->UpdateBackgroundAnimation(old_delegate);
+
+  // Add the new delegate if necessary.
+  if (!old_delegate) {
+    infobar_service->AddInfoBar(infobar.PassAs<InfoBarDelegate>());
+  } else if (replace_existing_infobar) {
+    infobar_service->ReplaceInfoBar(old_delegate,
+                                    infobar.PassAs<InfoBarDelegate>());
+  }
 }
 
 void TranslateInfoBarDelegate::Translate() {

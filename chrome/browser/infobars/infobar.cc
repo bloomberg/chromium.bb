@@ -183,7 +183,7 @@ void InfoBar::MaybeDelete() {
   if (!owner_ && delegate_ && (animation_.GetCurrentValue() == 0.0)) {
     if (container_)
       container_->RemoveInfoBar(this);
-    delegate_->InfoBarClosed();
+    delete delegate_;
     delegate_ = NULL;
   }
 }

@@ -178,10 +178,8 @@ void AutoLoginPrompter::Observe(int type,
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents_);
     // |infobar_service| is NULL for WebContents hosted in WebDialog.
-    if (infobar_service) {
-      infobar_service->AddInfoBar(
-          new AutoLoginInfoBarDelegate(infobar_service, params_));
-    }
+    if (infobar_service)
+      AutoLoginInfoBarDelegate::Create(infobar_service, params_);
   }
   // Either we couldn't add the infobar, we added the infobar, or the tab
   // contents was destroyed before the navigation completed.  In any case

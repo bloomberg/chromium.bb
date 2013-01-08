@@ -223,10 +223,8 @@ void CollectedCookiesViews::DeleteDelegate() {
 
 bool CollectedCookiesViews::Cancel() {
   if (status_changed_) {
-    InfoBarService* infobar_service =
-        InfoBarService::FromWebContents(web_contents_);
-    infobar_service->AddInfoBar(
-        new CollectedCookiesInfoBarDelegate(infobar_service));
+    CollectedCookiesInfoBarDelegate::Create(
+        InfoBarService::FromWebContents(web_contents_));
   }
 
   return true;

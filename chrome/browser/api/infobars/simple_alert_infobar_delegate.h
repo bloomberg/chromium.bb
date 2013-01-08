@@ -12,12 +12,17 @@
 
 class SimpleAlertInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  SimpleAlertInfoBarDelegate(InfoBarService* infobar_service,
-                             gfx::Image* icon,  // May be NULL.
-                             const string16& message,
-                             bool auto_expire);
+  // Creates a simple alert delegate and adds it to |infobar_service|.
+  static void Create(InfoBarService* infobar_service,
+                     gfx::Image* icon,  // May be NULL.
+                     const string16& message,
+                     bool auto_expire);
 
  private:
+  SimpleAlertInfoBarDelegate(InfoBarService* infobar_service,
+                             gfx::Image* icon,
+                             const string16& message,
+                             bool auto_expire);
   virtual ~SimpleAlertInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:

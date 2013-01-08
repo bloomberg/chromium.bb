@@ -214,10 +214,8 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
 
 - (void)windowWillClose:(NSNotification*)notif {
   if (contentSettingsChanged_) {
-    InfoBarService* infobarService =
-        InfoBarService::FromWebContents(webContents_);
-    infobarService->AddInfoBar(
-        new CollectedCookiesInfoBarDelegate(infobarService));
+    CollectedCookiesInfoBarDelegate::Create(
+        InfoBarService::FromWebContents(webContents_));
   }
   [allowedOutlineView_ setDelegate:nil];
   [blockedOutlineView_ setDelegate:nil];

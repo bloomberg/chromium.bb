@@ -20,6 +20,8 @@ class ConfirmInfoBarDelegate : public InfoBarDelegate {
     BUTTON_CANCEL = 1 << 1,
   };
 
+  virtual ~ConfirmInfoBarDelegate();
+
   // Returns the InfoBar type to be displayed for the InfoBar.
   virtual InfoBarAutomationType GetInfoBarAutomationType() const OVERRIDE;
 
@@ -59,7 +61,6 @@ class ConfirmInfoBarDelegate : public InfoBarDelegate {
 
  protected:
   explicit ConfirmInfoBarDelegate(InfoBarService* infobar_service);
-  virtual ~ConfirmInfoBarDelegate();
 
   virtual bool ShouldExpireInternal(
       const content::LoadCommittedDetails& details) const OVERRIDE;

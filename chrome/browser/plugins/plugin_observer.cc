@@ -32,14 +32,13 @@
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#endif
 #include "chrome/browser/plugins/plugin_installer.h"
 #include "chrome/browser/plugins/plugin_installer_observer.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
-
-#if defined(OS_WIN)
-#include "base/win/metro.h"
-#endif
 
 using content::OpenURLParams;
 using content::PluginService;
@@ -189,14 +188,9 @@ void PluginObserver::PluginCrashed(const FilePath& plugin_path) {
       PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);
   gfx::Image* icon = &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_PLUGIN_CRASHED);
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents());
-  infobar_service->AddInfoBar(
-      new SimpleAlertInfoBarDelegate(
-          infobar_service,
-          icon,
-          l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT, plugin_name),
-          true));
+  SimpleAlertInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents()), icon,
+      l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT, plugin_name), true);
 }
 
 bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
@@ -227,14 +221,11 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
 void PluginObserver::OnBlockedUnauthorizedPlugin(
     const string16& name,
     const std::string& identifier) {
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents());
-  infobar_service->AddInfoBar(
-      new UnauthorizedPluginInfoBarDelegate(
-          infobar_service,
-          Profile::FromBrowserContext(web_contents()->GetBrowserContext())->
-              GetHostContentSettingsMap(),
-          name, identifier));
+  UnauthorizedPluginInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents()),
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext())->
+          GetHostContentSettingsMap(),
+      name, identifier);
 }
 
 void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,
@@ -252,11 +243,9 @@ void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,
   plugin_placeholders_[placeholder_id] =
       new PluginPlaceholderHost(this, placeholder_id,
                                 plugin->name(), installer);
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents());
-  infobar_service->AddInfoBar(
-      OutdatedPluginInfoBarDelegate::Create(web_contents(),
-                                            installer, plugin.Pass()));
+  OutdatedPluginInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents()), installer,
+      plugin.Pass());
 #else
   // If we don't support third-party plug-in installation, we shouldn't have
   // outdated plug-ins.
@@ -283,25 +272,11 @@ void PluginObserver::OnFindMissingPlugin(int placeholder_id,
       new PluginPlaceholderHost(this, placeholder_id,
                                 plugin_metadata->name(),
                                 installer);
-  PluginInstallerInfoBarDelegate::InstallCallback callback =
+  PluginInstallerInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents()), installer,
+      plugin_metadata.Pass(),
       base::Bind(&PluginObserver::InstallMissingPlugin,
-                 weak_ptr_factory_.GetWeakPtr(), installer);
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents());
-  InfoBarDelegate* delegate;
-#if !defined(OS_WIN)
-  delegate = PluginInstallerInfoBarDelegate::Create(
-      infobar_service, installer, plugin_metadata.Pass(), callback);
-#else
-  delegate = base::win::IsMetroProcess() ?
-      new PluginMetroModeInfoBarDelegate(
-          infobar_service,
-          PluginMetroModeInfoBarDelegate::MISSING_PLUGIN,
-          plugin_metadata->name()) :
-      PluginInstallerInfoBarDelegate::Create(
-          infobar_service, installer, plugin_metadata.Pass(), callback);
-#endif
-  infobar_service->AddInfoBar(delegate);
+                 weak_ptr_factory_.GetWeakPtr(), installer));
 }
 
 void PluginObserver::InstallMissingPlugin(
@@ -341,15 +316,13 @@ void PluginObserver::OnCouldNotLoadPlugin(const FilePath& plugin_path) {
   g_browser_process->metrics_service()->LogPluginLoadingError(plugin_path);
   string16 plugin_name =
       PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents());
-  infobar_service->AddInfoBar(new SimpleAlertInfoBarDelegate(
-      infobar_service,
+  SimpleAlertInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents()),
       &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
           IDR_INFOBAR_PLUGIN_CRASHED),
       l10n_util::GetStringFUTF16(IDS_PLUGIN_INITIALIZATION_ERROR_PROMPT,
                                  plugin_name),
-      true  /* auto_expire */));
+      true  /* auto_expire */);
 }
 
 void PluginObserver::OnNPAPINotSupported(const std::string& identifier) {
@@ -375,13 +348,9 @@ void PluginObserver::OnNPAPINotSupported(const std::string& identifier) {
     return;
   }
 
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents());
-  infobar_service->AddInfoBar(
-      new PluginMetroModeInfoBarDelegate(
-          infobar_service,
-          PluginMetroModeInfoBarDelegate::DESKTOP_MODE_REQUIRED,
-          plugin->name()));
+  PluginMetroModeInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents()),
+      PluginMetroModeInfoBarDelegate::DESKTOP_MODE_REQUIRED, plugin->name());
 #else
   NOTREACHED();
 #endif

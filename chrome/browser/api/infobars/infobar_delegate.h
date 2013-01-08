@@ -84,10 +84,6 @@ class InfoBarDelegate {
   // Called when the user clicks on the close button to dismiss the infobar.
   virtual void InfoBarDismissed();
 
-  // Called after the InfoBar is closed. Deletes |this|.
-  // TODO(pkasting): Get rid of this and delete delegates directly.
-  void InfoBarClosed();
-
   // Return the icon to be shown for this InfoBar. If the returned Image is
   // NULL, no icon is shown.
   virtual gfx::Image* GetIcon() const;

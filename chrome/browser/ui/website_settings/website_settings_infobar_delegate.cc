@@ -13,6 +13,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+// static
+void WebsiteSettingsInfobarDelegate::Create(InfoBarService* infobar_service) {
+  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new WebsiteSettingsInfobarDelegate(infobar_service)));
+}
+
 WebsiteSettingsInfobarDelegate::WebsiteSettingsInfobarDelegate(
     InfoBarService* infobar_service)
     : ConfirmInfoBarDelegate(infobar_service) {

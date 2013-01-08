@@ -8,6 +8,9 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+ConfirmInfoBarDelegate::~ConfirmInfoBarDelegate() {
+}
+
 InfoBarDelegate::InfoBarAutomationType
     ConfirmInfoBarDelegate::GetInfoBarAutomationType() const {
   return CONFIRM_INFOBAR;
@@ -44,9 +47,6 @@ bool ConfirmInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
 ConfirmInfoBarDelegate::ConfirmInfoBarDelegate(
     InfoBarService* infobar_service)
     : InfoBarDelegate(infobar_service) {
-}
-
-ConfirmInfoBarDelegate::~ConfirmInfoBarDelegate() {
 }
 
 bool ConfirmInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {

@@ -64,11 +64,9 @@ bool ShowInfoBarFunction::RunImpl() {
     return false;
   }
 
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  infobar_service->AddInfoBar(
-      new ExtensionInfoBarDelegate(browser, infobar_service,
-                                   GetExtension(), url, height));
+  ExtensionInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents), browser, GetExtension(),
+      url, height);
 
   // TODO(finnur): Return the actual DOMWindow object. Bug 26463.
   DCHECK(browser->extension_window_controller());

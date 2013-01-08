@@ -232,13 +232,19 @@ const void* const OneClickSigninRequestUserData::kUserDataKey =
 // of this infobar.
 class OneClickInfoBarDelegateImpl : public OneClickSigninInfoBarDelegate {
  public:
-  OneClickInfoBarDelegateImpl(InfoBarService* owner,
-                              const std::string& session_index,
-                              const std::string& email,
-                              const std::string& password);
-  virtual ~OneClickInfoBarDelegateImpl();
+  // Creates a one click signin delegate and adds it to |infobar_service|.
+  static void Create(InfoBarService* infobar_service,
+                     const std::string& session_index,
+                     const std::string& email,
+                     const std::string& password);
 
  private:
+  OneClickInfoBarDelegateImpl(InfoBarService* owner,
+                               const std::string& session_index,
+                               const std::string& email,
+                               const std::string& password);
+  virtual ~OneClickInfoBarDelegateImpl();
+
   // InfoBarDelegate overrides.
   virtual InfoBarAutomationType GetInfoBarAutomationType() const OVERRIDE;
   virtual void InfoBarDismissed() OVERRIDE;
@@ -269,6 +275,16 @@ class OneClickInfoBarDelegateImpl : public OneClickSigninInfoBarDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(OneClickInfoBarDelegateImpl);
 };
+
+// static
+void OneClickInfoBarDelegateImpl::Create(InfoBarService* infobar_service,
+                                         const std::string& session_index,
+                                         const std::string& email,
+                                         const std::string& password) {
+  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new OneClickInfoBarDelegateImpl(infobar_service, session_index, email,
+                                      password)));
+}
 
 OneClickInfoBarDelegateImpl::OneClickInfoBarDelegateImpl(
     InfoBarService* owner,
@@ -867,8 +883,6 @@ void OneClickSigninHelper::DidStopLoading(
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
   Profile* profile =
       Profile::FromBrowserContext(contents->GetBrowserContext());
-  InfoBarService* infobar_tab_helper =
-      InfoBarService::FromWebContents(contents);
 
   VLOG(1) << "OneClickSigninHelper::DidStopLoading: signin is go."
           << " auto_accept=" << auto_accept_
@@ -881,9 +895,9 @@ void OneClickSigninHelper::DidStopLoading(
                                   one_click_signin::HISTOGRAM_DISMISSED,
                                   one_click_signin::HISTOGRAM_MAX);
       } else {
-        infobar_tab_helper->AddInfoBar(
-            new OneClickInfoBarDelegateImpl(infobar_tab_helper, session_index_,
-                                            email_, password_));
+        OneClickInfoBarDelegateImpl::Create(
+            InfoBarService::FromWebContents(contents), session_index_, email_,
+            password_);
       }
       break;
     case AUTO_ACCEPT_ACCEPTED:

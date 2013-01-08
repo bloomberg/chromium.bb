@@ -220,10 +220,8 @@ void WebsiteSettings::OnSiteDataAccessed() {
 }
 
 void WebsiteSettings::OnUIClosing() {
-  if (show_info_bar_) {
-    infobar_service_->AddInfoBar(
-        new WebsiteSettingsInfobarDelegate(infobar_service_));
-  }
+  if (show_info_bar_)
+    WebsiteSettingsInfobarDelegate::Create(infobar_service_);
 }
 
 void WebsiteSettings::Init(Profile* profile,

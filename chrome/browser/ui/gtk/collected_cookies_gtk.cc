@@ -460,10 +460,8 @@ void CollectedCookiesGtk::Observe(int type,
 
 void CollectedCookiesGtk::OnClose(GtkWidget* close_button) {
   if (status_changed_) {
-    InfoBarService* infobar_service =
-        InfoBarService::FromWebContents(web_contents_);
-    infobar_service->AddInfoBar(
-        new CollectedCookiesInfoBarDelegate(infobar_service));
+    CollectedCookiesInfoBarDelegate::Create(
+        InfoBarService::FromWebContents(web_contents_));
   }
   window_->CloseWebContentsModalDialog();
 }

@@ -6,23 +6,43 @@
 
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(TOOLKIT_GTK)
+#include <gtk/gtk.h>
+#endif
 
 using content::OpenURLParams;
 using content::Referrer;
 
 namespace chrome {
 
-ObsoleteOSInfoBar::ObsoleteOSInfoBar(InfoBarService* infobar_service,
-                                     const string16& message,
-                                     const GURL& url)
-    : ConfirmInfoBarDelegate(infobar_service),
-      message_(message),
-      learn_more_url_(url) {
-}
+// static
+void ObsoleteOSInfoBar::Create(InfoBarService* infobar_service) {
+#if defined(TOOLKIT_GTK)
+  // We've deprecated support for Ubuntu Hardy.  Rather than attempting to
+  // determine whether you're using that, we instead key off the GTK version;
+  // this will also deprecate other distributions (including variants of Ubuntu)
+  // that are of a similar age.
+  // Version key:
+  //   Ubuntu Hardy: GTK 2.12
+  //   RHEL 6:       GTK 2.18
+  //   Ubuntu Lucid: GTK 2.20
+  if (!gtk_check_version(2, 18, 0))
+    return;
+#else
+  // No other platforms currently show this infobar.
+  return;
+#endif
 
-ObsoleteOSInfoBar::~ObsoleteOSInfoBar() {
+  string16 message = l10n_util::GetStringUTF16(IDS_SYSTEM_OBSOLETE_MESSAGE);
+  // Link to an article in the help center on minimum system requirements.
+  const char* kLearnMoreURL =
+      "http://www.google.com/support/chrome/bin/answer.py?answer=95411";
+  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new ObsoleteOSInfoBar(infobar_service, message, GURL(kLearnMoreURL))));
 }
 
 string16 ObsoleteOSInfoBar::GetMessageText() const {
@@ -43,6 +63,17 @@ bool ObsoleteOSInfoBar::LinkClicked(WindowOpenDisposition disposition) {
       content::PAGE_TRANSITION_LINK, false);
   owner()->GetWebContents()->OpenURL(params);
   return false;
+}
+
+ObsoleteOSInfoBar::ObsoleteOSInfoBar(InfoBarService* infobar_service,
+                                     const string16& message,
+                                     const GURL& url)
+    : ConfirmInfoBarDelegate(infobar_service),
+      message_(message),
+      learn_more_url_(url) {
+}
+
+ObsoleteOSInfoBar::~ObsoleteOSInfoBar() {
 }
 
 }  // namespace chrome

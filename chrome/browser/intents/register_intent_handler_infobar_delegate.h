@@ -10,20 +10,37 @@
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "webkit/glue/web_intent_service_data.h"
 
+#if defined(UNIT_TEST)
+#include "base/memory/scoped_ptr.h"
+#endif
+
 class WebIntentsRegistry;
 class FaviconService;
 class GURL;
+namespace content {
+class WebContents;
+}
 
 // The InfoBar used to request permission for a site to be registered as an
 // Intent handler.
 class RegisterIntentHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  RegisterIntentHandlerInfoBarDelegate(
-      InfoBarService* infobar_service,
+  // Checks whether the intent service specified by |data| exists.  If not, and
+  // |web_contents| is in a non-incognito, web-intents-enabled profile, creates
+  // a register intent handler delegate and adds it to the InfoBarService for
+  // |web_contents|.
+  static void Create(content::WebContents* web_contents,
+                     const webkit_glue::WebIntentServiceData& data);
+
+#if defined(UNIT_TEST)
+  static scoped_ptr<RegisterIntentHandlerInfoBarDelegate> Create(
       WebIntentsRegistry* registry,
-      const webkit_glue::WebIntentServiceData& service,
-      FaviconService* favicon_service,
-      const GURL& origin_url);
+      const webkit_glue::WebIntentServiceData& data) {
+    return scoped_ptr<RegisterIntentHandlerInfoBarDelegate>(
+        new RegisterIntentHandlerInfoBarDelegate(NULL, registry, data, NULL,
+                                                 GURL()));
+  }
+#endif
 
   // ConfirmInfoBarDelegate implementation.
   virtual Type GetInfoBarType() const OVERRIDE;
@@ -33,22 +50,25 @@ class RegisterIntentHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
-  // Shows the intent registration infobar if |service| has not already been
-  // registered.
-  // |infobar_service| is the infobar controller for the tab in which the
-  // infobar may be shown. Must not be NULL.
-  // |registry| is the data source for web intents. Must not be NULL.
-  // |service| is the candidate service to show the infobar for.
-  // |favicon_service| is the favicon service to use. Must not be NULL.
-  // |origin_url| is the URL that the intent is registered from.
-  static void MaybeShowIntentInfoBar(
+ private:
+  RegisterIntentHandlerInfoBarDelegate(
       InfoBarService* infobar_service,
       WebIntentsRegistry* registry,
       const webkit_glue::WebIntentServiceData& service,
       FaviconService* favicon_service,
       const GURL& origin_url);
 
- private:
+  // Finishes the work of Create().  This is called back from the
+  // WebIntentsRegistry once it determines whether the requested intent service
+  // exists.
+  static void CreateContinuation(
+      InfoBarService* infobar_service,
+      WebIntentsRegistry* registry,
+      const webkit_glue::WebIntentServiceData& service,
+      FaviconService* favicon_service,
+      const GURL& origin_url,
+      bool provider_exists);
+
   // The web intents registry to use. Weak pointer.
   WebIntentsRegistry* registry_;
 

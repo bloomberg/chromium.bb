@@ -402,8 +402,4 @@ TEST_F(WebsiteSettingsTest, ShowInfoBar) {
   scoped_ptr<InfoBarDelegate> delegate(
       infobar_service()->GetInfoBarDelegateAt(0));
   infobar_service()->RemoveInfoBar(delegate.get());
-  // Right now InfoBarDelegates delete themselves via
-  // InfoBarClosed(); once InfoBars own their delegates, this can become a
-  // simple reset() call
-  delegate.release()->InfoBarClosed();
 }

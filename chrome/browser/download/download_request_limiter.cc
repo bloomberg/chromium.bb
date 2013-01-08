@@ -106,8 +106,7 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
     Cancel();
     return;
   }
-  infobar_ = new DownloadRequestInfoBarDelegate(infobar_service, this);
-  infobar_service->AddInfoBar(infobar_);
+  DownloadRequestInfoBarDelegate::Create(infobar_service, this);
 }
 
 void DownloadRequestLimiter::TabDownloadState::Cancel() {

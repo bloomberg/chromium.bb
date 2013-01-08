@@ -38,8 +38,10 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordManagerDelegateImpl);
 // forms never end up in an infobar.
 class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  SavePasswordInfoBarDelegate(InfoBarService* infobar_service,
-                              PasswordFormManager* form_to_save);
+  // If we won't be showing the one-click signin infobar, creates a save
+  // password delegate and adds it to the InfoBarService for |web_contents|.
+  static void Create(content::WebContents* web_contents,
+                     PasswordFormManager* form_to_save);
 
  private:
   enum ResponseType {
@@ -49,6 +51,8 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
     NUM_RESPONSE_TYPES,
   };
 
+  SavePasswordInfoBarDelegate(InfoBarService* infobar_service,
+                              PasswordFormManager* form_to_save);
   virtual ~SavePasswordInfoBarDelegate();
 
   // ConfirmInfoBarDelegate
@@ -70,6 +74,32 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(SavePasswordInfoBarDelegate);
 };
+
+// static
+void SavePasswordInfoBarDelegate::Create(content::WebContents* web_contents,
+                                         PasswordFormManager* form_to_save) {
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+  // Don't show the password manager infobar if this form is for a google
+  // account and we are going to show the one-click singin infobar.
+  // For now, one-click signin is fully implemented only on windows.
+  GURL realm(form_to_save->realm());
+  // TODO(mathp): Checking only against associated_username() causes a bug
+  // referenced here: crbug.com/133275
+  if ((realm == GURL(GaiaUrls::GetInstance()->gaia_login_form_realm()) ||
+       realm == GURL("https://www.google.com/")) &&
+      OneClickSigninHelper::CanOffer(
+          web_contents,
+          OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
+          UTF16ToUTF8(form_to_save->associated_username()), NULL)) {
+    return;
+  }
+#endif
+
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new SavePasswordInfoBarDelegate(infobar_service, form_to_save)));
+}
 
 SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
     InfoBarService* infobar_service,
@@ -147,26 +177,7 @@ void PasswordManagerDelegateImpl::FillPasswordForm(
 
 void PasswordManagerDelegateImpl::AddSavePasswordInfoBarIfPermitted(
     PasswordFormManager* form_to_save) {
-  // Don't show the password manager infobar if this form is for a google
-  // account and we are going to show the one-click singin infobar.
-  // For now, one-click signin is fully implemented only on windows.
-#if defined(ENABLE_ONE_CLICK_SIGNIN)
-  GURL realm(form_to_save->realm());
-  // TODO(mathp): Checking only against associated_username() causes a bug
-  // referenced here: crbug.com/133275
-  if ((realm == GURL(GaiaUrls::GetInstance()->gaia_login_form_realm()) ||
-      realm == GURL("https://www.google.com/")) &&
-      OneClickSigninHelper::CanOffer(web_contents_,
-          OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
-          UTF16ToUTF8(form_to_save->associated_username()), NULL)) {
-    return;
-  }
-#endif
-
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents_);
-  infobar_service->AddInfoBar(
-      new SavePasswordInfoBarDelegate(infobar_service, form_to_save));
+  SavePasswordInfoBarDelegate::Create(web_contents_, form_to_save);
 }
 
 Profile* PasswordManagerDelegateImpl::GetProfile() {

@@ -1240,9 +1240,8 @@
         'browser/ui/startup/default_browser_prompt.cc',
         'browser/ui/startup/default_browser_prompt.h',
         'browser/ui/startup/default_browser_prompt_win.cc',
-        'browser/ui/startup/obsolete_os_prompt.cc',
-        'browser/ui/startup/obsolete_os_prompt.h',
-        'browser/ui/startup/obsolete_os_prompt_gtk.cc',
+        'browser/ui/startup/obsolete_os_info_bar.cc',
+        'browser/ui/startup/obsolete_os_info_bar.h',
         'browser/ui/startup/session_crashed_prompt.cc',
         'browser/ui/startup/session_crashed_prompt.h',
         'browser/ui/startup/startup_browser_creator.cc',
@@ -2470,10 +2469,6 @@
             '../dbus/dbus.gyp:dbus',
             '../third_party/undoview/undoview.gyp:undoview',
           ],
-          'sources': [
-            'browser/ui/startup/obsolete_os_info_bar.cc',
-            'browser/ui/startup/obsolete_os_info_bar.h',
-          ],
         }],
         ['enable_web_intents==0', {
           'sources/': [
@@ -2643,9 +2638,6 @@
             '../third_party/mozilla/NSScreen+Utils.m',
             '../third_party/mozilla/NSWorkspace+Utils.h',
             '../third_party/mozilla/NSWorkspace+Utils.m',
-            # Additional files for use only on Mac and Gtk.
-            'browser/ui/startup/obsolete_os_info_bar.cc',
-            'browser/ui/startup/obsolete_os_info_bar.h',
           ],
           'include_dirs': [
             '../third_party/apple',

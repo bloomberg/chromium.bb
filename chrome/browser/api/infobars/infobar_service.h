@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_API_INFOBARS_INFOBAR_SERVICE_H_
 #define CHROME_BROWSER_API_INFOBARS_INFOBAR_SERVICE_H_
 
-#include <cstddef>
+#include "base/memory/scoped_ptr.h"
 
 namespace content {
 class WebContents;
@@ -35,8 +35,8 @@ class InfoBarService {
   // which returns true for InfoBarDelegate::EqualsDelegate(delegate),
   // |delegate| is closed immediately without being added.
   //
-  // Returns whether |delegate| was successfully added.
-  virtual bool AddInfoBar(InfoBarDelegate* delegate) = 0;
+  // Returns the delegate if it was successfully added.
+  virtual InfoBarDelegate* AddInfoBar(scoped_ptr<InfoBarDelegate> delegate) = 0;
 
   // Removes the InfoBar for the specified |delegate|.
   //
@@ -50,16 +50,18 @@ class InfoBarService {
   // If infobars are disabled for this tab, |new_delegate| is closed immediately
   // without being added, and nothing else happens.
   //
-  // Returns whether |new_delegate| was successfully added.
+  // Returns the new delegate if it was successfully added.
   //
   // NOTE: This does not perform any EqualsDelegate() checks like AddInfoBar().
-  virtual bool ReplaceInfoBar(InfoBarDelegate* old_delegate,
-                              InfoBarDelegate* new_delegate) = 0;
+  virtual InfoBarDelegate* ReplaceInfoBar(
+      InfoBarDelegate* old_delegate,
+      scoped_ptr<InfoBarDelegate> new_delegate) = 0;
 
   // Returns the number of infobars for this tab.
   virtual size_t GetInfoBarCount() const = 0;
 
-  // Returns the infobar at the given |index|.
+  // Returns the infobar delegate at the given |index|.  The InfoBarService
+  // retains ownership.
   //
   // Warning: Does not sanity check |index|.
   virtual InfoBarDelegate* GetInfoBarDelegateAt(size_t index) = 0;

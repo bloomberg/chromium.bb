@@ -16,9 +16,12 @@ class ProtocolHandlerRegistry;
 // card information gathered from a form submission.
 class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  RegisterProtocolHandlerInfoBarDelegate(InfoBarService* infobar_service,
-                                         ProtocolHandlerRegistry* registry,
-                                         const ProtocolHandler& handler);
+  // Creates a new RPH delegate.  Searches |infobar_service| for an existing
+  // delegate for the same |handler|; replaces it with the new delegate if
+  // found, otherwise adds the new infobar to |infobar_service|.
+  static void Create(InfoBarService* infobar_service,
+                     ProtocolHandlerRegistry* registry,
+                     const ProtocolHandler& handler);
 
   // ConfirmInfoBarDelegate:
   virtual Type GetInfoBarType() const OVERRIDE;
@@ -35,9 +38,11 @@ class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   virtual InfoBarAutomationType GetInfoBarAutomationType() const OVERRIDE;
 
-  bool IsReplacedBy(RegisterProtocolHandlerInfoBarDelegate* delegate);
-
  private:
+  RegisterProtocolHandlerInfoBarDelegate(InfoBarService* infobar_service,
+                                         ProtocolHandlerRegistry* registry,
+                                         const ProtocolHandler& handler);
+
   // Returns a user-friendly name for the protocol of this protocol handler.
   string16 GetProtocolName(const ProtocolHandler& handler) const;
   ProtocolHandlerRegistry* registry_;

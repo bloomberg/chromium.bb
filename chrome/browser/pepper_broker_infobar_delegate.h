@@ -22,13 +22,14 @@ class WebContents;
 // by storing a content setting for the site.
 class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  virtual ~PepperBrokerInfoBarDelegate();
-
-  static void Show(
-      content::WebContents* web_contents,
-      const GURL& url,
-      const FilePath& plugin_path,
-      const base::Callback<void(bool)>& callback);
+  // Determines whether the broker setting is allow, deny, or ask.  In the first
+  // two cases, runs the callback directly.  In the third, creates a pepper
+  // broker delegate and adds it to the InfoBarService associated with
+  // |web_contents|.
+  static void Create(content::WebContents* web_contents,
+                     const GURL& url,
+                     const FilePath& plugin_path,
+                     const base::Callback<void(bool)>& callback);
 
   // ConfirmInfoBarDelegate:
   virtual string16 GetMessageText() const OVERRIDE;
@@ -48,6 +49,7 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
       const std::string& languages,
       HostContentSettingsMap* content_settings,
       const base::Callback<void(bool)>& callback);
+  virtual ~PepperBrokerInfoBarDelegate();
 
   void DispatchCallback(bool result);
 

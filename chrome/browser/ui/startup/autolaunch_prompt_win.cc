@@ -36,12 +36,17 @@ const int kMaxInfobarShown = 5;
 // The delegate for the infobar shown when Chrome was auto-launched.
 class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
+  // Creates an autolaunch delegate and adds it to |infobar_service|.
+  static void Create(InfoBarService* infobar_service,
+                     PrefService* prefs,
+                     Profile* profile);
+
+ private:
   AutolaunchInfoBarDelegate(InfoBarService* infobar_service,
                             PrefService* prefs,
                             Profile* profile);
   virtual ~AutolaunchInfoBarDelegate();
 
- private:
   void AllowExpiry() { should_expire_ = true; }
 
   // ConfirmInfoBarDelegate:
@@ -70,6 +75,14 @@ class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(AutolaunchInfoBarDelegate);
 };
+
+// static
+void AutolaunchInfoBarDelegate::Create(InfoBarService* infobar_service,
+                                       PrefService* prefs,
+                                       Profile* profile) {
+  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new AutolaunchInfoBarDelegate(infobar_service, prefs, profile)));
+}
 
 AutolaunchInfoBarDelegate::AutolaunchInfoBarDelegate(
     InfoBarService* infobar_service,
@@ -175,17 +188,10 @@ bool ShowAutolaunchPrompt(Browser* browser) {
   }
 
   content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
-
-  // Don't show the info-bar if there are already info-bars showing.
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  if (infobar_service->GetInfoBarCount() > 0)
-    return false;
-
   profile = Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  infobar_service->AddInfoBar(new AutolaunchInfoBarDelegate(
-      infobar_service, profile->GetPrefs(), profile));
-
+  AutolaunchInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents), profile->GetPrefs(),
+      profile);
   return true;
 }
 

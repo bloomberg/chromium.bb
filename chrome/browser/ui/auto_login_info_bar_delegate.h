@@ -40,8 +40,8 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
     std::string username;
   };
 
-  AutoLoginInfoBarDelegate(InfoBarService* owner, const Params& params);
-  virtual ~AutoLoginInfoBarDelegate();
+  // Creates an autologin delegate and adds it to |infobar_service|.
+  static void Create(InfoBarService* infobar_service, const Params& params);
 
   // ConfirmInfoBarDelegate:
   virtual void InfoBarDismissed() OVERRIDE;
@@ -67,6 +67,9 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
   const std::string& args() const { return params_.args; }
 
  private:
+  AutoLoginInfoBarDelegate(InfoBarService* owner, const Params& params);
+  virtual ~AutoLoginInfoBarDelegate();
+
   void RecordHistogramAction(int action);
 
   const Params params_;

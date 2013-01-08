@@ -17,6 +17,25 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/geolocation/geolocation_confirm_infobar_delegate_android.h"
+typedef GeolocationConfirmInfoBarDelegateAndroid DelegateType;
+#else
+typedef GeolocationConfirmInfoBarDelegate DelegateType;
+#endif
+
+
+// static
+InfoBarDelegate* GeolocationConfirmInfoBarDelegate::Create(
+    InfoBarService* infobar_service,
+    GeolocationInfoBarQueueController* controller,
+    const GeolocationPermissionRequestID& id,
+    const GURL& requesting_frame,
+    const std::string& display_languages) {
+  return infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new DelegateType(infobar_service, controller, id, requesting_frame,
+                       display_languages)));
+}
 
 GeolocationConfirmInfoBarDelegate::GeolocationConfirmInfoBarDelegate(
     InfoBarService* infobar_service,

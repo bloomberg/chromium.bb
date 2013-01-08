@@ -33,11 +33,14 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
     virtual ~DelegateObserver() {}
   };
 
-  ExtensionInfoBarDelegate(Browser* browser,
-                           InfoBarService* infobar_service,
-                           const extensions::Extension* extension,
-                           const GURL& url,
-                           int height);
+  virtual ~ExtensionInfoBarDelegate();
+
+  // Creates an extension delegate and adds it to |infobar_service|.
+  static void Create(InfoBarService* infobar_service,
+                     Browser* browser,
+                     const extensions::Extension* extension,
+                     const GURL& url,
+                     int height);
 
   const extensions::Extension* extension() { return extension_; }
   extensions::ExtensionHost* extension_host() { return extension_host_.get(); }
@@ -48,7 +51,11 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   bool closing() const { return closing_; }
 
  private:
-  virtual ~ExtensionInfoBarDelegate();
+  ExtensionInfoBarDelegate(Browser* browser,
+                           InfoBarService* infobar_service,
+                           const extensions::Extension* extension,
+                           const GURL& url,
+                           int height);
 
   // InfoBarDelegate:
   virtual InfoBar* CreateInfoBar(InfoBarService* owner) OVERRIDE;

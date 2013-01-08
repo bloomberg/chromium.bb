@@ -37,28 +37,28 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
 
   static const size_t kNoIndex;
 
-  // Factory method to create a non-error translate infobar. |original_language|
-  // and |target_language| must be ASCII language codes (e.g. "en", "fr", etc.)
-  // for languages the TranslateManager supports translating. The lone exception
-  // is when the user initiates translation from the context menu, in which case
-  // it's legal to call this with |type| == TRANSLATING and
-  // |originalLanguage| == kUnknownLanguageCode.
-  static TranslateInfoBarDelegate* CreateDelegate(
-      Type infobar_type,
-      InfoBarService* infobar_service,
-      PrefService* prefs,
-      const std::string& original_language,
-      const std::string& target_language);
-
-  // Factory method to create an error translate infobar.
-  static TranslateInfoBarDelegate* CreateErrorDelegate(
-      TranslateErrors::Type error_type,
-      InfoBarService* infobar_service,
-      PrefService* prefs,
-      const std::string& original_language,
-      const std::string& target_language);
-
   virtual ~TranslateInfoBarDelegate();
+
+  // Factory method to create a translate infobar.  |error_type| must be
+  // specified iff |infobar_type| == TRANSLATION_ERROR.  For other infobar
+  // types, |original_language| and |target_language| must be ASCII language
+  // codes (e.g. "en", "fr", etc.) for languages the TranslateManager supports
+  // translating.  The lone exception is when the user initiates translation
+  // from the context menu, in which case it's legal to call this with
+  // |infobar_type| == TRANSLATING and
+  // |original_language| == kUnknownLanguageCode.
+  //
+  // If |replace_existing_infobar| is true, the infobar is created and added to
+  // |infobar_service|, replacing any other translate infobar already present
+  // there.  Otherwise, the infobar will only be added if there is no other
+  // translate infobar already present.
+  static void Create(InfoBarService* infobar_service,
+                     bool replace_existing_infobar,
+                     Type infobar_type,
+                     TranslateErrors::Type error_type,
+                     PrefService* prefs,
+                     const std::string& original_language,
+                     const std::string& target_language);
 
   // Returns the number of languages supported.
   size_t num_languages() const { return languages_.size(); }

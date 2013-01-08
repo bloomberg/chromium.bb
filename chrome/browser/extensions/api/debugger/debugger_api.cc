@@ -59,17 +59,24 @@ class ExtensionDevToolsClientHost;
 
 class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  ExtensionDevToolsInfoBarDelegate(
+  // Creates an extension dev tools delegate and adds it to |infobar_service|.
+  // Returns a pointer to the delegate if it was successfully added.
+  static ExtensionDevToolsInfoBarDelegate* Create(
       InfoBarService* infobar_service,
       const std::string& client_name,
       ExtensionDevToolsClientHost* client_host);
-  virtual ~ExtensionDevToolsInfoBarDelegate();
 
   // Notifies infobar delegate that associated DevToolsClientHost will be
   // destroyed.
   void DiscardClientHost();
 
  private:
+  ExtensionDevToolsInfoBarDelegate(
+      InfoBarService* infobar_service,
+      const std::string& client_name,
+      ExtensionDevToolsClientHost* client_host);
+  virtual ~ExtensionDevToolsInfoBarDelegate();
+
   // ConfirmInfoBarDelegate:
   virtual int GetButtons() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
@@ -196,14 +203,12 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
 
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents_);
-  infobar_delegate_ = new ExtensionDevToolsInfoBarDelegate(infobar_service,
-                                                           extension_name,
-                                                           this);
-  if (infobar_service->AddInfoBar(infobar_delegate_)) {
+  infobar_delegate_ = ExtensionDevToolsInfoBarDelegate::Create(infobar_service,
+                                                               extension_name,
+                                                               this);
+  if (infobar_delegate_) {
     registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
                    content::Source<InfoBarService>(infobar_service));
-  } else {
-    infobar_delegate_ = NULL;
   }
 }
 
@@ -347,6 +352,21 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
   }
 }
 
+// static
+ExtensionDevToolsInfoBarDelegate* ExtensionDevToolsInfoBarDelegate::Create(
+    InfoBarService* infobar_service,
+    const std::string& client_name,
+    ExtensionDevToolsClientHost* client_host) {
+  return static_cast<ExtensionDevToolsInfoBarDelegate*>(
+      infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+          new ExtensionDevToolsInfoBarDelegate(infobar_service, client_name,
+                                               client_host))));
+}
+
+void ExtensionDevToolsInfoBarDelegate::DiscardClientHost() {
+  client_host_ = NULL;
+}
+
 ExtensionDevToolsInfoBarDelegate::ExtensionDevToolsInfoBarDelegate(
     InfoBarService* infobar_service,
     const std::string& client_name,
@@ -357,10 +377,6 @@ ExtensionDevToolsInfoBarDelegate::ExtensionDevToolsInfoBarDelegate(
 }
 
 ExtensionDevToolsInfoBarDelegate::~ExtensionDevToolsInfoBarDelegate() {
-}
-
-void ExtensionDevToolsInfoBarDelegate::DiscardClientHost() {
-  client_host_ = NULL;
 }
 
 int ExtensionDevToolsInfoBarDelegate::GetButtons() const {

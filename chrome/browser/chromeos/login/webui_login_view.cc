@@ -17,11 +17,11 @@
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
-#include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -350,12 +350,7 @@ void WebUILoginView::RequestMediaAccessPermission(
     WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-
-  scoped_ptr<MediaStreamDevicesController> controller(
-      new MediaStreamDevicesController(profile, request, callback));
-  if (!controller->DismissInfoBarAndTakeActionOnSettings())
+  if (MediaStreamInfoBarDelegate::Create(web_contents, request, callback))
     NOTREACHED() << "Media stream not allowed for WebUI";
 }
 

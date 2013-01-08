@@ -23,12 +23,14 @@ class OneClickSigninInfoBarDelegate : public ConfirmInfoBarDelegate {
     SkColor button_border_color;
   };
 
-  explicit OneClickSigninInfoBarDelegate(InfoBarService* infobar_service);
   virtual ~OneClickSigninInfoBarDelegate();
 
   // Returns the colours to use with the one click signin infobar.  The colours
   // depend on the experimental group.
   virtual void GetAlternateColors(AlternateColors* alt_colors);
+
+ protected:
+  explicit OneClickSigninInfoBarDelegate(InfoBarService* infobar_service);
 
  private:
 #if defined(TOOLKIT_VIEWS)

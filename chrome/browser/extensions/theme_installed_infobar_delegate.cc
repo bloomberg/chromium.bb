@@ -12,6 +12,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_source.h"
@@ -19,6 +21,79 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+
+// static
+void ThemeInstalledInfoBarDelegate::Create(
+    const extensions::Extension* new_theme,
+    Profile* profile,
+    const std::string& previous_theme_id,
+    bool previous_using_native_theme) {
+  if (!new_theme->is_theme())
+    return;
+
+  // Get last active tabbed browser of profile.
+  Browser* browser = browser::FindTabbedBrowser(profile,
+                                                true,
+                                                chrome::GetActiveDesktop());
+  if (!browser)
+    return;
+
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
+  if (!web_contents)
+    return;
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+
+  // First find any previous theme preview infobars.
+  InfoBarDelegate* old_delegate = NULL;
+  for (size_t i = 0; i < infobar_service->GetInfoBarCount(); ++i) {
+    InfoBarDelegate* delegate = infobar_service->GetInfoBarDelegateAt(i);
+    ThemeInstalledInfoBarDelegate* theme_infobar =
+        delegate->AsThemePreviewInfobarDelegate();
+    if (theme_infobar) {
+      // If the user installed the same theme twice, ignore the second install
+      // and keep the first install info bar, so that they can easily undo to
+      // get back the previous theme.
+      if (theme_infobar->theme_id_ == new_theme->id())
+        return;
+      old_delegate = delegate;
+      break;
+    }
+  }
+
+  // Then either replace that old one or add a new one.
+  scoped_ptr<InfoBarDelegate> new_delegate(
+      new ThemeInstalledInfoBarDelegate(
+          infobar_service,
+          profile->GetExtensionService(),
+          ThemeServiceFactory::GetForProfile(profile),
+          new_theme,
+          previous_theme_id,
+          previous_using_native_theme));
+
+  if (old_delegate)
+    infobar_service->ReplaceInfoBar(old_delegate, new_delegate.Pass());
+  else
+    infobar_service->AddInfoBar(new_delegate.Pass());
+}
+
+bool ThemeInstalledInfoBarDelegate::Cancel() {
+  if (!previous_theme_id_.empty()) {
+    const extensions::Extension* previous_theme =
+        extension_service_->GetExtensionById(previous_theme_id_, true);
+    if (previous_theme) {
+      theme_service_->SetTheme(previous_theme);
+        return false;  // The theme change will close us.
+    }
+  }
+
+  if (previous_using_native_theme_)
+    theme_service_->SetNativeTheme();
+  else
+    theme_service_->UseDefaultTheme();
+  return false;  // The theme change will close us.
+}
 
 ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
     InfoBarService* infobar_service,
@@ -39,33 +114,11 @@ ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
                  content::Source<ThemeService>(theme_service_));
 }
 
-bool ThemeInstalledInfoBarDelegate::MatchesTheme(
-    const extensions::Extension* theme) const {
-  return theme && (theme->id() == theme_id_);
-}
-
 ThemeInstalledInfoBarDelegate::~ThemeInstalledInfoBarDelegate() {
   // We don't want any notifications while we're running our destructor.
   registrar_.RemoveAll();
 
   theme_service_->OnInfobarDestroyed();
-}
-
-bool ThemeInstalledInfoBarDelegate::Cancel() {
-  if (!previous_theme_id_.empty()) {
-    const extensions::Extension* previous_theme =
-        extension_service_->GetExtensionById(previous_theme_id_, true);
-    if (previous_theme) {
-      theme_service_->SetTheme(previous_theme);
-        return false;  // The theme change will close us.
-    }
-  }
-
-  if (previous_using_native_theme_)
-    theme_service_->SetNativeTheme();
-  else
-    theme_service_->UseDefaultTheme();
-  return false;  // The theme change will close us.
 }
 
 gfx::Image* ThemeInstalledInfoBarDelegate::GetIcon() const {

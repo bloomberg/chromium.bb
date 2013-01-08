@@ -165,22 +165,11 @@ void AutoLoginRedirector::RedirectToMergeSession(const std::string& token) {
 AutoLoginInfoBarDelegate::Params::Params() {}
 AutoLoginInfoBarDelegate::Params::~Params() {}
 
-AutoLoginInfoBarDelegate::AutoLoginInfoBarDelegate(
-    InfoBarService* owner,
-    const Params& params)
-    : ConfirmInfoBarDelegate(owner),
-      params_(params),
-      button_pressed_(false) {
-  RecordHistogramAction(HISTOGRAM_SHOWN);
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-                 content::Source<Profile>(Profile::FromBrowserContext(
-                     owner->GetWebContents()->GetBrowserContext())));
-}
-
-AutoLoginInfoBarDelegate::~AutoLoginInfoBarDelegate() {
-  if (!button_pressed_)
-    RecordHistogramAction(HISTOGRAM_IGNORED);
+// static
+void AutoLoginInfoBarDelegate::Create(InfoBarService* infobar_service,
+                                      const Params& params) {
+  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new AutoLoginInfoBarDelegate(infobar_service, params)));
 }
 
 AutoLoginInfoBarDelegate*
@@ -235,6 +224,24 @@ string16 AutoLoginInfoBarDelegate::GetMessageText(
     const std::string& username) const {
   return l10n_util::GetStringFUTF16(IDS_AUTOLOGIN_INFOBAR_MESSAGE,
                                     UTF8ToUTF16(username));
+}
+
+AutoLoginInfoBarDelegate::AutoLoginInfoBarDelegate(
+    InfoBarService* owner,
+    const Params& params)
+    : ConfirmInfoBarDelegate(owner),
+      params_(params),
+      button_pressed_(false) {
+  RecordHistogramAction(HISTOGRAM_SHOWN);
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
+                 content::Source<Profile>(Profile::FromBrowserContext(
+                     owner->GetWebContents()->GetBrowserContext())));
+}
+
+AutoLoginInfoBarDelegate::~AutoLoginInfoBarDelegate() {
+  if (!button_pressed_)
+    RecordHistogramAction(HISTOGRAM_IGNORED);
 }
 
 void AutoLoginInfoBarDelegate::RecordHistogramAction(int action) {

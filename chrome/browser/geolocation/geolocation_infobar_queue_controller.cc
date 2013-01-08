@@ -7,7 +7,6 @@
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_confirm_infobar_delegate.h"
-#include "chrome/browser/geolocation/geolocation_confirm_infobar_delegate_factory.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -51,9 +50,7 @@ class GeolocationInfoBarQueueController::PendingInfoBarRequest {
   const GeolocationPermissionRequestID& id() const { return id_; }
   const GURL& requesting_frame() const { return requesting_frame_; }
   bool has_infobar_delegate() const { return !!infobar_delegate_; }
-  GeolocationConfirmInfoBarDelegate* infobar_delegate() {
-      return infobar_delegate_;
-  }
+  InfoBarDelegate* infobar_delegate() { return infobar_delegate_; }
 
   void RunCallback(bool allowed);
   void CreateInfoBarDelegate(GeolocationInfoBarQueueController* controller,
@@ -64,7 +61,7 @@ class GeolocationInfoBarQueueController::PendingInfoBarRequest {
   GURL requesting_frame_;
   GURL embedder_;
   PermissionDecidedCallback callback_;
-  GeolocationConfirmInfoBarDelegate* infobar_delegate_;
+  InfoBarDelegate* infobar_delegate_;
 
   // Purposefully do not disable copying, as this is stored in STL containers.
 };
@@ -99,7 +96,7 @@ void GeolocationInfoBarQueueController::PendingInfoBarRequest::RunCallback(
 void GeolocationInfoBarQueueController::PendingInfoBarRequest::
     CreateInfoBarDelegate(GeolocationInfoBarQueueController* controller,
                           const std::string& display_languages) {
-  infobar_delegate_ = GeolocationConfirmInfoBarDelegateFactory::Create(
+  infobar_delegate_ = GeolocationConfirmInfoBarDelegate::Create(
       GetInfoBarService(id_), controller, id_, requesting_frame_,
       display_languages);
 
@@ -227,7 +224,7 @@ void GeolocationInfoBarQueueController::Observe(
       content::Details<InfoBarRemovedDetails>(details)->first;
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
        i != pending_infobar_requests_.end(); ++i) {
-    GeolocationConfirmInfoBarDelegate* confirm_delegate = i->infobar_delegate();
+    InfoBarDelegate* confirm_delegate = i->infobar_delegate();
     if (confirm_delegate == delegate) {
       GeolocationPermissionRequestID id(i->id());
       pending_infobar_requests_.erase(i);
@@ -270,7 +267,6 @@ void GeolocationInfoBarQueueController::ShowQueuedInfoBarForTab(
       RegisterForInfoBarNotifications(infobar_service);
       i->CreateInfoBarDelegate(
           this, profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
-      infobar_service->AddInfoBar(i->infobar_delegate());
       return;
     }
   }

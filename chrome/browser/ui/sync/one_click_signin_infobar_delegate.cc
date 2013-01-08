@@ -4,15 +4,15 @@
 
 #include "chrome/browser/ui/sync/one_click_signin_infobar_delegate.h"
 
-OneClickSigninInfoBarDelegate::OneClickSigninInfoBarDelegate(
-    InfoBarService* infobar_service)
-    : ConfirmInfoBarDelegate(infobar_service) {
-}
-
 OneClickSigninInfoBarDelegate::~OneClickSigninInfoBarDelegate() {
 }
 
 void OneClickSigninInfoBarDelegate::GetAlternateColors(
     AlternateColors* alt_colors) {
   alt_colors->enabled = false;
+}
+
+OneClickSigninInfoBarDelegate::OneClickSigninInfoBarDelegate(
+    InfoBarService* infobar_service)
+    : ConfirmInfoBarDelegate(infobar_service) {
 }

@@ -22,9 +22,12 @@ namespace {
 
 class ManagedModeWarningInfobarDelegate : public ConfirmInfoBarDelegate {
  public:
-  explicit ManagedModeWarningInfobarDelegate(InfoBarService* infobar_service);
+  // Creates a managed mode warning delegate and adds it to |infobar_service|.
+  // Returns the delegate if it was successfully added.
+  static InfoBarDelegate* Create(InfoBarService* infobar_service);
 
  private:
+  explicit ManagedModeWarningInfobarDelegate(InfoBarService* infobar_service);
   virtual ~ManagedModeWarningInfobarDelegate();
 
   // ConfirmInfoBarDelegate overrides:
@@ -62,6 +65,13 @@ void GoBackToSafety(content::WebContents* web_contents) {
   }
 
   web_contents->GetDelegate()->CloseContents(web_contents);
+}
+
+// static
+InfoBarDelegate* ManagedModeWarningInfobarDelegate::Create(
+    InfoBarService* infobar_service) {
+  return infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new ManagedModeWarningInfobarDelegate(infobar_service)));
 }
 
 ManagedModeWarningInfobarDelegate::ManagedModeWarningInfobarDelegate(
@@ -138,11 +148,8 @@ void ManagedModeNavigationObserver::DidCommitProvisionalLoadForFrame(
 
   if (behavior == ManagedModeURLFilter::WARN) {
     if (!warn_infobar_delegate_) {
-      InfoBarService* infobar_service =
-          InfoBarService::FromWebContents(web_contents());
-      warn_infobar_delegate_ =
-          new ManagedModeWarningInfobarDelegate(infobar_service);
-      infobar_service->AddInfoBar(warn_infobar_delegate_);
+      warn_infobar_delegate_ = ManagedModeWarningInfobarDelegate::Create(
+          InfoBarService::FromWebContents(web_contents()));
     }
   } else {
     if (warn_infobar_delegate_) {

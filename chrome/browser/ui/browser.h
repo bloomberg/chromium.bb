@@ -392,14 +392,6 @@ class Browser : public TabStripModelObserver,
                                             bool user_gesture,
                                             BrowserWindow* window);
 
-  // Helper function to register an intent handler.
-  // |data| is the registered handler data. |user_gesture| is true if the call
-  // was made in the context of a user gesture.
-  static void RegisterIntentHandlerHelper(
-      content::WebContents* web_contents,
-      const webkit_glue::WebIntentServiceData& data,
-      bool user_gesture);
-
   // Helper function to handle find results.
   static void FindReplyHelper(content::WebContents* web_contents,
                               int request_id,
@@ -407,12 +399,6 @@ class Browser : public TabStripModelObserver,
                               const gfx::Rect& selection_rect,
                               int active_match_ordinal,
                               bool final_update);
-
-  // Helper function to handle media access requests.
-  static void RequestMediaAccessPermissionHelper(
-      content::WebContents* web_contents,
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback);
 
   // Called by chrome::Navigate() when a navigation has occurred in a tab in
   // this Browser. Updates the UI for the start of this navigation.

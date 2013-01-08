@@ -16,9 +16,12 @@ class InfoBarService;
 // the reload right from the infobar.
 class WebsiteSettingsInfobarDelegate : public ConfirmInfoBarDelegate {
  public:
-  explicit WebsiteSettingsInfobarDelegate(InfoBarService* infobar_service);
+  // Creates a website settings delegate and adds it to |infobar_service|.
+  static void Create(InfoBarService* infobar_service);
 
  private:
+  explicit WebsiteSettingsInfobarDelegate(InfoBarService* infobar_service);
+
   // Overwridden from ConfirmInfoBarDelegate:
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;

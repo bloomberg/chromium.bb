@@ -12,6 +12,13 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+// static
+void AlternateNavInfoBarDelegate::Create(InfoBarService* infobar_service,
+                                         const GURL& alternate_nav_url) {
+  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new AlternateNavInfoBarDelegate(infobar_service, alternate_nav_url)));
+}
+
 AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
     InfoBarService* owner,
     const GURL& alternate_nav_url)

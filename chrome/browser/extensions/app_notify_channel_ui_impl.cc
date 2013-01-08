@@ -33,10 +33,10 @@ namespace {
 
 class AppNotifyChannelUIInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  AppNotifyChannelUIInfoBarDelegate(AppNotifyChannelUIImpl* creator,
-                                    InfoBarService* infobar_service,
-                                    const std::string& app_name);
-  virtual ~AppNotifyChannelUIInfoBarDelegate();
+  // Creates an app notify channel UI delegate and adds it to |infobar_service|.
+  static void Create(InfoBarService* infobar_service,
+                     AppNotifyChannelUIImpl* creator,
+                     const std::string& app_name);
 
   // ConfirmInfoBarDelegate.
   virtual string16 GetMessageText() const OVERRIDE;
@@ -46,22 +46,24 @@ class AppNotifyChannelUIInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual void InfoBarDismissed() OVERRIDE;
 
  private:
+  AppNotifyChannelUIInfoBarDelegate(AppNotifyChannelUIImpl* creator,
+                                    InfoBarService* infobar_service,
+                                    const std::string& app_name);
+  virtual ~AppNotifyChannelUIInfoBarDelegate();
+
   AppNotifyChannelUIImpl* creator_;
   std::string app_name_;
 
   DISALLOW_COPY_AND_ASSIGN(AppNotifyChannelUIInfoBarDelegate);
 };
 
-AppNotifyChannelUIInfoBarDelegate::AppNotifyChannelUIInfoBarDelegate(
-    AppNotifyChannelUIImpl* creator,
-    InfoBarService* infobar_service,
-    const std::string& app_name)
-    : ConfirmInfoBarDelegate(infobar_service),
-      creator_(creator),
-      app_name_(app_name) {
-}
-
-AppNotifyChannelUIInfoBarDelegate::~AppNotifyChannelUIInfoBarDelegate() {
+// static
+void AppNotifyChannelUIInfoBarDelegate::Create(InfoBarService* infobar_service,
+                                               AppNotifyChannelUIImpl* creator,
+                                               const std::string& app_name) {
+  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new AppNotifyChannelUIInfoBarDelegate(creator, infobar_service,
+                                            app_name)));
 }
 
 string16 AppNotifyChannelUIInfoBarDelegate::GetMessageText() const {
@@ -93,6 +95,18 @@ bool AppNotifyChannelUIInfoBarDelegate::Cancel() {
 
 void AppNotifyChannelUIInfoBarDelegate::InfoBarDismissed() {
   Cancel();
+}
+
+AppNotifyChannelUIInfoBarDelegate::AppNotifyChannelUIInfoBarDelegate(
+    AppNotifyChannelUIImpl* creator,
+    InfoBarService* infobar_service,
+    const std::string& app_name)
+    : ConfirmInfoBarDelegate(infobar_service),
+      creator_(creator),
+      app_name_(app_name) {
+}
+
+AppNotifyChannelUIInfoBarDelegate::~AppNotifyChannelUIInfoBarDelegate() {
 }
 
 }  // namespace
@@ -142,10 +156,8 @@ void AppNotifyChannelUIImpl::PromptSyncSetup(
     return;
   }
 
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents_);
-  infobar_service->AddInfoBar(new AppNotifyChannelUIInfoBarDelegate(
-      this, infobar_service, app_name_));
+  AppNotifyChannelUIInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents_), this, app_name_);
 }
 
 void AppNotifyChannelUIImpl::OnInfoBarResult(bool accepted) {

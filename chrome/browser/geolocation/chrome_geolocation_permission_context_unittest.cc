@@ -294,7 +294,7 @@ TEST_F(GeolocationPermissionContextTests, SinglePermission) {
   infobar_service()->RemoveInfoBar(infobar_0);
   EXPECT_EQ(1U, closed_delegate_tracker_.size());
   EXPECT_TRUE(closed_delegate_tracker_.Contains(infobar_0));
-  infobar_0->InfoBarClosed();
+  delete infobar_0;
 }
 
 #if defined(OS_ANDROID)
@@ -399,7 +399,7 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
   EXPECT_EQ(1U, closed_delegate_tracker_.size());
   EXPECT_TRUE(closed_delegate_tracker_.Contains(infobar_0));
   closed_delegate_tracker_.Clear();
-  infobar_0->InfoBarClosed();
+  delete infobar_0;
   // Now we should have a new infobar for the second frame.
   ASSERT_EQ(1U, infobar_service()->GetInfoBarCount());
 
@@ -416,7 +416,7 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
   infobar_service()->RemoveInfoBar(infobar_1);
   EXPECT_EQ(1U, closed_delegate_tracker_.size());
   EXPECT_TRUE(closed_delegate_tracker_.Contains(infobar_1));
-  infobar_1->InfoBarClosed();
+  delete infobar_1;
   EXPECT_EQ(0U, infobar_service()->GetInfoBarCount());
   // Ensure the persisted permissions are ok.
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
@@ -470,7 +470,7 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
   EXPECT_EQ(1U, closed_delegate_tracker_.size());
   EXPECT_TRUE(closed_delegate_tracker_.Contains(infobar_0));
   closed_delegate_tracker_.Clear();
-  infobar_0->InfoBarClosed();
+  delete infobar_0;
   ASSERT_EQ(1U, infobar_service()->GetInfoBarCount());
 
   ConfirmInfoBarDelegate* infobar_1 =
@@ -486,7 +486,7 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
   infobar_service()->RemoveInfoBar(infobar_1);
   EXPECT_EQ(1U, closed_delegate_tracker_.size());
   EXPECT_TRUE(closed_delegate_tracker_.Contains(infobar_1));
-  infobar_1->InfoBarClosed();
+  delete infobar_1;
   EXPECT_EQ(0U, infobar_service()->GetInfoBarCount());
   // Ensure the persisted permissions are ok.
   EXPECT_EQ(CONTENT_SETTING_ASK,
@@ -543,14 +543,14 @@ TEST_F(GeolocationPermissionContextTests, SameOriginMultipleTabs) {
   infobar_service()->RemoveInfoBar(infobar_0);
   EXPECT_EQ(2U, closed_delegate_tracker_.size());
   EXPECT_TRUE(closed_delegate_tracker_.Contains(infobar_0));
-  infobar_0->InfoBarClosed();
+  delete infobar_0;
   // Now the infobar for the tab with the same origin should have gone.
   EXPECT_EQ(0U, infobar_service_for_tab(1)->GetInfoBarCount());
   CheckPermissionMessageSentForTab(1, 0, true);
   EXPECT_TRUE(closed_delegate_tracker_.Contains(removed_infobar));
   closed_delegate_tracker_.Clear();
   // Destroy the infobar that has just been removed.
-  removed_infobar->InfoBarClosed();
+  delete removed_infobar;
 
   // But the other tab should still have the info bar...
   ASSERT_EQ(1U, infobar_service_for_tab(0)->GetInfoBarCount());
@@ -560,7 +560,7 @@ TEST_F(GeolocationPermissionContextTests, SameOriginMultipleTabs) {
   infobar_service_for_tab(0)->RemoveInfoBar(infobar_1);
   EXPECT_EQ(1U, closed_delegate_tracker_.size());
   EXPECT_TRUE(closed_delegate_tracker_.Contains(infobar_1));
-  infobar_1->InfoBarClosed();
+  delete infobar_1;
 }
 
 TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
@@ -591,14 +591,14 @@ TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
   infobar_service_for_tab(0)->RemoveInfoBar(infobar_0);
   EXPECT_EQ(2U, closed_delegate_tracker_.size());
   EXPECT_TRUE(closed_delegate_tracker_.Contains(infobar_0));
-  infobar_0->InfoBarClosed();
+  delete infobar_0;
   // Now the infobar for the tab with the same origin should have gone.
   EXPECT_EQ(0U, infobar_service()->GetInfoBarCount());
   CheckPermissionMessageSent(0, true);
   EXPECT_TRUE(closed_delegate_tracker_.Contains(removed_infobar));
   closed_delegate_tracker_.Clear();
   // Destroy the infobar that has just been removed.
-  removed_infobar->InfoBarClosed();
+  delete removed_infobar;
 
   // And we should have the queued infobar displayed now.
   ASSERT_EQ(1U, infobar_service_for_tab(0)->GetInfoBarCount());
@@ -612,7 +612,7 @@ TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
   infobar_service_for_tab(0)->RemoveInfoBar(infobar_1);
   EXPECT_EQ(1U, closed_delegate_tracker_.size());
   EXPECT_TRUE(closed_delegate_tracker_.Contains(infobar_1));
-  infobar_1->InfoBarClosed();
+  delete infobar_1;
 }
 
 TEST_F(GeolocationPermissionContextTests, TabDestroyed) {
@@ -647,7 +647,7 @@ TEST_F(GeolocationPermissionContextTests, TabDestroyed) {
 
   // Delete the tab contents.
   DeleteContents();
-  infobar_0->InfoBarClosed();
+  delete infobar_0;
 
   // During contents destruction, the infobar will have been closed, and the
   // pending request should have been cleared without an infobar being created.
@@ -680,5 +680,5 @@ TEST_F(GeolocationPermissionContextTests, InfoBarUsesCommittedEntry) {
 
   // Delete the tab contents.
   DeleteContents();
-  infobar_0->InfoBarClosed();
+  delete infobar_0;
 }

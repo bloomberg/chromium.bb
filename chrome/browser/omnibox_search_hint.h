@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_OMNIBOX_SEARCH_HINT_H_
 #define CHROME_BROWSER_OMNIBOX_SEARCH_HINT_H_
 
-#include <map>
-#include <string>
-
 #include "base/compiler_specific.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -50,16 +47,10 @@ class OmniboxSearchHint
   explicit OmniboxSearchHint(content::WebContents* web_contents);
   friend class content::WebContentsUserData<OmniboxSearchHint>;
 
-  void ShowInfoBar();
-
   content::NotificationRegistrar notification_registrar_;
 
   // The contents we are associated with.
   content::WebContents* web_contents_;
-
-  // A map containing the URLs of the search engine for which we want to
-  // trigger the hint.
-  std::map<std::string, int> search_engine_urls_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxSearchHint);
 };

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/startup/session_crashed_prompt.h"
 
-#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
@@ -24,37 +23,24 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-namespace {
+// static
+void SessionCrashedInfoBarDelegate::Create(Browser* browser) {
+  // Assume that if the user is launching incognito they were previously
+  // running incognito so that we have nothing to restore from.
+  if (browser->profile()->IsOffTheRecord())
+    return;
 
-// A delegate for the InfoBar shown when the previous session has crashed.
-class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate,
-                                      public content::NotificationObserver {
- public:
-  SessionCrashedInfoBarDelegate(InfoBarService* infobar_service,
-                                Browser* browser);
+  // In ChromeBot tests, there might be a race. This line appears to get
+  // called during shutdown and |web_contents| can be NULL.
+  content::WebContents* tab =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (!tab)
+    return;
 
- private:
-  virtual ~SessionCrashedInfoBarDelegate();
-
-  // ConfirmInfoBarDelegate:
-  virtual gfx::Image* GetIcon() const OVERRIDE;
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual int GetButtons() const OVERRIDE;
-  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  content::NotificationRegistrar registrar_;
-  bool accepted_;
-  bool removed_notification_received_;
-  Browser* browser_;
-
-  DISALLOW_COPY_AND_ASSIGN(SessionCrashedInfoBarDelegate);
-};
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(tab);
+  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new SessionCrashedInfoBarDelegate(infobar_service, browser)));
+}
 
 SessionCrashedInfoBarDelegate::SessionCrashedInfoBarDelegate(
     InfoBarService* infobar_service,
@@ -128,31 +114,3 @@ void SessionCrashedInfoBarDelegate::Observe(
     removed_notification_received_ = true;
   }
 }
-
-}  // namespace
-
-namespace chrome {
-
-void ShowSessionCrashedPrompt(Browser* browser) {
-  // Assume that if the user is launching incognito they were previously
-  // running incognito so that we have nothing to restore from.
-  if (browser->profile()->IsOffTheRecord())
-    return;
-
-  // In ChromeBot tests, there might be a race. This line appears to get
-  // called during shutdown and |tab| can be NULL.
-  content::WebContents* tab =
-      browser->tab_strip_model()->GetActiveWebContents();
-  if (!tab)
-    return;
-
-  // Don't show the info-bar if there are already info-bars showing.
-  InfoBarService* infobar_service = InfoBarService::FromWebContents(tab);
-  if (infobar_service->GetInfoBarCount() > 0)
-    return;
-
-  infobar_service->AddInfoBar(
-      new SessionCrashedInfoBarDelegate(infobar_service, browser));
-}
-
-}  // namespace chrome
