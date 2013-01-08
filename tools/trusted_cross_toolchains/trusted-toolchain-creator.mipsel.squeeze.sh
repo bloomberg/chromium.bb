@@ -574,14 +574,11 @@ BuildAndInstallQemu() {
   SubBanner "Downloading"
   wget -c ${DOWNLOAD_QEMU_URL}
 
-  SubBanner "Untaring"
+  SubBanner "Untarring"
   tar zxf  ${tarball}
   cd qemu-0.12.5
-
-  if [ -f "${PATCH_MIPS32}" ]; then
-    SubBanner "Patching"
-    patch -p1 < ${PATCH_MIPS32}
-  fi
+  SubBanner "Patching"
+  patch -p1 < ${PATCH_MIPS32}
 
   echo
   echo "NOTE: on 64 bit systems you will need to the following 32bit libs:"
