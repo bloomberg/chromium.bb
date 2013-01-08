@@ -62,8 +62,7 @@ bool MenuHostRootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 #endif
 }
 
-void MenuHostRootView::DispatchGestureEvent(
-    ui::GestureEvent* event) {
+void MenuHostRootView::DispatchGestureEvent(ui::GestureEvent* event) {
   RootView::DispatchGestureEvent(event);
   if (event->handled())
     return;

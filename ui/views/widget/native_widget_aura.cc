@@ -799,18 +799,6 @@ void NativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void NativeWidgetAura::OnScrollEvent(ui::ScrollEvent* event) {
-  if (event->type() == ui::ET_SCROLL) {
-    delegate_->OnScrollEvent(event);
-    if (event->handled())
-      return;
-
-    // Convert unprocessed scroll events into wheel events.
-    ui::MouseWheelEvent mwe(*static_cast<ui::ScrollEvent*>(event));
-    delegate_->OnMouseEvent(&mwe);
-    if (mwe.handled())
-      event->SetHandled();
-    return;
-  }
   delegate_->OnScrollEvent(event);
 }
 

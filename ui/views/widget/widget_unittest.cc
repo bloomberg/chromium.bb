@@ -122,6 +122,81 @@ class MouseView : public View {
   DISALLOW_COPY_AND_ASSIGN(MouseView);
 };
 
+// A view that keeps track of the events it receives, but consumes no events.
+class EventCountView : public View {
+ public:
+  EventCountView() {}
+  virtual ~EventCountView() {}
+
+  int GetEventCount(ui::EventType type) {
+    return event_count_[type];
+  }
+
+  void ResetCounts() {
+    event_count_.clear();
+  }
+
+ private:
+  void RecordEvent(const ui::Event& event) {
+    ++event_count_[event.type()];
+  }
+
+  // Overridden from View:
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+    RecordEvent(event);
+    return false;
+  }
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE {
+    RecordEvent(event);
+    return false;
+  }
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE {
+    RecordEvent(event);
+  }
+  virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE {
+    RecordEvent(event);
+  }
+  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE {
+    RecordEvent(event);
+  }
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE {
+    RecordEvent(event);
+  }
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE {
+    RecordEvent(event);
+    return false;
+  }
+  virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE {
+    RecordEvent(event);
+    return false;
+  }
+  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE {
+    RecordEvent(event);
+    return false;
+  }
+
+  // Overridden from ui::EventHandler:
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+    RecordEvent(*event);
+  }
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    RecordEvent(*event);
+  }
+  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
+    RecordEvent(*event);
+  }
+  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+    RecordEvent(*event);
+  }
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    RecordEvent(*event);
+  }
+
+  std::map<ui::EventType, int> event_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventCountView);
+};
+
 // A view that does a capture on gesture-begin events.
 class GestureCaptureView : public View {
  public:
@@ -1166,6 +1241,48 @@ TEST_F(WidgetTest, DesktopNativeWidgetAuraNoPaintAfterHideTest) {
 }
 
 #endif  // !defined(OS_CHROMEOS)
+
+// Tests that wheel events generted from scroll events are targetted to the
+// views under the cursor when the focused view does not processed them.
+TEST_F(WidgetTest, WheelEventsFromScrollEventTarget) {
+  EventCountView* focused_view = new EventCountView;
+  focused_view->set_focusable(true);
+
+  EventCountView* cursor_view = new EventCountView;
+
+  focused_view->SetBounds(0, 0, 50, 40);
+  cursor_view->SetBounds(60, 0, 50, 40);
+
+  Widget* widget = CreateTopLevelPlatformWidget();
+  widget->GetRootView()->AddChildView(focused_view);
+  widget->GetRootView()->AddChildView(cursor_view);
+
+  focused_view->RequestFocus();
+  EXPECT_TRUE(focused_view->HasFocus());
+
+  // Generate a scroll event on the cursor view. The focused view will receive a
+  // wheel event, but since it doesn't process the event, the view under the
+  // cursor will receive the wheel event.
+  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::Point(65, 5), 0, 0, 20);
+  widget->OnScrollEvent(&scroll);
+
+  EXPECT_EQ(0, focused_view->GetEventCount(ui::ET_SCROLL));
+  EXPECT_EQ(1, focused_view->GetEventCount(ui::ET_MOUSEWHEEL));
+
+  EXPECT_EQ(1, cursor_view->GetEventCount(ui::ET_SCROLL));
+  EXPECT_EQ(1, cursor_view->GetEventCount(ui::ET_MOUSEWHEEL));
+
+  focused_view->ResetCounts();
+  cursor_view->ResetCounts();
+
+  ui::ScrollEvent scroll2(ui::ET_SCROLL, gfx::Point(5, 5), 0, 0, 20);
+  widget->OnScrollEvent(&scroll2);
+  EXPECT_EQ(1, focused_view->GetEventCount(ui::ET_SCROLL));
+  EXPECT_EQ(1, focused_view->GetEventCount(ui::ET_MOUSEWHEEL));
+
+  EXPECT_EQ(0, cursor_view->GetEventCount(ui::ET_SCROLL));
+  EXPECT_EQ(0, cursor_view->GetEventCount(ui::ET_MOUSEWHEEL));
+}
 
 #endif  // defined(USE_AURA)
 
