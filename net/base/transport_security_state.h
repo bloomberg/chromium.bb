@@ -61,20 +61,6 @@ class NET_EXPORT TransportSecurityState
     DomainState();
     ~DomainState();
 
-    // Parses |value| as a Public-Key-Pins header. If successful, returns true
-    // and updates the |dynamic_spki_hashes| and |dynamic_spki_hashes_expiry|
-    // fields; otherwise, returns false without updating any fields.
-    // Interprets the max-age directive relative to |now|.
-    bool ParsePinsHeader(const base::Time& now,
-                         const std::string& value,
-                         const SSLInfo& ssl_info);
-
-    // Parses |value| as a Strict-Transport-Security header. If successful,
-    // returns true and updates the |upgrade_mode|, |upgrade_expiry| and
-    // |include_subdomains| fields; otherwise, returns false without updating
-    // any fields. Interprets the max-age directive relative to |now|.
-    bool ParseSTSHeader(const base::Time& now, const std::string& value);
-
     // Takes a set of SubjectPublicKeyInfo |hashes| and returns true if:
     //   1) |bad_static_spki_hashes| does not intersect |hashes|; AND
     //   2) Both |static_spki_hashes| and |dynamic_spki_hashes| are empty
@@ -237,6 +223,16 @@ class NET_EXPORT TransportSecurityState
   void AddOrUpdateForcedHosts(const std::string& hashed_host,
                               const DomainState& state);
 
+  // Processes an HSTS header value from the host, adding entries to
+  // dynamic state if necessary.
+  bool AddHSTSHeader(const std::string& host, const std::string& value);
+
+  // Processes an HPKP header value from the host, adding entries to
+  // dynamic state if necessary.  ssl_info is used to check that
+  // the specified pins overlap with the certificate chain.
+  bool AddHPKPHeader(const std::string& host, const std::string& value,
+                     const SSLInfo& ssl_info);
+
   // Returns true iff we have any static public key pins for the |host| and
   // iff its set of required pins is the set we expect for Google
   // properties.
@@ -248,11 +244,6 @@ class NET_EXPORT TransportSecurityState
   // entry, the exact match determines the return value.
   static bool IsGooglePinnedProperty(const std::string& host,
                                      bool sni_enabled);
-
-  // Decodes a pin string |value| (e.g. "sha1/hvfkN/qlp/zhXR3cuerq6jd2Z7g=").
-  // If parsing succeeded, updates |*out| and returns true; otherwise returns
-  // false without updating |*out|.
-  static bool ParsePin(const std::string& value, HashValue* out);
 
   // The maximum number of seconds for which we'll cache an HSTS request.
   static const long int kMaxHSTSAgeSecs;

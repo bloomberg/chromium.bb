@@ -685,93 +685,50 @@ void URLRequestHttpJob::FetchResponseCookies(
 
 // NOTE: |ProcessStrictTransportSecurityHeader| and
 // |ProcessPublicKeyPinsHeader| have very similar structures, by design.
-// They manipulate different parts of |TransportSecurityState::DomainState|,
-// and they must remain complementary. If, in future changes here, there is
-// any conflict between their policies (such as in |domain_state.mode|), you
-// should resolve the conflict in favor of the more strict policy.
 void URLRequestHttpJob::ProcessStrictTransportSecurityHeader() {
   DCHECK(response_info_);
-
-  const URLRequestContext* ctx = request_->context();
+  TransportSecurityState* security_state =
+      request_->context()->transport_security_state();
   const SSLInfo& ssl_info = response_info_->ssl_info;
 
-  // Only accept strict transport security headers on HTTPS connections that
-  // have no certificate errors.
+  // Only accept HSTS headers on HTTPS connections that have no
+  // certificate errors.
   if (!ssl_info.is_valid() || IsCertStatusError(ssl_info.cert_status) ||
-      !ctx->transport_security_state()) {
+      !security_state)
     return;
-  }
-
-  TransportSecurityState* security_state = ctx->transport_security_state();
-  TransportSecurityState::DomainState domain_state;
-  const std::string& host = request_info_.url.host();
-
-  bool sni_available =
-      SSLConfigService::IsSNIAvailable(ctx->ssl_config_service());
-  if (!security_state->GetDomainState(host, sni_available, &domain_state))
-    // |GetDomainState| may have altered |domain_state| while searching. If
-    // not found, start with a fresh state.
-    domain_state.upgrade_mode =
-        TransportSecurityState::DomainState::MODE_FORCE_HTTPS;
-
-  HttpResponseHeaders* headers = GetResponseHeaders();
-  std::string value;
-  void* iter = NULL;
-  base::Time now = base::Time::Now();
 
   // http://tools.ietf.org/html/draft-ietf-websec-strict-transport-sec:
   //
   //   If a UA receives more than one STS header field in a HTTP response
   //   message over secure transport, then the UA MUST process only the
   //   first such header field.
-  bool seen_sts = false;
-  while (headers->EnumerateHeader(&iter, "Strict-Transport-Security", &value)) {
-    if (seen_sts)
-      return;
-    seen_sts = true;
-    TransportSecurityState::DomainState domain_state;
-    if (domain_state.ParseSTSHeader(now, value))
-      security_state->EnableHost(host, domain_state);
-  }
+  HttpResponseHeaders* headers = GetResponseHeaders();
+  std::string value;
+  if (headers->EnumerateHeader(NULL, "Strict-Transport-Security", &value))
+    security_state->AddHSTSHeader(request_info_.url.host(), value);
 }
 
 void URLRequestHttpJob::ProcessPublicKeyPinsHeader() {
   DCHECK(response_info_);
-
-  const URLRequestContext* ctx = request_->context();
+  TransportSecurityState* security_state =
+      request_->context()->transport_security_state();
   const SSLInfo& ssl_info = response_info_->ssl_info;
 
-  // Only accept public key pins headers on HTTPS connections that have no
+  // Only accept HPKP headers on HTTPS connections that have no
   // certificate errors.
   if (!ssl_info.is_valid() || IsCertStatusError(ssl_info.cert_status) ||
-      !ctx->transport_security_state()) {
+      !security_state)
     return;
-  }
 
-  TransportSecurityState* security_state = ctx->transport_security_state();
-  TransportSecurityState::DomainState domain_state;
-  const std::string& host = request_info_.url.host();
-
-  bool sni_available =
-      SSLConfigService::IsSNIAvailable(ctx->ssl_config_service());
-  if (!security_state->GetDomainState(host, sni_available, &domain_state))
-    // |GetDomainState| may have altered |domain_state| while searching. If
-    // not found, start with a fresh state.
-    domain_state.upgrade_mode =
-        TransportSecurityState::DomainState::MODE_DEFAULT;
-
+  // http://tools.ietf.org/html/draft-ietf-websec-key-pinning:
+  //
+  //   If a UA receives more than one PKP header field in an HTTP
+  //   response message over secure transport, then the UA MUST process
+  //   only the first such header field.
   HttpResponseHeaders* headers = GetResponseHeaders();
-  void* iter = NULL;
   std::string value;
-  base::Time now = base::Time::Now();
-
-  while (headers->EnumerateHeader(&iter, "Public-Key-Pins", &value)) {
-    // Note that ParsePinsHeader updates |domain_state| (iff the header parses
-    // correctly), but does not completely overwrite it. It just updates the
-    // dynamic pinning metadata.
-    if (domain_state.ParsePinsHeader(now, value, ssl_info))
-      security_state->EnableHost(host, domain_state);
-  }
+  if (headers->EnumerateHeader(NULL, "Public-Key-Pins", &value))
+    security_state->AddHPKPHeader(request_info_.url.host(), value, ssl_info);
 }
 
 void URLRequestHttpJob::OnStartCompleted(int result) {

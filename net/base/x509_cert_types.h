@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/string_piece.h"
 #include "build/build_config.h"
+#include "net/base/hash_value.h"
 #include "net/base/net_export.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -27,88 +28,6 @@ class Time;
 namespace net {
 
 class X509Certificate;
-
-// SHA-1 fingerprint (160 bits) of a certificate.
-struct NET_EXPORT SHA1HashValue {
-  bool Equals(const SHA1HashValue& other) const {
-    return memcmp(data, other.data, sizeof(data)) == 0;
-  }
-
-  unsigned char data[20];
-};
-
-class NET_EXPORT SHA1HashValueLessThan {
- public:
-  bool operator()(const SHA1HashValue& lhs,
-                  const SHA1HashValue& rhs) const {
-    return memcmp(lhs.data, rhs.data, sizeof(lhs.data)) < 0;
-  }
-};
-
-struct NET_EXPORT SHA256HashValue {
-  bool Equals(const SHA256HashValue& other) const {
-    return memcmp(data, other.data, sizeof(data)) == 0;
-  }
-
-  unsigned char data[32];
-};
-
-class NET_EXPORT SHA256HashValueLessThan {
- public:
-  bool operator()(const SHA256HashValue& lhs,
-                  const SHA256HashValue& rhs) const {
-    return memcmp(lhs.data, rhs.data, sizeof(lhs.data)) < 0;
-  }
-};
-
-enum HashValueTag {
-  HASH_VALUE_SHA1,
-  HASH_VALUE_SHA256,
-
-  // This must always be last.
-  HASH_VALUE_TAGS_COUNT
-};
-
-class NET_EXPORT HashValue {
- public:
-  explicit HashValue(HashValueTag tag) : tag(tag) {}
-  HashValue() : tag(HASH_VALUE_SHA1) {}
-
-  bool Equals(const HashValue& other) const;
-  size_t size() const;
-  unsigned char* data();
-  const unsigned char* data() const;
-
-  HashValueTag tag;
-
- private:
-  union {
-    SHA1HashValue sha1;
-    SHA256HashValue sha256;
-  } fingerprint;
-};
-
-class NET_EXPORT HashValueLessThan {
- public:
-  bool operator()(const HashValue& lhs,
-                  const HashValue& rhs) const {
-    size_t lhs_size = lhs.size();
-    size_t rhs_size = rhs.size();
-
-    if (lhs_size != rhs_size)
-      return lhs_size < rhs_size;
-
-    return memcmp(lhs.data(), rhs.data(), lhs_size) < 0;
-  }
-};
-
-typedef std::vector<HashValue> HashValueVector;
-
-// IsSHA1HashInSortedArray returns true iff |hash| is in |array|, a sorted
-// array of SHA1 hashes.
-bool NET_EXPORT IsSHA1HashInSortedArray(const SHA1HashValue& hash,
-                                        const uint8* array,
-                                        size_t array_byte_len);
 
 // CertPrincipal represents the issuer or subject field of an X.509 certificate.
 struct NET_EXPORT CertPrincipal {

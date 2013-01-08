@@ -24,7 +24,6 @@
 #include "base/metrics/histogram.h"
 #include "base/sha1.h"
 #include "base/string_number_conversions.h"
-#include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -35,7 +34,7 @@
 #include "net/base/ssl_info.h"
 #include "net/base/x509_cert_types.h"
 #include "net/base/x509_certificate.h"
-#include "net/http/http_util.h"
+#include "net/http/http_security_headers.h"
 
 #if defined(USE_OPENSSL)
 #include "crypto/openssl_util.h"
@@ -43,13 +42,46 @@
 
 namespace net {
 
-const long int TransportSecurityState::kMaxHSTSAgeSecs = 86400 * 365;  // 1 year
+namespace {
 
-static std::string HashHost(const std::string& canonicalized_host) {
+std::string HashesToBase64String(const HashValueVector& hashes) {
+  std::string str;
+  for (size_t i = 0; i != hashes.size(); ++i) {
+    if (i != 0)
+      str += ",";
+    str += hashes[i].ToString();
+  }
+  return str;
+}
+
+std::string HashHost(const std::string& canonicalized_host) {
   char hashed[crypto::kSHA256Length];
   crypto::SHA256HashString(canonicalized_host, hashed, sizeof(hashed));
   return std::string(hashed, sizeof(hashed));
 }
+
+// Returns true if the intersection of |a| and |b| is not empty. If either
+// |a| or |b| is empty, returns false.
+bool HashesIntersect(const HashValueVector& a,
+                     const HashValueVector& b) {
+  for (HashValueVector::const_iterator i = a.begin(); i != a.end(); ++i) {
+    HashValueVector::const_iterator j =
+        std::find_if(b.begin(), b.end(), HashValuesEqual(*i));
+    if (j != b.end())
+      return true;
+  }
+  return false;
+}
+
+bool AddHash(const char* sha1_hash,
+             HashValueVector* out) {
+  HashValue hash(HASH_VALUE_SHA1);
+  memcpy(hash.data(), sha1_hash, hash.size());
+  out->push_back(hash);
+  return true;
+}
+
+}  // namespace
 
 TransportSecurityState::TransportSecurityState()
   : delegate_(NULL) {
@@ -181,370 +213,6 @@ void TransportSecurityState::DeleteSince(const base::Time& time) {
 
   if (dirtied)
     DirtyNotify();
-}
-
-// MaxAgeToInt converts a string representation of a number of seconds into a
-// int. We use strtol in order to handle overflow correctly. The string may
-// contain an arbitary number which we should truncate correctly rather than
-// throwing a parse failure.
-static bool MaxAgeToInt(std::string::const_iterator begin,
-                        std::string::const_iterator end,
-                        int* result) {
-  const std::string s(begin, end);
-  char* endptr;
-  long int i = strtol(s.data(), &endptr, 10 /* base */);
-  if (*endptr || i < 0)
-    return false;
-  if (i > TransportSecurityState::kMaxHSTSAgeSecs)
-    i = TransportSecurityState::kMaxHSTSAgeSecs;
-  *result = i;
-  return true;
-}
-
-// Strip, Split, StringPair, and ParsePins are private implementation details
-// of ParsePinsHeader(std::string&, DomainState&).
-static std::string Strip(const std::string& source) {
-  if (source.empty())
-    return source;
-
-  std::string::const_iterator start = source.begin();
-  std::string::const_iterator end = source.end();
-  HttpUtil::TrimLWS(&start, &end);
-  return std::string(start, end);
-}
-
-typedef std::pair<std::string, std::string> StringPair;
-
-static StringPair Split(const std::string& source, char delimiter) {
-  StringPair pair;
-  size_t point = source.find(delimiter);
-
-  pair.first = source.substr(0, point);
-  if (std::string::npos != point)
-    pair.second = source.substr(point + 1);
-
-  return pair;
-}
-
-// static
-bool TransportSecurityState::ParsePin(const std::string& value,
-                                      HashValue* out) {
-  StringPair slash = Split(Strip(value), '/');
-
-  if (slash.first == "sha1")
-    out->tag = HASH_VALUE_SHA1;
-  else if (slash.first == "sha256")
-    out->tag = HASH_VALUE_SHA256;
-  else
-    return false;
-
-  std::string decoded;
-  if (!base::Base64Decode(slash.second, &decoded) ||
-      decoded.size() != out->size()) {
-    return false;
-  }
-
-  memcpy(out->data(), decoded.data(), out->size());
-  return true;
-}
-
-static bool ParseAndAppendPin(const std::string& value,
-                              HashValueTag tag,
-                              HashValueVector* hashes) {
-  std::string unquoted = HttpUtil::Unquote(value);
-  std::string decoded;
-
-  // This code has to assume that 32 bytes is SHA-256 and 20 bytes is SHA-1.
-  // Currently, those are the only two possibilities, so the assumption is
-  // valid.
-  if (!base::Base64Decode(unquoted, &decoded))
-    return false;
-
-  HashValue hash(tag);
-  if (decoded.size() != hash.size())
-    return false;
-
-  memcpy(hash.data(), decoded.data(), hash.size());
-  hashes->push_back(hash);
-  return true;
-}
-
-struct HashValuesEqualPredicate {
-  explicit HashValuesEqualPredicate(const HashValue& fingerprint) :
-      fingerprint_(fingerprint) {}
-
-  bool operator()(const HashValue& other) const {
-    return fingerprint_.Equals(other);
-  }
-
-  const HashValue& fingerprint_;
-};
-
-// Returns true iff there is an item in |pins| which is not present in
-// |from_cert_chain|. Such an SPKI hash is called a "backup pin".
-static bool IsBackupPinPresent(const HashValueVector& pins,
-                               const HashValueVector& from_cert_chain) {
-  for (HashValueVector::const_iterator
-       i = pins.begin(); i != pins.end(); ++i) {
-    HashValueVector::const_iterator j =
-        std::find_if(from_cert_chain.begin(), from_cert_chain.end(),
-                     HashValuesEqualPredicate(*i));
-      if (j == from_cert_chain.end())
-        return true;
-  }
-
-  return false;
-}
-
-// Returns true if the intersection of |a| and |b| is not empty. If either
-// |a| or |b| is empty, returns false.
-static bool HashesIntersect(const HashValueVector& a,
-                            const HashValueVector& b) {
-  for (HashValueVector::const_iterator i = a.begin(); i != a.end(); ++i) {
-    HashValueVector::const_iterator j =
-        std::find_if(b.begin(), b.end(), HashValuesEqualPredicate(*i));
-    if (j != b.end())
-      return true;
-  }
-
-  return false;
-}
-
-// Returns true iff |pins| contains both a live and a backup pin. A live pin
-// is a pin whose SPKI is present in the certificate chain in |ssl_info|. A
-// backup pin is a pin intended for disaster recovery, not day-to-day use, and
-// thus must be absent from the certificate chain. The Public-Key-Pins header
-// specification requires both.
-static bool IsPinListValid(const HashValueVector& pins,
-                           const SSLInfo& ssl_info) {
-  // Fast fail: 1 live + 1 backup = at least 2 pins. (Check for actual
-  // liveness and backupness below.)
-  if (pins.size() < 2)
-    return false;
-
-  const HashValueVector& from_cert_chain = ssl_info.public_key_hashes;
-  if (from_cert_chain.empty())
-    return false;
-
-  return IsBackupPinPresent(pins, from_cert_chain) &&
-         HashesIntersect(pins, from_cert_chain);
-}
-
-// "Public-Key-Pins" ":"
-//     "max-age" "=" delta-seconds ";"
-//     "pin-" algo "=" base64 [ ";" ... ]
-bool TransportSecurityState::DomainState::ParsePinsHeader(
-    const base::Time& now,
-    const std::string& value,
-    const SSLInfo& ssl_info) {
-  bool parsed_max_age = false;
-  int max_age_candidate = 0;
-  HashValueVector pins;
-
-  std::string source = value;
-
-  while (!source.empty()) {
-    StringPair semicolon = Split(source, ';');
-    semicolon.first = Strip(semicolon.first);
-    semicolon.second = Strip(semicolon.second);
-    StringPair equals = Split(semicolon.first, '=');
-    equals.first = Strip(equals.first);
-    equals.second = Strip(equals.second);
-
-    if (LowerCaseEqualsASCII(equals.first, "max-age")) {
-      if (equals.second.empty() ||
-          !MaxAgeToInt(equals.second.begin(), equals.second.end(),
-                       &max_age_candidate)) {
-        return false;
-      }
-      if (max_age_candidate > kMaxHSTSAgeSecs)
-        max_age_candidate = kMaxHSTSAgeSecs;
-      parsed_max_age = true;
-    } else if (StartsWithASCII(equals.first, "pin-", false)) {
-      HashValueTag tag;
-      if (LowerCaseEqualsASCII(equals.first, "pin-sha1")) {
-        tag = HASH_VALUE_SHA1;
-      } else if (LowerCaseEqualsASCII(equals.first, "pin-sha256")) {
-        tag = HASH_VALUE_SHA256;
-      } else {
-        LOG(WARNING) << "Ignoring pin of unknown type: " << equals.first;
-        return false;
-      }
-      if (!ParseAndAppendPin(equals.second, tag, &pins))
-        return false;
-    } else {
-      // Silently ignore unknown directives for forward compatibility.
-    }
-
-    source = semicolon.second;
-  }
-
-  if (!parsed_max_age || !IsPinListValid(pins, ssl_info))
-    return false;
-
-  dynamic_spki_hashes_expiry =
-      now + base::TimeDelta::FromSeconds(max_age_candidate);
-
-  dynamic_spki_hashes.clear();
-  if (max_age_candidate > 0) {
-    for (HashValueVector::const_iterator i = pins.begin();
-         i != pins.end(); ++i) {
-      dynamic_spki_hashes.push_back(*i);
-    }
-  }
-
-  return true;
-}
-
-// Parse the Strict-Transport-Security header, as currently defined in
-// http://tools.ietf.org/html/draft-ietf-websec-strict-transport-sec-14:
-//
-// Strict-Transport-Security = "Strict-Transport-Security" ":"
-//                             [ directive ]  *( ";" [ directive ] )
-//
-// directive                 = directive-name [ "=" directive-value ]
-// directive-name            = token
-// directive-value           = token | quoted-string
-//
-// 1.  The order of appearance of directives is not significant.
-//
-// 2.  All directives MUST appear only once in an STS header field.
-//     Directives are either optional or required, as stipulated in
-//     their definitions.
-//
-// 3.  Directive names are case-insensitive.
-//
-// 4.  UAs MUST ignore any STS header fields containing directives, or
-//     other header field value data, that does not conform to the
-//     syntax defined in this specification.
-//
-// 5.  If an STS header field contains directive(s) not recognized by
-//     the UA, the UA MUST ignore the unrecognized directives and if the
-//     STS header field otherwise satisfies the above requirements (1
-//     through 4), the UA MUST process the recognized directives.
-bool TransportSecurityState::DomainState::ParseSTSHeader(
-    const base::Time& now,
-    const std::string& value) {
-  int max_age_candidate = 0;
-  bool include_subdomains_candidate = false;
-
-  // We must see max-age exactly once.
-  int max_age_observed = 0;
-  // We must see includeSubdomains exactly 0 or 1 times.
-  int include_subdomains_observed = 0;
-
-  enum ParserState {
-    START,
-    AFTER_MAX_AGE_LABEL,
-    AFTER_MAX_AGE_EQUALS,
-    AFTER_MAX_AGE,
-    AFTER_INCLUDE_SUBDOMAINS,
-    AFTER_UNKNOWN_LABEL,
-    DIRECTIVE_END
-  } state = START;
-
-  StringTokenizer tokenizer(value, " \t=;");
-  tokenizer.set_options(StringTokenizer::RETURN_DELIMS);
-  tokenizer.set_quote_chars("\"");
-  std::string unquoted;
-  while (tokenizer.GetNext()) {
-    DCHECK(!tokenizer.token_is_delim() || tokenizer.token().length() == 1);
-    switch (state) {
-      case START:
-      case DIRECTIVE_END:
-        if (IsAsciiWhitespace(*tokenizer.token_begin()))
-          continue;
-        if (LowerCaseEqualsASCII(tokenizer.token(), "max-age")) {
-          state = AFTER_MAX_AGE_LABEL;
-          max_age_observed++;
-        } else if (LowerCaseEqualsASCII(tokenizer.token(),
-                                        "includesubdomains")) {
-          state = AFTER_INCLUDE_SUBDOMAINS;
-          include_subdomains_observed++;
-          include_subdomains_candidate = true;
-        } else {
-          state = AFTER_UNKNOWN_LABEL;
-        }
-        break;
-
-      case AFTER_MAX_AGE_LABEL:
-        if (IsAsciiWhitespace(*tokenizer.token_begin()))
-          continue;
-        if (*tokenizer.token_begin() != '=')
-          return false;
-        DCHECK_EQ(tokenizer.token().length(), 1U);
-        state = AFTER_MAX_AGE_EQUALS;
-        break;
-
-      case AFTER_MAX_AGE_EQUALS:
-        if (IsAsciiWhitespace(*tokenizer.token_begin()))
-          continue;
-        unquoted = HttpUtil::Unquote(tokenizer.token());
-        if (!MaxAgeToInt(unquoted.begin(),
-                         unquoted.end(),
-                         &max_age_candidate))
-          return false;
-        state = AFTER_MAX_AGE;
-        break;
-
-      case AFTER_MAX_AGE:
-      case AFTER_INCLUDE_SUBDOMAINS:
-        if (IsAsciiWhitespace(*tokenizer.token_begin()))
-          continue;
-        else if (*tokenizer.token_begin() == ';')
-          state = DIRECTIVE_END;
-        else
-          return false;
-        break;
-
-      case AFTER_UNKNOWN_LABEL:
-        // Consume and ignore the post-label contents (if any).
-        if (*tokenizer.token_begin() != ';')
-          continue;
-        state = DIRECTIVE_END;
-        break;
-    }
-  }
-
-  // We've consumed all the input.  Let's see what state we ended up in.
-  if (max_age_observed != 1 ||
-      (include_subdomains_observed != 0 && include_subdomains_observed != 1)) {
-    return false;
-  }
-
-  switch (state) {
-    case AFTER_MAX_AGE:
-    case AFTER_INCLUDE_SUBDOMAINS:
-    case AFTER_UNKNOWN_LABEL:
-      if (max_age_candidate > 0) {
-        upgrade_expiry = now + base::TimeDelta::FromSeconds(max_age_candidate);
-        upgrade_mode = MODE_FORCE_HTTPS;
-      } else {
-        upgrade_expiry = now;
-        upgrade_mode = MODE_DEFAULT;
-      }
-      include_subdomains = include_subdomains_candidate;
-      return true;
-    case START:
-    case DIRECTIVE_END:
-    case AFTER_MAX_AGE_LABEL:
-    case AFTER_MAX_AGE_EQUALS:
-      return false;
-    default:
-      NOTREACHED();
-      return false;
-  }
-}
-
-static bool AddHash(const std::string& type_and_base64,
-                    HashValueVector* out) {
-  HashValue hash;
-
-  if (!TransportSecurityState::ParsePin(type_and_base64, &hash))
-    return false;
-
-  out->push_back(hash);
-  return true;
 }
 
 TransportSecurityState::~TransportSecurityState() {}
@@ -890,19 +558,17 @@ static bool HasPreload(const struct HSTSPreload* entries, size_t num_entries,
         if (!entries[j].https_required)
           out->upgrade_mode = TransportSecurityState::DomainState::MODE_DEFAULT;
         if (entries[j].pins.required_hashes) {
-          const char* const* hash = entries[j].pins.required_hashes;
-          while (*hash) {
-            bool ok = AddHash(*hash, &out->static_spki_hashes);
-            DCHECK(ok) << " failed to parse " << *hash;
-            hash++;
+          const char* const* sha1_hash = entries[j].pins.required_hashes;
+          while (*sha1_hash) {
+            AddHash(*sha1_hash, &out->static_spki_hashes);
+            sha1_hash++;
           }
         }
         if (entries[j].pins.excluded_hashes) {
-          const char* const* hash = entries[j].pins.excluded_hashes;
-          while (*hash) {
-            bool ok = AddHash(*hash, &out->bad_static_spki_hashes);
-            DCHECK(ok) << " failed to parse " << *hash;
-            hash++;
+          const char* const* sha1_hash = entries[j].pins.excluded_hashes;
+          while (*sha1_hash) {
+            AddHash(*sha1_hash, &out->bad_static_spki_hashes);
+            sha1_hash++;
           }
         }
       }
@@ -939,6 +605,40 @@ static const struct HSTSPreload* GetHSTSPreload(
   }
 
   return NULL;
+}
+
+bool TransportSecurityState::AddHSTSHeader(const std::string& host,
+                                           const std::string& value) {
+  base::Time now = base::Time::Now();
+  TransportSecurityState::DomainState domain_state;
+  if (ParseHSTSHeader(now, value, &domain_state.upgrade_expiry,
+                      &domain_state.include_subdomains)) {
+    // Handle max-age == 0
+    if (now == domain_state.upgrade_expiry)
+      domain_state.upgrade_mode = DomainState::MODE_DEFAULT;
+    else
+      domain_state.upgrade_mode = DomainState::MODE_FORCE_HTTPS;
+    domain_state.created = now;
+    EnableHost(host, domain_state);
+    return true;
+  }
+  return false;
+}
+
+bool TransportSecurityState::AddHPKPHeader(const std::string& host,
+                                           const std::string& value,
+                                           const SSLInfo& ssl_info) {
+  base::Time now = base::Time::Now();
+  TransportSecurityState::DomainState domain_state;
+  if (ParseHPKPHeader(now, value, ssl_info.public_key_hashes,
+                      &domain_state.dynamic_spki_hashes_expiry,
+                      &domain_state.dynamic_spki_hashes)) {
+    domain_state.upgrade_mode = DomainState::MODE_DEFAULT;
+    domain_state.created = now;
+    EnableHost(host, domain_state);
+    return true;
+  }
+  return false;
 }
 
 // static
@@ -984,21 +684,6 @@ void TransportSecurityState::ReportUMAOnPinFailure(const std::string& host) {
 
   UMA_HISTOGRAM_ENUMERATION("Net.PublicKeyPinFailureDomain",
                             entry->second_level_domain_name, DOMAIN_NUM_EVENTS);
-}
-
-// static
-const char* TransportSecurityState::HashValueLabel(
-    const HashValue& hash_value) {
-  switch (hash_value.tag) {
-    case HASH_VALUE_SHA1:
-      return "sha1/";
-    case HASH_VALUE_SHA256:
-      return "sha256/";
-    default:
-      NOTREACHED();
-      LOG(WARNING) << "Invalid fingerprint of unknown type " << hash_value.tag;
-      return "unknown/";
-  }
 }
 
 // static
@@ -1054,21 +739,6 @@ void TransportSecurityState::AddOrUpdateEnabledHosts(
 void TransportSecurityState::AddOrUpdateForcedHosts(
     const std::string& hashed_host, const DomainState& state) {
   forced_hosts_[hashed_host] = state;
-}
-
-static std::string HashesToBase64String(
-    const HashValueVector& hashes) {
-  std::vector<std::string> hashes_strs;
-  for (HashValueVector::const_iterator
-       i = hashes.begin(); i != hashes.end(); i++) {
-    std::string s;
-    const std::string hash_str(reinterpret_cast<const char*>(i->data()),
-                               i->size());
-    base::Base64Encode(hash_str, &s);
-    hashes_strs.push_back(s);
-  }
-
-  return JoinString(hashes_strs, ',');
 }
 
 TransportSecurityState::DomainState::DomainState()

@@ -29,16 +29,8 @@ namespace {
 
 ListValue* SPKIHashesToListValue(const HashValueVector& hashes) {
   ListValue* pins = new ListValue;
-
-  for (HashValueVector::const_iterator i = hashes.begin();
-       i != hashes.end(); ++i) {
-    std::string hash_str(reinterpret_cast<const char*>(i->data()), i->size());
-    std::string b64;
-    if (base::Base64Encode(hash_str, &b64))
-      pins->Append(new StringValue(TransportSecurityState::HashValueLabel(*i) +
-                                   b64));
-  }
-
+  for (size_t i = 0; i != hashes.size(); i++)
+    pins->Append(new StringValue(hashes[i].ToString()));
   return pins;
 }
 
@@ -48,7 +40,7 @@ void SPKIHashesFromListValue(const ListValue& pins, HashValueVector* hashes) {
     std::string type_and_base64;
     HashValue fingerprint;
     if (pins.GetString(i, &type_and_base64) &&
-        TransportSecurityState::ParsePin(type_and_base64, &fingerprint)) {
+        fingerprint.FromString(type_and_base64)) {
       hashes->push_back(fingerprint);
     }
   }
