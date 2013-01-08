@@ -393,7 +393,9 @@ void BluetoothReadFunction::Work() {
 
   if (total_bytes_read > 0) {
     success_ = true;
-    SetResult(base::BinaryValue::Create(all_bytes, total_bytes_read));
+    SetResult(base::BinaryValue::CreateWithCopiedBuffer(all_bytes,
+        total_bytes_read));
+    free(all_bytes);
   } else {
     success_ = (errsv == EAGAIN || errsv == EWOULDBLOCK);
     free(all_bytes);
