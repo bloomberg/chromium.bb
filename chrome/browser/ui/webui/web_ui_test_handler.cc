@@ -44,11 +44,11 @@ bool WebUITestHandler::RunJavaScriptTestWithResult(const string16& js_text) {
   test_succeeded_ = false;
   run_test_succeeded_ = false;
   RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
-  content::NotificationRegistrar notification_registrar;
-  notification_registrar.Add(
-      this, content::NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
-      content::Source<RenderViewHost>(rvh));
-  rvh->ExecuteJavascriptInWebFrameNotifyResult(string16(), js_text);
+  rvh->ExecuteJavascriptInWebFrameCallbackResult(
+      string16(),  // frame_xpath
+      js_text,
+      base::Bind(&WebUITestHandler::JavaScriptComplete,
+                 base::Unretained(this)));
   return WaitForResult();
 }
 
@@ -77,24 +77,19 @@ void WebUITestHandler::HandleTestResult(const ListValue* test_result) {
   }
 }
 
-void WebUITestHandler::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
+void WebUITestHandler::JavaScriptComplete(const base::Value* result) {
   // Quit the message loop if |is_waiting_| so waiting process can get result or
   // error. To ensure this gets done, do this before ASSERT* calls.
   if (is_waiting_)
     MessageLoopForUI::current()->Quit();
 
-  ASSERT_EQ(content::NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT, type);
-
-  SCOPED_TRACE("WebUITestHandler::Observe");
+  SCOPED_TRACE("WebUITestHandler::JavaScriptComplete");
 
   EXPECT_FALSE(run_test_done_);
   run_test_done_ = true;
   run_test_succeeded_ = false;
 
-  Value* value = content::Details<std::pair<int, Value*> >(details)->second;
-  ASSERT_TRUE(value->GetAsBoolean(&run_test_succeeded_));
+  ASSERT_TRUE(result->GetAsBoolean(&run_test_succeeded_));
 }
 
 bool WebUITestHandler::WaitForResult() {
