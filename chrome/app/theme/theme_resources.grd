@@ -394,7 +394,6 @@
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_SYNC" file="infobar_sync.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_THEME" file="infobar_theme.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_TRANSLATE" file="infobar_translate.png" />
-      <structure type="chrome_scaled_image" name="IDR_INFO_BUBBLE_CLOSE" file="bubble_close.png" />
       <structure type="chrome_scaled_image" name="IDR_INPUT_ALERT" file="input_alert.png" />
       <structure type="chrome_scaled_image" name="IDR_INPUT_GOOD" file="input_good.png" />
       <structure type="chrome_scaled_image" name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="keyword_search_magnifier.png" />

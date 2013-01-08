@@ -85,7 +85,7 @@ void ConfirmBubbleViews::Init() {
 
   views::ImageButton* close_button = new views::ImageButton(this);
   const gfx::ImageSkia* close_image =
-      bundle.GetImageNamed(IDR_INFO_BUBBLE_CLOSE).ToImageSkia();
+      bundle.GetImageNamed(IDR_WEB_UI_CLOSE).ToImageSkia();
   close_button->SetImage(views::CustomButton::STATE_NORMAL, close_image);
   close_button->set_tag(ConfirmBubbleModel::BUTTON_NONE);
   layout->AddView(close_button);
