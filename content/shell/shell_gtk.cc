@@ -101,6 +101,8 @@ void Shell::PlatformSetIsLoading(bool loading) {
 }
 
 void Shell::PlatformCreateWindow(int width, int height) {
+  SizeTo(width, height);
+
   if (headless_)
     return;
 
@@ -194,8 +196,6 @@ void Shell::PlatformCreateWindow(int width, int height) {
 
   gtk_container_add(GTK_CONTAINER(window_), vbox_);
   gtk_widget_show_all(GTK_WIDGET(window_));
-
-  SizeTo(width, height);
 }
 
 void Shell::PlatformSetContents() {
