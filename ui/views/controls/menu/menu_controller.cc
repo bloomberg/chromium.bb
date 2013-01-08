@@ -533,7 +533,17 @@ void MenuController::OnGestureEvent(SubmenuView* source,
                    SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
       event->StopPropagation();
     }
+  } else if (event->type() == ui::ET_GESTURE_TAP_CANCEL &&
+             part.menu &&
+             part.type == MenuPart::MENU_ITEM) {
+    // Move the selection to the parent menu so that the selection in the
+    // current menu is unset. Make sure the submenu remains open by sending the
+    // appropriate SetSelectionTypes flags.
+    SetSelection(part.menu->GetParentMenuItem(),
+        SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
+    event->StopPropagation();
   }
+
   if (event->stopped_propagation())
       return;
 
@@ -743,8 +753,7 @@ void MenuController::SetSelection(MenuItemView* menu_item,
   if (menu_item && menu_item->GetDelegate())
     menu_item->GetDelegate()->SelectionChanged(menu_item);
 
-  // TODO(sky): convert back to DCHECK when figure out 93471.
-  CHECK(menu_item || (selection_types & SELECTION_EXIT) != 0);
+  DCHECK(menu_item || (selection_types & SELECTION_EXIT) != 0);
 
   pending_state_.item = menu_item;
   pending_state_.submenu_open = (selection_types & SELECTION_OPEN_SUBMENU) != 0;
@@ -1532,9 +1541,9 @@ void MenuController::BuildMenuItemPath(MenuItemView* item,
 }
 
 void MenuController::StartShowTimer() {
-    show_timer_.Start(FROM_HERE,
-                      TimeDelta::FromMilliseconds(menu_config_.show_delay),
-                      this, &MenuController::CommitPendingSelection);
+  show_timer_.Start(FROM_HERE,
+                    TimeDelta::FromMilliseconds(menu_config_.show_delay),
+                    this, &MenuController::CommitPendingSelection);
 }
 
 void MenuController::StopShowTimer() {

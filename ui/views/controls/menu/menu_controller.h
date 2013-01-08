@@ -231,7 +231,7 @@ class VIEWS_EXPORT MenuController
     SubmenuView* submenu;
   };
 
-  // Sets the selection to menu_item a value of NULL unselects
+  // Sets the selection to |menu_item|. A value of NULL unselects
   // everything. |types| is a bitmask of |SetSelectionTypes|.
   //
   // Internally this updates pending_state_ immediatley. state_ is only updated
