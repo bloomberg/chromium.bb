@@ -66,6 +66,12 @@ bool CreateTemporaryRenderTargetTexture(IDirect3DDevice9* device,
                                         IDirect3DTexture9** texture,
                                         IDirect3DSurface9** render_target);
 
+SURFACE_EXPORT
+gfx::Size GetSize(IDirect3DTexture9* texture);
+
+SURFACE_EXPORT
+gfx::Size GetSize(IDirect3DSurface9* surface);
+
 }  // namespace ui_surface_d3d9_utils
 
 #endif  // UI_SURFACE_D3D9_UTILS_WIN_H_

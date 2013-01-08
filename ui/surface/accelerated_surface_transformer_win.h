@@ -7,6 +7,7 @@
 
 #include <d3d9.h>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -50,31 +51,133 @@ class SURFACE_EXPORT AcceleratedSurfaceTransformer {
       IDirect3DSurface9* dst_surface,
       const gfx::Size& dst_size);
 
+ // Draw a textured quad to a surface.
+  bool Copy(
+      IDirect3DTexture9* src_texture,
+      IDirect3DSurface9* dst_surface,
+      const gfx::Size& dst_size);
+
   // Resize a surface using repeated bilinear interpolation.
   bool ResizeBilinear(
     IDirect3DSurface9* src_surface,
     const gfx::Rect& src_subrect,
     IDirect3DSurface9* dst_surface);
 
+  // Color format conversion from RGB to planar YV12 (also known as YUV420).
+  //
+  // YV12 is effectively a twelve bit per pixel format consisting of a full-
+  // size y (luminance) plane and half-width, half-height u and v (blue and
+  // red chrominance) planes. This method will allocate three lockable surfaces,
+  // one for each plane, and return them via the arguments |dst_y|, |dst_u|,
+  // and |dst_v|. These surface will be created with an ARGB D3DFORMAT, but
+  // should be interpreted as the appropriate single-byte format when locking.
+  //
+  // The dimensions of the outputs (when interpreted as single-component data)
+  // are as follows:
+  //   |dst_y| : width and height exactly |dst_size|
+  //   |dst_u| : width and height are each half of |dst_size|, rounded up.
+  //   |dst_v| : width and height are each half of |dst_size|, rounded up.
+  //
+  // If |src_texture|'s dimensions do not match |dst_size|, the source will be
+  // bilinearly interpolated during conversion.
+  //
+  // Returns true if successful. Caller must be certain to free the buffers
+  // even if this function returns false.
+  bool TransformRGBToYV12(
+      IDirect3DTexture9* src_texture,
+      const gfx::Size& dst_size,
+      IDirect3DSurface9** dst_y,
+      IDirect3DSurface9** dst_u,
+      IDirect3DSurface9** dst_v);
+
  private:
+  friend class AcceleratedSurfaceTransformerTest;
+  FRIEND_TEST_ALL_PREFIXES(AcceleratedSurfaceTransformerTest, Init);
+
   enum ShaderCombo {
-    SIMPLE_TEXTURE,
+    ONE_TEXTURE,
+    RGB_TO_YV12_FAST__PASS_1_OF_2,
+    RGB_TO_YV12_FAST__PASS_2_OF_2,
+    RGB_TO_YV12_SLOW__PASS_1_OF_3,
+    RGB_TO_YV12_SLOW__PASS_2_OF_3,
+    RGB_TO_YV12_SLOW__PASS_3_OF_3,
     NUM_SHADERS
   };
 
+  // Efficient RGB->YV12 in two passes, but requires a device capable of writing
+  // multiple render targets at the same time.
+  //
+  // Returns true if successful.
+  bool TransformRGBToYV12_MRT(
+      IDirect3DTexture9* src_surface,
+      const gfx::Size& dst_size,
+      const gfx::Size& packed_y_size,
+      const gfx::Size& packed_uv_size,
+      IDirect3DSurface9* dst_y,
+      IDirect3DSurface9* dst_u,
+      IDirect3DSurface9* dst_v);
+
+  // Slower, less efficient RGB->YV12; does not require the device to have
+  // multiple render target capability. Runs at about half speed of the fast
+  // path.
+  //
+  // Returns true if successful.
+  bool TransformRGBToYV12_WithoutMRT(
+      IDirect3DTexture9* src_surface,
+      const gfx::Size& dst_size,
+      const gfx::Size& packed_y_size,
+      const gfx::Size& packed_uv_size,
+      IDirect3DSurface9* dst_y,
+      IDirect3DSurface9* dst_u,
+      IDirect3DSurface9* dst_v);
+
+  // Helper to allocate appropriately size YUV buffers, accounting for various
+  // roundings. The sizes of the buffers (in terms of ARGB pixels) are returned
+  // as |packed_y_size| and |packed_uv_size|.
+  //
+  // Returns true if successful. Caller must be certain to free the buffers
+  // even if this function returns false.
+  bool AllocYUVBuffers(
+      const gfx::Size& dst_size,
+      gfx::Size* packed_y_size,
+      gfx::Size* packed_uv_size,
+      IDirect3DSurface9** dst_y,
+      IDirect3DSurface9** dst_u,
+      IDirect3DSurface9** dst_v);
+
+  bool CopyWithTextureScale(
+      IDirect3DTexture9* src_texture,
+      IDirect3DSurface9* dst_surface,
+      const gfx::Size& dst_size,
+      float texture_scale_x,
+      float texture_scale_y);
+
   // Set the active vertex and pixel shader combination.
+  //
+  // Returns true if successful.
   bool SetShaderCombo(ShaderCombo combo);
 
-  // Intitializes a vertex and pixel shader combination from compiled bytecode.
-  bool InitShaderCombo(const BYTE vertex_shader_instructions[],
-                       const BYTE pixel_shader_instructions[],
-                       ShaderCombo shader_combo_name);
+  // Compiles a vertex and pixel shader combination, if not already compiled.
+  //
+  // Returns true if successful.
+  bool CompileShaderCombo(ShaderCombo shader_combo_name);
+
+  bool DoInit(IDirect3DDevice9* device);
+
+  void DrawScreenAlignedQuad(const gfx::Size& dst_size);
+
+  bool device_supports_multiple_render_targets() const {
+    return device_supports_multiple_render_targets_;
+  }
 
   IDirect3DDevice9* device();
 
   base::win::ScopedComPtr<IDirect3DDevice9> device_;
   base::win::ScopedComPtr<IDirect3DVertexShader9> vertex_shaders_[NUM_SHADERS];
   base::win::ScopedComPtr<IDirect3DPixelShader9> pixel_shaders_[NUM_SHADERS];
+  bool device_supports_multiple_render_targets_;
+  const BYTE* vertex_shader_sources_[NUM_SHADERS];
+  const BYTE* pixel_shader_sources_[NUM_SHADERS];
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceTransformer);
 };
 

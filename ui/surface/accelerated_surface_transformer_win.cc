@@ -9,6 +9,7 @@
 #include "accelerated_surface_transformer_win_hlsl_compiled.h"
 #include "base/debug/trace_event.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -21,6 +22,16 @@
 
 using base::win::ScopedComPtr;
 using std::vector;
+using ui_surface::AcceleratedSurfaceTransformerWinHLSL::kPsConvertRGBtoY8UV44;
+using ui_surface::AcceleratedSurfaceTransformerWinHLSL::kPsConvertUV44toU2V2;
+using ui_surface::AcceleratedSurfaceTransformerWinHLSL::kPsOneTexture;
+using ui_surface::AcceleratedSurfaceTransformerWinHLSL::kVsFetch2Pixels;
+using ui_surface::AcceleratedSurfaceTransformerWinHLSL::kVsFetch4Pixels;
+using ui_surface::AcceleratedSurfaceTransformerWinHLSL::kVsOneTexture;
+using ui_surface::AcceleratedSurfaceTransformerWinHLSL::kVsFetch4PixelsScale2;
+using ui_surface::AcceleratedSurfaceTransformerWinHLSL::kPsConvertRGBtoY;
+using ui_surface::AcceleratedSurfaceTransformerWinHLSL::kPsConvertRGBtoU;
+using ui_surface::AcceleratedSurfaceTransformerWinHLSL::kPsConvertRGBtoV;
 
 namespace d3d_utils = ui_surface_d3d9_utils;
 
@@ -35,6 +46,23 @@ const static D3DVERTEXELEMENT9 g_vertexElements[] = {
   { 0, 0, D3DDECLTYPE_FLOAT4, 0, D3DDECLUSAGE_POSITION, 0 },
   { 0, 16, D3DDECLTYPE_FLOAT2, 0, D3DDECLUSAGE_TEXCOORD, 0 },
   D3DDECL_END()
+};
+
+class ScopedRenderTargetRestorer {
+ public:
+  ScopedRenderTargetRestorer(IDirect3DDevice9* device,
+                             int render_target_id)
+    : device_(device),
+      target_id_(render_target_id) {
+    device_->GetRenderTarget(target_id_, original_render_target_.Receive());
+  }
+  ~ScopedRenderTargetRestorer() {
+    device_->SetRenderTarget(target_id_, original_render_target_);
+  }
+ private:
+  ScopedComPtr<IDirect3DDevice9> device_;
+  int target_id_;
+  ScopedComPtr<IDirect3DSurface9> original_render_target_;
 };
 
 // Calculate the number necessary to transform |src_subrect| into |dst_size|
@@ -69,59 +97,125 @@ gfx::Size GetHalfSizeNoLessThan(const gfx::Size& size,
                    std::max(min_size.height(), size.height() / 2));
 }
 
-gfx::Size GetSize(IDirect3DSurface9* surface) {
-  D3DSURFACE_DESC surface_description;
-  HRESULT hr = surface->GetDesc(&surface_description);
-  if (FAILED(hr))
-    return gfx::Size(0, 0);
-  return gfx::Size(surface_description.Width, surface_description.Height);
-}
-
 }  // namespace
 
+AcceleratedSurfaceTransformer::AcceleratedSurfaceTransformer()
+    : device_supports_multiple_render_targets_(false),
+      vertex_shader_sources_(),
+      pixel_shader_sources_() {
 
-AcceleratedSurfaceTransformer::AcceleratedSurfaceTransformer() {}
+  // Associate passes with actual shader programs.
+  vertex_shader_sources_[ONE_TEXTURE] = kVsOneTexture;
+  pixel_shader_sources_[ONE_TEXTURE] = kPsOneTexture;
+
+  vertex_shader_sources_[RGB_TO_YV12_FAST__PASS_1_OF_2] = kVsFetch4Pixels;
+  pixel_shader_sources_[RGB_TO_YV12_FAST__PASS_1_OF_2] = kPsConvertRGBtoY8UV44;
+
+  vertex_shader_sources_[RGB_TO_YV12_FAST__PASS_2_OF_2] = kVsFetch2Pixels;
+  pixel_shader_sources_[RGB_TO_YV12_FAST__PASS_2_OF_2] = kPsConvertUV44toU2V2;
+
+  vertex_shader_sources_[RGB_TO_YV12_SLOW__PASS_1_OF_3] = kVsFetch4Pixels;
+  pixel_shader_sources_[RGB_TO_YV12_SLOW__PASS_1_OF_3] = kPsConvertRGBtoY;
+
+  vertex_shader_sources_[RGB_TO_YV12_SLOW__PASS_2_OF_3] = kVsFetch4PixelsScale2;
+  pixel_shader_sources_[RGB_TO_YV12_SLOW__PASS_2_OF_3] = kPsConvertRGBtoU;
+
+  vertex_shader_sources_[RGB_TO_YV12_SLOW__PASS_3_OF_3] = kVsFetch4PixelsScale2;
+  pixel_shader_sources_[RGB_TO_YV12_SLOW__PASS_3_OF_3] = kPsConvertRGBtoV;
+
+  COMPILE_ASSERT(NUM_SHADERS == 6, must_initialize_shader_sources);
+}
 
 bool AcceleratedSurfaceTransformer::Init(IDirect3DDevice9* device) {
-  device_ = device;
-  if (!InitShaderCombo(
-          ui_surface::AcceleratedSurfaceTransformerWinHLSL::kVsOneTexture,
-          ui_surface::AcceleratedSurfaceTransformerWinHLSL::kPsOneTexture,
-          SIMPLE_TEXTURE)) {
+  bool result = DoInit(device);
+  if (!result) {
     ReleaseAll();
-    return false;
   }
+  return result;
+}
+
+bool AcceleratedSurfaceTransformer::DoInit(IDirect3DDevice9* device) {
+  device_ = device;
+
+  {
+    D3DCAPS9 caps;
+    HRESULT hr = device->GetDeviceCaps(&caps);
+    if (FAILED(hr))
+      return false;
+
+    device_supports_multiple_render_targets_ = (caps.NumSimultaneousRTs >= 2);
+
+    // Log statistics about which paths we take.
+    UMA_HISTOGRAM_BOOLEAN("GPU.AcceleratedSurfaceTransformerCanUseMRT",
+                          device_supports_multiple_render_targets());
+  }
+
+  // Force compilation of all shaders that could be used on this GPU.
+  if (!CompileShaderCombo(ONE_TEXTURE))
+    return false;
+
+  if (device_supports_multiple_render_targets()) {
+    if (!CompileShaderCombo(RGB_TO_YV12_FAST__PASS_1_OF_2) ||
+        !CompileShaderCombo(RGB_TO_YV12_FAST__PASS_2_OF_2)) {
+      return false;
+    }
+  } else {
+    if (!CompileShaderCombo(RGB_TO_YV12_SLOW__PASS_1_OF_3) ||
+        !CompileShaderCombo(RGB_TO_YV12_SLOW__PASS_2_OF_3) ||
+        !CompileShaderCombo(RGB_TO_YV12_SLOW__PASS_3_OF_3)) {
+      return false;
+    }
+  }
+  COMPILE_ASSERT(NUM_SHADERS == 6, must_compile_at_doinit);
 
   base::win::ScopedComPtr<IDirect3DVertexDeclaration9> vertex_declaration;
   HRESULT hr = device_->CreateVertexDeclaration(g_vertexElements,
                                                 vertex_declaration.Receive());
-  if (!SUCCEEDED(hr)) {
-    ReleaseAll();
+  if (FAILED(hr))
     return false;
-  }
-  device_->SetVertexDeclaration(vertex_declaration);
+  hr = device_->SetVertexDeclaration(vertex_declaration);
+  if (FAILED(hr))
+    return false;
 
   return true;
 }
 
-bool AcceleratedSurfaceTransformer::InitShaderCombo(
-    const BYTE vertex_shader_instructions[],
-    const BYTE pixel_shader_instructions[],
-    ShaderCombo shader_combo_name) {
-  HRESULT hr = device_->CreateVertexShader(
-      reinterpret_cast<const DWORD*>(vertex_shader_instructions),
-      vertex_shaders_[shader_combo_name].Receive());
+bool AcceleratedSurfaceTransformer::CompileShaderCombo(
+    ShaderCombo shader) {
+  if (!vertex_shaders_[shader]) {
+    HRESULT hr = device_->CreateVertexShader(
+        reinterpret_cast<const DWORD*>(vertex_shader_sources_[shader]),
+        vertex_shaders_[shader].Receive());
 
-  if (FAILED(hr))
-    return false;
+    if (FAILED(hr))
+      return false;
 
-  hr = device_->CreatePixelShader(
-      reinterpret_cast<const DWORD*>(pixel_shader_instructions),
-      pixel_shaders_[shader_combo_name].Receive());
+    for (int i = 0; i < NUM_SHADERS; ++i) {
+      if (vertex_shader_sources_[i] == vertex_shader_sources_[shader] &&
+          i != shader) {
+        vertex_shaders_[i] = vertex_shaders_[shader];
+      }
+    }
+  }
 
-  return SUCCEEDED(hr);
+  if (!pixel_shaders_[shader]) {
+    HRESULT hr = device_->CreatePixelShader(
+        reinterpret_cast<const DWORD*>(pixel_shader_sources_[shader]),
+        pixel_shaders_[shader].Receive());
+
+    if (FAILED(hr))
+      return false;
+
+    for (int i = 0; i < NUM_SHADERS; ++i) {
+      if (pixel_shader_sources_[i] == pixel_shader_sources_[shader] &&
+          i != shader) {
+        pixel_shaders_[i] = pixel_shaders_[shader];
+      }
+    }
+  }
+
+  return true;
 }
-
 
 void AcceleratedSurfaceTransformer::ReleaseAll() {
   for (int i = 0; i < NUM_SHADERS; i++) {
@@ -138,17 +232,36 @@ void AcceleratedSurfaceTransformer::DetachAll() {
   device_.Detach();
 }
 
-// Draw a textured quad to a surface.
 bool AcceleratedSurfaceTransformer::CopyInverted(
     IDirect3DTexture9* src_texture,
     IDirect3DSurface9* dst_surface,
     const gfx::Size& dst_size) {
-  base::win::ScopedComPtr<IDirect3DSurface9> default_color_target;
-  device()->GetRenderTarget(0, default_color_target.Receive());
+  return CopyWithTextureScale(src_texture, dst_surface, dst_size, 1.0f, -1.0f);
+}
 
-  if (!SetShaderCombo(SIMPLE_TEXTURE))
+bool AcceleratedSurfaceTransformer::Copy(
+    IDirect3DTexture9* src_texture,
+    IDirect3DSurface9* dst_surface,
+    const gfx::Size& dst_size) {
+  return CopyWithTextureScale(src_texture, dst_surface, dst_size, 1.0f, 1.0f);
+}
+
+bool AcceleratedSurfaceTransformer::CopyWithTextureScale(
+    IDirect3DTexture9* src_texture,
+    IDirect3DSurface9* dst_surface,
+    const gfx::Size& dst_size,
+    float texture_scale_x,
+    float texture_scale_y) {
+
+  if (!SetShaderCombo(ONE_TEXTURE))
     return false;
 
+  // Set the kTextureScale vertex shader constant, which is assigned to
+  // register 1.
+  float texture_scale[4] = {texture_scale_x, texture_scale_y, 0, 0};
+  device()->SetVertexShaderConstantF(1, texture_scale, 1);
+
+  ScopedRenderTargetRestorer render_target_restorer(device(), 0);
   device()->SetRenderTarget(0, dst_surface);
   device()->SetTexture(0, src_texture);
 
@@ -159,13 +272,38 @@ bool AcceleratedSurfaceTransformer::CopyInverted(
   };
   device()->SetViewport(&viewport);
 
-  float halfPixelX = -1.0f / dst_size.width();
-  float halfPixelY = 1.0f / dst_size.height();
+  if (d3d_utils::GetSize(src_texture) == dst_size) {
+    device()->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+    device()->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+  } else {
+    device()->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+    device()->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+  }
+  device()->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
+  device()->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+
+  DrawScreenAlignedQuad(dst_size);
+
+  // Clear surface references.
+  device()->SetTexture(0, NULL);
+  return true;
+}
+
+void AcceleratedSurfaceTransformer::DrawScreenAlignedQuad(
+    const gfx::Size& size) {
+  const float target_size[4] = { size.width(), size.height(), 0, 0};
+
+  // Set the uniform shader constant |kRenderTargetSize|, which is bound
+  // to register c0.
+  device()->SetVertexShaderConstantF(0, target_size, 1);
+
+  // We always send down the same vertices. The vertex program will take
+  // care of doing resolution-dependent position adjustment.
   Vertex vertices[] = {
-    { halfPixelX - 1, halfPixelY + 1, 0.5f, 1, 0, 1 },
-    { halfPixelX + 1, halfPixelY + 1, 0.5f, 1, 1, 1 },
-    { halfPixelX + 1, halfPixelY - 1, 0.5f, 1, 1, 0 },
-    { halfPixelX - 1, halfPixelY - 1, 0.5f, 1, 0, 0 }
+    { -1, +1, 0.5f, 1, 0, 0 },
+    { +1, +1, 0.5f, 1, 1, 0 },
+    { +1, -1, 0.5f, 1, 1, 1 },
+    { -1, -1, 0.5f, 1, 0, 1 }
   };
 
   device()->BeginScene();
@@ -175,10 +313,6 @@ bool AcceleratedSurfaceTransformer::CopyInverted(
                             sizeof(vertices[0]));
   device()->EndScene();
 
-  // Clear surface references.
-  device()->SetRenderTarget(0, default_color_target);
-  device()->SetTexture(0, NULL);
-  return true;
 }
 
 // Resize an RGB surface using repeated linear interpolation.
@@ -186,8 +320,8 @@ bool AcceleratedSurfaceTransformer::ResizeBilinear(
     IDirect3DSurface9* src_surface,
     const gfx::Rect& src_subrect,
     IDirect3DSurface9* dst_surface) {
-  gfx::Size src_size = GetSize(src_surface);
-  gfx::Size dst_size = GetSize(dst_surface);
+  gfx::Size src_size = d3d_utils::GetSize(src_surface);
+  gfx::Size dst_size = d3d_utils::GetSize(dst_surface);
 
   if (src_size.IsEmpty() || dst_size.IsEmpty())
     return false;
@@ -246,11 +380,212 @@ bool AcceleratedSurfaceTransformer::ResizeBilinear(
   return true;
 }
 
+bool AcceleratedSurfaceTransformer::TransformRGBToYV12(
+    IDirect3DTexture9* src_surface,
+    const gfx::Size& dst_size,
+    IDirect3DSurface9** dst_y,
+    IDirect3DSurface9** dst_u,
+    IDirect3DSurface9** dst_v) {
+  gfx::Size packed_y_size;
+  gfx::Size packed_uv_size;
+  if (!AllocYUVBuffers(dst_size, &packed_y_size, &packed_uv_size,
+                       dst_y, dst_u, dst_v)) {
+    return false;
+  }
+
+  if (device_supports_multiple_render_targets()) {
+    return TransformRGBToYV12_MRT(src_surface,
+                                  dst_size,
+                                  packed_y_size,
+                                  packed_uv_size,
+                                  *dst_y,
+                                  *dst_u,
+                                  *dst_v);
+  } else {
+    return TransformRGBToYV12_WithoutMRT(src_surface,
+                                         dst_size,
+                                         packed_y_size,
+                                         packed_uv_size,
+                                         *dst_y,
+                                         *dst_u,
+                                         *dst_v);
+  }
+}
+
+bool AcceleratedSurfaceTransformer::AllocYUVBuffers(
+    const gfx::Size& dst_size,
+    gfx::Size* y_size,
+    gfx::Size* uv_size,
+    IDirect3DSurface9** dst_y,
+    IDirect3DSurface9** dst_u,
+    IDirect3DSurface9** dst_v) {
+
+  // Y is full height, packed into 4 components.
+  *y_size = gfx::Size((dst_size.width() + 3) / 4, dst_size.height());
+
+  // U and V are half the size (rounded up) of Y.
+  *uv_size = gfx::Size((y_size->width() + 1) / 2, (y_size->height() + 1) / 2);
+
+  if (!d3d_utils::CreateTemporaryLockableSurface(device(), *y_size, dst_y))
+    return false;
+  if (!d3d_utils::CreateTemporaryLockableSurface(device(), *uv_size, dst_u))
+    return false;
+  if (!d3d_utils::CreateTemporaryLockableSurface(device(), *uv_size, dst_v))
+    return false;
+  return true;
+}
+
+bool AcceleratedSurfaceTransformer::TransformRGBToYV12_MRT(
+    IDirect3DTexture9* src_surface,
+    const gfx::Size& dst_size,
+    const gfx::Size& packed_y_size,
+    const gfx::Size& packed_uv_size,
+    IDirect3DSurface9* dst_y,
+    IDirect3DSurface9* dst_u,
+    IDirect3DSurface9* dst_v) {
+  TRACE_EVENT0("gpu", "RGBToYV12_MRT");
+
+  ScopedRenderTargetRestorer color0_restorer(device(), 0);
+  ScopedRenderTargetRestorer color1_restorer(device(), 1);
+
+  // Create an intermediate surface to hold the UUVV values. This is color
+  // target 1 for the first pass, and texture 0 for the second pass. Its
+  // values are not read afterwards.
+  base::win::ScopedComPtr<IDirect3DTexture9> uv_as_texture;
+  base::win::ScopedComPtr<IDirect3DSurface9> uv_as_surface;
+  if (!d3d_utils::CreateTemporaryRenderTargetTexture(device(),
+                                                     packed_y_size,
+                                                     uv_as_texture.Receive(),
+                                                     uv_as_surface.Receive())) {
+    return false;
+  }
+
+  // Clamping is required if (dst_size.width() % 8 != 0) or if
+  // (dst_size.height != 0), so we set it always. Both passes rely on this.
+  device()->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
+  device()->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+
+  /////////////////////////////////////////
+  // Pass 1: RGB --(scaled)--> YYYY + UUVV
+  SetShaderCombo(RGB_TO_YV12_FAST__PASS_1_OF_2);
+
+  // Enable bilinear filtering if scaling is required. The filtering will take
+  // place entirely in the first pass.
+  if (d3d_utils::GetSize(src_surface) != dst_size) {
+    device()->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+    device()->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+  } else {
+    device()->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+    device()->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+  }
+
+  device()->SetTexture(0, src_surface);
+  device()->SetRenderTarget(0, dst_y);
+  device()->SetRenderTarget(1, uv_as_surface);
+  DrawScreenAlignedQuad(dst_size);
+
+  /////////////////////////////////////////
+  // Pass 2: UUVV -> UUUU + VVVV
+  SetShaderCombo(RGB_TO_YV12_FAST__PASS_2_OF_2);
+
+  // The second pass uses bilinear minification to achieve vertical scaling,
+  // so enable it always.
+  device()->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+  device()->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+
+  device()->SetTexture(0, uv_as_texture);
+  device()->SetRenderTarget(0, dst_u);
+  device()->SetRenderTarget(1, dst_v);
+  DrawScreenAlignedQuad(packed_y_size);
+
+  // Clear surface references.
+  device()->SetTexture(0, NULL);
+  return true;
+}
+
+bool AcceleratedSurfaceTransformer::TransformRGBToYV12_WithoutMRT(
+    IDirect3DTexture9* src_surface,
+    const gfx::Size& dst_size,
+    const gfx::Size& packed_y_size,
+    const gfx::Size& packed_uv_size,
+    IDirect3DSurface9* dst_y,
+    IDirect3DSurface9* dst_u,
+    IDirect3DSurface9* dst_v) {
+  TRACE_EVENT0("gpu", "RGBToYV12_WithoutMRT");
+
+  ScopedRenderTargetRestorer color0_restorer(device(), 0);
+
+  base::win::ScopedComPtr<IDirect3DTexture9> scaled_src_surface;
+
+  // If scaling is requested, do it to a temporary texture. The MRT path
+  // gets a scale for free, so we need to support it here too (even though
+  // it's an extra operation).
+  if (d3d_utils::GetSize(src_surface) == dst_size) {
+    scaled_src_surface = src_surface;
+  } else {
+    base::win::ScopedComPtr<IDirect3DSurface9> dst_level0;
+    if (!d3d_utils::CreateTemporaryRenderTargetTexture(
+            device(), dst_size,
+            scaled_src_surface.Receive(), dst_level0.Receive())) {
+      return false;
+    }
+
+    if (!Copy(src_surface, dst_level0, dst_size)) {
+      return false;
+    }
+  }
+
+  // Input texture is the same for all three passes.
+  device()->SetTexture(0, scaled_src_surface);
+
+  // Clamping is required if (dst_size.width() % 8 != 0) or if
+  // (dst_size.height != 0), so we set it always. All passes rely on this.
+  device()->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
+  device()->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+
+  /////////////////////
+  // Pass 1: RGB -> Y.
+  SetShaderCombo(RGB_TO_YV12_SLOW__PASS_1_OF_3);
+
+  // Pass 1 just needs point sampling.
+  device()->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+  device()->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+
+  device()->SetRenderTarget(0, dst_y);
+  DrawScreenAlignedQuad(dst_size);
+
+  // Passes 2 and 3 rely on bilinear minification to downsample U and V.
+  device()->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+  device()->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+
+  /////////////////////
+  // Pass 2: RGB -> U.
+  SetShaderCombo(RGB_TO_YV12_SLOW__PASS_2_OF_3);
+  device()->SetRenderTarget(0, dst_u);
+  DrawScreenAlignedQuad(dst_size);
+
+  /////////////////////
+  // Pass 3: RGB -> V.
+  SetShaderCombo(RGB_TO_YV12_SLOW__PASS_3_OF_3);
+  device()->SetRenderTarget(0, dst_v);
+  DrawScreenAlignedQuad(dst_size);
+
+  // Clear surface references.
+  device()->SetTexture(0, NULL);
+  return true;
+}
+
 IDirect3DDevice9* AcceleratedSurfaceTransformer::device() {
   return device_;
 }
 
 bool AcceleratedSurfaceTransformer::SetShaderCombo(ShaderCombo combo) {
+  // Compile shaders on first use, if needed. Normally the compilation should
+  // already have happened at Init() time, but test code might force
+  // us down an unusual path.
+  if (!CompileShaderCombo(combo))
+    return false;
+
   HRESULT hr = device()->SetVertexShader(vertex_shaders_[combo]);
   if (!SUCCEEDED(hr))
     return false;

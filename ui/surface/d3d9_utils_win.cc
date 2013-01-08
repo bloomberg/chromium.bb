@@ -116,4 +116,20 @@ bool CreateTemporaryRenderTargetTexture(IDirect3DDevice9* device,
   return SUCCEEDED(hr);
 }
 
+gfx::Size GetSize(IDirect3DSurface9* surface) {
+  D3DSURFACE_DESC surface_description;
+  HRESULT hr = surface->GetDesc(&surface_description);
+  if (FAILED(hr))
+    return gfx::Size(0, 0);
+  return gfx::Size(surface_description.Width, surface_description.Height);
+}
+
+gfx::Size GetSize(IDirect3DTexture9* texture) {
+  D3DSURFACE_DESC surface_description;
+  HRESULT hr = texture->GetLevelDesc(0, &surface_description);
+  if (FAILED(hr))
+    return gfx::Size(0, 0);
+  return gfx::Size(surface_description.Width, surface_description.Height);
+}
+
 }  // namespace ui_surface_d3d9_utils
