@@ -15,9 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
-#include "base/stl_util.h"
 #include "base/string_util.h"
-#include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/synchronization/waitable_event.h"
@@ -45,12 +43,8 @@ class Worker : public Listener, public Sender {
         ipc_thread_((thread_name + "_ipc").c_str()),
         listener_thread_((thread_name + "_listener").c_str()),
         overrided_thread_(NULL),
-        shutdown_event_(true, false) {
-    // The data race on vfptr is real but is very hard
-    // to suppress using standard Valgrind mechanism (suppressions).
-    // We have to use ANNOTATE_BENIGN_RACE to hide the reports and
-    // make ThreadSanitizer bots green.
-    ANNOTATE_BENIGN_RACE(this, "Race on vfptr, http://crbug.com/25841");
+        shutdown_event_(true, false),
+        is_shutdown_(false) {
   }
 
   // Will create a named channel and use this name for the threads' name.
@@ -62,25 +56,13 @@ class Worker : public Listener, public Sender {
         ipc_thread_((channel_name + "_ipc").c_str()),
         listener_thread_((channel_name + "_listener").c_str()),
         overrided_thread_(NULL),
-        shutdown_event_(true, false) {
-    // The data race on vfptr is real but is very hard
-    // to suppress using standard Valgrind mechanism (suppressions).
-    // We have to use ANNOTATE_BENIGN_RACE to hide the reports and
-    // make ThreadSanitizer bots green.
-    ANNOTATE_BENIGN_RACE(this, "Race on vfptr, http://crbug.com/25841");
+        shutdown_event_(true, false),
+        is_shutdown_(false) {
   }
 
-  // The IPC thread needs to outlive SyncChannel, so force the correct order of
-  // destruction.
   virtual ~Worker() {
-    WaitableEvent listener_done(false, false), ipc_done(false, false);
-    ListenerThread()->message_loop()->PostTask(
-        FROM_HERE, base::Bind(&Worker::OnListenerThreadShutdown1, this,
-                              &listener_done, &ipc_done));
-    listener_done.Wait();
-    ipc_done.Wait();
-    ipc_thread_.Stop();
-    listener_thread_.Stop();
+    // Shutdown() must be called before destruction.
+    CHECK(is_shutdown_);
   }
   void AddRef() { }
   void Release() { }
@@ -97,6 +79,20 @@ class Worker : public Listener, public Sender {
     StartThread(&listener_thread_, MessageLoop::TYPE_DEFAULT);
     ListenerThread()->message_loop()->PostTask(
         FROM_HERE, base::Bind(&Worker::OnStart, this));
+  }
+  void Shutdown() {
+    // The IPC thread needs to outlive SyncChannel. We can't do this in
+    // ~Worker(), since that'll reset the vtable pointer (to Worker's), which
+    // may result in a race conditions. See http://crbug.com/25841.
+    WaitableEvent listener_done(false, false), ipc_done(false, false);
+    ListenerThread()->message_loop()->PostTask(
+        FROM_HERE, base::Bind(&Worker::OnListenerThreadShutdown1, this,
+                              &listener_done, &ipc_done));
+    listener_done.Wait();
+    ipc_done.Wait();
+    ipc_thread_.Stop();
+    listener_thread_.Stop();
+    is_shutdown_ = true;
   }
   void OverrideThread(base::Thread* overrided_thread) {
     DCHECK(overrided_thread_ == NULL);
@@ -236,6 +232,8 @@ class Worker : public Listener, public Sender {
 
   base::WaitableEvent shutdown_event_;
 
+  bool is_shutdown_;
+
   DISALLOW_COPY_AND_ASSIGN(Worker);
 };
 
@@ -262,7 +260,10 @@ void RunTest(std::vector<Worker*> workers) {
   for (size_t i = 0; i < workers.size(); ++i)
     workers[i]->done_event()->Wait();
 
-  STLDeleteContainerPointers(workers.begin(), workers.end());
+  for (size_t i = 0; i < workers.size(); ++i) {
+    workers[i]->Shutdown();
+    delete workers[i];
+  }
 }
 
 }  // namespace
@@ -1194,6 +1195,8 @@ TEST_F(IPCSyncChannelTest, SendAfterClose) {
   server.done_event()->Wait();
 
   EXPECT_FALSE(server.send_result());
+
+  server.Shutdown();
 }
 
 //-----------------------------------------------------------------------------

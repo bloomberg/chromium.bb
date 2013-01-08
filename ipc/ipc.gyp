@@ -18,6 +18,7 @@
       },
       'dependencies': [
         '../base/base.gyp:base',
+        # TODO(vtl): Needed for base/lazy_instance.h, which is suspect.
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
       ],
       # TODO(gregoryd): direct_dependent_settings should be shared with the
@@ -37,7 +38,6 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
-        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../testing/gtest.gyp:gtest',
       ],
       'include_dirs': [
@@ -106,6 +106,7 @@
           },
           'dependencies': [
             '../base/base.gyp:base_nacl_win64',
+            # TODO(vtl): Needed for base/lazy_instance.h, which is suspect.
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
           ],
           # TODO(gregoryd): direct_dependent_settings should be shared with the
