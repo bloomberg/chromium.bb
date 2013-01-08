@@ -15,6 +15,7 @@ namespace {
 // Maximum depth of submenus allowed (e.g., 1 indicates that submenus are
 // allowed, but not sub-submenus).
 const int kMaxMenuDepth = 2;
+const uint32_t kMaxMenuEntries = 1000;
 
 bool CheckMenu(int depth, const PP_Flash_Menu* menu);
 void FreeMenu(const PP_Flash_Menu* menu);
@@ -122,6 +123,11 @@ PP_Flash_Menu* ReadMenu(int depth,
 
   if (menu->count == 0)
     return menu;
+
+  if (menu->count > kMaxMenuEntries) {
+    FreeMenu(menu);
+    return NULL;
+  }
 
   menu->items = new PP_Flash_MenuItem[menu->count];
   memset(menu->items, 0, sizeof(PP_Flash_MenuItem) * menu->count);
