@@ -151,7 +151,7 @@ bool VerifyDataTypeEncryptionForTest(
       }
     }
     // Push the successor.
-    to_visit.push(child.Get(NEXT_ID));
+    to_visit.push(child.GetSuccessorId());
   }
   return true;
 }

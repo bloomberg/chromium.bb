@@ -247,22 +247,22 @@ TEST_F(ProcessCommitResponseCommandTest, MultipleCommitIdProjections) {
   Id cid;
   ASSERT_TRUE(directory()->GetFirstChildId(&trans, new_fid, &cid));
   Entry b1(&trans, syncable::GET_BY_ID, cid);
-  Entry b2(&trans, syncable::GET_BY_ID, b1.Get(syncable::NEXT_ID));
+  Entry b2(&trans, syncable::GET_BY_ID, b1.GetSuccessorId());
   CheckEntry(&b1, "bookmark 1", BOOKMARKS, new_fid);
   CheckEntry(&b2, "bookmark 2", BOOKMARKS, new_fid);
-  ASSERT_TRUE(b2.Get(syncable::NEXT_ID).IsRoot());
+  ASSERT_TRUE(b2.GetSuccessorId().IsRoot());
 
   // Look at the prefs and autofill items.
-  Entry p1(&trans, syncable::GET_BY_ID, b_folder.Get(syncable::NEXT_ID));
-  Entry p2(&trans, syncable::GET_BY_ID, p1.Get(syncable::NEXT_ID));
+  Entry p1(&trans, syncable::GET_BY_ID, b_folder.GetSuccessorId());
+  Entry p2(&trans, syncable::GET_BY_ID, p1.GetSuccessorId());
   CheckEntry(&p1, "Pref 1", PREFERENCES, id_factory_.root());
   CheckEntry(&p2, "Pref 2", PREFERENCES, id_factory_.root());
 
-  Entry a1(&trans, syncable::GET_BY_ID, p2.Get(syncable::NEXT_ID));
-  Entry a2(&trans, syncable::GET_BY_ID, a1.Get(syncable::NEXT_ID));
+  Entry a1(&trans, syncable::GET_BY_ID, p2.GetSuccessorId());
+  Entry a2(&trans, syncable::GET_BY_ID, a1.GetSuccessorId());
   CheckEntry(&a1, "Autofill 1", AUTOFILL, id_factory_.root());
   CheckEntry(&a2, "Autofill 2", AUTOFILL, id_factory_.root());
-  ASSERT_TRUE(a2.Get(syncable::NEXT_ID).IsRoot());
+  ASSERT_TRUE(a2.GetSuccessorId().IsRoot());
 }
 
 // In this test, we test processing a commit response for a commit batch that
@@ -371,7 +371,7 @@ TEST_F(ProcessCommitResponseCommandTest, NewFolderCommitKeepsChildOrder) {
         ASSERT_LT(0, c.Get(BASE_VERSION));
       }
     }
-    cid = c.Get(syncable::NEXT_ID);
+    cid = c.GetSuccessorId();
     child_count++;
   }
   ASSERT_EQ(batch_size*2, child_count)

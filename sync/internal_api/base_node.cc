@@ -195,14 +195,14 @@ bool BaseNode::HasChildren() const {
 }
 
 int64 BaseNode::GetPredecessorId() const {
-  syncable::Id id_string = GetEntry()->Get(syncable::PREV_ID);
+  syncable::Id id_string = GetEntry()->GetPredecessorId();
   if (id_string.IsRoot())
     return kInvalidId;
   return IdToMetahandle(GetTransaction()->GetWrappedTrans(), id_string);
 }
 
 int64 BaseNode::GetSuccessorId() const {
-  syncable::Id id_string = GetEntry()->Get(syncable::NEXT_ID);
+  syncable::Id id_string = GetEntry()->GetSuccessorId();
   if (id_string.IsRoot())
     return kInvalidId;
   return IdToMetahandle(GetTransaction()->GetWrappedTrans(), id_string);
@@ -242,7 +242,7 @@ int BaseNode::GetTotalNodeCount() const {
     syncable::Id child_id;
     if (dir->GetFirstChildId(trans, id, &child_id) && !child_id.IsRoot())
       stack.push(IdToMetahandle(trans, child_id));
-    syncable::Id successor_id = entry.Get(syncable::NEXT_ID);
+    syncable::Id successor_id = entry.GetSuccessorId();
     if (!successor_id.IsRoot())
       stack.push(IdToMetahandle(trans, successor_id));
   }

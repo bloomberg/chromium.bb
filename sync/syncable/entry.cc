@@ -95,6 +95,14 @@ ModelType Entry::GetModelType() const {
   return UNSPECIFIED;
 }
 
+Id Entry::GetPredecessorId() const {
+  return kernel_->ref(PREV_ID);
+}
+
+Id Entry::GetSuccessorId() const {
+  return kernel_->ref(NEXT_ID);
+}
+
 std::ostream& operator<<(std::ostream& s, const Blob& blob) {
   for (Blob::const_iterator i = blob.begin(); i != blob.end(); ++i)
     s << std::hex << std::setw(2)

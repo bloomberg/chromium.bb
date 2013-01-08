@@ -78,14 +78,14 @@ void ChangeEntryIDAndUpdateChildren(
   // order.  Do this by reinserting into the linked list; the first
   // step in PutPredecessor is to Unlink from the existing order, which
   // will overwrite the stale Id value from the adjacent nodes.
-  if (entry->Get(PREV_ID) == entry->Get(NEXT_ID) &&
-      entry->Get(PREV_ID) == old_id) {
+  if (entry->GetPredecessorId() == entry->GetSuccessorId() &&
+      entry->GetPredecessorId() == old_id) {
     // We just need a shallow update to |entry|'s fields since it is already
     // self looped.
     entry->Put(NEXT_ID, new_id);
     entry->Put(PREV_ID, new_id);
   } else {
-    entry->PutPredecessor(entry->Get(PREV_ID));
+    entry->PutPredecessor(entry->GetPredecessorId());
   }
 }
 

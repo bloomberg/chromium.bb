@@ -461,7 +461,7 @@ bool WriteNode::SetPosition(const BaseNode& new_parent,
 
   // Filter out redundant changes if both the parent and the predecessor match.
   if (new_parent_id == entry_->Get(syncable::PARENT_ID)) {
-    const syncable::Id& old = entry_->Get(syncable::PREV_ID);
+    const syncable::Id& old = entry_->GetPredecessorId();
     if ((!predecessor && old.IsRoot()) ||
         (predecessor && (old == predecessor->GetEntry()->Get(syncable::ID)))) {
       return true;

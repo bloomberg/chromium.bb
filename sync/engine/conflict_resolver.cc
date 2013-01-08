@@ -140,10 +140,10 @@ void ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     syncable::Id server_prev_id = entry.ComputePrevIdFromServerPosition(
         entry.Get(syncable::SERVER_PARENT_ID));
     bool needs_reinsertion = !parent_matches ||
-         server_prev_id != entry.Get(syncable::PREV_ID);
+         server_prev_id != entry.GetPredecessorId();
     DVLOG_IF(1, needs_reinsertion) << "Insertion needed, server prev id "
         << " is " << server_prev_id << ", local prev id is "
-        << entry.Get(syncable::PREV_ID);
+        << entry.GetPredecessorId();
     const sync_pb::EntitySpecifics& specifics =
         entry.Get(syncable::SPECIFICS);
     const sync_pb::EntitySpecifics& server_specifics =
@@ -288,7 +288,7 @@ void ConflictResolver::ResolveConflicts(
       Entry entry(trans, syncable::GET_BY_ID, prev_id);
       // Any entry in conflict must be valid.
       CHECK(entry.good());
-      Id new_prev_id = entry.Get(syncable::PREV_ID);
+      Id new_prev_id = entry.GetPredecessorId();
       if (new_prev_id == prev_id)
         break;
       prev_id = new_prev_id;

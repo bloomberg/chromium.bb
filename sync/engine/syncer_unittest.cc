@@ -90,10 +90,8 @@ using syncable::IS_UNAPPLIED_UPDATE;
 using syncable::IS_UNSYNCED;
 using syncable::META_HANDLE;
 using syncable::MTIME;
-using syncable::NEXT_ID;
 using syncable::NON_UNIQUE_NAME;
 using syncable::PARENT_ID;
-using syncable::PREV_ID;
 using syncable::BASE_SERVER_SPECIFICS;
 using syncable::SERVER_IS_DEL;
 using syncable::SERVER_PARENT_ID;
@@ -4509,14 +4507,14 @@ class SyncerPositionUpdateTest : public SyncerTest {
       Id id = i->second;
       Entry entry_with_id(&trans, GET_BY_ID, id);
       EXPECT_TRUE(entry_with_id.good());
-      EXPECT_EQ(prev_id, entry_with_id.Get(PREV_ID));
+      EXPECT_EQ(prev_id, entry_with_id.GetPredecessorId());
       EXPECT_EQ(
           i->first,
           NodeOrdinalToInt64(entry_with_id.Get(SERVER_ORDINAL_IN_PARENT)));
       if (next == position_map_.end()) {
-        EXPECT_EQ(Id(), entry_with_id.Get(NEXT_ID));
+        EXPECT_EQ(Id(), entry_with_id.GetSuccessorId());
       } else {
-        EXPECT_EQ(next->second, entry_with_id.Get(NEXT_ID));
+        EXPECT_EQ(next->second, entry_with_id.GetSuccessorId());
         next++;
       }
       prev_id = id;
@@ -4636,12 +4634,12 @@ class SyncerPositionTiebreakingTest : public SyncerTest {
     EXPECT_TRUE(low.good());
     EXPECT_TRUE(mid.good());
     EXPECT_TRUE(high.good());
-    EXPECT_TRUE(low.Get(PREV_ID) == null_id);
-    EXPECT_TRUE(mid.Get(PREV_ID) == low_id_);
-    EXPECT_TRUE(high.Get(PREV_ID) == mid_id_);
-    EXPECT_TRUE(high.Get(NEXT_ID) == null_id);
-    EXPECT_TRUE(mid.Get(NEXT_ID) == high_id_);
-    EXPECT_TRUE(low.Get(NEXT_ID) == mid_id_);
+    EXPECT_TRUE(low.GetPredecessorId() == null_id);
+    EXPECT_TRUE(mid.GetPredecessorId() == low_id_);
+    EXPECT_TRUE(high.GetPredecessorId() == mid_id_);
+    EXPECT_TRUE(high.GetSuccessorId() == null_id);
+    EXPECT_TRUE(mid.GetSuccessorId() == high_id_);
+    EXPECT_TRUE(low.GetSuccessorId() == mid_id_);
   }
 
  protected:

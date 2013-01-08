@@ -197,7 +197,7 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
     } else {
       if (meta_entry.Get(SPECIFICS).has_bookmark()) {
         // Common data in both new and old protocol.
-        const Id& prev_id = meta_entry.Get(syncable::PREV_ID);
+        const Id& prev_id = meta_entry.GetPredecessorId();
         string prev_id_string =
             prev_id.IsRoot() ? string() : prev_id.GetServerId();
         sync_entry->set_insert_after_item_id(prev_id_string);

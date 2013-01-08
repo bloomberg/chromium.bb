@@ -216,7 +216,7 @@ bool ChangeReorderBuffer::GetAllChangesInTreeOrder(
         // ordering.
         if (operations_.find(handle) == operations_.end())
           operations_[handle] = OP_UPDATE_POSITION_AND_PROPERTIES;
-        id = child.Get(syncable::NEXT_ID);
+        id = child.GetSuccessorId();
       }
     }
   }

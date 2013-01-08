@@ -56,7 +56,6 @@ using syncable::MutableEntry;
 using syncable::NON_UNIQUE_NAME;
 using syncable::BASE_SERVER_SPECIFICS;
 using syncable::PARENT_ID;
-using syncable::PREV_ID;
 using syncable::SERVER_CTIME;
 using syncable::SERVER_IS_DEL;
 using syncable::SERVER_IS_DIR;
@@ -462,7 +461,7 @@ bool AddItemThenPredecessors(
   if (item->Get(IS_DEL))
     return true;  // Deleted items have no predecessors.
 
-  Id prev_id = item->Get(PREV_ID);
+  Id prev_id = item->GetPredecessorId();
   while (!prev_id.IsRoot()) {
     Entry prev(trans, GET_BY_ID, prev_id);
     CHECK(prev.good()) << "Bad id when walking predecessors.";
@@ -471,7 +470,7 @@ bool AddItemThenPredecessors(
     if (!inserted_items->insert(prev.Get(META_HANDLE)).second)
       break;
     commit_ids->push_back(prev_id);
-    prev_id = prev.Get(PREV_ID);
+    prev_id = prev.GetPredecessorId();
   }
   return true;
 }

@@ -105,6 +105,9 @@ class SYNC_EXPORT Entry {
   ModelType GetServerModelType() const;
   ModelType GetModelType() const;
 
+  Id GetPredecessorId() const;
+  Id GetSuccessorId() const;
+
   inline bool ExistsOnClientBecauseNameIsNonEmpty() const {
     DCHECK(kernel_);
     return !kernel_->ref(NON_UNIQUE_NAME).empty();

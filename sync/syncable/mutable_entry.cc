@@ -400,7 +400,7 @@ bool MutableEntry::PutPredecessor(const Id& predecessor_id) {
     }
     if (predecessor.Get(PARENT_ID) != Get(PARENT_ID))
       return false;
-    successor_id = predecessor.Get(NEXT_ID);
+    successor_id = predecessor.GetSuccessorId();
     predecessor.Put(NEXT_ID, Get(ID));
   } else {
     syncable::Directory* dir = trans()->directory();

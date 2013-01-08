@@ -248,7 +248,7 @@ bool GetCommitIdsCommand::AddItemThenPredecessors(
   if (item.Get(syncable::IS_DEL))
     return true;  // Deleted items have no predecessors.
 
-  syncable::Id prev_id = item.Get(syncable::PREV_ID);
+  syncable::Id prev_id = item.GetPredecessorId();
   while (!prev_id.IsRoot()) {
     syncable::Entry prev(trans, syncable::GET_BY_ID, prev_id);
     CHECK(prev.good()) << "Bad id when walking predecessors.";
@@ -262,7 +262,7 @@ bool GetCommitIdsCommand::AddItemThenPredecessors(
     }
     if (!AddItem(ready_unsynced_set, prev, result))
       return false;  // Item is in conflict.
-    prev_id = prev.Get(syncable::PREV_ID);
+    prev_id = prev.GetPredecessorId();
   }
   return true;
 }
