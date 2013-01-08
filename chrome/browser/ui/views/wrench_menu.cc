@@ -295,24 +295,6 @@ class MenuButtonBackground : public views::Background {
   DISALLOW_COPY_AND_ASSIGN(MenuButtonBackground);
 };
 
-// A View subclass that forces SchedulePaint to paint all. Normally when the
-// mouse enters/exits a button the buttons invokes SchedulePaint. As part of the
-// button border (MenuButtonBackground) is rendered by the button to the
-// left/right of it SchedulePaint on the the button may not be enough, so this
-// forces a paint all.
-class ScheduleAllView : public views::View {
- public:
-  ScheduleAllView() {}
-
-  // Overridden from views::View.
-  virtual void SchedulePaintInRect(const gfx::Rect& r) OVERRIDE {
-    View::SchedulePaintInRect(gfx::Rect(0, 0, width(), height()));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScheduleAllView);
-};
-
 string16 GetAccessibleNameForWrenchMenuItem(
       MenuModel* model, int item_index, int accessible_string_id) {
   string16 accessible_name = l10n_util::GetStringUTF16(accessible_string_id);
@@ -330,11 +312,21 @@ string16 GetAccessibleNameForWrenchMenuItem(
 }
 
 // WrenchMenuView is a view that can contain text buttons.
-class WrenchMenuView : public ScheduleAllView, public views::ButtonListener {
+class WrenchMenuView : public views::View,
+                       public views::ButtonListener {
  public:
   WrenchMenuView(WrenchMenu* menu, MenuModel* menu_model)
       : menu_(menu),
         menu_model_(menu_model) {}
+
+  // Overridden from views::View.
+  virtual void SchedulePaintInRect(const gfx::Rect& r) OVERRIDE {
+    // Normally when the mouse enters/exits a button the buttons invokes
+    // SchedulePaint. As part of the button border (MenuButtonBackground) is
+    // rendered by the button to the left/right of it SchedulePaint on the the
+    // button may not be enough, so this forces a paint all.
+    View::SchedulePaintInRect(gfx::Rect(size()));
+  }
 
   TextButton* CreateAndConfigureButton(int string_id,
                                        MenuButtonBackground::ButtonType type,
