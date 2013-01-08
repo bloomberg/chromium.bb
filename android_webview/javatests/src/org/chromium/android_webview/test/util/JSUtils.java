@@ -51,7 +51,8 @@ public class JSUtils {
                     "var evObj = document.createEvent('Events'); " +
                     "evObj.initEvent('click', true, false); " +
                     "document.getElementById('" + linkId + "').dispatchEvent(evObj);" +
-                    "console.log('element with id [" + linkId + "] clicked');");
+                    "console.log('element with id [" + linkId + "] clicked');",
+                    null);
             }
         });
     }
