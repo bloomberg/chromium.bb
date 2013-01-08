@@ -26,8 +26,8 @@ namespace gfx {
 namespace {
 
 bool ScalingEnabled() {
-  static bool scale_images = !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableScalingInImageSkiaOperations);
+  static bool scale_images = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableScalingInImageSkiaOperations);
   return scale_images;
 }
 

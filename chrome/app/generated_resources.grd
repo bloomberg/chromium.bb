@@ -6975,6 +6975,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_ACCELERATED_VIDEO_DECODE_DESCRIPTION" desc="Description for the flag to disable accelerated video decode where available.">
         Disables hardware-accelerated video decode where available.
       </message>
+      <message name="IDS_FLAGS_ENABLE_SCALING_IN_IMAGE_SKIA_OPERATIONS_NAME" desc="Name of the flag to enable scaling in ImageSkiaOperations API.">
+        Enable scaling in ImageSkiaOperations.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_SCALING_IN_IMAGE_SKIA_OPERATIONS_DESCRIPTION" desc="Description for the flag enable scaling in ImageSkiaOperations API.">
+        Allows ImageSkiaOperations API to operate on images at different scale factors.
+      </message>
       <message name="IDS_FLAGS_ENABLE_WEBKIT_TEXT_SUBPIXEL_POSITIONING_NAME" desc="Name of the flag to enable subpixel text positioning on web pages.">
         Enable webpage text sub-pixel positioning.
       </message>
