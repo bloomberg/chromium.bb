@@ -25,4 +25,10 @@ public interface TabObserver {
      * @param url The new URL.
      */
     public void onUpdateUrl(TabBase tab, String url);
+
+    /**
+     * Called when the tab is about to close.
+     * @param tab The closing {@link TabBase}.
+     */
+    public void onCloseTab(TabBase tab);
 }

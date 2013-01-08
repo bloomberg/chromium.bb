@@ -70,6 +70,9 @@ public class TabBase {
      * be used.
      */
     public void destroy() {
+        for (int i = 0; i < mObservers.size(); ++i) {
+            mObservers.get(i).onCloseTab(TabBase.this);
+        }
         destroyContentView();
         if (mNativeTabBaseAndroidImpl != 0) {
             mCleanupReference.cleanupNow();

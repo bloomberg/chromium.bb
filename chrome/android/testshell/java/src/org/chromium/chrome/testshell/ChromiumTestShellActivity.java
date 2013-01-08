@@ -130,6 +130,14 @@ public class ChromiumTestShellActivity extends ChromiumActivity {
         return tab != null ? tab.getContentView() : null;
     }
 
+    /**
+     * Creates a {@link TabBase} with a URL specified by {@code url}.
+     * @param url The URL the new {@link TabBase} should start with.
+     */
+    public void createTab(String url) {
+        mTabManager.createTab(url);
+    }
+
     private void waitForDebuggerIfNeeded() {
         if (CommandLine.getInstance().hasSwitch(CommandLine.WAIT_FOR_JAVA_DEBUGGER)) {
             Log.e(TAG, "Waiting for Java debugger to connect...");

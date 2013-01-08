@@ -152,5 +152,9 @@ public class TestShellToolbar extends LinearLayout {
         public void onUpdateUrl(TabBase tab, String url) {
             if (tab == mTab) TestShellToolbar.this.onUpdateUrl(url);
         }
+
+        @Override
+        public void onCloseTab(TabBase tab) {
+        }
     }
 }

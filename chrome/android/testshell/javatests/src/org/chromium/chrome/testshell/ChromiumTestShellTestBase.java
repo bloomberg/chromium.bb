@@ -57,7 +57,7 @@ public class ChromiumTestShellTestBase extends
      * @return Whether or not the Shell was actually finished loading.
      * @throws Exception
      */
-    protected boolean waitForActiveShellToBeDoneLoading() throws Exception {
+    protected boolean waitForActiveShellToBeDoneLoading() throws InterruptedException {
         final ChromiumTestShellActivity activity = getActivity();
 
         // Wait for the Content Shell to be initialized.
@@ -85,5 +85,19 @@ public class ChromiumTestShellTestBase extends
                 }
             }
         }, WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+    }
+
+    /**
+     * Navigates the currently active tab to a sanitized version of {@code url}.
+     * @param url The potentially unsanitized URL to navigate to.
+     */
+    public void loadUrlWithSanitization(final String url) throws InterruptedException {
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().getActiveTab().loadUrlWithSanitization(url);
+            }
+        });
+        waitForActiveShellToBeDoneLoading();
     }
 }

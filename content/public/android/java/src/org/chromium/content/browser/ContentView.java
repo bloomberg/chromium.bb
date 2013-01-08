@@ -211,7 +211,8 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
         mContentViewCore.setContentViewClient(client);
     }
 
-    ContentViewClient getContentViewClient() {
+    // @VisibleForTesting
+    public ContentViewClient getContentViewClient() {
         return mContentViewCore.getContentViewClient();
     }
 
