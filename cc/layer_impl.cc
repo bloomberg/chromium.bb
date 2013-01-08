@@ -713,6 +713,19 @@ void LayerImpl::setContentsScale(float contentsScaleX, float contentsScaleY)
     noteLayerPropertyChanged();
 }
 
+void LayerImpl::calculateContentsScale(
+    float idealContentsScale,
+    float* contentsScaleX,
+    float* contentsScaleY,
+    gfx::Size* contentBounds)
+{
+    // Base LayerImpl has all of its content scales and content bounds pushed
+    // from its Layer during commit and just reuses those values as-is.
+    *contentsScaleX = this->contentsScaleX();
+    *contentsScaleY = this->contentsScaleY();
+    *contentBounds = this->contentBounds();
+}
+
 void LayerImpl::setScrollOffset(gfx::Vector2d scrollOffset)
 {
     if (m_scrollOffset == scrollOffset)

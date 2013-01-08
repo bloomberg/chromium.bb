@@ -15,6 +15,7 @@
 #include "cc/solid_color_draw_quad.h"
 #include "cc/tile_draw_quad.h"
 #include "ui/gfx/quad_f.h"
+#include "ui/gfx/size_conversions.h"
 
 namespace cc {
 
@@ -129,18 +130,6 @@ void PictureLayerImpl::dumpLayerProperties(std::string*, int indent) const {
 }
 
 void PictureLayerImpl::didUpdateTransforms() {
-  if (drawsContent()) {
-    // TODO(enne): Add tilings during pinch zoom
-    // TODO(enne): Consider culling old tilings after pinch finishes.
-    if (!tilings_.num_tilings()) {
-      AddTiling(contentsScaleX(), TileSize());
-      // TODO(enne): Add a low-res tiling as well.
-    }
-  } else {
-    // TODO(enne): This should be unnecessary once there are two trees.
-    tilings_.Reset();
-  }
-
   gfx::Transform current_screen_space_transform =
       screenSpaceTransform();
   double current_time =
@@ -168,6 +157,36 @@ void PictureLayerImpl::didUpdateTransforms() {
   last_content_bounds_ = contentBounds();
   last_content_scale_x_ = contentsScaleX();
   last_content_scale_y_ = contentsScaleY();
+}
+
+void PictureLayerImpl::calculateContentsScale(
+    float ideal_contents_scale,
+    float* contents_scale_x,
+    float* contents_scale_y,
+    gfx::Size* content_bounds) {
+  if (!drawsContent()) {
+    DCHECK(!tilings_.num_tilings());
+    return;
+  }
+
+  ManageTilings(ideal_contents_scale);
+
+  // The content scale and bounds for a PictureLayerImpl is somewhat fictitious.
+  // There are (usually) several tilings at different scales.  However, the
+  // content bounds is the (integer!) space in which quads are generated.
+  // In order to guarantee that we can fill this integer space with any set of
+  // tilings (and then map back to floating point texture coordinates), the
+  // contents scale must be at least as large as the largest of the tilings.
+  float max_contents_scale = 1.f;
+  for (size_t i = 0; i < tilings_.num_tilings(); ++i) {
+    const PictureLayerTiling* tiling = tilings_.tiling_at(i);
+    max_contents_scale = std::max(max_contents_scale, tiling->contents_scale());
+  }
+
+  *contents_scale_x = max_contents_scale;
+  *contents_scale_y = max_contents_scale;
+  *content_bounds = gfx::ToCeiledSize(
+      gfx::ScaleSize(bounds(), max_contents_scale, max_contents_scale));
 }
 
 scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
@@ -258,6 +277,20 @@ gfx::Size PictureLayerImpl::TileSize() const {
   }
 
   return layerTreeImpl()->settings().defaultTileSize;
+}
+
+void PictureLayerImpl::ManageTilings(float ideal_contents_scale) {
+  if (drawsContent()) {
+    // TODO(enne): Add tilings during pinch zoom
+    // TODO(enne): Consider culling old tilings after pinch finishes.
+    if (!tilings_.num_tilings()) {
+      AddTiling(ideal_contents_scale, TileSize());
+      // TODO(enne): Add a low-res tiling as well.
+    }
+  } else {
+    // TODO(enne): This should be unnecessary once there are two trees.
+    tilings_.Reset();
+  }
 }
 
 }  // namespace cc

@@ -199,6 +199,12 @@ public:
     float contentsScaleY() const { return m_drawProperties.contents_scale_y; }
     void setContentsScale(float contentsScaleX, float contentsScaleY);
 
+    virtual void calculateContentsScale(
+        float idealContentsScale,
+        float* contentsScaleX,
+        float* contentsScaleY,
+        gfx::Size* contentBounds);
+
     gfx::Vector2d scrollOffset() const { return m_scrollOffset; }
     void setScrollOffset(gfx::Vector2d);
 

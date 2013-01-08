@@ -30,6 +30,11 @@ public:
   virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
   virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
   virtual void didUpdateTransforms() OVERRIDE;
+  virtual void calculateContentsScale(
+      float ideal_contents_scale,
+      float* contents_scale_x,
+      float* contents_scale_y,
+      gfx::Size* content_bounds) OVERRIDE;
 
   // PictureLayerTilingClient overrides.
   virtual scoped_refptr<Tile> CreateTile(PictureLayerTiling*,
@@ -48,6 +53,7 @@ protected:
   void AddTiling(float contents_scale, gfx::Size tile_size);
   void SyncFromActiveLayer(const PictureLayerImpl* other);
   gfx::Size TileSize() const;
+  void ManageTilings(float ideal_contents_scale);
 
   PictureLayerTilingSet tilings_;
   scoped_refptr<PicturePileImpl> pile_;

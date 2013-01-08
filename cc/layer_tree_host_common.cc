@@ -406,8 +406,41 @@ gfx::Transform computeScrollCompensationMatrixForChildren(LayerImpl* layer, cons
     return nextScrollCompensationMatrix;
 }
 
+template<typename LayerType>
+static inline void calculateContentsScale(LayerType* layer, float contentsScale)
+{
+    layer->calculateContentsScale(
+        contentsScale,
+        &layer->drawProperties().contents_scale_x,
+        &layer->drawProperties().contents_scale_y,
+        &layer->drawProperties().content_bounds);
+
+    LayerType* maskLayer = layer->maskLayer();
+    if (maskLayer)
+    {
+        maskLayer->calculateContentsScale(
+            contentsScale,
+            &maskLayer->drawProperties().contents_scale_x,
+            &maskLayer->drawProperties().contents_scale_y,
+            &maskLayer->drawProperties().content_bounds);
+    }
+
+    LayerType* replicaMaskLayer = layer->replicaLayer() ? layer->replicaLayer()->maskLayer() : 0;
+    if (replicaMaskLayer)
+    {
+        replicaMaskLayer->calculateContentsScale(
+            contentsScale,
+            &replicaMaskLayer->drawProperties().contents_scale_x,
+            &replicaMaskLayer->drawProperties().contents_scale_y,
+            &replicaMaskLayer->drawProperties().content_bounds);
+    }
+}
+
 static inline void updateLayerContentsScale(LayerImpl* layer, const gfx::Transform& combinedTransform, float deviceScaleFactor, float pageScaleFactor, bool animatingTransformToScreen)
 {
+    gfx::Vector2dF transformScale = MathUtil::computeTransform2dScaleComponents(combinedTransform, deviceScaleFactor * pageScaleFactor);
+    float contentsScale = std::max(transformScale.x(), transformScale.y());
+    calculateContentsScale(layer, contentsScale);
 }
 
 static inline void updateLayerContentsScale(Layer* layer, const gfx::Transform& combinedTransform, float deviceScaleFactor, float pageScaleFactor, bool animatingTransformToScreen)
@@ -433,31 +466,8 @@ static inline void updateLayerContentsScale(Layer* layer, const gfx::Transform& 
     float contentsScale = rasterScale * deviceScaleFactor;
     if (!layer->boundsContainPageScale())
         contentsScale *= pageScaleFactor;
-    layer->calculateContentsScale(
-        contentsScale,
-        &layer->drawProperties().contents_scale_x,
-        &layer->drawProperties().contents_scale_y,
-        &layer->drawProperties().content_bounds);
 
-    Layer* maskLayer = layer->maskLayer();
-    if (maskLayer)
-    {
-        maskLayer->calculateContentsScale(
-            contentsScale,
-            &maskLayer->drawProperties().contents_scale_x,
-            &maskLayer->drawProperties().contents_scale_y,
-            &maskLayer->drawProperties().content_bounds);
-    }
-
-    Layer* replicaMaskLayer = layer->replicaLayer() ? layer->replicaLayer()->maskLayer() : 0;
-    if (replicaMaskLayer)
-    {
-        replicaMaskLayer->calculateContentsScale(
-            contentsScale,
-            &replicaMaskLayer->drawProperties().contents_scale_x,
-            &replicaMaskLayer->drawProperties().contents_scale_y,
-            &replicaMaskLayer->drawProperties().content_bounds);
-    }
+    calculateContentsScale(layer, contentsScale);
 }
 
 template<typename LayerType, typename LayerList>
