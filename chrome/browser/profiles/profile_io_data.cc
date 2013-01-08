@@ -172,10 +172,10 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   DCHECK(protocol_handler_registry);
 
   // The profile instance is only available here in the InitializeOnUIThread
-  // method, so we create the url interceptor here, then save it for
+  // method, so we create the url job factory here, then save it for
   // later delivery to the job factory in LazyInitialize.
-  params->protocol_handler_interceptor.reset(
-      protocol_handler_registry->CreateURLInterceptor());
+  params->protocol_handler_interceptor =
+      protocol_handler_registry->CreateJobInterceptorFactory();
 
   ChromeProxyConfigService* proxy_config_service =
       ProxyServiceFactory::CreateProxyConfigService(true);
@@ -394,7 +394,7 @@ ChromeURLRequestContext*
 ProfileIOData::GetIsolatedAppRequestContext(
     ChromeURLRequestContext* main_context,
     const StoragePartitionDescriptor& partition_descriptor,
-    scoped_ptr<net::URLRequestJobFactory::Interceptor>
+    scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor) const {
   LazyInitialize();
   ChromeURLRequestContext* context = NULL;
@@ -604,9 +604,9 @@ void ProfileIOData::ApplyProfileParamsToContext(
   context->set_ssl_config_service(profile_params_->ssl_config_service);
 }
 
-void ProfileIOData::SetUpJobFactoryDefaults(
-    net::URLRequestJobFactoryImpl* job_factory,
-    scoped_ptr<net::URLRequestJobFactory::Interceptor>
+scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
+    scoped_ptr<net::URLRequestJobFactoryImpl> job_factory,
+    scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor,
     net::NetworkDelegate* network_delegate,
     net::FtpTransactionFactory* ftp_transaction_factory,
@@ -622,11 +622,6 @@ void ProfileIOData::SetUpJobFactoryDefaults(
       CreateDevToolsProtocolHandler(chrome_url_data_manager_backend(),
                                     network_delegate));
   DCHECK(set_protocol);
-
-  if (protocol_handler_interceptor.get()) {
-    job_factory->AddInterceptor(protocol_handler_interceptor.release());
-  }
-
   set_protocol = job_factory->SetProtocolHandler(
       extensions::kExtensionScheme,
       CreateExtensionProtocolHandler(is_incognito(), GetExtensionInfoMap()));
@@ -661,6 +656,14 @@ void ProfileIOData::SetUpJobFactoryDefaults(
       new net::FtpProtocolHandler(ftp_transaction_factory,
                                   ftp_auth_cache));
 #endif  // !defined(DISABLE_FTP_SUPPORT)
+
+  if (protocol_handler_interceptor) {
+    protocol_handler_interceptor->Chain(
+        job_factory.PassAs<net::URLRequestJobFactory>());
+    return protocol_handler_interceptor.PassAs<net::URLRequestJobFactory>();
+  } else {
+    return job_factory.PassAs<net::URLRequestJobFactory>();
+  }
 }
 
 void ProfileIOData::ShutdownOnUIThread() {

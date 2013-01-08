@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -132,7 +133,7 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter {
       Profile* profile,
       const ProfileIOData* profile_io_data,
       const StoragePartitionDescriptor& partition_descriptor,
-      scoped_ptr<net::URLRequestJobFactory::Interceptor>
+      scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor);
 
   // Create an instance for an original profile for media with isolated
@@ -159,7 +160,7 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter {
       Profile* profile,
       const ProfileIOData* profile_io_data,
       const StoragePartitionDescriptor& partition_descriptor,
-      scoped_ptr<net::URLRequestJobFactory::Interceptor>
+      scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor);
 
  private:

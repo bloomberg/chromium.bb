@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -93,7 +94,7 @@ class TestProfileIOData : public ProfileIOData {
   virtual ChromeURLRequestContext* InitializeAppRequestContext(
       ChromeURLRequestContext* main_context,
       const StoragePartitionDescriptor& details,
-      scoped_ptr<net::URLRequestJobFactory::Interceptor>
+      scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor) const OVERRIDE {
     NOTREACHED();
     return NULL;
@@ -113,7 +114,7 @@ class TestProfileIOData : public ProfileIOData {
       AcquireIsolatedAppRequestContext(
           ChromeURLRequestContext* main_context,
           const StoragePartitionDescriptor& partition_descriptor,
-          scoped_ptr<net::URLRequestJobFactory::Interceptor>
+          scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
               protocol_handler_interceptor) const OVERRIDE {
     NOTREACHED();
     return NULL;

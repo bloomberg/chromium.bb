@@ -119,10 +119,10 @@ OffTheRecordProfileIOData::Handle::GetIsolatedAppRequestContextGetter(
   if (iter != app_request_context_getter_map_.end())
     return iter->second;
 
-  scoped_ptr<net::URLRequestJobFactory::Interceptor>
+  scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
       protocol_handler_interceptor(
           ProtocolHandlerRegistryFactory::GetForProfile(profile_)->
-              CreateURLInterceptor());
+              CreateJobInterceptorFactory());
   ChromeURLRequestContextGetter* context =
       ChromeURLRequestContextGetter::CreateOffTheRecordForIsolatedApp(
           profile_, io_data_, descriptor,
@@ -218,13 +218,12 @@ void OffTheRecordProfileIOData::LazyInitializeInternal(
   scoped_ptr<net::URLRequestJobFactoryImpl> main_job_factory(
       new net::URLRequestJobFactoryImpl());
 
-  SetUpJobFactoryDefaults(
-      main_job_factory.get(),
+  main_job_factory_ = SetUpJobFactoryDefaults(
+      main_job_factory.Pass(),
       profile_params->protocol_handler_interceptor.Pass(),
       network_delegate(),
       main_context->ftp_transaction_factory(),
       main_context->ftp_auth_cache());
-  main_job_factory_ = main_job_factory.Pass();
   main_context->set_job_factory(main_job_factory_.get());
 
 #if defined(ENABLE_EXTENSIONS)
@@ -271,13 +270,12 @@ void OffTheRecordProfileIOData::
   // job_factory::IsHandledProtocol return true, which prevents attempts to
   // handle the protocol externally. We pass NULL in to
   // SetUpJobFactoryDefaults() to get this effect.
-  SetUpJobFactoryDefaults(
-      extensions_job_factory.get(),
-      scoped_ptr<net::URLRequestJobFactoryImpl::Interceptor>(NULL),
+  extensions_job_factory_ = SetUpJobFactoryDefaults(
+      extensions_job_factory.Pass(),
+      scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>(NULL),
       NULL,
       extensions_context->ftp_transaction_factory(),
       extensions_context->ftp_auth_cache());
-  extensions_job_factory_ = extensions_job_factory.Pass();
   extensions_context->set_job_factory(extensions_job_factory_.get());
 }
 
@@ -285,7 +283,7 @@ ChromeURLRequestContext*
 OffTheRecordProfileIOData::InitializeAppRequestContext(
     ChromeURLRequestContext* main_context,
     const StoragePartitionDescriptor& partition_descriptor,
-    scoped_ptr<net::URLRequestJobFactory::Interceptor>
+    scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor) const {
   AppRequestContext* context = new AppRequestContext(load_time_stats());
 
@@ -309,12 +307,13 @@ OffTheRecordProfileIOData::InitializeAppRequestContext(
 
   scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());
-  SetUpJobFactoryDefaults(job_factory.get(),
-                          protocol_handler_interceptor.Pass(),
-                          network_delegate(),
-                          context->ftp_transaction_factory(),
-                          context->ftp_auth_cache());
-  context->SetJobFactory(job_factory.PassAs<net::URLRequestJobFactory>());
+  scoped_ptr<net::URLRequestJobFactory> top_job_factory;
+  top_job_factory = SetUpJobFactoryDefaults(job_factory.Pass(),
+                                            protocol_handler_interceptor.Pass(),
+                                            network_delegate(),
+                                            context->ftp_transaction_factory(),
+                                            context->ftp_auth_cache());
+  context->SetJobFactory(top_job_factory.Pass());
   return context;
 }
 
@@ -336,7 +335,7 @@ ChromeURLRequestContext*
 OffTheRecordProfileIOData::AcquireIsolatedAppRequestContext(
     ChromeURLRequestContext* main_context,
     const StoragePartitionDescriptor& partition_descriptor,
-    scoped_ptr<net::URLRequestJobFactory::Interceptor>
+    scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor) const {
   // We create per-app contexts on demand, unlike the others above.
   ChromeURLRequestContext* app_request_context =

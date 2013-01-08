@@ -30,18 +30,19 @@ namespace {
 
 void AssertInterceptedIO(
     const GURL& url,
-    net::URLRequestJobFactory::Interceptor* interceptor) {
+    net::URLRequestJobFactory* interceptor) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::URLRequestContext context;
   net::URLRequest request(url, NULL, &context);
-  scoped_refptr<net::URLRequestJob> job = interceptor->MaybeIntercept(
-      &request, context.network_delegate());
+  scoped_refptr<net::URLRequestJob> job =
+      interceptor->MaybeCreateJobWithProtocolHandler(
+          url.scheme(), &request, context.network_delegate());
   ASSERT_TRUE(job.get() != NULL);
 }
 
 void AssertIntercepted(
     const GURL& url,
-    net::URLRequestJobFactory::Interceptor* interceptor) {
+    net::URLRequestJobFactory* interceptor) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
@@ -51,18 +52,64 @@ void AssertIntercepted(
   MessageLoop::current()->RunUntilIdle();
 }
 
+// FakeURLRequestJobFactory returns NULL for all job creation requests and false
+// for all IsHandled*() requests. FakeURLRequestJobFactory can be chained to
+// ProtocolHandlerRegistry::JobInterceptorFactory so the result of
+// MaybeCreateJobWithProtocolHandler() indicates whether the
+// ProtocolHandlerRegistry properly handled a job creation request.
+class FakeURLRequestJobFactory : public net::URLRequestJobFactory {
+  // net::URLRequestJobFactory implementation:
+  virtual bool SetProtocolHandler(const std::string& scheme,
+                                  ProtocolHandler* protocol_handler) OVERRIDE {
+    return false;
+  }
+  virtual void AddInterceptor(Interceptor* interceptor) OVERRIDE {
+  }
+  virtual net::URLRequestJob* MaybeCreateJobWithInterceptor(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
+    return NULL;
+  }
+  net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
+      const std::string& scheme,
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
+    return NULL;
+  }
+  net::URLRequestJob* MaybeInterceptRedirect(
+      const GURL& location,
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
+    return NULL;
+  }
+  net::URLRequestJob* MaybeInterceptResponse(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
+    return NULL;
+  }
+  virtual bool IsHandledProtocol(const std::string& scheme) const OVERRIDE {
+    return false;
+  }
+  virtual bool IsHandledURL(const GURL& url) const OVERRIDE {
+    return false;
+  }
+};
+
 void AssertWillHandleIO(
     const std::string& scheme,
     bool expected,
-    net::URLRequestJobFactory::Interceptor* interceptor) {
+    ProtocolHandlerRegistry::JobInterceptorFactory* interceptor) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ASSERT_EQ(expected, interceptor->WillHandleProtocol(scheme));
+  interceptor->Chain(scoped_ptr<net::URLRequestJobFactory>(
+      new FakeURLRequestJobFactory()));
+  ASSERT_EQ(expected, interceptor->IsHandledProtocol(scheme));
+  interceptor->Chain(scoped_ptr<net::URLRequestJobFactory>(NULL));
 }
 
 void AssertWillHandle(
     const std::string& scheme,
     bool expected,
-    net::URLRequestJobFactory::Interceptor* interceptor) {
+    ProtocolHandlerRegistry::JobInterceptorFactory* interceptor) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
@@ -754,8 +801,8 @@ TEST_F(ProtocolHandlerRegistryTest, TestMaybeCreateTaskWorksFromIOThread) {
   registry()->OnAcceptRegisterProtocolHandler(ph1);
   GURL url("mailto:someone@something.com");
 
-  scoped_ptr<net::URLRequestJobFactory::Interceptor> interceptor(
-      registry()->CreateURLInterceptor());
+  scoped_ptr<net::URLRequestJobFactory> interceptor(
+      registry()->CreateJobInterceptorFactory());
   AssertIntercepted(url, interceptor.get());
 }
 
@@ -765,8 +812,8 @@ TEST_F(ProtocolHandlerRegistryTest,
   ProtocolHandler ph1 = CreateProtocolHandler(scheme, "test1");
   registry()->OnAcceptRegisterProtocolHandler(ph1);
 
-  scoped_ptr<net::URLRequestJobFactory::Interceptor> interceptor(
-      registry()->CreateURLInterceptor());
+  scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> interceptor(
+      registry()->CreateJobInterceptorFactory());
   AssertWillHandle(scheme, true, interceptor.get());
 }
 
@@ -812,8 +859,8 @@ TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestClearDefaultGetsPropagatedToIO) {
   registry()->OnAcceptRegisterProtocolHandler(ph1);
   registry()->ClearDefault(scheme);
 
-  scoped_ptr<net::URLRequestJobFactory::Interceptor> interceptor(
-      registry()->CreateURLInterceptor());
+  scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> interceptor(
+      registry()->CreateJobInterceptorFactory());
   AssertWillHandle(scheme, false, interceptor.get());
 }
 
@@ -822,8 +869,8 @@ TEST_F(ProtocolHandlerRegistryTest, TestLoadEnabledGetsPropogatedToIO) {
   ProtocolHandler ph1 = CreateProtocolHandler(mailto, "MailtoHandler");
   registry()->OnAcceptRegisterProtocolHandler(ph1);
 
-  scoped_ptr<net::URLRequestJobFactory::Interceptor> interceptor(
-      registry()->CreateURLInterceptor());
+  scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> interceptor(
+      registry()->CreateJobInterceptorFactory());
   AssertWillHandle(mailto, true, interceptor.get());
   registry()->Disable();
   AssertWillHandle(mailto, false, interceptor.get());

@@ -11,6 +11,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 
@@ -102,7 +103,7 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   virtual ChromeURLRequestContext* InitializeAppRequestContext(
       ChromeURLRequestContext* main_context,
       const StoragePartitionDescriptor& partition_descriptor,
-      scoped_ptr<net::URLRequestJobFactory::Interceptor>
+      scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
           protocol_handler_interceptor) const OVERRIDE;
   virtual ChromeURLRequestContext* InitializeMediaRequestContext(
       ChromeURLRequestContext* original_context,
@@ -113,7 +114,7 @@ class OffTheRecordProfileIOData : public ProfileIOData {
       AcquireIsolatedAppRequestContext(
           ChromeURLRequestContext* main_context,
           const StoragePartitionDescriptor& partition_descriptor,
-          scoped_ptr<net::URLRequestJobFactory::Interceptor>
+          scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
               protocol_handler_interceptor) const OVERRIDE;
   virtual ChromeURLRequestContext*
       AcquireIsolatedMediaRequestContext(
