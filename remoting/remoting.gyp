@@ -8,8 +8,19 @@
     # duplicated from chrome.gyp
     'chromium_code': 1,
 
+    'variables': {
+      'conditions': [
+        # Enable the multi-process host on Windows by default.
+        ['OS=="win"', {
+          'remoting_multi_process%': 1,
+        }, {
+          'remoting_multi_process%': 0,
+        }],
+      ],
+    },
+
     'remoting_host_linux_clipboard%': 1,
-    'remoting_multi_process%': 0,
+    'remoting_multi_process%': '<(remoting_multi_process)',
 
     # The |major|, |build| and |patch| versions are inherited from Chrome.
     # Since Chrome's |minor| version is always '0', we replace it with a
