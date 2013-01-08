@@ -1754,18 +1754,15 @@ Press any key to continue exploring.
            desc="The combobox description for the Mozc input method preference">
     Space input style
   </message>
-  <message translateable="false"
-           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SPACE_CHARACTER_FORM_FUNDAMENTAL_INPUT_MODE"
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SPACE_CHARACTER_FORM_FUNDAMENTAL_INPUT_MODE"
            desc="The combobox value for the Mozc input method preference">
     Follow input mode
   </message>
-  <message translateable="false"
-           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SPACE_CHARACTER_FORM_FUNDAMENTAL_FULL_WIDTH"
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SPACE_CHARACTER_FORM_FUNDAMENTAL_FULL_WIDTH"
            desc="The combobox value for the Mozc input method preference">
     Fullwidth
   </message>
-  <message translateable="false"
-           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SPACE_CHARACTER_FORM_FUNDAMENTAL_HALF_WIDTH"
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SPACE_CHARACTER_FORM_FUNDAMENTAL_HALF_WIDTH"
            desc="The combobox value for the Mozc input method preference">
     Halfwidth
   </message>
@@ -1773,18 +1770,15 @@ Press any key to continue exploring.
            desc="The combobox description for the Mozc input method preference">
     Adjust conversion based on previous input
   </message>
-  <message translateable="false"
-           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_HISTORY_LEARNING_LEVEL_DEFAULT_HISTORY"
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_HISTORY_LEARNING_LEVEL_DEFAULT_HISTORY"
            desc="The combobox value for the Mozc input method preference">
     Yes
   </message>
-  <message translateable="false"
-           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_HISTORY_LEARNING_LEVEL_READ_ONLY"
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_HISTORY_LEARNING_LEVEL_READ_ONLY"
            desc="The combobox value for the Mozc input method preference">
     Yes (don't record new data)
   </message>
-  <message translateable="false"
-           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_HISTORY_LEARNING_LEVEL_NO_HISTORY"
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_HISTORY_LEARNING_LEVEL_NO_HISTORY"
            desc="The combobox value for the Mozc input method preference">
     No
   </message>
@@ -1792,8 +1786,7 @@ Press any key to continue exploring.
            desc="The combobox description for the Mozc input method preference">
     Selection shortcut
   </message>
-  <message translateable="false"
-           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SELECTION_SHORTCUT_NO_SHORTCUT"
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SELECTION_SHORTCUT_NO_SHORTCUT"
            desc="The combobox value for the Mozc input method preference">
     No shortcut
   </message>
@@ -1811,18 +1804,15 @@ Press any key to continue exploring.
            desc="The combobox description for the Mozc input method preference">
     Shift key mode switch
   </message>
-  <message translateable="false"
-           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SHIFT_KEY_MODE_SWITCH_OFF"
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SHIFT_KEY_MODE_SWITCH_OFF"
            desc="The combobox value for the Mozc input method preference">
     Off
   </message>
-  <message translateable="false"
-           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SHIFT_KEY_MODE_SWITCH_ASCII_INPUT_MODE"
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SHIFT_KEY_MODE_SWITCH_ASCII_INPUT_MODE"
            desc="The combobox value for the Mozc input method preference">
     Alphanumeric
   </message>
-  <message translateable="false"
-           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SHIFT_KEY_MODE_SWITCH_KATAKANA_INPUT_MODE"
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SHIFT_KEY_MODE_SWITCH_KATAKANA_INPUT_MODE"
            desc="The combobox value for the Mozc input method preference">
     Katakana
   </message>
@@ -1830,23 +1820,19 @@ Press any key to continue exploring.
            desc="The combobox description for the Mozc input method preference">
     Numpad style
   </message>
-  <message translateable="false"
-           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_NUMPAD_CHARACTER_FORM_NUMPAD_INPUT_MODE"
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_NUMPAD_CHARACTER_FORM_NUMPAD_INPUT_MODE"
            desc="The combobox value for the Mozc input method preference">
     Follow input mode
   </message>
-  <message translateable="false"
-           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_NUMPAD_CHARACTER_FORM_NUMPAD_FULL_WIDTH"
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_NUMPAD_CHARACTER_FORM_NUMPAD_FULL_WIDTH"
            desc="The combobox value for the Mozc input method preference">
     Fullwidth
   </message>
-  <message translateable="false"
-           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_NUMPAD_CHARACTER_FORM_NUMPAD_HALF_WIDTH"
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_NUMPAD_CHARACTER_FORM_NUMPAD_HALF_WIDTH"
            desc="The combobox value for the Mozc input method preference">
     Halfwidth
   </message>
-  <message translateable="false"
-           name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_NUMPAD_CHARACTER_FORM_NUMPAD_DIRECT_INPUT"
+  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_NUMPAD_CHARACTER_FORM_NUMPAD_DIRECT_INPUT"
            desc="The combobox value for the Mozc input method preference">
     Direct input
   </message>
