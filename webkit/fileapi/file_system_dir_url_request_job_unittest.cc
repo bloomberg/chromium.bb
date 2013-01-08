@@ -141,9 +141,9 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
         context.get(), CreateURL(path), length));
   }
 
-  PlatformFileError GetFileInfo(const FilePath& path,
-                   base::PlatformFileInfo* file_info,
-                   FilePath* platform_file_path) {
+  base::PlatformFileError GetFileInfo(const FilePath& path,
+                                      base::PlatformFileInfo* file_info,
+                                      FilePath* platform_file_path) {
     scoped_ptr<FileSystemOperationContext> context(NewOperationContext());
     return file_util()->GetFileInfo(context.get(),
                                     CreateURL(path),

@@ -40,7 +40,7 @@ class MTPDeviceDelegate {
   // Updates the temporary snapshot file contents given by |local_path| with
   // media file contents given by |device_file_path| and also returns the
   // metadata of the temporary file.
-  virtual PlatformFileError CreateSnapshotFile(
+  virtual base::PlatformFileError CreateSnapshotFile(
       const FilePath& device_file_path,
       const FilePath& local_path,
       base::PlatformFileInfo* file_info) = 0;

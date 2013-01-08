@@ -5,22 +5,14 @@
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_FILE_UTIL_PROXY_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_FILE_UTIL_PROXY_H_
 
-#include <vector>
-
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/file_util_proxy.h"
-#include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
-#include "base/tracked_objects.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation.h"
 
 namespace fileapi {
-
-using base::PlatformFile;
-using base::PlatformFileError;
-using base::PlatformFileInfo;
 
 class FileSystemFileUtil;
 class FileSystemOperationContext;
@@ -36,8 +28,8 @@ class FileSystemFileUtilProxy {
   typedef base::FileUtilProxy::Entry Entry;
   typedef base::FileUtilProxy::CreateOrOpenCallback CreateOrOpenCallback;
 
-  typedef base::Callback<void(PlatformFileError status)> StatusCallback;
-  typedef base::Callback<void(PlatformFileError status,
+  typedef base::Callback<void(base::PlatformFileError status)> StatusCallback;
+  typedef base::Callback<void(base::PlatformFileError status,
                               bool created)> EnsureFileExistsCallback;
   typedef FileSystemOperation::GetMetadataCallback GetFileInfoCallback;
   typedef FileSystemOperation::ReadDirectoryCallback ReadDirectoryCallback;

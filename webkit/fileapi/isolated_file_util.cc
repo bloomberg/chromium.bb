@@ -194,4 +194,4 @@ bool DraggedFileUtil::IsDirectoryEmpty(
   return NativeFileUtil::IsDirectoryEmpty(url.path());
 }
 
-}  // namespace
+}  // namespace fileapi

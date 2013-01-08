@@ -5,7 +5,6 @@
 #include "webkit/fileapi/file_system_context.h"
 
 #include "base/bind.h"
-#include "base/file_util.h"
 #include "base/stl_util.h"
 #include "base/single_thread_task_runner.h"
 #include "googleurl/src/gurl.h"
@@ -238,7 +237,7 @@ void FileSystemContext::DeleteFileSystem(
 }
 
 FileSystemOperation* FileSystemContext::CreateFileSystemOperation(
-    const FileSystemURL& url, PlatformFileError* error_code) {
+    const FileSystemURL& url, base::PlatformFileError* error_code) {
   if (!url.is_valid()) {
     if (error_code)
       *error_code = base::PLATFORM_FILE_ERROR_INVALID_URL;
@@ -252,7 +251,7 @@ FileSystemOperation* FileSystemContext::CreateFileSystemOperation(
     return NULL;
   }
 
-  PlatformFileError fs_error = base::PLATFORM_FILE_OK;
+  base::PlatformFileError fs_error = base::PLATFORM_FILE_OK;
   FileSystemOperation* operation =
       mount_point_provider->CreateFileSystemOperation(url, this, &fs_error);
 

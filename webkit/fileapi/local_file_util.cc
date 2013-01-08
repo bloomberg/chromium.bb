@@ -16,6 +16,8 @@
 
 namespace fileapi {
 
+using base::PlatformFileError;
+
 class LocalFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
   LocalFileEnumerator(const FilePath& platform_root_path,
@@ -79,7 +81,7 @@ LocalFileUtil::~LocalFileUtil() {
 PlatformFileError LocalFileUtil::CreateOrOpen(
     FileSystemOperationContext* context,
     const FileSystemURL& url, int file_flags,
-    PlatformFile* file_handle, bool* created) {
+    base::PlatformFile* file_handle, bool* created) {
   FilePath file_path;
   PlatformFileError error = GetLocalFilePath(context, url, &file_path);
   if (error != base::PLATFORM_FILE_OK)
@@ -89,7 +91,7 @@ PlatformFileError LocalFileUtil::CreateOrOpen(
 }
 
 PlatformFileError LocalFileUtil::Close(FileSystemOperationContext* context,
-                                       PlatformFile file) {
+                                       base::PlatformFile file) {
   return NativeFileUtil::Close(file);
 }
 

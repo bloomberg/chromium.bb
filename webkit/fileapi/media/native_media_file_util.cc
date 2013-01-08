@@ -4,17 +4,15 @@
 
 #include "webkit/fileapi/media/native_media_file_util.h"
 
-#include "net/base/mime_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/media/media_path_filter.h"
 #include "webkit/fileapi/media/filtering_file_enumerator.h"
 
+using base::PlatformFile;
 using base::PlatformFileError;
 using base::PlatformFileInfo;
 
 namespace fileapi {
-
-class MediaPathFilter;
 
 NativeMediaFileUtil::NativeMediaFileUtil() {
 }

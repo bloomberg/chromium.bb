@@ -4,6 +4,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/file_path.h"
@@ -264,7 +265,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   }
 
   void CheckFileAndCloseHandle(
-      const FileSystemURL& url, PlatformFile file_handle) {
+      const FileSystemURL& url, base::PlatformFile file_handle) {
     scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
     FilePath local_path;
     EXPECT_EQ(base::PLATFORM_FILE_OK, ofu()->GetLocalFilePath(
@@ -283,7 +284,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
     if (base::kInvalidPlatformFileValue == file_handle) {
       bool created = true;
-      PlatformFileError error;
+      base::PlatformFileError error;
       file_handle = base::CreatePlatformFile(
           data_path,
           base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE,
@@ -1699,7 +1700,7 @@ TEST_F(ObfuscatedFileUtilTest, TestDirectoryTimestampForCreation) {
 
   // CreateOrOpen, create case.
   url = dir_url.WithPath(dir_url.path().AppendASCII("CreateOrOpen_file"));
-  PlatformFile file_handle = base::kInvalidPlatformFileValue;
+  base::PlatformFile file_handle = base::kInvalidPlatformFileValue;
   created = false;
   ClearTimestamp(dir_url);
   context.reset(NewContext(NULL));

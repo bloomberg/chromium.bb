@@ -5,32 +5,20 @@
 #ifndef WEBKIT_FILEAPI_LOCAL_FILE_UTIL_H_
 #define WEBKIT_FILEAPI_LOCAL_FILE_UTIL_H_
 
-#include <vector>
-
-#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/file_path.h"
-#include "base/file_util.h"
-#include "base/file_util_proxy.h"
-#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_file_util.h"
-#include "webkit/fileapi/file_system_types.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
-struct PlatformFileInfo;
 class Time;
 }
 
+class FilePath;
 class GURL;
 
 namespace fileapi {
-
-using base::PlatformFile;
-using base::PlatformFileError;
 
 class FileSystemOperationContext;
 class FileSystemURL;
@@ -41,24 +29,24 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE LocalFileUtil : public FileSystemFileUtil {
   LocalFileUtil();
   virtual ~LocalFileUtil();
 
-  virtual PlatformFileError CreateOrOpen(
+  virtual base::PlatformFileError CreateOrOpen(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       int file_flags,
-      PlatformFile* file_handle,
+      base::PlatformFile* file_handle,
       bool* created) OVERRIDE;
-  virtual PlatformFileError Close(
+  virtual base::PlatformFileError Close(
       FileSystemOperationContext* context,
-      PlatformFile file) OVERRIDE;
-  virtual PlatformFileError EnsureFileExists(
+      base::PlatformFile file) OVERRIDE;
+  virtual base::PlatformFileError EnsureFileExists(
       FileSystemOperationContext* context,
       const FileSystemURL& url, bool* created) OVERRIDE;
-  virtual PlatformFileError CreateDirectory(
+  virtual base::PlatformFileError CreateDirectory(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       bool exclusive,
       bool recursive) OVERRIDE;
-  virtual PlatformFileError GetFileInfo(
+  virtual base::PlatformFileError GetFileInfo(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       base::PlatformFileInfo* file_info,
@@ -67,38 +55,38 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE LocalFileUtil : public FileSystemFileUtil {
       FileSystemOperationContext* context,
       const FileSystemURL& root_url,
       bool recursive) OVERRIDE;
-  virtual PlatformFileError GetLocalFilePath(
+  virtual base::PlatformFileError GetLocalFilePath(
       FileSystemOperationContext* context,
       const FileSystemURL& file_system_url,
       FilePath* local_file_path) OVERRIDE;
-  virtual PlatformFileError Touch(
+  virtual base::PlatformFileError Touch(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       const base::Time& last_access_time,
       const base::Time& last_modified_time) OVERRIDE;
-  virtual PlatformFileError Truncate(
+  virtual base::PlatformFileError Truncate(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       int64 length) OVERRIDE;
   virtual bool IsDirectoryEmpty(
       FileSystemOperationContext* context,
       const FileSystemURL& url) OVERRIDE;
-  virtual PlatformFileError CopyOrMoveFile(
+  virtual base::PlatformFileError CopyOrMoveFile(
       FileSystemOperationContext* context,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
       bool copy) OVERRIDE;
-  virtual PlatformFileError CopyInForeignFile(
+  virtual base::PlatformFileError CopyInForeignFile(
       FileSystemOperationContext* context,
       const FilePath& src_file_path,
       const FileSystemURL& dest_url) OVERRIDE;
-  virtual PlatformFileError DeleteFile(
+  virtual base::PlatformFileError DeleteFile(
       FileSystemOperationContext* context,
       const FileSystemURL& url) OVERRIDE;
-  virtual PlatformFileError DeleteSingleDirectory(
+  virtual base::PlatformFileError DeleteSingleDirectory(
       FileSystemOperationContext* context,
       const FileSystemURL& url) OVERRIDE;
-  virtual PlatformFileError CreateSnapshotFile(
+  virtual base::PlatformFileError CreateSnapshotFile(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       base::PlatformFileInfo* file_info,

@@ -23,9 +23,6 @@ class DeviceMediaFileUtil;
 
 class IsolatedMountPointProvider : public FileSystemMountPointProvider {
  public:
-  using FileSystemMountPointProvider::ValidateFileSystemCallback;
-  using FileSystemMountPointProvider::DeleteFileSystemCallback;
-
   explicit IsolatedMountPointProvider(const FilePath& profile_path);
   virtual ~IsolatedMountPointProvider();
 

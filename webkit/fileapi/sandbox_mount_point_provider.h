@@ -44,9 +44,6 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
     : public FileSystemMountPointProvider,
       public FileSystemQuotaUtil {
  public:
-  using FileSystemMountPointProvider::ValidateFileSystemCallback;
-  using FileSystemMountPointProvider::DeleteFileSystemCallback;
-
   // Origin enumerator interface.
   // An instance of this interface is assumed to be called on the file thread.
   class OriginEnumerator {

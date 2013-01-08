@@ -4,8 +4,6 @@
 
 #include "webkit/fileapi/native_file_util.h"
 
-#include <vector>
-
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -34,6 +32,9 @@ bool SetPlatformSpecificDirectoryPermissions(const FilePath& dir_path) {
 }
 
 }  // namespace
+
+using base::PlatformFile;
+using base::PlatformFileError;
 
 class NativeFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
  public:

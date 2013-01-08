@@ -52,7 +52,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE DeviceMediaFileUtil
       FileSystemOperationContext* context,
       const FileSystemURL& root_url,
       bool recursive) OVERRIDE;
-  virtual PlatformFileError GetLocalFilePath(
+  virtual base::PlatformFileError GetLocalFilePath(
       FileSystemOperationContext* context,
       const FileSystemURL& file_system_url,
       FilePath* local_file_path) OVERRIDE;

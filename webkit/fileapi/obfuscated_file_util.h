@@ -7,7 +7,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "base/file_path.h"
 #include "base/file_util_proxy.h"
@@ -23,7 +22,6 @@
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
-struct PlatformFileInfo;
 class Time;
 }
 
@@ -67,9 +65,9 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
       int file_flags,
       base::PlatformFile* file_handle,
       bool* created) OVERRIDE;
-  virtual PlatformFileError Close(
+  virtual base::PlatformFileError Close(
       FileSystemOperationContext* context,
-      PlatformFile file) OVERRIDE;
+      base::PlatformFile file) OVERRIDE;
   virtual base::PlatformFileError EnsureFileExists(
       FileSystemOperationContext* context,
       const FileSystemURL& url, bool* created) OVERRIDE;
@@ -108,7 +106,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
       bool copy) OVERRIDE;
-  virtual PlatformFileError CopyInForeignFile(
+  virtual base::PlatformFileError CopyInForeignFile(
         FileSystemOperationContext* context,
         const FilePath& src_file_path,
         const FileSystemURL& dest_url) OVERRIDE;

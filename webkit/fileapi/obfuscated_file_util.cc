@@ -12,7 +12,6 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
@@ -960,7 +959,6 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
 
   // At this point we are sure we had successfully deleted the origin/type
   // directory (i.e. we're ready to just return true).
-
   // See if we have other directories in this origin directory.
   std::vector<FileSystemType> other_types;
   if (type != kFileSystemTypeTemporary)

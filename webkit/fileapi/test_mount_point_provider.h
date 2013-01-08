@@ -27,9 +27,6 @@ class FileSystemQuotaUtil;
 class WEBKIT_STORAGE_EXPORT_PRIVATE TestMountPointProvider
     : public FileSystemMountPointProvider {
  public:
-  using FileSystemMountPointProvider::ValidateFileSystemCallback;
-  using FileSystemMountPointProvider::DeleteFileSystemCallback;
-
   TestMountPointProvider(
       base::SequencedTaskRunner* task_runner,
       const FilePath& base_path);

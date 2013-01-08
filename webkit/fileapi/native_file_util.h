@@ -18,41 +18,38 @@ class Time;
 
 namespace fileapi {
 
-using base::PlatformFile;
-using base::PlatformFileError;
-
 // TODO(dmikurube): Add unit tests for NativeFileUtil.
 // This class handles accessing the OS native filesystem.
 class WEBKIT_STORAGE_EXPORT_PRIVATE NativeFileUtil {
  public:
-  static PlatformFileError CreateOrOpen(
+  static base::PlatformFileError CreateOrOpen(
       const FilePath& path,
       int file_flags,
-      PlatformFile* file_handle,
+      base::PlatformFile* file_handle,
       bool* created);
-  static PlatformFileError Close(PlatformFile file);
-  static PlatformFileError EnsureFileExists(const FilePath& path,
-                                            bool* created);
-  static PlatformFileError CreateDirectory(const FilePath& path,
-                                           bool exclusive,
-                                           bool recursive);
-  static PlatformFileError GetFileInfo(const FilePath& path,
-                                       base::PlatformFileInfo* file_info);
+  static base::PlatformFileError Close(base::PlatformFile file);
+  static base::PlatformFileError EnsureFileExists(const FilePath& path,
+                                                  bool* created);
+  static base::PlatformFileError CreateDirectory(const FilePath& path,
+                                                 bool exclusive,
+                                                 bool recursive);
+  static base::PlatformFileError GetFileInfo(const FilePath& path,
+                                             base::PlatformFileInfo* file_info);
   static scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
       CreateFileEnumerator(const FilePath& root_path,
                            bool recursive);
-  static PlatformFileError Touch(const FilePath& path,
-                                 const base::Time& last_access_time,
-                                 const base::Time& last_modified_time);
-  static PlatformFileError Truncate(const FilePath& path, int64 length);
+  static base::PlatformFileError Touch(const FilePath& path,
+                                       const base::Time& last_access_time,
+                                       const base::Time& last_modified_time);
+  static base::PlatformFileError Truncate(const FilePath& path, int64 length);
   static bool PathExists(const FilePath& path);
   static bool DirectoryExists(const FilePath& path);
   static bool IsDirectoryEmpty(const FilePath& path);
-  static PlatformFileError CopyOrMoveFile(const FilePath& src_path,
-                                   const FilePath& dest_path,
-                                   bool copy);
-  static PlatformFileError DeleteFile(const FilePath& path);
-  static PlatformFileError DeleteSingleDirectory(const FilePath& path);
+  static base::PlatformFileError CopyOrMoveFile(const FilePath& src_path,
+                                                const FilePath& dest_path,
+                                                bool copy);
+  static base::PlatformFileError DeleteFile(const FilePath& path);
+  static base::PlatformFileError DeleteSingleDirectory(const FilePath& path);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(NativeFileUtil);

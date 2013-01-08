@@ -19,7 +19,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE IsolatedFileUtil : public LocalFileUtil {
   virtual ~IsolatedFileUtil() {}
 
   // LocalFileUtil overrides.
-  virtual PlatformFileError GetLocalFilePath(
+  virtual base::PlatformFileError GetLocalFilePath(
       FileSystemOperationContext* context,
       const FileSystemURL& file_system_url,
       FilePath* local_file_path) OVERRIDE;

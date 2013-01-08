@@ -19,44 +19,44 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE NativeMediaFileUtil
  public:
   NativeMediaFileUtil();
 
-  virtual PlatformFileError CreateOrOpen(
+  virtual base::PlatformFileError CreateOrOpen(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       int file_flags,
-      PlatformFile* file_handle,
+      base::PlatformFile* file_handle,
       bool* created) OVERRIDE;
-  virtual PlatformFileError EnsureFileExists(
+  virtual base::PlatformFileError EnsureFileExists(
       FileSystemOperationContext* context,
       const FileSystemURL& url, bool* created) OVERRIDE;
   virtual scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FileSystemURL& root_url,
       bool recursive) OVERRIDE;
-  virtual PlatformFileError Touch(
+  virtual base::PlatformFileError Touch(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       const base::Time& last_access_time,
       const base::Time& last_modified_time) OVERRIDE;
-  virtual PlatformFileError Truncate(
+  virtual base::PlatformFileError Truncate(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       int64 length) OVERRIDE;
   virtual bool IsDirectoryEmpty(
       FileSystemOperationContext* context,
       const FileSystemURL& url) OVERRIDE;
-  virtual PlatformFileError CopyOrMoveFile(
+  virtual base::PlatformFileError CopyOrMoveFile(
       FileSystemOperationContext* context,
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
       bool copy) OVERRIDE;
-  virtual PlatformFileError CopyInForeignFile(
+  virtual base::PlatformFileError CopyInForeignFile(
         FileSystemOperationContext* context,
         const FilePath& src_file_path,
         const FileSystemURL& dest_url) OVERRIDE;
-  virtual PlatformFileError DeleteFile(
+  virtual base::PlatformFileError DeleteFile(
       FileSystemOperationContext* context,
       const FileSystemURL& url) OVERRIDE;
-  virtual PlatformFileError GetFileInfo(
+  virtual base::PlatformFileError GetFileInfo(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       base::PlatformFileInfo* file_info,
