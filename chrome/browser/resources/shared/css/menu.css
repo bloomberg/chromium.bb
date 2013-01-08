@@ -5,6 +5,7 @@
 menu {
   -webkit-box-shadow: 0 2px 4px rgba(0, 0, 0, .50);
   background: white;
+  border-radius: 2px;
   color: black;
   cursor: default;
   left: 0;
@@ -57,12 +58,11 @@ menu > [hidden] {
 }
 
 menu > :not(hr)[selected] {
-  background-color: rgb(220, 229, 250);
+  background-color: rgba(0, 0, 0, .06);
 }
 
 menu > :not(hr)[selected]:active {
-  background-color: rgb(66, 109, 201);
-  color: #fff;
+  background-color: rgba(0, 0, 0, .06);
 }
 
 menu > [checked]::before {
