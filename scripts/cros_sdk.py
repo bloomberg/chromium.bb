@@ -23,14 +23,11 @@ cros_build_lib.STRICT_SUDO = True
 DEFAULT_URL = 'https://commondatastorage.googleapis.com/chromiumos-sdk'
 COMPRESSION_PREFERENCE = ('xz', 'bz2')
 
-SRC_ROOT = os.path.realpath(constants.SOURCE_ROOT)
-OVERLAY_DIR = os.path.join(SRC_ROOT, 'src/third_party/chromiumos-overlay')
-SDK_VERSION_FILE = os.path.join(OVERLAY_DIR,
-                                'chromeos/binhost/host/sdk_version.conf')
-
 # TODO(zbehan): Remove the dependency on these, reimplement them in python
-MAKE_CHROOT = [os.path.join(SRC_ROOT, 'src/scripts/sdk_lib/make_chroot.sh')]
-ENTER_CHROOT = [os.path.join(SRC_ROOT, 'src/scripts/sdk_lib/enter_chroot.sh')]
+MAKE_CHROOT = [os.path.join(constants.SOURCE_ROOT,
+                            'src/scripts/sdk_lib/make_chroot.sh')]
+ENTER_CHROOT = [os.path.join(constants.SOURCE_ROOT,
+                             'src/scripts/sdk_lib/enter_chroot.sh')]
 
 # We need these tools to run. Very common tools (tar,..) are ommited.
 NEEDED_TOOLS = ('curl', 'xz', 'unshare')
@@ -213,7 +210,9 @@ deleting, downloading, etc.  If given --enter (or no args), it defaults
 to an interactive bash shell within the chroot.
 
 If given args those are passed to the chroot environment, and executed."""
-  conf = cros_build_lib.LoadKeyValueFile(SDK_VERSION_FILE, ignore_missing=True)
+  conf = cros_build_lib.LoadKeyValueFile(
+      os.path.join(constants.SOURCE_ROOT, constants.SDK_VERSION_FILE),
+      ignore_missing=True)
   sdk_latest_version = conf.get('SDK_LATEST_VERSION', '<unknown>')
   bootstrap_latest_version = conf.get('BOOTSTRAP_LATEST_VERSION', '<unknown>')
 
@@ -247,7 +246,8 @@ If given args those are passed to the chroot environment, and executed."""
       help='Download the sdk.')
 
   # Global options:
-  default_chroot = os.path.join(SRC_ROOT, constants.DEFAULT_CHROOT_DIR)
+  default_chroot = os.path.join(constants.SOURCE_ROOT,
+                                constants.DEFAULT_CHROOT_DIR)
   parser.add_option(
       '--chroot', dest='chroot', default=default_chroot, type='path',
       help=('SDK chroot dir name [%s]' % constants.DEFAULT_CHROOT_DIR))
@@ -346,7 +346,7 @@ If given args those are passed to the chroot environment, and executed."""
       osutils.SafeMakedirs(options.cache_dir)
 
       for target in (sdk_cache, distfiles_cache):
-        src = os.path.join(SRC_ROOT, os.path.basename(target))
+        src = os.path.join(constants.SOURCE_ROOT, os.path.basename(target))
         if not os.path.exists(src):
           osutils.SafeMakedirs(target)
           continue

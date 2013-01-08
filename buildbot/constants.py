@@ -175,6 +175,8 @@ VALID_AU_TEST_TYPES = [SMOKE_SUITE_TEST_TYPE, SIMPLE_AU_TEST_TYPE,
 
 VERSION_FILE = os.path.join('src/third_party/chromiumos-overlay',
                             'chromeos/config/chromeos_version.sh')
+SDK_VERSION_FILE = os.path.join('src/third_party/chromiumos-overlay',
+                                'chromeos/binhost/host/sdk_version.conf')
 
 BOTH_OVERLAYS = 'both'
 PUBLIC_OVERLAYS = 'public'
