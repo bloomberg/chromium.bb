@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/gtk/sad_tab_gtk.h"
 
+#include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/tab_contents/chrome_web_contents_view_delegate_gtk.h"
@@ -56,6 +57,23 @@ SadTabGtk::SadTabGtk(WebContents* web_contents, chrome::SadTabKind kind)
     : web_contents_(web_contents),
       kind_(kind) {
   DCHECK(web_contents_);
+
+  switch (kind_) {
+    case chrome::SAD_TAB_KIND_CRASHED: {
+      static int crashed = 0;
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Tabs.SadTab.CrashCreated", ++crashed, 1, 1000, 50);
+      break;
+    }
+    case chrome::SAD_TAB_KIND_KILLED: {
+      static int killed = 0;
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Tabs.SadTab.KilledCreated", ++killed, 1, 1000, 50);
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
 
   // Use an event box to get the background painting correctly.
   event_box_.Own(gtk_event_box_new());
@@ -156,6 +174,23 @@ SadTabGtk::~SadTabGtk() {
 }
 
 void SadTabGtk::Show() {
+  switch (kind_) {
+    case chrome::SAD_TAB_KIND_CRASHED: {
+      static int crashed = 0;
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Tabs.SadTab.CrashDisplayed", ++crashed, 1, 1000, 50);
+      break;
+    }
+    case chrome::SAD_TAB_KIND_KILLED: {
+      static int killed = 0;
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Tabs.SadTab.KilledDisplayed", ++killed, 1, 1000, 50);
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+
   GtkWidget* expanded_container =
       ChromeWebContentsViewDelegateGtk::GetFor(web_contents_)->
           expanded_container();
