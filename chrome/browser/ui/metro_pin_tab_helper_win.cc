@@ -31,6 +31,7 @@
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
@@ -77,45 +78,22 @@ bool CreateSiteSpecificLogo(const gfx::ImageSkia& image,
   const int kBoxHeight = 40;
   const int kCaptionHeight = 20;
   const double kBoxFade = 0.75;
-  const int kColorMeanDarknessLimit = 100;
-  const int kColorMeanLightnessLimit = 650;
 
   if (image.isNull())
     return false;
 
-  // First paint the image onto an opaque background to get rid of transparency.
-  // White is used as it will be disregarded in the mean calculation because of
-  // lightness limit.
+  // Fill the tile logo with the dominant color of the favicon bitmap.
+  SkColor dominant_color = color_utils::CalculateKMeanColorOfBitmap(
+      image.GetRepresentation(ui::SCALE_FACTOR_100P).sk_bitmap());
   SkPaint paint;
-  paint.setColor(SK_ColorWHITE);
-  gfx::Canvas favicon_canvas(gfx::Size(image.width(), image.height()),
-                             ui::SCALE_FACTOR_100P, true);
-  favicon_canvas.DrawRect(gfx::Rect(0, 0, image.width(), image.height()),
-                          paint);
-  favicon_canvas.DrawImageInt(image, 0, 0);
-
-  // Fill the tile logo with the average color from bitmap. To do this we need
-  // to work out the 'average color' which is calculated using PNG encoded data
-  // of the bitmap.
-  std::vector<unsigned char> icon_png;
-  if (!gfx::PNGCodec::EncodeBGRASkBitmap(
-          favicon_canvas.ExtractImageRep().sk_bitmap(), false, &icon_png)) {
-    return false;
-  }
-
-  scoped_refptr<base::RefCountedStaticMemory> icon_mem(
-      new base::RefCountedStaticMemory(&icon_png.front(), icon_png.size()));
-  color_utils::GridSampler sampler;
-  SkColor mean_color = color_utils::CalculateKMeanColorOfPNG(
-      icon_mem, kColorMeanDarknessLimit, kColorMeanLightnessLimit, &sampler);
-  paint.setColor(mean_color);
+  paint.setColor(dominant_color);
   gfx::Canvas canvas(gfx::Size(kLogoWidth, kLogoHeight), ui::SCALE_FACTOR_100P,
                      true);
   canvas.DrawRect(gfx::Rect(0, 0, kLogoWidth, kLogoHeight), paint);
 
   // Now paint a faded square for the favicon to go in.
   color_utils::HSL shift = {-1, -1, kBoxFade};
-  paint.setColor(color_utils::HSLShift(mean_color, shift));
+  paint.setColor(color_utils::HSLShift(dominant_color, shift));
   int box_left = (kLogoWidth - kBoxWidth) / 2;
   int box_top = (kLogoHeight - kCaptionHeight - kBoxHeight) / 2;
   canvas.DrawRect(gfx::Rect(box_left, box_top, kBoxWidth, kBoxHeight), paint);
