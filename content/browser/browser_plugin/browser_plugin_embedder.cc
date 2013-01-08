@@ -54,6 +54,125 @@ BrowserPluginEmbedder* BrowserPluginEmbedder::Create(
   return new BrowserPluginEmbedder(web_contents, render_view_host);
 }
 
+void BrowserPluginEmbedder::CreateGuest(
+    int instance_id,
+    int routing_id,
+    BrowserPluginGuest* guest_opener,
+    const BrowserPluginHostMsg_CreateGuest_Params& params) {
+  WebContentsImpl* guest_web_contents = NULL;
+  BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
+  CHECK(!guest);
+
+  // Validate that the partition id coming from the renderer is valid UTF-8,
+  // since we depend on this in other parts of the code, such as FilePath
+  // creation. If the validation fails, treat it as a bad message and kill the
+  // renderer process.
+  if (!IsStringUTF8(params.storage_partition_id)) {
+    content::RecordAction(UserMetricsAction("BadMessageTerminate_BPE"));
+    base::KillProcess(render_view_host_->GetProcess()->GetHandle(),
+                      content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
+    return;
+  }
+
+  const std::string& host =
+      render_view_host_->GetSiteInstance()->GetSiteURL().host();
+  std::string url_encoded_partition = net::EscapeQueryParamValue(
+      params.storage_partition_id, false);
+
+  SiteInstance* guest_site_instance = NULL;
+  if (guest_opener) {
+    guest_site_instance = guest_opener->GetWebContents()->GetSiteInstance();
+  } else {
+    // The SiteInstance of a given webview tag is based on the fact that it's a
+    // guest process in addition to which platform application the tag belongs
+    // to and what storage partition is in use, rather than the URL that the tag
+    // is being navigated to.
+    GURL guest_site(
+        base::StringPrintf("%s://%s/%s?%s", chrome::kGuestScheme,
+                          host.c_str(), params.persist_storage ? "persist" : "",
+                          url_encoded_partition.c_str()));
+
+    // If we already have a webview tag in the same app using the same storage
+    // partition, we should use the same SiteInstance so the existing tag and
+    // the new tag can script each other.
+    for (ContainerInstanceMap::const_iterator it =
+            guest_web_contents_by_instance_id_.begin();
+        it != guest_web_contents_by_instance_id_.end(); ++it) {
+      if (it->second->GetSiteInstance()->GetSiteURL() == guest_site) {
+        guest_site_instance = it->second->GetSiteInstance();
+        break;
+      }
+    }
+    if (!guest_site_instance) {
+      // Create the SiteInstance in a new BrowsingInstance, which will ensure
+      // that webview tags are also not allowed to send messages across
+      // different partitions.
+      guest_site_instance = SiteInstance::CreateForURL(
+          web_contents()->GetBrowserContext(), guest_site);
+    }
+  }
+  WebContentsImpl* opener_web_contents = static_cast<WebContentsImpl*>(
+      guest_opener ? guest_opener->GetWebContents() : NULL);
+  guest_web_contents = WebContentsImpl::CreateGuest(
+      web_contents()->GetBrowserContext(),
+      guest_site_instance,
+      routing_id,
+      opener_web_contents,
+      instance_id,
+      params);
+
+  guest = guest_web_contents->GetBrowserPluginGuest();
+  guest->set_embedder_web_contents(
+      static_cast<WebContentsImpl*>(web_contents()));
+
+  RendererPreferences* guest_renderer_prefs =
+      guest_web_contents->GetMutableRendererPrefs();
+  // Copy renderer preferences (and nothing else) from the embedder's
+  // TabContents to the guest.
+  //
+  // For GTK and Aura this is necessary to get proper renderer configuration
+  // values for caret blinking interval, colors related to selection and
+  // focus.
+  *guest_renderer_prefs = *web_contents()->GetMutableRendererPrefs();
+
+  guest_renderer_prefs->throttle_input_events = false;
+  // Navigation is disabled in Chrome Apps. We want to make sure guest-initiated
+  // navigations still continue to function inside the app.
+  guest_renderer_prefs->browser_handles_all_top_level_requests = false;
+  AddGuest(instance_id, guest_web_contents);
+  guest_web_contents->SetDelegate(guest);
+
+  // Create a swapped out RenderView for the guest in the embedder render
+  // process, so that the embedder can access the guest's window object.
+  int guest_routing_id =
+      static_cast<WebContentsImpl*>(guest->GetWebContents())->
+            CreateSwappedOutRenderView(web_contents()->GetSiteInstance());
+  render_view_host_->Send(new BrowserPluginMsg_GuestContentWindowReady(
+      render_view_host_->GetRoutingID(), instance_id, guest_routing_id));
+
+  guest->Initialize(params, guest_web_contents->GetRenderViewHost());
+}
+
+BrowserPluginGuest* BrowserPluginEmbedder::GetGuestByInstanceID(
+    int instance_id) const {
+  ContainerInstanceMap::const_iterator it =
+      guest_web_contents_by_instance_id_.find(instance_id);
+  if (it != guest_web_contents_by_instance_id_.end())
+    return static_cast<WebContentsImpl*>(it->second)->GetBrowserPluginGuest();
+  return NULL;
+}
+
+void BrowserPluginEmbedder::DestroyGuestByInstanceID(int instance_id) {
+  BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
+  if (guest) {
+    WebContents* guest_web_contents = guest->GetWebContents();
+
+    // Destroy the guest's web_contents.
+    delete guest_web_contents;
+    guest_web_contents_by_instance_id_.erase(instance_id);
+  }
+}
+
 void BrowserPluginEmbedder::GetRenderViewHostAtPosition(
     int x, int y, const WebContents::GetRenderViewHostCallback& callback) {
   // Store the callback so we can call it later when we have the response.
@@ -117,31 +236,11 @@ void BrowserPluginEmbedder::Observe(int type,
   }
 }
 
-BrowserPluginGuest* BrowserPluginEmbedder::GetGuestByInstanceID(
-    int instance_id) const {
-  ContainerInstanceMap::const_iterator it =
-      guest_web_contents_by_instance_id_.find(instance_id);
-  if (it != guest_web_contents_by_instance_id_.end())
-    return static_cast<WebContentsImpl*>(it->second)->GetBrowserPluginGuest();
-  return NULL;
-}
-
 void BrowserPluginEmbedder::AddGuest(int instance_id,
                                      WebContents* guest_web_contents) {
   DCHECK(guest_web_contents_by_instance_id_.find(instance_id) ==
          guest_web_contents_by_instance_id_.end());
   guest_web_contents_by_instance_id_[instance_id] = guest_web_contents;
-}
-
-void BrowserPluginEmbedder::DestroyGuestByInstanceID(int instance_id) {
-  BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
-  if (guest) {
-    WebContents* guest_web_contents = guest->GetWebContents();
-
-    // Destroy the guest's web_contents.
-    delete guest_web_contents;
-    guest_web_contents_by_instance_id_.erase(instance_id);
-  }
 }
 
 void BrowserPluginEmbedder::CleanUp() {
@@ -194,91 +293,7 @@ bool BrowserPluginEmbedder::ShouldForwardToBrowserPluginGuest(
 void BrowserPluginEmbedder::OnCreateGuest(
     int instance_id,
     const BrowserPluginHostMsg_CreateGuest_Params& params) {
-  WebContentsImpl* guest_web_contents = NULL;
-  BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
-  CHECK(!guest);
-
-  // Validate that the partition id coming from the renderer is valid UTF-8,
-  // since we depend on this in other parts of the code, such as FilePath
-  // creation. If the validation fails, treat it as a bad message and kill the
-  // renderer process.
-  if (!IsStringUTF8(params.storage_partition_id)) {
-    content::RecordAction(UserMetricsAction("BadMessageTerminate_BPE"));
-    base::KillProcess(render_view_host_->GetProcess()->GetHandle(),
-                      content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
-    return;
-  }
-
-  const std::string& host =
-      render_view_host_->GetSiteInstance()->GetSiteURL().host();
-  std::string url_encoded_partition = net::EscapeQueryParamValue(
-      params.storage_partition_id, false);
-
-  // The SiteInstance of a given webview tag is based on the fact that it's a
-  // guest process in addition to which platform application the tag belongs to
-  // and what storage partition is in use, rather than the URL that the tag is
-  // being navigated to.
-  GURL guest_site(
-      base::StringPrintf("%s://%s/%s?%s", chrome::kGuestScheme,
-                         host.c_str(), params.persist_storage ? "persist" : "",
-                         url_encoded_partition.c_str()));
-
-  // If we already have a webview tag in the same app using the same storage
-  // partition, we should use the same SiteInstance so the existing tag and
-  // the new tag can script each other.
-  SiteInstance* guest_site_instance = NULL;
-  for (ContainerInstanceMap::const_iterator it =
-           guest_web_contents_by_instance_id_.begin();
-       it != guest_web_contents_by_instance_id_.end(); ++it) {
-    if (it->second->GetSiteInstance()->GetSiteURL() == guest_site) {
-      guest_site_instance = it->second->GetSiteInstance();
-      break;
-    }
-  }
-  if (!guest_site_instance) {
-    // Create the SiteInstance in a new BrowsingInstance, which will ensure that
-    // webview tags are also not allowed to send messages across different
-    // partitions.
-    guest_site_instance = SiteInstance::CreateForURL(
-        web_contents()->GetBrowserContext(), guest_site);
-  }
-
-  guest_web_contents = WebContentsImpl::CreateGuest(
-      web_contents()->GetBrowserContext(),
-      guest_site_instance,
-      instance_id,
-      params);
-
-  guest = guest_web_contents->GetBrowserPluginGuest();
-  guest->set_embedder_web_contents(
-      static_cast<WebContentsImpl*>(web_contents()));
-
-  RendererPreferences* guest_renderer_prefs =
-      guest_web_contents->GetMutableRendererPrefs();
-  // Copy renderer preferences (and nothing else) from the embedder's
-  // TabContents to the guest.
-  //
-  // For GTK and Aura this is necessary to get proper renderer configuration
-  // values for caret blinking interval, colors related to selection and
-  // focus.
-  *guest_renderer_prefs = *web_contents()->GetMutableRendererPrefs();
-
-  guest_renderer_prefs->throttle_input_events = false;
-  // Navigation is disabled in Chrome Apps. We want to make sure guest-initiated
-  // navigations still continue to function inside the app.
-  guest_renderer_prefs->browser_handles_all_top_level_requests = false;
-  AddGuest(instance_id, guest_web_contents);
-  guest_web_contents->SetDelegate(guest);
-
-  // Create a swapped out RenderView for the guest in the embedder render
-  // process, so that the embedder can access the guest's window object.
-  int guest_routing_id =
-      static_cast<WebContentsImpl*>(guest->GetWebContents())->
-            CreateSwappedOutRenderView(web_contents()->GetSiteInstance());
-  render_view_host_->Send(new BrowserPluginMsg_GuestContentWindowReady(
-      render_view_host_->GetRoutingID(), instance_id, guest_routing_id));
-
-  guest->Initialize(params, guest_web_contents->GetRenderViewHost());
+  CreateGuest(instance_id, MSG_ROUTING_NONE, NULL, params);
 }
 
 void BrowserPluginEmbedder::OnNavigateGuest(

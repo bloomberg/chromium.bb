@@ -57,6 +57,23 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   static BrowserPluginEmbedder* Create(WebContentsImpl* web_contents,
                                        RenderViewHost* render_view_host);
 
+  // Create a guest WebContents with the provided |instance_id| and |params| and
+  // add it to this BrowserPluginEmbedder. Optionally, the new guest may be
+  // attached to a |guest_opener|, and may be attached to a pre-selected
+  // |routing_id|.
+  void CreateGuest(int instance_id,
+                   int routing_id,
+                   BrowserPluginGuest* guest_opener,
+                   const BrowserPluginHostMsg_CreateGuest_Params& params);
+
+  // Returns a guest browser plugin delegate by its container ID specified
+  // in BrowserPlugin.
+  BrowserPluginGuest* GetGuestByInstanceID(int instance_id) const;
+
+  // Destroy the guest with the provided |instance_id|. Remove references to the
+  // guest in this BrowserPluginEmbedder.
+  void DestroyGuestByInstanceID(int instance_id);
+
   // Overrides factory for testing. Default (NULL) value indicates regular
   // (non-test) environment.
   static void set_factory_for_testing(BrowserPluginHostFactory* factory) {
@@ -89,12 +106,8 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
   BrowserPluginEmbedder(WebContentsImpl* web_contents,
                         RenderViewHost* render_view_host);
 
-  // Returns a guest browser plugin delegate by its container ID specified
-  // in BrowserPlugin.
-  BrowserPluginGuest* GetGuestByInstanceID(int instance_id) const;
   // Adds a new guest web_contents to the embedder (overridable in test).
   virtual void AddGuest(int instance_id, WebContents* guest_web_contents);
-  void DestroyGuestByInstanceID(int instance_id);
   void CleanUp();
 
   // Called when visiblity of web_contents changes, so the embedder will

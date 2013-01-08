@@ -85,10 +85,16 @@ class CONTENT_EXPORT WebContentsImpl
       const WebContents::CreateParams& params,
       WebContentsImpl* opener);
 
+  // Returns the opener WebContentsImpl, if any. This can be set to null if the
+  // opener is closed or the page clears its window.opener.
+  WebContentsImpl* opener() const { return opener_; }
+
   // Creates a WebContents to be used as a browser plugin guest.
   static WebContentsImpl* CreateGuest(
       BrowserContext* browser_context,
       content::SiteInstance* site_instance,
+      int routing_id,
+      WebContentsImpl* opener_web_contents,
       int guest_instance_id,
       const BrowserPluginHostMsg_CreateGuest_Params& params);
 

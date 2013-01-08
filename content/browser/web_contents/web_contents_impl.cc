@@ -390,10 +390,13 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
 WebContentsImpl* WebContentsImpl::CreateGuest(
     BrowserContext* browser_context,
     SiteInstance* site_instance,
+    int routing_id,
+    WebContentsImpl* opener_web_contents,
     int guest_instance_id,
     const BrowserPluginHostMsg_CreateGuest_Params& params) {
 
-  WebContentsImpl* new_contents = new WebContentsImpl(browser_context, NULL);
+  WebContentsImpl* new_contents = new WebContentsImpl(browser_context,
+                                                      opener_web_contents);
 
   // This makes |new_contents| act as a guest.
   // For more info, see comment above class BrowserPluginGuest.
@@ -403,7 +406,9 @@ WebContentsImpl* WebContentsImpl::CreateGuest(
         new_contents,
         params));
 
-  new_contents->Init(WebContents::CreateParams(browser_context, site_instance));
+  WebContents::CreateParams create_params(browser_context, site_instance);
+  create_params.routing_id = routing_id;
+  new_contents->Init(create_params);
 
   return new_contents;
 }
