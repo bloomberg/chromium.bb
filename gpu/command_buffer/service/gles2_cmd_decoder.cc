@@ -83,7 +83,7 @@ khronos_uint64_t CityHashForAngle(const char* name, unsigned int len) {
       CityHash64(name, static_cast<size_t>(len)));
 }
 
-}
+}  // namespace
 
 class GLES2DecoderImpl;
 
@@ -1127,7 +1127,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Wrappers for various state.
   void DoDepthRangef(GLclampf znear, GLclampf zfar);
   void DoHint(GLenum target, GLenum mode);
-  void DoSampleCoverage (GLclampf value, GLboolean invert);
+  void DoSampleCoverage(GLclampf value, GLboolean invert);
 
   // Wrapper for glCompileShader.
   void DoCompileShader(GLuint shader);
@@ -3989,8 +3989,8 @@ bool GLES2DecoderImpl::GetHelper(
         if (state_.vertex_attrib_manager->element_array_buffer()) {
           GLuint client_id = 0;
           buffer_manager()->GetClientId(
-              state_.vertex_attrib_manager->element_array_buffer(
-                  )->service_id(), &client_id);
+              state_.vertex_attrib_manager->element_array_buffer()->
+                  service_id(), &client_id);
           *params = client_id;
         } else {
           *params = 0;
@@ -4569,7 +4569,7 @@ void GLES2DecoderImpl::DoHint(GLenum target, GLenum mode) {
   glHint(target, mode);
 }
 
-void GLES2DecoderImpl::DoSampleCoverage (GLclampf value, GLboolean invert) {
+void GLES2DecoderImpl::DoSampleCoverage(GLclampf value, GLboolean invert) {
   state_.sample_coverage_value = std::min(1.0f, std::max(0.0f, value));
   state_.sample_coverage_invert = (invert != 0);
   glSampleCoverage(state_.sample_coverage_value, invert);
@@ -4933,7 +4933,7 @@ void GLES2DecoderImpl::DoTexParameteri(
   }
 
   GLenum error =  texture_manager()->SetParameter(info, pname, param);
-  if(error != GL_NO_ERROR) {
+  if (error != GL_NO_ERROR) {
     SetGLErrorInvalidParam(error, "glTexParameteri", pname, param);
     return;
   }
@@ -6040,8 +6040,8 @@ error::Error GLES2DecoderImpl::DoDrawElements(
   }
 
   GLuint max_vertex_accessed;
-  if (!state_.vertex_attrib_manager->element_array_buffer(
-      )->GetMaxValueForRange(offset, count, type, &max_vertex_accessed)) {
+  if (!state_.vertex_attrib_manager->element_array_buffer()->
+      GetMaxValueForRange(offset, count, type, &max_vertex_accessed)) {
     SetGLError(GL_INVALID_OPERATION,
                function_name, "range out of bounds for buffer");
     return error::kNoError;
@@ -9960,7 +9960,7 @@ error::Error GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM(
   if (!info->SafeToRenderFrom()) {
     if (!texture_manager()->ClearTextureLevel(this, info, target, level)) {
       SetGLError(GL_OUT_OF_MEMORY,
-          "glAsyncTexSubImage2DCHROMIUM","dimensions too big");
+          "glAsyncTexSubImage2DCHROMIUM", "dimensions too big");
       return error::kNoError;
     }
   }
