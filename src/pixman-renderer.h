@@ -22,9 +22,6 @@
 
 #include  "compositor.h"
 
-void
-pixman_renderer_destroy(struct weston_compositor *ec);
-
 int
 pixman_renderer_init(struct weston_compositor *ec);
 

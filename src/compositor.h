@@ -273,6 +273,7 @@ struct weston_renderer {
 			       float red, float green,
 			       float blue, float alpha);
 	void (*destroy_surface)(struct weston_surface *surface);
+	void (*destroy)(struct weston_compositor *ec);
 };
 
 struct weston_compositor {
@@ -821,8 +822,6 @@ weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode
 
 int
 noop_renderer_init(struct weston_compositor *ec);
-void
-noop_renderer_destroy(struct weston_compositor *ec);
 
 struct weston_compositor *
 backend_init(struct wl_display *display, int argc, char *argv[],

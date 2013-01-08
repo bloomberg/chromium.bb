@@ -299,7 +299,7 @@ android_init_egl(struct android_compositor *compositor,
 
 	if (gl_renderer_output_create(&output->base,
 			output->fb->native_window) < 0) {
-		gl_renderer_destroy(&compositor->base);
+		compositor->base.renderer->destroy(&compositor->base);
 		return -1;
 	}
 
@@ -313,7 +313,7 @@ android_compositor_destroy(struct weston_compositor *base)
 
 	android_seat_destroy(compositor->seat);
 
-	gl_renderer_destroy(base);
+	base->renderer->destroy(base);
 
 	/* destroys outputs, too */
 	weston_compositor_shutdown(&compositor->base);
@@ -358,7 +358,7 @@ android_compositor_create(struct wl_display *display, int argc, char *argv[],
 	return &compositor->base;
 
 err_gl:
-	gl_renderer_destroy(&compositor->base);
+	compositor->base.renderer->destroy(&compositor->base);
 err_output:
 	android_output_destroy(&output->base);
 err_compositor:

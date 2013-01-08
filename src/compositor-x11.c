@@ -1419,10 +1419,7 @@ x11_destroy(struct weston_compositor *ec)
 
 	weston_compositor_shutdown(ec); /* destroys outputs, too */
 
-	if (compositor->use_pixman)
-		pixman_renderer_destroy(ec);
-	else
-		gl_renderer_destroy(ec);
+	ec->renderer->destroy(ec);
 
 	XCloseDisplay(compositor->dpy);
 	free(ec);
@@ -1532,10 +1529,7 @@ x11_compositor_create(struct wl_display *display,
 err_x11_input:
 	x11_input_destroy(c);
 err_renderer:
-	if (c->use_pixman)
-		pixman_renderer_destroy(&c->base);
-	else
-		gl_renderer_destroy(&c->base);
+	c->base.renderer->destroy(&c->base);
 err_xdisplay:
 	XCloseDisplay(c->dpy);
 err_free:

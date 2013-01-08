@@ -1347,7 +1347,7 @@ rpi_compositor_destroy(struct weston_compositor *base)
 	/* destroys outputs, too */
 	weston_compositor_shutdown(&compositor->base);
 
-	gl_renderer_destroy(&compositor->base);
+	compositor->base.renderer->destroy(&compositor->base);
 	tty_destroy(compositor->tty);
 
 	bcm_host_deinit();
@@ -1501,7 +1501,7 @@ rpi_compositor_create(struct wl_display *display, int argc, char *argv[],
 	return &compositor->base;
 
 out_gl:
-	gl_renderer_destroy(&compositor->base);
+	compositor->base.renderer->destroy(&compositor->base);
 
 out_tty:
 	tty_destroy(compositor->tty);

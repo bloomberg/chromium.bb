@@ -312,7 +312,7 @@ pixman_renderer_destroy_surface(struct weston_surface *surface)
 	free(ps);
 }
 
-WL_EXPORT void
+static void
 pixman_renderer_destroy(struct weston_compositor *ec)
 {
 	free(ec->renderer);
@@ -335,6 +335,7 @@ pixman_renderer_init(struct weston_compositor *ec)
 	renderer->create_surface = pixman_renderer_create_surface;
 	renderer->surface_set_color = pixman_renderer_surface_set_color;
 	renderer->destroy_surface = pixman_renderer_destroy_surface;
+	renderer->destroy = pixman_renderer_destroy;
 	ec->renderer = renderer;
 
 	return 0;

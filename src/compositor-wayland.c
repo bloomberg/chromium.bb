@@ -612,7 +612,7 @@ wayland_restore(struct weston_compositor *ec)
 static void
 wayland_destroy(struct weston_compositor *ec)
 {
-	gl_renderer_destroy(ec);
+	ec->renderer->destroy(ec);
 
 	weston_compositor_shutdown(ec);
 
@@ -686,7 +686,7 @@ wayland_compositor_create(struct wl_display *display,
 	return &c->base;
 
 err_gl:
-	gl_renderer_destroy(&c->base);
+	c->base.renderer->destroy(&c->base);
 err_display:
 	wl_display_disconnect(c->parent.wl_display);
 err_compositor:

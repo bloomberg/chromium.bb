@@ -2007,7 +2007,7 @@ drm_destroy(struct weston_compositor *ec)
 
 	weston_compositor_shutdown(ec);
 
-	gl_renderer_destroy(ec);
+	ec->renderer->destroy(ec);
 
 	destroy_sprites(d);
 	gbm_device_destroy(d->gbm);
@@ -2307,7 +2307,7 @@ err_drm_source:
 	wl_list_for_each_safe(weston_seat, next, &ec->base.seat_list, link)
 		evdev_input_destroy(weston_seat);
 err_sprite:
-	gl_renderer_destroy(&ec->base);
+	ec->base.renderer->destroy(&ec->base);
 	gbm_device_destroy(ec->gbm);
 	destroy_sprites(ec);
 err_udev_dev:

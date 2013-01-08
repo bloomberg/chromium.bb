@@ -1648,7 +1648,7 @@ gl_renderer_output_surface(struct weston_output *output)
 	return get_output_state(output)->egl_surface;
 }
 
-WL_EXPORT void
+static void
 gl_renderer_destroy(struct weston_compositor *ec)
 {
 	struct gl_renderer *gr = get_renderer(ec);
@@ -1748,6 +1748,7 @@ gl_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
 	gr->base.create_surface = gl_renderer_create_surface;
 	gr->base.surface_set_color = gl_renderer_surface_set_color;
 	gr->base.destroy_surface = gl_renderer_destroy_surface;
+	gr->base.destroy = gl_renderer_destroy;
 
 	gr->egl_display = eglGetDisplay(display);
 	if (gr->egl_display == EGL_NO_DISPLAY) {

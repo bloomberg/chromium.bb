@@ -68,7 +68,7 @@ noop_renderer_destroy_surface(struct weston_surface *surface)
 {
 }
 
-WL_EXPORT void
+static void
 noop_renderer_destroy(struct weston_compositor *ec)
 {
 	free(ec->renderer);
@@ -91,6 +91,7 @@ noop_renderer_init(struct weston_compositor *ec)
 	renderer->create_surface = noop_renderer_create_surface;
 	renderer->surface_set_color = noop_renderer_surface_set_color;
 	renderer->destroy_surface = noop_renderer_destroy_surface;
+	renderer->destroy = noop_renderer_destroy;
 	ec->renderer = renderer;
 
 	return 0;
