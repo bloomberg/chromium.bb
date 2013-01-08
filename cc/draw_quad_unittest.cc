@@ -362,7 +362,7 @@ TEST(DrawQuadTest, copyTextureDrawQuad)
     gfx::Rect opaqueRect(3, 7, 10, 12);
     unsigned resourceId = 82;
     bool premultipliedAlpha = true;
-    gfx::RectF uvRect(0.5, 224, -51, 36);
+    gfx::RectF uvRect(0.5f, 224.f, 51.f, 36.f);
     const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
     bool flipped = true;
     CREATE_SHARED_STATE();

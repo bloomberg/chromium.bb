@@ -62,8 +62,9 @@ class ShellWindow : public content::NotificationObserver,
     Frame frame;
 
     // Specify the initial content bounds of the window (excluding any window
-    // decorations). INT_MIN designates 'unspecified' for any coordinate, and
-    // should be replaced with a default value.
+    // decorations). INT_MIN designates 'unspecified' for the position
+    // components, and 0 for the size components. When unspecified, they should
+    // be replaced with a default value.
     gfx::Rect bounds;
 
     gfx::Size minimum_size;

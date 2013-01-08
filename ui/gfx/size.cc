@@ -8,18 +8,16 @@
 #include <windows.h>
 #endif
 
-#include "base/logging.h"
 #include "base/stringprintf.h"
-#include "ui/gfx/size_base.h"
+#include "ui/gfx/size_base_impl.h"
 
 namespace gfx {
 
 template class SizeBase<Size, int>;
 
 #if defined(OS_MACOSX)
-Size::Size(const CGSize& s) : SizeBase<Size, int>(0, 0) {
-  set_width(s.width);
-  set_height(s.height);
+Size::Size(const CGSize& s)
+    : SizeBase<Size, int>(s.width, s.height) {
 }
 
 Size& Size::operator=(const CGSize& s) {
