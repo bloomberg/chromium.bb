@@ -25,14 +25,16 @@
 namespace keys = extension_management_api_constants;
 namespace util = extension_function_test_utils;
 
+namespace extensions {
+
 class ExtensionManagementApiBrowserTest : public ExtensionBrowserTest {
  protected:
   bool CrashEnabledExtension(const std::string& extension_id) {
     content::WindowedNotificationObserver extension_crash_observer(
         chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
         content::NotificationService::AllSources());
-    extensions::ExtensionHost* background_host =
-        extensions::ExtensionSystem::Get(browser()->profile())->
+    ExtensionHost* background_host =
+        ExtensionSystem::Get(browser()->profile())->
             process_manager()->GetBackgroundHostForExtension(extension_id);
     if (!background_host)
       return false;
@@ -93,11 +95,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
                        UninstallWithConfirmDialog) {
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+  ExtensionService* service = ExtensionSystem::Get(browser()->profile())->
+      extension_service();
 
   // Install an extension.
-  const extensions::Extension* extension = InstallExtension(
+  const Extension* extension = InstallExtension(
       test_data_dir_.AppendASCII("api_test/management/enabled_extension"), 1);
   ASSERT_TRUE(extension);
 
@@ -136,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
   // Load an extension with a background page, so that we know it has a process
   // running.
   ExtensionTestMessageListener listener("ready", false);
-  const extensions::Extension* extension = LoadExtension(
+  const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("management/install_event"));
   ASSERT_TRUE(extension);
   ASSERT_TRUE(listener.WaitUntilSatisfied());
@@ -181,8 +183,8 @@ class ExtensionManagementApiEscalationTest :
         pem_path,
         FilePath());
 
-    ExtensionService* service = extensions::ExtensionSystem::Get(
-        browser()->profile())->extension_service();
+    ExtensionService* service = ExtensionSystem::Get(browser()->profile())->
+        extension_service();
 
     // Install low-permission version of the extension.
     ASSERT_TRUE(InstallExtension(path_v1, 1));
@@ -260,7 +262,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
   ASSERT_TRUE(CrashEnabledExtension(kId));
   SetEnabled(false, true, "");
   SetEnabled(true, true, "");
-  const extensions::Extension* extension = browser()->profile()->
-      GetExtensionService()->GetExtensionById(kId, false);
+  const Extension* extension = ExtensionSystem::Get(browser()->profile())->
+      extension_service()->GetExtensionById(kId, false);
   EXPECT_TRUE(extension);
 }
+
+}  // namespace extensions

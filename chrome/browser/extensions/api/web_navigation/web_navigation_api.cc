@@ -776,19 +776,19 @@ void WebNavigationAPI::Shutdown() {
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
+static base::LazyInstance<ProfileKeyedAPIFactory<WebNavigationAPI> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<WebNavigationAPI>*
+WebNavigationAPI::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
 void WebNavigationAPI::OnListenerAdded(
     const extensions::EventListenerInfo& details) {
   web_navigation_event_router_.reset(new WebNavigationEventRouter(profile_));
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
-}
-
-static base::LazyInstance<ProfileKeyedAPIFactory<WebNavigationAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
-
-template <>
-ProfileKeyedAPIFactory<WebNavigationAPI>*
-ProfileKeyedAPIFactory<WebNavigationAPI>::GetInstance() {
-  return &g_factory.Get();
 }
 
 }  // namespace extensions

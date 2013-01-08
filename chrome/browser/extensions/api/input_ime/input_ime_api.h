@@ -179,6 +179,9 @@ class InputImeAPI : public ProfileKeyedAPI,
   explicit InputImeAPI(Profile* profile);
   virtual ~InputImeAPI();
 
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<InputImeAPI>* GetFactoryInstance();
+
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -197,10 +200,6 @@ class InputImeAPI : public ProfileKeyedAPI,
   Profile* const profile_;
   content::NotificationRegistrar registrar_;
 };
-
-template <>
-ProfileKeyedAPIFactory<InputImeAPI>*
-ProfileKeyedAPIFactory<InputImeAPI>::GetInstance();
 
 }  // namespace extensions
 

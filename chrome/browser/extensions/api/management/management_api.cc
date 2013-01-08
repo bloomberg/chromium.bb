@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -49,16 +50,13 @@ using base::IntToString;
 using content::BrowserThread;
 using content::UtilityProcessHost;
 using content::UtilityProcessHostClient;
-using extensions::api::management::ExtensionInfo;
-using extensions::api::management::IconInfo;
-using extensions::ErrorUtils;
-using extensions::Extension;
-using extensions::ExtensionSystem;
-using extensions::PermissionMessages;
 
-namespace events = extensions::event_names;
 namespace keys = extension_management_api_constants;
-namespace management = extensions::api::management;
+
+namespace extensions {
+
+namespace events = event_names;
+namespace management = api::management;
 
 namespace {
 
@@ -104,21 +102,21 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
   info->is_app = extension.is_app();
   if (info->is_app) {
     if (extension.is_legacy_packaged_app())
-      info->type = ExtensionInfo::TYPE_LEGACY_PACKAGED_APP;
+      info->type = management::ExtensionInfo::TYPE_LEGACY_PACKAGED_APP;
     else if (extension.is_hosted_app())
-      info->type = ExtensionInfo::TYPE_HOSTED_APP;
+      info->type = management::ExtensionInfo::TYPE_HOSTED_APP;
     else
-      info->type = ExtensionInfo::TYPE_PACKAGED_APP;
+      info->type = management::ExtensionInfo::TYPE_PACKAGED_APP;
   } else if (extension.is_theme()) {
-    info->type = ExtensionInfo::TYPE_THEME;
+    info->type = management::ExtensionInfo::TYPE_THEME;
   } else {
-    info->type = ExtensionInfo::TYPE_EXTENSION;
+    info->type = management::ExtensionInfo::TYPE_EXTENSION;
   }
 
   if (info->enabled) {
     info->disabled_reason = management::ExtensionInfo::DISABLED_REASON_NONE;
   } else {
-    extensions::ExtensionPrefs* prefs = service->extension_prefs();
+    ExtensionPrefs* prefs = service->extension_prefs();
     if (prefs->DidExtensionEscalatePermissions(extension.id())) {
       info->disabled_reason =
           management::ExtensionInfo::DISABLED_REASON_PERMISSIONS_INCREASE;
@@ -163,10 +161,10 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
 
   if (!extension.is_hosted_app()) {
     // Skip host permissions for hosted apps.
-    const extensions::URLPatternSet host_perms =
+    const URLPatternSet host_perms =
         extension.GetActivePermissions()->explicit_hosts();
     if (!host_perms.is_empty()) {
-      for (extensions::URLPatternSet::const_iterator iter = host_perms.begin();
+      for (URLPatternSet::const_iterator iter = host_perms.begin();
            iter != host_perms.end(); ++iter) {
         info->host_permissions.push_back(iter->GetAsString());
       }
@@ -213,11 +211,11 @@ void AddExtensionInfo(const ExtensionSet& extensions,
 
 } // namespace
 
-ExtensionService* ExtensionManagementFunction::service() {
+ExtensionService* ManagementFunction::service() {
   return profile()->GetExtensionService();
 }
 
-ExtensionService* AsyncExtensionManagementFunction::service() {
+ExtensionService* AsyncManagementFunction::service() {
   return profile()->GetExtensionService();
 }
 
@@ -427,7 +425,7 @@ bool LaunchAppFunction::RunImpl() {
   // the user has not set a preference, we open the app in a tab.
   extension_misc::LaunchContainer launch_container =
       service()->extension_prefs()->GetLaunchContainer(
-          extension, extensions::ExtensionPrefs::LAUNCH_DEFAULT);
+          extension, ExtensionPrefs::LAUNCH_DEFAULT);
   application_launch::OpenApplication(application_launch::LaunchParams(
           profile(), extension, launch_container, NEW_FOREGROUND_TAB));
 #if !defined(OS_ANDROID)
@@ -458,8 +456,8 @@ bool SetEnabledFunction::RunImpl() {
     return false;
   }
 
-  const extensions::ManagementPolicy* policy = extensions::ExtensionSystem::Get(
-      profile())->management_policy();
+  const ManagementPolicy* policy = ExtensionSystem::Get(profile())->
+      management_policy();
   if (!policy->UserMayModifySettings(extension, NULL)) {
     error_ = ErrorUtils::FormatErrorMessage(
         keys::kUserCantModifyError, extension_id_);
@@ -469,7 +467,7 @@ bool SetEnabledFunction::RunImpl() {
   bool currently_enabled = service()->IsExtensionEnabled(extension_id_);
 
   if (!currently_enabled && params->enabled) {
-    extensions::ExtensionPrefs* prefs = service()->extension_prefs();
+    ExtensionPrefs* prefs = service()->extension_prefs();
     if (prefs->DidExtensionEscalatePermissions(extension_id_)) {
       if (!user_gesture()) {
         error_ = keys::kGestureNeededForEscalationError;
@@ -530,8 +528,8 @@ bool UninstallFunction::RunImpl() {
     return false;
   }
 
-  if (!extensions::ExtensionSystem::Get(
-      profile())->management_policy()->UserMayModifySettings(extension, NULL)) {
+  if (!ExtensionSystem::Get(profile())->management_policy()->
+      UserMayModifySettings(extension, NULL)) {
     error_ = ErrorUtils::FormatErrorMessage(
         keys::kUserCantModifyError, extension_id_);
     return false;
@@ -585,7 +583,7 @@ void UninstallFunction::ExtensionUninstallCanceled() {
   Release();
 }
 
-ExtensionManagementEventRouter::ExtensionManagementEventRouter(Profile* profile)
+ManagementEventRouter::ManagementEventRouter(Profile* profile)
     : profile_(profile) {
   int types[] = {
     chrome::NOTIFICATION_EXTENSION_INSTALLED,
@@ -602,9 +600,9 @@ ExtensionManagementEventRouter::ExtensionManagementEventRouter(Profile* profile)
   }
 }
 
-ExtensionManagementEventRouter::~ExtensionManagementEventRouter() {}
+ManagementEventRouter::~ManagementEventRouter() {}
 
-void ExtensionManagementEventRouter::Observe(
+void ManagementEventRouter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -638,8 +636,7 @@ void ExtensionManagementEventRouter::Observe(
   } else {
     const Extension* extension = NULL;
     if (event_name == events::kOnExtensionDisabled) {
-      extension = content::Details<extensions::UnloadedExtensionInfo>(
-          details)->extension;
+      extension = content::Details<UnloadedExtensionInfo>(details)->extension;
     } else {
       extension = content::Details<const Extension>(details).ptr();
     }
@@ -649,13 +646,11 @@ void ExtensionManagementEventRouter::Observe(
     args->Append(info->ToValue().release());
   }
 
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      event_name, args.Pass()));
-  extensions::ExtensionSystem::Get(profile)->event_router()->
-      BroadcastEvent(event.Pass());
+  scoped_ptr<Event> event(new Event(event_name, args.Pass()));
+  ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
 }
 
-ExtensionManagementAPI::ExtensionManagementAPI(Profile* profile)
+ManagementAPI::ManagementAPI(Profile* profile)
     : profile_(profile) {
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
       this, events::kOnExtensionInstalled);
@@ -667,15 +662,24 @@ ExtensionManagementAPI::ExtensionManagementAPI(Profile* profile)
       this, events::kOnExtensionDisabled);
 }
 
-ExtensionManagementAPI::~ExtensionManagementAPI() {
+ManagementAPI::~ManagementAPI() {
 }
 
-void ExtensionManagementAPI::Shutdown() {
+void ManagementAPI::Shutdown() {
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
-void ExtensionManagementAPI::OnListenerAdded(
-    const extensions::EventListenerInfo& details) {
-  management_event_router_.reset(new ExtensionManagementEventRouter(profile_));
+static base::LazyInstance<ProfileKeyedAPIFactory<ManagementAPI> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<ManagementAPI>* ManagementAPI::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
+void ManagementAPI::OnListenerAdded(const EventListenerInfo& details) {
+  management_event_router_.reset(new ManagementEventRouter(profile_));
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
+
+}  // namespace extensions

@@ -27,6 +27,9 @@ class TabsWindowsAPI : public ProfileKeyedAPI,
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<TabsWindowsAPI>* GetFactoryInstance();
+
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
       OVERRIDE;
@@ -44,10 +47,6 @@ class TabsWindowsAPI : public ProfileKeyedAPI,
 
   scoped_ptr<WindowsEventRouter> windows_event_router_;
 };
-
-template <>
-ProfileKeyedAPIFactory<TabsWindowsAPI>*
-ProfileKeyedAPIFactory<TabsWindowsAPI>::GetInstance();
 
 }  // namespace extensions
 

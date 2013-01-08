@@ -10,7 +10,6 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/omnibox/omnibox_api_factory.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -152,12 +151,17 @@ OmniboxAPI::OmniboxAPI(Profile* profile)
 OmniboxAPI::~OmniboxAPI() {
 }
 
-void OmniboxAPI::Shutdown() {
+base::LazyInstance<ProfileKeyedAPIFactory<OmniboxAPI> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<OmniboxAPI>* OmniboxAPI::GetFactoryInstance() {
+  return &g_factory.Get();
 }
 
 // static
 OmniboxAPI* OmniboxAPI::Get(Profile* profile) {
-  return OmniboxAPIFactory::GetForProfile(profile);
+  return ProfileKeyedAPIFactory<OmniboxAPI>::GetForProfile(profile);
 }
 
 void OmniboxAPI::Observe(int type,

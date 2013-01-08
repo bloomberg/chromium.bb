@@ -556,19 +556,18 @@ void CookiesAPI::Shutdown() {
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
+static base::LazyInstance<ProfileKeyedAPIFactory<CookiesAPI> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<CookiesAPI>* CookiesAPI::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
 void CookiesAPI::OnListenerAdded(
     const extensions::EventListenerInfo& details) {
   cookies_event_router_.reset(new CookiesEventRouter(profile_));
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
-}
-
-static base::LazyInstance<ProfileKeyedAPIFactory<CookiesAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
-
-template <>
-ProfileKeyedAPIFactory<CookiesAPI>*
-ProfileKeyedAPIFactory<CookiesAPI>::GetInstance() {
-  return &g_factory.Get();
 }
 
 }  // namespace extensions

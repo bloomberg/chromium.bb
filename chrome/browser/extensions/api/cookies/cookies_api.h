@@ -201,6 +201,9 @@ class CookiesAPI : public ProfileKeyedAPI,
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<CookiesAPI>* GetFactoryInstance();
+
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
       OVERRIDE;
@@ -221,10 +224,6 @@ class CookiesAPI : public ProfileKeyedAPI,
 
   DISALLOW_COPY_AND_ASSIGN(CookiesAPI);
 };
-
-template <>
-ProfileKeyedAPIFactory<CookiesAPI>*
-ProfileKeyedAPIFactory<CookiesAPI>::GetInstance();
 
 }  // namespace extensions
 

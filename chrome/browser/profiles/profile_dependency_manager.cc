@@ -24,13 +24,12 @@
 #include "chrome/browser/extensions/api/history/history_api_factory.h"
 #include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
 #include "chrome/browser/extensions/api/managed_mode/managed_mode_api.h"
-#include "chrome/browser/extensions/api/management/management_api_factory.h"
+#include "chrome/browser/extensions/api/management/management_api.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api_factory.h"
-#include "chrome/browser/extensions/api/omnibox/omnibox_api_factory.h"
-#include "chrome/browser/extensions/api/preference/preference_api_factory.h"
+#include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
+#include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/processes/processes_api.h"
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
-#include "chrome/browser/extensions/api/push_messaging/push_messaging_api_factory.h"
+#include "chrome/browser/extensions/api/push_messaging/push_messaging_api.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry_factory.h"
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
@@ -250,30 +249,27 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::BookmarkAPIFactory::GetInstance();
   extensions::BluetoothAPIFactory::GetInstance();
   extensions::CommandServiceFactory::GetInstance();
+  extensions::CookiesAPI::GetFactoryInstance();
   extensions::DialAPIFactory::GetInstance();
   extensions::ExtensionSystemFactory::GetInstance();
   extensions::FontSettingsAPIFactory::GetInstance();
   extensions::HistoryAPIFactory::GetInstance();
   extensions::IdleManagerFactory::GetInstance();
 #if defined(OS_CHROMEOS)
+  extensions::InputImeAPI::GetFactoryInstance();
   extensions::InputMethodAPIFactory::GetInstance();
 #endif
+  extensions::ManagedModeAPI::GetFactoryInstance();
+  extensions::ManagementAPI::GetFactoryInstance();
   extensions::MediaGalleriesPrivateAPIFactory::GetInstance();
-  extensions::OmniboxAPIFactory::GetInstance();
-  extensions::PreferenceAPIFactory::GetInstance();
-  extensions::ProfileKeyedAPIFactory<extensions::CookiesAPI>::GetInstance();
-#if defined(OS_CHROMEOS)
-  extensions::ProfileKeyedAPIFactory<extensions::InputImeAPI>::GetInstance();
-#endif
-  extensions::ProfileKeyedAPIFactory<extensions::ManagedModeAPI>::GetInstance();
-  extensions::ProfileKeyedAPIFactory<extensions::ProcessesAPI>::GetInstance();
-  extensions::ProfileKeyedAPIFactory<extensions::TabsWindowsAPI>::GetInstance();
-  extensions::ProfileKeyedAPIFactory
-      <extensions::WebNavigationAPI>::GetInstance();
-  extensions::PushMessagingAPIFactory::GetInstance();
+  extensions::OmniboxAPI::GetFactoryInstance();
+  extensions::PreferenceAPI::GetFactoryInstance();
+  extensions::ProcessesAPI::GetFactoryInstance();
+  extensions::PushMessagingAPI::GetFactoryInstance();
   extensions::SuggestedLinksRegistryFactory::GetInstance();
   extensions::TabCaptureRegistryFactory::GetInstance();
-  ExtensionManagementAPIFactory::GetInstance();
+  extensions::TabsWindowsAPI::GetFactoryInstance();
+  extensions::WebNavigationAPI::GetFactoryInstance();
 #endif
   FaviconServiceFactory::GetInstance();
 #if defined(OS_CHROMEOS) && defined(FILE_MANAGER_EXTENSION)

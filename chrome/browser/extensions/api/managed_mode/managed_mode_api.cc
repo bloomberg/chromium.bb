@@ -137,19 +137,18 @@ void ManagedModeAPI::Shutdown() {
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
+static base::LazyInstance<ProfileKeyedAPIFactory<ManagedModeAPI> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<ManagedModeAPI>* ManagedModeAPI::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
 void ManagedModeAPI::OnListenerAdded(
     const extensions::EventListenerInfo& details) {
   managed_mode_event_router_.reset(new ManagedModeEventRouter(profile_));
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
-}
-
-static base::LazyInstance<ProfileKeyedAPIFactory<ManagedModeAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
-
-template <>
-ProfileKeyedAPIFactory<ManagedModeAPI>*
-ProfileKeyedAPIFactory<ManagedModeAPI>::GetInstance() {
-  return &g_factory.Get();
 }
 
 }  // namespace extensions

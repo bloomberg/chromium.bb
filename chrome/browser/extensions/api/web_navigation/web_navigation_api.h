@@ -223,6 +223,9 @@ class WebNavigationAPI : public ProfileKeyedAPI,
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<WebNavigationAPI>* GetFactoryInstance();
+
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
       OVERRIDE;
@@ -243,10 +246,6 @@ class WebNavigationAPI : public ProfileKeyedAPI,
 
   DISALLOW_COPY_AND_ASSIGN(WebNavigationAPI);
 };
-
-template <>
-ProfileKeyedAPIFactory<WebNavigationAPI>*
-ProfileKeyedAPIFactory<WebNavigationAPI>::GetInstance();
 
 }  // namespace extensions
 

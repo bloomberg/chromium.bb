@@ -90,6 +90,9 @@ class ManagedModeAPI : public ProfileKeyedAPI,
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
+  // ProfileKeyedAPIFactory implementation.
+  static ProfileKeyedAPIFactory<ManagedModeAPI>* GetFactoryInstance();
+
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
       OVERRIDE;
@@ -110,10 +113,6 @@ class ManagedModeAPI : public ProfileKeyedAPI,
 
   DISALLOW_COPY_AND_ASSIGN(ManagedModeAPI);
 };
-
-template <>
-ProfileKeyedAPIFactory<ManagedModeAPI>*
-ProfileKeyedAPIFactory<ManagedModeAPI>::GetInstance();
 
 }  // namespace extensions
 

@@ -7,15 +7,16 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/push_messaging/push_messaging_api_factory.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
@@ -287,15 +288,30 @@ PushMessagingAPI::~PushMessagingAPI() {
 
 // static
 PushMessagingAPI* PushMessagingAPI::Get(Profile* profile) {
-  return PushMessagingAPIFactory::GetForProfile(profile);
+  return ProfileKeyedAPIFactory<PushMessagingAPI>::GetForProfile(profile);
 }
 
 void PushMessagingAPI::Shutdown() {
   push_messaging_event_router_.reset();
 }
 
+static base::LazyInstance<ProfileKeyedAPIFactory<PushMessagingAPI> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<PushMessagingAPI>*
+PushMessagingAPI::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
 PushMessagingEventRouter* PushMessagingAPI::GetEventRouterForTest() {
   return push_messaging_event_router_.get();
+}
+
+template <>
+void ProfileKeyedAPIFactory<PushMessagingAPI>::DeclareFactoryDependencies() {
+  DependsOn(ExtensionSystemFactory::GetInstance());
+  DependsOn(ProfileSyncServiceFactory::GetInstance());
 }
 
 }  // namespace extensions

@@ -292,13 +292,13 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<extensions::SetPolicyFunction>();
 
   // Management.
-  RegisterFunction<GetAllExtensionsFunction>();
-  RegisterFunction<GetExtensionByIdFunction>();
-  RegisterFunction<GetPermissionWarningsByIdFunction>();
-  RegisterFunction<GetPermissionWarningsByManifestFunction>();
-  RegisterFunction<LaunchAppFunction>();
-  RegisterFunction<SetEnabledFunction>();
-  RegisterFunction<UninstallFunction>();
+  RegisterFunction<extensions::GetAllExtensionsFunction>();
+  RegisterFunction<extensions::GetExtensionByIdFunction>();
+  RegisterFunction<extensions::GetPermissionWarningsByIdFunction>();
+  RegisterFunction<extensions::GetPermissionWarningsByManifestFunction>();
+  RegisterFunction<extensions::LaunchAppFunction>();
+  RegisterFunction<extensions::SetEnabledFunction>();
+  RegisterFunction<extensions::UninstallFunction>();
 
   // Extension module.
   RegisterFunction<extensions::SetUpdateUrlDataFunction>();

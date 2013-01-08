@@ -12,9 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -78,14 +78,14 @@ class OmniboxSendSuggestionsFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class OmniboxAPI : public ProfileKeyedService,
+class OmniboxAPI : public ProfileKeyedAPI,
                    public content::NotificationObserver {
  public:
   explicit OmniboxAPI(Profile* profile);
   virtual ~OmniboxAPI();
 
-  // ProfileKeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<OmniboxAPI>* GetFactoryInstance();
 
   // Convenience method to get the OmniboxAPI for a profile.
   static OmniboxAPI* Get(Profile* profile);
@@ -103,7 +103,15 @@ class OmniboxAPI : public ProfileKeyedService,
   gfx::Image GetOmniboxPopupIcon(const std::string& extension_id);
 
  private:
+  friend class ProfileKeyedAPIFactory<OmniboxAPI>;
+
   typedef std::set<const Extension*> PendingExtensions;
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() {
+    return "OmniboxAPI";
+  }
+  static const bool kServiceRedirectedInIncognito = true;
 
   TemplateURLService* url_service_;
 
@@ -116,6 +124,8 @@ class OmniboxAPI : public ProfileKeyedService,
   // Keeps track of favicon-sized omnibox icons for extensions.
   ExtensionIconManager omnibox_icon_manager_;
   ExtensionIconManager omnibox_popup_icon_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(OmniboxAPI);
 };
 
 class OmniboxSetDefaultSuggestionFunction : public SyncExtensionFunction {

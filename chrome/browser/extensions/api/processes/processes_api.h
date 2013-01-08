@@ -101,6 +101,9 @@ class ProcessesAPI : public ProfileKeyedAPI,
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<ProcessesAPI>* GetFactoryInstance();
+
   // Convenience method to get the ProcessesAPI for a profile.
   static ProcessesAPI* Get(Profile* profile);
 
@@ -125,10 +128,6 @@ class ProcessesAPI : public ProfileKeyedAPI,
   // Created lazily on first access.
   scoped_ptr<ProcessesEventRouter> processes_event_router_;
 };
-
-template <>
-ProfileKeyedAPIFactory<ProcessesAPI>*
-ProfileKeyedAPIFactory<ProcessesAPI>::GetInstance();
 
 // This extension function returns the Process object for the renderer process
 // currently in use by the specified Tab.

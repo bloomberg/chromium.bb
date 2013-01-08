@@ -40,19 +40,17 @@ void TabsWindowsAPI::Shutdown() {
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
+static base::LazyInstance<ProfileKeyedAPIFactory<TabsWindowsAPI> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+ProfileKeyedAPIFactory<TabsWindowsAPI>* TabsWindowsAPI::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
 void TabsWindowsAPI::OnListenerAdded(
     const extensions::EventListenerInfo& details) {
   windows_event_router();
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
-}
-
-static base::LazyInstance<ProfileKeyedAPIFactory<TabsWindowsAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
-
-template <>
-ProfileKeyedAPIFactory<TabsWindowsAPI>*
-ProfileKeyedAPIFactory<TabsWindowsAPI>::GetInstance() {
-  return &g_factory.Get();
 }
 
 }  // namespace extensions

@@ -864,6 +864,14 @@ InputImeAPI::InputImeAPI(Profile* profile)
 InputImeAPI::~InputImeAPI() {
 }
 
+static base::LazyInstance<ProfileKeyedAPIFactory<InputImeAPI> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<InputImeAPI>* InputImeAPI::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
 void InputImeAPI::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
@@ -897,15 +905,6 @@ void InputImeAPI::Observe(int type,
 
 InputImeEventRouter* InputImeAPI::input_ime_event_router() {
   return InputImeEventRouter::GetInstance();
-}
-
-static base::LazyInstance<ProfileKeyedAPIFactory<InputImeAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
-
-template <>
-ProfileKeyedAPIFactory<InputImeAPI>*
-ProfileKeyedAPIFactory<InputImeAPI>::GetInstance() {
-  return &g_factory.Get();
 }
 
 }  // namespace extensions

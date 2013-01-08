@@ -503,6 +503,14 @@ void ProcessesAPI::Shutdown() {
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
+static base::LazyInstance<ProfileKeyedAPIFactory<ProcessesAPI> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<ProcessesAPI>* ProcessesAPI::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
 // static
 ProcessesAPI* ProcessesAPI::Get(Profile* profile) {
   return ProfileKeyedAPIFactory<ProcessesAPI>::GetForProfile(profile);
@@ -525,15 +533,6 @@ void ProcessesAPI::OnListenerRemoved(const EventListenerInfo& details) {
   // is removed (or a process with one exits), then we let the extension API
   // know that it has one fewer listener.
   processes_event_router()->ListenerRemoved();
-}
-
-static base::LazyInstance<ProfileKeyedAPIFactory<ProcessesAPI> >
-g_factory = LAZY_INSTANCE_INITIALIZER;
-
-template <>
-ProfileKeyedAPIFactory<ProcessesAPI>*
-ProfileKeyedAPIFactory<ProcessesAPI>::GetInstance() {
-  return &g_factory.Get();
 }
 
 GetProcessIdForTabFunction::GetProcessIdForTabFunction() : tab_id_(-1) {

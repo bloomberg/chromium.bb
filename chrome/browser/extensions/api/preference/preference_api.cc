@@ -7,6 +7,7 @@
 #include <map>
 #include <utility>
 
+#include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
@@ -319,6 +320,14 @@ PreferenceAPI::~PreferenceAPI() {
 
 void PreferenceAPI::Shutdown() {
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+}
+
+static base::LazyInstance<ProfileKeyedAPIFactory<PreferenceAPI> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<PreferenceAPI>* PreferenceAPI::GetFactoryInstance() {
+  return &g_factory.Get();
 }
 
 void PreferenceAPI::OnListenerAdded(const EventListenerInfo& details) {
