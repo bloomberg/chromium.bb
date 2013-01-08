@@ -8,6 +8,7 @@
 #ifndef _LIBEVDEV_MT_H_
 #define _LIBEVDEV_MT_H_
 
+#include <stdint.h>
 #include <libevdev/libevdev_log.h>
 
 /*
@@ -24,8 +25,8 @@
 #define MAX_SLOT_COUNT  64
 
 typedef struct {
-    unsigned code;
-    int values[MAX_SLOT_COUNT];
+    uint32_t code;
+    int32_t values[MAX_SLOT_COUNT];
 } MTSlotInfo, *MTSlotInfoPtr;
 
 typedef struct {
