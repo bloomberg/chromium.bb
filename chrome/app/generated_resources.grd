@@ -15345,10 +15345,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Keyboard/Mouse (<ph name="ADDRESS">$1<ex>12:34:56:78:9A:BC</ex></ph>)
     </message>
 
-    <!-- High-constrast mode. -->
+    <!-- High-contrast mode. -->
     <message name="IDS_HIGH_CONTRAST_NOTIFICATION"
-             desc="Text that explains that the user is using Windows High-Constrast mode, so they may be interested in a high-contrast extension or a dark theme. Note to translators: this is the name of a feature in Windows, so please try to find the correct name of that feature in your region.">
-      You have High Constrast mode enabled. Would you like to install our High Contrast extension and a dark theme?
+             desc="Text that explains that the user is using Windows High-Contrast mode, so they may be interested in a high-contrast extension or a dark theme. Note to translators: this is the name of a feature in Windows, so please try to find the correct name of that feature in your region.">
+      You have High Contrast mode enabled. Would you like to install our High Contrast extension and a dark theme?
     </message>
     <message name="IDS_HIGH_CONTRAST_EXT"
              desc="The title of a link that will open the Chrome Web Store with a High Contrast extension the user can install.">

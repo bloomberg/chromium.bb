@@ -13,7 +13,7 @@ class View;
 
 namespace chrome {
 
-// Show a bubble telling the user that they're using Windows high-constrast mode
+// Show a bubble telling the user that they're using Windows high-contrast mode
 // with a light-on-dark scheme, so they may be interested in a high-contrast
 // Chrome extension and a dark theme. Only shows the first time we encounter
 // this condition for a particular profile.
