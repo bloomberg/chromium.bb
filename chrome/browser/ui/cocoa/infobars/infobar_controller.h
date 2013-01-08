@@ -107,16 +107,5 @@ class InfoBarService;
 // subclass.  Each of these subclasses overrides addAdditionalControls to
 // configure its view as necessary.
 
-@interface AlternateNavInfoBarController : InfoBarController
-// Called when there is a click on the link in the infobar.
-- (void)linkClicked;
-@end
 
 
-@interface ConfirmInfoBarController : InfoBarController
-// Called when the OK and Cancel buttons are clicked.
-- (IBAction)ok:(id)sender;
-- (IBAction)cancel:(id)sender;
-// Called when there is a click on the link in the infobar.
-- (void)linkClicked;
-@end

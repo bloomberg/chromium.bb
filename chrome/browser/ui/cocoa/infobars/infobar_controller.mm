@@ -2,29 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Cocoa/Cocoa.h>
+#import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 
-#include "base/logging.h"  // for NOTREACHED()
+#include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
-#include "base/sys_string_conversions.h"
 #include "grit/ui_resources.h"
-#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
-#include "chrome/browser/infobars/alternate_nav_infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#include "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
-#import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/gfx/image/image.h"
-#include "webkit/glue/window_open_disposition.h"
 
 namespace {
 // Durations set to match the default SlideAnimation duration.
@@ -282,193 +275,3 @@ const float kAnimateCloseDuration = 0.12;
 }
 
 @end
-
-
-/////////////////////////////////////////////////////////////////////////
-// AlternateNavInfoBarController implementation
-
-@implementation AlternateNavInfoBarController
-
-// Link infobars have a text message, of which part is linkified.  We
-// use an NSAttributedString to display styled text, and we set a
-// NSLink attribute on the hyperlink portion of the message.  Infobars
-// use a custom NSTextField subclass, which allows us to override
-// textView:clickedOnLink:atIndex: and intercept clicks.
-//
-- (void)addAdditionalControls {
-  // No buttons.
-  [self removeButtons];
-
-  AlternateNavInfoBarDelegate* delegate =
-      delegate_->AsAlternateNavInfoBarDelegate();
-  DCHECK(delegate);
-  size_t offset = string16::npos;
-  string16 message = delegate->GetMessageTextWithOffset(&offset);
-  string16 link = delegate->GetLinkText();
-  NSFont* font = [NSFont labelFontOfSize:
-                  [NSFont systemFontSizeForControlSize:NSRegularControlSize]];
-  HyperlinkTextView* view = (HyperlinkTextView*)label_.get();
-  [view setMessageAndLink:base::SysUTF16ToNSString(message)
-                 withLink:base::SysUTF16ToNSString(link)
-                 atOffset:offset
-                     font:font
-             messageColor:[NSColor blackColor]
-                linkColor:[NSColor blueColor]];
-}
-
-// Called when someone clicks on the link in the infobar.  This method
-// is called by the InfobarTextField on its delegate (the
-// AlternateNavInfoBarController).
-- (void)linkClicked {
-  if (![self isOwned])
-    return;
-  WindowOpenDisposition disposition =
-      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  if (delegate_->AsAlternateNavInfoBarDelegate()->LinkClicked(disposition))
-    [self removeSelf];
-}
-
-@end
-
-
-/////////////////////////////////////////////////////////////////////////
-// ConfirmInfoBarController implementation
-
-@implementation ConfirmInfoBarController
-
-// Called when someone clicks on the "OK" button.
-- (IBAction)ok:(id)sender {
-  if (![self isOwned])
-    return;
-  if (delegate_->AsConfirmInfoBarDelegate()->Accept())
-    [self removeSelf];
-}
-
-// Called when someone clicks on the "Cancel" button.
-- (IBAction)cancel:(id)sender {
-  if (![self isOwned])
-    return;
-  if (delegate_->AsConfirmInfoBarDelegate()->Cancel())
-    [self removeSelf];
-}
-
-// Confirm infobars can have OK and/or cancel buttons, depending on
-// the return value of GetButtons().  We create each button if
-// required and position them to the left of the close button.
-- (void)addAdditionalControls {
-  ConfirmInfoBarDelegate* delegate = delegate_->AsConfirmInfoBarDelegate();
-  DCHECK(delegate);
-  int visibleButtons = delegate->GetButtons();
-
-  NSRect okButtonFrame = [okButton_ frame];
-  NSRect cancelButtonFrame = [cancelButton_ frame];
-
-  DCHECK(NSMaxX(cancelButtonFrame) < NSMinX(okButtonFrame))
-      << "Ok button expected to be on the right of the Cancel button in nib";
-
-  CGFloat rightEdge = NSMaxX(okButtonFrame);
-  CGFloat spaceBetweenButtons =
-      NSMinX(okButtonFrame) - NSMaxX(cancelButtonFrame);
-  CGFloat spaceBeforeButtons =
-      NSMinX(cancelButtonFrame) - NSMaxX([label_.get() frame]);
-
-  // Update and position the OK button if needed.  Otherwise, hide it.
-  if (visibleButtons & ConfirmInfoBarDelegate::BUTTON_OK) {
-    [okButton_ setTitle:base::SysUTF16ToNSString(
-          delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK))];
-    [GTMUILocalizerAndLayoutTweaker sizeToFitView:okButton_];
-    okButtonFrame = [okButton_ frame];
-
-    // Position the ok button to the left of the Close button.
-    okButtonFrame.origin.x = rightEdge - okButtonFrame.size.width;
-    [okButton_ setFrame:okButtonFrame];
-
-    // Update the rightEdge
-    rightEdge = NSMinX(okButtonFrame);
-  } else {
-    [okButton_ removeFromSuperview];
-    okButton_ = nil;
-  }
-
-  // Update and position the Cancel button if needed.  Otherwise, hide it.
-  if (visibleButtons & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
-    [cancelButton_ setTitle:base::SysUTF16ToNSString(
-          delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL))];
-    [GTMUILocalizerAndLayoutTweaker sizeToFitView:cancelButton_];
-    cancelButtonFrame = [cancelButton_ frame];
-
-    // If we had a Ok button, leave space between the buttons.
-    if (visibleButtons & ConfirmInfoBarDelegate::BUTTON_OK) {
-      rightEdge -= spaceBetweenButtons;
-    }
-
-    // Position the Cancel button on our current right edge.
-    cancelButtonFrame.origin.x = rightEdge - cancelButtonFrame.size.width;
-    [cancelButton_ setFrame:cancelButtonFrame];
-
-    // Update the rightEdge.
-    rightEdge = NSMinX(cancelButtonFrame);
-  } else {
-    [cancelButton_ removeFromSuperview];
-    cancelButton_ = nil;
-  }
-
-  // If we had either button, leave space before the edge of the textfield.
-  if ((visibleButtons & ConfirmInfoBarDelegate::BUTTON_CANCEL) ||
-      (visibleButtons & ConfirmInfoBarDelegate::BUTTON_OK)) {
-    rightEdge -= spaceBeforeButtons;
-  }
-
-  NSRect frame = [label_.get() frame];
-  DCHECK(rightEdge > NSMinX(frame))
-      << "Need to make the xib larger to handle buttons with text this long";
-  frame.size.width = rightEdge - NSMinX(frame);
-  [label_.get() setFrame:frame];
-
-  // Set the text and link.
-  NSString* message = base::SysUTF16ToNSString(delegate->GetMessageText());
-  string16 link = delegate->GetLinkText();
-  if (!link.empty()) {
-    // Add spacing between the label and the link.
-    message = [message stringByAppendingString:@"   "];
-  }
-  NSFont* font = [NSFont labelFontOfSize:
-      [NSFont systemFontSizeForControlSize:NSRegularControlSize]];
-  HyperlinkTextView* view = (HyperlinkTextView*)label_.get();
-  [view setMessageAndLink:message
-                 withLink:base::SysUTF16ToNSString(link)
-                 atOffset:[message length]
-                     font:font
-             messageColor:[NSColor blackColor]
-                linkColor:[NSColor blueColor]];
-}
-
-// Called when someone clicks on the link in the infobar.  This method
-// is called by the InfobarTextField on its delegate (the
-// AlternateNavInfoBarController).
-- (void)linkClicked {
-  if (![self isOwned])
-    return;
-  WindowOpenDisposition disposition =
-      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  if (delegate_->AsConfirmInfoBarDelegate()->LinkClicked(disposition))
-    [self removeSelf];
-}
-
-@end
-
-
-//////////////////////////////////////////////////////////////////////////
-// CreateInfoBar() implementations
-
-InfoBar* AlternateNavInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  AlternateNavInfoBarController* controller =
-      [[AlternateNavInfoBarController alloc] initWithDelegate:this owner:owner];
-  return new InfoBar(controller, this);
-}
-
-InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  ConfirmInfoBarController* controller =
-      [[ConfirmInfoBarController alloc] initWithDelegate:this owner:owner];
-  return new InfoBar(controller, this);
-}
