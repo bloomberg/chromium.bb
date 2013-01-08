@@ -41,6 +41,7 @@
 struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_CreateGuest_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
+struct ViewHostMsg_CreateWindow_Params;
 #if defined(OS_MACOSX)
 struct ViewHostMsg_ShowPopup_Params;
 #endif
@@ -250,6 +251,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   // Message handlers for messages from guest.
 
+  void OnCreateWindow(const ViewHostMsg_CreateWindow_Params& params,
+                      int* route_id,
+                      int* surface_id,
+                      int64* cloned_session_storage_namespace_id);
   void OnHandleInputEventAck(
       WebKit::WebInputEvent::Type event_type,
       InputEventAckState ack_result);

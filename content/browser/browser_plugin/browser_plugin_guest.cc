@@ -353,6 +353,7 @@ void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
 bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuest, message)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnCreateWindow)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnHandleInputEventAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
                         OnHasTouchEventHandlers)
@@ -526,6 +527,18 @@ void BrowserPluginGuest::OnUpdateRectACK(
   render_view_host->Send(
       new ViewMsg_UpdateRect_ACK(render_view_host->GetRoutingID()));
   OnSetSize(instance_id_, auto_size_params, resize_guest_params);
+}
+
+void BrowserPluginGuest::OnCreateWindow(
+    const ViewHostMsg_CreateWindow_Params& params,
+    int* route_id,
+    int* surface_id,
+    int64* cloned_session_storage_namespace_id) {
+  // TODO(fsamuel): We do not currently support window.open.
+  // See http://crbug.com/140316.
+  *route_id = MSG_ROUTING_NONE;
+  *surface_id = 0;
+  *cloned_session_storage_namespace_id = 0l;
 }
 
 void BrowserPluginGuest::OnHandleInputEventAck(

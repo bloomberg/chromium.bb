@@ -4,7 +4,10 @@
 
 #include "content/browser/browser_plugin/browser_plugin_message_filter.h"
 
+#include "content/browser/browser_plugin/browser_plugin_guest.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/render_view_host.h"
 
 namespace content {
 
@@ -23,21 +26,34 @@ bool BrowserPluginMessageFilter::OnMessageReceived(
     bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(BrowserPluginMessageFilter, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnCreateWindow)
+    IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_CreateWindow,
+                                OnCreateWindow(message))
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void BrowserPluginMessageFilter::OnCreateWindow(
-    const ViewHostMsg_CreateWindow_Params& params,
-    int* route_id,
-    int* surface_id,
-    int64* cloned_session_storage_namespace_id) {
-  // TODO(fsamuel): We do not currently support window.open.
-  // See http://crbug.com/140316.
-  *route_id = MSG_ROUTING_NONE;
-  *surface_id = 0;
+void BrowserPluginMessageFilter::OverrideThreadForMessage(
+    const IPC::Message& message, BrowserThread::ID* thread) {
+  if (message.type() == ViewHostMsg_CreateWindow::ID)
+    *thread = BrowserThread::UI;
+}
+
+void BrowserPluginMessageFilter::OnCreateWindow(const IPC::Message& message) {
+  // Special case: For ViewHostMsg_CreateWindow, we route based on the contents
+  // of the message.
+  PickleIterator iter = IPC::SyncMessage::GetDataIterator(&message);
+  ViewHostMsg_CreateWindow_Params params;
+  if (!IPC::ReadParam(&message, &iter, &params)) {
+    NOTREACHED();
+    return;
+  }
+  RenderViewHost* rvh = RenderViewHost::FromID(render_process_id_,
+                                               params.opener_id);
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderViewHost(rvh));
+  BrowserPluginGuest* guest = web_contents->GetBrowserPluginGuest();
+  guest->OnMessageReceived(message);
 }
 
 } // namespace content

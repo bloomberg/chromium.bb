@@ -20,16 +20,15 @@ class BrowserPluginMessageFilter : public BrowserMessageFilter {
                              BrowserContext* browser_context);
 
   // BrowserMessageFilter implementation.
+  virtual void OverrideThreadForMessage(
+    const IPC::Message& message,
+    BrowserThread::ID* thread) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
  private:
   virtual ~BrowserPluginMessageFilter();
-  void OnCreateWindow(
-      const ViewHostMsg_CreateWindow_Params& params,
-      int* route_id,
-      int* surface_id,
-      int64* cloned_session_storage_namespace_id);
+  void OnCreateWindow(const IPC::Message& message);
 
   int render_process_id_;
 
