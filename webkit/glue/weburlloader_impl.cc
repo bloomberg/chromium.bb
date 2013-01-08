@@ -246,10 +246,14 @@ void PopulateURLResponse(
   // TODO(jungshik): Figure out the actual value of the referrer charset and
   // pass it to GetSuggestedFilename.
   std::string value;
-  if (headers->EnumerateHeader(NULL, "content-disposition", &value)) {
-    response->setSuggestedFileName(
-        net::GetSuggestedFilename(url, value, "", "", "", std::string()));
-  }
+  headers->EnumerateHeader(NULL, "content-disposition", &value);
+  response->setSuggestedFileName(
+      net::GetSuggestedFilename(url,
+                                value,
+                                std::string(),  // referrer_charset
+                                std::string(),  // suggested_name
+                                std::string(),  // mime_type
+                                std::string()));  // default_name
 
   Time time_val;
   if (headers->GetLastModifiedValue(&time_val))
