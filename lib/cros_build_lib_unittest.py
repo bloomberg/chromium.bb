@@ -956,5 +956,53 @@ class Test_iflatten_instance(cros_test_lib.TestCase):
     self.assertEqual([1, 2, 'f', 'd', 'a', 's'], f([1, 2, ('fdas',)], int))
     self.assertEqual([''], f(''))
 
+
+class TestKeyValueFiles(cros_test_lib.TempDirTestCase):
+
+  def testLoadFile(self):
+    """Verify reading a simple file works"""
+    conf_file = os.path.join(self.tempdir, 'file.conf')
+    osutils.WriteFile(conf_file, """# A comment !@
+A = 1
+AA= 2
+AAA =3
+AAAA\t=\t4
+AAAAA\t   \t=\t   5
+AAAAAA = 6     \t\t# Another comment
+\t
+\t# Aerith lives!
+C = 'D'
+CC= 'D'
+CCC ='D'
+\x20
+ \t# monsters go boom #
+E \t= "Fxxxxx" # Blargl
+EE= "Faaa\taaaa"\x20
+EEE ="Fk  \t  kkkk"\t
+Q = "'q"
+\tQQ ="q'"\x20
+ QQQ='"q"'\t
+""")
+    expected = {
+        'A': '1',
+        'AA': '2',
+        'AAA': '3',
+        'AAAA': '4',
+        'AAAAA': '5',
+        'AAAAAA': '6',
+        'C': 'D',
+        'CC': 'D',
+        'CCC': 'D',
+        'E': 'Fxxxxx',
+        'EE': 'Faaa\taaaa',
+        'EEE': 'Fk  \t  kkkk',
+        'Q': "'q",
+        'QQ': "q'",
+        'QQQ': '"q"',
+    }
+    result = cros_build_lib.LoadKeyValueFile(conf_file)
+    self.assertEqual(expected, result)
+
+
 if __name__ == '__main__':
   cros_test_lib.main()

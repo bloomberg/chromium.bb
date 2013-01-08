@@ -6,7 +6,6 @@
 """This script fetches and prepares an SDK chroot.
 """
 
-import errno
 import os
 import sys
 import urlparse
@@ -35,25 +34,6 @@ ENTER_CHROOT = [os.path.join(SRC_ROOT, 'src/scripts/sdk_lib/enter_chroot.sh')]
 
 # We need these tools to run. Very common tools (tar,..) are ommited.
 NEEDED_TOOLS = ('curl', 'xz', 'unshare')
-
-
-def GetSdkConfig():
-  """Extracts latest version from chromiumos-overlay."""
-  d = {}
-  try:
-    with open(SDK_VERSION_FILE) as f:
-      for raw_line in f:
-        line = raw_line.split('#')[0].strip()
-        if not line:
-          continue
-        chunks = line.split('=', 1)
-        if len(chunks) != 2:
-          raise Exception('Malformed version file; line %r' % raw_line)
-        d[chunks[0]] = chunks[1].strip().strip('"')
-  except EnvironmentError, e:
-    if e.errno != errno.ENOENT:
-      raise
-  return d
 
 
 def GetArchStageTarballs(version):
@@ -233,7 +213,7 @@ deleting, downloading, etc.  If given --enter (or no args), it defaults
 to an interactive bash shell within the chroot.
 
 If given args those are passed to the chroot environment, and executed."""
-  conf = GetSdkConfig()
+  conf = cros_build_lib.LoadKeyValueFile(SDK_VERSION_FILE, ignore_missing=True)
   sdk_latest_version = conf.get('SDK_LATEST_VERSION', '<unknown>')
   bootstrap_latest_version = conf.get('BOOTSTRAP_LATEST_VERSION', '<unknown>')
 

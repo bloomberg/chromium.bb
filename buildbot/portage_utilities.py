@@ -722,20 +722,9 @@ def RegenCache(overlay):
   if not repo_name:
     return
 
-  cache_config = ['cache-format', '=', 'md5-dict']
-
-  layout_conf = '%s/metadata/layout.conf' % overlay
-  if not os.path.exists(layout_conf):
-    return
-
-  gencache = False
-  with open(layout_conf) as f:
-    for line in f:
-      line = line.split('#')[0].split()
-      if line == cache_config:
-        gencache = True
-        break
-  if not gencache:
+  layout = cros_build_lib.LoadKeyValueFile('%s/metadata/layout.conf' % overlay,
+                                           ignore_missing=True)
+  if layout.get('cache-format') != 'md5-dict':
     return
 
   # Regen for the whole repo.

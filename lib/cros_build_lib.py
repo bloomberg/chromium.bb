@@ -1396,3 +1396,37 @@ def TreeOpen(status_url, sleep_timeout, max_timeout=600):
       return False
     Info('Waiting for the tree to open (%d minutes left)...', time_left / 60)
     time.sleep(sleep_timeout)
+
+
+def LoadKeyValueFile(input, ignore_missing=False):
+  """Turn a key=value file into a dict
+
+  Note: If you're designing a new data store, please use json rather than
+  this format.  This func is designed to work with legacy/external files
+  where json isn't an option.
+
+  Args:
+    input: The file to read.
+    ignore_missing: If the file does not exist, return an empty dict.
+  Returns:
+    a dict of all the key=value pairs found in the file.
+  """
+  d = {}
+  try:
+    with open(input) as f:
+      for raw_line in f:
+        line = raw_line.split('#')[0].strip()
+        if not line:
+          continue
+        chunks = line.split('=', 1)
+        if len(chunks) != 2:
+          raise ValueError('Malformed version file; line %r' % raw_line)
+        val = chunks[1].strip()
+        if val[0] in "\"'" and val[0] == val[-1]:
+          # Only strip quotes if the first & last one match.
+          val = val[1:-1]
+        d[chunks[0].strip()] = val
+  except EnvironmentError, e:
+    if not (ignore_missing and e.errno == errno.ENOENT):
+      raise
+  return d
