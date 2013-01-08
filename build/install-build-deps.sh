@@ -36,11 +36,11 @@ do
   shift
 done
 
-ubuntu_versions="10\.04|10\.10|11\.04|11\.10|12\.04"
-ubuntu_codenames="lucid|maverick|natty|oneiric|precise"
+ubuntu_versions="10\.04|10\.10|11\.04|11\.10|12\.04|12\.10"
+ubuntu_codenames="lucid|maverick|natty|oneiric|precise|quantal"
 
 if ! egrep -q "Ubuntu ($ubuntu_versions|$ubuntu_codenames)" /etc/issue; then
-  echo "ERROR: Only Ubuntu 10.04 (lucid) through 12.04 (precise) are currently"\
+  echo "ERROR: Only Ubuntu 10.04 (lucid) through 12.10 (quantal) are currently"\
       "supported" >&2
   exit 1
 fi
