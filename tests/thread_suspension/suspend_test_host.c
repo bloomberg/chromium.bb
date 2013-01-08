@@ -207,7 +207,8 @@ static void TrySuspendingSyscall(struct NaClApp *nap) {
  * in thread_suspension_test.cc, which is for testing
  * http://code.google.com/p/nativeclient/issues/detail?id=2569.
  */
-static void TrySuspendingSyscallInvokerThread(struct NaClApp *nap) {
+static void TrySuspendingSyscallInvokerThread(struct NaClApp *nap,
+                                              int reset_registers) {
   int iteration;
   struct SuspendTestShm *test_shm;
 
@@ -219,7 +220,21 @@ static void TrySuspendingSyscallInvokerThread(struct NaClApp *nap) {
   for (iteration = 0; iteration < 1000; iteration++) {
     uint32_t snapshot;
 
-    NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 0);
+    NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ reset_registers);
+    if (reset_registers) {
+      /*
+       * Additionally, we can stress-test setting the registers to
+       * their current state, since the debug stub does this.  This is
+       * supposed to be idempotent, but it was failing on Mac (see
+       * https://code.google.com/p/nativeclient/issues/detail?id=3243)
+       * because of the workaround we use for restoring segment
+       * registers on x86-32.
+       */
+      struct NaClAppThread *natp = GetOnlyThread(nap);
+      struct NaClSignalContext regs;
+      NaClAppThreadGetSuspendedRegisters(natp, &regs);
+      NaClAppThreadSetSuspendedRegisters(natp, &regs);
+    }
     NaClUntrustedThreadsResumeAll(nap);
 
     /* Wait for guest program to make some progress. */
@@ -400,8 +415,13 @@ int main(int argc, char **argv) {
   printf("Running TrySuspendingSyscall...\n");
   TrySuspendingSyscall(&app);
 
-  printf("Running TrySuspendingSyscallInvokerThread...\n");
-  TrySuspendingSyscallInvokerThread(&app);
+  printf("Running TrySuspendingSyscallInvokerThread"
+         " (reset_registers=0)...\n");
+  TrySuspendingSyscallInvokerThread(&app, /* reset_registers= */ 0);
+
+  printf("Running TrySuspendingSyscallInvokerThread"
+         " (reset_registers=1)...\n");
+  TrySuspendingSyscallInvokerThread(&app, /* reset_registers= */ 1);
 
   printf("Running TestGettingRegisterSnapshot...\n");
   TestGettingRegisterSnapshot(&app);

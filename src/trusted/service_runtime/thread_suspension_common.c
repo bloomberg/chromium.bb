@@ -57,12 +57,25 @@ void NaClAppThreadGetSuspendedRegisters(struct NaClAppThread *natp,
 
 void NaClAppThreadSetSuspendedRegisters(struct NaClAppThread *natp,
                                         const struct NaClSignalContext *regs) {
+  /*
+   * We only allow modifying the register state if the thread was
+   * suspended while executing untrusted code, not if the thread is
+   * inside a NaCl syscall.
+   */
   if ((natp->suspend_state & NACL_APP_THREAD_UNTRUSTED) != 0) {
-    NaClAppThreadSetSuspendedRegistersInternal(natp, regs);
+    struct NaClSignalContext current_regs;
+    NaClAppThreadGetSuspendedRegistersInternal(natp, &current_regs);
+    if (NaClSignalContextIsUntrusted(natp, &current_regs)) {
+      NaClAppThreadSetSuspendedRegistersInternal(natp, regs);
+    } else {
+      NaClLog(LOG_WARNING,
+              "NaClAppThreadSetSuspendedRegisters: Registers not modified "
+              "(thread suspended during trusted/untrusted context switch)\n");
+    }
   } else {
-    /* TODO(eaeltsin): can we alter NaClAppThread.user? */
     NaClLog(LOG_WARNING,
-            "NaClAppThreadSetSuspendedRegisters: Registers not modified\n");
+            "NaClAppThreadSetSuspendedRegisters: Registers not modified "
+            "(thread suspended inside syscall)\n");
   }
 }
 

@@ -74,7 +74,7 @@ static enum NaClSignalResult TrapSignalHandler(int signal, void *ucontext) {
     int is_untrusted;
 
     NaClSignalContextFromHandler(&context, ucontext);
-    is_untrusted = NaClSignalContextIsUntrusted(&context);
+    is_untrusted = NaClSignalContextIsUntrustedForCurrentThread(&context);
     if (g_in_untrusted_code != is_untrusted) {
       g_context_switch_count++;
       g_in_untrusted_code = is_untrusted;

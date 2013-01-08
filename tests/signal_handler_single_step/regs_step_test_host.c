@@ -102,7 +102,7 @@ static enum NaClSignalResult TrapSignalHandler(int signal, void *ucontext) {
    */
   is_inside_trampoline = (prog_ctr >= NACL_TRAMPOLINE_START &&
                           prog_ctr < NACL_TRAMPOLINE_END);
-  is_untrusted = (NaClSignalContextIsUntrusted(&context) &&
+  is_untrusted = (NaClSignalContextIsUntrustedForCurrentThread(&context) &&
                   !is_inside_trampoline);
   if (g_in_untrusted_code != is_untrusted) {
     g_context_switch_count++;
