@@ -12,6 +12,7 @@
 #include "cc/input_handler.h"
 #include "cc/layer_tree_host.h"
 #include "cc/output_surface.h"
+#include "cc/prioritized_resource_manager.h"
 #include "cc/scheduler.h"
 #include "cc/thread.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSharedGraphicsContext3D.h"

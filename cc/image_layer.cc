@@ -8,6 +8,7 @@
 #include "cc/image_layer_updater.h"
 #include "cc/layer_updater.h"
 #include "cc/layer_tree_host.h"
+#include "cc/prioritized_resource.h"
 #include "cc/resource_update_queue.h"
 
 namespace cc {

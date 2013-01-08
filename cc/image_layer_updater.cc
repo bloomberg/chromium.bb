@@ -3,9 +3,20 @@
 // found in the LICENSE file.
 
 #include "cc/image_layer_updater.h"
+#include "cc/prioritized_resource.h"
 #include "cc/resource_update_queue.h"
 
 namespace cc {
+
+ImageLayerUpdater::Resource::Resource(ImageLayerUpdater* updater, scoped_ptr<PrioritizedResource> texture)
+    : LayerUpdater::Resource(texture.Pass())
+    , m_updater(updater)
+{
+}
+
+ImageLayerUpdater::Resource::~Resource()
+{
+}
 
 void ImageLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats&)
 {

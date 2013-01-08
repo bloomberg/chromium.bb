@@ -4,6 +4,7 @@
 
 #include "caching_bitmap_content_layer_updater.h"
 
+#include "base/logging.h"
 #include "cc/layer_painter.h"
 #include "skia/ext/platform_canvas.h"
 

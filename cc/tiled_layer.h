@@ -8,9 +8,11 @@
 #include "cc/cc_export.h"
 #include "cc/contents_scaling_layer.h"
 #include "cc/layer_tiling_data.h"
-#include "cc/layer_updater.h"
 
 namespace cc {
+class LayerUpdater;
+class PrioritizedResourceManager;
+class PrioritizedResource;
 class UpdatableTile;
 
 class CC_EXPORT TiledLayer : public ContentsScalingLayer {
@@ -44,7 +46,7 @@ protected:
 
     // Exposed to subclasses for testing.
     void setTileSize(const gfx::Size&);
-    void setTextureFormat(GLenum textureFormat) { m_textureFormat = textureFormat; }
+    void setTextureFormat(unsigned textureFormat) { m_textureFormat = textureFormat; }
     void setBorderTexelOption(LayerTilingData::BorderTexelOption);
     size_t numPaintedTiles() { return m_tiler->tiles().size(); }
 
@@ -90,7 +92,7 @@ private:
 
     bool isSmallAnimatedLayer() const;
 
-    GLenum m_textureFormat;
+    unsigned m_textureFormat;
     bool m_skipsDraw;
     bool m_failedUpdate;
 

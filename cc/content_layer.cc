@@ -104,7 +104,7 @@ void ContentLayer::createUpdaterIfNeeded()
         m_updater = BitmapContentLayerUpdater::create(painter.Pass());
     m_updater->setOpaque(contentsOpaque());
 
-    GLenum textureFormat = layerTreeHost()->rendererCapabilities().bestTextureFormat;
+    unsigned textureFormat = layerTreeHost()->rendererCapabilities().bestTextureFormat;
     setTextureFormat(textureFormat);
 }
 

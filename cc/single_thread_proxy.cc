@@ -8,6 +8,7 @@
 #include "cc/draw_quad.h"
 #include "cc/layer_tree_host.h"
 #include "cc/output_surface.h"
+#include "cc/prioritized_resource_manager.h"
 #include "cc/resource_update_controller.h"
 #include "cc/thread.h"
 

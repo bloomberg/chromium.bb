@@ -6,6 +6,7 @@
 
 #include "cc/layer_tree_host.h"
 #include "cc/nine_patch_layer_impl.h"
+#include "cc/prioritized_resource.h"
 #include "cc/resource_update.h"
 #include "cc/resource_update_queue.h"
 

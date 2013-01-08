@@ -6,6 +6,7 @@
 #define CC_IMAGE_LAYER_UPDATER_H_
 
 #include "cc/layer_updater.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace cc {
 
@@ -15,11 +16,8 @@ class ImageLayerUpdater : public LayerUpdater {
 public:
     class Resource : public LayerUpdater::Resource {
     public:
-        Resource(ImageLayerUpdater* updater, scoped_ptr<PrioritizedResource> texture)
-            : LayerUpdater::Resource(texture.Pass())
-            , m_updater(updater)
-        {
-        }
+        Resource(ImageLayerUpdater* updater, scoped_ptr<PrioritizedResource> texture);
+        virtual ~Resource();
 
         virtual void update(ResourceUpdateQueue&, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE;
 

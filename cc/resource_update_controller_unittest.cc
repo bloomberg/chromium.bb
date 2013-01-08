@@ -4,6 +4,7 @@
 
 #include "cc/resource_update_controller.h"
 
+#include "cc/prioritized_resource_manager.h"
 #include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_proxy.h"

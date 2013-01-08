@@ -5,6 +5,7 @@
 #include "cc/bitmap_content_layer_updater.h"
 
 #include "cc/layer_painter.h"
+#include "cc/prioritized_resource.h"
 #include "cc/rendering_stats.h"
 #include "cc/resource_update.h"
 #include "cc/resource_update_queue.h"

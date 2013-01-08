@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "cc/bitmap_content_layer_updater.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace cc {
 

@@ -6,15 +6,15 @@
 #ifndef CC_SCROLLBAR_LAYER_H_
 #define CC_SCROLLBAR_LAYER_H_
 
-#include "cc/caching_bitmap_content_layer_updater.h"
 #include "cc/cc_export.h"
 #include "cc/contents_scaling_layer.h"
+#include "cc/layer_updater.h"
 #include "cc/scrollbar_theme_painter.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbar.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbarThemeGeometry.h"
 
 namespace cc {
-
+class CachingBitmapContentLayerUpdater;
 class ResourceUpdateQueue;
 class Scrollbar;
 class ScrollbarThemeComposite;
@@ -68,7 +68,7 @@ private:
     scoped_ptr<WebKit::WebScrollbarThemeGeometry> m_geometry;
     int m_scrollLayerId;
 
-    GLenum m_textureFormat;
+    unsigned m_textureFormat;
 
     gfx::RectF m_dirtyRect;
 

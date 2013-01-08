@@ -20,7 +20,6 @@
 #include "cc/layer_tree_settings.h"
 #include "cc/occlusion_tracker.h"
 #include "cc/output_surface.h"
-#include "cc/prioritized_resource_manager.h"
 #include "cc/proxy.h"
 #include "cc/rate_limiter.h"
 #include "cc/rendering_stats.h"
@@ -46,6 +45,8 @@ class Layer;
 class LayerTreeHostImpl;
 class LayerTreeHostImplClient;
 class PrioritizedResourceManager;
+class PrioritizedResource;
+class ResourceProvider;
 class ResourceUpdateQueue;
 class HeadsUpDisplayLayer;
 class Region;
@@ -57,7 +58,7 @@ struct CC_EXPORT RendererCapabilities {
     RendererCapabilities();
     ~RendererCapabilities();
 
-    GLenum bestTextureFormat;
+    unsigned bestTextureFormat;
     bool usingPartialSwap;
     bool usingAcceleratedPainting;
     bool usingSetVisibility;

@@ -6,6 +6,7 @@
 
 #include "base/time.h"
 #include "cc/layer_painter.h"
+#include "cc/prioritized_resource.h"
 #include "cc/rendering_stats.h"
 #include "cc/resource_update_queue.h"
 #include "third_party/skia/include/core/SkCanvas.h"

@@ -6,20 +6,22 @@
 #define CC_LAYER_UPDATER_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/cc_export.h"
-#include "cc/prioritized_resource.h"
-#include "third_party/khronos/GLES2/gl2.h"
 
 namespace gfx {
 class Rect;
+class Size;
 class Vector2d;
 }
 
 namespace cc {
 
+class PrioritizedResource;
+class PrioritizedResourceManager;
+class ResourceUpdateQueue;
 class TextureManager;
 struct RenderingStats;
-class ResourceUpdateQueue;
 
 class CC_EXPORT LayerUpdater : public base::RefCounted<LayerUpdater> {
 public:
@@ -29,7 +31,7 @@ public:
         virtual ~Resource();
 
         PrioritizedResource* texture() { return m_texture.get(); }
-        void swapTextureWith(scoped_ptr<PrioritizedResource>& texture) { m_texture.swap(texture); }
+        void swapTextureWith(scoped_ptr<PrioritizedResource>& texture);
         // TODO(reveman): partialUpdate should be a property of this class
         // instead of an argument passed to update().
         virtual void update(ResourceUpdateQueue&, const gfx::Rect& sourceRect, const gfx::Vector2d& destOffset, bool partialUpdate, RenderingStats&) = 0;
@@ -38,6 +40,8 @@ public:
 
     private:
         scoped_ptr<PrioritizedResource> m_texture;
+
+        DISALLOW_COPY_AND_ASSIGN(Resource);
     };
 
     LayerUpdater() { }

@@ -4,15 +4,20 @@
 
 #include "cc/layer_updater.h"
 
+#include "cc/prioritized_resource.h"
+
 namespace cc {
 
 LayerUpdater::Resource::Resource(scoped_ptr<PrioritizedResource> texture)
-    : m_texture(texture.Pass())
-{
+    : m_texture(texture.Pass()) {
 }
 
-LayerUpdater::Resource::~Resource()
-{
+void LayerUpdater::Resource::swapTextureWith(
+    scoped_ptr<PrioritizedResource>& texture) {
+  m_texture.swap(texture);
+}
+
+LayerUpdater::Resource::~Resource() {
 }
 
 }  // namespace cc

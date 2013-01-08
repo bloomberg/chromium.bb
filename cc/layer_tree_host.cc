@@ -23,6 +23,7 @@
 #include "cc/math_util.h"
 #include "cc/occlusion_tracker.h"
 #include "cc/overdraw_metrics.h"
+#include "cc/prioritized_resource_manager.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/switches.h"
 #include "cc/thread.h"

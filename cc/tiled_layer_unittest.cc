@@ -7,6 +7,7 @@
 #include "cc/bitmap_content_layer_updater.h"
 #include "cc/layer_painter.h"
 #include "cc/overdraw_metrics.h"
+#include "cc/prioritized_resource_manager.h"
 #include "cc/rendering_stats.h"
 #include "cc/resource_update_controller.h"
 #include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread

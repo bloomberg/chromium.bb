@@ -11,6 +11,7 @@
 #include "cc/layer_tree_host_impl.h"
 #include "cc/layer_tree_impl.h"
 #include "cc/output_surface.h"
+#include "cc/prioritized_resource.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_content_layer.h"
 #include "cc/test/fake_content_layer_client.h"
