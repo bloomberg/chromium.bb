@@ -121,7 +121,7 @@ bool GestureEventFilter::ShouldForwardForBounceReduction(
 bool GestureEventFilter::ShouldForward(const WebGestureEvent& gesture_event) {
   // Discard a zero-velocity fling start from the trackpad.
   if (gesture_event.type == WebInputEvent::GestureFlingStart &&
-      gesture_event.data.flingStart.sourceDevice == WebGestureEvent::Touchpad &&
+      gesture_event.sourceDevice == WebGestureEvent::Touchpad &&
       gesture_event.data.flingStart.velocityX == 0 &&
       gesture_event.data.flingStart.velocityY == 0) {
     return false;

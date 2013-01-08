@@ -587,9 +587,6 @@ class RenderWidgetHostTest : public testing::Test {
       float velocityY,
       WebGestureEvent::SourceDevice sourceDevice) {
     WebGestureEvent gesture_event;
-    // FIXME(mohsen || rjkroege): Remove following line after removing uses of
-    // flingStart.sourceDevice in WebKit, but before removing the field itself.
-    gesture_event.data.flingStart.sourceDevice = sourceDevice;
     gesture_event.data.flingStart.velocityX = velocityX;
     gesture_event.data.flingStart.velocityY = velocityY;
     SimulateGestureEventCore(WebInputEvent::GestureFlingStart, sourceDevice,

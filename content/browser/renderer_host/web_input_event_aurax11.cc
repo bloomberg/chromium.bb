@@ -162,11 +162,6 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
       webkit_event.type = WebKit::WebInputEvent::GestureFlingStart;
       webkit_event.data.flingStart.velocityX = event->x_offset();
       webkit_event.data.flingStart.velocityY = event->y_offset();
-      // FIXME(mohsen || rjkroege): Remove following line after removing uses of
-      // flingStart.sourceDevice in WebKit, but before removing the field
-      // itself.
-      webkit_event.data.flingStart.sourceDevice =
-          WebKit::WebGestureEvent::Touchpad;
       break;
     case ui::ET_SCROLL_FLING_CANCEL:
       webkit_event.type = WebKit::WebInputEvent::GestureFlingCancel;

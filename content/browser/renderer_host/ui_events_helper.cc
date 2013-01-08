@@ -189,11 +189,6 @@ WebKit::WebGestureEvent MakeWebGestureEventFromUIEvent(
       gesture_event.type = WebKit::WebInputEvent::GestureFlingStart;
       gesture_event.data.flingStart.velocityX = event.details().velocity_x();
       gesture_event.data.flingStart.velocityY = event.details().velocity_y();
-      // FIXME(mohsen || rjkroege): Remove following line after removing uses of
-      // flingStart.sourceDevice in WebKit, but before removing the field
-      // itself.
-      gesture_event.data.flingStart.sourceDevice =
-          WebKit::WebGestureEvent::Touchscreen;
       break;
     case ui::ET_SCROLL_FLING_CANCEL:
       gesture_event.type = WebKit::WebInputEvent::GestureFlingCancel;
