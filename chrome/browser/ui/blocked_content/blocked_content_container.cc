@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/blocked_content/blocked_content_container.h"
 
 #include "base/logging.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/rect.h"
@@ -56,6 +57,9 @@ void BlockedContentContainer::AddWebContents(content::WebContents* web_contents,
   web_contents->SetDelegate(this);
 
   BlockedContentTabHelper::CreateForWebContents(web_contents);
+  // Various UI parts assume the ability to retrieve favicons from blocked
+  // content.
+  FaviconTabHelper::CreateForWebContents(web_contents);
   BlockedContentTabHelper::FromWebContents(web_contents)->set_delegate(this);
 
   // Since the new web_contents will not be shown, call WasHidden to change
