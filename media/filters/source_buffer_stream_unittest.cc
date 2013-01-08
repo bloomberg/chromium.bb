@@ -2559,6 +2559,43 @@ TEST_F(SourceBufferStreamTest, SetExplicitDuration_DeletePartialSelectedRange) {
   CheckExpectedRanges("{ [0,4) [10,10) }");
 }
 
+// Test the case were the current playback position is at the end of the
+// buffered data and several overlaps occur that causes the selected
+// range to get split and then merged back into a single range.
+TEST_F(SourceBufferStreamTest, OverlapSplitAndMergeWhileWaitingForMoreData) {
+  // Seek to start of stream.
+  SeekToTimestamp(base::TimeDelta::FromMilliseconds(0));
+
+  NewSegmentAppend("0K 30 60 90 120K 150");
+  CheckExpectedRangesByTimestamp("{ [0,180) }");
+
+  // Read all the buffered data.
+  CheckExpectedBuffers("0K 30 60 90 120K 150");
+  CheckNoNextBuffer();
+
+  // Append data over the current GOP so that a keyframe is needed before
+  // playback can continue from the current position.
+  NewSegmentAppend("120K 150");
+  CheckExpectedRangesByTimestamp("{ [0,180) }");
+
+  // Append buffers that cause the range to get split.
+  NewSegmentAppend("0K 30");
+  CheckExpectedRangesByTimestamp("{ [0,60) [120,180) }");
+
+  // Append buffers that cause the ranges to get merged.
+  AppendBuffers("60 90");
+
+  CheckExpectedRangesByTimestamp("{ [0,180) }");
+
+  // Verify that we still don't have a next buffer.
+  CheckNoNextBuffer();
+
+  // Add more data to the end and verify that this new data is read correctly.
+  NewSegmentAppend("180K 210");
+  CheckExpectedRangesByTimestamp("{ [0,240) }");
+  CheckExpectedBuffers("180K 210");
+}
+
 // TODO(vrk): Add unit tests where keyframes are unaligned between streams.
 // (crbug.com/133557)
 

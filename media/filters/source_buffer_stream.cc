@@ -1504,8 +1504,13 @@ void SourceBufferRange::AppendRangeToEnd(const SourceBufferRange& range,
   DCHECK(CanAppendRangeToEnd(range));
   DCHECK(!buffers_.empty());
 
-  if (transfer_current_position)
-    next_buffer_index_ = range.next_buffer_index_ + buffers_.size();
+  if (transfer_current_position) {
+    if (range.next_buffer_index_ >= 0)
+      next_buffer_index_ = range.next_buffer_index_ + buffers_.size();
+
+    waiting_for_keyframe_ = range.waiting_for_keyframe_;
+    next_keyframe_timestamp_ = range.next_keyframe_timestamp_;
+  }
 
   AppendBuffersToEnd(range.buffers_);
 }
