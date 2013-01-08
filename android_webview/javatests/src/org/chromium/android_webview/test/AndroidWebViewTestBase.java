@@ -36,8 +36,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AndroidWebViewTestBase
         extends ActivityInstrumentationTestCase2<AndroidWebViewTestRunnerActivity> {
-    // TODO(boliu): Revert back to 15 seconds after crbug.com/167236 is fixed.
-    protected static int WAIT_TIMEOUT_SECONDS = 90;
+    protected static int WAIT_TIMEOUT_SECONDS = 15;
     private static final int CHECK_INTERVAL = 100;
     protected static final boolean NORMAL_VIEW = false;
     protected static final boolean INCOGNITO_VIEW = true;

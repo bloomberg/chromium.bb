@@ -105,44 +105,6 @@ class AwContentsUserData : public base::SupportsUserData::Data {
   AwContents* contents_;
 };
 
-// Work-around for http://crbug.com/161864. TODO(joth): Remove this class when
-// that bug is closed.
-class NullCompositor : public content::Compositor {
- public:
-  NullCompositor() {}
-  virtual ~NullCompositor() {}
-
-  // Compositor
-  virtual void SetRootLayer(scoped_refptr<cc::Layer> root) OVERRIDE {}
-  virtual void SetWindowBounds(const gfx::Size& size) OVERRIDE {}
-  virtual void SetVisible(bool visible) OVERRIDE {}
-  virtual void SetWindowSurface(ANativeWindow* window) OVERRIDE {}
-  virtual bool CompositeAndReadback(void *pixels, const gfx::Rect& rect)
-      OVERRIDE {
-    return false;
-  }
-  virtual void Composite() {}
-  virtual WebKit::WebGLId GenerateTexture(gfx::JavaBitmap& bitmap) OVERRIDE {
-    return 0;
-  }
-  virtual WebKit::WebGLId GenerateCompressedTexture(gfx::Size& size,
-                                                    int data_size,
-                                                    void* data) OVERRIDE {
-    return 0;
-  }
-  virtual void DeleteTexture(WebKit::WebGLId texture_id) OVERRIDE {}
-  virtual bool CopyTextureToBitmap(WebKit::WebGLId texture_id,
-                                   gfx::JavaBitmap& bitmap) OVERRIDE {
-    return false;
-  }
-  virtual bool CopyTextureToBitmap(WebKit::WebGLId texture_id,
-                                   const gfx::Rect& src_rect,
-                                   gfx::JavaBitmap& bitmap) OVERRIDE {
-    return false;
-  }
-  virtual void SetHasTransparentBackground(bool flag) OVERRIDE {}
-};
-
 }  // namespace
 
 // static
@@ -173,14 +135,9 @@ AwContents::AwContents(JNIEnv* env,
 }
 
 void AwContents::ResetCompositor() {
-  if (UseCompositorDirectDraw()) {
-    compositor_.reset(content::Compositor::Create(this));
-    if (scissor_clip_layer_.get())
-      AttachLayerTree();
-  } else {
-    LOG(WARNING) << "Running on unsupported device: using null Compositor";
-    compositor_.reset(new NullCompositor);
-  }
+  compositor_.reset(content::Compositor::Create(this));
+  if (scissor_clip_layer_.get())
+    AttachLayerTree();
 }
 
 void AwContents::SetWebContents(content::WebContents* web_contents) {

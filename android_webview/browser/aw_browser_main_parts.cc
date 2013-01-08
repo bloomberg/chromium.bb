@@ -37,11 +37,10 @@ void AwBrowserMainParts::PreEarlyInitialization() {
   net::NetworkChangeNotifier::SetFactory(
       new net::NetworkChangeNotifierFactoryAndroid());
   content::Compositor::InitializeWithFlags(
-      UseCompositorDirectDraw() ?
-          content::Compositor::DIRECT_CONTEXT_ON_DRAW_THREAD : 0);
+      content::Compositor::DIRECT_CONTEXT_ON_DRAW_THREAD);
 
   // Android WebView does not use default MessageLoop. It has its own
-  // Android specific MessageLoop. ALso see MainMessageLoopRun.
+  // Android specific MessageLoop. Also see MainMessageLoopRun.
   DCHECK(!main_message_loop_.get());
   main_message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
   MessageLoopForUI::current()->Start();
