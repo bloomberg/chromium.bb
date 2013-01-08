@@ -641,8 +641,11 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None,
     error_type = output_api.PresubmitPromptWarning
 
   # Only trigger if there is at least one python file affected.
-  rel_path = lambda x : input_api.os_path.join(input_api.os_path.relpath(
-      input_api.PresubmitLocalPath(), input_api.change.RepositoryRoot()), x)
+  def rel_path(regex):
+    """Modifies a regex for a subject to accept paths relative to root."""
+    prefix = input_api.os_path.join(input_api.os_path.relpath(
+        input_api.PresubmitLocalPath(), input_api.change.RepositoryRoot()), '')
+    return input_api.re.escape(prefix) + regex
   src_filter = lambda x: input_api.FilterSourceFile(
       x, map(rel_path, white_list), map(rel_path, black_list))
   if not input_api.AffectedSourceFiles(src_filter):
