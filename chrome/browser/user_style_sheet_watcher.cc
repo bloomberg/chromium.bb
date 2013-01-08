@@ -44,7 +44,8 @@ const char kUserStyleSheetFile[] = "Custom.css";
 // UserStyleSheetWatcher and its FilePathWatcher may be destroyed while a
 // callback to UserStyleSheetLoader is in progress, in which case the
 // UserStyleSheetLoader object outlives the watchers.
-class UserStyleSheetLoader : public FilePathWatcher::Delegate {
+class UserStyleSheetLoader
+    : public base::RefCountedThreadSafe<UserStyleSheetLoader> {
  public:
   UserStyleSheetLoader();
 
@@ -59,11 +60,12 @@ class UserStyleSheetLoader : public FilePathWatcher::Delegate {
   // Send out a notification if the stylesheet has already been loaded.
   void NotifyLoaded();
 
-  // FilePathWatcher::Delegate interface
-  virtual void OnFilePathChanged(const FilePath& path);
+  // FilePathWatcher::Callback method:
+  void NotifyPathChanged(const FilePath& path, bool error);
 
  private:
-  virtual ~UserStyleSheetLoader() {}
+  friend class base::RefCountedThreadSafe<UserStyleSheetLoader>;
+  ~UserStyleSheetLoader() {}
 
   // Called on the UI thread after the stylesheet has loaded.
   void SetStyleSheet(const GURL& url);
@@ -90,8 +92,9 @@ void UserStyleSheetLoader::NotifyLoaded() {
   }
 }
 
-void UserStyleSheetLoader::OnFilePathChanged(const FilePath& path) {
-  LoadStyleSheet(path);
+void UserStyleSheetLoader::NotifyPathChanged(const FilePath& path, bool error) {
+  if (!error)
+    LoadStyleSheet(path);
 }
 
 void UserStyleSheetLoader::LoadStyleSheet(const FilePath& style_sheet_file) {
@@ -162,8 +165,10 @@ void UserStyleSheetWatcher::Init() {
     FilePath style_sheet_file = profile_path_.AppendASCII(kStyleSheetDir)
                                              .AppendASCII(kUserStyleSheetFile);
     if (!file_watcher_->Watch(
-        style_sheet_file,
-        loader_.get())) {
+            style_sheet_file,
+            false,
+            base::Bind(&UserStyleSheetLoader::NotifyPathChanged,
+                       loader_.get()))) {
       LOG(ERROR) << "Failed to setup watch for " << style_sheet_file.value();
     }
     loader_->LoadStyleSheet(style_sheet_file);
