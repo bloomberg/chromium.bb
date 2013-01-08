@@ -62,7 +62,7 @@ deps = {
     'src/third_party/jsoncpp/source/src/lib_json':
         Var('git_url') + '/external/jsoncpp/jsoncpp/src/lib_json.git@a8caa51ba2f80971a45880425bf2ae864a786784',
     'src/third_party/leveldatabase/src':
-        Var('git_url') + '/external/leveldb.git@29c68f16466b1704dc7a663cf51bf9c5579830c3',
+        Var('git_url') + '/external/leveldb.git@85e27d04530c0323957f28c3f47a7d9f6efeceb0',
     'src/third_party/libexif/sources':
         Var('git_url') + '/chromium/deps/libexif/sources.git@d815c325bab0d1871d4c7e70600ecdfdab07db9e',
     'src/third_party/libjingle/source':
