@@ -1053,12 +1053,6 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBVar_AddRefObject,
                            int /* unused - need a return value for sync msgs */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBVar_ReleaseObject,
                     int64 /* object_id */)
-IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBVar_ConvertType,
-                           PP_Instance /* instance */,
-                           ppapi::proxy::SerializedVar /* var */,
-                           int /* new_type */,
-                           ppapi::proxy::SerializedVar /* exception */,
-                           ppapi::proxy::SerializedVar /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBVar_HasProperty,
                            ppapi::proxy::SerializedVar /* object */,
                            ppapi::proxy::SerializedVar /* property */,
