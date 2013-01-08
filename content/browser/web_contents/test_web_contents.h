@@ -90,6 +90,13 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
                                         int history_length,
                                         int32 min_page_id) OVERRIDE;
 
+  void TestDidFinishLoad(int64 frame_id, const GURL& url, bool is_main_frame);
+  void TestDidFailLoadWithError(int64 frame_id,
+                                const GURL& url,
+                                bool is_main_frame,
+                                int error_code,
+                                const string16& error_description);
+
  protected:
   // The deprecated WebContentsTester still needs to subclass this.
   explicit TestWebContents(BrowserContext* browser_context);

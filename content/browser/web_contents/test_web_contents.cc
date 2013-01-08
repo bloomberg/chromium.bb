@@ -200,6 +200,24 @@ void TestWebContents::SetHistoryLengthAndPrune(
   EXPECT_EQ(expect_set_history_length_and_prune_min_page_id_, min_page_id);
 }
 
+void TestWebContents::TestDidFinishLoad(int64 frame_id,
+                                        const GURL& url,
+                                        bool is_main_frame) {
+  ViewHostMsg_DidFinishLoad msg(0, frame_id, url, is_main_frame);
+  OnMessageReceived(render_manager_.current_host(), msg);
+}
+
+void TestWebContents::TestDidFailLoadWithError(
+    int64 frame_id,
+    const GURL& url,
+    bool is_main_frame,
+    int error_code,
+    const string16& error_description) {
+  ViewHostMsg_DidFailLoadWithError msg(
+      0, frame_id, url, is_main_frame, error_code, error_description);
+  OnMessageReceived(render_manager_.current_host(), msg);
+}
+
 void TestWebContents::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params,

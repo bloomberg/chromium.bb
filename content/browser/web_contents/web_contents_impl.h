@@ -515,10 +515,10 @@ class CONTENT_EXPORT WebContentsImpl
                                const GURL& target_url);
   void OnDocumentLoadedInFrame(int64 frame_id);
   void OnDidFinishLoad(int64 frame_id,
-                       const GURL& validated_url,
+                       const GURL& url,
                        bool is_main_frame);
   void OnDidFailLoadWithError(int64 frame_id,
-                              const GURL& validated_url,
+                              const GURL& url,
                               bool is_main_frame,
                               int error_code,
                               const string16& error_description);

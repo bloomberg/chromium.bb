@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/bindings_policy.h"
@@ -290,6 +291,36 @@ class WebContentsImplTest : public RenderViewHostImplTestHarness {
   TestBrowserThread ui_thread_;
   TestBrowserThread file_user_blocking_thread_;
   TestBrowserThread io_thread_;
+};
+
+class TestWebContentsObserver : public WebContentsObserver {
+ public:
+  TestWebContentsObserver(WebContents* contents)
+      : WebContentsObserver(contents) {
+  }
+  virtual ~TestWebContentsObserver() {}
+
+  virtual void DidFinishLoad(int64 frame_id,
+                             const GURL& validated_url,
+                             bool is_main_frame,
+                             RenderViewHost* render_view_host) OVERRIDE {
+    last_url_ = validated_url;
+  }
+  virtual void DidFailLoad(int64 frame_id,
+                           const GURL& validated_url,
+                           bool is_main_frame,
+                           int error_code,
+                           const string16& error_description,
+                           RenderViewHost* render_view_host) OVERRIDE {
+    last_url_ = validated_url;
+  }
+
+  const GURL& last_url() const { return last_url_; }
+
+ private:
+  GURL last_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWebContentsObserver);
 };
 
 }  // namespace
@@ -1948,5 +1979,38 @@ TEST_F(WebContentsImplTest, CopyStateFromAndPruneTargetInterstitial) {
   EXPECT_TRUE(static_cast<InterstitialPageImpl*>(
       other_contents->GetInterstitialPage())->reload_on_dont_proceed());
 }
+
+// Regression test for http://crbug.com/168611 - the URLs passed by the
+// DidFinishLoad and DidFailLoadWithError IPCs should get filtered.
+TEST_F(WebContentsImplTest, FilterURLs) {
+  TestWebContentsObserver observer(contents());
+
+  // A navigation to about:whatever should always look like a navigation to
+  // about:blank
+  GURL url_normalized("about:blank");
+  GURL url_from_ipc("about:whatever");
+
+  // We navigate the test WebContents to about:blank, since NavigateAndCommit
+  // will use the given URL to create the NavigationEntry as well, and that
+  // entry should contain the filtered URL.
+  contents()->NavigateAndCommit(url_normalized);
+
+  // Check that an IPC with about:whatever is correctly normalized.
+  contents()->TestDidFinishLoad(1, url_from_ipc, true);
+
+  EXPECT_EQ(url_normalized, observer.last_url());
+
+  // Create and navigate another WebContents.
+  scoped_ptr<TestWebContents> other_contents(
+      static_cast<TestWebContents*>(CreateTestWebContents()));
+  TestWebContentsObserver other_observer(other_contents.get());
+  other_contents->NavigateAndCommit(url_normalized);
+
+  // Check that an IPC with about:whatever is correctly normalized.
+  other_contents->TestDidFailLoadWithError(
+      1, url_from_ipc, true, 1, string16());
+  EXPECT_EQ(url_normalized, other_observer.last_url());
+}
+
 
 }  // namespace content
