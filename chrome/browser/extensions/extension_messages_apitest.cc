@@ -77,8 +77,7 @@ class MessageSender : public content::NotificationObserver {
 }  // namespace
 
 // Tests that message passing between extensions and content scripts works.
-// Flaky on the trybots. See http://crbug.com/96725.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Messaging) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Messaging) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("messaging/connect")) << message_;
 }
