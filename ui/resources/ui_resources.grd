@@ -267,6 +267,12 @@
       <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SPIKE_SMALL_RIGHT" file="common/window_bubble_shadow_spike_small_right.png" />
       <structure type="chrome_scaled_image" name="IDR_WINDOW_BUBBLE_SHADOW_SPIKE_SMALL_TOP" file="common/window_bubble_shadow_spike_small_top.png" />
       <structure type="chrome_scaled_image" name="IDR_MESSAGE_CLOSE" file="common/message_close.png" />
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE" file="common/notification_close.png"/>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_HOVER" file="common/notification_close_hover.png"/>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_PRESSED" file="common/notification_close_pressed.png"/>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATIONS_EXPAND" file="common/notifications_expand.png"/>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATIONS_EXPAND_HOVER" file="common/notifications_expand_hover.png"/>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATIONS_EXPAND_PRESSED" file="common/notifications_expand_pressed.png"/>
     </structures>
   </release>
 </grit>
