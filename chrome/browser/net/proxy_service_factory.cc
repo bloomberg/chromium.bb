@@ -106,7 +106,7 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
     }
   }
 
-  net::ProxyService* proxy_service;
+  net::ProxyService* proxy_service = NULL;
   if (use_v8) {
 #if defined(OS_IOS)
     NOTREACHED();

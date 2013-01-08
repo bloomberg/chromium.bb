@@ -35,7 +35,10 @@ OBJC_EXPORT void *objc_destructInstance(id obj);
 //  The version of clang that ships with Xcode 4.5 does not include this
 //  warning, so it is disabled on iOS.  This may change in future Xcode
 //  releases.
-#if !defined(OS_IOS)
+//  TODO(justincohen): This is fixed in clang 4.2 in XCode 4.6.  Remove this
+//  once everyone is moved to XCode 4.6 b/7882496.
+#if !defined(OS_IOS) || \
+    (__clang_major__ > 4 || (__clang_major__ == 4 && __clang_minor__ >= 2))
 __attribute__((objc_root_class))
 #endif
 @interface CrZombie  {
