@@ -16,7 +16,7 @@ import third_party.json_schema_compiler.idl_parser as idl_parser
 # Increment this version when there are changes to the data stored in any of
 # the caches used by APIDataSource. This allows the cache to be invalidated
 # without having to flush memcache on the production server.
-_VERSION = 8
+_VERSION = 9
 
 def _RemoveNoDocs(item):
   if json_parse.IsDict(item):
@@ -167,11 +167,18 @@ class _JSCModel(object):
             if v.type_ != model.PropertyType.ADDITIONAL_PROPERTIES]
 
   def _GenerateProperty(self, property_):
+    # Make sure we generate property info for arrays, too.
+    # TODO(kalman): what about choices?
+    if property_.type_ == model.PropertyType.ARRAY:
+      properties = property_.item_type.properties
+    else:
+      properties = property_.properties
+
     property_dict = {
       'name': property_.simple_name,
       'optional': property_.optional,
       'description': self._FormatDescription(property_.description),
-      'properties': self._GenerateProperties(property_.properties),
+      'properties': self._GenerateProperties(properties),
       'functions': self._GenerateFunctions(property_.functions),
       'parameters': [],
       'returns': None,

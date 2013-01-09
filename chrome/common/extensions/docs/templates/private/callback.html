@@ -1,17 +1,23 @@
-<h4>Callback function</h4>
+<h4>Callback</h4>
 <p>
   {{?optional}}
       If you specify the <em>{{name}}</em> parameter, it should
       specify a function that looks like this:
-  {{:}}
+  {{:optional}}
       The <em>{{name}}</em> parameter should specify a function
       that looks like this:
-  {{/}}
+  {{/optional}}
 </p>
 <pre>function({{#parameters}}{{+partials.variable_type}} {{name}}{{^last}}, {{/}}{{/}}) <span class="subdued">{...}</span>;</pre>
-{{?description}}<p>
+{{?description}}
+<p>
   {{{description}}}
-</p>{{/}}
+</p>
+{{/description}}
+{{?parameters}}
 <dl>
-  {{#parameters}}{{+partials.parameter_full}}{{/}}
+  {{#parameters}}
+    {{+partials.parameter_full}}
+  {{/parameters}}
 </dl>
+{{/parameters}}

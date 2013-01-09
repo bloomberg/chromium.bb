@@ -4,15 +4,21 @@
     <span>{{?returns}}{{+partials.variable_type}} {{/}}{{?parent_name}}{{parent_name}}{{:}}chrome.{{api.name}}{{/}}.{{name}}</span>({{#parameters}}{{+partials.parameter_item}}{{^last}}, {{/}}{{/}})
   </div>
   <div class="description">
-    {{?description}}<p>
+    {{?description}}
+    <p>
       {{{description}}}
-    </p>{{/description}}
+    </p>
+    {{/description}}
     {{?parameters}}
     <h4>Parameters</h4>
     <dl>
-      {{#parameters}}{{+partials.parameter_full}}{{/}}
+      {{#parameters}}
+        {{+partials.parameter_full}}
+      {{/parameters}}
     </dl>
-    {{?callback}}{{+partials.callback}}{{/}}
     {{/parameters}}
+    {{?callback}}
+      {{+partials.callback}}
+    {{/callback}}
   </div>
 </div>
