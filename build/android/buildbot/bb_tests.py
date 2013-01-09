@@ -99,9 +99,18 @@ def RunTestSuites(options, suite):
   RunCmd(['build/android/run_tests.py'] + args)
 
 
-def InstallApk(apk, apk_package, target):
-  args = ['--apk', apk, '--apk_package', apk_package]
-  if target == 'Release':
+def InstallApk(options, test, print_step=False):
+  """Install an apk to all phones.
+
+  Args:
+    options: options object
+    test: An I_TEST namedtuple
+    print_step: Print a buildbot step
+  """
+  if print_step:
+    buildbot_report.PrintNamedStep('install_%s' % test.name.lower())
+  args = ['--apk', test.apk, '--apk_package', test.apk_package]
+  if options.target == 'Release':
     args.append('--release')
 
   RunCmd(['build/android/adb_install_apk.py'] + args)
@@ -116,7 +125,7 @@ def RunInstrumentationSuite(options, test):
   """
   buildbot_report.PrintNamedStep('%s_instrumentation_tests' % test.name.lower())
 
-  InstallApk(test.apk, test.apk_package, options.target)
+  InstallApk(options, test)
   args = ['--test-apk', test.test_apk, '--test_data', test.test_data, '-vvv',
           '-I']
   if options.target == 'Release':
@@ -164,7 +173,7 @@ def MainTestWrapper(options):
 
   if options.install:
     test_obj = INSTRUMENTATION_TESTS[options.install]
-    InstallApk(test_obj.apk, test_obj.apk_package, options.target)
+    InstallApk(options, test_obj, print_step=True)
 
   if not options.test_filter:
     return
