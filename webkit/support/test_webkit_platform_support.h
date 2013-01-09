@@ -6,6 +6,7 @@
 #define WEBKIT_SUPPORT_TEST_WEBKIT_PLATFORM_SUPPORT_H_
 
 #include "base/compiler_specific.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGamepads.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "webkit/glue/webfileutilities_impl.h"
