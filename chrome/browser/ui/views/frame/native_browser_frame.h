@@ -24,8 +24,9 @@ class NativeBrowserFrame {
   virtual views::NativeWidget* AsNativeWidget() = 0;
   virtual const views::NativeWidget* AsNativeWidget() const = 0;
 
-  // Initializes the system context menu.
-  virtual void InitSystemContextMenu() = 0;
+  // Returns true if the OS takes care of showing the system menu. Returning
+  // false means BrowserFrame handles showing the system menu.
+  virtual bool UsesNativeSystemMenu() const = 0;
 
  protected:
   friend class BrowserFrame;

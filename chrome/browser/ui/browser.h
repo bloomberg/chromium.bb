@@ -893,7 +893,7 @@ class Browser : public TabStripModelObserver,
   // Tracks when this browser is being created by session restore.
   bool is_session_restore_;
 
-  chrome::HostDesktopType host_desktop_type_;
+  const chrome::HostDesktopType host_desktop_type_;
 
   scoped_ptr<chrome::UnloadController> unload_controller_;
 

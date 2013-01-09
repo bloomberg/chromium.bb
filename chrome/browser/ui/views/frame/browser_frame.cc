@@ -16,11 +16,15 @@
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
+#include "chrome/browser/ui/views/frame/system_menu_model_builder.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/native_widget.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -72,7 +76,10 @@ void BrowserFrame::InitBrowserFrame() {
 #endif
   Init(params);
 
-  native_browser_frame_->InitSystemContextMenu();
+  if (!native_browser_frame_->UsesNativeSystemMenu()) {
+    DCHECK(non_client_view());
+    non_client_view()->set_context_menu_controller(this);
+  }
 }
 
 int BrowserFrame::GetMinimizeButtonOffset() const {
@@ -144,6 +151,35 @@ void BrowserFrame::OnNativeWidgetActivationChanged(bool active) {
     BrowserList::SetLastActive(browser_view_->browser());
   }
   Widget::OnNativeWidgetActivationChanged(active);
+}
+
+void BrowserFrame::ShowContextMenuForView(views::View* source,
+                                          const gfx::Point& p) {
+  // Only show context menu if point is in unobscured parts of browser, i.e.
+  // if NonClientHitTest returns :
+  // - HTCAPTION: in title bar or unobscured part of tabstrip
+  // - HTNOWHERE: as the name implies.
+  gfx::Point point_in_view_coords(p);
+  views::View::ConvertPointFromScreen(non_client_view(), &point_in_view_coords);
+  int hit_test = non_client_view()->NonClientHitTest(point_in_view_coords);
+  if (hit_test == HTCAPTION || hit_test == HTNOWHERE) {
+    views::MenuModelAdapter menu_adapter(GetSystemMenuModel());
+    menu_runner_.reset(new views::MenuRunner(menu_adapter.CreateMenu()));
+    if (menu_runner_->RunMenuAt(source->GetWidget(), NULL,
+          gfx::Rect(p, gfx::Size(0,0)), views::MenuItemView::TOPLEFT,
+          views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
+        views::MenuRunner::MENU_DELETED)
+      return;
+  }
+}
+
+ui::MenuModel* BrowserFrame::GetSystemMenuModel() {
+  if (!menu_model_builder_.get()) {
+    menu_model_builder_.reset(
+        new SystemMenuModelBuilder(browser_view_, browser_view_->browser()));
+    menu_model_builder_->Init();
+  }
+  return menu_model_builder_->menu_model();
 }
 
 AvatarMenuButton* BrowserFrame::GetAvatarMenuButton() {

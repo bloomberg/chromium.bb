@@ -7,7 +7,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/views/frame/browser_desktop_root_window_host.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/system_menu_model_delegate.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/aura/client/aura_constants.h"
@@ -18,8 +17,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/font.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
-#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/corewm/visibility_controller.h"
 #include "ui/views/view.h"
 
@@ -78,7 +75,8 @@ const views::NativeWidget* DesktopBrowserFrameAura::AsNativeWidget() const {
   return this;
 }
 
-void DesktopBrowserFrameAura::InitSystemContextMenu() {
+bool DesktopBrowserFrameAura::UsesNativeSystemMenu() const {
+  return browser_desktop_root_window_host_->UsesNativeSystemMenu();
 }
 
 int DesktopBrowserFrameAura::GetMinimizeButtonOffset() const {

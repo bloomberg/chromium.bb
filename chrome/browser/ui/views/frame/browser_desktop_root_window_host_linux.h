@@ -29,6 +29,7 @@ class BrowserDesktopRootWindowHostLinux
   // Overridden from BrowserDesktopRootWindowHost:
   virtual DesktopRootWindowHost* AsDesktopRootWindowHost() OVERRIDE;
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
+  virtual bool UsesNativeSystemMenu() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserDesktopRootWindowHostLinux);
 };

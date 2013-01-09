@@ -33,6 +33,10 @@ class BrowserDesktopRootWindowHost {
   virtual views::DesktopRootWindowHost* AsDesktopRootWindowHost() = 0;
 
   virtual int GetMinimizeButtonOffset() const = 0;
+
+  // Returns true if the OS takes care of showing the system menu. Returning
+  // false means BrowserFrame handles showing the system menu.
+  virtual bool UsesNativeSystemMenu() const = 0;
 };
 
 

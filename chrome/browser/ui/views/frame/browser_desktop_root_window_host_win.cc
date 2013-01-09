@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "ui/base/theme_provider.h"
+#include "ui/views/controls/menu/native_menu_win.h"
 
 #pragma comment(lib, "dwmapi.lib")
 
@@ -41,6 +42,16 @@ BrowserDesktopRootWindowHostWin::BrowserDesktopRootWindowHostWin(
 BrowserDesktopRootWindowHostWin::~BrowserDesktopRootWindowHostWin() {
 }
 
+views::NativeMenuWin* BrowserDesktopRootWindowHostWin::GetSystemMenu() {
+  if (!system_menu_.get()) {
+    system_menu_.reset(
+        new views::NativeMenuWin(browser_frame_->GetSystemMenuModel(),
+                                 GetHWND()));
+    system_menu_->Rebuild();
+  }
+  return system_menu_.get();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopRootWindowHostWin, BrowserDesktopRootWindowHost implementation:
 
@@ -51,6 +62,10 @@ views::DesktopRootWindowHost*
 
 int BrowserDesktopRootWindowHostWin::GetMinimizeButtonOffset() const {
   return minimize_button_metrics_.GetMinimizeButtonOffsetX();
+}
+
+bool BrowserDesktopRootWindowHostWin::UsesNativeSystemMenu() const {
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -96,13 +111,16 @@ bool BrowserDesktopRootWindowHostWin::PreHandleMSG(UINT message,
                                                    LPARAM l_param,
                                                    LRESULT* result) {
   switch (message) {
-  case WM_ACTIVATE:
-    if (LOWORD(w_param) != WA_INACTIVE)
-      minimize_button_metrics_.OnHWNDActivated();
-    return false;
-  case WM_ENDSESSION:
-    browser::SessionEnding();
-    return true;
+    case WM_ACTIVATE:
+      if (LOWORD(w_param) != WA_INACTIVE)
+        minimize_button_metrics_.OnHWNDActivated();
+      return false;
+    case WM_ENDSESSION:
+      browser::SessionEnding();
+      return true;
+    case WM_INITMENUPOPUP:
+      GetSystemMenu()->UpdateStates();
+      return true;
   }
   return DesktopRootWindowHostWin::PreHandleMSG(
       message, w_param, l_param, result);

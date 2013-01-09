@@ -16,7 +16,6 @@ class BrowserFrame;
 class BrowserView;
 
 namespace views {
-class MenuRunner;
 namespace corewm {
 class VisibilityController;
 }
@@ -45,7 +44,7 @@ class DesktopBrowserFrameAura : public views::DesktopNativeWidgetAura,
   // Overridden from NativeBrowserFrame:
   virtual views::NativeWidget* AsNativeWidget() OVERRIDE;
   virtual const views::NativeWidget* AsNativeWidget() const OVERRIDE;
-  virtual void InitSystemContextMenu() OVERRIDE;
+  virtual bool UsesNativeSystemMenu() const OVERRIDE;
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
   virtual void TabStripDisplayModeChanged() OVERRIDE;
 
@@ -58,9 +57,6 @@ class DesktopBrowserFrameAura : public views::DesktopNativeWidgetAura,
 
   // Owned by the RootWindow.
   BrowserDesktopRootWindowHost* browser_desktop_root_window_host_;
-
-  // System menu.
-  scoped_ptr<views::MenuRunner> menu_runner_;
 
   scoped_ptr<views::corewm::VisibilityController> visibility_controller_;
 

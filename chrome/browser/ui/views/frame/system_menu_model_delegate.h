@@ -17,11 +17,14 @@ class SystemMenuModelDelegate : public ui::SimpleMenuModel::Delegate {
   SystemMenuModelDelegate(ui::AcceleratorProvider* provider, Browser* browser);
   virtual ~SystemMenuModelDelegate();
 
+  Browser* browser() { return browser_; }
+
   // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
   virtual bool GetAcceleratorForCommandId(
-      int command_id, ui::Accelerator* accelerator) OVERRIDE;
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
   virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
   virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE;
   virtual void ExecuteCommand(int command_id) OVERRIDE;

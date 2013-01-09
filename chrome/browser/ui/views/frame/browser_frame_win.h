@@ -14,10 +14,6 @@
 #include "ui/views/widget/native_widget_win.h"
 
 class BrowserView;
-class EncodingMenuModel;
-class SystemMenuModel;
-class SystemMenuModelDelegate;
-class ZoomMenuModel;
 
 namespace views {
 class NativeMenuWin;
@@ -69,7 +65,7 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   // Overridden from NativeBrowserFrame:
   virtual views::NativeWidget* AsNativeWidget() OVERRIDE;
   virtual const views::NativeWidget* AsNativeWidget() const OVERRIDE;
-  virtual void InitSystemContextMenu() OVERRIDE;
+  virtual bool UsesNativeSystemMenu() const OVERRIDE;
   virtual int GetMinimizeButtonOffset() const OVERRIDE;
   virtual void TabStripDisplayModeChanged() OVERRIDE;
 
@@ -80,13 +76,6 @@ class BrowserFrameWin : public views::NativeWidgetWin,
  private:
   // Updates the DWM with the frame bounds.
   void UpdateDWMFrame();
-
-  // Builds the correct menu for when we have minimal chrome.
-  void BuildSystemMenuForBrowserWindow();
-  void BuildSystemMenuForAppOrPopupWindow();
-
-  // Adds optional debug items for frame type toggling.
-  void AddFrameToggleItems();
 
   // Handles metro navigation and search requests.
   void HandleMetroNavSearchRequest(WPARAM w_param, LPARAM l_param);
@@ -101,16 +90,13 @@ class BrowserFrameWin : public views::NativeWidgetWin,
   // Called when the frame is closed. Only applies to Windows 8 metro mode.
   void CloseImmersiveFrame();
 
+  views::NativeMenuWin* GetSystemMenu();
+
   // The BrowserView is our ClientView. This is a pointer to it.
   BrowserView* browser_view_;
 
   BrowserFrame* browser_frame_;
 
-  // The additional items we insert into the system menu.
-  scoped_ptr<SystemMenuModelDelegate> system_menu_delegate_;
-  scoped_ptr<SystemMenuModel> system_menu_contents_;
-  scoped_ptr<ZoomMenuModel> zoom_menu_contents_;
-  scoped_ptr<EncodingMenuModel> encoding_menu_contents_;
   // The wrapped system menu itself.
   scoped_ptr<views::NativeMenuWin> system_menu_;
 

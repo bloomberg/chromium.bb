@@ -448,9 +448,6 @@
       ],
       'conditions': [
         ['use_aura==1', {
-          'sources/': [
-            ['exclude', 'controls/menu/menu_2.*'],
-          ],
           'sources!': [
             'controls/native_control.cc',
             'controls/native_control.h',
@@ -476,10 +473,17 @@
             }],
             ['OS=="win"', {
               'sources/': [
+                ['include', 'controls/menu/native_menu_win.cc'],
+                ['include', 'controls/menu/native_menu_win.h'],
                 ['include', 'widget/desktop_aura/desktop_screen_win.cc'],
                 ['include', 'widget/desktop_aura/desktop_drag_drop_client_win.cc'],
                 ['include', 'widget/desktop_aura/desktop_drop_target_win.cc'],
                 ['include', 'widget/desktop_aura/desktop_root_window_host_win.cc'],
+              ],
+            }],
+            ['OS!="win"', {
+              'sources/': [
+                ['exclude', 'controls/menu/menu_2.*'],
               ],
             }],
           ],

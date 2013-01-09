@@ -32,6 +32,10 @@ int BrowserDesktopRootWindowHostLinux::GetMinimizeButtonOffset() const {
   return 0;
 }
 
+bool BrowserDesktopRootWindowHostLinux::UsesNativeSystemMenu() const {
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopRootWindowHost, public:
 

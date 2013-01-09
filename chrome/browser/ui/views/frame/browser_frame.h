@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/widget/widget.h"
 
 class AvatarMenuButton;
@@ -16,6 +17,7 @@ class BrowserRootView;
 class BrowserView;
 class NativeBrowserFrame;
 class NonClientFrameView;
+class SystemMenuModelBuilder;
 
 namespace gfx {
 class Font;
@@ -23,15 +25,19 @@ class Rect;
 }
 
 namespace ui {
+class MenuModel;
 class ThemeProvider;
 }
 
 namespace views {
+class MenuRunner;
 class View;
 }
 
 // This is a virtual interface that allows system specific browser frames.
-class BrowserFrame : public views::Widget {
+class BrowserFrame
+    : public views::Widget,
+      public views::ContextMenuController {
  public:
   explicit BrowserFrame(BrowserView* browser_view);
   virtual ~BrowserFrame();
@@ -76,12 +82,19 @@ class BrowserFrame : public views::Widget {
   virtual ui::ThemeProvider* GetThemeProvider() const OVERRIDE;
   virtual void OnNativeWidgetActivationChanged(bool active) OVERRIDE;
 
+  // Overridden from views::ContextMenuController:
+  virtual void ShowContextMenuForView(views::View* source,
+                                      const gfx::Point& p) OVERRIDE;
+
   // Returns true if we should leave any offset at the frame caption. Typically
   // when the frame is maximized/full screen we want to leave no offset at the
   // top.
   bool ShouldLeaveOffsetNearTopBorder();
 
   AvatarMenuButton* GetAvatarMenuButton();
+
+  // Returns the menu model. BrowserFrame owns the returned model.
+  ui::MenuModel* GetSystemMenuModel();
 
  private:
   NativeBrowserFrame* native_browser_frame_;
@@ -96,6 +109,12 @@ class BrowserFrame : public views::Widget {
 
   // The BrowserView is our ClientView. This is a pointer to it.
   BrowserView* browser_view_;
+
+  scoped_ptr<SystemMenuModelBuilder> menu_model_builder_;
+
+  // Used to show the system menu. Only used if
+  // NativeBrowserFrame::UsesNativeSystemMenu() returns false.
+  scoped_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrame);
 };
