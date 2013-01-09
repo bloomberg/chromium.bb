@@ -10,10 +10,8 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
-#include "content/public/browser/android/download_controller_android.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/AwWebContentsDelegate_jni.h"
-#include "net/http/http_request_headers.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
@@ -57,16 +55,15 @@ void AwWebContentsDelegate::FindReply(WebContents* web_contents,
 bool AwWebContentsDelegate::CanDownload(content::RenderViewHost* source,
                                         int request_id,
                                         const std::string& request_method) {
-  if (request_method == net::HttpRequestHeaders::kGetMethod) {
-    content::DownloadControllerAndroid::Get()->CreateGETDownload(
-        source, request_id);
-  }
+  // Android webview intercepts download in its resource dispatcher host
+  // delegate, so should not reach here.
+  NOTREACHED();
   return false;
 }
 
 void AwWebContentsDelegate::OnStartDownload(WebContents* source,
                                             content::DownloadItem* download) {
-  NOTREACHED();  // We always return false in CanDownload.
+  NOTREACHED();  // Downloads are cancelled in ResourceDispatcherHostDelegate.
 }
 
 void AwWebContentsDelegate::AddNewContents(content::WebContents* source,
