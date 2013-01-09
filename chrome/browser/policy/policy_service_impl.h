@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_bundle.h"
@@ -47,14 +48,31 @@ class PolicyServiceImpl : public PolicyService,
   typedef ObserverList<PolicyService::Observer, true> Observers;
   typedef std::map<PolicyDomain, Observers*> ObserverMap;
 
+  // Information about policy changes sent to observers.
+  class PolicyChangeInfo {
+   public:
+    PolicyChangeInfo(const PolicyBundle::PolicyNamespace& policy_namespace,
+                     const PolicyMap& previous, const PolicyMap& current);
+    ~PolicyChangeInfo();
+
+    PolicyBundle::PolicyNamespace policy_namespace_;
+    PolicyMap previous_;
+    PolicyMap current_;
+  };
+
   // ConfigurationPolicyProvider::Observer overrides:
   virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) OVERRIDE;
 
-  // Notifies observers of |ns| that its policies have changed, passing along
-  // the |previous| and the |current| policies.
+  // Posts a task to notify observers of |ns| that its policies have changed,
+  // passing along the |previous| and the |current| policies.
   void NotifyNamespaceUpdated(const PolicyBundle::PolicyNamespace& ns,
                               const PolicyMap& previous,
                               const PolicyMap& current);
+
+  // Helper function invoked by NotifyNamespaceUpdated() to notify observers
+  // via a queued task, to deal with reentrancy issues caused by observers
+  // generating policy changes.
+  void NotifyNamespaceUpdatedTask(scoped_ptr<PolicyChangeInfo> info);
 
   // Combines the policies from all the providers, and notifies the observers
   // of namespaces whose policies have been modified.
@@ -86,6 +104,10 @@ class PolicyServiceImpl : public PolicyService,
   // List of callbacks to invoke once all providers refresh after a
   // RefreshPolicies() call.
   std::vector<base::Closure> refresh_callbacks_;
+
+  // Used to create tasks to delay new policy updates while we may be already
+  // processing previous policy updates.
+  base::WeakPtrFactory<PolicyServiceImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyServiceImpl);
 };

@@ -14,6 +14,7 @@
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -393,6 +394,12 @@ class PolicyPrefsTest
         TemplateURLServiceFactory::GetForProfile(browser()->profile()));
   }
 
+  void UpdateProviderPolicy(const PolicyMap& policy) {
+    provider_.UpdateChromePolicy(policy);
+    base::RunLoop loop;
+    loop.RunUntilIdle();
+  }
+
   PolicyTestCases policy_test_cases_;
   MockConfigurationPolicyProvider provider_;
 };
@@ -442,13 +449,13 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, PolicyToPrefsMapping) {
 
     // Verify that setting the policy overrides the pref.
     const PolicyMap kNoPolicies;
-    provider_.UpdateChromePolicy(kNoPolicies);
+    UpdateProviderPolicy(kNoPolicies);
     EXPECT_TRUE(pref->IsDefaultValue());
     EXPECT_TRUE(pref->IsUserModifiable());
     EXPECT_FALSE(pref->IsUserControlled());
     EXPECT_FALSE(pref->IsManaged());
 
-    provider_.UpdateChromePolicy(test_case->test_policy());
+    UpdateProviderPolicy(test_case->test_policy());
     EXPECT_FALSE(pref->IsDefaultValue());
     EXPECT_FALSE(pref->IsUserModifiable());
     EXPECT_FALSE(pref->IsUserControlled());
@@ -506,14 +513,14 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, CheckPolicyIndicators) {
       // Check that no controlled setting indicator is visible when no value is
       // set by policy.
       PolicyMap policies;
-      provider_.UpdateChromePolicy(policies);
+      UpdateProviderPolicy(policies);
       VerifyControlledSettingIndicators(browser(), indicator_selector,
                                         "", "", false);
       // Check that the appropriate controlled setting indicator is shown when a
       // value is enforced by policy.
       policies.LoadFrom(&(*indicator_test_case)->policy(),
                         POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
-      provider_.UpdateChromePolicy(policies);
+      UpdateProviderPolicy(policies);
       VerifyControlledSettingIndicators(browser(), indicator_selector,
                                         (*indicator_test_case)->value(),
                                         "policy",
@@ -536,7 +543,7 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, CheckPolicyIndicators) {
       // recommendation.
       policies.LoadFrom(&(*indicator_test_case)->policy(),
                         POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER);
-      provider_.UpdateChromePolicy(policies);
+      UpdateProviderPolicy(policies);
       VerifyControlledSettingIndicators(browser(), indicator_selector,
                                         (*indicator_test_case)->value(),
                                         "recommended",

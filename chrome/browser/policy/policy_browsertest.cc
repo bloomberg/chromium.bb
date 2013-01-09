@@ -14,6 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/test/test_file_util.h"
@@ -435,7 +436,7 @@ class PolicyTest : public InProcessBrowserTest {
     PolicyMap policies;
     policies.Set(key::kDisableScreenshots, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, base::Value::CreateBooleanValue(!enabled));
-    provider_.UpdateChromePolicy(policies);
+    UpdateProviderPolicy(policies);
   }
 
   void TestScreenshotFeedback(bool enabled) {
@@ -535,6 +536,13 @@ class PolicyTest : public InProcessBrowserTest {
     observer.Wait();
   }
 
+  void UpdateProviderPolicy(const PolicyMap& policy) {
+    provider_.UpdateChromePolicy(policy);
+    DCHECK(MessageLoop::current());
+    base::RunLoop loop;
+    loop.RunUntilIdle();
+  }
+
   MockConfigurationPolicyProvider provider_;
 };
 
@@ -591,7 +599,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
   PolicyMap policies;
   policies.Set(key::kBookmarkBarEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefs->IsManagedPreference(prefs::kShowBookmarkBar));
   EXPECT_TRUE(prefs->GetBoolean(prefs::kShowBookmarkBar));
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
@@ -602,14 +610,14 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
 
   policies.Set(key::kBookmarkBarEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefs->IsManagedPreference(prefs::kShowBookmarkBar));
   EXPECT_FALSE(prefs->GetBoolean(prefs::kShowBookmarkBar));
   // The bookmark bar is hidden in the NTP when disabled by policy.
   EXPECT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
 
   policies.Clear();
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   EXPECT_FALSE(prefs->IsManagedPreference(prefs::kShowBookmarkBar));
   EXPECT_FALSE(prefs->GetBoolean(prefs::kShowBookmarkBar));
   // The bookmark bar is shown detached in the NTP, when disabled by prefs only.
@@ -638,7 +646,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_ClearSiteDataOnExit) {
   PolicyMap policies;
   policies.Set(key::kClearSiteDataOnExit, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ClearSiteDataOnExit) {
@@ -688,7 +696,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   policies.Set(key::kDefaultSearchProviderSearchTermsReplacementKey,
                POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                base::Value::CreateStringValue(kSearchTermsReplacementKey));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   default_search = service->GetDefaultSearchProvider();
   ASSERT_TRUE(default_search);
   EXPECT_EQ(kKeyword, default_search->keyword());
@@ -714,7 +722,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   policies.Set(key::kDefaultSearchProviderEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
   EXPECT_TRUE(service->GetDefaultSearchProvider());
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   EXPECT_FALSE(service->GetDefaultSearchProvider());
   ui_test_utils::SendToOmniboxAndSubmit(location_bar, "should not work");
   // This means that submitting won't trigger any action.
@@ -754,7 +762,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceSafeSearch) {
   PolicyMap policies;
   policies.Set(key::kForceSafeSearch, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
 
   EXPECT_TRUE(prefs->IsManagedPreference(prefs::kForceSafeSearch));
   EXPECT_TRUE(prefs->GetBoolean(prefs::kForceSafeSearch));
@@ -820,7 +828,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   policies.Set(key::kDefaultSearchProviderSearchTermsReplacementKey,
                POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                base::Value::CreateStringValue(kSearchTermsReplacementKey));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   default_search = service->GetDefaultSearchProvider();
   ASSERT_TRUE(default_search);
   EXPECT_EQ(kKeyword, default_search->keyword());
@@ -887,7 +895,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {
   PolicyMap policies;
   policies.Set(key::kDisable3DAPIs, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   // Crash and reload the tab to get a new renderer.
   content::CrashTab(contents);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_RELOAD));
@@ -895,7 +903,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {
   // Enable with a policy.
   policies.Set(key::kDisable3DAPIs, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   content::CrashTab(contents);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_RELOAD));
   EXPECT_TRUE(IsWebGLEnabled(contents));
@@ -908,14 +916,14 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisableSpdy) {
   PolicyMap policies;
   policies.Set(key::kDisableSpdy, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(net::HttpStreamFactory::spdy_enabled());
   // Verify that it can be force-enabled too.
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kDisableSpdy, true);
   policies.Set(key::kDisableSpdy, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(net::HttpStreamFactory::spdy_enabled());
 }
@@ -943,7 +951,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisabledPlugins) {
   PolicyMap policies;
   policies.Set(key::kDisabledPlugins, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, disabled_plugins.DeepCopy());
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
   // The user shouldn't be able to enable it.
   EXPECT_FALSE(SetPluginEnabled(plugin_prefs, flash, true));
@@ -969,7 +977,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisabledPluginsExceptions) {
   PolicyMap policies;
   policies.Set(key::kDisabledPlugins, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, disabled_plugins.DeepCopy());
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
   // The user shouldn't be able to enable it.
   EXPECT_FALSE(SetPluginEnabled(plugin_prefs, flash, true));
@@ -981,7 +989,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisabledPluginsExceptions) {
       base::Value::CreateStringValue("*Flash*"));
   policies.Set(key::kDisabledPluginsExceptions, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, disabled_plugins_exceptions.DeepCopy());
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   // It should revert to the user's preference automatically.
   EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
   // And the user should be able to disable and enable again.
@@ -1009,7 +1017,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, EnabledPlugins) {
   PolicyMap policies;
   policies.Set(key::kEnabledPlugins, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, plugin_list.DeepCopy());
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
   // The user can't disable it anymore.
   EXPECT_FALSE(SetPluginEnabled(plugin_prefs, flash, false));
@@ -1018,7 +1026,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, EnabledPlugins) {
   // When a plugin is both enabled and disabled, the whitelist takes precedence.
   policies.Set(key::kDisabledPlugins, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, plugin_list.DeepCopy());
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   EXPECT_TRUE(plugin_prefs->IsPluginEnabled(*flash));
 }
 
@@ -1061,7 +1069,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AlwaysAuthorizePlugins) {
   PolicyMap policies;
   policies.Set(key::kAlwaysAuthorizePlugins, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   // Reloading the page shouldn't trigger the infobar this time.
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_EQ(0u, infobar_service->GetInfoBarCount());
@@ -1081,7 +1089,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabled) {
   PolicyMap policies;
   policies.Set(key::kDeveloperToolsDisabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   // The existing devtools window should have closed.
   EXPECT_FALSE(DevToolsWindow::GetDockedInstanceForInspectedTab(contents));
   // And it's not possible to open it again.
@@ -1115,7 +1123,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
   policies.Set(key::kDownloadDirectory, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
                base::Value::CreateStringValue(forced_dir.path().value()));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   DownloadAndVerifyFile(browser(), forced_dir.path(), file);
   // Verify that the first download location wasn't affected.
   EXPECT_FALSE(file_util::PathExists(initial_dir.path().Append(file)));
@@ -1132,7 +1140,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklist) {
   PolicyMap policies;
   policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, blacklist.DeepCopy());
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
 
   // "good.crx" is blacklisted.
   EXPECT_FALSE(InstallExtension(kGoodCrxName));
@@ -1150,7 +1158,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklist) {
   blacklist.Append(base::Value::CreateStringValue("*"));
   policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, blacklist.DeepCopy());
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   // AdBlock was automatically removed.
   ASSERT_FALSE(service->GetExtensionById(kAdBlockCrxId, true));
   // And can't be installed again, nor can good.crx.
@@ -1174,7 +1182,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallWhitelist) {
                POLICY_SCOPE_USER, blacklist.DeepCopy());
   policies.Set(key::kExtensionInstallWhitelist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, whitelist.DeepCopy());
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   // "adblock.crx" is blacklisted.
   EXPECT_FALSE(InstallExtension(kAdBlockCrxName));
   EXPECT_FALSE(service->GetExtensionById(kAdBlockCrxId, true));
@@ -1209,7 +1217,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_EXTENSION_INSTALLED,
       content::NotificationService::AllSources());
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   observer.Wait();
   content::Details<const extensions::Extension> details = observer.details();
   EXPECT_EQ(kGoodCrxId, details->id());
@@ -1230,7 +1238,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes) {
   PolicyMap policies;
   policies.Set(key::kExtensionAllowedTypes, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, allowed_types.DeepCopy());
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
 
   // "good.crx" is blocked.
   EXPECT_FALSE(InstallExtension(kGoodCrxName));
@@ -1265,14 +1273,14 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
   policies.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
                base::Value::CreateStringValue(chrome::kChromeUICreditsURL));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_HOME));
   content::WaitForLoadStop(contents);
   EXPECT_EQ(GURL(chrome::kChromeUICreditsURL), contents->GetURL());
 
   policies.Set(key::kHomepageIsNewTabPage, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_HOME));
   content::WaitForLoadStop(contents);
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), contents->GetURL());
@@ -1288,7 +1296,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {
   PolicyMap policies;
   policies.Set(key::kIncognitoEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   EXPECT_FALSE(chrome::ExecuteCommand(browser(), IDC_NEW_INCOGNITO_WINDOW));
   EXPECT_EQ(1u, BrowserList::size());
   EXPECT_FALSE(BrowserList::IsOffTheRecordSessionActive());
@@ -1296,7 +1304,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {
   // Enable via policy and verify that incognito windows can be opened.
   policies.Set(key::kIncognitoEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_NEW_INCOGNITO_WINDOW));
   EXPECT_EQ(2u, BrowserList::size());
   EXPECT_TRUE(BrowserList::IsOffTheRecordSessionActive());
@@ -1313,7 +1321,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Javascript) {
   PolicyMap policies;
   policies.Set(key::kJavascriptEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   // Reload the page.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
   EXPECT_FALSE(IsJavascriptEnabled(contents));
@@ -1330,7 +1338,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Javascript) {
   policies.Set(key::kDefaultJavaScriptSetting, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER,
                base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
   EXPECT_TRUE(IsJavascriptEnabled(contents));
 }
@@ -1340,7 +1348,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {
   PolicyMap policies;
   policies.Set(key::kSavingBrowserHistoryDisabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   GURL url = ui_test_utils::GetTestUrl(
       FilePath(FilePath::kCurrentDirectory),
       FilePath(FILE_PATH_LITERAL("empty.html")));
@@ -1352,7 +1360,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SavingBrowserHistoryDisabled) {
   // Now flip the policy and try again.
   policies.Set(key::kSavingBrowserHistoryDisabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   ui_test_utils::NavigateToURL(browser(), url);
   // Verify that the navigation was saved in the history.
   ui_test_utils::HistoryEnumerator enumerator2(browser()->profile());
@@ -1374,7 +1382,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
   PolicyMap policies;
   policies.Set(key::kTranslateEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   // Instead of waiting for NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED, this test
   // waits for NOTIFICATION_TAB_LANGUAGE_DETERMINED because that's what the
   // TranslateManager observes. This allows checking that an infobar is NOT
@@ -1403,7 +1411,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TranslateEnabled) {
   EXPECT_EQ(0u, infobar_service->GetInfoBarCount());
   policies.Set(key::kTranslateEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   // Navigating to the same URL now doesn't trigger an infobar.
   content::WindowedNotificationObserver language_observer2(
       chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
@@ -1441,7 +1449,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   PolicyMap policies;
   policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, blacklist.DeepCopy());
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
   // All bbb.com URLs are blocked.
   CheckCanOpenURL(browser(), kURLS[0]);
@@ -1454,7 +1462,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   whitelist.Append(base::Value::CreateStringValue("bbb.com/policy"));
   policies.Set(key::kURLWhitelist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, whitelist.DeepCopy());
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
   CheckCanOpenURL(browser(), kURLS[0]);
   CheckURLIsBlocked(browser(), kURLS[1]);
@@ -1512,7 +1520,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisableAudioOutput) {
   PolicyMap policies;
   policies.Set(key::kAudioOutputAllowed, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   EXPECT_TRUE(audio_handler->IsMuted());
   // This should not change the state now and should not trigger OnMuteToggled.
   audio_handler->SetMuted(false);
@@ -1522,7 +1530,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisableAudioOutput) {
   EXPECT_CALL(*mock, OnMuteToggled()).Times(1);
   policies.Set(key::kAudioOutputAllowed, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
-  provider_.UpdateChromePolicy(policies);
+  UpdateProviderPolicy(policies);
   EXPECT_FALSE(audio_handler->IsMuted());
   EXPECT_CALL(*mock, OnMuteToggled()).Times(1);
   audio_handler->SetMuted(true);

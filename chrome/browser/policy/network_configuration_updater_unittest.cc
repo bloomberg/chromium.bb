@@ -5,6 +5,8 @@
 #include "chrome/browser/policy/network_configuration_updater.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
@@ -41,6 +43,12 @@ class NetworkConfigurationUpdaterTest
     provider_.Shutdown();
   }
 
+  void UpdateProviderPolicy(const PolicyMap& policy) {
+    provider_.UpdateChromePolicy(policy);
+    base::RunLoop loop;
+    loop.RunUntilIdle();
+  }
+
   // Maps configuration policy name to corresponding ONC source.
   static chromeos::onc::ONCSource NameToONCSource(
       const std::string& name) {
@@ -54,13 +62,14 @@ class NetworkConfigurationUpdaterTest
   chromeos::MockNetworkLibrary network_library_;
   MockConfigurationPolicyProvider provider_;
   scoped_ptr<PolicyServiceImpl> policy_service_;
+  MessageLoop loop_;
 };
 
 TEST_P(NetworkConfigurationUpdaterTest, InitialUpdates) {
   PolicyMap policy;
   policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              Value::CreateStringValue(kFakeONC));
-  provider_.UpdateChromePolicy(policy);
+  UpdateProviderPolicy(policy);
 
   EXPECT_CALL(network_library_, AddNetworkProfileObserver(_));
 
@@ -114,7 +123,7 @@ TEST_P(NetworkConfigurationUpdaterTest, AllowWebTrust) {
     PolicyMap policy;
     policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                Value::CreateStringValue(kFakeONC));
-    provider_.UpdateChromePolicy(policy);
+    UpdateProviderPolicy(policy);
     Mock::VerifyAndClearExpectations(&network_library_);
 
     EXPECT_CALL(network_library_, RemoveNetworkProfileObserver(_));
@@ -148,7 +157,7 @@ TEST_P(NetworkConfigurationUpdaterTest, PolicyChange) {
     PolicyMap policy;
     policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                Value::CreateStringValue(kFakeONC));
-    provider_.UpdateChromePolicy(policy);
+    UpdateProviderPolicy(policy);
     Mock::VerifyAndClearExpectations(&network_library_);
 
     // Another update is expected if the policy goes away. In the current
@@ -164,7 +173,7 @@ TEST_P(NetworkConfigurationUpdaterTest, PolicyChange) {
     EXPECT_CALL(network_library_, RemoveNetworkProfileObserver(_));
 
     policy.Erase(GetParam());
-    provider_.UpdateChromePolicy(policy);
+    UpdateProviderPolicy(policy);
   }
   Mock::VerifyAndClearExpectations(&network_library_);
 }

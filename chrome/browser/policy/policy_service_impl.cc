@@ -6,14 +6,29 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "chrome/browser/policy/policy_map.h"
 
 namespace policy {
 
+PolicyServiceImpl::PolicyChangeInfo::PolicyChangeInfo(
+    const PolicyBundle::PolicyNamespace& policy_namespace,
+    const PolicyMap& previous, const PolicyMap& current)
+    : policy_namespace_(policy_namespace) {
+  previous_.CopyFrom(previous);
+  current_.CopyFrom(current);
+}
+
+PolicyServiceImpl::PolicyChangeInfo::~PolicyChangeInfo() {
+}
+
 typedef PolicyServiceImpl::Providers::const_iterator Iterator;
 
-PolicyServiceImpl::PolicyServiceImpl(const Providers& providers) {
+PolicyServiceImpl::PolicyServiceImpl(const Providers& providers)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   initialization_complete_ = true;
   providers_ = providers;
   for (Iterator it = providers.begin(); it != providers.end(); ++it) {
@@ -91,12 +106,39 @@ void PolicyServiceImpl::NotifyNamespaceUpdated(
     const PolicyBundle::PolicyNamespace& ns,
     const PolicyMap& previous,
     const PolicyMap& current) {
-  ObserverMap::iterator iterator = observers_.find(ns.first);
+  // If running a unit test that hasn't setup a MessageLoop, don't send any
+  // notifications.
+  if (!MessageLoop::current())
+    return;
+
+  // Don't queue up a task if we have no observers - that way Observers added
+  // later don't get notified of changes that happened during construction time.
+  if (observers_.find(ns.first) == observers_.end())
+    return;
+
+  // Notify Observers via a queued task, so Observers can't trigger a re-entrant
+  // call to MergeAndTriggerUpdates() by modifying policy.
+  scoped_ptr<PolicyChangeInfo> changes(
+      new PolicyChangeInfo(ns, previous, current));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&PolicyServiceImpl::NotifyNamespaceUpdatedTask,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&changes)));
+}
+
+void PolicyServiceImpl::NotifyNamespaceUpdatedTask(
+    scoped_ptr<PolicyChangeInfo> changes) {
+  ObserverMap::iterator iterator = observers_.find(
+      changes->policy_namespace_.first);
   if (iterator != observers_.end()) {
     FOR_EACH_OBSERVER(
         PolicyService::Observer,
         *iterator->second,
-        OnPolicyUpdated(ns.first, ns.second, previous, current));
+        OnPolicyUpdated(changes->policy_namespace_.first,
+                        changes->policy_namespace_.second,
+                        changes->previous_,
+                        changes->current_));
   }
 }
 
