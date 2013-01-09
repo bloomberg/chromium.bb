@@ -157,9 +157,11 @@ class InputMethodEngineIBus : public InputMethodEngine,
   // The current engine component.
   scoped_ptr<ibus::IBusComponent> component_;
 
-  // The current lookup table and it's visiblity.
+  // The current lookup table.
   scoped_ptr<ibus::IBusLookupTable> table_;
-  bool table_visible_;
+
+  // Indicates whether the candidate window is visible.
+  bool window_visible_;
 
   // Mapping of candidate index to candidate id.
   std::vector<int> candidate_ids_;

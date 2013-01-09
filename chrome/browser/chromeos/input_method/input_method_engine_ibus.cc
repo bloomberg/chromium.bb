@@ -52,7 +52,7 @@ InputMethodEngineIBus::InputMethodEngineIBus()
       preedit_cursor_(0),
       component_(new ibus::IBusComponent()),
       table_(new ibus::IBusLookupTable()),
-      table_visible_(false),
+      window_visible_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -209,46 +209,49 @@ bool InputMethodEngineIBus::SetCandidateWindowVisible(bool visible,
     return false;
   }
 
-  table_visible_ = visible;
-  GetCurrentService()->UpdateLookupTable(*table_.get(), table_visible_);
+  window_visible_ = visible;
+  GetCurrentService()->UpdateLookupTable(*table_.get(), window_visible_);
   return true;
 }
 
 void InputMethodEngineIBus::SetCandidateWindowCursorVisible(bool visible) {
-  if (!active_)
-    return;
   table_->set_is_cursor_visible(visible);
-  GetCurrentService()->UpdateLookupTable(*table_.get(), table_visible_);
+  if (active_)
+    GetCurrentService()->UpdateLookupTable(*table_.get(), window_visible_);
 }
 
 void InputMethodEngineIBus::SetCandidateWindowVertical(bool vertical) {
-  if (!active_)
-    return;
   table_->set_orientation(
       vertical ? ibus::IBusLookupTable::IBUS_LOOKUP_TABLE_ORIENTATION_VERTICAL :
       ibus::IBusLookupTable::IBUS_LOOKUP_TABLE_ORIENTATION_HORIZONTAL);
-  GetCurrentService()->UpdateLookupTable(*table_.get(), table_visible_);
+  if (active_)
+    GetCurrentService()->UpdateLookupTable(*table_.get(), window_visible_);
 }
 
 void InputMethodEngineIBus::SetCandidateWindowPageSize(int size) {
-  if (!active_)
-    return;
   table_->set_page_size(size);
-  GetCurrentService()->UpdateLookupTable(*table_.get(), table_visible_);
+  if (active_)
+    GetCurrentService()->UpdateLookupTable(*table_.get(), window_visible_);
 }
 
 void InputMethodEngineIBus::SetCandidateWindowAuxText(const char* text) {
-  if (!active_)
-    return;
   aux_text_->set_text(text);
-  GetCurrentService()->UpdateAuxiliaryText(*aux_text_.get(), aux_text_visible_);
+  if (active_) {
+    // Should not show auxiliary text if the whole window visibility is false.
+    GetCurrentService()->UpdateAuxiliaryText(
+        *aux_text_.get(),
+        window_visible_ && aux_text_visible_);
+  }
 }
 
 void InputMethodEngineIBus::SetCandidateWindowAuxTextVisible(bool visible) {
-  if (!active_)
-    return;
   aux_text_visible_ = visible;
-  GetCurrentService()->UpdateAuxiliaryText(*aux_text_.get(), aux_text_visible_);
+  if (active_) {
+    // Should not show auxiliary text if the whole window visibility is false.
+    GetCurrentService()->UpdateAuxiliaryText(
+        *aux_text_.get(),
+        window_visible_ && aux_text_visible_);
+  }
 }
 
 bool InputMethodEngineIBus::SetCandidates(
@@ -283,7 +286,7 @@ bool InputMethodEngineIBus::SetCandidates(
 
     table_->mutable_candidates()->push_back(entry);
   }
-  GetCurrentService()->UpdateLookupTable(*table_.get(), table_visible_);
+  GetCurrentService()->UpdateLookupTable(*table_.get(), window_visible_);
   return true;
 }
 
@@ -306,7 +309,7 @@ bool InputMethodEngineIBus::SetCursorPosition(int context_id, int candidate_id,
   }
 
   table_->set_cursor_position(position->second);
-  GetCurrentService()->UpdateLookupTable(*table_.get(), table_visible_);
+  GetCurrentService()->UpdateLookupTable(*table_.get(), window_visible_);
   return true;
 }
 
