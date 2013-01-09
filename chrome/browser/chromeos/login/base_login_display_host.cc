@@ -44,6 +44,7 @@
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 #include "ui/aura/window.h"
+#include "ui/base/events/event_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -401,6 +402,9 @@ void ShowLoginWizard(const std::string& first_screen_name,
     system::touchpad_settings::SetTapToClick(
         prefs->GetBoolean(prefs::kOwnerTapToClickEnabled));
   }
+
+  ui::SetNaturalScroll(CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNaturalScrollDefault));
 
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(size));
 
