@@ -941,33 +941,12 @@ bool MenuController::Dispatch(const base::NativeEvent& event) {
     aura::Env::GetInstance()->GetDispatcher()->Dispatch(event);
     return false;
   }
-  // We exit the menu and its message loop on control and alt keypress.
-  // So that accelerators such as control-n don't run with a nested
-  // message loop we exit on any modifier that might be used for an
-  // accelerator.
-  // If the user presses control-n, the menu disappears already when
-  // the control key is down. When "n" (while control is still down)
-  // is pressed the shortcut is handled normally after the nested loop
-  // has ended and the context menu has disappeared.
-  // We don't exit the menu on the release of modifiers as the menu
-  // may have been shown by way of an accelerator, eg alt-f. So that
-  // if we exited menus on the release of modifiers the menu would
-  // first appear and then immediately disappear.
-  const ui::EventType event_type = ui::EventTypeFromNative(event);
-  if (event_type == ui::ET_KEY_PRESSED ) {
-    const ui::KeyboardCode key_code = ui::KeyboardCodeFromNative(event);
-    if (key_code == ui::VKEY_LCONTROL || key_code == ui::VKEY_CONTROL ||
-        key_code == ui::VKEY_RCONTROL || key_code == ui::VKEY_MENU ) {
-      Cancel(EXIT_ALL);
-      return false;
-    }
-  }
   // Activates mnemonics only when it it pressed without modifiers except for
   // caps and shift.
   int flags = ui::EventFlagsFromNative(event) &
       ~ui::EF_CAPS_LOCK_DOWN & ~ui::EF_SHIFT_DOWN;
   if (flags == ui::EF_NONE) {
-    switch (event_type) {
+    switch (ui::EventTypeFromNative(event)) {
       case ui::ET_KEY_PRESSED:
         if (!OnKeyDown(ui::KeyboardCodeFromNative(event)))
           return false;
