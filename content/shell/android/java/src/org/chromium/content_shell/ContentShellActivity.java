@@ -5,7 +5,10 @@
 package org.chromium.content_shell;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -17,6 +20,7 @@ import org.chromium.content.browser.ActivityContentVideoViewDelegate;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.DeviceUtils;
+import org.chromium.content.browser.TracingIntentHandler;
 import org.chromium.content.common.CommandLine;
 import org.chromium.ui.gfx.ActivityNativeWindow;
 
@@ -29,11 +33,16 @@ public class ContentShellActivity extends ChromiumActivity {
     private static final String TAG = ContentShellActivity.class.getName();
 
     private static final String ACTIVE_SHELL_URL_KEY = "activeUrl";
+    private static final String ACTION_START_TRACE =
+            "org.chromium.content_shell.action.PROFILE_START";
+    private static final String ACTION_STOP_TRACE =
+            "org.chromium.content_shell.action.PROFILE_STOP";
     public static final String DEFAULT_SHELL_URL = "http://www.google.com";
     public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
 
     private ShellManager mShellManager;
     private ActivityNativeWindow mActivityNativeWindow;
+    private BroadcastReceiver mReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,6 +138,7 @@ public class ContentShellActivity extends ChromiumActivity {
         if (view != null) view.onActivityPause();
 
         super.onPause();
+        unregisterReceiver(mReceiver);
     }
 
     @Override
@@ -137,6 +147,27 @@ public class ContentShellActivity extends ChromiumActivity {
 
         ContentView view = getActiveContentView();
         if (view != null) view.onActivityResume();
+        IntentFilter intentFilter = new IntentFilter(ACTION_START_TRACE);
+        intentFilter.addAction(ACTION_STOP_TRACE);
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                String extra = intent.getStringExtra("file");
+                if (ACTION_START_TRACE.equals(action)) {
+                    if (extra.isEmpty()) {
+                        Log.e(TAG, "Can not start tracing without specifing saving location");
+                    } else {
+                        TracingIntentHandler.beginTracing(extra);
+                        Log.i(TAG, "start tracing");
+                    }
+                } else if (ACTION_STOP_TRACE.equals(action)) {
+                    Log.i(TAG, "stop tracing");
+                    TracingIntentHandler.endTracing();
+                }
+            }
+        };
+        registerReceiver(mReceiver, intentFilter);
     }
 
     @Override

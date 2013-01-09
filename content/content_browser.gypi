@@ -227,6 +227,8 @@
     'browser/android/surface_texture_peer_browser_impl.h',
     'browser/android/touch_point.cc',
     'browser/android/touch_point.h',
+    'browser/android/tracing_intent_handler.cc',
+    'browser/android/tracing_intent_handler.h',
     'browser/android/web_contents_observer_android.cc',
     'browser/android/web_contents_observer_android.h',
     'browser/appcache/appcache_dispatcher_host.cc',

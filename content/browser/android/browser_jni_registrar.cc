@@ -18,6 +18,7 @@
 #include "content/browser/android/sandboxed_process_launcher.h"
 #include "content/browser/android/surface_texture_peer_browser_impl.h"
 #include "content/browser/android/touch_point.h"
+#include "content/browser/android/tracing_intent_handler.h"
 #include "content/browser/android/web_contents_observer_android.h"
 #include "content/browser/geolocation/location_api_adapter_android.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
@@ -46,6 +47,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "RegisterImeAdapter", content::RegisterImeAdapter },
   { "SandboxedProcessLauncher", content::RegisterSandboxedProcessLauncher },
   { "TouchPoint", content::RegisterTouchPoint },
+  { "TracingIntentHandler", content::RegisterTracingIntentHandler },
   { "WebContentsObserverAndroid", content::RegisterWebContentsObserverAndroid },
   { "WebViewStatics", content::RegisterWebViewStatics },
 };
