@@ -71,7 +71,7 @@ void NetworkChangeNotifierNetworkLibrary::Init() {
   chromeos::NetworkLibrary* network_library =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   network_library->AddNetworkManagerObserver(this);
-
+  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
   DBusThreadManager::Get()->GetRootPowerManagerClient()->AddObserver(this);
 
   dns_config_service_.reset(new DnsConfigServiceChromeos());
@@ -95,15 +95,21 @@ void NetworkChangeNotifierNetworkLibrary::Shutdown() {
   lib->RemoveObserverForAllNetworks(this);
 
   DBusThreadManager::Get()->GetRootPowerManagerClient()->RemoveObserver(this);
+  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
 }
 
-void NetworkChangeNotifierNetworkLibrary::OnResume(
+void NetworkChangeNotifierNetworkLibrary::SystemResumed(
     const base::TimeDelta& sleep_duration) {
   // Force invalidation of various net resources on system resume.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
           &NetworkChangeNotifier::NotifyObserversOfIPAddressChange));
+}
+
+void NetworkChangeNotifierNetworkLibrary::OnResume(
+    const base::TimeDelta& sleep_duration) {
+  SystemResumed(sleep_duration);
 }
 
 

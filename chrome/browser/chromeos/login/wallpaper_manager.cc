@@ -130,6 +130,7 @@ void WallpaperManager::RegisterPrefs(PrefServiceSimple* local_state) {
 }
 
 void WallpaperManager::AddObservers() {
+  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
   if (!DBusThreadManager::Get()->GetRootPowerManagerClient()->HasObserver(this))
     DBusThreadManager::Get()->GetRootPowerManagerClient()->AddObserver(this);
   system::TimezoneSettings::GetInstance()->AddObserver(this);
@@ -558,6 +559,7 @@ void WallpaperManager::UpdateWallpaper() {
 WallpaperManager::~WallpaperManager() {
   ClearObsoleteWallpaperPrefs();
   DBusThreadManager::Get()->GetRootPowerManagerClient()->RemoveObserver(this);
+  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
   system::TimezoneSettings::GetInstance()->RemoveObserver(this);
   weak_factory_.InvalidateWeakPtrs();
 }
@@ -895,8 +897,12 @@ void WallpaperManager::StartLoad(const std::string& email,
                                       update_wallpaper));
 }
 
-void WallpaperManager::OnResume(const base::TimeDelta& sleep_duration) {
+void WallpaperManager::SystemResumed(const base::TimeDelta& sleep_duration) {
   BatchUpdateWallpaper();
+}
+
+void WallpaperManager::OnResume(const base::TimeDelta& sleep_duration) {
+  SystemResumed(sleep_duration);
 }
 
 void WallpaperManager::TimezoneChanged(const icu::TimeZone& timezone) {

@@ -1078,9 +1078,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     GetSystemTrayNotifier()->NotifyPowerStatusChanged(power_status);
   }
 
+  // Overridden from PowerManagerClient::Observer:
+  virtual void SystemResumed(const base::TimeDelta& sleep_duration) OVERRIDE {
+    GetSystemTrayNotifier()->NotifyRefreshClock();
+  }
+
   // Overridden from RootPowerManagerObserver:
   virtual void OnResume(const base::TimeDelta& sleep_duration) OVERRIDE {
-    GetSystemTrayNotifier()->NotifyRefreshClock();
+    SystemResumed(sleep_duration);
   }
 
   // Overridden from SessionManagerClient::Observer.

@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_image_loader.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/root_power_manager_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -57,6 +58,7 @@ extern const char kLargeWallpaperSuffix[];
 // This class maintains wallpapers for users who have logged into this Chrome
 // OS device.
 class WallpaperManager: public system::TimezoneSettings::Observer,
+                        public chromeos::PowerManagerClient::Observer,
                         public chromeos::RootPowerManagerObserver,
                         public content::NotificationObserver {
  public:
@@ -67,8 +69,8 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Registers wallpaper manager preferences.
   static void RegisterPrefs(PrefServiceSimple* local_state);
 
-  // Adds RootPowerManagerClient and TimeZoneSettings observers. It needs to be
-  // added after RootPowerManagerClient has been initialized.
+  // Adds PowerManagerClient and TimeZoneSettings observers. It needs to be
+  // added after PowerManagerClient has been initialized.
   void AddObservers();
 
   // Loads wallpaper asynchronously if the current wallpaper is not the
@@ -249,7 +251,11 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                  bool update_wallpaper,
                  const FilePath& wallpaper_path);
 
+  // Overridden from chromeos::PowerManagerObserver.
+  virtual void SystemResumed(const base::TimeDelta& sleep_duration) OVERRIDE;
+
   // Overridden from chromeos::RootPowerManagerObserver.
+  // TODO(derat): Remove this once notifications are sent by powerd.
   virtual void OnResume(const base::TimeDelta& sleep_duration) OVERRIDE;
 
   // Overridden from system::TimezoneSettings::Observer.

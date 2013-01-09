@@ -11,15 +11,21 @@
 namespace chromeos {
 
 ResumeObserver::ResumeObserver() {
+  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
   DBusThreadManager::Get()->GetRootPowerManagerClient()->AddObserver(this);
 }
 
 ResumeObserver::~ResumeObserver() {
+  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
   DBusThreadManager::Get()->GetRootPowerManagerClient()->RemoveObserver(this);
 }
 
-void ResumeObserver::OnResume(const base::TimeDelta& sleep_duration) {
+void ResumeObserver::SystemResumed(const base::TimeDelta& sleep_duration) {
   extensions::DispatchWokeUpEvent();
+}
+
+void ResumeObserver::OnResume(const base::TimeDelta& sleep_duration) {
+  SystemResumed(sleep_duration);
 }
 
 }  // namespace chromeos
