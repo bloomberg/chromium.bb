@@ -89,6 +89,7 @@ WebNotificationTray::WebNotificationTray(
   button_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON);
   tray_container()->AddChildView(button_);
+  SetVisible(false);
   UpdateTray();
 }
 
@@ -199,6 +200,10 @@ void WebNotificationTray::UpdateAfterLoginStatusChange(
       ShowMessageCenterBubble();
     show_message_center_on_unlock_ = false;
   }
+  // The status icon should be always visible except for lock screen / login
+  // screen, to allow quiet mode and settings.
+  SetVisible((login_status != user::LOGGED_IN_NONE) &&
+             (login_status != user::LOGGED_IN_LOCKED));
   UpdateTray();
 }
 
@@ -361,11 +366,6 @@ void WebNotificationTray::UpdateTray() {
     button_->SetState(views::CustomButton::STATE_PRESSED);
   else
     button_->SetState(views::CustomButton::STATE_NORMAL);
-  bool is_visible =
-      (status_area_widget()->login_status() != user::LOGGED_IN_NONE) &&
-      (status_area_widget()->login_status() != user::LOGGED_IN_LOCKED) &&
-      (message_center_->NotificationCount() > 0);
-  SetVisible(is_visible);
   Layout();
   SchedulePaint();
 }
