@@ -154,14 +154,8 @@ void CopyCanvasToBitmap(SkCanvas* canvas,  SkBitmap* snapshot) {
 }  // namespace
 
 WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
-    : RenderViewObserver(render_view),
-      dump_editing_callbacks_(false),
-      dump_frame_load_callbacks_(false),
-      dump_user_gesture_in_frame_load_callbacks_(false),
-      stop_provisional_frame_loads_(false),
-      dump_title_changes_(false),
-      test_is_running_(true),
-      wait_until_done_(false) {
+    : RenderViewObserver(render_view) {
+  Reset();
 }
 
 WebKitTestRunner::~WebKitTestRunner() {
@@ -329,6 +323,7 @@ void WebKitTestRunner::DidFinishLoad(WebFrame* frame) {
   if (!frame->parent()) {
     if (!wait_until_done_)
       test_is_running_ = false;
+    load_finished_ = true;
     Send(new ShellViewHostMsg_DidFinishLoad(routing_id()));
   }
 }
@@ -368,7 +363,10 @@ void WebKitTestRunner::SetXSSAuditorEnabled(bool enabled) {
 }
 
 void WebKitTestRunner::NotifyDone() {
-  test_is_running_ = false;
+  if (load_finished_)
+    test_is_running_ = false;
+  else
+    wait_until_done_ = false;
   Send(new ShellViewHostMsg_NotifyDone(routing_id()));
 }
 
@@ -510,6 +508,7 @@ void WebKitTestRunner::Reset() {
   stop_provisional_frame_loads_ = false;
   dump_title_changes_ = false;
   test_is_running_ = true;
+  load_finished_ = false;
   wait_until_done_ = false;
 }
 
@@ -572,6 +571,12 @@ void WebKitTestRunner::OnCaptureImageDump(
 void WebKitTestRunner::OnSetCurrentWorkingDirectory(
     const FilePath& current_working_directory) {
   current_working_directory_ = current_working_directory;
+  std::vector<FilePath::StringType> components;
+  current_working_directory_.GetComponents(&components);
+  for (unsigned i = 0; i < components.size(); ++i) {
+    if (components[i] == FILE_PATH_LITERAL("loading"))
+      dump_frame_load_callbacks_ = true;
+  }
 }
 
 SkCanvas* WebKitTestRunner::GetCanvas() {

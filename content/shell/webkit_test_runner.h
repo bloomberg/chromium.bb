@@ -124,6 +124,7 @@ class WebKitTestRunner : public RenderViewObserver,
 
   bool test_is_running_;
   bool wait_until_done_;
+  bool load_finished_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestRunner);
 };
