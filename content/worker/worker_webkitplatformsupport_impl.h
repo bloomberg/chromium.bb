@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/webkitplatformsupport_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMimeRegistry.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 
 namespace WebKit {
 class WebFileUtilities;
@@ -61,7 +62,7 @@ class WorkerWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl,
 
   virtual WebKit::WebBlobRegistry* blobRegistry();
 
-  virtual WebKit::WebIDBFactory* idbFactory() OVERRIDE;
+  virtual WebKit::WebIDBFactory* idbFactory();
 
   // WebMimeRegistry methods:
   virtual WebKit::WebMimeRegistry::SupportsType supportsMIMEType(

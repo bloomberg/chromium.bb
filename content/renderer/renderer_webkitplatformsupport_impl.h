@@ -10,6 +10,7 @@
 #include "base/platform_file.h"
 #include "content/common/content_export.h"
 #include "content/common/webkitplatformsupport_impl.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorkerRepository.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 
