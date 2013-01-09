@@ -37,9 +37,9 @@ enum PP_NaClError {
 
 /* PPB_NaCl_Private */
 interface PPB_NaCl_Private {
-  /* Launches NaCl's sel_ldr process.  Returns PP_NACL_OK on success and writes
-   * |socket_count| nacl::Handles to imc_handles. Returns PP_NACL_FAILED on
-   * failure. The |enable_ppapi_dev| parameter controls whether GetInterface
+  /* Launches NaCl's sel_ldr process.  Returns PP_NACL_OK on success and
+   * writes a nacl::Handle to imc_handle. Returns PP_NACL_FAILED on failure.
+   * The |enable_ppapi_dev| parameter controls whether GetInterface
    * returns 'Dev' interfaces to the NaCl plugin.  The |uses_ppapi| flag
    * indicates that the nexe run by sel_ldr will use the PPAPI APIs.
    * This implies that LaunchSelLdr is run from the main thread.  If a nexe
@@ -49,8 +49,7 @@ interface PPB_NaCl_Private {
                              [in] str_t alleged_url,
                              [in] PP_Bool uses_ppapi,
                              [in] PP_Bool enable_ppapi_dev,
-                             [in] int32_t socket_count,
-                             [out] mem_t imc_handles);
+                             [out] mem_t imc_handle);
 
   /* This function starts the IPC proxy so the nexe can communicate with the
    * browser. Returns PP_NACL_OK on success, otherwise a result code indicating

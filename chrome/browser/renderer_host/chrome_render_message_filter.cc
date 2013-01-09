@@ -176,13 +176,12 @@ net::HostResolver* ChromeRenderMessageFilter::GetHostResolver() {
 void ChromeRenderMessageFilter::OnLaunchNaCl(const GURL& manifest_url,
                                              int render_view_id,
                                              uint32 permission_bits,
-                                             int socket_count,
                                              IPC::Message* reply_msg) {
   NaClProcessHost* host = new NaClProcessHost(manifest_url,
                                               render_view_id,
                                               permission_bits,
                                               off_the_record_);
-  host->Launch(this, socket_count, reply_msg, extension_info_map_);
+  host->Launch(this, reply_msg, extension_info_map_);
 }
 
 void ChromeRenderMessageFilter::OnGetReadonlyPnaclFd(

@@ -127,8 +127,12 @@ ppapi::PpapiPermissions GetNaClPermissions(uint32 permission_bits) {
 }  // namespace
 
 struct NaClProcessHost::NaClInternal {
-  std::vector<nacl::Handle> sockets_for_renderer;
-  std::vector<nacl::Handle> sockets_for_sel_ldr;
+  nacl::Handle socket_for_renderer;
+  nacl::Handle socket_for_sel_ldr;
+
+  NaClInternal()
+    : socket_for_renderer(nacl::kInvalidHandle),
+      socket_for_sel_ldr(nacl::kInvalidHandle) { }
 };
 
 // -----------------------------------------------------------------------------
@@ -204,13 +208,14 @@ NaClProcessHost::~NaClProcessHost() {
     LOG(ERROR) << message;
   }
 
-  for (size_t i = 0; i < internal_->sockets_for_renderer.size(); i++) {
-    if (nacl::Close(internal_->sockets_for_renderer[i]) != 0) {
+  if (internal_->socket_for_renderer != nacl::kInvalidHandle) {
+    if (nacl::Close(internal_->socket_for_renderer) != 0) {
       NOTREACHED() << "nacl::Close() failed";
     }
   }
-  for (size_t i = 0; i < internal_->sockets_for_sel_ldr.size(); i++) {
-    if (nacl::Close(internal_->sockets_for_sel_ldr[i]) != 0) {
+
+  if (internal_->socket_for_sel_ldr != nacl::kInvalidHandle) {
+    if (nacl::Close(internal_->socket_for_sel_ldr) != 0) {
       NOTREACHED() << "nacl::Close() failed";
     }
   }
@@ -252,20 +257,11 @@ void NaClProcessHost::EarlyStartup() {
 
 void NaClProcessHost::Launch(
     ChromeRenderMessageFilter* chrome_render_message_filter,
-    int socket_count,
     IPC::Message* reply_msg,
     scoped_refptr<ExtensionInfoMap> extension_info_map) {
   chrome_render_message_filter_ = chrome_render_message_filter;
   reply_msg_ = reply_msg;
   extension_info_map_ = extension_info_map;
-
-  // Place an arbitrary limit on the number of sockets to limit
-  // exposure in case the renderer is compromised.  We can increase
-  // this if necessary.
-  if (socket_count > 8) {
-    delete this;
-    return;
-  }
 
   // Start getting the IRT open asynchronously while we launch the NaCl process.
   // We'll make sure this actually finished in StartWithLaunchedProcess, below.
@@ -286,18 +282,16 @@ void NaClProcessHost::Launch(
   // This means the sandboxed renderer cannot send handles to the
   // browser process.
 
-  for (int i = 0; i < socket_count; i++) {
-    nacl::Handle pair[2];
-    // Create a connected socket
-    if (nacl::SocketPair(pair) == -1) {
-      delete this;
-      return;
-    }
-    internal_->sockets_for_renderer.push_back(pair[0]);
-    internal_->sockets_for_sel_ldr.push_back(pair[1]);
-    SetCloseOnExec(pair[0]);
-    SetCloseOnExec(pair[1]);
+  nacl::Handle pair[2];
+  // Create a connected socket
+  if (nacl::SocketPair(pair) == -1) {
+    delete this;
+    return;
   }
+  internal_->socket_for_renderer = pair[0];
+  internal_->socket_for_sel_ldr = pair[1];
+  SetCloseOnExec(pair[0]);
+  SetCloseOnExec(pair[1]);
 
   // Launch the process
   if (!LaunchSelLdr()) {
@@ -618,33 +612,31 @@ void NaClProcessHost::OnResourcesReady() {
 
 bool NaClProcessHost::ReplyToRenderer(
     const IPC::ChannelHandle& channel_handle) {
-  std::vector<nacl::FileDescriptor> handles_for_renderer;
-  for (size_t i = 0; i < internal_->sockets_for_renderer.size(); i++) {
+  nacl::FileDescriptor handle_for_renderer;
 #if defined(OS_WIN)
-    // Copy the handle into the renderer process.
-    HANDLE handle_in_renderer;
-    if (!DuplicateHandle(base::GetCurrentProcessHandle(),
-                         reinterpret_cast<HANDLE>(
-                             internal_->sockets_for_renderer[i]),
-                         chrome_render_message_filter_->peer_handle(),
-                         &handle_in_renderer,
-                         0,  // Unused given DUPLICATE_SAME_ACCESS.
-                         FALSE,
-                         DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-      DLOG(ERROR) << "DuplicateHandle() failed";
-      return false;
-    }
-    handles_for_renderer.push_back(
-        reinterpret_cast<nacl::FileDescriptor>(handle_in_renderer));
-#else
-    // No need to dup the imc_handle - we don't pass it anywhere else so
-    // it cannot be closed.
-    nacl::FileDescriptor imc_handle;
-    imc_handle.fd = internal_->sockets_for_renderer[i];
-    imc_handle.auto_close = true;
-    handles_for_renderer.push_back(imc_handle);
-#endif
+  // Copy the handle into the renderer process.
+  HANDLE handle_in_renderer;
+  if (!DuplicateHandle(base::GetCurrentProcessHandle(),
+                       reinterpret_cast<HANDLE>(
+                           internal_->socket_for_renderer),
+                       chrome_render_message_filter_->peer_handle(),
+                       &handle_in_renderer,
+                       0,  // Unused given DUPLICATE_SAME_ACCESS.
+                       FALSE,
+                       DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
+    DLOG(ERROR) << "DuplicateHandle() failed";
+    return false;
   }
+  handle_for_renderer = reinterpret_cast<nacl::FileDescriptor>(
+      handle_in_renderer);
+#else
+  // No need to dup the imc_handle - we don't pass it anywhere else so
+  // it cannot be closed.
+  nacl::FileDescriptor imc_handle;
+  imc_handle.fd = internal_->socket_for_renderer;
+  imc_handle.auto_close = true;
+  handle_for_renderer = imc_handle;
+#endif
 
 #if defined(OS_WIN)
   // If we are on 64-bit Windows, the NaCl process's sandbox is
@@ -662,12 +654,12 @@ bool NaClProcessHost::ReplyToRenderer(
 
   const ChildProcessData& data = process_->GetData();
   ChromeViewHostMsg_LaunchNaCl::WriteReplyParams(
-      reply_msg_, handles_for_renderer,
+      reply_msg_, handle_for_renderer,
       channel_handle, base::GetProcId(data.handle), data.id);
   chrome_render_message_filter_->Send(reply_msg_);
   chrome_render_message_filter_ = NULL;
   reply_msg_ = NULL;
-  internal_->sockets_for_renderer.clear();
+  internal_->socket_for_renderer = nacl::kInvalidHandle;
   return true;
 }
 
@@ -719,12 +711,10 @@ bool NaClProcessHost::StartNaClExecution() {
   CHECK_NE(irt_file, base::kInvalidPlatformFileValue);
 
   const ChildProcessData& data = process_->GetData();
-  for (size_t i = 0; i < internal_->sockets_for_sel_ldr.size(); i++) {
-    if (!ShareHandleToSelLdr(data.handle,
-                             internal_->sockets_for_sel_ldr[i], true,
-                             &params.handles)) {
-      return false;
-    }
+  if (!ShareHandleToSelLdr(data.handle,
+                           internal_->socket_for_sel_ldr, true,
+                           &params.handles)) {
+    return false;
   }
 
   // Send over the IRT file handle.  We don't close our own copy!
@@ -766,7 +756,7 @@ bool NaClProcessHost::StartNaClExecution() {
 
   process_->Send(new NaClProcessMsg_Start(params));
 
-  internal_->sockets_for_sel_ldr.clear();
+  internal_->socket_for_sel_ldr = nacl::kInvalidHandle;
   return true;
 }
 

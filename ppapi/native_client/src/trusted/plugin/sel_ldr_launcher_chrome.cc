@@ -21,13 +21,10 @@ bool SelLdrLauncherChrome::Start(PP_Instance instance,
   if (!launch_nacl_process)
     return false;
   // send a synchronous message to the browser process
-  // TODO(sehr): This is asserted to be one.  Remove this parameter.
-  static const int kNumberOfChannelsToBeCreated = 1;
   if (launch_nacl_process(instance,
                           url,
                           PP_FromBool(uses_ppapi),
                           PP_FromBool(enable_ppapi_dev),
-                          kNumberOfChannelsToBeCreated,
                           &channel_) != PP_NACL_OK) {
     return false;
   }

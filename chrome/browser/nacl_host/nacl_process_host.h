@@ -59,7 +59,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // Initialize the new NaCl process. Result is returned by sending ipc
   // message reply_msg.
   void Launch(ChromeRenderMessageFilter* chrome_render_message_filter,
-              int socket_count,
               IPC::Message* reply_msg,
               scoped_refptr<ExtensionInfoMap> extension_info_map);
 

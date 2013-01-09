@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Thu Dec 13 13:40:29 2012. */
+/* From private/ppb_nacl_private.idl modified Mon Jan  7 12:49:31 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -62,9 +62,9 @@ typedef enum {
  */
 /* PPB_NaCl_Private */
 struct PPB_NaCl_Private_1_0 {
-  /* Launches NaCl's sel_ldr process.  Returns PP_NACL_OK on success and writes
-   * |socket_count| nacl::Handles to imc_handles. Returns PP_NACL_FAILED on
-   * failure. The |enable_ppapi_dev| parameter controls whether GetInterface
+  /* Launches NaCl's sel_ldr process.  Returns PP_NACL_OK on success and
+   * writes a nacl::Handle to imc_handle. Returns PP_NACL_FAILED on failure.
+   * The |enable_ppapi_dev| parameter controls whether GetInterface
    * returns 'Dev' interfaces to the NaCl plugin.  The |uses_ppapi| flag
    * indicates that the nexe run by sel_ldr will use the PPAPI APIs.
    * This implies that LaunchSelLdr is run from the main thread.  If a nexe
@@ -74,8 +74,7 @@ struct PPB_NaCl_Private_1_0 {
                                 const char* alleged_url,
                                 PP_Bool uses_ppapi,
                                 PP_Bool enable_ppapi_dev,
-                                int32_t socket_count,
-                                void* imc_handles);
+                                void* imc_handle);
   /* This function starts the IPC proxy so the nexe can communicate with the
    * browser. Returns PP_NACL_OK on success, otherwise a result code indicating
    * the failure. PP_NACL_FAILED is returned if LaunchSelLdr wasn't called with

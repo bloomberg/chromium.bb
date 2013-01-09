@@ -81,7 +81,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnLaunchNaCl(const GURL& manifest_url,
                     int render_view_id,
                     uint32 permission_bits,
-                    int socket_count,
                     IPC::Message* reply_msg);
   void OnGetReadonlyPnaclFd(const std::string& filename,
                             IPC::Message* reply_msg);
