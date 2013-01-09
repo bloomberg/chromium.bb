@@ -26,6 +26,7 @@ class TaskRunner;
 namespace net {
 
 class ServerBoundCertServiceJob;
+class ServerBoundCertServiceRequest;
 class ServerBoundCertServiceWorker;
 
 // A class for creating and fetching server bound certs.
@@ -34,8 +35,30 @@ class ServerBoundCertServiceWorker;
 class NET_EXPORT ServerBoundCertService
     : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
-  // Opaque type used to cancel a request.
-  typedef void* RequestHandle;
+  class NET_EXPORT RequestHandle {
+   public:
+    RequestHandle();
+    ~RequestHandle();
+
+    // Cancel the request.  Does nothing if the request finished or was already
+    // cancelled.
+    void Cancel();
+
+    bool is_active() const { return request_ != NULL; }
+
+   private:
+    friend class ServerBoundCertService;
+
+    void RequestStarted(ServerBoundCertService* service,
+                        ServerBoundCertServiceRequest* request,
+                        const CompletionCallback& callback);
+
+    void OnRequestComplete(int result);
+
+    ServerBoundCertService* service_;
+    ServerBoundCertServiceRequest* request_;
+    CompletionCallback callback_;
+  };
 
   // Password used on EncryptedPrivateKeyInfo data stored in EC private_key
   // values.  (This is not used to provide any security, but to workaround NSS
@@ -78,8 +101,9 @@ class NET_EXPORT ServerBoundCertService
   // could not be completed immediately, in which case the result code will
   // be passed to the callback when available.
   //
-  // |*out_req| will be filled with a handle to the async request. This handle
-  // is not valid after the request has completed.
+  // |*out_req| will be initialized with a handle to the async request. This
+  // RequestHandle object must be cancelled or destroyed before the
+  // ServerBoundCertService is destroyed.
   int GetDomainBoundCert(
       const std::string& origin,
       const std::vector<uint8>& requested_types,
@@ -88,11 +112,6 @@ class NET_EXPORT ServerBoundCertService
       std::string* cert,
       const CompletionCallback& callback,
       RequestHandle* out_req);
-
-  // Cancels the specified request. |req| is the handle returned by
-  // GetDomainBoundCert(). After a request is canceled, its completion
-  // callback will not be called.
-  void CancelRequest(RequestHandle req);
 
   // Returns the backing ServerBoundCertStore.
   ServerBoundCertStore* GetCertStore();
@@ -104,6 +123,11 @@ class NET_EXPORT ServerBoundCertService
   uint64 inflight_joins() const { return inflight_joins_; }
 
  private:
+  // Cancels the specified request. |req| is the handle stored by
+  // GetDomainBoundCert(). After a request is canceled, its completion
+  // callback will not be called.
+  void CancelRequest(ServerBoundCertServiceRequest* req);
+
   void HandleResult(const std::string& server_identifier,
                     int error,
                     scoped_ptr<ServerBoundCertStore::ServerBoundCert> cert);

@@ -896,7 +896,6 @@ SSLClientSocketNSS::Core::Core(
       transport_(transport),
       weak_net_log_factory_(net_log),
       server_bound_cert_service_(server_bound_cert_service),
-      domain_bound_cert_request_handle_(NULL),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
       nss_fd_(NULL),
@@ -1081,11 +1080,7 @@ void SSLClientSocketNSS::Core::Detach() {
 
   network_handshake_state_.Reset();
 
-  if (domain_bound_cert_request_handle_ != NULL) {
-    server_bound_cert_service_->CancelRequest(
-        domain_bound_cert_request_handle_);
-    domain_bound_cert_request_handle_ = NULL;
-  }
+  domain_bound_cert_request_handle_.Cancel();
 }
 
 int SSLClientSocketNSS::Core::Read(IOBuffer* buf, int buf_len,
@@ -2656,7 +2651,6 @@ void SSLClientSocketNSS::Core::OnGetDomainBoundCertComplete(int result) {
   DVLOG(1) << __FUNCTION__ << " " << result;
   DCHECK(OnNetworkTaskRunner());
 
-  domain_bound_cert_request_handle_ = NULL;
   OnHandshakeIOComplete(result);
 }
 

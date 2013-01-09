@@ -349,6 +349,38 @@ class ServerBoundCertServiceJob {
 // static
 const char ServerBoundCertService::kEPKIPassword[] = "";
 
+ServerBoundCertService::RequestHandle::RequestHandle()
+    : service_(NULL),
+      request_(NULL) {}
+
+ServerBoundCertService::RequestHandle::~RequestHandle() {
+  Cancel();
+}
+
+void ServerBoundCertService::RequestHandle::Cancel() {
+  if (request_) {
+    service_->CancelRequest(request_);
+    request_ = NULL;
+    callback_.Reset();
+  }
+}
+
+void ServerBoundCertService::RequestHandle::RequestStarted(
+    ServerBoundCertService* service,
+    ServerBoundCertServiceRequest* request,
+    const CompletionCallback& callback) {
+  DCHECK(request_ == NULL);
+  service_ = service;
+  request_ = request;
+  callback_ = callback;
+}
+
+void ServerBoundCertService::RequestHandle::OnRequestComplete(int result) {
+  request_ = NULL;
+  callback_.Run(result);
+  callback_.Reset();
+}
+
 ServerBoundCertService::ServerBoundCertService(
     ServerBoundCertStore* server_bound_cert_store,
     const scoped_refptr<base::TaskRunner>& task_runner)
@@ -390,8 +422,6 @@ int ServerBoundCertService::GetDomainBoundCert(
            << (requested_types.size() > 1 ? "..." : "");
   DCHECK(CalledOnValidThread());
   base::TimeTicks request_start = base::TimeTicks::Now();
-
-  *out_req = NULL;
 
   if (callback.is_null() || !private_key || !cert || origin.empty() ||
       requested_types.empty()) {
@@ -491,9 +521,11 @@ int ServerBoundCertService::GetDomainBoundCert(
   }
 
   ServerBoundCertServiceRequest* request = new ServerBoundCertServiceRequest(
-      request_start, callback, type, private_key, cert);
+      request_start,
+      base::Bind(&RequestHandle::OnRequestComplete, base::Unretained(out_req)),
+      type, private_key, cert);
   job->AddRequest(request);
-  *out_req = request;
+  out_req->RequestStarted(this, request, callback);
   return ERR_IO_PENDING;
 }
 
@@ -501,11 +533,9 @@ ServerBoundCertStore* ServerBoundCertService::GetCertStore() {
   return server_bound_cert_store_.get();
 }
 
-void ServerBoundCertService::CancelRequest(RequestHandle req) {
+void ServerBoundCertService::CancelRequest(ServerBoundCertServiceRequest* req) {
   DCHECK(CalledOnValidThread());
-  ServerBoundCertServiceRequest* request =
-      reinterpret_cast<ServerBoundCertServiceRequest*>(req);
-  request->Cancel();
+  req->Cancel();
 }
 
 // HandleResult is called by ServerBoundCertServiceWorker on the origin message

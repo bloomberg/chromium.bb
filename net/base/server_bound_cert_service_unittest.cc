@@ -82,13 +82,14 @@ TEST_F(ServerBoundCertServiceTest, CacheHit) {
       origin, types, &type1, &private_key_info1, &der_cert1,
       callback.callback(), &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle != NULL);
+  EXPECT_TRUE(request_handle.is_active());
   error = callback.WaitForResult();
   EXPECT_EQ(OK, error);
   EXPECT_EQ(1, service_->cert_count());
   EXPECT_EQ(CLIENT_CERT_ECDSA_SIGN, type1);
   EXPECT_FALSE(private_key_info1.empty());
   EXPECT_FALSE(der_cert1.empty());
+  EXPECT_FALSE(request_handle.is_active());
 
   // Synchronous completion.
   SSLClientCertType type2;
@@ -96,7 +97,7 @@ TEST_F(ServerBoundCertServiceTest, CacheHit) {
   error = service_->GetDomainBoundCert(
       origin, types, &type2, &private_key_info2, &der_cert2,
       callback.callback(), &request_handle);
-  EXPECT_TRUE(request_handle == NULL);
+  EXPECT_FALSE(request_handle.is_active());
   EXPECT_EQ(OK, error);
   EXPECT_EQ(1, service_->cert_count());
   EXPECT_EQ(CLIENT_CERT_ECDSA_SIGN, type2);
@@ -123,7 +124,7 @@ TEST_F(ServerBoundCertServiceTest, UnsupportedTypes) {
       origin, types, &type1, &private_key_info1, &der_cert1,
       callback.callback(), &request_handle);
   EXPECT_EQ(ERR_INVALID_ARGUMENT, error);
-  EXPECT_TRUE(request_handle == NULL);
+  EXPECT_FALSE(request_handle.is_active());
 
   // No supported types in requested_types.
   types.push_back(CLIENT_CERT_RSA_SIGN);
@@ -133,7 +134,7 @@ TEST_F(ServerBoundCertServiceTest, UnsupportedTypes) {
       origin, types, &type1, &private_key_info1, &der_cert1,
       callback.callback(), &request_handle);
   EXPECT_EQ(ERR_CLIENT_AUTH_CERT_TYPE_UNSUPPORTED, error);
-  EXPECT_TRUE(request_handle == NULL);
+  EXPECT_FALSE(request_handle.is_active());
 
   // Supported types after unsupported ones in requested_types.
   types.push_back(CLIENT_CERT_ECDSA_SIGN);
@@ -143,7 +144,7 @@ TEST_F(ServerBoundCertServiceTest, UnsupportedTypes) {
       origin, types, &type1, &private_key_info1, &der_cert1,
       callback.callback(), &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle != NULL);
+  EXPECT_TRUE(request_handle.is_active());
   error = callback.WaitForResult();
   EXPECT_EQ(OK, error);
   EXPECT_EQ(1, service_->cert_count());
@@ -161,7 +162,7 @@ TEST_F(ServerBoundCertServiceTest, UnsupportedTypes) {
       origin, types, &type2, &private_key_info2, &der_cert2,
       callback.callback(), &request_handle);
   EXPECT_EQ(ERR_INVALID_ARGUMENT, error);
-  EXPECT_TRUE(request_handle == NULL);
+  EXPECT_FALSE(request_handle.is_active());
 
   // No supported types in requested_types.
   types.push_back(CLIENT_CERT_RSA_SIGN);
@@ -171,14 +172,14 @@ TEST_F(ServerBoundCertServiceTest, UnsupportedTypes) {
       origin, types, &type2, &private_key_info2, &der_cert2,
       callback.callback(), &request_handle);
   EXPECT_EQ(ERR_CLIENT_AUTH_CERT_TYPE_UNSUPPORTED, error);
-  EXPECT_TRUE(request_handle == NULL);
+  EXPECT_FALSE(request_handle.is_active());
 
   // If we request EC, the cert we created before should still be there.
   types.push_back(CLIENT_CERT_ECDSA_SIGN);
   error = service_->GetDomainBoundCert(
       origin, types, &type2, &private_key_info2, &der_cert2,
       callback.callback(), &request_handle);
-  EXPECT_TRUE(request_handle == NULL);
+  EXPECT_FALSE(request_handle.is_active());
   EXPECT_EQ(OK, error);
   EXPECT_EQ(1, service_->cert_count());
   EXPECT_EQ(CLIENT_CERT_ECDSA_SIGN, type2);
@@ -201,7 +202,7 @@ TEST_F(ServerBoundCertServiceTest, StoreCerts) {
       origin1, types, &type1, &private_key_info1, &der_cert1,
       callback.callback(), &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle != NULL);
+  EXPECT_TRUE(request_handle.is_active());
   error = callback.WaitForResult();
   EXPECT_EQ(OK, error);
   EXPECT_EQ(1, service_->cert_count());
@@ -213,7 +214,7 @@ TEST_F(ServerBoundCertServiceTest, StoreCerts) {
       origin2, types, &type2, &private_key_info2, &der_cert2,
       callback.callback(), &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle != NULL);
+  EXPECT_TRUE(request_handle.is_active());
   error = callback.WaitForResult();
   EXPECT_EQ(OK, error);
   EXPECT_EQ(2, service_->cert_count());
@@ -225,7 +226,7 @@ TEST_F(ServerBoundCertServiceTest, StoreCerts) {
       origin3, types, &type3, &private_key_info3, &der_cert3,
       callback.callback(), &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle != NULL);
+  EXPECT_TRUE(request_handle.is_active());
   error = callback.WaitForResult();
   EXPECT_EQ(OK, error);
   EXPECT_EQ(3, service_->cert_count());
@@ -262,7 +263,7 @@ TEST_F(ServerBoundCertServiceTest, InflightJoin) {
       origin, types, &type1, &private_key_info1, &der_cert1,
       callback1.callback(), &request_handle1);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle1 != NULL);
+  EXPECT_TRUE(request_handle1.is_active());
   // If we request RSA and EC in the 2nd request, should still join with the
   // original request.
   types.insert(types.begin(), CLIENT_CERT_RSA_SIGN);
@@ -270,7 +271,7 @@ TEST_F(ServerBoundCertServiceTest, InflightJoin) {
       origin, types, &type2, &private_key_info2, &der_cert2,
       callback2.callback(), &request_handle2);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle2 != NULL);
+  EXPECT_TRUE(request_handle2.is_active());
 
   error = callback1.WaitForResult();
   EXPECT_EQ(OK, error);
@@ -298,7 +299,7 @@ TEST_F(ServerBoundCertServiceTest, ExtractValuesFromBytesEC) {
       origin, types, &type, &private_key_info, &der_cert, callback.callback(),
       &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle != NULL);
+  EXPECT_TRUE(request_handle.is_active());
   error = callback.WaitForResult();
   EXPECT_EQ(OK, error);
 
@@ -339,8 +340,42 @@ TEST_F(ServerBoundCertServiceTest, CancelRequest) {
                                       base::Bind(&FailTest),
                                       &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle != NULL);
-  service_->CancelRequest(request_handle);
+  EXPECT_TRUE(request_handle.is_active());
+  request_handle.Cancel();
+  EXPECT_FALSE(request_handle.is_active());
+
+  // Wait for generation to finish.
+  sequenced_worker_pool_->FlushForTesting();
+  // Wait for reply from ServerBoundCertServiceWorker to be posted back to the
+  // ServerBoundCertService.
+  MessageLoop::current()->RunUntilIdle();
+
+  // Even though the original request was cancelled, the service will still
+  // store the result, it just doesn't call the callback.
+  EXPECT_EQ(1, service_->cert_count());
+}
+
+// Tests that destructing the RequestHandle cancels the request.
+TEST_F(ServerBoundCertServiceTest, CancelRequestByHandleDestruction) {
+  std::string origin("https://encrypted.google.com:443");
+  SSLClientCertType type;
+  std::string private_key_info, der_cert;
+  int error;
+  std::vector<uint8> types;
+  types.push_back(CLIENT_CERT_ECDSA_SIGN);
+  {
+    ServerBoundCertService::RequestHandle request_handle;
+
+    error = service_->GetDomainBoundCert(origin,
+                                         types,
+                                         &type,
+                                         &private_key_info,
+                                         &der_cert,
+                                         base::Bind(&FailTest),
+                                         &request_handle);
+    EXPECT_EQ(ERR_IO_PENDING, error);
+    EXPECT_TRUE(request_handle.is_active());
+  }
 
   // Wait for generation to finish.
   sequenced_worker_pool_->FlushForTesting();
@@ -370,10 +405,10 @@ TEST_F(ServerBoundCertServiceTest, DestructionWithPendingRequest) {
                                       base::Bind(&FailTest),
                                       &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle != NULL);
+  EXPECT_TRUE(request_handle.is_active());
 
   // Cancel request and destroy the ServerBoundCertService.
-  service_->CancelRequest(request_handle);
+  request_handle.Cancel();
   service_.reset();
 
   // Wait for generation to finish.
@@ -391,22 +426,24 @@ TEST_F(ServerBoundCertServiceTest, SimultaneousCreation) {
   int error;
   std::vector<uint8> types;
   types.push_back(CLIENT_CERT_ECDSA_SIGN);
-  ServerBoundCertService::RequestHandle request_handle;
 
   std::string origin1("https://encrypted.google.com:443");
   SSLClientCertType type1;
   std::string private_key_info1, der_cert1;
   TestCompletionCallback callback1;
+  ServerBoundCertService::RequestHandle request_handle1;
 
   std::string origin2("https://foo.com:443");
   SSLClientCertType type2;
   std::string private_key_info2, der_cert2;
   TestCompletionCallback callback2;
+  ServerBoundCertService::RequestHandle request_handle2;
 
   std::string origin3("https://bar.com:443");
   SSLClientCertType type3;
   std::string private_key_info3, der_cert3;
   TestCompletionCallback callback3;
+  ServerBoundCertService::RequestHandle request_handle3;
 
   error = service_->GetDomainBoundCert(origin1,
                                        types,
@@ -414,9 +451,9 @@ TEST_F(ServerBoundCertServiceTest, SimultaneousCreation) {
                                        &private_key_info1,
                                        &der_cert1,
                                        callback1.callback(),
-                                       &request_handle);
+                                       &request_handle1);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle != NULL);
+  EXPECT_TRUE(request_handle1.is_active());
 
   error = service_->GetDomainBoundCert(origin2,
                                        types,
@@ -424,9 +461,9 @@ TEST_F(ServerBoundCertServiceTest, SimultaneousCreation) {
                                        &private_key_info2,
                                        &der_cert2,
                                        callback2.callback(),
-                                       &request_handle);
+                                       &request_handle2);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle != NULL);
+  EXPECT_TRUE(request_handle2.is_active());
 
   error = service_->GetDomainBoundCert(origin3,
                                        types,
@@ -434,9 +471,9 @@ TEST_F(ServerBoundCertServiceTest, SimultaneousCreation) {
                                        &private_key_info3,
                                        &der_cert3,
                                        callback3.callback(),
-                                       &request_handle);
+                                       &request_handle3);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle != NULL);
+  EXPECT_TRUE(request_handle3.is_active());
 
   error = callback1.WaitForResult();
   EXPECT_EQ(OK, error);
@@ -498,7 +535,7 @@ TEST_F(ServerBoundCertServiceTest, Expiration) {
       "https://good", types, &type1, &private_key_info1, &der_cert1,
       callback.callback(), &request_handle);
   EXPECT_EQ(OK, error);
-  EXPECT_TRUE(request_handle == NULL);
+  EXPECT_FALSE(request_handle.is_active());
   EXPECT_EQ(2, service_->cert_count());
   EXPECT_EQ(CLIENT_CERT_ECDSA_SIGN, type1);
   EXPECT_STREQ("a", private_key_info1.c_str());
@@ -511,7 +548,7 @@ TEST_F(ServerBoundCertServiceTest, Expiration) {
       "https://expired", types, &type2, &private_key_info2, &der_cert2,
       callback.callback(), &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle != NULL);
+  EXPECT_TRUE(request_handle.is_active());
   error = callback.WaitForResult();
   EXPECT_EQ(OK, error);
   EXPECT_EQ(2, service_->cert_count());
