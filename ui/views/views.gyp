@@ -587,6 +587,8 @@
         'test/desktop_test_views_delegate.h',
         'test/test_views_delegate.cc',
         'test/test_views_delegate.h',
+        'test/test_widget_observer.cc',
+        'test/test_widget_observer.h',
         'test/views_test_base.cc',
         'test/views_test_base.h',
       ],

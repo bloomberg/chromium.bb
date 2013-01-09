@@ -4,42 +4,13 @@
 
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
 
 namespace {
-
-// A Widget observer class used in the tests below to observe bubbles closing.
-class TestWidgetObserver : public WidgetObserver {
- public:
-  explicit TestWidgetObserver(Widget* widget);
-  virtual ~TestWidgetObserver();
-
-  // WidgetObserver overrides:
-  virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
-
-  bool widget_closed() const { return widget_ == NULL; }
-
- private:
-  Widget* widget_;
-};
-
-TestWidgetObserver::TestWidgetObserver(Widget* widget)
-    : widget_(widget) {
-  widget_->AddObserver(this);
-}
-
-TestWidgetObserver::~TestWidgetObserver() {
-  if (widget_)
-    widget_->RemoveObserver(this);
-}
-
-void TestWidgetObserver::OnWidgetClosing(Widget* widget) {
-  DCHECK_EQ(widget_, widget);
-  widget_ = NULL;
-}
 
 class TestBubbleDelegateView : public BubbleDelegateView {
  public:
@@ -85,7 +56,7 @@ TEST_F(BubbleDelegateTest, CreateDelegate) {
       BubbleDelegateView::CreateBubble(bubble_delegate));
   EXPECT_EQ(bubble_delegate, bubble_widget->widget_delegate());
   EXPECT_EQ(bubble_widget, bubble_delegate->GetWidget());
-  TestWidgetObserver bubble_observer(bubble_widget);
+  test::TestWidgetObserver bubble_observer(bubble_widget);
   EXPECT_FALSE(bubble_observer.widget_closed());
 
   BubbleBorder* border =
@@ -114,7 +85,7 @@ TEST_F(BubbleDelegateTest, CloseAnchorWidget) {
   EXPECT_EQ(bubble_delegate, bubble_widget->widget_delegate());
   EXPECT_EQ(bubble_widget, bubble_delegate->GetWidget());
   EXPECT_EQ(anchor_widget.get(), bubble_delegate->anchor_widget());
-  TestWidgetObserver bubble_observer(bubble_widget);
+  test::TestWidgetObserver bubble_observer(bubble_widget);
   EXPECT_FALSE(bubble_observer.widget_closed());
 
   bubble_widget->Show();
@@ -159,7 +130,7 @@ TEST_F(BubbleDelegateTest, ResetAnchorWidget) {
   EXPECT_EQ(bubble_delegate, bubble_widget->widget_delegate());
   EXPECT_EQ(bubble_widget, bubble_delegate->GetWidget());
   EXPECT_EQ(anchor_widget.get(), bubble_delegate->anchor_widget());
-  TestWidgetObserver bubble_observer(bubble_widget);
+  test::TestWidgetObserver bubble_observer(bubble_widget);
   EXPECT_FALSE(bubble_observer.widget_closed());
 
   // Showing and hiding the bubble widget should have no effect on its anchor.
