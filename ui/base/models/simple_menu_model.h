@@ -142,13 +142,6 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
   virtual MenuModelDelegate* GetMenuModelDelegate() const OVERRIDE;
 
  protected:
-  // Some variants of this model (SystemMenuModel) relies on items to be
-  // inserted backwards. This is counter-intuitive for the API, so rather than
-  // forcing customers to insert things backwards, we return the indices
-  // backwards instead. That's what this method is for. By default, it just
-  // returns what it's passed.
-  virtual int FlipIndex(int index) const;
-
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
   Delegate* delegate() { return delegate_; }
 
@@ -157,7 +150,7 @@ class UI_EXPORT SimpleMenuModel : public MenuModel {
 
   typedef std::vector<Item> ItemVector;
 
-  // Caller needs to call FlipIndex() if necessary. Returns |index|.
+  // Returns |index|.
   int ValidateItemIndex(int index) const;
 
   // Functions for inserting items into |items_|.

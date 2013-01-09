@@ -374,6 +374,7 @@ void BrowserFrameWin::InitSystemContextMenu() {
     BuildSystemMenuForBrowserWindow();
   else
     BuildSystemMenuForAppOrPopupWindow();
+  AddFrameToggleItems();
   system_menu_.reset(
       new views::NativeMenuWin(system_menu_contents_.get(), GetNativeWindow()));
   system_menu_->Rebuild();
@@ -466,41 +467,25 @@ void BrowserFrameWin::UpdateDWMFrame() {
 }
 
 void BrowserFrameWin::BuildSystemMenuForBrowserWindow() {
-  system_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
-
+  system_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
+  system_menu_contents_->AddItemWithStringId(IDC_RESTORE_TAB, IDS_RESTORE_TAB);
   if (chrome::CanOpenTaskManager()) {
+    system_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
     system_menu_contents_->AddItemWithStringId(IDC_TASK_MANAGER,
                                                IDS_TASK_MANAGER);
-    system_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
   }
-  system_menu_contents_->AddItemWithStringId(IDC_RESTORE_TAB, IDS_RESTORE_TAB);
-  system_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
-  AddFrameToggleItems();
+  system_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
   // If it's a regular browser window with tabs, we don't add any more items,
   // since it already has menus (Page, Chrome).
 }
 
 void BrowserFrameWin::BuildSystemMenuForAppOrPopupWindow() {
   Browser* browser = browser_view()->browser();
-  if (browser->is_app() && chrome::CanOpenTaskManager()) {
-    system_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
-    system_menu_contents_->AddItemWithStringId(IDC_TASK_MANAGER,
-                                               IDS_TASK_MANAGER);
-  }
-  system_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
-  encoding_menu_contents_.reset(new EncodingMenuModel(browser));
-  system_menu_contents_->AddSubMenuWithStringId(IDC_ENCODING_MENU,
-                                                IDS_ENCODING_MENU,
-                                                encoding_menu_contents_.get());
-  zoom_menu_contents_.reset(new ZoomMenuModel(system_menu_delegate_.get()));
-  system_menu_contents_->AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_ZOOM_MENU,
-                                                zoom_menu_contents_.get());
-  system_menu_contents_->AddItemWithStringId(IDC_PRINT, IDS_PRINT);
-  system_menu_contents_->AddItemWithStringId(IDC_FIND, IDS_FIND);
-  system_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
-  system_menu_contents_->AddItemWithStringId(IDC_PASTE, IDS_PASTE);
-  system_menu_contents_->AddItemWithStringId(IDC_COPY, IDS_COPY);
-  system_menu_contents_->AddItemWithStringId(IDC_CUT, IDS_CUT);
+  system_menu_contents_->AddItemWithStringId(IDC_BACK,
+                                             IDS_CONTENT_CONTEXT_BACK);
+  system_menu_contents_->AddItemWithStringId(IDC_FORWARD,
+                                             IDS_CONTENT_CONTEXT_FORWARD);
+  system_menu_contents_->AddItemWithStringId(IDC_RELOAD, IDS_APP_MENU_RELOAD);
   system_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
   if (browser->is_app()) {
     system_menu_contents_->AddItemWithStringId(IDC_NEW_TAB,
@@ -510,20 +495,33 @@ void BrowserFrameWin::BuildSystemMenuForAppOrPopupWindow() {
                                                IDS_SHOW_AS_TAB);
   }
   system_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
-  system_menu_contents_->AddItemWithStringId(IDC_RELOAD, IDS_APP_MENU_RELOAD);
-  system_menu_contents_->AddItemWithStringId(IDC_FORWARD,
-                                             IDS_CONTENT_CONTEXT_FORWARD);
-  system_menu_contents_->AddItemWithStringId(IDC_BACK,
-                                             IDS_CONTENT_CONTEXT_BACK);
-  AddFrameToggleItems();
+  system_menu_contents_->AddItemWithStringId(IDC_CUT, IDS_CUT);
+  system_menu_contents_->AddItemWithStringId(IDC_COPY, IDS_COPY);
+  system_menu_contents_->AddItemWithStringId(IDC_PASTE, IDS_PASTE);
+  system_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
+  system_menu_contents_->AddItemWithStringId(IDC_FIND, IDS_FIND);
+  system_menu_contents_->AddItemWithStringId(IDC_PRINT, IDS_PRINT);
+  zoom_menu_contents_.reset(new ZoomMenuModel(system_menu_delegate_.get()));
+  system_menu_contents_->AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_ZOOM_MENU,
+                                                zoom_menu_contents_.get());
+  encoding_menu_contents_.reset(new EncodingMenuModel(browser));
+  system_menu_contents_->AddSubMenuWithStringId(IDC_ENCODING_MENU,
+                                                IDS_ENCODING_MENU,
+                                                encoding_menu_contents_.get());
+  system_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
+  if (browser->is_app() && chrome::CanOpenTaskManager()) {
+    system_menu_contents_->AddItemWithStringId(IDC_TASK_MANAGER,
+                                               IDS_TASK_MANAGER);
+    system_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
+  }
 }
 
 void BrowserFrameWin::AddFrameToggleItems() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDebugEnableFrameToggle)) {
-    system_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
     system_menu_contents_->AddItem(IDC_DEBUG_FRAME_TOGGLE,
                                    L"Toggle Frame Type");
+    system_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
   }
 }
 

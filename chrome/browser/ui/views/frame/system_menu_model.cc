@@ -19,7 +19,3 @@ int SystemMenuModel::GetFirstItemIndex(gfx::NativeMenu native_menu) const {
   // We allow insertions before last item (Close).
   return std::max(0, GetMenuItemCount(native_menu) - 1);
 }
-
-int SystemMenuModel::FlipIndex(int index) const {
-  return GetItemCount() - index - 1;
-}

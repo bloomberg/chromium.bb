@@ -50,6 +50,7 @@ class UI_EXPORT MenuModel {
   // IMPORTANT: If the model implementation returns something _other_ than 0
   //            here, it must offset the values for |index| it passes to the
   //            methods below by this number - this is NOT done automatically!
+  // TODO(sky): remove this from MenuModel. It's confusing.
   virtual int GetFirstItemIndex(gfx::NativeMenu native_menu) const;
 
   // Returns the number of items in the menu.

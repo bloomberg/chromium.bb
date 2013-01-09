@@ -19,10 +19,6 @@ class SystemMenuModel : public ui::SimpleMenuModel {
   // Overridden from ui::MenuModel:
   virtual int GetFirstItemIndex(gfx::NativeMenu native_menu) const OVERRIDE;
 
- protected:
-  // Overridden from ui::SimpleMenuModel:
-  virtual int FlipIndex(int index) const OVERRIDE;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemMenuModel);
 };
