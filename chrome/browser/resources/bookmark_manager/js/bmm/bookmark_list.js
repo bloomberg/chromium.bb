@@ -165,6 +165,7 @@ cr.define('bmm', function() {
       }
 
       if (el && el.parentNode == this &&
+          !el.editing &&
           !(el.lastChild instanceof ContextMenuButton)) {
         el.appendChild(new ContextMenuButton);
       }
