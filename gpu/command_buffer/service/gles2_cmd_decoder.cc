@@ -598,6 +598,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   virtual error::ContextLostReason GetContextLostReason() OVERRIDE;
 
  private:
+  friend class ScopedFrameBufferBinder;
   friend class ScopedGLErrorSuppressor;
   friend class ScopedResolvedFrameBufferBinder;
   friend class ScopedTextureUploadTimer;
@@ -623,6 +624,9 @@ class GLES2DecoderImpl : public GLES2Decoder {
   void DeleteQueriesEXTHelper(GLsizei n, const GLuint* client_ids);
   bool GenVertexArraysOESHelper(GLsizei n, const GLuint* client_ids);
   void DeleteVertexArraysOESHelper(GLsizei n, const GLuint* client_ids);
+
+  // Workarounds
+  void OnFboChanged() const;
 
   // TODO(gman): Cache these pointers?
   BufferManager* buffer_manager() {
@@ -1743,6 +1747,7 @@ ScopedFrameBufferBinder::ScopedFrameBufferBinder(GLES2DecoderImpl* decoder,
     : decoder_(decoder) {
   ScopedGLErrorSuppressor suppressor(decoder_);
   glBindFramebufferEXT(GL_FRAMEBUFFER, id);
+  decoder->OnFboChanged();
 }
 
 ScopedFrameBufferBinder::~ScopedFrameBufferBinder() {
@@ -2605,6 +2610,7 @@ void GLES2DecoderImpl::DeleteFramebuffersHelper(
             GL_READ_FRAMEBUFFER_EXT : GL_FRAMEBUFFER;
         glBindFramebufferEXT(target, GetBackbufferServiceId());
       }
+      OnFboChanged();
       RemoveFramebufferInfo(client_ids[ii]);
     }
   }
@@ -2761,6 +2767,7 @@ void GLES2DecoderImpl::RestoreCurrentFramebufferBindings() {
         state_.bound_draw_framebuffer.get(),
         GetBackbufferServiceId());
   }
+  OnFboChanged();
 }
 
 void GLES2DecoderImpl::RestoreCurrentTexture2DBindings() {
@@ -3580,6 +3587,13 @@ void GLES2DecoderImpl::RestoreState() const {
       state_.bound_draw_framebuffer->service_id() :
       GetBackbufferServiceId();
   glBindFramebufferEXT(GL_FRAMEBUFFER, service_id);
+  OnFboChanged();
+}
+
+void GLES2DecoderImpl::OnFboChanged() const {
+  if (workarounds().restore_scissor_on_fbo_change)
+    glScissor(state_.scissor_x, state_.scissor_y,
+              state_.scissor_width, state_.scissor_height);
 }
 
 void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
@@ -3625,6 +3639,7 @@ void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
   }
 
   glBindFramebufferEXT(target, service_id);
+  OnFboChanged();
 }
 
 void GLES2DecoderImpl::DoBindRenderbuffer(GLenum target, GLuint client_id) {

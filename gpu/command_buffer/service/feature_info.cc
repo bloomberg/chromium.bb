@@ -91,6 +91,7 @@ FeatureInfo::Workarounds::Workarounds()
       reverse_point_sprite_coord_origin(false),
       set_texture_filter_before_generating_mipmap(false),
       use_current_program_after_successful_link(false),
+      restore_scissor_on_fbo_change(false),
       max_texture_size(0),
       max_cube_map_texture_size(0) {
 }
@@ -596,6 +597,10 @@ void FeatureInfo::AddFeatures() {
 
     if (is_nvidia) {
       workarounds_.use_current_program_after_successful_link = true;
+    }
+
+    if (is_qualcomm) {
+      workarounds_.restore_scissor_on_fbo_change = true;
     }
 
 #if defined(OS_MACOSX)
