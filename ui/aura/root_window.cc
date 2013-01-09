@@ -830,7 +830,6 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
     // If the initial touch is outside the root window, target the root.
     target = this;
     ProcessEvent(target ? target : NULL, event);
-    CHECK_EQ(ui::ER_UNHANDLED, event->result());
     result = event->result();
   } else {
     // We only come here when the first contact was within the root window.
