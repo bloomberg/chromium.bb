@@ -769,6 +769,7 @@
         'browser/google_apis/gdata_wapi_url_generator_unittest.cc',
         'browser/google_apis/fake_drive_service.cc',
         'browser/google_apis/fake_drive_service.h',
+        'browser/google_apis/fake_drive_service_unittest.cc',
         'browser/google_apis/mock_drive_service.cc',
         'browser/google_apis/mock_drive_service.h',
         'browser/google_apis/operation_registry_unittest.cc',
@@ -2133,6 +2134,7 @@
             'browser/sessions/session_backend_unittest.cc',
 
             # Test files cannot be opened on Android.
+            'browser/google_apis/fake_drive_service_unittest.cc',
             'browser/google_apis/gdata_wapi_operations_unittest.cc',
             'browser/google_apis/gdata_wapi_parser_unittest.cc',
 

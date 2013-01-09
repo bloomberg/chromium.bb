@@ -5,6 +5,9 @@
 #include "chrome/browser/google_apis/fake_drive_service.h"
 
 #include "base/logging.h"
+#include "base/message_loop.h"
+#include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/test_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -17,6 +20,32 @@ FakeDriveService::FakeDriveService() {
 
 FakeDriveService::~FakeDriveService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+bool FakeDriveService::LoadResourceListForWapi(
+    const std::string& relative_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  scoped_ptr<Value> raw_value = test_util::LoadJSONFile(relative_path);
+  base::DictionaryValue* as_dict = NULL;
+  base::Value* feed = NULL;
+  base::DictionaryValue* feed_as_dict = NULL;
+
+  // Extract the "feed" from the raw value and take the ownership.
+  // Note that Remove() transfers the ownership to |feed|.
+  if (raw_value->GetAsDictionary(&as_dict) &&
+      as_dict->Remove("feed", &feed) &&
+      feed->GetAsDictionary(&feed_as_dict)) {
+    resource_list_value_.reset(feed_as_dict);
+  }
+
+  return resource_list_value_;
+}
+
+bool FakeDriveService::LoadAccountMetadataForWapi(
+    const std::string& relative_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  account_metadata_value_ = test_util::LoadJSONFile(relative_path);
+  return account_metadata_value_;
 }
 
 void FakeDriveService::Initialize(Profile* profile) {
@@ -68,6 +97,14 @@ void FakeDriveService::GetResourceList(
     const GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  scoped_ptr<ResourceList> resource_list =
+      ResourceList::CreateFrom(*resource_list_value_);
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback,
+                 HTTP_SUCCESS,
+                 base::Passed(&resource_list)));
 }
 
 void FakeDriveService::GetResourceEntry(
@@ -75,12 +112,48 @@ void FakeDriveService::GetResourceEntry(
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  base::DictionaryValue* resource_list_dict = NULL;
+  base::ListValue* entries = NULL;
+  // Go through entries and return the one that matches |resource_id|.
+  if (resource_list_value_->GetAsDictionary(&resource_list_dict) &&
+      resource_list_dict->GetList("entry", &entries)) {
+    for (size_t i = 0; i < entries->GetSize(); ++i) {
+      base::DictionaryValue* entry = NULL;
+      base::DictionaryValue* resource_id_dict = NULL;
+      std::string current_resource_id;
+      if (entries->GetDictionary(i, &entry) &&
+          entry->GetDictionary("gd$resourceId", &resource_id_dict) &&
+          resource_id_dict->GetString("$t", &current_resource_id) &&
+          resource_id == current_resource_id) {
+        scoped_ptr<ResourceEntry> resource_entry =
+            ResourceEntry::CreateFrom(*entry);
+        MessageLoop::current()->PostTask(
+            FROM_HERE,
+            base::Bind(callback, HTTP_SUCCESS, base::Passed(&resource_entry)));
+        return;
+      }
+    }
+  }
+
+  scoped_ptr<ResourceEntry> null;
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, HTTP_NOT_FOUND, base::Passed(&null)));
 }
 
 void FakeDriveService::GetAccountMetadata(
     const GetAccountMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  scoped_ptr<AccountMetadataFeed> account_metadata =
+      AccountMetadataFeed::CreateFrom(*account_metadata_value_);
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback,
+                 HTTP_SUCCESS,
+                 base::Passed(&account_metadata)));
 }
 
 void FakeDriveService::GetApplicationInfo(
@@ -94,6 +167,38 @@ void FakeDriveService::DeleteResource(
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  base::DictionaryValue* resource_list_dict = NULL;
+  base::ListValue* entries = NULL;
+  // Go through entries and remove the one that matches |edit_url|.
+  if (resource_list_value_->GetAsDictionary(&resource_list_dict) &&
+      resource_list_dict->GetList("entry", &entries)) {
+    for (size_t i = 0; i < entries->GetSize(); ++i) {
+      base::DictionaryValue* entry = NULL;
+      base::ListValue* links = NULL;
+      if (entries->GetDictionary(i, &entry) &&
+          entry->GetList("link", &links)) {
+        for (size_t j = 0; j < links->GetSize(); ++j) {
+          base::DictionaryValue* link = NULL;
+          std::string rel;
+          std::string href;
+          if (links->GetDictionary(j, &link) &&
+              link->GetString("rel", &rel) &&
+              link->GetString("href", &href) &&
+              rel == "edit" &&
+              GURL(href) == edit_url) {
+            entries->Remove(i, NULL);
+            MessageLoop::current()->PostTask(
+                FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
+            return;
+          }
+        }
+      }
+    }
+  }
+
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
 }
 
 void FakeDriveService::DownloadHostedDocument(

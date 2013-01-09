@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_GOOGLE_APIS_FAKE_DRIVE_SERVICE_H_
 #define CHROME_BROWSER_GOOGLE_APIS_FAKE_DRIVE_SERVICE_H_
 
+#include "base/values.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 
 namespace google_apis {
@@ -21,6 +22,12 @@ class FakeDriveService : public DriveServiceInterface {
  public:
   FakeDriveService();
   virtual ~FakeDriveService();
+
+  // Loads the resource list for WAPI. Returns true on success.
+  bool LoadResourceListForWapi(const std::string& relative_path);
+
+  // Loads the account metadata for WAPI. Returns true on success.
+  bool LoadAccountMetadataForWapi(const std::string& relative_path);
 
   // DriveServiceInterface Overrides
   virtual void Initialize(Profile* profile) OVERRIDE;
@@ -85,6 +92,11 @@ class FakeDriveService : public DriveServiceInterface {
   virtual void AuthorizeApp(const GURL& edit_url,
                             const std::string& app_id,
                             const AuthorizeAppCallback& callback) OVERRIDE;
+
+ private:
+  scoped_ptr<base::Value> resource_list_value_;
+  scoped_ptr<base::Value> account_metadata_value_;
+  DISALLOW_COPY_AND_ASSIGN(FakeDriveService);
 };
 
 }  // namespace google_apis
