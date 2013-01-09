@@ -230,14 +230,24 @@ void CreateOrUpdateDesktopShortcutsForProfile(
 
   ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
   product.AddDefaultShortcutProperties(chrome_exe, &properties);
-  const FilePath shortcut_icon =
-      CreateChromeDesktopShortcutIconForProfile(profile_path, avatar_image);
-  if (!shortcut_icon.empty())
-    properties.set_icon(shortcut_icon, 0);
 
   const string16 command_line =
       profiles::internal::CreateProfileShortcutFlags(profile_path);
-  properties.set_arguments(command_line);
+
+  // Only set the profile-specific properties when |profile_name| is non empty.
+  // If it is empty, it means the shortcut being created should be a regular,
+  // non-profile Chrome shortcut.
+  if (!profile_name.empty()) {
+    const FilePath shortcut_icon =
+        CreateChromeDesktopShortcutIconForProfile(profile_path, avatar_image);
+    if (!shortcut_icon.empty())
+      properties.set_icon(shortcut_icon, 0);
+    properties.set_arguments(command_line);
+  } else {
+    // Set the arguments explicitly to the empty string to ensure that
+    // |ShellUtil::CreateOrUpdateShortcut| updates that part of the shortcut.
+    properties.set_arguments(string16());
+  }
 
   ShellUtil::ShortcutOperation operation =
       ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING;
@@ -263,10 +273,30 @@ void CreateOrUpdateDesktopShortcutsForProfile(
   }
 }
 
+// Returns true if any desktop shortcuts exist with target |chrome_exe|,
+// regardless of their command line arguments.
+bool ChromeDesktopShortcutsExist(const FilePath& chrome_exe) {
+  FilePath shortcuts_directory;
+  if (!GetDesktopShortcutsDirectory(&shortcuts_directory))
+    return false;
+
+  file_util::FileEnumerator enumerator(shortcuts_directory, false,
+      file_util::FileEnumerator::FILES);
+  for (FilePath path = enumerator.Next(); !path.empty();
+       path = enumerator.Next()) {
+    if (IsChromeShortcut(path, chrome_exe, NULL))
+      return true;
+  }
+
+  return false;
+}
+
 // Deletes all desktop shortcuts for the specified profile and also removes the
-// corresponding icon file. Must be called on the FILE thread.
+// corresponding icon file. If |ensure_shortcuts_remain| is true, then a regular
+// non-profile shortcut will be created if this function would otherwise delete
+// the last Chrome desktop shortcut(s). Must be called on the FILE thread.
 void DeleteDesktopShortcutsAndIconFile(const FilePath& profile_path,
-                                       const FilePath& icon_path) {
+                                       bool ensure_shortcuts_remain) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   FilePath chrome_exe;
@@ -290,7 +320,30 @@ void DeleteDesktopShortcutsAndIconFile(const FilePath& profile_path,
                               &shortcut_name);
   }
 
+  const FilePath icon_path =
+      profile_path.AppendASCII(profiles::internal::kProfileIconFileName);
   file_util::Delete(icon_path, false);
+
+  // If |ensure_shortcuts_remain| is true and deleting this profile caused the
+  // last shortcuts to be removed, re-create a regular non-profile shortcut.
+  const bool had_shortcuts = !shortcuts.empty();
+  if (ensure_shortcuts_remain && had_shortcuts &&
+      !ChromeDesktopShortcutsExist(chrome_exe)) {
+    BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
+    // Ensure that the distribution supports creating shortcuts. If it doesn't,
+    // the following code may result in NOTREACHED() being hit.
+    DCHECK(distribution->CanCreateDesktopShortcuts());
+    installer::Product product(distribution);
+
+    ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
+    product.AddDefaultShortcutProperties(chrome_exe, &properties);
+    properties.set_shortcut_name(
+        profiles::internal::GetShortcutFilenameForProfile(string16(),
+                                                          distribution));
+    ShellUtil::CreateOrUpdateShortcut(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
+                                      distribution, properties,
+                                      ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS);
+  }
 }
 
 // Replaces any reserved characters with spaces, and trims the resulting string
@@ -392,17 +445,17 @@ void ProfileShortcutManagerWin::OnProfileWasRemoved(
   const ProfileInfoCache& cache = profile_manager_->GetProfileInfoCache();
   // If there is only one profile remaining, remove the badging information
   // from an existing shortcut.
-  if (cache.GetNumberOfProfiles() == 1) {
+  const bool deleting_down_to_last_profile = (cache.GetNumberOfProfiles() == 1);
+  if (deleting_down_to_last_profile) {
     CreateOrUpdateShortcutsForProfileAtPath(cache.GetPathOfProfileAtIndex(0),
                                             UPDATE_EXISTING_ONLY,
                                             IGNORE_NON_PROFILE_SHORTCUTS);
   }
 
-  const FilePath icon_path =
-      profile_path.AppendASCII(profiles::internal::kProfileIconFileName);
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(&DeleteDesktopShortcutsAndIconFile,
-                                     profile_path, icon_path));
+                                     profile_path,
+                                     deleting_down_to_last_profile));
 }
 
 void ProfileShortcutManagerWin::OnProfileNameChanged(
@@ -452,8 +505,7 @@ FilePath ProfileShortcutManagerWin::GetOtherProfilePath(
   // other profile.
   size_t current_profile_index = cache.GetIndexOfProfileWithPath(profile_path);
   size_t other_profile_index = (current_profile_index == 0) ? 1 : 0;
-  return profile_manager_->GetProfileInfoCache().
-      GetPathOfProfileAtIndex(other_profile_index);
+  return cache.GetPathOfProfileAtIndex(other_profile_index);
 }
 
 void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
