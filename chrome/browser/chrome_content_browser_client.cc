@@ -1599,7 +1599,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
   web_prefs->asynchronous_spell_checking_enabled =
 #if defined(OS_MACOSX)
-      // TODO(hbono): Bug 107371: Implement asynchronous spellchecking API for
+      // TODO(groby): Bug 107371: Implement asynchronous spellchecking API for
       // Mac so it uses NSSpellChecker in the background.
       false;
 #else

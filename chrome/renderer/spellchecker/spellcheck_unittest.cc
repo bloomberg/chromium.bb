@@ -145,7 +145,7 @@ class MockTextCheckingCompletion : public WebKit::WebTextCheckingCompletion {
 //     with space characters or non-English words.
 // A test with a "[ROBUSTNESS]" mark shows it is a robustness test and it uses
 // grammatically incorrect string.
-// TODO(hbono): Please feel free to add more tests.
+// TODO(groby): Please feel free to add more tests.
 TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
   static const struct {
     // A string to be tested.

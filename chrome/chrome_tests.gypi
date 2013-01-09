@@ -1581,7 +1581,7 @@
             'browser/spellchecker/spellcheck_message_filter_mac_browsertest.cc',
           ],
           'sources!': [
-            # TODO(hbono): This test depends on hunspell and we cannot run it on
+            # TODO(groby): This test depends on hunspell and we cannot run it on
             # Mac, which does not use hunspell by default.
             'browser/spellchecker/spellcheck_service_browsertest.cc',
             # TODO(rouslan): This test depends on the custom dictionary UI,
