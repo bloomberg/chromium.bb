@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
+#include "base/threading/platform_thread.h"
 #include "base/time.h"
 
 namespace dbus {
@@ -60,10 +61,13 @@ typedef std::set<Stat*, Stat::PtrCompare> StatSet;
 // Simple class for gathering DBus usage statistics.
 class DBusStatistics {
  public:
-  DBusStatistics() : start_time_(base::Time::Now()) {
+  DBusStatistics()
+      : start_time_(base::Time::Now()),
+        origin_thread_id_(base::PlatformThread::CurrentId()) {
   }
 
   ~DBusStatistics() {
+    DCHECK_EQ(origin_thread_id_, base::PlatformThread::CurrentId());
     STLDeleteContainerPointers(stats_.begin(), stats_.end());
   }
 
@@ -79,6 +83,11 @@ class DBusStatistics {
                const std::string& interface,
                const std::string& method,
                StatType type) {
+    if (base::PlatformThread::CurrentId() != origin_thread_id_) {
+      DLOG(WARNING) << "Ignoring DBusStatistics::AddStat call from thread: "
+                    << base::PlatformThread::CurrentId();
+      return;
+    }
     Stat* stat = GetStat(service, interface, method, true);
     DCHECK(stat);
     if (type == TYPE_SENT_METHOD_CALLS)
@@ -97,6 +106,7 @@ class DBusStatistics {
                 const std::string& interface,
                 const std::string& method,
                 bool add_stat) {
+    DCHECK_EQ(origin_thread_id_, base::PlatformThread::CurrentId());
     scoped_ptr<Stat> stat(new Stat(service, interface, method));
     StatSet::iterator found = stats_.find(stat.get());
     if (found != stats_.end())
@@ -113,6 +123,7 @@ class DBusStatistics {
  private:
   StatSet stats_;
   base::Time start_time_;
+  base::PlatformThreadId origin_thread_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusStatistics);
 };

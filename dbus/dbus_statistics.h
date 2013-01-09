@@ -9,6 +9,11 @@
 
 #include "dbus/dbus_export.h"
 
+// The functions defined here are used to gather DBus statistics, and
+// provide them in a format convenient for debugging. These functions are only
+// valid when called from the main thread (the thread which Initialize() was
+// called from). Calls from other threads will be ignored.
+
 namespace dbus {
 namespace statistics {
 
