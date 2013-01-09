@@ -1203,6 +1203,7 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
   Tab* active_tab = NULL;
   std::vector<Tab*> tabs_dragging;
   std::vector<Tab*> selected_tabs;
+  int selected_tab_count = 0;
   bool is_dragging = false;
   int active_tab_index = -1;
   // Since |touch_layout_| is created based on number of tabs and width we use
@@ -1218,6 +1219,8 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
 
   for (int i = tab_count() - 1; i >= 0; --i) {
     Tab* tab = tab_at(i);
+    if (tab->IsSelected())
+      selected_tab_count++;
     if (tab->dragging() && !stacking) {
       is_dragging = true;
       if (tab->IsActive()) {
@@ -1256,13 +1259,11 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
     canvas->Restore();
 
   if (GetWidget()->ShouldUseNativeFrame()) {
-    bool multiple_tabs_selected = (!selected_tabs.empty() ||
-                                   tabs_dragging.size() > 1);
     // Make sure non-active tabs are somewhat transparent.
     SkPaint paint;
     // If there are multiple tabs selected, fade non-selected tabs more to make
     // the selected tabs more noticable.
-    int alpha = multiple_tabs_selected ?
+    int alpha = selected_tab_count > 1 ?
         kNativeFrameInactiveTabAlphaMultiSelection :
         kNativeFrameInactiveTabAlpha;
     paint.setColor(SkColorSetARGB(alpha, 255, 255, 255));
