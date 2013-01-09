@@ -15,7 +15,7 @@ class ImageDecoding(multi_page_benchmark.MultiPageBenchmark):
       return tab.runtime.Evaluate('isDone')
 
     decode_image_events = \
-        tab.timeline.timeline_events.GetAllOfType('DecodeImage')
+        tab.timeline.timeline_events.GetAllOfName('DecodeImage')
 
     # If it is a real image benchmark, then store only the last-minIterations
     # decode tasks.
@@ -26,9 +26,9 @@ class ImageDecoding(multi_page_benchmark.MultiPageBenchmark):
       min_iterations = tab.runtime.Evaluate('minIterations')
       decode_image_events = decode_image_events[-min_iterations:]
 
-    elapsed_times = [d.elapsed_time for d in decode_image_events]
-    if not elapsed_times:
+    durations = [d.duration_ms for d in decode_image_events]
+    if not durations:
       results.Add('ImageDecoding_avg', 'ms', 'unsupported')
       return
-    image_decoding_avg = sum(elapsed_times) / len(elapsed_times)
+    image_decoding_avg = sum(durations) / len(durations)
     results.Add('ImageDecoding_avg', 'ms', image_decoding_avg)
