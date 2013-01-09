@@ -1249,6 +1249,14 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ChangeWindowName) {
 
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
+  // Verify that the plugin's name is properly initialized.
+  {
+    scoped_ptr<base::Value> value(rvh->ExecuteJavascriptAndGetValue(string16(),
+        ASCIIToUTF16("document.getElementById('plugin').name")));
+    std::string result;
+    EXPECT_TRUE(value->GetAsString(&result));
+    EXPECT_EQ("start", result);
+  }
   {
     // Open a channel with the guest, wait until it replies,
     // then verify that the plugin's name has been updated.

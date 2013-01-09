@@ -90,11 +90,16 @@ static std::string TerminationStatusToString(base::TerminationStatus status) {
       return "killed";
     case base::TERMINATION_STATUS_PROCESS_CRASHED:
       return "crashed";
-    default:
-      // This should never happen.
-      DCHECK(false);
-      return "unknown";
+    case base::TERMINATION_STATUS_STILL_RUNNING:
+    case base::TERMINATION_STATUS_MAX_ENUM:
+      break;
   }
+  NOTREACHED() << "Unknown Termination Status.";
+  return "unknown";
+}
+
+static std::string GetInternalEventName(const char* event_name) {
+  return base::StringPrintf("-internal-%s", event_name);
 }
 }
 
@@ -649,6 +654,8 @@ void BrowserPlugin::ParseAttributes(const WebKit::WebPluginParams& params) {
     } else if (LowerCaseEqualsASCII(attributeName, kPartition)) {
       std::string error;
       SetPartitionAttribute(params.attributeValues[i].utf8(), &error);
+    } else if (LowerCaseEqualsASCII(attributeName, kName)) {
+      SetNameAttribute(params.attributeValues[i].utf8());
     }
   }
 
@@ -690,10 +697,8 @@ void BrowserPlugin::TriggerEvent(const std::string& event_name,
   // whose implementation details can (and likely will) change over time. The
   // wrapper/shim (e.g. <webview> tag) should receive these events, and expose a
   // more appropriate (and stable) event to the consumers as part of the API.
-  std::string internal_name = base::StringPrintf("-internal-%s",
-                                                 event_name.c_str());
   event.initCustomEvent(
-      WebKit::WebString::fromUTF8(internal_name.c_str()),
+      WebKit::WebString::fromUTF8(GetInternalEventName(event_name.c_str())),
       false, false,
       WebKit::WebSerializedScriptValue::serialize(
           v8::String::New(json_string.c_str(), json_string.size())));
@@ -884,8 +889,7 @@ void BrowserPlugin::updateGeometry(
   // previous resize to be ACK'ed and so we don't issue additional resizes
   // until the previous one is ACK'ed.
   if (!navigate_src_sent_ || auto_size_ || !resize_ack_received_ ||
-      (old_width == window_rect.width &&
-       old_height == window_rect.height)) {
+      (old_width == window_rect.width && old_height == window_rect.height)) {
     return;
   }
 
