@@ -131,6 +131,8 @@
       '-special_tabs.SpecialTabsTest.testSpecialURLTabs',
       # crbug.com/88593
       '-sync.SyncTest.testPersonalStuffSyncSection',
+      # crbug.com/168081
+      '-ntp.NTPTest.testCloseOneTab',
     ],
 
     'win': [
