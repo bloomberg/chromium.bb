@@ -247,10 +247,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void ForwardGestureEventImmediately(
       const WebKit::WebGestureEvent& gesture_event);
 
-  // Give key press listeners a chance to handle this key press. This allow
-  // widgets that don't have focus to still handle key presses.
-  bool KeyPressListenersHandleEvent(const NativeWebKeyboardEvent& event);
-
   void CancelUpdateTextDirection();
 
   // Called when a mouse click/gesture tap activates the renderer.
@@ -643,6 +639,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void ScrollBackingStoreRect(const gfx::Vector2d& delta,
                               const gfx::Rect& clip_rect,
                               const gfx::Size& view_size);
+
+  // Give key press listeners a chance to handle this key press. This allow
+  // widgets that don't have focus to still handle key presses.
+  bool KeyPressListenersHandleEvent(const NativeWebKeyboardEvent& event);
 
   // Called by OnInputEventAck() to process a keyboard event ack message.
   void ProcessKeyboardEventAck(int type, bool processed);

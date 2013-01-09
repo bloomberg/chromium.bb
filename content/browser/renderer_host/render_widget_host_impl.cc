@@ -1033,6 +1033,11 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
   if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
+  // First, let keypress listeners take a shot at handling the event.  If a
+  // listener handles the event, it should not be propagated to the renderer.
+  if (KeyPressListenersHandleEvent(key_event))
+    return;
+
   if (key_event.type == WebKeyboardEvent::Char &&
       (key_event.windowsKeyCode == ui::VKEY_RETURN ||
        key_event.windowsKeyCode == ui::VKEY_SPACE)) {
@@ -1161,20 +1166,6 @@ void RenderWidgetHostImpl::ForwardInputEvent(const WebInputEvent& input_event,
 void RenderWidgetHostImpl::ForwardTouchEvent(
     const WebKit::WebTouchEvent& touch_event) {
   touch_event_queue_->QueueEvent(touch_event);
-}
-
-bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(
-    const NativeWebKeyboardEvent& event) {
-  if (event.type != WebKeyboardEvent::RawKeyDown)
-    return false;
-
-  for (std::list<KeyboardListener*>::iterator it = keyboard_listeners_.begin();
-       it != keyboard_listeners_.end(); ++it) {
-    if ((*it)->HandleKeyPressEvent(event))
-      return true;
-  }
-
-  return false;
 }
 
 void RenderWidgetHostImpl::AddKeyboardListener(KeyboardListener* listener) {
@@ -2084,6 +2075,20 @@ void RenderWidgetHostImpl::Replace(const string16& word) {
 
 void RenderWidgetHostImpl::SetIgnoreInputEvents(bool ignore_input_events) {
   ignore_input_events_ = ignore_input_events;
+}
+
+bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(
+    const NativeWebKeyboardEvent& event) {
+  if (event.skip_in_browser || event.type != WebKeyboardEvent::RawKeyDown)
+    return false;
+
+  for (std::list<KeyboardListener*>::iterator it = keyboard_listeners_.begin();
+       it != keyboard_listeners_.end(); ++it) {
+    if ((*it)->HandleKeyPressEvent(event))
+      return true;
+  }
+
+  return false;
 }
 
 void RenderWidgetHostImpl::ProcessKeyboardEventAck(int type, bool processed) {

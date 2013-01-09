@@ -224,11 +224,6 @@ class RenderWidgetHostViewGtkWidget {
         host_view->is_fullscreen_;
     if (should_close_on_escape && GDK_Escape == event->keyval) {
       host_view->host_->Shutdown();
-    } else if (host_view->host_ &&
-               host_view->host_->KeyPressListenersHandleEvent(
-                   NativeWebKeyboardEvent(reinterpret_cast<GdkEvent*>(
-                       event)))) {
-      return TRUE;
     } else {
       // Send key event to input method.
       host_view->im_context_->ProcessKeyEvent(event);
