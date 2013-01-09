@@ -64,6 +64,9 @@ class ASH_EXPORT WebNotificationTray
   // Updates tray visibility login status of the system changes.
   void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
 
+  // Returns true if it should block the auto hide behavior of the launcher.
+  bool ShouldBlockLauncherAutoHide() const;
+
   // Returns true if the message center bubble is visible.
   bool IsMessageCenterBubbleVisible() const;
 

@@ -202,6 +202,10 @@ void WebNotificationTray::UpdateAfterLoginStatusChange(
   UpdateTray();
 }
 
+bool WebNotificationTray::ShouldBlockLauncherAutoHide() const {
+  return IsMessageCenterBubbleVisible() || quiet_mode_bubble() != NULL;
+}
+
 bool WebNotificationTray::IsMessageCenterBubbleVisible() const {
   return (message_center_bubble() &&
           message_center_bubble_->bubble()->IsVisible());
