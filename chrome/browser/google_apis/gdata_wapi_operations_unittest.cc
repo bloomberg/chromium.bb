@@ -188,7 +188,7 @@ class GDataWapiOperationsTest : public testing::Test {
                    base::Unretained(this)));
 
     url_generator_.reset(new GDataWapiUrlGenerator(
-        GDataWapiUrlGenerator::GetBaseUrlForTesting(test_server_.port())));
+        test_util::GetBaseUrlForTesting(test_server_.port())));
   }
 
   virtual void TearDown() OVERRIDE {

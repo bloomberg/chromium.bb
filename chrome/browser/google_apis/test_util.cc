@@ -9,11 +9,13 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_server/http_server.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
+#include "googleurl/src/gurl.h"
 
 namespace google_apis {
 namespace test_util {
@@ -45,6 +47,10 @@ FilePath GetTestFilePath(const std::string& relative_path) {
   path = path.AppendASCII("chromeos")
       .Append(FilePath::FromUTF8Unsafe(relative_path));
   return path;
+}
+
+GURL GetBaseUrlForTesting(int port) {
+  return GURL(base::StringPrintf("http://127.0.0.1:%d/", port));
 }
 
 void RunBlockingPoolTask() {

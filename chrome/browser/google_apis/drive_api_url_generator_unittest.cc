@@ -4,6 +4,7 @@
 
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
 
+#include "chrome/browser/google_apis/test_util.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -11,23 +12,29 @@ namespace google_apis {
 
 class DriveApiUrlGeneratorTest : public testing::Test {
  public:
-  DriveApiUrlGeneratorTest() {
+  DriveApiUrlGeneratorTest()
+      : url_generator_(GURL(DriveApiUrlGenerator::kBaseUrlForProduction)),
+        test_url_generator_(test_util::GetBaseUrlForTesting(12345)) {
   }
 
  protected:
   DriveApiUrlGenerator url_generator_;
+  DriveApiUrlGenerator test_url_generator_;
 };
 
 // Make sure the hard-coded urls are returned.
-// TODO(hidehiko): More detailed tests when we support server path injecting.
 TEST_F(DriveApiUrlGeneratorTest, GetAboutUrl) {
   EXPECT_EQ("https://www.googleapis.com/drive/v2/about",
             url_generator_.GetAboutUrl().spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/about",
+            test_url_generator_.GetAboutUrl().spec());
 }
 
 TEST_F(DriveApiUrlGeneratorTest, GetApplistUrl) {
   EXPECT_EQ("https://www.googleapis.com/drive/v2/apps",
             url_generator_.GetApplistUrl().spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/apps",
+            test_url_generator_.GetApplistUrl().spec());
 }
 
 TEST_F(DriveApiUrlGeneratorTest, GetChangelistUrl) {
@@ -47,6 +54,14 @@ TEST_F(DriveApiUrlGeneratorTest, GetChangelistUrl) {
                 GURL("https://localhost/drive/v2/changes"), 0).spec());
   EXPECT_EQ("https://localhost/drive/v2/changes?startChangeId=200",
             url_generator_.GetChangelistUrl(
+                GURL("https://localhost/drive/v2/changes"), 200).spec());
+
+  // For test server, the given base url should be used,
+  // but if |override_url| is given, |override_url| should be used.
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/changes?startChangeId=100",
+            test_url_generator_.GetChangelistUrl(GURL(), 100).spec());
+  EXPECT_EQ("https://localhost/drive/v2/changes?startChangeId=200",
+            test_url_generator_.GetChangelistUrl(
                 GURL("https://localhost/drive/v2/changes"), 200).spec());
 }
 
@@ -68,6 +83,14 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilelistUrl) {
   EXPECT_EQ("https://localhost/drive/v2/files?q=query",
             url_generator_.GetFilelistUrl(
                 GURL("https://localhost/drive/v2/files"), "query").spec());
+
+  // For test server, the given base url should be used,
+  // but if |override_url| is given, |override_url| should be used.
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files?q=query",
+            test_url_generator_.GetFilelistUrl(GURL(), "query").spec());
+  EXPECT_EQ("https://localhost/drive/v2/files?q=query",
+            test_url_generator_.GetFilelistUrl(
+                GURL("https://localhost/drive/v2/files"), "query").spec());
 }
 
 TEST_F(DriveApiUrlGeneratorTest, GetFileUrl) {
@@ -76,6 +99,11 @@ TEST_F(DriveApiUrlGeneratorTest, GetFileUrl) {
             url_generator_.GetFileUrl("0ADK06pfg").spec());
   EXPECT_EQ("https://www.googleapis.com/drive/v2/files/0Bz0bd074",
             url_generator_.GetFileUrl("0Bz0bd074").spec());
+
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/0ADK06pfg",
+            test_url_generator_.GetFileUrl("0ADK06pfg").spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files/0Bz0bd074",
+            test_url_generator_.GetFileUrl("0Bz0bd074").spec());
 }
 
 }  // namespace google_apis

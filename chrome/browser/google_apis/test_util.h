@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
+#include "googleurl/src/gurl.h"
 
 class FilePath;
 
@@ -40,6 +41,10 @@ void RunBlockingPoolTask();
 // Returns the absolute path for a test file stored under
 // chrome/test/data/chromeos.
 FilePath GetTestFilePath(const std::string& relative_path);
+
+// Returns the base URL for communicating with the local test server for
+// testing, running at the specified port number.
+GURL GetBaseUrlForTesting(int port);
 
 // Loads a test JSON file as a base::Value, from a test file stored under
 // chrome/test/data/chromeos.

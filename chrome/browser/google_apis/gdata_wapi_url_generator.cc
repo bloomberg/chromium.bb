@@ -56,11 +56,6 @@ const char GDataWapiUrlGenerator::kBaseUrlForProduction[] =
     "https://docs.google.com/";
 
 // static
-GURL GDataWapiUrlGenerator::GetBaseUrlForTesting(int port) {
-  return GURL(base::StringPrintf("http://127.0.0.1:%d/", port));
-}
-
-// static
 GURL GDataWapiUrlGenerator::AddStandardUrlParams(const GURL& url) {
   GURL result =
       chrome_common_net::AppendOrReplaceQueryParameter(url, "v", "3");

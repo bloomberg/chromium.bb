@@ -19,11 +19,6 @@ class GDataWapiUrlGeneratorTest : public testing::Test {
   GDataWapiUrlGenerator url_generator_;
 };
 
-TEST_F(GDataWapiUrlGeneratorTest, GetBaseUrlForTesting) {
-  EXPECT_EQ("http://127.0.0.1:12345/",
-            GDataWapiUrlGenerator::GetBaseUrlForTesting(12345).spec());
-}
-
 TEST_F(GDataWapiUrlGeneratorTest, AddStandardUrlParams) {
   EXPECT_EQ("http://www.example.com/?v=3&alt=json",
             GDataWapiUrlGenerator::AddStandardUrlParams(

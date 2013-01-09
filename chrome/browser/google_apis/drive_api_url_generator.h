@@ -15,10 +15,13 @@ namespace google_apis {
 // servers for production, and a local server for testing.
 class DriveApiUrlGenerator {
  public:
-  // TODO(hidehiko): Pass server name to a constructor in order to inject
-  // server path for testing.
-  DriveApiUrlGenerator();
+  // |base_url| is the path to the target drive api server.
+  // Note that this is an injecting point for a testing server.
+  explicit DriveApiUrlGenerator(const GURL& base_url);
   ~DriveApiUrlGenerator();
+
+  // The base URL for communicating with the production drive api server.
+  static const char kBaseUrlForProduction[];
 
   // Returns a URL to fetch "about" data.
   GURL GetAboutUrl() const;
@@ -44,6 +47,9 @@ class DriveApiUrlGenerator {
 
   // Returns a URL to fecth a file content.
   GURL GetFileUrl(const std::string& file_id) const;
+
+ private:
+  const GURL base_url_;
 
   // This class is copyable hence no DISALLOW_COPY_AND_ASSIGN here.
 };
