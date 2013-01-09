@@ -210,8 +210,10 @@ class MessageCenterContentsView : public views::View {
       label->SetEnabledColor(SK_ColorGRAY);
       scroll_content_->AddChildView(label);
       button_view_->SetCloseAllVisible(false);
+      scroller_->set_focusable(false);
     } else {
       button_view_->SetCloseAllVisible(true);
+      scroller_->set_focusable(true);
     }
     SizeScrollContent();
     Layout();
