@@ -48,7 +48,8 @@ scoped_refptr<Picture> Picture::Clone() const {
 
 void Picture::Record(ContentLayerClient* painter,
                      RenderingStats& stats) {
-  TRACE_EVENT0("cc", "Picture::Record");
+  TRACE_EVENT2("cc", "Picture::Record",
+               "width", layer_rect_.width(), "height", layer_rect_.height());
 
   // Record() should only be called once.
   DCHECK(!picture_);
@@ -93,7 +94,8 @@ void Picture::Raster(
     SkCanvas* canvas,
     gfx::Rect content_rect,
     float contents_scale) {
-  TRACE_EVENT0("cc", "Picture::Raster");
+  TRACE_EVENT2("cc", "Picture::Raster",
+               "width", layer_rect_.width(), "height", layer_rect_.height());
   DCHECK(picture_);
 
   canvas->save();
