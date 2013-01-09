@@ -19,6 +19,7 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/windows_version.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "ui/base/win/shell.h"
@@ -113,6 +114,22 @@ void ShowItemInFolderOnFileThread(const FilePath& full_path) {
   }
 }
 
+// Old ShellExecute crashes the process when the command for a given scheme
+// is empty. This function tells if it is.
+bool ValidateShellCommandForScheme(const std::string& scheme) {
+  base::win::RegKey key;
+  std::wstring registry_path = ASCIIToWide(scheme) +
+                               L"\\shell\\open\\command";
+  key.Open(HKEY_CLASSES_ROOT, registry_path.c_str(), KEY_READ);
+  if (!key.Valid())
+    return false;
+  DWORD size = 0;
+  key.ReadValue(NULL, NULL, &size, NULL);
+  if (size <= 2)
+    return false;
+  return true;
+}
+
 }  // namespace
 
 namespace platform_util {
@@ -148,20 +165,9 @@ void OpenExternal(const GURL& url) {
     return;
   }
 
-  base::win::RegKey key;
-  std::wstring registry_path = ASCIIToWide(url.scheme()) +
-                               L"\\shell\\open\\command";
-  key.Open(HKEY_CLASSES_ROOT, registry_path.c_str(), KEY_READ);
-  if (key.Valid()) {
-    DWORD size = 0;
-    key.ReadValue(NULL, NULL, &size, NULL);
-    if (size <= 2) {
-      // ShellExecute crashes the process when the command is empty.
-      // We check for "2" because it always returns the trailing NULL.
-      // TODO(nsylvain): we should also add a dialog to warn on errors. See
-      // bug 1136923.
+  if (base::win::GetVersion() < base::win::VERSION_WIN7) {
+    if (!ValidateShellCommandForScheme(url.scheme()))
       return;
-    }
   }
 
   if (reinterpret_cast<ULONG_PTR>(ShellExecuteA(NULL, "open",
