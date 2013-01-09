@@ -2351,12 +2351,6 @@
           'dependencies': [
             '../ash/ash.gyp:ash',
             '../ash/ash_strings.gyp:ash_strings',
-            '../ui/message_center/message_center.gyp:message_center',
-          ],
-        }],
-        ['OS=="win"', {
-          'dependencies': [
-            '../ui/message_center/message_center.gyp:message_center'
           ],
         }],
         ['use_aura==1 and use_ash==0 and OS=="linux"', {
@@ -2808,6 +2802,11 @@
             ['exclude', '^browser/ui/views/app_list/'],
             ['exclude', '^browser/ui/app_list/'],
           ]
+        }],
+        ['enable_message_center==1', {
+          'dependencies': [
+            '../ui/message_center/message_center.gyp:message_center',
+          ],
         }],
       ],
     },

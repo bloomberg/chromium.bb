@@ -2980,6 +2980,16 @@
             '../ui/app_list/app_list.gyp:app_list',
           ]
         }],
+        ['enable_message_center==1', {
+          'dependencies': [
+            '../ui/message_center/message_center.gyp:message_center',
+          ],
+        }, {  # enable_message_center==0
+          'sources!': [
+            'browser/notifications/message_center_notification_manager.cc',
+            'browser/notifications/message_center_notification_manager.h',
+          ],
+        }],
       ],
       'target_conditions': [
         # Need 'target_conditions' to override default filename_rules to include
