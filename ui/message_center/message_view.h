@@ -22,7 +22,7 @@ const int kPaddingBetweenItems = 10;
 const int kPaddingHorizontal = 18;
 const int kWebNotificationButtonWidth = 32;
 const int kWebNotificationIconSize = 40;
-const int kWebNotificationWidth = 320;
+const int kWebNotificationWidth = 300;
 
 // An abstract class that forms the basis of a view for a notification entry.
 class MessageView : public views::SlideOutView,

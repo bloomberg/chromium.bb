@@ -4,12 +4,16 @@
 
 #include "ui/message_center/message_center_bubble.h"
 
+#include "base/command_line.h"
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
+#include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_view.h"
 #include "ui/message_center/message_view_factory.h"
+#include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
@@ -25,7 +29,17 @@ namespace {
 
 const int kMessageBubbleBaseMinHeight = 80;
 const int kMessageBubbleBaseMaxHeight = 400;
+const int kMarginBetweenItems = 10;
+const int kItemShadowHeight = 4;
+const SkColor kMessageCenterBackgroundColor = SkColorSetRGB(0xe5, 0xe5, 0xe5);
 const SkColor kBorderDarkColor = SkColorSetRGB(0xaa, 0xaa, 0xaa);
+const SkColor kMessageItemShadowColorBase = SkColorSetARGB(0.3 * 255, 0, 0, 0);
+const SkColor kTransparentColor = SkColorSetARGB(0, 0, 0, 0);
+
+bool UseNewDesign() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableNewMessageCenterBubble);
+}
 
 // The view for the buttons at the bottom of the web notification tray.
 class WebNotificationButtonView : public views::View,
@@ -89,6 +103,10 @@ class FixedSizedScrollView : public views::ScrollView {
   FixedSizedScrollView() {
     set_focusable(true);
     set_notify_enter_exit_on_child(true);
+    if (UseNewDesign()) {
+      set_background(views::Background::CreateSolidBackground(
+          kMessageCenterBackgroundColor));
+    }
   }
 
   virtual ~FixedSizedScrollView() {}
@@ -138,10 +156,29 @@ class FixedSizedScrollView : public views::ScrollView {
 class ScrollContentView : public views::View {
  public:
   ScrollContentView() {
-    views::BoxLayout* layout =
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1);
-    layout->set_spread_blank_space(true);
-    SetLayoutManager(layout);
+    if (UseNewDesign()) {
+      // Set the margin to 0 for the layout. BoxLayout assumes the same margin
+      // for top and bottom, but the bottom margin here should be smaller
+      // because of the shadow of message view. Use an empty border instead
+      // to provide this margin.
+      SetLayoutManager(
+          new views::BoxLayout(views::BoxLayout::kVertical,
+                               0,
+                               0,
+                               kMarginBetweenItems - kItemShadowHeight));
+      set_background(views::Background::CreateSolidBackground(
+          kMessageCenterBackgroundColor));
+      set_border(views::Border::CreateEmptyBorder(
+          kMarginBetweenItems, /* top */
+          kMarginBetweenItems, /* left */
+          kMarginBetweenItems - kItemShadowHeight,  /* bottom */
+          kMarginBetweenItems /* right */ ));
+    } else {
+      views::BoxLayout* layout =
+          new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1);
+      layout->set_spread_blank_space(true);
+      SetLayoutManager(layout);
+    }
   }
 
   virtual ~ScrollContentView() {
@@ -160,6 +197,30 @@ class ScrollContentView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(ScrollContentView);
 };
 
+// A view to draw gradient shadow for each MessageView.
+class MessageViewShadow : public views::View {
+ public:
+  MessageViewShadow()
+      : painter_(views::Painter::CreateVerticalGradient(
+            kMessageItemShadowColorBase, kTransparentColor)) {
+  }
+
+ private:
+  // views::View overrides:
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
+    // The preferred size must not be empty. Thus put an arbitrary non-zero
+    // width here. It will be just ignored by the vertical box layout.
+    return gfx::Size(1, kItemShadowHeight);
+  }
+
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    painter_->Paint(canvas, bounds().size());
+  }
+
+  scoped_ptr<views::Painter> painter_;
+  DISALLOW_COPY_AND_ASSIGN(MessageViewShadow);
+};
+
 }  // namespace
 
 // Message Center contents.
@@ -167,8 +228,9 @@ class MessageCenterContentsView : public views::View {
  public:
   explicit MessageCenterContentsView(NotificationList::Delegate* list_delegate)
       : list_delegate_(list_delegate) {
+    int between_child = UseNewDesign() ? 0 : 1;
     SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
+        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, between_child));
 
     scroll_content_ = new ScrollContentView;
     scroller_ = new FixedSizedScrollView;
@@ -197,7 +259,16 @@ class MessageCenterContentsView : public views::View {
           MessageViewFactory::ViewForNotification(*iter, list_delegate_);
       view->set_scroller(scroller_);
       view->SetUpView();
-      scroll_content_->AddChildView(view);
+      if (UseNewDesign()) {
+        views::View* container = new views::View();
+        container->SetLayoutManager(
+            new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+        container->AddChildView(view);
+        container->AddChildView(new MessageViewShadow());
+        scroll_content_->AddChildView(container);
+      } else {
+        scroll_content_->AddChildView(view);
+      }
       if (++num_children >=
           NotificationList::kMaxVisibleMessageCenterNotifications) {
         break;
@@ -263,6 +334,11 @@ views::TrayBubbleView::InitParams MessageCenterBubble::GetInitParams(
     views::TrayBubbleView::AnchorAlignment anchor_alignment) {
   views::TrayBubbleView::InitParams init_params =
       GetDefaultInitParams(anchor_alignment);
+  if (UseNewDesign()) {
+    init_params.min_width += kMarginBetweenItems * 2;
+    init_params.max_width += kMarginBetweenItems * 2;
+  }
+  // TODO(mukai): The new design bubble should have screen-height at most.
   init_params.max_height = kMessageBubbleBaseMaxHeight;
   init_params.can_activate = true;
   return init_params;
