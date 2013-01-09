@@ -192,6 +192,10 @@ void PictureLayerImpl::calculateContentsScale(
       gfx::ScaleSize(bounds(), max_contents_scale, max_contents_scale));
 }
 
+skia::RefPtr<SkPicture> PictureLayerImpl::getPicture() {
+  return pile_->GetFlattenedPicture();
+}
+
 scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
                                                  gfx::Rect rect) {
   TileManager* tile_manager = layerTreeImpl()->tile_manager();

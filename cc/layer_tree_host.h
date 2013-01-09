@@ -24,7 +24,9 @@
 #include "cc/rate_limiter.h"
 #include "cc/rendering_stats.h"
 #include "cc/scoped_ptr_vector.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/rect.h"
 
 #if defined(COMPILER_GCC)
@@ -198,6 +200,8 @@ public:
     Proxy* proxy() const { return m_proxy.get(); }
 
     AnimationRegistrar* animationRegistrar() const { return m_animationRegistrar.get(); }
+
+    skia::RefPtr<SkPicture> capturePicture();
 
 protected:
     LayerTreeHost(LayerTreeHostClient*, const LayerTreeSettings&);

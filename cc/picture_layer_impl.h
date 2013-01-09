@@ -10,6 +10,8 @@
 #include "cc/picture_layer_tiling_set.h"
 #include "cc/picture_pile_impl.h"
 #include "cc/scoped_ptr_vector.h"
+#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkPicture.h"
 
 namespace cc {
 
@@ -35,6 +37,7 @@ public:
       float* contents_scale_x,
       float* contents_scale_y,
       gfx::Size* content_bounds) OVERRIDE;
+  virtual skia::RefPtr<SkPicture> getPicture() OVERRIDE;
 
   // PictureLayerTilingClient overrides.
   virtual scoped_refptr<Tile> CreateTile(PictureLayerTiling*,

@@ -1709,4 +1709,30 @@ void LayerTreeHostImpl::animateScrollbarsRecursive(LayerImpl* layer, base::TimeT
         animateScrollbarsRecursive(layer->children()[i], time);
 }
 
+// static
+LayerImpl* LayerTreeHostImpl::getNonCompositedContentLayerRecursive(LayerImpl* layer)
+{
+    if (!layer)
+        return NULL;
+
+    if (layer->drawsContent())
+        return layer;
+
+    for (LayerImpl::LayerList::const_iterator it = layer->children().begin();
+            it != layer->children().end(); ++it) {
+        LayerImpl* nccr = getNonCompositedContentLayerRecursive(*it);
+        if (nccr)
+            return nccr;
+    }
+
+    return NULL;
+}
+
+skia::RefPtr<SkPicture> LayerTreeHostImpl::capturePicture()
+{
+    LayerTreeImpl* tree = pendingTree() ? pendingTree() : activeTree();
+    LayerImpl* layer = getNonCompositedContentLayerRecursive(tree->RootLayer());
+    return layer ? layer->getPicture() : skia::RefPtr<SkPicture>();
+}
+
 }  // namespace cc

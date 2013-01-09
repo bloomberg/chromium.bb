@@ -17,7 +17,9 @@
 #include "cc/render_pass_sink.h"
 #include "cc/renderer.h"
 #include "cc/tile_manager.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/rect.h"
 
 namespace cc {
@@ -300,6 +302,8 @@ public:
 
     const PinchZoomViewport& pinchZoomViewport() const { return m_pinchZoomViewport; }
 
+    skia::RefPtr<SkPicture> capturePicture();
+
 protected:
     LayerTreeHostImpl(const LayerTreeSettings&, LayerTreeHostImplClient*, Proxy*);
     void activatePendingTree();
@@ -345,6 +349,8 @@ private:
     void animateScrollbarsRecursive(LayerImpl*, base::TimeTicks monotonicTime);
 
     void dumpRenderSurfaces(std::string*, int indent, const LayerImpl*) const;
+
+    static LayerImpl* getNonCompositedContentLayerRecursive(LayerImpl* layer);
 
     scoped_ptr<OutputSurface> m_outputSurface;
     scoped_ptr<ResourceProvider> m_resourceProvider;

@@ -11,6 +11,7 @@
 #include "cc/layer_tree_host_impl.h"
 #include "cc/layer_tree_impl.h"
 #include "cc/output_surface.h"
+#include "cc/picture_layer.h"
 #include "cc/prioritized_resource.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_content_layer.h"
@@ -24,10 +25,12 @@
 #include "cc/resource_update_queue.h"
 #include "cc/test/occlusion_tracker_test_common.h"
 #include "cc/timing_function.h"
+#include "skia/ext/refptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"
@@ -2018,6 +2021,72 @@ TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndSoftwareContent)
     EXPECT_TRUE(host->initializeRendererIfNeeded());
     EXPECT_EQ(0u, host->settings().maxPartialTextureUpdates);
 }
+
+class LayerTreeHostTestCapturePicture : public LayerTreeHostTest {
+public:
+    LayerTreeHostTestCapturePicture()
+        : m_bounds(gfx::Size(100, 100))
+        , m_layer(PictureLayer::create(&m_contentClient))
+    {
+        m_settings.implSidePainting = true;
+    }
+
+    class FillRectContentLayerClient : public ContentLayerClient {
+    public:
+        virtual void paintContents(SkCanvas* canvas, const gfx::Rect& clip, gfx::RectF& opaque) OVERRIDE
+        {
+            SkPaint paint;
+            paint.setColor(SK_ColorGREEN);
+
+            SkRect rect = SkRect::MakeWH(canvas->getDeviceSize().width(), canvas->getDeviceSize().height());
+            opaque = gfx::RectF(rect.width(), rect.height());
+            canvas->drawRect(rect, paint);
+        }
+    };
+
+    virtual void beginTest() OVERRIDE
+    {
+        m_layer->setIsDrawable(true);
+        m_layer->setBounds(m_bounds);
+        m_layerTreeHost->setViewportSize(m_bounds, m_bounds);
+        m_layerTreeHost->setRootLayer(m_layer);
+
+        EXPECT_TRUE(m_layerTreeHost->initializeRendererIfNeeded());
+        postSetNeedsCommitToMainThread();
+    }
+
+    virtual void didCommitAndDrawFrame() OVERRIDE
+    {
+        m_picture = m_layerTreeHost->capturePicture();
+        endTest();
+    }
+
+    virtual void afterTest() OVERRIDE
+    {
+        EXPECT_EQ(m_bounds, gfx::Size(m_picture->width(), m_picture->height()));
+
+        SkBitmap bitmap;
+        bitmap.setConfig(SkBitmap::kARGB_8888_Config, m_bounds.width(), m_bounds.height());
+        bitmap.allocPixels();
+        bitmap.eraseARGB(0, 0, 0, 0);
+        SkCanvas canvas(bitmap);
+
+        m_picture->draw(&canvas);
+
+        bitmap.lockPixels();
+        SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
+        EXPECT_EQ(SK_ColorGREEN, pixels[0]);
+        bitmap.unlockPixels();
+    }
+
+private:
+    gfx::Size m_bounds;
+    FillRectContentLayerClient m_contentClient;
+    scoped_refptr<PictureLayer> m_layer;
+    skia::RefPtr<SkPicture> m_picture;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestCapturePicture);
 
 }  // namespace
 }  // namespace cc

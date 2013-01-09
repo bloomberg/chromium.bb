@@ -45,6 +45,7 @@ public:
     virtual void acquireLayerTextures() OVERRIDE { }
     virtual void forceSerializeOnSwapBuffers() OVERRIDE;
     virtual bool commitPendingForTesting() OVERRIDE;
+    virtual skia::RefPtr<SkPicture> capturePicture() OVERRIDE;
 
     // LayerTreeHostImplClient implementation
     virtual void didLoseOutputSurfaceOnImplThread() OVERRIDE { }

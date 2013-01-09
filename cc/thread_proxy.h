@@ -54,6 +54,7 @@ public:
     virtual void acquireLayerTextures() OVERRIDE;
     virtual void forceSerializeOnSwapBuffers() OVERRIDE;
     virtual bool commitPendingForTesting() OVERRIDE;
+    virtual skia::RefPtr<SkPicture> capturePicture() OVERRIDE;
 
     // LayerTreeHostImplClient implementation
     virtual void didLoseOutputSurfaceOnImplThread() OVERRIDE;
@@ -133,6 +134,7 @@ private:
     void forceSerializeOnSwapBuffersOnImplThread(CompletionEvent*);
     void setNeedsForcedCommitOnImplThread();
     void commitPendingOnImplThreadForTesting(CommitPendingRequest* request);
+    void capturePictureOnImplThread(CompletionEvent*, skia::RefPtr<SkPicture>*);
 
     // Accessed on main thread only.
     bool m_animateRequested; // Set only when setNeedsAnimate is called.

@@ -890,4 +890,9 @@ void LayerTreeHost::setAnimationEventsRecursive(const AnimationEventsVector& eve
         setAnimationEventsRecursive(events, layer->children()[childIndex].get(), wallClockTime);
 }
 
+skia::RefPtr<SkPicture> LayerTreeHost::capturePicture()
+{
+    return m_proxy->capturePicture();
+}
+
 }  // namespace cc

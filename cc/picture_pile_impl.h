@@ -15,6 +15,8 @@
 #include "cc/picture.h"
 #include "cc/picture_pile.h"
 #include "cc/scoped_ptr_vector.h"
+#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/rect.h"
 
 namespace cc {
@@ -40,6 +42,8 @@ public:
       RenderingStats* stats);
 
   void GatherPixelRefs(const gfx::Rect&, std::list<skia::LazyPixelRef*>&);
+
+  skia::RefPtr<SkPicture> GetFlattenedPicture();
 
 private:
   friend class PicturePile;

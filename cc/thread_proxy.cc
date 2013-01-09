@@ -1017,4 +1017,27 @@ void ThreadProxy::commitPendingOnImplThreadForTesting(CommitPendingRequest* requ
     request->completion.signal();
 }
 
+skia::RefPtr<SkPicture> ThreadProxy::capturePicture()
+{
+    DCHECK(isMainThread());
+    CompletionEvent completion;
+    skia::RefPtr<SkPicture> picture;
+    {
+        DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
+        Proxy::implThread()->postTask(base::Bind(&ThreadProxy::capturePictureOnImplThread,
+                                                 m_implThreadWeakPtr,
+                                                 &completion,
+                                                 &picture));
+        completion.wait();
+    }
+    return picture;
+}
+
+void ThreadProxy::capturePictureOnImplThread(CompletionEvent* completion, skia::RefPtr<SkPicture>* picture)
+{
+    DCHECK(isImplThread());
+    *picture = m_layerTreeHostImpl->capturePicture();
+    completion->signal();
+}
+
 }  // namespace cc

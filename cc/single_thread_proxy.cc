@@ -398,4 +398,11 @@ bool SingleThreadProxy::commitPendingForTesting()
     return false;
 }
 
+skia::RefPtr<SkPicture> SingleThreadProxy::capturePicture()
+{
+    // Requires impl-side painting, which is only supported in threaded compositing.
+    NOTREACHED();
+    return skia::RefPtr<SkPicture>();
+}
+
 }  // namespace cc

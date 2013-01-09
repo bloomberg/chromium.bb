@@ -97,4 +97,29 @@ void PicturePileImpl::GatherPixelRefs(
   }
 }
 
+skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
+  TRACE_EVENT0("cc", "PicturePileImpl::GetFlattenedPicture");
+
+  gfx::Rect layer_rect;
+  for (PicturePile::Pile::const_iterator i = pile_.begin();
+      i != pile_.end(); ++i) {
+    layer_rect.Union((*i)->LayerRect());
+  }
+
+  skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
+  if (layer_rect.IsEmpty())
+    return picture;
+
+  SkCanvas* canvas = picture->beginRecording(
+      layer_rect.width(),
+      layer_rect.height(),
+      SkPicture::kUsePathBoundsForClip_RecordingFlag);
+
+  RenderingStats stats;
+  Raster(canvas, layer_rect, 1.0, &stats);
+  picture->endRecording();
+
+  return picture;
+}
+
 }  // namespace cc

@@ -287,6 +287,11 @@ gfx::Rect LayerImpl::layerRectToContentRect(const gfx::RectF& layerRect) const
     return gfx::ToEnclosingRect(contentRect);
 }
 
+skia::RefPtr<SkPicture> LayerImpl::getPicture()
+{
+    return skia::RefPtr<SkPicture>();
+}
+
 std::string LayerImpl::indentString(int indent)
 {
     std::string str;

@@ -61,4 +61,9 @@ bool FakeProxy::commitPendingForTesting()
     return false;
 }
 
+skia::RefPtr<SkPicture> FakeProxy::capturePicture()
+{
+    return skia::RefPtr<SkPicture>();
+}
+
 }  // namespace cc

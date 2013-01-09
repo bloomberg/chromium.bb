@@ -37,7 +37,7 @@ public:
   void Record(ContentLayerClient*, RenderingStats&);
 
   // Has Record() been called yet?
-  bool HasRecording() const { return picture_.get(); }
+  bool HasRecording() const { return picture_.get() != NULL; }
 
   // Apply this contents scale and raster the content rect into the canvas.
   void Raster(SkCanvas* canvas, gfx::Rect content_rect, float contents_scale);
