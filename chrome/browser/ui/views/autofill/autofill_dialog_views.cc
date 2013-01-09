@@ -9,10 +9,12 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
+#include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
-#include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -38,13 +40,20 @@ views::Label* CreateDetailsSectionLabel(const string16& text) {
   return label;
 }
 
-// Creates a view that packs a label on the left and some related controls
-// on the right.
-views::View* CreateSectionContainer(const string16& label,
-                                    views::View* controls) {
-  views::View* container = new views::View();
-  views::GridLayout* layout = new views::GridLayout(container);
-  container->SetLayoutManager(layout);
+}  // namespace
+
+// AutofillDialogViews::SectionContainer ---------------------------------------
+
+AutofillDialogViews::SectionContainer::SectionContainer(
+    const string16& label,
+    views::View* controls,
+    views::Button* proxy_button)
+    : proxy_button_(proxy_button),
+      forward_mouse_events_(false) {
+  set_notify_enter_exit_on_child(true);
+
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
 
   const int kColumnSetId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
@@ -67,16 +76,71 @@ views::View* CreateSectionContainer(const string16& label,
   layout->StartRow(0, kColumnSetId);
   layout->AddView(CreateDetailsSectionLabel(label));
   layout->AddView(controls);
-  return container;
 }
 
-}  // namespace
+AutofillDialogViews::SectionContainer::~SectionContainer() {}
+
+void AutofillDialogViews::SectionContainer::SetForwardMouseEvents(
+    bool forward) {
+  forward_mouse_events_ = forward;
+  if (!forward)
+    set_background(NULL);
+}
+
+void AutofillDialogViews::SectionContainer::OnMouseEntered(
+    const ui::MouseEvent& event) {
+  if (!forward_mouse_events_)
+    return;
+
+  // TODO(estade): use the correct color.
+  set_background(views::Background::CreateSolidBackground(SK_ColorLTGRAY));
+  proxy_button_->OnMouseEntered(ProxyEvent(event));
+  SchedulePaint();
+}
+
+void AutofillDialogViews::SectionContainer::OnMouseExited(
+    const ui::MouseEvent& event) {
+  if (!forward_mouse_events_)
+    return;
+
+  set_background(NULL);
+  proxy_button_->OnMouseExited(ProxyEvent(event));
+  SchedulePaint();
+}
+
+bool AutofillDialogViews::SectionContainer::OnMousePressed(
+    const ui::MouseEvent& event) {
+  if (!forward_mouse_events_)
+    return false;
+
+  return proxy_button_->OnMousePressed(ProxyEvent(event));
+}
+
+void AutofillDialogViews::SectionContainer::OnMouseReleased(
+    const ui::MouseEvent& event) {
+  if (!forward_mouse_events_)
+    return;
+
+  proxy_button_->OnMouseReleased(ProxyEvent(event));
+}
+
+// static
+ui::MouseEvent AutofillDialogViews::SectionContainer::ProxyEvent(
+    const ui::MouseEvent& event) {
+  ui::MouseEvent event_copy = event;
+  event_copy.set_location(gfx::Point());
+  return event_copy;
+}
+
+// AutofillDialogView ----------------------------------------------------------
 
 // static
 AutofillDialogView* AutofillDialogView::Create(
     AutofillDialogController* controller) {
   return new AutofillDialogViews(controller);
 }
+
+// AutofillDialogViews ---------------------------------------------------------
 
 AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
     : controller_(controller),
@@ -182,30 +246,30 @@ bool AutofillDialogViews::Accept() {
 
 void AutofillDialogViews::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
-  DCHECK_EQ(sender, use_billing_for_shipping_);
-  shipping_.container->SetVisible(!use_billing_for_shipping_->checked());
-  GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
-}
+  if (sender == use_billing_for_shipping_) {
+    shipping_.container->SetVisible(!use_billing_for_shipping_->checked());
+    GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
+  } else {
+    // TODO(estade): Should the menu be shown on mouse down?
+    DetailsGroup* group =
+        sender == email_.suggested_button ? &email_ :
+        sender == cc_.suggested_button ? &cc_ :
+        sender == billing_.suggested_button ? &billing_ :
+        sender == shipping_.suggested_button ? &shipping_ : NULL;
+    DCHECK(group);
 
-void AutofillDialogViews::OnMenuButtonClicked(views::View* source,
-                                              const gfx::Point& point) {
-  DetailsGroup* group =
-      source == email_.suggested_button ? &email_ :
-      source == cc_.suggested_button ? &cc_ :
-      source == billing_.suggested_button ? &billing_ :
-      source == shipping_.suggested_button ? &shipping_ : NULL;
-  DCHECK(group);
-  views::MenuModelAdapter adapter(
-      controller_->MenuModelForSection(group->section));
-  menu_runner_.reset(new views::MenuRunner(adapter.CreateMenu()));
+    views::MenuModelAdapter adapter(
+        controller_->MenuModelForSection(group->section));
+    menu_runner_.reset(new views::MenuRunner(adapter.CreateMenu()));
 
-  // Ignore the result since we don't need to handle a deleted menu specially.
-  ignore_result(
-      menu_runner_->RunMenuAt(source->GetWidget(),
-                              group->suggested_button,
-                              gfx::Rect(point, gfx::Size()),
-                              views::MenuItemView::TOPRIGHT,
-                              0));
+    // Ignore the result since we don't need to handle a deleted menu specially.
+    ignore_result(
+        menu_runner_->RunMenuAt(sender->GetWidget(),
+                                NULL,
+                                group->suggested_button->GetBoundsInScreen(),
+                                views::MenuItemView::TOPRIGHT,
+                                0));
+  }
 }
 
 void AutofillDialogViews::ContentsChanged(views::Textfield* sender,
@@ -277,16 +341,6 @@ void AutofillDialogViews::InitChildViews() {
   layout->StartRowWithPadding(0, single_column_set,
                               0, views::kUnrelatedControlVerticalSpacing);
   layout->AddView(CreateDetailsContainer());
-
-  // Separator.
-  layout->StartRowWithPadding(0, single_column_set,
-                              0, views::kUnrelatedControlVerticalSpacing);
-  layout->AddView(new views::Separator());
-
-  // Wallet checkbox.
-  layout->StartRowWithPadding(0, single_column_set,
-                              0, views::kRelatedControlVerticalSpacing);
-  layout->AddView(new views::Checkbox(controller_->WalletOptionText()));
 }
 
 views::View* AutofillDialogViews::CreateIntroContainer() {
@@ -335,12 +389,14 @@ void AutofillDialogViews::CreateDetailsSection(DialogSection section) {
 
   // Inputs container (manual inputs + combobox).
   views::View* inputs_container = CreateInputsContainer(section);
-  // Container (holds label + inputs).
-  views::View* container = CreateSectionContainer(
-      controller_->LabelForSection(section), inputs_container);
 
   DetailsGroup* group = GroupForSection(section);
-  group->container = container;
+  // Container (holds label + inputs).
+  group->container = new SectionContainer(
+      controller_->LabelForSection(section),
+      inputs_container,
+      group->suggested_button);
+  UpdateDetailsGroupState(*group);
 }
 
 void AutofillDialogViews::CreateBillingSection() {
@@ -363,9 +419,12 @@ void AutofillDialogViews::CreateBillingSection() {
   billing->AddChildView(use_billing_for_shipping_);
 
   // Container (holds label + inputs).
-  views::View* container = CreateSectionContainer(
-      controller_->LabelForSection(SECTION_BILLING), billing);
-  billing_.container = container;
+  billing_.container = new SectionContainer(
+      controller_->LabelForSection(SECTION_BILLING),
+      billing,
+      billing_.suggested_button);
+  UpdateDetailsGroupState(billing_);
+  UpdateDetailsGroupState(cc_);
 }
 
 views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
@@ -402,15 +461,18 @@ views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
   layout->AddView(info_view);
 
   // TODO(estade): Fix the appearance of this button.
-  views::MenuButton* menu_button =
-      new views::MenuButton(NULL, string16(), this, true);
+  views::ImageButton* menu_button = new views::ImageButton(this);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  menu_button->SetImage(views::CustomButton::STATE_NORMAL,
+      rb.GetImageSkiaNamed(IDR_AUTOFILL_DIALOG_MENU_BUTTON));
+  menu_button->SetImage(views::CustomButton::STATE_PRESSED,
+      rb.GetImageSkiaNamed(IDR_AUTOFILL_DIALOG_MENU_BUTTON_P));
   layout->AddView(menu_button);
 
   DetailsGroup* group = GroupForSection(section);
   group->suggested_button = menu_button;
   group->manual_input = manual_inputs;
   group->suggested_info = suggested_info;
-  UpdateDetailsGroupState(*group);
   return inputs_container;
 }
 
@@ -482,9 +544,14 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
 void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
   string16 suggestion_text =
       controller_->SuggestionTextForSection(group.section);
-  group.manual_input->SetVisible(suggestion_text.empty());
-  group.suggested_info->SetVisible(!suggestion_text.empty());
+  bool show_suggestions = !suggestion_text.empty();
+  group.manual_input->SetVisible(!show_suggestions);
+  group.suggested_info->SetVisible(show_suggestions);
   group.suggested_info->SetText(suggestion_text);
+
+  if (group.container)
+    group.container->SetForwardMouseEvents(show_suggestions);
+
   if (GetWidget())
     GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
 }

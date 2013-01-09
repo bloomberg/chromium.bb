@@ -18,8 +18,8 @@ class ConstrainedWindowViews;
 namespace views {
 class Checkbox;
 class Combobox;
+class ImageButton;
 class Label;
-class MenuButton;
 class MenuRunner;
 class Textfield;
 }
@@ -38,7 +38,6 @@ struct DetailInput;
 class AutofillDialogViews : public AutofillDialogView,
                             public views::DialogDelegate,
                             public views::ButtonListener,
-                            public views::MenuButtonListener,
                             public views::TextfieldController,
                             public views::FocusChangeListener {
  public:
@@ -68,10 +67,6 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  // views::MenuButtonListener implementation:
-  virtual void OnMenuButtonClicked(views::View* source,
-                                   const gfx::Point& point) OVERRIDE;
-
   // views::TextfieldController implementation:
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents) OVERRIDE;
@@ -88,6 +83,37 @@ class AutofillDialogViews : public AutofillDialogView,
   typedef std::map<const DetailInput*, views::Textfield*> TextfieldMap;
   typedef std::map<const DetailInput*, views::Combobox*> ComboboxMap;
 
+  // A view that packs a label on the left and some related controls
+  // on the right.
+  class SectionContainer : public views::View {
+   public:
+    SectionContainer(const string16& label,
+                     views::View* controls,
+                     views::Button* proxy_button);
+    virtual ~SectionContainer();
+
+    // Sets whether mouse events should be forwarded to |proxy_button_|.
+    void SetForwardMouseEvents(bool forward);
+
+    // views::View implementation.
+    virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
+    virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
+    virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+    virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
+
+   private:
+    // Converts |event| to one suitable for |proxy_button_|.
+    static ui::MouseEvent ProxyEvent(const ui::MouseEvent& event);
+
+    // Mouse events on |this| are sent to this button.
+    views::Button* proxy_button_;  // Weak reference.
+
+    // When true, mouse events will be forwarded to |proxy_button_|.
+    bool forward_mouse_events_;
+
+    DISALLOW_COPY_AND_ASSIGN(SectionContainer);
+  };
+
   // A convenience struct for holding pointers to views within each detail
   // section. None of the member pointers are owned.
   struct DetailsGroup {
@@ -97,7 +123,7 @@ class AutofillDialogViews : public AutofillDialogView,
     // The section this group is associated with.
     const DialogSection section;
     // The view that contains the entire section (label + input).
-    views::View* container;
+    SectionContainer* container;
     // The view that allows manual input.
     views::View* manual_input;
     // The textfields in |manual_input|, tracked by their DetailInput.
@@ -108,7 +134,7 @@ class AutofillDialogViews : public AutofillDialogView,
     // visible IFF |manual_input| is not visible.
     views::Label* suggested_info;
     // The view that allows selecting other data suggestions.
-    views::MenuButton* suggested_button;
+    views::ImageButton* suggested_button;
   };
 
   void InitChildViews();
