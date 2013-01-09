@@ -123,7 +123,7 @@ class CopyTest(AbstractGSContextTest):
     for version in xrange(7):
       self.Copy(version=version)
       self.gs_mock.assertCommandContains(
-          [], headers=['x-goog-if-sequence-number-match:%s' % version])
+          [], headers=['x-goog-if-generation-match:%s' % version])
 
   def testRunCommandError(self):
     """Test RunCommandError is propagated."""
