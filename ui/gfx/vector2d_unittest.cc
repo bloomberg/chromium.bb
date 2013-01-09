@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cmath>
+#include <limits>
+
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/vector2d.h"
 #include "ui/gfx/vector2d_f.h"
-
-#include <cmath>
-#include <limits>
 
 namespace gfx {
 
@@ -190,8 +190,8 @@ TEST(Vector2dTest, Length) {
         static_cast<double>(v0) * v0 + static_cast<double>(v1) * v1;
     double length = std::sqrt(length_squared);
     Vector2dF vector(v0, v1);
-    EXPECT_EQ(length_squared, vector.LengthSquared());
-    EXPECT_EQ(static_cast<float>(length), vector.Length());
+    EXPECT_DOUBLE_EQ(length_squared, vector.LengthSquared());
+    EXPECT_FLOAT_EQ(static_cast<float>(length), vector.Length());
   }
 }
 

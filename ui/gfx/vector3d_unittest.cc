@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cmath>
+#include <limits>
+
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/vector3d_f.h"
-
-#include <cmath>
-#include <limits>
 
 namespace gfx {
 
@@ -171,8 +171,8 @@ TEST(Vector3dTest, Length) {
         static_cast<double>(v2) * v2;
     double length = std::sqrt(length_squared);
     gfx::Vector3dF vector(v0, v1, v2);
-    EXPECT_EQ(length_squared, vector.LengthSquared());
-    EXPECT_EQ(static_cast<float>(length), vector.Length());
+    EXPECT_DOUBLE_EQ(length_squared, vector.LengthSquared());
+    EXPECT_FLOAT_EQ(static_cast<float>(length), vector.Length());
   }
 }
 
@@ -227,7 +227,6 @@ TEST(Vector3dTest, CrossProduct) {
     Vector3dF actual = gfx::CrossProduct(tests[i].input1, tests[i].input2);
     EXPECT_EQ(tests[i].expected.ToString(), actual.ToString());
   }
-
 }
 
 TEST(Vector3dFTest, ClampVector3dF) {
