@@ -67,8 +67,8 @@ bool WindowCanOpenTabs(Browser* browser) {
 // such Browser is located.
 Browser* GetOrCreateBrowser(Profile* profile,
                             chrome::HostDesktopType host_desktop_type) {
-  Browser* browser =
-      browser::FindTabbedBrowser(profile, false, host_desktop_type);
+  Browser* browser = chrome::FindTabbedBrowser(profile, false,
+                                               host_desktop_type);
   return browser ? browser : new Browser(
       Browser::CreateParams(profile, host_desktop_type));
 }

@@ -108,8 +108,8 @@ int EnrollmentDialogView::GetDialogButtons() const {
 bool EnrollmentDialogView::Accept() {
   // TODO(beng): use Navigate().
   // Navigate to the target URI in a browser tab.
-  Browser* browser = browser::FindTabbedBrowser(profile_, false,
-                                                chrome::HOST_DESKTOP_TYPE_ASH);
+  Browser* browser = chrome::FindTabbedBrowser(profile_, false,
+                                               chrome::HOST_DESKTOP_TYPE_ASH);
   if (!browser) {
     // Couldn't find a tabbed browser: create one.
     browser = new Browser(

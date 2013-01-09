@@ -17,7 +17,7 @@ class WebContents;
 
 // Collection of functions to find Browsers based on various criteria.
 
-namespace browser {
+namespace chrome {
 
 // Retrieve the last active tabbed browser with a profile matching |profile|.
 // If |match_original_profiles| is true, matching is done based on the
@@ -28,11 +28,7 @@ namespace browser {
 // |type| refers to the host desktop the returned browser should belong to.
 Browser* FindTabbedBrowser(Profile* profile,
                            bool match_original_profiles,
-                           chrome::HostDesktopType type);
-
-}  // namespace browser
-
-namespace chrome {
+                           HostDesktopType type);
 
 // Returns the first tabbed browser matching |profile|. If there is no tabbed
 // browser a new one is created and returned for the desktop specified by

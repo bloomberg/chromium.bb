@@ -220,7 +220,7 @@ Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
 
 Browser* OpenURLOffTheRecord(Profile* profile, const GURL& url) {
   chrome::OpenURLOffTheRecord(profile, url, chrome::HOST_DESKTOP_TYPE_NATIVE);
-  Browser* browser = browser::FindTabbedBrowser(
+  Browser* browser = chrome::FindTabbedBrowser(
       profile->GetOffTheRecordProfile(),
       false,
       chrome::HOST_DESKTOP_TYPE_NATIVE);

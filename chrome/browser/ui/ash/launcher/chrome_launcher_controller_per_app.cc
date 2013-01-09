@@ -745,7 +745,7 @@ void ChromeLauncherControllerPerApp::OnBrowserShortcutClicked(
     return;
   }
 
-  Browser* last_browser = browser::FindTabbedBrowser(
+  Browser* last_browser = chrome::FindTabbedBrowser(
       GetProfileForNewWindows(), true, chrome::HOST_DESKTOP_TYPE_ASH);
 
   if (!last_browser) {

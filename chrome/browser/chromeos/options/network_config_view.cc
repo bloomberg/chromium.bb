@@ -38,7 +38,7 @@ gfx::NativeWindow GetDialogParent() {
   if (chromeos::BaseLoginDisplayHost::default_host()) {
     return chromeos::BaseLoginDisplayHost::default_host()->GetNativeWindow();
   } else {
-    Browser* browser = browser::FindTabbedBrowser(
+    Browser* browser = chrome::FindTabbedBrowser(
         ProfileManager::GetDefaultProfileOrOffTheRecord(),
         true,
         chrome::HOST_DESKTOP_TYPE_ASH);

@@ -142,9 +142,9 @@ WebContents* OpenApplicationTab(Profile* profile,
                                 const Extension* extension,
                                 const GURL& override_url,
                                 WindowOpenDisposition disposition) {
-  Browser* browser = browser::FindTabbedBrowser(profile,
-                                                false,
-                                                chrome::GetActiveDesktop());
+  Browser* browser = chrome::FindTabbedBrowser(profile,
+                                               false,
+                                               chrome::GetActiveDesktop());
   WebContents* contents = NULL;
   if (!browser) {
     // No browser for this profile, need to open a new one.

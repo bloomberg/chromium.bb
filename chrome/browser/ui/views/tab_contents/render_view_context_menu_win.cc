@@ -59,9 +59,9 @@ void RenderViewContextMenuWin::ExecuteCommand(int command_id,
     // TODO(robertshield): FTB - Switch this to HOST_DESKTOP_TYPE_ASH when
     //                     we make that the default for metro.
     Browser* browser =
-        browser::FindTabbedBrowser(profile_->GetOriginalProfile(),
-                                   false,
-                                   chrome::HOST_DESKTOP_TYPE_NATIVE);
+        chrome::FindTabbedBrowser(profile_->GetOriginalProfile(),
+                                  false,
+                                  chrome::HOST_DESKTOP_TYPE_NATIVE);
     if (browser) {
       content::OpenURLParams url_params(
           params_.link_url,

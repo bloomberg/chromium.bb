@@ -507,7 +507,7 @@ void ProfileManager::FindOrCreateNewWindowForProfile(
   DCHECK(profile);
 
   if (!always_create) {
-    Browser* browser = browser::FindTabbedBrowser(profile, false, desktop_type);
+    Browser* browser = chrome::FindTabbedBrowser(profile, false, desktop_type);
     if (browser) {
       browser->window()->Activate();
       return;

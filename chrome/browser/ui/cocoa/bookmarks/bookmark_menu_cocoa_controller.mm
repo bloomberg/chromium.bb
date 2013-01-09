@@ -89,9 +89,9 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
 // Open the URL of the given BookmarkNode in the current tab.
 - (void)openURLForNode:(const BookmarkNode*)node {
   Browser* browser =
-      browser::FindTabbedBrowser(bridge_->GetProfile(),
-                                 true,
-                                 chrome::HOST_DESKTOP_TYPE_NATIVE);
+      chrome::FindTabbedBrowser(bridge_->GetProfile(),
+                                true,
+                                chrome::HOST_DESKTOP_TYPE_NATIVE);
   if (!browser)
     browser = new Browser(Browser::CreateParams(bridge_->GetProfile()));
   WindowOpenDisposition disposition =
@@ -111,9 +111,9 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
   DCHECK(node);
 
   Browser* browser =
-      browser::FindTabbedBrowser(bridge_->GetProfile(),
-                                 true,
-                                 chrome::HOST_DESKTOP_TYPE_NATIVE);
+      chrome::FindTabbedBrowser(bridge_->GetProfile(),
+                                true,
+                                chrome::HOST_DESKTOP_TYPE_NATIVE);
   if (!browser)
     browser = new Browser(Browser::CreateParams(bridge_->GetProfile()));
   DCHECK(browser);

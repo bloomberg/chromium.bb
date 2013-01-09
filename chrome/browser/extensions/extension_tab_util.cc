@@ -231,9 +231,7 @@ void ExtensionTabUtil::CreateTab(WebContents* web_contents,
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   chrome::HostDesktopType active_desktop = chrome::GetActiveDesktop();
-  Browser* browser = browser::FindTabbedBrowser(profile,
-                                                false,
-                                                active_desktop);
+  Browser* browser = chrome::FindTabbedBrowser(profile, false, active_desktop);
   const bool browser_created = !browser;
   if (!browser)
     browser = new Browser(Browser::CreateParams(profile, active_desktop));

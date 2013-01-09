@@ -84,8 +84,8 @@ void LocaleChangeGuard::RevertLocaleChange() {
   profile_->ChangeAppLocale(
       from_locale_, Profile::APP_LOCALE_CHANGED_VIA_REVERT);
 
-  Browser* browser = browser::FindTabbedBrowser(profile_, false,
-                                                chrome::HOST_DESKTOP_TYPE_ASH);
+  Browser* browser = chrome::FindTabbedBrowser(profile_, false,
+                                               chrome::HOST_DESKTOP_TYPE_ASH);
   if (browser)
     chrome::ExecuteCommand(browser, IDC_EXIT);
 }

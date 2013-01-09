@@ -33,9 +33,9 @@ void ThemeInstalledInfoBarDelegate::Create(
     return;
 
   // Get last active tabbed browser of profile.
-  Browser* browser = browser::FindTabbedBrowser(profile,
-                                                true,
-                                                chrome::GetActiveDesktop());
+  Browser* browser = chrome::FindTabbedBrowser(profile,
+                                               true,
+                                               chrome::GetActiveDesktop());
   if (!browser)
     return;
 
