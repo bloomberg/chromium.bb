@@ -62,8 +62,12 @@ const int kSideDecorationSize = 2;
 // should have been encoded using |gfx::PNGCodec::Encode|.
 bool ReadPNGFile(const FilePath& file_path, SkBitmap* bitmap) {
   DCHECK(bitmap);
+  FilePath abs_path(file_path);
+  if (!file_util::AbsolutePath(&abs_path))
+    return false;
+
   std::string png_data;
-  return file_util::ReadFileToString(file_path, &png_data) &&
+  return file_util::ReadFileToString(abs_path, &png_data) &&
          gfx::PNGCodec::Decode(reinterpret_cast<unsigned char*>(&png_data[0]),
                                png_data.length(),
                                bitmap);
