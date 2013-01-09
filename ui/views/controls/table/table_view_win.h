@@ -492,8 +492,8 @@ class VIEWS_EXPORT TableView : public NativeControl,
   SortDescriptors sort_descriptors_;
 
   // Mappings used when sorted.
-  scoped_array<int> view_to_model_;
-  scoped_array<int> model_to_view_;
+  scoped_ptr<int[]> view_to_model_;
+  scoped_ptr<int[]> model_to_view_;
 
   string16 alt_text_;
 

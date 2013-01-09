@@ -64,9 +64,9 @@ class GradientPainter : public Painter {
   // If |horizontal_| is true then the gradiant is painted horizontally.
   bool horizontal_;
   // The gradient colors.
-  scoped_array<SkColor> colors_;
+  scoped_ptr<SkColor[]> colors_;
   // The relative positions of the corresponding gradient colors.
-  scoped_array<SkScalar> pos_;
+  scoped_ptr<SkScalar[]> pos_;
   // The number of elements in |colors_| and |pos_|.
   size_t count_;
 

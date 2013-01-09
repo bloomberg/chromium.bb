@@ -1980,7 +1980,7 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
                                          WPARAM w_param,
                                          LPARAM l_param) {
   int num_points = LOWORD(w_param);
-  scoped_array<TOUCHINPUT> input(new TOUCHINPUT[num_points]);
+  scoped_ptr<TOUCHINPUT[]> input(new TOUCHINPUT[num_points]);
   if (GetTouchInputInfo(reinterpret_cast<HTOUCHINPUT>(l_param),
                         num_points, input.get(), sizeof(TOUCHINPUT))) {
     for (int i = 0; i < num_points; ++i) {
