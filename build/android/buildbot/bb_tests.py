@@ -183,7 +183,7 @@ def MainTestWrapper(options):
     RunWebkitLayoutTests(options)
 
   if options.experimental:
-    pass
+    RunTestSuites(options, 'sandbox_linux_unittests')
 
   # Print logcat, kill logcat monitor
   buildbot_report.PrintNamedStep('Logcat dump')
