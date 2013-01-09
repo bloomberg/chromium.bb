@@ -206,6 +206,47 @@ v8::Handle<v8::Value> DumpEditingCallbacks(const v8::Arguments& args) {
   return v8::Undefined();
 }
 
+v8::Handle<v8::Value> DumpFrameLoadCallbacks(const v8::Arguments& args) {
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
+    return v8::Undefined();
+
+  runner->DumpFrameLoadCallbacks();
+  return v8::Undefined();
+}
+
+v8::Handle<v8::Value> DumpUserGestureInFrameLoadCallbacks(
+    const v8::Arguments& args) {
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
+    return v8::Undefined();
+
+  runner->DumpUserGestureInFrameLoadCallbacks();
+  return v8::Undefined();
+}
+
+v8::Handle<v8::Value> SetStopProvisionalFrameLoads(const v8::Arguments& args) {
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
+    return v8::Undefined();
+
+  runner->StopProvisionalFrameLoads();
+  return v8::Undefined();
+}
+
+v8::Handle<v8::Value> DumpTitleChanges(const v8::Arguments& args) {
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
+    return v8::Undefined();
+
+  runner->DumpTitleChanges();
+  return v8::Undefined();
+}
+
 v8::Handle<v8::Value> GetGlobalFlag(const v8::Arguments& args) {
   return v8::Boolean::New(g_global_flag);
 }
@@ -291,6 +332,14 @@ WebKitTestRunnerBindings::GetNativeFunction(v8::Handle<v8::String> name) {
     return v8::FunctionTemplate::New(OverridePreference);
   if (name->Equals(v8::String::New("DumpEditingCallbacks")))
     return v8::FunctionTemplate::New(DumpEditingCallbacks);
+  if (name->Equals(v8::String::New("DumpFrameLoadCallbacks")))
+    return v8::FunctionTemplate::New(DumpFrameLoadCallbacks);
+  if (name->Equals(v8::String::New("DumpUserGestureInFrameLoadCallbacks")))
+    return v8::FunctionTemplate::New(DumpUserGestureInFrameLoadCallbacks);
+  if (name->Equals(v8::String::New("SetStopProvisionalFrameLoads")))
+    return v8::FunctionTemplate::New(SetStopProvisionalFrameLoads);
+  if (name->Equals(v8::String::New("DumpTitleChanges")))
+    return v8::FunctionTemplate::New(DumpTitleChanges);
   if (name->Equals(v8::String::New("GetGlobalFlag")))
     return v8::FunctionTemplate::New(GetGlobalFlag);
   if (name->Equals(v8::String::New("SetGlobalFlag")))

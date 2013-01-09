@@ -8,6 +8,10 @@ var testRunner = testRunner || {};
   native function CloseWebInspector();
   native function Display();
   native function DumpEditingCallbacks();
+  native function DumpFrameLoadCallbacks();
+  native function DumpUserGestureInFrameLoadCallbacks();
+  native function SetStopProvisionalFrameLoads();
+  native function DumpTitleChanges();
   native function EvaluateInWebInspector();
   native function ExecCommand();
   native function GetWorkerThreadCount();
@@ -85,7 +89,18 @@ var testRunner = testRunner || {};
     Object.defineProperty(this,
                           "dumpEditingCallbacks",
                           {value: DumpEditingCallbacks});
-
+    Object.defineProperty(this,
+                          "dumpFrameLoadCallbacks",
+                          {value: DumpFrameLoadCallbacks});
+    Object.defineProperty(this,
+                          "dumpUserGestureInFrameLoadCallbacks",
+                          {value: DumpUserGestureInFrameLoadCallbacks});
+    Object.defineProperty(this,
+                          "setStopProvisionalFrameLoads",
+                          {value: SetStopProvisionalFrameLoads});
+    Object.defineProperty(this,
+                          "dumpTitleChanges",
+                          {value: DumpTitleChanges});
 
     Object.defineProperty(this,
                           "globalFlag",

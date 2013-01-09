@@ -3293,6 +3293,12 @@ void RenderViewImpl::ProcessAcceleratedPinchZoomFlags(
 
 void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {
   WebDataSource* ds = frame->provisionalDataSource();
+
+  // In fast/loader/stop-provisional-loads.html, we abort the load before this
+  // callback is invoked.
+  if (!ds)
+    return;
+
   DocumentState* document_state = DocumentState::FromDataSource(ds);
 
   // We should only navigate to swappedout:// when is_swapped_out_ is true.

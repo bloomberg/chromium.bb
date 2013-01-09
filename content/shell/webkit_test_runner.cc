@@ -155,7 +155,13 @@ void CopyCanvasToBitmap(SkCanvas* canvas,  SkBitmap* snapshot) {
 
 WebKitTestRunner::WebKitTestRunner(RenderView* render_view)
     : RenderViewObserver(render_view),
-      dump_editing_callbacks_(false) {
+      dump_editing_callbacks_(false),
+      dump_frame_load_callbacks_(false),
+      dump_user_gesture_in_frame_load_callbacks_(false),
+      stop_provisional_frame_loads_(false),
+      dump_title_changes_(false),
+      test_is_running_(true),
+      wait_until_done_(false) {
 }
 
 WebKitTestRunner::~WebKitTestRunner() {
@@ -297,6 +303,22 @@ bool WebKitTestRunner::shouldDumpEditingCallbacks() const {
   return dump_editing_callbacks_;
 }
 
+bool WebKitTestRunner::shouldDumpFrameLoadCallbacks() const {
+  return test_is_running_ && dump_frame_load_callbacks_;
+}
+
+bool WebKitTestRunner::shouldDumpUserGestureInFrameLoadCallbacks() const {
+  return test_is_running_ && dump_user_gesture_in_frame_load_callbacks_;
+}
+
+bool WebKitTestRunner::stopProvisionalFrameLoads() const {
+  return stop_provisional_frame_loads_;
+}
+
+bool WebKitTestRunner::shouldDumpTitleChanges() const {
+  return dump_title_changes_;
+}
+
 // RenderViewObserver  --------------------------------------------------------
 
 void WebKitTestRunner::DidClearWindowObject(WebFrame* frame) {
@@ -304,8 +326,11 @@ void WebKitTestRunner::DidClearWindowObject(WebFrame* frame) {
 }
 
 void WebKitTestRunner::DidFinishLoad(WebFrame* frame) {
-  if (!frame->parent())
+  if (!frame->parent()) {
+    if (!wait_until_done_)
+      test_is_running_ = false;
     Send(new ShellViewHostMsg_DidFinishLoad(routing_id()));
+  }
 }
 
 void WebKitTestRunner::DidRequestShowContextMenu(
@@ -343,6 +368,7 @@ void WebKitTestRunner::SetXSSAuditorEnabled(bool enabled) {
 }
 
 void WebKitTestRunner::NotifyDone() {
+  test_is_running_ = false;
   Send(new ShellViewHostMsg_NotifyDone(routing_id()));
 }
 
@@ -365,6 +391,7 @@ void WebKitTestRunner::SetShouldStayOnPageAfterHandlingBeforeUnload(
 }
 
 void WebKitTestRunner::WaitUntilDone() {
+  wait_until_done_ = true;
   Send(new ShellViewHostMsg_WaitUntilDone(routing_id()));
 }
 
@@ -451,6 +478,22 @@ void WebKitTestRunner::DumpEditingCallbacks() {
   dump_editing_callbacks_ = true;
 }
 
+void WebKitTestRunner::DumpFrameLoadCallbacks() {
+  dump_frame_load_callbacks_ = true;
+}
+
+void WebKitTestRunner::DumpUserGestureInFrameLoadCallbacks() {
+  dump_user_gesture_in_frame_load_callbacks_ = true;
+}
+
+void WebKitTestRunner::StopProvisionalFrameLoads() {
+  stop_provisional_frame_loads_ = true;
+}
+
+void WebKitTestRunner::DumpTitleChanges() {
+  dump_title_changes_ = true;
+}
+
 void WebKitTestRunner::NotImplemented(const std::string& object,
                                       const std::string& method) {
   Send(new ShellViewHostMsg_NotImplemented(routing_id(), object, method));
@@ -462,6 +505,12 @@ void WebKitTestRunner::Reset() {
   ExportLayoutTestSpecificPreferences(prefs_, &prefs);
   render_view()->SetWebkitPreferences(prefs);
   dump_editing_callbacks_ = false;
+  dump_frame_load_callbacks_ = false;
+  dump_user_gesture_in_frame_load_callbacks_ = false;
+  stop_provisional_frame_loads_ = false;
+  dump_title_changes_ = false;
+  test_is_running_ = true;
+  wait_until_done_ = false;
 }
 
 // Private methods  -----------------------------------------------------------

@@ -67,6 +67,10 @@ class WebKitTestRunner : public RenderViewObserver,
 
   // WebTestRunner implementation.
   virtual bool shouldDumpEditingCallbacks() const;
+  virtual bool shouldDumpFrameLoadCallbacks() const;
+  virtual bool shouldDumpUserGestureInFrameLoadCallbacks() const;
+  virtual bool stopProvisionalFrameLoads() const;
+  virtual bool shouldDumpTitleChanges() const;
 
   void Reset();
   void Display();
@@ -84,6 +88,10 @@ class WebKitTestRunner : public RenderViewObserver,
   void ExecCommand(const std::string& command, const std::string& value);
   void OverridePreference(const std::string& key, v8::Local<v8::Value> value);
   void DumpEditingCallbacks();
+  void DumpFrameLoadCallbacks();
+  void DumpUserGestureInFrameLoadCallbacks();
+  void StopProvisionalFrameLoads();
+  void DumpTitleChanges();
 
   void NotImplemented(const std::string& object, const std::string& method);
 
@@ -109,6 +117,13 @@ class WebKitTestRunner : public RenderViewObserver,
   ::WebTestRunner::WebPreferences prefs_;
 
   bool dump_editing_callbacks_;
+  bool dump_frame_load_callbacks_;
+  bool dump_user_gesture_in_frame_load_callbacks_;
+  bool stop_provisional_frame_loads_;
+  bool dump_title_changes_;
+
+  bool test_is_running_;
+  bool wait_until_done_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestRunner);
 };
