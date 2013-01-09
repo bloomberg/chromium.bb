@@ -24,13 +24,15 @@
 #include "grit/theme_resources.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/views/background.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
-#include "ui/views/controls/menu/menu.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/table/group_table_model.h"
 #include "ui/views/controls/table/group_table_view.h"
 #include "ui/views/controls/table/table_view_observer.h"
@@ -65,7 +67,7 @@ class TaskManagerTableModel : public views::GroupTableModel,
     model_->AddObserver(this);
   }
 
-  ~TaskManagerTableModel() {
+  virtual ~TaskManagerTableModel() {
     model_->RemoveObserver(this);
   }
 
@@ -89,6 +91,8 @@ class TaskManagerTableModel : public views::GroupTableModel,
  private:
   TaskManagerModel* model_;
   ui::TableModelObserver* observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerTableModel);
 };
 
 int TaskManagerTableModel::RowCount() {
@@ -275,7 +279,7 @@ class TaskManagerView : public views::ButtonListener,
                         public views::TableViewObserver,
                         public views::LinkListener,
                         public views::ContextMenuController,
-                        public views::Menu::Delegate {
+                        public ui::SimpleMenuModel::Delegate {
  public:
   TaskManagerView(bool highlight_background_resources,
                   chrome::HostDesktopType desktop_type);
@@ -322,8 +326,12 @@ class TaskManagerView : public views::ButtonListener,
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& point) OVERRIDE;
 
-  // views::Menu::Delegate:
-  virtual bool IsItemChecked(int id) const OVERRIDE;
+  // ui::SimpleMenuModel::Delegate:
+  virtual bool IsCommandIdChecked(int id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int id) const OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
   virtual void ExecuteCommand(int id) OVERRIDE;
 
  private:
@@ -372,6 +380,8 @@ class TaskManagerView : public views::ButtonListener,
   // is reset to NULL when the window is closed.
   static TaskManagerView* instance_;
 
+  scoped_ptr<views::MenuRunner> menu_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(TaskManagerView);
 };
 
@@ -382,6 +392,9 @@ TaskManagerView* TaskManagerView::instance_ = NULL;
 TaskManagerView::TaskManagerView(bool highlight_background_resources,
                                  chrome::HostDesktopType desktop_type)
     : purge_memory_button_(NULL),
+      kill_button_(NULL),
+      about_memory_link_(NULL),
+      tab_table_(NULL),
       task_manager_(TaskManager::GetInstance()),
       model_(TaskManager::GetInstance()->model()),
       is_always_on_top_(false),
@@ -540,9 +553,6 @@ void TaskManagerView::ViewHierarchyChanged(bool is_add,
 }
 
 void TaskManagerView::Layout() {
-  // views::kPanelHorizMargin is too big.
-  const int kTableButtonSpacing = 12;
-
   gfx::Size size = kill_button_->GetPreferredSize();
   int prefered_width = size.width();
   int prefered_height = size.height();
@@ -592,8 +602,10 @@ gfx::Size TaskManagerView::GetPreferredSize() {
 // static
 void TaskManagerView::Show(bool highlight_background_resources,
                            chrome::HostDesktopType desktop_type) {
+#if defined(OS_WIN)
   // In Windows Metro it's not good to open this native window.
   DCHECK(!win8::IsSingleWindowMetroMode());
+#endif
 
   if (instance_) {
     if (instance_->highlight_background_resources_ !=
@@ -606,8 +618,7 @@ void TaskManagerView::Show(bool highlight_background_resources,
       return;
     }
   }
-  instance_ = new TaskManagerView(highlight_background_resources,
-                                  desktop_type);
+  instance_ = new TaskManagerView(highlight_background_resources, desktop_type);
   views::Widget::CreateWindow(instance_);
   instance_->InitAlwaysOnTopState();
   instance_->model_->StartUpdating();
@@ -621,7 +632,8 @@ void TaskManagerView::Show(bool highlight_background_resources,
 
 // ButtonListener implementation.
 void TaskManagerView::ButtonPressed(
-    views::Button* sender, const ui::Event& event) {
+    views::Button* sender,
+    const ui::Event& event) {
   if (purge_memory_button_ && (sender == purge_memory_button_)) {
     MemoryPurger::PurgeAll();
   } else {
@@ -727,18 +739,32 @@ void TaskManagerView::LinkClicked(views::Link* source, int event_flags) {
 void TaskManagerView::ShowContextMenuForView(views::View* source,
                                              const gfx::Point& point) {
   UpdateStatsCounters();
-  scoped_ptr<views::Menu> menu(views::Menu::Create(
-      this, views::Menu::TOPLEFT, source->GetWidget()->GetNativeView()));
+  ui::SimpleMenuModel menu_model(this);
   for (std::vector<ui::TableColumn>::iterator i(columns_.begin());
        i != columns_.end(); ++i) {
-    menu->AppendMenuItem(i->id, l10n_util::GetStringUTF16(i->id),
-        views::Menu::CHECKBOX);
+    menu_model.AddCheckItem(i->id, l10n_util::GetStringUTF16(i->id));
   }
-  menu->RunMenuAt(point.x(), point.y());
+  views::MenuModelAdapter menu_adapter(&menu_model);
+  menu_runner_.reset(new views::MenuRunner(menu_adapter.CreateMenu()));
+  if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
+                              views::MenuItemView::TOPLEFT,
+                              views::MenuRunner::CONTEXT_MENU) ==
+      views::MenuRunner::MENU_DELETED)
+    return;
 }
 
-bool TaskManagerView::IsItemChecked(int id) const {
+bool TaskManagerView::IsCommandIdChecked(int id) const {
   return tab_table_->IsColumnVisible(id);
+}
+
+bool TaskManagerView::IsCommandIdEnabled(int id) const {
+  return true;
+}
+
+bool TaskManagerView::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator) {
+  return false;
 }
 
 void TaskManagerView::ExecuteCommand(int id) {
