@@ -24,6 +24,7 @@
 #include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/protocol/password_specifics.pb.h"
 #include "sync/protocol/preference_specifics.pb.h"
+#include "sync/protocol/priority_preference_specifics.pb.h"
 #include "sync/protocol/proto_enum_conversions.h"
 #include "sync/protocol/search_engine_specifics.pb.h"
 #include "sync/protocol/session_specifics.pb.h"
@@ -299,6 +300,14 @@ DictionaryValue* BookmarkSpecificsToValue(
   return value;
 }
 
+DictionaryValue* PriorityPreferenceSpecificsToValue(
+    const sync_pb::PriorityPreferenceSpecifics& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_STR(name);
+  SET_STR(value);
+  return value;
+}
+
 DictionaryValue* DeviceInfoSpecificsToValue(
     const sync_pb::DeviceInfoSpecifics& proto) {
   DictionaryValue* value = new DictionaryValue();
@@ -466,6 +475,7 @@ DictionaryValue* EntitySpecificsToValue(
   SET_FIELD(nigori, NigoriSpecificsToValue);
   SET_FIELD(password, PasswordSpecificsToValue);
   SET_FIELD(preference, PreferenceSpecificsToValue);
+  SET_FIELD(priority_preference, PriorityPreferenceSpecificsToValue);
   SET_FIELD(search_engine, SearchEngineSpecificsToValue);
   SET_FIELD(session, SessionSpecificsToValue);
   SET_FIELD(synced_notification, SyncedNotificationSpecificsToValue);

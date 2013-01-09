@@ -343,6 +343,12 @@ const sync_pb::ExperimentsSpecifics& BaseNode::GetExperimentsSpecifics() const {
   return GetEntitySpecifics().experiments();
 }
 
+const sync_pb::PriorityPreferenceSpecifics&
+    BaseNode::GetPriorityPreferenceSpecifics() const {
+  DCHECK_EQ(GetModelType(), PRIORITY_PREFERENCES);
+  return GetEntitySpecifics().priority_preference();
+}
+
 const sync_pb::EntitySpecifics& BaseNode::GetEntitySpecifics() const {
   return GetUnencryptedSpecifics(GetEntry());
 }

@@ -93,6 +93,9 @@
       case ::syncer::EXPERIMENTS: \
         PER_DATA_TYPE_MACRO("Experiments"); \
         break; \
+      case ::syncer::PRIORITY_PREFERENCES :\
+        PER_DATA_TYPE_MACRO("PriorityPreferences"); \
+        break; \
       default: \
         NOTREACHED() << "Unknown datatype " \
                      << ::syncer::ModelTypeToString(datatype);  \

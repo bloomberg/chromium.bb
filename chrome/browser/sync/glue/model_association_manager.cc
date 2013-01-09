@@ -30,6 +30,7 @@ static const syncer::ModelType kStartOrder[] = {
   syncer::EXPERIMENTS,          //  Listed for completeness.
   syncer::BOOKMARKS,            //  UI thread datatypes.
   syncer::PREFERENCES,
+  syncer::PRIORITY_PREFERENCES,
   syncer::EXTENSIONS,
   syncer::APPS,
   syncer::THEMES,

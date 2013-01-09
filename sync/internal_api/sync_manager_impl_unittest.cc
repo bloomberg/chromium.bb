@@ -863,6 +863,7 @@ class SyncManagerTest : public testing::Test,
     (*out)[SESSIONS] = GROUP_PASSIVE;
     (*out)[PASSWORDS] = GROUP_PASSIVE;
     (*out)[PREFERENCES] = GROUP_PASSIVE;
+    (*out)[PRIORITY_PREFERENCES] = GROUP_PASSIVE;
   }
 
   virtual void OnChangesApplied(
@@ -1247,7 +1248,7 @@ TEST_F(SyncManagerTest, GetChildNodeIds) {
   const ListValue* nodes = NULL;
   ASSERT_TRUE(return_args.Get().GetList(0, &nodes));
   ASSERT_TRUE(nodes);
-  EXPECT_EQ(8u, nodes->GetSize());
+  EXPECT_EQ(9u, nodes->GetSize());
 }
 
 TEST_F(SyncManagerTest, GetChildNodeIdsFailure) {

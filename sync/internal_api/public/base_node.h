@@ -161,6 +161,11 @@ class SYNC_EXPORT BaseNode {
   // data.  Can only be called if GetModelType() == EXPERIMENTS.
   const sync_pb::ExperimentsSpecifics& GetExperimentsSpecifics() const;
 
+  // Getter specific to the PRIORITY_PREFERENCE datatype. Returns protobuf
+  // data.  Can only be called if GetModelType() == PRIORITY_PREFERENCE.
+  const sync_pb::PriorityPreferenceSpecifics&
+      GetPriorityPreferenceSpecifics() const;
+
   const sync_pb::EntitySpecifics& GetEntitySpecifics() const;
 
   // Returns the local external ID associated with the node.

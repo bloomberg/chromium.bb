@@ -28,6 +28,7 @@
         'nigori_specifics.proto',
         'password_specifics.proto',
         'preference_specifics.proto',
+        'priority_preference_specifics.proto',
         'search_engine_specifics.proto',
         'session_specifics.proto',
         'sync.proto',

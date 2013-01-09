@@ -85,6 +85,9 @@ void AddDefaultFieldValue(ModelType datatype,
     case EXPERIMENTS:
       specifics->mutable_experiments();
       break;
+    case PRIORITY_PREFERENCES:
+      specifics->mutable_priority_preference();
+      break;
     default:
       NOTREACHED() << "No known extension for model type.";
   }
@@ -155,6 +158,9 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
       break;
     case EXPERIMENTS:
       return sync_pb::EntitySpecifics::kExperimentsFieldNumber;
+      break;
+    case PRIORITY_PREFERENCES:
+      return sync_pb::EntitySpecifics::kPriorityPreferenceFieldNumber;
       break;
     default:
       NOTREACHED() << "No known extension for model type.";
@@ -260,6 +266,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.has_experiments())
     return EXPERIMENTS;
 
+  if (specifics.has_priority_preference())
+    return PRIORITY_PREFERENCES;
+
   return UNSPECIFIED;
 }
 
@@ -289,6 +298,9 @@ ModelTypeSet ControlTypes() {
   for (int i = FIRST_CONTROL_MODEL_TYPE; i <= LAST_CONTROL_MODEL_TYPE; ++i) {
     set.Put(ModelTypeFromInt(i));
   }
+
+  // TODO(albertb): Re-enable this when the server supports it.
+  set.Remove(PRIORITY_PREFERENCES);
 
   return set;
 }
@@ -344,6 +356,8 @@ const char* ModelTypeToString(ModelType model_type) {
       return "Device Info";
     case EXPERIMENTS:
       return "Experiments";
+    case PRIORITY_PREFERENCES:
+      return "Priority Preferences";
     default:
       break;
   }
@@ -417,6 +431,8 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return DEVICE_INFO;
   else if (model_type_string == "Experiments")
     return EXPERIMENTS;
+  else if (model_type_string == "Priority Preferences")
+    return PRIORITY_PREFERENCES;
   else
     NOTREACHED() << "No known model type corresponding to "
                  << model_type_string << ".";
@@ -493,6 +509,8 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_device_info";
     case EXPERIMENTS:
       return "google_chrome_experiments";
+    case PRIORITY_PREFERENCES:
+      return "google_chrome_priority_preferences";
     default:
       break;
   }
@@ -523,6 +541,7 @@ const char kHistoryDeleteDirectiveNotificationType[] =
 const char kSyncedNotificationType[] = "SYNCED_NOTIFICATION";
 const char kDeviceInfoNotificationType[] = "DEVICE_INFO";
 const char kExperimentsNotificationType[] = "EXPERIMENTS";
+const char kPriorityPreferenceNotificationType[] = "PRIORITY_PREFERENCE";
 }  // namespace
 
 bool RealModelTypeToNotificationType(ModelType model_type,
@@ -583,6 +602,8 @@ bool RealModelTypeToNotificationType(ModelType model_type,
     case EXPERIMENTS:
       *notification_type = kExperimentsNotificationType;
       return true;
+    case PRIORITY_PREFERENCES:
+      *notification_type = kPriorityPreferenceNotificationType;
     default:
       break;
   }
@@ -643,6 +664,9 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     *model_type = SYNCED_NOTIFICATIONS;
   } else if (notification_type == kDeviceInfoNotificationType) {
     *model_type = DEVICE_INFO;;
+    return true;
+  } else if (notification_type == kPriorityPreferenceNotificationType) {
+    *model_type = PRIORITY_PREFERENCES;
     return true;
   }
   *model_type = UNSPECIFIED;

@@ -94,7 +94,10 @@ enum ModelType {
   DEVICE_INFO,
   // Flags to enable experimental features.
   EXPERIMENTS,
-  LAST_CONTROL_MODEL_TYPE = EXPERIMENTS,
+  // These preferences are never encrypted so that they can be applied before
+  // the encryption system is fully initialized.
+  PRIORITY_PREFERENCES,
+  LAST_CONTROL_MODEL_TYPE = PRIORITY_PREFERENCES,
 
   LAST_REAL_MODEL_TYPE = LAST_CONTROL_MODEL_TYPE,
 

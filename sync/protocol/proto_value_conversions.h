@@ -43,6 +43,7 @@ class NigoriSpecifics;
 class PasswordSpecifics;
 class PasswordSpecificsData;
 class PreferenceSpecifics;
+class PriorityPreferenceSpecifics;
 class SearchEngineSpecifics;
 class SessionHeader;
 class SessionSpecifics;
@@ -140,6 +141,9 @@ SYNC_EXPORT_PRIVATE base::DictionaryValue* DeviceInfoSpecificsToValue(
 
 SYNC_EXPORT_PRIVATE base::DictionaryValue* ExperimentsSpecificsToValue(
     const sync_pb::ExperimentsSpecifics& proto);
+
+SYNC_EXPORT_PRIVATE base::DictionaryValue* PriorityPreferenceSpecificsToValue(
+    const sync_pb::PriorityPreferenceSpecifics& proto);
 
 SYNC_EXPORT_PRIVATE base::DictionaryValue* ExtensionSettingSpecificsToValue(
     const sync_pb::ExtensionSettingSpecifics& extension_setting_specifics);

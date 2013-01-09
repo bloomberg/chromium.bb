@@ -198,6 +198,13 @@ void WriteNode::SetExperimentsSpecifics(
   SetEntitySpecifics(entity_specifics);
 }
 
+void WriteNode::SetPriorityPreferenceSpecifics(
+    const sync_pb::PriorityPreferenceSpecifics& new_value) {
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.mutable_priority_preference()->CopyFrom(new_value);
+  SetEntitySpecifics(entity_specifics);
+}
+
 void WriteNode::SetEntitySpecifics(
     const sync_pb::EntitySpecifics& new_value) {
   ModelType new_specifics_type =

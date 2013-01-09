@@ -166,6 +166,11 @@ class SYNC_EXPORT WriteNode : public BaseNode {
   // Should only be called if GetModelType() == EXPERIMENTS.
   void SetExperimentsSpecifics(const sync_pb::ExperimentsSpecifics& specifics);
 
+  // Set the priority preference specifics.
+  // Should only be called if GetModelType() == PRIORITY_PREFERENCE.
+  void SetPriorityPreferenceSpecifics(
+      const sync_pb::PriorityPreferenceSpecifics& specifics);
+
   // Implementation of BaseNode's abstract virtual accessors.
   virtual const syncable::Entry* GetEntry() const OVERRIDE;
 

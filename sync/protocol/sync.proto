@@ -31,6 +31,7 @@ import "history_delete_directive_specifics.proto";
 import "nigori_specifics.proto";
 import "password_specifics.proto";
 import "preference_specifics.proto";
+import "priority_preference_specifics.proto";
 import "search_engine_specifics.proto";
 import "session_specifics.proto";
 import "sync_enums.proto";
@@ -105,6 +106,7 @@ message EntitySpecifics {
   optional SyncedNotificationSpecifics synced_notification = 153108;
   optional DeviceInfoSpecifics device_info = 154522;
   optional ExperimentsSpecifics experiments = 161496;
+  optional PriorityPreferenceSpecifics priority_preference = 163425;
 }
 
 message SyncEntity {

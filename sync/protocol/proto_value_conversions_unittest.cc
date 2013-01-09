@@ -24,6 +24,7 @@
 #include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/protocol/password_specifics.pb.h"
 #include "sync/protocol/preference_specifics.pb.h"
+#include "sync/protocol/priority_preference_specifics.pb.h"
 #include "sync/protocol/search_engine_specifics.pb.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
@@ -49,7 +50,7 @@ TEST_F(ProtoValueConversionsTest, ProtoChangeCheck) {
   // If this number changes, that means we added or removed a data
   // type.  Don't forget to add a unit test for {New
   // type}SpecificsToValue below.
-  EXPECT_EQ(21, MODEL_TYPE_COUNT);
+  EXPECT_EQ(22, MODEL_TYPE_COUNT);
 
   // We'd also like to check if we changed any field in our messages.
   // However, that's hard to do: sizeof could work, but it's
@@ -138,6 +139,10 @@ TEST_F(ProtoValueConversionsTest, BookmarkSpecificsData) {
   EXPECT_EQ(icon_url, encoded_icon_url);
 }
 
+TEST_F(ProtoValueConversionsTest, PriorityPreferenceSpecificsToValue) {
+  TestSpecificsToValue(PriorityPreferenceSpecificsToValue);
+}
+
 TEST_F(ProtoValueConversionsTest, DeviceInfoSpecificsToValue) {
   TestSpecificsToValue(DeviceInfoSpecificsToValue);
 }
@@ -212,6 +217,7 @@ TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
   SET_FIELD(password);
   SET_FIELD(device_info);
   SET_FIELD(preference);
+  SET_FIELD(priority_preference);
   SET_FIELD(search_engine);
   SET_FIELD(session);
   SET_FIELD(synced_notification);
