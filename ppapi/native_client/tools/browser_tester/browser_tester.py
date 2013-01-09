@@ -131,6 +131,11 @@ def BuildArgParser():
   parser.add_option('--nacl_exe_stderr', dest='nacl_exe_stderr',
                     type='string', default=None,
                     help='Redirect standard error of NaCl executable.')
+  parser.add_option('--expect_browser_process_crash',
+                    dest='expect_browser_process_crash',
+                    action='store_true',
+                    help='Do not signal a failure if the browser process '
+                    'crashes')
 
   return parser
 
@@ -251,6 +256,8 @@ def RunTestsOnce(url, options):
   try:
     while server.test_in_progress or options.interactive:
       if not browser.IsRunning():
+        if options.expect_browser_process_crash:
+          break
         listener.ServerError('Browser process ended during test '
                              '(return code %r)' % browser.GetReturnCode())
         # If Chrome exits prematurely without making a single request to the
