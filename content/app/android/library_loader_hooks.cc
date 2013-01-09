@@ -9,6 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/at_exit.h"
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/file_path.h"
@@ -48,11 +49,18 @@ static jboolean LibraryLoadedOnMainThread(JNIEnv* env, jclass clazz,
   // Can only use event tracing after setting up the command line.
   TRACE_EVENT0("jni", "JNI_OnLoad continuation");
 
+  // Note: because logging is setup here right after copying the command line
+  // array from java to native up top of this method, any code that adds the
+  // --enable-dcheck switch must do so on the Java side.
+  logging::DcheckState dcheck_state =
+      command_line->HasSwitch(switches::kEnableDCHECK) ?
+      logging::ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS :
+      logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS;
   logging::InitLogging(NULL,
                        logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
                        logging::DONT_LOCK_LOG_FILE,
                        logging::DELETE_OLD_LOG_FILE,
-                       logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+                       dcheck_state);
   // To view log output with IDs and timestamps use "adb logcat -v threadtime".
   logging::SetLogItems(false,    // Process ID
                        false,    // Thread ID
