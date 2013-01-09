@@ -117,6 +117,7 @@ class ScopedPtrVector {
   }
 
   void pop_back() {
+    delete data_.back();
     data_.pop_back();
   }
 
