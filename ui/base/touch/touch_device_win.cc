@@ -9,9 +9,9 @@
 namespace ui {
 
 bool IsTouchDevicePresent() {
-  // Docs: http://msdn.microsoft.com/en-us/library/dd371581(VS.85).aspx
-  return (::base::win::GetVersion() >= ::base::win::VERSION_WIN7) &&
-      (::GetSystemMetrics(SM_DIGITIZER) > 0);
+  int value = GetSystemMetrics(SM_DIGITIZER);
+  return (value & (NID_READY | NID_INTEGRATED_TOUCH)) ==
+             (NID_READY | NID_INTEGRATED_TOUCH);
 }
 
 }  // namespace ui
