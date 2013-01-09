@@ -148,6 +148,9 @@ const char kDisableHistogramCustomizer[]    = "disable-histogram-customizer";
 // will present the rendered page rather than the browser process.
 const char kDisableImageTransportSurface[]  = "disable-image-transport-surface";
 
+// Use hardware gpu, if available, for tests.
+const char kUseGpuInTests[]                 = "use-gpu-in-tests";
+
 // Disables GPU hardware acceleration.  If software renderer is not in place,
 // then the GPU process won't launch.
 const char kDisableGpu[]                    = "disable-gpu";

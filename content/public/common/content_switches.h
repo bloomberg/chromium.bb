@@ -51,6 +51,7 @@ extern const char kDisableFlashFullscreen3d[];
 CONTENT_EXPORT extern const char kDisableFlashStage3d[];
 CONTENT_EXPORT extern const char kDisableForceCompositingMode[];
 extern const char kDisableGeolocation[];
+CONTENT_EXPORT extern const char kUseGpuInTests[];
 extern const char kDisableGpu[];
 CONTENT_EXPORT extern const char kDisableGLMultisampling[];
 CONTENT_EXPORT extern const char kDisableGpuProcessPrelaunch[];

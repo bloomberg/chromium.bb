@@ -1315,9 +1315,6 @@ const char kTryChromeAgain[]                = "try-chrome-again";
 // Runs un-installation steps that were done by chrome first-run.
 const char kUninstall[]                     = "uninstall";
 
-// Use hardware gpu, if available, for tests.
-const char kUseGpuInTests[] = "use-gpu-in-tests";
-
 // Uses Spdy for the transport protocol instead of HTTP. This is a temporary
 // testing flag.
 const char kUseSpdy[]                       = "use-spdy";
