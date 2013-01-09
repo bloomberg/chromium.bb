@@ -36,6 +36,9 @@ class MagnificationManagerImpl : public MagnificationManager,
                                profile_(NULL),
                                type_(ash::MAGNIFIER_OFF) {
     registrar_.Add(this,
+                  chrome::NOTIFICATION_PROFILE_CREATED,
+                  content::NotificationService::AllSources());
+    registrar_.Add(this,
                   chrome::NOTIFICATION_SESSION_STARTED,
                   content::NotificationService::AllSources());
     registrar_.Add(this,
@@ -139,10 +142,20 @@ class MagnificationManagerImpl : public MagnificationManager,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
+      // When entering the login screen or non-guest desktop.
       case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE:
       case chrome::NOTIFICATION_SESSION_STARTED: {
         Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-        SetProfile(profile);
+        if (!profile->IsGuestSession())
+          SetProfile(profile);
+        break;
+      }
+      // When entering guest desktop, no NOTIFICATION_SESSION_STARTED event is
+      // fired, so we use NOTIFICATION_PROFILE_CREATED event instead.
+      case chrome::NOTIFICATION_PROFILE_CREATED: {
+        Profile* profile = content::Source<Profile>(source).ptr();
+        if (profile->IsGuestSession())
+          SetProfile(profile);
         break;
       }
       case chrome::NOTIFICATION_PROFILE_DESTROYED: {
