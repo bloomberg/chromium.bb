@@ -459,6 +459,13 @@ void BrowserPluginGuest::OnResizeGuest(
   web_contents()->GetView()->SizeContents(params.view_size);
 }
 
+void BrowserPluginGuest::OnSetFocus(int instance_id, bool focused) {
+  if (focused_ == focused)
+      return;
+  focused_ = focused;
+  Send(new ViewMsg_SetFocus(routing_id(), focused));
+}
+
 void BrowserPluginGuest::OnSetSize(
     int instance_id,
     const BrowserPluginHostMsg_AutoSize_Params& auto_size_params,
@@ -489,13 +496,6 @@ void BrowserPluginGuest::OnSetSize(
         resize_guest_params.view_size);
   }
   OnResizeGuest(instance_id_, resize_guest_params);
-}
-
-void BrowserPluginGuest::OnSetFocus(int instance_id, bool focused) {
-  if (focused_ == focused)
-      return;
-  focused_ = focused;
-  Send(new ViewMsg_SetFocus(routing_id(), focused));
 }
 
 void BrowserPluginGuest::OnSetVisibility(int instance_id, bool visible) {
