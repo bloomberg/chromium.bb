@@ -217,15 +217,14 @@ string16 ToolbarModelImpl::TryToExtractSearchTermsFromURL() const {
 
   // Ensure query extraction is enabled and query URL is HTTPS.
   if (!profile || !chrome::search::IsQueryExtractionEnabled(profile) ||
-      !url.SchemeIs(chrome::kHttpsScheme) ||
-      !google_util::IsInstantExtendedAPIGoogleSearchUrl(url.spec()))
+      !url.SchemeIs(chrome::kHttpsScheme))
     return string16();
 
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile);
 
-  TemplateURL *template_url = template_url_service->GetDefaultSearchProvider();
-  if (!template_url)
+  TemplateURL* template_url = template_url_service->GetDefaultSearchProvider();
+  if (!template_url || !template_url->HasSearchTermsReplacementKey(url))
     return string16();
 
   string16 result;

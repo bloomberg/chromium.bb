@@ -126,6 +126,7 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
   void ResetDefaultTemplateURL() {
     TemplateURLData data;
     data.SetURL("http://google.com/search?q={searchTerms}");
+    data.search_terms_replacement_key = "{google:instantExtendedEnabledKey}";
     TemplateURL* search_template_url = new TemplateURL(profile(), data);
     TemplateURLService* template_url_service =
         TemplateURLServiceFactory::GetForProfile(profile());

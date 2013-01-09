@@ -758,6 +758,36 @@ TEST_F(TemplateURLTest, ExtractSearchTermsFromURL) {
 
   EXPECT_TRUE(url.ExtractSearchTermsFromURL(
       GURL("http://google.com/?q=something"), &result));
+
+  EXPECT_EQ(ASCIIToUTF16("something"), result);
+
+  EXPECT_TRUE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.com/?espv&q=something"), &result));
+  EXPECT_EQ(ASCIIToUTF16("something"), result);
+
+  EXPECT_TRUE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.com/?espv=1&q=something"), &result));
+  EXPECT_EQ(ASCIIToUTF16("something"), result);
+
+  EXPECT_TRUE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.com/?espv=0&q=something"), &result));
+  EXPECT_EQ(ASCIIToUTF16("something"), result);
+
+  EXPECT_TRUE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.com/alt/#q=something"), &result));
+  EXPECT_EQ(ASCIIToUTF16("something"), result);
+
+  EXPECT_TRUE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.com/alt/#espv&q=something"), &result));
+  EXPECT_EQ(ASCIIToUTF16("something"), result);
+
+  EXPECT_TRUE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.com/alt/#espv=1&q=something"), &result));
+  EXPECT_EQ(ASCIIToUTF16("something"), result);
+
+  EXPECT_TRUE(url.ExtractSearchTermsFromURL(
+      GURL("http://google.com/alt/#espv=0&q=something"), &result));
+
   EXPECT_EQ(ASCIIToUTF16("something"), result);
 
   EXPECT_FALSE(url.ExtractSearchTermsFromURL(
@@ -811,4 +841,86 @@ TEST_F(TemplateURLTest, ExtractSearchTermsFromURL) {
   EXPECT_TRUE(url.ExtractSearchTermsFromURL(
       GURL("http://google.com/alt/?q=#q=123"), &result));
   EXPECT_EQ(ASCIIToUTF16("123"), result);
+}
+
+TEST_F(TemplateURLTest, HasSearchTermsReplacementKey) {
+  TemplateURLData data;
+  data.SetURL("http://google.com/?q={searchTerms}");
+  data.instant_url = "http://google.com/instant#q={searchTerms}";
+  data.alternate_urls.push_back("http://google.com/alt/#q={searchTerms}");
+  data.alternate_urls.push_back(
+      "http://google.com/alt/?ext=foo&q={searchTerms}#ref=bar");
+  data.search_terms_replacement_key = "espv";
+  TemplateURL url(NULL, data);
+
+  // Test with instant enabled required.
+  EXPECT_FALSE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/")));
+
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/?espv")));
+
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/#espv")));
+
+  EXPECT_FALSE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/?q=something")));
+
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/?q=something&espv")));
+
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/?q=something&espv=1")));
+
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/?q=something&espv=0")));
+
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/?espv&q=something")));
+
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/?espv=1&q=something")));
+
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/?espv=0&q=something")));
+
+  EXPECT_FALSE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/alt/#q=something")));
+
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/alt/#q=something&espv")));
+
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/alt/#q=something&espv=1")));
+
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/alt/#q=something&espv=0")));
+
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/alt/#espv&q=something")));
+
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/alt/#espv=1&q=something")));
+
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/alt/#espv=0&q=something")));
+
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/?espv#q=something")));
+
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/?espv=1#q=something")));
+
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/?q=something#espv")));
+
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://google.com/?q=something#espv=1")));
+
+  // This does not ensure the domain matches.
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://bing.com/?espv")));
+
+  EXPECT_TRUE(url.HasSearchTermsReplacementKey(
+      GURL("http://bing.com/#espv")));
 }

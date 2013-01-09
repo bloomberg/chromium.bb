@@ -473,14 +473,20 @@ class TemplateURL {
   // Use the alternate URLs and the search URL to match the provided |url|
   // and extract |search_terms| from it. Returns false and an empty
   // |search_terms| if no search terms can be matched. The order in which the
-  // alternate URLs are listed dictates their priority, the URL at index 0
-  // is treated as the highest priority and the primary search URL is treated
-  // as the lowest priority (see GetURL()).  For example, if a TemplateURL has
+  // alternate URLs are listed dictates their priority, the URL at index 0 is
+  // treated as the highest priority and the primary search URL is treated as
+  // the lowest priority (see GetURL()).  For example, if a TemplateURL has
   // alternate URL "http://foo/#q={searchTerms}" and search URL
   // "http://foo/?q={searchTerms}", and the URL to be decoded is
   // "http://foo/?q=a#q=b", the alternate URL will match first and the decoded
   // search term will be "b".
   bool ExtractSearchTermsFromURL(const GURL& url, string16* search_terms);
+
+  // Returns true if the specified |url| contains the search terms replacement
+  // key in either the query or the ref. This method does not verify anything
+  // else about the URL. In particular, it does not check that the domain
+  // matches that of this TemplateURL.
+  bool HasSearchTermsReplacementKey(const GURL& url) const;
 
  private:
   friend class TemplateURLService;

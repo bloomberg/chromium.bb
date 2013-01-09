@@ -789,6 +789,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   const std::string kAlternateURL0(
       "https://www.google.com/search#q={searchTerms}");
   const std::string kAlternateURL1("https://www.google.com/#q={searchTerms}");
+  const std::string kSearchTermsReplacementKey(
+      "{google:instantExtendedEnabledKey}");
 
   TemplateURLService* service = TemplateURLServiceFactory::GetForProfile(
       browser()->profile());
@@ -815,6 +817,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
   alternate_urls->AppendString(kAlternateURL1);
   policies.Set(key::kDefaultSearchProviderAlternateURLs, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, alternate_urls);
+  policies.Set(key::kDefaultSearchProviderSearchTermsReplacementKey,
+               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               base::Value::CreateStringValue(kSearchTermsReplacementKey));
   provider_.UpdateChromePolicy(policies);
   default_search = service->GetDefaultSearchProvider();
   ASSERT_TRUE(default_search);

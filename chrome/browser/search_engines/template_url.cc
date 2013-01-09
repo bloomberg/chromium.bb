@@ -60,6 +60,8 @@ const char kGoogleInstantExtendedEnabledParameter[] =
     "google:instantExtendedEnabledParameter";
 const char kGoogleInstantExtendedEnabledKey[] =
     "google:instantExtendedEnabledKey";
+const char kGoogleInstantExtendedEnabledKeyFull[] =
+    "{google:instantExtendedEnabledKey}";
 const char kGoogleOriginalQueryForSuggestionParameter[] =
     "google:originalQueryForSuggestion";
 const char kGoogleRLZParameter[] = "google:RLZ";
@@ -747,6 +749,11 @@ TemplateURL::TemplateURL(Profile* profile, const TemplateURLData& data)
       instant_url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
                        TemplateURLRef::INSTANT) {
   SetPrepopulateId(data_.prepopulate_id);
+
+  if (data_.search_terms_replacement_key ==
+      kGoogleInstantExtendedEnabledKeyFull) {
+    data_.search_terms_replacement_key = google_util::kInstantExtendedAPIParam;
+  }
 }
 
 TemplateURL::~TemplateURL() {
@@ -821,8 +828,8 @@ const std::string& TemplateURL::GetURL(size_t index) const {
       data_.alternate_urls[index] : url();
 }
 
-bool TemplateURL::ExtractSearchTermsFromURL(
-    const GURL& url, string16* search_terms) {
+bool TemplateURL::ExtractSearchTermsFromURL(const GURL& url,
+                                            string16* search_terms) {
   DCHECK(search_terms);
   search_terms->clear();
 
@@ -839,6 +846,25 @@ bool TemplateURL::ExtractSearchTermsFromURL(
       // return false. This is important for at least Google, where such URLs
       // are invalid.
       return !search_terms->empty();
+    }
+  }
+  return false;
+}
+
+bool TemplateURL::HasSearchTermsReplacementKey(const GURL& url) const {
+  // Look for the key both in the query and the ref.
+  std::string params[] = {url.query(), url.ref()};
+
+  for (int i = 0; i < 2; ++i) {
+    url_parse::Component query, key, value;
+    query.len = static_cast<int>(params[i].size());
+    while (url_parse::ExtractQueryKeyValue(params[i].c_str(), &query, &key,
+                                           &value)) {
+      if (key.is_nonempty() &&
+          params[i].substr(key.begin, key.len) ==
+              search_terms_replacement_key()) {
+        return true;
+      }
     }
   }
   return false;
