@@ -93,9 +93,9 @@ void Preferences::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled,
                              false,
                              PrefServiceSyncable::UNSYNCABLE_PREF);
-  // Check if the accessibility prefs are already registered, which can happen
+  // Check if the accessibility pref is already registered, which can happen
   // in WizardController::RegisterPrefs. We still want to try to register
-  // the prefs here in case of Chrome/Linux with ChromeOS=1.
+  // the pref here in case of Chrome/Linux with ChromeOS=1.
   if (prefs->FindPreference(prefs::kSpokenFeedbackEnabled) == NULL) {
     prefs->RegisterBooleanPref(prefs::kSpokenFeedbackEnabled,
                                false,
@@ -106,20 +106,27 @@ void Preferences::RegisterUserPrefs(PrefServiceSyncable* prefs) {
                                false,
                                PrefServiceSyncable::UNSYNCABLE_PREF);
   }
+  if (prefs->FindPreference(prefs::kScreenMagnifierEnabled) == NULL) {
+    prefs->RegisterBooleanPref(prefs::kScreenMagnifierEnabled,
+                               false,
+                               PrefServiceSyncable::SYNCABLE_PREF);
+  }
+  if (prefs->FindPreference(prefs::kScreenMagnifierScale) == NULL) {
+    prefs->RegisterDoublePref(prefs::kScreenMagnifierScale,
+                              std::numeric_limits<double>::min(),
+                              PrefServiceSyncable::UNSYNCABLE_PREF);
+  }
+  if (prefs->FindPreference(prefs::kShouldAlwaysShowAccessibilityMenu) ==
+      NULL) {
+    prefs->RegisterBooleanPref(prefs::kShouldAlwaysShowAccessibilityMenu,
+                               false,
+                               PrefServiceSyncable::UNSYNCABLE_PREF);
+  }
   if (prefs->FindPreference(prefs::kVirtualKeyboardEnabled) == NULL) {
     prefs->RegisterBooleanPref(prefs::kVirtualKeyboardEnabled,
                                false,
                                PrefServiceSyncable::UNSYNCABLE_PREF);
   }
-  prefs->RegisterBooleanPref(prefs::kScreenMagnifierEnabled,
-                             false,
-                             PrefServiceSyncable::SYNCABLE_PREF);
-  prefs->RegisterDoublePref(prefs::kScreenMagnifierScale,
-                            std::numeric_limits<double>::min(),
-                            PrefServiceSyncable::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kShouldAlwaysShowAccessibilityMenu,
-                             false,
-                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kMouseSensitivity,
                              3,
                              PrefServiceSyncable::SYNCABLE_PREF);
