@@ -98,6 +98,7 @@ WebPreferences::WebPreferences()
       accelerated_compositing_for_video_enabled(false),
       accelerated_2d_canvas_enabled(false),
       deferred_2d_canvas_enabled(false),
+      antialiased_2d_canvas_disabled(false),
       accelerated_painting_enabled(false),
       accelerated_filters_enabled(false),
       gesture_tap_highlight_enabled(false),
@@ -392,6 +393,9 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   // Enable deferred 2d canvas if requested on the command line.
   settings->setDeferred2dCanvasEnabled(deferred_2d_canvas_enabled);
+
+  // Disable antialiasing for 2d canvas if requested on the command line.
+  settings->setAntialiased2dCanvasEnabled(!antialiased_2d_canvas_disabled);
 
   // Enable gpu-accelerated painting if requested on the command line.
   settings->setAcceleratedPaintingEnabled(accelerated_painting_enabled);
