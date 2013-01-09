@@ -586,9 +586,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Sets DEPTH_TEST, STENCIL_TEST and color mask for the current framebuffer.
   void ApplyDirtyState();
 
-  // Reapply the texture parameters to the given texture.
-  void BindAndApplyTextureParameters(TextureManager::TextureInfo* info);
-
   // These check the state of the currently bound framebuffer or the
   // backbuffer if no framebuffer is bound.
   bool BoundFramebufferHasColorAttachmentWithAlpha();
@@ -3562,15 +3559,6 @@ void GLES2DecoderImpl::ApplyDirtyState() {
     EnableDisable(GL_BLEND, state_.enable_flags.blend);
     clear_state_dirty_ = false;
   }
-}
-
-void GLES2DecoderImpl::BindAndApplyTextureParameters(
-    TextureManager::TextureInfo* info) {
-  glBindTexture(info->target(), info->service_id());
-  glTexParameteri(info->target(), GL_TEXTURE_MIN_FILTER, info->min_filter());
-  glTexParameteri(info->target(), GL_TEXTURE_MAG_FILTER, info->mag_filter());
-  glTexParameteri(info->target(), GL_TEXTURE_WRAP_S, info->wrap_s());
-  glTexParameteri(info->target(), GL_TEXTURE_WRAP_T, info->wrap_t());
 }
 
 GLuint GLES2DecoderImpl::GetBackbufferServiceId() const {
@@ -9647,7 +9635,7 @@ void GLES2DecoderImpl::DoProduceTextureCHROMIUM(GLenum target,
     return;
   }
 
-  BindAndApplyTextureParameters(info);
+  glBindTexture(info->target(), info->service_id());
 }
 
 void GLES2DecoderImpl::DoConsumeTextureCHROMIUM(GLenum target,
@@ -9675,7 +9663,7 @@ void GLES2DecoderImpl::DoConsumeTextureCHROMIUM(GLenum target,
     return;
   }
 
-  BindAndApplyTextureParameters(info);
+  glBindTexture(info->target(), info->service_id());
 }
 
 void GLES2DecoderImpl::DoInsertEventMarkerEXT(

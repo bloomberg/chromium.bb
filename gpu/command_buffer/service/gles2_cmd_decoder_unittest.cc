@@ -7259,26 +7259,13 @@ TEST_F(GLES2DecoderTest, ProduceAndConsumeTextureCHROMIUM) {
       group().texture_manager()->GetTextureInfo(client_texture_id_);
   EXPECT_EQ(kServiceTextureId, info->service_id());
 
-  // Assigns and binds new service side texture ID and applies the texture
-  // objects' state to it.
+  // Assigns and binds new service side texture ID.
   EXPECT_CALL(*gl_, GenTextures(1, _))
       .WillOnce(SetArgumentPointee<1>(kNewServiceId))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kNewServiceId))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D,
-                                  GL_TEXTURE_MIN_FILTER,
-                                  GL_NEAREST_MIPMAP_LINEAR));
-  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D,
-                                  GL_TEXTURE_MAG_FILTER,
-                                  GL_LINEAR));
-  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D,
-                                  GL_TEXTURE_WRAP_S,
-                                  GL_REPEAT));
-  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D,
-                                  GL_TEXTURE_WRAP_T,
-                                  GL_REPEAT));
 
   ProduceTextureCHROMIUM produce_cmd;
   produce_cmd.Init(GL_TEXTURE_2D, kSharedMemoryId, kSharedMemoryOffset);
@@ -7307,26 +7294,13 @@ TEST_F(GLES2DecoderTest, ProduceAndConsumeTextureCHROMIUM) {
   // Service ID has changed.
   EXPECT_EQ(kNewServiceId, info->service_id());
 
-  // Assigns and binds original service side texture ID and applies the texture
-  // objects' state to it.
+  // Assigns and binds original service size texture ID.
   EXPECT_CALL(*gl_, DeleteTextures(1, _))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kServiceTextureId))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D,
-                                  GL_TEXTURE_MIN_FILTER,
-                                  GL_NEAREST_MIPMAP_LINEAR));
-  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D,
-                                  GL_TEXTURE_MAG_FILTER,
-                                  GL_LINEAR));
-  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D,
-                                  GL_TEXTURE_WRAP_S,
-                                  GL_REPEAT));
-  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D,
-                                  GL_TEXTURE_WRAP_T,
-                                  GL_REPEAT));
 
   ConsumeTextureCHROMIUM consume_cmd;
   consume_cmd.Init(GL_TEXTURE_2D, kSharedMemoryId, kSharedMemoryOffset);

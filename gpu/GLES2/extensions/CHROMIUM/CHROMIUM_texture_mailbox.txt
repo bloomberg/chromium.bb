@@ -41,13 +41,12 @@ New Procedures and Functions
     Moves the image data and parameters of the currently bound texture object
     into the mailbox. The texture object is redefined as though all its levels
     had been resized to zero by zero and the texture object is therefore
-    incomplete. If the mailbox previously contained image data, the old image
-    data is deleted. The state of the bound texture object is not saved in the
-    mailbox, only the image data, as well as the immutable state. The texture
-    object is no longer immutable.
+    incomplete.  The texture object parameters are undefined. The texture
+    object is no longer immutable. If the mailbox previously contained image
+    data, the old image data is deleted.
 
     If glProduceTextureCHROMIUM generates an error, the associated image data
-    is preserved in the texture object.
+    and state is preserved in the texture object.
 
     The mailbox is emptied and the texture image data deleted if the context
     is destroyed before being consumed. See glConsumeTextureCHROMIUM.

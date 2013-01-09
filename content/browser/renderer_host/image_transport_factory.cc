@@ -171,7 +171,7 @@ class ImageTransportClientTexture : public OwnedTexture {
         GL_TEXTURE_2D,
         reinterpret_cast<const signed char*>(mailbox_name.c_str()));
     size_ = new_size;
-    host_context_->flush();
+    host_context_->shallowFlushCHROMIUM();
   }
 
   virtual std::string Produce() OVERRIDE {
