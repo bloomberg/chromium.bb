@@ -126,8 +126,7 @@ View::View()
       focusable_(false),
       accessibility_focusable_(false),
       context_menu_controller_(NULL),
-      drag_controller_(NULL),
-      in_on_focus_(false) {
+      drag_controller_(NULL) {
 }
 
 View::~View() {
@@ -1328,11 +1327,8 @@ void View::OnFocus() {
   // By default, we clear the native focus. This ensures that no visible native
   // view as the focus and that we still receive keyboard inputs.
   FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager) {
-    in_on_focus_ = true;
+  if (focus_manager)
     focus_manager->ClearNativeFocus();
-    in_on_focus_ = false;
-  }
 
   // TODO(beng): Investigate whether it's possible for us to move this to
   //             Focus().
@@ -1596,8 +1592,6 @@ void View::DoRemoveChildView(View* view,
 }
 
 void View::PropagateRemoveNotifications(View* parent) {
-  CHECK(!in_on_focus_);
-
   for (int i = 0, count = child_count(); i < count; ++i)
     child_at(i)->PropagateRemoveNotifications(parent);
 

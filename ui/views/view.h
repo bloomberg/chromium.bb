@@ -1493,11 +1493,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
       native_view_accessibility_win_;
 #endif
 
-  // For debugging a crash (http://crbug.com/166355). If true we're in
-  // OnFocus().
-  // TODO(sky): nuke this.
-  bool in_on_focus_;
-
   DISALLOW_COPY_AND_ASSIGN(View);
 };
 
