@@ -288,6 +288,17 @@ void RootView::DispatchGestureEvent(ui::GestureEvent* event) {
     return;
   }
 
+  // If there was no handler for a SCROLL_BEGIN event, then subsequent scroll
+  // events are not dispatched to any views.
+  switch (event->type()) {
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+    case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_SCROLL_FLING_START:
+      return;
+    default:
+      break;
+  }
+
   // Walk up the tree until we find a view that wants the gesture event.
   for (gesture_handler_ = GetEventHandlerForPoint(event->location());
       gesture_handler_ && (gesture_handler_ != this);

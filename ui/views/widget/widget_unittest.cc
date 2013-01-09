@@ -136,11 +136,7 @@ class EventCountView : public View {
     event_count_.clear();
   }
 
- private:
-  void RecordEvent(const ui::Event& event) {
-    ++event_count_[event.type()];
-  }
-
+ protected:
   // Overridden from View:
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     RecordEvent(event);
@@ -192,9 +188,40 @@ class EventCountView : public View {
     RecordEvent(*event);
   }
 
+ private:
+  void RecordEvent(const ui::Event& event) {
+    ++event_count_[event.type()];
+  }
+
   std::map<ui::EventType, int> event_count_;
 
   DISALLOW_COPY_AND_ASSIGN(EventCountView);
+};
+
+// A view that keeps track of the events it receives, and consumes all scroll
+// gesture events.
+class ScrollableEventCountView : public EventCountView {
+ public:
+  ScrollableEventCountView() {}
+  virtual ~ScrollableEventCountView() {}
+
+ private:
+  // Overridden from ui::EventHandler:
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    EventCountView::OnGestureEvent(event);
+    switch (event->type()) {
+      case ui::ET_GESTURE_SCROLL_BEGIN:
+      case ui::ET_GESTURE_SCROLL_UPDATE:
+      case ui::ET_GESTURE_SCROLL_END:
+      case ui::ET_SCROLL_FLING_START:
+        event->SetHandled();
+        break;
+      default:
+        break;
+    }
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollableEventCountView);
 };
 
 // A view that does a capture on gesture-begin events.
@@ -1282,9 +1309,71 @@ TEST_F(WidgetTest, WheelEventsFromScrollEventTarget) {
 
   EXPECT_EQ(0, cursor_view->GetEventCount(ui::ET_SCROLL));
   EXPECT_EQ(0, cursor_view->GetEventCount(ui::ET_MOUSEWHEEL));
+
+  widget->CloseNow();
 }
 
 #endif  // defined(USE_AURA)
+
+// Tests that if a scroll-begin gesture is not handled, then subsequent scroll
+// events are not dispatched to any view.
+TEST_F(WidgetTest, GestureScrollEventDispatching) {
+  EventCountView* noscroll_view = new EventCountView;
+  EventCountView* scroll_view = new ScrollableEventCountView;
+
+  noscroll_view->SetBounds(0, 0, 50, 40);
+  scroll_view->SetBounds(60, 0, 40, 40);
+
+  Widget* widget = CreateTopLevelPlatformWidget();
+  widget->GetRootView()->AddChildView(noscroll_view);
+  widget->GetRootView()->AddChildView(scroll_view);
+
+  {
+    ui::GestureEvent begin(ui::ET_GESTURE_SCROLL_BEGIN,
+        5, 5, 0, base::TimeDelta(),
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 0),
+        1);
+    widget->OnGestureEvent(&begin);
+    ui::GestureEvent update(ui::ET_GESTURE_SCROLL_UPDATE,
+        25, 15, 0, base::TimeDelta(),
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 20, 10),
+        1);
+    widget->OnGestureEvent(&update);
+    ui::GestureEvent end(ui::ET_GESTURE_SCROLL_END,
+        25, 15, 0, base::TimeDelta(),
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END, 0, 0),
+        1);
+    widget->OnGestureEvent(&end);
+
+    EXPECT_EQ(1, noscroll_view->GetEventCount(ui::ET_GESTURE_SCROLL_BEGIN));
+    EXPECT_EQ(0, noscroll_view->GetEventCount(ui::ET_GESTURE_SCROLL_UPDATE));
+    EXPECT_EQ(0, noscroll_view->GetEventCount(ui::ET_GESTURE_SCROLL_END));
+  }
+
+  {
+    ui::GestureEvent begin(ui::ET_GESTURE_SCROLL_BEGIN,
+        65, 5, 0, base::TimeDelta(),
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 0),
+        1);
+    widget->OnGestureEvent(&begin);
+    ui::GestureEvent update(ui::ET_GESTURE_SCROLL_UPDATE,
+        85, 15, 0, base::TimeDelta(),
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 20, 10),
+        1);
+    widget->OnGestureEvent(&update);
+    ui::GestureEvent end(ui::ET_GESTURE_SCROLL_END,
+        85, 15, 0, base::TimeDelta(),
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END, 0, 0),
+        1);
+    widget->OnGestureEvent(&end);
+
+    EXPECT_EQ(1, scroll_view->GetEventCount(ui::ET_GESTURE_SCROLL_BEGIN));
+    EXPECT_EQ(1, scroll_view->GetEventCount(ui::ET_GESTURE_SCROLL_UPDATE));
+    EXPECT_EQ(1, scroll_view->GetEventCount(ui::ET_GESTURE_SCROLL_END));
+  }
+
+  widget->CloseNow();
+}
 
 }  // namespace
 }  // namespace views
