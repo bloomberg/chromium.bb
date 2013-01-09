@@ -165,8 +165,11 @@ class GSContext(object):
       filename: If given, the filename to place the content at; if not given,
         it's discerned from basename(local_path).
       acl: If given, a canned ACL.
-      version: If given, the sequence-number; essentially the version we intend
-        to replace/update.  This is useful for distributed reasons- for example,
+      version: If given, the generation; essentially the timestamp of the last
+        update.  Note this is not the same as sequence-number; it's
+        monotonically increasing bucket wide rather than reset per file.
+        The usage of this is if we intend to replace/update only if the version
+        is what we expect.  This is useful for distributed reasons- for example,
         to ensure you don't overwrite someone else's creation, a version of
         0 states "only update if no version exists".
     """
@@ -214,8 +217,11 @@ class GSContext(object):
       dest_path: Fully qualified local path or full gs:// path of the dest
                  file.
       acl: One of the google storage canned_acls to apply.
-      version: If given, the sequence-number; essentially the version we intend
-        to replace/update.  This is useful for distributed reasons- for example,
+      version: If given, the generation; essentially the timestamp of the last
+        update.  Note this is not the same as sequence-number; it's
+        monotonically increasing bucket wide rather than reset per file.
+        The usage of this is if we intend to replace/update only if the version
+        is what we expect.  This is useful for distributed reasons- for example,
         to ensure you don't overwrite someone else's creation, a version of
         0 states "only update if no version exists".
 
@@ -227,7 +233,7 @@ class GSContext(object):
     cmd, headers = [], []
 
     if version is not None:
-      headers = ['x-goog-if-sequence-number-match:%d' % version]
+      headers = ['x-goog-if-generation-match:%d' % version]
 
     cmd.append('cp')
 
