@@ -320,10 +320,14 @@ void DisplayManager::UpdateDisplays(
 
 RootWindow* DisplayManager::CreateRootWindowForDisplay(
     const gfx::Display& display) {
+  static int root_window_count = 0;
+
   RootWindow::CreateParams params(display.bounds_in_pixel());
   params.host = Shell::GetInstance()->root_window_host_factory()->
       CreateRootWindowHost(display.bounds_in_pixel());
   aura::RootWindow* root_window = new aura::RootWindow(params);
+  root_window->SetName(StringPrintf("RootWindow-%d", root_window_count++));
+
   // No need to remove RootWindowObserver because
   // the DisplayManager object outlives RootWindow objects.
   root_window->AddRootWindowObserver(this);
