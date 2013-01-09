@@ -99,6 +99,11 @@ void TestOpenFilePerms(bool fast_check_in_client) {
   // We have some extra sanity check for clearly wrong values.
   fd = open_broker.Open(kRW_WhiteListed, O_RDONLY|O_WRONLY|O_RDWR);
   EXPECT_EQ(fd, -EPERM);
+
+  // It makes no sense to allow O_CREAT in a 2-parameters open. Ensure this
+  // is denied.
+  fd = open_broker.Open(kRW_WhiteListed, O_RDWR|O_CREAT);
+  EXPECT_EQ(fd, -EPERM);
 }
 
 // Run the same thing twice. The second time, we make sure that no security

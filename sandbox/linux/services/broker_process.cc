@@ -67,6 +67,11 @@ bool IsAllowedOpenFlags(int flags) {
     return false;
   }
 
+  // We only support a 2-parameters open, so we forbid O_CREAT.
+  if (flags & O_CREAT) {
+    return false;
+  }
+
   // Some flags affect the behavior of the current process. We don't support
   // them and don't allow them for now.
   if (flags & ForCurrentProcessFlagsMask()) {
@@ -288,7 +293,9 @@ bool BrokerProcess::HandleOpenRequest(int reply_ipc,
     // O_CLOEXEC doesn't hurt (even though we won't execve()), and this
     // property won't be passed to the client.
     // We may want to think about O_NONBLOCK as well.
-    int opened_fd = open(file_to_open, flags | O_CLOEXEC);
+    // We're doing a 2-parameter open, so we don't support O_CREAT. It doesn't
+    // hurt to always pass a third argument though.
+    int opened_fd = open(file_to_open, flags | O_CLOEXEC, 0);
     if (opened_fd < 0) {
       write_pickle.WriteInt(-errno);
     } else {
