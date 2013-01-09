@@ -50,6 +50,7 @@
 #include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
+#include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
@@ -492,19 +493,22 @@ void ChromeShellDelegate::RecordUserMetricsAction(
 
 void ChromeShellDelegate::HandleMediaNextTrack() {
 #if defined(OS_CHROMEOS)
-  ExtensionMediaPlayerEventRouter::GetInstance()->NotifyNextTrack();
+  extensions::MediaPlayerAPI::Get(GetTargetBrowser()->profile())->
+      media_player_event_router()->NotifyNextTrack();
 #endif
 }
 
 void ChromeShellDelegate::HandleMediaPlayPause() {
 #if defined(OS_CHROMEOS)
-  ExtensionMediaPlayerEventRouter::GetInstance()->NotifyTogglePlayState();
+  extensions::MediaPlayerAPI::Get(GetTargetBrowser()->profile())->
+      media_player_event_router()->NotifyTogglePlayState();
 #endif
 }
 
 void ChromeShellDelegate::HandleMediaPrevTrack() {
 #if defined(OS_CHROMEOS)
-  ExtensionMediaPlayerEventRouter::GetInstance()->NotifyPrevTrack();
+  extensions::MediaPlayerAPI::Get(GetTargetBrowser()->profile())->
+      media_player_event_router()->NotifyPrevTrack();
 #endif
 }
 

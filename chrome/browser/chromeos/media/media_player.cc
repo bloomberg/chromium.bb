@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -110,7 +111,11 @@ void MediaPlayer::SetPlaylistPosition(int position) {
 }
 
 void MediaPlayer::NotifyPlaylistChanged() {
-  ExtensionMediaPlayerEventRouter::GetInstance()->NotifyPlaylistChanged();
+  Browser* browser = GetBrowser();
+  if (browser) {
+    extensions::MediaPlayerAPI::Get(browser->profile())->
+        media_player_event_router()->NotifyPlaylistChanged();
+  }
 }
 
 void MediaPlayer::PopupMediaPlayer() {

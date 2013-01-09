@@ -8,14 +8,14 @@
 #include "base/basictypes.h"
 
 class Profile;
-template <typename T> struct DefaultSingletonTraits;
+
+namespace extensions {
 
 // Event router class for events related to Mediaplayer.
-class ExtensionMediaPlayerEventRouter {
+class MediaPlayerEventRouter {
  public:
-  static ExtensionMediaPlayerEventRouter* GetInstance();
-
-  void Init(Profile* profile);
+  explicit MediaPlayerEventRouter(Profile* profile);
+  virtual ~MediaPlayerEventRouter();
 
   // Send notification that next-track shortcut key was pressed.
   void NotifyNextTrack();
@@ -32,9 +32,9 @@ class ExtensionMediaPlayerEventRouter {
  private:
   Profile* profile_;
 
-  ExtensionMediaPlayerEventRouter();
-  friend struct DefaultSingletonTraits<ExtensionMediaPlayerEventRouter>;
-  DISALLOW_COPY_AND_ASSIGN(ExtensionMediaPlayerEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(MediaPlayerEventRouter);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_MEDIA_PLAYER_EVENT_ROUTER_H_

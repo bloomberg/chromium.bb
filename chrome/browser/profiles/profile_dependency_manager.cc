@@ -86,6 +86,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/input_method_api_factory.h"
+#include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #if defined(FILE_MANAGER_EXTENSION)
 #include "chrome/browser/chromeos/extensions/file_browser_private_api_factory.h"
@@ -261,6 +262,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::ManagedModeAPI::GetFactoryInstance();
   extensions::ManagementAPI::GetFactoryInstance();
   extensions::MediaGalleriesPrivateAPIFactory::GetInstance();
+#if defined(OS_CHROMEOS)
+  extensions::MediaPlayerAPI::GetFactoryInstance();
+#endif
   extensions::OmniboxAPI::GetFactoryInstance();
   extensions::PreferenceAPI::GetFactoryInstance();
   extensions::ProcessesAPI::GetFactoryInstance();

@@ -9,6 +9,8 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 
+namespace extensions {
+
 static void BroadcastEvent(Profile* profile, const std::string& event_name) {
   if (profile && extensions::ExtensionSystem::Get(profile)->event_router()) {
     scoped_ptr<ListValue> args(new ListValue());
@@ -19,31 +21,27 @@ static void BroadcastEvent(Profile* profile, const std::string& event_name) {
   }
 }
 
-ExtensionMediaPlayerEventRouter::ExtensionMediaPlayerEventRouter()
-    : profile_(NULL) {
+MediaPlayerEventRouter::MediaPlayerEventRouter(Profile* profile)
+    : profile_(profile) {
 }
 
-ExtensionMediaPlayerEventRouter*
-    ExtensionMediaPlayerEventRouter::GetInstance() {
-  return Singleton<ExtensionMediaPlayerEventRouter>::get();
+MediaPlayerEventRouter::~MediaPlayerEventRouter() {
 }
 
-void ExtensionMediaPlayerEventRouter::Init(Profile* profile) {
-  profile_ = profile;
-}
-
-void ExtensionMediaPlayerEventRouter::NotifyNextTrack() {
+void MediaPlayerEventRouter::NotifyNextTrack() {
   BroadcastEvent(profile_, "mediaPlayerPrivate.onNextTrack");
 }
 
-void ExtensionMediaPlayerEventRouter::NotifyPlaylistChanged() {
+void MediaPlayerEventRouter::NotifyPlaylistChanged() {
   BroadcastEvent(profile_, "mediaPlayerPrivate.onPlaylistChanged");
 }
 
-void ExtensionMediaPlayerEventRouter::NotifyPrevTrack() {
+void MediaPlayerEventRouter::NotifyPrevTrack() {
   BroadcastEvent(profile_, "mediaPlayerPrivate.onPrevTrack");
 }
 
-void ExtensionMediaPlayerEventRouter::NotifyTogglePlayState() {
+void MediaPlayerEventRouter::NotifyTogglePlayState() {
   BroadcastEvent(profile_, "mediaPlayerPrivate.onTogglePlayState");
 }
+
+}  // namespace extensions
