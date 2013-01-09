@@ -312,7 +312,7 @@
             # Provide a way to force disable debugallocation in Debug builds,
             # e.g. for profiling (it's more rare to profile Debug builds,
             # but people sometimes need to do that).
-            'disable_debugallocation%': 1,
+            'disable_debugallocation%': 0,
           },
           'conditions': [
             ['disable_debugallocation==0', {
