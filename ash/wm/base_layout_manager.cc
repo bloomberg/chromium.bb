@@ -18,6 +18,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/corewm/corewm_switches.h"
 #include "ui/views/corewm/window_util.h"
 
 namespace ash {
@@ -154,9 +155,11 @@ void BaseLayoutManager::OnWindowDestroying(aura::Window* window) {
 
 void BaseLayoutManager::OnWindowActivated(aura::Window* gained_active,
                                           aura::Window* lost_active) {
-  if (gained_active && wm::IsWindowMinimized(gained_active)) {
-    gained_active->Show();
-    DCHECK(!wm::IsWindowMinimized(gained_active));
+  if (views::corewm::UseFocusController()) {
+    if (gained_active && wm::IsWindowMinimized(gained_active)) {
+      gained_active->Show();
+      DCHECK(!wm::IsWindowMinimized(gained_active));
+    }
   }
 }
 
