@@ -137,12 +137,6 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearFlac) {
 #endif
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavPcm) {
-  // Temporarily skip running HTTP version of the
-  // test since it times out frequently on the ASAN bots.
-  // Remove this condition once http://crbug.com/169031
-  // has been fixed.
-  if (GetParam())
-    return;
   PlayAudio("bear_pcm.wav", GetParam());
 }
 
