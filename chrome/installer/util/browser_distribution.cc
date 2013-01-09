@@ -266,6 +266,9 @@ void BrowserDistribution::LaunchUserExperiment(
     bool system_level) {
 }
 
+bool BrowserDistribution::ShouldSetExperimentLabels() {
+  return false;
+}
 
 void BrowserDistribution::InactiveUserToastExperiment(int flavor,
     const string16& experiment_group,

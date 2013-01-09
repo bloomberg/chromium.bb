@@ -164,6 +164,10 @@ class BrowserDistribution {
       const installer::Product& installation,
       const FilePath& application_path);
 
+  // Returns true if this distribution should set the Omaha experiment_labels
+  // registry value.
+  virtual bool ShouldSetExperimentLabels();
+
  protected:
   explicit BrowserDistribution(Type type);
 

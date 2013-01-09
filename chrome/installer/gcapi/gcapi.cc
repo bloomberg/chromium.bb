@@ -629,7 +629,7 @@ BOOL __stdcall ReactivateChrome(wchar_t* brand_code,
     if (SetReactivationBrandCode(brand_code, shell_mode)) {
       // Currently set this as a best-effort thing. We return TRUE if
       // reactivation succeeded regardless of the experiment label result.
-      SetOmahaExperimentLabel(brand_code, shell_mode);
+      SetReactivationExperimentLabels(brand_code, shell_mode);
 
       result = TRUE;
     } else {
@@ -640,4 +640,3 @@ BOOL __stdcall ReactivateChrome(wchar_t* brand_code,
 
   return result;
 }
-

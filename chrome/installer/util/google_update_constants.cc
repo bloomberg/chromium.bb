@@ -7,6 +7,9 @@
 namespace google_update {
 
 const wchar_t kChromeUpgradeCode[] = L"{8A69D345-D564-463C-AFF1-A69D9E530F96}";
+
+const wchar_t kExperimentLabels[] = L"experiment_labels";
+
 const wchar_t kGoogleUpdateUpgradeCode[] =
     L"{430FD4D0-B729-4F61-AA34-91526481799D}";
 

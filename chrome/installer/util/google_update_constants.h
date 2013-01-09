@@ -11,6 +11,11 @@ namespace google_update {
 
 // The GUID Google Update uses to keep track of Chrome upgrades.
 extern const wchar_t kChromeUpgradeCode[];
+
+// The name of the value where Google Update reads the list of experiments for
+// itself and Chrome.
+extern const wchar_t kExperimentLabels[];
+
 // The GUID Google Update uses to keep track of Google Update self-upgrades.
 extern const wchar_t kGoogleUpdateUpgradeCode[];
 

@@ -248,6 +248,15 @@ class GoogleUpdateSettings {
   // GetUpdateDetailForApp with the app guid stored in BrowserDistribution.)
   static bool GetUpdateDetail(bool system_install, ProductData* data);
 
+  // Sets |experiment_labels| as the Omaha experiment_labels value in the
+  // ClientState key for this Chrome product, if appropriate. If
+  // |experiment_labels| is empty, this will delete the value instead. This will
+  // return true if the label was successfully set (or deleted), false otherwise
+  // (even if the label does not need to be set for this particular distribution
+  // type).
+  static bool SetExperimentLabels(bool system_install,
+                                  const string16& experiment_labels);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(GoogleUpdateSettings);
 };

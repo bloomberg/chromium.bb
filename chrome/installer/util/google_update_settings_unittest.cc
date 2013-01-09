@@ -36,11 +36,12 @@ const GoogleUpdateSettings::UpdatePolicy kDefaultUpdatePolicy =
 #endif
 
 const wchar_t kTestProductGuid[] = L"{89F1B351-B15D-48D4-8F10-1298721CF13D}";
+const wchar_t kTestExperimentLabel[] = L"test_label_value";
 
 // This test fixture redirects the HKLM and HKCU registry hives for
 // the duration of the test to make it independent of the machine
 // and user settings.
-class GoogleUpdateSettingsTest: public testing::Test {
+class GoogleUpdateSettingsTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     registry_overrides_.OverrideRegistry(HKEY_LOCAL_MACHINE, L"HKLM_pit");
@@ -110,6 +111,47 @@ class GoogleUpdateSettingsTest: public testing::Test {
         }
       }
     }
+  }
+
+  // Test the writing and deleting functionality of the experiments label
+  // helper.
+  void TestExperimentsLabelHelper(SystemUserInstall install) {
+    BrowserDistribution* chrome =
+        BrowserDistribution::GetSpecificDistribution(
+            BrowserDistribution::CHROME_BROWSER);
+#if defined(GOOGLE_CHROME_BUILD)
+    EXPECT_TRUE(chrome->ShouldSetExperimentLabels());
+
+    EXPECT_TRUE(GoogleUpdateSettings::SetExperimentLabels(
+        install == SYSTEM_INSTALL, kTestExperimentLabel));
+
+    // Validate that something is written. Only worry about the label itself.
+    RegKey key;
+    std::wstring value;
+    HKEY root = install == SYSTEM_INSTALL ?
+        HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+    string16 state_key = install == SYSTEM_INSTALL ?
+        chrome->GetStateMediumKey() : chrome->GetStateKey();
+
+    EXPECT_EQ(ERROR_SUCCESS,
+              key.Open(root, state_key.c_str(), KEY_QUERY_VALUE));
+    EXPECT_EQ(ERROR_SUCCESS,
+        key.ReadValue(google_update::kExperimentLabels, &value));
+    EXPECT_EQ(kTestExperimentLabel, value);
+    key.Close();
+
+    // Now that the label is set, test the delete functionality. An empty label
+    // should result in deleting the value.
+    EXPECT_TRUE(GoogleUpdateSettings::SetExperimentLabels(
+        install == SYSTEM_INSTALL, string16()));
+    EXPECT_EQ(ERROR_SUCCESS,
+              key.Open(root, state_key.c_str(), KEY_QUERY_VALUE));
+    EXPECT_EQ(ERROR_FILE_NOT_FOUND,
+        key.ReadValue(google_update::kExperimentLabels, &value));
+    key.Close();
+#else
+    EXPECT_FALSE(chrome->ShouldSetExperimentLabels());
+#endif  // GOOGLE_CHROME_BUILD
   }
 
   // Creates "ap" key with the value given as parameter. Also adds work
@@ -553,6 +595,14 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyAppOverride) {
             GoogleUpdateSettings::GetAppUpdatePolicy(kTestProductGuid,
                                                      &is_overridden));
   EXPECT_FALSE(is_overridden);
+}
+
+TEST_F(GoogleUpdateSettingsTest, ExperimentsLabelHelperSystem) {
+  TestExperimentsLabelHelper(SYSTEM_INSTALL);
+}
+
+TEST_F(GoogleUpdateSettingsTest, ExperimentsLabelHelperUser) {
+  TestExperimentsLabelHelper(USER_INSTALL);
 }
 
 #endif  // defined(GOOGLE_CHROME_BUILD)

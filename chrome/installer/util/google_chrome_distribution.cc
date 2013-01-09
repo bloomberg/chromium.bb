@@ -868,5 +868,8 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
                                                      GetType()));
   base::LaunchProcess(cmd, base::LaunchOptions(), NULL);
 }
+#endif  // ifndef _WIN64
 
-#endif
+bool GoogleChromeDistribution::ShouldSetExperimentLabels() {
+  return true;
+}

@@ -175,3 +175,8 @@ bool GoogleChromeDistribution::BuildUninstallMetricsString(
   NOTREACHED();
   return false;
 }
+
+bool GoogleChromeDistribution::ShouldSetExperimentLabels() {
+  NOTREACHED();
+  return false;
+}

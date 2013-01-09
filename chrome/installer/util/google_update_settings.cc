@@ -642,3 +642,29 @@ bool GoogleUpdateSettings::GetUpdateDetail(bool system_install,
                                dist->GetAppGuid().c_str(),
                                data);
 }
+
+bool GoogleUpdateSettings::SetExperimentLabels(
+    bool system_install,
+    const string16& experiment_labels) {
+  HKEY reg_root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+
+  // Use the browser distribution and install level to write to the correct
+  // client state/app guid key.
+  bool success = false;
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  if (dist->ShouldSetExperimentLabels()) {
+    string16 client_state_path(
+        system_install ? dist->GetStateMediumKey() : dist->GetStateKey());
+    RegKey client_state(
+        reg_root, client_state_path.c_str(), KEY_SET_VALUE);
+    if (experiment_labels.empty()) {
+      success = client_state.DeleteValue(google_update::kExperimentLabels)
+          == ERROR_SUCCESS;
+    } else {
+      success = client_state.WriteValue(google_update::kExperimentLabels,
+          experiment_labels.c_str()) == ERROR_SUCCESS;
+    }
+  }
+
+  return success;
+}

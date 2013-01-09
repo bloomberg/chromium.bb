@@ -105,6 +105,8 @@ class GoogleChromeDistribution : public BrowserDistribution {
       const installer::Product& installation,
       const FilePath& application_path) OVERRIDE;
 
+  virtual bool ShouldSetExperimentLabels() OVERRIDE;
+
   const string16& product_guid() { return product_guid_; }
 
  protected:

@@ -6,25 +6,16 @@
 
 #include "base/string16.h"
 #include "base/stringprintf.h"
-#include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/win/registry.h"
-#include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/gcapi/gcapi.h"
+#include "chrome/installer/util/google_update_settings.h"
 
 using base::Time;
 using base::TimeDelta;
 using base::win::RegKey;
 
 namespace {
-
-const wchar_t kExperimentLabels[] = L"experiment_labels";
-
-const wchar_t* kExperimentAppGuids[] = {
-    L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}",
-    L"{8A69D345-D564-463C-AFF1-A69D9E530F96}",
-};
 
 const wchar_t* kDays[] =
     { L"Sun", L"Mon", L"Tue", L"Wed", L"Thu", L"Fri", L"Sat" };
@@ -74,44 +65,24 @@ int GetCurrentRlzWeek() {
 
 }  // namespace
 
-bool SetOmahaExperimentLabel(const wchar_t* brand_code, int shell_mode) {
+bool SetReactivationExperimentLabels(const wchar_t* brand_code,
+                                     int shell_mode) {
   if (!brand_code) {
     return false;
   }
-
-  // When this function is invoked in standard, non-elevated shell, we default
-  // to writing the experiment label to HKCU.  When it is invoked in a UAC-
-  // elevated shell, we write the experiment label to HKLM.
-  HKEY registry_hive =
-      shell_mode == GCAPI_INVOKED_UAC_ELEVATION ? HKEY_LOCAL_MACHINE :
-                                                  HKEY_CURRENT_USER;
 
   int week_number = GetCurrentRlzWeek();
   if (week_number < 0 || week_number > 999)
     week_number = 999;
 
-  string16 experiment_label;
-  base::SStringPrintf(&experiment_label,
+  string16 experiment_labels;
+  base::SStringPrintf(&experiment_labels,
                       L"reacbrand=%ls_%d|%ls",
                       brand_code,
                       week_number,
                       BuildOmahaExperimentDateString().c_str());
 
-  int successful_writes = 0;
-  for (int i = 0; i < arraysize(kExperimentAppGuids); ++i) {
-    string16 experiment_path(google_update::kRegPathClientState);
-    experiment_path += L"\\";
-    experiment_path += kExperimentAppGuids[i];
-
-    RegKey client_state(registry_hive, experiment_path.c_str(),
-                        KEY_SET_VALUE);
-    if (client_state.Valid()) {
-      if (client_state.WriteValue(kExperimentLabels,
-                                  experiment_label.c_str()) == ERROR_SUCCESS) {
-        successful_writes++;
-      }
-    }
-  }
-
-  return (successful_writes == arraysize(kExperimentAppGuids));
+  return GoogleUpdateSettings::SetExperimentLabels(
+      shell_mode == GCAPI_INVOKED_UAC_ELEVATION,
+      experiment_labels);
 }
