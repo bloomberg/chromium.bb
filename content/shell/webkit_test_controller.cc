@@ -273,9 +273,10 @@ void WebKitTestController::PluginCrashed(const FilePath& plugin_path) {
 
 void WebKitTestController::RenderViewCreated(RenderViewHost* render_view_host) {
   DCHECK(CalledOnValidThread());
-  // Might be kNullProcessId, in which case we will receive a notification later
-  // when the RenderProcessHost was created.
-  current_pid_ = base::GetProcId(render_view_host->GetProcess()->GetHandle());
+  // Might be kNullProcessHandle, in which case we will receive a notification
+  // later when the RenderProcessHost was created.
+  if (render_view_host->GetProcess()->GetHandle() != base::kNullProcessHandle)
+    current_pid_ = base::GetProcId(render_view_host->GetProcess()->GetHandle());
   render_view_host->Send(new ShellViewMsg_SetCurrentWorkingDirectory(
       render_view_host->GetRoutingID(), current_working_directory_));
 }
