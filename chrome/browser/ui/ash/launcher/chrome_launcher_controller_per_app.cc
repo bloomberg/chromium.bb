@@ -434,13 +434,14 @@ void ChromeLauncherControllerPerApp::ActivateApp(const std::string& app_id,
 
   // If there is an existing non-shortcut controller for this app, open it.
   ash::LauncherID id = GetLauncherIDForAppID(app_id);
-
-  // Only pinned applications will be handled.
-  if (!id)
+  if (id) {
+    LauncherItemController* controller = id_to_item_controller_map_[id];
+    controller->Activate();
     return;
+  }
 
-  LauncherItemController* controller = id_to_item_controller_map_[id];
-  controller->Activate();
+  // Otherwise launch the app.
+  LaunchApp(app_id, event_flags);
 }
 
 extensions::ExtensionPrefs::LaunchType
