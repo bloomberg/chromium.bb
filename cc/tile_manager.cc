@@ -184,7 +184,7 @@ TileManager::TileManager(
     scoped_ptr<RasterThread> thread = make_scoped_ptr(
         new RasterThread(thread_name_prefix +
                          StringPrintf("Worker%d", thread_number).c_str()));
-    raster_threads_.append(thread.Pass());
+    raster_threads_.push_back(thread.Pass());
   }
 
   ResetBinCounts();

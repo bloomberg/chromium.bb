@@ -139,10 +139,10 @@ TEST_F(GLRendererPixelTest, simpleGreenRect) {
   scoped_ptr<SolidColorDrawQuad> color_quad = SolidColorDrawQuad::Create();
   color_quad->SetNew(shared_state.get(), rect, SK_ColorGREEN);
 
-  pass->quad_list.append(color_quad.PassAs<DrawQuad>());
+  pass->quad_list.push_back(color_quad.PassAs<DrawQuad>());
 
   RenderPassList pass_list;
-  pass_list.append(pass.Pass());
+  pass_list.push_back(pass.Pass());
 
   renderer_->drawFrame(pass_list);
 
@@ -171,19 +171,19 @@ TEST_F(GLRendererPixelTest, RenderPassChangesSize) {
   scoped_ptr<SolidColorDrawQuad> yellow = SolidColorDrawQuad::Create();
   yellow->SetNew(shared_state.get(), gfx::Rect(100, 0, 100, 200), SK_ColorYELLOW);
 
-  child_pass->quad_list.append(blue.PassAs<DrawQuad>());
-  child_pass->quad_list.append(yellow.PassAs<DrawQuad>());
+  child_pass->quad_list.push_back(blue.PassAs<DrawQuad>());
+  child_pass->quad_list.push_back(yellow.PassAs<DrawQuad>());
 
   scoped_ptr<SharedQuadState> pass_shared_state =
       CreateTestSharedQuadState(gfx::Transform(), pass_rect);
-  root_pass->quad_list.append(
+  root_pass->quad_list.push_back(
       CreateTestRenderPassDrawQuad(pass_shared_state.get(),
                                    pass_rect,
                                    child_pass_id));
 
   RenderPassList pass_list;
-  pass_list.append(child_pass.Pass());
-  pass_list.append(root_pass.Pass());
+  pass_list.push_back(child_pass.Pass());
+  pass_list.push_back(root_pass.Pass());
 
   renderer_->setEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
   renderer_->decideRenderPassAllocationsForFrame(pass_list);

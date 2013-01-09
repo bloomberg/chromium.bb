@@ -203,6 +203,7 @@
       'scheduler.h',
       'scheduler_state_machine.cc',
       'scheduler_state_machine.h',
+      'scoped_ptr_algorithm.h',
       'scoped_ptr_deque.h',
       'scoped_ptr_hash_map.h',
       'scoped_ptr_vector.h',

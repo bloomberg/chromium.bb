@@ -24,7 +24,7 @@ DelegatedRendererLayerImpl::~DelegatedRendererLayerImpl()
 
 bool DelegatedRendererLayerImpl::hasDelegatedContent() const
 {
-    return !m_renderPassesInDrawOrder.isEmpty();
+    return !m_renderPassesInDrawOrder.empty();
 }
 
 bool DelegatedRendererLayerImpl::hasContributingDelegatedRenderPasses() const
@@ -38,19 +38,19 @@ bool DelegatedRendererLayerImpl::hasContributingDelegatedRenderPasses() const
 void DelegatedRendererLayerImpl::setRenderPasses(ScopedPtrVector<RenderPass>& renderPassesInDrawOrder)
 {
     gfx::RectF oldRootDamage;
-    if (!m_renderPassesInDrawOrder.isEmpty())
-        oldRootDamage = m_renderPassesInDrawOrder.last()->damage_rect;
+    if (!m_renderPassesInDrawOrder.empty())
+        oldRootDamage = m_renderPassesInDrawOrder.back()->damage_rect;
 
     clearRenderPasses();
 
     for (size_t i = 0; i < renderPassesInDrawOrder.size(); ++i) {
         m_renderPassesIndexById.insert(std::pair<RenderPass::Id, int>(renderPassesInDrawOrder[i]->id, i));
-        m_renderPassesInDrawOrder.append(renderPassesInDrawOrder.take(i));
+        m_renderPassesInDrawOrder.push_back(renderPassesInDrawOrder.take(renderPassesInDrawOrder.begin() + i));
     }
     renderPassesInDrawOrder.clear();
 
-    if (!m_renderPassesInDrawOrder.isEmpty())
-        m_renderPassesInDrawOrder.last()->damage_rect.Union(oldRootDamage);
+    if (!m_renderPassesInDrawOrder.empty())
+        m_renderPassesInDrawOrder.back()->damage_rect.Union(oldRootDamage);
 }
 
 void DelegatedRendererLayerImpl::clearRenderPasses()
@@ -102,7 +102,7 @@ void DelegatedRendererLayerImpl::appendContributingRenderPasses(RenderPassSink& 
 
 void DelegatedRendererLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
 {
-    if (m_renderPassesInDrawOrder.isEmpty())
+    if (m_renderPassesInDrawOrder.empty())
         return;
 
     RenderPass::Id targetRenderPassId = appendQuadsData.renderPassId;
@@ -116,7 +116,7 @@ void DelegatedRendererLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData
         // Verify that the renderPass we are appending to is created our renderTarget.
         DCHECK(targetRenderPassId.layer_id == renderTarget()->id());
 
-        const RenderPass* rootDelegatedRenderPass = m_renderPassesInDrawOrder.last();
+        const RenderPass* rootDelegatedRenderPass = m_renderPassesInDrawOrder.back();
         appendRenderPassQuads(quadSink, appendQuadsData, rootDelegatedRenderPass);
     } else {
         // Verify that the renderPass we are appending to was created by us.
@@ -141,7 +141,7 @@ void DelegatedRendererLayerImpl::appendRenderPassQuads(QuadSink& quadSink, Appen
             bool targetIsFromDelegatedRendererLayer = appendQuadsData.renderPassId.layer_id == id();
             if (!targetIsFromDelegatedRendererLayer) {
               // Should be the root render pass.
-              DCHECK(delegatedRenderPass == m_renderPassesInDrawOrder.last());
+              DCHECK(delegatedRenderPass == m_renderPassesInDrawOrder.back());
               // This layer must be drawing to a renderTarget other than itself.
               DCHECK(renderTarget() != this);
 

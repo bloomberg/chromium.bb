@@ -22,7 +22,7 @@ TestRenderPass* addRenderPass(ScopedPtrVector<RenderPass>& passList,
   scoped_ptr<TestRenderPass> pass(TestRenderPass::Create());
   pass->SetNew(id, outputRect, outputRect, rootTransform);
   TestRenderPass* saved = pass.get();
-  passList.append(pass.PassAs<RenderPass>());
+  passList.push_back(pass.PassAs<RenderPass>());
   return saved;
 }
 

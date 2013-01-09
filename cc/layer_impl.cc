@@ -74,16 +74,16 @@ void LayerImpl::addChild(scoped_ptr<LayerImpl> child)
 {
     child->setParent(this);
     DCHECK_EQ(layerTreeImpl(), child->layerTreeImpl());
-    m_children.append(child.Pass());
+    m_children.push_back(child.Pass());
     layerTreeImpl()->SetNeedsUpdateDrawProperties();
 }
 
 scoped_ptr<LayerImpl> LayerImpl::removeChild(LayerImpl* child)
 {
-    for (size_t i = 0; i < m_children.size(); ++i) {
-        if (m_children[i] == child) {
-            scoped_ptr<LayerImpl> ret = m_children.take(i);
-            m_children.remove(i);
+    for (ScopedPtrVector<LayerImpl>::iterator it = m_children.begin(); it != m_children.end(); ++it) {
+        if (*it == child) {
+            scoped_ptr<LayerImpl> ret = m_children.take(it);
+            m_children.erase(it);
             layerTreeImpl()->SetNeedsUpdateDrawProperties();
             return ret.Pass();
         }
@@ -99,7 +99,7 @@ void LayerImpl::removeAllChildren()
 
 void LayerImpl::clearChildList()
 {
-    if (m_children.isEmpty())
+    if (m_children.empty())
         return;
 
     m_children.clear();

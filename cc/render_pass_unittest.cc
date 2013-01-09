@@ -53,8 +53,8 @@ TEST(RenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
     pass->AppendSharedQuadState(sharedState.Pass());
 
     scoped_ptr<CheckerboardDrawQuad> checkerboardQuad = CheckerboardDrawQuad::Create();
-    checkerboardQuad->SetNew(pass->shared_quad_state_list.last(), gfx::Rect(), SkColor());
-    pass->quad_list.append(checkerboardQuad.PassAs<DrawQuad>());
+    checkerboardQuad->SetNew(pass->shared_quad_state_list.back(), gfx::Rect(), SkColor());
+    pass->quad_list.push_back(checkerboardQuad.PassAs<DrawQuad>());
 
     RenderPass::Id newId(63, 4);
 

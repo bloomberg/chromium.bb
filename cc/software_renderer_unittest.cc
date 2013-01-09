@@ -90,7 +90,7 @@ TEST_F(SoftwareRendererTest, solidColorQuad)
     rootRenderPass->AppendQuad(outerQuad.PassAs<DrawQuad>());
 
     RenderPassList list;
-    list.append(rootRenderPass.PassAs<RenderPass>());
+    list.push_back(rootRenderPass.PassAs<RenderPass>());
     renderer()->drawFrame(list);
 
     scoped_array<SkColor> pixels(new SkColor[deviceViewportSize().width() * deviceViewportSize().height()]);
@@ -149,7 +149,7 @@ TEST_F(SoftwareRendererTest, tileQuad)
     rootRenderPass->AppendQuad(outerQuad.PassAs<DrawQuad>());
 
     RenderPassList list;
-    list.append(rootRenderPass.PassAs<RenderPass>());
+    list.push_back(rootRenderPass.PassAs<RenderPass>());
     renderer()->drawFrame(list);
 
     scoped_array<SkColor> pixels(new SkColor[deviceViewportSize().width() * deviceViewportSize().height()]);

@@ -142,16 +142,16 @@ double TextureUploader::estimatedTexturesPerSecond()
 
 void TextureUploader::beginQuery()
 {
-    if (m_availableQueries.isEmpty())
-      m_availableQueries.append(Query::create(m_context));
+    if (m_availableQueries.empty())
+      m_availableQueries.push_back(Query::create(m_context));
 
-    m_availableQueries.first()->begin();
+    m_availableQueries.front()->begin();
 }
 
 void TextureUploader::endQuery()
 {
-    m_availableQueries.first()->end();
-    m_pendingQueries.append(m_availableQueries.takeFirst());
+    m_availableQueries.front()->end();
+    m_pendingQueries.push_back(m_availableQueries.take_front());
     m_numBlockingTextureUploads++;
 }
 
@@ -342,18 +342,18 @@ void TextureUploader::uploadWithMapTexSubImage(const uint8* image,
 
 void TextureUploader::processQueries()
 {
-    while (!m_pendingQueries.isEmpty()) {
-        if (m_pendingQueries.first()->isPending())
+    while (!m_pendingQueries.empty()) {
+        if (m_pendingQueries.front()->isPending())
             break;
 
-        unsigned usElapsed = m_pendingQueries.first()->value();
+        unsigned usElapsed = m_pendingQueries.front()->value();
         HISTOGRAM_CUSTOM_COUNTS("Renderer4.TextureGpuUploadTimeUS", usElapsed, 0, 100000, 50);
 
         // Clamp the queries to saner values in case the queries fail.
         usElapsed = std::max(1u, usElapsed);
         usElapsed = std::min(15000u, usElapsed);
 
-        if (!m_pendingQueries.first()->isNonBlocking())
+        if (!m_pendingQueries.front()->isNonBlocking())
             m_numBlockingTextureUploads--;
 
         // Remove the min and max value from our history and insert the new one.
@@ -364,7 +364,7 @@ void TextureUploader::processQueries()
         }
         m_texturesPerSecondHistory.insert(texturesPerSecond);
 
-        m_availableQueries.append(m_pendingQueries.takeFirst());
+        m_availableQueries.push_back(m_pendingQueries.take_front());
     }
 }
 

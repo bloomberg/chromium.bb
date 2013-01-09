@@ -4,10 +4,13 @@
 
 #include "cc/layer_animation_controller.h"
 
+#include <algorithm>
+
 #include "cc/animation.h"
 #include "cc/animation_registrar.h"
 #include "cc/keyframed_animation_curve.h"
 #include "cc/layer_animation_value_observer.h"
+#include "cc/scoped_ptr_algorithm.h"
 #include "ui/gfx/transform.h"
 
 namespace {
@@ -63,25 +66,32 @@ void LayerAnimationController::pauseAnimation(int animationId, double timeOffset
     }
 }
 
+struct HasAnimationId {
+    HasAnimationId(int id) : m_id(id) { }
+    bool operator()(Animation* animation) const { return animation->id() == m_id; }
+private:
+    int m_id;
+};
+
 void LayerAnimationController::removeAnimation(int animationId)
 {
-    for (size_t i = 0; i < m_activeAnimations.size();) {
-        if (m_activeAnimations[i]->id() == animationId)
-            m_activeAnimations.remove(i);
-        else
-            i++;
-    }
+    ScopedPtrVector<Animation>& animations = m_activeAnimations;
+    animations.erase(cc::remove_if(animations, animations.begin(), animations.end(), HasAnimationId(animationId)), animations.end());
     updateActivation();
 }
 
+struct HasAnimationIdAndProperty {
+    HasAnimationIdAndProperty(int id, Animation::TargetProperty targetProperty) : m_id(id), m_targetProperty(targetProperty) { }
+    bool operator()(Animation* animation) const { return animation->id() == m_id && animation->targetProperty() == m_targetProperty; }
+private:
+    int m_id;
+    Animation::TargetProperty m_targetProperty;
+};
+
 void LayerAnimationController::removeAnimation(int animationId, Animation::TargetProperty targetProperty)
 {
-    for (size_t i = 0; i < m_activeAnimations.size();) {
-        if (m_activeAnimations[i]->id() == animationId && m_activeAnimations[i]->targetProperty() == targetProperty)
-            m_activeAnimations.remove(i);
-        else
-            i++;
-    }
+    ScopedPtrVector<Animation>& animations = m_activeAnimations;
+    animations.erase(cc::remove_if(animations, animations.begin(), animations.end(), HasAnimationIdAndProperty(animationId, targetProperty)), animations.end());
     updateActivation();
 }
 
@@ -143,7 +153,7 @@ void LayerAnimationController::animate(double monotonicTime, AnimationEventsVect
 
 void LayerAnimationController::addAnimation(scoped_ptr<Animation> animation)
 {
-    m_activeAnimations.append(animation.Pass());
+    m_activeAnimations.push_back(animation.Pass());
     updateActivation();
 }
 
@@ -245,18 +255,20 @@ void LayerAnimationController::pushNewAnimationsToImplThread(LayerAnimationContr
     }
 }
 
+struct IsCompleted {
+    IsCompleted(const LayerAnimationController& mainThreadController) : m_mainThreadController(mainThreadController) { }
+    bool operator()(Animation* animation) const { return !m_mainThreadController.getAnimation(animation->group(), animation->targetProperty()); }
+private:
+    const LayerAnimationController& m_mainThreadController;
+};
+
 void LayerAnimationController::removeAnimationsCompletedOnMainThread(LayerAnimationController* controllerImpl) const
 {
     // Delete all impl thread animations for which there is no corresponding main thread animation.
     // Each iteration, controller->m_activeAnimations.size() is decremented or i is incremented
     // guaranteeing progress towards loop termination.
-    for (size_t i = 0; i < controllerImpl->m_activeAnimations.size();) {
-        Animation* current = getAnimation(controllerImpl->m_activeAnimations[i]->group(), controllerImpl->m_activeAnimations[i]->targetProperty());
-        if (!current)
-            controllerImpl->m_activeAnimations.remove(i);
-        else
-            i++;
-    }
+    ScopedPtrVector<Animation>& animations = controllerImpl->m_activeAnimations;
+    animations.erase(cc::remove_if(animations, animations.begin(), animations.end(), IsCompleted(*this)), animations.end());
 }
 
 void LayerAnimationController::pushPropertiesToImplThread(LayerAnimationController* controllerImpl) const
@@ -390,14 +402,12 @@ void LayerAnimationController::markAnimationsForDeletion(double monotonicTime, A
     }
 }
 
+static bool isWaitingForDeletion(Animation* animation) { return animation->runState() == Animation::WaitingForDeletion; }
+
 void LayerAnimationController::purgeAnimationsMarkedForDeletion()
 {
-    for (size_t i = 0; i < m_activeAnimations.size();) {
-        if (m_activeAnimations[i]->runState() == Animation::WaitingForDeletion)
-            m_activeAnimations.remove(i);
-        else
-            i++;
-    }
+    ScopedPtrVector<Animation>& animations = m_activeAnimations;
+    animations.erase(cc::remove_if(animations, animations.begin(), animations.end(), isWaitingForDeletion), animations.end());
 }
 
 void LayerAnimationController::replaceImplThreadAnimations(LayerAnimationController* controllerImpl) const
@@ -462,11 +472,11 @@ void LayerAnimationController::tickAnimations(double monotonicTime)
 void LayerAnimationController::updateActivation(bool force)
 {
     if (m_registrar) {
-        if (!m_activeAnimations.isEmpty() && (!m_isActive || force))
+        if (!m_activeAnimations.empty() && (!m_isActive || force))
             m_registrar->DidActivateAnimationController(this);
-        else if (m_activeAnimations.isEmpty() && (m_isActive || force))
+        else if (m_activeAnimations.empty() && (m_isActive || force))
             m_registrar->DidDeactivateAnimationController(this);
-        m_isActive = !m_activeAnimations.isEmpty();
+        m_isActive = !m_activeAnimations.empty();
     }
 }
 

@@ -162,7 +162,7 @@ void DirectRenderer::drawFrame(RenderPassList& renderPassesInDrawOrder)
     TRACE_EVENT0("cc", "DirectRenderer::drawFrame");
     HISTOGRAM_COUNTS("Renderer4.renderPassCount", renderPassesInDrawOrder.size());
 
-    const RenderPass* rootRenderPass = renderPassesInDrawOrder.last();
+    const RenderPass* rootRenderPass = renderPassesInDrawOrder.back();
     DCHECK(rootRenderPass);
 
     DrawingFrame frame;

@@ -31,7 +31,7 @@ SharedQuadState* QuadCuller::useSharedQuadState(scoped_ptr<SharedQuadState> shar
 {
     // FIXME: If all quads are culled for the sharedQuadState, we can drop it from the list.
     m_currentSharedQuadState = sharedQuadState.get();
-    m_sharedQuadStateList.append(sharedQuadState.Pass());
+    m_sharedQuadStateList.push_back(sharedQuadState.Pass());
     return m_currentSharedQuadState;
 }
 
@@ -51,11 +51,11 @@ static inline bool appendQuadInternal(scoped_ptr<DrawQuad> drawQuad, const gfx::
             float width = DebugColors::CulledTileBorderWidth(layer ? layer->layerTreeImpl() : NULL);
             scoped_ptr<DebugBorderDrawQuad> debugBorderQuad = DebugBorderDrawQuad::Create();
             debugBorderQuad->SetNew(drawQuad->shared_quad_state, drawQuad->visible_rect, color, width);
-            quadList.append(debugBorderQuad.PassAs<DrawQuad>());
+            quadList.push_back(debugBorderQuad.PassAs<DrawQuad>());
         }
 
         // Pass the quad after we're done using it.
-        quadList.append(drawQuad.Pass());
+        quadList.push_back(drawQuad.Pass());
     }
     return keepQuad;
 }
@@ -63,8 +63,8 @@ static inline bool appendQuadInternal(scoped_ptr<DrawQuad> drawQuad, const gfx::
 bool QuadCuller::append(scoped_ptr<DrawQuad> drawQuad, AppendQuadsData& appendQuadsData)
 {
     DCHECK(drawQuad->shared_quad_state == m_currentSharedQuadState);
-    DCHECK(!m_sharedQuadStateList.isEmpty());
-    DCHECK(m_sharedQuadStateList.last() == m_currentSharedQuadState);
+    DCHECK(!m_sharedQuadStateList.empty());
+    DCHECK(m_sharedQuadStateList.back() == m_currentSharedQuadState);
 
     gfx::Rect culledRect;
     bool hasOcclusionFromOutsideTargetSurface;

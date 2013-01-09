@@ -429,7 +429,7 @@ void LayerTreeHostImpl::updateDrawProperties()
 void LayerTreeHostImpl::FrameData::appendRenderPass(scoped_ptr<RenderPass> renderPass)
 {
     renderPassesById[renderPass->id] = renderPass.get();
-    renderPasses.append(renderPass.Pass());
+    renderPasses.push_back(renderPass.Pass());
 }
 
 static void appendQuadsForLayer(RenderPass* targetRenderPass, LayerImpl* layer, OcclusionTrackerImpl& occlusionTracker, AppendQuadsData& appendQuadsData)
@@ -520,7 +520,7 @@ static void appendQuadsToFillScreen(RenderPass* targetRenderPass, LayerImpl* roo
 
 bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
 {
-    DCHECK(frame.renderPasses.isEmpty());
+    DCHECK(frame.renderPasses.empty());
 
     if (!canDraw() || !rootLayer())
       return false;
@@ -616,8 +616,8 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
 #endif
 
     if (!activeTree()->has_transparent_background()) {
-        frame.renderPasses.last()->has_transparent_background = false;
-        appendQuadsToFillScreen(frame.renderPasses.last(), rootLayer(), activeTree()->background_color(), occlusionTracker);
+        frame.renderPasses.back()->has_transparent_background = false;
+        appendQuadsToFillScreen(frame.renderPasses.back(), rootLayer(), activeTree()->background_color(), occlusionTracker);
     }
 
     if (drawFrame)
@@ -661,9 +661,8 @@ static void removeRenderPassesRecursive(RenderPass::Id removeRenderPassId, Layer
 
     DCHECK(toRemove != renderPasses.end());
 
-    size_t index = toRemove - renderPasses.begin();
-    scoped_ptr<RenderPass> removedPass = renderPasses.take(index);
-    frame.renderPasses.remove(index);
+    scoped_ptr<RenderPass> removedPass = renderPasses.take(toRemove);
+    frame.renderPasses.erase(toRemove);
     frame.renderPassesById.erase(removeRenderPassId);
 
     // Now follow up for all RenderPass quads and remove their RenderPasses recursively.
@@ -880,7 +879,7 @@ void LayerTreeHostImpl::drawLayers(FrameData& frame)
 {
     TRACE_EVENT0("cc", "LayerTreeHostImpl::drawLayers");
     DCHECK(canDraw());
-    DCHECK(!frame.renderPasses.isEmpty());
+    DCHECK(!frame.renderPasses.empty());
 
     // FIXME: use the frame begin time from the overall compositor scheduler.
     // This value is currently inaccessible because it is up in Chromium's
@@ -897,7 +896,7 @@ void LayerTreeHostImpl::drawLayers(FrameData& frame)
 
     m_renderer->drawFrame(frame.renderPasses);
     // The render passes should be consumed by the renderer.
-    DCHECK(frame.renderPasses.isEmpty());
+    DCHECK(frame.renderPasses.empty());
     frame.renderPassesById.clear();
 
     // The next frame should start by assuming nothing has changed, and changes are noted as they occur.

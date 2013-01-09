@@ -20,10 +20,10 @@ class TestRenderPass : public cc::RenderPass {
   }
 
   void AppendQuad(scoped_ptr<cc::DrawQuad> quad) {
-    quad_list.append(quad.Pass());
+    quad_list.push_back(quad.Pass());
   }
   void AppendSharedQuadState(scoped_ptr<cc::SharedQuadState> state) {
-    shared_quad_state_list.append(state.Pass());
+    shared_quad_state_list.push_back(state.Pass());
   }
 
   void AppendOneOfEveryQuadType(cc::ResourceProvider*);

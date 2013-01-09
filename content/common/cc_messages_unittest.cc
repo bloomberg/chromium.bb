@@ -360,16 +360,16 @@ TEST_F(CCMessagesTest, AllQuads) {
                   arbitrary_bool1,
                   arbitrary_bool2);
 
-  pass_in->shared_quad_state_list.append(shared_state1_in.Pass());
-  pass_in->quad_list.append(checkerboard_in.PassAs<DrawQuad>());
-  pass_in->quad_list.append(debugborder_in.PassAs<DrawQuad>());
-  pass_in->quad_list.append(iosurface_in.PassAs<DrawQuad>());
-  pass_in->quad_list.append(renderpass_in.PassAs<DrawQuad>());
-  pass_in->shared_quad_state_list.append(shared_state2_in.Pass());
-  pass_in->shared_quad_state_list.append(shared_state3_in.Pass());
-  pass_in->quad_list.append(solidcolor_in.PassAs<DrawQuad>());
-  pass_in->quad_list.append(streamvideo_in.PassAs<DrawQuad>());
-  pass_in->quad_list.append(yuvvideo_in.PassAs<DrawQuad>());
+  pass_in->shared_quad_state_list.push_back(shared_state1_in.Pass());
+  pass_in->quad_list.push_back(checkerboard_in.PassAs<DrawQuad>());
+  pass_in->quad_list.push_back(debugborder_in.PassAs<DrawQuad>());
+  pass_in->quad_list.push_back(iosurface_in.PassAs<DrawQuad>());
+  pass_in->quad_list.push_back(renderpass_in.PassAs<DrawQuad>());
+  pass_in->shared_quad_state_list.push_back(shared_state2_in.Pass());
+  pass_in->shared_quad_state_list.push_back(shared_state3_in.Pass());
+  pass_in->quad_list.push_back(solidcolor_in.PassAs<DrawQuad>());
+  pass_in->quad_list.push_back(streamvideo_in.PassAs<DrawQuad>());
+  pass_in->quad_list.push_back(yuvvideo_in.PassAs<DrawQuad>());
 
   scoped_ptr<RenderPass> pass_cmp = RenderPass::Create();
   pass_cmp->SetAll(arbitrary_id,
@@ -379,16 +379,16 @@ TEST_F(CCMessagesTest, AllQuads) {
                    arbitrary_bool1,
                    arbitrary_bool2);
 
-  pass_cmp->shared_quad_state_list.append(shared_state1_cmp.Pass());
-  pass_cmp->quad_list.append(checkerboard_cmp.PassAs<DrawQuad>());
-  pass_cmp->quad_list.append(debugborder_cmp.PassAs<DrawQuad>());
-  pass_cmp->quad_list.append(iosurface_cmp.PassAs<DrawQuad>());
-  pass_cmp->quad_list.append(renderpass_cmp.PassAs<DrawQuad>());
-  pass_cmp->shared_quad_state_list.append(shared_state2_cmp.Pass());
-  pass_cmp->shared_quad_state_list.append(shared_state3_cmp.Pass());
-  pass_cmp->quad_list.append(solidcolor_cmp.PassAs<DrawQuad>());
-  pass_cmp->quad_list.append(streamvideo_cmp.PassAs<DrawQuad>());
-  pass_cmp->quad_list.append(yuvvideo_cmp.PassAs<DrawQuad>());
+  pass_cmp->shared_quad_state_list.push_back(shared_state1_cmp.Pass());
+  pass_cmp->quad_list.push_back(checkerboard_cmp.PassAs<DrawQuad>());
+  pass_cmp->quad_list.push_back(debugborder_cmp.PassAs<DrawQuad>());
+  pass_cmp->quad_list.push_back(iosurface_cmp.PassAs<DrawQuad>());
+  pass_cmp->quad_list.push_back(renderpass_cmp.PassAs<DrawQuad>());
+  pass_cmp->shared_quad_state_list.push_back(shared_state2_cmp.Pass());
+  pass_cmp->shared_quad_state_list.push_back(shared_state3_cmp.Pass());
+  pass_cmp->quad_list.push_back(solidcolor_cmp.PassAs<DrawQuad>());
+  pass_cmp->quad_list.push_back(streamvideo_cmp.PassAs<DrawQuad>());
+  pass_cmp->quad_list.push_back(yuvvideo_cmp.PassAs<DrawQuad>());
 
   // Make sure the in and cmp RenderPasses match.
   Compare(pass_cmp.get(), pass_in.get());
@@ -412,7 +412,7 @@ TEST_F(CCMessagesTest, AllQuads) {
 
   DelegatedFrameData frame_in;
   frame_in.size = arbitrary_size1;
-  frame_in.render_pass_list.append(pass_in.Pass());
+  frame_in.render_pass_list.push_back(pass_in.Pass());
 
   IPC::ParamTraits<DelegatedFrameData>::Write(&msg, frame_in);
 
@@ -424,7 +424,8 @@ TEST_F(CCMessagesTest, AllQuads) {
   EXPECT_EQ(arbitrary_size1, frame_out.size);
 
   // Make sure the out and cmp RenderPasses match.
-  scoped_ptr<RenderPass> pass_out = frame_out.render_pass_list.take(0);
+  scoped_ptr<RenderPass> pass_out = frame_out.render_pass_list.take(
+      frame_out.render_pass_list.begin());
   Compare(pass_cmp.get(), pass_out.get());
   ASSERT_EQ(3u, pass_out->shared_quad_state_list.size());
   ASSERT_EQ(7u, pass_out->quad_list.size());

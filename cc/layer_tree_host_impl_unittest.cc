@@ -3797,7 +3797,7 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
             }
         }
         testData.renderPassesById[renderPassId] = renderPass.get();
-        testData.renderPasses.insert(0, renderPass.PassAs<RenderPass>());
+        testData.renderPasses.insert(testData.renderPasses.begin(), renderPass.PassAs<RenderPass>());
         if (*currentChar)
             currentChar++;
     }
@@ -4389,7 +4389,7 @@ protected:
         ASSERT_EQ(1u, frame.renderPasses.size());
 
         // Verify the damage rect for the root render pass.
-        const RenderPass* rootRenderPass = frame.renderPasses.last();
+        const RenderPass* rootRenderPass = frame.renderPasses.back();
         EXPECT_RECT_EQ(expectedDamage, rootRenderPass->damage_rect);
 
         // Verify the root layer's quad is generated and not being culled.

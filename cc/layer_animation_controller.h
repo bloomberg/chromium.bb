@@ -62,7 +62,7 @@ public:
     bool hasActiveAnimation() const;
 
     // Returns true if there are any animations at all to process.
-    bool hasAnyAnimation() const { return !m_activeAnimations.isEmpty(); }
+    bool hasAnyAnimation() const { return !m_activeAnimations.empty(); }
 
     // Returns true if there is an animation currently animating the given property, or
     // if there is an animation scheduled to animate this property in the future.

@@ -408,7 +408,7 @@ bool ParamTraits<cc::RenderPass>::Read(
     scoped_ptr<cc::SharedQuadState> state(cc::SharedQuadState::Create());
     if (!ReadParam(m, iter, state.get()))
       return false;
-    p->shared_quad_state_list.append(state.Pass());
+    p->shared_quad_state_list.push_back(state.Pass());
   }
 
   size_t last_shared_quad_state_index = 0;
@@ -465,7 +465,7 @@ bool ParamTraits<cc::RenderPass>::Read(
     draw_quad->shared_quad_state =
         p->shared_quad_state_list[shared_quad_state_index];
 
-    p->quad_list.append(draw_quad.Pass());
+    p->quad_list.push_back(draw_quad.Pass());
   }
 
   return true;
@@ -637,7 +637,7 @@ bool ParamTraits<cc::DelegatedFrameData>::Read(const Message* m,
     scoped_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
     if (!ReadParam(m, iter, render_pass.get()))
       return false;
-    p->render_pass_list.append(render_pass.Pass());
+    p->render_pass_list.push_back(render_pass.Pass());
   }
   return true;
 }

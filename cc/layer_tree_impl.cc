@@ -157,7 +157,7 @@ const LayerTreeImpl::LayerList& LayerTreeImpl::RenderSurfaceLayerList() const {
 gfx::Size LayerTreeImpl::ContentSize() const {
   // TODO(aelias): Hardcoding the first child here is weird. Think of
   // a cleaner way to get the contentBounds on the Impl side.
-  if (!root_scroll_layer() || root_scroll_layer()->children().isEmpty())
+  if (!root_scroll_layer() || root_scroll_layer()->children().empty())
     return gfx::Size();
   return root_scroll_layer()->children()[0]->contentBounds();
 }

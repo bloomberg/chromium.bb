@@ -196,7 +196,7 @@ public:
         memcpy(pending->mailbox, mailbox, sizeof(pending->mailbox));
         pending->texture = m_textures.take(m_currentTexture);
         m_textures.set(m_currentTexture, scoped_ptr<Texture>());
-        m_pendingProduceTextures.append(pending.Pass());
+        m_pendingProduceTextures.push_back(pending.Pass());
     }
 
     virtual void consumeTextureCHROMIUM(WGC3Denum target, const WGC3Dbyte* mailbox)

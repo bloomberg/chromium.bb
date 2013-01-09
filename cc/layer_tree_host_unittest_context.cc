@@ -693,15 +693,15 @@ class LayerTreeHostContextTestDontUseLostResources :
       pass->AppendOneOfEveryQuadType(resource_provider);
 
       ScopedPtrVector<RenderPass> pass_list;
-      pass_list.append(pass_for_quad.PassAs<RenderPass>());
-      pass_list.append(pass.PassAs<RenderPass>());
+      pass_list.push_back(pass_for_quad.PassAs<RenderPass>());
+      pass_list.push_back(pass.PassAs<RenderPass>());
 
       // First child is the delegated layer.
       DelegatedRendererLayerImpl* delegated_impl =
           static_cast<DelegatedRendererLayerImpl*>(
               host_impl->rootLayer()->children()[0]);
       delegated_impl->setRenderPasses(pass_list);
-      EXPECT_TRUE(pass_list.isEmpty());
+      EXPECT_TRUE(pass_list.empty());
 
       color_video_frame_ = VideoFrame::CreateColorFrame(
           gfx::Size(4, 4), 0x80, 0x80, 0x80, base::TimeDelta());

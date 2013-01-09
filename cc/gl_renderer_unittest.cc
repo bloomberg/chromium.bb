@@ -72,7 +72,7 @@ public:
         RenderPass::Id renderPassId = m_rootLayer->renderSurface()->renderPassId();
         scoped_ptr<RenderPass> rootRenderPass = RenderPass::Create();
         rootRenderPass->SetNew(renderPassId, gfx::Rect(), gfx::Rect(), gfx::Transform());
-        m_renderPassesInDrawOrder.append(rootRenderPass.Pass());
+        m_renderPassesInDrawOrder.push_back(rootRenderPass.Pass());
     }
 
     // RendererClient methods.
@@ -92,7 +92,7 @@ public:
     int setFullRootLayerDamageCount() const { return m_setFullRootLayerDamageCount; }
     void setLastCallWasSetVisibilityPointer(bool* lastCallWasSetVisibility) { m_lastCallWasSetVisibility = lastCallWasSetVisibility; }
 
-    RenderPass* rootRenderPass() { return m_renderPassesInDrawOrder.last(); }
+    RenderPass* rootRenderPass() { return m_renderPassesInDrawOrder.back(); }
     RenderPassList& renderPassesInDrawOrder() { return m_renderPassesInDrawOrder; }
 
     size_t memoryAllocationLimitBytes() const { return m_memoryAllocationLimitBytes; }

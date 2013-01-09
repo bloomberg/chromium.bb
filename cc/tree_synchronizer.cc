@@ -36,8 +36,8 @@ void TreeSynchronizer::collectExistingLayerImplRecursive(ScopedPtrLayerImplMap& 
         return;
 
     ScopedPtrVector<LayerImpl>& children = layerImpl->m_children;
-    for (size_t i = 0; i < children.size(); ++i)
-        collectExistingLayerImplRecursive(oldLayers, children.take(i));
+    for (ScopedPtrVector<LayerImpl>::iterator it = children.begin(); it != children.end(); ++it)
+        collectExistingLayerImplRecursive(oldLayers, children.take(it));
 
     collectExistingLayerImplRecursive(oldLayers, layerImpl->takeMaskLayer());
     collectExistingLayerImplRecursive(oldLayers, layerImpl->takeReplicaLayer());
