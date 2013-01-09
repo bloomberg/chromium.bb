@@ -23,6 +23,18 @@
 
 namespace {
 
+// Makes sure that .jpg also shows .JPG. |data| is a std::string* in disguise.
+gboolean FileFilterCaseInsensitive(const GtkFileFilterInfo* file_info,
+                                   gpointer data) {
+  std::string* file_extension = reinterpret_cast<std::string*>(data);
+  return EndsWith(file_info->filename, *file_extension, false);
+}
+
+// Deletes |data| when gtk_file_filter_add_custom() is done with it.
+void OnFileFilterDataDestroyed(gpointer data) {
+  delete reinterpret_cast<std::string*>(data);
+}
+
 // Implementation of SelectFileDialog that shows a Gtk common dialog for
 // choosing a file or folder. This acts as a modal dialog.
 class SelectFileDialogImplGTK : public ui::SelectFileDialogImpl {
@@ -227,9 +239,14 @@ void SelectFileDialogImplGTK::AddFilters(GtkFileChooser* chooser) {
       if (!current_extension.empty()) {
         if (!filter)
           filter = gtk_file_filter_new();
-        std::string pattern = "*." + current_extension;
-        gtk_file_filter_add_pattern(filter, pattern.c_str());
-        fallback_labels.insert(pattern);
+        // |file_extension| is freed in |OnFileFilterDataDestroyed()|.
+        std::string* file_extension = new std::string("." + current_extension);
+        gtk_file_filter_add_custom(filter,
+                                   GTK_FILE_FILTER_FILENAME,
+                                   &FileFilterCaseInsensitive,
+                                   reinterpret_cast<gpointer>(file_extension),
+                                   &OnFileFilterDataDestroyed);
+        fallback_labels.insert(std::string("*").append(*file_extension));
       }
     }
     // We didn't find any non-empty extensions to filter on.
