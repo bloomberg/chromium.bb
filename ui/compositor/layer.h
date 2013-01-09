@@ -295,8 +295,8 @@ class COMPOSITOR_EXPORT Layer
   bool ConvertPointForAncestor(const Layer* ancestor, gfx::Point* point) const;
   bool ConvertPointFromAncestor(const Layer* ancestor, gfx::Point* point) const;
 
-  bool GetTransformRelativeTo(const Layer* ancestor,
-                              gfx::Transform* transform) const;
+  bool GetTargetTransformRelativeTo(const Layer* ancestor,
+                                    gfx::Transform* transform) const;
 
   // The only externally updated layers are ones that get their pixels from
   // WebKit and WebKit does not produce valid alpha values. All other layers
