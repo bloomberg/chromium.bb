@@ -129,14 +129,11 @@ class Emulator(object):
   # Time to wait for a "wait for boot complete" (property set on device).
   _WAITFORBOOT_TIMEOUT = 300
 
-  def __init__(self, new_avd_name, fast_and_loose):
+  def __init__(self, new_avd_name):
     """Init an Emulator.
 
     Args:
       nwe_avd_name: If set, will create a new temporary AVD.
-      fast_and_loose: Loosen up the rules for reliable running for speed.
-        Intended for quick testing or re-testing.
-
     """
     try:
       android_sdk_root = os.environ['ANDROID_SDK_ROOT']
@@ -149,7 +146,6 @@ class Emulator(object):
     self.popen = None
     self.device = None
     self.default_avd = True
-    self.fast_and_loose = fast_and_loose
     self.abi = 'armeabi-v7a'
     self.avd = 'avd_armeabi'
     if 'x86' in os.environ.get('TARGET_PRODUCT', ''):
@@ -211,8 +207,7 @@ class Emulator(object):
     """
     if kill_all_emulators:
       _KillAllEmulators()  # just to be sure
-    if not self.fast_and_loose:
-      self._AggressiveImageCleanup()
+    self._AggressiveImageCleanup()
     (self.device, port) = self._DeviceName()
     emulator_command = [
         self.emulator,
@@ -226,13 +221,12 @@ class Emulator(object):
         # Use a familiar name and port.
         '-avd', self.avd,
         '-port', str(port)]
-    if not self.fast_and_loose:
-      emulator_command.extend([
-          # Wipe the data.  We've seen cases where an emulator
-          # gets 'stuck' if we don't do this (every thousand runs or
-          # so).
-          '-wipe-data',
-          ])
+    emulator_command.extend([
+        # Wipe the data.  We've seen cases where an emulator
+        # gets 'stuck' if we don't do this (every thousand runs or
+        # so).
+        '-wipe-data',
+        ])
     logging.info('Emulator launch command: %s', ' '.join(emulator_command))
     self.popen = subprocess.Popen(args=emulator_command,
                                   stderr=subprocess.STDOUT)

@@ -115,14 +115,6 @@ def AddGTestOptions(option_parser):
                            help='Use Xvfb around tests (ignored if not Linux).')
   option_parser.add_option('--webkit', action='store_true',
                            help='Run the tests from a WebKit checkout.')
-  option_parser.add_option('--fast', '--fast_and_loose', dest='fast_and_loose',
-                           action='store_true',
-                           help='Go faster (but be less stable), '
-                           'for quick testing.  Example: when tracking down '
-                           'tests that hang to add to the disabled list, '
-                           'there is no need to redeploy the test binary '
-                           'or data to the device again.  '
-                           'Don\'t use on bots by default!')
   option_parser.add_option('--repeat', dest='repeat', type='int',
                            default=2,
                            help='Repeat count on test timeout.')

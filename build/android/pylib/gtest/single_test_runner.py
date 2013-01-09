@@ -39,7 +39,7 @@ class SingleTestRunner(BaseTestRunner):
 
   def __init__(self, device, test_suite, gtest_filter, test_arguments, timeout,
                cleanup_test_files, tool_name, shard_index, dump_debug_info,
-               fast_and_loose, build_type, in_webkit_checkout):
+               build_type, in_webkit_checkout):
     BaseTestRunner.__init__(self, device, tool_name, shard_index, build_type)
     self._running_on_emulator = self.device.startswith('emulator')
     self._gtest_filter = gtest_filter
@@ -51,7 +51,6 @@ class SingleTestRunner(BaseTestRunner):
           os.path.basename(test_suite), gtest_filter)
     else:
       self.dump_debug_info = None
-    self.fast_and_loose = fast_and_loose
     self.in_webkit_checkout = in_webkit_checkout
 
     logging.warning('Test suite: ' + test_suite)
@@ -222,7 +221,7 @@ class SingleTestRunner(BaseTestRunner):
     self.test_package.PushDataAndPakFiles()
     self.tool.CopyFiles()
     test_data = self.GetDataFilesForTestSuite()
-    if test_data and not self.fast_and_loose:
+    if test_data:
       # Make sure SD card is ready.
       self.adb.WaitForSdCardReady(20)
       for data in test_data:

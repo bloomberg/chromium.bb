@@ -112,7 +112,7 @@ class TestSharder(BaseTestSharder):
 
   def __init__(self, attached_devices, test_suite, gtest_filter,
                test_arguments, timeout, cleanup_test_files, tool,
-               log_dump_name, fast_and_loose, build_type, in_webkit_checkout,
+               log_dump_name, build_type, in_webkit_checkout,
                flakiness_server=None):
     BaseTestSharder.__init__(self, attached_devices, build_type)
     self.test_suite = test_suite
@@ -122,7 +122,6 @@ class TestSharder(BaseTestSharder):
     self.cleanup_test_files = cleanup_test_files
     self.tool = tool
     self.log_dump_name = log_dump_name
-    self.fast_and_loose = fast_and_loose
     self.in_webkit_checkout = in_webkit_checkout
     self.flakiness_server = flakiness_server
     self.all_tests = []
@@ -169,7 +168,6 @@ class TestSharder(BaseTestSharder):
         self.tool,
         0,
         not not self.log_dump_name,
-        self.fast_and_loose,
         self.build_type,
         self.in_webkit_checkout)
     # The executable/apk needs to be copied before we can call GetAllTests.
@@ -205,7 +203,6 @@ class TestSharder(BaseTestSharder):
         self.timeout,
         self.cleanup_test_files, self.tool, index,
         not not self.log_dump_name,
-        self.fast_and_loose,
         self.build_type,
         self.in_webkit_checkout)
 
@@ -253,7 +250,7 @@ def _RunATestSuite(options):
       if n > 0:
         # Creates a temporary AVD for the extra emulators.
         avd_name = 'run_tests_avd_%d' % n
-      buildbot_emulator = emulator.Emulator(avd_name, options.fast_and_loose)
+      buildbot_emulator = emulator.Emulator(avd_name)
       buildbot_emulator.Launch(kill_all_emulators=n == 0)
       t.Stop()
       buildbot_emulators.append(buildbot_emulator)
@@ -289,7 +286,6 @@ def _RunATestSuite(options):
       options.cleanup_test_files,
       options.tool,
       options.log_dump,
-      options.fast_and_loose,
       options.build_type,
       options.webkit,
       options.flakiness_dashboard_server)
