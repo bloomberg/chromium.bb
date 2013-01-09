@@ -1,4 +1,3 @@
-AXWebArea subrole=(null) title='' value=''
-    AXButton subrole=(null) title='Regular button' value=''
-    AXButton subrole=(null) title='' value=''
-        AXStaticText subrole=(null) title='' value='Toggle button'
+AXWebArea title='' value=''
+    AXButton title='Regular button' value=''
+    AXButton title='Toggle button' value=''

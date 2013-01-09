@@ -2,7 +2,6 @@ AXWebArea title='' value=''
     AXGroup title='' value=''
         AXStaticText title='' value='State'
         AXComboBox title='' value=''
-    AXList title='Alabama
-Alaska' value=''
+    AXList title='' value=''
         AXStaticText title='Alabama' value=''
         AXStaticText title='Alaska' value=''

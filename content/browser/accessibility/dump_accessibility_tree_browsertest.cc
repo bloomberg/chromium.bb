@@ -236,10 +236,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunTest(FILE_PATH_LITERAL("aria-application.html"));
 }
 
-// Broken by http://trac.webkit.org/137512
-// Tracked in http://crbug.com/165838
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       DISABLED_AccessibilityAriaCombobox) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaCombobox) {
   RunTest(FILE_PATH_LITERAL("aria-combobox.html"));
 }
 
@@ -255,10 +252,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityButtonNameCalc) {
   RunTest(FILE_PATH_LITERAL("button-name-calc.html"));
 }
 
-// TODO(dmazzoni): rebaseline and enable after this WebKit change is rolled:
-// https://bugs.webkit.org/show_bug.cgi?id=96323
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       DISABLED_AccessibilityCanvas) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCanvas) {
   RunTest(FILE_PATH_LITERAL("canvas.html"));
 }
 
@@ -267,21 +261,12 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunTest(FILE_PATH_LITERAL("checkbox-name-calc.html"));
 }
 
-// TODO(dimich): Started to fail in Chrome r149732 (crbug 140397)
-#if defined(OS_WIN)
-#define MAYBE_AccessibilityContenteditableDescendants \
-    DISABLED_AccessibilityContenteditableDescendants
-#else
-#define MAYBE_AccessibilityContenteditableDescendants \
-    AccessibilityContenteditableDescendants
-#endif
-
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityDiv) {
   RunTest(FILE_PATH_LITERAL("div.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       MAYBE_AccessibilityContenteditableDescendants) {
+                       AccessibilityContenteditableDescendants) {
   RunTest(FILE_PATH_LITERAL("contenteditable-descendants.html"));
 }
 
@@ -322,10 +307,8 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySpinButton) {
   RunTest(FILE_PATH_LITERAL("spinbutton.html"));
 }
 
-// TODO(dmazzoni): rebaseline and enable after this WebKit change is rolled:
-// https://bugs.webkit.org/show_bug.cgi?id=96323
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       DISABLED_AccessibilityToggleButton) {
+                       AccessibilityToggleButton) {
   RunTest(FILE_PATH_LITERAL("togglebutton.html"));
 }
 

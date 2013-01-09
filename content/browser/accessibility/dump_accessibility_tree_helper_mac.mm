@@ -32,7 +32,7 @@ string16 DumpAccessibilityTreeHelper::ToString(BrowserAccessibility* node,
                                                char* prefix) {
   StartLine();
   Add(true, Format(node, "", @selector(role), ""));
-  Add(true, Format(node, "subrole=", @selector(subrole), ""));
+  Add(false, Format(node, "subrole=", @selector(subrole), ""));
   Add(false, Format(node, "roleDescription='",
                           @selector(roleDescription),
                           "'"));

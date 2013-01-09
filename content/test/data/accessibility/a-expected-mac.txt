@@ -1,1 +1,4 @@
-#<skip -- need to generate>
+AXWebArea title='' value=''
+    AXGroup title='' value=''
+        AXLink title='normal link' value=''
+            AXStaticText title='' value='normal link'

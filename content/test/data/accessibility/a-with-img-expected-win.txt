@@ -1,17 +1,16 @@
-#<skip -- bug 120960>
-ROLE_SYSTEM_DOCUMENT name='' state=FOCUSED,READONLY,FOCUSABLE
-    IA2_ROLE_SECTION name='' state=READONLY
-        ROLE_SYSTEM_LINK name='bullet Link with image at start.' state=FOCUSABLE,LINKED
-            ROLE_SYSTEM_GRAPHIC name='bullet' state=LINKED
-            ROLE_SYSTEM_TEXT name='Link with image at start.' state=READONLY,LINKED
-        ROLE_SYSTEM_LINK name='Link with image in the middle.' state=FOCUSABLE,LINKED
-            ROLE_SYSTEM_TEXT name='Link with' state=READONLY,LINKED
-            ROLE_SYSTEM_GRAPHIC name='image' state=LINKED
-            ROLE_SYSTEM_TEXT name='in the middle.' state=READONLY,LINKED
-        ROLE_SYSTEM_LINK name='Link with broken image in the middle.' state=FOCUSABLE,LINKED
-            ROLE_SYSTEM_TEXT name='Link with' state=READONLY,LINKED
-            ROLE_SYSTEM_GRAPHIC name='broken' state=LINKED
-            ROLE_SYSTEM_TEXT name='in the middle.' state=READONLY,LINKED
-        ROLE_SYSTEM_LINK name='Link with image at the end last' state=FOCUSABLE,LINKED
-            ROLE_SYSTEM_TEXT name='Link with image at the end ' state=READONLY,LINKED
-            ROLE_SYSTEM_GRAPHIC name='last' state=LINKED
+ROLE_SYSTEM_DOCUMENT name='' READONLY FOCUSABLE
+    IA2_ROLE_SECTION name='' READONLY
+        ROLE_SYSTEM_LINK name='Link with image at start.' FOCUSABLE
+            ROLE_SYSTEM_GRAPHIC name='Link' READONLY
+            ROLE_SYSTEM_TEXT name=' with image at start.' READONLY
+        ROLE_SYSTEM_LINK name='Link with image in the middle.' FOCUSABLE
+            ROLE_SYSTEM_TEXT name='Link with ' READONLY
+            ROLE_SYSTEM_GRAPHIC name='image' READONLY
+            ROLE_SYSTEM_TEXT name=' in the middle.' READONLY
+        ROLE_SYSTEM_LINK name='Link with broken in the middle.' FOCUSABLE
+            ROLE_SYSTEM_TEXT name='Link with ' READONLY
+            ROLE_SYSTEM_GRAPHIC name='broken' READONLY
+            ROLE_SYSTEM_TEXT name=' in the middle.' READONLY
+        ROLE_SYSTEM_LINK name='Link with image at the end' FOCUSABLE
+            ROLE_SYSTEM_TEXT name='Link with image at the ' READONLY
+            ROLE_SYSTEM_GRAPHIC name='end' READONLY

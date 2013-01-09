@@ -1,1 +1,8 @@
-#<skip -- need to validate/generate>
+AXWebArea title='' description='' help=''
+    AXGroup title='' description='' help=''
+        AXCheckBox title='' description='Title0' help=''
+        AXCheckBox title='Label1' description='' help='Title1'
+        AXCheckBox title='' description='AriaLabel2' help='Title2'
+        AXCheckBox title='' description='LabelledBy3' help='Title3'
+        AXCheckBox title='' description='LabelledBy4' help='DescribedBy4'
+        AXCheckBox title='' description='' help='DescribedBy5'

@@ -1,5 +1,4 @@
 <!--
-@MAC-DENY:subrole*
 @WIN-DENY:description*
 -->
 <html>
@@ -12,9 +11,9 @@
         aria-owns="state_list" 
         aria-readonly="true" 
         aria-activedescendant="state2"/> 
-    <ul id="state_list" tabindex="-1" aria-expanded="true">
-      <li id="state1" role="option">Alabama</li> 
-      <li id="state2" role="option">Alaska</li> 
+    <ul id="state_list" role="listbox" aria-expanded="true">
+      <li id="state1" role="option" tabindex="-1">Alabama</li> 
+      <li id="state2" role="option" tabindex="-1">Alaska</li> 
     </ul>
   </body>
 </html>
