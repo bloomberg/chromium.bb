@@ -451,6 +451,7 @@ TEST_F(DelegatedRendererLayerImplTestSharedData, SharedData)
 
     // The state should be transformed only once.
     EXPECT_RECT_EQ(gfx::Rect(30, 30, 50, 50), sharedState->clipped_rect_in_target);
+    EXPECT_RECT_EQ(gfx::Rect(30, 30, 50, 50), sharedState->clip_rect);
     gfx::Transform expected;
     expected.Translate(30, 30);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, sharedState->content_to_target_transform);
