@@ -35,7 +35,7 @@ AC_CHECK_FUNCS([mkostemp strchrnul])
 
 COMPOSITOR_MODULES="wayland-server xkbcommon pixman-1"
 
-AC_ARG_ENABLE(egl, [ --disable-egl],,
+AC_ARG_ENABLE(egl, [  --disable-egl],,
               enable_egl=yes)
 AM_CONDITIONAL(ENABLE_EGL, test x$enable_egl = xyes)
 if test x$enable_egl = xyes; then
