@@ -92,6 +92,9 @@
       <structure type="chrome_scaled_image" name="IDR_CLOSE_BAR_H" file="close_bar_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_BAR_MASK" file="close_bar_mask.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_BAR_P" file="close_bar_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_CLOSE_DIALOG" file="close_dialog.png" />
+      <structure type="chrome_scaled_image" name="IDR_CLOSE_DIALOG_H" file="close_dialog_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_CLOSE_DIALOG_P" file="close_dialog_pressed.png" />
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_CLOSE_H" file="linux_close_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_CLOSE_P" file="linux_close_pressed.png" />
