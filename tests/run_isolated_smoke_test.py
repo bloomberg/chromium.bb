@@ -16,6 +16,9 @@ import unittest
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
+# Imported just for the rmtree function.
+import run_isolated
+
 VERBOSE = False
 
 
@@ -168,6 +171,41 @@ class RunSwarmStep(unittest.TestCase):
     self.assertEquals(6, returncode)
     actual = list_files_tree(self.cache)
     self.assertEquals(sorted(expected), actual)
+
+  def test_download_isolated(self):
+    out_dir = None
+    try:
+      out_dir = tempfile.mkdtemp()
+
+      # Store the required files.
+      self._store('file1.txt')
+      self._store('repeated_files.py')
+
+      # Loads an arbitrary .isolated on the file system.
+      isolated = os.path.join(self.data_dir, 'download.isolated')
+      out, err, returncode = self._run(
+          self._generate_args_with_isolated(isolated) +
+          ['--download', out_dir])
+
+      expected_output = ('.isolated files successfully downloaded and setup in '
+                         '%s\nTo run this test please run the command %s from '
+                         'the directory %s\n' %
+                         (out_dir, [sys.executable, u'repeated_files.py'],
+                          out_dir + os.path.sep))
+      if not VERBOSE:
+        self.assertEquals('', err)
+        self.assertEquals(expected_output, out)
+      self.assertEquals(0, returncode)
+
+      # Ensure the correct files have been placed in the temp directory.
+      self.assertTrue(os.path.exists(os.path.join(out_dir, 'file1.txt')))
+      self.assertTrue(os.path.exists(os.path.join(out_dir, 'new_folder',
+                                                  'file1.txt')))
+      self.assertTrue(os.path.exists(os.path.join(out_dir,
+                                                  'repeated_files.py')))
+    finally:
+      if out_dir:
+        run_isolated.rmtree(out_dir)
 
   def test_fail_empty_isolated(self):
     result_sha1 = self._store_result({})

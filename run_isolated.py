@@ -583,6 +583,9 @@ class Remote(object):
 
     def copy_file(item, dest):
       source = os.path.join(file_or_url, item)
+      if source == dest:
+        logging.info('Source and destination are the same, no action required')
+        return
       logging.debug('copy_file(%s, %s)', source, dest)
       shutil.copy(source, dest)
     return copy_file
@@ -602,6 +605,36 @@ class CachePolicies(object):
     self.max_cache_size = max_cache_size
     self.min_free_space = min_free_space
     self.max_items = max_items
+
+
+class NoCache(object):
+  """This class is intended to be usable everywhere the Cache class is.
+  Instead of downloading to a cache, all files are downloaded to the target
+  directory and then moved to where they are needed.
+  """
+
+  def __init__(self, target_directory, remote):
+    self.target_directory = target_directory
+    self.remote = remote
+
+  def retrieve(self, priority, item, size):
+    """Get the request file."""
+    self.remote.add_item(priority, item, self.path(item), size)
+    self.remote.get_result()
+
+  def wait_for(self, items):
+    """Download the first item of the given list if it is missing."""
+    item = items.iterkeys().next()
+
+    if not os.path.exists(self.path(item)):
+      self.remote.add_item(Remote.MED, item, self.path(item), UNKNOWN_FILE_SIZE)
+      downloaded = self.remote.get_result()
+      assert downloaded == item
+
+    return item
+
+  def path(self, item):
+    return os.path.join(self.target_directory, item)
 
 
 class Cache(object):
@@ -988,6 +1021,118 @@ class Settings(object):
     self.read_only = self.read_only or False
 
 
+def create_directories(base_directory, files):
+  """Creates the directory structure needed by the given list of files."""
+  logging.debug('create_directories(%s, %d)', base_directory, len(files))
+  # Creates the tree of directories to create.
+  directories = set(os.path.dirname(f) for f in files)
+  for item in list(directories):
+    while item:
+      directories.add(item)
+      item = os.path.dirname(item)
+  for d in sorted(directories):
+    if d:
+      os.mkdir(os.path.join(base_directory, d))
+
+
+def create_links(base_directory, files):
+  """Creates any links needed by the given set of files."""
+  for filepath, properties in files:
+    if 'link' not in properties:
+      continue
+    outfile = os.path.join(base_directory, filepath)
+    # symlink doesn't exist on Windows. So the 'link' property should
+    # never be specified for windows .isolated file.
+    os.symlink(properties['l'], outfile)  # pylint: disable=E1101
+    if 'm' in properties:
+      lchmod = getattr(os, 'lchmod', None)
+      if lchmod:
+        lchmod(outfile, properties['m'])
+
+
+def setup_commands(base_directory, cwd, cmd):
+  """Correctly adjusts and then returns the required working directory
+  and command needed to run the test.
+  """
+  assert not os.path.isabs(cwd), 'The cwd must be a relative path, got %s' % cwd
+  cwd = os.path.join(base_directory, cwd)
+  if not os.path.isdir(cwd):
+    os.makedirs(cwd)
+
+  # Ensure paths are correctly separated on windows.
+  cmd[0] = cmd[0].replace('/', os.path.sep)
+  cmd = fix_python_path(cmd)
+
+  return cwd, cmd
+
+
+def generate_remaining_files(files):
+  """Generates a dictionary of all the remaining files to be downloaded."""
+  remaining = {}
+  for filepath, props in files:
+    if 'h' in props:
+      remaining.setdefault(props['h'], []).append((filepath, props))
+
+  return remaining
+
+
+def download_test_data(isolated_hash, target_directory, remote):
+  """Downloads the dependencies to the given directory."""
+  if not os.path.exists(target_directory):
+    os.makedirs(target_directory)
+
+  settings = Settings()
+  no_cache = NoCache(target_directory, Remote(remote))
+
+  # Download all the isolated files.
+  with Profiler('GetIsolateds') as _prof:
+    settings.load(no_cache, isolated_hash)
+
+  if not settings.command:
+    print >> sys.stderr, 'No command to run'
+    return 1
+
+  with Profiler('GetRest') as _prof:
+    create_directories(target_directory, settings.files)
+    create_links(target_directory, settings.files.iteritems())
+
+    cwd, cmd = setup_commands(target_directory, settings.relative_cwd,
+                              settings.command[:])
+
+    remaining = generate_remaining_files(settings.files.iteritems())
+
+    # Now block on the remaining files to be downloaded and mapped.
+    logging.info('Retrieving remaining files')
+    last_update = time.time()
+    while remaining:
+      obj = no_cache.wait_for(remaining)
+      files = remaining.pop(obj)
+
+      for i, (filepath, properties) in enumerate(files):
+        outfile = os.path.join(target_directory, filepath)
+        logging.info(no_cache.path(obj))
+
+        if i + 1 == len(files):
+          os.rename(no_cache.path(obj), outfile)
+        else:
+          shutil.copyfile(no_cache.path(obj), outfile)
+
+        if 'm' in properties:
+          # It's not set on Windows.
+          os.chmod(outfile, properties['m'])
+
+      if time.time() - last_update > DELAY_BETWEEN_UPDATES_IN_SECS:
+        logging.info('%d files remaining...' % len(remaining))
+        last_update = time.time()
+
+  print('.isolated files successfully downloaded and setup in %s' %
+        target_directory)
+  print('To run this test please run the command %s from the directory %s' %
+        (cmd, cwd))
+
+  return 0
+
+
 def run_tha_test(isolated_hash, cache_dir, remote, policies):
   """Downloads the dependencies in the cache, hardlinks them into a temporary
   directory and runs the executable.
@@ -1012,46 +1157,13 @@ def run_tha_test(isolated_hash, cache_dir, remote, policies):
         return 1
 
       with Profiler('GetRest') as _prof:
-        logging.debug('Creating directories')
-        # Creates the tree of directories to create.
-        directories = set(os.path.dirname(f) for f in settings.files)
-        for item in list(directories):
-          while item:
-            directories.add(item)
-            item = os.path.dirname(item)
-        for d in sorted(directories):
-          if d:
-            os.mkdir(os.path.join(outdir, d))
-
-        # Creates the links if necessary.
-        for filepath, properties in settings.files.iteritems():
-          if 'link' not in properties:
-            continue
-          outfile = os.path.join(outdir, filepath)
-          # symlink doesn't exist on Windows. So the 'link' property should
-          # never be specified for windows .isolated file.
-          os.symlink(properties['l'], outfile)  # pylint: disable=E1101
-          if 'm' in properties:
-            # It's not set on Windows.
-            lchmod = getattr(os, 'lchmod', None)
-            if lchmod:
-              lchmod(outfile, properties['m'])
-
-        # Remaining files to be processed.
-        # Note that files could still be not be downloaded yet here.
-        remaining = dict()
-        for filepath, props in settings.files.iteritems():
-          if 'h' in props:
-            remaining.setdefault(props['h'], []).append((filepath, props))
+        create_directories(outdir, settings.files)
+        create_links(outdir, settings.files.iteritems())
+        remaining = generate_remaining_files(settings.files.iteritems())
 
         # Do bookkeeping while files are being downloaded in the background.
-        cwd = os.path.join(outdir, settings.relative_cwd)
-        if not os.path.isdir(cwd):
-          os.makedirs(cwd)
-        cmd = settings.command[:]
-        # Ensure paths are correctly separated on windows.
-        cmd[0] = cmd[0].replace('/', os.path.sep)
-        cmd = fix_python_path(cmd)
+        cwd, cmd = setup_commands(outdir, settings.relative_cwd,
+                                  settings.command[:])
 
         # Now block on the remaining files to be downloaded and mapped.
         logging.info('Retrieving remaining files')
@@ -1094,6 +1206,13 @@ def main():
       '-v', '--verbose', action='count', default=0, help='Use multiple times')
   parser.add_option('--no-run', action='store_true', help='Skip the run part')
 
+  group = optparse.OptionGroup(parser, 'Download')
+  group.add_option(
+      '--download', metavar='DEST',
+      help='Downloads files to DEST and returns without running, instead of '
+           'downloading and then running from a temporary directory.')
+  parser.add_option_group(group)
+
   group = optparse.OptionGroup(parser, 'Data source')
   group.add_option(
       '-s', '--isolated',
@@ -1108,7 +1227,10 @@ def main():
   parser.add_option_group(group)
 
   group.add_option(
-      '-r', '--remote', metavar='URL', help='Remote where to get the items')
+      '-r', '--remote', metavar='URL',
+      default=
+          'https://isolateserver.appspot.com/content/retrieve/default-gzip/',
+      help='Remote where to get the items. Defaults to %default')
   group = optparse.OptionGroup(parser, 'Cache management')
   group.add_option(
       '--cache',
@@ -1159,25 +1281,28 @@ def main():
   if bool(options.isolated) == bool(options.hash):
     logging.debug('One and only one of --isolated or --hash is required.')
     parser.error('One and only one of --isolated or --hash is required.')
-  if not options.remote:
-    logging.debug('--remote is required.')
-    parser.error('--remote is required.')
   if args:
     logging.debug('Unsupported args %s' % ' '.join(args))
     parser.error('Unsupported args %s' % ' '.join(args))
 
+  options.cache = os.path.abspath(options.cache)
   policies = CachePolicies(
       options.max_cache_size, options.min_free_space, options.max_items)
-  try:
-    return run_tha_test(
-        options.isolated or options.hash,
-        os.path.abspath(options.cache),
-        options.remote,
-        policies)
-  except Exception, e:
-    # Make sure any exception is logged.
-    logging.exception(e)
-    return 1
+
+  if options.download:
+    return download_test_data(options.isolated or options.hash,
+                              options.download, options.remote)
+  else:
+    try:
+      return run_tha_test(
+          options.isolated or options.hash,
+          options.cache,
+          options.remote,
+          policies)
+    except Exception, e:
+      # Make sure any exception is logged.
+      logging.exception(e)
+      return 1
 
 
 if __name__ == '__main__':

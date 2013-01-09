@@ -1,0 +1,20 @@
+{
+  "command": [
+    "python",
+    "repeated_files.py"
+  ],
+  "files": {
+    "file1.txt": {
+      "h": "a64969e7ebc5e3627680a3fbbaa1b9181d03f1b4",
+      "s": 6
+    },
+    "new_folder/file1.txt": {
+      "h": "a64969e7ebc5e3627680a3fbbaa1b9181d03f1b4",
+      "s": 6
+    },
+    "repeated_files.py": {
+      "h": "100f28891f7e0ef7a902bfe46f21b2972377a9ac",
+      "s": 720
+    }
+  }
+}
