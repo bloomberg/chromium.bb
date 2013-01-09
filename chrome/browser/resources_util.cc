@@ -9,6 +9,7 @@
 #include "base/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "grit/theme_resources_map.h"
+#include "grit/ui_resources_map.h"
 
 namespace {
 
@@ -22,6 +23,8 @@ class ThemeMap {
   ThemeMap() {
     for (size_t i = 0; i < kThemeResourcesSize; ++i)
       id_map_[kThemeResources[i].name] = kThemeResources[i].value;
+    for (size_t i = 0; i < kUiResourcesSize; ++i)
+      id_map_[kUiResources[i].name] = kUiResources[i].value;
   }
 
   int GetId(const std::string& resource_name) {

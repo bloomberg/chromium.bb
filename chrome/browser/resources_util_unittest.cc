@@ -5,30 +5,25 @@
 #include "chrome/browser/resources_util.h"
 
 #include "grit/theme_resources.h"
+#include "grit/ui_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-struct TestCase {
-  const char* name;
-  int id;
-};
-
-}  // namespace
-
 TEST(ResourcesUtil, SpotCheckIds) {
-  const TestCase kTestCases[] = {
+  const struct {
+    const char* name;
+    int id;
+  } kCases[] = {
+    // IDRs from chrome/app/theme/theme_resources.grd should be valid.
     {"IDR_BACK", IDR_BACK},
     {"IDR_STOP", IDR_STOP},
-    {"IDR_OMNIBOX_STAR", IDR_OMNIBOX_STAR},
-    {"IDR_SAD_TAB", IDR_SAD_TAB},
+    // IDRs from ui/resources/ui_resources.grd should be valid.
+    {"IDR_CHECKMARK", IDR_CHECKMARK},
+    {"IDR_THROBBER", IDR_THROBBER},
+    // Unknown names should be invalid and return -1.
+    {"foobar", -1},
+    {"backstar", -1},
   };
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
-    EXPECT_EQ(kTestCases[i].id,
-              ResourcesUtil::GetThemeResourceId(kTestCases[i].name));
-  }
 
-  // Should return -1 of unknown names.
-  EXPECT_EQ(-1, ResourcesUtil::GetThemeResourceId("foobar"));
-  EXPECT_EQ(-1, ResourcesUtil::GetThemeResourceId("backstar"));
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kCases); ++i)
+    EXPECT_EQ(kCases[i].id, ResourcesUtil::GetThemeResourceId(kCases[i].name));
 }
