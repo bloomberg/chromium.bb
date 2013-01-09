@@ -140,6 +140,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       accelerated_compositing_reported_(false),
       incremented_externally_allocated_memory_(false),
       audio_source_provider_(params.audio_source_provider()),
+      audio_renderer_sink_(params.audio_renderer_sink()),
       is_local_source_(false),
       supports_save_(true),
       starting_(false) {

@@ -325,7 +325,13 @@ class WebMediaPlayerImpl
 
   bool incremented_externally_allocated_memory_;
 
+  // TODO(scherkus): Sadly these two objects are the same and we're also forced
+  // to maintain an additional reference to |audio_renderer_sink_| otherwise
+  // |audio_source_provider_| will go bad after |pipeline_| shuts down.
+  //
+  // See http://crbug.com/136442 for details.
   WebKit::WebAudioSourceProvider* audio_source_provider_;
+  scoped_refptr<media::AudioRendererSink> audio_renderer_sink_;
 
   bool is_local_source_;
   bool supports_save_;
