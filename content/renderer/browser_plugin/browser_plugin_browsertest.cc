@@ -153,6 +153,7 @@ TEST_F(BrowserPluginTest, InitialResize) {
   update_rect_params.view_size = gfx::Size(640, 480);
   update_rect_params.scale_factor = 1.0f;
   update_rect_params.is_resize_ack = true;
+  update_rect_params.needs_ack = true;
   BrowserPluginMsg_UpdateRect msg(0, instance_id, update_rect_params);
   browser_plugin->OnMessageReceived(msg);
   EXPECT_FALSE(browser_plugin->pending_damage_buffer_.get());
@@ -235,6 +236,7 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
     update_rect_params.view_size = gfx::Size(640, 480);
     update_rect_params.scale_factor = 1.0f;
     update_rect_params.is_resize_ack = true;
+    update_rect_params.needs_ack = true;
     // By sending |damage_buffer_sequence_id| back to BrowserPlugin on
     // UpdateRect, then the BrowserPlugin knows that the browser process has
     // received and has begun to use the |pending_damage_buffer_|.
@@ -277,6 +279,7 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
     update_rect_params.view_size = gfx::Size(641, 480);
     update_rect_params.scale_factor = 1.0f;
     update_rect_params.is_resize_ack = true;
+    update_rect_params.needs_ack = true;
     update_rect_params.damage_buffer_sequence_id =
         browser_plugin->damage_buffer_sequence_id_;
     BrowserPluginMsg_UpdateRect msg(0, instance_id, update_rect_params);
@@ -292,6 +295,7 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
     update_rect_params.view_size = gfx::Size(643, 480);
     update_rect_params.scale_factor = 1.0f;
     update_rect_params.is_resize_ack = true;
+    update_rect_params.needs_ack = true;
     update_rect_params.damage_buffer_sequence_id =
         browser_plugin->damage_buffer_sequence_id_;
     BrowserPluginMsg_UpdateRect msg(0, instance_id, update_rect_params);
@@ -813,6 +817,7 @@ TEST_F(BrowserPluginTest, AutoSizeAttributes) {
   update_rect_params.view_size = gfx::Size(1337, 1338);
   update_rect_params.scale_factor = 1.0f;
   update_rect_params.is_resize_ack = true;
+  update_rect_params.needs_ack = true;
   BrowserPluginMsg_UpdateRect msg(0, instance_id, update_rect_params);
   browser_plugin->OnMessageReceived(msg);
 

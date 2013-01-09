@@ -456,6 +456,13 @@ void BrowserPlugin::OnUpdateRect(
        (width() != params.view_size.width() ||
         height() != params.view_size.height())) ||
       (auto_size_ && (!InAutoSizeBounds(params.view_size)))) {
+    // We are HW accelerated, render widget does not expect an ack,
+    // but we still need to update the size.
+    if (!params.needs_ack) {
+      UpdateGuestAutoSizeState();
+      return;
+    }
+
     if (!resize_ack_received_) {
       // The guest has not yet responded to the last resize request, and
       // so we don't want to do anything at this point other than ACK the guest.

@@ -110,6 +110,10 @@ IPC_STRUCT_BEGIN(BrowserPluginMsg_UpdateRect_Params)
 
   // Is this UpdateRect an ACK to a resize request?
   IPC_STRUCT_MEMBER(bool, is_resize_ack)
+
+  // Used in HW accelerated case to switch between sending an UpdateRect_ACK
+  // with the new size or just resizing.
+  IPC_STRUCT_MEMBER(bool, needs_ack)
 IPC_STRUCT_END()
 
 // Browser plugin messages

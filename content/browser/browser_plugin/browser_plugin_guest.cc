@@ -641,6 +641,7 @@ void BrowserPluginGuest::OnUpdateRect(
   relay_params.scale_factor = params.scale_factor;
   relay_params.is_resize_ack = ViewHostMsg_UpdateRect_Flags::is_resize_ack(
       params.flags);
+  relay_params.needs_ack = params.needs_ack;
 
   // HW accelerated case, acknowledge resize only
   if (!params.needs_ack) {
