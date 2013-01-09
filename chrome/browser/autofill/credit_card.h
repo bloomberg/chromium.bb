@@ -106,7 +106,8 @@ class CreditCard : public FormGroup {
   string16 Expiration2DigitYearAsString() const;
 
   // Sets |expiration_month_| to the integer conversion of |text|.
-  void SetExpirationMonthFromString(const string16& text);
+  void SetExpirationMonthFromString(const string16& text,
+                                    const std::string& app_locale);
 
   // Sets |expiration_year_| to the integer conversion of |text|.
   void SetExpirationYearFromString(const string16& text);

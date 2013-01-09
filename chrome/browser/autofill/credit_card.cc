@@ -167,7 +167,9 @@ bool ConvertYear(const string16& year, int* num) {
   return false;
 }
 
-bool ConvertMonth(const string16& month, int* num) {
+bool ConvertMonth(const string16& month,
+                  const std::string& app_locale,
+                  int* num) {
   // If the |month| is empty, clear the stored value.
   if (month.empty()) {
     *num = 0;
@@ -178,11 +180,16 @@ bool ConvertMonth(const string16& month, int* num) {
   if (base::StringToInt(month, num))
     return true;
 
-  // Try parsing the |month| as a named month, e.g. "January" or "Jan".
+  // If the locale is unknown, give up.
+  if (app_locale.empty())
+    return false;
+
+  // Otherwise, try parsing the |month| as a named month, e.g. "January" or
+  // "Jan".
   string16 lowercased_month = StringToLowerASCII(month);
 
   UErrorCode status = U_ZERO_ERROR;
-  icu::Locale locale(AutofillCountry::ApplicationLocale().c_str());
+  icu::Locale locale(app_locale.c_str());
   icu::DateFormatSymbols date_format_symbols(locale, status);
   DCHECK(status == U_ZERO_ERROR || status == U_USING_FALLBACK_WARNING ||
          status == U_USING_DEFAULT_WARNING);
@@ -291,7 +298,7 @@ void CreditCard::SetRawInfo(AutofillFieldType type, const string16& value) {
       break;
 
     case CREDIT_CARD_EXP_MONTH:
-      SetExpirationMonthFromString(value);
+      SetExpirationMonthFromString(value, std::string());
       break;
 
     case CREDIT_CARD_EXP_2_DIGIT_YEAR:
@@ -344,6 +351,8 @@ bool CreditCard::SetInfo(AutofillFieldType type,
                          const std::string& app_locale) {
   if (type == CREDIT_CARD_NUMBER)
     SetRawInfo(type, StripSeparators(value));
+  else if (type == CREDIT_CARD_EXP_MONTH)
+    SetExpirationMonthFromString(value, app_locale);
   else
     SetRawInfo(type, value);
 
@@ -360,8 +369,10 @@ void CreditCard::GetMatchingTypes(const string16& text,
     matching_types->insert(CREDIT_CARD_NUMBER);
 
   int month;
-  if (ConvertMonth(text, &month) && month != 0 && month == expiration_month_)
+  if (ConvertMonth(text, app_locale, &month) && month != 0 &&
+      month == expiration_month_) {
     matching_types->insert(CREDIT_CARD_EXP_MONTH);
+  }
 }
 
 const string16 CreditCard::Label() const {
@@ -597,9 +608,10 @@ string16 CreditCard::Expiration2DigitYearAsString() const {
   return base::IntToString16(Expiration2DigitYear());
 }
 
-void CreditCard::SetExpirationMonthFromString(const string16& text) {
+void CreditCard::SetExpirationMonthFromString(const string16& text,
+                                              const std::string& app_locale) {
   int month;
-  if (!ConvertMonth(text, &month))
+  if (!ConvertMonth(text, app_locale, &month))
     return;
 
   SetExpirationMonth(month);

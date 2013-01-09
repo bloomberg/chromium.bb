@@ -164,7 +164,7 @@ TEST(CreditCardTest, SetRawInfoCreditCardNumber) {
 }
 
 // Verify that we can handle both numeric and named months.
-TEST(CreditCardTest, SetRawInfoExpirationMonth) {
+TEST(CreditCardTest, SetExpirationMonth) {
   CreditCard card;
 
   card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("05"));
@@ -173,10 +173,14 @@ TEST(CreditCardTest, SetRawInfoExpirationMonth) {
   card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("7"));
   EXPECT_EQ(ASCIIToUTF16("07"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
 
+  // This should fail, and preserve the previous value.
   card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("January"));
+  EXPECT_EQ(ASCIIToUTF16("07"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+
+  card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("January"), "en-US");
   EXPECT_EQ(ASCIIToUTF16("01"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
 
-  card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("Apr"));
+  card.SetInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("Apr"), "en-US");
   EXPECT_EQ(ASCIIToUTF16("04"), card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
 }
 
