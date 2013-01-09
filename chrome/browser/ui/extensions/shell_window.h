@@ -60,6 +60,7 @@ class ShellWindow : public content::NotificationObserver,
 
     WindowType window_type;
     Frame frame;
+    bool transparent_background;  // Only supported on ash.
 
     // Specify the initial content bounds of the window (excluding any window
     // decorations). INT_MIN designates 'unspecified' for the position

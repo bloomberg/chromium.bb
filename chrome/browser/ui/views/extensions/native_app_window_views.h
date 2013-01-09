@@ -19,6 +19,7 @@ class ExtensionKeybindingRegistryViews;
 class Profile;
 
 namespace content {
+class RenderViewHost;
 class WebContents;
 }
 
@@ -32,7 +33,8 @@ class WebView;
 
 class NativeAppWindowViews : public NativeAppWindow,
                              public views::WidgetDelegateView,
-                             public views::WidgetObserver {
+                             public views::WidgetObserver,
+                             public content::WebContentsObserver {
  public:
   NativeAppWindowViews(ShellWindow* shell_window,
                        const ShellWindow::CreateParams& params);
@@ -94,6 +96,10 @@ class NativeAppWindowViews : public NativeAppWindow,
   virtual void OnWidgetActivationChanged(views::Widget* widget,
                                          bool active) OVERRIDE;
 
+  // WebContentsObserver implementation.
+  virtual void RenderViewCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
+
   // views::View implementation.
   virtual void Layout() OVERRIDE;
   virtual void ViewHierarchyChanged(
@@ -130,7 +136,8 @@ class NativeAppWindowViews : public NativeAppWindow,
 
   scoped_ptr<SkRegion> draggable_region_;
 
-  bool frameless_;
+  const bool frameless_;
+  const bool transparent_background_;
   gfx::Size minimum_size_;
   gfx::Size maximum_size_;
   gfx::Size preferred_size_;

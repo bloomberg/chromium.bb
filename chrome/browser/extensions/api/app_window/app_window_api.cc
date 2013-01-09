@@ -190,6 +190,12 @@ bool AppWindowCreateFunction::RunImpl() {
       }
     }
 
+    if (options->transparent_background.get() &&
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableExperimentalExtensionApis)) {
+      create_params.transparent_background = *options->transparent_background;
+    }
+
     gfx::Size& minimum_size = create_params.minimum_size;
     if (options->min_width.get())
       minimum_size.set_width(*options->min_width);

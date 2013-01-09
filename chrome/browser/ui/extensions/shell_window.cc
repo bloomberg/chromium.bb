@@ -90,6 +90,7 @@ void SuspendRenderViewHost(RenderViewHost* rvh) {
 ShellWindow::CreateParams::CreateParams()
   : window_type(ShellWindow::WINDOW_TYPE_DEFAULT),
     frame(ShellWindow::FRAME_CHROME),
+    transparent_background(false),
     bounds(INT_MIN, INT_MIN, 0, 0),
     creator_process_id(0), hidden(false) {
 }
