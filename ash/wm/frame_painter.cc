@@ -791,9 +791,8 @@ int FramePainter::AdjustFrameHitCodeForMaximizedModes(int hit_code) {
 
 bool FramePainter::UseSoloWindowHeader() {
   aura::RootWindow* root = window_->GetRootWindow();
-  if (!root)
+  if (!root || root->GetProperty(internal::kIgnoreSoloWindowFramePainterPolicy))
     return false;
-
   return (root->GetProperty(internal::kSoloWindowFramePainterKey) == this);
 }
 

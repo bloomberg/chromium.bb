@@ -22,6 +22,7 @@ namespace internal {
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(ash::internal::AlwaysOnTopController,
                                  kAlwaysOnTopControllerKey,
                                  NULL);
+DEFINE_WINDOW_PROPERTY_KEY(bool, kIgnoreSoloWindowFramePainterPolicy, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kIgnoredByShelfKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(
     ui::WindowShowState, kRestoreShowStateKey, ui::SHOW_STATE_DEFAULT);

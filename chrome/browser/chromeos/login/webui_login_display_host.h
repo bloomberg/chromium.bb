@@ -74,6 +74,13 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost,
   // wallpaper animation end.
   void StartPostponedWebUI();
 
+  // Initializes |login_window_| and |login_view_| fields if needed.
+  void InitLoginWindowAndView();
+
+  // Closes |login_window_| and resets |login_window_| and
+  // |login_view_| fields.
+  void ResetLoginWindowAndView();
+
   // Container of the screen we are displaying.
   views::Widget* login_window_;
 
@@ -126,6 +133,10 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost,
   // Stored parameters for StartWizard, required to restore in case of crash.
   std::string wizard_first_screen_name_;
   scoped_ptr<DictionaryValue> wizard_screen_parameters_;
+
+  // Old value of the ash::internal::kIgnoreSoloWindowFramePainterPolicy
+  // property of the root window for |login_window_|.
+  bool old_ignore_solo_window_frame_painter_policy_value_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUILoginDisplayHost);
 };

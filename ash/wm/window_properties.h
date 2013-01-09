@@ -33,6 +33,11 @@ class RootWindowController;
 extern const aura::WindowProperty<internal::AlwaysOnTopController*>* const
     kAlwaysOnTopControllerKey;
 
+// A property key to disable the frame painter policy for solo windows.
+// It is only available for root windows.
+ASH_EXPORT extern const aura::WindowProperty<bool>* const
+    kIgnoreSoloWindowFramePainterPolicy;
+
 // True if the window is ignored by the shelf layout manager for purposes of
 // darkening the shelf.
 extern const aura::WindowProperty<bool>* const
