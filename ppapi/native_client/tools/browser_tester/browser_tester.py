@@ -297,7 +297,13 @@ def RunTestsOnce(url, options):
     except Exception:
       listener.ever_failed = 1
     browser.Cleanup()
-    server.server_close()
+    # We avoid calling server.server_close() here because it causes
+    # the HTTP server thread to exit uncleanly with an EBADF error,
+    # which adds noise to the logs (though it does not cause the test
+    # to fail).  server_close() does not attempt to tell the server
+    # loop to shut down before closing the socket FD it is
+    # select()ing.  Since we are about to exit, we don't really need
+    # to close the socket FD.
 
   if tool_failed:
     return 2
