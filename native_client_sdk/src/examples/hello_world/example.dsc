@@ -1,5 +1,10 @@
 {
   'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
+  'SEARCH': [
+    '.',
+    '..',
+    '../../tools',
+  ],
   'TARGETS': [
     {
       'NAME' : 'hello_world',
@@ -8,7 +13,11 @@
       'LIBS': ['ppapi', 'pthread']
     }
   ],
-  'DATA': ['example.js'],
+  'DATA': [
+    'Makefile',
+    'common.mk',
+    'example.js',
+  ],
   'DEST': 'examples',
   'NAME': 'hello_world',
   'TITLE': 'Hello World.',
@@ -21,4 +30,3 @@ JavaScript which will display it as an alert.""",
   'FOCUS': 'Basic HTML, JavaScript, and module architecture.',
   'GROUP': 'Tools'
 }
-

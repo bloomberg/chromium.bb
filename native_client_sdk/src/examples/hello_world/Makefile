@@ -25,7 +25,7 @@ include common.mk
 # The base name of the final NEXE, also the name of the NMF file containing
 # the mapping between architecture and actual NEXE.
 #
-TARGET=hello_world_stdio
+TARGET=hello_world
 
 #
 # List of sources to compile
@@ -43,10 +43,11 @@ SOURCES=hello_world.c
 # switches.
 #
 # We break this list down into two parts, the set we need to rebuild (DEPS)
-# and the set we do not.
+# and the set we do not.  This example does not havea any additional library
+# dependencies.
 #
-DEPS=ppapi_main nacl_mounts
-LIBS=$(DEPS) ppapi_cpp ppapi pthread
+DEPS=
+LIBS=$(DEPS) ppapi pthread
 
 
 #

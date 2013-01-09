@@ -1,5 +1,10 @@
 {
   'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
+  'SEARCH': [
+    '.',
+    '..',
+    '../../tools',
+  ],
   'TARGETS': [
     {
       'NAME' : 'hello_world_interactive',
@@ -12,12 +17,16 @@
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
-  'DATA': ['example.js'],
+  'DATA': [
+    'example.js',
+    'Makefile',
+    'common.mk',
+  ],
   'DEST': 'examples',
   'NAME': 'hello_world_interactive',
   'TITLE': 'Interactive Hello World in C++',
   'DESC': """
-The Interactive Hello World C++ example demonstrates the basic structure 
+The Interactive Hello World C++ example demonstrates the basic structure
 of all Native Client applications. This example loads a Native Client module
 which uses two way interaction with JavaScript whenever a button is clicked.
 The NaCl module will respond with the number 42 or the reversed version of the

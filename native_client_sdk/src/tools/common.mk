@@ -128,6 +128,9 @@ X86_LINK?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-g++ -Wl,-as-needed
 ARM_CXX?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-g++
 ARM_LINK?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-g++ -Wl,-as-needed
 
+PNACL_CXX?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-clang++ -c
+PNACL_LINK?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-clang++
+
 
 #
 # Rules for output directories.
@@ -145,6 +148,18 @@ $(TOOLCHAIN)/$(CONFIG): | $(TOOLCHAIN)
 
 OUTDIR:=$(TOOLCHAIN)/$(CONFIG)
 
+
+#
+# Dependency Macro
+#
+# $1 = Name of dependency
+#
+define DEPEND_RULE
+.PHONY: $(1)
+$(1):
+	+$(MAKE) -C $(NACL_SDK_ROOT)/src/$(1)
+DEPS_LIST+=$(1)
+endef
 
 #
 # Compile Macro
@@ -170,6 +185,9 @@ $(OUTDIR)/$(basename $(1))_x86_64.o : $(1) $(THIS_MAKE) | $(OUTDIR)
 
 $(OUTDIR)/$(basename $(1))_arm.o : $(1) $(THIS_MAKE) | $(OUTDIR)
 	$(ARM_CXX) -o $$@ -c $$< $(OPT_FLAGS) $(CXX_FLAGS) $(NACL_WARNINGS)
+
+$(OUTDIR)/$(basename $(1))_pnacl.o : $(1) $(THIS_MAKE) | $(OUTDIR)
+	$(PNACL_CXX) -o $$@ -c $$< $(OPT_FLAGS) $(CXX_FLAGS) $(NACL_WARNINGS)
 endef
 
 
@@ -205,7 +223,12 @@ $(OUTDIR)/$(1)_x86_64.nexe : $(foreach src,$(2),$(OUTDIR)/$(basename $(src))_x86
 NMF_TARGETS+=$(OUTDIR)/$(1)_arm.nexe
 $(OUTDIR)/$(1)_arm.nexe : $(foreach src,$(2),$(OUTDIR)/$(basename $(src))_arm.o)
 	$(ARM_LINK) -o $$@ $$^ $(LD_ARM) $(LD_FLAGS) $(foreach lib,$(LIBS),-l$(lib))
+
+NMF_TARGETS+=$(OUTDIR)/$(1).pexe
+$(OUTDIR)/$(1).pexe : $(foreach src,$(2),$(OUTDIR)/$(basename $(src))_pnacl.o)
+	$(PNACL_LINK) -o $$@ $$^ $(LD_PNACL) $(LD_FLAGS) $(foreach lib,$(LIBS),-l$(lib))
 endef
+
 
 
 #
@@ -214,6 +237,11 @@ endef
 ARCHES=x86_32 x86_64
 ifeq "newlib" "$(TOOLCHAIN)"
 ARCHES+=arm
+endif
+NMF_ARCHES:=$(foreach arch,$(ARCHES),_$(arch).nexe)
+
+ifeq "pnacl" "$(TOOLCHAIN)"
+NMF_ARCHES:=.pexe
 endif
 
 
@@ -234,9 +262,51 @@ GLIBC_PATHS:=-L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib32
 GLIBC_PATHS+=-L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib
 
 define NMF_RULE
-$(OUTDIR)/$(1).nmf : $(foreach arch,$(ARCHES),$(OUTDIR)/$(1)_$(arch).nexe)
-	$(NMF) -o $$@ $$^ -D $(GLIBC_DUMP) $(GLIBC_PATHS) $(2)
+$(OUTDIR)/$(1).nmf : $(foreach arch,$(NMF_ARCHES),$(OUTDIR)/$(1)$(arch))
+	$(NMF) -o $$@ $$^ -D $(GLIBC_DUMP) $(GLIBC_PATHS) -s $(OUTDIR) $(2)
 
-all : $(OUTDIR)/$(1).nmf
+all : $(DEPS_LIST) $(OUTDIR)/$(1).nmf
 endef
+
+
+#
+# Verify we can find the Chrome executable if we need to launch it.
+#
+.PHONY: CHECK_FOR_CHROME RUN LAUNCH
+CHECK_FOR_CHROME:
+ifeq (,$(wildcard $(CHROME_PATH)))
+	$(warning No valid Chrome found at CHROME_PATH=$(CHROME_PATH))
+	$(error Set CHROME_PATH via an environment variable, or command-line.)
+else
+	$(warning Using chrome at: $(CHROME_PATH))
+endif
+
+
+#
+# Variables for running examples with Chrome.
+#
+RUN_PY:=python $(NACL_SDK_ROOT)/tools/run.py
+
+# Add this to launch Chrome with additional environment variables defined.
+# Each element should be specified as KEY=VALUE, with whitespace separating
+# key-value pairs. e.g.
+# CHROME_ENV=FOO=1 BAR=2 BAZ=3
+CHROME_ENV?=
+
+# Additional arguments to pass to Chrome.
+CHROME_ARGS+=--enable-nacl --enable-pnacl --incognito --ppapi-out-of-process
+
+
+CONFIG?=Debug
+PAGE?=index_$(TOOLCHAIN)_$(CONFIG).html
+
+RUN: LAUNCH
+LAUNCH: CHECK_FOR_CHROME all
+ifeq (,$(wildcard $(PAGE)))
+	$(warning No valid HTML page found at $(PAGE))
+	$(error Make sure TOOLCHAIN and CONFIG are properly set)
+endif
+	$(RUN_PY) -C $(THIS_DIR) -P $(PAGE) $(addprefix -E ,$(CHROME_ENV)) -- \
+	    $(CHROME_PATH) $(CHROME_ARGS) \
+	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
 

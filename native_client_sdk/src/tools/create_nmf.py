@@ -47,6 +47,9 @@ MAIN_NEXE = 'main.nexe'  # Name of entry point for execution
 PROGRAM_KEY = 'program'  # Key of the program section in an nmf file
 URL_KEY = 'url'  # Key of the url field for a particular file in an nmf file
 FILES_KEY = 'files'  # Key of the files section in an nmf file
+PORTABLE_KEY = 'portable' # key for portable section of manifest
+TRANSLATE_KEY = 'pnacl-translate' # key for translatable objects
+
 
 # The proper name of the dynamic linker, as kept in the IRT.  This is
 # excluded from the nmf file by convention.
@@ -228,6 +231,7 @@ class NmfUtils(object):
     self.needed = {}
     self.lib_prefix = lib_prefix or []
     self.remap = remap or {}
+    self.pnacl = len(main_files) > 0 and main_files[0].endswith('pexe')
 
   def GleanFromObjdump(self, files):
     '''Get architecture and dependency information for given files
@@ -305,6 +309,7 @@ class NmfUtils(object):
           Includes the input files as well, with arch filled in if absent.
           Example: { '/path/to/my.nexe': ArchFile(my.nexe),
                      '/path/to/libfoo.so': ArchFile(libfoo.so) }'''
+
     if self.needed:
       return self.needed
 
@@ -372,6 +377,15 @@ class NmfUtils(object):
         Trace("copy: %s -> %s" % (source, destination))
         shutil.copy2(source, destination)
 
+  def _GeneratePNaClManifest(self):
+    manifest = {}
+    manifest[PROGRAM_KEY] = {}
+    manifest[PROGRAM_KEY][PORTABLE_KEY] = {}
+    manifest[PROGRAM_KEY][PORTABLE_KEY][TRANSLATE_KEY] = {
+      "url": os.path.basename(self.main_files[0])
+    }
+    self.manifest = manifest
+
   def _GenerateManifest(self):
     '''Create a JSON formatted dict containing the files
 
@@ -426,8 +440,10 @@ class NmfUtils(object):
   def GetManifest(self):
     '''Returns a JSON-formatted dict containing the NaCl dependencies'''
     if not self.manifest:
-      self._GenerateManifest()
-
+      if self.pnacl:
+        self._GeneratePNaClManifest()
+      else:
+        self._GenerateManifest()
     return self.manifest
 
   def GetJson(self):
@@ -562,7 +578,7 @@ def main(argv):
     with open(options.output, 'w') as output:
       output.write(nmf.GetJson())
 
-  if options.stage_dependencies:
+  if options.stage_dependencies and not nmf.pnacl:
     Trace("Staging dependencies...")
     nmf.StageDependencies(options.stage_dependencies)
 
