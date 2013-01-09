@@ -23,13 +23,10 @@ class IOBuffer;
 
 namespace extensions {
 
-class ApiResourceEventNotifier;
-
 // A UsbDeviceResource is an ApiResource wrapper for a UsbDevice.
 class UsbDeviceResource : public ApiResource {
  public:
   UsbDeviceResource(const std::string& owner_extension_id,
-                    ApiResourceEventNotifier* notifier,
                     scoped_refptr<UsbDevice> device);
   virtual ~UsbDeviceResource();
 

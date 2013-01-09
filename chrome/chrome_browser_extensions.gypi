@@ -67,8 +67,6 @@
         'browser/extensions/api/api_resource.cc',
         'browser/extensions/api/api_resource.h',
         'browser/extensions/api/api_resource_manager.h',
-        'browser/extensions/api/api_resource_event_notifier.cc',
-        'browser/extensions/api/api_resource_event_notifier.h',
         'browser/extensions/api/alarms/alarm_manager.cc',
         'browser/extensions/api/alarms/alarm_manager.h',
         'browser/extensions/api/alarms/alarms_api.cc',

@@ -16,8 +16,7 @@ namespace extensions {
 const char kSocketTypeNotSupported[] = "Socket type does not support this API";
 
 Socket::Socket(const std::string& owner_extension_id)
-    : ApiResource(owner_extension_id, NULL),
-      is_connected_(false) {
+    : ApiResource(owner_extension_id), is_connected_(false) {
 }
 
 Socket::~Socket() {

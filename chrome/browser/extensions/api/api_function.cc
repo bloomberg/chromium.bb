@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/api_function.h"
 
 #include "base/bind.h"
-#include "chrome/browser/extensions/api/api_resource_event_notifier.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 
@@ -17,22 +16,6 @@ ApiFunction::ApiFunction() {
 }
 
 ApiFunction::~ApiFunction() {
-}
-
-int ApiFunction::ExtractSrcId(const DictionaryValue* options) {
-  int src_id = -1;
-  if (options) {
-    if (options->HasKey(kSrcIdKey))
-      EXTENSION_FUNCTION_VALIDATE(options->GetInteger(kSrcIdKey, &src_id));
-  }
-  return src_id;
-}
-
-ApiResourceEventNotifier* ApiFunction::CreateEventNotifier(int src_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return new ApiResourceEventNotifier(
-      extensions::ExtensionSystem::Get(profile())->event_router(), profile(),
-      extension_id(), src_id, source_url());
 }
 
 // AsyncApiFunction

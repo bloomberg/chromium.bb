@@ -13,12 +13,9 @@ namespace extensions {
 
 const char kSerialConnectionNotFoundError[] = "Serial connection not found";
 
-SerialConnection::SerialConnection(const std::string& port,
-                                   int bitrate,
+SerialConnection::SerialConnection(const std::string& port, int bitrate,
                                    const std::string& owner_extension_id)
-    : ApiResource(owner_extension_id, NULL),
-      port_(port),
-      bitrate_(bitrate),
+    : ApiResource(owner_extension_id), port_(port), bitrate_(bitrate),
       file_(base::kInvalidPlatformFileValue) {
   CHECK(bitrate >= 0);
 }
@@ -56,8 +53,7 @@ void SerialConnection::Close() {
 
 int SerialConnection::Read(scoped_refptr<net::IOBufferWithSize> io_buffer) {
   DCHECK(io_buffer->data());
-  return base::ReadPlatformFileAtCurrentPos(file_,
-                                            io_buffer->data(),
+  return base::ReadPlatformFileAtCurrentPos(file_, io_buffer->data(),
                                             io_buffer->size());
 }
 
@@ -65,8 +61,8 @@ int SerialConnection::Write(scoped_refptr<net::IOBuffer> io_buffer,
                             int byte_count) {
   DCHECK(io_buffer->data());
   DCHECK(byte_count >= 0);
-  return base::WritePlatformFileAtCurrentPos(file_,
-                                             io_buffer->data(), byte_count);
+  return base::WritePlatformFileAtCurrentPos(file_, io_buffer->data(),
+                                             byte_count);
 }
 
 void SerialConnection::Flush() {

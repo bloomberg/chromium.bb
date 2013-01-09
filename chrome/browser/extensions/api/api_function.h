@@ -10,19 +10,13 @@
 
 namespace extensions {
 
-class ApiResourceEventNotifier;
-
+// Base class for API functions. TODO(miket): there isn't much here anymore
+// since the removal of ApiResourceEventRouter. Should we promote all its
+// subclasses to UIThreadExtensionFunctions?
 class ApiFunction : public UIThreadExtensionFunction {
  protected:
   ApiFunction();
   virtual ~ApiFunction();
-
-  // Looks for a kSrcId key that might have been added to a create method's
-  // options object.
-  int ExtractSrcId(const DictionaryValue* options);
-
-  // Utility.
-  ApiResourceEventNotifier* CreateEventNotifier(int src_id);
 };
 
 // AsyncApiFunction provides convenient thread management for APIs that need to

@@ -18,7 +18,6 @@ class UsbDevice;
 
 namespace extensions {
 
-class ApiResourceEventNotifier;
 class UsbDeviceResource;
 
 class UsbAsyncApiFunction : public AsyncApiFunction {

@@ -295,7 +295,8 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
 
   if (device_for_test_) {
     UsbDeviceResource* const resource = new UsbDeviceResource(
-        extension_->id(), NULL, device_for_test_);
+        extension_->id(),
+        device_for_test_);
 
     Device device;
     result->Append(PopulateDevice(manager_->Add(resource), 0, 0));
@@ -327,7 +328,7 @@ void UsbFindDevicesFunction::AsyncWorkStart() {
   for (size_t i = 0; i < devices.size(); ++i) {
     UsbDevice* const device = devices[i];
     UsbDeviceResource* const resource = new UsbDeviceResource(
-        extension_->id(), NULL, device);
+        extension_->id(), device);
 
     Device js_device;
     result->Append(PopulateDevice(manager_->Add(resource),

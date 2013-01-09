@@ -12,7 +12,6 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "chrome/browser/extensions/api/api_resource_event_notifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "googleurl/src/gurl.h"
 
@@ -31,9 +30,8 @@ class ApiResourceManagerUnitTest : public BrowserWithTestWindowTest {
 
 class FakeApiResource : public ApiResource {
  public:
-  FakeApiResource(const std::string& owner_extension_id,
-                  ApiResourceEventNotifier* event_notifier) :
-      ApiResource(owner_extension_id, event_notifier) {}
+  FakeApiResource(const std::string& owner_extension_id) :
+      ApiResource(owner_extension_id) {}
   ~FakeApiResource() {}
 };
 
@@ -48,19 +46,8 @@ TEST_F(ApiResourceManagerUnitTest, TwoAppsCannotShareResources) {
   const std::string extension_one_id(extension_one->id());
   const std::string extension_two_id(extension_two->id());
 
-  GURL url_one("url-one");
-  GURL url_two("url-two");
-  scoped_refptr<ApiResourceEventNotifier> event_notifier_one(
-      new ApiResourceEventNotifier(
-          NULL, NULL, extension_one_id, 1111, url_one));
-  scoped_refptr<ApiResourceEventNotifier> event_notifier_two(
-      new ApiResourceEventNotifier(
-          NULL, NULL, extension_two_id, 2222, url_two));
-
-  int resource_one_id = manager->Add(new FakeApiResource(
-      extension_one_id, event_notifier_one.get()));
-  int resource_two_id = manager->Add(new FakeApiResource(
-      extension_two_id, event_notifier_two.get()));
+  int resource_one_id = manager->Add(new FakeApiResource(extension_one_id));
+  int resource_two_id = manager->Add(new FakeApiResource(extension_two_id));
   CHECK(resource_one_id);
   CHECK(resource_two_id);
 
