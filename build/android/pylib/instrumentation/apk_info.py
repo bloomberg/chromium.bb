@@ -5,13 +5,13 @@
 """Gathers information about APKs."""
 
 import collections
-import constants
 import logging
 import os
 import pickle
 import re
 
 from pylib import cmd_helper
+from pylib import constants
 
 
 # If you change the cached output of proguard, increment this number
