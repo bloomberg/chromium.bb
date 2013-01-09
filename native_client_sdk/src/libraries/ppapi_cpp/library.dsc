@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['win', 'linux'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
   'SEARCH' : [
       '../../../../ppapi/cpp',
       '../../../../ppapi/utility',

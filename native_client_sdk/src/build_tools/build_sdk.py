@@ -274,26 +274,13 @@ HEADER_MAP = {
       'irt.h': 'src/untrusted/irt/irt.h',
       'irt_ppapi.h': 'src/untrusted/irt/irt_ppapi.h',
   },
-  'libs': {
+  'host': {
   },
 }
 
-
-def InstallHeaders(tc_dst_inc, pepper_ver, tc_name):
-  """Copies NaCl headers to expected locations in the toolchain."""
-  if tc_name == 'arm':
-    # arm toolchain header should be the same as the x86 newlib
-    # ones
-    tc_name = 'newlib'
-  tc_map = HEADER_MAP[tc_name]
-  for filename in tc_map:
-    src = os.path.join(NACL_DIR, tc_map[filename])
-    dst = os.path.join(tc_dst_inc, filename)
-    buildbot_common.MakeDir(os.path.dirname(dst))
-    buildbot_common.CopyFile(src, dst)
-
+def InstallCommonHeaders(inc_path):
   # Clean out per toolchain ppapi directory
-  ppapi = os.path.join(tc_dst_inc, 'ppapi')
+  ppapi = os.path.join(inc_path, 'ppapi')
   buildbot_common.RemoveDir(ppapi)
 
   # Copy in c and c/dev headers
@@ -302,14 +289,6 @@ def InstallHeaders(tc_dst_inc, pepper_ver, tc_name):
           os.path.join(ppapi, 'c'))
   buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'c', 'dev', '*.h'),
           os.path.join(ppapi, 'c', 'dev'))
-
-  # Run the generator to overwrite IDL files
-  generator_args = [sys.executable, 'generator.py', '--wnone', '--cgen',
-      '--verbose', '--dstroot=%s/c' % ppapi]
-  if pepper_ver:
-    generator_args.append('--release=M' + pepper_ver)
-  buildbot_common.Run(generator_args,
-                      cwd=os.path.join(PPAPI_DIR, 'generators'))
 
   # Remove private and trusted interfaces
   buildbot_common.RemoveDir(os.path.join(ppapi, 'c', 'private'))
@@ -341,26 +320,41 @@ def InstallHeaders(tc_dst_inc, pepper_ver, tc_name):
           os.path.join(ppapi, 'gles2'))
 
   # Copy the EGL headers
-  buildbot_common.MakeDir(os.path.join(tc_dst_inc, 'EGL'))
+  buildbot_common.MakeDir(os.path.join(inc_path, 'EGL'))
   buildbot_common.CopyDir(
           os.path.join(PPAPI_DIR, 'lib', 'gl', 'include', 'EGL', '*.h'),
-          os.path.join(tc_dst_inc, 'EGL'))
+          os.path.join(inc_path, 'EGL'))
 
   # Copy the GLES2 headers
-  buildbot_common.MakeDir(os.path.join(tc_dst_inc, 'GLES2'))
+  buildbot_common.MakeDir(os.path.join(inc_path, 'GLES2'))
   buildbot_common.CopyDir(
           os.path.join(PPAPI_DIR, 'lib', 'gl', 'include', 'GLES2', '*.h'),
-          os.path.join(tc_dst_inc, 'GLES2'))
+          os.path.join(inc_path, 'GLES2'))
 
   # Copy the KHR headers
-  buildbot_common.MakeDir(os.path.join(tc_dst_inc, 'KHR'))
+  buildbot_common.MakeDir(os.path.join(inc_path, 'KHR'))
   buildbot_common.CopyDir(
           os.path.join(PPAPI_DIR, 'lib', 'gl', 'include', 'KHR', '*.h'),
-          os.path.join(tc_dst_inc, 'KHR'))
+          os.path.join(inc_path, 'KHR'))
 
   # Copy the lib files
   buildbot_common.CopyDir(os.path.join(PPAPI_DIR, 'lib'),
-          os.path.join(tc_dst_inc, 'ppapi'))
+          os.path.join(inc_path, 'ppapi'))
+
+
+def InstallNaClHeaders(tc_dst_inc, pepper_ver, tc_name):
+  """Copies NaCl headers to expected locations in the toolchain."""
+  if tc_name == 'arm':
+    # arm toolchain header should be the same as the x86 newlib
+    # ones
+    tc_name = 'newlib'
+  tc_map = HEADER_MAP[tc_name]
+
+  for filename in tc_map:
+    src = os.path.join(NACL_DIR, tc_map[filename])
+    dst = os.path.join(tc_dst_inc, filename)
+    buildbot_common.MakeDir(os.path.dirname(dst))
+    buildbot_common.CopyFile(src, dst)
 
 
 def MakeNinjaRelPath(path):
@@ -546,20 +540,20 @@ def BuildStepBuildToolchains(pepperdir, platform, pepper_ver, toolchains):
   GypNinjaInstall(pepperdir, platform, toolchains)
 
   if 'newlib' in toolchains:
-    InstallHeaders(GetToolchainNaClInclude('newlib', newlibdir, 'x86'),
-                   pepper_ver,
-                   'newlib')
+    InstallNaClHeaders(GetToolchainNaClInclude('newlib', newlibdir, 'x86'),
+                       pepper_ver,
+                       'newlib')
 
   if 'glibc' in toolchains:
-    InstallHeaders(GetToolchainNaClInclude('glibc', glibcdir, 'x86'),
-                   pepper_ver,
-                   'glibc')
+    InstallNaClHeaders(GetToolchainNaClInclude('glibc', glibcdir, 'x86'),
+                       pepper_ver,
+                       'glibc')
 
   if 'arm' in toolchains:
     tcname = platform + '_arm_newlib'
     armdir = os.path.join(pepperdir, 'toolchain', tcname)
-    InstallHeaders(GetToolchainNaClInclude('newlib', armdir, 'arm'),
-                   pepper_ver, 'arm')
+    InstallNaClHeaders(GetToolchainNaClInclude('newlib', armdir, 'arm'),
+                       pepper_ver, 'arm')
 
   if 'pnacl' in toolchains:
     shell = platform == 'win'
@@ -583,9 +577,9 @@ def BuildStepBuildToolchains(pepperdir, platform, pepper_ver, toolchains):
           os.path.join(release_build_dir, 'libpnacl_irt_shim.a'),
           GetPNaClNativeLib(pnacldir, pnacl_libdir_map[arch]))
 
-    InstallHeaders(GetToolchainNaClInclude('pnacl', pnacldir, 'x86'),
-                   pepper_ver,
-                   'newlib')
+    InstallNaClHeaders(GetToolchainNaClInclude('pnacl', pnacldir, 'x86'),
+                       pepper_ver,
+                       'newlib')
 
 
 def BuildStepCopyBuildHelpers(pepperdir, platform):
@@ -928,7 +922,7 @@ def main(args):
 
   BuildStepCopyTextFiles(pepperdir, pepper_ver, clnumber)
   BuildStepBuildToolchains(pepperdir, platform, pepper_ver, toolchains)
-  InstallHeaders(os.path.join(pepperdir, 'include'), None, 'libs')
+  InstallCommonHeaders(os.path.join(pepperdir, 'include'))
   BuildStepCopyBuildHelpers(pepperdir, platform)
   BuildStepCopyExamples(pepperdir, toolchains, options.build_experimental, True)
 
