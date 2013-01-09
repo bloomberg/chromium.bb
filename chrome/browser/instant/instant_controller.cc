@@ -48,6 +48,20 @@ const int kMaxInstantSupportFailures = 10;
 // reloaded so that the page does not become stale.
 const int kStaleLoaderTimeoutMS = 3 * 3600 * 1000;
 
+// For reporting events of interest.
+enum InstantControllerEvent {
+  INSTANT_CONTROLLER_EVENT_URL_ADDED_TO_BLACKLIST = 0,
+  INSTANT_CONTROLLER_EVENT_URL_REMOVED_FROM_BLACKLIST = 1,
+  INSTANT_CONTROLLER_EVENT_URL_BLOCKED_BY_BLACKLIST = 2,
+  INSTANT_CONTROLLER_EVENT_MAX = 3,
+};
+
+void RecordEventHistogram(InstantControllerEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("Instant.InstantControllerEvent",
+                            event,
+                            INSTANT_CONTROLLER_EVENT_MAX);
+}
+
 void AddSessionStorageHistogram(bool extended_enabled,
                                 const content::WebContents* tab1,
                                 const content::WebContents* tab2) {
@@ -811,9 +825,13 @@ void InstantController::InstantSupportDetermined(
 
   if (loader_ && loader_->contents() == contents) {
     if (supports_instant) {
-      blacklisted_urls_.erase(loader_->instant_url());
+      if (blacklisted_urls_.erase(loader_->instant_url())) {
+        RecordEventHistogram(
+            INSTANT_CONTROLLER_EVENT_URL_REMOVED_FROM_BLACKLIST);
+      }
     } else {
       ++blacklisted_urls_[loader_->instant_url()];
+      RecordEventHistogram(INSTANT_CONTROLLER_EVENT_URL_ADDED_TO_BLACKLIST);
       HideInternal();
       delete loader_->ReleaseContents();
       MessageLoop::current()->DeleteSoon(FROM_HERE, loader_.release());
@@ -1207,8 +1225,10 @@ bool InstantController::GetInstantURL(const TemplateURL* template_url,
   std::map<std::string, int>::const_iterator iter =
       blacklisted_urls_.find(*instant_url);
   if (iter != blacklisted_urls_.end() &&
-      iter->second > kMaxInstantSupportFailures)
+      iter->second > kMaxInstantSupportFailures) {
+    RecordEventHistogram(INSTANT_CONTROLLER_EVENT_URL_BLOCKED_BY_BLACKLIST);
     return false;
+  }
 
   return true;
 }
