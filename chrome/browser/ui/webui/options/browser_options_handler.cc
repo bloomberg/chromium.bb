@@ -219,11 +219,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "importData", IDS_OPTIONS_IMPORT_DATA_BUTTON },
     { "improveBrowsingExperience", IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE },
     { "languageAndSpellCheckSettingsButton",
-#if defined(OS_CHROMEOS)
-      IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE },
-#else
       IDS_OPTIONS_SETTINGS_LANGUAGE_AND_INPUT_SETTINGS },
-#endif
     { "linkDoctorPref", IDS_OPTIONS_LINKDOCTOR_PREF },
     { "manageAutofillSettings", IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS_LINK },
     { "managePasswords", IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK },

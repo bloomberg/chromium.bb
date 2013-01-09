@@ -1312,9 +1312,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_CONTROL_TITLE" desc="In settings Internet options, Title of the section which houses the enable/disable buttons.">
     General
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE" desc="In settings system options, the label for the customize button for languages and input">
-    Customize languages and input...
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MODIFIER_KEYS_CUSTOMIZE" desc="In settings system options, the label for the customize button for modifier keys">
     Modifier keys...
   </message>
