@@ -72,17 +72,17 @@ run_benchmark = env.AutoDepsCommand(
 
 env.AlwaysBuild(env.Alias('dfavalidatorbenchmark', run_benchmark))
 
-# TODO(shcherbina): Get rid of this check once
-# http://code.google.com/p/nativeclient/issues/detail?id=3238 is fixed.
-if not env.UsingEmulator():
-  gen_dfa_test = env.CommandTest(
-      'gen_dfa_test.out',
-      ['${PYTHON}', env.File('gen_dfa_test.py')] + INSTRUCTION_DEFINITIONS)
+# We don't run this test under qemu because it attempts to execute host python
+# binary.
+gen_dfa_test = env.CommandTest(
+    'gen_dfa_test.out',
+    ['${PYTHON}', env.File('gen_dfa_test.py')] + INSTRUCTION_DEFINITIONS,
+    direct_emulation=False)
 
-  env.AddNodeToTestSuite(
-      gen_dfa_test,
-      ['small_tests', 'validator_tests'],
-      'run_gen_dfa_test')
+env.AddNodeToTestSuite(
+    gen_dfa_test,
+    ['small_tests', 'validator_tests'],
+    'run_gen_dfa_test')
 
 # Source generation:
 #
