@@ -28,7 +28,10 @@ div#header {
 
 #header h1 {
   -webkit-padding-start: 75px;
-  background: url('../../app/theme/flags_section.png') 0 20px no-repeat;
+  background: -webkit-image-set(
+      url('../../app/theme/default_100_percent/flags_section.png') 1x,
+      url('../../app/theme/default_200_percent/flags_section.png') 2x)
+      0 20px no-repeat;
   display: inline;
   margin: 0;
   padding-bottom: 40px;
@@ -36,7 +39,10 @@ div#header {
 }
 
 html[dir=rtl] #header h1 {
-  background: url('../../app/theme/flags_section.png') right no-repeat;
+  background: -webkit-image-set(
+      url('../../app/theme/default_100_percent/flags_section.png') 1x,
+      url('../../app/theme/default_200_percent/flags_section.png') 2x)
+      right no-repeat;
 }
 
 h1 {
