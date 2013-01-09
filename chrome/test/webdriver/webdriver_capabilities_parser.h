@@ -54,10 +54,6 @@ struct Capabilities {
   // The minimum level to log for each log type.
   LogLevel log_levels[LogType::kNum];
 
-  // Whether Chrome should simulate input events using OS APIs instead of
-  // WebKit APIs.
-  bool native_events;
-
   // By default, ChromeDriver configures Chrome in such a way as convenient
   // for website testing. E.g., it configures Chrome so that sites are allowed
   // to use the geolocation API without requesting the user's consent.

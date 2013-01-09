@@ -35,7 +35,6 @@ TEST(CapabilitiesParser, SimpleCaps) {
   options->SetString("channel", "channel");
   options->SetBoolean("detach", true);
   options->SetBoolean("loadAsync", true);
-  options->SetBoolean("nativeEvents", true);
 
   Capabilities caps;
   base::ScopedTempDir temp_dir;
@@ -46,7 +45,6 @@ TEST(CapabilitiesParser, SimpleCaps) {
   EXPECT_STREQ("channel", caps.channel.c_str());
   EXPECT_TRUE(caps.detach);
   EXPECT_TRUE(caps.load_async);
-  EXPECT_TRUE(caps.native_events);
 }
 
 TEST(CapabilitiesParser, Args) {

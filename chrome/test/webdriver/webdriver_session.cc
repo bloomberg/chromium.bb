@@ -1538,22 +1538,9 @@ void Session::SendKeysOnSessionThread(const string16& keys,
     return;
   }
   for (size_t i = 0; i < key_events.size(); ++i) {
-    if (capabilities_.native_events) {
-      // The automation provider will generate up/down events for us, we
-      // only need to call it once as compared to the WebKeyEvent method.
-      // Hence we filter events by their types, keeping only rawkeydown.
-      if (key_events[i].type != automation::kRawKeyDownType)
-        continue;
-      automation_->SendNativeKeyEvent(
-          current_target_.view_id,
-          key_events[i].key_code,
-          key_events[i].modifiers,
-          error);
-    } else {
-      automation_->SendWebKeyEvent(
-          current_target_.view_id,
-          key_events[i], error);
-    }
+    automation_->SendWebKeyEvent(
+        current_target_.view_id,
+        key_events[i], error);
     if (*error) {
       std::string details = base::StringPrintf(
           "Failed to send key event. Event details:\n"

@@ -38,7 +38,6 @@ Capabilities::Capabilities()
       detach(false),
       load_async(false),
       local_state(new DictionaryValue()),
-      native_events(false),
       no_website_testing_defaults(false),
       prefs(new DictionaryValue()) {
   log_levels[LogType::kDriver] = kAllLogLevel;
@@ -257,8 +256,11 @@ Error* CapabilitiesParser::ParseLoggingPrefs(const base::Value* option) {
 }
 
 Error* CapabilitiesParser::ParseNativeEvents(const Value* option) {
-  if (!option->GetAsBoolean(&caps_->native_events))
+  bool native_events;
+  if (!option->GetAsBoolean(&native_events))
     return CreateBadInputError("nativeEvents", Value::TYPE_BOOLEAN, option);
+  if (native_events)
+    return new Error(kUnknownError, "OS-level events are not supported");
   return NULL;
 }
 

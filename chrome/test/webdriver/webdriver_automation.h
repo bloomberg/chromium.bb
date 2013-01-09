@@ -97,13 +97,6 @@ class Automation {
                        const WebKeyEvent& key_event,
                        Error** error);
 
-  // Sends an OS level key event to the current browser. Waits until the key
-  // has been processed by the browser.
-  void SendNativeKeyEvent(const WebViewId& view_id,
-                          ui::KeyboardCode key_code,
-                          int modifiers,
-                          Error** error);
-
   // Sends a web mouse event to the given view. Waits until the event has
   // been processed by the view.
   void SendWebMouseEvent(const WebViewId& view_id,

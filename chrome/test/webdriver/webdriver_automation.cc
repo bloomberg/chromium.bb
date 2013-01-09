@@ -703,22 +703,6 @@ void Automation::SendWebKeyEvent(const WebViewId& view_id,
   }
 }
 
-void Automation::SendNativeKeyEvent(const WebViewId& view_id,
-                                    ui::KeyboardCode key_code,
-                                    int modifiers,
-                                    Error** error) {
-  WebViewLocator view_locator;
-  *error = ConvertViewIdToLocator(view_id, &view_locator);
-  if (*error)
-    return;
-
-  automation::Error auto_error;
-  if (!SendNativeKeyEventJSONRequest(
-         automation(), view_locator, key_code, modifiers, &auto_error)) {
-    *error = Error::FromAutomationError(auto_error);
-  }
-}
-
 void Automation::SendWebMouseEvent(const WebViewId& view_id,
                                    const WebMouseEvent& event,
                                    Error** error) {

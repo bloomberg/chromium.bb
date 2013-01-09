@@ -188,39 +188,6 @@ class WebserverTest(ChromeDriverTest):
     server.Kill()
 
 
-class NativeInputTest(ChromeDriverTest):
-  """Native input ChromeDriver tests."""
-
-  _CAPABILITIES = {'chrome.nativeEvents': True }
-
-  def testCanStartWithNativeEvents(self):
-    driver = self.GetNewDriver(NativeInputTest._CAPABILITIES)
-    self.assertTrue(driver.capabilities['chrome.nativeEvents'])
-
-  # Flaky on windows. See crbug.com/80295.
-  def DISABLED_testSendKeysNative(self):
-    driver = self.GetNewDriver(NativeInputTest._CAPABILITIES)
-    driver.get(self.GetTestDataUrl() + '/test_page.html')
-    # Find the text input.
-    q = driver.find_element_by_name('key_input_test')
-    # Send some keys.
-    q.send_keys('tokyo')
-    self.assertEqual(q.text, 'tokyo')
-
-
-  # Needs to run on a machine with an IME installed.
-  def DISABLED_testSendKeysNativeProcessedByIME(self):
-    driver = self.GetNewDriver(NativeInputTest._CAPABILITIES)
-    driver.get(self.GetTestDataUrl() + '/test_page.html')
-    q = driver.find_element_by_name('key_input_test')
-    # Send key combination to turn IME on.
-    q.send_keys(Keys.F7)
-    q.send_keys('toukyou')
-    # Now turning it off.
-    q.send_keys(Keys.F7)
-    self.assertEqual(q.get_attribute('value'), "\xe6\x9d\xb1\xe4\xba\xac")
-
-
 class DesiredCapabilitiesTest(ChromeDriverTest):
   """Tests for webdriver desired capabilities."""
 
