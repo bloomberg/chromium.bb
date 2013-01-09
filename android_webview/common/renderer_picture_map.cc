@@ -4,6 +4,8 @@
 
 #include "android_webview/common/renderer_picture_map.h"
 
+#include "base/logging.h"
+
 using base::AutoLock;
 
 namespace android_webview {
@@ -28,14 +30,13 @@ RendererPictureMap::RendererPictureMap() {
 RendererPictureMap::~RendererPictureMap() {
 }
 
-scoped_refptr<cc::PicturePileImpl> RendererPictureMap::GetRendererPicture(
-    int id) {
+skia::RefPtr<SkPicture> RendererPictureMap::GetRendererPicture(int id) {
   AutoLock lock(lock_);
   return picture_map_[id];
 }
 
 void RendererPictureMap::SetRendererPicture(int id,
-    scoped_refptr<cc::PicturePileImpl> picture) {
+    skia::RefPtr<SkPicture> picture) {
   AutoLock lock(lock_);
   picture_map_[id] = picture;
 }

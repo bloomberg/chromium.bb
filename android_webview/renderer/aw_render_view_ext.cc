@@ -200,8 +200,7 @@ void AwRenderViewExt::OnEnableCapturePictureCallback(bool enable) {
   //    content::RenderView::CapturePictureCallback());
 }
 
-void AwRenderViewExt::OnPictureUpdate(
-    scoped_refptr<cc::PicturePileImpl> picture) {
+void AwRenderViewExt::OnPictureUpdate(skia::RefPtr<SkPicture> picture) {
   RendererPictureMap::GetInstance()->SetRendererPicture(routing_id(), picture);
   Send(new AwViewHostMsg_PictureUpdated(routing_id()));
 }

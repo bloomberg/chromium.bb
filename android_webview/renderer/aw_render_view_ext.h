@@ -7,10 +7,11 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
-#include "cc/picture_pile_impl.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "skia/ext/refptr.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPermissionClient.h"
+#include "third_party/skia/include/core/SkPicture.h"
 
 namespace WebKit {
 
@@ -45,7 +46,7 @@ class AwRenderViewExt : public content::RenderViewObserver,
 
   void OnEnableCapturePictureCallback(bool enable);
 
-  void OnPictureUpdate(scoped_refptr<cc::PicturePileImpl> picture);
+  void OnPictureUpdate(skia::RefPtr<SkPicture> picture);
 
   // WebKit::WebPermissionClient implementation.
   virtual bool allowImage(WebKit::WebFrame* frame,

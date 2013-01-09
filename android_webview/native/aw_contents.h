@@ -146,11 +146,11 @@ class AwContents : public FindHelper::Listener,
   scoped_refptr<cc::Layer> scissor_clip_layer_;
   scoped_refptr<cc::Layer> transform_layer_;
   scoped_refptr<cc::Layer> view_clip_layer_;
+  gfx::Point hw_rendering_scroll_;
   gfx::Size view_size_;
   bool view_visible_;
   bool compositor_visible_;
   bool is_composite_pending_;
-  int last_scroll_x_, last_scroll_y_;
 
   // Used only for detecting Android View System context changes.
   // Not to be used between draw calls.

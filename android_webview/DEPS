@@ -13,6 +13,8 @@ include_rules = [
   "+content/public/common",
   "+jni",
   "+net",
+  "+skia",
+  "+third_party/skia/include",
   "+ui/android",
   "+ui/base",
   "+webkit",

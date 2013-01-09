@@ -7,28 +7,28 @@
 
 #include <map>
 
-#include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "cc/picture_pile_impl.h"
+#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkPicture.h"
 
 namespace android_webview {
 
-// Stores picture piles received from diferent renderers and associates them by
+// Stores pictures received from diferent renderers and associates them by
 // renderer id. Will only work in single process mode.
 class RendererPictureMap {
  public:
   static void CreateInstance();
   static RendererPictureMap* GetInstance();
 
-  scoped_refptr<cc::PicturePileImpl> GetRendererPicture(int id);
-  void SetRendererPicture(int id, scoped_refptr<cc::PicturePileImpl> picture);
+  skia::RefPtr<SkPicture> GetRendererPicture(int id);
+  void SetRendererPicture(int id, skia::RefPtr<SkPicture> picture);
   void ClearRendererPicture(int id);
 
  private:
   RendererPictureMap();
   ~RendererPictureMap();
 
-  typedef std::map<int, scoped_refptr<cc::PicturePileImpl> > PictureMap;
+  typedef std::map<int, skia::RefPtr<SkPicture> > PictureMap;
   PictureMap picture_map_;
   base::Lock lock_;
 };

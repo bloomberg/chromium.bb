@@ -27,8 +27,6 @@
 #include "base/pickle.h"
 #include "base/supports_user_data.h"
 #include "cc/layer.h"
-#include "cc/picture_pile_impl.h"
-#include "cc/rendering_stats.h"
 #include "content/components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_thread.h"
@@ -39,9 +37,11 @@
 #include "content/public/common/ssl_status.h"
 #include "jni/AwContents_jni.h"
 #include "net/base/x509_certificate.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -122,7 +122,6 @@ AwContents::AwContents(JNIEnv* env,
       view_visible_(false),
       compositor_visible_(false),
       is_composite_pending_(false),
-      last_scroll_x_(0), last_scroll_y_(0),
       last_frame_context_(NULL) {
   RendererPictureMap::CreateInstance();
   android_webview::AwBrowserDependencyFactory* dependency_factory =
@@ -270,7 +269,6 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
     last_frame_context_ = current_context;
   }
 
-  gfx::Transform transform;
   compositor_->SetWindowBounds(gfx::Size(draw_info->width, draw_info->height));
 
   if (draw_info->is_layer) {
@@ -279,6 +277,7 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
     // The Android framework will composite us afterwards.
     compositor_->SetHasTransparentBackground(false);
     view_clip_layer_->setMasksToBounds(false);
+    transform_layer_->setTransform(gfx::Transform());
     scissor_clip_layer_->setMasksToBounds(false);
     scissor_clip_layer_->setPosition(gfx::PointF());
     scissor_clip_layer_->setBounds(gfx::Size());
@@ -303,14 +302,16 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
     undo_clip_position.Translate(-clip_rect.x(), -clip_rect.y());
     scissor_clip_layer_->setSublayerTransform(undo_clip_position);
 
+    gfx::Transform transform;
     transform.matrix().setColMajorf(draw_info->transform);
+
+    // The scrolling values of the Android Framework affect the transformation
+    // matrix. This needs to be undone to let the compositor handle scrolling.
+    transform.Translate(hw_rendering_scroll_.x(), hw_rendering_scroll_.y());
+    transform_layer_->setTransform(transform);
+
     view_clip_layer_->setMasksToBounds(true);
   }
-
-  // The scrolling values of the Android Framework affect the transformation
-  // matrix. This needs to be undone to let the compositor handle scrolling.
-  transform.Translate(last_scroll_x_, last_scroll_y_);
-  transform_layer_->setTransform(transform);
 
   compositor_->Composite();
   is_composite_pending_ = false;
@@ -379,7 +380,7 @@ void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
 }
 
 bool AwContents::DrawSW(JNIEnv* env, jobject obj, jobject java_canvas) {
-  scoped_refptr<cc::PicturePileImpl> picture =
+  skia::RefPtr<SkPicture> picture =
       RendererPictureMap::GetInstance()->GetRendererPicture(
           web_contents_->GetRoutingID());
   if (!picture)
@@ -402,9 +403,8 @@ bool AwContents::DrawSW(JNIEnv* env, jobject obj, jobject java_canvas) {
     SkDevice device(bitmap);
     SkCanvas canvas(&device);
     SkMatrix matrix;
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < 9; i++)
       matrix.set(i, pixels->matrix[i]);
-    }
     canvas.setMatrix(matrix);
 
     SkRegion clip;
@@ -416,12 +416,7 @@ bool AwContents::DrawSW(JNIEnv* env, jobject obj, jobject java_canvas) {
       clip.setRect(SkIRect::MakeWH(pixels->width, pixels->height));
     }
 
-    SkIRect sk_clip_rect = clip.getBounds();
-    gfx::Rect clip_rect(sk_clip_rect.x(), sk_clip_rect.y(),
-                        sk_clip_rect.width(), sk_clip_rect.height());
-
-    cc::RenderingStats stats;
-    picture->Raster(&canvas, clip_rect, 1.0, &stats);
+    picture->draw(&canvas);
   }
 
   g_draw_sw_functions->release_pixels(pixels);
@@ -817,8 +812,7 @@ jboolean AwContents::RestoreFromOpaqueState(
 
 void AwContents::SetScrollForHWFrame(JNIEnv* env, jobject obj,
                                      int scroll_x, int scroll_y) {
-  last_scroll_x_ = scroll_x;
-  last_scroll_y_ = scroll_y;
+  hw_rendering_scroll_ = gfx::Point(scroll_x, scroll_y);
 }
 
 void AwContents::SetPendingWebContentsForPopup(
@@ -846,6 +840,8 @@ void AwContents::OnPictureUpdated(int process_id, int render_view_id) {
   if (render_view_id != web_contents_->GetRoutingID())
     return;
 
+  // TODO(leandrogracia): delete when sw rendering uses Ubercompositor.
+  // Invalidation should be provided by the compositor only.
   Invalidate();
 }
 
