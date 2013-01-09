@@ -92,10 +92,13 @@ public class ContentSettings {
     private boolean mDomStorageEnabled = false;
 
     // Not accessed by the native side.
-    private final String mDefaultUserAgent;
     private boolean mSupportZoom = true;
     private boolean mBuiltInZoomControls = false;
     private boolean mDisplayZoomControls = true;
+    static class LazyDefaultUserAgent {
+        // Lazy Holder pattern
+        private static final String sInstance = nativeGetDefaultUserAgent();
+    }
 
     // Protects access to settings global fields.
     private static final Object sGlobalContentSettingsLock = new Object();
@@ -220,14 +223,12 @@ public class ContentSettings {
         mEventHandler = new EventHandler();
         if (mCanModifySettings) {
             // PERSONALITY_VIEW
-            mDefaultUserAgent = nativeGetDefaultUserAgent();
-            mUserAgent = mDefaultUserAgent;
+            mUserAgent = LazyDefaultUserAgent.sInstance;
             syncToNativeOnUiThread();
         } else {
             // PERSONALITY_CHROME
             // Chrome has zooming enabled by default. These settings are not
             // set by the native code.
-            mDefaultUserAgent = ""; // Unused by PERSONALITY_CHROME but must be initialized.
             mBuiltInZoomControls = true;
             mDisplayZoomControls = false;
             syncFromNativeOnUiThread();
@@ -249,7 +250,7 @@ public class ContentSettings {
      * overridden by {@link #setUserAgentString()}
      */
     public static String getDefaultUserAgent() {
-        return nativeGetDefaultUserAgent();
+        return LazyDefaultUserAgent.sInstance;
     }
 
     /**
@@ -261,7 +262,7 @@ public class ContentSettings {
         synchronized (mContentSettingsLock) {
             final String oldUserAgent = mUserAgent;
             if (ua == null || ua.length() == 0) {
-                mUserAgent = mDefaultUserAgent;
+                mUserAgent = LazyDefaultUserAgent.sInstance;
             } else {
                 mUserAgent = ua;
             }
