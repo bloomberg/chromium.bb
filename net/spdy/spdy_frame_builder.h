@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/sys_byteorder.h"
 #include "net/base/net_export.h"
@@ -15,7 +16,7 @@
 
 namespace net {
 
-// This class provides facilities for basic binary value packing and unpacking
+// This class provides facilities for basic binary value packing
 // into Spdy frames.
 //
 // The SpdyFrameBuilder supports appending primitive values (int, string, etc)
@@ -24,8 +25,6 @@ namespace net {
 // buffer is exposed as the "data" of the SpdyFrameBuilder.
 class NET_EXPORT_PRIVATE SpdyFrameBuilder {
  public:
-  ~SpdyFrameBuilder();
-
   // Initializes a SpdyFrameBuilder with a buffer of given size
   explicit SpdyFrameBuilder(size_t size);
 
@@ -40,13 +39,14 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
   // |stream_id| and |flags|.
   SpdyFrameBuilder(SpdyStreamId stream_id, SpdyDataFlags flags,  size_t size);
 
+  ~SpdyFrameBuilder();
+
   // Returns the size of the SpdyFrameBuilder's data.
   size_t length() const { return length_; }
 
   // Takes the buffer from the SpdyFrameBuilder.
   SpdyFrame* take() {
-    SpdyFrame* rv = new SpdyFrame(buffer_, true);
-    buffer_ = NULL;
+    SpdyFrame* rv = new SpdyFrame(buffer_.release(), true);
     capacity_ = 0;
     length_ = 0;
     return rv;
@@ -81,43 +81,18 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
   bool WriteBytesToOffset(int offset, const void* data, uint32 data_len) {
     if (offset + data_len > length_)
       return false;
-    char *ptr = buffer_ + offset;
+    char *ptr = buffer_.get() + offset;
     memcpy(ptr, data, data_len);
     return true;
   }
 
-  // Returns true if the given iterator could point to data with the given
-  // length. If there is no room for the given data before the end of the
-  // payload, returns false.
-  bool IteratorHasRoomFor(const void* iter, int len) const {
-    const char* end_of_region = reinterpret_cast<const char*>(iter) + len;
-    if (len < 0 ||
-        iter < buffer_ ||
-        iter > end_of_payload() ||
-        iter > end_of_region ||
-        end_of_region > end_of_payload())
-      return false;
-
-    // Watch out for overflow in pointer calculation, which wraps.
-    return (iter <= end_of_region) && (end_of_region <= end_of_payload());
-  }
-
  protected:
-  size_t capacity() const {
-    return capacity_;
-  }
-
-  const char* end_of_payload() const { return buffer_ + length_; }
+  const char* end_of_payload() const { return buffer_.get() + length_; }
 
   // Completes the write operation by padding the data with NULL bytes until it
   // is padded. Should be paired with BeginWrite, but it does not necessarily
   // have to be called after the data is written.
   void EndWrite(char* dest, int length);
-
-  // Moves the iterator by the given number of bytes.
-  static void UpdateIter(void** iter, int bytes) {
-    *iter = static_cast<char*>(*iter) + bytes;
-  }
 
  private:
   // Returns the location that the data should be written at, or NULL if there
@@ -125,7 +100,7 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
   // length to pad out for the next write.
   char* BeginWrite(size_t length);
 
-  char* buffer_;
+  scoped_ptr<char[]> buffer_;
   size_t capacity_;  // Allocation size of payload (or -1 if buffer is const).
   size_t length_;    // current length of the buffer
 };

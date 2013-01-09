@@ -61,7 +61,6 @@ SpdyFrameBuilder::SpdyFrameBuilder(SpdyStreamId stream_id,
 }
 
 SpdyFrameBuilder::~SpdyFrameBuilder() {
-  delete[] buffer_;
 }
 
 char* SpdyFrameBuilder::BeginWrite(size_t length) {
@@ -74,7 +73,7 @@ char* SpdyFrameBuilder::BeginWrite(size_t length) {
   DCHECK_LE(length, std::numeric_limits<uint32>::max());
 #endif
 
-  return buffer_ + offset;
+  return buffer_.get() + offset;
 }
 
 void SpdyFrameBuilder::EndWrite(char* dest, int length) {
