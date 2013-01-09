@@ -147,8 +147,13 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
 
   // Stores client authentication information between ClientAuthHandler and
   // GetSSLCertRequestInfo calls.
-  std::vector<scoped_refptr<X509Certificate> > client_certs_;
   bool client_auth_cert_needed_;
+  // List of DER-encoded X.509 DistinguishedName of certificate authorities
+  // allowed by the server.
+  std::vector<std::string> cert_authorities_;
+  // Set of certificates that matches the server criteria. This should be
+  // removed soon as being tracked in http://crbug.com/166642.
+  std::vector<scoped_refptr<X509Certificate> > client_certs_;
 
   CertVerifier* const cert_verifier_;
   scoped_ptr<SingleRequestCertVerifier> verifier_;

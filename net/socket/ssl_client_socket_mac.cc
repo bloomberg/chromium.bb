@@ -748,8 +748,15 @@ bool SSLClientSocketMac::GetSSLInfo(SSLInfo* ssl_info) {
 
 void SSLClientSocketMac::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
-  // I'm being asked for available client certs (identities).
-  // First, get the cert issuer names allowed by the server.
+  cert_request_info->host_and_port = host_and_port_.ToString();
+  cert_request_info->cert_authorities.clear();
+  cert_request_info->cert_key_types.clear();
+  cert_request_info->client_certs.clear();
+
+  // Retrieve the cert issuers accepted by the server. This information is
+  // currently (temporarily) being saved both in |valid_issuers| and
+  // |cert_authorities|, the latter being the target solution. The refactoring
+  // effort is being tracked in http://crbug.com/166642.
   std::vector<CertPrincipal> valid_issuers;
   CFArrayRef valid_issuer_names = NULL;
   if (SSLCopyDistinguishedNames(ssl_context_, &valid_issuer_names) == noErr &&
@@ -758,9 +765,14 @@ void SSLClientSocketMac::GetSSLCertRequestInfo(
             << " valid issuer names";
     int n = CFArrayGetCount(valid_issuer_names);
     for (int i = 0; i < n; i++) {
-      // Parse each name into a CertPrincipal object.
       CFDataRef issuer = reinterpret_cast<CFDataRef>(
           CFArrayGetValueAtIndex(valid_issuer_names, i));
+      // Add the DER-encoded issuer DistinguishedName to |cert_authorities|.
+      cert_request_info->cert_authorities.push_back(std::string(
+          reinterpret_cast<const char*>(CFDataGetBytePtr(issuer)),
+          static_cast<size_t>(CFDataGetLength(issuer))));
+      // Add the CertPrincipal object representing the issuer to
+      // |valid_issuers|.
       CertPrincipal p;
       if (p.ParseDistinguishedName(CFDataGetBytePtr(issuer),
                                    CFDataGetLength(issuer))) {
@@ -771,8 +783,6 @@ void SSLClientSocketMac::GetSSLCertRequestInfo(
   }
 
   // Now get the available client certs whose issuers are allowed by the server.
-  cert_request_info->host_and_port = host_and_port_.ToString();
-  cert_request_info->client_certs.clear();
   // TODO(rch):  we should consider passing a host-port pair as the first
   // argument to X509Certificate::GetSSLClientCertificates.
   X509Certificate::GetSSLClientCertificates(host_and_port_.host(),

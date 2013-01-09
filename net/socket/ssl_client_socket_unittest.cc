@@ -4,6 +4,7 @@
 
 #include "net/socket/ssl_client_socket.h"
 
+#include "base/memory/ref_counted.h"
 #include "net/base/address_list.h"
 #include "net/base/cert_test_util.h"
 #include "net/base/host_resolver.h"
@@ -12,6 +13,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/base/net_log_unittest.h"
+#include "net/base/ssl_cert_request_info.h"
 #include "net/base/ssl_config_service.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_data_directory.h"
@@ -936,3 +938,112 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
   EXPECT_FALSE(sock->IsConnected());
 }
 
+// Verifies the correctness of GetSSLCertRequestInfo.
+class SSLClientSocketCertRequestInfoTest : public SSLClientSocketTest {
+ protected:
+  // Creates a test server with the given SSLOptions, connects to it and returns
+  // the SSLCertRequestInfo reported by the socket.
+  scoped_refptr<net::SSLCertRequestInfo> GetCertRequest(
+      net::TestServer::SSLOptions ssl_options) {
+    net::TestServer test_server(net::TestServer::TYPE_HTTPS,
+                                ssl_options,
+                                FilePath());
+    if (!test_server.Start())
+      return NULL;
+
+    net::AddressList addr;
+    if (!test_server.GetAddressList(&addr))
+      return NULL;
+
+    net::TestCompletionCallback callback;
+    net::CapturingNetLog log;
+    net::StreamSocket* transport = new net::TCPClientSocket(
+        addr, &log, net::NetLog::Source());
+    int rv = transport->Connect(callback.callback());
+    if (rv == net::ERR_IO_PENDING)
+      rv = callback.WaitForResult();
+    EXPECT_EQ(net::OK, rv);
+
+    scoped_ptr<net::SSLClientSocket> sock(
+        CreateSSLClientSocket(transport, test_server.host_port_pair(),
+                              kDefaultSSLConfig));
+    EXPECT_FALSE(sock->IsConnected());
+
+    rv = sock->Connect(callback.callback());
+    if (rv == net::ERR_IO_PENDING)
+      rv = callback.WaitForResult();
+    scoped_refptr<net::SSLCertRequestInfo> request_info =
+        new net::SSLCertRequestInfo();
+    sock->GetSSLCertRequestInfo(request_info.get());
+    sock->Disconnect();
+    EXPECT_FALSE(sock->IsConnected());
+
+    return request_info;
+  }
+
+  // The following is needed to construct paths to certificates passed as
+  // |client_authorities| in server SSLOptions. Current implementation of
+  // RemoteTestServer (used on Android) expects relative paths, as opposed to
+  // LocalTestServer, which expects absolute paths (what to fix?).
+  FilePath CertDirectory() {
+#ifdef OS_ANDROID
+    return net::GetTestCertsDirectoryRelative();
+#else
+    return net::GetTestCertsDirectory();
+#endif
+  }
+};
+
+TEST_F(SSLClientSocketCertRequestInfoTest, NoAuthorities) {
+  net::TestServer::SSLOptions ssl_options;
+  ssl_options.request_client_certificate = true;
+  scoped_refptr<net::SSLCertRequestInfo> request_info =
+      GetCertRequest(ssl_options);
+  ASSERT_TRUE(request_info);
+  EXPECT_EQ(0u, request_info->cert_authorities.size());
+}
+
+TEST_F(SSLClientSocketCertRequestInfoTest, TwoAuthorities) {
+  const FilePath::CharType kThawteFile[] =
+      FILE_PATH_LITERAL("thawte.single.pem");
+  const unsigned char kThawteDN[] = {
+    0x30, 0x4c, 0x31, 0x0b, 0x30, 0x09, 0x06, 0x03, 0x55, 0x04, 0x06, 0x13,
+    0x02, 0x5a, 0x41, 0x31, 0x25, 0x30, 0x23, 0x06, 0x03, 0x55, 0x04, 0x0a,
+    0x13, 0x1c, 0x54, 0x68, 0x61, 0x77, 0x74, 0x65, 0x20, 0x43, 0x6f, 0x6e,
+    0x73, 0x75, 0x6c, 0x74, 0x69, 0x6e, 0x67, 0x20, 0x28, 0x50, 0x74, 0x79,
+    0x29, 0x20, 0x4c, 0x74, 0x64, 0x2e, 0x31, 0x16, 0x30, 0x14, 0x06, 0x03,
+    0x55, 0x04, 0x03, 0x13, 0x0d, 0x54, 0x68, 0x61, 0x77, 0x74, 0x65, 0x20,
+    0x53, 0x47, 0x43, 0x20, 0x43, 0x41
+  };
+  const size_t kThawteLen = sizeof(kThawteDN);
+
+  const FilePath::CharType kDiginotarFile[] =
+      FILE_PATH_LITERAL("diginotar_root_ca.pem");
+  const unsigned char kDiginotarDN[] = {
+    0x30, 0x5f, 0x31, 0x0b, 0x30, 0x09, 0x06, 0x03, 0x55, 0x04, 0x06, 0x13,
+    0x02, 0x4e, 0x4c, 0x31, 0x12, 0x30, 0x10, 0x06, 0x03, 0x55, 0x04, 0x0a,
+    0x13, 0x09, 0x44, 0x69, 0x67, 0x69, 0x4e, 0x6f, 0x74, 0x61, 0x72, 0x31,
+    0x1a, 0x30, 0x18, 0x06, 0x03, 0x55, 0x04, 0x03, 0x13, 0x11, 0x44, 0x69,
+    0x67, 0x69, 0x4e, 0x6f, 0x74, 0x61, 0x72, 0x20, 0x52, 0x6f, 0x6f, 0x74,
+    0x20, 0x43, 0x41, 0x31, 0x20, 0x30, 0x1e, 0x06, 0x09, 0x2a, 0x86, 0x48,
+    0x86, 0xf7, 0x0d, 0x01, 0x09, 0x01, 0x16, 0x11, 0x69, 0x6e, 0x66, 0x6f,
+    0x40, 0x64, 0x69, 0x67, 0x69, 0x6e, 0x6f, 0x74, 0x61, 0x72, 0x2e, 0x6e,
+    0x6c
+  };
+  const size_t kDiginotarLen = sizeof(kDiginotarDN);
+
+  net::TestServer::SSLOptions ssl_options;
+  ssl_options.request_client_certificate = true;
+  ssl_options.client_authorities.push_back(CertDirectory().Append(kThawteFile));
+  ssl_options.client_authorities.push_back(
+      CertDirectory().Append(kDiginotarFile));
+  scoped_refptr<net::SSLCertRequestInfo> request_info =
+      GetCertRequest(ssl_options);
+  ASSERT_TRUE(request_info);
+  ASSERT_EQ(2u, request_info->cert_authorities.size());
+  EXPECT_EQ(std::string(reinterpret_cast<const char*>(kThawteDN), kThawteLen),
+            request_info->cert_authorities[0]);
+  EXPECT_EQ(
+      std::string(reinterpret_cast<const char*>(kDiginotarDN), kDiginotarLen),
+      request_info->cert_authorities[1]);
+}

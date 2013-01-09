@@ -429,8 +429,13 @@ struct HandshakeState {
   bool channel_id_sent;
 
   // If the peer requests client certificate authentication, the set of
-  // certificates that matched the peer's criteria.
+  // certificates that matched the peer's criteria. This should be soon removed
+  // as being tracked in http://crbug.com/166642.
   CertificateList client_certs;
+
+  // List of DER-encoded X.509 DistinguishedName of certificate authorities
+  // allowed by the server.
+  std::vector<std::string> cert_authorities;
 
   // Set when the handshake fully completes.
   //
@@ -1301,12 +1306,20 @@ SECStatus SSLClientSocketNSS::Core::PlatformClientAuthHandler(
   }
 
   core->nss_handshake_state_.client_certs.clear();
+  core->nss_handshake_state_.cert_authorities.clear();
 
   std::vector<CERT_NAME_BLOB> issuer_list(ca_names->nnames);
   for (int i = 0; i < ca_names->nnames; ++i) {
     issuer_list[i].cbData = ca_names->names[i].len;
     issuer_list[i].pbData = ca_names->names[i].data;
+    core->nss_handshake_state_.cert_authorities.push_back(std::string(
+        reinterpret_cast<const char*>(ca_names->names[i].data),
+        static_cast<size_t>(ca_names->names[i].len)));
   }
+
+  // Retrieve the list of matching client certificates. This is to be moved out
+  // of here as a part of refactoring effort being tracked in
+  // http://crbug.com/166642.
 
   // Client certificates of the user are in the "MY" system certificate store.
   HCERTSTORE my_cert_store = CertOpenSystemStore(NULL, L"MY");
@@ -1480,12 +1493,21 @@ SECStatus SSLClientSocketNSS::Core::PlatformClientAuthHandler(
   }
 
   core->nss_handshake_state_.client_certs.clear();
+  core->nss_handshake_state_.cert_authorities.clear();
 
-  // First, get the cert issuer names allowed by the server.
+  // Retrieve the cert issuers accepted by the server. This information is
+  // currently (temporarily) being saved both in |valid_issuers| and
+  // |cert_authorities|, the latter being the target solution. The refactoring
+  // effort is being tracked in http://crbug.com/166642.
   std::vector<CertPrincipal> valid_issuers;
   int n = ca_names->nnames;
   for (int i = 0; i < n; i++) {
-    // Parse each name into a CertPrincipal object.
+    // Add the DER-encoded issuer DistinguishedName to |cert_authorities|.
+    core->nss_handshake_state_.cert_authorities.push_back(std::string(
+        reinterpret_cast<const char*>(ca_names->names[i].data),
+        static_cast<size_t>(ca_names->names[i].len)));
+    // Add the CertPrincipal object representing the issuer to
+    // |valid_issuers|.
     CertPrincipal p;
     if (p.ParseDistinguishedName(ca_names->names[i].data,
                                  ca_names->names[i].len)) {
@@ -1562,8 +1584,8 @@ SECStatus SSLClientSocketNSS::Core::ClientAuthHandler(
   core->client_auth_cert_needed_ = !core->ssl_config_.send_client_cert;
   void* wincx  = SSL_RevealPinArg(socket);
 
-  // Second pass: a client certificate should have been selected.
   if (core->ssl_config_.send_client_cert) {
+    // Second pass: a client certificate should have been selected.
     if (core->ssl_config_.client_cert) {
       CERTCertificate* cert = CERT_DupCertificate(
           core->ssl_config_.client_cert->os_cert_handle());
@@ -1587,9 +1609,22 @@ SECStatus SSLClientSocketNSS::Core::ClientAuthHandler(
     return SECFailure;
   }
 
+  // First pass: client certificate is needed.
   core->nss_handshake_state_.client_certs.clear();
+  core->nss_handshake_state_.cert_authorities.clear();
 
-  // Iterate over all client certificates.
+  // Retrieve the DER-encoded DistinguishedName of the cert issuers accepted by
+  // the server and save them in |cert_authorities|.
+  for (int i = 0; i < ca_names->nnames; i++) {
+    core->nss_handshake_state_.cert_authorities.push_back(std::string(
+        reinterpret_cast<const char*>(ca_names->names[i].data),
+        static_cast<size_t>(ca_names->names[i].len)));
+  }
+
+  // Iterate over all client certificates and put the ones matching the server
+  // criteria in |nss_handshake_state_.client_certs|. This is to be moved out of
+  // here as a part of refactoring effort being tracked in
+  // http://crbug.com/166642.
   CERTCertList* client_certs = CERT_FindUserCertsByUsage(
       CERT_GetDefaultCertDB(), certUsageSSLClient,
       PR_FALSE, PR_FALSE, wincx);
@@ -2779,6 +2814,8 @@ void SSLClientSocketNSS::GetSSLCertRequestInfo(
   EnterFunction("");
   // TODO(rch): switch SSLCertRequestInfo.host_and_port to a HostPortPair
   cert_request_info->host_and_port = host_and_port_.ToString();
+  cert_request_info->cert_authorities = core_->state().cert_authorities;
+  // This should be removed as being tracked in http://crbug.com/166642.
   cert_request_info->client_certs = core_->state().client_certs;
   LeaveFunction(cert_request_info->client_certs.size());
 }

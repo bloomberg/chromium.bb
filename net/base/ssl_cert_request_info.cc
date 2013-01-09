@@ -13,8 +13,10 @@ SSLCertRequestInfo::SSLCertRequestInfo() : is_proxy(false) {
 
 void SSLCertRequestInfo::Reset() {
   host_and_port.clear();
-  client_certs.clear();
   is_proxy = false;
+  cert_authorities.clear();
+  cert_key_types.clear();
+  client_certs.clear();
 }
 
 SSLCertRequestInfo::~SSLCertRequestInfo() {

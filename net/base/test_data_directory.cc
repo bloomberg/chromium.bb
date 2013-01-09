@@ -9,10 +9,19 @@
 
 namespace net {
 
+namespace {
+const FilePath::CharType kCertificateRelativePath[] =
+    FILE_PATH_LITERAL("net/data/ssl/certificates");
+}  // namespace
+
 FilePath GetTestCertsDirectory() {
-  FilePath certs_dir;
-  PathService::Get(base::DIR_SOURCE_ROOT, &certs_dir);
-  return certs_dir.Append(FILE_PATH_LITERAL("net/data/ssl/certificates"));
+  FilePath src_root;
+  PathService::Get(base::DIR_SOURCE_ROOT, &src_root);
+  return src_root.Append(kCertificateRelativePath);
+}
+
+FilePath GetTestCertsDirectoryRelative() {
+  return FilePath(kCertificateRelativePath);
 }
 
 FilePath GetWebSocketTestDataDirectory() {

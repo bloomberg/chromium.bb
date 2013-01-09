@@ -456,12 +456,13 @@ bool SSLClientSocketWin::GetSSLInfo(SSLInfo* ssl_info) {
 void SSLClientSocketWin::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
   cert_request_info->host_and_port = host_and_port_.ToString();
+  cert_request_info->cert_authorities.clear();
+  cert_request_info->cert_key_types.clear();
   cert_request_info->client_certs.clear();
 
-  // Get the certificate_authorities field of the CertificateRequest message.
-  // Schannel doesn't return the certificate_types field of the
-  // CertificateRequest message to us, so we can't filter the client
-  // certificates properly. :-(
+  // Get the server criteria for client certificates. Schannel doesn't return
+  // the certificate_types field of the CertificateRequest message to us, so we
+  // can't fill the |cert_key_types| field.
   SecPkgContext_IssuerListInfoEx issuer_list;
   SECURITY_STATUS status = QueryContextAttributes(
       &ctxt_, SECPKG_ATTR_ISSUER_LIST_EX, &issuer_list);
@@ -469,6 +470,16 @@ void SSLClientSocketWin::GetSSLCertRequestInfo(
     DLOG(ERROR) << "QueryContextAttributes (issuer list) failed: " << status;
     return;
   }
+
+  for (size_t i = 0; i < issuer_list.cIssuers; i++) {
+    cert_request_info->cert_authorities.push_back(std::string(
+        reinterpret_cast<const char*>(issuer_list.aIssuers[i].pbData),
+        static_cast<size_t>(issuer_list.aIssuers[i].cbData)));
+  }
+
+  // Retrieve the list of matching client certificates. This is to be moved out
+  // of here as a part of refactoring effort being tracked in
+  // http://crbug.com/166642.
 
   // Client certificates of the user are in the "MY" system certificate store.
   HCERTSTORE my_cert_store = CertOpenSystemStore(NULL, L"MY");

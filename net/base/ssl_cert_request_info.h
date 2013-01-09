@@ -10,13 +10,29 @@
 
 #include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
+#include "net/base/ssl_client_cert_type.h"
 
 namespace net {
 
 class X509Certificate;
 
-// The SSLCertRequestInfo class contains the info that allows a user to
-// select a certificate to send to the SSL server for client authentication.
+// The SSLCertRequestInfo class represents server criteria regarding client
+// certificate required for a secure connection.
+//
+// In TLS 1.1, the CertificateRequest
+// message is defined as:
+//   enum {
+//   rsa_sign(1), dss_sign(2), rsa_fixed_dh(3), dss_fixed_dh(4),
+//   rsa_ephemeral_dh_RESERVED(5), dss_ephemeral_dh_RESERVED(6),
+//   fortezza_dms_RESERVED(20), (255)
+//   } ClientCertificateType;
+//
+//   opaque DistinguishedName<1..2^16-1>;
+//
+//   struct {
+//       ClientCertificateType certificate_types<1..2^8-1>;
+//       DistinguishedName certificate_authorities<3..2^16-1>;
+//   } CertificateRequest;
 class NET_EXPORT SSLCertRequestInfo
     : public base::RefCountedThreadSafe<SSLCertRequestInfo> {
  public:
@@ -31,20 +47,14 @@ class NET_EXPORT SSLCertRequestInfo
   // the request.  False, if the server was the origin server.
   bool is_proxy;
 
-  // A list of client certificates that match the server's criteria in the
-  // SSL CertificateRequest message.  In TLS 1.0, the CertificateRequest
-  // message is defined as:
-  //   enum {
-  //     rsa_sign(1), dss_sign(2), rsa_fixed_dh(3), dss_fixed_dh(4),
-  //     (255)
-  //   } ClientCertificateType;
-  //
-  //   opaque DistinguishedName<1..2^16-1>;
-  //
-  //   struct {
-  //       ClientCertificateType certificate_types<1..2^8-1>;
-  //       DistinguishedName certificate_authorities<3..2^16-1>;
-  //   } CertificateRequest;
+  // List of DER-encoded X.509 DistinguishedName of certificate authorities
+  // allowed by the server.
+  std::vector<std::string> cert_authorities;
+
+  std::vector<SSLClientCertType> cert_key_types;
+
+  // Client certificates matching the server criteria. This should be removed
+  // soon as being tracked in http://crbug.com/166642.
   std::vector<scoped_refptr<X509Certificate> > client_certs;
 
  private:

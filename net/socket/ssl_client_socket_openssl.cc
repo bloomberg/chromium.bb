@@ -565,7 +565,20 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl,
   DCHECK(*pkey == NULL);
 
   if (!ssl_config_.send_client_cert) {
+    // First pass: we know that a client certificate is needed, but we do not
+    // have one at hand.
     client_auth_cert_needed_ = true;
+    STACK_OF(X509_NAME) *authorities = SSL_get_client_CA_list(ssl);
+    for (int i = 0; i < sk_X509_NAME_num(authorities); i++) {
+      X509_NAME *ca_name = (X509_NAME *)sk_X509_NAME_value(authorities, i);
+      unsigned char* str = NULL;
+      int length = i2d_X509_NAME(ca_name, &str);
+      cert_authorities_.push_back(std::string(
+          reinterpret_cast<const char*>(str),
+          static_cast<size_t>(length)));
+      OPENSSL_free(str);
+    }
+
     return -1;  // Suspends handshake.
   }
 
@@ -637,6 +650,7 @@ bool SSLClientSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
 void SSLClientSocketOpenSSL::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
   cert_request_info->host_and_port = host_and_port_.ToString();
+  cert_request_info->cert_authorities = cert_authorities_;
   cert_request_info->client_certs = client_certs_;
 }
 
@@ -759,6 +773,7 @@ void SSLClientSocketOpenSSL::Disconnect() {
   server_cert_verify_result_.Reset();
   completed_handshake_ = false;
 
+  cert_authorities_.clear();
   client_certs_.clear();
   client_auth_cert_needed_ = false;
 }
