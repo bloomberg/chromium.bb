@@ -42,6 +42,10 @@ void ChromeContentClient::AddAdditionalSchemes(
   // No additional schemes for iOS.
 }
 
+bool ChromeContentClient::HasWebUIScheme(const GURL& url) const {
+  return url.SchemeIs(chrome::kChromeUIScheme);
+}
+
 bool ChromeContentClient::CanHandleWhileSwappedOut(
     const IPC::Message& msg) {
   NOTIMPLEMENTED();

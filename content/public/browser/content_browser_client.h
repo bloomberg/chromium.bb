@@ -22,6 +22,7 @@
 #include "base/posix/global_descriptors.h"
 #endif
 
+
 class CommandLine;
 class FilePath;
 class GURL;
@@ -64,10 +65,12 @@ class RenderViewHost;
 class RenderViewHostDelegateView;
 class ResourceContext;
 class SiteInstance;
+class SpeechInputManagerDelegate;
 class SpeechRecognitionManagerDelegate;
 class WebContents;
 class WebContentsView;
 class WebContentsViewDelegate;
+class WebUIControllerFactory;
 struct MainFunctionParams;
 struct ShowDesktopNotificationHostMsgParams;
 
@@ -113,6 +116,10 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Notifies that a BrowserChildProcessHost has been created.
   virtual void BrowserChildProcessHostCreated(BrowserChildProcessHost* host) {}
+
+  // Gets the WebUIControllerFactory which will be responsible for generating
+  // WebUIs. Can return NULL if the embedder doesn't need WebUI support.
+  virtual WebUIControllerFactory* GetWebUIControllerFactory();
 
   // Get the effective URL for the given actual URL, to allow an embedder to
   // group different url schemes in the same SiteInstance.

@@ -19,13 +19,11 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "content/public/test/test_launcher.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -212,16 +210,6 @@ void ChromeTestSuite::Initialize() {
     PathService::Override(base::DIR_EXE, browser_dir_);
     PathService::Override(base::DIR_MODULE, browser_dir_);
   }
-
-#if !defined(OS_IOS)
-  if (!content::GetCurrentTestLauncherDelegate()) {
-    // Only want to do this for unit tests. For browser tests, this won't create
-    // the right object since TestChromeWebUIControllerFactory is used. That's
-    // created and registered in ChromeBrowserMainParts as in normal startup.
-    content::WebUIControllerFactory::RegisterFactory(
-        ChromeWebUIControllerFactory::GetInstance());
-  }
-#endif
 
   // Disable external libraries load if we are under python process in
   // ChromeOS.  That means we are autotest and, if ASAN is used,
