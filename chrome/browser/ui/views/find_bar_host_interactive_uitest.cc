@@ -114,7 +114,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_CrashEscHandlers) {
       browser(), ui::VKEY_ESCAPE, false, false, false, false));
 }
 
-IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
+// Fails to start the test server on ChromeOS: http://crbug.com/168974
+#if defined(OS_CHROMEOS)
+#define MAYBE_FocusRestore DISABLED_FocusRestore
+#else
+#define MAYBE_FocusRestore FocusRestore
+#endif
+IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestore) {
   ASSERT_TRUE(test_server()->Start());
 
   GURL url = test_server()->GetURL("title1.html");
