@@ -1,13 +1,13 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from telemetry import multi_page_benchmark
 from telemetry import multi_page_benchmark_unittest_base
 from telemetry import page
 from perf_tools import smoothness_benchmark
 
 from telemetry import browser_finder
 from telemetry import options_for_unittests
+from telemetry.page_benchmark_results import PageBenchmarkResults
 
 import os
 import urlparse
@@ -48,12 +48,14 @@ class SmoothnessBenchmarkUnitTest(
                        'totalTimeInSeconds': 1,
                        'numAnimationFrames': 10,
                        'numFramesSentToScreen': 10}
-    res = multi_page_benchmark.BenchmarkResults()
+    res = PageBenchmarkResults()
     res.WillMeasurePage(page.Page('http://foo.com/'))
     smoothness_benchmark.CalcScrollResults(rendering_stats, res)
     res.DidMeasurePage()
-    self.assertEquals(50, res.page_results[0]['dropped_percent'])
-    self.assertAlmostEquals(100, res.page_results[0]['mean_frame_time'], 2)
+    self.assertEquals(50, res.page_results[0]['dropped_percent'].value)
+    self.assertAlmostEquals(
+      100,
+      res.page_results[0]['mean_frame_time'].value, 2)
 
   def testCalcResultsRealRenderStats(self):
     rendering_stats = {'numFramesSentToScreen': 60,
@@ -68,12 +70,14 @@ class SmoothnessBenchmarkUnitTest(
                        'totalTextureUploadTimeInSeconds': 0,
                        'totalRasterizeTimeInSeconds': 0,
                        'totalTimeInSeconds': 1.0}
-    res = multi_page_benchmark.BenchmarkResults()
+    res = PageBenchmarkResults()
     res.WillMeasurePage(page.Page('http://foo.com/'))
     smoothness_benchmark.CalcScrollResults(rendering_stats, res)
     res.DidMeasurePage()
-    self.assertEquals(0, res.page_results[0]['dropped_percent'])
-    self.assertAlmostEquals(1000/60., res.page_results[0]['mean_frame_time'], 2)
+    self.assertEquals(0, res.page_results[0]['dropped_percent'].value)
+    self.assertAlmostEquals(
+      1000/60.,
+      res.page_results[0]['mean_frame_time'].value, 2)
 
   def testBoundingClientRect(self):
     options = options_for_unittests.GetCopy()
@@ -128,7 +132,7 @@ class SmoothnessBenchmarkUnitTest(
     all_results = self.RunBenchmark(benchmark, ps)
 
     results0 = all_results.page_results[0]
-    self.assertTrue(results0['percent_impl_scrolled'] > 0)
+    self.assertTrue(results0['percent_impl_scrolled'].value > 0)
 
   def testScrollingWithoutGpuBenchmarkingExtension(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
