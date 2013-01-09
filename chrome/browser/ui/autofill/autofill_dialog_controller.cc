@@ -240,6 +240,8 @@ string16 AutofillDialogController::LabelForSection(DialogSection section)
   switch (section) {
     case SECTION_EMAIL:
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_EMAIL);
+    case SECTION_CC:
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_CC);
     case SECTION_BILLING:
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_BILLING);
     case SECTION_SHIPPING:

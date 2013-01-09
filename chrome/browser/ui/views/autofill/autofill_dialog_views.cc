@@ -247,8 +247,7 @@ bool AutofillDialogViews::Accept() {
 void AutofillDialogViews::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
   if (sender == use_billing_for_shipping_) {
-    shipping_.container->SetVisible(!use_billing_for_shipping_->checked());
-    GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
+    UpdateDetailsGroupState(shipping_);
   } else {
     // TODO(estade): Should the menu be shown on mouse down?
     DetailsGroup* group =
@@ -372,21 +371,20 @@ views::View* AutofillDialogViews::CreateDetailsContainer() {
   // Email.
   CreateDetailsSection(SECTION_EMAIL);
   view->AddChildView(email_.container);
+  // Credit card.
+  CreateDetailsSection(SECTION_CC);
+  view->AddChildView(cc_.container);
   // Billing.
-  CreateBillingSection();
+  CreateDetailsSection(SECTION_BILLING);
   view->AddChildView(billing_.container);
   // Shipping.
   CreateDetailsSection(SECTION_SHIPPING);
   view->AddChildView(shipping_.container);
-  shipping_.container->SetVisible(!use_billing_for_shipping_->checked());
 
   return view;
 }
 
 void AutofillDialogViews::CreateDetailsSection(DialogSection section) {
-  DCHECK_NE(SECTION_CC, section);
-  DCHECK_NE(SECTION_BILLING, section);
-
   // Inputs container (manual inputs + combobox).
   views::View* inputs_container = CreateInputsContainer(section);
 
@@ -397,34 +395,6 @@ void AutofillDialogViews::CreateDetailsSection(DialogSection section) {
       inputs_container,
       group->suggested_button);
   UpdateDetailsGroupState(*group);
-}
-
-void AutofillDialogViews::CreateBillingSection() {
-  views::View* billing = new views::View();
-  billing->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, 0, 0,
-      views::kRelatedControlVerticalSpacing));
-
-  static const DialogSection sections[] = { SECTION_CC, SECTION_BILLING };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(sections); ++i) {
-    // Inputs container (manual inputs + combobox).
-    views::View* inputs_container = CreateInputsContainer(sections[i]);
-    billing->AddChildView(inputs_container);
-  }
-
-  use_billing_for_shipping_ =
-      new views::Checkbox(controller_->UseBillingForShippingText());
-  use_billing_for_shipping_->SetChecked(true);
-  use_billing_for_shipping_->set_listener(this);
-  billing->AddChildView(use_billing_for_shipping_);
-
-  // Container (holds label + inputs).
-  billing_.container = new SectionContainer(
-      controller_->LabelForSection(SECTION_BILLING),
-      billing,
-      billing_.suggested_button);
-  UpdateDetailsGroupState(billing_);
-  UpdateDetailsGroupState(cc_);
 }
 
 views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
@@ -453,6 +423,15 @@ views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
   views::View* info_view = new views::View();
   info_view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+
+  if (section == SECTION_SHIPPING) {
+    use_billing_for_shipping_ =
+        new views::Checkbox(controller_->UseBillingForShippingText());
+    use_billing_for_shipping_->SetChecked(true);
+    use_billing_for_shipping_->set_listener(this);
+    info_view->AddChildView(use_billing_for_shipping_);
+  }
+
   views::View* manual_inputs = InitInputsView(section);
   info_view->AddChildView(manual_inputs);
   views::Label* suggested_info = new views::Label();
@@ -545,9 +524,23 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
   string16 suggestion_text =
       controller_->SuggestionTextForSection(group.section);
   bool show_suggestions = !suggestion_text.empty();
-  group.manual_input->SetVisible(!show_suggestions);
   group.suggested_info->SetVisible(show_suggestions);
   group.suggested_info->SetText(suggestion_text);
+
+  if (group.section == SECTION_SHIPPING) {
+    bool show_checkbox = !show_suggestions;
+    // When the checkbox is going from hidden to visible, it's because the
+    // user clicked "Enter new address". Reset the checkbox to unchecked in this
+    // case.
+    if (show_checkbox && !use_billing_for_shipping_->visible())
+      use_billing_for_shipping_->SetChecked(false);
+
+    use_billing_for_shipping_->SetVisible(show_checkbox);
+    group.manual_input->SetVisible(
+        show_checkbox && !use_billing_for_shipping_->checked());
+  } else {
+    group.manual_input->SetVisible(!show_suggestions);
+  }
 
   if (group.container)
     group.container->SetForwardMouseEvents(show_suggestions);

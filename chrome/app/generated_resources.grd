@@ -10783,6 +10783,9 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_AUTOFILL_DIALOG_SECTION_EMAIL" desc="Label for the email section of the imperative autofill dialog.">
         Email address
       </message>
+      <message name="IDS_AUTOFILL_DIALOG_SECTION_CC" desc="Label for the credit card section of the imperative autofill dialog.">
+        Credit card
+      </message>
       <message name="IDS_AUTOFILL_DIALOG_SECTION_BILLING" desc="Label for the billing details section of the imperative autofill dialog.">
         Billing details
       </message>
@@ -10790,7 +10793,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Shipping details
       </message>
       <message name="IDS_AUTOFILL_DIALOG_USE_BILLING_FOR_SHIPPING" desc="Checkbox label that asks whether the billing info should also be used for shipping info.">
-        Use as shipping address?
+        Use billing address for shipping
       </message>
       <message name="IDS_AUTOFILL_DIALOG_SUBMIT_BUTTON" desc="Button text for confirmation of user details.">
         Submit
