@@ -79,6 +79,9 @@ void NativeAppWindowViews::InitializeDefaultWindow(
   init_params.delegate = this;
   init_params.remove_standard_frame = true;
   init_params.use_system_default_icon = true;
+  // TODO(erg): Conceptually, these are toplevel windows, but we theoretically
+  // could plumb context through to here in some cases.
+  init_params.top_level = true;
   window_->Init(init_params);
   gfx::Rect window_bounds = create_params.bounds;
   window_bounds.Inset(-GetFrameInsets());

@@ -10,7 +10,7 @@
 namespace oak {
 
 // Shows the Oak window. Refocuses an existing one.
-OAK_EXPORT void ShowOakWindow();
+OAK_EXPORT void ShowOakWindowWithContext(gfx::NativeView context);
 
 }  // namespace oak
 

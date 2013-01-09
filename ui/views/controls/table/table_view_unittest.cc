@@ -17,8 +17,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/table_model.h"
 #include "ui/base/models/table_model_observer.h"
-#include "ui/base/win/scoped_ole_initializer.h"
 #include "ui/views/controls/table/table_view.h"
+#include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -133,7 +133,7 @@ int TestTableModel::CompareValues(int row1, int row2, int column_id) {
 
 // TableViewTest ---------------------------------------------------------------
 
-class TableViewTest : public testing::Test, views::WidgetDelegate {
+class TableViewTest : public ViewsTestBase, views::WidgetDelegate {
  public:
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
@@ -173,28 +173,29 @@ class TableViewTest : public testing::Test, views::WidgetDelegate {
   TableView* table_;
 
  private:
-  MessageLoopForUI message_loop_;
   views::Widget* window_;
-  ui::ScopedOleInitializer ole_initializer_;
 };
 
 void TableViewTest::SetUp() {
+  ViewsTestBase::SetUp();
+
   model_.reset(CreateModel());
   std::vector<ui::TableColumn> columns;
   columns.resize(2);
   columns[0].id = 0;
   columns[1].id = 1;
+
+  // TODO(erg): This crashes on windows. Try making this derive from ViewsTests.
   table_ = new TableView(model_.get(), columns, views::ICON_AND_TEXT,
                          false, false, false);
-  window_ = views::Widget::CreateWindowWithBounds(
-      this,
-      gfx::Rect(100, 100, 512, 512));
+  window_ = views::Widget::CreateWindowWithContextAndBounds(
+      this, GetContext(), gfx::Rect(100, 100, 512, 512));
 }
 
 void TableViewTest::TearDown() {
   window_->Close();
-  // Temporary workaround to avoid leak of RootView::pending_paint_task_.
-  message_loop_.RunUntilIdle();
+
+  ViewsTestBase::TearDown();
 }
 
 void TableViewTest::VerifyViewOrder(int first, ...) {

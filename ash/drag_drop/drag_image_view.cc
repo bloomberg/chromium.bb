@@ -18,11 +18,12 @@ namespace internal {
 namespace {
 using views::Widget;
 
-Widget* CreateDragWidget() {
+Widget* CreateDragWidget(gfx::NativeView context) {
   Widget* drag_widget = new Widget;
   Widget::InitParams params;
   params.type = Widget::InitParams::TYPE_TOOLTIP;
   params.keep_on_top = true;
+  params.context = context;
   params.accept_events = false;
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.transparent = true;
@@ -34,8 +35,8 @@ Widget* CreateDragWidget() {
 }
 }
 
-DragImageView::DragImageView() : views::ImageView() {
-  widget_.reset(CreateDragWidget());
+DragImageView::DragImageView(gfx::NativeView context) : views::ImageView() {
+  widget_.reset(CreateDragWidget(context));
   widget_->SetContentsView(this);
   widget_->SetAlwaysOnTop(true);
 

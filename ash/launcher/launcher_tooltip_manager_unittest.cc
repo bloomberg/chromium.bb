@@ -6,6 +6,7 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_util.h"
@@ -51,12 +52,12 @@ class LauncherTooltipManagerTest : public AshTestBase {
   }
 
   void ShowDelayed() {
-    dummy_anchor_.reset(new views::View);
+    CreateWidget();
     tooltip_manager_->ShowDelayed(dummy_anchor_.get(), string16());
   }
 
   void ShowImmediately() {
-    dummy_anchor_.reset(new views::View);
+    CreateWidget();
     tooltip_manager_->ShowImmediately(dummy_anchor_.get(), string16());
   }
 
@@ -77,10 +78,27 @@ class LauncherTooltipManagerTest : public AshTestBase {
   }
 
  protected:
+  scoped_ptr<views::Widget> widget_;
   scoped_ptr<views::View> dummy_anchor_;
   scoped_ptr<internal::LauncherTooltipManager> tooltip_manager_;
 
  private:
+  void CreateWidget() {
+    dummy_anchor_.reset(new views::View);
+
+    widget_.reset(new views::Widget);
+    views::Widget::InitParams params(
+        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+    params.transparent = true;
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.parent = Shell::GetContainer(
+        Shell::GetPrimaryRootWindow(),
+        ash::internal::kShellWindowId_LauncherContainer);
+
+    widget_->Init(params);
+    widget_->SetContentsView(dummy_anchor_.get());
+  }
+
   DISALLOW_COPY_AND_ASSIGN(LauncherTooltipManagerTest);
 };
 
@@ -103,6 +121,7 @@ TEST_F(LauncherTooltipManagerTest, HideWhenShelfIsHidden) {
   scoped_ptr<views::Widget> widget(new views::Widget);
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.context = CurrentContext();
   widget->Init(params);
   widget->SetFullscreen(true);
   widget->Show();

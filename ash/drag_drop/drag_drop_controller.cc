@@ -152,7 +152,7 @@ int DragDropController::StartDragAndDrop(
   drag_image_final_bounds_for_cancel_animation_ = gfx::Rect(
       start_location - provider->GetDragImageOffset(),
       provider->GetDragImage().size());
-  drag_image_.reset(new DragImageView);
+  drag_image_.reset(new DragImageView(source_window->GetRootWindow()));
   drag_image_->SetImage(provider->GetDragImage());
   drag_image_offset_ = provider->GetDragImageOffset();
   gfx::Rect drag_image_bounds(start_location, drag_image_->GetPreferredSize());

@@ -217,7 +217,8 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
   const char* kExpectedHorizontalCustomizedLabel[] = { "a.", "s.", "d." };
 
   views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  views::Widget::InitParams params =
+      CreateParams(views::Widget::InitParams::TYPE_WINDOW);
   widget->Init(params);
 
   CandidateWindowView candidate_window_view(widget);
@@ -423,7 +424,8 @@ TEST_F(CandidateWindowViewTest, DoNotChangeRowHeightWithLabelSwitchTest) {
   // We should NOT manually free widget by default, otherwise double free will
   // be occurred. So, we should instantiate widget class with "new" operation.
   views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  views::Widget::InitParams params =
+      CreateParams(views::Widget::InitParams::TYPE_WINDOW);
   widget->Init(params);
 
   CandidateWindowView candidate_window_view(widget);

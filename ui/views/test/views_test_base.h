@@ -48,6 +48,10 @@ class ViewsTestBase : public testing::Test {
   // cross-platform tests.
   Widget::InitParams CreateParams(Widget::InitParams::Type type);
 
+  // Returns a context view. In aura builds, this will be the
+  // RootWindow. Everywhere else, NULL.
+  gfx::NativeView GetContext();
+
  private:
   MessageLoopForUI message_loop_;
   scoped_ptr<TestViewsDelegate> views_delegate_;

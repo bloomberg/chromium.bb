@@ -16,7 +16,7 @@ namespace internal {
 
 class DragImageView : public views::ImageView {
  public:
-  DragImageView();
+  explicit DragImageView(gfx::NativeView context);
   virtual ~DragImageView();
 
   // Sets the bounds of the native widget in screen

@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/shell.h"
 #include "base/utf_string_conversions.h"  // ASCIIToUTF16
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -131,7 +133,8 @@ namespace shell {
 void CreateWidgetsWindow() {
   gfx::Rect bounds(kWindowLeft, kWindowTop, kWindowWidth, kWindowHeight);
   views::Widget* widget =
-      views::Widget::CreateWindowWithBounds(new WidgetsWindow, bounds);
+      views::Widget::CreateWindowWithContextAndBounds(
+          new WidgetsWindow, Shell::GetPrimaryRootWindow(), bounds);
   widget->GetNativeView()->SetName("WidgetsWindow");
   widget->Show();
 }

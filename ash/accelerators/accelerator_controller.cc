@@ -629,7 +629,7 @@ bool AcceleratorController::PerformAction(int action,
     case SHOW_OAK:
       if (CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kAshEnableOak)) {
-        oak::ShowOakWindow();
+        oak::ShowOakWindowWithContext(Shell::GetPrimaryRootWindow());
         return true;
       }
       break;

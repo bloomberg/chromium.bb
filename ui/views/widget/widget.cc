@@ -230,15 +230,15 @@ Widget* Widget::CreateWindow(WidgetDelegate* delegate) {
 }
 
 // static
-Widget* Widget::CreateWindowWithParent(WidgetDelegate* delegate,
-                                       gfx::NativeWindow parent) {
-  return CreateWindowWithParentAndBounds(delegate, parent, gfx::Rect());
-}
-
-// static
 Widget* Widget::CreateWindowWithBounds(WidgetDelegate* delegate,
                                        const gfx::Rect& bounds) {
   return CreateWindowWithParentAndBounds(delegate, NULL, bounds);
+}
+
+// static
+Widget* Widget::CreateWindowWithParent(WidgetDelegate* delegate,
+                                       gfx::NativeWindow parent) {
+  return CreateWindowWithParentAndBounds(delegate, parent, gfx::Rect());
 }
 
 // static

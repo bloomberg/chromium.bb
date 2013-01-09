@@ -69,4 +69,12 @@ Widget::InitParams ViewsTestBase::CreateParams(
   return params;
 }
 
+gfx::NativeView ViewsTestBase::GetContext() {
+#if defined(USE_AURA)
+  return aura_test_helper_->root_window();
+#else
+  return NULL;
+#endif
+}
+
 }  // namespace views

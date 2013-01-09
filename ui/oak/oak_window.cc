@@ -146,11 +146,14 @@ void OakWindow::Init() {
 
 }  // namespace internal
 
-void ShowOakWindow() {
+void ShowOakWindowWithContext(gfx::NativeView context) {
   if (!internal::OakWindow::instance) {
+    // TODO(erg): Do we want to reuse this window in times with a different
+    // context? For now, this is OK, but if we ever use Oak outside of the ash
+    // shell, we run into crbug.com/165759.
     internal::OakWindow::instance =
-        views::Widget::CreateWindowWithBounds(new internal::OakWindow,
-                                              gfx::Rect(10, 10, 500, 500));
+        views::Widget::CreateWindowWithContextAndBounds(
+            new internal::OakWindow, context, gfx::Rect(10, 10, 500, 500));
   }
   internal::OakWindow::instance->Show();
 }

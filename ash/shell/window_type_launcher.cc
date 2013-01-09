@@ -183,8 +183,10 @@ void AddViewToLayout(views::GridLayout* layout, views::View* view) {
 
 void InitWindowTypeLauncher() {
   views::Widget* widget =
-      views::Widget::CreateWindowWithBounds(new WindowTypeLauncher,
-                                            gfx::Rect(120, 150, 300, 410));
+      views::Widget::CreateWindowWithContextAndBounds(
+          new WindowTypeLauncher,
+          Shell::GetPrimaryRootWindow(),
+          gfx::Rect(120, 150, 300, 410));
   widget->GetNativeView()->SetName("WindowTypeLauncher");
   views::corewm::SetShadowType(widget->GetNativeView(),
                                views::corewm::SHADOW_TYPE_RECTANGULAR);
