@@ -98,14 +98,17 @@ FilePath GetVersionedFileName(const std::string& input_language,
   // dictionaries that you add at the same time. Increment the major version
   // number if you're updating either dic or aff files. Increment the minor
   // version number if you're updating only dic_delta files.
-  std::vector<LanguageVersion> special_version_string;
+  static LanguageVersion special_version_string[] = {
+    {"et-EE", "-1-1"},  // No dic/aff files
+    {"tr-TR", "-1-1"},  // No dic/aff files
+  };
 
   // Generate the bdict file name using default version string or special
   // version string, depending on the language.
   std::string language = GetSpellCheckLanguageRegion(input_language);
   std::string versioned_bdict_file_name(language + kDefaultVersionString +
                                         ".bdic");
-  for (size_t i = 0; i < special_version_string.size(); ++i) {
+  for (size_t i = 0; i < arraysize(special_version_string); ++i) {
     if (language == special_version_string[i].language) {
       versioned_bdict_file_name =
           language + special_version_string[i].version + ".bdic";
