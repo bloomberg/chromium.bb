@@ -186,8 +186,6 @@
         '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.dll',
         '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
         '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
-        '<(PRODUCT_DIR)/nacl_irt_srpc_x86_32.nexe',
-        '<(PRODUCT_DIR)/nacl_irt_srpc_x86_64.nexe',
         '<(PRODUCT_DIR)/locales/en-US.pak',
         '<(PRODUCT_DIR)/icudt.dll',
       ],
