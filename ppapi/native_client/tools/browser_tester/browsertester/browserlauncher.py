@@ -273,6 +273,9 @@ class ChromeLauncher(BrowserLauncher):
             '--enable-logging',
             '--log-level=1',
             '--safebrowsing-disable-auto-update',
+            # Suppress metrics reporting.  This prevents misconfigured bots,
+            # people testing at their desktop, etc from poisoning the UMA data.
+            '--metrics-recording-only',
             # Chrome explicitly blacklists some ports as "unsafe" because
             # certain protocols use them.  Chrome gives an error like this:
             # Error 312 (net::ERR_UNSAFE_PORT): Unknown error
