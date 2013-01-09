@@ -13,6 +13,7 @@
 #ifndef MEDIA_BASE_DECODER_BUFFER_H_
 #define MEDIA_BASE_DECODER_BUFFER_H_
 
+#include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "media/base/buffers.h"
@@ -62,7 +63,7 @@ class MEDIA_EXPORT DecoderBuffer : public Buffer {
 
  private:
   int buffer_size_;
-  uint8* data_;
+  scoped_ptr<uint8, base::ScopedPtrAlignedFree> data_;
   scoped_ptr<DecryptConfig> decrypt_config_;
 
   // Constructor helper method for memory allocations.

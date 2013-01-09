@@ -7,10 +7,6 @@
 #include "base/logging.h"
 #include "media/base/decrypt_config.h"
 
-#if !defined(OS_ANDROID)
-#include "base/memory/aligned_memory.h"
-#endif
-
 namespace media {
 
 DecoderBuffer::DecoderBuffer(int buffer_size)
@@ -23,33 +19,22 @@ DecoderBuffer::DecoderBuffer(const uint8* data, int buffer_size)
     : Buffer(base::TimeDelta(), base::TimeDelta()),
       buffer_size_(buffer_size) {
   // Prevent invalid allocations.  Also used to create end of stream buffers.
-  if (!data) {
+  if (!data || buffer_size <= 0) {
     buffer_size_ = 0;
-    data_ = NULL;
     return;
   }
 
   Initialize();
-  memcpy(data_, data, buffer_size_);
+  memcpy(data_.get(), data, buffer_size_);
 }
 
-DecoderBuffer::~DecoderBuffer() {
-#if !defined(OS_ANDROID)
-  base::AlignedFree(data_);
-#else
-  delete[] data_;
-#endif
-}
+DecoderBuffer::~DecoderBuffer() {}
 
 void DecoderBuffer::Initialize() {
   DCHECK_GE(buffer_size_, 0);
-#if !defined(OS_ANDROID)
-  data_ = reinterpret_cast<uint8*>(
-      base::AlignedAlloc(buffer_size_ + kPaddingSize, kAlignmentSize));
-  memset(data_ + buffer_size_, 0, kPaddingSize);
-#else
-  data_ = new uint8[buffer_size_];
-#endif
+  data_.reset(reinterpret_cast<uint8*>(
+      base::AlignedAlloc(buffer_size_ + kPaddingSize, kAlignmentSize)));
+  memset(data_.get() + buffer_size_, 0, kPaddingSize);
 }
 
 scoped_refptr<DecoderBuffer> DecoderBuffer::CopyFrom(const uint8* data,
@@ -63,7 +48,7 @@ scoped_refptr<DecoderBuffer> DecoderBuffer::CreateEOSBuffer() {
 }
 
 const uint8* DecoderBuffer::GetData() const {
-  return data_;
+  return data_.get();
 }
 
 int DecoderBuffer::GetDataSize() const {
@@ -71,7 +56,7 @@ int DecoderBuffer::GetDataSize() const {
 }
 
 uint8* DecoderBuffer::GetWritableData() {
-  return data_;
+  return data_.get();
 }
 
 const DecryptConfig* DecoderBuffer::GetDecryptConfig() const {
