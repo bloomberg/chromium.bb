@@ -28,6 +28,10 @@ class PrefServiceSimple;
 class PrefServiceSyncable;
 class Profile;
 
+namespace policy{
+class URLBlacklist;
+}
+
 // Managed mode allows one person to manage the Chrome experience for another
 // person by pre-configuring and then locking a managed User profile.
 // The ManagedMode class provides methods to check whether the browser is in
@@ -61,6 +65,34 @@ class ManagedMode : public chrome::BrowserListObserver,
   // classifying sites in the history view.
   // This method should only be called on the UI thread.
   static const ManagedModeURLFilter* GetURLFilterForUIThread();
+
+  // The functions that handle manual whitelists use |url_pattern| or lists
+  // of "url patterns". An "url pattern" is a pattern in the format used by the
+  // policy::URLBlacklist filter. A description of the format used can be found
+  // here: http://dev.chromium.org/administrators/url-blacklist-filter-format.
+  // They all receive the |is_whitelist| parameter which dictates whether they
+  // act on the whitelist (for |is_whitelist| == true) or on the blacklist (for
+  // |is_whitelist| == false).
+
+  // Checks if the |url_pattern| is in the manual whitelist.
+  static bool IsInManualList(const bool is_whitelist,
+                             const std::string& url_pattern);
+
+  // Appends |list| to the manual white/black list (according to |is_whitelist|)
+  // both in URL filter and in preferences.
+  static void AddToManualList(const bool is_whitelist,
+                              const base::ListValue& list);
+
+  // Removes |list| from the manual white/black list (according to
+  // |is_whitelist|) both in URL filter and in preferences.
+  static void RemoveFromManualList(const bool is_whitelist,
+                                   const base::ListValue& list);
+
+  // Updates the whitelist and the blacklist from the prefs.
+  static void UpdateManualLists();
+
+  // Returns the profile blacklist.
+  static scoped_ptr<base::ListValue> GetBlacklist();
 
   // ExtensionManagementPolicy::Provider implementation:
   virtual std::string GetDebugPolicyProviderName() const OVERRIDE;
@@ -132,7 +164,29 @@ class ManagedMode : public chrome::BrowserListObserver,
 
   void OnDefaultFilteringBehaviorChanged();
 
-  void UpdateWhitelist();
+  void UpdateManualListsImpl();
+
+  // Returns a copy of the manual whitelist which is stored in each profile.
+  scoped_ptr<base::ListValue> GetWhitelist();
+
+  // The following functions use |is_whitelist| to select between the whitelist
+  // and the blacklist as the target of the function. If |is_whitelist| is true
+  // |url_pattern| is added to the whitelist, otherwise it is added to the
+  // blacklist.
+
+  void RemoveFromManualListImpl(const bool is_whitelist,
+                                const base::ListValue& whitelist);
+
+  // Adds the |url_pattern| to the manual lists in the URL filter. This is used
+  // by AddToManualListImpl().
+  void AddURLPatternToManualList(const bool is_whitelist,
+                                 const std::string& url_pattern);
+
+  void AddToManualListImpl(const bool is_whitelist,
+                           const base::ListValue& whitelist);
+
+  bool IsInManualListImpl(const bool is_whitelist,
+                          const std::string& url_pattern);
 
   content::NotificationRegistrar registrar_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;

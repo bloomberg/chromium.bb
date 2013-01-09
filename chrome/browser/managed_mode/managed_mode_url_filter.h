@@ -13,6 +13,10 @@
 #include "base/values.h"
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
 
+namespace policy {
+class URLBlacklist;
+}  // namespace policy
+
 class FilePath;
 class GURL;
 
@@ -56,6 +60,15 @@ class ManagedModeURLFilter : public base::NonThreadSafe {
   void SetFromPatterns(const std::vector<std::string>& patterns,
                        const base::Closure& continuation);
 
+  // Sets the manual lists.
+  void SetManualLists(scoped_ptr<ListValue> whitelist,
+                      scoped_ptr<ListValue> blacklist);
+
+  // Adds a pattern to a manual list. If |is_whitelist| is true it gets added
+  // to the whitelist, else to the blacklist.
+  void AddURLPatternToManualList(const bool is_whitelist,
+                                 const std::string& url_pattern);
+
  private:
   void SetContents(const base::Closure& callback,
                    scoped_ptr<Contents> url_matcher);
@@ -63,6 +76,12 @@ class ManagedModeURLFilter : public base::NonThreadSafe {
   base::WeakPtrFactory<ManagedModeURLFilter> weak_ptr_factory_;
   FilteringBehavior default_behavior_;
   scoped_ptr<Contents> contents_;
+
+  // The |url_manual_list_allow_| blocks all URLs except the ones that are
+  // added while the |url_manual_list_block_| blocks only the URLs that are
+  // added to it.
+  scoped_ptr<policy::URLBlacklist> url_manual_list_allow_;
+  scoped_ptr<policy::URLBlacklist> url_manual_list_block_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedModeURLFilter);
 };

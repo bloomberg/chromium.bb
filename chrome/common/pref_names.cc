@@ -33,6 +33,11 @@ const char kHomePageChanged[] = "homepage_changed";
 // Does this user have a Google+ Profile?
 const char kIsGooglePlusUser[] = "is_google_plus_user";
 
+// List of pages that are manually approved.
+const char kManagedModeWhitelist[] = "profile.managed.whitelist";
+// List of pages that are manually blocked.
+const char kManagedModeBlacklist[] = "profile.managed.blacklist";
+
 // Used to determine if the last session exited cleanly. Set to false when
 // first opened, and to true when closing. On startup if the value is false,
 // it means the profile didn't exit cleanly.

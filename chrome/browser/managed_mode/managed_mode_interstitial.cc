@@ -5,6 +5,7 @@
 #include "chrome/browser/managed_mode/managed_mode_interstitial.h"
 
 #include "base/i18n/rtl.h"
+#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -38,6 +39,10 @@ void ShowInterstitialOnUIThread(int render_process_host_id,
         BrowserThread::IO, FROM_HERE, base::Bind(callback, true));
     return;
   }
+
+  ManagedModeNavigationObserver* navigation_observer =
+      ManagedModeNavigationObserver::FromWebContents(web_contents);
+  navigation_observer->SetStateToRecordingAfterPreview();
 
   new ManagedModeInterstitial(web_contents, url, callback);
 }

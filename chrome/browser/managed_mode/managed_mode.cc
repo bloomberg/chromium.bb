@@ -12,7 +12,9 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
 #include "chrome/browser/managed_mode/managed_mode_url_filter.h"
+#include "chrome/browser/policy/url_blacklist_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -63,6 +65,26 @@ class ManagedMode::URLFilterContext {
                                       base::Bind(&base::DoNothing)));
   }
 
+  void SetManualLists(scoped_ptr<ListValue> whitelist,
+                      scoped_ptr<ListValue> blacklist) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&ManagedModeURLFilter::SetManualLists,
+                                      base::Unretained(&url_filter_),
+                                      base::Passed(&whitelist),
+                                      base::Passed(&blacklist)));
+  }
+
+  void AddURLPatternToManualList(bool is_whitelist,
+                                 const std::string& url) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    task_runner_->PostTask(FROM_HERE,
+        base::Bind(&ManagedModeURLFilter::AddURLPatternToManualList,
+                   base::Unretained(&url_filter_),
+                   is_whitelist,
+                   url));
+  }
+
   void ShutdownOnUIThread() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     bool result = task_runner_->DeleteSoon(FROM_HERE, this);
@@ -91,6 +113,10 @@ void ManagedMode::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterIntegerPref(prefs::kDefaultManagedModeFilteringBehavior,
                              2,
                              PrefServiceSyncable::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kManagedModeWhitelist,
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kManagedModeBlacklist,
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 // static
@@ -211,6 +237,78 @@ const ManagedModeURLFilter* ManagedMode::GetURLFilterForIOThreadImpl() {
 
 const ManagedModeURLFilter* ManagedMode::GetURLFilterForUIThreadImpl() {
   return ui_url_filter_context_->url_filter();
+}
+
+// static
+void ManagedMode::AddToManualList(bool is_whitelist,
+                                  const base::ListValue& list) {
+  GetInstance()->AddToManualListImpl(is_whitelist, list);
+}
+
+void ManagedMode::AddToManualListImpl(bool is_whitelist,
+                                      const base::ListValue& list) {
+  if (!managed_profile_)
+    return;
+
+  ListPrefUpdate pref_update(managed_profile_->GetPrefs(),
+                             is_whitelist ? prefs::kManagedModeWhitelist :
+                                            prefs::kManagedModeBlacklist);
+  ListValue* pref_list = pref_update.Get();
+
+  for (size_t i = 0; i < list.GetSize(); ++i) {
+    std::string url_pattern;
+    list.GetString(i, &url_pattern);
+
+    if (!IsInManualList(is_whitelist, url_pattern)) {
+      pref_list->AppendString(url_pattern);
+      AddURLPatternToManualList(is_whitelist, url_pattern);
+    }
+  }
+}
+
+// static
+void ManagedMode::RemoveFromManualList(bool is_whitelist,
+                                       const base::ListValue& list) {
+  GetInstance()->RemoveFromManualListImpl(is_whitelist, list);
+}
+
+void ManagedMode::RemoveFromManualListImpl(bool is_whitelist,
+                                           const base::ListValue& list) {
+  ListPrefUpdate pref_update(managed_profile_->GetPrefs(),
+                             is_whitelist ? prefs::kManagedModeWhitelist :
+                                            prefs::kManagedModeBlacklist);
+  ListValue* pref_list = pref_update.Get();
+
+  for (size_t i = 0; i < list.GetSize(); ++i) {
+    std::string pattern;
+    size_t out_index;
+    list.GetString(i, &pattern);
+    StringValue value_to_remove(pattern);
+
+    pref_list->Remove(value_to_remove, &out_index);
+  }
+}
+
+// static
+bool ManagedMode::IsInManualList(bool is_whitelist,
+                                 const std::string& url_pattern) {
+  return GetInstance()->IsInManualListImpl(is_whitelist, url_pattern);
+}
+
+bool ManagedMode::IsInManualListImpl(bool is_whitelist,
+                                     const std::string& url_pattern) {
+  StringValue pattern(url_pattern);
+  const ListValue* list = managed_profile_->GetPrefs()->GetList(
+      is_whitelist ? prefs::kManagedModeWhitelist :
+                     prefs::kManagedModeBlacklist);
+  return list->Find(pattern) != list->end();
+}
+
+// static
+scoped_ptr<base::ListValue> ManagedMode::GetBlacklist() {
+    return scoped_ptr<base::ListValue>(
+        GetInstance()->managed_profile_->GetPrefs()->GetList(
+            prefs::kManagedModeBlacklist)->DeepCopy()).Pass();
 }
 
 std::string ManagedMode::GetDebugPolicyProviderName() const {
@@ -385,7 +483,7 @@ void ManagedMode::SetInManagedMode(Profile* newly_managed_profile) {
   g_browser_process->local_state()->SetBoolean(prefs::kInManagedMode,
                                                in_managed_mode);
   if (in_managed_mode)
-    UpdateWhitelist();
+    UpdateManualListsImpl();
 
   // This causes the avatar and the profile menu to get updated.
   content::NotificationService::current()->Notify(
@@ -412,7 +510,27 @@ void ManagedMode::OnDefaultFilteringBehaviorChanged() {
   ui_url_filter_context_->SetDefaultFilteringBehavior(behavior);
 }
 
-void ManagedMode::UpdateWhitelist() {
+// Static
+void ManagedMode::UpdateManualLists() {
+  GetInstance()->UpdateManualListsImpl();
+}
+
+void ManagedMode::UpdateManualListsImpl() {
   io_url_filter_context_->LoadWhitelists(GetActiveSiteLists());
   ui_url_filter_context_->LoadWhitelists(GetActiveSiteLists());
+  io_url_filter_context_->SetManualLists(GetWhitelist(), GetBlacklist());
+  ui_url_filter_context_->SetManualLists(GetWhitelist(), GetBlacklist());
+}
+
+scoped_ptr<base::ListValue> ManagedMode::GetWhitelist() {
+  return make_scoped_ptr(
+      managed_profile_->GetPrefs()->GetList(
+          prefs::kManagedModeWhitelist)->DeepCopy());
+}
+
+void ManagedMode::AddURLPatternToManualList(
+    bool is_whitelist,
+    const std::string& url_pattern) {
+  io_url_filter_context_->AddURLPatternToManualList(true, url_pattern);
+  ui_url_filter_context_->AddURLPatternToManualList(true, url_pattern);
 }

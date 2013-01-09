@@ -159,7 +159,13 @@ scoped_ptr<ManagedModeURLFilter::Contents> LoadWhitelistsOnBlockingPoolThread(
 ManagedModeURLFilter::ManagedModeURLFilter()
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       default_behavior_(ALLOW),
-      contents_(new Contents()) {
+      contents_(new Contents()),
+      url_manual_list_allow_(new policy::URLBlacklist()),
+      url_manual_list_block_(new policy::URLBlacklist()) {
+  // Set empty manual lists in the begining.
+  scoped_ptr<base::ListValue> whitelist(new base::ListValue());
+  scoped_ptr<base::ListValue> blacklist(new base::ListValue());
+  SetManualLists(whitelist.Pass(), blacklist.Pass());
   // Detach from the current thread so we can be constructed on a different
   // thread than the one where we're used.
   DetachFromThread();
@@ -190,6 +196,14 @@ ManagedModeURLFilter::GetFilteringBehaviorForURL(const GURL& url) const {
   if (!policy::URLBlacklist::HasStandardScheme(url))
     return ALLOW;
 #endif
+
+  // TODO(sergiu): Find a less confusing way to do this. Options include
+  // renaming the functions in policy::URLBlacklist or adding a function that
+  // checks if the URL is allowed instead of blocked.
+  if (!url_manual_list_allow_->IsURLBlocked(url))
+    return ALLOW;
+  if (url_manual_list_block_->IsURLBlocked(url))
+    return BLOCK;
 
   // Check the list of URL patterns.
   std::set<URLMatcherConditionSet::ID> matching_ids =
@@ -264,6 +278,46 @@ void ManagedModeURLFilter::SetFromPatterns(
       base::Bind(&CreateWhitelistFromPatterns, patterns),
       base::Bind(&ManagedModeURLFilter::SetContents,
                  weak_ptr_factory_.GetWeakPtr(), continuation));
+}
+
+void ManagedModeURLFilter::SetManualLists(scoped_ptr<ListValue> whitelist,
+                                          scoped_ptr<ListValue> blacklist){
+  DCHECK(CalledOnValidThread());
+  url_manual_list_block_.reset(new policy::URLBlacklist);
+  url_manual_list_allow_.reset(new policy::URLBlacklist);
+  url_manual_list_block_->Block(blacklist.get());
+  ListValue all_sites;
+  all_sites.Append(new base::StringValue("*"));
+  url_manual_list_allow_->Allow(whitelist.get());
+  url_manual_list_allow_->Block(&all_sites);
+
+  // Debug
+  DVLOG(1) << "Loaded whitelist: ";
+  for (ListValue::iterator it = whitelist->begin();
+       it != whitelist->end(); ++it){
+    std::string item;
+    (*it)->GetAsString(&item);
+    DVLOG(1) << item;
+  }
+  DVLOG(1) << "Loaded blacklist: ";
+  for (ListValue::iterator it = blacklist->begin();
+       it != blacklist->end(); ++it){
+    std::string item;
+    (*it)->GetAsString(&item);
+    DVLOG(1) << item;
+  }
+}
+
+void ManagedModeURLFilter::AddURLPatternToManualList(
+    const bool is_whitelist,
+    const std::string& url) {
+  DCHECK(CalledOnValidThread());
+  ListValue list;
+  list.AppendString(url);
+  if (is_whitelist)
+    url_manual_list_allow_->Allow(&list);
+  else
+    url_manual_list_block_->Block(&list);
 }
 
 void ManagedModeURLFilter::SetContents(const base::Closure& continuation,

@@ -15617,6 +15617,15 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_MANAGED_MODE_GO_BACK_ACTION" desc="Label for the button that goes back to a 'safe' page.">
       Take me back!
     </message>
+    <message name="IDS_MANAGED_MODE_PREVIEW_MESSAGE" desc="Text of the infobar shown while a website is previewed.">
+      Do you want to add this website to the whitelist?
+    </message>
+    <message name="IDS_MANAGED_MODE_PREVIEW_ACCEPT" desc="Label for the button that adds the website to the manual whitelist.">
+      Add to whitelist.
+    </message>
+    <message name="IDS_MANAGED_MODE_ALREADY_ADDED_MESSAGE" desc="Text of the message that indicates that the website was already on one of the whitelists.">
+      This website was already on the whitelist so it was not added again.
+    </message>
 
     <!-- Password generation strings -->
     <message name="IDS_PASSWORD_GENERATION_BUBBLE_TITLE" desc="The title of the bubble asking users if they would like Chrome to generate a password for them on an account creation page.">
