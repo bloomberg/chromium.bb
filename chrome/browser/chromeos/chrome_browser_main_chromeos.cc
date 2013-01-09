@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/linux_util.h"
 #include "base/message_loop.h"
@@ -717,6 +718,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
 void ChromeBrowserMainPartsChromeos::SetupPlatformFieldTrials() {
   SetupLowMemoryHeadroomFieldTrial();
+  SetupZramFieldTrial();
 }
 
 void ChromeBrowserMainPartsChromeos::SetupLowMemoryHeadroomFieldTrial() {
@@ -763,6 +765,42 @@ void ChromeBrowserMainPartsChromeos::SetupLowMemoryHeadroomFieldTrial() {
       LOG(WARNING) << "low_mem: Part of 'default' experiment";
     }
   }
+}
+
+
+void ChromeBrowserMainPartsChromeos::SetupZramFieldTrial() {
+  // The dice for this experiment have been thrown at boot.  The selected group
+  // number is stored in a file.
+  const FilePath kZramGroupPath("/home/chronos/.swap_exp_enrolled");
+  std::string zram_file_content;
+  // If the file does not exist, the experiment has not started.
+  if (!file_util::ReadFileToString(kZramGroupPath, &zram_file_content))
+    return;
+  // The file contains a single significant character, possibly followed by
+  // newline.  "x" means the user has opted out.  "0" through "8" are the valid
+  // group names.  (See src/platform/init/swap-exp.conf in chromiumos repo for
+  // group meanings.)
+  std::string zram_group = zram_file_content.substr(0, 1);
+  if (zram_group.compare("x") == 0)
+    return;
+  const base::FieldTrial::Probability kDivisor = 1;  // on/off only
+  scoped_refptr<base::FieldTrial> trial =
+      base::FieldTrialList::FactoryGetFieldTrial(
+          "ZRAM", kDivisor, "default", 2013, 12, 31, NULL);
+  // Assign probability of 1 to the group Chrome OS has picked.  Assign 0 to
+  // all other choices.
+  const char* const kGroups[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8" };
+  bool matched = false;
+  for (size_t i = 0; i < arraysize(kGroups); ++i) {
+    bool match = zram_group.compare(kGroups[i]) == 0;
+    trial->AppendGroup(kGroups[i], match ? 1 : 0);
+    if (match) {
+      matched = true;
+      LOG(WARNING) << "zram field trial: group " << kGroups[i];
+    }
+  }
+  if (!matched)
+    LOG(WARNING) << "zram field trial: invalid group \"" << zram_group << "\"";
 }
 
 }  //  namespace chromeos

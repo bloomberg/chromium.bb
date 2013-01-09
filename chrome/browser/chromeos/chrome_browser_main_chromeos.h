@@ -64,6 +64,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
  private:
   // Set up field trial for low memory headroom settings.
   void SetupLowMemoryHeadroomFieldTrial();
+  void SetupZramFieldTrial();
 
   scoped_ptr<contacts::ContactManager> contact_manager_;
   scoped_ptr<BrightnessObserver> brightness_observer_;
