@@ -212,6 +212,33 @@ TEST_F(NotificationListTest, SendRemoveNotifications) {
   EXPECT_EQ(3u, delegate()->GetSendRemoveCountAndReset());
 }
 
+TEST_F(NotificationListTest, OldPopupShouldNotBeHidden) {
+  std::vector<std::string> ids;
+  for (size_t i = 0; i <= NotificationList::kMaxVisiblePopupNotifications;
+       i++) {
+    ids.push_back(AddNotification(NULL));
+  }
+
+  NotificationList::Notifications popups;
+  notification_list()->GetPopupNotifications(&popups);
+  // The popup should contain the oldest kMaxVisiblePopupNotifications. Newer
+  // one should come earlier in the popup list. It means, the last element
+  // of |popups| should be the firstly added one, and so on.
+  EXPECT_EQ(NotificationList::kMaxVisiblePopupNotifications, popups.size());
+  NotificationList::Notifications::const_reverse_iterator iter =
+      popups.rbegin();
+  for (size_t i = 0; i < NotificationList::kMaxVisiblePopupNotifications;
+       ++i, ++iter) {
+    EXPECT_EQ(ids[i], iter->id) << i;
+  }
+
+  notification_list()->MarkPopupsAsShown(ui::notifications::DEFAULT_PRIORITY);
+  popups.clear();
+  notification_list()->GetPopupNotifications(&popups);
+  EXPECT_EQ(1u, popups.size());
+  EXPECT_EQ(ids[ids.size() - 1], popups.begin()->id);
+}
+
 TEST_F(NotificationListTest, Priority) {
   ASSERT_EQ(0u, notification_list()->NotificationCount());
   ASSERT_EQ(0u, notification_list()->unread_count());

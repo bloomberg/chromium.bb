@@ -184,8 +184,8 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // as a popup. kMaxVisiblePopupNotifications are used to limit the number of
   // notifications for the default priority.
   void GetPopupIterators(int priority,
-                         Notifications::iterator& first,
-                         Notifications::iterator& last);
+                         Notifications::iterator* first,
+                         Notifications::iterator* last);
 
   // Given a dictionary of optional notification fields (or NULL), unpacks all
   // recognized values into the given Notification struct. We assume prior

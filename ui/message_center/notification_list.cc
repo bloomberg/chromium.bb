@@ -234,7 +234,7 @@ void NotificationList::GetPopupNotifications(
   for (int i = ui::notifications::DEFAULT_PRIORITY;
        i <= ui::notifications::MAX_PRIORITY; ++i) {
     Notifications::iterator first, last;
-    GetPopupIterators(i, first, last);
+    GetPopupIterators(i, &first, &last);
     if (first != last)
       iters.push_back(make_pair(first, last));
   }
@@ -256,7 +256,7 @@ void NotificationList::GetPopupNotifications(
 
 void NotificationList::MarkPopupsAsShown(int priority) {
   Notifications::iterator first, last;
-  GetPopupIterators(priority, first, last);
+  GetPopupIterators(priority, &first, &last);
   for (Notifications::iterator iter = first; iter != last; ++iter)
     iter->shown_as_popup = true;
 }
@@ -393,28 +393,32 @@ void NotificationList::PushNotification(Notification& notification) {
 }
 
 void NotificationList::GetPopupIterators(int priority,
-                                         Notifications::iterator& first,
-                                         Notifications::iterator& last) {
+                                         Notifications::iterator* first,
+                                         Notifications::iterator* last) {
   Notifications& notifications = notifications_[priority];
   // No popups for LOW/MIN priority.
   if (priority < ui::notifications::DEFAULT_PRIORITY) {
-    first = notifications.end();
-    last = notifications.end();
+    *first = notifications.end();
+    *last = notifications.end();
     return;
   }
 
   size_t popup_count = 0;
-  first = notifications.begin();
-  last = first;
-  while (last != notifications.end()) {
-    if (last->shown_as_popup)
+  *first = notifications.begin();
+  *last = *first;
+  while (*last != notifications.end()) {
+    if ((*last)->shown_as_popup)
       break;
-    ++last;
-    popup_count++;
-    // No limits for HIGH/MAX priority.
+    ++(*last);
+
+    // Checking limits. No limits for HIGH/MAX priority. DEFAULT priority
+    // will return at most kMaxVisiblePopupNotifications entries. If the
+    // popup entries are more, older entries are used. see crbug.com/165768
     if (priority == ui::notifications::DEFAULT_PRIORITY &&
         popup_count >= kMaxVisiblePopupNotifications) {
-      break;
+      ++(*first);
+    } else {
+      ++popup_count;
     }
   }
 }
