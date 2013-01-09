@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.CpuFeatures;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ISandboxedProcessCallback;
@@ -41,6 +42,13 @@ public class SandboxedProcessConnection implements ServiceConnection {
             "com.google.android.apps.chrome.extra.sandbox_extraFile_";
     public static final String EXTRA_FILES_ID_SUFFIX = "_id";
     public static final String EXTRA_FILES_FD_SUFFIX = "_fd";
+
+    // Used to pass the CPU core count to sandboxed processes.
+    public static final String EXTRA_CPU_COUNT =
+            "com.google.android.apps.chrome.extra.cpu_count";
+    // Used to pass the CPU features mask to sandboxed processes.
+    public static final String EXTRA_CPU_FEATURES =
+            "com.google.android.apps.chrome.extra.cpu_features";
 
     private final Context mContext;
     private final int mServiceNumber;
@@ -237,6 +245,10 @@ public class SandboxedProcessConnection implements ServiceConnection {
                 bundle.putParcelable(fdName, parcelFiles[i]);
                 bundle.putInt(idName, fileInfos[i].mId);
             }
+            // Add the CPU properties now.
+            bundle.putInt(EXTRA_CPU_COUNT, CpuFeatures.getCount());
+            bundle.putLong(EXTRA_CPU_FEATURES, CpuFeatures.getMask());
+
             try {
                 mPID = mService.setupConnection(bundle, mConnectionParams.mCallback);
             } catch (android.os.RemoteException re) {

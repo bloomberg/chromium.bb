@@ -47,6 +47,9 @@
         'content.gyp:content_jni_headers',
         '../skia/skia.gyp:skia',
       ],
+      'includes': [
+        '../build/android/cpufeatures.gypi',
+      ],
     }],
     ['OS=="ios"', {
       'sources!': [

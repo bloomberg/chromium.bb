@@ -4,6 +4,8 @@
 
 #include "content/app/android/sandboxed_process_service.h"
 
+#include <cpu-features.h>
+
 #include "base/android/jni_array.h"
 #include "base/logging.h"
 #include "base/posix/global_descriptors.h"
@@ -60,7 +62,11 @@ void InternalInitSandboxedProcess(const std::vector<int>& file_ids,
                                   JNIEnv* env,
                                   jclass clazz,
                                   jobject context,
-                                  jobject service) {
+                                  jobject service,
+                                  jint cpu_count,
+                                  jlong cpu_features) {
+  // Set the CPU properties.
+  android_setCpu(cpu_count, cpu_features);
   // Register the file descriptors.
   // This includes the IPC channel, the crash dump signals and resource related
   // files.
@@ -86,14 +92,17 @@ void InitSandboxedProcess(JNIEnv* env,
                           jobject context,
                           jobject service,
                           jintArray j_file_ids,
-                          jintArray j_file_fds) {
+                          jintArray j_file_fds,
+                          jint cpu_count,
+                          jlong cpu_features) {
   std::vector<int> file_ids;
   std::vector<int> file_fds;
   JavaIntArrayToIntVector(env, j_file_ids, &file_ids);
   JavaIntArrayToIntVector(env, j_file_fds, &file_fds);
 
   InternalInitSandboxedProcess(
-      file_ids, file_fds, env, clazz, context, service);
+      file_ids, file_fds, env, clazz, context, service,
+      cpu_count, cpu_features);
 }
 
 void ExitSandboxedProcess(JNIEnv* env, jclass clazz) {
