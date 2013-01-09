@@ -47,8 +47,7 @@ class AwContents : public FindHelper::Listener,
 
   AwContents(JNIEnv* env,
              jobject obj,
-             jobject web_contents_delegate,
-             bool private_browsing);
+             jobject web_contents_delegate);
   virtual ~AwContents();
 
   void DrawGL(AwDrawGLInfo* draw_info);

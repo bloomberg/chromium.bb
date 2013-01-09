@@ -21,8 +21,7 @@ base::LazyInstance<AwBrowserDependencyFactoryImpl>::Leaky g_lazy_instance;
 
 }  // namespace
 
-AwBrowserDependencyFactoryImpl::AwBrowserDependencyFactoryImpl() {
-}
+AwBrowserDependencyFactoryImpl::AwBrowserDependencyFactoryImpl() {}
 
 AwBrowserDependencyFactoryImpl::~AwBrowserDependencyFactoryImpl() {}
 
@@ -31,18 +30,14 @@ void AwBrowserDependencyFactoryImpl::InstallInstance() {
   SetInstance(g_lazy_instance.Pointer());
 }
 
-content::BrowserContext* AwBrowserDependencyFactoryImpl::GetBrowserContext(
-    bool incognito) {
-  // TODO(boliu): Remove incognito parameter.
-  LOG_IF(ERROR, incognito) << "Android WebView does not support incognito mode"
-                           << " yet. Creating normal profile instead.";
+content::BrowserContext* AwBrowserDependencyFactoryImpl::GetBrowserContext() {
   return static_cast<AwContentBrowserClient*>(
       content::GetContentClient()->browser())->GetAwBrowserContext();
 }
 
-WebContents* AwBrowserDependencyFactoryImpl::CreateWebContents(bool incognito) {
+WebContents* AwBrowserDependencyFactoryImpl::CreateWebContents() {
   return content::WebContents::Create(
-      content::WebContents::CreateParams(GetBrowserContext(incognito)));
+      content::WebContents::CreateParams(GetBrowserContext()));
 }
 
 }  // namespace android_webview

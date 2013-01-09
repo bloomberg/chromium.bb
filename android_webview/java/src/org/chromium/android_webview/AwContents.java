@@ -262,18 +262,27 @@ public class AwContents {
         }
     }
 
+    // TODO(kristianm): Delete this when privateBrowsing parameter is removed in Android
+    public AwContents(ViewGroup containerView,
+            ContentViewCore.InternalAccessDelegate internalAccessAdapter,
+            AwContentsClient contentsClient,
+            NativeWindow nativeWindow, boolean privateBrowsing,
+            boolean isAccessFromFileURLsGrantedByDefault) {
+        this(containerView, internalAccessAdapter, contentsClient, nativeWindow,
+                isAccessFromFileURLsGrantedByDefault);
+    }
+
     /**
      * @param containerView the view-hierarchy item this object will be bound to.
      * @param internalAccessAdapter to access private methods on containerView.
      * @param contentsClient will receive API callbacks from this WebView Contents
-     * @param privateBrowsing whether this is a private browsing instance of WebView.
      * @param isAccessFromFileURLsGrantedByDefault passed to ContentViewCore.initialize.
      * TODO(benm): Remove the nativeWindow parameter.
      */
     public AwContents(ViewGroup containerView,
             ContentViewCore.InternalAccessDelegate internalAccessAdapter,
             AwContentsClient contentsClient,
-            NativeWindow nativeWindow, boolean privateBrowsing,
+            NativeWindow nativeWindow,
             boolean isAccessFromFileURLsGrantedByDefault) {
         mContainerView = containerView;
         mInternalAccessAdapter = internalAccessAdapter;
@@ -281,7 +290,7 @@ public class AwContents {
         // setup performs process initialisation work needed by AwContents.
         mContentViewCore = new ContentViewCore(containerView.getContext(),
                 ContentViewCore.PERSONALITY_VIEW);
-        mNativeAwContents = nativeInit(contentsClient.getWebContentsDelegate(), privateBrowsing);
+        mNativeAwContents = nativeInit(contentsClient.getWebContentsDelegate());
         mContentsClient = contentsClient;
         mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
         mClientCallbackHandler = new ClientCallbackHandler();
@@ -934,8 +943,7 @@ public class AwContents {
     //  Native methods
     //--------------------------------------------------------------------------------------------
 
-    private native int nativeInit(AwWebContentsDelegate webViewWebContentsDelegate,
-            boolean privateBrowsing);
+    private native int nativeInit(AwWebContentsDelegate webViewWebContentsDelegate);
     private static native void nativeDestroy(int nativeAwContents);
     private static native void nativeSetAwDrawSWFunctionTable(int functionTablePointer);
     private static native int nativeGetAwDrawGLFunction();

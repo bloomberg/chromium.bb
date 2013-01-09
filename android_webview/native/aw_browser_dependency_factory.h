@@ -37,10 +37,10 @@ class AwBrowserDependencyFactory {
   static AwBrowserDependencyFactory* GetInstance();
 
   // Returns the current browser context based on the specified mode.
-  virtual content::BrowserContext* GetBrowserContext(bool incognito) = 0;
+  virtual content::BrowserContext* GetBrowserContext() = 0;
 
   // Constructs and returns ownership of a WebContents instance.
-  virtual content::WebContents* CreateWebContents(bool incognito) = 0;
+  virtual content::WebContents* CreateWebContents() = 0;
 
  protected:
   AwBrowserDependencyFactory();

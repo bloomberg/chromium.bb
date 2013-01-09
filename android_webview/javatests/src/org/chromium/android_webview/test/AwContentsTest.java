@@ -43,7 +43,7 @@ public class AwContentsTest extends AndroidWebViewTestBase {
     @UiThreadTest
     public void testCreateDestroy() throws Throwable {
         // NOTE this test runs on UI thread, so we cannot call any async methods.
-        createAwTestContainerView(false, mContentsClient).getAwContents().destroy();
+        createAwTestContainerView(mContentsClient).getAwContents().destroy();
     }
 
     private int callDocumentHasImagesSync(final AwContents awContents)
@@ -98,7 +98,7 @@ public class AwContentsTest extends AndroidWebViewTestBase {
     public void testClearCacheMemoryAndDisk() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainer =
-                createAwTestContainerViewOnMainSync(false, contentClient);
+                createAwTestContainerViewOnMainSync(contentClient);
         final AwContents awContents = testContainer.getAwContents();
 
         TestWebServer webServer = null;
@@ -151,7 +151,7 @@ public class AwContentsTest extends AndroidWebViewTestBase {
     @Feature({"AndroidWebView"})
     public void testClearCacheInQuickSuccession() throws Throwable {
         final AwTestContainerView testContainer =
-                createAwTestContainerViewOnMainSync(false, new TestAwContentsClient());
+                createAwTestContainerViewOnMainSync(new TestAwContentsClient());
         final AwContents awContents = testContainer.getAwContents();
 
         runTestOnUiThread(new Runnable() {

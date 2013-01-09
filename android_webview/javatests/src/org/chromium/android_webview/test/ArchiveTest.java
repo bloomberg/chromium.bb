@@ -28,6 +28,7 @@ public class ArchiveTest extends AndroidWebViewTestBase {
 
     @Override
     protected void setUp() throws Exception {
+        super.setUp();
         mTestContainerView = createAwTestContainerViewOnMainSync(mContentsClient);
     }
 

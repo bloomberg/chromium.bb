@@ -38,8 +38,6 @@ public class AndroidWebViewTestBase
         extends ActivityInstrumentationTestCase2<AndroidWebViewTestRunnerActivity> {
     protected static int WAIT_TIMEOUT_SECONDS = 15;
     private static final int CHECK_INTERVAL = 100;
-    protected static final boolean NORMAL_VIEW = false;
-    protected static final boolean INCOGNITO_VIEW = true;
 
     public AndroidWebViewTestBase() {
         super(AndroidWebViewTestRunnerActivity.class);
@@ -202,19 +200,18 @@ public class AndroidWebViewTestBase
         });
     }
 
-    protected AwTestContainerView createAwTestContainerView(final boolean incognito,
+    protected AwTestContainerView createAwTestContainerView(
             final AwContentsClient awContentsClient) {
-        return createAwTestContainerView(incognito, new AwTestContainerView(getActivity()),
+        return createAwTestContainerView(new AwTestContainerView(getActivity()),
                 awContentsClient);
     }
 
-    protected AwTestContainerView createAwTestContainerView(final boolean incognito,
+    protected AwTestContainerView createAwTestContainerView(
             final AwTestContainerView testContainerView,
             final AwContentsClient awContentsClient) {
         testContainerView.initialize(new AwContents(testContainerView,
                 testContainerView.getInternalAccessDelegate(),
-                awContentsClient, new ActivityNativeWindow(getActivity()),
-                incognito, false));
+                awContentsClient, new ActivityNativeWindow(getActivity()), false));
         getActivity().addView(testContainerView);
         testContainerView.requestFocus();
         return testContainerView;
@@ -222,19 +219,12 @@ public class AndroidWebViewTestBase
 
     protected AwTestContainerView createAwTestContainerViewOnMainSync(
             final AwContentsClient client) throws Exception {
-        return createAwTestContainerViewOnMainSync(NORMAL_VIEW, client);
-    }
-
-    protected AwTestContainerView createAwTestContainerViewOnMainSync(
-            final boolean incognito,
-            final AwContentsClient client) throws Exception {
         final AtomicReference<AwTestContainerView> testContainerView =
                 new AtomicReference<AwTestContainerView>();
-        final Context context = getActivity();
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                testContainerView.set(createAwTestContainerView(incognito, client));
+                testContainerView.set(createAwTestContainerView(client));
             }
         });
         return testContainerView.get();

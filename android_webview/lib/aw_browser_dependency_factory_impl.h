@@ -28,8 +28,8 @@ class AwBrowserDependencyFactoryImpl : public AwBrowserDependencyFactory {
   static void InstallInstance();
 
   // AwBrowserDependencyFactory
-  virtual content::BrowserContext* GetBrowserContext(bool incognito) OVERRIDE;
-  virtual content::WebContents* CreateWebContents(bool incognito) OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContext() OVERRIDE;
+  virtual content::WebContents* CreateWebContents() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AwBrowserDependencyFactoryImpl);

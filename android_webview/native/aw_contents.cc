@@ -114,8 +114,7 @@ AwContents* AwContents::FromWebContents(WebContents* web_contents) {
 
 AwContents::AwContents(JNIEnv* env,
                        jobject obj,
-                       jobject web_contents_delegate,
-                       bool private_browsing)
+                       jobject web_contents_delegate)
     : java_ref_(env, obj),
       web_contents_delegate_(
           new AwWebContentsDelegate(env, web_contents_delegate)),
@@ -130,7 +129,7 @@ AwContents::AwContents(JNIEnv* env,
   // TODO(joth): rather than create and set the WebContents here, expose the
   // factory method to java side and have that orchestrate the construction
   // order.
-  SetWebContents(dependency_factory->CreateWebContents(private_browsing));
+  SetWebContents(dependency_factory->CreateWebContents());
 }
 
 void AwContents::ResetCompositor() {
@@ -606,10 +605,8 @@ void AwContents::SetInterceptNavigationDelegate(JNIEnv* env,
 
 static jint Init(JNIEnv* env,
                  jobject obj,
-                 jobject web_contents_delegate,
-                 jboolean private_browsing) {
-  AwContents* tab = new AwContents(env, obj, web_contents_delegate,
-                                   private_browsing);
+                 jobject web_contents_delegate) {
+  AwContents* tab = new AwContents(env, obj, web_contents_delegate);
   return reinterpret_cast<jint>(tab);
 }
 

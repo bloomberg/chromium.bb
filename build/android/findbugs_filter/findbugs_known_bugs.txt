@@ -32,7 +32,6 @@ M C CSM: Shouldn't use synchronized method, please narrow down the synchronizati
 M C CST: Shouldn't use synchronized(this), please narrow down the synchronization scope.  At HttpAuthDatabase.java
 M C CST: Shouldn't use synchronized(this), please narrow down the synchronization scope.  At SimpleSynchronizedThis.java
 M C IJU: TestCase org.chromium.android_webview.test.AndroidWebViewTestBase defines setUp that doesn't call super.setUp()  At AndroidWebViewTestBase.java
-M C IJU: TestCase org.chromium.android_webview.test.ArchiveTest defines setUp that doesn't call super.setUp()  At ArchiveTest.java
 M C IJU: TestCase org.chromium.android_webview.test.HttpAuthDatabaseTest defines setUp that doesn't call super.setUp()  At HttpAuthDatabaseTest.java
 M C IJU: TestCase org.chromium.android_webview.test.HttpAuthDatabaseTest defines tearDown that doesn't call super.tearDown()  At HttpAuthDatabaseTest.java
 M C IJU: TestCase org.chromium.chrome.testshell.ProviderBookmarkNodeTest defines setUp that doesn't call super.setUp()  At ProviderBookmarkNodeTest.java
@@ -65,7 +64,6 @@ M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$7.
 M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$8.method2() defined in anonymous class  At JavaBridgeBasicsTest.java
 M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$9.method() defined in anonymous class  At JavaBridgeBasicsTest.java
 M C USELESS_STRING: Invocation of toString on certChain in org.chromium.net.X509Util.verifyServerCertificates(byte[][], String)  At X509Util.java
-M D DLS: Dead store to context in org.chromium.android_webview.test.AndroidWebViewTestBase.createAwTestContainerViewOnMainSync(boolean, AwContentsClient)  At AndroidWebViewTestBase.java
 M D DLS: Dead store to eventTime in org.chromium.content.browser.LongPressDetectorTest$1.run()  At LongPressDetectorTest.java
 M D DLS: Dead store to prevEditableLength in org.chromium.content.browser.ImeAdapter$AdapterInputConnection.setEditableText(String, int, int, int, int)  At ImeAdapter.java
 M D DLS: Dead store to testUrl in org.chromium.android_webview.test.ClientOnPageFinishedTest.testOnPageFinishedNotCalledForValidSubresources()  At ClientOnPageFinishedTest.java
