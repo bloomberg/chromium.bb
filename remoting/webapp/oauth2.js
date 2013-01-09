@@ -514,11 +514,17 @@ remoting.OAuth2.prototype.getEmail = function(onOk, onError) {
   var onResponse = function(xhr) {
     var email = null;
     if (xhr.status == 200) {
-      // TODO(ajwong): See if we can't find a JSON endpoint.
-      email = xhr.responseText.split('&')[0].split('=')[1];
-      window.localStorage.setItem(that.KEY_EMAIL_, email);
-      onOk(email);
-      return;
+      var result = jsonParseSafe(xhr.responseText);
+      if (result && 'email' in result) {
+        window.localStorage.setItem(that.KEY_EMAIL_, result['email']);
+        onOk(result['email']);
+        return;
+      } else {
+        console.error(
+            'Cannot parse userinfo response: ', xhr.responseText, xhr);
+        onError(remoting.Error.UNEXPECTED);
+        return;
+      }
     }
     console.error('Unable to get email address:', xhr.status, xhr);
     if (xhr.status == 401) {
@@ -531,8 +537,7 @@ remoting.OAuth2.prototype.getEmail = function(onOk, onError) {
   /** @param {string} token The access token. */
   var getEmailFromToken = function(token) {
     var headers = { 'Authorization': 'OAuth ' + token };
-    // TODO(ajwong): Update to new v2 API.
-    remoting.xhr.get('https://www.googleapis.com/userinfo/email',
+    remoting.xhr.get('https://www.googleapis.com/oauth2/v1/userinfo',
                      onResponse, '', headers);
   };
 
