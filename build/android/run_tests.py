@@ -45,7 +45,6 @@ import subprocess
 import sys
 import time
 
-import emulator
 from pylib import android_commands
 from pylib import buildbot_report
 from pylib import cmd_helper
@@ -53,6 +52,7 @@ from pylib import ports
 from pylib.base_test_sharder import BaseTestSharder
 from pylib.gtest import debug_info
 from pylib.gtest.single_test_runner import SingleTestRunner
+from pylib.utils import emulator
 from pylib.utils import run_tests_helper
 from pylib.utils import test_options_parser
 from pylib.utils import time_profile
@@ -244,20 +244,9 @@ def _RunATestSuite(options):
   buildbot_emulators = []
 
   if options.use_emulator:
-    for n in range(options.emulator_count):
-      t = time_profile.TimeProfile('Emulator launch %d' % n)
-      avd_name = None
-      if n > 0:
-        # Creates a temporary AVD for the extra emulators.
-        avd_name = 'run_tests_avd_%d' % n
-      buildbot_emulator = emulator.Emulator(avd_name)
-      buildbot_emulator.Launch(kill_all_emulators=n == 0)
-      t.Stop()
-      buildbot_emulators.append(buildbot_emulator)
-      attached_devices.append(buildbot_emulator.device)
-    # Wait for all emulators to boot completed.
-    map(lambda buildbot_emulator: buildbot_emulator.ConfirmLaunch(True),
-        buildbot_emulators)
+    buildbot_emulators = emulator.LaunchEmulators(options.emulator_count,
+                                                  wait_for_boot=True)
+    attached_devices = [e.device for e in buildbot_emulators]
   elif options.test_device:
     attached_devices = [options.test_device]
   else:
