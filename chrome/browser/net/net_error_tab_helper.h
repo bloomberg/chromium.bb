@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/public/pref_member.h"
 #include "chrome/browser/net/dns_probe_service.h"
+#include "chrome/common/net/net_error_info.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -39,7 +40,7 @@ class NetErrorTabHelper
       const string16& error_description,
       content::RenderViewHost* render_view_host) OVERRIDE;
 
-  void OnDnsProbeFinished(DnsProbeService::Result result);
+  void OnDnsProbeFinished(chrome_common_net::DnsProbeResult result);
 
   static void set_state_for_testing(TestingState testing_state);
 

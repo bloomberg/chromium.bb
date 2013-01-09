@@ -10,7 +10,10 @@
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/net/dns_probe_job.h"
+#include "chrome/common/net/net_error_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using chrome_common_net::DnsProbeResult;
 
 namespace chrome_browser_net {
 
@@ -18,7 +21,8 @@ namespace {
 
 class MockDnsProbeJob : public DnsProbeJob {
  public:
-  MockDnsProbeJob(const CallbackType& callback, Result result)
+  MockDnsProbeJob(const CallbackType& callback,
+                  DnsProbeJob::Result result)
       : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -109,7 +113,7 @@ class DnsProbeServiceTest : public testing::Test {
  public:
   DnsProbeServiceTest()
       : callback_called_(false),
-        callback_result_(DnsProbeService::PROBE_UNKNOWN) {
+        callback_result_(chrome_common_net::DNS_PROBE_UNKNOWN) {
   }
 
   void Probe() {
@@ -130,10 +134,10 @@ class DnsProbeServiceTest : public testing::Test {
   MessageLoopForIO message_loop_;
   TestDnsProbeService service_;
   bool callback_called_;
-  DnsProbeService::Result callback_result_;
+  DnsProbeResult callback_result_;
 
  private:
-  void ProbeCallback(DnsProbeService::Result result) {
+  void ProbeCallback(DnsProbeResult result) {
     callback_called_ = true;
     callback_result_ = result;
   }
@@ -152,7 +156,7 @@ TEST_F(DnsProbeServiceTest, Probe) {
 
   RunUntilIdle();
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(DnsProbeService::PROBE_NXDOMAIN, callback_result_);
+  EXPECT_EQ(chrome_common_net::DNS_PROBE_NXDOMAIN, callback_result_);
 }
 
 TEST_F(DnsProbeServiceTest, Cache) {
@@ -170,7 +174,7 @@ TEST_F(DnsProbeServiceTest, Cache) {
 
   RunUntilIdle();
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(DnsProbeService::PROBE_NXDOMAIN, callback_result_);
+  EXPECT_EQ(chrome_common_net::DNS_PROBE_NXDOMAIN, callback_result_);
 }
 
 TEST_F(DnsProbeServiceTest, Expired) {
@@ -182,7 +186,7 @@ TEST_F(DnsProbeServiceTest, Expired) {
 
   RunUntilIdle();
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(DnsProbeService::PROBE_NXDOMAIN, callback_result_);
+  EXPECT_EQ(chrome_common_net::DNS_PROBE_NXDOMAIN, callback_result_);
 
   Reset();
 
@@ -193,7 +197,7 @@ TEST_F(DnsProbeServiceTest, Expired) {
 
   RunUntilIdle();
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(DnsProbeService::PROBE_NXDOMAIN, callback_result_);
+  EXPECT_EQ(chrome_common_net::DNS_PROBE_NXDOMAIN, callback_result_);
 }
 
 TEST_F(DnsProbeServiceTest, SystemFail) {
@@ -203,7 +207,7 @@ TEST_F(DnsProbeServiceTest, SystemFail) {
 
   Probe();
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(DnsProbeService::PROBE_UNKNOWN, callback_result_);
+  EXPECT_EQ(chrome_common_net::DNS_PROBE_UNKNOWN, callback_result_);
 
   Reset();
 

@@ -7,12 +7,14 @@
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/net/dns_probe_service.h"
+#include "chrome/common/net/net_error_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using chrome_common_net::DnsProbeResult;
 using content::BrowserThread;
 using content::TestBrowserThread;
 
@@ -44,7 +46,7 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
     probes_allowed_ = probes_allowed;
   }
 
-  void SimulateProbeResult(DnsProbeService::Result result) {
+  void SimulateProbeResult(DnsProbeResult result) {
     OnDnsProbeFinished(result);
   }
 
@@ -130,21 +132,21 @@ TEST_F(NetErrorTabHelperTest, HandleProbeResponse) {
   SimulateFailure(true, net::ERR_NAME_NOT_RESOLVED);
 
   // Make sure we handle probe response.
-  tab_helper_.SimulateProbeResult(DnsProbeService::PROBE_UNKNOWN);
+  tab_helper_.SimulateProbeResult(chrome_common_net::DNS_PROBE_UNKNOWN);
   EXPECT_FALSE(tab_helper_.dns_probe_running());
   EXPECT_EQ(1, tab_helper_.probe_start_count());
 }
 
 TEST_F(NetErrorTabHelperTest, MultipleProbes) {
   SimulateFailure(true, net::ERR_NAME_NOT_RESOLVED);
-  tab_helper_.SimulateProbeResult(DnsProbeService::PROBE_UNKNOWN);
+  tab_helper_.SimulateProbeResult(chrome_common_net::DNS_PROBE_UNKNOWN);
 
   // Make sure we can run a new probe after the previous one returned.
   SimulateFailure(true, net::ERR_NAME_NOT_RESOLVED);
   EXPECT_TRUE(tab_helper_.dns_probe_running());
   EXPECT_EQ(2, tab_helper_.probe_start_count());
 
-  tab_helper_.SimulateProbeResult(DnsProbeService::PROBE_UNKNOWN);
+  tab_helper_.SimulateProbeResult(chrome_common_net::DNS_PROBE_UNKNOWN);
   EXPECT_FALSE(tab_helper_.dns_probe_running());
   EXPECT_EQ(2, tab_helper_.probe_start_count());
 }

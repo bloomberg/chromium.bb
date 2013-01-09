@@ -11,11 +11,13 @@
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/net/net_error_info.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 
 using base::FieldTrialList;
+using chrome_common_net::DnsProbeResult;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::RenderViewHost;
@@ -48,7 +50,7 @@ bool GetEnabledByTrial() {
 
 void DnsProbeCallback(
     base::WeakPtr<NetErrorTabHelper> tab_helper,
-    DnsProbeService::Result result) {
+    DnsProbeResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   BrowserThread::PostTask(
@@ -126,8 +128,7 @@ void NetErrorTabHelper::OnMainFrameDnsError() {
   set_dns_probe_running(true);
 }
 
-void NetErrorTabHelper::OnDnsProbeFinished(
-    DnsProbeService::Result result) {
+void NetErrorTabHelper::OnDnsProbeFinished(DnsProbeResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(dns_probe_running_);
 

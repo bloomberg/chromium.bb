@@ -8,6 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/net/dns_probe_job.h"
+#include "chrome/common/net/net_error_info.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
 #include "net/dns/dns_client.h"
@@ -16,6 +17,7 @@
 
 using base::FieldTrialList;
 using base::StringToInt;
+using chrome_common_net::DnsProbeResult;
 using net::DnsClient;
 using net::DnsConfig;
 using net::IPAddressNumber;
@@ -74,7 +76,7 @@ DnsProbeService::DnsProbeService()
     : system_result_(DnsProbeJob::SERVERS_UNKNOWN),
       public_result_(DnsProbeJob::SERVERS_UNKNOWN),
       state_(STATE_NO_RESULTS),
-      result_(PROBE_UNKNOWN),
+      result_(chrome_common_net::DNS_PROBE_UNKNOWN),
       dns_attempts_(GetAttemptsFromFieldTrial()) {
   NetworkChangeNotifier::AddIPAddressObserver(this);
 }
@@ -125,7 +127,7 @@ void DnsProbeService::ExpireResults() {
   DCHECK_EQ(STATE_RESULTS_CACHED, state_);
 
   state_ = STATE_NO_RESULTS;
-  result_ = PROBE_UNKNOWN;
+  result_ = chrome_common_net::DNS_PROBE_UNKNOWN;
 }
 
 void DnsProbeService::StartProbes() {
@@ -152,7 +154,7 @@ void DnsProbeService::StartProbes() {
     state_ = STATE_RESULTS_CACHED;
     // TODO(ttuttle): Should this be BAD_CONFIG?  Currently I think it only
     // happens when the system DnsConfig has no servers.
-    result_ = PROBE_UNKNOWN;
+    result_ = chrome_common_net::DNS_PROBE_UNKNOWN;
     CallCallbacks();
     return;
   }
@@ -173,34 +175,36 @@ void DnsProbeService::OnProbesComplete() {
 }
 
 void DnsProbeService::HistogramProbes() const {
+  const DnsProbeResult kMaxResult = chrome_common_net::DNS_PROBE_MAX;
+
   DCHECK_EQ(STATE_RESULTS_CACHED, state_);
-  DCHECK_NE(MAX_RESULT, result_);
+  DCHECK_NE(kMaxResult, result_);
 
   base::TimeDelta elapsed = base::Time::Now() - probe_start_time_;
 
-  UMA_HISTOGRAM_ENUMERATION("DnsProbe.Probe.Result", result_, MAX_RESULT);
+  UMA_HISTOGRAM_ENUMERATION("DnsProbe.Probe.Result", result_, kMaxResult);
   UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.Elapsed", elapsed);
 
   if (NetworkChangeNotifier::IsOffline()) {
     UMA_HISTOGRAM_ENUMERATION("DnsProbe.Probe.NcnOffline.Result",
-                              result_, MAX_RESULT);
+                              result_, kMaxResult);
     UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.NcnOffline.Elapsed", elapsed);
   } else {
     UMA_HISTOGRAM_ENUMERATION("DnsProbe.Probe.NcnOnline.Result",
-                              result_, MAX_RESULT);
+                              result_, kMaxResult);
     UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.NcnOnline.Elapsed", elapsed);
   }
 
   switch (result_) {
-  case PROBE_UNKNOWN:
+  case chrome_common_net::DNS_PROBE_UNKNOWN:
     UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.ResultUnknown.Elapsed",
                                elapsed);
     break;
-  case PROBE_NO_INTERNET:
+  case chrome_common_net::DNS_PROBE_NO_INTERNET:
     UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.ResultNoInternet.Elapsed",
                                elapsed);
     break;
-  case PROBE_BAD_CONFIG:
+  case chrome_common_net::DNS_PROBE_BAD_CONFIG:
     UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.ResultBadConfig.Elapsed",
                                elapsed);
 
@@ -217,41 +221,41 @@ void DnsProbeService::HistogramProbes() const {
         "DnsProbe.Probe.ResultBadConfig.SystemIsLocalhost",
         system_is_localhost_);
     break;
-  case PROBE_NXDOMAIN:
+  case chrome_common_net::DNS_PROBE_NXDOMAIN:
     UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.ResultNxdomain.Elapsed",
                                elapsed);
     break;
-  case MAX_RESULT:
+  case chrome_common_net::DNS_PROBE_MAX:
     NOTREACHED();
     break;
   }
 }
 
-DnsProbeService::Result DnsProbeService::EvaluateResults() const {
+DnsProbeResult DnsProbeService::EvaluateResults() const {
   DCHECK_NE(DnsProbeJob::SERVERS_UNKNOWN, system_result_);
   DCHECK_NE(DnsProbeJob::SERVERS_UNKNOWN, public_result_);
 
   // If the system DNS is working, assume the domain doesn't exist.
   if (system_result_ == DnsProbeJob::SERVERS_CORRECT)
-    return PROBE_NXDOMAIN;
+    return chrome_common_net::DNS_PROBE_NXDOMAIN;
 
   // If the system DNS is not working but another public server is, assume the
   // DNS config is bad (or perhaps the DNS servers are down or broken).
   if (public_result_ == DnsProbeJob::SERVERS_CORRECT)
-    return PROBE_BAD_CONFIG;
+    return chrome_common_net::DNS_PROBE_BAD_CONFIG;
 
   // If the system DNS is not working and another public server is unreachable,
   // assume the internet connection is down (note that system DNS may be a
   // router on the LAN, so it may be reachable but returning errors.)
   if (public_result_ == DnsProbeJob::SERVERS_UNREACHABLE)
-    return PROBE_NO_INTERNET;
+    return chrome_common_net::DNS_PROBE_NO_INTERNET;
 
   // Otherwise: the system DNS is not working and another public server is
   // responding but with errors or incorrect results.  This is an awkward case;
   // an invasive captive portal or a restrictive firewall may be intercepting
   // or rewriting DNS traffic, or the public server may itself be failing or
   // down.
-  return PROBE_UNKNOWN;
+  return chrome_common_net::DNS_PROBE_UNKNOWN;
 }
 
 void DnsProbeService::CallCallbacks() {
