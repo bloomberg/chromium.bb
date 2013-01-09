@@ -67,7 +67,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 // tab border image is not visibly clipped.  It is a bit smaller than the sum
 // of the two tab edge bitmaps because these bitmaps have a few transparent
 // pixels on the side.  The selected tab width includes the close button width.
-+ (CGFloat)minTabWidth { return 35; }
++ (CGFloat)minTabWidth { return 36; }
 + (CGFloat)minSelectedTabWidth { return 52; }
 + (CGFloat)maxTabWidth { return 214; }
 + (CGFloat)miniTabWidth { return 58; }
