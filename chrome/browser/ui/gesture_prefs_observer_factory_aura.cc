@@ -74,6 +74,8 @@ const char* kPrefsToObserve[] = {
   prefs::kFlingAccelerationCurveCoefficient1,
   prefs::kFlingAccelerationCurveCoefficient2,
   prefs::kFlingAccelerationCurveCoefficient3,
+  prefs::kFlingMaxCancelToDownTimeInMs,
+  prefs::kFlingMaxTapGapTimeInMs,
   prefs::kFlingVelocityCap,
   prefs::kLongPressTimeInSeconds,
   prefs::kMaxDistanceForTwoFingerTapInPixels,
@@ -130,6 +132,10 @@ void GesturePrefsObserver::Update() {
       prefs_->GetDouble(prefs::kFlingAccelerationCurveCoefficient2));
   GestureConfiguration::set_fling_acceleration_curve_coefficients(3,
       prefs_->GetDouble(prefs::kFlingAccelerationCurveCoefficient3));
+  GestureConfiguration::set_fling_max_cancel_to_down_time_in_ms(
+      prefs_->GetInteger(prefs::kFlingMaxCancelToDownTimeInMs));
+  GestureConfiguration::set_fling_max_tap_gap_time_in_ms(
+      prefs_->GetInteger(prefs::kFlingMaxTapGapTimeInMs));
   GestureConfiguration::set_fling_velocity_cap(
       prefs_->GetDouble(prefs::kFlingVelocityCap));
   GestureConfiguration::set_long_press_time_in_seconds(
@@ -251,6 +257,14 @@ void GesturePrefsObserverFactoryAura::RegisterUserPrefs(
   prefs->RegisterDoublePref(
       prefs::kFlingAccelerationCurveCoefficient3,
       GestureConfiguration::fling_acceleration_curve_coefficients(3),
+      PrefServiceSyncable::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(
+      prefs::kFlingMaxCancelToDownTimeInMs,
+      GestureConfiguration::fling_max_cancel_to_down_time_in_ms(),
+      PrefServiceSyncable::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(
+      prefs::kFlingMaxTapGapTimeInMs,
+      GestureConfiguration::fling_max_tap_gap_time_in_ms(),
       PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kFlingVelocityCap,

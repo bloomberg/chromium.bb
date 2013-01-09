@@ -240,8 +240,6 @@ extern const char kDisableCarbonInterposing[];
 #endif
 
 #if defined(USE_AURA)
-CONTENT_EXPORT extern const char kFlingTapSuppressMaxDown[];
-CONTENT_EXPORT extern const char kFlingTapSuppressMaxGap[];
 CONTENT_EXPORT extern const char kTestCompositor[];
 #endif
 

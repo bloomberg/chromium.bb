@@ -777,6 +777,8 @@ extern const char kPinnedLauncherApps[];
 extern const char kShowLogoutButtonInTray[];
 extern const char kShelfPreferences[];
 
+extern const char kFlingMaxCancelToDownTimeInMs[];
+extern const char kFlingMaxTapGapTimeInMs[];
 extern const char kFlingVelocityCap[];
 extern const char kLongPressTimeInSeconds[];
 extern const char kMaxDistanceBetweenTapsForDoubleTap[];

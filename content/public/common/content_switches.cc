@@ -748,12 +748,6 @@ const char kDisableCarbonInterposing[]      = "disable-carbon-interposing";
 const char kDisableSoftwareRasterizer[]     = "disable-software-rasterizer";
 
 #if defined(USE_AURA)
-// Configures the time after a GestureFlingCancel in which taps are cancelled.
-extern const char kFlingTapSuppressMaxDown[] = "fling-tap-suppress-max-down";
-
-// Maximum time between mousedown and mouseup to be considered a tap.
-extern const char kFlingTapSuppressMaxGap[] = "fling-tap-suppress-max-gap";
-
 // Forces usage of the test compositor. Needed to run ui tests on bots.
 extern const char kTestCompositor[]         = "test-compositor";
 #endif

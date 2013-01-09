@@ -132,6 +132,16 @@ function GestureConfig() {
   /** List of fields used to dynamically build form. **/
   var GESTURE_FIELDS = [
     {
+      key: 'fling_max_cancel_to_down_time_in_ms',
+      label: 'Maximum Cancel to Down Time for Tap Suppression',
+      units: 'milliseconds',
+    },
+    {
+      key: 'fling_max_tap_gap_time_in_ms',
+      label: 'Maximum Tap Gap Time for Tap Suppression',
+      units: 'milliseconds',
+    },
+    {
       key: 'long_press_time_in_seconds',
       label: 'Long Press Time',
       units: 'seconds'

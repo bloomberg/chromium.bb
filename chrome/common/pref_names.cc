@@ -2142,6 +2142,10 @@ const char kShowLogoutButtonInTray[] = "show_logout_button_in_tray";
 // kShelfAutoHideBehavior.
 const char kShelfPreferences[] = "shelf_preferences";
 
+const char kFlingMaxCancelToDownTimeInMs[] =
+    "gesture.fling_max_cancel_to_down_time_in_ms";
+const char kFlingMaxTapGapTimeInMs[] =
+    "gesture.fling_max_tap_gap_time_in_ms";
 const char kFlingVelocityCap[] = "gesture.fling_velocity_cap";
 const char kLongPressTimeInSeconds[] =
     "gesture.long_press_time_in_seconds";

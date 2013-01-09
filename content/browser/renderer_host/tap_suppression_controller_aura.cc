@@ -10,51 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/common/content_switches.h"
-
-namespace {
-
-// Default maxium time between a mousedown/mouseup pair that is considered to
-// be a suppressable tap.
-static const int kMaxiumTapGapTimeMs = 200;
-
-// Default maximum time between a GestureFlingCancel and a mousedown such that
-// the mousedown is considered associated with the cancel event.
-static const int kMaxiumCancelToDownTimeMs = 400;
-
-// Sets |*value| to |switchKey| if it exists or sets it to |defaultValue|.
-static void GetFlingParamHelper(int* value, int defaultValue,
-                                const char switchKey[]) {
-  if (*value < 0) {
-    *value = defaultValue;
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    std::string command_line_param =
-        command_line->GetSwitchValueASCII(switchKey);
-    if (!command_line_param.empty()) {
-      int v;
-      if (base::StringToInt(command_line_param, &v))
-        *value = static_cast<int>(v);
-    }
-    DCHECK_GT(*value, 0);
-  }
-}
-
-static int GetMaxiumTapGapTimeMs() {
-  static int maximum_tap_gap_time_ms = -1;
-  GetFlingParamHelper(&maximum_tap_gap_time_ms,
-                      kMaxiumTapGapTimeMs,
-                      switches::kFlingTapSuppressMaxGap);
-  return maximum_tap_gap_time_ms;
-}
-
-static int GetMaxiumCancelToDownTimeMs() {
-  static int maximum_cancel_to_down_time_ms = -1;
-  GetFlingParamHelper(&maximum_cancel_to_down_time_ms,
-                      kMaxiumCancelToDownTimeMs,
-                      switches::kFlingTapSuppressMaxDown);
-  return maximum_cancel_to_down_time_ms;
-}
-
-} // namespace
+#include "ui/base/gestures/gesture_configuration.h"
 
 namespace content {
 
@@ -86,11 +42,12 @@ bool TapSuppressionController::ShouldDeferMouseDown(
     case NOTHING:
       return false;
     case GFC_IN_PROGRESS:
-      mouse_down_timer_.Start(FROM_HERE,
-                              base::TimeDelta::FromMilliseconds(
-                                  GetMaxiumTapGapTimeMs()),
-                              this,
-                              &TapSuppressionController::MouseDownTimerExpired);
+      mouse_down_timer_.Start(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(
+              ui::GestureConfiguration::fling_max_tap_gap_time_in_ms()),
+          this,
+          &TapSuppressionController::MouseDownTimerExpired);
       stashed_mouse_down_ = event;
       state_ = MD_STASHED;
       return true;
@@ -100,11 +57,12 @@ bool TapSuppressionController::ShouldDeferMouseDown(
       return false;
     case LAST_CANCEL_STOPPED_FLING:
       if ((base::TimeTicks::Now() - fling_cancel_time_).InMilliseconds()
-          < GetMaxiumCancelToDownTimeMs()) {
+          < ui::GestureConfiguration::fling_max_cancel_to_down_time_in_ms()) {
         state_ = MD_STASHED;
-        mouse_down_timer_.Start(FROM_HERE,
+        mouse_down_timer_.Start(
+            FROM_HERE,
             base::TimeDelta::FromMilliseconds(
-            GetMaxiumTapGapTimeMs()),
+                ui::GestureConfiguration::fling_max_tap_gap_time_in_ms()),
             this,
             &TapSuppressionController::MouseDownTimerExpired);
         stashed_mouse_down_ = event;

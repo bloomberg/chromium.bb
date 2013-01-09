@@ -817,8 +817,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kPpapiFlashVersion,
       ::switches::kPpapiOutOfProcess,
       ::switches::kRendererStartupDialog,
-      ::switches::kFlingTapSuppressMaxDown,
-      ::switches::kFlingTapSuppressMaxGap,
 #if defined(USE_XI2_MT)
       ::switches::kTouchCalibration,
 #endif
