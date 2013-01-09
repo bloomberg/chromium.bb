@@ -29,6 +29,7 @@
 #include "cc/stream_video_draw_quad.h"
 #include "cc/texture_draw_quad.h"
 #include "cc/video_layer_impl.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSharedGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"

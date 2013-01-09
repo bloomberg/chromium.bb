@@ -7,6 +7,7 @@
 #include <limits>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <GLES2/gl2extchromium.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
 

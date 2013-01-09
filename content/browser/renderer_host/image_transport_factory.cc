@@ -26,6 +26,7 @@
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/webkitplatformsupport_impl.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/ipc/command_buffer_proxy.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"

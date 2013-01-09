@@ -14,6 +14,7 @@
 #include "cc/stream_video_draw_quad.h"
 #include "cc/texture_draw_quad.h"
 #include "cc/yuv_video_draw_quad.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "media/filters/skcanvas_video_renderer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"

@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <GLES2/gl2ext.h>
+#include <GLES2/gl2extchromium.h>
 #include "../client/buffer_tracker.h"
 #include "../client/mapped_memory.h"
 #include "../client/program_info_manager.h"

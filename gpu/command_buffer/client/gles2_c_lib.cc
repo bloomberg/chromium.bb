@@ -11,6 +11,7 @@
 #define GL_GLEXT_PROTOTYPES
 #endif
 #include <GLES2/gl2ext.h>
+#include <GLES2/gl2extchromium.h>
 
 extern "C" {
 // Include the auto-generated part of this file. We split this because it means

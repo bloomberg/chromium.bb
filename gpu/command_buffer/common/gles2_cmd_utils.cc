@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <GLES2/gl2extchromium.h>
 
 #include "../common/gles2_cmd_utils.h"
 #include "../common/gles2_cmd_format.h"

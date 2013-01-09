@@ -33,6 +33,7 @@
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/ipc/command_buffer_proxy.h"
 #include "webkit/gpu/gl_bindings_skia_cmd_buffer.h"
 

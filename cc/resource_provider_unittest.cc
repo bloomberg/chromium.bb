@@ -10,6 +10,7 @@
 #include "cc/scoped_ptr_hash_map.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"

@@ -3,8 +3,6 @@
 
 /* $Revision: 19436 $ on $Date:: 2012-10-10 10:37:04 -0700 #$ */
 
-#include <GLES2/gl2chromium.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -1808,7 +1806,5 @@ typedef void (GL_APIENTRYP PFNGLENDTILINGQCOMPROC) (GLbitfield preserveMask);
 #ifdef __cplusplus
 }
 #endif
-
-#include <GLES2/gl2extchromium.h>
 
 #endif /* __gl2ext_h_ */

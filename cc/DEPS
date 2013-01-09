@@ -1,4 +1,5 @@
 include_rules = [
+  "+gpu/GLES2",
   "+media",
   "+skia/ext",
   "+third_party/skia/include",

@@ -30,6 +30,7 @@ include_rules = [
   "+gpu/command_buffer/client",
   "+gpu/command_buffer/common",
   "+gpu/command_buffer/service",
+  "+gpu/GLES2",
   "+third_party/khronos/GLES2",
 
   # For shared USB keycode conversion tables used by ppapi plugin code.

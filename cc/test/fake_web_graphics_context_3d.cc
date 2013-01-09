@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
