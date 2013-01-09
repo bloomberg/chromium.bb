@@ -46,6 +46,10 @@ class GdbRspConnection(object):
     for i in xrange(int(timeout_in_seconds / poll_time_in_seconds)):
       # On Mac OS X, we have to create a new socket FD for each retry.
       sock = socket.socket()
+      # Do not delay sending small packets.  This significantly speeds up
+      # debug stub test.  Since we send all replies as a whole, this doesn't
+      # create an excessive amount of small packets.
+      sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
       try:
         sock.connect(addr)
       except socket.error:
