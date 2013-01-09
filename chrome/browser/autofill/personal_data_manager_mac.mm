@@ -16,6 +16,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/autofill/autofill_country.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/phone_number.h"
 #include "grit/generated_resources.h"
@@ -47,7 +48,7 @@ class AuxiliaryProfilesImpl {
   void GetAddressBookNames(ABPerson* me,
                            NSString* addressLabelRaw,
                            AutofillProfile* profile);
-  void GetAddressBookAddresses(NSDictionary* address, AutofillProfile* profile);
+  void GetAddressBookAddress(NSDictionary* address, AutofillProfile* profile);
   void GetAddressBookEmail(ABPerson* me,
                            NSString* addressLabelRaw,
                            AutofillProfile* profile);
@@ -120,7 +121,7 @@ void AuxiliaryProfilesImpl::GetAddressBookMeCard() {
     GetAddressBookNames(me, addressLabelRaw, profile.get());
 
     // Fill in address information.
-    GetAddressBookAddresses(address, profile.get());
+    GetAddressBookAddress(address, profile.get());
 
     // Fill in email information.
     GetAddressBookEmail(me, addressLabelRaw, profile.get());
@@ -156,8 +157,8 @@ void AuxiliaryProfilesImpl::GetAddressBookNames(
 // second line we join with commas.
 // For example:  "c/o John Doe\n1122 Other Avenue\nApt #7" translates to
 // line 1: "c/o John Doe", line 2: "1122 Other Avenue, Apt #7".
-void AuxiliaryProfilesImpl::GetAddressBookAddresses(NSDictionary* address,
-                                                    AutofillProfile* profile) {
+void AuxiliaryProfilesImpl::GetAddressBookAddress(NSDictionary* address,
+                                                  AutofillProfile* profile) {
   if (NSString* addressField = [address objectForKey:kABAddressStreetKey]) {
     // If there are newlines in the address, split into two lines.
     if ([addressField rangeOfCharacterFromSet:
@@ -193,8 +194,9 @@ void AuxiliaryProfilesImpl::GetAddressBookAddresses(NSDictionary* address,
     profile->SetRawInfo(ADDRESS_HOME_ZIP, base::SysNSStringToUTF16(zip));
 
   if (NSString* country = [address objectForKey:kABAddressCountryKey]) {
-    profile->SetRawInfo(ADDRESS_HOME_COUNTRY,
-                        base::SysNSStringToUTF16(country));
+    profile->SetInfo(ADDRESS_HOME_COUNTRY,
+                     base::SysNSStringToUTF16(country),
+                     AutofillCountry::ApplicationLocale());
   }
 }
 
