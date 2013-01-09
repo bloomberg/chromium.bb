@@ -193,7 +193,7 @@ void PpapiDecryptor::DecryptAndDecodeAudio(
     return;
   }
 
-  DVLOG(1) << "DecryptAndDecodeAudio()";
+  DVLOG(3) << "DecryptAndDecodeAudio()";
   if (!plugin_cdm_delegate_->DecryptAndDecodeAudio(encrypted, audio_decode_cb))
     audio_decode_cb.Run(kError, AudioBuffers());
 }
