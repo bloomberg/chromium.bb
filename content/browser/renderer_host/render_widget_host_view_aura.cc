@@ -342,6 +342,8 @@ void RenderWidgetHostViewAura::InitAsPopup(
     old_child->popup_parent_host_view_ = NULL;
   }
   popup_parent_host_view_->popup_child_host_view_ = this;
+  if (popup_type_ != WebKit::WebPopupTypeNone)
+    window_->SetCapture();
   window_->SetType(aura::client::WINDOW_TYPE_MENU);
   window_->Init(ui::LAYER_TEXTURED);
   window_->SetName("RenderWidgetHostViewAura");
@@ -1549,7 +1551,10 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
       FinishImeCompositionSession();
       break;
     case ui::ET_MOUSE_RELEASED:
-      window_->ReleaseCapture();
+      if (popup_type_ == WebKit::WebPopupTypeNone &&
+          (popup_child_host_view_ == NULL ||
+           popup_child_host_view_->popup_type_ == WebKit::WebPopupTypeNone))
+        window_->ReleaseCapture();
       break;
     default:
       break;
