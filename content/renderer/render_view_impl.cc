@@ -146,6 +146,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentServiceInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMessagePortChannel.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
@@ -503,6 +504,29 @@ static void NotifyTimezoneChange(WebKit::WebFrame* frame) {
   WebKit::WebFrame* child = frame->firstChild();
   for (; child; child = child->nextSibling())
     NotifyTimezoneChange(child);
+}
+
+static WindowOpenDisposition NavigationPolicyToDisposition(
+    WebNavigationPolicy policy) {
+  switch (policy) {
+    case WebKit::WebNavigationPolicyIgnore:
+      return IGNORE_ACTION;
+    case WebKit::WebNavigationPolicyDownload:
+      return SAVE_TO_DISK;
+    case WebKit::WebNavigationPolicyCurrentTab:
+      return CURRENT_TAB;
+    case WebKit::WebNavigationPolicyNewBackgroundTab:
+      return NEW_BACKGROUND_TAB;
+    case WebKit::WebNavigationPolicyNewForegroundTab:
+      return NEW_FOREGROUND_TAB;
+    case WebKit::WebNavigationPolicyNewWindow:
+      return NEW_WINDOW;
+    case WebKit::WebNavigationPolicyNewPopup:
+      return NEW_POPUP;
+  default:
+    NOTREACHED() << "Unexpected WebNavigationPolicy";
+    return IGNORE_ACTION;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

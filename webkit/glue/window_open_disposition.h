@@ -5,9 +5,6 @@
 #ifndef WEBKIT_GLUE_WINDOW_OPEN_DISPOSITION_H_
 #define WEBKIT_GLUE_WINDOW_OPEN_DISPOSITION_H_
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNavigationPolicy.h"
-#include "webkit/glue/webkit_glue_export.h"
-
 enum WindowOpenDisposition {
   UNKNOWN,
   SUPPRESS_OPEN,
@@ -22,9 +19,5 @@ enum WindowOpenDisposition {
   OFF_THE_RECORD,
   IGNORE_ACTION
 };
-
-// Conversion function:
-WEBKIT_GLUE_EXPORT WindowOpenDisposition NavigationPolicyToDisposition(
-    WebKit::WebNavigationPolicy policy);
 
 #endif  // WEBKIT_GLUE_WINDOW_OPEN_DISPOSITION_H_
