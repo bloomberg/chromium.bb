@@ -58,10 +58,13 @@ function WebView(node) {
 
   shadowRoot.appendChild(this.objectNode_);
 
-  // this.objectNode_[apiMethod] are defined after the shadow object is appended
-  // to the shadow root.
+  // this.objectNode_[apiMethod] are not necessarily defined immediately after
+  // the shadow object is appended to the shadow root.
+  var self = this;
   WEB_VIEW_API_METHODS.forEach(function(apiMethod) {
-    node[apiMethod] = this.objectNode_[apiMethod].bind(this.objectNode_);
+    node[apiMethod] = function(var_args) {
+      return self.objectNode_[apiMethod].apply(self.objectNode_, arguments);
+    };
   }, this);
 
   // Map attribute modifications on the <webview> tag to property changes in
