@@ -13,15 +13,6 @@ cr.define('login', function() {
   // Maximum Gaia loading time in seconds.
   /** @const */ var MAX_GAIA_LOADING_TIME_SEC = 60;
 
-  // Network state constants.
-  /** @const */ var NET_STATE = {
-    OFFLINE: 0,
-    ONLINE: 1,
-    PORTAL: 2,
-    CONNECTING: 3,
-    UNKNOWN: 4
-  };
-
   // Frame loading errors.
   /** @const */ var NET_ERROR = {
     ABORTED_BY_USER: 3
@@ -185,7 +176,7 @@ cr.define('login', function() {
      */
     onBeforeShow: function(data) {
       chrome.send('loginUIStateChanged', ['gaia-signin', true]);
-      $('login-header-bar').signinUIActive = true;
+      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.GAIA_SIGNIN;
 
       // Announce the name of the screen, if accessibility is on.
       $('gaia-signin-aria-label').setAttribute(
@@ -201,7 +192,7 @@ cr.define('login', function() {
      */
     onBeforeHide: function() {
       chrome.send('loginUIStateChanged', ['gaia-signin', false]);
-      $('login-header-bar').signinUIActive = false;
+      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.HIDDEN;
     },
 
     /**
@@ -359,7 +350,7 @@ cr.define('login', function() {
           // Show 'Cancel' button to allow user to return to the main screen
           // (e.g. this makes sense when connection is back).
           Oobe.getInstance().headerHidden = false;
-          $('login-header-bar').signinUIActive = true;
+          $('login-header-bar').signinUIState = SIGNIN_UI_STATE.GAIA_SIGNIN;
           // Do nothing, since offline version is reloaded after an error comes.
         } else {
           Oobe.showSigninUI();

@@ -27,6 +27,13 @@
 /* Help topic identifiers. */
 /** @const */ var HELP_TOPIC_ENTERPRISE_REPORTING = 2535613;
 
+/* Signin UI state constants. Used to control header bar UI. */
+/** @const */ var SIGNIN_UI_STATE = {
+  HIDDEN: 0,
+  GAIA_SIGNIN: 1,
+  ACCOUNT_PICKER: 2
+};
+
 cr.define('cr.ui.login', function() {
   var Bubble = cr.ui.Bubble;
 
@@ -526,7 +533,11 @@ cr.define('cr.ui.login', function() {
    * @param {string} opt_email An optional email for signin UI.
    */
   DisplayManager.showSigninUI = function(opt_email) {
-    $('login-header-bar').signinUIActive = true;
+    var currentScreenId = Oobe.getInstance().currentScreen.id;
+    if (currentScreenId == SCREEN_GAIA_SIGNIN)
+      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.GAIA_SIGNIN;
+    else if (currentScreenId == SCREEN_ACCOUNT_PICKER)
+      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ACCOUNT_PICKER;
     chrome.send('showAddUser', [opt_email]);
   };
 

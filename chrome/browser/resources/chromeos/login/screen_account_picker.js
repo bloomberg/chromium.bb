@@ -75,6 +75,7 @@ cr.define('login', function() {
      */
     onBeforeShow: function(data) {
       chrome.send('loginUIStateChanged', ['account-picker', true]);
+      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ACCOUNT_PICKER;
       chrome.send('hideCaptivePortal');
       var podRow = $('pod-row');
       podRow.handleBeforeShow();
@@ -109,6 +110,7 @@ cr.define('login', function() {
      */
     onBeforeHide: function() {
       chrome.send('loginUIStateChanged', ['account-picker', false]);
+      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.HIDDEN;
       $('pod-row').handleHide();
     },
 

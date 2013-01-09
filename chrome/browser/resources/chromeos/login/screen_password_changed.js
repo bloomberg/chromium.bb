@@ -138,8 +138,6 @@ cr.define('login', function() {
      */
     cancel: function() {
       this.disabled = true;
-      // Reset login action bar state.
-      $('login-header-bar').signinUIActive = false;
       chrome.send('cancelPasswordChangedFlow');
     },
 
