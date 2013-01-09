@@ -631,6 +631,10 @@ void RenderWidget::OnHandleInputEvent(const WebKit::WebInputEvent* input_event,
     prevent_default = prevent_default || WillHandleGestureEvent(gesture_event);
   }
 
+  if (input_event->type == WebInputEvent::GestureTap ||
+      input_event->type == WebInputEvent::GestureLongPress)
+    resetInputMethod();
+
   bool processed = prevent_default;
   if (input_event->type != WebInputEvent::Char || !suppress_next_char_events_) {
     suppress_next_char_events_ = false;
@@ -1297,7 +1301,6 @@ void RenderWidget::willBeginCompositorFrame() {
   // The following two can result in further layout and possibly
   // enable GPU acceleration so they need to be called before any painting
   // is done.
-  UpdateTextInputState(DO_NOT_SHOW_IME);
   UpdateSelectionBounds();
 
   WillInitiatePaint();

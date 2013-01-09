@@ -324,7 +324,7 @@ class ImeAdapter {
     @CalledByNative
     private void cancelComposition() {
         if (mInputConnection != null) {
-            mInputConnection.cancelComposition();
+            mInputConnection.restartInput();
         }
     }
 
@@ -546,13 +546,6 @@ class ImeAdapter {
                 return;
             }
 
-            // When a programmatic change has been made to the editable field, both the start
-            // and end positions for the composition will equal zero. In this case we cancel the
-            // active composition in the editor as this no longer is relevant.
-            if (textUnchanged && compositionStart == 0 && compositionEnd == 0) {
-                cancelComposition();
-            }
-
             if (!textUnchanged) {
                 editable.replace(0, editable.length(), text);
             }
@@ -565,6 +558,13 @@ class ImeAdapter {
                 // e.g. backspace to undo autocorrection will not work with the default OSK.
                 getInputMethodManager().updateSelection(mInternalView,
                         selectionStart, selectionEnd, compositionStart, compositionEnd);
+            }
+
+            // When WebKit changes the editable field, both the start and the end positions for
+            // the composition will be set to -1. In this case we have to call restart input
+            // for the IME to update its state.
+            if (textUnchanged && compositionStart == -1 && compositionEnd == -1) {
+                restartInput();
             }
         }
 
@@ -586,7 +586,7 @@ class ImeAdapter {
         public boolean performEditorAction(int actionCode) {
             switch (actionCode) {
                 case EditorInfo.IME_ACTION_NEXT:
-                    cancelComposition();
+                    restartInput();
                     // Send TAB key event
                     long timeStampMs = System.currentTimeMillis();
                     mImeAdapter.sendSyntheticKeyEvent(
@@ -687,11 +687,10 @@ class ImeAdapter {
         }
 
         /**
-         * Informs the InputMethodManager and InputMethodSession (i.e. the IME) that there
-         * is no longer a current composition. Note this differs from finishComposingText, which
-         * is called by the IME when it wants to end a composition.
+         * Informs the InputMethodManager and InputMethodSession (i.e. the IME) that the text
+         * state is no longer what the IME has and that it needs to be updated.
          */
-        void cancelComposition() {
+        void restartInput() {
             getInputMethodManager().restartInput(mInternalView);
         }
 
