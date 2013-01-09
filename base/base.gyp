@@ -273,6 +273,12 @@
             '../build/linux/system.gyp:gtk',
           ],
         }],
+        ['OS == "win"', {
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [
+            4267,
+          ],
+        }],
       ],
       'export_dependent_settings': [
         'base',
@@ -710,6 +716,10 @@
             'files/dir_reader_posix_unittest.cc',
             'threading/worker_pool_posix_unittest.cc',
             'message_pump_libevent_unittest.cc',
+          ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [
+            4267,
           ],
         }, {  # OS != "win"
           'dependencies': [

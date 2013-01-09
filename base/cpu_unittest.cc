@@ -17,7 +17,8 @@ TEST(CPU, RunExtendedInstructions) {
   // Retrieve the CPU information.
   base::CPU cpu;
 
-#if defined(OS_WIN)
+// TODO(jschuh): crbug.com/168866 Find a way to enable this on Win64.
+#if defined(OS_WIN) && !defined(_M_X64)
   ASSERT_TRUE(cpu.has_mmx());
 
   // Execute an MMX instruction.
