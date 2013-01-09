@@ -69,6 +69,7 @@ void PromoResourceService::RegisterPrefs(PrefServiceSimple* local_state) {
 // static
 void PromoResourceService::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   // TODO(dbeam): remove in M28 when all prefs have been cleared.
+  // http://crbug.com/168887
   prefs->RegisterStringPref(prefs::kNtpPromoResourceCacheUpdate,
                             "0",
                             PrefServiceSyncable::UNSYNCABLE_PREF);

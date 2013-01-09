@@ -319,6 +319,7 @@ void NotificationPromo::RegisterPrefs(PrefServiceSimple* local_state) {
 // static
 void NotificationPromo::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   // TODO(dbeam): Remove in M28 when we're reasonably sure all prefs are gone.
+  // http://crbug.com/168887
   prefs->RegisterDictionaryPref(kPrefPromoObject,
                                 PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->ClearPref(kPrefPromoObject);
