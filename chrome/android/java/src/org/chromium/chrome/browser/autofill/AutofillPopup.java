@@ -64,10 +64,8 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
         /**
          * Handles the selection of an Autofill suggestion from an AutofillPopup.
          * @param listIndex The index of the selected Autofill suggestion.
-         * @param value The value of the selected Autofill suggestion.
-         * @param uniqueId The unique id of the selected Autofill suggestion.
          */
-        public void suggestionSelected(int listIndex, String value, int uniqueId);
+        public void suggestionSelected(int listIndex);
     }
 
     // ListPopupWindow needs an anchor view to determine it's size and position.  We create a view
@@ -223,14 +221,7 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        try {
-            ListAdapter adapter = (ListAdapter) parent.getAdapter();
-            AutofillSuggestion data = (AutofillSuggestion) adapter.getItem(position);
-            mAutofillCallback.suggestionSelected(position, data.mName, data.mUniqueId);
-        } catch (ClassCastException e) {
-            Log.w("AutofillWindow", "error in onItemClick", e);
-            assert false;
-        }
+        mAutofillCallback.suggestionSelected(position);
     }
 
 }

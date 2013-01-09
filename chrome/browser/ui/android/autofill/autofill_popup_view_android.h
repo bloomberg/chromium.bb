@@ -24,13 +24,8 @@ class AutofillPopupViewAndroid : public AutofillPopupView {
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
   // --------------------------------------------------------------------------
-  // Called when an autofill item was selected. TODO(estade): remove |name| and
-  // |unique_id|.
-  void SuggestionSelected(JNIEnv* env,
-                          jobject obj,
-                          jint list_index,
-                          jstring name,
-                          jint unique_id);
+  // Called when an autofill item was selected.
+  void SuggestionSelected(JNIEnv* env, jobject obj, jint list_index);
 
   void Dismissed(JNIEnv *env, jobject obj);
 

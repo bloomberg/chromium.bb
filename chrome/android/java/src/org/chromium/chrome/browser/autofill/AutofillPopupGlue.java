@@ -35,8 +35,8 @@ public class AutofillPopupGlue implements AutofillPopupDelegate{
     }
 
     @Override
-    public void suggestionSelected(int listIndex, String value, int uniqueId) {
-        nativeSuggestionSelected(mNativeAutofillPopup, listIndex, value, uniqueId);
+    public void suggestionSelected(int listIndex) {
+        nativeSuggestionSelected(mNativeAutofillPopup, listIndex);
     }
 
     /**
@@ -84,6 +84,6 @@ public class AutofillPopupGlue implements AutofillPopupDelegate{
 
     private native void nativeDismissed(int nativeAutofillPopupViewAndroid);
     private native void nativeSuggestionSelected(int nativeAutofillPopupViewAndroid,
-            int listIndex, String value, int uniqueId);
+            int listIndex);
 
 }

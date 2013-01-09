@@ -80,9 +80,7 @@ void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
 
 void AutofillPopupViewAndroid::SuggestionSelected(JNIEnv* env,
                                                   jobject obj,
-                                                  jint list_index,
-                                                  jstring /*name*/,
-                                                  jint /*identifier*/) {
+                                                  jint list_index) {
   controller_->AcceptSuggestion(list_index);
 }
 
