@@ -43,7 +43,7 @@ def ValidateInstallAPKOption(option_parser, options):
   if not options.apk:
     option_parser.error('--apk is mandatory.')
   if not os.path.exists(options.apk):
-    options.apk = os.path.join(os.environ['CHROME_SRC'],
+    options.apk = os.path.join(constants.CHROME_DIR,
                                'out', options.build_type,
                                'apks', options.apk)
 

@@ -46,5 +46,7 @@ SDK_BUILD_APKS_DIR = 'apks'
 # The directory on the device where perf test output gets saved to.
 DEVICE_PERF_OUTPUT_DIR = '/data/data/' + CHROME_PACKAGE + '/files'
 
-# Directory on host where screensohts are saved.
 SCREENSHOTS_DIR = os.path.join(CHROME_DIR, 'out_screenshots')
+
+ANDROID_SDK_ROOT = os.path.join(CHROME_DIR, 'third_party/android_tools/sdk')
+ANDROID_NDK_ROOT = os.path.join(CHROME_DIR, 'third_party/android_tools/ndk')

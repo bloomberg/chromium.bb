@@ -22,6 +22,9 @@ function bb_parse_args {
       --build-properties=*)
         BUILD_PROPERTIES="$(echo "$1" | sed 's/^[^=]*=//')"
         ;;
+      --slave-properties=*)
+        SLAVE_PROPERTIES="$(echo "$1" | sed 's/^[^=]*=//')"
+        ;;
       *)
         echo "@@@STEP_WARNINGS@@@"
         echo "Warning, unparsed input argument: '$1'"
@@ -29,12 +32,6 @@ function bb_parse_args {
     esac
     shift
   done
-}
-
-# Function to force-green a bot.
-function bb_force_bot_green_and_exit {
-  echo "@@@BUILD_STEP Bot forced green.@@@"
-  exit 0
 }
 
 # Basic setup for all bots to run after a source tree checkout.
@@ -88,16 +85,6 @@ function bb_baseline_setup {
       echo "@@@STEP_WARNINGS@@@"
     fi
   fi
-}
-
-# Used internally to buildbot_functions.sh.
-function _bb_android_run_tests () {
-  local FLAGS
-  FLAGS="--xvfb --verbose"
-  if [[ ${BUILDTYPE} == Release ]]; then
-    FLAGS="${FLAGS} --release"
-  fi
-  build/android/run_tests.py ${FLAGS} ${EXTRA_RUN_TESTS_FLAGS} "$@"
 }
 
 function bb_compile_setup {
@@ -207,80 +194,6 @@ function bb_compile_experimental {
   done
 }
 
-# Run tests on an emulator.
-function bb_run_tests_emulator {
-  echo "@@@BUILD_STEP Run Tests on an Emulator@@@"
-  _bb_android_run_tests -e
-}
-
-function bb_spawn_logcat_monitor_and_status {
-  adb start-server
-  sleep 1
-  python build/android/device_status_check.py
-  LOGCAT_DUMP_DIR="$CHROME_SRC/out/logcat"
-  rm -rf "$LOGCAT_DUMP_DIR"
-  python build/android/adb_logcat_monitor.py "$LOGCAT_DUMP_DIR" &
-}
-
-function bb_print_logcat {
-  echo "@@@BUILD_STEP Logcat dump@@@"
-  python build/android/adb_logcat_printer.py "$LOGCAT_DUMP_DIR"
-}
-
-# Run tests on an actual device.  (Better have one plugged in!)
-function bb_run_unit_tests {
-  echo "@@@BUILD_STEP Run unit tests@@@"
-  _bb_android_run_tests
-}
-
-# Run WebKit's test suites: webkit_unit_tests and TestWebKitAPI
-function bb_run_webkit_unit_tests {
-  echo "@@@BUILD_STEP Run webkit unit tests@@@"
-  _bb_android_run_tests -s webkit_unit_tests
-  _bb_android_run_tests -s TestWebKitAPI
-}
-
-# Lint WebKit's TestExpectation files.
-function bb_lint_webkit_expectation_files {
-  echo "@@@BUILD_STEP webkit_lint@@@"
-  bb_run_step python webkit/tools/layout_tests/run_webkit_tests.py \
-    --lint-test-files \
-    --chromium
-}
-
-# Run layout tests on an actual device.
-function bb_run_webkit_layout_tests {
-  echo "@@@BUILD_STEP webkit_tests@@@"
-  local BUILDERNAME="$(bb_get_json_prop "$BUILD_PROPERTIES" buildername)"
-  local BUILDNUMBER="$(bb_get_json_prop "$BUILD_PROPERTIES" buildnumber)"
-  local MASTERNAME="$(bb_get_json_prop "$BUILD_PROPERTIES" mastername)"
-  local RESULTSERVER=\
-"$(bb_get_json_prop "$FACTORY_PROPERTIES" test_results_server)"
-
-  bb_run_step python webkit/tools/layout_tests/run_webkit_tests.py \
-      --no-show-results \
-      --no-new-test-results \
-      --full-results-html \
-      --clobber-old-results \
-      --exit-after-n-failures 5000 \
-      --exit-after-n-crashes-or-timeouts 100 \
-      --debug-rwt-logging \
-      --results-directory "../layout-test-results" \
-      --target "$BUILDTYPE" \
-      --builder-name "$BUILDERNAME" \
-      --build-number "$BUILDNUMBER" \
-      --master-name "$MASTERNAME" \
-      --build-name "$BUILDERNAME" \
-      --platform=chromium-android \
-      --test-results-server "$RESULTSERVER"
-}
-
-# Run experimental unittest bundles.
-function bb_run_experimental_unit_tests {
-  echo
-  # _bb_android_run_tests -s your_test_here
-}
-
 # Run findbugs.
 function bb_run_findbugs {
   echo "@@@BUILD_STEP findbugs@@@"
@@ -301,67 +214,6 @@ function bb_run_step {
     echo "@@@STEP_FAILURE@@@"
   fi
   )
-}
-
-# Install a specific APK.
-# Args:
-#   $1: APK to be installed.
-#   $2: APK_PACKAGE for the APK to be installed.
-function bb_install_apk {
-  local APK=${1}
-  local APK_PACKAGE=${2}
-  if [[ $BUILDTYPE = Release ]]; then
-    local BUILDFLAG="--release"
-  fi
-
-  echo "@@@BUILD_STEP Install ${APK}@@@"
-  python build/android/adb_install_apk.py --apk ${APK} \
-      --apk_package ${APK_PACKAGE} ${BUILDFLAG}
-}
-
-# Run instrumentation tests for a specific APK.
-# Args:
-#   $1: APK to be installed.
-#   $2: APK_PACKAGE for the APK to be installed.
-#   $3: TEST_APK to run the tests against.
-#   $4: TEST_DATA in format destination:source
-function bb_run_all_instrumentation_tests_for_apk {
-  local APK=${1}
-  local APK_PACKAGE=${2}
-  local TEST_APK=${3}
-  local TEST_DATA=${4}
-  local FLAGS
-
-  # Install application APK.
-  bb_install_apk ${APK} ${APK_PACKAGE}
-
-  # Run instrumentation tests. Using -I to install the test apk.
-  echo "@@@BUILD_STEP Run instrumentation tests ${TEST_APK}@@@"
-  FLAGS="-vvv"
-  if [[ "${BUILDTYPE}" == Release ]]; then
-    FLAGS="${FLAGS} --release"
-  fi
-  bb_run_step python build/android/run_instrumentation_tests.py \
-      ${FLAGS} ${EXTRA_RUN_TESTS_FLAGS} --test-apk ${TEST_APK} -I \
-      --test_data ${TEST_DATA}
-}
-
-# Run instrumentation tests for all relevant APKs on device.
-function bb_run_instrumentation_tests {
-  bb_run_all_instrumentation_tests_for_apk "ContentShell.apk" \
-      "org.chromium.content_shell" "ContentShellTest" \
-      "content:content/test/data/android/device_files"
-  bb_run_all_instrumentation_tests_for_apk "ChromiumTestShell.apk" \
-      "org.chromium.chrome.testshell" "ChromiumTestShellTest" \
-      "chrome:chrome/test/data/android/device_files"
-  bb_run_all_instrumentation_tests_for_apk "AndroidWebView.apk" \
-      "org.chromium.android_webview" "AndroidWebViewTest" \
-      "webview:android_webview/test/data/device_files"
-}
-
-# Run instrumentation tests for experimental APKs on device.
-function bb_run_experimental_instrumentation_tests {
-  echo "" # Can't have empty functions in bash.
 }
 
 # Zip and archive a build.
