@@ -52,3 +52,12 @@ ProfileInfoCacheTest.*
 
 # Failing on the bot. http://crbug.com/167014
 BrowserCommandControllerTest.AvatarMenuDisabledWhenOnlyOneProfile
+
+# Failing on the bot. http://crbug.com/168882
+UserCloudPolicyStoreTest.LoadWithInvalidFile
+UserCloudPolicyStoreTest.LoadWithNoFile
+UserCloudPolicyStoreTest.Store
+UserCloudPolicyStoreTest.StoreThenClear
+UserCloudPolicyStoreTest.StoreThenLoad
+UserCloudPolicyStoreTest.StoreTwoTimes
+UserCloudPolicyStoreTest.StoreValidationError
