@@ -18,6 +18,9 @@
         "kernel_object.cc",
         "kernel_proxy.cc",
         "kernel_wrap.cc",
+        "kernel_wrap_glibc.cc",
+        "kernel_wrap_newlib.cc",
+        "kernel_wrap_win.cc",
         "mount.cc",
         "mount_dev.cc",
         "mount_html5fs.cc",
@@ -75,11 +78,6 @@
       ],
       'DEST': 'include/utils',
     }
-  ],
-  'DATA': [
-    "kernel_wrap_glibc.cc",
-    "kernel_wrap_newlib.cc",
-    "kernel_wrap_win.cc",
   ],
   'DEST': 'src',
   'NAME': 'nacl_mounts',

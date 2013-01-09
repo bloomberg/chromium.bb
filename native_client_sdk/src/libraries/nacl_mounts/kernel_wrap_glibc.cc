@@ -3,6 +3,12 @@
  * found in the LICENSE file.
  */
 
+#include <sys/types.h>  // Include something that will define __GLIBC__.
+
+// The entire file is wrapped in this #if. We do this so this .cc file can be
+// compiled, even on a non-glibc build.
+#if defined(__native_client__) && defined(__GLIBC__)
+
 #include "nacl_mounts/kernel_wrap.h"
 #include <alloca.h>
 #include <dirent.h>
@@ -13,6 +19,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include "nacl_mounts/kernel_intercept.h"
+
 
 namespace {
 
@@ -275,3 +282,5 @@ static struct NaClMountsStaticInitializer {
     DO_WRAP(write);
   }
 } nacl_mounts_static_initializer;
+
+#endif  // defined(__native_client__) && defined(__GLIBC__)

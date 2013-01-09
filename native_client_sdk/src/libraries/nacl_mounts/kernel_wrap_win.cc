@@ -3,6 +3,10 @@
  * found in the LICENSE file.
  */
 
+// The entire file is wrapped in this #if. We do this so this .cc file can be
+// compiled, even on a non-Windows build.
+#if defined(WIN32)
+
 #include "nacl_mounts/kernel_wrap.h"
 #include <errno.h>
 #include <fcntl.h>
@@ -216,3 +220,5 @@ int _write(int fd, const void* buf, size_t nbyte) {
 }
 
 EXTERN_C_END
+
+#endif   // defined(WIN32)
