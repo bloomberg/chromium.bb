@@ -118,8 +118,6 @@ HistoryQuickProvider::HistoryQuickProvider(
 
 void HistoryQuickProvider::Start(const AutocompleteInput& input,
                                  bool minimal_changes) {
-  if (minimal_changes)
-    return;
   matches_.clear();
   if (disabled_)
     return;
