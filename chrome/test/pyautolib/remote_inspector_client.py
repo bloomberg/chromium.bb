@@ -72,6 +72,7 @@ class _DevToolsSocketRequest(object):
     is_fulfilled_condition: A threading.Condition for waiting for the request to
         be fulfilled.
   """
+
   def __init__(self, method, params, message_id):
     """Initialize.
 
@@ -111,6 +112,7 @@ class _DevToolsSocketClient(asyncore.dispatcher):
         working together with this class to communicate with a remote Chrome
         instance.
   """
+
   def __init__(self, verbose, show_socket_messages, hostname, port, path):
     """Initialize.
 
@@ -277,12 +279,15 @@ class _RemoteInspectorThread(threading.Thread):
   of managing request and reply messages, whereas _DevToolsSocketClient handles
   the lower-level work of socket communication.
   """
-  def __init__(self, tab_index, verbose, show_socket_messages):
+
+  def __init__(self, tab_index, tab_filter, verbose, show_socket_messages):
     """Initialize.
 
     Args:
       tab_index: The integer index of the tab in the remote Chrome instance to
           use for snapshotting.
+      tab_filter: When specified, is run over tabs of the remote Chrome
+          instances to choose which one to connect to.
       verbose: A boolean indicating whether or not to use verbose logging.
       show_socket_messages: A boolean indicating whether or not to show the
           socket messages sent/received when communicating with the remote
@@ -304,7 +309,7 @@ class _RemoteInspectorThread(threading.Thread):
 
     # Create a DevToolsSocket client and wait for it to complete the remote
     # debugging protocol handshake with the remote Chrome instance.
-    result = self._IdentifyDevToolsSocketConnectionInfo(tab_index)
+    result = self._IdentifyDevToolsSocketConnectionInfo(tab_index, tab_filter)
     self._client = _DevToolsSocketClient(
         verbose, show_socket_messages, result['host'], result['port'],
         result['path'])
@@ -517,12 +522,14 @@ class _RemoteInspectorThread(threading.Thread):
         request.params = {'type': 'HEAP', 'uid': last_req.results['uid']}
 
   @staticmethod
-  def _IdentifyDevToolsSocketConnectionInfo(tab_index):
+  def _IdentifyDevToolsSocketConnectionInfo(tab_index, tab_filter):
     """Identifies DevToolsSocket connection info from a remote Chrome instance.
 
     Args:
       tab_index: The integer index of the tab in the remote Chrome instance to
-                 which to connect.
+          which to connect.
+      tab_filter: When specified, is run over tabs of the remote Chrome instance
+          to choose which one to connect to.
 
     Returns:
       A dictionary containing the DevToolsSocket connection info:
@@ -539,21 +546,28 @@ class _RemoteInspectorThread(threading.Thread):
       # TODO(dennisjeffrey): Do not assume port 9222.  The port should be passed
       # as input to this function.
       f = urllib2.urlopen('http://localhost:9222/json')
-      result = f.read();
+      result = f.read()
+      logging.debug(result)
       result = simplejson.loads(result)
     except urllib2.URLError, e:
       raise RuntimeError(
           'Error accessing Chrome instance debugging port: ' + str(e))
 
-    if tab_index >= len(result):
-      raise RuntimeError(
-          'Specified tab index %d doesn\'t exist (%d tabs found)' %
-          (tab_index, len(result)))
+    if tab_filter:
+      connect_to = filter(tab_filter, result)[0]
+    else:
+      if tab_index >= len(result):
+        raise RuntimeError(
+            'Specified tab index %d doesn\'t exist (%d tabs found)' %
+            (tab_index, len(result)))
+      connect_to = result[tab_index]
 
-    if 'webSocketDebuggerUrl' not in result[tab_index]:
+    logging.debug(simplejson.dumps(connect_to))
+
+    if 'webSocketDebuggerUrl' not in connect_to:
       raise RuntimeError('No socket URL exists for the specified tab.')
 
-    socket_url = result[tab_index]['webSocketDebuggerUrl']
+    socket_url = connect_to['webSocketDebuggerUrl']
     parsed = urlparse.urlparse(socket_url)
     # On ChromeOS, the "ws://" scheme may not be recognized, leading to an
     # incorrect netloc (and empty hostname and port attributes) in |parsed|.
@@ -797,20 +811,25 @@ class RemoteInspectorClient(object):
     StartTimelineEventMonitoring: Starts monitoring for timeline events.
     StopTimelineEventMonitoring: Stops monitoring for timeline events.
   """
+
   # TODO(dennisjeffrey): Allow a user to specify a window index too (not just a
   # tab index), when running through PyAuto.
-  def __init__(self, tab_index=0, verbose=False, show_socket_messages=False):
+  def __init__(self, tab_index=0, tab_filter=None,
+               verbose=False, show_socket_messages=False):
     """Initialize.
 
     Args:
       tab_index: The integer index of the tab in the remote Chrome instance to
-                 which to connect.  Defaults to 0 (the first tab).
+          which to connect.  Defaults to 0 (the first tab).
+      tab_filter: When specified, is run over tabs of the remote Chrome
+          instance to choose which one to connect to.
       verbose: A boolean indicating whether or not to use verbose logging.
       show_socket_messages: A boolean indicating whether or not to show the
-                            socket messages sent/received when communicating
-                            with the remote Chrome instance.
+          socket messages sent/received when communicating with the remote
+          Chrome instance.
     """
     self._tab_index = tab_index
+    self._tab_filter = tab_filter
     self._verbose = verbose
     self._show_socket_messages = show_socket_messages
 
@@ -827,7 +846,7 @@ class RemoteInspectorClient(object):
 
     # Start up a thread for long-term communication with the remote inspector.
     self._remote_inspector_thread = _RemoteInspectorThread(
-        tab_index, verbose, show_socket_messages)
+        tab_index, tab_filter, verbose, show_socket_messages)
     self._remote_inspector_thread.start()
     # At this point, a connection has already been made to the remote inspector.
 
@@ -1060,7 +1079,7 @@ class RemoteInspectorClient(object):
 
       Args:
         reply_dict: A dictionary object representing the reply message received
-                    from the remote Chrome instance.
+            from the remote Chrome instance.
       """
       request_id = reply_dict['id']
       # GC command will have id = 0, the second command id = 1
