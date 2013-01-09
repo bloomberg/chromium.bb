@@ -52,21 +52,27 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
 VALID_TESTS = set(['ui', 'unit', 'webkit', 'webkit_layout'])
 
 
-def RunCmd(command, flunk_on_failure=True):
-  """Run a command relative to the chrome source root."""
-
+def SpawnCmd(command):
+  """Spawn a process without waiting for termination."""
   # Add adb binary to path. In the future, might use build_internal copy.
   env = dict(os.environ)
   env['PATH'] = os.pathsep.join([
       env['PATH'], os.path.join(constants.ANDROID_SDK_ROOT, 'platform-tools')])
+  print '>', ' '.join(map(pipes.quote, command))
+  sys.stdout.flush()
+  if TESTING:
+    class MockPopen(object):
+      @staticmethod
+      def wait():
+        return 0
+    return MockPopen()
 
-  command_str = ' '.join(map(pipes.quote, command))
-  print '>', command_str
-  if not TESTING:
-    code = subprocess.Popen(command, cwd=CHROME_SRC, env=env).wait()
-  else:
-    code = 0
-  print '<', command_str
+  return subprocess.Popen(command, cwd=CHROME_SRC, env=env)
+
+def RunCmd(command, flunk_on_failure=True):
+  """Run a command relative to the chrome source root."""
+  code = SpawnCmd(command).wait()
+  print '<', ' '.join(map(pipes.quote, command))
   if code != 0:
     print 'ERROR: non-zero status %d from %s' % (code, command)
     if flunk_on_failure:
@@ -166,9 +172,7 @@ def MainTestWrapper(options):
   # Spawn logcat monitor
   logcat_dir = os.path.join(CHROME_SRC, 'out/logcat')
   shutil.rmtree(logcat_dir, ignore_errors=True)
-  if not TESTING:
-    subprocess.Popen(
-        ['build/android/adb_logcat_monitor.py', logcat_dir], cwd=CHROME_SRC)
+  SpawnCmd(['build/android/adb_logcat_monitor.py', logcat_dir])
 
   if 'unit' in options.test_filter:
     RunTestSuites(options, None)
