@@ -192,9 +192,9 @@ TEST_F(EntropyProviderTest, UseOneTimeRandomizationSHA1) {
   base::FieldTrialList field_trial_list(new SHA1EntropyProvider("client_id"));
   scoped_refptr<base::FieldTrial> trials[] = {
       base::FieldTrialList::FactoryGetFieldTrial("one", 100, "default",
-          base::FieldTrialList::kExpirationYearInFuture, 1, 1, NULL),
+          base::FieldTrialList::kNoExpirationYear, 1, 1, NULL),
       base::FieldTrialList::FactoryGetFieldTrial("two", 100, "default",
-          base::FieldTrialList::kExpirationYearInFuture, 1, 1, NULL) };
+          base::FieldTrialList::kNoExpirationYear, 1, 1, NULL) };
 
   for (size_t i = 0; i < arraysize(trials); ++i) {
     trials[i]->UseOneTimeRandomization();
@@ -220,9 +220,9 @@ TEST_F(EntropyProviderTest, UseOneTimeRandomizationPermuted) {
       new PermutedEntropyProvider(1234, kMaxLowEntropySize));
   scoped_refptr<base::FieldTrial> trials[] = {
       base::FieldTrialList::FactoryGetFieldTrial("one", 100, "default",
-          base::FieldTrialList::kExpirationYearInFuture, 1, 1, NULL),
+          base::FieldTrialList::kNoExpirationYear, 1, 1, NULL),
       base::FieldTrialList::FactoryGetFieldTrial("two", 100, "default",
-          base::FieldTrialList::kExpirationYearInFuture, 1, 1, NULL) };
+          base::FieldTrialList::kNoExpirationYear, 1, 1, NULL) };
 
   for (size_t i = 0; i < arraysize(trials); ++i) {
     trials[i]->UseOneTimeRandomization();

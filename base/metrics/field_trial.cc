@@ -49,7 +49,7 @@ const int FieldTrial::kDefaultGroupNumber = 0;
 bool FieldTrial::enable_benchmarking_ = false;
 
 const char FieldTrialList::kPersistentStringSeparator('/');
-int FieldTrialList::kExpirationYearInFuture = 0;
+int FieldTrialList::kNoExpirationYear = 0;
 
 //------------------------------------------------------------------------------
 // FieldTrial methods and members.
@@ -244,11 +244,10 @@ FieldTrialList::FieldTrialList(
   DCHECK(!used_without_global_);
   global_ = this;
 
+  Time two_years_from_build_time = GetBuildTime() + TimeDelta::FromDays(730);
   Time::Exploded exploded;
-  Time two_years_from_now =
-      Time::NowFromSystemTime() + TimeDelta::FromDays(730);
-  two_years_from_now.LocalExplode(&exploded);
-  kExpirationYearInFuture = exploded.year;
+  two_years_from_build_time.LocalExplode(&exploded);
+  kNoExpirationYear = exploded.year;
 }
 
 FieldTrialList::~FieldTrialList() {

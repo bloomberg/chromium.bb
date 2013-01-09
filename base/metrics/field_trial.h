@@ -283,8 +283,9 @@ class BASE_EXPORT FieldTrialList {
   // second process to mimic our state (i.e., provide the same group name).
   static const char kPersistentStringSeparator;  // Currently a slash.
 
-  // Define expiration year in future. It is initialized to two years from Now.
-  static int kExpirationYearInFuture;
+  // Year that is guaranteed to not be expired when instantiating a field trial
+  // via |FactoryGetFieldTrial()|.  Set to two years from the build date.
+  static int kNoExpirationYear;
 
   // Observer is notified when a FieldTrial's group is selected.
   class BASE_EXPORT Observer {

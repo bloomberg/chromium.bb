@@ -717,5 +717,18 @@ TEST_F(FieldTrialTest, DisabledTrialNotActive) {
   EXPECT_TRUE(states.empty());
 }
 
+TEST_F(FieldTrialTest, ExpirationYearNotExpired) {
+  const char kTrialName[] = "NotExpired";
+  const char kGroupName[] = "Group2";
+  const int kProbability = 100;
+  ASSERT_FALSE(FieldTrialList::TrialExists(kTrialName));
+
+  FieldTrial* trial =
+      FieldTrialList::FactoryGetFieldTrial(
+          kTrialName, kProbability, kDefaultGroupName,
+          FieldTrialList::kNoExpirationYear, 1, 1, NULL);
+  trial->AppendGroup(kGroupName, kProbability);
+  EXPECT_EQ(kGroupName, trial->group_name());
+}
 
 }  // namespace base

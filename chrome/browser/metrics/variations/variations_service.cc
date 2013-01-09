@@ -532,7 +532,7 @@ void VariationsService::CreateTrialFromStudy(const Study& study,
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
           study.name(), total_probability, study.default_experiment_name(),
-          base::FieldTrialList::kExpirationYearInFuture, 1, 1, NULL));
+          base::FieldTrialList::kNoExpirationYear, 1, 1, NULL));
 
   if (study.has_consistency() &&
       study.consistency() == Study_Consistency_PERMANENT) {
