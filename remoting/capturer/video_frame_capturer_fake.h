@@ -17,6 +17,10 @@ namespace remoting {
 // See remoting/host/video_frame_capturer.h.
 class VideoFrameCapturerFake : public VideoFrameCapturer {
  public:
+  // VideoFrameCapturerFake generates a picture of size kWidth x kHeight.
+  static const int kWidth = 800;
+  static const int kHeight = 600;
+
   VideoFrameCapturerFake();
   virtual ~VideoFrameCapturerFake();
 

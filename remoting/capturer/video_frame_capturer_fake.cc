@@ -12,8 +12,8 @@ namespace remoting {
 // VideoFrameCapturerFake generates a white picture of size kWidth x kHeight
 // with a rectangle of size kBoxWidth x kBoxHeight. The rectangle moves kSpeed
 // pixels per frame along both axes, and bounces off the sides of the screen.
-static const int kWidth = 800;
-static const int kHeight = 600;
+static const int kWidth = VideoFrameCapturerFake::kWidth;
+static const int kHeight = VideoFrameCapturerFake::kHeight;
 static const int kBoxWidth = 140;
 static const int kBoxHeight = 140;
 static const int kSpeed = 20;

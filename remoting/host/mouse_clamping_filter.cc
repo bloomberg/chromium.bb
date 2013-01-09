@@ -4,24 +4,34 @@
 
 #include "remoting/host/mouse_clamping_filter.h"
 
-#include "remoting/capturer/video_frame_capturer.h"
 #include "remoting/proto/event.pb.h"
+#include "remoting/proto/video.pb.h"
 
 namespace remoting {
 
-MouseClampingFilter::MouseClampingFilter(VideoFrameCapturer* capturer,
-                                         protocol::InputStub* input_stub)
-  : MouseInputFilter(input_stub), capturer_(capturer) {
+MouseClampingFilter::MouseClampingFilter(
+    protocol::InputStub* input_stub,
+    protocol::VideoStub* video_stub)
+    : input_filter_(input_stub),
+      video_stub_(video_stub) {
 }
 
 MouseClampingFilter::~MouseClampingFilter() {
 }
 
-void MouseClampingFilter::InjectMouseEvent(const protocol::MouseEvent& event) {
-  // Ensure that the MouseInputFilter is clamping to the current dimensions.
-  set_output_size(capturer_->size_most_recent());
-  set_input_size(capturer_->size_most_recent());
-  MouseInputFilter::InjectMouseEvent(event);
+void MouseClampingFilter::ProcessVideoPacket(
+    scoped_ptr<VideoPacket> video_packet,
+    const base::Closure& done) {
+  // Configure the MouseInputFilter to clamp to the video dimensions.
+  if (video_packet->format().has_screen_width() &&
+      video_packet->format().has_screen_height()) {
+    SkISize screen_size = SkISize::Make(video_packet->format().screen_width(),
+                                        video_packet->format().screen_height());
+    input_filter_.set_input_size(screen_size);
+    input_filter_.set_output_size(screen_size);
+  }
+
+  video_stub_->ProcessVideoPacket(video_packet.Pass(), done);
 }
 
 }  // namespace remoting
