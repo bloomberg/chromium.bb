@@ -26,7 +26,6 @@
 
 NaClForkDelegate::NaClForkDelegate()
     : status_(kNaClHelperUnused),
-      sandboxed_(false),
       fd_(-1) {}
 
 // Note these need to match up with their counterparts in nacl_helper_linux.c
@@ -35,13 +34,10 @@ const char kNaClHelperReservedAtZero[] =
     "--reserved_at_zero=0xXXXXXXXXXXXXXXXX";
 const char kNaClHelperRDebug[] = "--r_debug=0xXXXXXXXXXXXXXXXX";
 
-void NaClForkDelegate::Init(const bool sandboxed,
-                            const int browserdesc,
-                            const int sandboxdesc) {
+void NaClForkDelegate::Init(const int browserdesc, const int sandboxdesc) {
   VLOG(1) << "NaClForkDelegate::Init()";
   int fds[2];
 
-  sandboxed_ = sandboxed;
   // Confirm a couple hard-wired assumptions.
   // The NaCl constants are from chrome/nacl/nacl_linux_helper.h
   DCHECK(kNaClBrowserDescriptor == browserdesc);

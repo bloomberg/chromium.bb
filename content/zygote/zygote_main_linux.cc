@@ -463,8 +463,7 @@ bool ZygoteMain(const MainFunctionParams& params,
 
   if (forkdelegate != NULL) {
     VLOG(1) << "ZygoteMain: initializing fork delegate";
-    forkdelegate->Init(setuid_sandbox->IsSuidSandboxChild(),
-                       Zygote::kBrowserDescriptor,
+    forkdelegate->Init(Zygote::kBrowserDescriptor,
                        Zygote::kMagicSandboxIPCDescriptor);
   } else {
     VLOG(1) << "ZygoteMain: fork delegate is NULL";
