@@ -15,7 +15,7 @@ class ImageDecoding(multi_page_benchmark.MultiPageBenchmark):
       return tab.runtime.Evaluate('isDone')
 
     decode_image_events = \
-        tab.timeline.timeline_events.GetAllOfName('DecodeImage')
+        tab.timeline.timeline_model.GetAllOfName('DecodeImage')
 
     # If it is a real image benchmark, then store only the last-minIterations
     # decode tasks.
