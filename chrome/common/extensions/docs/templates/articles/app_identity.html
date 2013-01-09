@@ -86,26 +86,44 @@ It's not the most graceful task, but here's how it goes:
 </p>
 
 <ol>
-	<li>Go to your
-		<a href="http://www.chromium.org/user-experience/user-data-directory">user data directory</a>.
-		Example on MacOs: <code>~/Library/Application\ Support/Google/Chrome/Default/Extensions</code></li>
-	<li>List the installed apps and extensions and match your app ID on the apps and extensions management page
-		to the same ID here.</li>
-	<li>Go to the installed app directory (this will be a version within the app ID).
-		Open the installed <code>manifest.json</code>
-		(pico is a quick way to open the file).</li>
-	<li>Copy the "key" in the installed <code>manifest.json</code> and paste it into your app's source manifest file.</li>
+  <li>Go to your <a href="http://www.chromium.org/user-experience/user-data-directory">user data
+  directory</a>. Example on MacOs:
+  <code>~/Library/Application\ Support/Google/Chrome/Default/Extensions</code></li>
+  <li>List the installed apps and extensions and match your app ID on the apps and extensions
+  management page to the same ID here.</li>
+  <li>Go to the installed app directory (this will be a version within the app ID).
+  Open the installed <code>manifest.json</code> (pico is a quick way to open the file).</li>
+  <li>Copy the "key" in the installed <code>manifest.json</code> and paste it into your app's
+  source manifest file.</li>
 </ol>
 
 <h3 id="client_id">Get your client ID</h3>
 
 <p>
-Setting up the client ID is currently not available externally
-via <a href="https://devconsole-canary.corp.google.com/apis/">Google APIs Console</a>.
-So to setup the OAuth2 client ID,
-email <a href="mailto:chrome-apps-auth-requests@google.com">chrome-apps-auth-request@google.com</a>
-with your stable app ID and
-we will reply appropriately with your OAuth2 client ID.
+You need to register your app
+in the Google APIs Console
+to get the client ID:
+</p>
+ 
+<ol>
+  <li>Login to the <a href="https://code.google.com/apis/console/">Google APIs Console</a>
+  using the same Google account used to upload your app to the Chrome Web Store. </li>
+  <li>Create a new project by expanding the drop-down menu in the top-left
+  corner and selecting the <strong>Create...</strong> menu item. </li>
+  <li> Once created and named, go to the "Services" navigation menu item and
+  turn on any Google services your app needs. </li>
+  <li> Go to the "API Access" navigation menu item and click on the
+  <strong>Create an OAuth 2.0 client ID...</strong> blue button. </li>
+  <li> Enter the requested branding information,
+  select the <strong>Installed application</strong> type. </li>
+  <li> Select <strong>Chrome Application</strong> and enter your application ID
+  (same ID displayed in the apps and extensions management page). </li>
+</ol>
+
+<p class="warning">
+<strong>Warning: </strong>
+If the app ID here does not match your app ID,
+an error will occur when your app calls <a href="#token">getAuthToken()</a>.
 </p>
 
 <h3 id="update_manifest">Update your manifest</h3>
