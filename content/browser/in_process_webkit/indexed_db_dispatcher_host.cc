@@ -353,10 +353,14 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::DatabaseDispatcherHost,
                            message, *msg_is_ok)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseMetadata, OnMetadata)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateObjectStoreOld,
+                        OnCreateObjectStoreOld)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateObjectStore,
                         OnCreateObjectStore)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDeleteObjectStore,
                         OnDeleteObjectStore)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDeleteObjectStoreOld,
+                        OnDeleteObjectStoreOld)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateTransaction,
                         OnCreateTransaction)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClose, OnClose)
@@ -371,6 +375,10 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCount, OnCount)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDeleteRange, OnDeleteRange)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClear, OnClear)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateIndex,
+                        OnCreateIndex)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDeleteIndex,
+                        OnDeleteIndex)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -420,8 +428,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMetadata(
   }
 }
 
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(
-    const IndexedDBHostMsg_DatabaseCreateObjectStore_Params& params,
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStoreOld(
+    const IndexedDBHostMsg_DatabaseCreateObjectStoreOld_Params& params,
     int32* object_store_id, WebKit::WebExceptionCode* ec) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   WebIDBDatabase* idb_database = parent_->GetOrTerminateProcess(
@@ -442,9 +450,27 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(
   }
 }
 
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteObjectStore(
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(
+    const IndexedDBHostMsg_DatabaseCreateObjectStore_Params& params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
+      &map_, params.ipc_database_id);
+  if (!database)
+    return;
+
+  database->createObjectStore(
+      parent_->HostTransactionId(params.transaction_id),
+      params.object_store_id,
+      params.name, params.key_path, params.auto_increment);
+  if (parent_->Context()->IsOverQuota(
+      database_url_map_[params.ipc_database_id])) {
+    database->abort(params.transaction_id);
+  }
+}
+
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteObjectStoreOld(
     int32 ipc_database_id,
-    int64 index_id,
+    int64 object_store_id,
     int32 ipc_transaction_id,
     WebKit::WebExceptionCode* ec) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
@@ -456,7 +482,21 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteObjectStore(
     return;
 
   *ec = 0;
-  idb_database->deleteObjectStore(index_id, *idb_transaction, *ec);
+  idb_database->deleteObjectStore(object_store_id, *idb_transaction, *ec);
+}
+
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteObjectStore(
+    int32 ipc_database_id,
+    int64 transaction_id,
+    int64 object_store_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
+      &map_, ipc_database_id);
+  if (!database)
+    return;
+
+  database->deleteObjectStore(parent_->HostTransactionId(transaction_id),
+                              object_store_id);
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransaction(
@@ -649,6 +689,44 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClear(
   database->clear(parent_->HostTransactionId(transaction_id),
                   object_store_id, callbacks.release());
 }
+
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateIndex(
+    const IndexedDBHostMsg_DatabaseCreateIndex_Params& params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
+      &map_, params.ipc_database_id);
+  if (!database)
+    return;
+
+  database->createIndex(
+      parent_->HostTransactionId(params.transaction_id),
+      params.object_store_id,
+      params.index_id,
+      params.name,
+      params.key_path,
+      params.unique,
+      params.multi_entry);
+  if (parent_->Context()->IsOverQuota(
+      database_url_map_[params.ipc_database_id])) {
+    database->abort(params.transaction_id);
+  }
+}
+
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteIndex(
+    int32 ipc_database_id,
+    int64 transaction_id,
+    int64 object_store_id,
+    int64 index_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
+      &map_, ipc_database_id);
+  if (!database)
+    return;
+
+  database->deleteIndex(parent_->HostTransactionId(transaction_id),
+                        object_store_id, index_id);
+}
+
 
 //////////////////////////////////////////////////////////////////////
 // IndexedDBDispatcherHost::IndexDispatcherHost

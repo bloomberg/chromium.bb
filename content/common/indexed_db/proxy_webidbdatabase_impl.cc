@@ -99,7 +99,7 @@ WebKit::WebIDBObjectStore* RendererWebIDBDatabaseImpl::createObjectStore(
     bool auto_increment,
     const WebKit::WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
-  IndexedDBHostMsg_DatabaseCreateObjectStore_Params params;
+  IndexedDBHostMsg_DatabaseCreateObjectStoreOld_Params params;
   params.id = id;
   params.name = name;
   params.key_path = IndexedDBKeyPath(key_path);
@@ -109,11 +109,29 @@ WebKit::WebIDBObjectStore* RendererWebIDBDatabaseImpl::createObjectStore(
 
   int object_store;
   IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_DatabaseCreateObjectStore(
+      new IndexedDBHostMsg_DatabaseCreateObjectStoreOld(
           params, &object_store, &ec));
   if (!object_store)
     return NULL;
   return new RendererWebIDBObjectStoreImpl(object_store);
+}
+
+void RendererWebIDBDatabaseImpl::createObjectStore(
+    long long transaction_id,
+    long long object_store_id,
+    const WebKit::WebString& name,
+    const WebKit::WebIDBKeyPath& key_path,
+    bool auto_increment) {
+  IndexedDBHostMsg_DatabaseCreateObjectStore_Params params;
+  params.ipc_database_id = ipc_database_id_;
+  params.transaction_id = transaction_id;
+  params.object_store_id = object_store_id;
+  params.name = name;
+  params.key_path = IndexedDBKeyPath(key_path);
+  params.auto_increment = auto_increment;
+
+  IndexedDBDispatcher::Send(
+      new IndexedDBHostMsg_DatabaseCreateObjectStore(params));
 }
 
 void RendererWebIDBDatabaseImpl::deleteObjectStore(
@@ -121,9 +139,19 @@ void RendererWebIDBDatabaseImpl::deleteObjectStore(
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_DatabaseDeleteObjectStore(
+      new IndexedDBHostMsg_DatabaseDeleteObjectStoreOld(
           ipc_database_id_, object_store_id,
           IndexedDBDispatcher::TransactionId(transaction), &ec));
+}
+
+void RendererWebIDBDatabaseImpl::deleteObjectStore(
+    long long transaction_id,
+    long long object_store_id) {
+  IndexedDBDispatcher::Send(
+      new IndexedDBHostMsg_DatabaseDeleteObjectStore(
+          ipc_database_id_,
+          transaction_id,
+          object_store_id));
 }
 
 WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::createTransaction(
@@ -272,5 +300,40 @@ void RendererWebIDBDatabaseImpl::clear(
   dispatcher->RequestIDBDatabaseClear(
       ipc_database_id_,
       transaction_id, object_store_id, callbacks);
+}
+
+void RendererWebIDBDatabaseImpl::createIndex(
+    long long transaction_id,
+    long long object_store_id,
+    long long index_id,
+    const WebString& name,
+    const WebIDBKeyPath& key_path,
+    bool unique,
+    bool multi_entry)
+{
+  IndexedDBHostMsg_DatabaseCreateIndex_Params params;
+  params.ipc_database_id = ipc_database_id_;
+  params.transaction_id = transaction_id;
+  params.object_store_id = object_store_id;
+  params.index_id = index_id;
+  params.name = name;
+  params.key_path = IndexedDBKeyPath(key_path);
+  params.unique = unique;
+  params.multi_entry = multi_entry;
+
+  IndexedDBDispatcher::Send(
+      new IndexedDBHostMsg_DatabaseCreateIndex(params));
+}
+
+void RendererWebIDBDatabaseImpl::deleteIndex(
+    long long transaction_id,
+    long long object_store_id,
+    long long index_id)
+{
+  IndexedDBDispatcher::Send(
+      new IndexedDBHostMsg_DatabaseDeleteIndex(
+          ipc_database_id_,
+          transaction_id,
+          object_store_id, index_id));
 }
 }  // namespace content

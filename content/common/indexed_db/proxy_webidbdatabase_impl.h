@@ -31,10 +31,19 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
       bool auto_increment,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode& ec);
+  virtual void createObjectStore(
+      long long transaction_id,
+      long long objectstore_id,
+      const WebKit::WebString& name,
+      const WebKit::WebIDBKeyPath& key_path,
+      bool auto_increment);
   virtual void deleteObjectStore(
       long long object_store_id,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode& ec);
+  virtual void deleteObjectStore(
+      long long transaction_id,
+      long long object_store_id);
   virtual WebKit::WebIDBTransaction* createTransaction(
       long long transaction_id,
       const WebKit::WebVector<long long>& scope,
@@ -82,7 +91,16 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
   virtual void clear(long long transactionId,
                      long long objectStoreId,
                      WebKit::WebIDBCallbacks*);
-
+  virtual void createIndex(long long transactionId,
+                           long long objectStoreId,
+                           long long indexId,
+                           const WebKit::WebString& name,
+                           const WebKit::WebIDBKeyPath&,
+                           bool unique,
+                           bool multiEntry);
+  virtual void deleteIndex(long long transactionId, long
+                           long objectStoreId,
+                           long long indexId);
  private:
   int32 ipc_database_id_;
 };

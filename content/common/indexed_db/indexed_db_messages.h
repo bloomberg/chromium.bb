@@ -69,7 +69,7 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryDeleteDatabase_Params)
 IPC_STRUCT_END()
 
 // Used to create an object store.
-IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCreateObjectStore_Params)
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCreateObjectStoreOld_Params)
   // The storage id of the object store.
   IPC_STRUCT_MEMBER(int64, id)
   // The name of the object store.
@@ -82,6 +82,22 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCreateObjectStore_Params)
   IPC_STRUCT_MEMBER(int32, ipc_transaction_id)
   // The database the object store belongs to.
   IPC_STRUCT_MEMBER(int32, ipc_database_id)
+IPC_STRUCT_END()
+
+// Used to create an object store.
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCreateObjectStore_Params)
+  // The database the object store belongs to.
+  IPC_STRUCT_MEMBER(int32, ipc_database_id)
+  // The transaction its associated with.
+  IPC_STRUCT_MEMBER(int64, transaction_id)
+  // The storage id of the object store.
+  IPC_STRUCT_MEMBER(int64, object_store_id)
+  // The name of the object store.
+  IPC_STRUCT_MEMBER(string16, name)
+  // The keyPath of the object store.
+  IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, key_path)
+  // Whether the object store created should have a key generator.
+  IPC_STRUCT_MEMBER(bool, auto_increment)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseGet_Params)
@@ -248,6 +264,26 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseSetIndexKeys_Params)
   // A list of index keys for each index.
   IPC_STRUCT_MEMBER(std::vector<std::vector<content::IndexedDBKey> >,
                     index_keys)
+IPC_STRUCT_END()
+
+// Used to create an index.
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCreateIndex_Params)
+  // The transaction this is associated with.
+  IPC_STRUCT_MEMBER(int64, transaction_id)
+  // The database being used.
+  IPC_STRUCT_MEMBER(int32, ipc_database_id)
+  // The object store the index belongs to.
+  IPC_STRUCT_MEMBER(int64, object_store_id)
+  // The storage id of the index.
+  IPC_STRUCT_MEMBER(int64, index_id)
+  // The name of the index.
+  IPC_STRUCT_MEMBER(string16, name)
+  // The keyPath of the index.
+  IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, key_path)
+  // Whether the index created has unique keys.
+  IPC_STRUCT_MEMBER(bool, unique)
+  // Whether the index created produces keys for each array entry.
+  IPC_STRUCT_MEMBER(bool, multi_entry)
 IPC_STRUCT_END()
 
 // Used to create an index.
@@ -501,17 +537,28 @@ IPC_SYNC_MESSAGE_CONTROL1_1(IndexedDBHostMsg_DatabaseMetadata,
                             IndexedDBDatabaseMetadata /* metadata */)
 
 // WebIDBDatabase::createObjectStore() message.
-IPC_SYNC_MESSAGE_CONTROL1_2(IndexedDBHostMsg_DatabaseCreateObjectStore,
-                            IndexedDBHostMsg_DatabaseCreateObjectStore_Params,
-                            int32, /* ipc_object_store_id */
-                            WebKit::WebExceptionCode /* ec */)
+IPC_SYNC_MESSAGE_CONTROL1_2(
+    IndexedDBHostMsg_DatabaseCreateObjectStoreOld,
+    IndexedDBHostMsg_DatabaseCreateObjectStoreOld_Params,
+    int32, /* ipc_object_store_id */
+    WebKit::WebExceptionCode /* ec */)
+
+// WebIDBDatabase::createObjectStore() message.
+IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseCreateObjectStore,
+                     IndexedDBHostMsg_DatabaseCreateObjectStore_Params)
 
 // WebIDBDatabase::deleteObjectStore() message.
-IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_DatabaseDeleteObjectStore,
+IPC_SYNC_MESSAGE_CONTROL3_1(IndexedDBHostMsg_DatabaseDeleteObjectStoreOld,
                             int32, /* ipc_database_id */
                             int64, /* object_store_id */
                             int32, /* ipc_transaction_id */
                             WebKit::WebExceptionCode /* ec */)
+
+// WebIDBDatabase::deleteObjectStore() message.
+IPC_MESSAGE_CONTROL3(IndexedDBHostMsg_DatabaseDeleteObjectStore,
+                     int32, /* ipc_database_id */
+                     int64, /* transaction_id */
+                     int64) /* object_store_id */
 
 // WebIDBDatabase::createTransaction() message.
 // TODO: make this message async.
@@ -569,6 +616,17 @@ IPC_MESSAGE_CONTROL5(IndexedDBHostMsg_DatabaseClear,
                      int32, /* ipc_database_id */
                      int64, /* transaction_id */
                      int64) /* object_store_id */
+
+// WebIDBDatabase::createIndex() message.
+IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseCreateIndex,
+                     IndexedDBHostMsg_DatabaseCreateIndex_Params)
+
+// WebIDBDatabase::deleteIndex() message.
+IPC_MESSAGE_CONTROL4(IndexedDBHostMsg_DatabaseDeleteIndex,
+                     int32, /* ipc_database_id */
+                     int64, /* transaction_id */
+                     int64, /* object_store_id */
+                     int64) /* index_id */
 
 // WebIDBIndex::openObjectCursor() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_IndexOpenObjectCursor,

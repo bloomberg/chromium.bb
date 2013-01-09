@@ -16,6 +16,8 @@
 class GURL;
 struct IndexedDBDatabaseMetadata;
 struct IndexedDBHostMsg_DatabaseCount_Params;
+struct IndexedDBHostMsg_DatabaseCreateIndex_Params;
+struct IndexedDBHostMsg_DatabaseCreateObjectStoreOld_Params;
 struct IndexedDBHostMsg_DatabaseCreateObjectStore_Params;
 struct IndexedDBHostMsg_DatabaseDeleteRange_Params;
 struct IndexedDBHostMsg_DatabaseGet_Params;
@@ -124,13 +126,18 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
     void OnMetadata(int32 ipc_database_id,
                     IndexedDBDatabaseMetadata* metadata);
-    void OnCreateObjectStore(
-        const IndexedDBHostMsg_DatabaseCreateObjectStore_Params& params,
+    void OnCreateObjectStoreOld(
+        const IndexedDBHostMsg_DatabaseCreateObjectStoreOld_Params& params,
         int32* object_store_id, WebKit::WebExceptionCode* ec);
+    void OnCreateObjectStore(
+        const IndexedDBHostMsg_DatabaseCreateObjectStore_Params& params);
+    void OnDeleteObjectStoreOld(int32 ipc_database_id,
+                                int64 object_store_id,
+                                int32 ipc_transaction_id,
+                                WebKit::WebExceptionCode* ec);
     void OnDeleteObjectStore(int32 ipc_database_id,
-                             int64 object_store_id,
-                             int32 ipc_transaction_id,
-                             WebKit::WebExceptionCode* ec);
+                             int64 transaction_id,
+                             int64 object_store_id);
     void OnCreateTransaction(int32 ipc_thread_id,
                              int32 ipc_database_id,
                              int64 transaction_id,
@@ -161,6 +168,13 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
                  int32 ipc_database_id,
                  int64 transaction_id,
                  int64 object_store_id);
+    void OnCreateIndex(
+        const IndexedDBHostMsg_DatabaseCreateIndex_Params& params);
+    void OnDeleteIndex(int32 ipc_database_id,
+                       int64 transaction_id,
+                       int64 object_store_id,
+                       int64 index_id);
+
     IndexedDBDispatcherHost* parent_;
     IDMap<WebKit::WebIDBDatabase, IDMapOwnPointer> map_;
     WebIDBObjectIDToURLMap database_url_map_;
