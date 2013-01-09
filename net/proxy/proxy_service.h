@@ -299,7 +299,7 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
   int TryToCompleteSynchronously(const GURL& url, ProxyInfo* result);
 
   // Cancels all of the requests sent to the ProxyResolver. These will be
-  // restarted when calling ResumeAllPendingRequests().
+  // restarted when calling SetReady().
   void SuspendAllPendingRequests();
 
   // Advances the current state to |STATE_READY|, and resumes any pending
