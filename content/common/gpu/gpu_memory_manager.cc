@@ -421,6 +421,10 @@ void GpuMemoryManager::GetVideoMemoryUsageStats(
       base::GetCurrentProcId()].video_memory = GetCurrentUsage();
   video_memory_usage_stats->process_map[
       base::GetCurrentProcId()].has_duplicates = true;
+
+  video_memory_usage_stats->bytes_allocated = GetCurrentUsage();
+  video_memory_usage_stats->bytes_allocated_historical_max =
+      bytes_allocated_historical_max_;
 }
 
 void GpuMemoryManager::SetWindowCount(uint32 window_count) {

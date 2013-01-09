@@ -6,7 +6,9 @@
 
 namespace content {
 
-GPUVideoMemoryUsageStats::GPUVideoMemoryUsageStats() {
+GPUVideoMemoryUsageStats::GPUVideoMemoryUsageStats()
+    : bytes_allocated(0),
+      bytes_allocated_historical_max(0) {
 }
 
 GPUVideoMemoryUsageStats::~GPUVideoMemoryUsageStats() {
