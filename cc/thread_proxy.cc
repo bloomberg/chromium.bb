@@ -1013,7 +1013,8 @@ bool ThreadProxy::commitPendingForTesting()
 void ThreadProxy::commitPendingOnImplThreadForTesting(CommitPendingRequest* request)
 {
     DCHECK(isImplThread());
-    request->commitPending = m_schedulerOnImplThread->commitPending();
+    if (m_layerTreeHostImpl->outputSurface())
+        request->commitPending = m_schedulerOnImplThread->commitPending();
     request->completion.signal();
 }
 
