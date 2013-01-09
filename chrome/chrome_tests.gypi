@@ -1301,6 +1301,7 @@
         'test/base/empty_browser_test.cc',
         'test/base/in_process_browser_test_browsertest.cc',
         'test/base/tracing_browsertest.cc',
+        'test/data/webui/accessibility_audit_browsertest.js',
         'test/data/webui/assertions.js',
         'test/data/webui/async_gen.cc',
         'test/data/webui/async_gen.h',

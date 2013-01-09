@@ -45,7 +45,10 @@ using content::WebUIMessageHandler;
 
 namespace {
 
-const FilePath::CharType kMockJS[] = FILE_PATH_LITERAL("mock4js.js");
+const FilePath::CharType kA11yAuditLibraryJSPath[] = FILE_PATH_LITERAL(
+    "third_party/accessibility-developer-tools/gen/axs_testing.js");
+const FilePath::CharType kMockJSPath[] =
+    FILE_PATH_LITERAL("chrome/third_party/mock4js/mock4js.js");
 const FilePath::CharType kWebUILibraryJS[] = FILE_PATH_LITERAL("test_api.js");
 const FilePath::CharType kWebUITestFolder[] = FILE_PATH_LITERAL("webui");
 base::LazyInstance<std::vector<std::string> > error_messages_ =
@@ -72,6 +75,17 @@ WebUIBrowserTest::~WebUIBrowserTest() {}
 
 void WebUIBrowserTest::AddLibrary(const FilePath& library_path) {
   user_libraries_.push_back(library_path);
+}
+
+// Add a helper JS library to the given WebUIBrowserTest from a path relative to
+// base::DIR_SOURCE_ROOT.
+// static
+void AddLibraryFromSourceRoot(WebUIBrowserTest* browser_test,
+                              const FilePath& path) {
+  FilePath filePath;
+  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &filePath));
+  filePath = filePath.Append(path);
+  browser_test->AddLibrary(filePath);
 }
 
 bool WebUIBrowserTest::RunJavascriptFunction(const std::string& function_name) {
@@ -329,13 +343,8 @@ void WebUIBrowserTest::SetUpInProcessBrowserTestFixture() {
   ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       resources_pack_path, ui::SCALE_FACTOR_NONE);
 
-  FilePath mockPath;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &mockPath));
-  mockPath = mockPath.AppendASCII("chrome");
-  mockPath = mockPath.AppendASCII("third_party");
-  mockPath = mockPath.AppendASCII("mock4js");
-  mockPath = mockPath.Append(kMockJS);
-  AddLibrary(mockPath);
+  AddLibraryFromSourceRoot(this, FilePath(kA11yAuditLibraryJSPath));
+  AddLibraryFromSourceRoot(this, FilePath(kMockJSPath));
   AddLibrary(FilePath(kWebUILibraryJS));
 }
 

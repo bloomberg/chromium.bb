@@ -136,6 +136,15 @@ void V8UnitTest::InitPathsAndLibraries() {
   mockPath = mockPath.AppendASCII("mock4js.js");
   AddLibrary(mockPath);
 
+  FilePath accessibilityAuditPath;
+  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &accessibilityAuditPath));
+  accessibilityAuditPath = accessibilityAuditPath.AppendASCII("third_party");
+  accessibilityAuditPath =
+      accessibilityAuditPath.AppendASCII("accessibility-developer-tools");
+  accessibilityAuditPath = accessibilityAuditPath.AppendASCII("gen");
+  accessibilityAuditPath = accessibilityAuditPath.AppendASCII("axs_testing.js");
+  AddLibrary(accessibilityAuditPath);
+
   FilePath testApiPath;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &testApiPath));
   testApiPath = testApiPath.AppendASCII("webui");

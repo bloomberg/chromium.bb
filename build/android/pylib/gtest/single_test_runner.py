@@ -158,6 +158,7 @@ class SingleTestRunner(BaseTestRunner):
           'net/data/cache_tests/insert_load1',
           'net/data/cache_tests/dirty_entry5',
           'net/data/ssl/certificates/',
+          'third_party/accessibility-developer-tools/gen/axs_testing.js',
           'ui/base/test/data/data_pack_unittest',
       ]
       if self.test_package.test_suite_basename == 'unit_tests':
