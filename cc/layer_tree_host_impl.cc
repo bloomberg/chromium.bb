@@ -1025,6 +1025,8 @@ void LayerTreeHostImpl::activatePendingTreeIfNeeded()
 void LayerTreeHostImpl::activatePendingTree()
 {
     CHECK(m_pendingTree);
+
+    m_activeTree->PushPersistedState(m_pendingTree.get());
     m_activeTree.swap(m_pendingTree);
     // TODO(enne): consider recycling this tree to prevent layer churn
     m_pendingTree.reset();

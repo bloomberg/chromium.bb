@@ -129,6 +129,8 @@ class CC_EXPORT LayerTreeImpl {
 
   AnimationRegistrar* animationRegistrar() const;
 
+  void PushPersistedState(LayerTreeImpl* pendingTree);
+
 protected:
   LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
 
@@ -144,7 +146,7 @@ protected:
   typedef base::hash_map<int, LayerImpl*> LayerIdMap;
   LayerIdMap layer_id_map_;
 
-  // Persisted state
+  // Persisted state for non-impl-side-painting.
   int scrolling_layer_id_from_previous_tree_;
 
   // List of visible layers for the most recently prepared frame. Used for
