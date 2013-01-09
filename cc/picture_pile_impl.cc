@@ -59,13 +59,15 @@ void PicturePileImpl::Raster(
 
   base::TimeTicks rasterizeBeginTime = base::TimeTicks::Now();
 
-  // TODO(enne): do this more efficiently, i.e. top down with Skia clips
   canvas->save();
   canvas->translate(-content_rect.x(), -content_rect.y());
   canvas->clipRect(gfx::RectToSkRect(content_rect));
 
-  for (PicturePile::Pile::const_iterator i = pile_.begin();
-       i != pile_.end(); ++i) {
+  // Raster through the pile top down, using clips to make sure that
+  // pictures on top are not overdrawn by pictures on the bottom.
+  Region unclipped(content_rect);
+  for (PicturePile::Pile::reverse_iterator i = pile_.rbegin();
+       i != pile_.rend(); ++i) {
     // This is intentionally *enclosed* rect, so that the clip is aligned on
     // integral post-scale content pixels and does not extend past the edges of
     // the picture's layer rect.  The min_contents_scale enforces that enough
@@ -73,13 +75,16 @@ void PicturePileImpl::Raster(
     // invalidated pixels at any larger scale level.
     gfx::Rect content_clip = gfx::ToEnclosedRect(
         gfx::ScaleRect((*i)->LayerRect(), contents_scale));
-    if (!content_rect.Intersects(content_clip))
+    if (!unclipped.Intersects(content_clip))
       continue;
-
     (*i)->Raster(canvas, content_clip, contents_scale);
 
-    SkISize deviceSize = canvas->getDeviceSize();
-    stats->totalPixelsRasterized += deviceSize.width() * deviceSize.height();
+    // Don't allow pictures underneath to draw where this picture did.
+    canvas->clipRect(gfx::RectToSkRect(content_clip), SkRegion::kDifference_Op);
+    unclipped.Subtract(content_clip);
+
+    stats->totalPixelsRasterized +=
+        content_clip.width() * content_clip.height();
   }
   canvas->restore();
 
