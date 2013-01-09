@@ -261,6 +261,32 @@ void NotificationList::MarkPopupsAsShown(int priority) {
     iter->shown_as_popup = true;
 }
 
+void NotificationList::MarkSinglePopupAsShown(const std::string& id) {
+  Notifications::iterator iter;
+  if (!GetNotification(id, &iter))
+    return;
+
+  if (iter->shown_as_popup)
+    return;
+
+  // Moves the item to the beginning of the already-shown items.
+  Notification notification = *iter;
+  notification.shown_as_popup = true;
+  notifications_[notification.priority].erase(iter);
+  for (Notifications::iterator iter2 =
+           notifications_[notification.priority].begin();
+       iter2 != notifications_[notification.priority].end(); iter2++) {
+    if (iter2->shown_as_popup) {
+      notifications_[notification.priority].insert(iter2, notification);
+      return;
+    }
+  }
+
+  // No notifications are already shown as popup, so just re-adding at the end
+  // of the list.
+  notifications_[notification.priority].push_back(notification);
+}
+
 void NotificationList::SetQuietMode(bool quiet_mode) {
   SetQuietModeInternal(quiet_mode);
   quiet_mode_timer_.reset();

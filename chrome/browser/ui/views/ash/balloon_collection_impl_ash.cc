@@ -83,7 +83,6 @@ void BalloonCollectionImplAsh::OnClicked(const std::string& notification_id) {
   if (!balloon)
     return;
   balloon->OnClick();
-  RemoveById(notification_id);
 }
 
 void BalloonCollectionImplAsh::OnButtonClicked(

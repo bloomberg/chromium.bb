@@ -149,6 +149,9 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // Marks the popups for the |priority| as shown.
   void MarkPopupsAsShown(int priority);
 
+  // Marks a specific popup item as shown.
+  void MarkSinglePopupAsShown(const std::string& id);
+
   bool quiet_mode() const { return quiet_mode_; }
 
   // Sets the current quiet mode status to |quiet_mode|. The new status is not

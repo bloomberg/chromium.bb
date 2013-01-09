@@ -317,6 +317,57 @@ TEST_F(NotificationListTest, NotificationOrderAndPriority) {
   EXPECT_EQ(default_id, iter->id);
 }
 
+TEST_F(NotificationListTest, MarkSinglePopupAsShown) {
+  std::string id1 = AddNotification(NULL);
+  std::string id2 = AddNotification(NULL);
+  ASSERT_EQ(2u, notification_list()->NotificationCount());
+  ASSERT_EQ(2u, GetPopupCounts());
+
+  notification_list()->MarkSinglePopupAsShown(id2);
+  EXPECT_EQ(2u, notification_list()->NotificationCount());
+  EXPECT_EQ(1u, GetPopupCounts());
+  NotificationList::Notifications popups;
+  notification_list()->GetPopupNotifications(&popups);
+  EXPECT_EQ(id1, popups.begin()->id);
+
+  // Reorder happens -- popup-notifications should be at the beginning of the
+  // list.
+  // TODO(mukai): confirm this behavior is expected.
+  NotificationList::Notifications notifications;
+  notification_list()->GetNotifications(&notifications);
+  NotificationList::Notifications::const_iterator iter = notifications.begin();
+  EXPECT_EQ(id1, iter->id);
+  iter++;
+  EXPECT_EQ(id2, iter->id);
+
+  // Trickier scenario.
+  notification_list()->MarkPopupsAsShown(ui::notifications::DEFAULT_PRIORITY);
+  std::string id3 = AddNotification(NULL);
+  std::string id4 = AddNotification(NULL);
+  std::string id5 = AddNotification(NULL);
+  notification_list()->MarkSinglePopupAsShown(id4);
+  popups.clear();
+  notifications.clear();
+  notification_list()->GetPopupNotifications(&popups);
+  notification_list()->GetNotifications(&notifications);
+  EXPECT_EQ(2u, popups.size());
+  iter = popups.begin();
+  EXPECT_EQ(id5, iter->id);
+  iter++;
+  EXPECT_EQ(id3, iter->id);
+  EXPECT_EQ(5u, notifications.size());
+  iter = notifications.begin();
+  EXPECT_EQ(id5, iter->id);
+  iter++;
+  EXPECT_EQ(id3, iter->id);
+  iter++;
+  EXPECT_EQ(id4, iter->id);
+  iter++;
+  EXPECT_EQ(id1, iter->id);
+  iter++;
+  EXPECT_EQ(id2, iter->id);
+}
+
 TEST_F(NotificationListTest, QuietMode) {
   notification_list()->SetQuietMode(true);
   AddNotification(NULL);

@@ -146,6 +146,10 @@ void MessageCenter::ShowNotificationSettings(const std::string& id) {
 void MessageCenter::OnNotificationClicked(const std::string& id) {
   if (delegate_)
     delegate_->OnClicked(id);
+  if (HasPopupNotifications()) {
+    notification_list_->MarkSinglePopupAsShown(id);
+    NotifyMessageCenterChanged(false);
+  }
 }
 
 void MessageCenter::OnQuietModeChanged(bool quiet_mode) {
