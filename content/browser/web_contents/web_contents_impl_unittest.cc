@@ -10,6 +10,7 @@
 #include "content/browser/web_contents/interstitial_page_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/test_web_contents.h"
+#include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_details.h"
@@ -19,7 +20,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
-#include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
@@ -28,19 +28,20 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
-#include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace content {
 namespace {
 
+const char kTestWebUIUrl[] = "chrome://blah";
+
 class WebContentsImplTestWebUIControllerFactory
     : public WebUIControllerFactory {
  public:
   virtual WebUIController* CreateWebUIControllerForURL(
       WebUI* web_ui, const GURL& url) const OVERRIDE {
-   if (!GetContentClient()->HasWebUIScheme(url))
+   if (!UseWebUI(url))
      return NULL;
 
    return new WebUIController(web_ui);
@@ -53,43 +54,25 @@ class WebContentsImplTestWebUIControllerFactory
 
   virtual bool UseWebUIForURL(BrowserContext* browser_context,
                               const GURL& url) const OVERRIDE {
-    return GetContentClient()->HasWebUIScheme(url);
+    return UseWebUI(url);
   }
 
   virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
                                       const GURL& url) const OVERRIDE {
-    return GetContentClient()->HasWebUIScheme(url);
+    return UseWebUI(url);
   }
 
   virtual bool IsURLAcceptableForWebUI(
       BrowserContext* browser_context,
       const GURL& url,
       bool data_urls_allowed) const {
-    return GetContentClient()->HasWebUIScheme(url);
-  }
-};
-
-class WebContentsImplTestContentClient : public TestContentClient {
- public:
-  WebContentsImplTestContentClient() {
-  }
-
-  virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE {
-    return url.SchemeIs("webcontentsimpltest");
-  }
-};
-
-class WebContentsImplTestBrowserClient : public TestContentBrowserClient {
- public:
-  WebContentsImplTestBrowserClient() {
-  }
-
-  virtual WebUIControllerFactory* GetWebUIControllerFactory() OVERRIDE {
-    return &factory_;
+    return UseWebUI(url);
   }
 
  private:
-  WebContentsImplTestWebUIControllerFactory factory_;
+  bool UseWebUI(const GURL& url) const {
+    return url == GURL(kTestWebUIUrl);
+  }
 };
 
 class TestInterstitialPage;
@@ -257,37 +240,24 @@ class TestInterstitialPageStateGuard : public TestInterstitialPage::Delegate {
 class WebContentsImplTest : public RenderViewHostImplTestHarness {
  public:
   WebContentsImplTest()
-      : old_client_(NULL),
-        old_browser_client_(NULL),
-        ui_thread_(BrowserThread::UI, &message_loop_),
+      : ui_thread_(BrowserThread::UI, &message_loop_),
         file_user_blocking_thread_(
             BrowserThread::FILE_USER_BLOCKING, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
   }
 
   virtual void SetUp() {
-    // These tests treat webcontentsimpltest as a privileged WebUI scheme.
-    // We must register it similarly to kChromeUIScheme.
-    url_util::AddStandardScheme("webcontentsimpltest");
-
-    old_client_ = GetContentClient();
-    old_browser_client_ = GetContentClient()->browser();
-    SetContentClient(&client_);
-    GetContentClient()->set_browser_for_testing(&browser_client_);
     RenderViewHostImplTestHarness::SetUp();
+    WebUIControllerFactory::RegisterFactory(&factory_);
   }
 
   virtual void TearDown() {
-    GetContentClient()->set_browser_for_testing(old_browser_client_);
-    SetContentClient(old_client_);
     RenderViewHostImplTestHarness::TearDown();
+    WebUIControllerFactoryRegistry::UnregisterFactoryForTesting(&factory_);
   }
 
  private:
-  WebContentsImplTestContentClient client_;
-  WebContentsImplTestBrowserClient browser_client_;
-  ContentClient* old_client_;
-  ContentBrowserClient* old_browser_client_;
+  WebContentsImplTestWebUIControllerFactory factory_;
   TestBrowserThread ui_thread_;
   TestBrowserThread file_user_blocking_thread_;
   TestBrowserThread io_thread_;
@@ -345,7 +315,7 @@ TEST_F(WebContentsImplTest, UpdateTitle) {
 TEST_F(WebContentsImplTest, NTPViewSource) {
   NavigationControllerImpl& cont =
       static_cast<NavigationControllerImpl&>(controller());
-  const char kUrl[] = "view-source:webcontentsimpltest://blah";
+  const char kUrl[] = "view-source:chrome://blah";
   const GURL kGURL(kUrl);
 
   process()->sink().ClearMessages();
@@ -759,7 +729,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
   contents()->transition_cross_site = true;
 
   // Start with a web ui page, which gets a new RVH with WebUI bindings.
-  const GURL url1("webcontentsimpltest://blah");
+  const GURL url1("chrome://blah");
   controller().LoadURL(
       url1, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   TestRenderViewHost* ntp_rvh = test_rvh();
@@ -896,7 +866,7 @@ TEST_F(WebContentsImplTest, CrossSiteNotPreemptedDuringBeforeUnload) {
   contents()->transition_cross_site = true;
 
   // Navigate to NTP URL.
-  const GURL url("webcontentsimpltest://blah");
+  const GURL url("chrome://blah");
   controller().LoadURL(
       url, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   TestRenderViewHost* orig_rvh = test_rvh();
@@ -914,7 +884,7 @@ TEST_F(WebContentsImplTest, CrossSiteNotPreemptedDuringBeforeUnload) {
   // Suppose the first navigation tries to commit now, with a
   // ViewMsg_Stop in flight.  This should not cancel the pending navigation,
   // but it should act as if the beforeunload ack arrived.
-  orig_rvh->SendNavigate(1, GURL("webcontentsimpltest://blah"));
+  orig_rvh->SendNavigate(1, GURL("chrome://blah"));
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
   EXPECT_FALSE(orig_rvh->is_waiting_for_beforeunload_ack());

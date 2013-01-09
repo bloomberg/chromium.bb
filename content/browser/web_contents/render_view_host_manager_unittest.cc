@@ -10,12 +10,12 @@
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/render_view_host_manager.h"
 #include "content/browser/web_contents/test_web_contents.h"
+#include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_ui_controller.h"
-#include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_transition_types.h"
@@ -25,7 +25,6 @@
 #include "content/public/test/test_notification_tracker.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
-#include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/glue_serialize.h"
 
@@ -47,7 +46,7 @@ class RenderViewHostManagerTestWebUIControllerFactory
   // WebUIFactory implementation.
   virtual WebUIController* CreateWebUIControllerForURL(
       WebUI* web_ui, const GURL& url) const OVERRIDE {
-    if (!(should_create_webui_ && GetContentClient()->HasWebUIScheme(url)))
+    if (!(should_create_webui_ && HasWebUIScheme(url)))
       return NULL;
     return new WebUIController(web_ui);
   }
@@ -59,57 +58,25 @@ class RenderViewHostManagerTestWebUIControllerFactory
 
   virtual bool UseWebUIForURL(BrowserContext* browser_context,
                               const GURL& url) const OVERRIDE {
-    return GetContentClient()->HasWebUIScheme(url);
+    return HasWebUIScheme(url);
   }
 
   virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
                                       const GURL& url) const OVERRIDE {
-    return GetContentClient()->HasWebUIScheme(url);
+    return HasWebUIScheme(url);
   }
 
   virtual bool IsURLAcceptableForWebUI(
       BrowserContext* browser_context,
       const GURL& url,
       bool data_urls_allowed) const OVERRIDE {
-    return GetContentClient()->HasWebUIScheme(url);
+    return HasWebUIScheme(url);
   }
 
  private:
   bool should_create_webui_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostManagerTestWebUIControllerFactory);
-};
-
-class RenderViewHostManagerTestClient : public TestContentClient {
- public:
-  RenderViewHostManagerTestClient() {
-  }
-
-  virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE {
-    return url.SchemeIs(chrome::kChromeUIScheme);
-  }
-};
-
-class RenderViewHostManagerTestBrowserClient
-    : public TestContentBrowserClient {
- public:
-  RenderViewHostManagerTestBrowserClient() {}
-  virtual ~RenderViewHostManagerTestBrowserClient() {}
-
-  void set_should_create_webui(bool should_create_webui) {
-    factory_.set_should_create_webui(should_create_webui);
-  }
-
-  // TestContentBrowserClient implementation.
-  virtual WebUIControllerFactory*
-      GetWebUIControllerFactory() OVERRIDE {
-    return &factory_;
-  }
-
- private:
-  RenderViewHostManagerTestWebUIControllerFactory factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderViewHostManagerTestBrowserClient);
 };
 
 }  // namespace
@@ -119,21 +86,16 @@ class RenderViewHostManagerTest
  public:
   virtual void SetUp() OVERRIDE {
     RenderViewHostImplTestHarness::SetUp();
-    old_client_ = GetContentClient();
-    old_browser_client_ = GetContentClient()->browser();
-    SetContentClient(&client_);
-    GetContentClient()->set_browser_for_testing(&browser_client_);
-    url_util::AddStandardScheme(chrome::kChromeUIScheme);
+    WebUIControllerFactory::RegisterFactory(&factory_);
   }
 
   virtual void TearDown() OVERRIDE {
     RenderViewHostImplTestHarness::TearDown();
-    GetContentClient()->set_browser_for_testing(old_browser_client_);
-    SetContentClient(old_client_);
+    WebUIControllerFactoryRegistry::UnregisterFactoryForTesting(&factory_);
   }
 
   void set_should_create_webui(bool should_create_webui) {
-    browser_client_.set_should_create_webui(should_create_webui);
+    factory_.set_should_create_webui(should_create_webui);
   }
 
   void NavigateActiveAndCommit(const GURL& url) {
@@ -166,10 +128,7 @@ class RenderViewHostManagerTest
   }
 
  private:
-  RenderViewHostManagerTestClient client_;
-  RenderViewHostManagerTestBrowserClient browser_client_;
-  ContentClient* old_client_;
-  ContentBrowserClient* old_browser_client_;
+  RenderViewHostManagerTestWebUIControllerFactory factory_;
 };
 
 // Tests that when you navigate from a chrome:// url to another page, and
