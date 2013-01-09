@@ -24,7 +24,8 @@ PictureLayerTiling::PictureLayerTiling(float contents_scale,
                                        gfx::Size tile_size)
     : client_(NULL),
       contents_scale_(contents_scale),
-      tiling_data_(tile_size, gfx::Size(), true) {
+      tiling_data_(tile_size, gfx::Size(), true),
+      resolution_(NON_IDEAL_RESOLUTION) {
 }
 
 PictureLayerTiling::~PictureLayerTiling() {
@@ -60,12 +61,6 @@ void PictureLayerTiling::CreateTile(int i, int j) {
   TileMapKey key(i, j);
   DCHECK(!tiles_[key]);
   tiles_[key] = client_->CreateTile(this, tile_rect);
-
-  // TODO(enne): Remove this when we start setting priorities correctly.
-  TilePriority priority;
-  priority.resolution = HIGH_RESOLUTION;
-  priority.time_to_visible_in_seconds = 1000;
-  tiles_[key]->set_priority(ACTIVE_TREE, priority);
 }
 
 Region PictureLayerTiling::OpaqueRegionInContentRect(
@@ -271,8 +266,8 @@ gfx::Size PictureLayerTiling::Iterator::texture_size() const {
 void PictureLayerTiling::UpdateTilePriorities(
     WhichTree tree,
     const gfx::Size& device_viewport,
-    float layer_content_scale_x,
-    float layer_content_scale_y,
+    float last_layer_contents_scale,
+    float current_layer_contents_scale,
     const gfx::Transform& last_screen_transform,
     const gfx::Transform& current_screen_transform,
     double time_delta) {
@@ -287,6 +282,7 @@ void PictureLayerTiling::UpdateTilePriorities(
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     TileMapKey key = it->first;
     TilePriority priority;
+    priority.resolution = resolution_;
     if (key.first > right || key.second > bottom) {
       priority.distance_to_visible_in_pixels = std::numeric_limits<int>::max();
       priority.time_to_visible_in_seconds =
@@ -296,22 +292,25 @@ void PictureLayerTiling::UpdateTilePriorities(
     }
 
     gfx::Rect tile_bound = tiling_data_.TileBounds(key.first, key.second);
-    gfx::RectF layer_content_rect = gfx::ScaleRect(
+    gfx::RectF current_layer_content_rect = gfx::ScaleRect(
         tile_bound,
-        layer_content_scale_x / contents_scale_,
-        layer_content_scale_y / contents_scale_);
-    gfx::RectF screen_rect = MathUtil::mapClippedRect(
-        current_screen_transform, layer_content_rect);
-    gfx::RectF previous_rect = MathUtil::mapClippedRect(
-        last_screen_transform, layer_content_rect);
+        current_layer_contents_scale / contents_scale_,
+        current_layer_contents_scale / contents_scale_);
+    gfx::RectF current_screen_rect = MathUtil::mapClippedRect(
+        current_screen_transform, current_layer_content_rect);
+    gfx::RectF last_layer_content_rect = gfx::ScaleRect(
+        tile_bound,
+        last_layer_contents_scale / contents_scale_,
+        last_layer_contents_scale / contents_scale_);
+    gfx::RectF last_screen_rect  = MathUtil::mapClippedRect(
+        last_screen_transform, last_layer_content_rect);
 
-    priority.resolution = HIGH_RESOLUTION;
     priority.time_to_visible_in_seconds =
         TilePriority::TimeForBoundsToIntersect(
-            previous_rect, screen_rect, time_delta, view_rect);
+            last_screen_rect, current_screen_rect, time_delta, view_rect);
 
     priority.distance_to_visible_in_pixels =
-        TilePriority::manhattanDistance(screen_rect, view_rect);
+        TilePriority::manhattanDistance(current_screen_rect, view_rect);
     it->second->set_priority(tree, priority);
   }
 }

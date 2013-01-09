@@ -304,6 +304,8 @@ public:
 
     skia::RefPtr<SkPicture> capturePicture();
 
+    bool pinchGestureActive() const { return m_pinchGestureActive; }
+
 protected:
     LayerTreeHostImpl(const LayerTreeSettings&, LayerTreeHostImplClient*, Proxy*);
     void activatePendingTree();

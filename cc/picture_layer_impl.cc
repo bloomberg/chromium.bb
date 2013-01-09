@@ -17,6 +17,10 @@
 #include "ui/gfx/quad_f.h"
 #include "ui/gfx/size_conversions.h"
 
+namespace {
+const float kMaxScaleRatioDuringPinch = 2.0f;
+}
+
 namespace cc {
 
 PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* treeImpl, int id)
@@ -24,6 +28,8 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* treeImpl, int id)
       tilings_(this),
       pile_(PicturePileImpl::Create()),
       last_update_time_(0),
+      last_content_scale_(0),
+      ideal_contents_scale_(0),
       is_mask_(false) {
 }
 
@@ -53,7 +59,8 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
   if (showDebugBorders()) {
     for (PictureLayerTilingSet::Iterator iter(&tilings_,
                                               contentsScaleX(),
-                                              rect);
+                                              rect,
+                                              ideal_contents_scale_);
          iter;
          ++iter) {
       SkColor color;
@@ -74,7 +81,14 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
     }
   }
 
-  for (PictureLayerTilingSet::Iterator iter(&tilings_, contentsScaleX(), rect);
+  // Keep track of the tilings that were used so that tilings that are
+  // unused can be considered for removal.
+  std::vector<PictureLayerTiling*> seen_tilings;
+
+  for (PictureLayerTilingSet::Iterator iter(&tilings_,
+                                            contentsScaleX(),
+                                            rect,
+                                            ideal_contents_scale_);
        iter;
        ++iter) {
     ResourceProvider::ResourceId resource = 0;
@@ -122,7 +136,15 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
                  outside_right_edge && useAA,
                  outside_bottom_edge && useAA);
     quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
+
+    if (!seen_tilings.size() || seen_tilings.back() != iter.CurrentTiling())
+      seen_tilings.push_back(iter.CurrentTiling());
   }
+
+  // During a pinch, a user could zoom in and out, so throwing away a tiling may
+  // be premature.
+  if (!layerTreeImpl()->PinchGestureActive())
+    CleanUpUnusedTilings(seen_tilings);
 }
 
 void PictureLayerImpl::dumpLayerProperties(std::string*, int indent) const {
@@ -137,16 +159,15 @@ void PictureLayerImpl::didUpdateTransforms() {
   double time_delta = 0;
   if (last_update_time_ != 0 && last_bounds_ == bounds() &&
       last_content_bounds_ == contentBounds() &&
-      last_content_scale_x_ == contentsScaleX() &&
-      last_content_scale_y_ == contentsScaleY()) {
+      last_content_scale_ == contentsScaleX()) {
     time_delta = current_time - last_update_time_;
   }
   WhichTree tree = layerTreeImpl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
   tilings_.UpdateTilePriorities(
       tree,
       layerTreeImpl()->device_viewport_size(),
+      last_content_scale_,
       contentsScaleX(),
-      contentsScaleY(),
       last_screen_space_transform_,
       current_screen_space_transform,
       time_delta);
@@ -155,8 +176,7 @@ void PictureLayerImpl::didUpdateTransforms() {
   last_update_time_ = current_time;
   last_bounds_ = bounds();
   last_content_bounds_ = contentBounds();
-  last_content_scale_x_ = contentsScaleX();
-  last_content_scale_y_ = contentsScaleY();
+  last_content_scale_ = contentsScaleX();
 }
 
 void PictureLayerImpl::calculateContentsScale(
@@ -170,9 +190,9 @@ void PictureLayerImpl::calculateContentsScale(
   }
 
   float min_contents_scale = layerTreeImpl()->settings().minimumContentsScale;
-  ideal_contents_scale = std::max(ideal_contents_scale, min_contents_scale);
+  ideal_contents_scale_ = std::max(ideal_contents_scale, min_contents_scale);
 
-  ManageTilings(ideal_contents_scale);
+  ManageTilings(ideal_contents_scale_);
 
   // The content scale and bounds for a PictureLayerImpl is somewhat fictitious.
   // There are (usually) several tilings at different scales.  However, the
@@ -237,13 +257,16 @@ void PictureLayerImpl::SetIsMask(bool is_mask) {
   if (is_mask_ == is_mask)
     return;
   is_mask_ = is_mask;
-  tilings_.Reset();
+  tilings_.RemoveAllTiles();
 }
 
 ResourceProvider::ResourceId PictureLayerImpl::contentsResourceId() const {
   gfx::Rect content_rect(gfx::Point(), contentBounds());
   float scale = contentsScaleX();
-  for (PictureLayerTilingSet::Iterator iter(&tilings_, scale, content_rect);
+  for (PictureLayerTilingSet::Iterator iter(&tilings_,
+                                            scale,
+                                            content_rect,
+                                            ideal_contents_scale_);
        iter;
        ++iter) {
     // Mask resource not ready yet.
@@ -257,25 +280,26 @@ ResourceProvider::ResourceId PictureLayerImpl::contentsResourceId() const {
   return 0;
 }
 
-void PictureLayerImpl::AddTiling(float contents_scale, gfx::Size tile_size) {
+PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
   if (contents_scale < layerTreeImpl()->settings().minimumContentsScale)
-    return;
+    return NULL;
 
-  const PictureLayerTiling* tiling = tilings_.AddTiling(
+  PictureLayerTiling* tiling = tilings_.AddTiling(
       contents_scale,
-      tile_size);
+      TileSize());
 
   // If a new tiling is created on the active tree, sync it to the pending tree
   // so that it can share the same tiles.
   if (layerTreeImpl()->IsPendingTree())
-    return;
+    return tiling;
 
   PictureLayerImpl* pending_twin = static_cast<PictureLayerImpl*>(
       layerTreeImpl()->FindPendingTreeLayerById(id()));
   if (!pending_twin)
-    return;
+    return tiling;
   DCHECK_EQ(id(), pending_twin->id());
   pending_twin->SyncTiling(tiling);
+  return tiling;
 }
 
 gfx::Size PictureLayerImpl::TileSize() const {
@@ -289,18 +313,110 @@ gfx::Size PictureLayerImpl::TileSize() const {
   return layerTreeImpl()->settings().defaultTileSize;
 }
 
+namespace {
+
+inline float PositiveRatio(float float1, float float2) {
+  DCHECK(float1 > 0);
+  DCHECK(float2 > 0);
+  return float1 > float2 ? float1 / float2 : float2 / float1;
+}
+
+inline bool IsCloserToThan(
+    PictureLayerTiling* layer1,
+    PictureLayerTiling* layer2,
+    float contents_scale) {
+  // Absolute value for ratios.
+  float ratio1 = PositiveRatio(layer1->contents_scale(), contents_scale);
+  float ratio2 = PositiveRatio(layer2->contents_scale(), contents_scale);
+  return ratio1 < ratio2;
+}
+
+}  // namespace
+
 void PictureLayerImpl::ManageTilings(float ideal_contents_scale) {
-  if (drawsContent()) {
-    // TODO(enne): Add tilings during pinch zoom
-    // TODO(enne): Consider culling old tilings after pinch finishes.
-    if (!tilings_.num_tilings()) {
-      AddTiling(ideal_contents_scale, TileSize());
-      // TODO(enne): Add a low-res tiling as well.
+  DCHECK(ideal_contents_scale);
+  float low_res_factor = layerTreeImpl()->settings().lowResContentsScaleFactor;
+  float low_res_contents_scale = ideal_contents_scale * low_res_factor;
+
+  // Remove any tilings from the pending tree that don't exactly match the
+  // contents scale.  The pending tree should always come in crisp.  However,
+  // don't do this during a pinch, to avoid throwing away a tiling that should
+  // have been kept.
+  if (layerTreeImpl()->IsPendingTree() &&
+      !layerTreeImpl()->PinchGestureActive()) {
+    std::vector<PictureLayerTiling*> remove_list;
+    for (size_t i = 0; i < tilings_.num_tilings(); ++i) {
+      PictureLayerTiling* tiling = tilings_.tiling_at(i);
+      if (tiling->contents_scale() == ideal_contents_scale)
+        continue;
+      if (tiling->contents_scale() == low_res_contents_scale)
+        continue;
+      remove_list.push_back(tiling);
     }
-  } else {
-    // TODO(enne): This should be unnecessary once there are two trees.
-    tilings_.Reset();
+
+    for (size_t i = 0; i < remove_list.size(); ++i)
+      tilings_.Remove(remove_list[i]);
   }
+
+  // Find existing tilings closest to ideal high / low res.
+  PictureLayerTiling* high_res = NULL;
+  PictureLayerTiling* low_res = NULL;
+  for (size_t i = 0; i < tilings_.num_tilings(); ++i) {
+    PictureLayerTiling* tiling = tilings_.tiling_at(i);
+    if (!high_res || IsCloserToThan(tiling, high_res, ideal_contents_scale))
+      high_res = tiling;
+    if (!low_res || IsCloserToThan(tiling, low_res, low_res_contents_scale))
+      low_res = tiling;
+
+    // Reset all tilings to non-ideal until the end of this function.
+    tiling->set_resolution(NON_IDEAL_RESOLUTION);
+  }
+
+  // The active tree always has calcDrawProperties called on it first, and
+  // any tilings added to the active tree will be synced to the pending tree.
+  // Therefore, only add tilings to the active tree.
+  if (layerTreeImpl()->IsActiveTree()) {
+    if (layerTreeImpl()->PinchGestureActive() && high_res) {
+      // If zooming out, if only available high-res tiling is very high
+      // resolution, create additional tilings closer to the ideal.
+      // When zooming in, add some additional tilings so that content
+      // "crisps up" prior to releasing pinch.
+      float ratio = PositiveRatio(
+          high_res->contents_scale(),
+          ideal_contents_scale);
+      if (ratio >= kMaxScaleRatioDuringPinch)
+        high_res = AddTiling(ideal_contents_scale);
+    } else {
+      // When not pinching or if no tilings, add exact contents scales.
+      if (!high_res || high_res->contents_scale() != ideal_contents_scale)
+        high_res = AddTiling(ideal_contents_scale);
+      if (!low_res || low_res->contents_scale() != low_res_contents_scale)
+        low_res = AddTiling(low_res_contents_scale);
+    }
+  }
+
+  if (high_res)
+    high_res->set_resolution(HIGH_RESOLUTION);
+  if (low_res && low_res != high_res)
+    low_res->set_resolution(LOW_RESOLUTION);
+}
+
+void PictureLayerImpl::CleanUpUnusedTilings(
+    std::vector<PictureLayerTiling*> used_tilings) {
+  std::vector<PictureLayerTiling*> to_remove;
+
+  for (size_t i = 0; i < tilings_.num_tilings(); ++i) {
+    PictureLayerTiling* tiling = tilings_.tiling_at(i);
+    // Don't remove the current high or low res tilinig.
+    if (tiling->resolution() != NON_IDEAL_RESOLUTION)
+      continue;
+    if (std::find(used_tilings.begin(), used_tilings.end(), tiling) ==
+        used_tilings.end())
+      to_remove.push_back(tiling);
+  }
+
+  for (size_t i = 0; i < to_remove.size(); ++i)
+    tilings_.Remove(to_remove[i]);
 }
 
 }  // namespace cc

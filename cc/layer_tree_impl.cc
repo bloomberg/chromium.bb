@@ -229,6 +229,10 @@ int LayerTreeImpl::MaxTextureSize() const {
   return layer_tree_host_impl_->rendererCapabilities().maxTextureSize;
 }
 
+bool LayerTreeImpl::PinchGestureActive() const {
+  return layer_tree_host_impl_->pinchGestureActive();
+}
+
 void LayerTreeImpl::SetNeedsRedraw() {
   layer_tree_host_impl_->setNeedsRedraw();
 }

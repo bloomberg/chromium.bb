@@ -29,7 +29,11 @@ TEST(PictureLayerTilingSetTest, NoResources) {
   gfx::Rect content_rect(gfx::Point(), content_bounds);
 
   Region remaining(content_rect);
-  PictureLayerTilingSet::Iterator iter(&set, contents_scale, content_rect);
+  PictureLayerTilingSet::Iterator iter(
+      &set,
+      contents_scale,
+      content_rect,
+      contents_scale);
   for (; iter; ++iter) {
     gfx::Rect geometry_rect = iter.geometry_rect();
     EXPECT_TRUE(content_rect.Contains(geometry_rect));

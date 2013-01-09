@@ -140,6 +140,11 @@ class ScopedPtrVector {
     std::swap(*writable_a, *writable_b);
   }
 
+  template<class Compare>
+  inline void sort(Compare comp) {
+   std::sort(data_.begin(), data_.end(), comp);
+  }
+
   iterator begin() { return static_cast<iterator>(data_.begin()); }
   const_iterator begin() const { return data_.begin(); }
   iterator end() { return static_cast<iterator>(data_.end()); }

@@ -51,6 +51,9 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
 
   bool contents_swizzled() const { return managed_state_.contents_swizzled; }
 
+  float contents_scale() const { return contents_scale_; }
+  gfx::Rect content_rect() const { return content_rect_; }
+
  private:
   // Methods called by by tile manager.
   friend class TileManager;
@@ -58,7 +61,6 @@ class CC_EXPORT Tile : public base::RefCounted<Tile> {
   ManagedTileState& managed_state() { return managed_state_; }
   const ManagedTileState& managed_state() const { return managed_state_; }
   size_t bytes_consumed_if_allocated() const;
-  float contents_scale() const { return contents_scale_; }
 
   // Normal private methods.
   friend class base::RefCounted<Tile>;

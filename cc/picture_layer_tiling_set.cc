@@ -6,6 +6,18 @@
 
 namespace cc {
 
+namespace {
+
+class LargestToSmallestScaleFunctor {
+ public:
+  bool operator() (PictureLayerTiling* left, PictureLayerTiling* right) {
+    return left->contents_scale() > right->contents_scale();
+  }
+};
+
+}  // namespace
+
+
 PictureLayerTilingSet::PictureLayerTilingSet(
     PictureLayerTilingClient * client)
     : client_(client) {
@@ -37,6 +49,8 @@ void PictureLayerTilingSet::Clone(
   tilings_.push_back(tiling->Clone());
   tilings_.back()->SetClient(client_);
   tilings_.back()->Invalidate(invalidation);
+
+  tilings_.sort(LargestToSmallestScaleFunctor());
 }
 
 void PictureLayerTilingSet::SetLayerBounds(gfx::Size layer_bounds) {
@@ -51,27 +65,57 @@ gfx::Size PictureLayerTilingSet::LayerBounds() const {
   return layer_bounds_;
 }
 
-const PictureLayerTiling* PictureLayerTilingSet::AddTiling(
+PictureLayerTiling* PictureLayerTilingSet::AddTiling(
     float contents_scale,
     gfx::Size tile_size) {
   tilings_.push_back(PictureLayerTiling::Create(contents_scale, tile_size));
-  tilings_.back()->SetClient(client_);
-  tilings_.back()->SetLayerBounds(layer_bounds_);
-  return tilings_.back();
+  PictureLayerTiling* appended = tilings_.back();
+  appended->SetClient(client_);
+  appended->SetLayerBounds(layer_bounds_);
+
+  tilings_.sort(LargestToSmallestScaleFunctor());
+  return appended;
 }
 
-void PictureLayerTilingSet::Reset() {
+void PictureLayerTilingSet::RemoveAllTilings() {
+  tilings_.clear();
+}
+
+void PictureLayerTilingSet::Remove(PictureLayerTiling* tiling) {
+  ScopedPtrVector<PictureLayerTiling>::iterator iter =
+    std::find(tilings_.begin(), tilings_.end(), tiling);
+  if (iter == tilings_.end())
+    return;
+  tilings_.erase(iter);
+}
+
+void PictureLayerTilingSet::RemoveAllTiles() {
   for (size_t i = 0; i < tilings_.size(); ++i)
     tilings_[i]->Reset();
 }
 
-PictureLayerTilingSet::Iterator::Iterator(const PictureLayerTilingSet* set,
-                                          float contents_scale,
-                                          gfx::Rect content_rect)
+PictureLayerTilingSet::Iterator::Iterator(
+    const PictureLayerTilingSet* set,
+    float contents_scale,
+    gfx::Rect content_rect,
+    float ideal_contents_scale)
     : set_(set),
       contents_scale_(contents_scale),
+      ideal_contents_scale_(ideal_contents_scale),
       current_tiling_(-1) {
   missing_region_.Union(content_rect);
+
+  for (ideal_tiling_ = 0;
+       static_cast<size_t>(ideal_tiling_) < set_->tilings_.size();
+       ++ideal_tiling_) {
+    PictureLayerTiling* tiling = set_->tilings_[ideal_tiling_];
+    if (tiling->contents_scale() < ideal_contents_scale_) {
+      if (ideal_tiling_ > 0)
+        ideal_tiling_--;
+      break;
+    }
+  }
+
   ++(*this);
 }
 
@@ -111,6 +155,30 @@ Tile* PictureLayerTilingSet::Iterator::operator*() const {
   return *tiling_iter_;
 }
 
+PictureLayerTiling* PictureLayerTilingSet::Iterator::CurrentTiling() {
+  if (current_tiling_ < 0)
+    return NULL;
+  if (static_cast<size_t>(current_tiling_) >= set_->tilings_.size())
+    return NULL;
+  return set_->tilings_[current_tiling_];
+}
+
+int PictureLayerTilingSet::Iterator::NextTiling() const {
+  // Order returned by this method is:
+  // 1. Ideal tiling index
+  // 2. Tiling index < Ideal in decreasing order (higher res than ideal)
+  // 3. Tiling index > Ideal in increasing order (lower res than ideal)
+  // 4. Tiling index > tilings.size() (invalid index)
+  if (current_tiling_ < 0)
+    return ideal_tiling_;
+  else if (current_tiling_ > ideal_tiling_)
+    return current_tiling_ + 1;
+  else if (current_tiling_)
+    return current_tiling_ - 1;
+  else
+    return ideal_tiling_ + 1;
+}
+
 PictureLayerTilingSet::Iterator& PictureLayerTilingSet::Iterator::operator++() {
   bool first_time = current_tiling_ < 0;
 
@@ -133,7 +201,7 @@ PictureLayerTilingSet::Iterator& PictureLayerTilingSet::Iterator::operator++() {
     // tiling and set up to iterate through all of the remaining holes.
     // This will also happen the first time through the loop.
     if (!region_iter_.has_rect()) {
-      current_tiling_++;
+      current_tiling_ = NextTiling();
       current_region_.Swap(missing_region_);
       missing_region_.Clear();
       region_iter_ = Region::Iterator(current_region_);

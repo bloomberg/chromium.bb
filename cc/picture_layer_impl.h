@@ -53,10 +53,11 @@ public:
 
 protected:
   PictureLayerImpl(LayerTreeImpl* treeImpl, int id);
-  void AddTiling(float contents_scale, gfx::Size tile_size);
+  PictureLayerTiling* AddTiling(float contents_scale);
   void SyncFromActiveLayer(const PictureLayerImpl* other);
   gfx::Size TileSize() const;
   void ManageTilings(float ideal_contents_scale);
+  void CleanUpUnusedTilings(std::vector<PictureLayerTiling*> used_tilings);
 
   PictureLayerTilingSet tilings_;
   scoped_refptr<PicturePileImpl> pile_;
@@ -66,8 +67,8 @@ protected:
   double last_update_time_;
   gfx::Size last_bounds_;
   gfx::Size last_content_bounds_;
-  float last_content_scale_x_;
-  float last_content_scale_y_;
+  float last_content_scale_;
+  float ideal_contents_scale_;
   bool is_mask_;
 
   friend class PictureLayer;

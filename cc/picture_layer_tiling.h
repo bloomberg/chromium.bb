@@ -12,6 +12,7 @@
 #include "cc/hash_pair.h"
 #include "cc/region.h"
 #include "cc/tile.h"
+#include "cc/tile_priority.h"
 #include "cc/tiling_data.h"
 #include "ui/gfx/rect.h"
 
@@ -38,6 +39,8 @@ class CC_EXPORT PictureLayerTiling {
   void Invalidate(const Region& layer_invalidation);
 
   void SetClient(PictureLayerTilingClient* client);
+  void set_resolution(TileResolution resolution) { resolution_ = resolution; }
+  TileResolution resolution() const { return resolution_; }
 
   gfx::Rect ContentRect() const;
   float contents_scale() const { return contents_scale_; }
@@ -89,8 +92,8 @@ class CC_EXPORT PictureLayerTiling {
   void UpdateTilePriorities(
       WhichTree tree,
       const gfx::Size& device_viewport,
-      float layer_content_scale_x,
-      float layer_content_scale_y,
+      float last_contents_scale,
+      float current_contents_scale,
       const gfx::Transform& last_screen_transform,
       const gfx::Transform& current_screen_transform,
       double time_delta);
@@ -108,6 +111,7 @@ class CC_EXPORT PictureLayerTiling {
   gfx::Size layer_bounds_;
   TileMap tiles_;
   TilingData tiling_data_;
+  TileResolution resolution_;
 
   friend class Iterator;
 };
