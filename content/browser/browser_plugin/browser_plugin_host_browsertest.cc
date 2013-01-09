@@ -1242,4 +1242,41 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, GetRenderViewHostAtPositionTest) {
             test_embedder()->last_rvh_at_position_response());
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ChangeWindowName) {
+  const char kEmbedderURL[] = "files/browser_plugin_naming_embedder.html";
+  const char* kGuestURL = "files/browser_plugin_naming_guest.html";
+  StartBrowserPluginTest(kEmbedderURL, kGuestURL, false, "");
+
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      test_embedder()->web_contents()->GetRenderViewHost());
+  {
+    // Open a channel with the guest, wait until it replies,
+    // then verify that the plugin's name has been updated.
+    const string16 expected_title = ASCIIToUTF16("guest");
+    content::TitleWatcher title_watcher(test_embedder()->web_contents(),
+                                        expected_title);
+    ExecuteSyncJSFunction(rvh, "OpenCommChannel();");
+    string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+
+    scoped_ptr<base::Value> value(rvh->ExecuteJavascriptAndGetValue(string16(),
+        ASCIIToUTF16("document.getElementById('plugin').name")));
+    std::string result;
+    EXPECT_TRUE(value->GetAsString(&result));
+    EXPECT_EQ("guest", result);
+  }
+  {
+    // Set the plugin's name and verify that the window.name of the guest
+    // has been updated.
+    const string16 expected_title = ASCIIToUTF16("foobar");
+    content::TitleWatcher title_watcher(test_embedder()->web_contents(),
+                                        expected_title);
+    ExecuteSyncJSFunction(rvh,
+        "document.getElementById('plugin').name = 'foobar';");
+    string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+
+  }
+}
+
 }  // namespace content

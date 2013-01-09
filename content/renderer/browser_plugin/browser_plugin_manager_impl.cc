@@ -100,6 +100,7 @@ bool BrowserPluginManagerImpl::ShouldForwardToBrowserPlugin(
     case BrowserPluginMsg_LoadStop::ID:
     case BrowserPluginMsg_SetCursor::ID:
     case BrowserPluginMsg_ShouldAcceptTouchEvents::ID:
+    case BrowserPluginMsg_UpdatedName::ID:
     case BrowserPluginMsg_UpdateRect::ID:
       return true;
     default:

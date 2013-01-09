@@ -219,6 +219,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                      const BrowserPluginHostMsg_ResizeGuest_Params& params);
   // Overriden in tests.
   virtual void OnSetFocus(int instance_id, bool focused);
+  // Sets the name of the guest so that other guests in the same partition can
+  // access it.
+  void OnSetName(int instance_id, const std::string& name);
   // Updates the size state of the guest.
   void OnSetSize(
       int instance_id,
@@ -269,6 +272,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   // Overriden in tests.
   virtual void OnTakeFocus(bool reverse);
   void OnUpdateDragCursor(WebKit::WebDragOperation operation);
+  void OnUpdateFrameName(int frame_id,
+                         bool is_top_level,
+                         const std::string& name);
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
 
   // Static factory instance (always NULL for non-test).
@@ -290,6 +296,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   base::TimeDelta guest_hang_timeout_;
   bool focused_;
   bool visible_;
+  std::string name_;
   bool auto_size_enabled_;
   gfx::Size max_auto_size_;
   gfx::Size min_auto_size_;

@@ -1,0 +1,29 @@
+<html>
+  <body>
+    <script>
+      var embedder = null;
+      var lastName = '';
+      function SetWindowName(name) {
+        window.name = name;
+        lastName = name;
+        embedder.postMessage(name, '*');
+      }
+
+      function pollName() {
+        if (window.name != lastName) {
+          lastName = window.name;
+          // Signal the embedder with the new window name.
+          embedder.postMessage(lastName, '*');
+          setTimeout(pollName, 100);
+        }
+      }
+
+      window.addEventListener('message', function(e) {
+        console.log('test');
+        embedder = e.source;
+        SetWindowName('guest');
+        setTimeout(pollName, 100);
+      });
+    </script>
+  </body>
+</html>

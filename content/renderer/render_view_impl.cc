@@ -964,6 +964,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_PasteAndMatchStyle, OnPasteAndMatchStyle)
     IPC_MESSAGE_HANDLER(ViewMsg_Replace, OnReplace)
     IPC_MESSAGE_HANDLER(ViewMsg_Delete, OnDelete)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetName, OnSetName)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectAll, OnSelectAll)
     IPC_MESSAGE_HANDLER(ViewMsg_Unselect, OnUnselect)
     IPC_MESSAGE_HANDLER(ViewMsg_SetEditableSelectionOffsets,
@@ -1384,6 +1385,13 @@ void RenderViewImpl::OnDelete() {
     return;
 
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Delete"));
+}
+
+void RenderViewImpl::OnSetName(const std::string& name) {
+  if (!webview())
+    return;
+
+  webview()->mainFrame()->setName(WebString::fromUTF8(name));
 }
 
 void RenderViewImpl::OnSelectAll() {
@@ -2728,6 +2736,14 @@ void RenderViewImpl::frameDetached(WebFrame* frame) {
 
 void RenderViewImpl::willClose(WebFrame* frame) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FrameWillClose(frame));
+}
+
+void RenderViewImpl::didChangeName(WebFrame* frame,
+                                   const WebString& name)  {
+  Send(new ViewHostMsg_UpdateFrameName(routing_id_,
+                                       frame->identifier(),
+                                       !frame->parent(),
+                                       UTF16ToUTF8(name)));
 }
 
 void RenderViewImpl::loadURLExternally(

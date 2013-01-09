@@ -9,7 +9,7 @@
 
 var watchForTag = require("tagWatcher").watchForTag;
 
-var WEB_VIEW_ATTRIBUTES = ['src', 'partition'];
+var WEB_VIEW_ATTRIBUTES = ['name', 'src', 'partition'];
 
 // All exposed api methods for <webview>, these are forwarded to the browser
 // plugin.
@@ -117,6 +117,11 @@ function WebView(node) {
  * @private
  */
 WebView.prototype.handleMutation_ = function(mutation) {
+  // This observer monitors mutations to attributes of the <webview> and
+  // updates the BrowserPlugin properties accordingly. In turn, updating
+  // a BrowserPlugin property will update the corresponding BrowserPlugin
+  // attribute, if necessary. See BrowserPlugin::UpdateDOMAttribute for more
+  // details.
   this.objectNode_[mutation.attributeName] =
       this.node_.getAttribute(mutation.attributeName);
 };
@@ -125,8 +130,17 @@ WebView.prototype.handleMutation_ = function(mutation) {
  * @private
  */
 WebView.prototype.handleObjectMutation_ = function(mutation) {
-  this.node_.setAttribute(mutation.attributeName,
-      this.objectNode_.getAttribute(mutation.attributeName));
+  // This observer monitors mutations to attributes of the BrowserPlugin and
+  // updates the <webview> attributes accordingly.
+  if (!this.objectNode_.hasAttribute(mutation.attributeName)) {
+    // If an attribute is removed from the BrowserPlugin, then remove it
+    // from the <webview> as well.
+    this.node_.removeAttribute(mutation.attributeName);
+  } else {
+    // Update the <webview> attribute to match the BrowserPlugin attribute.
+    this.node_.setAttribute(mutation.attributeName,
+        this.objectNode_.getAttribute(mutation.attributeName));
+  }
 };
 
 /**

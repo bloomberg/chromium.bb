@@ -41,6 +41,10 @@ class CONTENT_EXPORT BrowserPlugin :
   void UpdateDOMAttribute(const std::string& attribute_name,
                           const std::string& attribute_value);
 
+  // Get the name attribute value.
+  std::string name_attribute() const { return name_; }
+  // Set the name attribute value.
+  void SetNameAttribute(const std::string& name);
   // Get the src attribute value of the BrowserPlugin instance.
   std::string src_attribute() const { return src_; }
   // Set the src attribute value of the BrowserPlugin instance.
@@ -260,6 +264,7 @@ class CONTENT_EXPORT BrowserPlugin :
   void OnLoadStop(int instance_id);
   void OnSetCursor(int instance_id, const WebCursor& cursor);
   void OnShouldAcceptTouchEvents(int instance_id, bool accept);
+  void OnUpdatedName(int instance_id, const std::string& name);
   void OnUpdateRect(int instance_id,
                     const BrowserPluginMsg_UpdateRect_Params& params);
 
@@ -299,6 +304,7 @@ class CONTENT_EXPORT BrowserPlugin :
   // Tracks the visibility of the browser plugin regardless of the whole
   // embedder RenderView's visibility.
   bool visible_;
+  std::string name_;
 
   WebCursor cursor_;
 

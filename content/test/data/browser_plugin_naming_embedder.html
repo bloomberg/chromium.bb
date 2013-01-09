@@ -1,0 +1,37 @@
+<html>
+  <body>
+    <object id="plugin"
+      type="application/browser-plugin"
+      width="640"
+      height="480"></object>
+    <script>
+      var loadstop = false;
+      var requestCommChannel = false;
+      function SetSrc(src) {
+        var plugin = document.getElementById('plugin');
+        plugin.src = src;
+      }
+      // Open a two-way communication channel with the guest.
+      function OpenCommChannel() {
+        if (!loadstop) {
+          requestCommChannel = true;
+          return;
+        }
+        var plugin = document.getElementById('plugin');
+        plugin.contentWindow.frames.postMessage('test', '*');
+      }
+
+      // Establish a two-way channel with the guest.
+      window.addEventListener('message', function(e) {
+        document.title = event.data;
+      });
+      var plugin = document.getElementById('plugin');
+      plugin.addEventListener('-internal-loadstop', function(e) {
+        loadstop = true;
+        if (requestCommChannel) {
+          plugin.contentWindow.frames.postMessage('test', '*');
+        }
+      });
+    </script>
+  </body>
+</html>

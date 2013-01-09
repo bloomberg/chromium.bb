@@ -56,6 +56,7 @@ BrowserPluginGuest::BrowserPluginGuest(
           base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
       focused_(params.focused),
       visible_(params.visible),
+      name_(params.name),
       auto_size_enabled_(params.auto_size_params.enable),
       max_auto_size_(params.auto_size_params.max_size),
       min_auto_size_(params.auto_size_params.min_size) {
@@ -75,6 +76,7 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ResizeGuest, OnResizeGuest)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetAutoSize, OnSetSize)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetFocus, OnSetFocus)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetName, OnSetName)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetVisibility, OnSetVisibility)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_TerminateGuest, OnTerminateGuest)
@@ -321,12 +323,13 @@ void BrowserPluginGuest::RenderViewReady() {
   // here (see http://crbug.com/158151).
   Send(new ViewMsg_SetFocus(routing_id(), focused_));
   UpdateVisibility();
-  if (auto_size_enabled_) {
-    web_contents()->GetRenderViewHost()->EnableAutoResize(
-        min_auto_size_, max_auto_size_);
-  } else {
-    web_contents()->GetRenderViewHost()->DisableAutoResize(damage_view_size_);
-  }
+  RenderViewHost* rvh = web_contents()->GetRenderViewHost();
+  if (auto_size_enabled_)
+    rvh->EnableAutoResize(min_auto_size_, max_auto_size_);
+  else
+    rvh->DisableAutoResize(damage_view_size_);
+
+  rvh->Send(new ViewMsg_SetName(rvh->GetRoutingID(), name_));
 }
 
 void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
@@ -367,6 +370,7 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFrameName, OnUpdateFrameName)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -464,6 +468,15 @@ void BrowserPluginGuest::OnSetFocus(int instance_id, bool focused) {
       return;
   focused_ = focused;
   Send(new ViewMsg_SetFocus(routing_id(), focused));
+}
+
+void BrowserPluginGuest::OnSetName(int instance_id, const std::string& name) {
+  if (name == name_)
+    return;
+  name_ = name;
+  web_contents()->GetRenderViewHost()->Send(new ViewMsg_SetName(
+      web_contents()->GetRenderViewHost()->GetRoutingID(),
+      name));
 }
 
 void BrowserPluginGuest::OnSetSize(
@@ -605,6 +618,19 @@ void BrowserPluginGuest::OnUpdateDragCursor(
       embedder_render_view_host->GetDelegate()->GetDelegateView();
   if (view)
     view->UpdateDragCursor(operation);
+}
+
+void BrowserPluginGuest::OnUpdateFrameName(int frame_id,
+                                           bool is_top_level,
+                                           const std::string& name) {
+  if (!is_top_level)
+    return;
+
+  name_ = name;
+  SendMessageToEmbedder(new BrowserPluginMsg_UpdatedName(
+      embedder_routing_id(),
+      instance_id_,
+      name));
 }
 
 void BrowserPluginGuest::OnUpdateRect(

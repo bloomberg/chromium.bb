@@ -41,6 +41,7 @@ bool BrowserPluginGuestHelper::ShouldForwardToBrowserPluginGuest(
  #endif
     case ViewHostMsg_ShowWidget::ID:
     case ViewHostMsg_TakeFocus::ID:
+    case ViewHostMsg_UpdateFrameName::ID:
     case ViewHostMsg_UpdateRect::ID:
       return true;
     default:

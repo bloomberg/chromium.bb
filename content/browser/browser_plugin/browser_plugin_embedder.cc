@@ -279,6 +279,7 @@ bool BrowserPluginEmbedder::ShouldForwardToBrowserPluginGuest(
     case BrowserPluginHostMsg_ResizeGuest::ID:
     case BrowserPluginHostMsg_SetAutoSize::ID:
     case BrowserPluginHostMsg_SetFocus::ID:
+    case BrowserPluginHostMsg_SetName::ID:
     case BrowserPluginHostMsg_SetVisibility::ID:
     case BrowserPluginHostMsg_Stop::ID:
     case BrowserPluginHostMsg_TerminateGuest::ID:

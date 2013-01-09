@@ -60,6 +60,7 @@ const char kEventUnresponsive[] = "unresponsive";
 
 // Parameters/properties on events.
 const char kIsTopLevel[] = "isTopLevel";
+const char kName[] = "name";
 const char kNewURL[] = "newUrl";
 const char kNewHeight[] = "newHeight";
 const char kNewWidth[] = "newWidth";
@@ -156,9 +157,10 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadRedirect, OnLoadRedirect)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStart, OnLoadStart)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStop, OnLoadStop)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
                         OnShouldAcceptTouchEvents)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_UpdatedName, OnUpdatedName)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -186,6 +188,21 @@ void BrowserPlugin::UpdateDOMAttribute(
   }
 }
 
+void BrowserPlugin::SetNameAttribute(const std::string& name) {
+  if (name_ == name)
+    return;
+
+  name_ = name;
+  if (!navigate_src_sent_)
+    return;
+
+  browser_plugin_manager()->Send(
+      new BrowserPluginHostMsg_SetName(
+          render_view_routing_id_,
+          instance_id_,
+          name));
+}
+
 bool BrowserPlugin::SetSrcAttribute(const std::string& src,
                                     std::string* error_message) {
   if (!valid_partition_id_) {
@@ -205,6 +222,7 @@ bool BrowserPlugin::SetSrcAttribute(const std::string& src,
     create_guest_params.persist_storage = persist_storage_;
     create_guest_params.focused = ShouldGuestBeFocused();
     create_guest_params.visible = visible_;
+    create_guest_params.name = name_;
     GetDamageBufferWithSizeParams(&create_guest_params.auto_size_params,
                                   &create_guest_params.resize_guest_params);
     browser_plugin_manager()->Send(
@@ -404,6 +422,11 @@ void BrowserPlugin::OnShouldAcceptTouchEvents(int instance_id, bool accept) {
         WebKit::WebPluginContainer::TouchEventRequestTypeRaw :
         WebKit::WebPluginContainer::TouchEventRequestTypeNone);
   }
+}
+
+void BrowserPlugin::OnUpdatedName(int instance_id, const std::string& name) {
+  name_ = name;
+  UpdateDOMAttribute(kName, name);
 }
 
 void BrowserPlugin::OnUpdateRect(

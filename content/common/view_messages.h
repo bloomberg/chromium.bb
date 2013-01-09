@@ -693,6 +693,10 @@ IPC_STRUCT_END()
 
 // Messages sent from the browser to the renderer.
 
+// Set the top-level frame to the provided name.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetName,
+                    std::string /* frame_name */)
+
 // Sent to the RenderView when a new tab is swapped into an existing
 // tab and the histories need to be merged. The existing tab has a history of
 // |merged_history_length| which precedes the history of the new tab. All
@@ -2050,6 +2054,12 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateZoomLimits,
 // terminated.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_SuddenTerminationChanged,
                      bool /* enabled */)
+
+// Informs the browser of updated frame names.
+IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateFrameName,
+                    int /* frame_id */,
+                    bool /* is_top_level */,
+                    std::string /* name */)
 
 #if defined(OS_MACOSX)
 // Request that the browser load a font into shared memory for us.

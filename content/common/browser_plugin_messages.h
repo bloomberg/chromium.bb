@@ -55,6 +55,7 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_CreateGuest_Params)
   IPC_STRUCT_MEMBER(bool, persist_storage)
   IPC_STRUCT_MEMBER(bool, focused)
   IPC_STRUCT_MEMBER(bool, visible)
+  IPC_STRUCT_MEMBER(std::string, name)
   IPC_STRUCT_MEMBER(BrowserPluginHostMsg_AutoSize_Params, auto_size_params)
   IPC_STRUCT_MEMBER(BrowserPluginHostMsg_ResizeGuest_Params,
                     resize_guest_params)
@@ -214,6 +215,11 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_PluginAtPositionResponse,
                     int /* request_id */,
                     gfx::Point /* position */)
 
+// Sets the name of the guest window to the provided |name|.
+IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetName,
+                    int /* instance_id */,
+                    std::string /* name */)
+
 // -----------------------------------------------------------------------------
 // These messages are from the guest renderer to the browser process
 
@@ -318,6 +324,11 @@ IPC_MESSAGE_ROUTED2(BrowserPluginMsg_UpdateRect,
 IPC_MESSAGE_ROUTED2(BrowserPluginMsg_PluginAtPositionRequest,
                     int /* request_id */,
                     gfx::Point /* position */)
+
+// Informs BrowserPlugin of a new name set for the top-level guest frame.
+IPC_MESSAGE_ROUTED2(BrowserPluginMsg_UpdatedName,
+                    int /* instance_id */,
+                    std::string /* name */)
 
 // Guest renders into an FBO with textures provided by the embedder.
 // When HW accelerated buffers are swapped in the guest, the message

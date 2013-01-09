@@ -536,6 +536,8 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void didDisownOpener(WebKit::WebFrame* frame);
   virtual void frameDetached(WebKit::WebFrame* frame);
   virtual void willClose(WebKit::WebFrame* frame);
+  virtual void didChangeName(WebKit::WebFrame* frame,
+                             const WebKit::WebString& name);
   virtual void loadURLExternally(WebKit::WebFrame* frame,
                                  const WebKit::WebURLRequest& request,
                                  WebKit::WebNavigationPolicy policy);
@@ -923,6 +925,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnCustomContextMenuAction(const CustomContextMenuContext& custom_context,
       unsigned action);
   void OnDelete();
+  void OnSetName(const std::string& name);
   void OnDeterminePageLanguage();
   void OnDisableScrollbarsForSmallWindows(
       const gfx::Size& disable_scrollbars_size_limit);
