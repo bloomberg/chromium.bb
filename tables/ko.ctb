@@ -110,15 +110,15 @@ word , 5
 always , 5
 decpoint . 3
 midnum - 36
-hyphen - 36-36
+hyphen - 36
 always \s--\s 36-36
 always \s-\s 36-36
 midnum \x00ad 36
 postpunc . 256
 word . 256
 always . 256
-postpunc ; 23
-word ; 23
+postpunc ; 56-23
+word ; 56-23
 midnum : 5-2
 postpunc : 5-2
 always : 5-2
@@ -129,7 +129,7 @@ always / 456-34
 always < 5-13
 always = 25-25
 always > 46-2
-always + 26-26
+always + 5-235
 postpunc ? 236
 word ? 236
 always ? 236
@@ -142,38 +142,41 @@ endnum 's 3-234
 always % 356-1234
 midnum ^ 45
 always ^ 456-126
-always ~ 4-156
+always ~ 36-36
 always & 4-12346
-midnum * 4-16
+midnum * 5-23
 always * 35-35
-prepunc [ 12356
-word [ 12356
-always [ 12356
-postpunc ] 23456
-word ] 4-23456
-always ] 23456
-prepunc { 2356
-word { 2356
-always { 2356
-postpunc } 2356
-word } 2356
-always } 2356
+prepunc [ 236-3
+word [ 236-3
+always [ 236-3
+postpunc ] 6-356
+word ] 6-356
+always ] 6-356
+prepunc { 236-23
+word { 236-23
+always { 236-23
+postpunc } 56-356
+word } 56-356
+always } 56-356
 always @ 4-1
 always \\ 4-1256
 always | 456-1256
 repeated \s 0
 repeated \t 0
-always \s-\s 36-36
+always \s-\s 36
 always ..." 5-5-5-356
+always … 5-5-5
 always ... 5-5-5
 always ...' 5-5-5-356-3
 repeated .... 0
-repeated ____ 456
+repeated ____ 6-36-36-3
 repeated ---- 36
 always .\s.\s." 3-3-3-356
 always .\s.\s. 3-3-3 . . .
 begnum $ 256
 always $ 4-256
+always _ 6-36-36-3
+always — 56-36-36-23
 
 # special character sequences
 compbrl :// URLs
@@ -210,7 +213,7 @@ pass2 @3-56 @3
 #Korean section:
 
 #Detect English:
-letsign 56
+letsign 356
 
 #Basic letter patterns (to be used in G1 and G2):
 sign ᄀ 4
@@ -447,7 +450,7 @@ sign ㅄ 45-6
 sign ㅅ 6
 sign ㅆ 6-6
 sign ㅇ 1245
-sign ㅈ 14
+sign ㅈ 46
 sign ㅉ 6-46
 sign ㅊ 56
 sign ㅋ 124
