@@ -6452,3 +6452,14 @@
    fun:vp8e_encode
    fun:vpx_codec_encode
 }
+{
+   bug_169042
+   Memcheck:Leak
+   ...
+   fun:_ZN6policy12URLBlacklist10AddFiltersEbPKN4base9ListValueE
+   fun:_ZN6policy12URLBlacklist5BlockEPKN4base9ListValueE
+   fun:_ZN20ManagedModeURLFilter14SetManualListsE10scoped_ptrIN4base9ListValueENS1_14DefaultDeleterIS2_EEES5_
+   fun:_ZN20ManagedModeURLFilterC1Ev
+   fun:_ZN11ManagedMode16URLFilterContextC1E13scoped_refptrIN4base19SequencedTaskRunnerEE
+   fun:_ZN11ManagedModeC2Ev
+}
