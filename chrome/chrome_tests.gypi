@@ -1880,7 +1880,6 @@
         'test/perf/startup_test.cc',
         'test/perf/tab_switching_test.cc',
         'test/perf/url_fetch_test.cc',
-        'test/perf/v8_benchmark_uitest.cc',
       ],
       'conditions': [
         ['OS=="win" and buildtype=="Official"', {
