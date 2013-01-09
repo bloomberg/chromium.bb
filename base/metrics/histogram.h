@@ -168,6 +168,13 @@ class Lock;
     name, sample, base::TimeDelta::FromMilliseconds(1), \
     base::TimeDelta::FromSeconds(10), 50)
 
+// For folks that need real specific times, use this to select a precise range
+// of times you want plotted, and the number of buckets you want used.
+#define HISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count) \
+    STATIC_HISTOGRAM_POINTER_BLOCK(name, AddTime(sample), \
+        base::Histogram::FactoryTimeGet(name, min, max, bucket_count, \
+                                        base::HistogramBase::kNoFlags))
+
 #define HISTOGRAM_COUNTS(name, sample) HISTOGRAM_CUSTOM_COUNTS( \
     name, sample, 1, 1000000, 50)
 
@@ -185,12 +192,9 @@ class Lock;
 #define HISTOGRAM_PERCENTAGE(name, under_one_hundred) \
     HISTOGRAM_ENUMERATION(name, under_one_hundred, 101)
 
-// For folks that need real specific times, use this to select a precise range
-// of times you want plotted, and the number of buckets you want used.
-#define HISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count) \
-    STATIC_HISTOGRAM_POINTER_BLOCK(name, AddTime(sample), \
-        base::Histogram::FactoryTimeGet(name, min, max, bucket_count, \
-                                        base::HistogramBase::kNoFlags))
+#define HISTOGRAM_BOOLEAN(name, sample) \
+    STATIC_HISTOGRAM_POINTER_BLOCK(name, AddBoolean(sample), \
+        base::BooleanHistogram::FactoryGet(name, base::Histogram::kNoFlags))
 
 // Support histograming of an enumerated value.  The samples should always be
 // strictly less than |boundary_value| -- this prevents you from running into
