@@ -39,6 +39,7 @@ public:
     // |  |
     // 0--3
     void setVertexOpacity(const float vertexOpacity[4]);
+    virtual bool canClipSelf() const OVERRIDE;
 
     void setTextureMailbox(const std::string& mailboxName, const base::Callback<void(unsigned)>& releaseCallback);
 

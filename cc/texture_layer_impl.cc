@@ -135,4 +135,9 @@ const char* TextureLayerImpl::layerTypeAsString() const
     return "TextureLayer";
 }
 
+bool TextureLayerImpl::canClipSelf() const
+{
+    return true;
+}
+
 }  // namespace cc

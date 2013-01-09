@@ -69,6 +69,8 @@ public:
     virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
     virtual bool blocksPendingCommit() const OVERRIDE;
 
+    virtual bool canClipSelf() const OVERRIDE;
+
 protected:
     TextureLayer(TextureLayerClient*, bool usesMailbox);
     virtual ~TextureLayer();

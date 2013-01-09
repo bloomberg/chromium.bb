@@ -291,6 +291,8 @@ public:
 
     virtual skia::RefPtr<SkPicture> getPicture();
 
+    virtual bool canClipSelf() const;
+
 protected:
     LayerImpl(LayerTreeImpl* layerImpl, int);
 

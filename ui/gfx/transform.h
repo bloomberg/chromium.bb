@@ -91,6 +91,15 @@ class UI_EXPORT Transform {
     return !(matrix_.getType() & ~SkMatrix44::kTranslate_Mask);
   }
 
+  // Returns true if the matrix is either a positive scale and/or a translation.
+  bool IsPositiveScaleOrTranslation() const {
+    if (!IsScaleOrTranslation())
+      return false;
+    return matrix_.getDouble(0, 0) > 0.0 &&
+        matrix_.getDouble(1, 1) > 0.0 &&
+        matrix_.getDouble(2, 2) > 0.0;
+  }
+
   // Returns true if the matrix is either identity or pure, non-fractional
   // translation.
   bool IsIdentityOrIntegerTranslation() const;

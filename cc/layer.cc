@@ -129,6 +129,11 @@ bool Layer::blocksPendingCommit() const
     return false;
 }
 
+bool Layer::canClipSelf() const
+{
+    return false;
+}
+
 void Layer::setParent(Layer* layer)
 {
     DCHECK(!layer || !layer->hasAncestor(this));

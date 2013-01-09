@@ -289,6 +289,8 @@ public:
     // canvas that doesn't want to be triple-buffered across all three trees.
     virtual bool blocksPendingCommit() const;
 
+    virtual bool canClipSelf() const;
+
 protected:
     friend class LayerImpl;
     friend class TreeSynchronizer;

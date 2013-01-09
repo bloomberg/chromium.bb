@@ -64,18 +64,17 @@ const TextureDrawQuad* TextureDrawQuad::MaterialCast(const DrawQuad* quad) {
 bool TextureDrawQuad::PerformClipping() {
   // This only occurs if the rect is only scaled and translated (and thus still
   // axis aligned).
-  if (!quadTransform().IsScaleOrTranslation())
+  if (!quadTransform().IsPositiveScaleOrTranslation())
     return false;
 
   // Grab our scale and make sure it's positive.
-  float x_scale = quadTransform().matrix().getDouble(0, 0);
-  float y_scale = quadTransform().matrix().getDouble(1, 1);
-  if (x_scale <= 0.0f || y_scale <= 0.0f)
-    return false;
+  float x_scale = static_cast<float>(quadTransform().matrix().getDouble(0, 0));
+  float y_scale = static_cast<float>(quadTransform().matrix().getDouble(1, 1));
 
   // Grab our offset.
-  gfx::Vector2dF offset(quadTransform().matrix().getDouble(0, 3),
-                        quadTransform().matrix().getDouble(1, 3));
+  gfx::Vector2dF offset(
+      static_cast<float>(quadTransform().matrix().getDouble(0, 3)),
+      static_cast<float>(quadTransform().matrix().getDouble(1, 3)));
 
   // Transform the rect by the scale and offset.
   gfx::RectF rectF = rect;

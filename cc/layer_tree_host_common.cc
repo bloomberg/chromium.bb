@@ -291,7 +291,8 @@ static bool subtreeShouldRenderToSeparateSurface(LayerType* layer, bool axisAlig
     }
 
     // If the layer clips its descendants but it is not axis-aligned with respect to its parent.
-    if (layerClipsSubtree(layer) && !axisAlignedWithRespectToParent && numDescendantsThatDrawContent > 0) {
+    if (layerClipsSubtree(layer) && !axisAlignedWithRespectToParent && !layer->drawProperties().descendants_can_clip_selves)
+    {
         TRACE_EVENT_INSTANT0("cc", "LayerTreeHostCommon::requireSurface clipping");
         return true;
     }
@@ -495,15 +496,25 @@ template<typename LayerType>
 static void preCalculateMetaInformation(LayerType* layer)
 {
     int numDescendantsThatDrawContent = 0;
+    bool descendantsCanClipSelves = true;
+    bool sublayerTransformPreventsClip = !layer->sublayerTransform().IsPositiveScaleOrTranslation();
 
     for (size_t i = 0; i < layer->children().size(); ++i) {
         LayerType* childLayer = layer->children()[i];
         preCalculateMetaInformation<LayerType>(childLayer);
+
         numDescendantsThatDrawContent += childLayer->drawsContent() ? 1 : 0;
         numDescendantsThatDrawContent += childLayer->drawProperties().num_descendants_that_draw_content;
+
+        if ((childLayer->drawsContent() && !childLayer->canClipSelf()) ||
+            !childLayer->drawProperties().descendants_can_clip_selves ||
+            sublayerTransformPreventsClip ||
+            !childLayer->transform().IsPositiveScaleOrTranslation())
+            descendantsCanClipSelves = false;
     }
 
     layer->drawProperties().num_descendants_that_draw_content = numDescendantsThatDrawContent;
+    layer->drawProperties().descendants_can_clip_selves = descendantsCanClipSelves;
 }
 
 // Recursively walks the layer tree starting at the given node and computes all the

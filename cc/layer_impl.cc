@@ -292,6 +292,11 @@ skia::RefPtr<SkPicture> LayerImpl::getPicture()
     return skia::RefPtr<SkPicture>();
 }
 
+bool LayerImpl::canClipSelf() const
+{
+    return false;
+}
+
 std::string LayerImpl::indentString(int indent)
 {
     std::string str;

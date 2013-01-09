@@ -198,4 +198,9 @@ bool TextureLayer::blocksPendingCommit() const
     return true;
 }
 
+bool TextureLayer::canClipSelf() const
+{
+    return true;
+}
+
 }  // namespace cc

@@ -103,13 +103,44 @@ public:
     {
     }
 
-    virtual bool drawsContent() const OVERRIDE { return true; }
+    virtual bool drawsContent() const OVERRIDE;
 
 private:
     virtual ~LayerWithForcedDrawsContent()
     {
     }
 };
+
+class LayerCanClipSelf : public Layer {
+public:
+    LayerCanClipSelf()
+        : Layer()
+    {
+    }
+
+    virtual bool drawsContent() const OVERRIDE;
+    virtual bool canClipSelf() const OVERRIDE;
+
+private:
+    virtual ~LayerCanClipSelf()
+    {
+    }
+};
+
+bool LayerWithForcedDrawsContent::drawsContent() const
+{
+    return true;
+}
+
+bool LayerCanClipSelf::drawsContent() const
+{
+    return true;
+}
+
+bool LayerCanClipSelf::canClipSelf() const
+{
+    return true;
+}
 
 class MockContentLayerClient : public ContentLayerClient {
 public:
@@ -333,11 +364,12 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleRenderSurface)
     parentTranslationToAnchor.Translate(25, 30);
     gfx::Transform parentSublayerMatrix;
     parentSublayerMatrix.Scale3d(0.9, 1, 3.3);
+
     gfx::Transform parentTranslationToCenter;
     parentTranslationToCenter.Translate(50, 60);
     gfx::Transform parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * inverse(parentTranslationToAnchor)
             * parentTranslationToCenter * parentSublayerMatrix * inverse(parentTranslationToCenter);
-    gfx::Vector2dF parentCompositeScale = MathUtil::computeTransform2dScaleComponents(parentCompositeTransform, 1.f);
+    gfx::Vector2dF parentCompositeScale = MathUtil::computeTransform2dScaleComponents(parentCompositeTransform, 1.0f);
     gfx::Transform surfaceSublayerTransform;
     surfaceSublayerTransform.Scale(parentCompositeScale.x(), parentCompositeScale.y());
     gfx::Transform surfaceSublayerCompositeTransform = parentCompositeTransform * inverse(surfaceSublayerTransform);
@@ -365,6 +397,91 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleRenderSurface)
 
     // The screen space is the same as the target since the child surface draws into the root.
     EXPECT_TRANSFORMATION_MATRIX_EQ(surfaceSublayerCompositeTransform, child->renderTarget()->renderSurface()->screenSpaceTransform());
+}
+
+TEST(LayerTreeHostCommonTest, verifySeparateRenderTargetRequirementWithClipping)
+{
+    scoped_refptr<Layer> root = Layer::create();
+    scoped_refptr<Layer> parent = Layer::create();
+    scoped_refptr<Layer> child = Layer::create();
+    scoped_refptr<Layer> grandChild = make_scoped_refptr(new LayerCanClipSelf());
+    root->addChild(parent);
+    parent->addChild(child);
+    child->addChild(grandChild);
+    parent->setMasksToBounds(true);
+    child->setMasksToBounds(true);
+
+    gfx::Transform identityMatrix;
+    gfx::Transform parentLayerTransform;
+    gfx::Transform parentSublayerMatrix;
+    gfx::Transform childLayerMatrix;
+
+    // No render surface should exist yet.
+    EXPECT_FALSE(root->renderSurface());
+    EXPECT_FALSE(parent->renderSurface());
+    EXPECT_FALSE(child->renderSurface());
+    EXPECT_FALSE(grandChild->renderSurface());
+
+    // One-time setup of root layer
+    parentLayerTransform.Scale3d(1, 0.9, 1);
+    parentSublayerMatrix.Scale3d(0.9, 1, 3.3);
+    childLayerMatrix.Rotate(20);
+
+    setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(1, 2), false);
+    setLayerPropertiesForTesting(parent.get(), parentLayerTransform, parentSublayerMatrix, gfx::PointF(0.25, 0.25), gfx::PointF(0, 0), gfx::Size(100, 120), false);
+    setLayerPropertiesForTesting(child.get(), childLayerMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(16, 18), false);
+    setLayerPropertiesForTesting(grandChild.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(8, 10), false);
+
+    executeCalculateDrawProperties(root.get());
+
+    // Render surfaces should have been created according to clipping rules now (grandchild can clip self).
+    EXPECT_TRUE(root->renderSurface());
+    EXPECT_FALSE(parent->renderSurface());
+    EXPECT_FALSE(child->renderSurface());
+    EXPECT_FALSE(grandChild->renderSurface());
+}
+
+TEST(LayerTreeHostCommonTest, verifySeparateRenderTargetRequirementWithoutClipping)
+{
+    scoped_refptr<Layer> root = Layer::create();
+    scoped_refptr<Layer> parent = Layer::create();
+    scoped_refptr<Layer> child = Layer::create();
+    // This layer cannot clip itself, a feature we are testing here.
+    scoped_refptr<Layer> grandChild = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    root->addChild(parent);
+    parent->addChild(child);
+    child->addChild(grandChild);
+    parent->setMasksToBounds(true);
+    child->setMasksToBounds(true);
+
+    gfx::Transform identityMatrix;
+    gfx::Transform parentLayerTransform;
+    gfx::Transform parentSublayerMatrix;
+    gfx::Transform childLayerMatrix;
+
+    // No render surface should exist yet.
+    EXPECT_FALSE(root->renderSurface());
+    EXPECT_FALSE(parent->renderSurface());
+    EXPECT_FALSE(child->renderSurface());
+    EXPECT_FALSE(grandChild->renderSurface());
+
+    // One-time setup of root layer
+    parentLayerTransform.Scale3d(1, 0.9, 1);
+    parentSublayerMatrix.Scale3d(0.9, 1, 3.3);
+    childLayerMatrix.Rotate(20);
+
+    setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(1, 2), false);
+    setLayerPropertiesForTesting(parent.get(), parentLayerTransform, parentSublayerMatrix, gfx::PointF(0.25, 0.25), gfx::PointF(0, 0), gfx::Size(100, 120), false);
+    setLayerPropertiesForTesting(child.get(), childLayerMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(16, 18), false);
+    setLayerPropertiesForTesting(grandChild.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(8, 10), false);
+
+    executeCalculateDrawProperties(root.get());
+
+    // Render surfaces should have been created according to clipping rules now (grandchild can't clip self).
+    EXPECT_TRUE(root->renderSurface());
+    EXPECT_FALSE(parent->renderSurface());
+    EXPECT_TRUE(child->renderSurface());
+    EXPECT_FALSE(grandChild->renderSurface());
 }
 
 TEST(LayerTreeHostCommonTest, verifyTransformsForReplica)
