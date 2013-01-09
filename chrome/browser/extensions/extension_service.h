@@ -339,10 +339,11 @@ class ExtensionService
       const GURL& download_url,
       extensions::CrxInstaller** out_crx_installer) OVERRIDE;
 
-  // Reloads the specified extension.
+  // Reloads the specified extension, sending the onLaunched() event to it if it
+  // currently has any window showing.
   void ReloadExtension(const std::string& extension_id);
 
-  // Restarts the specified extension.
+  // Reloads an extension and sends it the onRestarted() event.
   void RestartExtension(const std::string& extension_id);
 
   // Uninstalls the specified extension. Callers should only call this method

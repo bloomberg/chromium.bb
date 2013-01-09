@@ -65,6 +65,7 @@ class CrashNotificationDelegate : public NotificationDelegate {
                             const Extension* extension)
       : profile_(profile),
         is_hosted_app_(extension->is_hosted_app()),
+        is_platform_app_(extension->is_platform_app()),
         extension_id_(extension->id()) {
   }
 
@@ -83,6 +84,9 @@ class CrashNotificationDelegate : public NotificationDelegate {
           BackgroundContentsServiceFactory::GetForProfile(profile_);
       if (!service->GetAppBackgroundContents(ASCIIToUTF16(extension_id_)))
         service->LoadBackgroundContentsForExtension(profile_, extension_id_);
+    } else if (is_platform_app_) {
+      extensions::ExtensionSystem::Get(profile_)->extension_service()->
+          RestartExtension(extension_id_);
     } else {
       extensions::ExtensionSystem::Get(profile_)->extension_service()->
           ReloadExtension(extension_id_);
@@ -106,6 +110,7 @@ class CrashNotificationDelegate : public NotificationDelegate {
 
   Profile* profile_;
   bool is_hosted_app_;
+  bool is_platform_app_;
   std::string extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashNotificationDelegate);

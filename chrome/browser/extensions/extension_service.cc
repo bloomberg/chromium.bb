@@ -711,8 +711,7 @@ void ExtensionService::ReloadExtension(const std::string& extension_id) {
 }
 
 void ExtensionService::RestartExtension(const std::string& extension_id) {
-  int events = HasShellWindows(extension_id) ? EVENT_RESTARTED : EVENT_NONE;
-  ReloadExtensionWithEvents(extension_id, events);
+  ReloadExtensionWithEvents(extension_id, EVENT_RESTARTED);
 }
 
 void ExtensionService::ReloadExtensionWithEvents(
