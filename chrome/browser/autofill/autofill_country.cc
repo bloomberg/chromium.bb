@@ -14,6 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "base/threading/thread_checker.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -635,7 +636,6 @@ class CountryNames {
                                scoped_array<uint8_t>* buffer,
                                int32_t* buffer_size) const;
 
-
   // Maps from common country names, including 2- and 3-letter country codes,
   // to the corresponding 2-letter country codes. The keys are uppercase ASCII
   // strings.
@@ -651,6 +651,9 @@ class CountryNames {
   // Maps ICU locale names to their corresponding collators.
   std::map<std::string, icu::Collator*> collators_;
 
+  // Verifies thread-safety of accesses to the application locale.
+  base::ThreadChecker thread_checker_;
+
   // Caches the application locale, for thread-safe access.
   std::string application_locale_;
 
@@ -664,7 +667,13 @@ CountryNames* CountryNames::GetInstance() {
 
 const std::string CountryNames::ApplicationLocale() {
   if (application_locale_.empty()) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    // In production code, this class is always constructed on the UI thread, so
+    // the two conditions in the below DCHECK are identical.  In test code,
+    // sometimes there is a UI thread, and sometimes there is just the unnamed
+    // main thread.  Since this class is a singleton, it needs to support both
+    // cases.  Hence, the somewhat strange looking DCHECK below.
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+           thread_checker_.CalledOnValidThread());
     application_locale_ =
         content::GetContentClient()->browser()->GetApplicationLocale();
   }
