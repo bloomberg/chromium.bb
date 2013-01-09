@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web_layer_tree_view_impl.h"
+#include "webkit/compositor_bindings/web_layer_tree_view_impl.h"
 
 #include "base/command_line.h"
 #include "cc/font_atlas.h"
@@ -18,274 +18,260 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRenderingStats.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
-#include "web_layer_impl.h"
-#include "web_to_ccinput_handler_adapter.h"
+#include "webkit/compositor_bindings/web_layer_impl.h"
 #include "webkit/compositor_bindings/web_rendering_stats_impl.h"
+#include "webkit/compositor_bindings/web_to_ccinput_handler_adapter.h"
 
-using namespace cc;
 
 namespace WebKit {
 
 WebLayerTreeViewImpl::WebLayerTreeViewImpl(WebLayerTreeViewClient* client)
-    : m_client(client)
-{
+    : client_(client) {
 }
 
-WebLayerTreeViewImpl::~WebLayerTreeViewImpl()
-{
+WebLayerTreeViewImpl::~WebLayerTreeViewImpl() {
 }
 
-bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSettings, scoped_ptr<Thread> implThread)
-{
-    LayerTreeSettings settings;
-    settings.acceleratePainting = webSettings.acceleratePainting;
-    settings.renderVSyncEnabled = webSettings.renderVSyncEnabled;
-    settings.perTilePaintingEnabled = webSettings.perTilePaintingEnabled;
-    settings.acceleratedAnimationEnabled = webSettings.acceleratedAnimationEnabled;
-    settings.pageScalePinchZoomEnabled = webSettings.pageScalePinchZoomEnabled;
-    settings.refreshRate = webSettings.refreshRate;
-    settings.defaultTileSize = webSettings.defaultTileSize;
-    settings.maxUntiledLayerSize = webSettings.maxUntiledLayerSize;
-    settings.initialDebugState.showFPSCounter = webSettings.showFPSCounter;
-    settings.initialDebugState.showPaintRects = webSettings.showPaintRects;
-    settings.initialDebugState.showPlatformLayerTree = webSettings.showPlatformLayerTree;
-    settings.initialDebugState.showDebugBorders = webSettings.showDebugBorders;
-    m_layerTreeHost = LayerTreeHost::create(this, settings, implThread.Pass());
-    if (!m_layerTreeHost.get())
-        return false;
-    return true;
+bool WebLayerTreeViewImpl::initialize(
+    const WebLayerTreeView::Settings& web_settings,
+    scoped_ptr<cc::Thread> impl_thread) {
+  cc::LayerTreeSettings settings;
+  settings.acceleratePainting = web_settings.acceleratePainting;
+  settings.renderVSyncEnabled = web_settings.renderVSyncEnabled;
+  settings.perTilePaintingEnabled = web_settings.perTilePaintingEnabled;
+  settings.acceleratedAnimationEnabled =
+      web_settings.acceleratedAnimationEnabled;
+  settings.pageScalePinchZoomEnabled = web_settings.pageScalePinchZoomEnabled;
+  settings.refreshRate = web_settings.refreshRate;
+  settings.defaultTileSize = web_settings.defaultTileSize;
+  settings.maxUntiledLayerSize = web_settings.maxUntiledLayerSize;
+  settings.initialDebugState.showFPSCounter = web_settings.showFPSCounter;
+  settings.initialDebugState.showPaintRects = web_settings.showPaintRects;
+  settings.initialDebugState.showPlatformLayerTree =
+      web_settings.showPlatformLayerTree;
+  settings.initialDebugState.showDebugBorders = web_settings.showDebugBorders;
+  layer_tree_host_ = cc::LayerTreeHost::create(this,
+                                               settings,
+                                               impl_thread.Pass());
+  if (!layer_tree_host_)
+    return false;
+  return true;
 }
 
-void WebLayerTreeViewImpl::setSurfaceReady()
-{
-    m_layerTreeHost->setSurfaceReady();
+cc::LayerTreeHost* WebLayerTreeViewImpl::layer_tree_host() const {
+  return layer_tree_host_.get();
 }
 
-void WebLayerTreeViewImpl::setRootLayer(const WebLayer& root)
-{
-    m_layerTreeHost->setRootLayer(static_cast<const WebLayerImpl*>(&root)->layer());
+void WebLayerTreeViewImpl::setSurfaceReady() {
+  layer_tree_host_->setSurfaceReady();
 }
 
-void WebLayerTreeViewImpl::clearRootLayer()
-{
-    m_layerTreeHost->setRootLayer(scoped_refptr<Layer>());
+void WebLayerTreeViewImpl::setRootLayer(const WebLayer& root) {
+  layer_tree_host_->setRootLayer(
+      static_cast<const WebLayerImpl*>(&root)->layer());
 }
 
-void WebLayerTreeViewImpl::setViewportSize(const WebSize& layoutViewportSize, const WebSize& deviceViewportSize)
-{
-    if (!deviceViewportSize.isEmpty())
-        m_layerTreeHost->setViewportSize(layoutViewportSize, deviceViewportSize);
-    else
-        m_layerTreeHost->setViewportSize(layoutViewportSize, layoutViewportSize);
+void WebLayerTreeViewImpl::clearRootLayer() {
+  layer_tree_host_->setRootLayer(scoped_refptr<cc::Layer>());
 }
 
-WebSize WebLayerTreeViewImpl::layoutViewportSize() const
-{
-    return m_layerTreeHost->layoutViewportSize();
+void WebLayerTreeViewImpl::setViewportSize(
+    const WebSize& layout_viewport_size, const WebSize& device_viewport_size) {
+  if (!device_viewport_size.isEmpty()) {
+    layer_tree_host_->setViewportSize(layout_viewport_size,
+                                      device_viewport_size);
+  } else {
+    layer_tree_host_->setViewportSize(layout_viewport_size,
+                                      layout_viewport_size);
+  }
 }
 
-WebSize WebLayerTreeViewImpl::deviceViewportSize() const
-{
-    return m_layerTreeHost->deviceViewportSize();
+WebSize WebLayerTreeViewImpl::layoutViewportSize() const {
+  return layer_tree_host_->layoutViewportSize();
 }
 
-WebFloatPoint WebLayerTreeViewImpl::adjustEventPointForPinchZoom(const WebFloatPoint& point) const
-{
-    return m_layerTreeHost->adjustEventPointForPinchZoom(point);
+WebSize WebLayerTreeViewImpl::deviceViewportSize() const {
+  return layer_tree_host_->deviceViewportSize();
 }
 
-void WebLayerTreeViewImpl::setDeviceScaleFactor(const float deviceScaleFactor)
-{
-    m_layerTreeHost->setDeviceScaleFactor(deviceScaleFactor);
+WebFloatPoint WebLayerTreeViewImpl::adjustEventPointForPinchZoom(
+    const WebFloatPoint& point) const {
+  return layer_tree_host_->adjustEventPointForPinchZoom(point);
 }
 
-float WebLayerTreeViewImpl::deviceScaleFactor() const
-{
-    return m_layerTreeHost->deviceScaleFactor();
+void WebLayerTreeViewImpl::setDeviceScaleFactor(float device_scale_factor) {
+  layer_tree_host_->setDeviceScaleFactor(device_scale_factor);
 }
 
-void WebLayerTreeViewImpl::setBackgroundColor(WebColor color)
-{
-    m_layerTreeHost->setBackgroundColor(color);
+float WebLayerTreeViewImpl::deviceScaleFactor() const {
+  return layer_tree_host_->deviceScaleFactor();
 }
 
-void WebLayerTreeViewImpl::setHasTransparentBackground(bool transparent)
-{
-    m_layerTreeHost->setHasTransparentBackground(transparent);
+void WebLayerTreeViewImpl::setBackgroundColor(WebColor color) {
+  layer_tree_host_->setBackgroundColor(color);
 }
 
-void WebLayerTreeViewImpl::setVisible(bool visible)
-{
-    m_layerTreeHost->setVisible(visible);
+void WebLayerTreeViewImpl::setHasTransparentBackground(bool transparent) {
+  layer_tree_host_->setHasTransparentBackground(transparent);
 }
 
-void WebLayerTreeViewImpl::setPageScaleFactorAndLimits(float pageScaleFactor, float minimum, float maximum)
-{
-    m_layerTreeHost->setPageScaleFactorAndLimits(pageScaleFactor, minimum, maximum);
+void WebLayerTreeViewImpl::setVisible(bool visible) {
+  layer_tree_host_->setVisible(visible);
 }
 
-void WebLayerTreeViewImpl::startPageScaleAnimation(const WebPoint& scroll, bool useAnchor, float newPageScale, double durationSec)
-{
-    base::TimeDelta duration = base::TimeDelta::FromMicroseconds(durationSec * base::Time::kMicrosecondsPerSecond);
-    m_layerTreeHost->startPageScaleAnimation(gfx::Vector2d(scroll.x, scroll.y), useAnchor, newPageScale, duration);
+void WebLayerTreeViewImpl::setPageScaleFactorAndLimits(float page_scale_factor,
+                                                       float minimum,
+                                                       float maximum) {
+  layer_tree_host_->setPageScaleFactorAndLimits(page_scale_factor,
+                                                minimum, maximum);
 }
 
-void WebLayerTreeViewImpl::setNeedsAnimate()
-{
-    m_layerTreeHost->setNeedsAnimate();
+void WebLayerTreeViewImpl::startPageScaleAnimation(const WebPoint& scroll,
+                                                   bool use_anchor,
+                                                   float new_page_scale,
+                                                   double duration_sec) {
+  int64 duration_us = duration_sec * base::Time::kMicrosecondsPerSecond;
+  base::TimeDelta duration = base::TimeDelta::FromMicroseconds(duration_us);
+  layer_tree_host_->startPageScaleAnimation(gfx::Vector2d(scroll.x, scroll.y),
+                                            use_anchor,
+                                            new_page_scale,
+                                            duration);
 }
 
-void WebLayerTreeViewImpl::setNeedsRedraw()
-{
-    m_layerTreeHost->setNeedsRedraw();
+void WebLayerTreeViewImpl::setNeedsAnimate() {
+  layer_tree_host_->setNeedsAnimate();
 }
 
-bool WebLayerTreeViewImpl::commitRequested() const
-{
-    return m_layerTreeHost->commitRequested();
+void WebLayerTreeViewImpl::setNeedsRedraw() {
+  layer_tree_host_->setNeedsRedraw();
 }
 
-void WebLayerTreeViewImpl::composite()
-{
-    m_layerTreeHost->composite();
+bool WebLayerTreeViewImpl::commitRequested() const {
+  return layer_tree_host_->commitRequested();
 }
 
-void WebLayerTreeViewImpl::updateAnimations(double frameBeginTimeSeconds)
-{
-    base::TimeTicks frameBeginTime = base::TimeTicks::FromInternalValue(frameBeginTimeSeconds * base::Time::kMicrosecondsPerSecond);
-    m_layerTreeHost->updateAnimations(frameBeginTime);
+void WebLayerTreeViewImpl::composite() {
+  layer_tree_host_->composite();
 }
 
-void WebLayerTreeViewImpl::didStopFlinging()
-{
-    m_layerTreeHost->didStopFlinging();
+void WebLayerTreeViewImpl::didStopFlinging() {
+  layer_tree_host_->didStopFlinging();
 }
 
-bool WebLayerTreeViewImpl::compositeAndReadback(void *pixels, const WebRect& rect)
-{
-    return m_layerTreeHost->compositeAndReadback(pixels, rect);
+void WebLayerTreeViewImpl::updateAnimations(double frame_begin_time_seconds) {
+  int64 frame_begin_time_us =
+      frame_begin_time_seconds * base::Time::kMicrosecondsPerSecond;
+  base::TimeTicks frame_begin_time =
+      base::TimeTicks::FromInternalValue(frame_begin_time_us);
+  layer_tree_host_->updateAnimations(frame_begin_time);
 }
 
-void WebLayerTreeViewImpl::finishAllRendering()
-{
-    m_layerTreeHost->finishAllRendering();
+bool WebLayerTreeViewImpl::compositeAndReadback(void* pixels,
+                                                const WebRect& rect) {
+  return layer_tree_host_->compositeAndReadback(pixels, rect);
 }
 
-void WebLayerTreeViewImpl::setDeferCommits(bool deferCommits)
-{
-    m_layerTreeHost->setDeferCommits(deferCommits);
+void WebLayerTreeViewImpl::finishAllRendering() {
+  layer_tree_host_->finishAllRendering();
 }
 
-void WebLayerTreeViewImpl::renderingStats(WebRenderingStats& stats) const
-{
-    m_layerTreeHost->renderingStats(
-        &static_cast<WebRenderingStatsImpl&>(stats).rendering_stats);
+void WebLayerTreeViewImpl::setDeferCommits(bool defer_commits) {
+  layer_tree_host_->setDeferCommits(defer_commits);
 }
 
-void WebLayerTreeViewImpl::setShowFPSCounter(bool show)
-{
-    LayerTreeDebugState debugState = m_layerTreeHost->debugState();
-    debugState.showFPSCounter = show;
-    m_layerTreeHost->setDebugState(debugState);
+void WebLayerTreeViewImpl::renderingStats(WebRenderingStats& stats) const {
+  layer_tree_host_->renderingStats(
+      &static_cast<WebRenderingStatsImpl&>(stats).rendering_stats);
 }
 
-void WebLayerTreeViewImpl::setShowPaintRects(bool show)
-{
-    LayerTreeDebugState debugState = m_layerTreeHost->debugState();
-    debugState.showPaintRects = show;
-    m_layerTreeHost->setDebugState(debugState);
+void WebLayerTreeViewImpl::setShowFPSCounter(bool show) {
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->debugState();
+  debug_state.showFPSCounter = show;
+  layer_tree_host_->setDebugState(debug_state);
 }
 
-void WebLayerTreeViewImpl::setContinuousPaintingEnabled(bool enabled)
-{
-    LayerTreeDebugState debugState = m_layerTreeHost->debugState();
-    debugState.continuousPainting = enabled;
-    m_layerTreeHost->setDebugState(debugState);
+void WebLayerTreeViewImpl::setShowPaintRects(bool show) {
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->debugState();
+  debug_state.showPaintRects = show;
+  layer_tree_host_->setDebugState(debug_state);
 }
 
-scoped_ptr<FontAtlas> WebLayerTreeViewImpl::createFontAtlas()
-{
-    int fontHeight;
-    WebRect asciiToWebRectTable[128];
-    gfx::Rect asciiToRectTable[128];
-    SkBitmap bitmap;
-
-    m_client->createFontAtlas(bitmap, asciiToWebRectTable, fontHeight);
-
-    for (int i = 0; i < 128; ++i)
-        asciiToRectTable[i] = asciiToWebRectTable[i];
-
-    return FontAtlas::create(bitmap, asciiToRectTable, fontHeight).Pass();
+void WebLayerTreeViewImpl::setContinuousPaintingEnabled(bool enabled) {
+  cc::LayerTreeDebugState debug_state = layer_tree_host_->debugState();
+  debug_state.continuousPainting = enabled;
+  layer_tree_host_->setDebugState(debug_state);
 }
 
-void WebLayerTreeViewImpl::willBeginFrame()
-{
-    m_client->willBeginFrame();
+scoped_ptr<cc::FontAtlas> WebLayerTreeViewImpl::createFontAtlas() {
+  int font_height;
+  WebRect ascii_to_web_rect_table[128];
+  gfx::Rect ascii_to_rect_table[128];
+  SkBitmap bitmap;
+
+  client_->createFontAtlas(bitmap, ascii_to_web_rect_table, font_height);
+
+  for (int i = 0; i < 128; ++i)
+    ascii_to_rect_table[i] = ascii_to_web_rect_table[i];
+
+  return cc::FontAtlas::create(bitmap, ascii_to_rect_table, font_height).Pass();
 }
 
-void WebLayerTreeViewImpl::didBeginFrame()
-{
-    m_client->didBeginFrame();
+void WebLayerTreeViewImpl::willBeginFrame() {
+  client_->willBeginFrame();
 }
 
-void WebLayerTreeViewImpl::animate(double monotonicFrameBeginTime)
-{
-    m_client->updateAnimations(monotonicFrameBeginTime);
+void WebLayerTreeViewImpl::didBeginFrame() {
+  client_->didBeginFrame();
 }
 
-void WebLayerTreeViewImpl::layout()
-{
-    m_client->layout();
+void WebLayerTreeViewImpl::animate(double monotonic_frame_begin_time) {
+  client_->updateAnimations(monotonic_frame_begin_time);
 }
 
-void WebLayerTreeViewImpl::applyScrollAndScale(gfx::Vector2d scrollDelta, float pageScale)
-{
-    m_client->applyScrollAndScale(scrollDelta, pageScale);
+void WebLayerTreeViewImpl::layout() {
+  client_->layout();
 }
 
-scoped_ptr<cc::OutputSurface> WebLayerTreeViewImpl::createOutputSurface()
-{
-    WebKit::WebCompositorOutputSurface* web = m_client->createOutputSurface();
-    return make_scoped_ptr(static_cast<cc::OutputSurface*>(web));
+void WebLayerTreeViewImpl::applyScrollAndScale(gfx::Vector2d scroll_delta,
+                                               float page_scale) {
+  client_->applyScrollAndScale(scroll_delta, page_scale);
 }
 
-void WebLayerTreeViewImpl::didRecreateOutputSurface(bool success)
-{
-    m_client->didRecreateOutputSurface(success);
+scoped_ptr<cc::OutputSurface> WebLayerTreeViewImpl::createOutputSurface() {
+  WebKit::WebCompositorOutputSurface* web = client_->createOutputSurface();
+  return make_scoped_ptr(static_cast<cc::OutputSurface*>(web));
 }
 
-scoped_ptr<InputHandler> WebLayerTreeViewImpl::createInputHandler()
-{
-    scoped_ptr<InputHandler> ret;
-    scoped_ptr<WebInputHandler> handler(m_client->createInputHandler());
-    if (handler)
-        ret = WebToCCInputHandlerAdapter::create(handler.Pass());
-    return ret.Pass();
+void WebLayerTreeViewImpl::didRecreateOutputSurface(bool success) {
+  client_->didRecreateOutputSurface(success);
 }
 
-void WebLayerTreeViewImpl::willCommit()
-{
-    m_client->willCommit();
+scoped_ptr<cc::InputHandler> WebLayerTreeViewImpl::createInputHandler() {
+  scoped_ptr<cc::InputHandler> ret;
+  scoped_ptr<WebInputHandler> handler(client_->createInputHandler());
+  if (handler)
+    ret = WebToCCInputHandlerAdapter::create(handler.Pass());
+  return ret.Pass();
 }
 
-void WebLayerTreeViewImpl::didCommit()
-{
-    m_client->didCommit();
+void WebLayerTreeViewImpl::willCommit() {
+  client_->willCommit();
 }
 
-void WebLayerTreeViewImpl::didCommitAndDrawFrame()
-{
-    m_client->didCommitAndDrawFrame();
+void WebLayerTreeViewImpl::didCommit() {
+  client_->didCommit();
 }
 
-void WebLayerTreeViewImpl::didCompleteSwapBuffers()
-{
-    m_client->didCompleteSwapBuffers();
+void WebLayerTreeViewImpl::didCommitAndDrawFrame() {
+  client_->didCommitAndDrawFrame();
 }
 
-void WebLayerTreeViewImpl::scheduleComposite()
-{
-    m_client->scheduleComposite();
+void WebLayerTreeViewImpl::didCompleteSwapBuffers() {
+  client_->didCompleteSwapBuffers();
 }
 
-} // namespace WebKit
+void WebLayerTreeViewImpl::scheduleComposite() {
+  client_->scheduleComposite();
+}
+
+}  // namespace WebKit
