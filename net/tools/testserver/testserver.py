@@ -494,6 +494,7 @@ class TestPageHandler(BasePageHandler):
       'jpg' : 'image/jpeg',
       'json': 'application/json',
       'pdf' : 'application/pdf',
+      'wav' : 'audio/wav',
       'xml' : 'text/xml'
     }
     self._default_mime_type = 'text/html'

@@ -442,11 +442,12 @@ NavigationEntry* NavigationControllerImpl::GetLastCommittedEntry() const {
 }
 
 bool NavigationControllerImpl::CanViewSource() const {
-  bool is_supported_mime_type = net::IsSupportedNonImageMimeType(
-      web_contents_->GetContentsMimeType().c_str());
+  const std::string& mime_type = web_contents_->GetContentsMimeType();
+  bool is_viewable_mime_type = net::IsSupportedNonImageMimeType(mime_type) &&
+      !net::IsSupportedMediaMimeType(mime_type);
   NavigationEntry* active_entry = GetActiveEntry();
   return active_entry && !active_entry->IsViewSourceMode() &&
-    is_supported_mime_type && !web_contents_->GetInterstitialPage();
+      is_viewable_mime_type && !web_contents_->GetInterstitialPage();
 }
 
 int NavigationControllerImpl::GetLastCommittedEntryIndex() const {

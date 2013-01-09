@@ -21,6 +21,7 @@
 
 namespace {
 const char kTestHtml[] = "files/viewsource/test.html";
+const char kTestMedia[] = "files/media/pink_noise_140ms.wav";
 }
 
 typedef InProcessBrowserTest ViewSourceTest;
@@ -73,6 +74,21 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, ViewSourceInMenuEnabledOnANormalPage) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   EXPECT_TRUE(chrome::CanViewSource(browser()));
+}
+
+// For page that is media content, make sure that we cannot select "View Source"
+// See http://crbug.com/83714
+IN_PROC_BROWSER_TEST_F(ViewSourceTest, ViewSourceInMenuDisabledOnAMediaPage) {
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL url(test_server()->GetURL(kTestMedia));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  const char* mime_type = chrome::GetActiveWebContents(browser())->
+      GetContentsMimeType().c_str();
+
+  EXPECT_STREQ("audio/wav", mime_type);
+  EXPECT_FALSE(chrome::CanViewSource(browser()));
 }
 
 // Make sure that when looking at the page source, we can't select "View Source"
