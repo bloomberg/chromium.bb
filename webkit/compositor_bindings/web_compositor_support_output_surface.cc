@@ -41,7 +41,7 @@ cc::SoftwareOutputDevice* WebCompositorSupportOutputSurface::SoftwareDevice() co
 }
 
 void WebCompositorSupportOutputSurface::SendFrameToParentCompositor(
-    const cc::CompositorFrame&) {
+    cc::CompositorFrame*) {
   // No support for delegated renderers in DumpRenderTree.
   NOTREACHED();
 }

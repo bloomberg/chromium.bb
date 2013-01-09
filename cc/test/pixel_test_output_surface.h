@@ -24,7 +24,7 @@ class PixelTestOutputSurface : public OutputSurface {
       OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* Context3D() const OVERRIDE;
   virtual SoftwareOutputDevice* SoftwareDevice() const OVERRIDE;
-  virtual void SendFrameToParentCompositor(const CompositorFrame&) OVERRIDE {}
+  virtual void SendFrameToParentCompositor(CompositorFrame*) OVERRIDE {}
 
  private:
   PixelTestOutputSurface();

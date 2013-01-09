@@ -42,6 +42,9 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
   float vertex_opacity[4];
   bool flipped;
 
+  virtual void AppendResources(ResourceProvider::ResourceIdArray* resources)
+      OVERRIDE;
+
   static const TextureDrawQuad* MaterialCast(const DrawQuad*);
 
   bool PerformClipping();

@@ -47,6 +47,12 @@ void IOSurfaceDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->orientation = orientation;
 }
 
+void IOSurfaceDrawQuad::AppendResources(
+    ResourceProvider::ResourceIdArray* resources) {
+  // TODO(danakj): Convert to TextureDrawQuad?
+  NOTIMPLEMENTED();
+}
+
 const IOSurfaceDrawQuad* IOSurfaceDrawQuad::MaterialCast(
     const DrawQuad* quad) {
   DCHECK(quad->material == DrawQuad::IO_SURFACE_CONTENT);

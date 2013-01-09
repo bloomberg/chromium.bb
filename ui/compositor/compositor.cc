@@ -84,8 +84,7 @@ class WebGraphicsContextToOutputSurfaceAdapter
     return NULL;
   }
 
-  virtual void SendFrameToParentCompositor(
-      const cc::CompositorFrame&) OVERRIDE {
+  virtual void SendFrameToParentCompositor(cc::CompositorFrame*) OVERRIDE {
   }
 
  private:

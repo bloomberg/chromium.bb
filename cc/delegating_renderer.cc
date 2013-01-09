@@ -12,6 +12,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "cc/checkerboard_draw_quad.h"
+#include "cc/compositor_frame.h"
 #include "cc/compositor_frame_ack.h"
 #include "cc/debug_border_draw_quad.h"
 #include "cc/render_pass.h"
@@ -28,17 +29,22 @@ using WebKit::WebGraphicsContext3D;
 namespace cc {
 
 scoped_ptr<DelegatingRenderer> DelegatingRenderer::Create(
-    RendererClient* client, ResourceProvider* resource_provider) {
+    RendererClient* client,
+    OutputSurface* output_surface,
+    ResourceProvider* resource_provider) {
   scoped_ptr<DelegatingRenderer> renderer(
-      new DelegatingRenderer(client, resource_provider));
+      new DelegatingRenderer(client, output_surface, resource_provider));
   if (!renderer->Initialize())
     return scoped_ptr<DelegatingRenderer>();
   return renderer.Pass();
 }
 
 DelegatingRenderer::DelegatingRenderer(
-    RendererClient* client, ResourceProvider* resource_provider)
+    RendererClient* client,
+    OutputSurface* output_surface,
+    ResourceProvider* resource_provider)
     : Renderer(client),
+      output_surface_(output_surface),
       resource_provider_(resource_provider),
       visible_(true) {
   DCHECK(resource_provider_);
@@ -128,7 +134,24 @@ const RendererCapabilities& DelegatingRenderer::capabilities() const {
 void DelegatingRenderer::drawFrame(
     RenderPassList& render_passes_in_draw_order) {
   TRACE_EVENT0("cc", "DelegatingRenderer::drawFrame");
-  NOTIMPLEMENTED();
+
+  CompositorFrame out_frame;
+  out_frame.metadata = m_client->makeCompositorFrameMetadata();
+
+  out_frame.delegated_frame_data = make_scoped_ptr(new DelegatedFrameData);
+  DelegatedFrameData& out_data = *out_frame.delegated_frame_data;
+
+  out_data.size = viewportSize();
+  out_data.render_pass_list.swap(render_passes_in_draw_order);
+
+  ResourceProvider::ResourceIdArray resources;
+  for (size_t i = 0; i < out_data.render_pass_list.size(); ++i) {
+    for (size_t j = 0; j < out_data.render_pass_list[i]->quad_list.size(); ++j)
+      out_data.render_pass_list[i]->quad_list[j]->AppendResources(&resources);
+  }
+  resource_provider_->prepareSendToParent(resources, &out_data.resource_list);
+
+  output_surface_->SendFrameToParentCompositor(&out_frame);
 }
 
 bool DelegatingRenderer::swapBuffers() {

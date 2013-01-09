@@ -54,8 +54,9 @@ class CC_EXPORT OutputSurface : public WebKit::WebCompositorOutputSurface {
   virtual SoftwareOutputDevice* SoftwareDevice() const = 0;
 
   // Sends frame data to the parent compositor. This should only be called when
-  // capabilities().has_parent_compositor.
-  virtual void SendFrameToParentCompositor(const CompositorFrame&) {}
+  // capabilities().has_parent_compositor. The implementation may destroy or
+  // steal the contents of the CompositorFrame passed in.
+  virtual void SendFrameToParentCompositor(CompositorFrame*) = 0;
 };
 
 }  // namespace cc

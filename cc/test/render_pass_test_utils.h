@@ -22,7 +22,7 @@ class TestRenderPass;
 // Adds a new render pass with the provided properties to the given
 // render pass list.
 TestRenderPass* addRenderPass(
-    ScopedPtrVector<RenderPass>& passList,
+    RenderPassList& passList,
     RenderPass::Id id,
     const gfx::Rect& outputRect,
     const gfx::Transform& rootTransform);

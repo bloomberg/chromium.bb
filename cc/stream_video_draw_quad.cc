@@ -40,6 +40,12 @@ void StreamVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->matrix = matrix;
 }
 
+void StreamVideoDrawQuad::AppendResources(
+    ResourceProvider::ResourceIdArray* resources) {
+  // TODO(danakj): Convert to TextureDrawQuad?
+  NOTIMPLEMENTED();
+}
+
 const StreamVideoDrawQuad* StreamVideoDrawQuad::MaterialCast(
     const DrawQuad* quad) {
   DCHECK(quad->material == DrawQuad::STREAM_VIDEO_CONTENT);

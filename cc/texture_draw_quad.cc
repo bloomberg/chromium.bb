@@ -56,6 +56,11 @@ void TextureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->flipped = flipped;
 }
 
+void TextureDrawQuad::AppendResources(
+    ResourceProvider::ResourceIdArray* resources) {
+  resources->push_back(resource_id);
+}
+
 const TextureDrawQuad* TextureDrawQuad::MaterialCast(const DrawQuad* quad) {
   DCHECK(quad->material == DrawQuad::TEXTURE_CONTENT);
   return static_cast<const TextureDrawQuad*>(quad);

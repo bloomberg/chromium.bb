@@ -91,9 +91,9 @@ cc::SoftwareOutputDevice* CompositorOutputSurface::SoftwareDevice() const {
 }
 
 void CompositorOutputSurface::SendFrameToParentCompositor(
-    const cc::CompositorFrame& frame) {
+    cc::CompositorFrame* frame) {
   DCHECK(CalledOnValidThread());
-  Send(new ViewHostMsg_SwapCompositorFrame(routing_id_, frame));
+  Send(new ViewHostMsg_SwapCompositorFrame(routing_id_, *frame));
 }
 
 void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {

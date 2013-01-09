@@ -89,4 +89,6 @@ scoped_ptr<DrawQuad> DrawQuad::Copy(
   return copy_quad.Pass();
 }
 
+void DrawQuad::AppendResources(ResourceProvider::ResourceIdArray* resources) {}
+
 }  // namespace cc

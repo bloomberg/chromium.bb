@@ -26,7 +26,8 @@ class TestRenderPass : public cc::RenderPass {
     shared_quad_state_list.append(state.Pass());
   }
 
-  void AppendOneOfEveryQuadType(cc::ResourceProvider*);
+  void AppendOneOfEveryQuadType(
+      cc::ResourceProvider*, RenderPass::Id child_pass);
 
  protected:
   TestRenderPass() : RenderPass() {}

@@ -42,6 +42,9 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
   VideoLayerImpl::FramePlane u_plane;
   VideoLayerImpl::FramePlane v_plane;
 
+  virtual void AppendResources(ResourceProvider::ResourceIdArray* resources)
+      OVERRIDE;
+
   static const YUVVideoDrawQuad* MaterialCast(const DrawQuad*);
  private:
   YUVVideoDrawQuad();
