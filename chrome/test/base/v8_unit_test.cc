@@ -68,6 +68,7 @@ bool V8UnitTest::ExecuteJavascriptLibraries() {
       library_file = file_util::PathExists(gen_file) ? gen_file :
           test_data_directory.Append(*user_libraries_iterator);
     }
+    file_util::AbsolutePath(&library_file);
     if (!file_util::ReadFileToString(library_file, &library_content)) {
       ADD_FAILURE() << library_file.value();
       return false;

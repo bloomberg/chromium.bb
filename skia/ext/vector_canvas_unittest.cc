@@ -334,8 +334,10 @@ void Premultiply(SkBitmap bitmap) {
 void LoadPngFileToSkBitmap(const FilePath& filename,
                            SkBitmap* bitmap,
                            bool is_opaque) {
+  FilePath absolute_path(filename);
+  file_util::AbsolutePath(&absolute_path);
   std::string compressed;
-  file_util::ReadFileToString(filename, &compressed);
+  file_util::ReadFileToString(absolute_path, &compressed);
   ASSERT_TRUE(compressed.size());
 
   ASSERT_TRUE(gfx::PNGCodec::Decode(
