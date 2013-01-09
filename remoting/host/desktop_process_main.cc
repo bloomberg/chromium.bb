@@ -17,6 +17,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "remoting/base/auto_thread_task_runner.h"
+#include "remoting/base/breakpad.h"
 #include "remoting/host/desktop_process.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/logging.h"
