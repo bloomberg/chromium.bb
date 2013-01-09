@@ -16,6 +16,9 @@ class TableView;
 // Views used to render the header for the table.
 class VIEWS_EXPORT TableHeader : public views::View {
  public:
+  // Amount the text is padded on the left/right side.
+  static const int kHorizontalPadding;
+
   explicit TableHeader(TableView* table);
   virtual ~TableHeader();
 

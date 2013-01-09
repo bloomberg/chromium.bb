@@ -143,6 +143,13 @@ class VIEWS_EXPORT TableView
   void SetColumnVisibility(int id, bool is_visible);
   bool IsColumnVisible(int id) const;
 
+  // Adds the specified column. |col| is not made visible.
+  void AddColumn(const ui::TableColumn& col);
+
+  // Returns true if the column with the specified id is known (either visible
+  // or not).
+  bool HasColumn(int id) const;
+
   // TODO(sky): rename to set_observer().
   void SetObserver(TableViewObserver* observer) {
     table_view_observer_ = observer;

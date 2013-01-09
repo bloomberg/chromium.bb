@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/table_model.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/examples/example_base.h"
@@ -27,10 +28,12 @@ class TableView;
 
 namespace examples {
 
-class TableExample : public ExampleBase,
-                     public ui::TableModel,
-                     public TableViewObserver,
-                     public ButtonListener {
+class TableExample
+    : public ExampleBase,
+      public ui::TableModel,
+      public TableGrouper,
+      public TableViewObserver,
+      public ButtonListener {
  public:
   TableExample();
   virtual ~TableExample();
@@ -43,6 +46,9 @@ class TableExample : public ExampleBase,
   virtual string16 GetText(int row, int column_id) OVERRIDE;
   virtual gfx::ImageSkia GetIcon(int row) OVERRIDE;
   virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
+
+  // TableGrouper:
+  virtual void GetGroupRange(int model_index, GroupRange* range) OVERRIDE;
 
   // TableViewObserver:
   virtual void OnSelectionChanged() OVERRIDE;

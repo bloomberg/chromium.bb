@@ -238,6 +238,19 @@ bool TableView::IsColumnVisible(int id) const {
   return false;
 }
 
+void TableView::AddColumn(const ui::TableColumn& col) {
+  DCHECK(!HasColumn(col.id));
+  columns_.push_back(col);
+}
+
+bool TableView::HasColumn(int id) const {
+  for (size_t i = 0; i < columns_.size(); ++i) {
+    if (columns_[i].id == id)
+      return true;
+  }
+  return false;
+}
+
 void TableView::SetVisibleColumnWidth(int index, int width) {
   DCHECK(index >= 0 && index < static_cast<int>(visible_columns_.size()));
   if (visible_columns_[index].width == width)
@@ -273,9 +286,12 @@ void TableView::Layout() {
   // parent()->parent() is the scrollview. When its width changes we force
   // recalculating column sizes.
   View* scroll_view = parent() ? parent()->parent() : NULL;
-  if (scroll_view && scroll_view->width() != last_parent_width_) {
-    last_parent_width_ = scroll_view->width();
-    UpdateVisibleColumnSizes();
+  if (scroll_view) {
+    const int scroll_view_width = scroll_view->GetContentsBounds().width();
+    if (scroll_view_width != last_parent_width_) {
+      last_parent_width_ = scroll_view_width;
+      UpdateVisibleColumnSizes();
+    }
   }
   // We have to override Layout like this since we're contained in a ScrollView.
   gfx::Size pref = GetPreferredSize();
@@ -442,7 +458,8 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
       canvas->DrawStringInt(
           model_->GetText(model_index, visible_columns_[j].column.id), font_,
           kTextColor,
-          GetMirroredXWithWidthInView(text_x, cell_bounds.right() - text_x),
+          GetMirroredXWithWidthInView(text_x, cell_bounds.right() - text_x -
+                                      kTextHorizontalPadding),
           cell_bounds.y() + kTextVerticalPadding,
           cell_bounds.right() - text_x,
           cell_bounds.height() - kTextVerticalPadding * 2,
@@ -536,10 +553,10 @@ void TableView::UpdateVisibleColumnSizes() {
   std::vector<ui::TableColumn> columns;
   for (size_t i = 0; i < visible_columns_.size(); ++i)
     columns.push_back(visible_columns_[i].column);
-  std::vector<int> sizes =
-      views::CalculateTableColumnSizes(last_parent_width_, header_->font(),
-                                       font_, 0,  // TODO: fix this
-                                       columns, model_);
+  std::vector<int> sizes = views::CalculateTableColumnSizes(
+      last_parent_width_, header_->font(), font_,
+      std::max(kTextHorizontalPadding, TableHeader::kHorizontalPadding) * 2,
+      columns, model_);
   DCHECK_EQ(visible_columns_.size(), sizes.size());
   int x = 0;
   for (size_t i = 0; i < visible_columns_.size(); ++i) {

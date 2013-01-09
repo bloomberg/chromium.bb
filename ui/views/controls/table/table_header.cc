@@ -17,7 +17,6 @@ namespace views {
 namespace {
 
 const int kVerticalPadding = 6;
-const int kHorizontalPadding = 4;
 
 // The minimum width we allow a column to go down to.
 const int kMinColumnWidth = 10;
@@ -37,6 +36,9 @@ gfx::NativeCursor GetResizeCursor() {
 }
 
 }  // namespace
+
+// static
+const int TableHeader::kHorizontalPadding = 4;
 
 typedef std::vector<TableView::VisibleColumn> Columns;
 
@@ -90,8 +92,10 @@ bool TableHeader::OnMousePressed(const ui::MouseEvent& event) {
       resize_details_->initial_width =
           table_->visible_columns()[index].width;
     }
+    return true;
   }
-  return true;
+  // Return false so that context menus on ancestors work.
+  return false;
 }
 
 bool TableHeader::OnMouseDragged(const ui::MouseEvent& event) {
