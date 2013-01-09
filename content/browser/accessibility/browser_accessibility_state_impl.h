@@ -45,9 +45,7 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   virtual bool IsAccessibleBrowser() OVERRIDE;
   virtual void AddHistogramCallback(base::Closure callback) OVERRIDE;
 
-  // Called a short while after startup to allow time for the accessibility
-  // state to be determined. Updates a histogram with the current state.
-  void UpdateHistogram();
+  virtual void UpdateHistogramsForTesting() OVERRIDE;
 
   AccessibilityMode GetAccessibilityMode();
   void SetAccessibilityMode(AccessibilityMode mode);
@@ -55,6 +53,10 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
  private:
   friend class base::RefCountedThreadSafe<BrowserAccessibilityStateImpl>;
   friend struct DefaultSingletonTraits<BrowserAccessibilityStateImpl>;
+
+  // Called a short while after startup to allow time for the accessibility
+  // state to be determined. Updates histograms with the current state.
+  void UpdateHistograms();
 
   // Leaky singleton, destructor generally won't be called.
   virtual ~BrowserAccessibilityStateImpl();

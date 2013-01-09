@@ -34,6 +34,8 @@ class CONTENT_EXPORT BrowserAccessibilityState {
   // Use this to register a method to update additional accessibility
   // histograms.
   virtual void AddHistogramCallback(base::Closure callback) = 0;
+
+  virtual void UpdateHistogramsForTesting() = 0;
 };
 
 }  // namespace content

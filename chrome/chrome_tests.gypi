@@ -878,6 +878,7 @@
         'app/chrome_dll_resource.h',
         'app/chrome_version.rc.version',
         'browser/accessibility/accessibility_extension_apitest.cc',
+        'browser/accessibility/browser_accessibility_state_browsertest.cc',
         'browser/app_controller_mac_browsertest.mm',
         'browser/autocomplete/autocomplete_browsertest.cc',
         'browser/autofill/autofill_browsertest.cc',

@@ -50,12 +50,12 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
   }
 
 #if defined(OS_WIN)
-  // On Windows, UpdateHistogram calls some system functions with unknown
+  // On Windows, UpdateHistograms calls some system functions with unknown
   // runtime, so call it on the file thread to ensure there's no jank.
   // Everything in that method must be safe to call on another thread.
   BrowserThread::ID update_histogram_thread = BrowserThread::FILE;
 #else
-  // On all other platforms, UpdateHistogram should be called on the main
+  // On all other platforms, UpdateHistograms should be called on the main
   // thread.
   BrowserThread::ID update_histogram_thread = BrowserThread::UI;
 #endif
@@ -65,7 +65,7 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
   AddRef();
   BrowserThread::PostDelayedTask(
       update_histogram_thread, FROM_HERE,
-      base::Bind(&BrowserAccessibilityStateImpl::UpdateHistogram, this),
+      base::Bind(&BrowserAccessibilityStateImpl::UpdateHistograms, this),
       base::TimeDelta::FromSeconds(kAccessibilityHistogramDelaySecs));
 }
 
@@ -94,7 +94,11 @@ void BrowserAccessibilityStateImpl::AddHistogramCallback(
   histogram_callbacks_.push_back(callback);
 }
 
-void BrowserAccessibilityStateImpl::UpdateHistogram() {
+void BrowserAccessibilityStateImpl::UpdateHistogramsForTesting() {
+  UpdateHistograms();
+}
+
+void BrowserAccessibilityStateImpl::UpdateHistograms() {
   UpdatePlatformSpecificHistograms();
 
   for (size_t i = 0; i < histogram_callbacks_.size(); ++i)
