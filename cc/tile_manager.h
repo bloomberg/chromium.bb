@@ -12,16 +12,15 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "cc/rendering_stats.h"
 #include "cc/resource_pool.h"
 #include "cc/tile_priority.h"
 
 namespace cc {
-
-class RasterThread;
+class RasterWorkerPool;
 class ResourceProvider;
 class Tile;
 class TileVersion;
-struct RenderingStats;
 
 class CC_EXPORT TileManagerClient {
  public:
@@ -80,7 +79,9 @@ class CC_EXPORT TileManager {
               size_t num_raster_threads);
   virtual ~TileManager();
 
-  const GlobalStateThatImpactsTilePriority& GlobalState() const { return global_state_; }
+  const GlobalStateThatImpactsTilePriority& GlobalState() const {
+      return global_state_;
+  }
   void SetGlobalState(const GlobalStateThatImpactsTilePriority& state);
 
   void ManageTiles();
@@ -97,36 +98,34 @@ class CC_EXPORT TileManager {
  protected:
   // Methods called by Tile
   friend class Tile;
-  void RegisterTile(Tile*);
-  void UnregisterTile(Tile*);
-  void WillModifyTilePriority(Tile*, WhichTree, const TilePriority& new_priority);
+  void RegisterTile(Tile* tile);
+  void UnregisterTile(Tile* tile);
+  void WillModifyTilePriority(
+      Tile* tile, WhichTree tree, const TilePriority& new_priority);
 
  private:
   void ResetBinCounts();
   void AssignGpuMemoryToTiles();
-  void FreeResourcesForTile(Tile*);
+  void FreeResourcesForTile(Tile* tile);
   void ScheduleManageTiles();
   void ScheduleCheckForCompletedSetPixels();
   void DispatchMoreTasks();
-  void DispatchOneRasterTask(RasterThread*, scoped_refptr<Tile>);
+  void GatherPixelRefsForTile(Tile* tile);
+  void DispatchImageDecodeTasksForTile(Tile* tile);
+  void DispatchOneImageDecodeTask(
+      scoped_refptr<Tile> tile, skia::LazyPixelRef* pixel_ref);
+  void OnImageDecodeTaskCompleted(
+      scoped_refptr<Tile> tile, uint32_t pixel_ref_id);
+  void DispatchOneRasterTask(scoped_refptr<Tile> tile);
   void OnRasterTaskCompleted(
-      scoped_refptr<Tile>,
-      scoped_ptr<ResourcePool::Resource>,
-      scoped_refptr<PicturePileImpl>,
-      int manage_tiles_call_count_when_dispatched,
-      RenderingStats*);
-  void DidFinishTileInitialization(Tile*);
-  void DispatchImageDecodingTasksForTile(Tile*);
-  void OnImageDecodingTaskCompleted(scoped_refptr<Tile>,
-                                    uint32_t,
-                                    RenderingStats*);
-  void DispatchOneImageDecodingTask(
-      RasterThread*, scoped_refptr<Tile>, skia::LazyPixelRef*);
-  void GatherPixelRefsForTile(Tile*);
-  RasterThread* GetFreeRasterThread();
+      scoped_refptr<Tile> tile,
+      scoped_ptr<ResourcePool::Resource> resource,
+      int manage_tiles_call_count_when_dispatched);
+  void DidFinishTileInitialization(Tile* tile);
 
   TileManagerClient* client_;
   scoped_ptr<ResourcePool> resource_pool_;
+  scoped_ptr<RasterWorkerPool> raster_worker_;
   bool manage_tiles_pending_;
   int manage_tiles_call_count_;
   bool check_for_completed_set_pixels_pending_;
@@ -150,9 +149,6 @@ class CC_EXPORT TileManager {
 
   typedef std::queue<scoped_refptr<Tile> > TileQueue;
   TileQueue tiles_with_pending_set_pixels_;
-
-  typedef ScopedPtrVector<RasterThread> RasterThreadVector;
-  RasterThreadVector raster_threads_;
 
   RenderingStats rendering_stats_;
 

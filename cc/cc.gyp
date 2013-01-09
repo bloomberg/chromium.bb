@@ -168,6 +168,8 @@
       'quad_culler.cc',
       'quad_culler.h',
       'quad_sink.h',
+      'raster_worker_pool.cc',
+      'raster_worker_pool.h',
       'rate_limiter.cc',
       'rate_limiter.h',
       'region.cc',
