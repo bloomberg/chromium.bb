@@ -153,15 +153,15 @@ def RunWebkitLayoutTests(options):
 
 
 def MainTestWrapper(options):
+  # Device check and alert emails
+  RunCmd(['build/android/device_status_check.py'], flunk_on_failure=False)
+
   if options.install:
     test_obj = INSTRUMENTATION_TESTS[options.install]
     InstallApk(test_obj.apk, test_obj.apk_package, options.target)
 
   if not options.test_filter:
     return
-
-  # Device check and alert emails
-  RunCmd(['build/android/device_status_check.py'], flunk_on_failure=False)
 
   # Spawn logcat monitor
   logcat_dir = os.path.join(CHROME_SRC, 'out/logcat')
