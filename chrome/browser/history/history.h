@@ -25,6 +25,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/search_engines/template_url_id.h"
+#include "chrome/browser/visitedlink/visitedlink_delegate.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/ref_counted_util.h"
 #include "content/public/browser/notification_observer.h"
@@ -45,6 +46,7 @@ class HistoryURLProvider;
 class PageUsageData;
 class PageUsageRequest;
 class Profile;
+class VisitedLinkMaster;
 struct HistoryURLProviderParams;
 
 namespace base {
@@ -107,7 +109,8 @@ class HistoryDBTask : public base::RefCountedThreadSafe<HistoryDBTask> {
 class HistoryService : public CancelableRequestProvider,
                        public content::NotificationObserver,
                        public syncer::SyncableService,
-                       public ProfileKeyedService {
+                       public ProfileKeyedService,
+                       public VisitedLinkDelegate {
  public:
   // Miscellaneous commonly-used types.
   typedef std::vector<PageUsageData*> PageUsageDataList;
@@ -260,31 +263,6 @@ class HistoryService : public CancelableRequestProvider,
   void SetPageContents(const GURL& url, const string16& contents);
 
   // Querying ------------------------------------------------------------------
-
-  // Callback class that a client can implement to iterate over URLs. The
-  // callbacks WILL BE CALLED ON THE BACKGROUND THREAD! Your implementation
-  // should handle this appropriately.
-  class URLEnumerator {
-   public:
-    // Indicates that a URL is available. There will be exactly one call for
-    // every URL in history.
-    virtual void OnURL(const history::URLRow& url_row) = 0;
-
-    // Indicates we are done iterating over URLs. Once called, there will be no
-    // more callbacks made. This call is guaranteed to occur, even if there are
-    // no URLs. If all URLs were iterated, success will be true.
-    virtual void OnComplete(bool success) = 0;
-
-   protected:
-    virtual ~URLEnumerator() {}
-  };
-
-  // Enumerate all URLs in history. The given iterator will be owned by the
-  // caller, so the caller should ensure it exists until OnComplete is called.
-  // You should not generally use this since it will be slow to slurp all URLs
-  // in from the database. It is designed for rebuilding the visited link
-  // database from history.
-  void IterateURLs(URLEnumerator* iterator);
 
   // Returns the information about the requested URL. If the URL is found,
   // success will be true and the information will be in the URLRow parameter.
@@ -678,6 +656,13 @@ class HistoryService : public CancelableRequestProvider,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Implementation of VisitedLinkDelegate.
+  virtual bool AreEquivalentContexts(
+      content::BrowserContext* context1,
+      content::BrowserContext* context2) OVERRIDE;
+  virtual void RebuildTable(
+      const scoped_refptr<URLEnumerator>& enumerator) OVERRIDE;
 
   // Low-level Init().  Same as the public version, but adds a |no_db| parameter
   // that is only set by unittests which causes the backend to not init its DB.
@@ -1102,6 +1087,10 @@ class HistoryService : public CancelableRequestProvider,
 
   // The profile, may be null when testing.
   Profile* profile_;
+
+  // Used for propagating link highlighting data across renderers. May be null
+  // in tests.
+  scoped_ptr<VisitedLinkMaster> visitedlink_master_;
 
   // Has the backend finished loading? The backend is loaded once Init has
   // completed.

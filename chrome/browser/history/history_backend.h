@@ -173,7 +173,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void ScheduleAutocomplete(HistoryURLProvider* provider,
                             HistoryURLProviderParams* params);
 
-  void IterateURLs(HistoryService::URLEnumerator* enumerator);
+  void IterateURLs(
+      const scoped_refptr<VisitedLinkDelegate::URLEnumerator>& enumerator);
   void QueryURL(scoped_refptr<QueryURLRequest> request,
                 const GURL& url,
                 bool want_visits);

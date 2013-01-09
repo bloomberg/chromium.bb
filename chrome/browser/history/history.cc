@@ -111,6 +111,29 @@ void RunWithFaviconResults(
   callback.Run(results->bitmap_results, results->size_map);
 }
 
+// Extract history::URLRows into GURLs for VisitedLinkMaster.
+class URLIteratorFromURLRows : public VisitedLinkMaster::URLIterator {
+ public:
+  explicit URLIteratorFromURLRows(const history::URLRows& url_rows)
+      : itr_(url_rows.begin()),
+        end_(url_rows.end()) {
+  }
+
+  virtual const GURL& NextURL() OVERRIDE {
+    return (itr_++)->url();
+  }
+
+  virtual bool HasNextURL() const OVERRIDE {
+    return itr_ != end_;
+  }
+
+ private:
+  history::URLRows::const_iterator itr_;
+  history::URLRows::const_iterator end_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLIteratorFromURLRows);
+};
+
 }  // namespace
 
 // Sends messages from the backend to us on the main thread. This must be a
@@ -208,6 +231,8 @@ HistoryService::HistoryService(Profile* profile)
     : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       thread_(new base::Thread(kHistoryThreadName)),
       profile_(profile),
+      visitedlink_master_(new VisitedLinkMaster(
+          profile, ALLOW_THIS_IN_INITIALIZER_LIST(this))),
       backend_loaded_(false),
       current_backend_id_(-1),
       bookmark_service_(NULL),
@@ -472,10 +497,8 @@ void HistoryService::AddPage(const history::HistoryAddPageArgs& add_page_args) {
     return;
 
   // Add link & all redirects to visited link list.
-  VisitedLinkMaster* visited_links;
-  if (profile_ &&
-      (visited_links = VisitedLinkMaster::FromProfile(profile_))) {
-    visited_links->AddURL(add_page_args.url);
+  if (visitedlink_master_) {
+    visitedlink_master_->AddURL(add_page_args.url);
 
     if (!add_page_args.redirects.empty()) {
       // We should not be asked to add a page in the middle of a redirect chain.
@@ -485,7 +508,7 @@ void HistoryService::AddPage(const history::HistoryAddPageArgs& add_page_args) {
       // We need the !redirects.empty() condition above since size_t is unsigned
       // and will wrap around when we subtract one from a 0 size.
       for (size_t i = 0; i < add_page_args.redirects.size() - 1; i++)
-        visited_links->AddURL(add_page_args.redirects[i]);
+        visitedlink_master_->AddURL(add_page_args.redirects[i]);
     }
   }
 
@@ -530,11 +553,8 @@ void HistoryService::AddPageWithDetails(const GURL& url,
     return;
 
   // Add to the visited links system.
-  VisitedLinkMaster* visited_links;
-  if (profile_ &&
-      (visited_links = VisitedLinkMaster::FromProfile(profile_))) {
-    visited_links->AddURL(url);
-  }
+  if (visitedlink_master_)
+    visitedlink_master_->AddURL(url);
 
   history::URLRow row(url);
   row.set_title(title);
@@ -554,16 +574,14 @@ void HistoryService::AddPagesWithDetails(const history::URLRows& info,
                                          history::VisitSource visit_source) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Add to the visited links system.
-  VisitedLinkMaster* visited_links;
-  if (profile_ &&
-      (visited_links = VisitedLinkMaster::FromProfile(profile_))) {
+  if (visitedlink_master_) {
     std::vector<GURL> urls;
     urls.reserve(info.size());
     for (history::URLRows::const_iterator i = info.begin(); i != info.end();
          ++i)
       urls.push_back(i->url());
 
-    visited_links->AddURLs(urls);
+    visitedlink_master_->AddURLs(urls);
   }
 
   ScheduleAndForget(PRIORITY_NORMAL,
@@ -718,11 +736,6 @@ void HistoryService::SetImportedFavicons(
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleAndForget(PRIORITY_NORMAL,
                     &HistoryBackend::SetImportedFavicons, favicon_usage);
-}
-
-void HistoryService::IterateURLs(URLEnumerator* enumerator) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::IterateURLs, enumerator);
 }
 
 HistoryService::Handle HistoryService::QueryURL(
@@ -902,17 +915,16 @@ void HistoryService::Observe(int type,
       // delete notifications are by time. We would also like to be more
       // respectful of privacy and never tell the user something is gone when it
       // isn't. Therefore, we update the delete URLs after the fact.
-      if (!profile_)
-        return;  // No profile, probably unit testing.
-      content::Details<history::URLsDeletedDetails> deleted_details(details);
-      VisitedLinkMaster* visited_links =
-          VisitedLinkMaster::FromProfile(profile_);
-      if (!visited_links)
-        return;  // Nobody to update.
-      if (deleted_details->all_history)
-        visited_links->DeleteAllURLs();
-      else  // Delete individual ones.
-        visited_links->DeleteURLs(deleted_details->rows);
+      if (visitedlink_master_) {
+        content::Details<history::URLsDeletedDetails> deleted_details(details);
+
+        if (deleted_details->all_history) {
+          visitedlink_master_->DeleteAllURLs();
+        } else {
+          URLIteratorFromURLRows iterator(deleted_details->rows);
+          visitedlink_master_->DeleteURLs(&iterator);
+        }
+      }
       break;
     }
 
@@ -924,6 +936,23 @@ void HistoryService::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+bool HistoryService::AreEquivalentContexts(content::BrowserContext* context1,
+                                           content::BrowserContext* context2) {
+  DCHECK(context1);
+  DCHECK(context2);
+
+  Profile* profile1 = Profile::FromBrowserContext(context1);
+  Profile* profile2 = Profile::FromBrowserContext(context2);
+
+  return profile1->IsSameProfile(profile2);
+}
+
+void HistoryService::RebuildTable(
+    const scoped_refptr<URLEnumerator>& enumerator) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::IterateURLs, enumerator);
 }
 
 bool HistoryService::Init(const FilePath& history_dir,
@@ -949,6 +978,12 @@ bool HistoryService::Init(const FilePath& history_dir,
 
   // Create the history backend.
   LoadBackendIfNecessary();
+
+  if (visitedlink_master_) {
+    bool result = visitedlink_master_->Init();
+    DCHECK(result);
+  }
+
   return true;
 }
 
