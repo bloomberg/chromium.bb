@@ -594,14 +594,9 @@ const char kEnableAcceleratedOverflowScroll[] =
     "enable-accelerated-overflow-scroll";
 
 // Enables accelerated compositing for scrollable frames for accelerated
-// scrolling for them. Requires kForceCompositingMode.
+// scrolling for them.
 const char kEnableAcceleratedScrollableFrames[] =
      "enable-accelerated-scrollable-frames";
-
-// Enables accelerated scrolling by the compositor for frames. Requires
-// kForceCompositingMode and kEnableAcceleratedScrollableFrames.
-const char kEnableCompositedScrollingForFrames[] =
-     "enable-composited-scrolling-for-frames";
 
 // Visibly render a border around paint rects in the web page to help debug
 // and study painting behavior.

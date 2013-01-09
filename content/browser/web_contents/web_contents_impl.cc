@@ -484,8 +484,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(switches::kEnableAcceleratedOverflowScroll);
   prefs.accelerated_compositing_for_scrollable_frames_enabled =
       command_line.HasSwitch(switches::kEnableAcceleratedScrollableFrames);
-  prefs.composited_scrolling_for_frames_enabled =
-      command_line.HasSwitch(switches::kEnableCompositedScrollingForFrames);
   prefs.show_paint_rects =
       command_line.HasSwitch(switches::kShowPaintRects);
   prefs.render_vsync_enabled =
