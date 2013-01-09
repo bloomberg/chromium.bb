@@ -12,13 +12,26 @@ extern const char kClientLoginToOAuth2Url[];
 
 // Specifies the backend server used for gaia authentications, like sync or
 // policies for example. The https:// prefix and the trailing slash should be
-// omitted. The default value is "www.google.com".
+// omitted. The default value is "accounts.google.com".
 extern const char kGaiaHost[];
 
 // Specifies the path prefix for GAIA authentication URL. It should be used
 // for testing in cases where authentication path prefix differs from the one
 // used in production.
 extern const char kGaiaUrlPath[];
+
+// Specifies the backend server used for Google API calls. The https:// prefix
+// and the trailing slash should be omitted.
+// The default value is "www.googleapis.com".
+extern const char kGoogleApisHost[];
+
+// Specifies the backend server used for lso authentication calls.
+// The https:// prefix and the trailing slash should be
+// omitted. The default value is "accounts.google.com".
+extern const char kLsoHost[];
+
+// TODO(zelidrag): Get rid of all following since all URLs should be
+// controlled only with --gaia-host, --lso-host and --google-apis-host.
 
 // Specifies custom OAuth1 login scope for testing purposes.
 extern const char kOAuth1LoginScope[];

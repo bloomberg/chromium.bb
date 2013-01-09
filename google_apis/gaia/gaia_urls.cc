@@ -12,35 +12,34 @@ namespace {
 
 // Gaia service constants
 const char kDefaultGaiaBaseUrl[] = "accounts.google.com";
+const char kDefaultGoogleApisBaseUrl[] = "www.googleapis.com";
 const char kCaptchaUrlPrefixSuffix[] = "/";
+
+// API calls from accounts.google.com
 const char kClientLoginUrlSuffix[] = "/ClientLogin";
 const char kServiceLoginUrlSuffix[] = "/ServiceLogin";
 const char kIssueAuthTokenUrlSuffix[] = "/IssueAuthToken";
 const char kGetUserInfoUrlSuffix[] = "/GetUserInfo";
 const char kTokenAuthUrlSuffix[] = "/TokenAuth";
 const char kMergeSessionUrlSuffix[] = "/MergeSession";
-
 const char kOAuthGetAccessTokenUrlSuffix[] = "/OAuthGetAccessToken";
 const char kOAuthWrapBridgeUrlSuffix[] = "/OAuthWrapBridge";
 const char kOAuth1LoginUrlSuffix[] = "/OAuthLogin";
 const char kOAuthRevokeTokenUrlSuffix[] = "/AuthSubRevokeToken";
 
-// Federated login constants
-const char kDefaultFederatedLoginHost[] = "www.google.com";
-const char kDefaultFederatedLoginPath[] = "/accounts";
+// API calls from accounts.google.com (LSO)
 const char kGetOAuthTokenUrlSuffix[] = "/o/oauth/GetOAuthToken/";
+const char kClientLoginToOAuth2UrlSuffix[] = "/o/oauth2/programmatic_auth";
+const char kOAuth2TokenUrlSuffix[] = "/o/oauth2/token";
+const char kClientOAuthUrlSuffix[] = "/ClientOAuth";
 
-const char kClientLoginToOAuth2Url[] =
-    "https://accounts.google.com/o/oauth2/programmatic_auth";
-const char kOAuth2TokenUrl[] =
-    "https://accounts.google.com/o/oauth2/token";
-const char kOAuth2IssueTokenUrl[] =
-    "https://www.googleapis.com/oauth2/v2/IssueToken";
+// API calls from www.googleapis.com
+const char kOAuth2IssueTokenUrlSuffix[] = "/oauth2/v2/IssueToken";
+const char kOAuthUserInfoUrlSuffix[] = "/oauth2/v1/userinfo";
+const char kOAuthWrapBridgeUserInfoScopeUrlSuffix[] = "/auth/userinfo.email";
+
 const char kOAuth1LoginScope[] =
     "https://www.google.com/accounts/OAuthLogin";
-const char kOAuthUserInfoUrl[] =
-    "https://www.googleapis.com/oauth2/v1/userinfo";
-
 
 void GetSwitchValueWithDefault(const char* switch_value,
                                const char* default_value,
@@ -65,8 +64,19 @@ GaiaUrls::GaiaUrls() {
   GetSwitchValueWithDefault(switches::kGaiaHost, kDefaultGaiaBaseUrl,
                             &host_base);
 
+  std::string lso_base;
+  GetSwitchValueWithDefault(switches::kLsoHost, kDefaultGaiaBaseUrl,
+                            &lso_base);
+
+  std::string google_apis_base;
+  GetSwitchValueWithDefault(switches::kGoogleApisHost,
+                            kDefaultGoogleApisBaseUrl,
+                            &google_apis_base);
+
   captcha_url_prefix_ = "http://" + host_base + kCaptchaUrlPrefixSuffix;
   gaia_origin_url_ = "https://" + host_base;
+  lso_origin_url_ = "https://" + lso_base;
+  google_apis_origin_url_ = "https://" + google_apis_base;
   std::string gaia_url_base = gaia_origin_url_;
   if (command_line->HasSwitch(switches::kGaiaUrlPath)) {
     std::string path =
@@ -79,49 +89,58 @@ GaiaUrls::GaiaUrls() {
     }
   }
 
-  client_login_url_ = gaia_url_base + kClientLoginUrlSuffix;
-  service_login_url_ = gaia_url_base + kServiceLoginUrlSuffix;
-  issue_auth_token_url_ = gaia_url_base + kIssueAuthTokenUrlSuffix;
-  get_user_info_url_ = gaia_url_base + kGetUserInfoUrlSuffix;
-  token_auth_url_ = gaia_url_base + kTokenAuthUrlSuffix;
-  merge_session_url_ = gaia_url_base + kMergeSessionUrlSuffix;
-  get_oauth_token_url_ = gaia_url_base + kGetOAuthTokenUrlSuffix;
-  oauth_get_access_token_url_ = gaia_url_base +
-                                kOAuthGetAccessTokenUrlSuffix;
-  oauth_wrap_bridge_url_ = gaia_url_base + kOAuthWrapBridgeUrlSuffix;
-  oauth_revoke_token_url_ = gaia_url_base + kOAuthRevokeTokenUrlSuffix;
-  oauth1_login_url_ = gaia_url_base + kOAuth1LoginUrlSuffix;
-
-  GetSwitchValueWithDefault(switches::kOAuth1LoginScope,
-                            kOAuth1LoginScope,
-                            &oauth1_login_scope_);
-
-  // TODO(joaodasilva): these aren't configurable for now, but are managed here
-  // so that users of Gaia URLs don't have to use static constants.
-  // http://crbug.com/97126
-  oauth_wrap_bridge_user_info_scope_ =
-      "https://www.googleapis.com/auth/userinfo.email";
-  client_oauth_url_ = "https://accounts.google.com/ClientOAuth";
 
   oauth2_chrome_client_id_ =
       google_apis::GetOAuth2ClientID(google_apis::CLIENT_MAIN);
   oauth2_chrome_client_secret_ =
       google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_MAIN);
 
+  // URLs from accounts.google.com.
+  gaia_login_form_realm_ = gaia_url_base + "/";
+  client_login_url_ = gaia_url_base + kClientLoginUrlSuffix;
+  service_login_url_ = gaia_url_base + kServiceLoginUrlSuffix;
+  issue_auth_token_url_ = gaia_url_base + kIssueAuthTokenUrlSuffix;
+  get_user_info_url_ = gaia_url_base + kGetUserInfoUrlSuffix;
+  token_auth_url_ = gaia_url_base + kTokenAuthUrlSuffix;
+  merge_session_url_ = gaia_url_base + kMergeSessionUrlSuffix;
+  oauth_get_access_token_url_ = gaia_url_base +
+                                kOAuthGetAccessTokenUrlSuffix;
+  oauth_wrap_bridge_url_ = gaia_url_base + kOAuthWrapBridgeUrlSuffix;
+  oauth_revoke_token_url_ = gaia_url_base + kOAuthRevokeTokenUrlSuffix;
+  oauth1_login_url_ = gaia_url_base + kOAuth1LoginUrlSuffix;
+  client_oauth_url_ = gaia_url_base + kClientOAuthUrlSuffix;
+
+  // URLs from accounts.google.com (LSO).
+  get_oauth_token_url_ = lso_origin_url_ + kGetOAuthTokenUrlSuffix;
+  std::string client_login_to_oauth2_url = lso_origin_url_ +
+                                           kClientLoginToOAuth2UrlSuffix;
+  std::string oauth2_token_url = lso_origin_url_ + kOAuth2TokenUrlSuffix;
+
+  // URLs from www.googleapis.com.
+  oauth_wrap_bridge_user_info_scope_ = google_apis_origin_url_ +
+      kOAuthWrapBridgeUserInfoScopeUrlSuffix;
+  std::string oauth2_issue_token_url = google_apis_origin_url_ +
+                                       kOAuth2IssueTokenUrlSuffix;
+  std::string oauth_user_info_url = google_apis_origin_url_ +
+                                    kOAuthUserInfoUrlSuffix;
+
+  // TODO(zelidrag): Get rid of all these switches since all URLs should be
+  // controlled only with --gaia-host, --lso-host and --google-apis-host.
+  GetSwitchValueWithDefault(switches::kOAuth1LoginScope,
+                            kOAuth1LoginScope,
+                            &oauth1_login_scope_);
   GetSwitchValueWithDefault(switches::kClientLoginToOAuth2Url,
-                            kClientLoginToOAuth2Url,
+                            client_login_to_oauth2_url.c_str(),
                             &client_login_to_oauth2_url_);
   GetSwitchValueWithDefault(switches::kOAuth2TokenUrl,
-                            kOAuth2TokenUrl,
+                            oauth2_token_url.c_str(),
                             &oauth2_token_url_);
   GetSwitchValueWithDefault(switches::kOAuth2IssueTokenUrl,
-                            kOAuth2IssueTokenUrl,
+                            oauth2_issue_token_url.c_str(),
                             &oauth2_issue_token_url_);
   GetSwitchValueWithDefault(switches::kOAuthUserInfoUrl,
-                            kOAuthUserInfoUrl,
+                            oauth_user_info_url.c_str(),
                             &oauth_user_info_url_);
-
-  gaia_login_form_realm_ = "https://accounts.google.com/";
 }
 
 GaiaUrls::~GaiaUrls() {

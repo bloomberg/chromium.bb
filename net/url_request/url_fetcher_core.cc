@@ -622,6 +622,12 @@ void URLFetcherCore::OnReadCompleted(URLRequest* request,
   }
 }
 
+void URLFetcherCore::OnCertificateRequested(
+    URLRequest* request,
+    SSLCertRequestInfo* cert_request_info) {
+  request->ContinueWithCertificate(NULL);
+}
+
 void URLFetcherCore::OnConnectionTypeChanged(
     NetworkChangeNotifier::ConnectionType type) {
   DCHECK_GT(num_retries_on_network_changes_, 0);

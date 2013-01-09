@@ -52,6 +52,8 @@ class GaiaUrls {
   std::string captcha_url_prefix_;
 
   std::string gaia_origin_url_;
+  std::string lso_origin_url_;
+  std::string google_apis_origin_url_;
   std::string client_login_url_;
   std::string service_login_url_;
   std::string issue_auth_token_url_;

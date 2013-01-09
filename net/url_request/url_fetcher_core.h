@@ -124,6 +124,9 @@ class URLFetcherCore
   virtual void OnResponseStarted(URLRequest* request) OVERRIDE;
   virtual void OnReadCompleted(URLRequest* request,
                                int bytes_read) OVERRIDE;
+  virtual void OnCertificateRequested(
+      URLRequest* request,
+      SSLCertRequestInfo* cert_request_info) OVERRIDE;
 
   // Overridden from NetworkChangeNotifier::ConnectionTypeObserver:
   virtual void OnConnectionTypeChanged(
