@@ -316,9 +316,6 @@ void Window::SchedulePaintInRect(const gfx::Rect& rect) {
 
 void Window::SetExternalTexture(ui::Texture* texture) {
   layer_->SetExternalTexture(texture);
-  gfx::Rect region(bounds().size());
-  FOR_EACH_OBSERVER(
-      WindowObserver, observers_, OnWindowPaintScheduled(this, region));
 }
 
 void Window::SetDefaultParentByRootWindow(RootWindow* root_window,
