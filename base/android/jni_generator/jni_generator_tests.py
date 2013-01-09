@@ -1912,7 +1912,7 @@ class Foo {
                     jni_generator.JniParams._inner_classes)
     self.assertTrue('Lorg/chromium/content/app/Foo$PasswordListObserver' in
                     jni_generator.JniParams._inner_classes)
-    self.assertEquals('Lorg/chromium/content/app/ContentMain$Inner',
+    self.assertEquals('Lorg/chromium/content/app/ContentMain$Inner;',
                       jni_generator.JniParams.JavaToJni('ContentMain.Inner'))
     self.assertRaises(SyntaxError,
                       jni_generator.JniParams.JavaToJni,

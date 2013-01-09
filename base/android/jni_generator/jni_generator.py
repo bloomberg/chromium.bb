@@ -203,7 +203,7 @@ class JniParams(object):
       inner = components[-1]
       for qualified_name in JniParams._imports:
         if qualified_name.endswith('/' + outer):
-          return prefix + qualified_name + '$' + inner
+          return prefix + qualified_name + '$' + inner + ';'
 
     # Type not found, falling back to same package as this class.
     return prefix + 'L' + JniParams._package + '/' + param + ';'
