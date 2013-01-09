@@ -58,6 +58,9 @@ def FindChrome(src_dir, options):
   chrome_locations = [
       'build/%s/chrome.exe' % mode,
       'chrome/%s/chrome.exe' % mode,
+      # For Linux buildbots.  scripts/slave/extract_build.py extracts builds
+      # to src/sconsbuild/ rather than src/out/.
+      'sconsbuild/%s/chrome' % mode,
       # Windows Chromium ninja builder
       'out/%s/chrome.exe' % mode,
       'out/%s/chrome' % mode,
