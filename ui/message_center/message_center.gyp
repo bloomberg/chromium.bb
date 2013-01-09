@@ -36,6 +36,8 @@
         'message_center_constants.cc',
         'message_center_constants.h',
         'message_center_export.h',
+        'message_center_switches.cc',
+        'message_center_switches.h',
         'message_popup_bubble.cc',
         'message_popup_bubble.h',
         'message_simple_view.cc',
