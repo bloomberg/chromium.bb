@@ -78,7 +78,7 @@ class VIEWS_EXPORT MenuController
                     const gfx::Rect& bounds,
                     MenuItemView::AnchorPosition position,
                     bool context_menu,
-                    int* mouse_event_flags);
+                    int* event_flags);
 
   // Whether or not Run blocks.
   bool IsBlockingRun() const { return blocking_run_; }
@@ -275,7 +275,7 @@ class VIEWS_EXPORT MenuController
 
   // Invoked when the user accepts the selected item. This is only used
   // when blocking. This schedules the loop to quit.
-  void Accept(MenuItemView* item, int mouse_event_flags);
+  void Accept(MenuItemView* item, int event_flags);
 
   bool ShowSiblingMenu(SubmenuView* source, const gfx::Point& mouse_location);
 
@@ -490,9 +490,8 @@ class VIEWS_EXPORT MenuController
   // If the user accepted the selection, this is the result.
   MenuItemView* result_;
 
-  // The mouse event flags when the user clicked on a menu. Is 0 if the
-  // user did not use the mouse to select the menu.
-  int result_mouse_event_flags_;
+  // The event flags when the user selected the menu.
+  int accept_event_flags_;
 
   // If not empty, it means we're nested. When Run is invoked from within
   // Run, the current state (state_) is pushed onto menu_stack_. This allows

@@ -272,7 +272,7 @@ MenuItemView* MenuController::Run(Widget* parent,
                                   const gfx::Rect& bounds,
                                   MenuItemView::AnchorPosition position,
                                   bool context_menu,
-                                  int* result_mouse_event_flags) {
+                                  int* result_event_flags) {
   exit_type_ = EXIT_NONE;
   possible_drag_ = false;
   drag_in_progress_ = false;
@@ -351,8 +351,8 @@ MenuItemView* MenuController::Run(Widget* parent,
   // In case we're nested, reset result_.
   result_ = NULL;
 
-  if (result_mouse_event_flags)
-    *result_mouse_event_flags = result_mouse_event_flags_;
+  if (result_event_flags)
+    *result_event_flags = accept_event_flags_;
 
   if (exit_type_ == EXIT_OUTERMOST) {
     SetExitType(EXIT_NONE);
@@ -524,7 +524,7 @@ void MenuController::OnGestureEvent(SubmenuView* source,
         !(part.menu->HasSubmenu())) {
       if (part.menu->GetDelegate()->IsTriggerableEvent(
           part.menu, *event)) {
-        Accept(part.menu, 0);
+        Accept(part.menu, event->flags());
       }
       event->StopPropagation();
     } else if (part.type == MenuPart::MENU_ITEM) {
@@ -1045,7 +1045,7 @@ MenuController::MenuController(ui::NativeTheme* theme,
       exit_type_(EXIT_NONE),
       did_capture_(false),
       result_(NULL),
-      result_mouse_event_flags_(0),
+      accept_event_flags_(0),
       drop_target_(NULL),
       drop_position_(MenuDelegate::DROP_UNKNOWN),
       owner_(NULL),
@@ -1124,7 +1124,7 @@ void MenuController::UpdateInitialLocation(
 #endif
 }
 
-void MenuController::Accept(MenuItemView* item, int mouse_event_flags) {
+void MenuController::Accept(MenuItemView* item, int event_flags) {
   DCHECK(IsBlockingRun());
   result_ = item;
   if (item && !menu_stack_.empty() &&
@@ -1133,7 +1133,7 @@ void MenuController::Accept(MenuItemView* item, int mouse_event_flags) {
   } else {
     SetExitType(EXIT_ALL);
   }
-  result_mouse_event_flags_ = mouse_event_flags;
+  accept_event_flags_ = event_flags;
 }
 
 bool MenuController::ShowSiblingMenu(SubmenuView* source,
