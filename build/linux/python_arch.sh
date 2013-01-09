@@ -27,6 +27,12 @@ if [ $? -eq 0 ]; then
   exit 0
 fi
 
+echo $file_out | grep -qs "MIPS"
+if [ $? -eq 0 ]; then
+  echo mipsel
+  exit 0
+fi
+
 echo $file_out | grep -qs "x86-64"
 if [ $? -eq 0 ]; then
   echo x64
