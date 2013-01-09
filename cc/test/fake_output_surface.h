@@ -7,7 +7,6 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/compositor_frame.h"
 #include "cc/output_surface.h"
 #include "cc/test/fake_software_output_device.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
@@ -48,10 +47,7 @@ class FakeOutputSurface : public OutputSurface {
   virtual WebKit::WebGraphicsContext3D* Context3D() const OVERRIDE;
   virtual SoftwareOutputDevice* SoftwareDevice() const OVERRIDE;
 
-  virtual void SendFrameToParentCompositor(CompositorFrame*) OVERRIDE;
-
-  CompositorFrame& last_sent_frame() { return last_sent_frame_; }
-  size_t num_sent_frames() { return num_sent_frames_; }
+  virtual void SendFrameToParentCompositor(const CompositorFrame&) OVERRIDE;
 
 private:
   explicit FakeOutputSurface(
@@ -63,8 +59,6 @@ private:
   scoped_ptr<SoftwareOutputDevice> software_device_;
   struct Capabilities capabilities_;
   OutputSurfaceClient* client_;
-  CompositorFrame last_sent_frame_;
-  size_t num_sent_frames_;
 };
 
 static inline scoped_ptr<cc::OutputSurface> createFakeOutputSurface()

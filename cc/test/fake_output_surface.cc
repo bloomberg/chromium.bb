@@ -7,15 +7,13 @@
 namespace cc {
 
 FakeOutputSurface::FakeOutputSurface(
-    scoped_ptr<WebKit::WebGraphicsContext3D> context3d, bool has_parent)
-    : num_sent_frames_(0) {
+    scoped_ptr<WebKit::WebGraphicsContext3D> context3d, bool has_parent) {
   context3d_ = context3d.Pass();
   capabilities_.has_parent_compositor = has_parent;
 }
 
 FakeOutputSurface::FakeOutputSurface(
-    scoped_ptr<SoftwareOutputDevice> software_device, bool has_parent)
-    : num_sent_frames_(0) {
+    scoped_ptr<SoftwareOutputDevice> software_device, bool has_parent) {
   software_device_ = software_device.Pass();
   capabilities_.has_parent_compositor = has_parent;
 }
@@ -45,10 +43,6 @@ SoftwareOutputDevice* FakeOutputSurface::SoftwareDevice() const {
   return software_device_.get();
 }
 
-void FakeOutputSurface::SendFrameToParentCompositor(
-    CompositorFrame* frame) {
-  frame->AssignTo(&last_sent_frame_);
-  ++num_sent_frames_;
-}
+void FakeOutputSurface::SendFrameToParentCompositor(const CompositorFrame&) {}
 
 }  // namespace cc

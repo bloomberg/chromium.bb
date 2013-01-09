@@ -29,7 +29,7 @@ using namespace WebKit;
 
 namespace cc {
 
-bool TestHooks::prepareToDrawOnThread(cc::LayerTreeHostImpl*, LayerTreeHostImpl::FrameData&, bool)
+bool TestHooks::prepareToDrawOnThread(cc::LayerTreeHostImpl*)
 {
     return true;
 }
@@ -64,7 +64,7 @@ void MockLayerTreeHostImpl::commitComplete()
 bool MockLayerTreeHostImpl::prepareToDraw(FrameData& frame)
 {
     bool result = LayerTreeHostImpl::prepareToDraw(frame);
-    if (!m_testHooks->prepareToDrawOnThread(this, frame, result))
+    if (!m_testHooks->prepareToDrawOnThread(this))
         result = false;
     return result;
 }

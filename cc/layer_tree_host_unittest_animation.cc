@@ -180,10 +180,7 @@ class LayerTreeHostAnimationTestCheckerboardDoesNotStarveDraws :
       endTest();
   }
 
-  virtual bool prepareToDrawOnThread(
-      LayerTreeHostImpl* host_impl,
-      LayerTreeHostImpl::FrameData& frame,
-      bool result) OVERRIDE {
+  virtual bool prepareToDrawOnThread(LayerTreeHostImpl*) OVERRIDE {
     return false;
   }
 

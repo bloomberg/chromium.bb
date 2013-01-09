@@ -36,7 +36,7 @@ class WebCompositorSupportOutputSurface : public cc::OutputSurface {
   virtual WebKit::WebGraphicsContext3D* Context3D() const OVERRIDE;
   virtual cc::SoftwareOutputDevice* SoftwareDevice() const OVERRIDE;
 
-  virtual void SendFrameToParentCompositor(cc::CompositorFrame*) OVERRIDE;
+  virtual void SendFrameToParentCompositor(const cc::CompositorFrame&) OVERRIDE;
 
 private:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebCompositorSupportOutputSurface(

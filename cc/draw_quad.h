@@ -6,7 +6,6 @@
 #define CC_DRAW_QUAD_H_
 
 #include "cc/cc_export.h"
-#include "cc/resource_provider.h"
 #include "cc/shared_quad_state.h"
 
 namespace cc {
@@ -71,8 +70,6 @@ class CC_EXPORT DrawQuad {
     return needs_blending || shared_quad_state->opacity < 1.0f ||
         !opaque_rect.Contains(visible_rect);
   }
-
-  virtual void AppendResources(ResourceProvider::ResourceIdArray* resources);
 
  protected:
   DrawQuad();

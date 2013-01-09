@@ -340,7 +340,7 @@ class BrowserCompositorOutputSurface
   }
 
   virtual void SendFrameToParentCompositor(
-      cc::CompositorFrame*) OVERRIDE {
+      const cc::CompositorFrame&) OVERRIDE {
   }
 
   void OnUpdateVSyncParameters(

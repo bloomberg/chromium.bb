@@ -33,9 +33,6 @@ class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
   unsigned texture_id;
   gfx::Transform matrix;
 
-  virtual void AppendResources(ResourceProvider::ResourceIdArray* resources)
-      OVERRIDE;
-
   static const StreamVideoDrawQuad* MaterialCast(const DrawQuad*);
  private:
   StreamVideoDrawQuad();

@@ -81,11 +81,6 @@ void RenderPassDrawQuad::SetAll(
   this->background_filters = background_filters;
 }
 
-void RenderPassDrawQuad::AppendResources(
-    ResourceProvider::ResourceIdArray* resources) {
-  resources->push_back(mask_resource_id);
-}
-
 const RenderPassDrawQuad* RenderPassDrawQuad::MaterialCast(
     const DrawQuad* quad) {
   DCHECK(quad->material == DrawQuad::RENDER_PASS);

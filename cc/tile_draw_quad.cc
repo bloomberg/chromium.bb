@@ -75,11 +75,6 @@ void TileDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->bottom_edge_aa = bottom_edge_aa;
 }
 
-void TileDrawQuad::AppendResources(
-    ResourceProvider::ResourceIdArray* resources) {
-  resources->push_back(resource_id);
-}
-
 const TileDrawQuad* TileDrawQuad::MaterialCast(
     const DrawQuad* quad) {
   DCHECK(quad->material == DrawQuad::TILED_CONTENT);

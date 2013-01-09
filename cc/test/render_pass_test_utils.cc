@@ -15,7 +15,7 @@
 
 namespace cc {
 
-TestRenderPass* addRenderPass(RenderPassList& passList,
+TestRenderPass* addRenderPass(ScopedPtrVector<RenderPass>& passList,
                               RenderPass::Id id,
                               const gfx::Rect& outputRect,
                               const gfx::Transform& rootTransform) {

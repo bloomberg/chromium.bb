@@ -690,7 +690,7 @@ class LayerTreeHostContextTestDontUseLostResources :
           gfx::Rect(0, 0, 10, 10),
           gfx::Rect(0, 0, 10, 10),
           gfx::Transform());
-      pass->AppendOneOfEveryQuadType(resource_provider, RenderPass::Id(2, 1));
+      pass->AppendOneOfEveryQuadType(resource_provider);
 
       ScopedPtrVector<RenderPass> pass_list;
       pass_list.append(pass_for_quad.PassAs<RenderPass>());
@@ -735,10 +735,7 @@ class LayerTreeHostContextTestDontUseLostResources :
     }
   }
 
-  virtual bool prepareToDrawOnThread(
-      LayerTreeHostImpl* host_impl,
-      LayerTreeHostImpl::FrameData& frame,
-      bool result) OVERRIDE {
+  virtual bool prepareToDrawOnThread(LayerTreeHostImpl* host_impl) {
     if (host_impl->activeTree()->source_frame_number() == 2) {
       // Lose the context during draw on the second commit. This will cause
       // a third commit to recover.

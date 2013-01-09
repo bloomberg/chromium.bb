@@ -20,7 +20,7 @@
 namespace cc {
 
 void TestRenderPass::AppendOneOfEveryQuadType(
-    cc::ResourceProvider* resourceProvider, RenderPass::Id child_pass) {
+    cc::ResourceProvider* resourceProvider) {
   gfx::Rect rect(0, 0, 100, 100);
   gfx::Rect opaque_rect(10, 10, 80, 80);
   const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -31,31 +31,6 @@ void TestRenderPass::AppendOneOfEveryQuadType(
           ResourceProvider::TextureUsageAny);
   unsigned texture_id = ResourceProvider::ScopedReadLockGL(
       resourceProvider, texture_resource).textureId();
-  cc::ResourceProvider::ResourceId resource1 =
-      resourceProvider->createResource(
-          gfx::Size(45, 5),
-          resourceProvider->bestTextureFormat(),
-          ResourceProvider::TextureUsageAny);
-  cc::ResourceProvider::ResourceId resource2 =
-      resourceProvider->createResource(
-          gfx::Size(346, 61),
-          resourceProvider->bestTextureFormat(),
-          ResourceProvider::TextureUsageAny);
-  cc::ResourceProvider::ResourceId resource3 =
-      resourceProvider->createResource(
-          gfx::Size(12, 134),
-          resourceProvider->bestTextureFormat(),
-          ResourceProvider::TextureUsageAny);
-  cc::ResourceProvider::ResourceId resource4 =
-      resourceProvider->createResource(
-          gfx::Size(56, 12),
-          resourceProvider->bestTextureFormat(),
-          ResourceProvider::TextureUsageAny);
-  cc::ResourceProvider::ResourceId resource5 =
-      resourceProvider->createResource(
-          gfx::Size(73, 26),
-          resourceProvider->bestTextureFormat(),
-          ResourceProvider::TextureUsageAny);
 
   scoped_ptr<cc::SharedQuadState> shared_state = cc::SharedQuadState::Create();
   shared_state->SetAll(gfx::Transform(),
@@ -90,35 +65,19 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                           cc::IOSurfaceDrawQuad::FLIPPED);
   AppendQuad(io_surface_quad.PassAs<DrawQuad>());
 
-  if (child_pass.layer_id) {
-    scoped_ptr<cc::RenderPassDrawQuad> render_pass_quad =
-        cc::RenderPassDrawQuad::Create();
-    render_pass_quad->SetNew(shared_state.get(),
-                             rect,
-                             child_pass,
-                             false,
-                             resource5,
-                             rect,
-                             gfx::RectF(),
-                             WebKit::WebFilterOperations(),
-                             skia::RefPtr<SkImageFilter>(),
-                             WebKit::WebFilterOperations());
-    AppendQuad(render_pass_quad.PassAs<DrawQuad>());
-
-    scoped_ptr<cc::RenderPassDrawQuad> render_pass_replica_quad =
-        cc::RenderPassDrawQuad::Create();
-    render_pass_replica_quad->SetNew(shared_state.get(),
-                                     rect,
-                                     child_pass,
-                                     true,
-                                     resource5,
-                                     rect,
-                                     gfx::RectF(),
-                                     WebKit::WebFilterOperations(),
-                                     skia::RefPtr<SkImageFilter>(),
-                                     WebKit::WebFilterOperations());
-    AppendQuad(render_pass_replica_quad.PassAs<DrawQuad>());
-  }
+  scoped_ptr<cc::RenderPassDrawQuad> render_pass_quad =
+      cc::RenderPassDrawQuad::Create();
+  render_pass_quad->SetNew(shared_state.get(),
+                           rect,
+                           cc::RenderPass::Id(1, 1),
+                           false,
+                           0,
+                           rect,
+                           gfx::RectF(),
+                           WebKit::WebFilterOperations(),
+                           skia::RefPtr<SkImageFilter>(),
+                           WebKit::WebFilterOperations());
+  AppendQuad(render_pass_quad.PassAs<DrawQuad>());
 
   scoped_ptr<cc::SolidColorDrawQuad> solid_color_quad =
       cc::SolidColorDrawQuad::Create();
@@ -141,7 +100,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
   texture_quad->SetNew(shared_state.get(),
                        rect,
                        opaque_rect,
-                       resource1,
+                       texture_resource,
                        false,
                        rect,
                        vertex_opacity,
@@ -151,16 +110,16 @@ void TestRenderPass::AppendOneOfEveryQuadType(
   scoped_ptr<cc::TileDrawQuad> scaled_tile_quad =
       cc::TileDrawQuad::Create();
   scaled_tile_quad->SetNew(shared_state.get(),
-                           rect,
-                           opaque_rect,
-                           resource2,
-                           gfx::RectF(0, 0, 50, 50),
-                           gfx::Size(50, 50),
-                           false,
-                           false,
-                           false,
-                           false,
-                           false);
+                    rect,
+                    opaque_rect,
+                    texture_resource,
+                    gfx::RectF(0, 0, 50, 50),
+                    gfx::Size(50, 50),
+                    false,
+                    false,
+                    false,
+                    false,
+                    false);
   AppendQuad(scaled_tile_quad.PassAs<DrawQuad>());
 
   scoped_ptr<cc::SharedQuadState> transformed_state = shared_state->Copy();
@@ -170,16 +129,16 @@ void TestRenderPass::AppendOneOfEveryQuadType(
   scoped_ptr<cc::TileDrawQuad> transformed_tile_quad =
       cc::TileDrawQuad::Create();
   transformed_tile_quad->SetNew(transformed_state.get(),
-                                rect,
-                                opaque_rect,
-                                resource3,
-                                gfx::RectF(0, 0, 100, 100),
-                                gfx::Size(100, 100),
-                                false,
-                                false,
-                                false,
-                                false,
-                                false);
+                    rect,
+                    opaque_rect,
+                    texture_resource,
+                    gfx::RectF(0, 0, 100, 100),
+                    gfx::Size(100, 100),
+                    false,
+                    false,
+                    false,
+                    false,
+                    false);
   AppendQuad(transformed_tile_quad.PassAs<DrawQuad>());
 
   scoped_ptr<cc::TileDrawQuad> tile_quad =
@@ -187,7 +146,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
   tile_quad->SetNew(shared_state.get(),
                     rect,
                     opaque_rect,
-                    resource4,
+                    texture_resource,
                     gfx::RectF(0, 0, 100, 100),
                     gfx::Size(100, 100),
                     false,

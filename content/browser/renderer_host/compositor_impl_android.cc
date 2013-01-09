@@ -72,7 +72,7 @@ class WebGraphicsContextToOutputSurfaceAdapter : public cc::OutputSurface {
   }
 
   virtual void SendFrameToParentCompositor(
-      cc::CompositorFrame*) OVERRIDE {
+      const cc::CompositorFrame&) OVERRIDE {
   }
 
  private:
