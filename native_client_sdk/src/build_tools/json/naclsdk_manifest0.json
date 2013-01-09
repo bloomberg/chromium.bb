@@ -1,39 +1,39 @@
 {
   "bundles": [
     {
-      "name": "sdk_tools",
-      "description": "Native Client SDK Tools, revision 160493",
-      "stability": "stable",
-      "recommended": "yes",
-      "version": 1,
+      "name": "sdk_tools", 
+      "description": "Native Client SDK Tools, revision 174973", 
+      "stability": "stable", 
+      "recommended": "yes", 
+      "version": 1, 
       "archives": [
         {
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.160493/sdk_tools.tgz",
+          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.174973/sdk_tools.tgz", 
           "checksum": {
-            "sha1": "98799f2f2603d57a8b386f3898b0d69baa376448"
-          },
-          "host_os": "mac",
-          "size": 25955
-        },
+            "sha1": "2e4dfe3f5276784677ec9ecc565b9b107bde2bd3"
+          }, 
+          "host_os": "mac", 
+          "size": 31934
+        }, 
         {
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.160493/sdk_tools.tgz",
+          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.174973/sdk_tools.tgz", 
           "checksum": {
-            "sha1": "98799f2f2603d57a8b386f3898b0d69baa376448"
-          },
-          "host_os": "linux",
-          "size": 25955
-        },
+            "sha1": "2e4dfe3f5276784677ec9ecc565b9b107bde2bd3"
+          }, 
+          "host_os": "linux", 
+          "size": 31934
+        }, 
         {
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.160493/sdk_tools.tgz",
+          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.174973/sdk_tools.tgz", 
           "checksum": {
-            "sha1": "98799f2f2603d57a8b386f3898b0d69baa376448"
-          },
-          "host_os": "win",
-          "size": 25955
+            "sha1": "2e4dfe3f5276784677ec9ecc565b9b107bde2bd3"
+          }, 
+          "host_os": "win", 
+          "size": 31934
         }
-      ],
-      "revision": 160493
+      ], 
+      "revision": 174973
     }
-  ],
+  ], 
   "manifest_version": 2
 }
