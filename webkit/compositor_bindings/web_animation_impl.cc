@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web_animation_impl.h"
+#include "webkit/compositor_bindings/web_animation_impl.h"
 
 #include "cc/animation.h"
 #include "cc/animation_curve.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationCurve.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAnimation.h"
-#include "web_animation_id_provider.h"
-#include "web_float_animation_curve_impl.h"
-#include "web_transform_animation_curve_impl.h"
+#include "webkit/compositor_bindings/web_animation_id_provider.h"
+#include "webkit/compositor_bindings/web_float_animation_curve_impl.h"
+#include "webkit/compositor_bindings/web_transform_animation_curve_impl.h"
 
 using cc::Animation;
 using webkit::WebAnimationIdProvider;

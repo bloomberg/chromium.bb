@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web_to_ccscrollbar_theme_painter_adapter.h"
+#include "webkit/compositor_bindings/web_to_ccscrollbar_theme_painter_adapter.h"
 
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbarThemePainter.h"

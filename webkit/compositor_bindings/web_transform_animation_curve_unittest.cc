@@ -7,7 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebTransformOperations.h"
-#include "web_transform_animation_curve_impl.h"
+#include "webkit/compositor_bindings/web_transform_animation_curve_impl.h"
 
 using namespace WebKit;
 

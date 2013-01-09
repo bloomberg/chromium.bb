@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web_solid_color_layer_impl.h"
+#include "webkit/compositor_bindings/web_solid_color_layer_impl.h"
 
 #include "cc/solid_color_layer.h"
-#include "web_layer_impl.h"
+#include "webkit/compositor_bindings/web_layer_impl.h"
 
 using cc::SolidColorLayer;
 

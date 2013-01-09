@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web_image_layer_impl.h"
+#include "webkit/compositor_bindings/web_image_layer_impl.h"
 
 #include "base/command_line.h"
 #include "cc/image_layer.h"
 #include "cc/picture_image_layer.h"
 #include "cc/switches.h"
-#include "web_layer_impl.h"
+#include "webkit/compositor_bindings/web_layer_impl.h"
 
 static bool usingPictureLayer()
 {

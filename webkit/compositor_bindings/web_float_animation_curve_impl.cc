@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web_float_animation_curve_impl.h"
+#include "webkit/compositor_bindings/web_float_animation_curve_impl.h"
 
 #include "cc/animation_curve.h"
 #include "cc/keyframed_animation_curve.h"
 #include "cc/timing_function.h"
-#include "web_animation_curve_common.h"
+#include "webkit/compositor_bindings/web_animation_curve_common.h"
 
 namespace WebKit {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web_nine_patch_layer_impl.h"
+#include "webkit/compositor_bindings/web_nine_patch_layer_impl.h"
 
 #include "cc/nine_patch_layer.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
-#include "web_layer_impl.h"
-#include "SkBitmap.h"
+#include "webkit/compositor_bindings/web_layer_impl.h"
 
 using cc::NinePatchLayer;
 

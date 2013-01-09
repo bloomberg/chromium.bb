@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web_float_animation_curve_impl.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/timing_function.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/compositor_bindings/web_float_animation_curve_impl.h"
 
 using namespace WebKit;
 

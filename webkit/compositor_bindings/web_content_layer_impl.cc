@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web_content_layer_impl.h"
+#include "webkit/compositor_bindings/web_content_layer_impl.h"
 
-#include "SkMatrix44.h"
 #include "base/command_line.h"
 #include "cc/content_layer.h"
 #include "cc/picture_layer.h"
@@ -14,6 +13,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
+#include "third_party/skia/include/utils/SkMatrix44.h"
 
 using namespace cc;
 

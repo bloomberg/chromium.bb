@@ -2,12 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web_layer_impl.h"
+#include "webkit/compositor_bindings/web_layer_impl.h"
 
-#include "SkMatrix44.h"
-#ifdef LOG
-#undef LOG
-#endif
 #include "base/string_util.h"
 #include "cc/animation.h"
 #include "cc/layer.h"
@@ -16,7 +12,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
-#include "web_animation_impl.h"
+#include "third_party/skia/include/utils/SkMatrix44.h"
+#include "webkit/compositor_bindings/web_animation_impl.h"
 
 using cc::Animation;
 using cc::Layer;
