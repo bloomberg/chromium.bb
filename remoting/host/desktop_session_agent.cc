@@ -217,6 +217,8 @@ void DesktopSessionAgent::OnCaptureCompleted(
     scoped_refptr<CaptureData> capture_data) {
   DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
 
+  current_size_ = capture_data->size();
+
   // Serialize CaptureData
   SerializedCapturedData serialized_data;
   serialized_data.shared_buffer_id = capture_data->shared_buffer()->id();
@@ -341,7 +343,7 @@ void DesktopSessionAgent::OnInvalidateRegion(
     return;
   }
 
-  SkIRect bounds = SkIRect::MakeSize(video_capturer_->size_most_recent());
+  SkIRect bounds = SkIRect::MakeSize(current_size_);
 
   // Convert |invalid_rects| into a region.
   SkRegion invalid_region;
@@ -512,6 +514,7 @@ DesktopSessionAgent::DesktopSessionAgent(
       input_task_runner_(input_task_runner),
       io_task_runner_(io_task_runner),
       video_capture_task_runner_(video_capture_task_runner),
+      current_size_(SkISize::Make(0, 0)),
       next_shared_buffer_id_(1),
       started_(false) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());

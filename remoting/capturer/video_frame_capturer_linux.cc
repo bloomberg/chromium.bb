@@ -62,7 +62,6 @@ class VideoFrameCapturerLinux : public VideoFrameCapturer {
   virtual void Stop() OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
   virtual void CaptureFrame() OVERRIDE;
-  virtual const SkISize& size_most_recent() const OVERRIDE;
 
  private:
   void InitXDamage();
@@ -587,10 +586,6 @@ void VideoFrameCapturerLinux::SlowBlit(uint8* image, const SkIRect& rect,
     dst_pos += capture_data->stride();
     src_pos += src_stride;
   }
-}
-
-const SkISize& VideoFrameCapturerLinux::size_most_recent() const {
-  return helper_.size_most_recent();
 }
 
 }  // namespace

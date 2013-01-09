@@ -107,9 +107,6 @@ class VideoFrameCapturer {
   // data of the previous capture. There can be at most one concurrent read
   // going on when this method is called.
   virtual void CaptureFrame() = 0;
-
-  // Get the size of the most recently captured screen.
-  virtual const SkISize& size_most_recent() const = 0;
 };
 
 }  // namespace remoting

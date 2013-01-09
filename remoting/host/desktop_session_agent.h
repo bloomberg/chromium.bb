@@ -22,6 +22,7 @@
 #include "remoting/host/ui_strings.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/core/SkSize.h"
 
 namespace IPC {
 class ChannelProxy;
@@ -224,6 +225,9 @@ class DesktopSessionAgent
 
   // IPC channel connecting the desktop process with the network process.
   scoped_ptr<IPC::ChannelProxy> network_channel_;
+
+  // Size of the most recent captured video frame.
+  SkISize current_size_;
 
   // Next shared buffer ID to be used.
   int next_shared_buffer_id_;

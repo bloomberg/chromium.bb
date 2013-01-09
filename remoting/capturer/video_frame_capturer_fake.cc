@@ -70,10 +70,6 @@ void VideoFrameCapturerFake::CaptureFrame() {
   delegate_->OnCaptureCompleted(capture_data);
 }
 
-const SkISize& VideoFrameCapturerFake::size_most_recent() const {
-  return helper_.size_most_recent();
-}
-
 void VideoFrameCapturerFake::GenerateImage() {
   memset(buffers_[current_buffer_].get(), 0xff,
          size_.width() * size_.height() * CaptureData::kBytesPerPixel);

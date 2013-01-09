@@ -21,7 +21,6 @@ class MockVideoFrameCapturer : public VideoFrameCapturer {
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD1(InvalidateRegion, void(const SkRegion& invalid_region));
   MOCK_METHOD0(CaptureFrame, void());
-  MOCK_CONST_METHOD0(size_most_recent, const SkISize&());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockVideoFrameCapturer);

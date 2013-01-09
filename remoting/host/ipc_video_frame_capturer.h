@@ -30,7 +30,6 @@ class IpcVideoFrameCapturer : public VideoFrameCapturer {
   virtual void Stop() OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
   virtual void CaptureFrame() OVERRIDE;
-  virtual const SkISize& size_most_recent() const OVERRIDE;
 
   // Called when a video frame has been captured. |capture_data| describes
   // a captured frame.
@@ -45,9 +44,6 @@ class IpcVideoFrameCapturer : public VideoFrameCapturer {
 
   // Wraps the IPC channel to the desktop session agent.
   scoped_refptr<DesktopSessionProxy> desktop_session_proxy_;
-
-  // Size of the most recent captured frame.
-  SkISize size_most_recent_;
 
   DISALLOW_COPY_AND_ASSIGN(IpcVideoFrameCapturer);
 };

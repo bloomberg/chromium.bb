@@ -86,7 +86,6 @@ class VideoFrameCapturerWin : public VideoFrameCapturer {
   virtual void Stop() OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
   virtual void CaptureFrame() OVERRIDE;
-  virtual const SkISize& size_most_recent() const OVERRIDE;
 
  private:
   // Make sure that the device contexts match the screen configuration.
@@ -273,10 +272,6 @@ void VideoFrameCapturerWin::CaptureFrame() {
 
   // Check for cursor shape update.
   CaptureCursor();
-}
-
-const SkISize& VideoFrameCapturerWin::size_most_recent() const {
-  return helper_.size_most_recent();
 }
 
 void VideoFrameCapturerWin::Start(Delegate* delegate) {

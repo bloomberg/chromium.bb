@@ -73,7 +73,7 @@ MockVideoEncoder::~MockVideoEncoder() {}
 
 class VideoSchedulerTest : public testing::Test {
  public:
-  VideoSchedulerTest() : size_(SkISize::Make(0, 0)) {
+  VideoSchedulerTest() {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -104,7 +104,6 @@ class VideoSchedulerTest : public testing::Test {
   // The following mock objects are owned by VideoScheduler.
   MockVideoEncoder* encoder_;
 
-  SkISize size_;
   scoped_refptr<CaptureData> data_;
 
  private:
@@ -125,14 +124,11 @@ void VideoSchedulerTest::GenerateOnCaptureCompleted() {
 TEST_F(VideoSchedulerTest, StartAndStop) {
   Expectation capturer_start = EXPECT_CALL(capturer_, Start(_));
 
-  size_.set(kWidth, kHeight);
-  data_ = new CaptureData(NULL, kWidth * CaptureData::kBytesPerPixel, size_);
+  data_ = new CaptureData(NULL, kWidth * CaptureData::kBytesPerPixel,
+                          SkISize::Make(kWidth, kHeight));
 
   // Create a RunLoop through which to drive |message_loop_|.
   base::RunLoop run_loop;
-
-  EXPECT_CALL(capturer_, size_most_recent())
-      .WillRepeatedly(ReturnRef(size_));
 
   // First the capturer is called.
   Expectation capturer_capture = EXPECT_CALL(capturer_, CaptureFrame())

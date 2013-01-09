@@ -29,7 +29,6 @@ class VideoFrameCapturerFake : public VideoFrameCapturer {
   virtual void Stop() OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
   virtual void CaptureFrame() OVERRIDE;
-  virtual const SkISize& size_most_recent() const OVERRIDE;
 
  private:
   // Generates an image in the front buffer.

@@ -112,7 +112,6 @@ class VideoFrameCapturerMac : public VideoFrameCapturer {
   virtual void Stop() OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
   virtual void CaptureFrame() OVERRIDE;
-  virtual const SkISize& size_most_recent() const OVERRIDE;
 
  private:
   void CaptureCursor();
@@ -651,10 +650,6 @@ void VideoFrameCapturerMac::CgBlitPostLion(const VideoFrame& buffer,
                i.rect());
     }
   }
-}
-
-const SkISize& VideoFrameCapturerMac::size_most_recent() const {
-  return helper_.size_most_recent();
 }
 
 void VideoFrameCapturerMac::ScreenConfigurationChanged() {

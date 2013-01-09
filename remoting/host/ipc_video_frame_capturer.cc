@@ -13,8 +13,7 @@ namespace remoting {
 IpcVideoFrameCapturer::IpcVideoFrameCapturer(
     scoped_refptr<DesktopSessionProxy> desktop_session_proxy)
     : delegate_(NULL),
-      desktop_session_proxy_(desktop_session_proxy),
-      size_most_recent_(SkISize::Make(0, 0)) {
+      desktop_session_proxy_(desktop_session_proxy) {
 }
 
 IpcVideoFrameCapturer::~IpcVideoFrameCapturer() {
@@ -38,15 +37,8 @@ void IpcVideoFrameCapturer::CaptureFrame() {
   desktop_session_proxy_->CaptureFrame();
 }
 
-const SkISize& IpcVideoFrameCapturer::size_most_recent() const {
-  return size_most_recent_;
-}
-
 void IpcVideoFrameCapturer::OnCaptureCompleted(
     scoped_refptr<CaptureData> capture_data) {
-  if (capture_data)
-    size_most_recent_ = capture_data->size();
-
   if (delegate_)
     delegate_->OnCaptureCompleted(capture_data);
 }
