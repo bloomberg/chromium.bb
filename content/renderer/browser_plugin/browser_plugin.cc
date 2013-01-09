@@ -198,7 +198,7 @@ bool BrowserPlugin::SetSrcAttribute(const std::string& src,
 
   // If we haven't created the guest yet, do so now. We will navigate it right
   // after creation. If |src| is empty, we can delay the creation until we
-  // acutally need it.
+  // actually need it.
   if (!navigate_src_sent_) {
     BrowserPluginHostMsg_CreateGuest_Params create_guest_params;
     create_guest_params.storage_partition_id = storage_partition_id_;
