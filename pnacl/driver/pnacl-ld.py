@@ -36,24 +36,26 @@ EXTRA_ENV = {
   'STRIP_FLAGS_all'  : '-s',
   'STRIP_FLAGS_debug': '-S',
 
+  'OPT_INLINE_THRESHOLD': '100',
+  'OPT_LEVEL': '',  # Default opt is 0, but we need to know if it's explicitly
+                    # requested or not, since we don't want to propagate
+                    # the value to TRANSLATE_FLAGS if it wasn't explicitly set.
+  'OPT_FLAGS': '-O${#OPT_LEVEL ? ${OPT_LEVEL} : 0} ${OPT_STRIP_%STRIP_MODE%} ' +
+               '-inline-threshold=${OPT_INLINE_THRESHOLD} ' +
+               '--do-not-wrap',
+  'OPT_STRIP_none': '',
+  'OPT_STRIP_all': '-disable-opt --strip',
+  'OPT_STRIP_debug': '-disable-opt --strip-debug',
+
   'TRANSLATE_FLAGS': '${PIC ? -fPIC} ${!STDLIB ? -nostdlib} ' +
                      '${STATIC ? -static} ' +
                      '${SHARED ? -shared} ' +
                      '${#SONAME ? -Wl,--soname=${SONAME}} ' +
-                     '-O${OPT_LEVEL} ' +
+                     '${#OPT_LEVEL ? -O${OPT_LEVEL}} ' +
                      '${TRANSLATE_FLAGS_USER}',
 
   # Extra pnacl-translate flags specified by the user using -Wt
   'TRANSLATE_FLAGS_USER': '',
-
-  'OPT_FLAGS': '-O${OPT_LEVEL} ${OPT_STRIP_%STRIP_MODE%} ' +
-               '-inline-threshold=${OPT_INLINE_THRESHOLD} ' +
-               '--do-not-wrap',
-  'OPT_INLINE_THRESHOLD': '100',
-  'OPT_LEVEL': '0',
-  'OPT_STRIP_none': '',
-  'OPT_STRIP_all': '-disable-opt --strip',
-  'OPT_STRIP_debug': '-disable-opt --strip-debug',
 
   'GOLD_PLUGIN_ARGS': '-plugin=${GOLD_PLUGIN_SO} ' +
                       '-plugin-opt=emit-llvm',
@@ -326,7 +328,7 @@ def main(argv):
     chain.add(LinkBC, 'pre_opt.' + bitcode_type)
     if env.getbool('STATIC') and len(native_objects) == 0:
       chain.add(DoExpandCtorsAndTls, 'expand_ctors_and_tls.' + bitcode_type)
-    if env.getone('OPT_LEVEL') != '0':
+    if env.getone('OPT_LEVEL') != '' and env.getone('OPT_LEVEL') != '0':
       chain.add(DoOPT, 'opt.' + bitcode_type)
     elif env.getone('STRIP_MODE') != 'none':
       chain.add(DoStrip, 'stripped.' + bitcode_type)

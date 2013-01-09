@@ -60,8 +60,11 @@ EXTRA_ENV = {
   'BIAS_X8664'  : '-D__amd64__ -D__amd64 -D__x86_64__ -D__x86_64 -D__core2__',
   'FRONTEND_TRIPLE' : 'le32-unknown-nacl',
 
-  'OPT_LEVEL'   : '0',
-  'CC_FLAGS'    : '-O${OPT_LEVEL} -fno-common ${PTHREAD ? -pthread} ' +
+  'OPT_LEVEL'   : '',  # Default for most tools is 0, but we need to know
+                       # if it's explicitly set or not when the driver
+                       # is only used for linking + translating.
+  'CC_FLAGS'    : '-O${#OPT_LEVEL ? ${OPT_LEVEL} : 0} ' +
+                  '-fno-common ${PTHREAD ? -pthread} ' +
                   '-nostdinc ${BIAS_%BIAS%} ' +
                   # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2345
                   # it would be better to detect asm use inside clang
@@ -102,8 +105,10 @@ EXTRA_ENV = {
     '${BASE_USR}/include/c++/4.4.3/x86_64-nacl ' +
     '${BASE_USR}/include/c++/4.4.3/backward',
 
-
-  'LD_FLAGS' : '-O${OPT_LEVEL} ${STATIC ? -static} ${SHARED ? -shared} ' +
+  # Only propagate opt level to linker if explicitly set, so that the
+  # linker will know if an opt level was explicitly set or not.
+  'LD_FLAGS' : '${#OPT_LEVEL ? -O${OPT_LEVEL}} ' +
+               '${STATIC ? -static} ${SHARED ? -shared} ' +
                '${PIC ? -fPIC} ${@AddPrefix:-L:SEARCH_DIRS}',
 
   'SEARCH_DIRS'      : '${SEARCH_DIRS_USER} ${PREFIXES}',
@@ -145,7 +150,7 @@ EXTRA_ENV = {
     '-l:crti.bc -l:crtbegin.bc ${ld_inputs} ${STDLIBS}',
 
   # Flags for translating to native .o files.
-  'TRANSLATE_FLAGS' : '-O${OPT_LEVEL}',
+  'TRANSLATE_FLAGS' : '-O${#OPT_LEVEL ? ${OPT_LEVEL} : 0}',
 
   'STDLIBS'   : '${DEFAULTLIBS ? '
                 '${LIBSTDCPP} ${LIBPTHREAD} ${LIBNACL} ${LIBC} ${PNACL_ABI}}',
