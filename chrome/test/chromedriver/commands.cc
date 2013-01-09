@@ -148,3 +148,19 @@ Status ExecuteSwitchToFrame(
   session->frame = frame;
   return Status(kOk);
 }
+
+Status ExecuteGetTitle(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  const char* kGetTitleScript =
+      "function() {"
+      "  if (document.title)"
+      "    return document.title;"
+      "  else"
+      "    return document.URL;"
+      "}";
+  base::ListValue args;
+  return session->chrome->CallFunction(
+      session->frame, kGetTitleScript, args, value);
+}

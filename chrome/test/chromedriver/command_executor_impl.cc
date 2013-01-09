@@ -47,6 +47,8 @@ void CommandExecutorImpl::Init() {
       base::Bind(&ExecuteExecuteScript)));
   command_map_.Set("switchToFrame", base::Bind(execute_session_command,
       base::Bind(&ExecuteSwitchToFrame)));
+  command_map_.Set("getTitle", base::Bind(execute_session_command,
+      base::Bind(&ExecuteGetTitle)));
   Command quit_command = base::Bind(execute_session_command,
       base::Bind(&ExecuteQuit, &session_map_));
   command_map_.Set("quit", quit_command);

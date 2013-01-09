@@ -84,6 +84,9 @@ class ChromeDriver(object):
   def SwitchToMainFrame(self):
     self.SwitchToFrame(None)
 
+  def GetTitle(self):
+    return self._ExecuteSessionCommand('getTitle')
+
   def Quit(self):
     """Quits the browser and ends the session."""
     self._ExecuteSessionCommand('quit')

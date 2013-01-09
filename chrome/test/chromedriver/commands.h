@@ -64,4 +64,10 @@ Status ExecuteSwitchToFrame(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+// Get the current page title.
+Status ExecuteGetTitle(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 #endif  // CHROME_TEST_CHROMEDRIVER_COMMANDS_H_

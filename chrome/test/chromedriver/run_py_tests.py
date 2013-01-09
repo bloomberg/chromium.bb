@@ -12,65 +12,80 @@ import sys
 import unittest
 
 import chromedriver
+import webserver
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'pylib'))
 
+from common import chrome_paths
 from common import unittest_util
 
 
 class ChromeDriverTest(unittest.TestCase):
   """End to end tests for ChromeDriver."""
 
+  @classmethod
+  def setUpClass(cls):
+    cls._http_server = webserver.WebServer(chrome_paths.GetTestData())
+
+  @classmethod
+  def tearDownClass(cls):
+    cls._http_server.Shutdown()
+
+  @staticmethod
+  def GetHttpUrlForFile(file_path):
+    return ChromeDriverTest._http_server.GetUrl() + file_path
+
+  def setUp(self):
+    self._driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB, _CHROME_BINARY)
+
+  def tearDown(self):
+    self._driver.Quit()
+
   def testStartStop(self):
-    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB, _CHROME_BINARY)
-    driver.Quit()
+    pass
 
   def testLoadUrl(self):
-    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB, _CHROME_BINARY)
-    driver.Load('http://www.google.com')
-    driver.Quit()
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
 
   def testEvaluateScript(self):
-    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB, _CHROME_BINARY)
-    self.assertEquals(1, driver.ExecuteScript('return 1'))
-    self.assertEquals(None, driver.ExecuteScript(''))
-    driver.Quit()
+    self.assertEquals(1, self._driver.ExecuteScript('return 1'))
+    self.assertEquals(None, self._driver.ExecuteScript(''))
 
   def testEvaluateScriptWithArgs(self):
-    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB, _CHROME_BINARY)
     script = ('document.body.innerHTML = "<div>b</div><div>c</div>";' +
               'return {stuff: document.querySelectorAll("div")};')
-    stuff = driver.ExecuteScript(script)['stuff']
+    stuff = self._driver.ExecuteScript(script)['stuff']
     script = 'return arguments[0].innerHTML + arguments[1].innerHTML';
-    self.assertEquals('bc', driver.ExecuteScript(script, stuff[0], stuff[1]))
-    driver.Quit()
+    self.assertEquals(
+        'bc', self._driver.ExecuteScript(script, stuff[0], stuff[1]))
 
   def testEvaluateInvalidScript(self):
-    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB, _CHROME_BINARY)
     self.assertRaises(chromedriver.ChromeDriverException,
-                      driver.ExecuteScript, '{{{')
-    driver.Quit()
+                      self._driver.ExecuteScript, '{{{')
 
   def testSwitchToFrame(self):
-    driver = chromedriver.ChromeDriver(_CHROMEDRIVER_LIB, _CHROME_BINARY)
-    driver.ExecuteScript(
+    self._driver.ExecuteScript(
         'var frame = document.createElement("iframe");'
         'frame.id="id";'
         'frame.name="name";'
         'document.body.appendChild(frame);')
-    self.assertTrue(driver.ExecuteScript('return window.top == window'))
-    driver.SwitchToFrame('id')
-    self.assertTrue(driver.ExecuteScript('return window.top != window'))
-    driver.SwitchToMainFrame()
-    self.assertTrue(driver.ExecuteScript('return window.top == window'))
-    driver.SwitchToFrame('name')
-    self.assertTrue(driver.ExecuteScript('return window.top != window'))
-    driver.SwitchToMainFrame()
-    self.assertTrue(driver.ExecuteScript('return window.top == window'))
-    driver.SwitchToFrameByIndex(0)
-    self.assertTrue(driver.ExecuteScript('return window.top != window'))
-    driver.Quit()
+    self.assertTrue(self._driver.ExecuteScript('return window.top == window'))
+    self._driver.SwitchToFrame('id')
+    self.assertTrue(self._driver.ExecuteScript('return window.top != window'))
+    self._driver.SwitchToMainFrame()
+    self.assertTrue(self._driver.ExecuteScript('return window.top == window'))
+    self._driver.SwitchToFrame('name')
+    self.assertTrue(self._driver.ExecuteScript('return window.top != window'))
+    self._driver.SwitchToMainFrame()
+    self.assertTrue(self._driver.ExecuteScript('return window.top == window'))
+    self._driver.SwitchToFrameByIndex(0)
+    self.assertTrue(self._driver.ExecuteScript('return window.top != window'))
+
+  def testGetTitle(self):
+    script = 'document.title = "title"; return 1;'
+    self.assertEquals(1, self._driver.ExecuteScript(script))
+    self.assertEqual('title', self._driver.GetTitle())
 
 
 if __name__ == '__main__':
