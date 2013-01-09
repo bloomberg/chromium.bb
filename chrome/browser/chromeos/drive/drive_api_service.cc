@@ -9,6 +9,8 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
+#include "base/task_runner_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/drive_api_operations.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -30,35 +32,62 @@ const char kDriveScope[] = "https://www.googleapis.com/auth/drive";
 const char kDriveAppsReadonlyScope[] =
     "https://www.googleapis.com/auth/drive.apps.readonly";
 
-// Parses the JSON value into ResourceList and runs |callback|.
-void ParseResourceListAndRun(
-    const google_apis::GetResourceListCallback& callback,
-    google_apis::GDataErrorCode error,
-    scoped_ptr<base::Value> value) {
+scoped_ptr<google_apis::ResourceList> ParseResourceListOnBlockingPool(
+    scoped_ptr<base::Value> value, google_apis::GDataErrorCode* error) {
   if (!value) {
-    callback.Run(error, scoped_ptr<google_apis::ResourceList>());
-    return;
+    // JSON value is not available.
+    return scoped_ptr<google_apis::ResourceList>();
   }
 
-  // TODO(satorux): Parse the JSON value on a blocking pool. crbug.com/165088
+  // Parse the value into ResourceList via ChangeList.
+  // If failed, set (i.e. overwrite) the error flag and return immediately.
   scoped_ptr<google_apis::ChangeList> change_list(
       google_apis::ChangeList::CreateFrom(*value));
   if (!change_list) {
-    callback.Run(google_apis::GDATA_PARSE_ERROR,
-                 scoped_ptr<google_apis::ResourceList>());
-    return;
+    *error = google_apis::GDATA_PARSE_ERROR;
+    return scoped_ptr<google_apis::ResourceList>();
   }
 
-  // TODO(satorux): Do the conversion on a blocking pool too. crbug.com/165088
   scoped_ptr<google_apis::ResourceList> resource_list =
       google_apis::ResourceList::CreateFromChangeList(*change_list);
   if (!resource_list) {
-    callback.Run(google_apis::GDATA_PARSE_ERROR,
-                 scoped_ptr<google_apis::ResourceList>());
-    return;
+    *error = google_apis::GDATA_PARSE_ERROR;
+    return scoped_ptr<google_apis::ResourceList>();
   }
 
-  callback.Run(error, resource_list.Pass());
+  // Pass the result to the params, so that DidParseResourceListOnBlockingPool
+  // defined below can process it.
+  return resource_list.Pass();
+}
+
+// Callback invoked when the parsing of resource list is completed,
+// regardless whether it is succeeded or not.
+void DidParseResourceListOnBlockingPool(
+    const google_apis::GetResourceListCallback& callback,
+    google_apis::GDataErrorCode* error,
+    scoped_ptr<google_apis::ResourceList> resource_list) {
+  callback.Run(*error, resource_list.Pass());
+}
+
+// Sends a task to parse the JSON value into ResourceList on blocking pool,
+// with a callback which is called when the task is done.
+void ParseResourceListOnBlockingPoolAndRun(
+    const google_apis::GetResourceListCallback& callback,
+    google_apis::GDataErrorCode in_error,
+    scoped_ptr<base::Value> value) {
+  // Note that the error value may be overwritten in
+  // ParseResoruceListOnBlockingPool before used in
+  // DidParseResourceListOnBlockingPool.
+  google_apis::GDataErrorCode* error =
+      new google_apis::GDataErrorCode(in_error);
+
+  PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&ParseResourceListOnBlockingPool,
+                 base::Passed(&value), error),
+      base::Bind(&DidParseResourceListOnBlockingPool,
+                 callback, base::Owned(error)));
 }
 
 // Parses the JSON value to ResourceEntry runs |callback|.
@@ -223,7 +252,7 @@ void DriveAPIService::GetFilelist(
           url_generator_,
           url,
           search_query,
-          base::Bind(&ParseResourceListAndRun, callback)));
+          base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
 
 void DriveAPIService::GetChangelist(
@@ -240,7 +269,7 @@ void DriveAPIService::GetChangelist(
           url_generator_,
           url,
           start_changestamp,
-          base::Bind(&ParseResourceListAndRun, callback)));
+          base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
 
 void DriveAPIService::GetResourceEntry(
