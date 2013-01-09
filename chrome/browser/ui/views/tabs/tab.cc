@@ -488,6 +488,14 @@ void Tab::SetData(const TabRendererData& data) {
       StartCrashAnimation();
 #endif
     }
+
+  } else if ((data_.capture_state == TabRendererData::CAPTURE_STATE_NONE) &&
+             (old.capture_state != TabRendererData::CAPTURE_STATE_NONE)) {
+    StopRecordingAnimation();
+
+  } else if ((data_.capture_state != TabRendererData::CAPTURE_STATE_NONE) &&
+             (old.capture_state == TabRendererData::CAPTURE_STATE_NONE)) {
+    StartRecordingAnimation();
   } else {
     if (IsPerformingCrashAnimation())
       StopCrashAnimation();
@@ -529,22 +537,22 @@ void Tab::UpdateLoadingAnimation(TabRendererData::NetworkState state) {
 }
 
 void Tab::StartPulse() {
-  if (!pulse_animation_.get()) {
-    pulse_animation_.reset(new ui::ThrobAnimation(this));
-    pulse_animation_->SetSlideDuration(kPulseDurationMs);
+  if (!tab_animation_.get()) {
+    tab_animation_.reset(new ui::ThrobAnimation(this));
+    tab_animation_->SetSlideDuration(kPulseDurationMs);
     if (animation_container_.get())
-      pulse_animation_->SetContainer(animation_container_.get());
+      tab_animation_->SetContainer(animation_container_.get());
   }
-  pulse_animation_->Reset();
-  pulse_animation_->StartThrobbing(std::numeric_limits<int>::max());
+  tab_animation_->Reset();
+  tab_animation_->StartThrobbing(std::numeric_limits<int>::max());
 }
 
 void Tab::StopPulse() {
-  if (!pulse_animation_.get())
+  if (!tab_animation_.get())
     return;
 
-  pulse_animation_->Stop();  // Do stop so we get notified.
-  pulse_animation_.reset(NULL);
+  tab_animation_->Stop();  // Do stop so we get notified.
+  tab_animation_.reset(NULL);
 }
 
 void Tab::StartMiniTabTitleAnimation() {
@@ -636,7 +644,7 @@ int Tab::GetImmersiveHeight() {
 void Tab::AnimationProgressed(const ui::Animation* animation) {
   // Ignore if the pulse animation is being performed on active tab because
   // it repaints the same image. See |Tab::PaintTabBackground()|.
-  if (animation == pulse_animation_.get() && IsActive())
+  if (animation == tab_animation_.get() && IsActive())
     return;
   SchedulePaint();
 }
@@ -1280,6 +1288,7 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
 
   bounds.set_x(GetMirroredXForRect(bounds));
 
+  // Paint network activity (aka throbber) animation frame.
   if (data().network_state != TabRendererData::NETWORK_STATE_NONE) {
     ui::ThemeProvider* tp = GetThemeProvider();
     gfx::ImageSkia frames(*tp->GetImageSkiaNamed(
@@ -1290,100 +1299,94 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
     int image_offset = loading_animation_frame_ * icon_size;
     DrawIconCenter(canvas, frames, image_offset,
                    icon_size, icon_size, bounds, false, SkPaint());
+    return;
+  }
+
+  // Paint regular icon and potentially overlays.
+  canvas->Save();
+  canvas->ClipRect(GetLocalBounds());
+  if (should_display_crashed_favicon_) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    gfx::ImageSkia crashed_favicon(*rb.GetImageSkiaNamed(IDR_SAD_FAVICON));
+    bounds.set_y(bounds.y() + favicon_hiding_offset_);
+    DrawIconCenter(canvas, crashed_favicon, 0,
+                    crashed_favicon.width(),
+                    crashed_favicon.height(), bounds, true, SkPaint());
   } else {
-    canvas->Save();
-    canvas->ClipRect(GetLocalBounds());
-    if (should_display_crashed_favicon_) {
-      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      gfx::ImageSkia crashed_favicon(*rb.GetImageSkiaNamed(IDR_SAD_FAVICON));
-      bounds.set_y(bounds.y() + favicon_hiding_offset_);
-      DrawIconCenter(canvas, crashed_favicon, 0,
-                     crashed_favicon.width(),
-                     crashed_favicon.height(), bounds, true, SkPaint());
-    } else {
-      if (!data().favicon.isNull()) {
-        if (data().capture_state == TabRendererData::CAPTURE_STATE_PROJECTING) {
-          // If projecting, shrink favicon and add projection screen instead.
-          gfx::ImageSkia resized_icon =
-              gfx::ImageSkiaOperations::CreateResizedImage(
-                  data().favicon,
-                  skia::ImageOperations::RESIZE_BEST,
-                  gfx::Size(data().favicon.width() *
-                            kProjectingFaviconResizeScale,
-                            data().favicon.height() *
-                            kProjectingFaviconResizeScale));
+    if (!data().favicon.isNull()) {
+      if (data().capture_state == TabRendererData::CAPTURE_STATE_PROJECTING) {
+        // If projecting, shrink favicon and add projection screen instead.
+        gfx::ImageSkia resized_icon =
+            gfx::ImageSkiaOperations::CreateResizedImage(
+                data().favicon,
+                skia::ImageOperations::RESIZE_BEST,
+                gfx::Size(data().favicon.width() *
+                          kProjectingFaviconResizeScale,
+                          data().favicon.height() *
+                          kProjectingFaviconResizeScale));
 
-          gfx::Rect resized_bounds(bounds);
-          // Need to shift it up a bit vertically because the projection screen
-          // is thinner on the top and bottom.
-          resized_bounds.set_y(resized_bounds.y() - 1);
+        gfx::Rect resized_bounds(bounds);
+        // Need to shift it up a bit vertically because the projection screen
+        // is thinner on the top and bottom.
+        resized_bounds.set_y(resized_bounds.y() - 1);
 
-          DrawIconCenter(canvas, resized_icon, 0,
-                         resized_icon.width(),
-                         resized_icon.height(),
-                         resized_bounds, true, SkPaint());
+        DrawIconCenter(canvas, resized_icon, 0,
+                        resized_icon.width(),
+                        resized_icon.height(),
+                        resized_bounds, true, SkPaint());
 
-          ui::ThemeProvider* tp = GetThemeProvider();
-          gfx::ImageSkia projection_screen(
-              *tp->GetImageSkiaNamed(IDR_TAB_CAPTURE));
+        ui::ThemeProvider* tp = GetThemeProvider();
+        gfx::ImageSkia projection_screen(
+            *tp->GetImageSkiaNamed(IDR_TAB_CAPTURE));
 
-          DrawIconCenter(canvas, projection_screen, 0,
-                         data().favicon.width(),
-                         data().favicon.height(),
-                         bounds, true, SkPaint());
-        } else {
-          // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
-          // to using that class to render the favicon).
-          DrawIconCenter(canvas, data().favicon, 0,
-                         data().favicon.width(),
-                         data().favicon.height(),
-                         bounds, true, SkPaint());
-        }
+        DrawIconCenter(canvas, projection_screen, 0,
+                        data().favicon.width(),
+                        data().favicon.height(),
+                        bounds, true, SkPaint());
+      } else {
+        // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
+        // to using that class to render the favicon).
+        DrawIconCenter(canvas, data().favicon, 0,
+                        data().favicon.width(),
+                        data().favicon.height(),
+                        bounds, true, SkPaint());
       }
     }
-    canvas->Restore();
+  }
+  canvas->Restore();
 
-    if (data().capture_state != TabRendererData::CAPTURE_STATE_NONE) {
-      if (!recording_animation_.get()) {
-        recording_animation_.reset(new ui::ThrobAnimation(this));
-        recording_animation_->SetTweenType(ui::Tween::EASE_IN_OUT);
-        recording_animation_->SetThrobDuration(kRecordingDurationMs);
-        recording_animation_->StartThrobbing(-1);
-      }
+  // Paint recording or projecting animation overlay.
+  if (data().capture_state != TabRendererData::CAPTURE_STATE_NONE) {
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    U8CPU alpha = icon_animation_->GetCurrentValue() * 0xff;
+    paint.setAlpha(alpha);
+    ui::ThemeProvider* tp = GetThemeProvider();
 
-      SkPaint paint;
-      paint.setAntiAlias(true);
-      U8CPU alpha = recording_animation_->GetCurrentValue() * 0xff;
-      paint.setAlpha(alpha);
-      ui::ThemeProvider* tp = GetThemeProvider();
-
-      if (data().capture_state == TabRendererData::CAPTURE_STATE_PROJECTING) {
-        // If projecting, add projection glow animation.
-        gfx::Rect glow_bounds(bounds);
-        glow_bounds.set_x(glow_bounds.x() - (32 - 24));
-        glow_bounds.set_y(0);
-        glow_bounds.set_width(glow_bounds.width() *
+    if (data().capture_state == TabRendererData::CAPTURE_STATE_PROJECTING) {
+      // If projecting, add projection glow animation.
+      gfx::Rect glow_bounds(bounds);
+      glow_bounds.set_x(glow_bounds.x() - (32 - 24));
+      glow_bounds.set_y(0);
+      glow_bounds.set_width(glow_bounds.width() *
+                            kProjectingGlowResizeScale);
+      glow_bounds.set_height(glow_bounds.height() *
                               kProjectingGlowResizeScale);
-        glow_bounds.set_height(glow_bounds.height() *
-                               kProjectingGlowResizeScale);
 
-        gfx::ImageSkia projection_glow(
-            *tp->GetImageSkiaNamed(IDR_TAB_CAPTURE_GLOW));
-        DrawIconCenter(canvas, projection_glow, 0,
-                       projection_glow.width(), projection_glow.height(),
-                       glow_bounds, false, paint);
-      } else if (data().capture_state ==
-                 TabRendererData::CAPTURE_STATE_RECORDING) {
-        // If recording, fade the recording icon on top of the favicon.
-        gfx::ImageSkia recording_dot(*tp->GetImageSkiaNamed(IDR_TAB_RECORDING));
-        DrawIconCenter(canvas, recording_dot, 0,
-                       recording_dot.width(), recording_dot.height(),
-                       bounds, false, paint);
-      } else {
-        NOTREACHED();
-      }
+      gfx::ImageSkia projection_glow(
+          *tp->GetImageSkiaNamed(IDR_TAB_CAPTURE_GLOW));
+      DrawIconCenter(canvas, projection_glow, 0,
+                      projection_glow.width(), projection_glow.height(),
+                      glow_bounds, false, paint);
+    } else if (data().capture_state ==
+                TabRendererData::CAPTURE_STATE_RECORDING) {
+      // If recording, fade the recording icon on top of the favicon.
+      gfx::ImageSkia recording_dot(*tp->GetImageSkiaNamed(IDR_TAB_RECORDING));
+      DrawIconCenter(canvas, recording_dot, 0,
+                      recording_dot.width(), recording_dot.height(),
+                      bounds, false, paint);
     } else {
-      recording_animation_.reset();
+      NOTREACHED();
     }
   }
 }
@@ -1481,8 +1484,8 @@ double Tab::GetThrobValue() {
   double min = is_selected ? kSelectedTabOpacity : 0;
   double scale = is_selected ? kSelectedTabThrobScale : 1;
 
-  if (pulse_animation_.get() && pulse_animation_->is_animating())
-    return pulse_animation_->GetCurrentValue() * kHoverOpacity * scale + min;
+  if (tab_animation_.get() && tab_animation_->is_animating())
+    return tab_animation_->GetCurrentValue() * kHoverOpacity * scale + min;
 
   if (hover_controller_.ShouldDraw()) {
     return kHoverOpacity * hover_controller_.GetAnimationValue() * scale +
@@ -1506,20 +1509,33 @@ void Tab::ResetCrashedFavicon() {
 }
 
 void Tab::StartCrashAnimation() {
-  if (!crash_animation_.get())
-    crash_animation_.reset(new FaviconCrashAnimation(this));
-  crash_animation_->Stop();
-  crash_animation_->Start();
+  icon_animation_.reset(new FaviconCrashAnimation(this));
+  icon_animation_->Start();
 }
 
 void Tab::StopCrashAnimation() {
-  if (!crash_animation_.get())
+  if (!icon_animation_.get())
     return;
-  crash_animation_->Stop();
+  icon_animation_.reset();
+}
+
+void Tab::StartRecordingAnimation() {
+  ui::ThrobAnimation* animation = new ui::ThrobAnimation(this);
+  animation->SetTweenType(ui::Tween::EASE_IN_OUT);
+  animation->SetThrobDuration(kRecordingDurationMs);
+  animation->StartThrobbing(-1);
+  icon_animation_.reset(animation);
+}
+
+void Tab::StopRecordingAnimation() {
+  if (!icon_animation_.get())
+    return;
+  icon_animation_->Stop();
+  icon_animation_.reset();
 }
 
 bool Tab::IsPerformingCrashAnimation() const {
-  return crash_animation_.get() && crash_animation_->is_animating();
+  return icon_animation_.get() && data_.IsCrashed();
 }
 
 void Tab::ScheduleIconPaint() {

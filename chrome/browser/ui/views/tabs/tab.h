@@ -235,9 +235,11 @@ class Tab : public ui::AnimationDelegate,
   void DisplayCrashedFavicon();
   void ResetCrashedFavicon();
 
-  // Starts/Stops the crash animation.
   void StartCrashAnimation();
   void StopCrashAnimation();
+
+  void StartRecordingAnimation();
+  void StopRecordingAnimation();
 
   // Returns true if the crash animation is currently running.
   bool IsPerformingCrashAnimation() const;
@@ -287,14 +289,11 @@ class Tab : public ui::AnimationDelegate,
 
   bool should_display_crashed_favicon_;
 
-  // Pulse animation. Non-null if StartPulse has been invoked.
-  scoped_ptr<ui::ThrobAnimation> pulse_animation_;
-
-  // Crash animation.
-  scoped_ptr<FaviconCrashAnimation> crash_animation_;
-
-  // Recording animation.
-  scoped_ptr<ui::ThrobAnimation> recording_animation_;
+  // The tab and the icon can both be animating. The tab 'throbs' by changing
+  // color. The icon can have one of several of animations like crashing,
+  // recording, projecting, etc.
+  scoped_ptr<ui::ThrobAnimation> tab_animation_;
+  scoped_ptr<ui::LinearAnimation> icon_animation_;
 
   scoped_refptr<ui::AnimationContainer> animation_container_;
 
