@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/features/feature.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -68,6 +69,23 @@ ACTION_P(NotifyOkStateAndCallback, mock_remote_service) {
       FROM_HERE, base::Bind(arg1, fileapi::SYNC_STATUS_OK));
 }
 
+ACTION_P2(UpdateRemoteChangeQueue, origin, mock_remote_service) {
+  *origin = arg0;
+  mock_remote_service->NotifyRemoteChangeQueueUpdated(1);
+}
+
+ACTION_P2(ReturnWithFakeFileAddedStatus, origin, mock_remote_service) {
+  fileapi::FileSystemURL mock_url(*origin,
+                                  fileapi::kFileSystemTypeTest,
+                                  FilePath(FILE_PATH_LITERAL("foo")));
+  mock_remote_service->NotifyRemoteChangeQueueUpdated(0);
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(arg1,
+                            fileapi::SYNC_STATUS_OK,
+                            mock_url,
+                            fileapi::SYNC_OPERATION_ADDED));
+}
+
 }  // namespace
 
 // TODO(calvinlo): Add Chrome OS support for syncable file system
@@ -90,9 +108,20 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetUsageAndQuota) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnFileSynced) {
+  // Mock a pending remote change to be synced.
+  GURL origin;
+  EXPECT_CALL(*mock_remote_service(), RegisterOriginForTrackingChanges(_, _))
+      .WillOnce(UpdateRemoteChangeQueue(&origin, mock_remote_service()));
+  EXPECT_CALL(*mock_remote_service(), ProcessRemoteChange(_, _))
+      .WillOnce(ReturnWithFakeFileAddedStatus(&origin,
+                                               mock_remote_service()));
+  ASSERT_TRUE(RunPlatformAppTest("sync_file_system/on_file_synced"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, OnSyncStateChanged) {
-  EXPECT_CALL(*mock_remote_service(),
-              RegisterOriginForTrackingChanges(_, _))
+  EXPECT_CALL(*mock_remote_service(), RegisterOriginForTrackingChanges(_, _))
       .WillOnce(NotifyOkStateAndCallback(mock_remote_service()));
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/on_sync_state_changed"))
       << message_;
