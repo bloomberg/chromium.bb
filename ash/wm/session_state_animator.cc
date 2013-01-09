@@ -246,6 +246,7 @@ void StartGrayscaleBrightnessAnimationForWindow(
     aura::Window* window,
     float target,
     base::TimeDelta duration,
+    ui::Tween::Type tween_type,
     ui::LayerAnimationObserver* observer) {
   ui::LayerAnimator* animator = window->layer()->GetAnimator();
 
@@ -257,13 +258,13 @@ void StartGrayscaleBrightnessAnimationForWindow(
   scoped_ptr<ui::LayerAnimationElement> brightness_element(
       ui::LayerAnimationElement::CreateBrightnessElement(
           target, duration));
-  brightness_element->set_tween_type(ui::Tween::EASE_IN);
+  brightness_element->set_tween_type(tween_type);
   brightness_sequence->AddElement(brightness_element.release());
 
   scoped_ptr<ui::LayerAnimationElement> grayscale_element(
       ui::LayerAnimationElement::CreateGrayscaleElement(
           target, duration));
-  grayscale_element->set_tween_type(ui::Tween::EASE_IN);
+  grayscale_element->set_tween_type(tween_type);
   grayscale_sequence->AddElement(grayscale_element.release());
 
   std::vector<ui::LayerAnimationSequence*> animations;
@@ -439,11 +440,11 @@ base::TimeDelta SessionStateAnimator::GetDuration(AnimationSpeed speed) {
     case ANIMATION_SPEED_MOVE_WINDOWS:
       return base::TimeDelta::FromMilliseconds(350);
     case ANIMATION_SPEED_UNDO_MOVE_WINDOWS:
-      return base::TimeDelta::FromMilliseconds(500);
+      return base::TimeDelta::FromMilliseconds(350);
     case ANIMATION_SPEED_SHUTDOWN:
       return base::TimeDelta::FromMilliseconds(1000);
     case ANIMATION_SPEED_REVERT_SHUTDOWN:
-      return base::TimeDelta::FromMilliseconds(1500);
+      return base::TimeDelta::FromMilliseconds(500);
   }
   // Satisfy compilers that do not understand that we will return from switch
   // above anyway.
@@ -603,11 +604,11 @@ void SessionStateAnimator::RunAnimationForWindow(
       break;
     case ANIMATION_GRAYSCALE_BRIGHTNESS:
       StartGrayscaleBrightnessAnimationForWindow(
-          window, 1.0, duration, observer);
+          window, 1.0, duration, ui::Tween::EASE_IN, observer);
       break;
     case ANIMATION_UNDO_GRAYSCALE_BRIGHTNESS:
       StartGrayscaleBrightnessAnimationForWindow(
-          window, 0.0, duration, observer);
+          window, 0.0, duration, ui::Tween::EASE_IN_OUT, observer);
       break;
   }
 }

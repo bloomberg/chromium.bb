@@ -264,7 +264,7 @@ void SessionStateControllerImpl2::CancelShutdownAnimation() {
   }
   animator_->StartGlobalAnimation(
       internal::SessionStateAnimator::ANIMATION_UNDO_GRAYSCALE_BRIGHTNESS,
-      internal::SessionStateAnimator::ANIMATION_SPEED_REVERT);
+      internal::SessionStateAnimator::ANIMATION_SPEED_REVERT_SHUTDOWN);
   pre_shutdown_timer_.Stop();
 }
 
@@ -500,15 +500,15 @@ void SessionStateControllerImpl2::CancelPreLockAnimation() {
   animator_->StartAnimationWithObserver(
       internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
       internal::SessionStateAnimator::ANIMATION_UNDO_LIFT,
-      internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
+      internal::SessionStateAnimator::ANIMATION_SPEED_UNDO_MOVE_WINDOWS,
       observer);
   animator_->StartAnimationWithObserver(
       internal::SessionStateAnimator::LAUNCHER,
       internal::SessionStateAnimator::ANIMATION_FADE_IN,
-      internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
+      internal::SessionStateAnimator::ANIMATION_SPEED_UNDO_MOVE_WINDOWS,
       observer);
   AnimateBackgroundHidingIfNecessary(
-      internal::SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS,
+      internal::SessionStateAnimator::ANIMATION_SPEED_UNDO_MOVE_WINDOWS,
       observer);
 
   observer->Unpause();
