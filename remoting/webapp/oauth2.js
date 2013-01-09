@@ -11,6 +11,9 @@
  * chrome-extensions in OAuth2.
  */
 
+// TODO(jamiewalch): Delete this code once Chromoting is a v2 app and uses the
+// identity API (http://crbug.com/ 134213).
+
 'use strict';
 
 /** @suppress {duplicate} */

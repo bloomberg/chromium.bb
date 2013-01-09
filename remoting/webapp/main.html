@@ -207,12 +207,33 @@ found in the LICENSE file.
       </section> <!-- host-list-div -->
     </div> <!-- home -->
 
-    <div id="dialog-screen"
-         data-ui-mode="home.host home.client home.auth home.history home.confirm-host-delete home.host-setup home.token-refresh-failed"
+    <div id="auth-dialog" hidden>
+      <div class="dialog-screen"></div>
+      <div class="dialog-container">
+        <div class="box-spacer"></div>
+        <div class="kd-modaldialog">
+          <h2 i18n-content="MODE_AUTHORIZE"></h2>
+          <p id="auth-error-message"
+             i18n-content="DESCRIPTION_AUTHORIZE"
+             class="message"></p>
+          <div class="centered">
+            <button id="auth-button"
+                    type="button"
+                    autofocus="autofocus"
+                    i18n-content="CONTINUE_BUTTON">
+            </button>
+          </div>
+        </div>
+        <div class="box-spacer"></div>
+      </div>
+    </div> <!-- auth-dialog -->
+
+    <div class="dialog-screen"
+         data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-setup home.token-refresh-failed"
          hidden></div>
 
-    <div id="dialog-container"
-         data-ui-mode="home.host home.client home.auth home.history home.confirm-host-delete home.host-setup home.token-refresh-failed"
+    <div class="dialog-container"
+         data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-setup home.token-refresh-failed"
          hidden>
 
       <div class="box-spacer"></div>
@@ -340,22 +361,6 @@ found in the LICENSE file.
             </div>
         </div>
       </div> <!-- host-setup-dialog -->
-
-      <div id="auth-dialog"
-           data-ui-mode="home.auth"
-           class="kd-modaldialog">
-        <h2 i18n-content="MODE_AUTHORIZE"></h2>
-        <p id="auth-error-message"
-           i18n-content="DESCRIPTION_AUTHORIZE"
-           class="message"></p>
-        <div class="centered">
-          <button id="auth-button"
-                  type="button"
-                  autofocus="autofocus"
-                  i18n-content="CONTINUE_BUTTON">
-          </button>
-        </div>
-      </div> <!-- auth-dialog -->
 
       <div id="host-dialog"
            class="kd-modaldialog"

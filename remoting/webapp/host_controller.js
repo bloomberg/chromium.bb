@@ -144,7 +144,7 @@ remoting.HostController.prototype.start = function(hostPin, consent, callback) {
       var hostSecretHash =
           that.plugin_.getPinHash(newHostId, hostPin);
       var hostConfig = JSON.stringify({
-          xmpp_login: remoting.oauth2.getCachedEmail(),
+          xmpp_login: remoting.identity.getCachedEmail(),
           oauth_refresh_token: remoting.oauth2.exportRefreshToken(),
           host_id: newHostId,
           host_name: hostName,
@@ -190,7 +190,7 @@ remoting.HostController.prototype.start = function(hostPin, consent, callback) {
   /** @param {string} privateKey
    *  @param {string} publicKey */
   function onKeyGenerated(privateKey, publicKey) {
-    remoting.oauth2.callWithToken(
+    remoting.identity.callWithToken(
         /** @param {string} oauthToken */
         function(oauthToken) {
           doRegisterHost(privateKey, publicKey, oauthToken);

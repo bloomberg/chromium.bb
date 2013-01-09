@@ -70,3 +70,42 @@ chrome.storage = {};
 // TODO(jamiewalch): Flesh this out with the correct type when we're a v2 app.
 /** @type {remoting.MockStorage} */
 chrome.storage.local = null;
+
+/** @type {Object} */
+chrome.app.runtime = {
+  /** @type {Object} */
+  onLaunched: {
+    /** @param {function():void} callback */
+    addListener: function(callback) {}
+  }
+};
+
+/** @type {Object} */
+chrome.app.window = {
+  /**
+   * @param {string} name
+   * @param {Object} parameters
+   */
+  create: function(name, parameters) {}
+};
+
+/** @type {Object} */
+chrome.experimental = {};
+
+/** @type {Object} */
+chrome.experimental.identity = {
+  /**
+   * @param {Object.<string>} parameters
+   * @param {function(string):void} callback
+   */
+  getAuthToken: function(parameters, callback) {}
+};
+
+/** @type {Object} */
+chrome.runtime = {
+  /** @type {Object} */
+  lastError: {
+    /** @type {string} */
+    message: ''
+  }
+};

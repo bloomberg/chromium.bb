@@ -21,7 +21,6 @@ var remoting = remoting || {};
 // 'home' state applies to all elements and can be removed.
 remoting.AppMode = {
   HOME: 'home',
-    UNAUTHENTICATED: 'home.auth',
     TOKEN_REFRESH_FAILED: 'home.token-refresh-failed',
     HOST: 'home.host',
       HOST_WAITING_FOR_CODE: 'home.host.waiting-for-code',

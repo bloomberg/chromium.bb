@@ -158,8 +158,8 @@ remoting.HostSetupDialog.prototype.showForStart = function() {
   // Although we don't need an access token in order to start the host,
   // using callWithToken here ensures consistent error handling in the
   // case where the refresh token is invalid.
-  remoting.oauth2.callWithToken(this.showForStartWithToken_.bind(this),
-                                remoting.showErrorMessage);
+  remoting.identity.callWithToken(this.showForStartWithToken_.bind(this),
+                                  remoting.showErrorMessage);
 };
 
 /**

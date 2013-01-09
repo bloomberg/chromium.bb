@@ -26,8 +26,8 @@ var lastShareWasCancelled_ = false;
  */
 remoting.tryShare = function() {
   console.log('Attempting to share...');
-  remoting.oauth2.callWithToken(remoting.tryShareWithToken_,
-                                remoting.showErrorMessage);
+  remoting.identity.callWithToken(remoting.tryShareWithToken_,
+                                  remoting.showErrorMessage);
 };
 
 /**
@@ -45,7 +45,7 @@ remoting.tryShareWithToken_ = function(token) {
   remoting.hostSession = new remoting.HostSession();
   remoting.hostSession.createPluginAndConnect(
       document.getElementById('host-plugin-container'),
-      /** @type {string} */(remoting.oauth2.getCachedEmail()),
+      /** @type {string} */(remoting.identity.getCachedEmail()),
       token,
       onNatTraversalPolicyChanged_,
       onHostStateChanged_,

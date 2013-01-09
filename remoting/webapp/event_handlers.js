@@ -15,7 +15,7 @@ function onLoad() {
     // We don't need a token until we authenticate, but asking for one here
     // handles the token-expired case earlier, avoiding asking the user for
     // the access code both before and after re-authentication.
-    remoting.oauth2.callWithToken(
+    remoting.identity.callWithToken(
         /** @param {string} token */
         function(token) {
           remoting.setMode(remoting.AppMode.CLIENT_UNCONNECTED);

@@ -216,7 +216,7 @@ function onClientStateChange_(oldState, newState) {
     showConnectError_(remoting.Error.BAD_PLUGIN_VERSION);
 
   } else if (newState == remoting.ClientSession.State.CONNECTING) {
-    console.log('Connecting as ' + remoting.oauth2.getCachedEmail());
+    console.log('Connecting as ' + remoting.identity.getCachedEmail());
 
   } else if (newState == remoting.ClientSession.State.INITIALIZING) {
     console.log('Initializing connection');

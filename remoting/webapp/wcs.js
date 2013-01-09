@@ -65,7 +65,7 @@ remoting.Wcs = function(wcsIqClient, token, onReady) {
    */
   this.pollForUpdatedToken_ = setInterval(
       function() {
-        remoting.oauth2.callWithToken(updateAccessToken, onError);
+        remoting.identity.callWithToken(updateAccessToken, onError);
       },
       60 * 1000);
 

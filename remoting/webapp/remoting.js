@@ -29,16 +29,42 @@ remoting.Error = {
 };
 
 /**
+ * Show the authorization consent UI and register a one-shot event handler to
+ * continue the authorization process.
+ *
+ * @param {function():void} authContinue Callback to invoke when the user
+ *     clicks "Continue".
+ */
+function consentRequired_(authContinue) {
+  /** @type {HTMLElement} */
+  var dialog = document.getElementById('auth-dialog');
+  /** @type {HTMLElement} */
+  var button = document.getElementById('auth-button');
+  var consentGranted = function(event) {
+    dialog.hidden = true;
+    button.removeEventListener('click', consentGranted, false);
+    authContinue();
+  };
+  dialog.hidden = false;
+  button.addEventListener('click', consentGranted, false);
+}
+
+/**
  * Entry point for app initialization.
  */
 remoting.init = function() {
-  // TODO(jamiewalch): Remove this when we migrate to apps v2.
+  // TODO(jamiewalch): Remove this when we migrate to apps v2
+  // (http://crbug.com/ 134213).
   remoting.initMockStorage();
 
   remoting.logExtensionInfoAsync_();
   l10n.localize();
   // Create global objects.
   remoting.oauth2 = new remoting.OAuth2();
+  // TODO(jamiewalch): Reinstate this when we migrate to apps v2
+  // (http://crbug.com/ 134213).
+  // remoting.identity = new remoting.Identity(consentRequired_);
+  remoting.identity = remoting.oauth2;
   remoting.stats = new remoting.ConnectionStats(
       document.getElementById('statistics'));
   remoting.formatIq = new remoting.FormatIq();
@@ -58,7 +84,7 @@ remoting.init = function() {
       }
   );
 
-  remoting.oauth2.getEmail(remoting.onEmail, remoting.showErrorMessage);
+  remoting.identity.getEmail(remoting.onEmail, remoting.showErrorMessage);
 
   remoting.showOrHideIt2MeUi();
   remoting.showOrHideMe2MeUi();
@@ -113,7 +139,10 @@ remoting.initDaemonUi = function () {
   remoting.hostController = new remoting.HostController();
   document.getElementById('share-button').disabled =
       !remoting.hostController.isPluginSupported();
-  remoting.setMode(getAppStartupMode_());
+  remoting.setMode(remoting.AppMode.HOME);
+  if (!remoting.oauth2.isAuthenticated()) {
+    document.getElementById('auth-dialog').hidden = false;
+  }
   remoting.hostSetupDialog =
       new remoting.HostSetupDialog(remoting.hostController);
   // Display the cached host list, then asynchronously update and re-display it.
@@ -190,7 +219,8 @@ remoting.promptClose = function() {
 remoting.signOut = function() {
   remoting.oauth2.clear();
   chrome.storage.local.clear();
-  remoting.setMode(remoting.AppMode.UNAUTHENTICATED);
+  remoting.setMode(remoting.AppMode.HOME);
+  document.getElementById('auth-dialog').hidden = false;
 };
 
 /**
@@ -229,18 +259,6 @@ function pluginGotCopy_(eventUncast) {
       event.preventDefault();
     }
   }
-}
-
-/**
- * Gets the major-mode that this application should start up in.
- *
- * @return {remoting.AppMode} The mode to start in.
- */
-function getAppStartupMode_() {
-  if (!remoting.oauth2.isAuthenticated()) {
-    return remoting.AppMode.UNAUTHENTICATED;
-  }
-  return remoting.AppMode.HOME;
 }
 
 /**

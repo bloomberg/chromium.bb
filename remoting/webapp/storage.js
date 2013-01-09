@@ -11,6 +11,9 @@
  * out that migrating our OAuth2 code to the new API is non-trivial; since
  * that code will need to be rewritten to be Apps-v2-compatible anyway, a
  * mock seems like a good temporary solution.
+ *
+ * TODO(jamiewalch): Delete this file when we migrate to apps v2
+ * (http://crbug.com/ 134213).
  */
 
 'use strict';

@@ -46,7 +46,7 @@ remoting.WcsLoader.load = function(onReady, onError) {
   var start = function(token) {
     remoting.wcsLoader.start_(token, onReady, onError);
   };
-  remoting.oauth2.callWithToken(start, onError);
+  remoting.identity.callWithToken(start, onError);
 };
 
 /**

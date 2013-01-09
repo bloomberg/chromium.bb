@@ -512,7 +512,7 @@ button {
   height: 0;
 }
 
-#dialog-container {
+.dialog-container {
   position: fixed;
   top: 200px;
   left: 0;
@@ -520,7 +520,7 @@ button {
   display: -webkit-box;
 }
 
-#dialog-screen {
+.dialog-screen {
   position: fixed;
   top: 0;
   left: 0;
