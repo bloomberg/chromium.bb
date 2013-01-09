@@ -9,8 +9,13 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
+#include "base/process_util.h"
 #include "base/run_loop.h"
+#include "base/string_number_conversions.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/shell/shell.h"
@@ -130,6 +135,9 @@ WebKitTestController::WebKitTestController() {
   CHECK(!instance_);
   instance_ = this;
   printer_.reset(new WebKitTestResultPrinter(&std::cout, &std::cerr));
+  registrar_.Add(this,
+                 NOTIFICATION_RENDERER_PROCESS_CREATED,
+                 NotificationService::AllSources());
   ResetAfterLayoutTest();
 }
 
@@ -161,7 +169,7 @@ bool WebKitTestController::PrepareForLayoutTest(
       NULL,
       MSG_ROUTING_NONE,
       NULL);
-  Observe(main_window_->web_contents());
+  WebContentsObserver::Observe(main_window_->web_contents());
   main_window_->LoadURL(test_url);
   if (test_url.spec().find("/dumpAsText/") != std::string::npos ||
       test_url.spec().find("\\dumpAsText\\") != std::string::npos) {
@@ -198,11 +206,12 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   }
   watchdog_.Cancel();
   if (main_window_) {
-    Observe(NULL);
+    WebContentsObserver::Observe(NULL);
     main_window_ = NULL;
   }
   Shell::CloseAllWindows();
   Send(new ShellViewMsg_ResetAll);
+  current_pid_ = base::kNullProcessId;
   return true;
 }
 
@@ -264,14 +273,19 @@ void WebKitTestController::PluginCrashed(const FilePath& plugin_path) {
 
 void WebKitTestController::RenderViewCreated(RenderViewHost* render_view_host) {
   DCHECK(CalledOnValidThread());
+  // Might be kNullProcessId, in which case we will receive a notification later
+  // when the RenderProcessHost was created.
+  current_pid_ = base::GetProcId(render_view_host->GetProcess()->GetHandle());
   render_view_host->Send(new ShellViewMsg_SetCurrentWorkingDirectory(
       render_view_host->GetRoutingID(), current_working_directory_));
 }
 
 void WebKitTestController::RenderViewGone(base::TerminationStatus status) {
   DCHECK(CalledOnValidThread());
-  if (status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
-      status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
+  if (current_pid_ != base::kNullProcessId) {
+    printer_->AddErrorMessage(std::string("#CRASHED - renderer (pid ") +
+                              base::IntToString(current_pid_) + ")");
+  } else {
     printer_->AddErrorMessage("#CRASHED - renderer");
   }
 }
@@ -280,6 +294,30 @@ void WebKitTestController::WebContentsDestroyed(WebContents* web_contents) {
   DCHECK(CalledOnValidThread());
   main_window_ = NULL;
   printer_->AddErrorMessage("FAIL: main window was destroyed");
+}
+
+void WebKitTestController::Observe(int type,
+                                   const NotificationSource& source,
+                                   const NotificationDetails& details) {
+  DCHECK(CalledOnValidThread());
+  switch (type) {
+    case NOTIFICATION_RENDERER_PROCESS_CREATED: {
+      if (!main_window_)
+        return;
+      RenderViewHost* render_view_host =
+          main_window_->web_contents()->GetRenderViewHost();
+      if (!render_view_host)
+        return;
+      RenderProcessHost* render_process_host =
+          Source<RenderProcessHost>(source).ptr();
+      if (render_process_host != render_view_host->GetProcess())
+        return;
+      current_pid_ = base::GetProcId(render_process_host->GetHandle());
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
 }
 
 void WebKitTestController::CaptureDump() {

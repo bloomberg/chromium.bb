@@ -12,6 +12,8 @@
 #include "base/file_path.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "webkit/glue/webpreferences.h"
@@ -65,7 +67,8 @@ class WebKitTestResultPrinter {
 };
 
 class WebKitTestController : public base::NonThreadSafe,
-                             public WebContentsObserver {
+                             public WebContentsObserver,
+                             public NotificationObserver {
  public:
   static WebKitTestController* Get();
 
@@ -100,6 +103,11 @@ class WebKitTestController : public base::NonThreadSafe,
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
+
+  // NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
 
  private:
   static WebKitTestController* instance_;
@@ -136,6 +144,8 @@ class WebKitTestController : public base::NonThreadSafe,
 
   Shell* main_window_;
 
+  int current_pid_;
+
   bool enable_pixel_dumping_;
   std::string expected_pixel_hash_;
 
@@ -156,6 +166,8 @@ class WebKitTestController : public base::NonThreadSafe,
   // Access to the following variables needs to be guarded by |lock_|.
   mutable base::Lock lock_;
   bool can_open_windows_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitTestController);
 };
