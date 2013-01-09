@@ -718,6 +718,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableWebIntents(
       command_line.HasSwitch(switches::kWebIntentsInvocationEnabled));
 
+  WebRuntimeFeatures::enableSeamlessIFrames(
+      command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
+
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 
   devtools_agent_message_filter_ = new DevToolsAgentFilter();
