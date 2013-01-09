@@ -1130,6 +1130,7 @@ private:
         setSkipsDraw(skipsDraw);
         if (!tileMissing) {
             ResourceProvider::ResourceId resource = resourceProvider->createResource(gfx::Size(), GL_RGBA, ResourceProvider::TextureUsageAny);
+            resourceProvider->allocateForTesting(resource);
             pushTileProperties(0, 0, resource, gfx::Rect(), false);
         }
         if (animating)
@@ -1755,6 +1756,7 @@ private:
         , m_quadVisibleRect(5, 5, 5, 5)
         , m_resourceId(resourceProvider->createResource(gfx::Size(1, 1), GL_RGBA, ResourceProvider::TextureUsageAny))
     {
+        resourceProvider->allocateForTesting(m_resourceId);
         setAnchorPoint(gfx::PointF(0, 0));
         setBounds(gfx::Size(10, 10));
         setContentBounds(gfx::Size(10, 10));

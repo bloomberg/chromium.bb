@@ -141,9 +141,9 @@ void ResourceUpdateController::updateTexture(ResourceUpdate update)
         // is available in other shared contexts. It is important to do here
         // because the backing texture is created in one context while it is
         // being written to in another.
-        m_resourceProvider->flush();
         ResourceProvider::ScopedWriteLockGL lock(
             m_resourceProvider, texture->resourceId());
+        m_resourceProvider->flush();
 
         // Make sure ganesh uses the correct GL context.
         paintContext->makeContextCurrent();

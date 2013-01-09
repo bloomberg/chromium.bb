@@ -384,6 +384,7 @@ TEST_F(TextureLayerImplWithMailboxTest, testCallbackOnInUseResource)
         provider->createResourceFromTextureMailbox(
            m_testData.m_mailbox1,
            m_testData.m_releaseMailbox1);
+    provider->allocateForTesting(id);
 
     // Transfer some resources to the parent.
     ResourceProvider::ResourceIdArray resourceIdsToTransfer;

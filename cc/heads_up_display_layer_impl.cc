@@ -77,8 +77,14 @@ void HeadsUpDisplayLayerImpl::willDraw(ResourceProvider* resourceProvider)
     if (m_hudTexture->size() != bounds() || resourceProvider->inUseByConsumer(m_hudTexture->id()))
         m_hudTexture->Free();
 
-    if (!m_hudTexture->id())
+    if (!m_hudTexture->id()) {
         m_hudTexture->Allocate(bounds(), GL_RGBA, ResourceProvider::TextureUsageAny);
+        // TODO(epenner): This texture was being used before setPixels was called,
+        // which is now not allowed (it's an uninitialized read). This should be fixed
+        // and this allocateForTesting() removed.
+        // http://crbug.com/166784
+        resourceProvider->allocateForTesting(m_hudTexture->id());
+    }
 }
 
 void HeadsUpDisplayLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)

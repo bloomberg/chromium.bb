@@ -29,6 +29,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
           gfx::Size(20, 12),
           resourceProvider->bestTextureFormat(),
           ResourceProvider::TextureUsageAny);
+  resourceProvider->allocateForTesting(texture_resource);
   unsigned texture_id = ResourceProvider::ScopedReadLockGL(
       resourceProvider, texture_resource).textureId();
 
@@ -163,6 +164,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
             gfx::Size(20, 12),
             resourceProvider->bestTextureFormat(),
             ResourceProvider::TextureUsageAny);
+    resourceProvider->allocateForTesting(planes[i].resourceId);
     planes[i].size = gfx::Size(100, 100);
     planes[i].format = GL_LUMINANCE;
   }
