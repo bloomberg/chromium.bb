@@ -66,6 +66,7 @@ def GetCommands(options, bot_config):
 
 
 def GetBotStepMap():
+  compile_step = ['bb_compile']
   std_build_steps = ['bb_compile', 'bb_zip_build']
   std_test_steps = ['bb_extract_build', 'bb_reboot_phones']
   std_tests = ['ui', 'unit']
@@ -78,9 +79,9 @@ def GetBotStepMap():
       # Main builders
       B('main-builder-dbg',
         ['bb_compile', 'bb_run_findbugs', 'bb_zip_build'], None, None),
-      B('main-builder-rel', std_build_steps, None, None),
-      B('main-clang-builder', ['bb_compile'], None, None),
-      B('main-clobber', ['bb_compile'], None, None),
+      B('main-builder-rel', compile_step, None, None),
+      B('main-clang-builder', compile_step, None, None),
+      B('main-clobber', compile_step, None, None),
       B('main-tests-dbg', std_test_steps, T(std_tests), None),
 
       # Other waterfalls
@@ -92,13 +93,14 @@ def GetBotStepMap():
       B('fyi-builder-rel',
         ['bb_compile', 'bb_compile_experimental', 'bb_zip_build'], None, None),
       B('fyi-tests', std_test_steps, T(std_tests, ['--experimental']), None),
-      B('perf-builder-rel', std_build_steps, None, None),
       B('perf-tests-rel', std_test_steps, T([], ['--install=ContentShell']),
         None),
-      B('webkit-latest-builder', std_build_steps, None, None),
       B('webkit-latest-tests', std_test_steps, T(['unit']), None),
       B('webkit-latest-webkit-tests', std_test_steps,
         T(['webkit_layout', 'webkit']), None),
+
+      # Generic builder config (for substring match).
+      B('builder', std_build_steps, None, None),
   ]
 
   bot_map = dict((config.bot_id, config) for config in bot_configs)
@@ -138,21 +140,22 @@ def main(argv):
   if args:
     parser.error('Unused args: %s' % args)
 
-  bot_id = options.bot_id or options.factory_properties.get('bot_id')
+  bot_id = options.bot_id or options.factory_properties.get('android_bot_id')
   if not bot_id:
     parser.error('A bot id must be specified through option or factory_props.')
 
   # Get a BotConfig object looking first for an exact bot-id match. If no exact
   # match, look for a bot-id which is a substring of the specified id.
-  # This allows similar bots can have unique IDs, but to share config.
+  # This allows similar bots to have unique IDs, but to share config.
+  # If multiple substring matches exist, pick the longest one.
   bot_map = GetBotStepMap()
   bot_config = bot_map.get(bot_id)
   if not bot_config:
-    for cur_id, cur_config in bot_map.iteritems():
-      if cur_id in bot_id:
-        print 'Using config from id="%s" (substring match).' % cur_id
-        bot_config = cur_config
-        break
+    substring_matches = filter(lambda x: x in bot_id, bot_map.iterkeys())
+    if substring_matches:
+      max_id = max(substring_matches, key=len)
+      print 'Using config from id="%s" (substring match).' % max_id
+      bot_config = bot_map[max_id]
   if not bot_config:
     print 'Error: config for id="%s" cannot be inferred.' % bot_id
     return 1
