@@ -57,12 +57,7 @@ class BookmarkBrowsertest : public InProcessBrowserTest {
   BookmarkModel* WaitForBookmarkModel(Profile* profile) {
     BookmarkModel* bookmark_model =
         BookmarkModelFactory::GetForProfile(profile);
-    if (!bookmark_model->IsLoaded()) {
-      content::WindowedNotificationObserver observer(
-          chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-          content::NotificationService::AllSources());
-      observer.Wait();
-    }
+    ui_test_utils::WaitForBookmarkModelToLoad(bookmark_model);
     return bookmark_model;
   }
 };
