@@ -24,13 +24,14 @@ from common import unittest_util
 class ChromeDriverTest(unittest.TestCase):
   """End to end tests for ChromeDriver."""
 
-  @classmethod
-  def setUpClass(cls):
-    cls._http_server = webserver.WebServer(chrome_paths.GetTestData())
+  @staticmethod
+  def GlobalSetUp():
+    ChromeDriverTest._http_server = webserver.WebServer(
+        chrome_paths.GetTestData())
 
-  @classmethod
-  def tearDownClass(cls):
-    cls._http_server.Shutdown()
+  @staticmethod
+  def GlobalTearDown():
+    ChromeDriverTest._http_server.Shutdown()
 
   @staticmethod
   def GetHttpUrlForFile(file_path):
@@ -117,5 +118,7 @@ if __name__ == '__main__':
   all_tests_suite = unittest.defaultTestLoader.loadTestsFromModule(
       sys.modules[__name__])
   tests = unittest_util.FilterTestSuite(all_tests_suite, options.filter)
+  ChromeDriverTest.GlobalSetUp();
   result = unittest.TextTestRunner().run(tests)
+  ChromeDriverTest.GlobalTearDown();
   sys.exit(len(result.failures) + len(result.errors))
