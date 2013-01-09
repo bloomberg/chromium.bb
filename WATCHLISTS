@@ -82,7 +82,8 @@
                   '|chrome/browser/bookmarks/' \
                   '|chrome/browser/common/' \
                   '|chrome/browser/favicon/' \
-                  '|chrome/browser/history/'
+                  '|chrome/browser/history/' \
+                  '|chrome/browser/visitedlink/'
     },
     'browser_compositor': {
       'filepath': 'ui/compositor/'
