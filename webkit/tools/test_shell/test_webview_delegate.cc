@@ -532,7 +532,7 @@ WebPlugin* TestWebViewDelegate::createPlugin(WebFrame* frame,
 WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
     WebFrame* frame, const WebKit::WebURL& url, WebMediaPlayerClient* client) {
   webkit_media::WebMediaPlayerParams params(
-      NULL, NULL, NULL, NULL, new media::MediaLog());
+      NULL, NULL, NULL, new media::MediaLog());
   return new webkit_media::WebMediaPlayerImpl(
       frame,
       client,

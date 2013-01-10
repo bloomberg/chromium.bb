@@ -130,8 +130,6 @@
     'renderer/media/media_stream_impl.h',
     'renderer/media/pepper_platform_video_decoder_impl.cc',
     'renderer/media/pepper_platform_video_decoder_impl.h',
-    'renderer/media/render_audiosourceprovider.cc',
-    'renderer/media/render_audiosourceprovider.h',
     'renderer/media/render_media_log.cc',
     'renderer/media/render_media_log.h',
     'renderer/media/renderer_audio_output_device.cc',

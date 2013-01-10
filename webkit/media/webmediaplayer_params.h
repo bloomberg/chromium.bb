@@ -13,10 +13,6 @@ class AudioRendererSink;
 class MediaLog;
 }
 
-namespace WebKit {
-class WebAudioSourceProvider;
-}
-
 namespace webkit_media {
 
 class MediaStreamClient;
@@ -26,24 +22,12 @@ class MediaStreamClient;
 class WebMediaPlayerParams {
  public:
   // |media_log| is the only required parameter; all others may be null.
-  //
-  // If provided, |audio_source_provider| and |audio_renderer_sink| arguments
-  // must be the same object.
-  //
-  // TODO(scherkus): Remove WebAudioSourceProvider parameter once we
-  // refactor RenderAudioSourceProvider to live under webkit/media/
-  // instead of content/renderer/, see http://crbug.com/136442
   WebMediaPlayerParams(
-      WebKit::WebAudioSourceProvider* audio_source_provider,
       const scoped_refptr<media::AudioRendererSink>& audio_renderer_sink,
       const scoped_refptr<media::GpuVideoDecoder::Factories>& gpu_factories,
       MediaStreamClient* media_stream_client,
       const scoped_refptr<media::MediaLog>& media_log);
   ~WebMediaPlayerParams();
-
-  WebKit::WebAudioSourceProvider* audio_source_provider() const {
-    return audio_source_provider_;
-  }
 
   const scoped_refptr<media::AudioRendererSink>& audio_renderer_sink() const {
     return audio_renderer_sink_;
@@ -63,7 +47,6 @@ class WebMediaPlayerParams {
   }
 
  private:
-  WebKit::WebAudioSourceProvider* audio_source_provider_;
   scoped_refptr<media::AudioRendererSink> audio_renderer_sink_;
   scoped_refptr<media::GpuVideoDecoder::Factories> gpu_factories_;
   MediaStreamClient* media_stream_client_;

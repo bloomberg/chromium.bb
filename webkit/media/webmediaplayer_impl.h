@@ -80,6 +80,7 @@ class MediaLog;
 namespace webkit_media {
 
 class MediaStreamClient;
+class WebAudioSourceProviderImpl;
 class WebMediaPlayerDelegate;
 class WebMediaPlayerParams;
 class WebMediaPlayerProxy;
@@ -325,13 +326,8 @@ class WebMediaPlayerImpl
 
   bool incremented_externally_allocated_memory_;
 
-  // TODO(scherkus): Sadly these two objects are the same and we're also forced
-  // to maintain an additional reference to |audio_renderer_sink_| otherwise
-  // |audio_source_provider_| will go bad after |pipeline_| shuts down.
-  //
-  // See http://crbug.com/136442 for details.
-  WebKit::WebAudioSourceProvider* audio_source_provider_;
-  scoped_refptr<media::AudioRendererSink> audio_renderer_sink_;
+  // Routes audio playback to either AudioRendererSink or WebAudio.
+  scoped_refptr<WebAudioSourceProviderImpl> audio_source_provider_;
 
   bool is_local_source_;
   bool supports_save_;

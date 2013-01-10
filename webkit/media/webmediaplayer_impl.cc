@@ -33,6 +33,7 @@
 #include "v8/include/v8.h"
 #include "webkit/media/buffered_data_source.h"
 #include "webkit/media/filter_helpers.h"
+#include "webkit/media/webaudiosourceprovider_impl.h"
 #include "webkit/media/webmediaplayer_delegate.h"
 #include "webkit/media/webmediaplayer_params.h"
 #include "webkit/media/webmediaplayer_proxy.h"
@@ -139,8 +140,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       media_log_(params.media_log()),
       accelerated_compositing_reported_(false),
       incremented_externally_allocated_memory_(false),
-      audio_source_provider_(params.audio_source_provider()),
-      audio_renderer_sink_(params.audio_renderer_sink()),
       is_local_source_(false),
       supports_save_(true),
       starting_(false) {
@@ -198,13 +197,11 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   proxy_->set_frame_provider(video_renderer);
 
   // Create default audio renderer using the null sink if no sink was provided.
-  scoped_refptr<media::AudioRendererSink> audio_renderer_sink =
-      params.audio_renderer_sink();
-  if (!audio_renderer_sink)
-    audio_renderer_sink = new media::NullAudioSink();
-
+  audio_source_provider_ = new WebAudioSourceProviderImpl(
+      params.audio_renderer_sink() ? params.audio_renderer_sink() :
+      new media::NullAudioSink());
   filter_collection_->AddAudioRenderer(new media::AudioRendererImpl(
-      audio_renderer_sink, set_decryptor_ready_cb));
+      audio_source_provider_, set_decryptor_ready_cb));
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
