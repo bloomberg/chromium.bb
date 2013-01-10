@@ -75,7 +75,7 @@ deps = {
     "/trunk/deps/third_party/WebKit@76115",
 
   "src/third_party/icu":
-    "/trunk/deps/third_party/icu46@174978",
+    "/trunk/deps/third_party/icu46@175290",
 
   "src/third_party/libexif/sources":
     "/trunk/deps/third_party/libexif/sources@146817",
