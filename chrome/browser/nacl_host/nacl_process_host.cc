@@ -904,6 +904,7 @@ bool NaClProcessHost::AttachDebugExceptionHandler(const std::string& info,
            base::kProcessAccessVMOperation |
            base::kProcessAccessVMRead |
            base::kProcessAccessVMWrite |
+           base::kProcessAccessDuplicateHandle |
            base::kProcessAccessWaitForTermination,
            process_handle.Receive())) {
     LOG(ERROR) << "Failed to get process handle";
