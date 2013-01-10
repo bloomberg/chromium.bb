@@ -65,6 +65,9 @@
       'msvs_disabled_warnings': [
         # Signed/unsigned comparison.
         4018,
+
+        # TODO(jschuh): http://crbug.com/167187 size_t -> int
+        4267,
       ],
       'sources': [
         # Include and then exclude so that all files show up in IDEs, even if
