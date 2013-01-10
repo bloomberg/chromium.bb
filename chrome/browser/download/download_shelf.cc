@@ -4,15 +4,54 @@
 
 #include "chrome/browser/download/download_shelf.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/message_loop.h"
+#include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/download/download_started_animation.h"
+#include "chrome/browser/platform_util.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
+#include "content/public/browser/web_contents.h"
+#include "ui/base/animation/animation.h"
+
+using content::DownloadItem;
+
+namespace {
+
+// Delay before we show a transient download.
+const int64 kDownloadShowDelayInSeconds = 2;
+
+} // namespace
+
 DownloadShelf::DownloadShelf()
     : should_show_on_unhide_(false),
-      is_hidden_(false) {}
+      is_hidden_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+}
 
-void DownloadShelf::AddDownload(content::DownloadItem* download) {
-  if (is_hidden_)
-    Unhide();
-  Show();
-  DoAddDownload(download);
+DownloadShelf::~DownloadShelf() {
+}
+
+void DownloadShelf::AddDownload(DownloadItem* download) {
+  DCHECK(download);
+  if (DownloadItemModel(download).ShouldRemoveFromShelfWhenComplete()) {
+    // If we are going to remove the download from the shelf upon completion,
+    // wait a few seconds to see if it completes quickly. If it's a small
+    // download, then the user won't have time to interact with it.
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&DownloadShelf::ShowDownloadById,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   download->GetId()),
+        GetTransientDownloadShowDelay());
+  } else {
+    ShowDownload(download);
+  }
 }
 
 void DownloadShelf::Show() {
@@ -49,4 +88,55 @@ void DownloadShelf::Unhide() {
     should_show_on_unhide_ = false;
     DoShow();
   }
+}
+
+base::TimeDelta DownloadShelf::GetTransientDownloadShowDelay() {
+  return base::TimeDelta::FromSeconds(kDownloadShowDelayInSeconds);
+}
+
+content::DownloadManager* DownloadShelf::GetDownloadManager() {
+  DCHECK(browser());
+  return content::BrowserContext::GetDownloadManager(browser()->profile());
+}
+
+void DownloadShelf::ShowDownload(DownloadItem* download) {
+  if (download->IsComplete() &&
+      DownloadItemModel(download).ShouldRemoveFromShelfWhenComplete()) {
+    return;
+  }
+
+  if (is_hidden_)
+    Unhide();
+  Show();
+  DoAddDownload(download);
+
+  // browser() can be NULL for tests.
+  if (!browser())
+    return;
+
+  // Show the download started animation if:
+  // - Download started animation is enabled for this download. It is disabled
+  //   for "Save As" downloads and extension installs, for example.
+  // - The browser has an active visble WebContents. (browser isn't minimized,
+  //   or running under a test etc.)
+  // - Rich animations are enabled.
+  content::WebContents* shelf_tab = chrome::GetActiveWebContents(browser());
+  if (DownloadItemModel(download).ShouldShowDownloadStartedAnimation() &&
+      shelf_tab &&
+      platform_util::IsVisible(shelf_tab->GetNativeView()) &&
+      ui::Animation::ShouldRenderRichAnimation()) {
+    DownloadStartedAnimation::Show(shelf_tab);
+  }
+}
+
+void DownloadShelf::ShowDownloadById(int32 download_id) {
+  content::DownloadManager* download_manager = GetDownloadManager();
+  if (!download_manager)
+    return;
+
+  DownloadItem* download = download_manager->GetDownload(download_id);
+  if (!download)
+    return;
+
+  ShowDownload(download);
 }

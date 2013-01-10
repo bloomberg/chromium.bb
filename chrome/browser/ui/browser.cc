@@ -44,13 +44,10 @@
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_shelf.h"
-#include "chrome/browser/download/download_started_animation.h"
-#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -68,7 +65,6 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
@@ -187,7 +183,6 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
-#include "ui/base/animation/animation.h"
 #include "ui/base/dialogs/selected_file_info.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/point.h"
@@ -1448,19 +1443,6 @@ void Browser::OnStartDownload(WebContents* source,
   // GetDownloadShelf creates the download shelf if it was not yet created.
   DownloadShelf* shelf = window()->GetDownloadShelf();
   shelf->AddDownload(download);
-  // Don't show the animation for "Save file" downloads.
-  // For non-theme extensions, we don't show the download animation.
-  // Show animation in same window as the download shelf. Download shelf
-  // may not be in the same window that initiated the download.
-  // Don't show the animation if the selected tab is not visible (i.e. the
-  // window is minimized, we're in a unit test, etc.).
-  WebContents* shelf_tab = chrome::GetActiveWebContents(shelf->browser());
-  if ((download->GetTotalBytes() > 0) &&
-      !download_crx_util::IsExtensionDownload(*download) &&
-      platform_util::IsVisible(shelf_tab->GetNativeView()) &&
-      ui::Animation::ShouldRenderRichAnimation()) {
-    DownloadStartedAnimation::Show(shelf_tab);
-  }
 
   // If the download occurs in a new tab, and it's not a save page
   // download (started before initial navigation completed) close it.

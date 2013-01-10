@@ -20,6 +20,7 @@
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/gfx/font.h"
 
+using content::DownloadItem;
 using ::testing::Mock;
 using ::testing::NiceMock;
 using ::testing::Return;
@@ -72,7 +73,7 @@ class DownloadItemModelTest : public testing::Test {
     ON_CALL(item_, GetOpenWhenComplete()).WillByDefault(Return(false));
     ON_CALL(item_, GetFileExternallyRemoved()).WillByDefault(Return(false));
     ON_CALL(item_, GetState())
-        .WillByDefault(Return(content::DownloadItem::IN_PROGRESS));
+        .WillByDefault(Return(DownloadItem::IN_PROGRESS));
     ON_CALL(item_, GetURL())
         .WillByDefault(ReturnRefOfCopy(GURL(kDefaultURL)));
     ON_CALL(item_, GetFileNameToReportUser())
@@ -81,7 +82,7 @@ class DownloadItemModelTest : public testing::Test {
         .WillByDefault(ReturnRefOfCopy(FilePath(kDefaultTargetFilePath)));
     ON_CALL(item_, GetTargetDisposition())
         .WillByDefault(
-            Return(content::DownloadItem::TARGET_DISPOSITION_OVERWRITE));
+            Return(DownloadItem::TARGET_DISPOSITION_OVERWRITE));
     ON_CALL(item_, IsPaused()).WillByDefault(Return(false));
   }
 
@@ -90,8 +91,8 @@ class DownloadItemModelTest : public testing::Test {
     EXPECT_CALL(item_, GetState())
         .WillRepeatedly(Return(
             (reason == content::DOWNLOAD_INTERRUPT_REASON_NONE) ?
-                content::DownloadItem::IN_PROGRESS :
-                content::DownloadItem::INTERRUPTED));
+                DownloadItem::IN_PROGRESS :
+                DownloadItem::INTERRUPTED));
     EXPECT_CALL(item_, IsInProgress())
         .WillRepeatedly(Return(
             reason == content::DOWNLOAD_INTERRUPT_REASON_NONE));
@@ -269,7 +270,7 @@ TEST_F(DownloadItemModelTest, InterruptTooltip) {
 }
 
 TEST_F(DownloadItemModelTest, InProgressStatus) {
-  struct TestCase {
+  const struct TestCase {
     int64 received_bytes;               // Return value of GetReceivedBytes().
     int64 total_bytes;                  // Return value of GetTotalBytes().
     bool  time_remaining_known;         // If TimeRemaining() is known.
@@ -319,7 +320,7 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
   SetupDownloadItemDefaults();
 
   for (unsigned i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); i++) {
-    TestCase& test_case = kTestCases[i];
+    const TestCase& test_case = kTestCases[i];
     Mock::VerifyAndClearExpectations(&item());
     Mock::VerifyAndClearExpectations(&model());
     EXPECT_CALL(item(), GetReceivedBytes())
@@ -352,4 +353,60 @@ TEST_F(DownloadItemModelTest, ShouldShowInShelf) {
 
   model().SetShouldShowInShelf(true);
   EXPECT_TRUE(model().ShouldShowInShelf());
+}
+
+TEST_F(DownloadItemModelTest, ShouldRemoveFromShelfWhenComplete) {
+  const struct TestCase {
+    DownloadItem::DownloadState state;
+    bool is_dangerous;
+    bool is_auto_open;  // Either an extension install, temporary, open when
+                        // complete or open based on extension.
+    bool expected_result;
+  } kTestCases[] = {
+    // All the valid combinations of state, is_dangerous and is_auto_open.
+    //
+    //                              .--- Is dangerous.
+    //                             |       .--- Auto open or temporary.
+    //                             |      |      .--- Expected result.
+    { DownloadItem::IN_PROGRESS, false, false, false },
+    { DownloadItem::IN_PROGRESS, false, true , true  },
+    { DownloadItem::IN_PROGRESS, true , false, false },
+    { DownloadItem::IN_PROGRESS, true , true , false },
+    { DownloadItem::COMPLETE,    false, false, false },
+    { DownloadItem::COMPLETE,    false, true , true  },
+    { DownloadItem::CANCELLED,   false, false, false },
+    { DownloadItem::CANCELLED,   false, true , false },
+    { DownloadItem::CANCELLED,   true , false, false },
+    { DownloadItem::CANCELLED,   true , true , false },
+    { DownloadItem::INTERRUPTED, false, false, false },
+    { DownloadItem::INTERRUPTED, false, true , false },
+    { DownloadItem::INTERRUPTED, true , false, false },
+    { DownloadItem::INTERRUPTED, true , true , false }
+  };
+
+  SetupDownloadItemDefaults();
+
+  for (unsigned i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); i++) {
+    const TestCase& test_case = kTestCases[i];
+    EXPECT_CALL(item(), GetOpenWhenComplete())
+        .WillRepeatedly(Return(test_case.is_auto_open));
+    EXPECT_CALL(item(), GetState())
+        .WillRepeatedly(Return(test_case.state));
+    EXPECT_CALL(item(), IsCancelled())
+        .WillRepeatedly(Return(test_case.state == DownloadItem::CANCELLED));
+    EXPECT_CALL(item(), IsComplete())
+        .WillRepeatedly(Return(test_case.state == DownloadItem::COMPLETE));
+    EXPECT_CALL(item(), IsInProgress())
+        .WillRepeatedly(Return(test_case.state == DownloadItem::IN_PROGRESS));
+    EXPECT_CALL(item(), IsInterrupted())
+        .WillRepeatedly(Return(test_case.state == DownloadItem::INTERRUPTED));
+    EXPECT_CALL(item(), GetSafetyState())
+        .WillRepeatedly(Return(test_case.is_dangerous ? DownloadItem::DANGEROUS
+                                                      : DownloadItem::SAFE));
+
+    EXPECT_EQ(test_case.expected_result,
+              model().ShouldRemoveFromShelfWhenComplete());
+    Mock::VerifyAndClearExpectations(&item());
+    Mock::VerifyAndClearExpectations(&model());
+  }
 }

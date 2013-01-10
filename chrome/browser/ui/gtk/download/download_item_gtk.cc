@@ -339,9 +339,10 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download_item) {
       complete_animation_.Show();
       break;
     case DownloadItem::COMPLETE:
-      // GetAutoOpened() may change after the download's initial transition to
-      // COMPLETE, so we check it before the idemopotency shield below.
-      if (download()->GetAutoOpened()) {
+      // ShouldRemoveFromShelfWhenComplete() may change after the download's
+      // initial transition to COMPLETE, so we check it before the idemopotency
+      // shield below.
+      if (download_model_.ShouldRemoveFromShelfWhenComplete()) {
         parent_shelf_->RemoveDownloadItem(this);  // This will delete us!
         return;
       }

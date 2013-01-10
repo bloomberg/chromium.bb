@@ -4,8 +4,11 @@
 
 #include "chrome/browser/download/test_download_shelf.h"
 
+#include "content/public/browser/download_manager.h"
+
 TestDownloadShelf::TestDownloadShelf()
-    : is_showing_(false) {
+    : is_showing_(false),
+      did_add_download_(false) {
 }
 
 TestDownloadShelf::~TestDownloadShelf() {
@@ -23,7 +26,13 @@ Browser* TestDownloadShelf::browser() const {
   return NULL;
 }
 
+void TestDownloadShelf::set_download_manager(
+    content::DownloadManager* download_manager) {
+  download_manager_ = download_manager;
+}
+
 void TestDownloadShelf::DoAddDownload(content::DownloadItem* download) {
+  did_add_download_ = true;
 }
 
 void TestDownloadShelf::DoShow() {
@@ -34,3 +43,10 @@ void TestDownloadShelf::DoClose() {
   is_showing_ = false;
 }
 
+base::TimeDelta TestDownloadShelf::GetTransientDownloadShowDelay() {
+  return base::TimeDelta();
+}
+
+content::DownloadManager* TestDownloadShelf::GetDownloadManager() {
+  return download_manager_.get();
+}

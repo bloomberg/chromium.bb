@@ -47,7 +47,7 @@ void DownloadItemMac::OnDownloadUpdated(content::DownloadItem* download) {
 
   switch (download->GetState()) {
     case DownloadItem::COMPLETE:
-      if (download->GetAutoOpened()) {
+      if (download_model_.ShouldRemoveFromShelfWhenComplete()) {
         [item_controller_ remove];  // We're deleted now!
         return;
       }

@@ -369,6 +369,35 @@ bool DownloadItemModel::IsMalicious() const {
   return false;
 }
 
+bool DownloadItemModel::ShouldRemoveFromShelfWhenComplete() const {
+  // If the download was already opened automatically, it should be removed.
+  if (download_->GetAutoOpened())
+    return true;
+
+  // If the download is interrupted or cancelled, it should not be removed.
+  if (download_->IsInterrupted() || download_->IsCancelled())
+    return false;
+
+  // If the download is dangerous or malicious, we should display a warning on
+  // the shelf until the user accepts the download.
+  if (IsDangerous())
+    return false;
+
+  // If the download is an extension, temporary, or will be opened
+  // automatically, then it should be removed from the shelf on completion.
+  // TODO(asanka): The logic for deciding opening behavior should be in a
+  //               central location. http://crbug.com/167702
+  return (download_crx_util::IsExtensionDownload(*download_) ||
+          download_->IsTemporary() ||
+          download_->GetOpenWhenComplete() ||
+          download_->ShouldOpenFileBasedOnExtension());
+}
+
+bool DownloadItemModel::ShouldShowDownloadStartedAnimation() const {
+  return !download_->IsSavePackageDownload() &&
+      !download_crx_util::IsExtensionDownload(*download_);
+}
+
 bool DownloadItemModel::ShouldShowInShelf() const {
   const DownloadItemModelData* data = DownloadItemModelData::Get(download_);
   return !data || data->should_show_in_shelf();

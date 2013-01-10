@@ -79,6 +79,24 @@ class DownloadItemModel {
   // Is this considered a malicious download? Implies IsDangerous().
   bool IsMalicious() const;
 
+  // Returns |true| if this download is expected to complete successfully and
+  // thereafter be removed from the shelf.  Downloads that are opened
+  // automatically or are temporary will be removed from the shelf on successful
+  // completion.
+  //
+  // Returns |false| if the download is not expected to complete (interrupted,
+  // cancelled, dangerous, malicious), or won't be removed on completion.
+  //
+  // Since the expectation of successful completion may change, the return value
+  // of this function will change over the course of a download.
+  bool ShouldRemoveFromShelfWhenComplete() const;
+
+  // Returns |true| if the download started animation (big download arrow
+  // animates down towards the shelf) should be displayed for this download.
+  // Downloads that were initiated via "Save As" or are extension installs don't
+  // show the animation.
+  bool ShouldShowDownloadStartedAnimation() const;
+
   // Returns |true| if this download should be displayed in the downloads shelf.
   bool ShouldShowInShelf() const;
 

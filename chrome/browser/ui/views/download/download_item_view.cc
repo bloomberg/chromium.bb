@@ -270,7 +270,7 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download_item) {
         LoadIcon();
         break;
       case DownloadItem::COMPLETE:
-        if (download()->GetAutoOpened()) {
+        if (model_.ShouldRemoveFromShelfWhenComplete()) {
           shelf_->RemoveDownloadView(this);  // This will delete us!
           return;
         }
