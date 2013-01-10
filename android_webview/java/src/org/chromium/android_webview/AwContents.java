@@ -77,6 +77,13 @@ public class AwContents {
         public String imgSrc;
     }
 
+    /**
+     * Interface that consumers of {@link AwContents} must implement to allow the proper
+     * dispatching of view methods through the containing view.
+     */
+    public interface InternalAccessDelegate extends ContentViewCore.InternalAccessDelegate {
+    }
+
     private int mNativeAwContents;
     private ViewGroup mContainerView;
     private ContentViewCore mContentViewCore;
