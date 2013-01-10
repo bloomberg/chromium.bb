@@ -5827,15 +5827,6 @@
    fun:_ZN13DRTTestRunner18locationChangeDoneEv
    fun:_ZN11WebViewHost18locationChangeDoneEPN6WebKit8WebFrameE
    fun:_ZN11WebViewHost13didFinishLoadEPN6WebKit8WebFrameE
-   fun:_ZN6WebKit21FrameLoaderClientImpl21dispatchDidFinishLoadEv
-   fun:_ZN7WebCore11FrameLoader29checkLoadCompleteForThisFrameEv
-   fun:_ZN7WebCore11FrameLoader17checkLoadCompleteEv
-   fun:_ZN7WebCore14DocumentLoader15finishedLoadingEv
-   fun:_ZN7WebCore18MainResourceLoader16didFinishLoadingEd
-   fun:_ZN7WebCore14ResourceLoader16didFinishLoadingEPNS_14ResourceHandleEd
-   fun:_ZN7WebCore22ResourceHandleInternal16didFinishLoadingEPN6WebKit12WebURLLoaderEd
-   fun:_ZN11webkit_glue16WebURLLoaderImpl7Context18OnCompletedRequestEibRKSsRKN4base9TimeTicksE
-   fun:_ZN12_GLOBAL__N_112RequestProxy22NotifyCompletedRequestEiRKSsRKN4base9TimeTicksE
 }
 {
    bug_150995_d
@@ -6168,8 +6159,9 @@
    fun:_ZN7WebCore23v8StringToWebCoreStringIN3WTF12AtomicStringEEET_N2v86HandleINS4_6StringEEENS_12ExternalModeE
    fun:_ZN7WebCore16V8StringResourceILNS_20V8StringResourceModeE1EE8toStringIN3WTF12AtomicStringEEET_v
    fun:_ZN7WebCore16V8StringResourceILNS_20V8StringResourceModeE1EEcvN3WTF12AtomicStringEEv
-   fun:_ZN7WebCore20IDBRequestV8InternalL24addEventListenerCallbackERKN2v89ArgumentsE
+   fun:_ZN7WebCore23WorkerContextV8InternalL24addEventListenerCallbackERKN2v89ArgumentsE
    fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
 {
    # storage/indexeddb/objectstore-basics-workers.html
@@ -6461,4 +6453,30 @@
    fun:_ZN20ManagedModeURLFilterC1Ev
    fun:_ZN11ManagedMode16URLFilterContextC1E13scoped_refptrIN4base19SequencedTaskRunnerEE
    fun:_ZN11ManagedModeC2Ev
+}
+{
+   bug_
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF10RefCountedIN7WebCore18StyleSheetContentsEEnwEm
+   fun:_ZN7WebCore18StyleSheetContents6createERKNS_16CSSParserContextE
+   fun:_ZN7WebCoreL12parseUASheetERKN3WTF6StringE
+   fun:_ZN7WebCoreL12parseUASheetEPKcj
+   fun:_ZN7WebCoreL15viewSourceStyleEv
+   fun:_ZN7WebCore13StyleResolver12matchUARulesERNS0_11MatchResultE
+   fun:_ZN7WebCore13StyleResolver15styleForElementEPNS_7ElementEPNS_11RenderStyleENS_20StyleSharingBehaviorENS_20RuleMatchingBehaviorEPNS_12RenderRegionE
+   fun:_ZN7WebCore13StyleResolverC1EPNS_8DocumentEb
+   fun:_ZN7WebCore8Document19createStyleResolverEv
+   fun:_ZN7WebCore8Document13styleResolverEv
+   fun:_ZN7WebCore7Element16styleForRendererEv
+   fun:_ZN7WebCore20NodeRenderingContext32createRendererForElementIfNeededEv
+   fun:_ZN7WebCore7Element22createRendererIfNeededEv
+   fun:_ZN7WebCore7Element6attachEv
+   fun:_ZN7WebCore22HTMLViewSourceDocument21createContainingTableEv
+   fun:_ZN7WebCore22HTMLViewSourceDocument9addSourceERKN3WTF6StringERNS_9HTMLTokenE
+   fun:_ZN7WebCore20HTMLViewSourceParser13pumpTokenizerEv
+   fun:_ZN7WebCore20HTMLViewSourceParser6appendERKNS_15SegmentedStringE
+   fun:_ZN7WebCore25DecodedDataDocumentParser5flushEPNS_14DocumentWriterE
+   fun:_ZN7WebCore14DocumentWriter3endEv
 }
