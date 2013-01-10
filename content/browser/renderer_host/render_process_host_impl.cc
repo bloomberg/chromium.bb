@@ -84,7 +84,6 @@
 #include "content/browser/speech/input_tag_speech_dispatcher_host.h"
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/trace_message_filter.h"
-#include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/worker_host/worker_storage_partition.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/common/child_process_host_impl.h"
@@ -99,6 +98,7 @@
 #include "content/public/browser/render_process_host_factory.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
@@ -1271,10 +1271,12 @@ bool RenderProcessHostImpl::IsSuitableHost(
   if (!host->IsGuest() && site_url.SchemeIs(chrome::kGuestScheme))
     return false;
 
-  if (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+  WebUIControllerFactory* factory =
+      GetContentClient()->browser()->GetWebUIControllerFactory();
+  if (factory &&
+      ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           host->GetID()) !=
-      WebUIControllerFactoryRegistry::GetInstance()->UseWebUIBindingsForURL(
-          browser_context, site_url)) {
+      factory->UseWebUIBindingsForURL(browser_context, site_url)) {
     return false;
   }
 
@@ -1390,8 +1392,10 @@ bool RenderProcessHostImpl::ShouldUseProcessPerSite(
   }
 
   // DevTools pages have WebUI type but should not reuse the same host.
-  if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
-          browser_context, url) &&
+  WebUIControllerFactory* factory =
+      GetContentClient()->browser()->GetWebUIControllerFactory();
+  if (factory &&
+      factory->UseWebUIForURL(browser_context, url) &&
       !url.SchemeIs(chrome::kChromeDevToolsScheme)) {
     return true;
   }

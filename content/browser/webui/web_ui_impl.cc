@@ -13,12 +13,12 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
@@ -77,10 +77,13 @@ void WebUIImpl::OnWebUISend(const GURL& source_url,
                             const ListValue& args) {
   WebContentsDelegate* delegate = web_contents_->GetDelegate();
   bool data_urls_allowed = delegate && delegate->CanLoadDataURLsInWebUI();
+  WebUIControllerFactory* factory =
+      GetContentClient()->browser()->GetWebUIControllerFactory();
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->
           HasWebUIBindings(web_contents_->GetRenderProcessHost()->GetID()) ||
-      !WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
-          web_contents_->GetBrowserContext(), source_url, data_urls_allowed)) {
+      !factory->IsURLAcceptableForWebUI(web_contents_->GetBrowserContext(),
+                                        source_url,
+                                        data_urls_allowed)) {
     NOTREACHED() << "Blocked unauthorized use of WebUIBindings.";
     return;
   }

@@ -96,11 +96,11 @@ class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
   }
   virtual bool UseWebUIForURL(BrowserContext* browser_context,
                               const GURL& url) const OVERRIDE {
-    return HasWebUIScheme(url);
+    return GetContentClient()->HasWebUIScheme(url);
   }
   virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
                                       const GURL& url) const OVERRIDE {
-    return HasWebUIScheme(url);
+    return GetContentClient()->HasWebUIScheme(url);
   }
   virtual bool IsURLAcceptableForWebUI(
       BrowserContext* browser_context,
@@ -108,6 +108,28 @@ class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
       bool data_urls_allowed) const OVERRIDE {
     return false;
   }
+};
+
+class WebUITestClient : public ShellContentClient {
+ public:
+  WebUITestClient() {
+  }
+
+  virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE {
+    return url.SchemeIs(chrome::kChromeUIScheme);
+  }
+};
+
+class WebUITestBrowserClient : public ShellContentBrowserClient {
+ public:
+  WebUITestBrowserClient() {}
+
+  virtual WebUIControllerFactory* GetWebUIControllerFactory() OVERRIDE {
+    return &factory_;
+  }
+
+ private:
+  WebUITestWebUIControllerFactory factory_;
 };
 
 }  // namespace
@@ -320,8 +342,14 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
 }
 
 TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
-  WebUITestWebUIControllerFactory factory;
-  WebUIControllerFactory::RegisterFactory(&factory);
+  WebUITestClient client;
+  WebUITestBrowserClient browser_client;
+  ContentClient* old_client = GetContentClient();
+  ContentBrowserClient* old_browser_client = GetContentClient()->browser();
+
+  SetContentClient(&client);
+  GetContentClient()->set_browser_for_testing(&browser_client);
+  client.set_renderer_for_testing(old_client->renderer());
 
   // Navigations to normal HTTP URLs can be handled locally.
   WebKit::WebURLRequest request(GURL("http://foo.com"));
@@ -356,6 +384,9 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
       WebKit::WebNavigationPolicyNewForegroundTab,
       false);
   EXPECT_EQ(WebKit::WebNavigationPolicyIgnore, policy);
+
+  GetContentClient()->set_browser_for_testing(old_browser_client);
+  SetContentClient(old_client);
 }
 
 TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {

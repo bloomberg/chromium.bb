@@ -37,7 +37,6 @@
 #include "content/browser/web_contents/interstitial_page_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_view_guest.h"
-#include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/browser_plugin_messages.h"
 #include "content/common/icon_messages.h"
@@ -65,6 +64,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_restriction.h"
@@ -823,9 +823,13 @@ WebContentsView* WebContentsImpl::GetView() const {
 }
 
 WebUI* WebContentsImpl::CreateWebUI(const GURL& url) {
+  WebUIControllerFactory* factory =
+      GetContentClient()->browser()->GetWebUIControllerFactory();
+  if (!factory)
+    return NULL;
   WebUIImpl* web_ui = new WebUIImpl(this);
-  WebUIController* controller = WebUIControllerFactoryRegistry::GetInstance()->
-      CreateWebUIControllerForURL(web_ui, url);
+  WebUIController* controller =
+      factory->CreateWebUIControllerForURL(web_ui, url);
   if (controller) {
     web_ui->SetController(controller);
     return web_ui;
@@ -1572,10 +1576,13 @@ bool WebContentsImpl::NavigateToEntry(
   // For security, we should never send non-Web-UI URLs to a Web UI renderer.
   // Double check that here.
   int enabled_bindings = dest_render_view_host->GetEnabledBindings();
+  WebUIControllerFactory* factory =
+      GetContentClient()->browser()->GetWebUIControllerFactory();
   bool data_urls_allowed = delegate_ && delegate_->CanLoadDataURLsInWebUI();
   bool is_allowed_in_web_ui_renderer =
-      WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
-          GetBrowserContext(), entry.GetURL(), data_urls_allowed);
+      factory &&
+      factory->IsURLAcceptableForWebUI(GetBrowserContext(), entry.GetURL(),
+                                       data_urls_allowed);
   if ((enabled_bindings & BINDINGS_POLICY_WEB_UI) &&
       !is_allowed_in_web_ui_renderer) {
     // Log the URL to help us diagnose any future failures of this CHECK.
@@ -1852,8 +1859,11 @@ int WebContentsImpl::GetContentRestrictions() const {
 }
 
 WebUI::TypeID WebContentsImpl::GetWebUITypeForCurrentState() {
-  return WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
-      GetBrowserContext(), GetURL());
+  WebUIControllerFactory* factory =
+      GetContentClient()->browser()->GetWebUIControllerFactory();
+  if (!factory)
+    return WebUI::kNoWebUI;
+  return factory->GetWebUIType(GetBrowserContext(), GetURL());
 }
 
 WebUI* WebContentsImpl::GetWebUIForCurrentState() {

@@ -866,8 +866,6 @@
     'browser/user_metrics.cc',
     'browser/utility_process_host_impl.cc',
     'browser/utility_process_host_impl.h',
-    'browser/webui/web_ui_controller_factory_registry.cc',
-    'browser/webui/web_ui_controller_factory_registry.h',
     'browser/webui/web_ui_impl.cc',
     'browser/webui/web_ui_impl.h',
     'browser/webui/web_ui_message_handler.cc',

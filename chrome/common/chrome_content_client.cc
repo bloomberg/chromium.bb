@@ -386,6 +386,12 @@ void ChromeContentClient::AddAdditionalSchemes(
 #endif
 }
 
+bool ChromeContentClient::HasWebUIScheme(const GURL& url) const {
+  return url.SchemeIs(chrome::kChromeDevToolsScheme) ||
+         url.SchemeIs(chrome::kChromeInternalScheme) ||
+         url.SchemeIs(chrome::kChromeUIScheme);
+}
+
 bool ChromeContentClient::CanHandleWhileSwappedOut(
     const IPC::Message& msg) {
   // Any Chrome-specific messages (apart from those listed in

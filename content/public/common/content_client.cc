@@ -52,6 +52,10 @@ ContentClient::ContentClient()
 ContentClient::~ContentClient() {
 }
 
+bool ContentClient::HasWebUIScheme(const GURL& url) const {
+  return false;
+}
+
 bool ContentClient::CanHandleWhileSwappedOut(const IPC::Message& message) {
   return false;
 }

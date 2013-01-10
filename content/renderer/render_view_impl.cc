@@ -2943,7 +2943,8 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     // blessed with file permissions.
     int cumulative_bindings = RenderProcess::current()->GetEnabledBindings();
     bool is_initial_navigation = page_id_ == -1;
-    bool should_fork = HasWebUIScheme(url) ||
+    bool should_fork =
+        GetContentClient()->HasWebUIScheme(url) ||
         (cumulative_bindings & BINDINGS_POLICY_WEB_UI) ||
         url.SchemeIs(chrome::kViewSourceScheme) ||
         (frame->isViewSourceModeEnabled() &&
