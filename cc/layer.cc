@@ -35,8 +35,6 @@ Layer::Layer()
     , m_scrollable(false)
     , m_shouldScrollOnMainThread(false)
     , m_haveWheelEventHandlers(false)
-    , m_nonFastScrollableRegionChanged(false)
-    , m_touchEventHandlerRegionChanged(false)
     , m_anchorPoint(0.5, 0.5)
     , m_backgroundColor(0)
     , m_opacity(1.0)
@@ -483,7 +481,6 @@ void Layer::setNonFastScrollableRegion(const Region& region)
     if (m_nonFastScrollableRegion == region)
         return;
     m_nonFastScrollableRegion = region;
-    m_nonFastScrollableRegionChanged = true;
     setNeedsCommit();
 }
 
@@ -492,7 +489,6 @@ void Layer::setTouchEventHandlerRegion(const Region& region)
     if (m_touchEventHandlerRegion == region)
         return;
     m_touchEventHandlerRegion = region;
-    m_touchEventHandlerRegionChanged = true;
 }
 
 void Layer::setDrawCheckerboardForMissingTiles(bool checkerboard)
@@ -601,16 +597,8 @@ void Layer::pushPropertiesTo(LayerImpl* layer)
     layer->setScrollable(m_scrollable);
     layer->setShouldScrollOnMainThread(m_shouldScrollOnMainThread);
     layer->setHaveWheelEventHandlers(m_haveWheelEventHandlers);
-    // Copying a Region is more expensive than most layer properties, since it involves copying two Vectors that may be
-    // arbitrarily large depending on page content, so we only push the property if it's changed.
-    if (m_nonFastScrollableRegionChanged) {
-        layer->setNonFastScrollableRegion(m_nonFastScrollableRegion);
-        m_nonFastScrollableRegionChanged = false;
-    }
-    if (m_touchEventHandlerRegionChanged) {
-        layer->setTouchEventHandlerRegion(m_touchEventHandlerRegion);
-        m_touchEventHandlerRegionChanged = false;
-    }
+    layer->setNonFastScrollableRegion(m_nonFastScrollableRegion);
+    layer->setTouchEventHandlerRegion(m_touchEventHandlerRegion);
     layer->setContentsOpaque(m_contentsOpaque);
     if (!opacityIsAnimating())
         layer->setOpacity(m_opacity);
