@@ -38,6 +38,10 @@ class CONTENT_EXPORT WebContentsView {
   virtual RenderWidgetHostView* CreateViewForWidget(
       RenderWidgetHost* render_widget_host) = 0;
 
+  // Creates a new View that holds a popup and receives messages for it.
+  virtual RenderWidgetHostView* CreateViewForPopupWidget(
+      RenderWidgetHost* render_widget_host) = 0;
+
   // Returns the native widget that contains the contents of the tab.
   virtual gfx::NativeView GetNativeView() const = 0;
 

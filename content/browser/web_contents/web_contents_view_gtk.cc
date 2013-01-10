@@ -149,6 +149,11 @@ RenderWidgetHostView* WebContentsViewGtk::CreateViewForWidget(
   return view;
 }
 
+RenderWidgetHostView* WebContentsViewGtk::CreateViewForPopupWidget(
+    RenderWidgetHost* render_widget_host) {
+  return RenderWidgetHostViewPort::CreateViewForWidget(render_widget_host);
+}
+
 gfx::NativeView WebContentsViewGtk::GetNativeView() const {
   if (delegate_.get())
     return delegate_->GetNativeView();

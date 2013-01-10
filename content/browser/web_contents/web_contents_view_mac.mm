@@ -142,6 +142,11 @@ RenderWidgetHostView* WebContentsViewMac::CreateViewForWidget(
   return view;
 }
 
+RenderWidgetHostView* WebContentsViewMac::CreateViewForPopupWidget(
+    RenderWidgetHost* render_widget_host) {
+  return RenderWidgetHostViewPort::CreateViewForWidget(render_widget_host);
+}
+
 gfx::NativeView WebContentsViewMac::GetNativeView() const {
   return cocoa_view_.get();
 }

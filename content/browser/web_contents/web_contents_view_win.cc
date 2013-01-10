@@ -139,6 +139,11 @@ RenderWidgetHostView* WebContentsViewWin::CreateViewForWidget(
   return view;
 }
 
+RenderWidgetHostView* WebContentsViewWin::CreateViewForPopupWidget(
+    RenderWidgetHost* render_widget_host) {
+  return RenderWidgetHostViewPort::CreateViewForWidget(render_widget_host);
+}
+
 gfx::NativeView WebContentsViewWin::GetNativeView() const {
   return hwnd();
 }

@@ -51,6 +51,11 @@ RenderWidgetHostView* TestWebContentsView::CreateViewForWidget(
   return NULL;
 }
 
+RenderWidgetHostView* TestWebContentsView::CreateViewForPopupWidget(
+    RenderWidgetHost* render_widget_host) {
+  return NULL;
+}
+
 gfx::NativeView TestWebContentsView::GetNativeView() const {
   return gfx::NativeView();
 }

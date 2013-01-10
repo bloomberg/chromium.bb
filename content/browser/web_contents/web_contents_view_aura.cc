@@ -680,6 +680,11 @@ RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
   return view;
 }
 
+RenderWidgetHostView* WebContentsViewAura::CreateViewForPopupWidget(
+    RenderWidgetHost* render_widget_host) {
+  return RenderWidgetHostViewPort::CreateViewForWidget(render_widget_host);
+}
+
 gfx::NativeView WebContentsViewAura::GetNativeView() const {
   return window_.get();
 }

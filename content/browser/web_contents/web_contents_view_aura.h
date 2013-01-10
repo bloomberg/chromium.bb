@@ -82,6 +82,8 @@ class CONTENT_EXPORT WebContentsViewAura
       const gfx::Size& initial_size, gfx::NativeView context) OVERRIDE;
   virtual RenderWidgetHostView* CreateViewForWidget(
       RenderWidgetHost* render_widget_host) OVERRIDE;
+  virtual RenderWidgetHostView* CreateViewForPopupWidget(
+      RenderWidgetHost* render_widget_host) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeView GetContentNativeView() const OVERRIDE;
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;
