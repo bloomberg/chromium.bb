@@ -5,11 +5,9 @@
 #ifndef CHROME_BROWSER_UI_ASH_APP_LIST_APP_LIST_CONTROLLER_ASH_H_
 #define CHROME_BROWSER_UI_ASH_APP_LIST_APP_LIST_CONTROLLER_ASH_H_
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/app_list/app_list_controller.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 
 class AppListControllerDelegateAsh : public AppListControllerDelegate {
  public:

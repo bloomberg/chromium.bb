@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/app_list_controller.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 
 #include "base/logging.h"
-#include "build/build_config.h"
 
 AppListControllerDelegate::~AppListControllerDelegate() {}
 
@@ -28,12 +27,3 @@ void AppListControllerDelegate::ShowCreateShortcutsDialog(
 void AppListControllerDelegate::CreateNewWindow(bool incognito) {
   NOTREACHED();
 }
-
-namespace app_list_controller {
-
-#if defined(OS_CHROMEOS)
-// Default implementation for ports which do not have this implemented.
-void InitAppList() {}
-#endif
-
-}  // namespace app_list_controller

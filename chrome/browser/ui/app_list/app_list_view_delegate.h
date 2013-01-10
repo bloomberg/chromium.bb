@@ -10,9 +10,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/app_list/app_list_controller.h"
 #include "ui/app_list/app_list_view_delegate.h"
 
+class AppListControllerDelegate;
 class AppsModelBuilder;
 class SearchBuilder;
 

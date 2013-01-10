@@ -105,7 +105,7 @@
 #endif
 
 #if defined(ENABLE_APP_LIST)
-#include "chrome/browser/ui/app_list/app_list_controller.h"
+#include "chrome/browser/ui/app_list/app_list_util.h"
 #endif
 
 using content::ChildProcessSecurityPolicy;
@@ -336,9 +336,9 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     base::StatisticsRecorder::set_dump_on_exit(true);
 
 #if defined(ENABLE_APP_LIST)
-  app_list_controller::InitAppList();
+  chrome::InitAppList();
   if (command_line_.HasSwitch(switches::kShowAppList)) {
-    app_list_controller::ShowAppList();
+    chrome::ShowAppList();
     return true;
   }
 #endif

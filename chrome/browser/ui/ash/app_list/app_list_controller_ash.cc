@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 
 #include "ash/shell.h"
+#include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
 AppListControllerDelegateAsh::AppListControllerDelegateAsh() {}
@@ -59,7 +60,7 @@ void AppListControllerDelegateAsh::LaunchApp(Profile* profile,
   DismissView();
 }
 
-namespace app_list_controller {
+namespace chrome {
 
 #if defined(OS_CHROMEOS)
 void ShowAppList() {
@@ -67,4 +68,4 @@ void ShowAppList() {
 }
 #endif
 
-}
+}  // namespace chrome

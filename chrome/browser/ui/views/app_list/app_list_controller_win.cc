@@ -20,7 +20,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/ui/app_list/app_list_controller.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
@@ -494,7 +495,7 @@ void CreateAppList() {
 
 }  // namespace
 
-namespace app_list_controller {
+namespace chrome {
 
 void InitAppList() {
   // Check that the presence of the app list shortcut matches the flag
@@ -527,4 +528,4 @@ void ShowAppList() {
   g_app_list_controller.Get().ShowAppList();
 }
 
-}  // namespace app_list_controller
+}  // namespace chrome

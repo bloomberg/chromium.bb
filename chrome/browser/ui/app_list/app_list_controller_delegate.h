@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_H_
-#define CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_DELEGATE_H_
+#define CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_DELEGATE_H_
 
 #include <string>
 
@@ -55,14 +55,4 @@ class AppListControllerDelegate {
                          int event_flags) = 0;
 };
 
-namespace app_list_controller {
-
-// Do any once off initialization needed for the app list.
-void InitAppList();
-
-// Show the app list.
-void ShowAppList();
-
-}  // namespace app_list_controller
-
-#endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_CONTROLLER_DELEGATE_H_
