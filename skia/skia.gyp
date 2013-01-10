@@ -227,13 +227,6 @@
         # it ever gets used the processes that use it need to call
         # SkGraphics::Init().
         'SK_ALLOW_STATIC_GLOBAL_INITIALIZERS=0',
-
-        # Temporarily keep old int-srcrect behavior, until we determine if
-        # the few failures are a bug or not.
-        'SK_SUPPORT_INT_SRCRECT_DRAWBITMAPRECT',
-        'SK_IGNORE_QUAD_STROKE_FIX',
-        'SK_IGNORE_TRANS_CLAMP_FIX',
-        'SK_IGNORE_FAST_SCALEMATRIX_INVERT',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
