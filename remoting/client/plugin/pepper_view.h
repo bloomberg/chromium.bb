@@ -45,42 +45,43 @@ class PepperView : public FrameConsumer,
   virtual void SetSourceSize(const SkISize& source_size,
                              const SkIPoint& dpi) OVERRIDE;
 
-  // Updates the PepperView's size, clipping area and scale factor.
+  // Updates the PepperView's size & clipping area, taking into account the
+  // DIP-to-device scale factor.
   void SetView(const pp::View& view);
 
-  // Return the dimensions of the view and source in device pixels.
-  const SkISize& get_view_size() const {
-    return view_size_;
-  }
-  const SkISize& get_screen_size() const {
+  // Returns the dimensions of the most recently displayed frame, in pixels.
+  const SkISize& get_source_size() const {
     return source_size_;
   }
 
   // Return the dimensions of the view in Density Independent Pixels (DIPs).
-  // On high-DPI devices this will be smaller than the size in device pixels.
+  // Note that there may be multiple device pixels per DIP.
   const SkISize& get_view_size_dips() const {
-    return view_size_dips_;
+    return dips_size_;
   }
 
  private:
-  // This routine allocates an image buffer.
+  // Allocates a new frame buffer to supply to the FrameProducer to render into.
+  // Returns NULL if the maximum number of buffers has already been allocated.
   pp::ImageData* AllocateBuffer();
 
-  // This routine frees an image buffer allocated by AllocateBuffer().
+  // Frees a frame buffer previously allocated by AllocateBuffer.
   void FreeBuffer(pp::ImageData* buffer);
 
-  // This routine makes sure that enough image buffers are in flight to keep
-  // the decoding pipeline busy.
+  // Allocates buffers and passes them to the FrameProducer to render into until
+  // the maximum number of buffers are in-flight.
   void InitiateDrawing();
 
-  // This routine applies the given image buffer to the screen taking into
-  // account |clip_area| of the buffer and |region| describing valid parts
-  // of the buffer.
+  // Renders the parts of |buffer| identified by |region| to the view.  If the
+  // clip area of the view has changed since the buffer was generated then
+  // FrameProducer is supplied the missed parts of |region|.  The FrameProducer
+  // will be supplied a new buffer when FlushBuffer() completes.
   void FlushBuffer(const SkIRect& clip_area,
                    pp::ImageData* buffer,
                    const SkRegion& region);
 
-  // This is a completion callback for FlushGraphics().
+  // Handles completion of FlushBuffer(), triggering a new buffer to be
+  // returned to FrameProducer for rendering.
   void OnFlushDone(base::Time paint_start, pp::ImageData* buffer, int result);
 
   // Reference to the creating plugin instance. Needed for interacting with
@@ -103,19 +104,28 @@ class PepperView : public FrameConsumer,
   SkIRect merge_clip_area_;
   SkRegion merge_region_;
 
-  // View size, clip area and host dimensions, in device pixels.
+  // View size in Density Independent Pixels (DIPs).
+  SkISize dips_size_;
+
+  // Scale factor from DIPs to device pixels.
+  float dips_to_device_scale_;
+
+  // View size in output pixels. This is the size at which FrameProducer must
+  // render frames. It usually matches the DIPs size of the view, but may match
+  // the size in device pixels when scaling is in effect, to reduce artefacts.
   SkISize view_size_;
+
+  // Scale factor from output pixels to device pixels.
+  float dips_to_view_scale_;
+
+  // Visible area of the view, in output pixels.
   SkIRect clip_area_;
+
+  // Size of the most recent source frame in pixels.
   SkISize source_size_;
 
-  // The DPI of the host screen.
+  // Resolution of the most recent source frame dots-per-inch.
   SkIPoint source_dpi_;
-
-  // View size in Density-Independent pixels.
-  SkISize view_size_dips_;
-
-  // DIP-to-device pixel scale factor.
-  float view_scale_;
 
   // True if there is already a Flush() pending on the Graphics2D context.
   bool flush_pending_;

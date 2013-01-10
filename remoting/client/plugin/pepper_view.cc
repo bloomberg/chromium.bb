@@ -43,12 +43,13 @@ PepperView::PepperView(ChromotingInstance* instance,
     producer_(producer),
     merge_buffer_(NULL),
     merge_clip_area_(SkIRect::MakeEmpty()),
+    dips_size_(SkISize::Make(0, 0)),
+    dips_to_device_scale_(1.0f),
     view_size_(SkISize::Make(0, 0)),
+    dips_to_view_scale_(1.0f),
     clip_area_(SkIRect::MakeEmpty()),
     source_size_(SkISize::Make(0, 0)),
     source_dpi_(SkIPoint::Make(0, 0)),
-    view_size_dips_(SkISize::Make(0, 0)),
-    view_scale_(1.0f),
     flush_pending_(false),
     is_initialized_(false),
     frame_received_(false) {
@@ -74,37 +75,40 @@ void PepperView::SetView(const pp::View& view) {
   bool view_changed = false;
 
   pp::Rect pp_size = view.GetRect();
-  SkISize new_size_dips = SkISize::Make(pp_size.width(), pp_size.height());
+  SkISize new_dips_size = SkISize::Make(pp_size.width(), pp_size.height());
   pp::ViewDev view_dev(view);
-  float new_scale = view_dev.GetDeviceScale();
+  float new_dips_to_device_scale = view_dev.GetDeviceScale();
 
-  if (view_size_dips_ != new_size_dips || view_scale_ != new_scale) {
+  if (dips_size_ != new_dips_size ||
+      dips_to_device_scale_ != new_dips_to_device_scale) {
     view_changed = true;
-    view_scale_ = new_scale;
-    view_size_dips_ = new_size_dips;
+    dips_to_device_scale_ = new_dips_to_device_scale;
+    dips_size_ = new_dips_size;
 
-    // If |view_scale_| is > 1.0 then the device is high-DPI, and there are
-    // actually |view_scale_| physical pixels for every one Density Independent
-    // Pixel (DIP).  If we specify a scale of 1.0 to Graphics2D then we can
-    // render at DIP resolution and let PPAPI up-scale for high-DPI devices.
-    // Note that |view_scale_| is DIPS->pixels, |scale| is pixels->DIPS.
-    float scale = 1.0f;
-    view_size_ = view_size_dips_;
+    // If |dips_to_device_scale_| is > 1.0 then the device is high-DPI, and
+    // there are actually |view_device_scale_| physical pixels for every one
+    // Density Independent Pixel (DIP).  If we specify a scale of 1.0 to
+    // Graphics2D then we can render at DIP resolution and let PPAPI up-scale
+    // for high-DPI devices.
+    dips_to_view_scale_ = 1.0f;
+    view_size_ = dips_size_;
 
     // If the view's DIP dimensions don't match the source then let the frame
     // producer do the scaling, and render at device resolution.
-    if (view_size_dips_ != source_size_) {
-      scale = 1.0f / view_scale_;
-      view_size_ = SkISize::Make(ceilf(view_size_dips_.width() * view_scale_),
-                                 ceilf(view_size_dips_.height() * view_scale_));
+    if (dips_size_ != source_size_) {
+      dips_to_view_scale_ = dips_to_device_scale_;
+      view_size_ = SkISize::Make(
+          ceilf(dips_size_.width() * dips_to_view_scale_),
+          ceilf(dips_size_.height() * dips_to_view_scale_));
     }
 
     // Create a 2D rendering context at the chosen frame dimensions.
     pp::Size pp_size = pp::Size(view_size_.width(), view_size_.height());
     graphics2d_ = pp::Graphics2D(instance_, pp_size, true);
 
+    // Specify the scale from our coordinates to DIPs.
     pp::Graphics2D_Dev graphics2d_dev(graphics2d_);
-    graphics2d_dev.SetScale(scale);
+    graphics2d_dev.SetScale(1.0f / dips_to_view_scale_);
 
     bool result = instance_->BindGraphics(graphics2d_);
 
@@ -113,10 +117,11 @@ void PepperView::SetView(const pp::View& view) {
   }
 
   pp::Rect pp_clip = view.GetClipRect();
-  SkIRect new_clip = SkIRect::MakeLTRB(floorf(pp_clip.x() * view_scale_),
-                                       floorf(pp_clip.y() * view_scale_),
-                                       ceilf(pp_clip.right() * view_scale_),
-                                       ceilf(pp_clip.bottom() * view_scale_));
+  SkIRect new_clip = SkIRect::MakeLTRB(
+      floorf(pp_clip.x() * dips_to_view_scale_),
+      floorf(pp_clip.y() * dips_to_view_scale_),
+      ceilf(pp_clip.right() * dips_to_view_scale_),
+      ceilf(pp_clip.bottom() * dips_to_view_scale_));
   if (clip_area_ != new_clip) {
     view_changed = true;
 
@@ -142,8 +147,8 @@ void PepperView::ApplyBuffer(const SkISize& view_size,
     instance_->OnFirstFrameReceived();
     frame_received_ = true;
   }
-  // Currently we cannot use the data in the buffer is scale factor has changed
-  // already.
+  // We cannot use the data in the buffer if its dimensions don't match the
+  // current view size.
   // TODO(alexeypa): We could rescale and draw it (or even draw it without
   // rescaling) to reduce the perceived lag while we are waiting for
   // the properly scaled data.

@@ -381,7 +381,7 @@ bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
 
   // TODO(wez): When we have a good hook into Host dimensions changes, move
   // this there.
-  mouse_input_filter_.set_output_size(view_->get_screen_size());
+  mouse_input_filter_.set_output_size(view_->get_source_size());
 
   return input_handler_.HandleInputEvent(event);
 }
