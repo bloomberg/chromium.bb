@@ -351,7 +351,7 @@ extern const char kTrustedSpdyProxy[];
 extern const char kTryChromeAgain[];
 extern const char kUninstall[];
 extern const char kUseSpdy[];
-extern const char kUseSpellingService[];
+extern const char kUseSpellingSuggestions[];
 extern const char kMaxSpdySessionsPerDomain[];
 extern const char kMaxSpdyConcurrentStreams[];
 extern const char kUserDataDir[];

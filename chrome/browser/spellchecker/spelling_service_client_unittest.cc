@@ -190,8 +190,6 @@ class SpellingServiceClientTest : public testing::Test {
   virtual ~SpellingServiceClientTest() {}
 
   void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kUseSpellingService);
   }
 
   void OnTextCheckComplete(int tag,

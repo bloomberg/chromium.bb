@@ -1319,9 +1319,9 @@ const char kUninstall[]                     = "uninstall";
 // testing flag.
 const char kUseSpdy[]                       = "use-spdy";
 
-// Enables use of the spelling web service. This will only work if asynchronous
-// spell checking is not disabled.
-const char kUseSpellingService[]            = "use-spelling-service";
+// Disables use of the spelling web service and only provides suggestions.
+// This will only work if asynchronous spell checking is not disabled.
+const char kUseSpellingSuggestions[]            = "use-spelling-suggestions";
 
 // Sets the maximum SPDY sessions per domain.
 const char kMaxSpdySessionsPerDomain[]      = "max-spdy-sessions-per-domain";

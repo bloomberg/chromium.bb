@@ -327,6 +327,8 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, SeparatorAfterSuggestions) {
       new SpellingMenuObserver(menu.get()));
   menu->SetObserver(observer.get());
   menu->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kUseSpellingSuggestions);
 
   // Make sure we can pretend to handle the JSON request.
   menu->CreateRequestContext();
@@ -372,8 +374,6 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest,
       new SpellingMenuObserver(menu.get()));
   menu->SetObserver(observer.get());
   menu->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kUseSpellingService);
 
   // Make sure we can pretend to handle the JSON request.
   menu->CreateRequestContext();
