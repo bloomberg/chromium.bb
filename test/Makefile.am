@@ -4,6 +4,8 @@ TESTS=run-test.sh
 
 TESTDATA=4x6.pcf 8x16.pcf out.expected fonts.conf.in
 
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_builddir)
+
 if HAVE_PTHREAD
 check_PROGRAMS = test-pthread
 noinst_PROGRAMS = $(check_PROGRAMS)
