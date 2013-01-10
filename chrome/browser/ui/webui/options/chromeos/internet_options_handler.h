@@ -80,7 +80,7 @@ class InternetOptionsHandler
   // be NULL.
   void DoConnect(chromeos::Network* network);
 
-  void SetActivationButtonVisibility(
+  void SetCellularButtonsVisibility(
       const chromeos::CellularNetwork* cellular,
       base::DictionaryValue* dictionary,
       const std::string& carrier_id);
@@ -123,6 +123,8 @@ class InternetOptionsHandler
       base::DictionaryValue* shill_properties,
       const chromeos::NetworkIPConfigVector& ipconfigs,
       const std::string& hardware_address);
+  void PopulateConnectionDetails(const chromeos::Network* network,
+                                 base::DictionaryValue* dictionary);
   void PopulateWifiDetails(const chromeos::WifiNetwork* wifi,
                            base::DictionaryValue* dictionary);
   void PopulateWimaxDetails(const chromeos::WimaxNetwork* wimax,
@@ -146,6 +148,9 @@ class InternetOptionsHandler
   void FillNetworkInfo(base::DictionaryValue* dictionary);
   // Refreshes the display of network information.
   void RefreshNetworkData();
+  // Updates the display of network connection information for the details page
+  // if it's up.
+  void UpdateConnectionData(const chromeos::Network* network);
   // Updates the carrier change status.
   void UpdateCarrier(bool success);
   // Adds observers for wireless networks, if any, so that we can dynamically

@@ -34,6 +34,19 @@ cr.define('options.internet', function() {
     }
   }
 
+  /*
+   * Helper function to update the properties of the data object from the
+   * properties in the update object.
+   * @param {object} data object to update.
+   * @param {object} object containing the updated properties.
+   */
+  function updateDataObject(data, update) {
+    for (prop in update) {
+      if (prop in data)
+        data[prop] = update[prop];
+    }
+  }
+
   /**
    * Monitor pref change of given element.
    * @param {Element} el Target element.
@@ -492,7 +505,6 @@ cr.define('options.internet', function() {
     chrome.send('setCarrier', [data.servicePath, carrier]);
   };
 
-
   /**
    * Performs minimal initialization of the InternetDetails dialog in
    * preparation for showing proxy-setttings.
@@ -682,6 +694,47 @@ cr.define('options.internet', function() {
     }
   };
 
+  DetailsInternetPage.updateConnectionData = function(update) {
+    var detailsPage = DetailsInternetPage.getInstance();
+    if (!detailsPage.visible)
+      return;
+
+    var data = $('connection-state').data;
+    if (!data)
+      return;
+
+    // Update our cached data object.
+    updateDataObject(data, update);
+
+    detailsPage.deviceConnected = data.deviceConnected;
+    detailsPage.connecting = data.connecting;
+    detailsPage.connected = data.connected;
+    $('connection-state').textContent = data.connectionState;
+
+    $('details-internet-login').hidden = data.connected;
+    $('details-internet-login').disabled = data.disableConnectButton;
+
+    if (data.type == Constants.TYPE_WIFI) {
+      $('wifi-connection-state').textContent = data.connectionState;
+    } else if (data.type == Constants.TYPE_WIMAX) {
+      $('wimax-connection-state').textContent = data.connectionState;
+    } else if (data.type == Constants.TYPE_CELLULAR) {
+      $('activation-state').textContent = data.activationState;
+
+      $('buyplan-details').hidden = !data.showBuyButton;
+      $('view-account-details').hidden = !data.showViewAccountButton;
+
+      $('activate-details').hidden = !data.showActivateButton;
+      if (data.showActivateButton)
+        $('details-internet-login').hidden = true;
+    }
+
+    if (data.type != Constants.TYPE_ETHERNET)
+      $('details-internet-disconnect').hidden = !data.connected;
+
+    $('connection-state').data = data;
+  }
+
   DetailsInternetPage.showDetailedInfo = function(data) {
     var detailsPage = DetailsInternetPage.getInstance();
 
@@ -728,6 +781,7 @@ cr.define('options.internet', function() {
     $('activate-details').hidden = true;
     $('view-account-details').hidden = true;
     $('details-internet-login').hidden = data.connected;
+    $('details-internet-login').disabled = data.disableConnectButton;
     if (data.type == Constants.TYPE_ETHERNET)
       $('details-internet-disconnect').hidden = true;
     else
