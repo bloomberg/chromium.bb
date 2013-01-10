@@ -1197,11 +1197,12 @@ cr.define('options', function() {
     },
 
     /**
-     * Show/hide touchpad settings slider.
+     * Show/hide touchpad-related settings.
      * @private
      */
     showTouchpadControls_: function(show) {
       $('touchpad-settings').hidden = !show;
+      $('accessibility-tap-dragging').hidden = !show;
     },
 
     /**
