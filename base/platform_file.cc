@@ -19,7 +19,8 @@ PlatformFile CreatePlatformFile(const FilePath& name,
                                 bool* created,
                                 PlatformFileError* error) {
   if (name.ReferencesParent()) {
-    *error = PLATFORM_FILE_ERROR_ACCESS_DENIED;
+    if (error)
+      *error = PLATFORM_FILE_ERROR_ACCESS_DENIED;
     return kInvalidPlatformFileValue;
   }
   return CreatePlatformFileUnsafe(name, flags, created, error);
