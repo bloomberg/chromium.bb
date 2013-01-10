@@ -316,6 +316,7 @@ bool SyncSchedulerImpl::ScheduleConfiguration(
   DCHECK(IsConfigRelatedUpdateSourceValue(params.source));
   DCHECK_EQ(CONFIGURATION_MODE, mode_);
   DCHECK(!params.ready_task.is_null());
+  CHECK(started_) << "Scheduler must be running to configure.";
   SDVLOG(2) << "Reconfiguring syncer.";
 
   // Only one configuration is allowed at a time. Verify we're not waiting
@@ -593,6 +594,12 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
     const tracked_objects::Location& nudge_location) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK(!invalidation_map.empty()) << "Nudge scheduled for no types!";
+
+  if (!started_) {
+    SDVLOG_LOC(nudge_location, 2)
+        << "Dropping nudge, scheduler is not running.";
+    return;
+  }
 
   SDVLOG_LOC(nudge_location, 2)
       << "In ScheduleNudgeImpl with delay "
@@ -992,6 +999,8 @@ void SyncSchedulerImpl::StopImpl(const base::Closure& callback) {
   weak_ptr_factory_.InvalidateWeakPtrs();
   wait_interval_.reset();
   poll_timer_.Stop();
+  unscheduled_nudge_storage_.reset();
+  pending_nudge_ = NULL;
   if (started_) {
     started_ = false;
   }
