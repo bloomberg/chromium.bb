@@ -17,6 +17,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/mock_url_fetcher_factory.h"
+#include "google_apis/google_api_keys.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -811,19 +812,22 @@ TEST_F(GaiaAuthFetcherTest, ClientOAuthSuccess) {
   scopes.push_back("https://some.other.scope.com");
   auth.StartClientOAuth("username", "password", scopes, "", "en");
 
-  scoped_ptr<base::Value> actual(base::JSONReader::Read(auth.request_body_));
-  scoped_ptr<base::Value> expected(base::JSONReader::Read(
+  std::string expected_text = base::StringPrintf(
       "{"
       "\"email\": \"username\","
       "\"password\": \"password\","
       "\"scopes\": [\"https://www.google.com/accounts/OAuthLogin\","
       "             \"https://some.other.scope.com\"],"
-      "\"oauth2_client_id\": \"77185425430.apps.googleusercontent.com\","
+      "\"oauth2_client_id\": \"%s\","
       "\"friendly_device_name\": \"tests\","
       "\"accepts_challenges\": [\"Captcha\", \"TwoStep\"],"
       "\"locale\": \"en\","
       "\"fallback\": { \"name\": \"GetOAuth2Token\" }"
-      "}"));
+      "}",
+      google_apis::GetOAuth2ClientID(google_apis::CLIENT_MAIN).c_str());
+
+  scoped_ptr<base::Value> actual(base::JSONReader::Read(auth.request_body_));
+  scoped_ptr<base::Value> expected(base::JSONReader::Read(expected_text));
   EXPECT_TRUE(expected->Equals(actual.get()));
 }
 
@@ -840,18 +844,20 @@ TEST_F(GaiaAuthFetcherTest, ClientOAuthWithQuote) {
   scopes.push_back("https://some.\"other.scope.com");
   auth.StartClientOAuth("user\"name", "pass\"word", scopes, "", "e\"n");
 
-  scoped_ptr<base::Value> actual(base::JSONReader::Read(auth.request_body_));
-  scoped_ptr<base::Value> expected(base::JSONReader::Read(
+  std::string expected_text = base::StringPrintf(
       "{"
       "\"email\": \"user\\\"name\","
       "\"password\": \"pass\\\"word\","
       "\"scopes\": [\"https://some.\\\"other.scope.com\"],"
-      "\"oauth2_client_id\": \"77185425430.apps.googleusercontent.com\","
+      "\"oauth2_client_id\": \"%s\","
       "\"friendly_device_name\": \"te\\\"sts\","
       "\"accepts_challenges\": [\"Captcha\", \"TwoStep\"],"
       "\"locale\": \"e\\\"n\","
       "\"fallback\": { \"name\": \"GetOAuth2Token\" }"
-      "}"));
+      "}",
+      google_apis::GetOAuth2ClientID(google_apis::CLIENT_MAIN).c_str());
+  scoped_ptr<base::Value> actual(base::JSONReader::Read(auth.request_body_));
+  scoped_ptr<base::Value> expected(base::JSONReader::Read(expected_text));
   EXPECT_TRUE(expected->Equals(actual.get()));
 }
 
