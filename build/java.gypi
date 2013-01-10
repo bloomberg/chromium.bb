@@ -73,6 +73,7 @@
         'crunched_res_dir': '<(SHARED_INTERMEDIATE_DIR)/<(package_name)/res',
         'R_dir': '<(SHARED_INTERMEDIATE_DIR)/<(package_name)/java_R',
         'R_file': '<(R_dir)/<(R_package_relpath)/R.java',
+        'R_text_file': '<(R_dir)/R.txt',
         'generated_src_dirs': ['<(R_dir)'],
         'additional_input_paths': ['<(R_file)'],
       },
@@ -82,6 +83,7 @@
           # generated_R_dirs and additional_R_files.
           'generated_R_dirs': ['<(R_dir)'],
           'additional_R_files': ['<(R_file)'],
+          'additional_R_text_files': ['<(R_text_file)'],
 
           # Dependent APKs include this target's resources via
           # additional_res_dirs and additional_res_packages.
