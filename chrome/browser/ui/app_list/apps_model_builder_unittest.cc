@@ -76,12 +76,25 @@ TEST_F(AppsModelBuilderTest, DisableAndEnable) {
 
   service_->DisableExtension(kHostedAppId,
                              extensions::Extension::DISABLE_NONE);
-  EXPECT_EQ(std::string("Packaged App 1,Packaged App 2"),
+  EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
             GetModelContent(model.get()));
 
   service_->EnableExtension(kHostedAppId);
   EXPECT_EQ(std::string("Packaged App 1,Packaged App 2,Hosted App"),
             GetModelContent(model.get()));
+}
+
+TEST_F(AppsModelBuilderTest, Uninstall) {
+  scoped_ptr<app_list::AppListModel::Apps> model(
+      new app_list::AppListModel::Apps);
+  AppsModelBuilder builder(profile_.get(), model.get(), NULL);
+  builder.Build();
+
+  service_->UninstallExtension(kPackagedApp2Id, false, NULL);
+  EXPECT_EQ(std::string("Packaged App 1,Hosted App"),
+            GetModelContent(model.get()));
+
+  loop_.RunUntilIdle();
 }
 
 TEST_F(AppsModelBuilderTest, OrdinalPrefsChange) {

@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "ui/gfx/native_widget_types.h"
+
 class Profile;
 
 // Interface to allow the view delegate to call out to whatever is controlling
@@ -25,15 +27,18 @@ class AppListControllerDelegate {
   // Handle the view being activated or deactivated.
   virtual void ViewActivationChanged(bool active);
 
+  // Get app list window.
+  virtual gfx::NativeWindow GetAppListWindow() = 0;
+
   // Control of pinning apps.
   virtual bool IsAppPinned(const std::string& extension_id);
   virtual void PinApp(const std::string& extension_id);
   virtual void UnpinApp(const std::string& extension_id);
   virtual bool CanPin() = 0;
 
-  // Be aware of the extension uninstalling flow.
-  virtual void AboutToUninstallApp() {}
-  virtual void UninstallAppCompleted() {}
+  // Be aware of the extension prompt (either uninstalling flow or enable flow).
+  virtual void OnShowExtensionPrompt() {}
+  virtual void OnCloseExtensionPrompt() {}
 
   // Whether the controller supports showing the Create Shortcuts dialog.
   virtual bool CanShowCreateShortcutsDialog() = 0;

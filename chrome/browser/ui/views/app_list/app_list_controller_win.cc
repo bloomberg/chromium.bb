@@ -95,9 +95,10 @@ class AppListControllerDelegateWin : public AppListControllerDelegate {
   virtual void DismissView() OVERRIDE;
   virtual void ViewClosing() OVERRIDE;
   virtual void ViewActivationChanged(bool active) OVERRIDE;
+  virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
   virtual bool CanPin() OVERRIDE;
-  virtual void AboutToUninstallApp() OVERRIDE;
-  virtual void UninstallAppCompleted() OVERRIDE;
+  virtual void OnShowExtensionPrompt() OVERRIDE;
+  virtual void OnCloseExtensionPrompt() OVERRIDE;
   virtual bool CanShowCreateShortcutsDialog() OVERRIDE;
   virtual void ShowCreateShortcutsDialog(
       Profile* profile,
@@ -187,15 +188,20 @@ void AppListControllerDelegateWin::ViewClosing() {
   g_app_list_controller.Get().AppListClosing();
 }
 
+gfx::NativeWindow AppListControllerDelegateWin::GetAppListWindow() {
+  app_list::AppListView* view = g_app_list_controller.Get().GetView();
+  return view ? view->GetWidget()->GetNativeWindow() : NULL;
+}
+
 bool AppListControllerDelegateWin::CanPin() {
   return false;
 }
 
-void AppListControllerDelegateWin::AboutToUninstallApp() {
+void AppListControllerDelegateWin::OnShowExtensionPrompt() {
   g_app_list_controller.Get().set_can_close(false);
 }
 
-void AppListControllerDelegateWin::UninstallAppCompleted() {
+void AppListControllerDelegateWin::OnCloseExtensionPrompt() {
   g_app_list_controller.Get().set_can_close(true);
 }
 

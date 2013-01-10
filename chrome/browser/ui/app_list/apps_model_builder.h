@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_APP_LIST_APPS_MODEL_BUILDER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/prefs/public/pref_change_registrar.h"
@@ -16,6 +17,7 @@
 
 class AppListControllerDelegate;
 class ExtensionAppItem;
+class ExtensionSet;
 class Profile;
 
 class AppsModelBuilder : public content::NotificationObserver,
@@ -30,6 +32,11 @@ class AppsModelBuilder : public content::NotificationObserver,
   void Build();
 
  private:
+  typedef std::vector<ExtensionAppItem*> Apps;
+
+  // Adds apps in |extensions| to |apps|.
+  void AddApps(const ExtensionSet* extensions, Apps* apps);
+
   // Populates the model with apps.
   void PopulateApps();
 

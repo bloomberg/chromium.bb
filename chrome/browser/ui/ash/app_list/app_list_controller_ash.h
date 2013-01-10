@@ -17,6 +17,7 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
  private:
   // AppListControllerDelegate overrides:
   virtual void DismissView() OVERRIDE;
+  virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
   virtual bool IsAppPinned(const std::string& extension_id) OVERRIDE;
   virtual void PinApp(const std::string& extension_id) OVERRIDE;
   virtual void UnpinApp(const std::string& extension_id) OVERRIDE;

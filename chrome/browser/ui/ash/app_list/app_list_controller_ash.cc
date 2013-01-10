@@ -18,6 +18,11 @@ void AppListControllerDelegateAsh::DismissView() {
     ash::Shell::GetInstance()->ToggleAppList(NULL);
 }
 
+gfx::NativeWindow AppListControllerDelegateAsh::GetAppListWindow() {
+  DCHECK(ash::Shell::HasInstance());
+  return ash::Shell::GetInstance()->GetAppListWindow();
+}
+
 bool AppListControllerDelegateAsh::IsAppPinned(
     const std::string& extension_id) {
   return ChromeLauncherController::instance()->IsAppPinned(extension_id);

@@ -10,13 +10,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
+#include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
+#include "content/public/browser/page_navigator.h"
 #include "sync/api/string_ordinal.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class AppListControllerDelegate;
-class ExtensionResource;
+class ExtensionEnableFlow;
 class Profile;
-class SkBitmap;
 
 namespace extensions {
 class ContextMenuMatcher;
@@ -26,16 +27,14 @@ class Extension;
 // ExtensionAppItem represents an extension app in app list.
 class ExtensionAppItem : public ChromeAppListItem,
                          public extensions::IconImage::Observer,
+                         public ExtensionEnableFlowDelegate,
+                         public content::PageNavigator,
                          public ui::SimpleMenuModel::Delegate {
  public:
   ExtensionAppItem(Profile* profile,
                    const extensions::Extension* extension,
                    AppListControllerDelegate* controller);
   virtual ~ExtensionAppItem();
-
-  // Gets extension associated with this model. Returns NULL if extension
-  // no longer exists.
-  const extensions::Extension* GetExtension() const;
 
   syncer::StringOrdinal GetPageOrdinal() const;
   syncer::StringOrdinal GetAppLaunchOrdinal() const;
@@ -45,25 +44,47 @@ class ExtensionAppItem : public ChromeAppListItem,
   // the beginning or at the end.
   void Move(const ExtensionAppItem* prev, const ExtensionAppItem* next);
 
+  // Updates the app item's icon, if necessary adding an overlay and/or making
+  // it gray.
+  void UpdateIcon();
+
   const std::string& extension_id() const { return extension_id_; }
 
  private:
+  // Gets extension associated with this model. Returns NULL if extension
+  // no longer exists.
+  const extensions::Extension* GetExtension() const;
+
   // Loads extension icon.
   void LoadImage(const extensions::Extension* extension);
 
   // Whether or not the app item has an overlay.
   bool HasOverlay();
 
-  // Sets the app item's icon, if necessary adding an overlay.
-  void SetIconWithOverlay(const gfx::ImageSkia& icon);
-
   void ShowExtensionOptions();
   void ShowExtensionDetails();
   void StartExtensionUninstall();
 
+  // Checks if extension is disabled and if enable flow should be started.
+  // Returns true if extension enable flow is started or there is already one
+  // running.
+  bool RunExtensionEnableFlow();
+
+  // Private equivalent to Activate(), without refocus for already-running apps.
+  void Launch(int event_flags);
+
   // Overridden from extensions::IconImage::Observer:
   virtual void OnExtensionIconImageChanged(
       extensions::IconImage* image) OVERRIDE;
+
+  // Overridden from ExtensionEnableFlowDelegate:
+  virtual ExtensionInstallPrompt* CreateExtensionInstallPrompt() OVERRIDE;
+  virtual void ExtensionEnableFlowFinished() OVERRIDE;
+  virtual void ExtensionEnableFlowAborted(bool user_initiated) OVERRIDE;
+
+  // Overridden from content::PageNavigator:
+  virtual content::WebContents* OpenURL(
+      const content::OpenURLParams& params) OVERRIDE;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
@@ -79,9 +100,6 @@ class ExtensionAppItem : public ChromeAppListItem,
   virtual void Activate(int event_flags) OVERRIDE;
   virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
 
-  // Private equivalent to Activate(), without refocus for already-running apps.
-  void Launch(int event_flags);
-
   Profile* profile_;
   const std::string extension_id_;
   AppListControllerDelegate* controller_;
@@ -89,6 +107,7 @@ class ExtensionAppItem : public ChromeAppListItem,
   scoped_ptr<extensions::IconImage> icon_;
   scoped_ptr<ui::SimpleMenuModel> context_menu_model_;
   scoped_ptr<extensions::ContextMenuMatcher> extension_menu_items_;
+  scoped_ptr<ExtensionEnableFlow> extension_enable_flow_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppItem);
 };

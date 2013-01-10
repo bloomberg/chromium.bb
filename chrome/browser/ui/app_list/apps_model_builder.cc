@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/app_list/apps_model_builder.h"
 
 #include <algorithm>
-#include <vector>
 
 #include "base/auto_reset.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -21,8 +20,6 @@
 using extensions::Extension;
 
 namespace {
-
-typedef std::vector<ExtensionAppItem*> Apps;
 
 bool AppPrecedes(const ExtensionAppItem* app1, const ExtensionAppItem* app2) {
   const syncer::StringOrdinal& page1 = app1->GetPageOrdinal();
@@ -77,6 +74,14 @@ void AppsModelBuilder::Build() {
   HighlightApp();
 }
 
+void AppsModelBuilder::AddApps(const ExtensionSet* extensions, Apps* apps) {
+  for (ExtensionSet::const_iterator app = extensions->begin();
+       app != extensions->end(); ++app) {
+    if ((*app)->ShouldDisplayInAppLauncher())
+      apps->push_back(new ExtensionAppItem(profile_, *app, controller_));
+  }
+}
+
 void AppsModelBuilder::PopulateApps() {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
@@ -84,12 +89,9 @@ void AppsModelBuilder::PopulateApps() {
     return;
 
   Apps apps;
-  const ExtensionSet* extensions = service->extensions();
-  for (ExtensionSet::const_iterator app = extensions->begin();
-       app != extensions->end(); ++app) {
-    if ((*app)->ShouldDisplayInAppLauncher())
-      apps.push_back(new ExtensionAppItem(profile_, *app, controller_));
-  }
+  AddApps(service->extensions(), &apps);
+  AddApps(service->disabled_extensions(), &apps);
+  AddApps(service->terminated_extensions(), &apps);
 
   if (apps.empty())
     return;
@@ -188,20 +190,28 @@ void AppsModelBuilder::Observe(int type,
       if (!extension->ShouldDisplayInAppLauncher())
         return;
 
-      if (FindApp(extension->id()) != -1)
+      const int existing_index = FindApp(extension->id());
+      if (existing_index != -1) {
+        GetAppAt(existing_index)->UpdateIcon();
         return;
+      }
 
       InsertApp(new ExtensionAppItem(profile_, extension, controller_));
       HighlightApp();
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
-      const Extension* extension =
-          content::Details<extensions::UnloadedExtensionInfo>(
-              details)->extension;
+      const content::Details<extensions::UnloadedExtensionInfo>& unload_info(
+          details);
+      const Extension* extension = unload_info->extension;
       int index = FindApp(extension->id());
-      if (index >= 0)
+      if (index < 0)
+        break;
+
+      if (unload_info->reason == extension_misc::UNLOAD_REASON_UNINSTALL)
         model_->DeleteAt(index);
+      else
+        GetAppAt(index)->UpdateIcon();
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED: {
