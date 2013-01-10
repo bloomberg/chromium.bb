@@ -44,8 +44,6 @@
 #  R_package - The java package in which the R class (which maps resources to
 #    integer IDs) should be generated, e.g. org.chromium.content.
 #  R_package_relpath - Same as R_package, but replace each '.' with '/'.
-#  java_strings_grd - The name of the grd file from which to generate localized
-#    strings.xml files, if any.
 
 {
   'dependencies': [
@@ -67,19 +65,16 @@
     'generated_R_dirs': [],
     'additional_R_files': [],
     'has_java_resources%': 0,
-    'java_strings_grd%': '',
   },
   'conditions': [
     ['has_java_resources == 1', {
       'variables': {
         'res_dir': '<(java_in_dir)/res',
-        'out_res_dir': '<(SHARED_INTERMEDIATE_DIR)/<(package_name)/res',
+        'crunched_res_dir': '<(SHARED_INTERMEDIATE_DIR)/<(package_name)/res',
         'R_dir': '<(SHARED_INTERMEDIATE_DIR)/<(package_name)/java_R',
         'R_file': '<(R_dir)/<(R_package_relpath)/R.java',
         'generated_src_dirs': ['<(R_dir)'],
         'additional_input_paths': ['<(R_file)'],
-        # grit_grd_file is used by grit_action.gypi, included below.
-        'grit_grd_file': '<(java_in_dir)/strings/<(java_strings_grd)',
       },
       'all_dependent_settings': {
         'variables': {
@@ -90,40 +85,15 @@
 
           # Dependent APKs include this target's resources via
           # additional_res_dirs and additional_res_packages.
-          'additional_res_dirs': ['<(out_res_dir)', '<(res_dir)'],
+          'additional_res_dirs': ['<(crunched_res_dir)', '<(res_dir)'],
           'additional_res_packages': ['<(R_package)'],
         },
       },
-      'conditions': [
-        ['java_strings_grd != ""', {
-          'actions': [
-            {
-              'action_name': 'generate_localized_strings_xml',
-              'variables': {
-                'grit_out_dir': '<(out_res_dir)',
-                # resource_ids is unneeded since we don't generate .h headers.
-                'grit_resource_ids': '',
-              },
-              'includes': ['../build/grit_action.gypi'],
-            },
-          ],
-        }],
-      ],
       'actions': [
         # Generate R.java and crunch image resources.
         {
           'action_name': 'process_resources',
           'message': 'processing resources for <(package_name)',
-          'conditions': [
-            ['java_strings_grd != ""', {
-              'inputs': [
-                # TODO(newt): replace this with .../values/strings.xml once
-                # the English strings.xml is generated as well? That would be
-                # simpler and faster and should be equivalent.
-                '<!@pymod_do_main(grit_info <@(grit_defines) --outputs "<(out_res_dir)" <(grit_grd_file))',
-              ],
-            }],
-          ],
           'inputs': [
             '<(DEPTH)/build/android/process_resources.py',
             '<!@(find <(res_dir) -type f)',
@@ -138,7 +108,7 @@
             '--R-package', '<(R_package)',
             '--R-dir', '<(R_dir)',
             '--res-dir', '<(res_dir)',
-            '--crunched-res-dir', '<(out_res_dir)',
+            '--crunched-res-dir', '<(crunched_res_dir)',
           ],
         },
       ],

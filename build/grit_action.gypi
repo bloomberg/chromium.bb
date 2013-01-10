@@ -28,7 +28,7 @@
   ],
   'action': ['<@(grit_cmd)',
              '-i', '<(grit_grd_file)', 'build',
-             '-f', '<(grit_resource_ids)',
+             '-f<(grit_resource_ids)',
              '-o', '<(grit_out_dir)',
              '<@(grit_defines)' ],
   'msvs_cygwin_shell': 0,
