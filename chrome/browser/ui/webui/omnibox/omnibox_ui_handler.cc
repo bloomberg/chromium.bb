@@ -142,8 +142,15 @@ void OmniboxUIHandler::AddResultToDictionary(const std::string& prefix,
 }
 
 void OmniboxUIHandler::StartOmniboxQuery(
-    const base::ListValue* one_element_input_string) {
-  string16 input_string = ExtractStringValue(one_element_input_string);
+    const base::ListValue* two_element_input_string) {
+  DCHECK_EQ(2u, two_element_input_string->GetSize());
+  string16 input_string;
+  bool return_val = two_element_input_string->GetString(0, &input_string);
+  DCHECK(return_val);
+  bool prevent_inline_autocomplete;
+  return_val =
+      two_element_input_string->GetBoolean(1, &prevent_inline_autocomplete);
+  DCHECK(return_val);
   string16 empty_string;
   // Tell the autocomplete controller to start working on the
   // input.  It's okay if the previous request hasn't yet finished;
@@ -155,7 +162,7 @@ void OmniboxUIHandler::StartOmniboxQuery(
       input_string,
       string16::npos,
       empty_string,  // user's desired tld (top-level domain)
-      false,  // don't prevent inline autocompletion
+      prevent_inline_autocomplete,
       false,  // no preferred keyword provider
       true,  // allow exact keyword matches
       AutocompleteInput::ALL_MATCHES));  // want all matches

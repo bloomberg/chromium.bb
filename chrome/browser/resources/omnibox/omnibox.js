@@ -25,6 +25,8 @@ cr.define('omniboxDebug', function() {
   function initialize() {
     $('omnibox-input-form').addEventListener(
         'submit', startOmniboxQuery, false);
+    $('prevent-inline-autocomplete').addEventListener(
+        'change', startOmniboxQuery);
     $('show-details').addEventListener('change', refresh);
     $('show-incomplete-results').addEventListener('change', refresh);
     $('show-all-providers').addEventListener('change', refresh);
@@ -46,8 +48,12 @@ cr.define('omniboxDebug', function() {
   function startOmniboxQuery(event) {
     // First, clear the results of past calls (if any).
     progressiveAutocompleteResults = [];
-    // Then, call chrome with a one-element list: the value in the text box.
-    chrome.send('startOmniboxQuery', [$('input-text').value]);
+    // Then, call chrome with a two-element list:
+    // - first element: the value in the text box
+    // - second element: the value of prevent-inline-autocomplete
+    chrome.send('startOmniboxQuery', [
+        $('input-text').value,
+        $('prevent-inline-autocomplete').checked]);
     // Cancel the submit action.  i.e., don't submit the form.  (We handle
     // display the results solely with Javascript.)
     event.preventDefault();

@@ -49,9 +49,11 @@ class OmniboxUIHandler : public AutocompleteControllerDelegate,
  private:
   // Gets called from the javascript when a user enters text into the
   // chrome://omnibox/ text box and clicks submit or hits enter.
-  // |one_element_input_string| is expected to be a one-element list
-  // where the first element is the input string.
-  void StartOmniboxQuery(const base::ListValue* one_element_input_string);
+  // |two_element_input_string| is expected to be a two-element list
+  // where the first element is the input string and the second element
+  // is a boolean indicating whether we should set prevent_inline_autocomplete
+  // or not.
+  void StartOmniboxQuery(const base::ListValue* two_element_input_string);
 
   // Helper function for OnResultChanged().
   // Takes an iterator over AutocompleteMatches and packages them into
