@@ -931,19 +931,15 @@ class LoadRegisterList_LDM_LDMIA_LDMFD
     : public LoadRegisterList {
 };
 
-class LoadVectorRegister_Vldr_Rule_320_A1_A2_P628
+class LoadVectorRegister_VLDR
     : public LoadVectorRegister {
 };
 
-class LoadVectorRegisterList_Vldm_Rule_318_A1_A2_P626
+class LoadVectorRegisterList_VLDM
     : public LoadVectorRegisterList {
 };
 
-class LoadVectorRegisterList_Vldm_Rule_319_A1_A2_P626
-    : public LoadVectorRegisterList {
-};
-
-class LoadVectorRegisterList_Vpop_Rule_354_A1_A2_P694
+class LoadVectorRegisterList_VPOP
     : public LoadVectorRegisterList {
 };
 
@@ -1075,15 +1071,15 @@ class StoreRegisterList_STM_STMIA_STMEA
     : public StoreRegisterList {
 };
 
-class StoreVectorRegister_Vstr_Rule_400_A1_A2_P786
+class StoreVectorRegister_VSTR
     : public StoreVectorRegister {
 };
 
-class StoreVectorRegisterList_Vpush_355_A1_A2_P696
+class StoreVectorRegisterList_VPUSH
     : public StoreVectorRegisterList {
 };
 
-class StoreVectorRegisterList_Vstm_Rule_399_A1_A2_P784
+class StoreVectorRegisterList_VSTM
     : public StoreVectorRegisterList {
 };
 
@@ -4874,52 +4870,40 @@ class NamedLoadRegisterList_LDM_LDMIA_LDMFD
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadRegisterList_LDM_LDMIA_LDMFD);
 };
 
-class NamedLoadVectorRegister_Vldr_Rule_320_A1_A2_P628
+class NamedLoadVectorRegister_VLDR
     : public NamedClassDecoder {
  public:
-  NamedLoadVectorRegister_Vldr_Rule_320_A1_A2_P628()
-    : NamedClassDecoder(decoder_, "LoadVectorRegister Vldr_Rule_320_A1_A2_P628")
+  NamedLoadVectorRegister_VLDR()
+    : NamedClassDecoder(decoder_, "LoadVectorRegister VLDR")
   {}
 
  private:
-  nacl_arm_dec::LoadVectorRegister_Vldr_Rule_320_A1_A2_P628 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadVectorRegister_Vldr_Rule_320_A1_A2_P628);
+  nacl_arm_dec::LoadVectorRegister_VLDR decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadVectorRegister_VLDR);
 };
 
-class NamedLoadVectorRegisterList_Vldm_Rule_318_A1_A2_P626
+class NamedLoadVectorRegisterList_VLDM
     : public NamedClassDecoder {
  public:
-  NamedLoadVectorRegisterList_Vldm_Rule_318_A1_A2_P626()
-    : NamedClassDecoder(decoder_, "LoadVectorRegisterList Vldm_Rule_318_A1_A2_P626")
+  NamedLoadVectorRegisterList_VLDM()
+    : NamedClassDecoder(decoder_, "LoadVectorRegisterList VLDM")
   {}
 
  private:
-  nacl_arm_dec::LoadVectorRegisterList_Vldm_Rule_318_A1_A2_P626 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadVectorRegisterList_Vldm_Rule_318_A1_A2_P626);
+  nacl_arm_dec::LoadVectorRegisterList_VLDM decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadVectorRegisterList_VLDM);
 };
 
-class NamedLoadVectorRegisterList_Vldm_Rule_319_A1_A2_P626
+class NamedLoadVectorRegisterList_VPOP
     : public NamedClassDecoder {
  public:
-  NamedLoadVectorRegisterList_Vldm_Rule_319_A1_A2_P626()
-    : NamedClassDecoder(decoder_, "LoadVectorRegisterList Vldm_Rule_319_A1_A2_P626")
+  NamedLoadVectorRegisterList_VPOP()
+    : NamedClassDecoder(decoder_, "LoadVectorRegisterList VPOP")
   {}
 
  private:
-  nacl_arm_dec::LoadVectorRegisterList_Vldm_Rule_319_A1_A2_P626 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadVectorRegisterList_Vldm_Rule_319_A1_A2_P626);
-};
-
-class NamedLoadVectorRegisterList_Vpop_Rule_354_A1_A2_P694
-    : public NamedClassDecoder {
- public:
-  NamedLoadVectorRegisterList_Vpop_Rule_354_A1_A2_P694()
-    : NamedClassDecoder(decoder_, "LoadVectorRegisterList Vpop_Rule_354_A1_A2_P694")
-  {}
-
- private:
-  nacl_arm_dec::LoadVectorRegisterList_Vpop_Rule_354_A1_A2_P694 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadVectorRegisterList_Vpop_Rule_354_A1_A2_P694);
+  nacl_arm_dec::LoadVectorRegisterList_VPOP decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadVectorRegisterList_VPOP);
 };
 
 class NamedMaskedBinary2RegisterImmediateOp_BIC_immediate
@@ -5306,40 +5290,40 @@ class NamedStoreRegisterList_STM_STMIA_STMEA
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreRegisterList_STM_STMIA_STMEA);
 };
 
-class NamedStoreVectorRegister_Vstr_Rule_400_A1_A2_P786
+class NamedStoreVectorRegister_VSTR
     : public NamedClassDecoder {
  public:
-  NamedStoreVectorRegister_Vstr_Rule_400_A1_A2_P786()
-    : NamedClassDecoder(decoder_, "StoreVectorRegister Vstr_Rule_400_A1_A2_P786")
+  NamedStoreVectorRegister_VSTR()
+    : NamedClassDecoder(decoder_, "StoreVectorRegister VSTR")
   {}
 
  private:
-  nacl_arm_dec::StoreVectorRegister_Vstr_Rule_400_A1_A2_P786 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreVectorRegister_Vstr_Rule_400_A1_A2_P786);
+  nacl_arm_dec::StoreVectorRegister_VSTR decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreVectorRegister_VSTR);
 };
 
-class NamedStoreVectorRegisterList_Vpush_355_A1_A2_P696
+class NamedStoreVectorRegisterList_VPUSH
     : public NamedClassDecoder {
  public:
-  NamedStoreVectorRegisterList_Vpush_355_A1_A2_P696()
-    : NamedClassDecoder(decoder_, "StoreVectorRegisterList Vpush_355_A1_A2_P696")
+  NamedStoreVectorRegisterList_VPUSH()
+    : NamedClassDecoder(decoder_, "StoreVectorRegisterList VPUSH")
   {}
 
  private:
-  nacl_arm_dec::StoreVectorRegisterList_Vpush_355_A1_A2_P696 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreVectorRegisterList_Vpush_355_A1_A2_P696);
+  nacl_arm_dec::StoreVectorRegisterList_VPUSH decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreVectorRegisterList_VPUSH);
 };
 
-class NamedStoreVectorRegisterList_Vstm_Rule_399_A1_A2_P784
+class NamedStoreVectorRegisterList_VSTM
     : public NamedClassDecoder {
  public:
-  NamedStoreVectorRegisterList_Vstm_Rule_399_A1_A2_P784()
-    : NamedClassDecoder(decoder_, "StoreVectorRegisterList Vstm_Rule_399_A1_A2_P784")
+  NamedStoreVectorRegisterList_VSTM()
+    : NamedClassDecoder(decoder_, "StoreVectorRegisterList VSTM")
   {}
 
  private:
-  nacl_arm_dec::StoreVectorRegisterList_Vstm_Rule_399_A1_A2_P784 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreVectorRegisterList_Vstm_Rule_399_A1_A2_P784);
+  nacl_arm_dec::StoreVectorRegisterList_VSTM decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreVectorRegisterList_VSTM);
 };
 
 class NamedUnary1RegisterBitRangeMsbGeLsb_BFC

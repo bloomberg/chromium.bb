@@ -957,6 +957,10 @@ RegisterList LoadStoreVectorRegisterList::defs(Instruction i) const {
   return RegisterList(base_small_writeback_register(i));
 }
 
+RegisterList LoadStoreVectorRegisterList::uses(Instruction i) const {
+  return RegisterList(n.reg(i));
+}
+
 bool LoadStoreVectorRegisterList::
   base_address_register_writeback_small_immediate(Instruction i) const {
   return wback.IsDefined(i);
@@ -978,6 +982,9 @@ SafetyLevel StoreVectorRegisterList::safety(Instruction i) const {
 }
 
 // LoadStoreVectorRegister
+RegisterList LoadStoreVectorRegister::uses(Instruction i) const {
+  return RegisterList(n.reg(i));
+}
 
 // LoadVectorRegister
 bool LoadVectorRegister::is_literal_load(Instruction i) const {

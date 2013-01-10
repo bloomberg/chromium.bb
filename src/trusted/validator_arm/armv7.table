@@ -1969,49 +1969,213 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
                           cccc11101d11111udddd101fx1i0iiii (VFPv3)
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- extension_register_load_store_instructions (A7.6)
+*VdRegs
+  { cond(31:28), D(22), Vd(15:12), imm8(7:0) }
+  imm32 := ZeroExtend(imm8:'00', 32);
+*VdRnImm *VdRegs
+  { cond(31:28), U(23), D(22), Rn(19:16), Vd(15:12), imm8(7:0) }
+  add := U=1;
+  n := Rn;
+  defs := {};
+  uses := {Rn};
+*Vldr *VdRnImm
+  baseline := LoadVectorRegister;
+  # TODO(karl): Add vector defs/uses etc.
+  base := Rn;
+  is_literal_load := Rn == Pc;
+*Vldr32 *Vldr
+  single_reg := true;
+  d := D:Vd;
+  arch := VFPv2;
+*Vldr64 *Vldr
+  single_reg := false;
+  d := D:Vd;
+  arch := (VFPv2, AdvSIMD);
+*Vstr *VdRnImm
+  baseline := StoreVectorRegister;
+  # TODO(karl): Add vector defs/uses etc.
+  safety := n == Pc => FORBIDDEN_OPERANDS;
+*Vstr32 *Vstr
+  single_reg := true;
+  d := Vd:D;
+  arch := VFPv2;
+*Vstr64 *Vstr
+  single_reg := false;
+  d := D:Vd;
+  arch := (VFPv2, AdvSIMD);
+*Vstackop *VdRegs
+  # TODO(karl): Add vector defs/uses etc.
+  base := Sp;
+  small_imm_base_wb := true;
+  defs := {Sp};
+  uses := {Sp};  
+*Vpop *Vstackop
+  baseline := LoadVectorRegisterList;
+*Vpop32 *Vpop
+  single_regs := true; d := Vd:D;
+  regs := imm8;
+  safety := regs == 0 | d + regs > 32 => UNPREDICTABLE;
+  arch := VFPv2;
+*Vpop64 *Vpop
+  single_regs := false; d := D:Vd;
+  regs := imm8 / 2;
+  safety := regs == 0 | regs > 16 | d + regs > 32 => UNPREDICTABLE &
+            VFPSmallRegisterBank() & d + regs > 16 => UNPREDICTABLE
+            # & imm8(0) == 1 => DEPRECATED
+            # Note: The above safety condition is commented out because the
+            # test "regs == 0" already covers this case.
+            ;
+  arch := (VFPv2, AdvSIMD);
+*Vpush *Vstackop
+  baseline := StoreVectorRegisterList;
+*Vpush32 *Vpush
+  single_regs := true; d := Vd:D;
+  regs := imm8;
+  safety := regs == 0 | d + regs > 32 => UNPREDICTABLE;
+  arch := VFPv2;
+*Vpush64 *Vpush
+  single_regs := false; d := D:Vd;
+  regs := imm8 / 2;
+  safety := regs == 0 | regs > 16 | d + regs > 32 => UNPREDICTABLE &
+            VFPSmallRegisterBank() & d + regs > 16 => UNPREDICTABLE
+            # & imm8(0) == 1 => DEPRECATED
+            # Note: The above safety condition is commented out because the
+            # test "regs == 0" already covers this case.
+            ;
+  arch := (VFPv2, AdvSIMD);
+*VdRnRegs *VdRegs
+  { cond(31:28), P(24), U(23), D(22), W(21), Rn(19:16),
+    Vd(15:12), imm8(7:0) }
+  # Valid combinations are: PUW = 010 (IA without !)
+  #                             = 011 (IA without !)
+  #                             = 101 (IA ith !)
+  add := U=1; wback := W=1;
+  n := Rn;
+  base := Rn;
+  small_imm_base_wb := wback;
+  defs := {Rn if wback else None};
+  uses := {Rn};
+  safety := P=0 & U=0 & W=0 => DECODER_ERROR &
+            P=1 & W=0 => DECODER_ERROR &  # VLDR/VSTR
+            P == U & W=1 => UNDEFINED &
+            n == Pc & wback => UNPREDICTABLE;
+*Vldm *VdRnRegs
+  baseline := LoadVectorRegisterList;
+  # TODO(karl): Add vector defs/uses etc.
+  safety := super.safety &
+            P=0 & U=1 & W=1 & Rn == Sp => DECODER_ERROR;  # VPOP
+*Vldm32 *Vldm
+  single_regs := true;
+  d := Vd:D;  regs := imm8;
+  safety := super.safety &
+            regs == 0 | d + regs > 32 => UNPREDICTABLE;
+  arch := VFPv2;
+*Vldm64 *Vldm
+  single_regs := false;  
+  d := D:Vd;  regs := imm8 / 2;
+  safety := super.safety &
+            regs == 0 | regs > 16 | d + regs > 32 => UNPREDICTABLE &
+            VFPSmallRegisterBank() & d + regs > 16 => UNPREDICTABLE
+            # & imm8(0) == 1 => DEPRECATED
+            # Note: The above safety condition is commented out because the
+            # test "regs == 0" already covers this case.
+            ;
+  arch := (VFPv2, AdvSIMD);
+*Vstm *VdRnRegs
+  baseline := StoreVectorRegisterList;
+  # TODO(karl): Add vector defs/uses etc.
+  safety := super.safety &
+            P=1 & U=0 & W=1 & Rn == Sp => DECODER_ERROR;  # VPUSH
+*Vstm32 *Vstm
+  single_regs := true;
+  d := Vd:D;  regs := imm8;
+  safety := super.safety &
+            regs == 0 | d + regs > 32 => UNPREDICTABLE;
+  arch := VFPv2;
+*Vstm64 *Vstm
+  single_regs := false;  
+  d := D:Vd;  regs := imm8 / 2;
+  safety := super.safety &
+            regs == 0 | regs > 16 | d + regs > 32 => UNPREDICTABLE &
+            VFPSmallRegisterBank() & d + regs > 16 => UNPREDICTABLE
+            # & imm8(0) == 1 => DEPRECATED
+            # Note: The above safety condition is commented out because the
+            # test "regs == 0" already covers this case.
+            ;
+  arch := (VFPv2, AdvSIMD);
++--
 #
 # TODO(karl): Decide if baseline classes should also be actual classes, once
 #             we finish fixing all uses of StoreCoprocessor and LoadCoprocessor.
 # TODO(jfb) The architecture for these instructions only includes Advanced SIMD
 #           for the 64-bit variants (coproc==0b1011).
 #
-# Note: The following instructions handles both A1 and A2 forms of the
-# instruction, by matching coproc(11:8)=101x.
-#
-| opcode(24:20) Rn(19:16)
-| 0010x         -         -> transfer_between_arm_core_and_extension_registers_64_bit
-| 01x00         -         = StoreVectorRegisterList
-                            Vstm_Rule_399_A1_A2_P784
-                            cccc11001d00nnnndddd101xiiiiiiii (VFPv2, AdvSIMD)
-| 01x10         -         = StoreVectorRegisterList
-                            Vstm_Rule_399_A1_A2_P784
-                            cccc11001d10nnnndddd101xiiiiiiii (VFPv2, AdvSIMD)
-| 1xx00         -         = StoreVectorRegister
-                            Vstr_Rule_400_A1_A2_P786
-                            cccc1101ud00nnnndddd101xiiiiiiii (VFPv2, AdvSIMD)
-| 10x10         ~1101     = StoreVectorRegisterList
-                            Vstm_Rule_399_A1_A2_P784
-                            cccc11010d10nnnndddd101xiiiiiiii NotRnIsSp (VFPv2, AdvSIMD)
-| "             1101      = StoreVectorRegisterList
-                            Vpush_355_A1_A2_P696
-                            cccc11010d101101dddd101xiiiiiiii (VFPv2, AdvSIMD)
-| 01x01         -         = LoadVectorRegisterList
-                            Vldm_Rule_319_A1_A2_P626
-                            cccc11001d01nnnndddd101xiiiiiiii (VFPv2, AdvSIMD)
-| 01x11         ~1101     = LoadVectorRegisterList
-                            Vldm_Rule_319_A1_A2_P626
-                            cccc11001d11nnnndddd101xiiiiiiii NotRnIsSp (VFPv2, AdvSIMD)
-| "             1101      = LoadVectorRegisterList
-                            Vpop_Rule_354_A1_A2_P694
-                            cccc11001d111101dddd101xiiiiiiii (VFPv2, AdvSIMD)
-| 1xx01         -         = LoadVectorRegister
-                            Vldr_Rule_320_A1_A2_P628
-                            cccc1101ud01nnnndddd101xiiiiiiii (VFPv2, AdvSIMD)
-| 10x11         -         = LoadVectorRegisterList
-                            Vldm_Rule_318_A1_A2_P626
-                            cccc11010d11nnnndddd101xiiiiiiii (VFPv2, AdvSIMD)
+# Note: For ease of implementation, we have added field S(8) to capture
+# whether the instruction is single (32) or double (64). This corresponds
+# to matching coproc(11:8)=101x.
+| opcode(24:20) Rn(19:16) S(8)
+| 0010x         -         - -> transfer_between_arm_core_and_extension_registers_64_bit
+| 01x00         -         0 = *Vstm32
+                               pattern := cccc110pudw0nnnndddd1010iiiiiiii;
+                               rule := VSTM;
+| "             "         1 = *Vstm64
+                               pattern := cccc110pudw0nnnndddd1011iiiiiiii;
+                               rule := VSTM;
+| 01x10         -         0 = *Vstm32
+                               pattern := cccc110pudw0nnnndddd1010iiiiiiii;
+                               rule := VSTM;
+| "             "         1 = *Vstm64
+                               pattern := cccc110pudw0nnnndddd1011iiiiiiii;
+                               rule := VSTM;
+| 1xx00         -         0 = *Vstr32
+                               pattern := cccc1101ud00nnnndddd1010iiiiiiii;
+                               rule := VSTR;
+| "             "         1 = *Vstr64
+                               pattern := cccc1101ud00nnnndddd1011iiiiiiii;
+                               rule := VSTR;
+| 10x10         ~1101     0 = *Vstm32
+                               pattern := cccc110pudw0nnnndddd1010iiiiiiii;
+                               rule := VSTM;
+| "             "         1 = *Vstm64
+                               pattern := cccc110pudw0nnnndddd1011iiiiiiii;
+                               rule := VSTM;
+| "             1101      0 = *Vpush32
+                               pattern := cccc11010d101101dddd1010iiiiiiii;
+                               rule := VPUSH;
+| "             "         1 = *Vpush64
+                               pattern := cccc11010d101101dddd1011iiiiiiii;
+                               rule := VPUSH;
+| 01x01         -         0 = *Vldm32
+                               pattern := cccc110pudw1nnnndddd1010iiiiiiii;
+                               rule := VLDM;
+| "             "         1 = *Vldm64
+                               pattern := cccc110pudw1nnnndddd1011iiiiiiii;
+                               rule := VLDM;
+| 01x11         ~1101     0 = *Vldm32
+                               pattern := cccc110pudw1nnnndddd1010iiiiiiii;
+                               rule := VLDM;
+| "             "         1 = *Vldm64
+                               pattern := cccc110pudw1nnnndddd1011iiiiiiii;
+                               rule := VLDM;
+| "             1101      0 = *Vpop32
+                               pattern := cccc11001d111101dddd1010iiiiiiii;
+                               rule := VPOP;
+| "             "         1 = *Vpop64
+                               pattern := cccc11001d111101dddd1011iiiiiiii;
+                               rule := VPOP;
+| 1xx01         -         0 = *Vldr32
+                               pattern := cccc1101ud01nnnndddd1010iiiiiiii;
+                               rule := VLDR;
+| "             "         1 = *Vldr64
+                               pattern := cccc1101ud01nnnndddd1011iiiiiiii;
+                               rule := VLDR;
+| 10x11         -         0 = *Vldm32
+                               pattern := cccc110pudw1nnnndddd1010iiiiiiii;
+                               rule := VLDM;
+| "             "         1 = *Vldm64
+                               pattern := cccc110pudw1nnnndddd1011iiiiiiii;
+                               rule := VLDM;
 +--
 
 +-- transfer_between_arm_core_and_extension_register_8_16_and_32_bit (A7.8)

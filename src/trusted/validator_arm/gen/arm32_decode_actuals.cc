@@ -6609,6 +6609,324 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
 }
 
+// Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1
+//
+// Actual:
+//   {base: inst(19:16),
+//    defs: {inst(19:16)
+//         if inst(21)=1
+//         else 32},
+//    safety: [0  ==
+//            inst(7:0) ||
+//         32  <=
+//            inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
+//      15  ==
+//            inst(19:16) &&
+//         inst(21)=1 => UNPREDICTABLE,
+//      inst(23)  ==
+//            inst(24) &&
+//         inst(21)=1 => UNDEFINED,
+//      inst(24)=0 &&
+//         inst(23)=0 &&
+//         inst(21)=0 => DECODER_ERROR,
+//      inst(24)=0 &&
+//         inst(23)=1 &&
+//         inst(21)=1 &&
+//         13  ==
+//            inst(19:16) => DECODER_ERROR,
+//      inst(24)=1 &&
+//         inst(21)=0 => DECODER_ERROR],
+//    small_imm_base_wb: inst(21)=1,
+//    uses: {inst(19:16)}}
+
+Register Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16)
+  //       if inst(21)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x00200000)  ==
+          0x00200000
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32)));
+}
+
+SafetyLevel Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(24)=0 &&
+  //       inst(23)=0 &&
+  //       inst(21)=0 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00800000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00000000))
+    return DECODER_ERROR;
+
+  // inst(24)=1 &&
+  //       inst(21)=0 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x01000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00000000))
+    return DECODER_ERROR;
+
+  // inst(23)  ==
+  //          inst(24) &&
+  //       inst(21)=1 => UNDEFINED
+  if ((((((inst.Bits() & 0x01000000) >> 24)) == (((inst.Bits() & 0x00800000) >> 23)))) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return UNDEFINED;
+
+  // 15  ==
+  //          inst(19:16) &&
+  //       inst(21)=1 => UNPREDICTABLE
+  if ((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return UNPREDICTABLE;
+
+  // inst(24)=0 &&
+  //       inst(23)=1 &&
+  //       inst(21)=1 &&
+  //       13  ==
+  //          inst(19:16) => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00800000)  ==
+          0x00800000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000) &&
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (13))))
+    return DECODER_ERROR;
+
+  // 0  ==
+  //          inst(7:0) ||
+  //       32  <=
+  //          inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x000000FF)) == (0))) ||
+       ((((((((inst.Bits() & 0x0000F000) >> 12)) << 1) | ((inst.Bits() & 0x00400000) >> 22)) + (inst.Bits() & 0x000000FF)) > (32))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+bool Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1::
+base_address_register_writeback_small_immediate(
+      Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // small_imm_base_wb: 'inst(21)=1'
+  return (inst.Bits() & 0x00200000)  ==
+          0x00200000;
+}
+
+RegisterList Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1
+//
+// Actual:
+//   {base: inst(19:16),
+//    defs: {inst(19:16)
+//         if inst(21)=1
+//         else 32},
+//    safety: [0  ==
+//            inst(7:0) / 2 ||
+//         16  <=
+//            inst(7:0) / 2 ||
+//         32  <=
+//            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
+//      15  ==
+//            inst(19:16) &&
+//         inst(21)=1 => UNPREDICTABLE,
+//      VFPSmallRegisterBank() &&
+//         16  <=
+//            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
+//      inst(23)  ==
+//            inst(24) &&
+//         inst(21)=1 => UNDEFINED,
+//      inst(24)=0 &&
+//         inst(23)=0 &&
+//         inst(21)=0 => DECODER_ERROR,
+//      inst(24)=0 &&
+//         inst(23)=1 &&
+//         inst(21)=1 &&
+//         13  ==
+//            inst(19:16) => DECODER_ERROR,
+//      inst(24)=1 &&
+//         inst(21)=0 => DECODER_ERROR],
+//    small_imm_base_wb: inst(21)=1,
+//    uses: {inst(19:16)}}
+
+Register Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16)
+  //       if inst(21)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x00200000)  ==
+          0x00200000
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32)));
+}
+
+SafetyLevel Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(24)=0 &&
+  //       inst(23)=0 &&
+  //       inst(21)=0 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00800000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00000000))
+    return DECODER_ERROR;
+
+  // inst(24)=1 &&
+  //       inst(21)=0 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x01000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00000000))
+    return DECODER_ERROR;
+
+  // inst(23)  ==
+  //          inst(24) &&
+  //       inst(21)=1 => UNDEFINED
+  if ((((((inst.Bits() & 0x01000000) >> 24)) == (((inst.Bits() & 0x00800000) >> 23)))) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return UNDEFINED;
+
+  // 15  ==
+  //          inst(19:16) &&
+  //       inst(21)=1 => UNPREDICTABLE
+  if ((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return UNPREDICTABLE;
+
+  // inst(24)=0 &&
+  //       inst(23)=1 &&
+  //       inst(21)=1 &&
+  //       13  ==
+  //          inst(19:16) => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00800000)  ==
+          0x00800000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000) &&
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (13))))
+    return DECODER_ERROR;
+
+  // 0  ==
+  //          inst(7:0) / 2 ||
+  //       16  <=
+  //          inst(7:0) / 2 ||
+  //       32  <=
+  //          inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE
+  if (((((inst.Bits() & 0x000000FF) / 2) == (0))) ||
+       ((((inst.Bits() & 0x000000FF) / 2) > (16))) ||
+       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + (inst.Bits() & 0x000000FF) / 2) > (32))))
+    return UNPREDICTABLE;
+
+  // VFPSmallRegisterBank() &&
+  //       16  <=
+  //          inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE
+  if ((nacl_arm_dec::VFPSmallRegisterBank()) &&
+       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + (inst.Bits() & 0x000000FF) / 2) > (16))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+bool Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1::
+base_address_register_writeback_small_immediate(
+      Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // small_imm_base_wb: 'inst(21)=1'
+  return (inst.Bits() & 0x00200000)  ==
+          0x00200000;
+}
+
+RegisterList Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1
+//
+// Actual:
+//   {base: inst(19:16),
+//    defs: {},
+//    is_literal_load: 15  ==
+//            inst(19:16),
+//    uses: {inst(19:16)}}
+
+Register Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+bool Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1::
+is_literal_load(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // is_literal_load: '15  ==
+  //          inst(19:16)'
+  return ((((inst.Bits() & 0x000F0000) >> 16)) == (15));
+}
+
+RegisterList Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
 // Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1
 //
 // Actual:
@@ -7360,6 +7678,139 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1
+//
+// Actual:
+//   {base: 13,
+//    defs: {13},
+//    safety: [0  ==
+//            inst(7:0) ||
+//         32  <=
+//            inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE],
+//    small_imm_base_wb: true,
+//    uses: {13}}
+
+Register Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: '13'
+  return Register(13);
+}
+
+RegisterList Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{13}'
+  return RegisterList().
+   Add(Register(13));
+}
+
+SafetyLevel Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 0  ==
+  //          inst(7:0) ||
+  //       32  <=
+  //          inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x000000FF)) == (0))) ||
+       ((((((((inst.Bits() & 0x0000F000) >> 12)) << 1) | ((inst.Bits() & 0x00400000) >> 22)) + (inst.Bits() & 0x000000FF)) > (32))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+bool Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1::
+base_address_register_writeback_small_immediate(
+      Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // small_imm_base_wb: 'true'
+  return true;
+}
+
+RegisterList Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{13}'
+  return RegisterList().
+   Add(Register(13));
+}
+
+// Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1
+//
+// Actual:
+//   {base: 13,
+//    defs: {13},
+//    safety: [0  ==
+//            inst(7:0) / 2 ||
+//         16  <=
+//            inst(7:0) / 2 ||
+//         32  <=
+//            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
+//      VFPSmallRegisterBank() &&
+//         16  <=
+//            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE],
+//    small_imm_base_wb: true,
+//    uses: {13}}
+
+Register Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: '13'
+  return Register(13);
+}
+
+RegisterList Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{13}'
+  return RegisterList().
+   Add(Register(13));
+}
+
+SafetyLevel Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 0  ==
+  //          inst(7:0) / 2 ||
+  //       16  <=
+  //          inst(7:0) / 2 ||
+  //       32  <=
+  //          inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE
+  if (((((inst.Bits() & 0x000000FF) / 2) == (0))) ||
+       ((((inst.Bits() & 0x000000FF) / 2) > (16))) ||
+       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + (inst.Bits() & 0x000000FF) / 2) > (32))))
+    return UNPREDICTABLE;
+
+  // VFPSmallRegisterBank() &&
+  //       16  <=
+  //          inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE
+  if ((nacl_arm_dec::VFPSmallRegisterBank()) &&
+       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + (inst.Bits() & 0x000000FF) / 2) > (16))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+bool Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1::
+base_address_register_writeback_small_immediate(
+      Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // small_imm_base_wb: 'true'
+  return true;
+}
+
+RegisterList Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{13}'
+  return RegisterList().
+   Add(Register(13));
+}
+
 // Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1
 //
 // Actual:
@@ -7809,6 +8260,321 @@ uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'
   return RegisterList();
+}
+
+// Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1
+//
+// Actual:
+//   {base: inst(19:16),
+//    defs: {inst(19:16)
+//         if inst(21)=1
+//         else 32},
+//    safety: [0  ==
+//            inst(7:0) ||
+//         32  <=
+//            inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
+//      15  ==
+//            inst(19:16) &&
+//         inst(21)=1 => UNPREDICTABLE,
+//      inst(23)  ==
+//            inst(24) &&
+//         inst(21)=1 => UNDEFINED,
+//      inst(24)=0 &&
+//         inst(23)=0 &&
+//         inst(21)=0 => DECODER_ERROR,
+//      inst(24)=1 &&
+//         inst(21)=0 => DECODER_ERROR,
+//      inst(24)=1 &&
+//         inst(23)=0 &&
+//         inst(21)=1 &&
+//         13  ==
+//            inst(19:16) => DECODER_ERROR],
+//    small_imm_base_wb: inst(21)=1,
+//    uses: {inst(19:16)}}
+
+Register Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16)
+  //       if inst(21)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x00200000)  ==
+          0x00200000
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32)));
+}
+
+SafetyLevel Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(24)=0 &&
+  //       inst(23)=0 &&
+  //       inst(21)=0 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00800000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00000000))
+    return DECODER_ERROR;
+
+  // inst(24)=1 &&
+  //       inst(21)=0 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x01000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00000000))
+    return DECODER_ERROR;
+
+  // inst(23)  ==
+  //          inst(24) &&
+  //       inst(21)=1 => UNDEFINED
+  if ((((((inst.Bits() & 0x01000000) >> 24)) == (((inst.Bits() & 0x00800000) >> 23)))) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return UNDEFINED;
+
+  // 15  ==
+  //          inst(19:16) &&
+  //       inst(21)=1 => UNPREDICTABLE
+  if ((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return UNPREDICTABLE;
+
+  // inst(24)=1 &&
+  //       inst(23)=0 &&
+  //       inst(21)=1 &&
+  //       13  ==
+  //          inst(19:16) => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x01000000) &&
+       ((inst.Bits() & 0x00800000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000) &&
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (13))))
+    return DECODER_ERROR;
+
+  // 0  ==
+  //          inst(7:0) ||
+  //       32  <=
+  //          inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x000000FF)) == (0))) ||
+       ((((((((inst.Bits() & 0x0000F000) >> 12)) << 1) | ((inst.Bits() & 0x00400000) >> 22)) + (inst.Bits() & 0x000000FF)) > (32))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+bool Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1::
+base_address_register_writeback_small_immediate(
+      Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // small_imm_base_wb: 'inst(21)=1'
+  return (inst.Bits() & 0x00200000)  ==
+          0x00200000;
+}
+
+RegisterList Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1
+//
+// Actual:
+//   {base: inst(19:16),
+//    defs: {inst(19:16)
+//         if inst(21)=1
+//         else 32},
+//    safety: [0  ==
+//            inst(7:0) / 2 ||
+//         16  <=
+//            inst(7:0) / 2 ||
+//         32  <=
+//            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
+//      15  ==
+//            inst(19:16) &&
+//         inst(21)=1 => UNPREDICTABLE,
+//      VFPSmallRegisterBank() &&
+//         16  <=
+//            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
+//      inst(23)  ==
+//            inst(24) &&
+//         inst(21)=1 => UNDEFINED,
+//      inst(24)=0 &&
+//         inst(23)=0 &&
+//         inst(21)=0 => DECODER_ERROR,
+//      inst(24)=1 &&
+//         inst(21)=0 => DECODER_ERROR,
+//      inst(24)=1 &&
+//         inst(23)=0 &&
+//         inst(21)=1 &&
+//         13  ==
+//            inst(19:16) => DECODER_ERROR],
+//    small_imm_base_wb: inst(21)=1,
+//    uses: {inst(19:16)}}
+
+Register Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16)
+  //       if inst(21)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x00200000)  ==
+          0x00200000
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32)));
+}
+
+SafetyLevel Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(24)=0 &&
+  //       inst(23)=0 &&
+  //       inst(21)=0 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00800000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00000000))
+    return DECODER_ERROR;
+
+  // inst(24)=1 &&
+  //       inst(21)=0 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x01000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00000000))
+    return DECODER_ERROR;
+
+  // inst(23)  ==
+  //          inst(24) &&
+  //       inst(21)=1 => UNDEFINED
+  if ((((((inst.Bits() & 0x01000000) >> 24)) == (((inst.Bits() & 0x00800000) >> 23)))) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return UNDEFINED;
+
+  // 15  ==
+  //          inst(19:16) &&
+  //       inst(21)=1 => UNPREDICTABLE
+  if ((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return UNPREDICTABLE;
+
+  // inst(24)=1 &&
+  //       inst(23)=0 &&
+  //       inst(21)=1 &&
+  //       13  ==
+  //          inst(19:16) => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x01000000) &&
+       ((inst.Bits() & 0x00800000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000) &&
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (13))))
+    return DECODER_ERROR;
+
+  // 0  ==
+  //          inst(7:0) / 2 ||
+  //       16  <=
+  //          inst(7:0) / 2 ||
+  //       32  <=
+  //          inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE
+  if (((((inst.Bits() & 0x000000FF) / 2) == (0))) ||
+       ((((inst.Bits() & 0x000000FF) / 2) > (16))) ||
+       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + (inst.Bits() & 0x000000FF) / 2) > (32))))
+    return UNPREDICTABLE;
+
+  // VFPSmallRegisterBank() &&
+  //       16  <=
+  //          inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE
+  if ((nacl_arm_dec::VFPSmallRegisterBank()) &&
+       ((((((((inst.Bits() & 0x00400000) >> 22)) << 4) | ((inst.Bits() & 0x0000F000) >> 12)) + (inst.Bits() & 0x000000FF) / 2) > (16))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+bool Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1::
+base_address_register_writeback_small_immediate(
+      Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // small_imm_base_wb: 'inst(21)=1'
+  return (inst.Bits() & 0x00200000)  ==
+          0x00200000;
+}
+
+RegisterList Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [15  ==
+//            inst(19:16) => FORBIDDEN_OPERANDS],
+//    uses: {inst(19:16)}}
+
+RegisterList Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) => FORBIDDEN_OPERANDS
+  if (((((inst.Bits() & 0x000F0000) >> 16)) == (15)))
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
 }
 
 // Actual_VSWP_111100111d11ss10dddd00000qm0mmmm_case_1

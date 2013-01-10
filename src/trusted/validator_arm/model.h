@@ -50,6 +50,15 @@ inline uint32_t ArchVersion() {
   return 7;
 }
 
+// Returns FALSE if all of the 32 registers D0-D31 can be accessed, and TRUE if
+// only the 16 registers D0-D15 can be accessed.
+inline bool VFPSmallRegisterBank() {
+  // Note: The minimum supported platform, which is checked in (see
+  // native_client/src/trusted/platform_qualify/arch/arm/nacl_arm_qualify.h)
+  // allows access to all 32 registers D0-D31.
+  return false;
+}
+
 // A (POD) value class that names a single register.  We could use a typedef
 // for this, but it introduces some ambiguity problems because of the
 // implicit conversion to/from int.

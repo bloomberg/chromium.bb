@@ -12363,6 +12363,300 @@ class Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss1
       Actual_VLD4_single_4_element_structure_to_one_lane_111101001d10nnnnddddss11aaaammmm_case_1);
 };
 
+// Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1
+//
+// Actual:
+//   {base: inst(19:16),
+//    defs: {inst(19:16)
+//         if inst(21)=1
+//         else 32},
+//    safety: [0  ==
+//            inst(7:0) ||
+//         32  <=
+//            inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
+//      15  ==
+//            inst(19:16) &&
+//         inst(21)=1 => UNPREDICTABLE,
+//      inst(23)  ==
+//            inst(24) &&
+//         inst(21)=1 => UNDEFINED,
+//      inst(24)=0 &&
+//         inst(23)=0 &&
+//         inst(21)=0 => DECODER_ERROR,
+//      inst(24)=0 &&
+//         inst(23)=1 &&
+//         inst(21)=1 &&
+//         13  ==
+//            inst(19:16) => DECODER_ERROR,
+//      inst(24)=1 &&
+//         inst(21)=0 => DECODER_ERROR],
+//    small_imm_base_wb: inst(21)=1,
+//    uses: {inst(19:16)}}
+//
+// Baseline:
+//   {D: D(22),
+//    None: 32,
+//    P: P(24),
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    Sp: 13,
+//    U: U(23),
+//    Vd: Vd(15:12),
+//    W: W(21),
+//    add: U(23)=1,
+//    arch: VFPv2,
+//    base: Rn,
+//    baseline: LoadVectorRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D,
+//    defs: {Rn
+//         if wback
+//         else None},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      D(22),
+//      W(21),
+//      Rn(19:16),
+//      Vd(15:12),
+//      imm8(7:0)],
+//    imm32: ZeroExtend(imm8:0(1:0), 32),
+//    imm8: imm8(7:0),
+//    n: Rn,
+//    pattern: cccc110pudw1nnnndddd1010iiiiiiii,
+//    regs: imm8,
+//    rule: VLDM,
+//    safety: [P(24)=0 &&
+//         U(23)=0 &&
+//         W(21)=0 => DECODER_ERROR,
+//      P(24)=1 &&
+//         W(21)=0 => DECODER_ERROR,
+//      P  ==
+//            U &&
+//         W(21)=1 => UNDEFINED,
+//      n  ==
+//            Pc &&
+//         wback => UNPREDICTABLE,
+//      P(24)=0 &&
+//         U(23)=1 &&
+//         W(21)=1 &&
+//         Rn  ==
+//            Sp => DECODER_ERROR,
+//      regs  ==
+//            0 ||
+//         d + regs  >
+//            32 => UNPREDICTABLE],
+//    single_regs: true,
+//    small_imm_base_wb: wback,
+//    true: true,
+//    uses: {Rn},
+//    wback: W(21)=1}
+class Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1
+     : public ClassDecoder {
+ public:
+  Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_VLDM_cccc110pudw1nnnndddd1010iiiiiiii_case_1);
+};
+
+// Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1
+//
+// Actual:
+//   {base: inst(19:16),
+//    defs: {inst(19:16)
+//         if inst(21)=1
+//         else 32},
+//    safety: [0  ==
+//            inst(7:0) / 2 ||
+//         16  <=
+//            inst(7:0) / 2 ||
+//         32  <=
+//            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
+//      15  ==
+//            inst(19:16) &&
+//         inst(21)=1 => UNPREDICTABLE,
+//      VFPSmallRegisterBank() &&
+//         16  <=
+//            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
+//      inst(23)  ==
+//            inst(24) &&
+//         inst(21)=1 => UNDEFINED,
+//      inst(24)=0 &&
+//         inst(23)=0 &&
+//         inst(21)=0 => DECODER_ERROR,
+//      inst(24)=0 &&
+//         inst(23)=1 &&
+//         inst(21)=1 &&
+//         13  ==
+//            inst(19:16) => DECODER_ERROR,
+//      inst(24)=1 &&
+//         inst(21)=0 => DECODER_ERROR],
+//    small_imm_base_wb: inst(21)=1,
+//    uses: {inst(19:16)}}
+//
+// Baseline:
+//   {D: D(22),
+//    None: 32,
+//    P: P(24),
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    Sp: 13,
+//    U: U(23),
+//    Vd: Vd(15:12),
+//    W: W(21),
+//    add: U(23)=1,
+//    arch: ['VFPv2', 'AdvSIMD'],
+//    base: Rn,
+//    baseline: LoadVectorRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {Rn
+//         if wback
+//         else None},
+//    false: false,
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      D(22),
+//      W(21),
+//      Rn(19:16),
+//      Vd(15:12),
+//      imm8(7:0)],
+//    imm32: ZeroExtend(imm8:0(1:0), 32),
+//    imm8: imm8(7:0),
+//    n: Rn,
+//    pattern: cccc110pudw1nnnndddd1011iiiiiiii,
+//    regs: imm8 / 2,
+//    rule: VLDM,
+//    safety: [P(24)=0 &&
+//         U(23)=0 &&
+//         W(21)=0 => DECODER_ERROR,
+//      P(24)=1 &&
+//         W(21)=0 => DECODER_ERROR,
+//      P  ==
+//            U &&
+//         W(21)=1 => UNDEFINED,
+//      n  ==
+//            Pc &&
+//         wback => UNPREDICTABLE,
+//      P(24)=0 &&
+//         U(23)=1 &&
+//         W(21)=1 &&
+//         Rn  ==
+//            Sp => DECODER_ERROR,
+//      regs  ==
+//            0 ||
+//         regs  >
+//            16 ||
+//         d + regs  >
+//            32 => UNPREDICTABLE,
+//      VFPSmallRegisterBank() &&
+//         d + regs  >
+//            16 => UNPREDICTABLE],
+//    single_regs: false,
+//    small_imm_base_wb: wback,
+//    uses: {Rn},
+//    wback: W(21)=1}
+class Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1
+     : public ClassDecoder {
+ public:
+  Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_VLDM_cccc110pudw1nnnndddd1011iiiiiiii_case_1);
+};
+
+// Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1
+//
+// Actual:
+//   {base: inst(19:16),
+//    defs: {},
+//    is_literal_load: 15  ==
+//            inst(19:16),
+//    uses: {inst(19:16)}}
+//
+// Baseline:
+//   {D: D(22),
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    U: U(23),
+//    Vd: Vd(15:12),
+//    add: U(23)=1,
+//    arch: VFPv2,
+//    base: Rn,
+//    baseline: LoadVectorRegister,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    fields: [cond(31:28), U(23), D(22), Rn(19:16), Vd(15:12), imm8(7:0)],
+//    imm32: ZeroExtend(imm8:0(1:0), 32),
+//    imm8: imm8(7:0),
+//    is_literal_load: Rn  ==
+//            Pc,
+//    n: Rn,
+//    pattern: cccc1101ud01nnnndddd1010iiiiiiii,
+//    rule: VLDR,
+//    single_reg: true,
+//    true: true,
+//    uses: {Rn}}
+//
+// Baseline:
+//   {D: D(22),
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    U: U(23),
+//    Vd: Vd(15:12),
+//    add: U(23)=1,
+//    arch: ['VFPv2', 'AdvSIMD'],
+//    base: Rn,
+//    baseline: LoadVectorRegister,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    false: false,
+//    fields: [cond(31:28), U(23), D(22), Rn(19:16), Vd(15:12), imm8(7:0)],
+//    imm32: ZeroExtend(imm8:0(1:0), 32),
+//    imm8: imm8(7:0),
+//    is_literal_load: Rn  ==
+//            Pc,
+//    n: Rn,
+//    pattern: cccc1101ud01nnnndddd1011iiiiiiii,
+//    rule: VLDR,
+//    single_reg: false,
+//    uses: {Rn}}
+class Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1
+     : public ClassDecoder {
+ public:
+  Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual bool is_literal_load(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1);
+};
+
 // Actual_VMLAL_by_scalar_A2_1111001u1dssnnnndddd0p10n1m0mmmm_case_1
 //
 // Actual:
@@ -13943,6 +14237,181 @@ class Actual_VPADD_integer_111100100dssnnnndddd1011n0m1mmmm_case_1
       Actual_VPADD_integer_111100100dssnnnndddd1011n0m1mmmm_case_1);
 };
 
+// Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1
+//
+// Actual:
+//   {base: 13,
+//    defs: {13},
+//    safety: [0  ==
+//            inst(7:0) ||
+//         32  <=
+//            inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE],
+//    small_imm_base_wb: true,
+//    uses: {13}}
+//
+// Baseline:
+//   {D: D(22),
+//    Sp: 13,
+//    Vd: Vd(15:12),
+//    arch: VFPv2,
+//    base: Sp,
+//    baseline: LoadVectorRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D,
+//    defs: {Sp},
+//    fields: [cond(31:28), D(22), Vd(15:12), imm8(7:0)],
+//    imm32: ZeroExtend(imm8:0(1:0), 32),
+//    imm8: imm8(7:0),
+//    pattern: cccc11001d111101dddd1010iiiiiiii,
+//    regs: imm8,
+//    rule: VPOP,
+//    safety: [regs  ==
+//            0 ||
+//         d + regs  >
+//            32 => UNPREDICTABLE],
+//    single_regs: true,
+//    small_imm_base_wb: true,
+//    true: true,
+//    uses: {Sp}}
+//
+// Baseline:
+//   {D: D(22),
+//    Sp: 13,
+//    Vd: Vd(15:12),
+//    arch: VFPv2,
+//    base: Sp,
+//    baseline: StoreVectorRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D,
+//    defs: {Sp},
+//    fields: [cond(31:28), D(22), Vd(15:12), imm8(7:0)],
+//    imm32: ZeroExtend(imm8:0(1:0), 32),
+//    imm8: imm8(7:0),
+//    pattern: cccc11010d101101dddd1010iiiiiiii,
+//    regs: imm8,
+//    rule: VPUSH,
+//    safety: [regs  ==
+//            0 ||
+//         d + regs  >
+//            32 => UNPREDICTABLE],
+//    single_regs: true,
+//    small_imm_base_wb: true,
+//    true: true,
+//    uses: {Sp}}
+class Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1
+     : public ClassDecoder {
+ public:
+  Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_VPOP_cccc11001d111101dddd1010iiiiiiii_case_1);
+};
+
+// Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1
+//
+// Actual:
+//   {base: 13,
+//    defs: {13},
+//    safety: [0  ==
+//            inst(7:0) / 2 ||
+//         16  <=
+//            inst(7:0) / 2 ||
+//         32  <=
+//            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
+//      VFPSmallRegisterBank() &&
+//         16  <=
+//            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE],
+//    small_imm_base_wb: true,
+//    uses: {13}}
+//
+// Baseline:
+//   {D: D(22),
+//    Sp: 13,
+//    Vd: Vd(15:12),
+//    arch: ['VFPv2', 'AdvSIMD'],
+//    base: Sp,
+//    baseline: LoadVectorRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {Sp},
+//    false: false,
+//    fields: [cond(31:28), D(22), Vd(15:12), imm8(7:0)],
+//    imm32: ZeroExtend(imm8:0(1:0), 32),
+//    imm8: imm8(7:0),
+//    pattern: cccc11001d111101dddd1011iiiiiiii,
+//    regs: imm8 / 2,
+//    rule: VPOP,
+//    safety: [regs  ==
+//            0 ||
+//         regs  >
+//            16 ||
+//         d + regs  >
+//            32 => UNPREDICTABLE,
+//      VFPSmallRegisterBank() &&
+//         d + regs  >
+//            16 => UNPREDICTABLE],
+//    single_regs: false,
+//    small_imm_base_wb: true,
+//    true: true,
+//    uses: {Sp}}
+//
+// Baseline:
+//   {D: D(22),
+//    Sp: 13,
+//    Vd: Vd(15:12),
+//    arch: ['VFPv2', 'AdvSIMD'],
+//    base: Sp,
+//    baseline: StoreVectorRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {Sp},
+//    false: false,
+//    fields: [cond(31:28), D(22), Vd(15:12), imm8(7:0)],
+//    imm32: ZeroExtend(imm8:0(1:0), 32),
+//    imm8: imm8(7:0),
+//    pattern: cccc11010d101101dddd1011iiiiiiii,
+//    regs: imm8 / 2,
+//    rule: VPUSH,
+//    safety: [regs  ==
+//            0 ||
+//         regs  >
+//            16 ||
+//         d + regs  >
+//            32 => UNPREDICTABLE,
+//      VFPSmallRegisterBank() &&
+//         d + regs  >
+//            16 => UNPREDICTABLE],
+//    single_regs: false,
+//    small_imm_base_wb: true,
+//    true: true,
+//    uses: {Sp}}
+class Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1
+     : public ClassDecoder {
+ public:
+  Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_VPOP_cccc11001d111101dddd1011iiiiiiii_case_1);
+};
+
 // Actual_VQDMLAL_VQDMLSL_A1_111100101dssnnnndddd10p1n0m0mmmm_case_1
 //
 // Actual:
@@ -15471,6 +15940,296 @@ class Actual_VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_1
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Actual_VSHLL_A2_111100111d11ss10dddd001100m0mmmm_case_1);
+};
+
+// Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1
+//
+// Actual:
+//   {base: inst(19:16),
+//    defs: {inst(19:16)
+//         if inst(21)=1
+//         else 32},
+//    safety: [0  ==
+//            inst(7:0) ||
+//         32  <=
+//            inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE,
+//      15  ==
+//            inst(19:16) &&
+//         inst(21)=1 => UNPREDICTABLE,
+//      inst(23)  ==
+//            inst(24) &&
+//         inst(21)=1 => UNDEFINED,
+//      inst(24)=0 &&
+//         inst(23)=0 &&
+//         inst(21)=0 => DECODER_ERROR,
+//      inst(24)=1 &&
+//         inst(21)=0 => DECODER_ERROR,
+//      inst(24)=1 &&
+//         inst(23)=0 &&
+//         inst(21)=1 &&
+//         13  ==
+//            inst(19:16) => DECODER_ERROR],
+//    small_imm_base_wb: inst(21)=1,
+//    uses: {inst(19:16)}}
+//
+// Baseline:
+//   {D: D(22),
+//    None: 32,
+//    P: P(24),
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    Sp: 13,
+//    U: U(23),
+//    Vd: Vd(15:12),
+//    W: W(21),
+//    add: U(23)=1,
+//    arch: VFPv2,
+//    base: Rn,
+//    baseline: StoreVectorRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D,
+//    defs: {Rn
+//         if wback
+//         else None},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      D(22),
+//      W(21),
+//      Rn(19:16),
+//      Vd(15:12),
+//      imm8(7:0)],
+//    imm32: ZeroExtend(imm8:0(1:0), 32),
+//    imm8: imm8(7:0),
+//    n: Rn,
+//    pattern: cccc110pudw0nnnndddd1010iiiiiiii,
+//    regs: imm8,
+//    rule: VSTM,
+//    safety: [P(24)=0 &&
+//         U(23)=0 &&
+//         W(21)=0 => DECODER_ERROR,
+//      P(24)=1 &&
+//         W(21)=0 => DECODER_ERROR,
+//      P  ==
+//            U &&
+//         W(21)=1 => UNDEFINED,
+//      n  ==
+//            Pc &&
+//         wback => UNPREDICTABLE,
+//      P(24)=1 &&
+//         U(23)=0 &&
+//         W(21)=1 &&
+//         Rn  ==
+//            Sp => DECODER_ERROR,
+//      regs  ==
+//            0 ||
+//         d + regs  >
+//            32 => UNPREDICTABLE],
+//    single_regs: true,
+//    small_imm_base_wb: wback,
+//    true: true,
+//    uses: {Rn},
+//    wback: W(21)=1}
+class Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1
+     : public ClassDecoder {
+ public:
+  Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_VSTM_cccc110pudw0nnnndddd1010iiiiiiii_case_1);
+};
+
+// Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1
+//
+// Actual:
+//   {base: inst(19:16),
+//    defs: {inst(19:16)
+//         if inst(21)=1
+//         else 32},
+//    safety: [0  ==
+//            inst(7:0) / 2 ||
+//         16  <=
+//            inst(7:0) / 2 ||
+//         32  <=
+//            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
+//      15  ==
+//            inst(19:16) &&
+//         inst(21)=1 => UNPREDICTABLE,
+//      VFPSmallRegisterBank() &&
+//         16  <=
+//            inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE,
+//      inst(23)  ==
+//            inst(24) &&
+//         inst(21)=1 => UNDEFINED,
+//      inst(24)=0 &&
+//         inst(23)=0 &&
+//         inst(21)=0 => DECODER_ERROR,
+//      inst(24)=1 &&
+//         inst(21)=0 => DECODER_ERROR,
+//      inst(24)=1 &&
+//         inst(23)=0 &&
+//         inst(21)=1 &&
+//         13  ==
+//            inst(19:16) => DECODER_ERROR],
+//    small_imm_base_wb: inst(21)=1,
+//    uses: {inst(19:16)}}
+//
+// Baseline:
+//   {D: D(22),
+//    None: 32,
+//    P: P(24),
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    Sp: 13,
+//    U: U(23),
+//    Vd: Vd(15:12),
+//    W: W(21),
+//    add: U(23)=1,
+//    arch: ['VFPv2', 'AdvSIMD'],
+//    base: Rn,
+//    baseline: StoreVectorRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {Rn
+//         if wback
+//         else None},
+//    false: false,
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      D(22),
+//      W(21),
+//      Rn(19:16),
+//      Vd(15:12),
+//      imm8(7:0)],
+//    imm32: ZeroExtend(imm8:0(1:0), 32),
+//    imm8: imm8(7:0),
+//    n: Rn,
+//    pattern: cccc110pudw0nnnndddd1011iiiiiiii,
+//    regs: imm8 / 2,
+//    rule: VSTM,
+//    safety: [P(24)=0 &&
+//         U(23)=0 &&
+//         W(21)=0 => DECODER_ERROR,
+//      P(24)=1 &&
+//         W(21)=0 => DECODER_ERROR,
+//      P  ==
+//            U &&
+//         W(21)=1 => UNDEFINED,
+//      n  ==
+//            Pc &&
+//         wback => UNPREDICTABLE,
+//      P(24)=1 &&
+//         U(23)=0 &&
+//         W(21)=1 &&
+//         Rn  ==
+//            Sp => DECODER_ERROR,
+//      regs  ==
+//            0 ||
+//         regs  >
+//            16 ||
+//         d + regs  >
+//            32 => UNPREDICTABLE,
+//      VFPSmallRegisterBank() &&
+//         d + regs  >
+//            16 => UNPREDICTABLE],
+//    single_regs: false,
+//    small_imm_base_wb: wback,
+//    uses: {Rn},
+//    wback: W(21)=1}
+class Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1
+     : public ClassDecoder {
+ public:
+  Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_VSTM_cccc110pudw0nnnndddd1011iiiiiiii_case_1);
+};
+
+// Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [15  ==
+//            inst(19:16) => FORBIDDEN_OPERANDS],
+//    uses: {inst(19:16)}}
+//
+// Baseline:
+//   {D: D(22),
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    U: U(23),
+//    Vd: Vd(15:12),
+//    add: U(23)=1,
+//    arch: VFPv2,
+//    baseline: StoreVectorRegister,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: Vd:D,
+//    defs: {},
+//    fields: [cond(31:28), U(23), D(22), Rn(19:16), Vd(15:12), imm8(7:0)],
+//    imm32: ZeroExtend(imm8:0(1:0), 32),
+//    imm8: imm8(7:0),
+//    n: Rn,
+//    pattern: cccc1101ud00nnnndddd1010iiiiiiii,
+//    rule: VSTR,
+//    safety: [n  ==
+//            Pc => FORBIDDEN_OPERANDS],
+//    single_reg: true,
+//    true: true,
+//    uses: {Rn}}
+//
+// Baseline:
+//   {D: D(22),
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    U: U(23),
+//    Vd: Vd(15:12),
+//    add: U(23)=1,
+//    arch: ['VFPv2', 'AdvSIMD'],
+//    baseline: StoreVectorRegister,
+//    cond: cond(31:28),
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {},
+//    false: false,
+//    fields: [cond(31:28), U(23), D(22), Rn(19:16), Vd(15:12), imm8(7:0)],
+//    imm32: ZeroExtend(imm8:0(1:0), 32),
+//    imm8: imm8(7:0),
+//    n: Rn,
+//    pattern: cccc1101ud00nnnndddd1011iiiiiiii,
+//    rule: VSTR,
+//    safety: [n  ==
+//            Pc => FORBIDDEN_OPERANDS],
+//    single_reg: false,
+//    uses: {Rn}}
+class Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1
+     : public ClassDecoder {
+ public:
+  Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_VSTR_cccc1101ud00nnnndddd1010iiiiiiii_case_1);
 };
 
 // Actual_VSWP_111100111d11ss10dddd00000qm0mmmm_case_1

@@ -1339,6 +1339,7 @@ class LoadStoreVectorRegisterList : public LoadStoreVectorOp {
   LoadStoreVectorRegisterList() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
   virtual bool base_address_register_writeback_small_immediate(
       Instruction i) const;
 
@@ -1383,6 +1384,7 @@ class StoreVectorRegisterList : public LoadStoreVectorRegisterList {
 class LoadStoreVectorRegister : public LoadStoreVectorOp {
  public:
   LoadStoreVectorRegister() {}
+  virtual RegisterList uses(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadStoreVectorRegister);

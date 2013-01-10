@@ -1281,40 +1281,40 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_extension_register_load_
 
   if ((inst.Bits() & 0x01B00000)  ==
           0x00900000 /* opcode(24:20)=01x01 */) {
-    return LoadVectorRegisterList_Vldm_Rule_319_A1_A2_P626_instance_;
+    return LoadVectorRegisterList_VLDM_instance_;
   }
 
   if ((inst.Bits() & 0x01B00000)  ==
           0x00B00000 /* opcode(24:20)=01x11 */ &&
       (inst.Bits() & 0x000F0000)  !=
           0x000D0000 /* Rn(19:16)=~1101 */) {
-    return LoadVectorRegisterList_Vldm_Rule_319_A1_A2_P626_instance_;
+    return LoadVectorRegisterList_VLDM_instance_;
   }
 
   if ((inst.Bits() & 0x01B00000)  ==
           0x00B00000 /* opcode(24:20)=01x11 */ &&
       (inst.Bits() & 0x000F0000)  ==
           0x000D0000 /* Rn(19:16)=1101 */) {
-    return LoadVectorRegisterList_Vpop_Rule_354_A1_A2_P694_instance_;
+    return LoadVectorRegisterList_VPOP_instance_;
   }
 
   if ((inst.Bits() & 0x01B00000)  ==
           0x01200000 /* opcode(24:20)=10x10 */ &&
       (inst.Bits() & 0x000F0000)  !=
           0x000D0000 /* Rn(19:16)=~1101 */) {
-    return StoreVectorRegisterList_Vstm_Rule_399_A1_A2_P784_instance_;
+    return StoreVectorRegisterList_VSTM_instance_;
   }
 
   if ((inst.Bits() & 0x01B00000)  ==
           0x01200000 /* opcode(24:20)=10x10 */ &&
       (inst.Bits() & 0x000F0000)  ==
           0x000D0000 /* Rn(19:16)=1101 */) {
-    return StoreVectorRegisterList_Vpush_355_A1_A2_P696_instance_;
+    return StoreVectorRegisterList_VPUSH_instance_;
   }
 
   if ((inst.Bits() & 0x01B00000)  ==
           0x01300000 /* opcode(24:20)=10x11 */) {
-    return LoadVectorRegisterList_Vldm_Rule_318_A1_A2_P626_instance_;
+    return LoadVectorRegisterList_VLDM_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000)  ==
@@ -1324,17 +1324,17 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_extension_register_load_
 
   if ((inst.Bits() & 0x01300000)  ==
           0x01000000 /* opcode(24:20)=1xx00 */) {
-    return StoreVectorRegister_Vstr_Rule_400_A1_A2_P786_instance_;
+    return StoreVectorRegister_VSTR_instance_;
   }
 
   if ((inst.Bits() & 0x01300000)  ==
           0x01100000 /* opcode(24:20)=1xx01 */) {
-    return LoadVectorRegister_Vldr_Rule_320_A1_A2_P628_instance_;
+    return LoadVectorRegister_VLDR_instance_;
   }
 
   if ((inst.Bits() & 0x01900000)  ==
           0x00800000 /* opcode(24:20)=01xx0 */) {
-    return StoreVectorRegisterList_Vstm_Rule_399_A1_A2_P784_instance_;
+    return StoreVectorRegisterList_VSTM_instance_;
   }
 
   // Catch any attempt to fall through...
