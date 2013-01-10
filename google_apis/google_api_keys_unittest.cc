@@ -10,6 +10,8 @@
 // This is a little unorthodox, but it lets us test the behavior as
 // close to unmodified as possible.
 
+#include "google_apis/google_api_keys.h"
+
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,10 +23,19 @@
 // since there are no platform-specific bits in this code.
 #if defined(OS_LINUX) || defined(OS_MACOSX)
 
-// We need to include this once at global scope so things like STL and
-// classes from base do not get defined again within the different
-// namespaces below.
-#include "google_apis/google_api_keys.cc"
+// We need to include everything included by google_api_keys.cc once
+// at global scope so that things like STL and classes from base don't
+// get defined when we re-include the google_api_keys.cc file
+// below. We used to include that file in its entirety here, but that
+// can cause problems if the linker decides the version of symbols
+// from that file included here is the "right" version.
+#include <string>
+#include "base/command_line.h"
+#include "base/environment.h"
+#include "base/lazy_instance.h"
+#include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/stringize_macros.h"
 
 // These are the (temporary) default values for OAuth IDs and secrets.
 static const char kDefaultNonOfficialAPIKey[] =

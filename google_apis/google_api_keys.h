@@ -5,6 +5,8 @@
 #ifndef GOOGLE_APIS_GOOGLE_API_KEYS_H_
 #define GOOGLE_APIS_GOOGLE_API_KEYS_H_
 
+// If you add more includes to this file, you also need to add them to
+// google_api_keys_unittest.cc.
 #include <string>
 
 // These functions enable you to retrieve keys to use for Google APIs

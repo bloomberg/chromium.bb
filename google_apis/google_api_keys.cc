@@ -4,6 +4,8 @@
 
 #include "google_apis/google_api_keys.h"
 
+// If you add more includes to this list, you also need to add them to
+// google_api_keys_unittest.cc.
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/lazy_instance.h"
