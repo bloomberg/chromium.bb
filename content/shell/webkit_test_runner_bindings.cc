@@ -247,6 +247,46 @@ v8::Handle<v8::Value> DumpTitleChanges(const v8::Arguments& args) {
   return v8::Undefined();
 }
 
+v8::Handle<v8::Value> DumpResourceLoadCallbacks(const v8::Arguments& args) {
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
+    return v8::Undefined();
+
+  runner->DumpResourceLoadCallbacks();
+  return v8::Undefined();
+}
+
+v8::Handle<v8::Value> DumpResourceRequestCallbacks(const v8::Arguments& args) {
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
+    return v8::Undefined();
+
+  runner->DumpResourceRequestCallbacks();
+  return v8::Undefined();
+}
+
+v8::Handle<v8::Value> DumpResourceResponseMIMETypes(const v8::Arguments& args) {
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
+    return v8::Undefined();
+
+  runner->DumpResourceResponseMIMETypes();
+  return v8::Undefined();
+}
+
+v8::Handle<v8::Value> DumpCreateView(const v8::Arguments& args) {
+  WebKitTestRunner* runner =
+      ShellRenderProcessObserver::GetInstance()->main_test_runner();
+  if (!runner)
+    return v8::Undefined();
+
+  runner->DumpCreateView();
+  return v8::Undefined();
+}
+
 v8::Handle<v8::Value> GetGlobalFlag(const v8::Arguments& args) {
   return v8::Boolean::New(g_global_flag);
 }
@@ -340,6 +380,14 @@ WebKitTestRunnerBindings::GetNativeFunction(v8::Handle<v8::String> name) {
     return v8::FunctionTemplate::New(SetStopProvisionalFrameLoads);
   if (name->Equals(v8::String::New("DumpTitleChanges")))
     return v8::FunctionTemplate::New(DumpTitleChanges);
+  if (name->Equals(v8::String::New("DumpResourceLoadCallbacks")))
+    return v8::FunctionTemplate::New(DumpResourceLoadCallbacks);
+  if (name->Equals(v8::String::New("DumpResourceRequestCallbacks")))
+    return v8::FunctionTemplate::New(DumpResourceRequestCallbacks);
+  if (name->Equals(v8::String::New("DumpResourceResponseMIMETypes")))
+    return v8::FunctionTemplate::New(DumpResourceResponseMIMETypes);
+  if (name->Equals(v8::String::New("DumpCreateView")))
+    return v8::FunctionTemplate::New(DumpCreateView);
   if (name->Equals(v8::String::New("GetGlobalFlag")))
     return v8::FunctionTemplate::New(GetGlobalFlag);
   if (name->Equals(v8::String::New("SetGlobalFlag")))

@@ -12,6 +12,10 @@ var testRunner = testRunner || {};
   native function DumpUserGestureInFrameLoadCallbacks();
   native function SetStopProvisionalFrameLoads();
   native function DumpTitleChanges();
+  native function DumpResourceLoadCallbacks();
+  native function DumpResourceRequestCallbacks();
+  native function DumpResourceResponseMIMETypes();
+  native function DumpCreateView();
   native function EvaluateInWebInspector();
   native function ExecCommand();
   native function GetWorkerThreadCount();
@@ -98,6 +102,18 @@ var testRunner = testRunner || {};
     Object.defineProperty(this,
                           "setStopProvisionalFrameLoads",
                           {value: SetStopProvisionalFrameLoads});
+    Object.defineProperty(this,
+                          "dumpResourceLoadCallbacks",
+                          {value: DumpResourceLoadCallbacks});
+    Object.defineProperty(this,
+                          "dumpResourceRequestCallbacks",
+                          {value: DumpResourceRequestCallbacks});
+    Object.defineProperty(this,
+                          "dumpResourceResponseMIMETypes",
+                          {value: DumpResourceResponseMIMETypes});
+    Object.defineProperty(this,
+                          "dumpCreateView",
+                          {value: DumpCreateView});
     Object.defineProperty(this,
                           "dumpTitleChanges",
                           {value: DumpTitleChanges});

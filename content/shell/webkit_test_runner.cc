@@ -19,6 +19,7 @@
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_render_process_observer.h"
 #include "content/shell/webkit_test_helpers.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
@@ -27,6 +28,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -46,10 +48,12 @@ using WebKit::WebDevToolsAgent;
 using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebGamepads;
+using WebKit::WebIntentRequest;
 using WebKit::WebRect;
 using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebURL;
+using WebKit::WebURLError;
 using WebKit::WebVector;
 using WebKit::WebView;
 using WebTestRunner::WebPreferences;
@@ -291,6 +295,46 @@ void WebKitTestRunner::applyPreferences() {
   Send(new ShellViewHostMsg_OverridePreferences(routing_id(), prefs));
 }
 
+void WebKitTestRunner::setCurrentWebIntentRequest(
+    const WebIntentRequest& request) {
+    intent_request_ = request;
+}
+
+WebIntentRequest* WebKitTestRunner::currentWebIntentRequest() {
+  return &intent_request_;
+}
+
+std::string WebKitTestRunner::makeURLErrorDescription(
+    const WebURLError& error) {
+  std::string domain = error.domain.utf8();
+  int code = error.reason;
+
+  if (domain == net::kErrorDomain) {
+    domain = "NSURLErrorDomain";
+    switch (error.reason) {
+    case net::ERR_ABORTED:
+      code = -999;  // NSURLErrorCancelled
+      break;
+    case net::ERR_UNSAFE_PORT:
+      // Our unsafe port checking happens at the network stack level, but we
+      // make this translation here to match the behavior of stock WebKit.
+      domain = "WebKitErrorDomain";
+      code = 103;
+      break;
+    case net::ERR_ADDRESS_INVALID:
+    case net::ERR_ADDRESS_UNREACHABLE:
+    case net::ERR_NETWORK_ACCESS_DENIED:
+      code = -1004;  // NSURLErrorCannotConnectToHost
+      break;
+    }
+  } else {
+    DLOG(WARNING) << "Unknown error domain";
+  }
+
+  return base::StringPrintf("<NSError domain %s, code %d, failing URL \"%s\">",
+      domain.c_str(), code, error.unreachableURL.spec().data());
+}
+
 // WebTestRunner  -------------------------------------------------------------
 
 bool WebKitTestRunner::shouldDumpEditingCallbacks() const {
@@ -311,6 +355,26 @@ bool WebKitTestRunner::stopProvisionalFrameLoads() const {
 
 bool WebKitTestRunner::shouldDumpTitleChanges() const {
   return dump_title_changes_;
+}
+
+bool WebKitTestRunner::shouldDumpResourceLoadCallbacks() const {
+  return test_is_running_ && dump_resource_load_callbacks_;
+}
+
+bool WebKitTestRunner::shouldDumpResourceRequestCallbacks() const {
+  return test_is_running_ && dump_resource_request_callbacks_;
+}
+
+bool WebKitTestRunner::shouldDumpResourceResponseMIMETypes() const {
+  return test_is_running_ && dump_resource_response_mime_types_;
+}
+
+bool WebKitTestRunner::shouldDumpCreateView() const {
+  return dump_create_view_;
+}
+
+bool WebKitTestRunner::canOpenWindows() const {
+  return can_open_windows_;
 }
 
 // RenderViewObserver  --------------------------------------------------------
@@ -394,6 +458,7 @@ void WebKitTestRunner::WaitUntilDone() {
 }
 
 void WebKitTestRunner::CanOpenWindows() {
+  can_open_windows_ = true;
   Send(new ShellViewHostMsg_CanOpenWindows(routing_id()));
 }
 
@@ -492,6 +557,22 @@ void WebKitTestRunner::DumpTitleChanges() {
   dump_title_changes_ = true;
 }
 
+void WebKitTestRunner::DumpResourceLoadCallbacks() {
+  dump_resource_load_callbacks_ = true;
+}
+
+void WebKitTestRunner::DumpResourceRequestCallbacks() {
+  dump_resource_request_callbacks_ = true;
+}
+
+void WebKitTestRunner::DumpResourceResponseMIMETypes() {
+  dump_resource_response_mime_types_ = true;
+}
+
+void WebKitTestRunner::DumpCreateView() {
+  dump_create_view_ = true;
+}
+
 void WebKitTestRunner::NotImplemented(const std::string& object,
                                       const std::string& method) {
   Send(new ShellViewHostMsg_NotImplemented(routing_id(), object, method));
@@ -507,6 +588,11 @@ void WebKitTestRunner::Reset() {
   dump_user_gesture_in_frame_load_callbacks_ = false;
   stop_provisional_frame_loads_ = false;
   dump_title_changes_ = false;
+  dump_resource_load_callbacks_ = false;
+  dump_resource_request_callbacks_ = false;
+  dump_resource_response_mime_types_ = false;
+  dump_create_view_ = false;
+  can_open_windows_ = false;
   test_is_running_ = true;
   load_finished_ = false;
   wait_until_done_ = false;

@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentRequest.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebPreferences.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestDelegate.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestRunner.h"
@@ -64,6 +65,9 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual WebKit::WebURL rewriteLayoutTestsURL(const std::string& utf8_url);
   virtual ::WebTestRunner::WebPreferences* preferences();
   virtual void applyPreferences();
+  virtual void setCurrentWebIntentRequest(const WebKit::WebIntentRequest&);
+  virtual WebKit::WebIntentRequest* currentWebIntentRequest();
+  virtual std::string makeURLErrorDescription(const WebKit::WebURLError& error);
 
   // WebTestRunner implementation.
   virtual bool shouldDumpEditingCallbacks() const;
@@ -71,6 +75,11 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual bool shouldDumpUserGestureInFrameLoadCallbacks() const;
   virtual bool stopProvisionalFrameLoads() const;
   virtual bool shouldDumpTitleChanges() const;
+  virtual bool shouldDumpResourceLoadCallbacks() const;
+  virtual bool shouldDumpResourceRequestCallbacks() const;
+  virtual bool shouldDumpResourceResponseMIMETypes() const;
+  virtual bool shouldDumpCreateView() const;
+  virtual bool canOpenWindows() const;
 
   void Reset();
   void Display();
@@ -92,6 +101,10 @@ class WebKitTestRunner : public RenderViewObserver,
   void DumpUserGestureInFrameLoadCallbacks();
   void StopProvisionalFrameLoads();
   void DumpTitleChanges();
+  void DumpResourceLoadCallbacks();
+  void DumpResourceRequestCallbacks();
+  void DumpResourceResponseMIMETypes();
+  void DumpCreateView();
 
   void NotImplemented(const std::string& object, const std::string& method);
 
@@ -116,11 +129,18 @@ class WebKitTestRunner : public RenderViewObserver,
 
   ::WebTestRunner::WebPreferences prefs_;
 
+  WebKit::WebIntentRequest intent_request_;
+
   bool dump_editing_callbacks_;
   bool dump_frame_load_callbacks_;
   bool dump_user_gesture_in_frame_load_callbacks_;
   bool stop_provisional_frame_loads_;
   bool dump_title_changes_;
+  bool dump_resource_load_callbacks_;
+  bool dump_resource_request_callbacks_;
+  bool dump_resource_response_mime_types_;
+  bool dump_create_view_;
+  bool can_open_windows_;
 
   bool test_is_running_;
   bool wait_until_done_;
