@@ -373,6 +373,7 @@ image_create(struct display *display, const char *filename,
 
 	if (!image->image) {
 		fprintf(stderr, "could not find the image %s!\n", b);
+		free(image);
 		return NULL;
 	}
 
