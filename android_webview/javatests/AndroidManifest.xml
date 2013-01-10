@@ -12,8 +12,7 @@
         <provider android:name="TestContentProvider"
             android:authorities="org.chromium.android_webview.test.TestContentProvider" />
     </application>
-    <!-- TODO(joth): Change minSdkVersion to 16 when crbug/161864 lands. -->
-    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="17" />
+    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="16" />
     <instrumentation android:name="android.test.InstrumentationTestRunner"
         android:targetPackage="org.chromium.android_webview"
         android:label="Tests for org.chromium.android_webview"/>
