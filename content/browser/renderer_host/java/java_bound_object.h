@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/linked_ptr.h"
 #include "content/browser/renderer_host/java/java_method.h"
@@ -37,10 +38,11 @@ class JavaBoundObject {
 
   virtual ~JavaBoundObject();
 
-  // Gets a global ref to the underlying JavaObject from a JavaBoundObject
-  // wrapped as an NPObject. Ownership of the global ref is retained by the
-  // JavaBoundObject: the caller must NOT release it.
-  static jobject GetJavaObject(NPObject* object);
+  // Gets a local ref to the underlying JavaObject from a JavaBoundObject
+  // wrapped as an NPObject. May return null if the underlying object has
+  // been garbage collected.
+  static base::android::ScopedJavaLocalRef<jobject> GetJavaObject(
+      NPObject* object);
 
   // Methods to implement the NPObject callbacks.
   bool HasMethod(const std::string& name) const;
@@ -54,10 +56,9 @@ class JavaBoundObject {
 
   void EnsureMethodsAreSetUp() const;
 
-  // The global ref to the underlying Java object that this JavaBoundObject
+  // The weak ref to the underlying Java object that this JavaBoundObject
   // instance represents.
-  base::android::ScopedJavaGlobalRef<jobject> java_object_;
-
+  JavaObjectWeakGlobalRef java_object_;
   // Map of public methods, from method name to Method instance. Multiple
   // entries will be present for overloaded methods. Note that we can't use
   // scoped_ptr in STL containers as we can't copy it.

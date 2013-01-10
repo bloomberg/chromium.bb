@@ -589,7 +589,7 @@ jvalue CoerceJavaScriptObjectToJavaValue(const NPVariant& variant,
         // objects. Spec requires passing only Java objects which are
         // assignment-compatibile.
         result.l = AttachCurrentThread()->NewLocalRef(
-            JavaBoundObject::GetJavaObject(object));
+            JavaBoundObject::GetJavaObject(object).obj());
       } else {
         // LIVECONNECT_COMPLIANCE: Existing behavior is to pass null. Spec
         // requires converting if the target type is
@@ -742,7 +742,7 @@ NPObject* JavaBoundObject::Create(
 JavaBoundObject::JavaBoundObject(
     const JavaRef<jobject>& object,
     base::android::JavaRef<jclass>& safe_annotation_clazz)
-    : java_object_(object),
+    : java_object_(AttachCurrentThread(), object.obj()),
       are_methods_set_up_(false),
       safe_annotation_clazz_(safe_annotation_clazz) {
   // We don't do anything with our Java object when first created. We do it all
@@ -752,10 +752,10 @@ JavaBoundObject::JavaBoundObject(
 JavaBoundObject::~JavaBoundObject() {
 }
 
-jobject JavaBoundObject::GetJavaObject(NPObject* object) {
+ScopedJavaLocalRef<jobject> JavaBoundObject::GetJavaObject(NPObject* object) {
   DCHECK_EQ(&JavaNPObject::kNPClass, object->_class);
   JavaBoundObject* jbo = reinterpret_cast<JavaNPObject*>(object)->bound_object;
-  return jbo->java_object_.obj();
+  return jbo->java_object_.get(AttachCurrentThread());
 }
 
 bool JavaBoundObject::HasMethod(const std::string& name) const {
@@ -795,10 +795,15 @@ bool JavaBoundObject::Invoke(const std::string& name, const NPVariant* args,
                                                      true);
   }
 
-  // Call
-  bool ok = CallJNIMethod(java_object_.obj(), method->return_type(),
-                          method->id(), &parameters[0], result,
-                          safe_annotation_clazz_);
+  ScopedJavaLocalRef<jobject> obj = java_object_.get(AttachCurrentThread());
+
+  bool ok = false;
+  if (!obj.is_null()) {
+    // Call
+    ok = CallJNIMethod(obj.obj(), method->return_type(),
+                       method->id(), &parameters[0], result,
+                       safe_annotation_clazz_);
+  }
 
   // Now that we're done with the jvalue, release any local references created
   // by CoerceJavaScriptValueToJavaValue().
@@ -816,8 +821,14 @@ void JavaBoundObject::EnsureMethodsAreSetUp() const {
   are_methods_set_up_ = true;
 
   JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_object_.get(env);
+
+  if (obj.is_null()) {
+    return;
+  }
+
   ScopedJavaLocalRef<jclass> clazz(env, static_cast<jclass>(
-      env->CallObjectMethod(java_object_.obj(),  GetMethodIDFromClassName(
+      env->CallObjectMethod(obj.obj(),  GetMethodIDFromClassName(
           env,
           kJavaLangObject,
           kGetClass,

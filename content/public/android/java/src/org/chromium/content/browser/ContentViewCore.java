@@ -49,6 +49,10 @@ import org.chromium.content.common.TraceEvent;
 import org.chromium.ui.gfx.NativeWindow;
 
 import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * Provides a Java-side 'wrapper' around a WebContent (native) instance.
@@ -74,6 +78,27 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     // Personality of the ContentView.
     private final int mPersonality;
+
+    // If the embedder adds a JavaScript interface object that contains an indirect reference to
+    // the ContentViewCore, then storing a strong ref to the interface object on the native
+    // side would prevent garbage collection of the ContentViewCore (as that strong ref would
+    // create a new GC root).
+    // For that reason, we store only a weak reference to the interface object on the
+    // native side. However we still need a strong reference on the Java side to
+    // prevent garbage collection if the embedder doesn't maintain their own ref to the
+    // interface object - the Java side ref won't create a new GC root.
+    // This map stores those refernces. We put into the map on addJavaScriptInterface()
+    // and remove from it in removeJavaScriptInterface().
+    private Map<String, Object> mJavaScriptInterfaces = new HashMap<String, Object>();
+
+    // Additionally, we keep track of all Java bound JS objects that are in use on the
+    // current page to ensure that they are not garbage collected until the page is
+    // navigated. This includes interface objects that have been removed
+    // via the removeJavaScriptInterface API and transient objects returned from methods
+    // on the interface object.
+    // TODO(benm): Implement the transient object retention - likely by moving the
+    // management of this set into the native Java bridge. (crbug/169228) (crbug/169228)
+    private Set<Object> mRetainedJavaScriptObjects = new HashSet<Object>();
 
     /**
      * Interface that consumers of {@link ContentViewCore} must implement to allow the proper
@@ -494,6 +519,10 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             public void didStartLoading(String url) {
                 hidePopupDialog();
                 resetGestureDetectors();
+                // TODO(benm): This isn't quite the right place to do this. Management
+                // of this set should be moving into the native java bridge in crbug/169228
+                // and until that's ready this will do.
+                mRetainedJavaScriptObjects.clear();
             }
         };
     }
@@ -625,6 +654,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         }
         mNativeContentViewCore = 0;
         mContentSettings = null;
+        mJavaScriptInterfaces.clear();
+        mRetainedJavaScriptObjects.clear();
     }
 
     /**
@@ -2131,13 +2162,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         return mZoomManager.getZoomControlsViewForTest();
     }
 
-    // TODO(joth): Remove in next patch.
-    @Deprecated
-    public void addJavascriptInterface(Object object, String name, boolean requireAnnotation) {
-        addPossiblyUnsafeJavascriptInterface(object, name,
-                requireAnnotation ? JavascriptInterface.class : null);
-    }
-
     /**
      * This will mimic {@link #addPossiblyUnsafeJavascriptInterface(Object, String, Class)}
      * and automatically pass in {@link JavascriptInterface} as the required annotation.
@@ -2195,6 +2219,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     public void addPossiblyUnsafeJavascriptInterface(Object object, String name,
             Class<? extends Annotation> requiredAnnotation) {
         if (mNativeContentViewCore != 0 && object != null) {
+            mJavaScriptInterfaces.put(name, object);
             nativeAddJavascriptInterface(mNativeContentViewCore, object, name, requiredAnnotation);
         }
     }
@@ -2205,6 +2230,10 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      * @param name The name of the interface to remove.
      */
     public void removeJavascriptInterface(String name) {
+        // TODO(benm): Move the management of this retained object set
+        // into the native java bridge. (crbug/169228)
+        mRetainedJavaScriptObjects.add(mJavaScriptInterfaces.get(name));
+        mJavaScriptInterfaces.remove(name);
         if (mNativeContentViewCore != 0) {
             nativeRemoveJavascriptInterface(mNativeContentViewCore, name);
         }
