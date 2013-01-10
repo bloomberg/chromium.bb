@@ -201,9 +201,10 @@ def ProcessManifest(file_sha1, test_name, shards, test_filter, options):
   print 'Sending test requests to swarm'
   test_url = options.swarm_url + '/test'
   manifest_text = manifest.to_json()
+  data = urllib.urlencode({'request': manifest_text})
   result = None
   try:
-    result = urllib2.urlopen(test_url, manifest_text).read()
+    result = urllib2.urlopen(test_url, data=data).read()
 
     # Check that we can read the output as a JSON string
     json.loads(result)
