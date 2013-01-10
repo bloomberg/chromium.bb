@@ -6455,7 +6455,7 @@
    fun:_ZN11ManagedModeC2Ev
 }
 {
-   bug_
+   bug_169311
    Memcheck:Leak
    fun:malloc
    fun:_ZN3WTF10fastMallocEm
@@ -6470,13 +6470,4 @@
    fun:_ZN7WebCore8Document19createStyleResolverEv
    fun:_ZN7WebCore8Document13styleResolverEv
    fun:_ZN7WebCore7Element16styleForRendererEv
-   fun:_ZN7WebCore20NodeRenderingContext32createRendererForElementIfNeededEv
-   fun:_ZN7WebCore7Element22createRendererIfNeededEv
-   fun:_ZN7WebCore7Element6attachEv
-   fun:_ZN7WebCore22HTMLViewSourceDocument21createContainingTableEv
-   fun:_ZN7WebCore22HTMLViewSourceDocument9addSourceERKN3WTF6StringERNS_9HTMLTokenE
-   fun:_ZN7WebCore20HTMLViewSourceParser13pumpTokenizerEv
-   fun:_ZN7WebCore20HTMLViewSourceParser6appendERKNS_15SegmentedStringE
-   fun:_ZN7WebCore25DecodedDataDocumentParser5flushEPNS_14DocumentWriterE
-   fun:_ZN7WebCore14DocumentWriter3endEv
 }
