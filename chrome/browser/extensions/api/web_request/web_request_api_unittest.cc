@@ -495,7 +495,7 @@ void ExtensionWebRequestTest::FireURLRequestWithData(
   element_readers.push_back(new net::UploadBytesElementReader(
       &(bytes_1[0]), bytes_1.size()));
   element_readers.push_back(new net::UploadFileElementReader(
-      ::FilePath(), 0, 0, base::Time()));
+      base::MessageLoopProxy::current(), ::FilePath(), 0, 0, base::Time()));
   element_readers.push_back(new net::UploadBytesElementReader(
       &(bytes_2[0]), bytes_2.size()));
   request.set_upload(make_scoped_ptr(

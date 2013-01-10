@@ -126,7 +126,7 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_FileBody) {
                                                   &temp_file_path));
 
   element_readers.push_back(new UploadFileElementReader(
-      temp_file_path, 0, 0, base::Time()));
+      base::MessageLoopProxy::current(), temp_file_path, 0, 0, base::Time()));
 
   scoped_ptr<UploadDataStream> body(new UploadDataStream(&element_readers, 0));
   TestCompletionCallback callback;

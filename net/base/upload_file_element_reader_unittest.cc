@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/message_loop_proxy.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -30,6 +31,7 @@ class UploadFileElementReaderTest : public PlatformTest {
         file_util::WriteFile(temp_file_path_, &bytes_[0], bytes_.size()));
 
     reader_.reset(new UploadFileElementReader(
+        base::MessageLoopProxy::current(),
         temp_file_path_, 0, kuint64max, base::Time()));
     TestCompletionCallback callback;
     ASSERT_EQ(ERR_IO_PENDING, reader_->Init(callback.callback()));
@@ -160,6 +162,7 @@ TEST_F(UploadFileElementReaderTest, Range) {
   const uint64 kOffset = 2;
   const uint64 kLength = bytes_.size() - kOffset * 3;
   reader_.reset(new UploadFileElementReader(
+      base::MessageLoopProxy::current(),
       temp_file_path_, kOffset, kLength, base::Time()));
   TestCompletionCallback init_callback;
   ASSERT_EQ(ERR_IO_PENDING, reader_->Init(init_callback.callback()));
@@ -185,6 +188,7 @@ TEST_F(UploadFileElementReaderTest, FileChanged) {
   const base::Time expected_modification_time =
       info.last_modified - base::TimeDelta::FromSeconds(1);
   reader_.reset(new UploadFileElementReader(
+      base::MessageLoopProxy::current(),
       temp_file_path_, 0, kuint64max, expected_modification_time));
   TestCompletionCallback init_callback;
   ASSERT_EQ(ERR_IO_PENDING, reader_->Init(init_callback.callback()));
@@ -194,6 +198,7 @@ TEST_F(UploadFileElementReaderTest, FileChanged) {
 TEST_F(UploadFileElementReaderTest, WrongPath) {
   const FilePath wrong_path(FILE_PATH_LITERAL("wrong_path"));
   reader_.reset(new UploadFileElementReader(
+      base::MessageLoopProxy::current(),
       wrong_path, 0, kuint64max, base::Time()));
   TestCompletionCallback init_callback;
   ASSERT_EQ(ERR_IO_PENDING, reader_->Init(init_callback.callback()));

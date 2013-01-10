@@ -8,10 +8,15 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "net/base/upload_element_reader.h"
+
+namespace base {
+class TaskRunner;
+}
 
 namespace net {
 
@@ -20,16 +25,9 @@ class FileStream;
 // An UploadElementReader implementation for file.
 class NET_EXPORT UploadFileElementReader : public UploadElementReader {
  public:
-  // Deletes FileStream on the worker pool to avoid blocking the IO thread.
-  // This class is used as a template argument of scoped_ptr_malloc.
-  class FileStreamDeleter {
-   public:
-    void operator() (FileStream* file_stream) const;
-  };
-
-  typedef scoped_ptr_malloc<FileStream, FileStreamDeleter> ScopedFileStreamPtr;
-
-  UploadFileElementReader(const FilePath& path,
+  // |task_runner| is used to perform file operations. It must not be NULL.
+  UploadFileElementReader(base::TaskRunner* task_runner,
+                          const FilePath& path,
                           uint64 range_offset,
                           uint64 range_length,
                           const base::Time& expected_modification_time);
@@ -52,6 +50,20 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
                    const CompletionCallback& callback) OVERRIDE;
 
  private:
+  // Deletes FileStream with |task_runner| to avoid blocking the IO thread.
+  // This class is used as a template argument of scoped_ptr.
+  class FileStreamDeleter {
+   public:
+    explicit FileStreamDeleter(base::TaskRunner* task_runner);
+    ~FileStreamDeleter();
+    void operator() (FileStream* file_stream) const;
+
+   private:
+    scoped_refptr<base::TaskRunner> task_runner_;
+  };
+
+  typedef scoped_ptr<FileStream, FileStreamDeleter> ScopedFileStreamPtr;
+
   FRIEND_TEST_ALL_PREFIXES(UploadDataStreamTest, FileSmallerThanLength);
   FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionTest,
                            UploadFileSmallerThanLength);
@@ -81,6 +93,7 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
     ~ScopedOverridingContentLengthForTests();
   };
 
+  scoped_refptr<base::TaskRunner> task_runner_;
   const FilePath path_;
   const uint64 range_offset_;
   const uint64 range_length_;

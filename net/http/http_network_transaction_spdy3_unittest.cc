@@ -6531,7 +6531,8 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UploadFileSmallerThanLength) {
 
   ScopedVector<UploadElementReader> element_readers;
   element_readers.push_back(
-      new UploadFileElementReader(temp_file_path, 0, kuint64max, base::Time()));
+      new UploadFileElementReader(base::MessageLoopProxy::current(),
+                                  temp_file_path, 0, kuint64max, base::Time()));
   UploadDataStream upload_data_stream(&element_readers, 0);
 
   HttpRequestInfo request;
@@ -6584,7 +6585,8 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UploadUnreadableFile) {
 
   ScopedVector<UploadElementReader> element_readers;
   element_readers.push_back(
-      new UploadFileElementReader(temp_file, 0, kuint64max, base::Time()));
+      new UploadFileElementReader(base::MessageLoopProxy::current(),
+                                  temp_file, 0, kuint64max, base::Time()));
   UploadDataStream upload_data_stream(&element_readers, 0);
 
   HttpRequestInfo request;
@@ -6640,7 +6642,8 @@ TEST_F(HttpNetworkTransactionSpdy3Test, UnreadableUploadFileAfterAuthRestart) {
 
   ScopedVector<UploadElementReader> element_readers;
   element_readers.push_back(
-      new UploadFileElementReader(temp_file, 0, kuint64max, base::Time()));
+      new UploadFileElementReader(base::MessageLoopProxy::current(),
+                                  temp_file, 0, kuint64max, base::Time()));
   UploadDataStream upload_data_stream(&element_readers, 0);
 
   HttpRequestInfo request;

@@ -390,6 +390,7 @@ class SpdyNetworkTransactionSpdy2Test
 
       ScopedVector<UploadElementReader> element_readers;
       element_readers.push_back(new UploadFileElementReader(
+          base::MessageLoopProxy::current(),
           file_path, 0, kUploadDataSize, base::Time()));
       upload_data_stream_.reset(new UploadDataStream(&element_readers, 0));
 
@@ -416,6 +417,7 @@ class SpdyNetworkTransactionSpdy2Test
       element_readers.push_back(
           new UploadBytesElementReader(kUploadData, kFileRangeOffset));
       element_readers.push_back(new UploadFileElementReader(
+          base::MessageLoopProxy::current(),
           file_path, kFileRangeOffset, kFileRangeLength, base::Time()));
       element_readers.push_back(new UploadBytesElementReader(
           kUploadData + kFileRangeOffset + kFileRangeLength,

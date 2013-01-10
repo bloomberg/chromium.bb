@@ -13,6 +13,10 @@
 #include "webkit/base/data_element.h"
 #include "webkit/glue/webkit_glue_export.h"
 
+namespace base {
+class TaskRunner;
+}
+
 namespace net {
 class UploadDataStream;
 }
@@ -42,10 +46,11 @@ class WEBKIT_GLUE_EXPORT ResourceRequestBody
                                  const base::Time& expected_modification_time);
 
   // Creates a new UploadDataStream from this request body. This also resolves
-  // any blob references using given |blob_controller|.
-  // TODO(kinuko): Clean up this hack.
+  // any blob references using given |blob_controller|. |task_runner| is used to
+  // perform file operations when the data gets uploaded.
   net::UploadDataStream* ResolveElementsAndCreateUploadDataStream(
-      webkit_blob::BlobStorageController* blob_controller);
+      webkit_blob::BlobStorageController* blob_controller,
+      base::TaskRunner* task_runner);
 
   const std::vector<Element>* elements() const { return &elements_; }
   std::vector<Element>* elements_mutable() { return &elements_; }

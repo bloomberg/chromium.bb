@@ -465,7 +465,8 @@ class RequestProxy
       request_->set_upload(make_scoped_ptr(
           params->request_body->ResolveElementsAndCreateUploadDataStream(
               static_cast<TestShellRequestContext*>(g_request_context)->
-              blob_storage_controller())));
+              blob_storage_controller(),
+              base::MessageLoopProxy::current())));
     }
     SimpleAppCacheSystem::SetExtraRequestInfo(
         request_.get(), params->appcache_host_id, params->request_type);
