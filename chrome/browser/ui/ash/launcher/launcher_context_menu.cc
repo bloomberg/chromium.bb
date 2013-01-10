@@ -67,10 +67,8 @@ void LauncherContextMenu::Init() {
   if (is_valid_item()) {
     if (item_.type == ash::TYPE_APP_SHORTCUT) {
       DCHECK(controller_->IsPinned(item_.id));
-      // Everything can be started as many times as needed through the menu,
-      // except for V2 apps - there should be only one instance of it.
-      if  (!controller_->IsPlatformApp(item_.id) ||
-           !controller_->IsOpen(item_.id)) {
+      // V1 apps can be started from the menu - but V2 apps should not.
+      if  (!controller_->IsPlatformApp(item_.id)) {
         AddItem(MENU_OPEN_NEW, string16());
         AddSeparator(ui::NORMAL_SEPARATOR);
       }
