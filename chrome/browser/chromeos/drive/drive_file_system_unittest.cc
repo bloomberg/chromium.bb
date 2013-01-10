@@ -358,13 +358,15 @@ class DriveFileSystemTest : public testing::Test {
   // Gets entry info by path synchronously.
   scoped_ptr<DriveEntryProto> GetEntryInfoByPathSync(
       const FilePath& file_path) {
+    DriveFileError error;
+    scoped_ptr<DriveEntryProto> entry_proto;
     file_system_->GetEntryInfoByPath(
         file_path,
-        base::Bind(&CallbackHelper::GetEntryInfoCallback,
-                   callback_helper_.get()));
+        base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
+                   &error, &entry_proto));
     google_apis::test_util::RunBlockingPoolTask();
 
-    return callback_helper_->entry_proto_.Pass();
+    return entry_proto.Pass();
   }
 
   // Gets directory info by path synchronously.
@@ -758,12 +760,6 @@ class DriveFileSystemTest : public testing::Test {
       file_type_ = file_type;
     }
 
-    virtual void FileOperationCallback(DriveFileError error) {
-      DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-      last_error_ = error;
-    }
-
     virtual void GetAvailableSpaceCallback(DriveFileError error,
                                            int64 bytes_total,
                                            int64 bytes_used) {
@@ -782,13 +778,6 @@ class DriveFileSystemTest : public testing::Test {
     virtual void CloseFileCallback(DriveFileError error) {
       last_error_ = error;
       MessageLoop::current()->Quit();
-    }
-
-    virtual void GetEntryInfoCallback(
-        DriveFileError error,
-        scoped_ptr<DriveEntryProto> entry_proto) {
-      last_error_ = error;
-      entry_proto_ = entry_proto.Pass();
     }
 
     virtual void ReadDirectoryCallback(
@@ -1269,10 +1258,6 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
 
-  FileOperationCallback callback =
-      base::Bind(&CallbackHelper::FileOperationCallback,
-                 callback_helper_.get());
-
   // Prepare a local file.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -1290,11 +1275,14 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
       google_apis::ResourceEntry::ExtractAndParse(*value));
 
   // Transfer the local file to Drive.
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   file_system_->TransferFileFromLocalToRemote(
-      local_src_file_path, remote_dest_file_path, callback);
+      local_src_file_path,
+      remote_dest_file_path,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, error);
 
   // Now the remote file should exist.
   EXPECT_TRUE(EntryExists(remote_dest_file_path));
@@ -1341,16 +1329,16 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
   EXPECT_CALL(*mock_drive_service_,
               AddResourceToDirectory(_, _, _)).Times(1);
 
-  FileOperationCallback callback =
-      base::Bind(&CallbackHelper::FileOperationCallback,
-                 callback_helper_.get());
 
   // Transfer the local file to Drive.
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   file_system_->TransferFileFromLocalToRemote(
-      local_src_file_path, remote_dest_file_path, callback);
+      local_src_file_path,
+      remote_dest_file_path,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, error);
 
   // Now the remote file should exist.
   EXPECT_TRUE(EntryExists(remote_dest_file_path));
@@ -1358,10 +1346,6 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
 
 TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
-
-  FileOperationCallback callback =
-      base::Bind(&CallbackHelper::FileOperationCallback,
-                 callback_helper_.get());
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -1396,11 +1380,14 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
                            _, _))
       .Times(1);
 
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   file_system_->TransferFileFromRemoteToLocal(
-      remote_src_file_path, local_dest_file_path, callback);
+      remote_src_file_path,
+      local_dest_file_path,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, error);
 
   std::string cache_file_data;
   EXPECT_TRUE(file_util::ReadFileToString(cache_file, &cache_file_data));
@@ -1415,19 +1402,18 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
 TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
-  FileOperationCallback callback =
-      base::Bind(&CallbackHelper::FileOperationCallback,
-                 callback_helper_.get());
-
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath local_dest_file_path = temp_dir.path().Append("local_copy.txt");
   FilePath remote_src_file_path(FILE_PATH_LITERAL("drive/Document 1.gdoc"));
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   file_system_->TransferFileFromRemoteToLocal(
-      remote_src_file_path, local_dest_file_path, callback);
+      remote_src_file_path,
+      local_dest_file_path,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, error);
 
   scoped_ptr<DriveEntryProto> entry_proto = GetEntryInfoByPathSync(
       remote_src_file_path);
@@ -1443,13 +1429,13 @@ TEST_F(DriveFileSystemTest, CopyNotExistingFile) {
 
   EXPECT_FALSE(EntryExists(src_file_path));
 
-  FileOperationCallback callback =
-      base::Bind(&CallbackHelper::FileOperationCallback,
-                 callback_helper_.get());
-
-  file_system_->Copy(src_file_path, dest_file_path, callback);
+  DriveFileError error = DRIVE_FILE_OK;
+  file_system_->Copy(
+      src_file_path,
+      dest_file_path,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
 
   EXPECT_FALSE(EntryExists(src_file_path));
   EXPECT_FALSE(EntryExists(dest_file_path));
@@ -1472,13 +1458,14 @@ TEST_F(DriveFileSystemTest, CopyFileToNonExistingDirectory) {
 
   EXPECT_FALSE(EntryExists(dest_parent_path));
 
-  FileOperationCallback callback =
-      base::Bind(&CallbackHelper::FileOperationCallback,
-                 callback_helper_.get());
+  DriveFileError error = DRIVE_FILE_OK;
+  file_system_->Move(
+      src_file_path,
+      dest_file_path,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
 
-  file_system_->Move(src_file_path, dest_file_path, callback);
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
 
   EXPECT_TRUE(EntryExists(src_file_path));
   EXPECT_FALSE(EntryExists(dest_parent_path));
@@ -1508,14 +1495,13 @@ TEST_F(DriveFileSystemTest, CopyFileToInvalidPath) {
       dest_parent_path);
   ASSERT_TRUE(dest_entry_proto.get());
 
-  FileOperationCallback callback =
-      base::Bind(&CallbackHelper::FileOperationCallback,
-                 callback_helper_.get());
-
-  file_system_->Copy(src_file_path, dest_file_path, callback);
+  DriveFileError error = DRIVE_FILE_OK;
+  file_system_->Copy(
+      src_file_path,
+      dest_file_path,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_A_DIRECTORY,
-            callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_A_DIRECTORY, error);
 
   EXPECT_TRUE(EntryExists(src_file_path));
   EXPECT_TRUE(EntryExists(src_file_path));
@@ -1544,16 +1530,16 @@ TEST_F(DriveFileSystemTest, RenameFile) {
               RenameResource(GURL(src_entry_proto->edit_url()),
                              FILE_PATH_LITERAL("Test.log"), _));
 
-  FileOperationCallback callback =
-      base::Bind(&CallbackHelper::FileOperationCallback,
-                 callback_helper_.get());
-
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
 
-  file_system_->Move(src_file_path, dest_file_path, callback);
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  file_system_->Move(
+      src_file_path,
+      dest_file_path,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, error);
 
   EXPECT_FALSE(EntryExists(src_file_path));
   EXPECT_TRUE(EntryExists(dest_file_path));
@@ -1590,19 +1576,19 @@ TEST_F(DriveFileSystemTest, MoveFileFromRootToSubDirectory) {
                   GURL(dest_parent_proto->content_url()),
                   GURL(src_entry_proto->edit_url()), _));
 
-  FileOperationCallback callback =
-      base::Bind(&CallbackHelper::FileOperationCallback,
-                 callback_helper_.get());
-
   // Expect notification for both source and destination directories.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
 
-  file_system_->Move(src_file_path, dest_file_path, callback);
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  file_system_->Move(
+      src_file_path,
+      dest_file_path,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, error);
 
   EXPECT_FALSE(EntryExists(src_file_path));
   EXPECT_TRUE(EntryExists(dest_file_path));
@@ -1640,19 +1626,19 @@ TEST_F(DriveFileSystemTest, MoveFileFromSubDirectoryToRoot) {
                   GURL(src_parent_proto->content_url()),
                   src_file_resource_id, _));
 
-  FileOperationCallback callback =
-      base::Bind(&CallbackHelper::FileOperationCallback,
-                 callback_helper_.get());
-
   // Expect notification for both source and destination directories.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive/Directory 1"))))).Times(1);
 
-  file_system_->Move(src_file_path, dest_file_path, callback);
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  file_system_->Move(
+      src_file_path,
+      dest_file_path,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, error);
 
   EXPECT_FALSE(EntryExists(src_file_path));
   ASSERT_TRUE(EntryExists(dest_file_path));
@@ -1711,10 +1697,6 @@ TEST_F(DriveFileSystemTest, MoveFileBetweenSubDirectories) {
                   GURL(src_entry_proto->edit_url()),
                   _));
 
-  FileOperationCallback callback =
-      base::Bind(&CallbackHelper::FileOperationCallback,
-                 callback_helper_.get());
-
   // Expect notification for both source and destination directories plus
   // interim file path.
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
@@ -1724,9 +1706,13 @@ TEST_F(DriveFileSystemTest, MoveFileBetweenSubDirectories) {
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive/New Folder 1"))))).Times(1);
 
-  file_system_->Move(src_file_path, dest_file_path, callback);
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  file_system_->Move(
+      src_file_path,
+      dest_file_path,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, error);
 
   EXPECT_FALSE(EntryExists(src_file_path));
   EXPECT_FALSE(EntryExists(interim_file_path));
@@ -1744,13 +1730,13 @@ TEST_F(DriveFileSystemTest, MoveNotExistingFile) {
 
   EXPECT_FALSE(EntryExists(src_file_path));
 
-  FileOperationCallback callback =
-      base::Bind(&CallbackHelper::FileOperationCallback,
-                 callback_helper_.get());
-
-  file_system_->Move(src_file_path, dest_file_path, callback);
+  DriveFileError error = DRIVE_FILE_OK;
+  file_system_->Move(
+      src_file_path,
+      dest_file_path,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
 
   EXPECT_FALSE(EntryExists(src_file_path));
   EXPECT_FALSE(EntryExists(dest_file_path));
@@ -1773,14 +1759,13 @@ TEST_F(DriveFileSystemTest, MoveFileToNonExistingDirectory) {
 
   EXPECT_FALSE(EntryExists(dest_parent_path));
 
-  FileOperationCallback callback =
-      base::Bind(&CallbackHelper::FileOperationCallback,
-                 callback_helper_.get());
-
-  file_system_->Move(src_file_path, dest_file_path, callback);
+  DriveFileError error = DRIVE_FILE_OK;
+  file_system_->Move(
+      src_file_path,
+      dest_file_path,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
-
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
 
   EXPECT_FALSE(EntryExists(dest_parent_path));
   EXPECT_FALSE(EntryExists(dest_file_path));
@@ -1809,14 +1794,13 @@ TEST_F(DriveFileSystemTest, MoveFileToInvalidPath) {
       dest_parent_path);
   ASSERT_TRUE(dest_parent_proto.get());
 
-  FileOperationCallback callback =
-      base::Bind(&CallbackHelper::FileOperationCallback,
-                 callback_helper_.get());
-
-  file_system_->Move(src_file_path, dest_file_path, callback);
+  DriveFileError error = DRIVE_FILE_OK;
+  file_system_->Move(
+      src_file_path,
+      dest_file_path,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_A_DIRECTORY,
-            callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_A_DIRECTORY, error);
 
   EXPECT_TRUE(EntryExists(src_file_path));
   EXPECT_TRUE(EntryExists(dest_parent_path));
@@ -1966,18 +1950,15 @@ TEST_F(DriveFileSystemTest, CreateDirectoryWithService) {
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive"))))).Times(1);
 
-  // Set last error so it's not a valid error code.
-  callback_helper_->last_error_ = static_cast<DriveFileError>(1);
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   file_system_->CreateDirectory(
       FilePath(FILE_PATH_LITERAL("drive/Sample Directory Title")),
       false,  // is_exclusive
       true,  // is_recursive
-      base::Bind(&CallbackHelper::FileOperationCallback,
-                 callback_helper_.get()));
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
-  // TODO(gspencer): Uncomment this when we get a blob that
-  // works that can be returned from the mock.
-  // EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
+
+  EXPECT_EQ(DRIVE_FILE_OK, error);
 }
 
 TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
@@ -2400,12 +2381,6 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   EXPECT_CALL(*mock_directory_observer_,
               OnDirectoryChanged(Eq(FilePath(kDriveRootDirectory)))).Times(1);
 
-  // The callback will be called upon completion of
-  // UpdateFileByResourceId().
-  FileOperationCallback callback =
-      base::Bind(&CallbackHelper::FileOperationCallback,
-                 callback_helper_.get());
-
   // Check the number of files in the root directory. We'll compare the
   // number after updating a file.
   scoped_ptr<DriveEntryProtoVector> root_directory_entries(
@@ -2413,10 +2388,15 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
   ASSERT_TRUE(root_directory_entries.get());
   const int num_files_in_root = CountFiles(*root_directory_entries);
 
-  file_system_->UpdateFileByResourceId(kResourceId, callback);
+  // The callback will be called upon completion of
+  // UpdateFileByResourceId().
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  file_system_->UpdateFileByResourceId(
+      kResourceId,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
 
-  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
   // Make sure that the number of files did not change (i.e. we updated an
   // existing file, rather than adding a new file. The number of files
   // increases if we don't handle the file update right).
@@ -2436,13 +2416,12 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_NonexistentFile) {
 
   // The callback will be called upon completion of
   // UpdateFileByResourceId().
-  FileOperationCallback callback =
-      base::Bind(&CallbackHelper::FileOperationCallback,
-                 callback_helper_.get());
-
-  file_system_->UpdateFileByResourceId(kResourceId, callback);
+  DriveFileError error = DRIVE_FILE_OK;
+  file_system_->UpdateFileByResourceId(
+      kResourceId,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
 }
 
 TEST_F(DriveFileSystemTest, ContentSearch) {
