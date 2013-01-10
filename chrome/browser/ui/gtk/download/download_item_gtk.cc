@@ -459,7 +459,10 @@ void DownloadItemGtk::OnLoadSmallIconComplete(gfx::Image* image) {
 
 void DownloadItemGtk::OnLoadLargeIconComplete(gfx::Image* image) {
   icon_large_ = image;
-  DownloadItemDrag::SetSource(body_.get(), download(), icon_large_);
+  if (download()->IsComplete())
+    DownloadItemDrag::SetSource(body_.get(), download(), icon_large_);
+  // Else, the download will be made draggable once an OnDownloadUpdated()
+  // notification is received with download->IsComplete().
 }
 
 void DownloadItemGtk::LoadIcon() {

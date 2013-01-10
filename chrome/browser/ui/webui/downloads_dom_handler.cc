@@ -338,10 +338,10 @@ void DownloadsDOMHandler::HandleDrag(const base::ListValue* args) {
   content::DownloadItem* file = GetDownloadByValue(args);
   content::WebContents* web_contents = GetWebUIWebContents();
   // |web_contents| is only NULL in the test.
-  if (!file || !web_contents)
+  if (!file || !web_contents || !file->IsComplete())
     return;
   gfx::Image* icon = g_browser_process->icon_manager()->LookupIcon(
-      file->GetUserVerifiedFilePath(), IconLoader::NORMAL);
+      file->GetTargetFilePath(), IconLoader::NORMAL);
   gfx::NativeView view = web_contents->GetNativeView();
   {
     // Enable nested tasks during DnD, while |DragDownload()| blocks.

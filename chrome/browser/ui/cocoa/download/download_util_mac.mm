@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/cocoa/download/download_util_mac.h"
 
+#include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -28,8 +29,9 @@ void AddFileToPasteboard(NSPasteboard* pasteboard, const FilePath& path) {
 void DragDownload(const DownloadItem* download,
                   gfx::Image* icon,
                   gfx::NativeView view) {
+  DCHECK(download->IsComplete());
   NSPasteboard* pasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-  AddFileToPasteboard(pasteboard, download->GetFullPath());
+  AddFileToPasteboard(pasteboard, download->GetTargetFilePath());
 
   // Synthesize a drag event, since we don't have access to the actual event
   // that initiated a drag (possibly consumed by the Web UI, for example).

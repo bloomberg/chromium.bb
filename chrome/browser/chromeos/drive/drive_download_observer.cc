@@ -251,9 +251,10 @@ void DriveDownloadObserver::OnDownloadUpdated(
 }
 
 void DriveDownloadObserver::UploadDownloadItem(DownloadItem* download) {
+  DCHECK(download->IsComplete());
   file_write_helper_->PrepareWritableFileAndRun(
       GetDrivePath(download),
-      base::Bind(&MoveDownloadedFile, download->GetFullPath()));
+      base::Bind(&MoveDownloadedFile, download->GetTargetFilePath()));
 }
 
 }  // namespace drive

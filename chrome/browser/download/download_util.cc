@@ -348,6 +348,7 @@ void DragDownload(const DownloadItem* download,
                   gfx::Image* icon,
                   gfx::NativeView view) {
   DCHECK(download);
+  DCHECK(download->IsComplete());
 
   // Set up our OLE machinery
   ui::OSExchangeData data;
@@ -357,7 +358,7 @@ void DragDownload(const DownloadItem* download,
         download->GetFileNameToReportUser(), icon->ToImageSkia(), &data);
   }
 
-  const FilePath full_path = download->GetFullPath();
+  const FilePath full_path = download->GetTargetFilePath();
   data.SetFilename(full_path);
 
   std::string mime_type = download->GetMimeType();
