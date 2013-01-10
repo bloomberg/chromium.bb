@@ -800,8 +800,10 @@ weston_wm_handle_property_notify(struct weston_wm *wm, xcb_generic_event_t *even
 	struct weston_wm_window *window;
 
 	window = hash_table_lookup(wm->window_hash, property_notify->window);
-	if (window)
-		window->properties_dirty = 1;
+	if (!window)
+		return;
+
+	window->properties_dirty = 1;
 
 	weston_log("XCB_PROPERTY_NOTIFY: window %d, ",
 		property_notify->window);
