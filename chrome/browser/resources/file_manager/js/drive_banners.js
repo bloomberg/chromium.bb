@@ -282,10 +282,11 @@ FileListBannerController.prototype.showLowGDriveSpaceWarning_ =
         util.bytesToSi(sizeStats.remainingSizeKB * 1024));
     box.appendChild(text);
 
-    var link = this.document_.createElement('div');
+    var link = this.document_.createElement('a');
     link.className = 'plain-link';
     link.textContent = str('DRIVE_BUY_MORE_SPACE_LINK');
     link.href = GOOGLE_DRIVE_BUY_STORAGE;
+    link.target = '_blank';
     box.appendChild(link);
 
     var close = this.document_.createElement('div');
