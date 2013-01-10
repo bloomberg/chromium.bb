@@ -68,6 +68,27 @@ TEST_F(FakeDriveServiceTest, GetResourceList) {
   EXPECT_EQ(12U, resource_list->entries().size());
 }
 
+TEST_F(FakeDriveServiceTest, GetResourceList_Offline) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+  fake_service_.set_offline(true);
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.GetResourceList(
+      GURL(),
+      0,  // start_changestamp
+      "",  // search_query
+      false, // shared_with_me
+      "",  // directory_resource_id
+      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
+                 &error,
+                 &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_FALSE(resource_list);
+}
+
 TEST_F(FakeDriveServiceTest, GetAccountMetadata) {
   ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
       "gdata/account_metadata.json"));
@@ -87,6 +108,23 @@ TEST_F(FakeDriveServiceTest, GetAccountMetadata) {
   EXPECT_EQ(2U, account_metadata->installed_apps().size());
 }
 
+TEST_F(FakeDriveServiceTest, GetAccountMetadata_Offline) {
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "gdata/account_metadata.json"));
+  fake_service_.set_offline(true);
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<AccountMetadataFeed> account_metadata;
+  fake_service_.GetAccountMetadata(
+      base::Bind(&test_util::CopyResultsFromGetAccountMetadataCallback,
+                 &error,
+                 &account_metadata));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_FALSE(account_metadata);
+}
+
 TEST_F(FakeDriveServiceTest, GetApplicationInfo) {
   ASSERT_TRUE(fake_service_.LoadApplicationInfoForDriveApi(
       "drive/applist.json"));
@@ -102,6 +140,23 @@ TEST_F(FakeDriveServiceTest, GetApplicationInfo) {
   EXPECT_EQ(HTTP_SUCCESS, error);
 
   ASSERT_TRUE(app_info);
+}
+
+TEST_F(FakeDriveServiceTest, GetApplicationInfo_Offline) {
+  ASSERT_TRUE(fake_service_.LoadApplicationInfoForDriveApi(
+      "drive/applist.json"));
+  fake_service_.set_offline(true);
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<base::Value> app_info;
+  fake_service_.GetApplicationInfo(
+      base::Bind(&test_util::CopyResultsFromGetDataCallback,
+                 &error,
+                 &app_info));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_FALSE(app_info);
 }
 
 TEST_F(FakeDriveServiceTest, GetResourceEntry_ExistingFile) {
@@ -140,6 +195,24 @@ TEST_F(FakeDriveServiceTest, GetResourceEntry_NonexistingFile) {
   ASSERT_FALSE(resource_entry);
 }
 
+TEST_F(FakeDriveServiceTest, GetResourceEntry_Offline) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+  fake_service_.set_offline(true);
+
+  const std::string kResourceId = "file:2_file_resource_id";
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> resource_entry;
+  fake_service_.GetResourceEntry(
+      kResourceId,
+      base::Bind(&test_util::CopyResultsFromGetResourceEntryCallback,
+                 &error,
+                 &resource_entry));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_FALSE(resource_entry);
+}
+
 TEST_F(FakeDriveServiceTest, DeleteResource_ExistingFile) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
 
@@ -169,6 +242,20 @@ TEST_F(FakeDriveServiceTest, DeleteResource_NonexistingFile) {
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
+}
+
+TEST_F(FakeDriveServiceTest, DeleteResource_Offline) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+  fake_service_.set_offline(true);
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  fake_service_.DeleteResource(
+      GURL("https://file1_link_self/file:2_file_resource_id"),
+      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
+                 &error));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
 }
 
 TEST_F(FakeDriveServiceTest, DownloadFile_ExistingFile) {
@@ -219,6 +306,30 @@ TEST_F(FakeDriveServiceTest, DownloadFile_NonexistingFile) {
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
+}
+
+TEST_F(FakeDriveServiceTest, DownloadFile_Offline) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+  fake_service_.set_offline(true);
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  const GURL kContentUrl("https://file_content_url/");
+  const FilePath kOutputFilePath = temp_dir.path().AppendASCII("whatever.txt");
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  FilePath output_file_path;
+  fake_service_.DownloadFile(
+      FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
+      kOutputFilePath,
+      kContentUrl,
+      base::Bind(&test_util::CopyResultsFromDownloadActionCallback,
+                 &error,
+                 &output_file_path),
+      GetContentCallback());
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
 }
 
 TEST_F(FakeDriveServiceTest, CopyHostedDocument_ExistingHostedDocument) {
@@ -279,6 +390,25 @@ TEST_F(FakeDriveServiceTest, CopyHostedDocument_ExistingRegularFile) {
   EXPECT_FALSE(resource_entry);
 }
 
+TEST_F(FakeDriveServiceTest, CopyHostedDocument_Offline) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+  fake_service_.set_offline(true);
+
+  const std::string kResourceId = "document:5_document_resource_id";
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> resource_entry;
+  fake_service_.CopyHostedDocument(
+      kResourceId,
+      FILE_PATH_LITERAL("new name"),
+      base::Bind(&test_util::CopyResultsFromGetResourceEntryCallback,
+                 &error,
+                 &resource_entry));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_FALSE(resource_entry);
+}
+
 TEST_F(FakeDriveServiceTest, RenameResource_ExistingFile) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
 
@@ -314,6 +444,24 @@ TEST_F(FakeDriveServiceTest, RenameResource_NonexistingFile) {
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
+}
+
+TEST_F(FakeDriveServiceTest, RenameResource_Offline) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+  fake_service_.set_offline(true);
+
+  const std::string kResourceId = "file:2_file_resource_id";
+  const GURL kEditUrl("https://file1_link_self/file:2_file_resource_id");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  fake_service_.RenameResource(
+      kEditUrl,
+      FILE_PATH_LITERAL("new name"),
+      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
+                 &error));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
 }
 
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInRootDirectory) {
@@ -400,6 +548,25 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_NonexistingFile) {
   EXPECT_EQ(HTTP_NOT_FOUND, error);
 }
 
+TEST_F(FakeDriveServiceTest, AddResourceToDirectory_Offline) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+  fake_service_.set_offline(true);
+
+  const std::string kResourceId = "file:2_file_resource_id";
+  const GURL kEditUrl("https://file1_link_self/file:2_file_resource_id");
+  const GURL kNewParentContentUrl("https://new_url");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  fake_service_.AddResourceToDirectory(
+      kNewParentContentUrl,
+      kEditUrl,
+      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
+                 &error));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+}
+
 TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_ExistingFile) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
 
@@ -447,6 +614,25 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_NonexistingFile) {
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
+}
+
+TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_Offline) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+  fake_service_.set_offline(true);
+
+  const std::string kResourceId("file:subdirectory_file_1_id");
+  const GURL kParentContentUrl(
+      "https://dir_1_self_link/folder:1_folder_resource_id");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  fake_service_.RemoveResourceFromDirectory(
+      kParentContentUrl,
+      kResourceId,
+      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
+                 &error));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
 }
 
 TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
@@ -516,6 +702,24 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonexistingDirectory) {
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
+  EXPECT_FALSE(resource_entry);
+}
+
+TEST_F(FakeDriveServiceTest, AddNewDirectory_Offline) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+  fake_service_.set_offline(true);
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> resource_entry;
+  fake_service_.AddNewDirectory(
+      GURL(),  // Empty means add it to the root directory.
+      FILE_PATH_LITERAL("new directory"),
+      base::Bind(&test_util::CopyResultsFromGetResourceEntryCallback,
+                 &error,
+                 &resource_entry));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
   EXPECT_FALSE(resource_entry);
 }
 

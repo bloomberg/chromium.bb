@@ -17,7 +17,8 @@ using content::BrowserThread;
 namespace google_apis {
 
 FakeDriveService::FakeDriveService()
-    : resource_id_count_(0) {
+    : resource_id_count_(0),
+      offline_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -108,6 +109,16 @@ void FakeDriveService::GetResourceList(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  if (offline_) {
+    scoped_ptr<ResourceList> null;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   GDATA_NO_CONNECTION,
+                   base::Passed(&null)));
+    return;
+  }
+
   scoped_ptr<ResourceList> resource_list =
       ResourceList::CreateFrom(*resource_list_value_);
   MessageLoop::current()->PostTask(
@@ -122,6 +133,16 @@ void FakeDriveService::GetResourceEntry(
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  if (offline_) {
+    scoped_ptr<ResourceEntry> null;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   GDATA_NO_CONNECTION,
+                   base::Passed(&null)));
+    return;
+  }
 
   base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
   if (entry) {
@@ -144,6 +165,15 @@ void FakeDriveService::GetAccountMetadata(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  if (offline_) {
+    scoped_ptr<AccountMetadataFeed> null;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   GDATA_NO_CONNECTION,
+                   base::Passed(&null)));
+    return;
+  }
   scoped_ptr<AccountMetadataFeed> account_metadata =
       AccountMetadataFeed::CreateFrom(*account_metadata_value_);
   MessageLoop::current()->PostTask(
@@ -157,6 +187,16 @@ void FakeDriveService::GetApplicationInfo(
     const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  if (offline_) {
+    scoped_ptr<base::Value> null;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   GDATA_NO_CONNECTION,
+                   base::Passed(&null)));
+    return;
+  }
 
   scoped_ptr<base::Value> copied_app_info_value(
       app_info_value_->DeepCopy());
@@ -173,6 +213,12 @@ void FakeDriveService::DeleteResource(
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  if (offline_) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, GDATA_NO_CONNECTION));
+    return;
+  }
 
   base::DictionaryValue* resource_list_dict = NULL;
   base::ListValue* entries = NULL;
@@ -226,6 +272,15 @@ void FakeDriveService::DownloadFile(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!download_action_callback.is_null());
 
+  if (offline_) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(download_action_callback,
+                   GDATA_NO_CONNECTION,
+                   FilePath()));
+    return;
+  }
+
   base::DictionaryValue* entry = FindEntryByContentUrl(content_url);
   if (!entry) {
     base::MessageLoopProxy::current()->PostTask(
@@ -256,6 +311,16 @@ void FakeDriveService::CopyHostedDocument(
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  if (offline_) {
+    scoped_ptr<ResourceEntry> null;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   GDATA_NO_CONNECTION,
+                   base::Passed(&null)));
+    return;
+  }
 
   base::DictionaryValue* resource_list_dict = NULL;
   base::ListValue* entries = NULL;
@@ -320,6 +385,12 @@ void FakeDriveService::RenameResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  if (offline_) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, GDATA_NO_CONNECTION));
+    return;
+  }
+
   base::DictionaryValue* entry = FindEntryByEditUrl(edit_url);
   if (entry) {
     entry->SetString("title.$t",
@@ -339,6 +410,12 @@ void FakeDriveService::AddResourceToDirectory(
     const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  if (offline_) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, GDATA_NO_CONNECTION));
+    return;
+  }
 
   base::DictionaryValue* entry = FindEntryByEditUrl(edit_url);
   if (entry) {
@@ -381,6 +458,12 @@ void FakeDriveService::RemoveResourceFromDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  if (offline_) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, GDATA_NO_CONNECTION));
+    return;
+  }
+
   base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
   if (entry) {
     base::ListValue* links = NULL;
@@ -413,6 +496,16 @@ void FakeDriveService::AddNewDirectory(
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  if (offline_) {
+    scoped_ptr<ResourceEntry> null;
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   GDATA_NO_CONNECTION,
+                   base::Passed(&null)));
+    return;
+  }
 
   // If the parent content URL is not empty, the parent should exist.
   if (!parent_content_url.is_empty()) {
@@ -590,6 +683,8 @@ base::DictionaryValue* FakeDriveService::FindEntryByContentUrl(
 }
 
 std::string FakeDriveService::GetNewResourceId() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   ++resource_id_count_;
   return base::StringPrintf("resource_id_%d", resource_id_count_);
 }

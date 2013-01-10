@@ -32,6 +32,10 @@ class FakeDriveService : public DriveServiceInterface {
   // Loads the application info for Drive API. Returns true on success.
   bool LoadApplicationInfoForDriveApi(const std::string& relative_path);
 
+  // Changes the offline state. All functions fail with GDATA_NO_CONNECTION
+  // when offline. By default the offline state is false.
+  void set_offline(bool offline) { offline_ = offline; }
+
   // DriveServiceInterface Overrides
   virtual void Initialize(Profile* profile) OVERRIDE;
   virtual void AddObserver(DriveServiceObserver* observer) OVERRIDE;
@@ -119,6 +123,7 @@ class FakeDriveService : public DriveServiceInterface {
   scoped_ptr<base::Value> account_metadata_value_;
   scoped_ptr<base::Value> app_info_value_;
   int resource_id_count_;
+  bool offline_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDriveService);
 };
