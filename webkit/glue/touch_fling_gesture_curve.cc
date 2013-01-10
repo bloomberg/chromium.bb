@@ -165,6 +165,8 @@ bool TouchFlingGestureCurve::apply(double time, WebGestureCurveTarget* target) {
   cumulative_scroll_ = WebSize(scroll.x, scroll.y);
 
   if (time + time_offset_ < curve_duration_ || scroll_increment != WebPoint()) {
+    // scrollBy() could delete this curve if the animation is over, so don't
+    // touch any member variables after making that call.
     target->scrollBy(scroll_increment);
     return true;
   }

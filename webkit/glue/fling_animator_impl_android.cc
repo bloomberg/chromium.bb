@@ -107,9 +107,11 @@ bool FlingAnimatorImpl::apply(double time,
 
   gfx::Point current_position = GetCurrentPosition();
   gfx::Vector2d diff(current_position - last_position_);
-  WebKit::WebPoint scroll_amount(diff.x(), diff.y());
-  target->scrollBy(scroll_amount);
   last_position_ = current_position;
+  WebKit::WebPoint scroll_amount(diff.x(), diff.y());
+  // scrollBy() could delete this curve if the animation is over, so don't touch
+  // any member variables after making that call.
+  target->scrollBy(scroll_amount);
   return true;
 }
 
