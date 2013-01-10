@@ -1937,7 +1937,7 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
 
 	weston_log("GL ES 2 renderer features:\n");
 	weston_log_continue(STAMP_SPACE "read-back format: %s\n",
-			    ec->read_format == GL_BGRA_EXT ? "BGRA" : "RGBA");
+		ec->read_format == PIXMAN_a8r8g8b8 ? "BGRA" : "RGBA");
 	weston_log_continue(STAMP_SPACE "wl_shm sub-image to texture: %s\n",
 			    gr->has_unpack_subimage ? "yes" : "no");
 	weston_log_continue(STAMP_SPACE "EGL Wayland extension: %s\n",
