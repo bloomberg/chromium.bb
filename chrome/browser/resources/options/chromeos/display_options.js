@@ -835,7 +835,6 @@ cr.define('options', function() {
         $('selected-display-data-container').hidden = true;
         $('display-configuration-arrow').hidden = true;
         $('display-options-set-primary').hidden = true;
-        $('display-options-toggle-mirroring').hidden = true;
         return;
       }
 
@@ -874,8 +873,6 @@ cr.define('options', function() {
 
       $('display-options-set-primary').hidden =
           this.displays_[this.focusedIndex_].isPrimary;
-      $('display-options-toggle-mirroring').hidden =
-          (this.displays_.length <= 1);
     },
 
     /**
@@ -1053,11 +1050,6 @@ cr.define('options', function() {
      * @private
      */
     onDisplayChanged_: function(mirroring, displays, layout, offset) {
-      if (displays.length <= 1) {
-        OptionsPage.showDefaultPage();
-        return;
-      }
-
       this.mirroring_ = mirroring;
       this.layout_ = layout;
       this.offset_ = offset;
