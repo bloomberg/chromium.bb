@@ -62,7 +62,8 @@ static const char* kKeyTests[] = {
   "keyrange-required-arguments.html",
   "key-sort-order-across-types.html",
   "key-sort-order-date.html",
-  "key-type-array.html",
+  // Flaky: http://crbug.com/165671
+  //"key-type-array.html",
   "key-type-infinity.html",
   "invalid-keys.html",
   NULL
@@ -121,13 +122,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, DISABLED_IndexTests) {
   RunLayoutTests(kIndexTests);
 }
 
-#if defined(OS_LINUX)
-#define MAYBE_KeyTests DISABLED_KeyTests
-#else
-#define MAYBE_KeyTests KeyTests
-#endif
-
-IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, MAYBE_KeyTests) {
+IN_PROC_BROWSER_TEST_F(IndexedDBLayoutTest, KeyTests) {
   RunLayoutTests(kKeyTests);
 }
 
