@@ -41,7 +41,7 @@ EXTRA_DIST=fc-validate.sgml $(BUILT_MANS)
 
 CLEANFILES =
 
-fc_validate_LDADD = ${top_builddir}/src/libfontconfig.la
+fc_validate_LDADD = ${top_builddir}/src/libfontconfig.la $(FREETYPE_LIBS)
 
 if USEDOCBOOK
 
