@@ -1055,6 +1055,7 @@ body {
     url('../images/media/2x/error.png') 2x);
   background-position: 25px center;
   background-repeat: no-repeat;
+  color: white;
   display: -webkit-box;
   height: 54px;
   padding-left: 70px;
