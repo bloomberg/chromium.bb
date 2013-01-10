@@ -100,8 +100,7 @@ cr.define('options.search_engines', function() {
       faviconDivEl.className = 'favicon';
       if (!this.isPlaceholder) {
         faviconDivEl.style.backgroundImage =
-            url('chrome://favicon/iconurl@' + window.devicePixelRatio + 'x/' +
-                engine.iconURL);
+            imageset('chrome://favicon/iconurl@scalefactorx/' + engine.iconURL);
       }
       nameColEl.appendChild(faviconDivEl);
 

@@ -99,7 +99,7 @@ cr.define('options', function() {
      */
     updateFavicon_: function() {
       var urlField = $('homepage-url-field');
-      urlField.style.backgroundImage = url(getFaviconUrl(urlField.value));
+      urlField.style.backgroundImage = getFaviconImageSet(urlField.value);
     },
 
     /**

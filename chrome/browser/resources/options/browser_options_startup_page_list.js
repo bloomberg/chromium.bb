@@ -57,7 +57,7 @@ cr.define('options.browser_options', function() {
       titleEl.classList.add('weakrtl');
       titleEl.textContent = pageInfo.title;
       if (!this.isPlaceholder) {
-        titleEl.style.backgroundImage = url(getFaviconUrl(pageInfo.url));
+        titleEl.style.backgroundImage = getFaviconImageSet(pageInfo.url);
         titleEl.title = pageInfo.tooltip;
       }
 

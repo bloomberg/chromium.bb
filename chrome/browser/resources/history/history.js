@@ -196,7 +196,7 @@ Visit.prototype.addHighlightedText_ = function(node, content, highlightText) {
  */
 Visit.prototype.getTitleDOM_ = function() {
   var node = createElementWithClassName('div', 'title');
-  node.style.backgroundImage = url(getFaviconUrl(this.url_));
+  node.style.backgroundImage = getFaviconImageSet(this.url_);
   node.style.backgroundSize = '16px';
 
   var link = document.createElement('a');

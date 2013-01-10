@@ -83,7 +83,7 @@ cr.define('ntp', function() {
         a.title = data.tabs.map(function(tab) { return tab.title; }).join('\n');
       } else {
         a.href = data.url;
-        a.style.backgroundImage = url(getFaviconUrl(data.url));
+        a.style.backgroundImage = getFaviconImageSet(data.url);
         a.textContent = data.title;
       }
 

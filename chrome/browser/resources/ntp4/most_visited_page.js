@@ -94,9 +94,12 @@ cr.define('ntp', function() {
       this.classList.add('focusable');
 
       var faviconDiv = this.querySelector('.favicon');
-      var faviconUrl = getFaviconUrl(data.url);
-      faviconDiv.style.backgroundImage = url(faviconUrl);
-      chrome.send('getFaviconDominantColor', [faviconUrl, this.id]);
+      faviconDiv.style.backgroundImage = getFaviconImageSet(data.url);
+
+      // The favicon should have the same dominant color regardless of the
+      // device pixel ratio the favicon is requested for.
+      chrome.send('getFaviconDominantColor',
+                  [getFaviconUrlForCurrentDevicePixelRatio(data.url), this.id]);
 
       var title = this.querySelector('.title');
       title.textContent = data.title;
