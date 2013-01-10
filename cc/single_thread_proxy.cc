@@ -29,6 +29,10 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layerTreeHost)
 {
     TRACE_EVENT0("cc", "SingleThreadProxy::SingleThreadProxy");
     DCHECK(Proxy::isMainThread());
+    DCHECK(layerTreeHost);
+
+    // Impl-side painting not supported without threaded compositing
+    DCHECK(!layerTreeHost->settings().implSidePainting);
 }
 
 void SingleThreadProxy::start()
@@ -360,9 +364,6 @@ bool SingleThreadProxy::doComposite()
             return false;
 
         m_layerTreeHostImpl->animate(base::TimeTicks::Now(), base::Time::Now());
-
-        if (m_layerTreeHostImpl->settings().implSidePainting)
-          m_layerTreeHostImpl->manageTiles();
 
         // We guard prepareToDraw() with canDraw() because it always returns a valid frame, so can only
         // be used when such a frame is possible. Since drawLayers() depends on the result of
