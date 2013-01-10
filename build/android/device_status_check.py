@@ -162,7 +162,6 @@ def main():
   options, args = parser.parse_args()
   if args:
     parser.error('Unknown options %s' % args)
-  buildbot_report.PrintNamedStep('Device Status Check')
   devices = android_commands.GetAttachedDevices()
   types, builds, reports, errors = [], [], [], []
   if devices:

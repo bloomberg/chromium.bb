@@ -46,33 +46,17 @@ import sys
 import time
 
 from pylib import android_commands
-from pylib import buildbot_report
 from pylib import cmd_helper
 from pylib import ports
 from pylib.base_test_sharder import BaseTestSharder
 from pylib.gtest import debug_info
+from pylib.gtest import gtest_config
 from pylib.gtest.single_test_runner import SingleTestRunner
 from pylib.utils import emulator
 from pylib.utils import run_tests_helper
 from pylib.utils import test_options_parser
 from pylib.utils import time_profile
 from pylib.utils import xvfb
-
-
-_TEST_SUITES = ['base_unittests',
-                'cc_unittests',
-                'content_unittests',
-                'gpu_unittests',
-                'ipc_tests',
-                'media_unittests',
-                'net_unittests',
-                'sql_unittests',
-                'sync_unit_tests',
-                'ui_unittests',
-                'unit_tests',
-                'webkit_compositor_bindings_unittests',
-                'android_webview_unittests',
-               ]
 
 
 def FullyQualifiedTestSuites(exe, option_test_suite, build_type):
@@ -87,7 +71,7 @@ def FullyQualifiedTestSuites(exe, option_test_suite, build_type):
   if option_test_suite:
     all_test_suites = [option_test_suite]
   else:
-    all_test_suites = _TEST_SUITES
+    all_test_suites = gtest_config.STABLE_TEST_SUITES
 
   if exe:
     qualified_test_suites = [os.path.join(test_suite_dir, t)
@@ -103,7 +87,7 @@ def FullyQualifiedTestSuites(exe, option_test_suite, build_type):
       raise Exception('Test suite %s not found in %s.\n'
                       'Supported test suites:\n %s\n'
                       'Ensure it has been built.\n' %
-                      (t, q, _TEST_SUITES))
+                      (t, q, gtest_config.STABLE_TEST_SUITES))
   return qualified_test_suites
 
 
@@ -239,7 +223,6 @@ def _RunATestSuite(options):
     0 if successful, number of failing tests otherwise.
   """
   step_name = os.path.basename(options.test_suite).replace('-debug.apk', '')
-  buildbot_report.PrintNamedStep(step_name)
   attached_devices = []
   buildbot_emulators = []
 
@@ -254,7 +237,6 @@ def _RunATestSuite(options):
 
   if not attached_devices:
     logging.critical('A device must be attached and online.')
-    buildbot_report.PrintError()
     return 1
 
   # Reset the test port allocation. It's important to do it before starting
@@ -323,7 +305,7 @@ def Dispatch(options):
 def ListTestSuites():
   """Display a list of available test suites."""
   print 'Available test suites are:'
-  for test_suite in _TEST_SUITES:
+  for test_suite in gtest_config.STABLE_TEST_SUITES:
     print test_suite
 
 

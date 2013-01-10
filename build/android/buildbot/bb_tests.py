@@ -16,6 +16,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from pylib import buildbot_report
 from pylib import constants
+from pylib.gtest import gtest_config
 
 
 TESTING = 'BUILDBOT_TESTING' in os.environ
@@ -82,21 +83,21 @@ def RunCmd(command, flunk_on_failure=True):
   return code
 
 
-def RunTestSuites(options, suite):
+def RunTestSuites(options, suites):
   """Manages an invocation of run_tests.py.
 
   Args:
     options: options object.
-    suite: The suite to pass to run_tests or None to run default suites.
+    suites: List of suites to run.
   """
   args = ['--verbose']
-  if suite:
-    args.extend(['-s', suite])
   if options.target == 'Release':
     args.append('--release')
   if options.asan:
     args.append('--tool=asan')
-  RunCmd(['build/android/run_tests.py'] + args)
+  for suite in suites:
+    buildbot_report.PrintNamedStep(suite)
+    RunCmd(['build/android/run_tests.py', '-s', suite] + args)
 
 
 def InstallApk(options, test, print_step=False):
@@ -169,6 +170,7 @@ def RunWebkitLayoutTests(options):
 
 def MainTestWrapper(options):
   # Device check and alert emails
+  buildbot_report.PrintNamedStep('device_status_check')
   RunCmd(['build/android/device_status_check.py'], flunk_on_failure=False)
 
   if options.install:
@@ -184,25 +186,24 @@ def MainTestWrapper(options):
   SpawnCmd(['build/android/adb_logcat_monitor.py', logcat_dir])
 
   if 'unit' in options.test_filter:
-    RunTestSuites(options, None)
+    RunTestSuites(options, gtest_config.STABLE_TEST_SUITES)
   if 'ui' in options.test_filter:
     for test in INSTRUMENTATION_TESTS.itervalues():
       RunInstrumentationSuite(options, test)
   if 'webkit' in options.test_filter:
-    RunTestSuites(options, 'webkit_unit_tests')
-    RunTestSuites(options, 'TestWebKitAPI')
+    RunTestSuites(options, ['webkit_unit_tests', 'TestWebKitAPI'])
     RunWebkitLint(options.target)
   if 'webkit_layout' in options.test_filter:
     RunWebkitLayoutTests(options)
 
   if options.experimental:
-    RunTestSuites(options, 'sandbox_linux_unittests')
+    RunTestSuites(options, gtest_config.EXPERIMENTAL_TEST_SUITES)
 
   # Print logcat, kill logcat monitor
-  buildbot_report.PrintNamedStep('Logcat dump')
+  buildbot_report.PrintNamedStep('logcat_dump')
   RunCmd(['build/android/adb_logcat_printer.py', logcat_dir])
 
-  buildbot_report.PrintNamedStep('Test report')
+  buildbot_report.PrintNamedStep('test_report')
   for report in glob.glob(
       os.path.join(CHROME_SRC, 'out', options.target, 'test_logs', '*.log')):
     subprocess.Popen(['cat', report]).wait()
