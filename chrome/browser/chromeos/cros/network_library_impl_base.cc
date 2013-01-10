@@ -743,7 +743,7 @@ void NetworkLibraryImplBase::NetworkConnectStart(
   network->set_connecting();
   // Distinguish between user-initiated connection attempts
   // and auto-connect.
-  network->set_connection_started(true);
+  network->set_user_connect_state(USER_CONNECT_STARTED);
   NotifyNetworkManagerChanged(true);  // Forced update.
   VLOG(1) << "Requesting connect to network: " << network->name()
           << " profile type: " << profile_type;

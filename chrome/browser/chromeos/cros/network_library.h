@@ -361,7 +361,10 @@ class Network {
   bool connected() const { return IsConnectedState(state_); }
   bool connecting_or_connected() const { return connecting() || connected(); }
   // True when a user-initiated connection attempt is in progress
-  bool connection_started() const { return connection_started_; }
+  bool connection_started() const {
+    return user_connect_state_ == USER_CONNECT_STARTED;
+  }
+  UserConnectState user_connect_state() const { return user_connect_state_; }
   bool failed() const { return state_ == STATE_FAILURE; }
   bool disconnected() const { return IsDisconnectedState(state_); }
   bool ready() const { return state_ == STATE_READY; }
@@ -562,7 +565,9 @@ class Network {
     state_ = STATE_IDLE;
   }
   void set_connectable(bool connectable) { connectable_ = connectable; }
-  void set_connection_started(bool started) { connection_started_ = started; }
+  void set_user_connect_state(UserConnectState user_connect_state) {
+    user_connect_state_ = user_connect_state;
+  }
   void set_is_active(bool is_active) { is_active_ = is_active; }
   void set_added(bool added) { added_ = added; }
   void set_auto_connect(bool auto_connect) { auto_connect_ = auto_connect; }
@@ -601,7 +606,7 @@ class Network {
   ConnectionState state_;
   ConnectionError error_;
   bool connectable_;
-  bool connection_started_;
+  UserConnectState user_connect_state_;
   bool is_active_;
   int priority_;  // determines order in network list.
   bool auto_connect_;

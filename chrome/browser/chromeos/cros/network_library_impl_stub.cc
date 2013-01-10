@@ -406,7 +406,7 @@ void NetworkLibraryImplStub::ConnectToNetwork(Network* network) {
 
   // Set connected state.
   network->set_connected();
-  network->set_connection_started(false);
+  network->set_user_connect_state(USER_CONNECT_CONNECTED);
 
   // Make the connected network the highest priority network.
   // Set all other networks of the same type to disconnected + inactive;

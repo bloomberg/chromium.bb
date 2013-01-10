@@ -838,6 +838,9 @@ ConnectionError NativeNetworkParser::ParseError(const std::string& error) {
     { flimflam::kErrorIpsecPskAuthFailed, ERROR_IPSEC_PSK_AUTH_FAILED },
     { flimflam::kErrorIpsecCertAuthFailed, ERROR_IPSEC_CERT_AUTH_FAILED },
     { flimflam::kErrorPppAuthFailed, ERROR_PPP_AUTH_FAILED },
+    { shill::kErrorEapAuthenticationFailed, ERROR_EAP_AUTHENTICATION_FAILED },
+    { shill::kErrorEapLocalTlsFailed, ERROR_EAP_LOCAL_TLS_FAILED },
+    { shill::kErrorEapRemoteTlsFailed, ERROR_EAP_REMOTE_TLS_FAILED },
   };
   CR_DEFINE_STATIC_LOCAL(EnumMapper<ConnectionError>, parser,
       (table, arraysize(table), ERROR_NO_ERROR));
