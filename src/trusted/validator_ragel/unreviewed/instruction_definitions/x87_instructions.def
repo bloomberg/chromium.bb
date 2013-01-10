@@ -7,6 +7,12 @@
 #                            Chapter 2: x87 Floating-Point Instruction Reference
 ################################################################################
 # File format: see general_purpose_instructions.def
+################################################################################
+# Note that some instructions have alternative name if prefixed with fwait.
+# These versions are commented out. Since for the purpose of validation
+# fwait is independent instruction, all special handling should happen in
+# decoder_test.c, not at the DFA level (but it's low priority, so maybe
+# we'll drop support for it at all).
 ######## F2XM1 #################################################################
 nop, 0x90, norex
 nop, 0x40 0x90, amd64 norex
@@ -30,7 +36,7 @@ fbstp Msb, 0xdf /6, CPUFeature_x87
 fchs, 0xd9 0xe0, CPUFeature_x87
 ######## FCLEX #################################################################
 fnclex, 0xdb 0xe2, CPUFeature_x87
-fclex, fwait 0xdb 0xe2, CPUFeature_x87 nacl-forbidden
+# fclex, fwait 0xdb 0xe2, CPUFeature_x87 nacl-forbidden
 ######## FCMOVcc ###############################################################
 fcmovb r7 t7, 0xda 0xc0, CPUFeature_CMOVx87
 fcmovbe r7 t7, 0xda 0xd0, CPUFeature_CMOVx87
@@ -92,7 +98,7 @@ fild Msq, 0xdf /5, CPUFeature_x87 att-show-name-suffix-ll
 fincstp, 0xd9 0xf7, CPUFeature_x87
 ######## FINIT/FNINIT ##########################################################
 fninit, 0xdb 0xe3, CPUFeature_x87
-finit, fwait 0xdb 0xe3, CPUFeature_x87 nacl-forbidden
+# finit, fwait 0xdb 0xe3, CPUFeature_x87 nacl-forbidden
 ######## FIST/FISTP ############################################################
 fist Msw, 0xdf /2, CPUFeature_x87
 fist Msi, 0xdb /2, CPUFeature_x87 att-show-name-suffix-l
@@ -156,9 +162,9 @@ frstors Msr, data16 rexw 0xdd /4, amd64 CPUFeature_x87 nacl-forbidden
 fnsave Msr, 0xdd /6, CPUFeature_x87
 fnsaves Msr, data16 0xdd /6, CPUFeature_x87 nacl-forbidden
 fnsaves Msr, data16 rexw 0xdd /6, amd64 CPUFeature_x87 nacl-forbidden
-fsave Msr, fwait 0xdd /6, CPUFeature_x87 nacl-forbidden
-fsaves Msr, fwait data16 0xdd /6, CPUFeature_x87 nacl-forbidden
-fsaves Msr, fwait data16 rexw 0xdd /6, amd64 CPUFeature_x87 nacl-forbidden
+# fsave Msr, fwait 0xdd /6, CPUFeature_x87 nacl-forbidden
+# fsaves Msr, fwait data16 0xdd /6, CPUFeature_x87 nacl-forbidden
+# fsaves Msr, fwait data16 rexw 0xdd /6, amd64 CPUFeature_x87 nacl-forbidden
 ######## FSCALE ################################################################
 fscale, 0xd9 0xfd, CPUFeature_x87
 ######## FSIN ##################################################################
@@ -177,19 +183,19 @@ fstp Msd, 0xdd /3, CPUFeature_x87 att-show-name-suffix-l
 fstp Mst, 0xdb /7, CPUFeature_x87 att-show-name-suffix-t
 ######## FSTCW/FNSTCW ##########################################################
 fnstcw Msw, 0xd9 /7, CPUFeature_x87
-fstcw Msw, fwait 0xd9 /7, CPUFeature_x87 nacl-forbidden
+# fstcw Msw, fwait 0xd9 /7, CPUFeature_x87 nacl-forbidden
 ######## FSTENV/FNSTENV ########################################################
 fnstenv Mse, 0xd9 /6, CPUFeature_x87
 fnstenvs Mse, data16 0xd9 /6, CPUFeature_x87 nacl-forbidden
 fnstenvs Mse, data16 rexw 0xd9 /6, amd64 CPUFeature_x87 nacl-forbidden
-fstenv Mse, fwait 0xd9 /6, CPUFeature_x87 nacl-forbidden
-fstenvs Mse, fwait data16 0xd9 /6, CPUFeature_x87 nacl-forbidden
-fstenvs Mse, fwait data16 rexw 0xd9 /6, amd64 CPUFeature_x87 nacl-forbidden
+# fstenv Mse, fwait 0xd9 /6, CPUFeature_x87 nacl-forbidden
+# fstenvs Mse, fwait data16 0xd9 /6, CPUFeature_x87 nacl-forbidden
+# fstenvs Mse, fwait data16 rexw 0xd9 /6, amd64 CPUFeature_x87 nacl-forbidden
 ######## FSTSW/FNSTSW ##########################################################
 fnstsw Mw, 0xdd /7, CPUFeature_x87
 fnstsw aw, 0xdf 0xe0, CPUFeature_x87
-fstsw Mw, fwait 0xdd /7, CPUFeature_x87 nacl-forbidden
-fstsw aw, fwait 0xdf 0xe0, CPUFeature_x87 nacl-forbidden
+# fstsw Mw, fwait 0xdd /7, CPUFeature_x87 nacl-forbidden
+# fstsw aw, fwait 0xdf 0xe0, CPUFeature_x87 nacl-forbidden
 ######## FSUB/FSUBP/FISUB ######################################################
 # “fsub” and “fsubr” are swapped for some operands in objdump.  This is known
 # issue, but it can not be fixed because of compatibility concerns.  Here we use

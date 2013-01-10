@@ -27,7 +27,8 @@ femms, 0x0f 0x0e, CPUFeature_3DNOW
 frstor Msr, 0xdd /4, CPUFeature_x87
 ######## FSAVE/FNSAVE ##########################################################
 fnsave Msr, 0xdd /6, CPUFeature_x87
-fsave Msr, fwait 0xdd /6, CPUFeature_x87 nacl-forbidden
+# See comment on fwait in x87_instructions.def.
+# fsave Msr, fwait 0xdd /6, CPUFeature_x87 nacl-forbidden
 ######## FXRSTOR ###############################################################
 fxrstor Msx, 0x0f 0xae /1, norexw CPUFeature_FXSR
 fxrstor64 Msx, rexw 0x0f 0xae /1, amd64 CPUFeature_FXSR
