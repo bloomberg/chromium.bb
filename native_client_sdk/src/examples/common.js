@@ -19,14 +19,23 @@ var common = (function () {
    * @param {string} path Directory name where .nmf file can be found.
    * @param {number} width The width to create the plugin.
    * @param {number} height The height to create the plugin.
+   * @param {Object} optional dictionary of args to send to DidCreateInstance
    */
-  function createNaClModule(name, tool, path, width, height) {
+  function createNaClModule(name, tool, path, width, height, args) {
     var moduleEl = document.createElement('embed');
     moduleEl.setAttribute('name', 'nacl_module');
     moduleEl.setAttribute('id', 'nacl_module');
     moduleEl.setAttribute('width', width);
     moduleEl.setAttribute('height',height);
     moduleEl.setAttribute('src', path + '/' + name + '.nmf');
+
+    // Add any optional arguments
+    if (args) {
+      for (var key in args) {
+        moduleEl.setAttribute(key, args[key])
+      }
+    }
+
     // For NaCL modules use application/x-nacl.
     var mimetype = 'application/x-nacl';
     var isHost = tool == 'win' || tool == 'linux' || tool == 'mac';
