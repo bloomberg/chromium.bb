@@ -721,6 +721,8 @@ const char kSavedIPNameServersProperty[] = "SavedIP.NameServers";
 const char kSavedIPPeerAddressProperty[] = "SavedIP.PeerAddress";
 const char kSavedIPPrefixlenProperty[] = "SavedIP.Prefixlen";
 const char kWifiVendorInformationProperty[] = "WiFi.VendorInformation";
+const char kWifiProtectedManagementFrameRequiredProperty[] =
+    "WiFi.ProtectedManagementFrameRequired";
 
 // WiFi Service Vendor Information dictionary properties.
 const char kVendorWPSManufacturerProperty[] = "Manufacturer";
