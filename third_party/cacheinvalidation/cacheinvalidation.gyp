@@ -36,6 +36,8 @@
           '<(proto_out_dir)',
         ],
       },
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [4267, ],
     },
     # The main cache invalidation library.  External clients should depend
     # only on this.
@@ -122,6 +124,8 @@
       'export_dependent_settings': [
         '../../base/base.gyp:base',
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [4267, ],
     },
     # Unittests for the cache invalidation library.
     # TODO(ghc): Write native tests and include them here.
