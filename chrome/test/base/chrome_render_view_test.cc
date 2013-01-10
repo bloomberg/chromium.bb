@@ -20,12 +20,12 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/renderer_resources.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptController.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/webkit_glue.h"
 
