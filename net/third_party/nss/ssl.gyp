@@ -86,7 +86,7 @@
       'dependencies': [
         '../../../third_party/zlib/zlib.gyp:zlib',
       ],
-      'msvs_disabled_warnings': [4018, 4244],
+      'msvs_disabled_warnings': [4018, 4244, 4267],
       'conditions': [
         [ 'clang == 1', {
           'cflags': [

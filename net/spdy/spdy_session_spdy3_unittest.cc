@@ -667,7 +667,7 @@ TEST_F(SpdySessionSpdy3Test, OnSettings) {
 
   SettingsMap new_settings;
   const SpdySettingsIds kSpdySettingsIds1 = SETTINGS_MAX_CONCURRENT_STREAMS;
-  const size_t max_concurrent_streams = 2;
+  const uint32 max_concurrent_streams = 2;
   new_settings[kSpdySettingsIds1] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
 

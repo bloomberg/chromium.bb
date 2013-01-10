@@ -230,7 +230,7 @@ TEST_P(SpdyProtocolTest, TestSpdySettingsFrame) {
     SettingsFlagsAndId(6, 9)
   };
 
-  for (size_t index = 0; index < arraysize(ids); ++index) {
+  for (uint32 index = 0; index < arraysize(ids); ++index) {
     SettingsFlagsAndId flags_and_id = ids[index];
     SpdySettingsIds id = static_cast<SpdySettingsIds>(flags_and_id.id());
     SpdySettingsFlags flags =

@@ -80,6 +80,8 @@
         'cloud_policy_code_generate',
       ],
       'includes': [ '../../../build/protoc.gypi' ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [4267, ],
     },
     {
       # This target builds the "full" protobuf, used for tests only.
