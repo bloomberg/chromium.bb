@@ -346,6 +346,25 @@ void DeleteDesktopShortcutsAndIconFile(const FilePath& profile_path,
   }
 }
 
+// Returns true if profile at |profile_path| has any shortcuts. Does not
+// consider non-profile shortcuts. Must be called on the FILE thread.
+bool HasAnyProfileShortcuts(const FilePath& profile_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED();
+    return false;
+  }
+
+  const string16 command_line =
+      profiles::internal::CreateProfileShortcutFlags(profile_path);
+  std::vector<FilePath> shortcuts;
+  ListDesktopShortcutsWithCommandLine(chrome_exe, command_line, false,
+                                      &shortcuts);
+  return !shortcuts.empty();
+}
+
 // Replaces any reserved characters with spaces, and trims the resulting string
 // to prevent any leading and trailing spaces. Also makes sure that the
 // resulting filename doesn't exceed |kMaxProfileShortcutFileNameLength|.
@@ -419,6 +438,21 @@ void ProfileShortcutManagerWin::CreateProfileShortcut(
     const FilePath& profile_path) {
   CreateOrUpdateShortcutsForProfileAtPath(profile_path, CREATE_WHEN_NONE_FOUND,
                                           IGNORE_NON_PROFILE_SHORTCUTS);
+}
+
+void ProfileShortcutManagerWin::RemoveProfileShortcuts(
+    const FilePath& profile_path) {
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DeleteDesktopShortcutsAndIconFile, profile_path, false));
+}
+
+void ProfileShortcutManagerWin::HasProfileShortcuts(
+    const FilePath& profile_path,
+    const base::Callback<void(bool)>& callback) {
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&HasAnyProfileShortcuts, profile_path), callback);
 }
 
 void ProfileShortcutManagerWin::OnProfileAdded(const FilePath& profile_path) {

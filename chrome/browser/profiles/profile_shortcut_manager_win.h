@@ -47,6 +47,10 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
 
   // ProfileShortcutManager implementation:
   virtual void CreateProfileShortcut(const FilePath& profile_path) OVERRIDE;
+  virtual void RemoveProfileShortcuts(const FilePath& profile_path) OVERRIDE;
+  virtual void HasProfileShortcuts(
+      const FilePath& profile_path,
+      const base::Callback<void(bool)>& callback) OVERRIDE;
 
   // ProfileInfoCacheObserver implementation:
   virtual void OnProfileAdded(const FilePath& profile_path) OVERRIDE;

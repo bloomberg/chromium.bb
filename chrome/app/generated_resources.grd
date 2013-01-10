@@ -15248,10 +15248,13 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_PROFILES_CREATE_MANAGED_CHECKBOX" desc="Label for the 'Managed user' checkbox in the create profile dialog">
       Managed user
     </message>
-    <message name="IDS_PROFILES_CREATE_SHORTCUT_CHKBOX" desc="Create Shortcut Checkbox">
+    <message name="IDS_PROFILES_CREATE_SHORTCUT_CHECKBOX" desc="Create Shortcut Checkbox">
       Create desktop shortcut for this user
     </message>
-
+    <message name="IDS_PROFILES_REMOVE_SHORTCUT_CHECKBOX" desc="Remove Shortcut Checkbox">
+      Remove desktop shortcut for this user
+    </message>
+ 
     <!-- Tracing about page strings -->
     <message name="IDS_TRACING_TITLE" desc="Title for the about:tracing page.">
       Tracing

@@ -71,12 +71,21 @@ cr.define('options', function() {
     didShowPage: function() {
       chrome.send('requestDefaultProfileIcons');
 
-      if ($('manage-shortcut'))
-        $('manage-shortcut').checked = false;
-
       // Just ignore the manage profile dialog on Chrome OS, they use /accounts.
       if (!cr.isChromeOS && window.location.pathname == '/manageProfile')
         ManageProfileOverlay.getInstance().prepareForManageDialog_();
+
+      // When editing a profile, initially hide both the "create shortcut" and
+      // "remove shortcut" boxes and ask the handler which to show. It will call
+      // |receiveHasProfileShortcuts|, which will show the appropriate one.
+      $('manage-shortcut-container').hidden = true;
+      $('remove-shortcut-container').hidden = true;
+      $('manage-shortcut').checked = false;
+      $('remove-shortcut').checked = false;
+      if (loadTimeData.getBoolean('profileShortcutsEnabled')) {
+        var profileInfo = ManageProfileOverlay.getInstance().profileInfo_;
+        chrome.send('requestHasProfileShortcuts', [profileInfo.filePath]);
+      }
 
       $('manage-profile-name').focus();
     },
@@ -192,6 +201,17 @@ cr.define('options', function() {
     },
 
     /**
+     * Callback to show the create shortcut checkbox when in edit mode, called
+     * by the handler as a result of the 'requestHasProfileShortcuts_' message.
+     * @param {boolean} hasShortcuts Whether profile has any existing shortcuts.
+     * @private
+     */
+    receiveHasProfileShortcuts_: function(hasShortcuts) {
+      var mode = hasShortcuts ? 'remove' : 'manage';
+      $(mode + '-shortcut-container').hidden = false;
+    },
+
+    /**
      * Display the error bubble, with |errorText| in the bubble.
      * @param {string} errorText The localized string id to display as an error.
      * @param {string} mode A label that specifies the type of dialog
@@ -251,12 +271,14 @@ cr.define('options', function() {
     submitManageChanges_: function() {
       var name = $('manage-profile-name').value;
       var iconURL = $('manage-profile-icon-grid').selectedItem;
-      var manage_checkbox = false;
-      if ($('manage-shortcut'))
-        manage_checkbox = $('manage-shortcut').checked;
+      var shortcutAction = '';
+      if ($('manage-shortcut').checked)
+        shortcutAction = 'create';
+      else if ($('remove-shortcut').checked)
+        shortcutAction = 'remove';
+
       chrome.send('setProfileNameAndIcon',
-                  [this.profileInfo_.filePath, name, iconURL,
-                  manage_checkbox]);
+                  [this.profileInfo_.filePath, name, iconURL, shortcutAction]);
     },
 
     /**
@@ -268,13 +290,11 @@ cr.define('options', function() {
       // Get the user's chosen name and icon, or default if they do not
       // wish to customize their profile.
       var name = $('create-profile-name').value;
-      var icon_url = $('create-profile-icon-grid').selectedItem;
-      var create_shortcut = false;
-      if ($('create-shortcut'))
-        create_checkbox = $('create-shortcut').checked;
-      var is_managed = $('create-profile-managed').checked;
+      var iconUrl = $('create-profile-icon-grid').selectedItem;
+      var createShortcut = $('create-shortcut').checked;
+      var isManaged = $('create-profile-managed').checked;
       chrome.send('createProfile',
-                  [name, icon_url, create_shortcut, is_managed]);
+                  [name, iconUrl, createShortcut, isManaged]);
     },
 
     /**
@@ -352,6 +372,7 @@ cr.define('options', function() {
     'receiveDefaultProfileIcons',
     'receiveNewProfileDefaults',
     'receiveProfileNames',
+    'receiveHasProfileShortcuts',
     'setProfileInfo',
     'setProfileName',
     'showManageDialog',
@@ -391,8 +412,10 @@ cr.define('options', function() {
          loadTimeData.getStringF('createProfileInstructions');
       ManageProfileOverlay.getInstance().hideErrorBubble_('create');
 
-      if ($('create-shortcut'))
-        $('create-shortcut').checked = true;
+      var shortcutsEnabled = loadTimeData.getBoolean('profileShortcutsEnabled');
+      $('create-shortcut-container').hidden = !shortcutsEnabled;
+      $('create-shortcut').checked = shortcutsEnabled;
+
       $('create-profile-name-label').hidden = true;
       $('create-profile-name').hidden = true;
       $('create-profile-ok').disabled = true;

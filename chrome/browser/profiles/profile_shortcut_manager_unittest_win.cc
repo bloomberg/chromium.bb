@@ -567,3 +567,65 @@ TEST_F(ProfileShortcutManagerTest, UpdateTwoShortcutsWithNoFlags) {
                                 profile_1_path_);
   ValidateProfileShortcut(FROM_HERE, profile_1_name_, profile_1_path_);
 }
+
+TEST_F(ProfileShortcutManagerTest, RemoveProfileShortcuts) {
+  SetupAndCreateTwoShortcuts(FROM_HERE);
+  CreateProfileWithShortcut(FROM_HERE, profile_3_name_, profile_3_path_);
+
+  const FilePath profile_1_shortcut_path_1 =
+      GetDefaultShortcutPathForProfile(profile_1_name_);
+  const FilePath profile_2_shortcut_path_1 =
+      GetDefaultShortcutPathForProfile(profile_2_name_);
+
+  // Make copies of the shortcuts for both profiles.
+  const FilePath profile_1_shortcut_path_2 =
+      shortcuts_directory_.Append(L"Copied1.lnk");
+  const FilePath profile_2_shortcut_path_2 =
+      shortcuts_directory_.Append(L"Copied2.lnk");
+  ASSERT_TRUE(file_util::CopyFile(profile_1_shortcut_path_1,
+                                  profile_1_shortcut_path_2));
+  ASSERT_TRUE(file_util::CopyFile(profile_2_shortcut_path_1,
+                                  profile_2_shortcut_path_2));
+  ValidateProfileShortcutAtPath(FROM_HERE, profile_1_shortcut_path_2,
+                                profile_1_path_);
+  ValidateProfileShortcutAtPath(FROM_HERE, profile_2_shortcut_path_2,
+                                profile_2_path_);
+
+  // Delete shortcuts for profile 1 and ensure that they got deleted while the
+  // shortcuts for profile 2 were kept.
+  profile_shortcut_manager_->RemoveProfileShortcuts(profile_1_path_);
+  RunPendingTasks();
+  EXPECT_FALSE(file_util::PathExists(profile_1_shortcut_path_1));
+  EXPECT_FALSE(file_util::PathExists(profile_1_shortcut_path_2));
+  ValidateProfileShortcutAtPath(FROM_HERE, profile_2_shortcut_path_1,
+                                profile_2_path_);
+  ValidateProfileShortcutAtPath(FROM_HERE, profile_2_shortcut_path_2,
+                                profile_2_path_);
+}
+
+TEST_F(ProfileShortcutManagerTest, HasProfileShortcuts) {
+  SetupAndCreateTwoShortcuts(FROM_HERE);
+
+  struct HasShortcutsResult {
+    bool has_shortcuts;
+    void set_has_shortcuts(bool value) { has_shortcuts = value; }
+  } result = { false };
+
+  const base::Callback<void(bool)> callback =
+      base::Bind(&HasShortcutsResult::set_has_shortcuts,
+                 base::Unretained(&result));
+
+  // Profile 2 should have a shortcut initially.
+  profile_shortcut_manager_->HasProfileShortcuts(profile_2_path_, callback);
+  RunPendingTasks();
+  EXPECT_TRUE(result.has_shortcuts);
+
+  // Delete the shortcut and check that the function returns false.
+  const FilePath profile_2_shortcut_path =
+      GetDefaultShortcutPathForProfile(profile_2_name_);
+  ASSERT_TRUE(file_util::Delete(profile_2_shortcut_path, false));
+  EXPECT_FALSE(file_util::PathExists(profile_2_shortcut_path));
+  profile_shortcut_manager_->HasProfileShortcuts(profile_2_path_, callback);
+  RunPendingTasks();
+  EXPECT_FALSE(result.has_shortcuts);
+}

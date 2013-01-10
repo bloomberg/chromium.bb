@@ -23,18 +23,22 @@
         <button id="managed-user-settings-button"
             i18n-content="manageProfilesManagedUserSettings">
       </div>
-      <if expr="is_win">
-        <div class="action-area-checkbox-container">
-          <div class="checkbox">
-            <label>
-              <input id="manage-shortcut" type="checkbox">
-              <span for="manage-shortcut" 
-                  i18n-content="createProfileShortcut">
-              </span>
-            </label>
-          </div>
+      <div class="action-area-checkbox-container">
+        <div id="manage-shortcut-container" class="checkbox" hidden>
+          <label>
+            <input id="manage-shortcut" type="checkbox">
+            <span for="manage-shortcut" i18n-content="createProfileShortcut">
+            </span>
+          </label>
         </div>
-      </if>
+        <div id="remove-shortcut-container" class="checkbox" hidden>
+          <label>
+            <input id="remove-shortcut" type="checkbox">
+            <span for="remove-shortcut" i18n-content="removeProfileShortcut">
+            </span>
+          </label>
+        </div>
+      </div>
       <div class="button-strip">
         <button id="manage-profile-cancel" i18n-content="cancel"></button>
         <button id="manage-profile-ok" i18n-content="ok"></button>
@@ -79,16 +83,13 @@
             <span i18n-content="manageProfilesManagedLabel"></span>
           </label>
         </div>
-        <if expr="is_win">
-          <div class="checkbox">
-            <label>
-              <input id="create-shortcut" type="checkbox">
-              <span for="create-shortcut"
-                  i18n-content="createProfileShortcut">
-              </span>
-            </label>
-          </div>
-        </if>
+        <div id="create-shortcut-container" class="checkbox" hidden>
+          <label>
+            <input id="create-shortcut" type="checkbox">
+            <span for="create-shortcut" i18n-content="createProfileShortcut">
+            </span>
+          </label>
+        </div>
       </div>
       <div class="button-strip">
         <button id="create-profile-cancel" i18n-content="cancel"></button>
