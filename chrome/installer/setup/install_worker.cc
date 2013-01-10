@@ -168,6 +168,15 @@ void AddInstallerCopyTasks(const InstallerState& installer_state,
                                       temp_path.value(), WorkItem::ALWAYS);
   }
 
+  if (installer_state.RequiresActiveSetup()) {
+    // Make a copy of setup.exe with a different name so that Active Setup
+    // doesn't require an admin on XP thanks to Application Compatibility.
+    FilePath active_setup_exe(installer_dir.Append(kActiveSetupExe));
+    install_list->AddCopyTreeWorkItem(
+        setup_path.value(), active_setup_exe.value(), temp_path.value(),
+        WorkItem::ALWAYS);
+  }
+
   // If only the App Host (not even the Chrome Binaries) is being installed,
   // this must be a user-level App Host piggybacking on system-level Chrome
   // Binaries. Only setup.exe is required, and only for uninstall.
@@ -1400,6 +1409,7 @@ void AddActiveSetupWorkItems(const InstallerState& installer_state,
             << "-level " << distribution->GetAppShortCutName();
     return;
   }
+  DCHECK(installer_state.RequiresActiveSetup());
 
   const HKEY root = HKEY_LOCAL_MACHINE;
   const string16 active_setup_path(
@@ -1410,8 +1420,9 @@ void AddActiveSetupWorkItems(const InstallerState& installer_state,
   list->AddSetRegValueWorkItem(root, active_setup_path, L"",
                                distribution->GetAppShortCutName(), true);
 
-  CommandLine cmd(installer_state.GetInstallerDirectory(new_version).
-      Append(setup_path.BaseName()));
+  FilePath active_setup_exe(installer_state.GetInstallerDirectory(new_version)
+      .Append(kActiveSetupExe));
+  CommandLine cmd(active_setup_exe);
   cmd.AppendSwitch(installer::switches::kConfigureUserSettings);
   cmd.AppendSwitch(installer::switches::kVerboseLogging);
   cmd.AppendSwitch(installer::switches::kSystemLevel);

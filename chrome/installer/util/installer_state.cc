@@ -790,4 +790,8 @@ void InstallerState::WriteInstallerResult(
     LOG(ERROR) << "Failed to record installer error information in registry.";
 }
 
+bool InstallerState::RequiresActiveSetup() const {
+  return system_install() && FindProduct(BrowserDistribution::CHROME_BROWSER);
+}
+
 }  // namespace installer
