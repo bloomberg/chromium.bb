@@ -25,6 +25,7 @@
 namespace {
 
 const char kEncryptOtpBodyFormat[] = "cvv=%s:%s";
+const char kEscrowSensitiveInformationFormat[] = "gid=%s&cardNumber=%s&cvv=%s";
 const char kJsonMimeType[] = "application/json";
 const char kApplicationMimeType[] = "application/x-www-form-urlencoded";
 const size_t kMaxBits = 63;
@@ -37,8 +38,7 @@ void WalletClient::AcceptLegalDocuments(
     const std::vector<std::string>& document_ids,
     const std::string& google_transaction_id,
     WalletClient::WalletClientObserver* observer) {
-  DCHECK_EQ(request_type_, NO_PENDING_REQUEST);
-
+  DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   request_type_ = ACCEPT_LEGAL_DOCUMENTS;
 
   DictionaryValue request_dict;
@@ -65,7 +65,7 @@ void WalletClient::EncryptOtp(
     const void* otp,
     size_t length,
     WalletClient::WalletClientObserver* observer) {
-  DCHECK_EQ(request_type_, NO_PENDING_REQUEST);
+  DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   size_t num_bits = length * 8;
   DCHECK_LT(num_bits, kMaxBits);
 
@@ -75,8 +75,28 @@ void WalletClient::EncryptOtp(
                                        base::HexEncode(&num_bits, 1).c_str(),
                                        base::HexEncode(otp, length).c_str());
 
-  MakeWalletRequest(GetSecureUrl(), post_body, observer, kApplicationMimeType);
+  MakeWalletRequest(GetEncryptionUrl(),
+                    post_body,
+                    observer,
+                    kApplicationMimeType);
 }
+
+void WalletClient::EscrowSensitiveInformation(
+    const std::string& primary_account_number,
+    const std::string& card_verification_number,
+    const std::string& obfuscated_gaia_id,
+    WalletClient::WalletClientObserver* observer) {
+  DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
+  request_type_ = ESCROW_SENSITIVE_INFORMATION;
+
+  std::string post_body = StringPrintf(kEscrowSensitiveInformationFormat,
+                                       obfuscated_gaia_id.c_str(),
+                                       primary_account_number.c_str(),
+                                       card_verification_number.c_str());
+
+  MakeWalletRequest(GetEscrowUrl(), post_body, observer, kApplicationMimeType);
+}
+
 
 void WalletClient::GetFullWallet(
     const std::string& instrument_id,
@@ -87,8 +107,7 @@ void WalletClient::GetFullWallet(
     const std::string& encrypted_otp,
     const std::string& session_material,
     WalletClient::WalletClientObserver* observer) {
-  DCHECK_EQ(request_type_, NO_PENDING_REQUEST);
-
+  DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   request_type_ = GET_FULL_WALLET;
 
   DictionaryValue request_dict;
@@ -110,8 +129,7 @@ void WalletClient::GetFullWallet(
 
 void WalletClient::GetWalletItems(
     WalletClient::WalletClientObserver* observer) {
-  DCHECK_EQ(request_type_, NO_PENDING_REQUEST);
-
+  DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   request_type_ = GET_WALLET_ITEMS;
 
   DictionaryValue request_dict;
@@ -130,8 +148,7 @@ void WalletClient::SendExtendedAutofillStatus(
     const std::string& reason,
     const std::string& google_transaction_id,
     WalletClient::WalletClientObserver* observer) {
-  DCHECK_EQ(request_type_, NO_PENDING_REQUEST);
-
+  DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
   request_type_ = SEND_STATUS;
 
   DictionaryValue request_dict;
@@ -219,14 +236,12 @@ void WalletClient::OnURLFetchComplete(
   request_type_ = NO_PENDING_REQUEST;
 
   switch (type) {
-    case ACCEPT_LEGAL_DOCUMENTS: {
+    case ACCEPT_LEGAL_DOCUMENTS:
       observer_->OnAcceptLegalDocuments();
       break;
-    }
-    case SEND_STATUS: {
+    case SEND_STATUS:
       observer_->OnSendExtendedAutofillStatus();
       break;
-    }
     case ENCRYPT_OTP: {
       if (!data.empty()) {
         std::vector<std::string> splits;
@@ -240,6 +255,12 @@ void WalletClient::OnURLFetchComplete(
       }
       break;
     }
+    case ESCROW_SENSITIVE_INFORMATION:
+      if (!data.empty())
+        observer_->OnDidEscrowSensitiveInformation(data);
+      else
+        observer_->OnWalletError();
+      break;
     case GET_FULL_WALLET: {
       if (response_dict.get()) {
         scoped_ptr<FullWallet> full_wallet(

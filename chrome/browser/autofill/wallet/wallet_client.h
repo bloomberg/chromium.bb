@@ -41,6 +41,12 @@ class WalletClient : public net::URLFetcherDelegate {
     virtual void OnEncryptOtp(const std::string& encrypted_otp,
                               const std::string& session_material) = 0;
 
+    // Called when an EscrowSensitiveInformation request finishes successfully.
+    // |escrow_handle| must be used when saving a new instrument using
+    // SaveInstrument or SaveAdressAndInstrument.
+    virtual void OnDidEscrowSensitiveInformation(
+        const std::string& escrow_handle) = 0;
+
     // Called when a GetFullWallet request finishes successfully. Caller owns
     // the input pointer.
     virtual void OnGetFullWallet(FullWallet* full_wallet) = 0;
@@ -87,6 +93,14 @@ class WalletClient : public net::URLFetcherDelegate {
                   size_t length,
                   WalletClientObserver* observer);
 
+  // Before calling SaveInstrument or SaveAddressAndInstrument, the client must
+  // escrow |primary_account_number| and |card_verfication_number| with Google
+  // Wallet.
+  void EscrowSensitiveInformation(const std::string& primary_account_number,
+                                  const std::string& card_verification_number,
+                                  const std::string& obfuscated_gaia_id,
+                                  WalletClientObserver* observer);
+
   // GetFullWallet retrieves the a FullWallet for the user. |instrument_id| and
   // |adddress_id| should have been selected by the user in some UI,
   // |merchant_domain| should come from the BrowserContext, the |cart|
@@ -121,6 +135,7 @@ class WalletClient : public net::URLFetcherDelegate {
     NO_PENDING_REQUEST,
     ACCEPT_LEGAL_DOCUMENTS,
     ENCRYPT_OTP,
+    ESCROW_SENSITIVE_INFORMATION,
     GET_FULL_WALLET,
     GET_WALLET_ITEMS,
     SEND_STATUS,

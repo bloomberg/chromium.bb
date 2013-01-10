@@ -1351,8 +1351,8 @@ const char kViewerConnection[]              = "viewer-connection";
 // Cycle through a series of URLs listed in the specified file.
 const char kVisitURLs[]                     = "visit-urls";
 
-// Secure service URL for Online Wallet service. Used for encyption of one time
-// pads and to escrow credit card numbers.
+// Secure service URL for Online Wallet service. Used as the base url to escrow
+// credit card numbers.
 const char kWalletSecureServiceUrl[]        = "wallet-secure-service-url";
 
 // Service URL for Online Wallet service. Used as the base url for Online Wallet

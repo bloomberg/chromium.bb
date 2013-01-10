@@ -27,7 +27,9 @@ TEST(WalletServiceUrl, CheckDefaultUrls) {
   ASSERT_EQ("https://wallet.google.com/online/v2/passiveauth",
             GetPassiveAuthUrl().spec());
   ASSERT_EQ("https://wallet.google.com/online-secure/temporarydata/cvv?s7e=cvv",
-            GetSecureUrl().spec());
+            GetEncryptionUrl().spec());
+  ASSERT_EQ("https://wallet.google.com/dehEfe?s7e=cardNumber%3Bcvv",
+            GetEscrowUrl().spec());
 }
 
 }  // namespace wallet

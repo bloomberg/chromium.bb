@@ -167,6 +167,9 @@ const char kSendExtendedAutofillStatusOfFailureValidRequest[] =
         "\"success\":false"
     "}";
 
+const char kEscrowSensitiveInformationRequest[] =
+    "gid=obfuscated_gaia_id&cardNumber=pan&cvv=cvn";
+
 }  // anonymous namespace
 
 namespace wallet {
@@ -202,6 +205,8 @@ class MockWalletClientObserver
   MOCK_METHOD0(OnAcceptLegalDocuments, void());
   MOCK_METHOD2(OnEncryptOtp, void(const std::string& encrypted_otp,
                                   const std::string& session_material));
+  MOCK_METHOD1(OnDidEscrowSensitiveInformation,
+               void(const std::string& escrow_handle));
   MOCK_METHOD1(OnGetFullWallet, void(FullWallet* full_wallet));
   MOCK_METHOD1(OnGetWalletItems, void(WalletItems* wallet_items));
   MOCK_METHOD0(OnSendExtendedAutofillStatus, void());
@@ -223,7 +228,7 @@ TEST_F(WalletClientTest, WalletErrorOnExpectedVoidResponse) {
   WalletClient wallet_client(profile_.GetRequestContext());
   wallet_client.SendExtendedAutofillStatus(true, "", "", "", &observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  DCHECK(fetcher);
+  ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
@@ -240,7 +245,7 @@ TEST_F(WalletClientTest, WalletErrorOnExpectedResponse) {
   Cart cart("currency_code", "currency_code");
   wallet_client.GetFullWallet("", "", "", cart, "", "", "", &observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  DCHECK(fetcher);
+  ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
@@ -254,7 +259,7 @@ TEST_F(WalletClientTest, NetworkFailureOnExpectedVoidResponse) {
   WalletClient wallet_client(profile_.GetRequestContext());
   wallet_client.SendExtendedAutofillStatus(true, "", "", "", &observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  DCHECK(fetcher);
+  ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
@@ -269,7 +274,7 @@ TEST_F(WalletClientTest, NetworkFailureOnExpectedResponse) {
   Cart cart("currency_code", "currency_code");
   wallet_client.GetFullWallet("", "", "", cart, "", "", "", &observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  DCHECK(fetcher);
+  ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
@@ -283,14 +288,52 @@ TEST_F(WalletClientTest, RequestError) {
   WalletClient wallet_client(profile_.GetRequestContext());
   wallet_client.SendExtendedAutofillStatus(true, "", "", "", &observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  DCHECK(fetcher);
+  ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_BAD_REQUEST);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
 // TODO(ahutter): Add test for EncryptOtp.
-// TODO(ahutter): Add retry and failure tests for EncryptOtp, GetWalletItems,
+// TODO(ahutter): Add failure tests for EncryptOtp, GetWalletItems,
 // GetFullWallet for when data is missing or invalid.
+
+TEST_F(WalletClientTest, EscrowSensitiveInformationSuccess) {
+  MockWalletClientObserver observer;
+  EXPECT_CALL(observer, OnDidEscrowSensitiveInformation("abc")).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.EscrowSensitiveInformation("pan",
+                                           "cvn",
+                                           "obfuscated_gaia_id",
+                                           &observer);
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+  EXPECT_EQ(kEscrowSensitiveInformationRequest, fetcher->upload_data());
+  fetcher->set_response_code(net::HTTP_OK);
+  fetcher->SetResponseString("abc");
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+}
+
+TEST_F(WalletClientTest, EscrowSensitiveInformationFailure) {
+  MockWalletClientObserver observer;
+  EXPECT_CALL(observer, OnWalletError()).Times(1);
+
+  net::TestURLFetcherFactory factory;
+
+  WalletClient wallet_client(profile_.GetRequestContext());
+  wallet_client.EscrowSensitiveInformation("pan",
+                                           "cvn",
+                                           "obfuscated_gaia_id",
+                                           &observer);
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+  EXPECT_EQ(kEscrowSensitiveInformationRequest, fetcher->upload_data());
+  fetcher->set_response_code(net::HTTP_OK);
+  fetcher->SetResponseString("");
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+}
 
 TEST_F(WalletClientTest, GetFullWallet) {
   MockWalletClientObserver observer;
@@ -309,8 +352,8 @@ TEST_F(WalletClientTest, GetFullWallet) {
                               "session_material",
                               &observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  DCHECK(fetcher);
-  ASSERT_EQ(kGetFullWalletValidRequest, fetcher->upload_data());
+  ASSERT_TRUE(fetcher);
+  EXPECT_EQ(kGetFullWalletValidRequest, fetcher->upload_data());
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(kGetFullWalletValidResponse);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
@@ -330,8 +373,8 @@ TEST_F(WalletClientTest, AcceptLegalDocuments) {
                                      kGoogleTransactionId,
                                      &observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  DCHECK(fetcher);
-  ASSERT_EQ(kAcceptLegalDocumentsValidRequest, fetcher->upload_data());
+  ASSERT_TRUE(fetcher);
+  EXPECT_EQ(kAcceptLegalDocumentsValidRequest, fetcher->upload_data());
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
@@ -345,8 +388,8 @@ TEST_F(WalletClientTest, GetWalletItems) {
   WalletClient wallet_client(profile_.GetRequestContext());
   wallet_client.GetWalletItems(&observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  DCHECK(fetcher);
-  ASSERT_EQ(kGetWalletItemsValidRequest, fetcher->upload_data());
+  ASSERT_TRUE(fetcher);
+  EXPECT_EQ(kGetWalletItemsValidRequest, fetcher->upload_data());
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(kGetWalletItemsValidResponse);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
@@ -365,8 +408,8 @@ TEST_F(WalletClientTest, SendExtendedAutofillOfStatusSuccess) {
                                            "google_transaction_id",
                                            &observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  DCHECK(fetcher);
-  ASSERT_EQ(kSendExtendedAutofillStatusOfSuccessValidRequest,
+  ASSERT_TRUE(fetcher);
+  EXPECT_EQ(kSendExtendedAutofillStatusOfSuccessValidRequest,
             fetcher->upload_data());
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
@@ -385,8 +428,8 @@ TEST_F(WalletClientTest, SendExtendedAutofillStatusOfFailure) {
                                            "google_transaction_id",
                                            &observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  DCHECK(fetcher);
-  ASSERT_EQ(kSendExtendedAutofillStatusOfFailureValidRequest,
+  ASSERT_TRUE(fetcher);
+  EXPECT_EQ(kSendExtendedAutofillStatusOfFailureValidRequest,
             fetcher->upload_data());
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
