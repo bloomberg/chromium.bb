@@ -1081,6 +1081,7 @@
             'has_java_resources': 1,
             'R_package': 'org.chromium.chrome',
             'R_package_relpath': 'org/chromium/chrome',
+            'java_strings_grd': 'android_chrome_strings.grd',
           },
           'includes': [
             '../build/java.gypi',
