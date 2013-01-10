@@ -512,6 +512,16 @@ ShelfAlignment RootWindowController::GetShelfAlignment() {
   return shelf_->GetAlignment();
 }
 
+bool RootWindowController::IsImmersiveMode() const {
+  aura::Window* container = workspace_controller_->GetActiveWorkspaceWindow();
+  for (size_t i = 0; i < container->children().size(); ++i) {
+    aura::Window* child = container->children()[i];
+    if (child->IsVisible() && child->GetProperty(kImmersiveModeKey))
+      return true;
+  }
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowController, private:
 

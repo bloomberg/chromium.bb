@@ -236,6 +236,10 @@ void WorkspaceManager::SetActiveWorkspaceByWindow(Window* window) {
   }
 }
 
+Window* WorkspaceManager::GetActiveWorkspaceWindow() {
+  return active_workspace_->window();
+}
+
 Window* WorkspaceManager::GetParentForNewWindow(Window* window) {
   // Try to put windows with transient parents in the same workspace as their
   // transient parent.

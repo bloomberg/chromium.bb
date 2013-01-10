@@ -11,6 +11,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
@@ -24,6 +25,9 @@
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+
+using aura::Window;
+using views::Widget;
 
 namespace ash {
 namespace {
@@ -317,6 +321,33 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
       internal::kShellWindowId_SystemModalContainer)->layout_manager(),
           controller->GetSystemModalLayoutManager(
               session_modal_widget->GetNativeView()));
+}
+
+// Ensure a workspace with two windows reports immersive mode even if only
+// one has the property set.
+TEST_F(RootWindowControllerTest, ImmersiveMode) {
+  UpdateDisplay("600x600");
+  internal::RootWindowController* controller =
+      Shell::GetInstance()->GetPrimaryRootWindowController();
+
+  // Open a maximized window.
+  Widget* w1 = CreateTestWidget(gfx::Rect(0, 1, 250, 251));
+  w1->Maximize();
+
+  // Immersive mode off by default.
+  EXPECT_FALSE(controller->IsImmersiveMode());
+
+  // Enter immersive mode.
+  w1->GetNativeWindow()->SetProperty(ash::internal::kImmersiveModeKey, true);
+  EXPECT_TRUE(controller->IsImmersiveMode());
+
+  // Add a child, like a print window.  Still in immersive mode.
+  Widget* w2 =
+      Widget::CreateWindowWithParentAndBounds(NULL,
+                                              w1->GetNativeWindow(),
+                                              gfx::Rect(0, 1, 150, 151));
+  w2->Show();
+  EXPECT_TRUE(controller->IsImmersiveMode());
 }
 
 }  // namespace test

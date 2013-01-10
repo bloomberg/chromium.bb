@@ -79,6 +79,9 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
   // NULL or not contained in a workspace.
   void SetActiveWorkspaceByWindow(aura::Window* window);
 
+  // Returns the container window for the active workspace, never NULL.
+  aura::Window* GetActiveWorkspaceWindow();
+
   // Returns the parent for |window|. This is invoked from StackingController
   // when a new Window is being added.
   aura::Window* GetParentForNewWindow(aura::Window* window);

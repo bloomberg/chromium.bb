@@ -46,10 +46,13 @@ void WorkspaceController::SetActiveWorkspaceByWindow(aura::Window* window) {
   return workspace_manager_->SetActiveWorkspaceByWindow(window);
 }
 
+aura::Window* WorkspaceController::GetActiveWorkspaceWindow() {
+  return workspace_manager_->GetActiveWorkspaceWindow();
+}
+
 aura::Window* WorkspaceController::GetParentForNewWindow(aura::Window* window) {
   return workspace_manager_->GetParentForNewWindow(window);
 }
-
 
 void WorkspaceController::DoInitialAnimation() {
   workspace_manager_->DoInitialAnimation();

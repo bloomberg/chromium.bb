@@ -7,7 +7,9 @@
 #include <string>
 
 #include "ash/desktop_background/user_wallpaper_delegate.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/wm/property_util.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
@@ -126,8 +128,13 @@ void LauncherContextMenu::Init() {
       }
     }
   }
-  AddCheckItemWithStringId(
-      MENU_AUTO_HIDE, IDS_AURA_LAUNCHER_CONTEXT_MENU_AUTO_HIDE);
+  // Don't show the auto-hide menu item while in immersive mode because the
+  // launcher always auto-hides in this mode and it's confusing when the
+  // preference appears not to apply.
+  if (!ash::GetRootWindowController(root_window_)->IsImmersiveMode()) {
+    AddCheckItemWithStringId(
+        MENU_AUTO_HIDE, IDS_AURA_LAUNCHER_CONTEXT_MENU_AUTO_HIDE);
+  }
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kShowLauncherAlignmentMenu)) {
     AddSubMenuWithStringId(MENU_ALIGNMENT_MENU,

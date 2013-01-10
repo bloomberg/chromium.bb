@@ -164,6 +164,10 @@ class ASH_EXPORT RootWindowController {
   bool SetShelfAlignment(ShelfAlignment alignment);
   ShelfAlignment GetShelfAlignment();
 
+  // Returns true if the active workspace is in immersive mode. Exposed here
+  // so clients of Ash don't need to know the details of workspace management.
+  bool IsImmersiveMode() const;
+
  private:
   // Creates each of the special window containers that holds windows of various
   // types in the shell UI.

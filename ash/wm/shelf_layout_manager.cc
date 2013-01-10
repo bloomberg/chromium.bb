@@ -15,6 +15,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/wm/property_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace/workspace_animations.h"
 #include "base/auto_reset.h"
@@ -256,6 +257,10 @@ void ShelfLayoutManager::UpdateVisibilityState() {
   if (delegate && delegate->IsScreenLocked()) {
     SetState(SHELF_VISIBLE);
   } else if (gesture_drag_status_ == GESTURE_DRAG_COMPLETE_IN_PROGRESS) {
+    SetState(SHELF_AUTO_HIDE);
+  } else if (GetRootWindowController(root_window_)->IsImmersiveMode()) {
+    // The user choosing immersive mode indicates he or she wants to maximize
+    // screen real-estate for content, so always auto-hide the shelf.
     SetState(SHELF_AUTO_HIDE);
   } else {
     WorkspaceWindowState window_state(workspace_controller_->GetWindowState());

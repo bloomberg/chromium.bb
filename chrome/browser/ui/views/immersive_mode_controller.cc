@@ -17,6 +17,8 @@
 
 #if defined(USE_ASH)
 #include "ash/ash_switches.h"
+#include "ash/shell.h"
+#include "ash/wm/window_properties.h"
 #include "base/command_line.h"
 #endif
 
@@ -298,6 +300,15 @@ void ImmersiveModeController::SetEnabled(bool enabled) {
     // Stop cursor-at-top tracking.
     top_timer_.Stop();
   }
+
+#if defined(USE_ASH)
+  native_window_->SetProperty(ash::internal::kImmersiveModeKey, enabled_);
+  // Ash on Windows may not have a shell.
+  if (ash::Shell::HasInstance()) {
+    // Shelf auto-hides in immersive mode.
+    ash::Shell::GetInstance()->UpdateShelfVisibility();
+  }
+#endif
 
   // Always ensure tab strip is in correct state.
   browser_view_->tabstrip()->SetImmersiveStyle(enabled_);

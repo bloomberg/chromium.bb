@@ -43,6 +43,9 @@ ASH_EXPORT extern const aura::WindowProperty<bool>* const
 extern const aura::WindowProperty<bool>* const
     kIgnoredByShelfKey;
 
+// True if this is a browser window in immersive mode.
+ASH_EXPORT extern const aura::WindowProperty<bool>* const kImmersiveModeKey;
+
 // Used to remember the show state before the window was minimized.
 extern const aura::WindowProperty<ui::WindowShowState>* const
     kRestoreShowStateKey;

@@ -12,6 +12,13 @@
 #include "ui/gfx/rect.h"
 #include "ui/views/view.h"
 
+#if defined(USE_ASH)
+#include "ash/root_window_controller.h"
+#include "ash/shelf_types.h"
+#include "ash/shell.h"
+#include "ash/wm/shelf_layout_manager.h"
+#endif
+
 namespace {
 
 // Returns the bounds of |view| in widget coordinates.
@@ -69,6 +76,9 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, MAYBE_ImmersiveMode) {
   EXPECT_FALSE(browser_view->tabstrip()->IsImmersiveStyle());
   EXPECT_TRUE(browser_view->IsTabStripVisible());
   EXPECT_TRUE(browser_view->IsToolbarVisible());
+  // Shelf hide triggered by enabling immersive mode eventually changes the
+  // widget bounds and causes a Layout(). Force it to happen early for test.
+  browser_view->parent()->Layout();
   // Content area is still immediately below the tab indicators.
   EXPECT_EQ(GetRectInWidget(browser_view).y() + Tab::GetImmersiveHeight(),
             GetRectInWidget(contents_view).y());
@@ -113,6 +123,9 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, MAYBE_ImmersiveMode) {
             GetRectInWidget(contents_view).y());
   controller->StartRevealForTest();
   EXPECT_TRUE(browser_view->IsTabStripVisible());
+  // Shelf hide triggered by enabling immersive mode eventually changes the
+  // widget bounds and causes a Layout(). Force it to happen early for test.
+  browser_view->parent()->Layout();
   EXPECT_EQ(GetRectInWidget(browser_view).y(),
             GetRectInWidget(contents_view).y());
   controller->SetEnabled(false);
@@ -167,3 +180,40 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, MAYBE_ImmersiveMode) {
   controller->SetEnabled(true);
   controller->StartRevealForTest();
 }
+
+#if defined(USE_ASH)
+// Test shelf auto-hide toggling behavior.
+IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveShelf) {
+  ui::LayerAnimator::set_disable_animations_for_test(true);
+
+  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  ImmersiveModeController* immersive_controller =
+      browser_view->immersive_mode_controller();
+  browser_view->GetWidget()->Maximize();
+
+  // Shelf is visible when the test starts.
+  ash::internal::ShelfLayoutManager* shelf =
+      ash::Shell::GetPrimaryRootWindowController()->shelf();
+  ASSERT_EQ(ash::SHELF_VISIBLE, shelf->visibility_state());
+
+  // Turning immersive mode on sets the shelf to auto-hide.
+  immersive_controller->SetEnabled(true);
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
+
+  // Disabling immersive mode puts it back.
+  immersive_controller->SetEnabled(false);
+  EXPECT_EQ(ash::SHELF_VISIBLE, shelf->visibility_state());
+
+  // The user could toggle the launcher behavior.
+  shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
+
+  // Enabling immersive mode keeps auto-hide.
+  immersive_controller->SetEnabled(true);
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
+
+  // Disabling immersive mode maintains the user's auto-hide selection.
+  immersive_controller->SetEnabled(false);
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
+}
+#endif  // defined(OS_CHROMEOS)
