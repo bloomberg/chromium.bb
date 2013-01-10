@@ -18,17 +18,14 @@
 // For communications between NaCl loader and browser.
 // See also content/common/zygote_main_linux.cc and
 // http://code.google.com/p/chromium/wiki/LinuxZygote
-#define kNaClBrowserDescriptor 3
+
 // For communications between NaCl loader and zygote.
-// We put the kNaClZygoteDescriptor on 3 together with the
-// kNaClBrowserDescriptor. They are never used at the same
-// time, and this prevents /dev/urandom from using the fd.
 #define kNaClZygoteDescriptor 3
 // For communications between the NaCl loader process and
 // the SUID sandbox.
 #define kNaClSandboxDescriptor 5
-// NOTE: kNaClBrowserDescriptor and kNaClSandboxDescriptor must match
-// content/browser/zygote_main_linux.cc kBrowserDescriptor and
+// NOTE: kNaClSandboxDescriptor must match
+// content/browser/zygote_main_linux.cc
 // kMagicSandboxIPCDescriptor.
 
 // A fork request from the Zygote to the helper includes an array

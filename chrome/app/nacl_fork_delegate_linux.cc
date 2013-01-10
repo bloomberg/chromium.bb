@@ -34,13 +34,12 @@ const char kNaClHelperReservedAtZero[] =
     "--reserved_at_zero=0xXXXXXXXXXXXXXXXX";
 const char kNaClHelperRDebug[] = "--r_debug=0xXXXXXXXXXXXXXXXX";
 
-void NaClForkDelegate::Init(const int browserdesc, const int sandboxdesc) {
+void NaClForkDelegate::Init(const int sandboxdesc) {
   VLOG(1) << "NaClForkDelegate::Init()";
   int fds[2];
 
-  // Confirm a couple hard-wired assumptions.
-  // The NaCl constants are from chrome/nacl/nacl_linux_helper.h
-  DCHECK(kNaClBrowserDescriptor == browserdesc);
+  // Confirm a hard-wired assumption.
+  // The NaCl constant is from chrome/nacl/nacl_linux_helper.h
   DCHECK(kNaClSandboxDescriptor == sandboxdesc);
 
   CHECK(socketpair(PF_UNIX, SOCK_SEQPACKET, 0, fds) == 0);

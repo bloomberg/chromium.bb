@@ -25,7 +25,7 @@ class ZygoteForkDelegate {
 
   // Initialization happens in the zygote after it has been
   // started by ZygoteMain.
-  virtual void Init(int browserdesc, int sandboxdesc) = 0;
+  virtual void Init(int sandboxdesc) = 0;
 
   // After Init, supply a UMA_HISTOGRAM_ENUMERATION the delegate
   // would like to supply on the first fork.

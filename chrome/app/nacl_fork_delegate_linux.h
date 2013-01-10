@@ -22,7 +22,7 @@ class NaClForkDelegate : public content::ZygoteForkDelegate {
   NaClForkDelegate();
   virtual ~NaClForkDelegate();
 
-  virtual void Init(int browserdesc, int sandboxdesc) OVERRIDE;
+  virtual void Init(int sandboxdesc) OVERRIDE;
   virtual void InitialUMA(std::string* uma_name,
                           int* uma_sample,
                           int* uma_boundary_value) OVERRIDE;

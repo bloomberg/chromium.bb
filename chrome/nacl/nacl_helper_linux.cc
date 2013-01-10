@@ -43,14 +43,8 @@ void BecomeNaClLoader(const std::vector<int>& child_fds,
   // don't need zygote FD any more
   if (HANDLE_EINTR(close(kNaClZygoteDescriptor)) != 0)
     LOG(ERROR) << "close(kNaClZygoteDescriptor) failed.";
-  // Set up browser descriptor on fd 3 and IPC as expected by Chrome.
   base::GlobalDescriptors::GetInstance()->Set(kPrimaryIPCChannel,
-      kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
-  int zfd = dup2(child_fds[kNaClBrowserFDIndex], kNaClBrowserDescriptor);
-  if (zfd != kNaClBrowserDescriptor) {
-    LOG(ERROR) << "Could not initialize kNaClBrowserDescriptor";
-    _exit(-1);
-  }
+                                              child_fds[kNaClBrowserFDIndex]);
 
   MessageLoopForIO main_message_loop;
   NaClListener listener;
