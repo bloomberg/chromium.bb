@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/preferences.h"
 
+#include "ash/magnifier/magnifier_constants.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
@@ -13,6 +14,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
@@ -113,6 +115,9 @@ void Preferences::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   }
   prefs->RegisterBooleanPref(prefs::kScreenMagnifierEnabled,
                              false,
+                             PrefServiceSyncable::SYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kScreenMagnifierType,
+                             ash::kDefaultMagnifierType,
                              PrefServiceSyncable::SYNCABLE_PREF);
   prefs->RegisterDoublePref(prefs::kScreenMagnifierScale,
                             std::numeric_limits<double>::min(),
@@ -304,13 +309,14 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
   accessibility_enabled_.Init(prefs::kSpokenFeedbackEnabled, prefs, callback);
   screen_magnifier_enabled_.Init(prefs::kScreenMagnifierEnabled,
                                  prefs, callback);
+  screen_magnifier_type_.Init(prefs::kScreenMagnifierType, prefs, callback);
   screen_magnifier_scale_.Init(prefs::kScreenMagnifierScale, prefs, callback);
   mouse_sensitivity_.Init(prefs::kMouseSensitivity, prefs, callback);
   touchpad_sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, callback);
   use_24hour_clock_.Init(prefs::kUse24HourClock, prefs, callback);
   disable_drive_.Init(prefs::kDisableDrive, prefs, callback);
   disable_drive_over_cellular_.Init(prefs::kDisableDriveOverCellular,
-                                   prefs, callback);
+                                    prefs, callback);
   disable_drive_hosted_files_.Init(prefs::kDisableDriveHostedFiles,
                                    prefs, callback);
   download_default_directory_.Init(prefs::kDownloadDefaultDirectory,

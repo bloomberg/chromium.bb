@@ -46,7 +46,9 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual bool IsSpokenFeedbackEnabled() const OVERRIDE;
   virtual void ToggleHighContrast() OVERRIDE;
   virtual bool IsHighContrastEnabled() const OVERRIDE;
-  virtual void SetMagnifier(MagnifierType type) OVERRIDE;
+  virtual void SetMagnifierEnabled(bool enabled) OVERRIDE;
+  virtual void SetMagnifierType(MagnifierType type) OVERRIDE;
+  virtual bool IsMagnifierEnabled() const OVERRIDE;
   virtual MagnifierType GetMagnifierType() const OVERRIDE;
   virtual bool ShouldAlwaysShowAccessibilityMenu() const OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
@@ -79,6 +81,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   bool locked_;
   bool spoken_feedback_enabled_;
   bool high_contrast_enabled_;
+  bool screen_magnifier_enabled_;
   MagnifierType screen_magnifier_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateImpl);

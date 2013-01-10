@@ -149,8 +149,14 @@ class ASH_EXPORT ShellDelegate {
   // Returns true if high contrast mode is enabled.
   virtual bool IsHighContrastEnabled() const = 0;
 
-  // Invoked to change the mode of the screen magnifier.
-  virtual void SetMagnifier(MagnifierType type) = 0;
+  // Invoked to enable the screen magnifier.
+  virtual void SetMagnifierEnabled(bool enabled) = 0;
+
+  // Invoked to change the type of the screen magnifier.
+  virtual void SetMagnifierType(MagnifierType type) = 0;
+
+  // Returns if the screen magnifier is enabled or not.
+  virtual bool IsMagnifierEnabled() const = 0;
 
   // Returns the current screen magnifier mode.
   virtual MagnifierType GetMagnifierType() const = 0;

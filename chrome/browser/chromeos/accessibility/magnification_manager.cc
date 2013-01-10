@@ -34,7 +34,8 @@ class MagnificationManagerImpl : public MagnificationManager,
  public:
   MagnificationManagerImpl() : first_time_update_(true),
                                profile_(NULL),
-                               type_(ash::MAGNIFIER_OFF) {
+                               type_(ash::kDefaultMagnifierType),
+                               enabled_(false) {
     registrar_.Add(this,
                   chrome::NOTIFICATION_PROFILE_CREATED,
                   content::NotificationService::AllSources());
@@ -54,64 +55,114 @@ class MagnificationManagerImpl : public MagnificationManager,
   }
 
   // MagnificationManager implimentation:
-  ash::MagnifierType GetMagnifierType() OVERRIDE {
+  bool IsMagnifierEnabled() const OVERRIDE {
+    return enabled_;
+  }
+
+  ash::MagnifierType GetMagnifierType() const OVERRIDE {
     return type_;
   }
 
-  void SetMagnifier(ash::MagnifierType type) OVERRIDE {
-    if (type == type_ && type == ash::MAGNIFIER_OFF)
+  void SetMagnifierEnabled(bool enabled) OVERRIDE {
+    // This method may be invoked even when the other magnifier settings (e.g.
+    // type or scale) are changed, so we need to call magnification controller
+    // even if |enabled| is unchanged. Only if |enabled| is false and the
+    // magnifier is already disabled, we are sure that we don't need to reflect
+    // the new settings right now because the magnifier keeps disabled.
+    if (!enabled && !enabled_)
       return;
 
+    enabled_ = enabled;
+
+    if (profile_) {
+      PrefService* prefs = profile_->GetPrefs();
+      DCHECK(prefs);
+      if (enabled != prefs->GetBoolean(prefs::kScreenMagnifierEnabled)) {
+        prefs->SetBoolean(prefs::kScreenMagnifierEnabled, enabled);
+        prefs->CommitPendingWrite();
+      }
+    }
+
+    NotifyMagnifierChanged();
+
+    if (type_ == ash::MAGNIFIER_FULL) {
+      ash::Shell::GetInstance()->magnification_controller()->SetEnabled(
+          enabled_);
+    } else {
+      ash::Shell::GetInstance()->partial_magnification_controller()->SetEnabled(
+          enabled_);
+    }
+  }
+
+  void SetMagnifierType(ash::MagnifierType type) OVERRIDE {
+    if (type_ == type)
+      return;
+
+    DCHECK(type == ash::MAGNIFIER_FULL || type == ash::MAGNIFIER_PARTIAL);
     type_ = type;
 
     if (profile_) {
       PrefService* prefs = profile_->GetPrefs();
-      if (prefs) {
-        bool enabled = (type != ash::MAGNIFIER_OFF);
-        if (enabled != prefs->GetBoolean(prefs::kScreenMagnifierEnabled)) {
-          prefs->SetBoolean(prefs::kScreenMagnifierEnabled, enabled);
-          prefs->CommitPendingWrite();
-        }
-      }
+      DCHECK(prefs);
+      prefs->SetInteger(prefs::kScreenMagnifierType, type);
+      prefs->CommitPendingWrite();
     }
 
-    accessibility::AccessibilityStatusEventDetails details(
-        type != ash::MAGNIFIER_OFF, ash::A11Y_NOTIFICATION_NONE);
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
-        content::NotificationService::AllSources(),
-        content::Details<accessibility::AccessibilityStatusEventDetails>(
-            &details));
+    NotifyMagnifierChanged();
 
-    ash::Shell::GetInstance()->magnification_controller()->SetEnabled(
-        type == ash::MAGNIFIER_FULL);
-    ash::Shell::GetInstance()->partial_magnification_controller()->SetEnabled(
-        type == ash::MAGNIFIER_PARTIAL);
+    if (enabled_) {
+      ash::Shell::GetInstance()->magnification_controller()->SetEnabled(
+          type_ == ash::MAGNIFIER_FULL);
+      ash::Shell::GetInstance()->partial_magnification_controller()->SetEnabled(
+          type_ == ash::MAGNIFIER_PARTIAL);
+    }
   }
 
   void SaveScreenMagnifierScale(double scale) OVERRIDE {
     Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+    DCHECK(profile->GetPrefs());
     profile->GetPrefs()->SetDouble(prefs::kScreenMagnifierScale, scale);
   }
 
-  double GetSavedScreenMagnifierScale() OVERRIDE {
+  double GetSavedScreenMagnifierScale() const OVERRIDE {
     Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+    DCHECK(profile->GetPrefs());
     if (profile->GetPrefs()->HasPrefPath(prefs::kScreenMagnifierScale))
       return profile->GetPrefs()->GetDouble(prefs::kScreenMagnifierScale);
     return std::numeric_limits<double>::min();
   }
 
  private:
+  void NotifyMagnifierChanged() {
+      accessibility::AccessibilityStatusEventDetails details(
+          enabled_, type_, ash::A11Y_NOTIFICATION_NONE);
+      content::NotificationService::current()->Notify(
+          chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
+          content::NotificationService::AllSources(),
+          content::Details<accessibility::AccessibilityStatusEventDetails>(
+              &details));
+  }
+
+  bool IsMagnifierEnabledFromPref() {
+    if (!profile_)
+      return false;
+
+    DCHECK(profile_->GetPrefs());
+    return profile_->GetPrefs()->GetBoolean(prefs::kScreenMagnifierEnabled);
+  }
+
   ash::MagnifierType GetMagnifierTypeFromPref() {
     if (!profile_)
-      return ash::MAGNIFIER_OFF;
+      return ash::kDefaultMagnifierType;
 
-    PrefService* prefs = profile_->GetPrefs();
-    if (!prefs)
-      return ash::MAGNIFIER_OFF;
+    DCHECK(profile_->GetPrefs());
+    ash::MagnifierType type = static_cast<ash::MagnifierType>(
+        profile_->GetPrefs()->GetInteger(prefs::kScreenMagnifierType));
 
-    return prefs->GetBoolean(prefs::kScreenMagnifierEnabled) ?
-        ash::MAGNIFIER_FULL : ash::MAGNIFIER_OFF;
+    if (type == ash::MAGNIFIER_FULL || type == ash::MAGNIFIER_PARTIAL)
+      return type;
+
+    return ash::kDefaultMagnifierType;
   }
 
   void SetProfile(Profile* profile) {
@@ -124,17 +175,27 @@ class MagnificationManagerImpl : public MagnificationManager,
       pref_change_registrar_->Init(profile->GetPrefs());
       pref_change_registrar_->Add(
           prefs::kScreenMagnifierEnabled,
-          base::Bind(&MagnificationManagerImpl::UpdateMagnifierStatus,
+          base::Bind(&MagnificationManagerImpl::UpdateMagnifierStatusFromPref,
+                     base::Unretained(this)));
+      pref_change_registrar_->Add(
+          prefs::kScreenMagnifierType,
+          base::Bind(&MagnificationManagerImpl::UpdateMagnifierStatusFromPref,
                      base::Unretained(this)));
     }
 
     profile_ = profile;
-    UpdateMagnifierStatus();
+    UpdateMagnifierStatusFromPref();
   }
 
-  void UpdateMagnifierStatus() {
-    ash::MagnifierType type = GetMagnifierTypeFromPref();
-    SetMagnifier(type);
+  void UpdateMagnifierStatusFromPref() {
+    bool enabled = IsMagnifierEnabledFromPref();
+    if (!enabled) {
+      SetMagnifierEnabled(enabled);
+      SetMagnifierType(GetMagnifierTypeFromPref());
+    } else {
+      SetMagnifierType(GetMagnifierTypeFromPref());
+      SetMagnifierEnabled(enabled);
+    }
   }
 
   // content::NotificationObserver implimentation:
@@ -168,6 +229,7 @@ class MagnificationManagerImpl : public MagnificationManager,
   bool first_time_update_;
   Profile* profile_;
   ash::MagnifierType type_;
+  bool enabled_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
 

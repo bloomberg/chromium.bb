@@ -24,7 +24,8 @@ TestShellDelegate::TestShellDelegate()
       session_started_(true),
       spoken_feedback_enabled_(false),
       high_contrast_enabled_(false),
-      screen_magnifier_type_(MAGNIFIER_OFF),
+      screen_magnifier_enabled_(false),
+      screen_magnifier_type_(kDefaultMagnifierType),
       user_logged_in_(true),
       can_lock_screen_(true),
       num_exit_requests_(0) {
@@ -124,8 +125,16 @@ bool TestShellDelegate::IsHighContrastEnabled() const {
   return high_contrast_enabled_;
 }
 
-void TestShellDelegate::SetMagnifier(const MagnifierType type) {
+void TestShellDelegate::SetMagnifierEnabled(bool enabled) {
+  screen_magnifier_enabled_ = enabled;
+}
+
+void TestShellDelegate::SetMagnifierType(MagnifierType type) {
   screen_magnifier_type_ = type;
+}
+
+bool TestShellDelegate::IsMagnifierEnabled() const {
+  return screen_magnifier_enabled_;
 }
 
 MagnifierType TestShellDelegate::GetMagnifierType() const {

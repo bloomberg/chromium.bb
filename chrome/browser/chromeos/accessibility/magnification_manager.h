@@ -24,20 +24,30 @@ class MagnificationManager {
   // Returns the existing instance. If there is no instance, creates one.
   // because only one instance should exist at the same time.
   static void Initialize();
+
   // Deletes the existing instance of MagnificationManager.
   static void Shutdown();
+
   // Returns the existing instance. If there is no instance, returns NULL.
   static MagnificationManager* Get();
 
+  // Returns if the screen magnifier is enabled.
+  virtual bool IsMagnifierEnabled() const = 0;
+
   // Returns the current type of the screen magnifier.
-  virtual ash::MagnifierType GetMagnifierType() = 0;
+  virtual ash::MagnifierType GetMagnifierType() const = 0;
+
+  // Enables the screen magnifier.
+  virtual void SetMagnifierEnabled(bool enabled) = 0;
+
   // Changes the type of the screen magnifier.
-  virtual void SetMagnifier(ash::MagnifierType type) = 0;
+  virtual void SetMagnifierType(ash::MagnifierType type) = 0;
 
   // Saves the magnifier scale to the pref.
   virtual void SaveScreenMagnifierScale(double scale) = 0;
+
   // Loads the magnifier scale from the pref.
-  virtual double GetSavedScreenMagnifierScale() = 0;
+  virtual double GetSavedScreenMagnifierScale() const = 0;
 
  protected:
   virtual ~MagnificationManager() {}
