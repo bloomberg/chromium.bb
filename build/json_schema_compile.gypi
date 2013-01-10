@@ -5,8 +5,7 @@
 {
   'variables': {
     # When including this gypi, the following variables must be set:
-    #   json_schema_files: a list of json files that comprise the api model.
-    #   idl_schema_files: a list of IDL files that comprise the api model.
+    #   schema_files: a list of json or IDL files that comprise the api model.
     #   cc_dir: path to generated files
     #   root_namespace: the C++ namespace that all generated files go under
     # Functions and namespaces can be excluded by setting "nocompile" to true.

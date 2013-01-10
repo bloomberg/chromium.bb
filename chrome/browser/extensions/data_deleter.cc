@@ -4,8 +4,8 @@
 
 #include "chrome/browser/extensions/data_deleter.h"
 
+#include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_context.h"

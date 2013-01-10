@@ -5,7 +5,7 @@
 {
   'variables': {
     # When including this gypi, the following variables must be set:
-    #   idl_schema_files: an array of idl files that comprise the api model.
+    #   schema_files: an array of json or idl files that comprise the api model.
     #   cc_dir: path to generated files
     #   root_namespace: the C++ namespace that all generated files go under
     # Functions and namespaces can be excluded by setting "nocompile" to true.
@@ -27,7 +27,7 @@
         '<(api_gen_dir)/model.py',
         '<(api_gen_dir)/schema_bundle_generator.py',
         '<(api_gen_dir)/util_cc_helper.py',
-        '<@(idl_schema_files)',
+        '<@(schema_files)',
       ],
       'outputs': [
         '<(SHARED_INTERMEDIATE_DIR)/<(cc_dir)/generated_api.h',
@@ -41,7 +41,7 @@
         '--destdir=<(SHARED_INTERMEDIATE_DIR)',
         '--namespace=<(root_namespace)',
         '--bundle',
-        '<@(idl_schema_files)',
+        '<@(schema_files)',
       ],
       'message': 'Generating C++ API bundle code',
       'process_outputs_as_sources': 1,

@@ -106,8 +106,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
   const std::string id = extension->id();
 
   // Uninstall, then cancel via the confirm dialog.
-  scoped_refptr<UninstallFunction> uninstall_function(new UninstallFunction());
-  UninstallFunction::SetAutoConfirmForTest(false);
+  scoped_refptr<ManagementUninstallFunction> uninstall_function(
+      new ManagementUninstallFunction());
+  ManagementUninstallFunction::SetAutoConfirmForTest(false);
 
   EXPECT_TRUE(MatchPattern(
       util::RunFunctionAndReturnError(
@@ -121,8 +122,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
   EXPECT_TRUE(service->GetExtensionById(id, false) != NULL);
 
   // Uninstall, then accept via the confirm dialog.
-  uninstall_function = new UninstallFunction();
-  UninstallFunction::SetAutoConfirmForTest(true);
+  uninstall_function = new ManagementUninstallFunction();
+  ManagementUninstallFunction::SetAutoConfirmForTest(true);
 
   util::RunFunctionAndReturnSingleResult(
       uninstall_function,
@@ -144,8 +145,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
   ASSERT_TRUE(listener.WaitUntilSatisfied());
 
   // The management API should list this extension.
-  scoped_refptr<GetAllExtensionsFunction> function =
-      new GetAllExtensionsFunction();
+  scoped_refptr<ManagementGetAllFunction> function =
+      new ManagementGetAllFunction();
   scoped_ptr<base::Value> result(util::RunFunctionAndReturnSingleResult(
       function.get(), "[]", browser()));
   base::ListValue* list;
@@ -155,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
   // And it should continue to do so even after it crashes.
   ASSERT_TRUE(CrashEnabledExtension(extension->id()));
 
-  function = new GetAllExtensionsFunction();
+  function = new ManagementGetAllFunction();
   result.reset(util::RunFunctionAndReturnSingleResult(
       function.get(), "[]", browser()));
   ASSERT_TRUE(result->GetAsList(&list));
@@ -200,7 +201,8 @@ class ExtensionManagementApiEscalationTest :
 
   void SetEnabled(bool enabled, bool user_gesture,
                   const std::string& expected_error) {
-    scoped_refptr<SetEnabledFunction> function(new SetEnabledFunction);
+    scoped_refptr<ManagementSetEnabledFunction> function(
+        new ManagementSetEnabledFunction);
     const char* enabled_string = enabled ? "true" : "false";
     if (user_gesture)
       function->set_user_gesture(true);
@@ -227,8 +229,8 @@ const char ExtensionManagementApiEscalationTest::kId[] =
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
                        DisabledReason) {
-  scoped_refptr<GetExtensionByIdFunction> function =
-      new GetExtensionByIdFunction();
+  scoped_refptr<ManagementGetFunction> function =
+      new ManagementGetFunction();
   scoped_ptr<base::Value> result(util::RunFunctionAndReturnSingleResult(
       function.get(),
       base::StringPrintf("[\"%s\"]", kId),

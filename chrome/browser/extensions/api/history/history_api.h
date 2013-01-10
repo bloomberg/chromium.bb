@@ -112,12 +112,12 @@ class HistoryFunctionWithCallback : public HistoryFunction {
   void SendResponseToCallback();
 };
 
-class GetMostVisitedHistoryFunction : public HistoryFunctionWithCallback {
+class HistoryGetMostVisitedFunction : public HistoryFunctionWithCallback {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.history.getMostVisited");
 
  protected:
-  virtual ~GetMostVisitedHistoryFunction() {}
+  virtual ~HistoryGetMostVisitedFunction() {}
 
   // HistoryFunctionWithCallback:
   virtual bool RunAsyncImpl() OVERRIDE;
@@ -127,12 +127,12 @@ class GetMostVisitedHistoryFunction : public HistoryFunctionWithCallback {
                      const history::FilteredURLList& data);
 };
 
-class GetVisitsHistoryFunction : public HistoryFunctionWithCallback {
+class HistoryGetVisitsFunction : public HistoryFunctionWithCallback {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("history.getVisits");
 
  protected:
-  virtual ~GetVisitsHistoryFunction() {}
+  virtual ~HistoryGetVisitsFunction() {}
 
   // HistoryFunctionWithCallback:
   virtual bool RunAsyncImpl() OVERRIDE;
@@ -144,12 +144,12 @@ class GetVisitsHistoryFunction : public HistoryFunctionWithCallback {
                      history::VisitVector* visits);
 };
 
-class SearchHistoryFunction : public HistoryFunctionWithCallback {
+class HistorySearchFunction : public HistoryFunctionWithCallback {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("history.search");
 
  protected:
-  virtual ~SearchHistoryFunction() {}
+  virtual ~HistorySearchFunction() {}
 
   // HistoryFunctionWithCallback:
   virtual bool RunAsyncImpl() OVERRIDE;
@@ -159,23 +159,23 @@ class SearchHistoryFunction : public HistoryFunctionWithCallback {
                       history::QueryResults* results);
 };
 
-class AddUrlHistoryFunction : public HistoryFunction {
+class HistoryAddUrlFunction : public HistoryFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("history.addUrl");
 
  protected:
-  virtual ~AddUrlHistoryFunction() {}
+  virtual ~HistoryAddUrlFunction() {}
 
   // HistoryFunctionWithCallback:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class DeleteAllHistoryFunction : public HistoryFunctionWithCallback {
+class HistoryDeleteAllFunction : public HistoryFunctionWithCallback {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("history.deleteAll");
 
  protected:
-  virtual ~DeleteAllHistoryFunction() {}
+  virtual ~HistoryDeleteAllFunction() {}
 
   // HistoryFunctionWithCallback:
   virtual bool RunAsyncImpl() OVERRIDE;
@@ -185,23 +185,23 @@ class DeleteAllHistoryFunction : public HistoryFunctionWithCallback {
 };
 
 
-class DeleteUrlHistoryFunction : public HistoryFunction {
+class HistoryDeleteUrlFunction : public HistoryFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("history.deleteUrl");
 
  protected:
-  virtual ~DeleteUrlHistoryFunction() {}
+  virtual ~HistoryDeleteUrlFunction() {}
 
   // HistoryFunctionWithCallback:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class DeleteRangeHistoryFunction : public HistoryFunctionWithCallback {
+class HistoryDeleteRangeFunction : public HistoryFunctionWithCallback {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("history.deleteRange");
 
  protected:
-  virtual ~DeleteRangeHistoryFunction() {}
+  virtual ~HistoryDeleteRangeFunction() {}
 
   // HistoryFunctionWithCallback:
   virtual bool RunAsyncImpl() OVERRIDE;

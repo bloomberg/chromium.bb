@@ -217,7 +217,7 @@ FontSettingsAPI::FontSettingsAPI(Profile* profile)
 FontSettingsAPI::~FontSettingsAPI() {
 }
 
-bool ClearFontFunction::RunImpl() {
+bool FontSettingsClearFontFunction::RunImpl() {
   if (profile_->IsOffTheRecord()) {
     error_ = kSetFromIncognitoError;
     return false;
@@ -242,7 +242,7 @@ bool ClearFontFunction::RunImpl() {
   return true;
 }
 
-bool GetFontFunction::RunImpl() {
+bool FontSettingsGetFontFunction::RunImpl() {
   scoped_ptr<fonts::GetFont::Params> params(
       fonts::GetFont::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -275,7 +275,7 @@ bool GetFontFunction::RunImpl() {
   return true;
 }
 
-bool SetFontFunction::RunImpl() {
+bool FontSettingsSetFontFunction::RunImpl() {
   if (profile_->IsOffTheRecord()) {
     error_ = kSetFromIncognitoError;
     return false;
@@ -302,18 +302,19 @@ bool SetFontFunction::RunImpl() {
   return true;
 }
 
-bool GetFontListFunction::RunImpl() {
+bool FontSettingsGetFontListFunction::RunImpl() {
   content::GetFontListAsync(
-      Bind(&GetFontListFunction::FontListHasLoaded, this));
+      Bind(&FontSettingsGetFontListFunction::FontListHasLoaded, this));
   return true;
 }
 
-void GetFontListFunction::FontListHasLoaded(scoped_ptr<ListValue> list) {
+void FontSettingsGetFontListFunction::FontListHasLoaded(
+    scoped_ptr<ListValue> list) {
   bool success = CopyFontsToResult(list.get());
   SendResponse(success);
 }
 
-bool GetFontListFunction::CopyFontsToResult(ListValue* fonts) {
+bool FontSettingsGetFontListFunction::CopyFontsToResult(ListValue* fonts) {
   scoped_ptr<ListValue> result(new ListValue());
   for (ListValue::iterator it = fonts->begin(); it != fonts->end(); ++it) {
     ListValue* font_list_value;
@@ -401,63 +402,63 @@ bool SetFontPrefExtensionFunction::RunImpl() {
   return true;
 }
 
-const char* ClearDefaultFontSizeFunction::GetPrefName() {
+const char* FontSettingsClearDefaultFontSizeFunction::GetPrefName() {
   return prefs::kWebKitDefaultFontSize;
 }
 
-const char* GetDefaultFontSizeFunction::GetPrefName() {
+const char* FontSettingsGetDefaultFontSizeFunction::GetPrefName() {
   return prefs::kWebKitDefaultFontSize;
 }
 
-const char* GetDefaultFontSizeFunction::GetKey() {
+const char* FontSettingsGetDefaultFontSizeFunction::GetKey() {
   return kPixelSizeKey;
 }
 
-const char* SetDefaultFontSizeFunction::GetPrefName() {
+const char* FontSettingsSetDefaultFontSizeFunction::GetPrefName() {
   return prefs::kWebKitDefaultFontSize;
 }
 
-const char* SetDefaultFontSizeFunction::GetKey() {
+const char* FontSettingsSetDefaultFontSizeFunction::GetKey() {
   return kPixelSizeKey;
 }
 
-const char* ClearDefaultFixedFontSizeFunction::GetPrefName() {
+const char* FontSettingsClearDefaultFixedFontSizeFunction::GetPrefName() {
   return prefs::kWebKitDefaultFixedFontSize;
 }
 
-const char* GetDefaultFixedFontSizeFunction::GetPrefName() {
+const char* FontSettingsGetDefaultFixedFontSizeFunction::GetPrefName() {
   return prefs::kWebKitDefaultFixedFontSize;
 }
 
-const char* GetDefaultFixedFontSizeFunction::GetKey() {
+const char* FontSettingsGetDefaultFixedFontSizeFunction::GetKey() {
   return kPixelSizeKey;
 }
 
-const char* SetDefaultFixedFontSizeFunction::GetPrefName() {
+const char* FontSettingsSetDefaultFixedFontSizeFunction::GetPrefName() {
   return prefs::kWebKitDefaultFixedFontSize;
 }
 
-const char* SetDefaultFixedFontSizeFunction::GetKey() {
+const char* FontSettingsSetDefaultFixedFontSizeFunction::GetKey() {
   return kPixelSizeKey;
 }
 
-const char* ClearMinimumFontSizeFunction::GetPrefName() {
+const char* FontSettingsClearMinimumFontSizeFunction::GetPrefName() {
   return prefs::kWebKitMinimumFontSize;
 }
 
-const char* GetMinimumFontSizeFunction::GetPrefName() {
+const char* FontSettingsGetMinimumFontSizeFunction::GetPrefName() {
   return prefs::kWebKitMinimumFontSize;
 }
 
-const char* GetMinimumFontSizeFunction::GetKey() {
+const char* FontSettingsGetMinimumFontSizeFunction::GetKey() {
   return kPixelSizeKey;
 }
 
-const char* SetMinimumFontSizeFunction::GetPrefName() {
+const char* FontSettingsSetMinimumFontSizeFunction::GetPrefName() {
   return prefs::kWebKitMinimumFontSize;
 }
 
-const char* SetMinimumFontSizeFunction::GetKey() {
+const char* FontSettingsSetMinimumFontSizeFunction::GetKey() {
   return kPixelSizeKey;
 }
 

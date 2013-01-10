@@ -19,14 +19,14 @@
 #include "chrome/browser/extensions/extension_function.h"
 
 class Browser;
-class FileHandlerSelectFileFunction;
+class FileBrowserHandlerInternalSelectFileFunction;
 
 namespace file_handler {
 
-// Interface that is used by FileHandlerSelectFileFunction to select the file
-// path that should be reported back to the extension function caller.
-// Nobody will take the ownership of the interface implementation, so it should
-// delete itself once it's done.
+// Interface that is used by FileBrowserHandlerInternalSelectFileFunction to
+// select the file path that should be reported back to the extension function
+// caller.  Nobody will take the ownership of the interface implementation, so
+// it should delete itself once it's done.
 class FileSelector {
  public:
   virtual ~FileSelector() {}
@@ -48,19 +48,21 @@ class FileSelector {
   // |SelectFile| will be called at most once by a single extension function.
   // The interface implementation should delete itself after the extension
   // function is notified of file selection result.
-  virtual void SelectFile(const FilePath& suggested_name,
-                          const std::vector<std::string>& allowed_extensions,
-                          Browser* browser,
-                          FileHandlerSelectFileFunction* function) = 0;
+  virtual void SelectFile(
+      const FilePath& suggested_name,
+      const std::vector<std::string>& allowed_extensions,
+      Browser* browser,
+      FileBrowserHandlerInternalSelectFileFunction* function) = 0;
 };
 
-// Interface that is used by FileHandlerSelectFileFunction to create a
-// FileSelector it can use to select a file path.
+// Interface that is used by FileBrowserHandlerInternalSelectFileFunction to
+// create a FileSelector it can use to select a file path.
 class FileSelectorFactory {
  public:
   virtual ~FileSelectorFactory() {}
 
-  // Creates a FileSelector instance for the FileHandlerSelectFileFunction.
+  // Creates a FileSelector instance for the
+  // FileBrowserHandlerInternalSelectFileFunction.
   virtual FileSelector* CreateFileSelector() const = 0;
 };
 
@@ -68,18 +70,19 @@ class FileSelectorFactory {
 
 // The fileBrowserHandlerInternal.selectFile extension function implementation.
 // See the file description for more info.
-class FileHandlerSelectFileFunction : public AsyncExtensionFunction {
+class FileBrowserHandlerInternalSelectFileFunction
+    : public AsyncExtensionFunction {
  public:
   // Default constructor used in production code.
   // It will create its own FileSelectorFactory implementation, and set the
   // value of |user_gesture_check_enabled| to true.
-  FileHandlerSelectFileFunction();
+  FileBrowserHandlerInternalSelectFileFunction();
 
   // This constructor should be used only in tests to inject test file selector
   // factory and to allow extension function to run even if it hasn't been
   // invoked by user gesture.
   // Created object will take the ownership of the |file_selector_factory|.
-  FileHandlerSelectFileFunction(
+  FileBrowserHandlerInternalSelectFileFunction(
       file_handler::FileSelectorFactory* file_selector_factory,
       bool enable_user_gesture_check);
 
@@ -93,7 +96,7 @@ class FileHandlerSelectFileFunction : public AsyncExtensionFunction {
 
  protected:
   // The class is ref counted, so destructor should not be public.
-  virtual ~FileHandlerSelectFileFunction() OVERRIDE;
+  virtual ~FileBrowserHandlerInternalSelectFileFunction();
 
   // AsyncExtensionFunction implementation.
   // Runs the extension function implementation.

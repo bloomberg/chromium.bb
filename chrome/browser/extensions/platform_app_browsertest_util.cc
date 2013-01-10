@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/extensions/api/tabs/tabs.h"
+#include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/ui/browser.h"
@@ -93,7 +93,7 @@ ShellWindow* PlatformAppBrowserTest::GetFirstShellWindow() {
 
 size_t PlatformAppBrowserTest::RunGetWindowsFunctionForExtension(
     const Extension* extension) {
-  scoped_refptr<GetAllWindowsFunction> function = new GetAllWindowsFunction();
+  scoped_refptr<WindowsGetAllFunction> function = new WindowsGetAllFunction();
   function->set_extension(extension);
   scoped_ptr<base::ListValue> result(utils::ToList(
       utils::RunFunctionAndReturnSingleResult(function.get(),
@@ -105,7 +105,7 @@ size_t PlatformAppBrowserTest::RunGetWindowsFunctionForExtension(
 bool PlatformAppBrowserTest::RunGetWindowFunctionForExtension(
     int window_id,
     const Extension* extension) {
-  scoped_refptr<GetWindowFunction> function = new GetWindowFunction();
+  scoped_refptr<WindowsGetFunction> function = new WindowsGetFunction();
   function->set_extension(extension);
   utils::RunFunction(
           function.get(),

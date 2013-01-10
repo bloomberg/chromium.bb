@@ -217,13 +217,14 @@ class RecordApiTest : public InProcessBrowserTest {
   // Run a capture, using standard URL test list and the specified
   // user data dir.  Return via |out_list| the list of error URLs,
   // if any, resulting from the capture.  And return directly the
-  // CaptureURLsFunction that was used, so that its state may be
+  // RecordCaptureURLsFunction that was used, so that its state may be
   // queried.
-  scoped_refptr<CaptureURLsFunction> RunCapture(const FilePath& user_data_dir,
+  scoped_refptr<RecordCaptureURLsFunction> RunCapture(
+      const FilePath& user_data_dir,
       scoped_ptr<base::ListValue>* out_list) {
 
-    scoped_refptr<CaptureURLsFunction> capture_function(
-        new CaptureURLsFunction(new TestProcessStrategy(&temp_files_)));
+    scoped_refptr<RecordCaptureURLsFunction> capture_function(
+        new RecordCaptureURLsFunction(new TestProcessStrategy(&temp_files_)));
 
     std::string escaped_user_data_dir;
     ReplaceChars(user_data_dir.AsUTF8Unsafe(), "\\", "\\\\",
@@ -277,7 +278,7 @@ IN_PROC_BROWSER_TEST_F(RecordApiTest, DISABLED_CheckCapture) {
   scoped_ptr<base::ListValue> result;
 
   EXPECT_TRUE(user_data_dir.CreateUniqueTempDir());
-  scoped_refptr<CaptureURLsFunction> capture_URLs_function =
+  scoped_refptr<RecordCaptureURLsFunction> capture_URLs_function =
       RunCapture(user_data_dir.path(), &result);
 
   // Check that user-data-dir switch has been properly overridden.
@@ -314,7 +315,8 @@ IN_PROC_BROWSER_TEST_F(RecordApiTest, MAYBE_CheckPlayback) {
   ReplaceChars(user_data_dir.path().AsUTF8Unsafe(), "\\", "\\\\",
       &escaped_user_data_dir);
 
-  scoped_refptr<ReplayURLsFunction> playback_function(new ReplayURLsFunction(
+  scoped_refptr<RecordReplayURLsFunction> playback_function(
+      new RecordReplayURLsFunction(
       new TestProcessStrategy(&temp_files_)));
   scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
       utils::RunFunctionAndReturnSingleResult(playback_function,

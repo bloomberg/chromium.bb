@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_RECORD_RECORD_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_RECORD_RECORD_API_H_
 
-#include "chrome/browser/extensions/extension_function.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/time.h"
+#include "chrome/browser/extensions/extension_function.h"
 
 namespace {
 
@@ -105,15 +105,15 @@ class RunPageCyclerFunction : public AsyncExtensionFunction {
   scoped_ptr<ProcessStrategy> process_strategy_;
 };
 
-class CaptureURLsFunction : public RunPageCyclerFunction {
+class RecordCaptureURLsFunction : public RunPageCyclerFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.record.captureURLs");
 
-  CaptureURLsFunction();
-  explicit CaptureURLsFunction(ProcessStrategy* strategy);
+  RecordCaptureURLsFunction();
+  explicit RecordCaptureURLsFunction(ProcessStrategy* strategy);
 
  private:
-  virtual ~CaptureURLsFunction() {}
+  virtual ~RecordCaptureURLsFunction() {}
 
   // Read the ReplayDetails parameter if it exists.
   virtual bool ParseJSParameters() OVERRIDE;
@@ -125,15 +125,15 @@ class CaptureURLsFunction : public RunPageCyclerFunction {
   virtual void Finish() OVERRIDE;
 };
 
-class ReplayURLsFunction : public RunPageCyclerFunction {
+class RecordReplayURLsFunction : public RunPageCyclerFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.record.replayURLs");
 
-  ReplayURLsFunction();
-  explicit ReplayURLsFunction(ProcessStrategy* strategy);
+  RecordReplayURLsFunction();
+  explicit RecordReplayURLsFunction(ProcessStrategy* strategy);
 
  private:
-  virtual ~ReplayURLsFunction();
+  virtual ~RecordReplayURLsFunction();
 
   // Read the ReplayDetails parameter if it exists.
   virtual bool ParseJSParameters() OVERRIDE;
