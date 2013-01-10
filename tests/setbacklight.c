@@ -74,9 +74,11 @@ get_drm_connector_type(struct udev_device *drm_device, uint32_t connector_id)
 		drmModeFreeConnector(connector);
 		drmModeFreeResources(res);
 
+		close(fd);
 		return connector_type;
 	}
 
+	close(fd);
 	drmModeFreeResources(res);
 	return -1;
 }
