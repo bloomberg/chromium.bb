@@ -154,6 +154,8 @@
       'picture_pile.h',
       'picture_pile_impl.cc',
       'picture_pile_impl.h',
+      'pinch_zoom_viewport.cc',
+      'pinch_zoom_viewport.h',
       'platform_color.h',
       'prioritized_resource.cc',
       'prioritized_resource.h',

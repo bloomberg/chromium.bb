@@ -13,6 +13,7 @@
 #include "cc/cc_export.h"
 #include "cc/input_handler.h"
 #include "cc/output_surface_client.h"
+#include "cc/pinch_zoom_viewport.h"
 #include "cc/render_pass.h"
 #include "cc/render_pass_sink.h"
 #include "cc/renderer.h"
@@ -52,65 +53,6 @@ public:
     // Returns true if resources were deleted by this call.
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) = 0;
     virtual void sendManagedMemoryStats() = 0;
-};
-
-// PinchZoomViewport models the bounds and offset of the viewport that is used during a pinch-zoom operation.
-// It tracks the layout-space dimensions of the viewport before any applied scale, and then tracks the layout-space
-// coordinates of the viewport respecting the pinch settings.
-class CC_EXPORT PinchZoomViewport {
-public:
-    PinchZoomViewport();
-
-    float totalPageScaleFactor() const;
-
-    void setPageScaleFactor(float factor) { m_pageScaleFactor = factor; }
-    float pageScaleFactor() const { return m_pageScaleFactor; }
-
-    void setPageScaleDelta(float delta);
-    float pageScaleDelta() const  { return m_pageScaleDelta; }
-
-    float minPageScaleFactor() const { return m_minPageScaleFactor; }
-    float maxPageScaleFactor() const { return m_maxPageScaleFactor; }
-
-    void setSentPageScaleDelta(float delta) { m_sentPageScaleDelta = delta; }
-    float sentPageScaleDelta() const { return m_sentPageScaleDelta; }
-
-    void setDeviceScaleFactor(float factor) { m_deviceScaleFactor = factor; }
-    float deviceScaleFactor() const { return m_deviceScaleFactor; }
-
-    // Returns true if the passed parameters were different from those previously
-    // cached.
-    bool setPageScaleFactorAndLimits(float pageScaleFactor,
-                                     float minPageScaleFactor,
-                                     float maxPageScaleFactor);
-
-    // Returns the bounds and offset of the scaled and translated viewport to use for pinch-zoom.
-    gfx::RectF bounds() const;
-    const gfx::Vector2dF& zoomedViewportOffset() const { return m_zoomedViewportOffset; }
-
-    void setLayoutViewportSize(const gfx::SizeF& size) { m_layoutViewportSize = size; }
-
-    // Apply the scroll offset in layout space to the offset of the pinch-zoom viewport. The viewport cannot be
-    // scrolled outside of the layout viewport bounds. Returns the component of the scroll that is un-applied due to
-    // this constraint.
-    gfx::Vector2dF applyScroll(const gfx::Vector2dF&);
-
-    // The implTransform goes from the origin of the unzoomedDeviceViewport to the
-    // origin of the zoomedDeviceViewport.
-    //
-    // implTransform = S[pageScale] * Tr[-zoomedDeviceViewportOffset]
-    gfx::Transform implTransform(bool pageScalePinchZoomEnabled) const;
-
-private:
-    float m_pageScaleFactor;
-    float m_pageScaleDelta;
-    float m_sentPageScaleDelta;
-    float m_maxPageScaleFactor;
-    float m_minPageScaleFactor;
-    float m_deviceScaleFactor;
-
-    gfx::Vector2dF m_zoomedViewportOffset;
-    gfx::SizeF m_layoutViewportSize;
 };
 
 // LayerTreeHostImpl owns the LayerImpl tree as well as associated rendering state
@@ -298,7 +240,7 @@ public:
     template<typename RenderPassCuller>
     static void removeRenderPasses(RenderPassCuller, FrameData&);
 
-    float totalPageScaleFactorForTesting() const { return m_pinchZoomViewport.totalPageScaleFactor(); }
+    float totalPageScaleFactorForTesting() const { return m_pinchZoomViewport.total_page_scale_factor(); }
 
     const PinchZoomViewport& pinchZoomViewport() const { return m_pinchZoomViewport; }
 

@@ -93,11 +93,11 @@ void LayerTreeImpl::UpdateMaxScrollOffset() {
     // Pinch with pageScale scrolls entirely in layout space.  ContentSize
     // returns the bounds including the page scale factor, so calculate the
     // pre page-scale layout size here.
-    float page_scale_factor = pinch_zoom_viewport().pageScaleFactor();
+    float page_scale_factor = pinch_zoom_viewport().page_scale_factor();
     content_bounds.set_width(content_bounds.width() / page_scale_factor);
     content_bounds.set_height(content_bounds.height() / page_scale_factor);
   } else {
-    view_bounds.Scale(1 / pinch_zoom_viewport().pageScaleDelta());
+    view_bounds.Scale(1 / pinch_zoom_viewport().page_scale_delta());
   }
 
   gfx::Vector2dF max_scroll = gfx::Rect(content_bounds).bottom_right() -
@@ -127,7 +127,7 @@ void LayerTreeImpl::UpdateDrawProperties() {
         RootLayer(),
         device_viewport_size(),
         device_scale_factor(),
-        pinch_zoom_viewport().pageScaleFactor(),
+        pinch_zoom_viewport().page_scale_factor(),
         MaxTextureSize(),
         settings().canUseLCDText,
         render_surface_layer_list_);
