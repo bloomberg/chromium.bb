@@ -16,6 +16,13 @@
 
 namespace cc {
 
+// This epsilon is used to determine if two layers are too close to each other
+// to be able to tell which is in front of the other.  It's a relative epsilon
+// so it is robust to changes in scene scale.  This value was chosen by picking
+// a value near machine epsilon and then increasing it until the flickering on
+// the test scene went away.
+const float kLayerEpsilon = 1e-4f;
+
 inline static float perpProduct(const gfx::Vector2dF& u, const gfx::Vector2dF& v)
 {
     return u.x() * v.y() - u.y() * v.x();
@@ -69,6 +76,14 @@ LayerSorter::~LayerSorter()
 {
 }
 
+static float const checkFloatingPointNumericAccuracy(float a, float b)
+{
+    float absDif = std::abs(b - a);
+    float absMax = std::max(std::abs(b), std::abs(a));
+    // Check to see if we've got a result with a reasonable amount of error.
+    return absDif / absMax;
+}
+
 // Checks whether layer "a" draws on top of layer "b". The weight value returned is an indication of
 // the maximum z-depth difference between the layers or zero if the layers are found to be intesecting
 // (some features are in front and some are behind).
@@ -110,9 +125,24 @@ LayerSorter::ABCompareResult LayerSorter::checkOverlap(LayerShape* a, LayerShape
     // which layer is in front.
     float maxPositive = 0;
     float maxNegative = 0;
+
+    // This flag tracks the existance of a numerically accurate seperation
+    // between two layers.  If there is no accurate seperation, the layers
+    // cannot be effectively sorted.
+    bool accurate = false;
+
     for (unsigned o = 0; o < overlapPoints.size(); o++) {
         float za = a->layerZFromProjectedPoint(overlapPoints[o]);
         float zb = b->layerZFromProjectedPoint(overlapPoints[o]);
+
+        // Here we attempt to avoid numeric issues with layers that are too
+        // close together.  If we have 2-sided quads that are very close
+        // together then we will draw them in document order to avoid
+        // flickering.  The correct solution is for the content maker to turn
+        // on back-face culling or move the quads apart (if they're not two
+        // sides of one object).
+        if (checkFloatingPointNumericAccuracy(za, zb) > kLayerEpsilon)
+          accurate = true;
 
         float diff = za - zb;
         if (diff > maxPositive)
@@ -120,6 +150,10 @@ LayerSorter::ABCompareResult LayerSorter::checkOverlap(LayerShape* a, LayerShape
         if (diff < maxNegative)
             maxNegative = diff;
     }
+
+    // If we can't tell which should come first, we use document order.
+    if (!accurate)
+      return ABeforeB;
 
     float maxDiff = (fabsf(maxPositive) > fabsf(maxNegative) ? maxPositive : maxNegative);
 

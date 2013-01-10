@@ -263,5 +263,55 @@ TEST(LayerSorterTest, verifyExistingOrderingPreservedWhenNoZDiff)
     EXPECT_EQ(5, layerList[4]->id());
 }
 
+TEST(LayerSorterTest, verifyConcidentLayerPrecisionLossResultsInDocumentOrder)
+{
+    FakeImplProxy proxy;
+    FakeLayerTreeHostImpl hostImpl(&proxy);
+
+    scoped_ptr<LayerImpl> layer1 = LayerImpl::create(hostImpl.activeTree(), 1);
+    scoped_ptr<LayerImpl> layer2 = LayerImpl::create(hostImpl.activeTree(), 2);
+
+    // Layer 1 should occur before layer 2 in paint.  However, due to numeric
+    // issues in the sorter, it will put the layers in the wrong order
+    // in some situations.  Here we test a patch that results in  document
+    // order rather than calculated order when numeric percision is suspect
+    // in calculated order.
+
+    gfx::Transform BehindMatrix;
+    BehindMatrix.Translate3d(0, 0, 0.999999f);
+    BehindMatrix.RotateAboutXAxis(38.5f);
+    BehindMatrix.RotateAboutYAxis(77.0f);
+    gfx::Transform FrontMatrix;
+    FrontMatrix.Translate3d(0, 0, 1.0f);
+    FrontMatrix.RotateAboutXAxis(38.5f);
+    FrontMatrix.RotateAboutYAxis(77.0f);
+
+    layer1->setBounds(gfx::Size(10, 10));
+    layer1->setContentBounds(gfx::Size(10, 10));
+    layer1->drawProperties().target_space_transform = BehindMatrix;
+    layer1->setDrawsContent(true);
+
+    layer2->setBounds(gfx::Size(10, 10));
+    layer2->setContentBounds(gfx::Size(10, 10));
+    layer2->drawProperties().target_space_transform = FrontMatrix;
+    layer2->setDrawsContent(true);
+
+    std::vector<LayerImpl*> layerList;
+    layerList.push_back(layer1.get());
+    layerList.push_back(layer2.get());
+
+    ASSERT_EQ(static_cast<size_t>(2), layerList.size());
+    EXPECT_EQ(1, layerList[0]->id());
+    EXPECT_EQ(2, layerList[1]->id());
+
+    LayerSorter layerSorter;
+    layerSorter.sort(layerList.begin(), layerList.end());
+
+    ASSERT_EQ(static_cast<size_t>(2), layerList.size());
+    EXPECT_EQ(1, layerList[0]->id());
+    EXPECT_EQ(2, layerList[1]->id());
+}
+
 }  // namespace
 }  // namespace cc
+
