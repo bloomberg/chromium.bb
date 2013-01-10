@@ -670,6 +670,7 @@ namespace shill {
 const char kClearPropertiesFunction[] = "ClearProperties";
 const char kRefreshFunction[] = "Refresh";
 const char kSetCarrierFunction[] = "SetCarrier";
+const char kGetNetworksForGeolocation[] = "GetNetworksForGeolocation";
 
 // Device property names.
 const char kReceiveByteCountProperty[] = "ReceiveByteCount";
