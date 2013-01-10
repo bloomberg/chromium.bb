@@ -100,7 +100,8 @@
   margin-bottom: 5px;
 }
 
-.action-area-checkbox-container {
+.action-area-checkbox-container,
+.action-area-settings-container {
   -webkit-box-flex: 1;
 }
 
