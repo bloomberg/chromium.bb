@@ -273,12 +273,18 @@ void AutofillDialogViews::ButtonPressed(views::Button* sender,
 
 void AutofillDialogViews::ContentsChanged(views::Textfield* sender,
                                           const string16& new_contents) {
-  // TODO(estade): work for not billing.
-  for (TextfieldMap::iterator iter = billing_.textfields.begin();
-       iter != billing_.textfields.end();
+  const DetailsGroup& group =
+      sender->parent() == email_.manual_input ? email_ :
+      sender->parent() == cc_.manual_input ? cc_ :
+      sender->parent() == billing_.manual_input ? billing_ :
+                                                  shipping_;
+
+  for (TextfieldMap::const_iterator iter = group.textfields.begin();
+       iter != group.textfields.end();
        ++iter) {
     if (iter->second == sender) {
       controller_->UserEditedInput(iter->first,
+                                   group.section,
                                    GetWidget()->GetNativeView(),
                                    sender->GetBoundsInScreen(),
                                    new_contents);

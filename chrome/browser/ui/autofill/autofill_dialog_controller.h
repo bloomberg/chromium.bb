@@ -124,6 +124,7 @@ class AutofillDialogController : public AutofillPopupDelegate,
 
   // Called by the view when the user changes the contents of a text field.
   void UserEditedInput(const DetailInput* input,
+                       DialogSection section,
                        gfx::NativeView view,
                        const gfx::Rect& content_bounds,
                        const string16& field_contents);
@@ -200,6 +201,9 @@ class AutofillDialogController : public AutofillPopupDelegate,
   // Returns the PersonalDataManager for |profile_|.
   PersonalDataManager* GetManager();
 
+  // Like RequestedFieldsForSection, but returns a pointer.
+  DetailInputs* MutableRequestedFieldsForSection(DialogSection section);
+
   // The |profile| for |contents_|.
   Profile* const profile_;
 
@@ -236,6 +240,10 @@ class AutofillDialogController : public AutofillPopupDelegate,
   std::vector<PersonalDataManager::GUIDPair> popup_guids_;
 
   AutofillPopupControllerImpl* popup_controller_;
+
+  // The section for which |popup_controller_| is currently showing a popup
+  // (if any).
+  DialogSection section_showing_popup_;
 
   scoped_ptr<AutofillDialogView> view_;
 

@@ -123,7 +123,8 @@ AutofillDialogController::AutofillDialogController(
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_cc_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_billing_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(suggested_shipping_(this)),
-      popup_controller_(NULL) {
+      popup_controller_(NULL),
+      section_showing_popup_(SECTION_BILLING) {
   // TODO(estade): |this| should observe PersonalDataManager.
   // TODO(estade): remove duplicates from |form|?
 }
@@ -309,7 +310,7 @@ const DetailInputs& AutofillDialogController::RequestedFieldsForSection(
   }
 
   NOTREACHED();
-  return requested_shipping_fields_;
+  return requested_billing_fields_;
 }
 
 ui::ComboboxModel* AutofillDialogController::ComboboxModelForAutofillType(
@@ -383,13 +384,19 @@ void AutofillDialogController::ViewClosed(DialogAction action) {
 
 void AutofillDialogController::UserEditedInput(
     const DetailInput* input,
+    DialogSection section,
     gfx::NativeView view,
     const gfx::Rect& content_bounds,
     const string16& field_contents) {
-  // TODO(estade): support all sections, not just billing.
+  // TODO(estade): supporting CC will require some refactoring.
+  if (section == SECTION_CC)
+    return;
+
   std::vector<string16> popup_values, popup_labels, popup_icons;
   std::vector<AutofillFieldType> field_types;
-  const DetailInputs& inputs = RequestedFieldsForSection(SECTION_BILLING);
+
+  // TODO(estade): add field types from email section?
+  const DetailInputs& inputs = RequestedFieldsForSection(section);
   field_types.reserve(inputs.size());
   for (DetailInputs::const_iterator iter = inputs.begin();
        iter != inputs.end(); ++iter) {
@@ -417,6 +424,7 @@ void AutofillDialogController::UserEditedInput(
                           popup_labels,
                           popup_icons,
                           popup_ids);
+  section_showing_popup_ = section;
 }
 
 void AutofillDialogController::FocusMoved() {
@@ -439,9 +447,10 @@ void AutofillDialogController::DidAcceptSuggestion(const string16& value,
   if (!profile)
     return;
 
-  // TODO(estade): implement for all sections.
-  FillInputFromFormGroup(profile, &requested_billing_fields_);
-  view_->UpdateSection(SECTION_BILLING);
+  FillInputFromFormGroup(
+      profile,
+      MutableRequestedFieldsForSection(section_showing_popup_));
+  view_->UpdateSection(section_showing_popup_);
 
   // TODO(estade): not sure why it's necessary to do this explicitly.
   popup_controller_->Hide();
@@ -611,6 +620,11 @@ DialogSection AutofillDialogController::SectionForSuggestionsMenuModel(
 
 PersonalDataManager* AutofillDialogController::GetManager() {
   return PersonalDataManagerFactory::GetForProfile(profile_);
+}
+
+DetailInputs* AutofillDialogController::MutableRequestedFieldsForSection(
+    DialogSection section) {
+  return const_cast<DetailInputs*>(&RequestedFieldsForSection(section));
 }
 
 }  // namespace autofill
