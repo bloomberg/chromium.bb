@@ -5,6 +5,7 @@
 #include "chrome/browser/google_apis/fake_drive_service.h"
 
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,8 +20,8 @@ class FakeDriveServiceTest : public testing::Test {
       : ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }
 
-  // Returns true if the resource identified by |resource_id| exists.
-  bool Exists(const std::string& resource_id) {
+  // Returns the resource entry that matches |resource_id|.
+  scoped_ptr<ResourceEntry> FindEntry(const std::string& resource_id) {
     GDataErrorCode error = GDATA_OTHER_ERROR;
     scoped_ptr<ResourceEntry> resource_entry;
     fake_service_.GetResourceEntry(
@@ -29,7 +30,13 @@ class FakeDriveServiceTest : public testing::Test {
                    &error,
                    &resource_entry));
     message_loop_.RunUntilIdle();
-    return error == HTTP_SUCCESS;
+    return resource_entry.Pass();
+  }
+
+  // Returns true if the resource identified by |resource_id| exists.
+  bool Exists(const std::string& resource_id) {
+    scoped_ptr<ResourceEntry> resource_entry = FindEntry(resource_id);
+    return resource_entry;
   }
 
   MessageLoopForUI message_loop_;
@@ -76,6 +83,23 @@ TEST_F(FakeDriveServiceTest, GetAccountMetadata) {
   ASSERT_TRUE(account_metadata);
   // Do some sanity check.
   EXPECT_EQ(2U, account_metadata->installed_apps().size());
+}
+
+TEST_F(FakeDriveServiceTest, GetApplicationInfo) {
+  ASSERT_TRUE(fake_service_.LoadApplicationInfoForDriveApi(
+      "drive/applist.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<base::Value> app_info;
+  fake_service_.GetApplicationInfo(
+      base::Bind(&test_util::CopyResultsFromGetDataCallback,
+                 &error,
+                 &app_info));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+
+  ASSERT_TRUE(app_info);
 }
 
 TEST_F(FakeDriveServiceTest, GetResourceEntry_ExistingFile) {
@@ -143,6 +167,304 @@ TEST_F(FakeDriveServiceTest, DeleteResource_NonexistingFile) {
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
+}
+
+TEST_F(FakeDriveServiceTest, CopyHostedDocument_ExistingHostedDocument) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  const std::string kResourceId = "document:5_document_resource_id";
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> resource_entry;
+  fake_service_.CopyHostedDocument(
+      kResourceId,
+      FILE_PATH_LITERAL("new name"),
+      base::Bind(&test_util::CopyResultsFromGetResourceEntryCallback,
+                 &error,
+                 &resource_entry));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_entry);
+  // The copied entry should have the new resource ID and the title.
+  EXPECT_EQ(kResourceId + "_copied", resource_entry->resource_id());
+  EXPECT_EQ("new name", UTF16ToUTF8(resource_entry->title()));
+}
+
+TEST_F(FakeDriveServiceTest, CopyHostedDocument_NonexistingHostedDocument) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  const std::string kResourceId = "document:nonexisting_resource_id";
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> resource_entry;
+  fake_service_.CopyHostedDocument(
+      kResourceId,
+      FILE_PATH_LITERAL("new name"),
+      base::Bind(&test_util::CopyResultsFromGetResourceEntryCallback,
+                 &error,
+                 &resource_entry));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_NOT_FOUND, error);
+  EXPECT_FALSE(resource_entry);
+}
+
+TEST_F(FakeDriveServiceTest, CopyHostedDocument_ExistingRegularFile) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  const std::string kResourceId = "file:2_file_resource_id";
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> resource_entry;
+  fake_service_.CopyHostedDocument(
+      kResourceId,
+      FILE_PATH_LITERAL("new name"),
+      base::Bind(&test_util::CopyResultsFromGetResourceEntryCallback,
+                 &error,
+                 &resource_entry));
+  message_loop_.RunUntilIdle();
+
+  // The copy should fail as this is not a hosted document.
+  EXPECT_EQ(HTTP_NOT_FOUND, error);
+  EXPECT_FALSE(resource_entry);
+}
+
+TEST_F(FakeDriveServiceTest, RenameResource_ExistingFile) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  const std::string kResourceId = "file:2_file_resource_id";
+  const GURL kEditUrl("https://file1_link_self/file:2_file_resource_id");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  fake_service_.RenameResource(
+      kEditUrl,
+      FILE_PATH_LITERAL("new name"),
+      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
+                 &error));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+
+  scoped_ptr<ResourceEntry> resource_entry = FindEntry(kResourceId);
+  ASSERT_TRUE(resource_entry);
+  EXPECT_EQ("new name", UTF16ToUTF8(resource_entry->title()));
+}
+
+TEST_F(FakeDriveServiceTest, RenameResource_NonexistingFile) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  const GURL kEditUrl("https://file1_link_self/file:nonexisting_file");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  fake_service_.RenameResource(
+      kEditUrl,
+      FILE_PATH_LITERAL("new name"),
+      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
+                 &error));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_NOT_FOUND, error);
+}
+
+TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInRootDirectory) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  const std::string kResourceId = "file:2_file_resource_id";
+  const GURL kEditUrl("https://file1_link_self/file:2_file_resource_id");
+  const GURL kNewParentContentUrl("https://new_url");
+
+  scoped_ptr<ResourceEntry> resource_entry = FindEntry(kResourceId);
+  ASSERT_TRUE(resource_entry);
+  // The parent link should not exist as this file is in the root directory.
+  const google_apis::Link* parent_link =
+      resource_entry->GetLinkByType(Link::LINK_PARENT);
+  ASSERT_FALSE(parent_link);
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  fake_service_.AddResourceToDirectory(
+      kNewParentContentUrl,
+      kEditUrl,
+      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
+                 &error));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+
+  resource_entry = FindEntry(kResourceId);
+  ASSERT_TRUE(resource_entry);
+  // The parent link should now exist as the parent directory is changed.
+  parent_link = resource_entry->GetLinkByType(Link::LINK_PARENT);
+  ASSERT_TRUE(parent_link);
+  EXPECT_EQ(kNewParentContentUrl, parent_link->href());
+}
+
+TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInNonRootDirectory) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  const std::string kResourceId = "file:subdirectory_file_1_id";
+  const GURL kEditUrl(
+      "https://dir1_file_link_self/file:subdirectory_file_1_id");
+  const GURL kNewParentContentUrl("https://new_url");
+
+  scoped_ptr<ResourceEntry> resource_entry = FindEntry(kResourceId);
+  ASSERT_TRUE(resource_entry);
+  // Here's the original parent link.
+  const google_apis::Link* parent_link =
+      resource_entry->GetLinkByType(Link::LINK_PARENT);
+  ASSERT_TRUE(parent_link);
+  EXPECT_EQ("https://dir_1_self_link/folder:1_folder_resource_id",
+            parent_link->href().spec());
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  fake_service_.AddResourceToDirectory(
+      kNewParentContentUrl,
+      kEditUrl,
+      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
+                 &error));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+
+  resource_entry = FindEntry(kResourceId);
+  ASSERT_TRUE(resource_entry);
+  // The parent link should now be changed.
+  parent_link = resource_entry->GetLinkByType(Link::LINK_PARENT);
+  ASSERT_TRUE(parent_link);
+  EXPECT_EQ(kNewParentContentUrl, parent_link->href());
+}
+
+TEST_F(FakeDriveServiceTest, AddResourceToDirectory_NonexistingFile) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  const GURL kEditUrl("https://file1_link_self/file:nonexisting_file");
+  const GURL kNewParentContentUrl("https://new_url");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  fake_service_.AddResourceToDirectory(
+      kNewParentContentUrl,
+      kEditUrl,
+      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
+                 &error));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_NOT_FOUND, error);
+}
+
+TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_ExistingFile) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  const std::string kResourceId("file:subdirectory_file_1_id");
+  const GURL kParentContentUrl(
+      "https://dir_1_self_link/folder:1_folder_resource_id");
+
+  scoped_ptr<ResourceEntry> resource_entry = FindEntry(kResourceId);
+  ASSERT_TRUE(resource_entry);
+  // The parent link should exist now.
+  const google_apis::Link* parent_link =
+      resource_entry->GetLinkByType(Link::LINK_PARENT);
+  ASSERT_TRUE(parent_link);
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  fake_service_.RemoveResourceFromDirectory(
+      kParentContentUrl,
+      kResourceId,
+      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
+                 &error));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+
+  resource_entry = FindEntry(kResourceId);
+  ASSERT_TRUE(resource_entry);
+  // The parent link should be gone now.
+  parent_link = resource_entry->GetLinkByType(Link::LINK_PARENT);
+  ASSERT_FALSE(parent_link);
+}
+
+TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_NonexistingFile) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  const std::string kResourceId("file:nonexisting_file");
+  const GURL kParentContentUrl(
+      "https://dir_1_self_link/folder:1_folder_resource_id");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  fake_service_.RemoveResourceFromDirectory(
+      kParentContentUrl,
+      kResourceId,
+      base::Bind(&test_util::CopyResultsFromEntryActionCallback,
+                 &error));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_NOT_FOUND, error);
+}
+
+TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> resource_entry;
+  fake_service_.AddNewDirectory(
+      GURL(),  // Empty means add it to the root directory.
+      FILE_PATH_LITERAL("new directory"),
+      base::Bind(&test_util::CopyResultsFromGetResourceEntryCallback,
+                 &error,
+                 &resource_entry));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_entry);
+  EXPECT_EQ("resource_id_1", resource_entry->resource_id());
+  EXPECT_EQ("new directory", UTF16ToUTF8(resource_entry->title()));
+  // The parent link should not exist as the new directory was added in the
+  // root.
+  const google_apis::Link* parent_link =
+      resource_entry->GetLinkByType(Link::LINK_PARENT);
+  ASSERT_FALSE(parent_link);
+}
+
+TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonRootDirectory) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  const GURL kParentContentUrl(
+      "https://dir_1_self_link/folder:1_folder_resource_id");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> resource_entry;
+  fake_service_.AddNewDirectory(
+      kParentContentUrl,
+      FILE_PATH_LITERAL("new directory"),
+      base::Bind(&test_util::CopyResultsFromGetResourceEntryCallback,
+                 &error,
+                 &resource_entry));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_entry);
+  EXPECT_EQ("resource_id_1", resource_entry->resource_id());
+  EXPECT_EQ("new directory", UTF16ToUTF8(resource_entry->title()));
+  const google_apis::Link* parent_link =
+      resource_entry->GetLinkByType(Link::LINK_PARENT);
+  ASSERT_TRUE(parent_link);
+  EXPECT_EQ(kParentContentUrl, parent_link->href());
+}
+
+TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonexistingDirectory) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  const GURL kParentContentUrl(
+      "https://dir_1_self_link/folder:nonexisting_resource_id");
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> resource_entry;
+  fake_service_.AddNewDirectory(
+      kParentContentUrl,
+      FILE_PATH_LITERAL("new directory"),
+      base::Bind(&test_util::CopyResultsFromGetResourceEntryCallback,
+                 &error,
+                 &resource_entry));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_NOT_FOUND, error);
+  EXPECT_FALSE(resource_entry);
 }
 
 }  // namespace google_apis

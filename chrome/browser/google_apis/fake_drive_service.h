@@ -29,6 +29,9 @@ class FakeDriveService : public DriveServiceInterface {
   // Loads the account metadata for WAPI. Returns true on success.
   bool LoadAccountMetadataForWapi(const std::string& relative_path);
 
+  // Loads the application info for Drive API. Returns true on success.
+  bool LoadApplicationInfoForDriveApi(const std::string& relative_path);
+
   // DriveServiceInterface Overrides
   virtual void Initialize(Profile* profile) OVERRIDE;
   virtual void AddObserver(DriveServiceObserver* observer) OVERRIDE;
@@ -66,6 +69,8 @@ class FakeDriveService : public DriveServiceInterface {
       const GURL& content_url,
       const DownloadActionCallback& download_action_callback,
       const GetContentCallback& get_content_callback) OVERRIDE;
+  // The new resource ID for the copied document will look like
+  // |resource_id| + "_copied".
   virtual void CopyHostedDocument(
       const std::string& resource_id,
       const FilePath::StringType& new_name,
@@ -94,8 +99,27 @@ class FakeDriveService : public DriveServiceInterface {
                             const AuthorizeAppCallback& callback) OVERRIDE;
 
  private:
+  // Returns a pointer to the entry that matches |resource_id|, or NULL if
+  // not found.
+  base::DictionaryValue* FindEntryByResourceId(const std::string& resource_id);
+
+  // Returns a pointer to the entry that matches |edit_url|, or NULL if not
+  // found.
+  base::DictionaryValue* FindEntryByEditUrl(const GURL& edit_url);
+
+  // Returns a pointer to the entry that matches |content_url|, or NULL if
+  // not found.
+  base::DictionaryValue* FindEntryByContentUrl(const GURL& content_url);
+
+  // Returns a new resource ID, which looks like "resource_id_<num>" where
+  // <num> is a monotonically increasing number starting from 1.
+  std::string GetNewResourceId();
+
   scoped_ptr<base::Value> resource_list_value_;
   scoped_ptr<base::Value> account_metadata_value_;
+  scoped_ptr<base::Value> app_info_value_;
+  int resource_id_count_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeDriveService);
 };
 

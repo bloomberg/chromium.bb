@@ -298,7 +298,7 @@
             "term": "http://schemas.google.com/docs/2007#folder"
          } ],
          "content": {
-            "src": "https://1_folder_content_url",
+            "src": "https://dir_1_self_link/folder:1_folder_resource_id",
             "type": "application/atom+xml;type=feed"
          },
          "docs$writersCanInvite": {
