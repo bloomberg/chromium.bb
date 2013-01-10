@@ -99,8 +99,8 @@ FilePath GetVersionedFileName(const std::string& input_language,
   // number if you're updating either dic or aff files. Increment the minor
   // version number if you're updating only dic_delta files.
   static LanguageVersion special_version_string[] = {
-    {"et-EE", "-1-1"},  // No dic/aff files
-    {"tr-TR", "-1-1"},  // No dic/aff files
+    {"tr-TR", "-4-0"},  // Jan 9, 2013: Add "FLAG num" to aff to avoid heapcheck
+                        // crash.
   };
 
   // Generate the bdict file name using default version string or special
