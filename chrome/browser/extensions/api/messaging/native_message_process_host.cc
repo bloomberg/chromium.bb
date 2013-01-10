@@ -22,7 +22,7 @@ namespace {
 
 const int kExitTimeoutMS = 5000;
 const uint32 kMaxMessageDataLength = 10 * 1024 * 1024;
-const char kNativeHostsDirectoryName[] = "Native Hosts";
+const char kNativeHostsDirectoryName[] = "native_hosts";
 
 }  // namespace
 
