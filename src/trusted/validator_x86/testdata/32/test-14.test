@@ -1,16 +1,17 @@
 @hex:
   # test 14: ldmxcsr, stmxcsr
-  90 0f ae 10 90 0f ae 18
-  90 90 90 90 90 90 f4
+  0f ae 10
+  0f ae 18
+  f4
 @nval:
   *** <input> is safe ***
 @nvals:
   *** <input> is safe ***
   
   Opcode Histogram;
-  2	0x0f	8	0x90	1	0xf4	
+  2	0x0f	1	0xf4	
   Analysis Summary:
-  11 Checked instructions
+  3 Checked instructions
   0 checked jump targets
   0 calls/jumps need dynamic checking (0.00%)
   
@@ -24,28 +25,12 @@
   0 bad instruction length
   0 internal errors
 @dis:
-  00000000: 90                                           nop
-  00000001: 0f ae 10                                     ldmxcsr %ds:[%eax]
-  00000004: 90                                           nop
-  00000005: 0f ae 18                                     stmxcsr %ds:[%eax]
-  00000008: 90                                           nop
-  00000009: 90                                           nop
-  0000000a: 90                                           nop
-  0000000b: 90                                           nop
-  0000000c: 90                                           nop
-  0000000d: 90                                           nop
-  0000000e: f4                                           hlt
+  00000000: 0f ae 10                                     ldmxcsr %ds:[%eax]
+  00000003: 0f ae 18                                     stmxcsr %ds:[%eax]
+  00000006: f4                                           hlt
 @vdis:
-   0:	90                  	nop
-   1:	0f ae 10            	ldmxcsr [%eax]
-   4:	90                  	nop
-   5:	0f ae 18            	stmxcsr [%eax]
-   8:	90                  	nop
-   9:	90                  	nop
-   a:	90                  	nop
-   b:	90                  	nop
-   c:	90                  	nop
-   d:	90                  	nop
-   e:	f4                  	hlt
+   0:	0f ae 10            	ldmxcsr [%eax]
+   3:	0f ae 18            	stmxcsr [%eax]
+   6:	f4                  	hlt
 @rdfa_output:
   return code: 0

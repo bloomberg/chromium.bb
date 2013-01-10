@@ -1,16 +1,16 @@
 @hex:
   # test 7: group2, three byte move.
   c1 f9 1f 89 4d e4
-  90 90 90 90 90 90 f4
+  f4
 @nval:
   *** <input> is safe ***
 @nvals:
   *** <input> is safe ***
   
   Opcode Histogram;
-  1	0x89	6	0x90	1	0xc1	1	0xf4	
+  1	0x89	1	0xc1	1	0xf4	
   Analysis Summary:
-  9 Checked instructions
+  3 Checked instructions
   0 checked jump targets
   0 calls/jumps need dynamic checking (0.00%)
   
@@ -26,22 +26,10 @@
 @dis:
   00000000: c1 f9 1f                                     sar %ecx, 0x1f
   00000003: 89 4d e4                                     mov %ss:[%ebp-0x1c], %ecx
-  00000006: 90                                           nop
-  00000007: 90                                           nop
-  00000008: 90                                           nop
-  00000009: 90                                           nop
-  0000000a: 90                                           nop
-  0000000b: 90                                           nop
-  0000000c: f4                                           hlt
+  00000006: f4                                           hlt
 @vdis:
    0:	c1 f9 1f            	sar %edi, 0x1f
    3:	89 4d e4            	mov 0xffffffe4[%ebp], %ecx
-   6:	90                  	nop
-   7:	90                  	nop
-   8:	90                  	nop
-   9:	90                  	nop
-   a:	90                  	nop
-   b:	90                  	nop
-   c:	f4                  	hlt
+   6:	f4                  	hlt
 @rdfa_output:
   return code: 0
