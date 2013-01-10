@@ -114,9 +114,9 @@ FileSystemFileUtil* TestMountPointProvider::GetFileUtil(FileSystemType type) {
   return local_file_util_.get();
 }
 
-FilePath TestMountPointProvider::GetPathForPermissionsCheck(
-    const FilePath& virtual_path) const {
-  return base_path_.Append(virtual_path);
+FilePermissionPolicy TestMountPointProvider::GetPermissionPolicy(
+    const FileSystemURL& url, int permissions) const {
+  return FILE_PERMISSION_ALWAYS_DENY;
 }
 
 FileSystemOperation* TestMountPointProvider::CreateFileSystemOperation(

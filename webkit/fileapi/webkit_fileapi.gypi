@@ -6,6 +6,8 @@
   'variables': {
     'webkit_fileapi_sources': [
       '../fileapi/file_observers.h',
+      '../fileapi/file_permission_policy.cc',
+      '../fileapi/file_permission_policy.h',
       '../fileapi/file_stream_writer.h',
       '../fileapi/file_system_callback_dispatcher.cc',
       '../fileapi/file_system_callback_dispatcher.h',

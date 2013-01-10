@@ -235,9 +235,14 @@ fileapi::FileSystemFileUtil* CrosMountPointProvider::GetFileUtil(
   return local_file_util_.get();
 }
 
-FilePath CrosMountPointProvider::GetPathForPermissionsCheck(
-    const FilePath& virtual_path) const {
-  return virtual_path;
+fileapi::FilePermissionPolicy CrosMountPointProvider::GetPermissionPolicy(
+    const fileapi::FileSystemURL& url, int permissions) const {
+  if (url.mount_type() == fileapi::kFileSystemTypeIsolated) {
+    // Permissions in isolated filesystems should be examined with
+    // FileSystem permission.
+    return fileapi::FILE_PERMISSION_USE_FILESYSTEM_PERMISSION;
+  }
+  return fileapi::FILE_PERMISSION_USE_FILE_PERMISSION;
 }
 
 fileapi::FileSystemOperation* CrosMountPointProvider::CreateFileSystemOperation(

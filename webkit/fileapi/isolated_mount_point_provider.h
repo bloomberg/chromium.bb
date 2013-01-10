@@ -38,8 +38,9 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
   virtual bool IsAccessAllowed(const FileSystemURL& url) OVERRIDE;
   virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
   virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) OVERRIDE;
-  virtual FilePath GetPathForPermissionsCheck(const FilePath& virtual_path)
-      const OVERRIDE;
+  virtual FilePermissionPolicy GetPermissionPolicy(
+      const FileSystemURL& url,
+      int permissions) const OVERRIDE;
   virtual FileSystemOperation* CreateFileSystemOperation(
       const FileSystemURL& url,
       FileSystemContext* context,

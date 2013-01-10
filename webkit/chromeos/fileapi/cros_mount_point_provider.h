@@ -57,8 +57,9 @@ class WEBKIT_STORAGE_EXPORT CrosMountPointProvider
   virtual bool IsRestrictedFileName(const FilePath& filename) const OVERRIDE;
   virtual fileapi::FileSystemFileUtil* GetFileUtil(
       fileapi::FileSystemType type) OVERRIDE;
-  virtual FilePath GetPathForPermissionsCheck(const FilePath& virtual_path)
-      const OVERRIDE;
+  virtual fileapi::FilePermissionPolicy GetPermissionPolicy(
+      const fileapi::FileSystemURL& url,
+      int permissions) const OVERRIDE;
   virtual fileapi::FileSystemOperation* CreateFileSystemOperation(
       const fileapi::FileSystemURL& url,
       fileapi::FileSystemContext* context,

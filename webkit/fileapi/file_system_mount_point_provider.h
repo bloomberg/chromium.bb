@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/file_path.h"
 #include "base/platform_file.h"
+#include "webkit/fileapi/file_permission_policy.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/storage/webkit_storage_export.h"
 
@@ -68,10 +69,10 @@ class WEBKIT_STORAGE_EXPORT FileSystemMountPointProvider {
   // Returns the specialized FileSystemFileUtil for this mount point.
   virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) = 0;
 
-  // Returns file path we should use to check access permissions for
-  // |virtual_path|.
-  virtual FilePath GetPathForPermissionsCheck(const FilePath& virtual_path)
-      const = 0;
+  // Returns file permission policy we should apply for the given |url|.
+  virtual FilePermissionPolicy GetPermissionPolicy(
+      const FileSystemURL& url,
+      int permissions) const = 0;
 
   // Returns a new instance of the specialized FileSystemOperation for this
   // mount point based on the given triplet of |origin_url|, |file_system_type|

@@ -100,10 +100,16 @@ FileSystemFileUtil* IsolatedMountPointProvider::GetFileUtil(
   return NULL;
 }
 
-FilePath IsolatedMountPointProvider::GetPathForPermissionsCheck(
-    const FilePath& virtual_path) const {
-  // For isolated filesystems we only check per-filesystem permissions.
-  return FilePath();
+FilePermissionPolicy IsolatedMountPointProvider::GetPermissionPolicy(
+    const FileSystemURL& url, int permissions) const {
+  if (url.type() == kFileSystemTypeDragged && url.path().empty()) {
+    // The root directory of the dragged filesystem must be always read-only.
+    if (permissions != kReadFilePermissions)
+      return FILE_PERMISSION_ALWAYS_DENY;
+  }
+  // Access to isolated file systems should be checked using per-filesystem
+  // access permission.
+  return FILE_PERMISSION_USE_FILESYSTEM_PERMISSION;
 }
 
 FileSystemOperation* IsolatedMountPointProvider::CreateFileSystemOperation(
