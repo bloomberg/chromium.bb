@@ -17,7 +17,9 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   typedef content::WebContentsViewDelegate* ViewDelegateFactoryFn(
       content::WebContents* web_contents);
 
-  AwContentBrowserClient(ViewDelegateFactoryFn* view_delegate_factory);
+  AwContentBrowserClient(
+      ViewDelegateFactoryFn* view_delegate_factory,
+      GeolocationPermissionFactoryFn* geolocation_permission_factory);
   virtual ~AwContentBrowserClient();
 
   AwBrowserContext* GetAwBrowserContext();

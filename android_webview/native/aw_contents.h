@@ -102,6 +102,13 @@ class AwContents : public FindHelper::Listener,
                            int scroll_x, int scroll_y);
   void FocusFirstNode(JNIEnv* env, jobject obj);
 
+  // Geolocation API support
+  void OnGeolocationShowPrompt(int render_process_id,
+                             int render_view_id,
+                             int bridge_id,
+                             const GURL& requesting_frame);
+  void OnGeolocationHidePrompt();
+
   // Find-in-page API and related methods.
   jint FindAllSync(JNIEnv* env, jobject obj, jstring search_string);
   void FindAllAsync(JNIEnv* env, jobject obj, jstring search_string);

@@ -32,6 +32,8 @@
         'aw_contents.h',
         'aw_contents_io_thread_client_impl.cc',
         'aw_contents_io_thread_client_impl.h',
+        'aw_geolocation_permission_context.cc',
+        'aw_geolocation_permission_context.h',
         'aw_http_auth_handler.cc',
         'aw_http_auth_handler.h',
         'aw_javascript_dialog_creator.cc',

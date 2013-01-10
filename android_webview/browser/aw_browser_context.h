@@ -9,14 +9,19 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/geolocation_permission_context.h"
 
 namespace android_webview {
 
 class AwURLRequestContextGetter;
 
+typedef content::GeolocationPermissionContext* GeolocationPermissionFactoryFn();
+
 class AwBrowserContext : public content::BrowserContext {
  public:
-  AwBrowserContext(const FilePath path);
+  AwBrowserContext(
+      const FilePath path,
+      GeolocationPermissionFactoryFn* geolocation_permission_factory);
   virtual ~AwBrowserContext();
 
   // Called before BrowserThreads are created.
@@ -51,6 +56,9 @@ class AwBrowserContext : public content::BrowserContext {
   FilePath context_storage_path_;
 
   scoped_refptr<AwURLRequestContextGetter> url_request_context_getter_;
+  GeolocationPermissionFactoryFn* geolocation_permission_factory_;
+  scoped_refptr<content::GeolocationPermissionContext>
+      geolocation_permission_context_;
 
   AwDownloadManagerDelegate download_manager_delegate_;
 

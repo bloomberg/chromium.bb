@@ -6,6 +6,7 @@
 
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
+#include "android_webview/native/aw_geolocation_permission_context.h"
 #include "android_webview/native/aw_web_contents_view_delegate.h"
 #include "android_webview/renderer/aw_content_renderer_client.h"
 #include "base/command_line.h"
@@ -78,7 +79,9 @@ void AwMainDelegate::ProcessExiting(const std::string& process_type) {
 content::ContentBrowserClient*
     AwMainDelegate::CreateContentBrowserClient() {
   content_browser_client_.reset(
-      new AwContentBrowserClient(&AwWebContentsViewDelegate::Create));
+      new AwContentBrowserClient(
+          &AwWebContentsViewDelegate::Create,
+          &AwGeolocationPermissionContext::Create));
 
   return content_browser_client_.get();
 }

@@ -8,8 +8,11 @@
 
 namespace android_webview {
 
-AwBrowserContext::AwBrowserContext(const FilePath path)
-    : context_storage_path_(path) {
+AwBrowserContext::AwBrowserContext(
+    const FilePath path,
+    GeolocationPermissionFactoryFn* geolocation_permission_factory)
+    : context_storage_path_(path),
+      geolocation_permission_factory_(geolocation_permission_factory) {
 }
 
 AwBrowserContext::~AwBrowserContext() {
@@ -75,10 +78,10 @@ AwBrowserContext::GetDownloadManagerDelegate() {
 
 content::GeolocationPermissionContext*
 AwBrowserContext::GetGeolocationPermissionContext() {
-  // TODO(boliu): Implement this to power WebSettings.setGeolocationEnabled
-  // setting.
-  NOTIMPLEMENTED();
-  return NULL;
+  if (!geolocation_permission_context_) {
+    geolocation_permission_context_ = (*geolocation_permission_factory_)();
+  }
+  return geolocation_permission_context_;
 }
 
 content::SpeechRecognitionPreferences*

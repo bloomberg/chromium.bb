@@ -614,6 +614,22 @@ bool RegisterAwContents(JNIEnv* env) {
   return RegisterNativesImpl(env) >= 0;
 }
 
+void AwContents::OnGeolocationShowPrompt(int render_process_id,
+                                       int render_view_id,
+                                       int bridge_id,
+                                       const GURL& requesting_frame) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> j_requesting_frame(
+      ConvertUTF8ToJavaString(env, requesting_frame.spec()));
+  Java_AwContents_onGeolocationPermissionsShowPrompt(env,
+      java_ref_.get(env).obj(), render_process_id, render_view_id, bridge_id,
+      j_requesting_frame.obj());
+}
+
+void AwContents::OnGeolocationHidePrompt() {
+  // TODO(kristianm): Implement this
+}
+
 jint AwContents::FindAllSync(JNIEnv* env, jobject obj, jstring search_string) {
   return GetFindHelper()->FindAllSync(
       ConvertJavaStringToUTF16(env, search_string));

@@ -44,13 +44,15 @@ class DummyAccessTokenStore : public content::AccessTokenStore {
 namespace android_webview {
 
 AwContentBrowserClient::AwContentBrowserClient(
-    ViewDelegateFactoryFn* view_delegate_factory)
+    ViewDelegateFactoryFn* view_delegate_factory,
+    GeolocationPermissionFactoryFn* geolocation_permission_factory)
     : view_delegate_factory_(view_delegate_factory) {
   FilePath user_data_dir;
   if (!PathService::Get(base::DIR_ANDROID_APP_DATA, &user_data_dir)) {
     NOTREACHED() << "Failed to get app data directory for Android WebView";
   }
-  browser_context_.reset(new AwBrowserContext(user_data_dir));
+  browser_context_.reset(
+      new AwBrowserContext(user_data_dir, geolocation_permission_factory));
 }
 
 AwContentBrowserClient::~AwContentBrowserClient() {
