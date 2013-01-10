@@ -364,7 +364,6 @@ TabDragController::TabDragController()
       attached_tabstrip_(NULL),
       screen_(NULL),
       host_desktop_type_(chrome::HOST_DESKTOP_TYPE_NATIVE),
-      source_tab_offset_(0),
       offset_to_width_ratio_(0),
       old_focused_view_(NULL),
       last_move_screen_loc_(0),
@@ -431,7 +430,6 @@ void TabDragController::Init(
       source_tabstrip->GetWidget()->GetNativeView());
   host_desktop_type_ = chrome::GetHostDesktopTypeForNativeView(
       source_tabstrip->GetWidget()->GetNativeView());
-  source_tab_offset_ = source_tab_offset;
   start_point_in_screen_ = gfx::Point(source_tab_offset, mouse_offset.y());
   views::View::ConvertPointToScreen(source_tab, &start_point_in_screen_);
   mouse_offset_ = mouse_offset;
@@ -453,7 +451,8 @@ void TabDragController::Init(
   MessageLoopForUI::current()->AddObserver(this);
 
   if (source_tab->width() > 0) {
-    offset_to_width_ratio_ = static_cast<float>(source_tab_offset_) /
+    offset_to_width_ratio_ = static_cast<float>(
+        source_tab->GetMirroredXInView(source_tab_offset)) /
         static_cast<float>(source_tab->width());
   }
   InitWindowCreatePoint();

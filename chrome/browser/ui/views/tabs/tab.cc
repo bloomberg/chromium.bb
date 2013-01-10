@@ -867,6 +867,11 @@ bool Tab::OnMousePressed(const ui::MouseEvent& event) {
       (event.IsOnlyRightMouseButton() && event.flags() & ui::EF_FROM_TOUCH)) {
     ui::ListSelectionModel original_selection;
     original_selection.Copy(controller()->GetSelectionModel());
+    // Changing the selection may cause our bounds to change. If that happens
+    // the location of the event may no longer be valid. Create a copy of the
+    // event in the parents coordinate, which won't change, and recreate an
+    // event after changing so the coordinates are correct.
+    ui::MouseEvent event_in_parent(event, static_cast<View*>(this), parent());
     if (controller()->SupportsMultipleSelection()) {
       if (event.IsShiftDown() && event.IsControlDown()) {
         controller()->AddSelectionFromAnchorTo(this);
@@ -884,7 +889,9 @@ bool Tab::OnMousePressed(const ui::MouseEvent& event) {
     } else if (!IsSelected()) {
       controller()->SelectTab(this);
     }
-    controller()->MaybeStartDrag(this, event, original_selection);
+    ui::MouseEvent cloned_event(event_in_parent, parent(),
+                                static_cast<View*>(this));
+    controller()->MaybeStartDrag(this, cloned_event, original_selection);
   }
   return true;
 }
@@ -963,13 +970,18 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
       if (event->details().touch_points() != 1)
         return;
 
+      // See comment in OnMousePressed() as to why we copy the event.
+      ui::GestureEvent event_in_parent(*event, static_cast<View*>(this),
+                                       parent());
       ui::ListSelectionModel original_selection;
       original_selection.Copy(controller()->GetSelectionModel());
       if (!IsSelected())
         controller()->SelectTab(this);
       gfx::Point loc(event->location());
       views::View::ConvertPointToScreen(this, &loc);
-      controller()->MaybeStartDrag(this, *event, original_selection);
+      ui::GestureEvent cloned_event(event_in_parent, parent(),
+                                    static_cast<View*>(this));
+      controller()->MaybeStartDrag(this, cloned_event, original_selection);
       break;
     }
 

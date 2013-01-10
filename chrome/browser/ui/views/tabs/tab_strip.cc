@@ -1089,7 +1089,7 @@ void TabStrip::MaybeStartDrag(
     GetWidget()->SetCapture(this);
   drag_controller_.reset(new TabDragController);
   drag_controller_->Init(
-      this, tab, tabs, gfx::Point(x, y), tab->GetMirroredXInView(event.x()),
+      this, tab, tabs, gfx::Point(x, y), event.x(),
       selection_model, detach_behavior, move_behavior);
 }
 
@@ -2125,16 +2125,11 @@ void TabStrip::ResizeLayoutTabs() {
     // mini-tabs have the same width), so there is nothing to do.
     return;
   }
-  Tab* first_tab  = tab_at(mini_tab_count);
-  double unselected, selected;
-  GetDesiredTabWidths(tab_count(), mini_tab_count, &unselected, &selected);
-  // TODO: this is always selected, should it be 'selected : unselected'?
-  int w = Round(first_tab->IsActive() ? selected : selected);
-
-  // We only want to run the animation if we're not already at the desired
-  // size.
-  if (abs(first_tab->width() - w) > 1)
-    StartResizeLayoutAnimation();
+  // Don't try and avoid layout based on tab sizes. If tabs are small enough
+  // then the width of the active tab may not change, but other widths may
+  // have. This is particularly important if we've overflowed (all tabs are at
+  // the min).
+  StartResizeLayoutAnimation();
 }
 
 void TabStrip::ResizeLayoutTabsFromTouch() {

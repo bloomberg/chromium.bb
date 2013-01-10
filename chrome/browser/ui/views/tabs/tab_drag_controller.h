@@ -499,10 +499,7 @@ class TabDragController : public content::WebContentsDelegate,
   // detached window is created at the right location.
   gfx::Point mouse_offset_;
 
-  // Offset of the mouse relative to the source tab.
-  int source_tab_offset_;
-
-  // Ratio of the x-coordinate of the |source_tab_offset_| to the width of the
+  // Ratio of the x-coordinate of the |source_tab_offset| to the width of the
   // tab. Not used for vertical tabs.
   float offset_to_width_ratio_;
 
