@@ -86,6 +86,17 @@ CONFIGURE_HOST_TOOL = CONFIGURE_HOST_COMMON + [
 ]
 
 
+def InstallDocFiles(subdir, files):
+  doc_dir = os.path.join('%(output)s', 'share', 'doc', subdir)
+  dirs = sorted(set([os.path.dirname(os.path.join(doc_dir, file))
+                     for file in files]))
+  commands = ([command.Mkdir(dir, parents=True) for dir in dirs] +
+              [command.Copy(os.path.join('%(src)s', file),
+                            os.path.join(doc_dir, file))
+               for file in files])
+  return commands
+
+
 def NewlibLibcScript(arch):
   template = """/*
  * This is a linker script that gets installed as libc.a for the
@@ -284,7 +295,10 @@ def HostTools(target):
               command.Command(MAKE_CHECK_CMD),
               command.Command(MAKE_DESTDIR_CMD + ['install-strip']),
               REMOVE_INFO_DIR,
-              ] +
+              ] + InstallDocFiles('binutils',
+                                  ['COPYING3'] +
+                                  [os.path.join(subdir, 'NEWS') for subdir in
+                                   ['binutils', 'gas', 'ld', 'gold']]) +
               # The top-level lib* directories contain host libraries
               # that we don't want to include in the distribution.
               [command.RemoveDirectory(os.path.join('%(output)s', name))
@@ -331,7 +345,8 @@ def HostTools(target):
                             True),
               GccCommand(target, MAKE_DESTDIR_CMD + ['install-strip-gcc']),
               REMOVE_INFO_DIR,
-              ],
+              # Note we include COPYING.RUNTIME here and not with gcc_libs.
+              ] + InstallDocFiles('gcc', ['COPYING3', 'COPYING.RUNTIME']),
           },
       }
   return tools
@@ -423,7 +438,7 @@ def TargetLibs(target):
                                  NewlibFile('lib', 'libcrt_common.a')),
                   command.WriteData(NewlibLibcScript(target),
                                     NewlibFile('lib', 'libc.a')),
-                  ],
+                  ] + InstallDocFiles('newlib', ['COPYING.NEWLIB']),
           },
 
       'gcc_libs_' + target: {
