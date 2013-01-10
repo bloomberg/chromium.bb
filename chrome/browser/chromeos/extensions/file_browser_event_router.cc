@@ -625,7 +625,9 @@ void FileBrowserEventRouter::DispatchMountEvent(
       mount_info.mount_type == chromeos::MOUNT_TYPE_DEVICE &&
       !mount_info.mount_condition &&
       event == DiskMountManager::MOUNTING) {
-    file_manager_util::OpenActionChoiceDialog(FilePath(mount_info.mount_path));
+    // To enable Photo Import call file_manager_util::OpenActionChoiceDialog
+    // instead.
+    file_manager_util::ViewRemovableDrive(FilePath(mount_info.mount_path));
   }
 }
 
