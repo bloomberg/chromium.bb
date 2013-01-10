@@ -1,6 +1,7 @@
 EMAIL_ADDRESS | address_email | Email* | ne00_99@yahoo.com
 NAME_FIRST | shipping_firstName | First Name* | 
 NAME_LAST | shipping_lastName | Last Name* | 
+UNKNOWN_TYPE | shipping_country | First Name* | US
 ADDRESS_HOME_LINE1 | shipping_address1 | Street Address Line 1* | 
 ADDRESS_HOME_LINE2 | shipping_address2 | Street Address Line 2 | 
 ADDRESS_HOME_CITY | shipping_city | City* | 
@@ -9,8 +10,10 @@ ADDRESS_HOME_ZIP | shipping_zipCode | ZIP Code* |
 PHONE_HOME_WHOLE_NUMBER | shipping_day1 | Phone Number* | 
 UNKNOWN_TYPE | shipping_ext1 | Ext. | 
 ADDRESS_HOME_STATE | shipping_county | County | UNKNOWN
+UNKNOWN_TYPE | billingAddressCheckBox | Same as Delivery/Shipping Address | on
 NAME_FIRST | firstName | First Name* | 
 NAME_LAST | lastName | Last Name* | 
+UNKNOWN_TYPE | country | First Name* | US
 ADDRESS_HOME_LINE1 | address1 | Street Address Line 1* | 
 ADDRESS_HOME_LINE2 | address2 | Street Address Line 2 | 
 ADDRESS_HOME_CITY | city | City* | 

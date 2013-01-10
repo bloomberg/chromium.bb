@@ -43,7 +43,8 @@ AutofillField::AutofillField(const FormFieldData& field,
 AutofillField::~AutofillField() {}
 
 void AutofillField::set_heuristic_type(AutofillFieldType type) {
-  if (type >= 0 && type < MAX_VALID_FIELD_TYPE) {
+  if (type >= 0 && type < MAX_VALID_FIELD_TYPE &&
+      type != FIELD_WITH_DEFAULT_VALUE) {
     heuristic_type_ = type;
   } else {
     NOTREACHED();

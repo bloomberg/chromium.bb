@@ -18,6 +18,9 @@ PHONE_HOME_NUMBER | mob_phone_part2 | Mobile phone |
 PHONE_HOME_NUMBER | mob_phone_part3 | Mobile phone | 
 EMAIL_ADDRESS | email_addr | *Email | 
 EMAIL_ADDRESS | retype_email_addr | *Re-type email | 
+UNKNOWN_TYPE | promo_email_flag | Receive information on special offers and new arrivals at Bed Bath & Beyond. | Y
+UNKNOWN_TYPE | mobile_offers_opt_in | Bed Bath & Beyond may deliver mobile offers and promotions via text message in the future. Check the box if you would like to receive these mobile offers and promotions on your mobile phone. View our Privacy policy. Message & data rates may apply. | Y
+UNKNOWN_TYPE | shipping_options | Shipping | B
 NAME_FIRST | ship_first_nm | *First name | 
 NAME_MIDDLE | ship_mid_nm | Middle name | 
 NAME_LAST | ship_last_nm | *Last name | 

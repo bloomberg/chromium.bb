@@ -1,3 +1,5 @@
+UNKNOWN_TYPE | action |  | new-user
+UNKNOWN_TYPE | action | Create a new account (Recommended for Business accounts) Use existing Amazon customer account | sign-in
 UNKNOWN_TYPE | userName | First and Last Name: | 
 EMAIL_ADDRESS | email | E-mail Address: | 
 EMAIL_ADDRESS | emailCheck | Re-type E-mail Address: | 

@@ -1,3 +1,7 @@
+UNKNOWN_TYPE | accountType | Account TypeWhat's this? | 2
+UNKNOWN_TYPE | accountType | Personal | 7
+UNKNOWN_TYPE | accountType | Musician | 15
+UNKNOWN_TYPE | accountType | Comedian | 9
 NAME_FIRST | tbxFirstName | First Name | 
 NAME_LAST | tbxLastName | Last Name | 
 UNKNOWN_TYPE | tbxMusicianName | Artist Name | 
@@ -7,3 +11,5 @@ EMAIL_ADDRESS | tbxEmail | Email |
 UNKNOWN_TYPE | ddlMonth | Birthday | 
 UNKNOWN_TYPE | ddlDay |  | 
 UNKNOWN_TYPE | ddlYear |  | 
+UNKNOWN_TYPE | rblGender | Gender | M
+UNKNOWN_TYPE | rblGender | Male | F

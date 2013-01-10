@@ -9,9 +9,10 @@ ADDRESS_HOME_CITY | city | City: |
 ADDRESS_HOME_STATE | state | State: | 
 ADDRESS_HOME_ZIP | zipCode | ZIP Code: | 
 ADDRESS_HOME_CITY | taxGeoCode | Municipality: As an additional way to make sure you receive your order, we ask that you select the name of your municipality (city, town, borough, village, etc.) followed by the county, township, or parish in which you reside. | 
+UNKNOWN_TYPE | billingAddress | Please enter the phone number and e-mail address associated with this billing address.E-mail Address: Contact Phone: | on
 EMAIL_ADDRESS | email1 | E-mail Address: | 
 PHONE_HOME_CITY_CODE | billphone1 | Contact Phone: | 
 PHONE_HOME_NUMBER | billphone2 | Contact Phone: | 
 PHONE_HOME_NUMBER | billphone3 | Contact Phone: | 
-EMAIL_ADDRESS | selfAddress | This is also my billing address. Please enter the phone number and e-mail address associated with this billing address.E-mail Address: Contact Phone: | 0
+EMAIL_ADDRESS | selfAddress | Please enter the phone number and e-mail address associated with this billing address.E-mail Address: Contact Phone: | 0
 UNKNOWN_TYPE | save-address |  | on

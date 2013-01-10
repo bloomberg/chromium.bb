@@ -10,4 +10,5 @@ ADDRESS_HOME_CITY | city | City: |
 ADDRESS_HOME_STATE | province | State: | 
 ADDRESS_HOME_ZIP | zipCode | Zip                           code: | 
 ADDRESS_HOME_COUNTRY | country | Country: | US
+UNKNOWN_TYPE | termcheck | Country: | ON
 UNKNOWN_TYPE | securityCode | Enter                           the security code shown below: | 
