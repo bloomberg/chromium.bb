@@ -48,12 +48,16 @@ function WebView(node) {
 
   this.objectNode_ = document.createElement('object');
   this.objectNode_.type = 'application/browser-plugin';
-  // The <object> node fills in the <browser> container.
+  // The <object> node fills in the <webview> container.
   this.objectNode_.style.width = '100%';
   this.objectNode_.style.height = '100%';
   WEB_VIEW_ATTRIBUTES.forEach(function(attributeName) {
-    this.objectNode_.setAttribute(
-        attributeName, this.node_.getAttribute(attributeName));
+    // Only copy attributes that have been assigned values, rather than copying
+    // a series of undefined attributes to BrowserPlugin.
+    if (this.node_.hasAttribute(attributeName)) {
+      this.objectNode_.setAttribute(
+          attributeName, this.node_.getAttribute(attributeName));
+    }
   }, this);
 
   shadowRoot.appendChild(this.objectNode_);
