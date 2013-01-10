@@ -115,13 +115,11 @@ bool InitializeGLBindings(GLImplementation implementation) {
       if (!PathService::Get(base::DIR_MODULE, &module_path))
         return false;
 
-      // Attempt to load D3DX and its dependencies using the default search path
+      // Attempt to load the D3DX shader compiler using the default search path
       // and if that fails, using an absolute path. This is to ensure these DLLs
       // are loaded before ANGLE is loaded in case they are not in the default
       // search path.
       LoadD3DXLibrary(module_path, base::StringPrintf(L"d3dcompiler_%d.dll",
-                                                      kPinnedD3DXVersion));
-      LoadD3DXLibrary(module_path, base::StringPrintf(L"d3dx9_%d.dll",
                                                       kPinnedD3DXVersion));
 
       FilePath gles_path;

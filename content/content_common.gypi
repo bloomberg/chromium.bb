@@ -531,7 +531,6 @@
       'link_settings': {
         'libraries': [
            '-ld3d9.lib',
-           '-ld3dx9.lib',
            '-ldxva2.lib',
            '-lstrmiids.lib',
            '-lmf.lib',
@@ -543,7 +542,6 @@
             'AdditionalLibraryDirectories': ['$(DXSDK_DIR)/lib/x86'],
             'DelayLoadDLLs': [
               'd3d9.dll',
-              'd3dx9_43.dll',
               'dxva2.dll',
               'mf.dll',
               'mfplat.dll',

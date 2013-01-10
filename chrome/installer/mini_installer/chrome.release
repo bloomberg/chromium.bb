@@ -23,7 +23,6 @@ chrome_frame_helper.dll: %(VersionDir)s\
 Extensions\*.*: %(VersionDir)s\Extensions\
 ffmpegsumo.dll: %(VersionDir)s\
 pdf.dll: %(VersionDir)s\
-d3dx9_43.dll: %(VersionDir)s\
 D3DCompiler_43.dll: %(VersionDir)s\
 libEGL.dll: %(VersionDir)s\
 libGLESv2.dll: %(VersionDir)s\
