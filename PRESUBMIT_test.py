@@ -60,6 +60,14 @@ class MockFile(object):
     return self._local_path
 
 
+class MockChange(object):
+  def __init__(self, changed_files):
+    self._changed_files = changed_files
+
+  def LocalPaths(self):
+    return self._changed_files
+
+
 class IncludeOrderTest(unittest.TestCase):
   def testSystemHeaderOrder(self):
     scope = [(1, '#include <csystem.h>'),
@@ -337,6 +345,14 @@ class BadExtensionsTest(unittest.TestCase):
       MockFile('other/path/qux.cc', ''),
     ]
     results = PRESUBMIT._CheckPatchFiles(mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(results))
+
+  def testOnlyOwnersFiles(self):
+    mock_change = MockChange([
+      'some/path/OWNERS',
+      'A\Windows\Path\OWNERS',
+    ])
+    results = PRESUBMIT.GetPreferredTrySlaves(None, mock_change)
     self.assertEqual(0, len(results))
 
 

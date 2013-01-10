@@ -829,7 +829,7 @@ def CheckChangeOnCommit(input_api, output_api):
 def GetPreferredTrySlaves(project, change):
   files = change.LocalPaths()
 
-  if not files:
+  if not files or all(re.search(r'[\\/]OWNERS$', f) for f in files):
     return []
 
   if all(re.search('\.(m|mm)$|(^|[/_])mac[/_.]', f) for f in files):
