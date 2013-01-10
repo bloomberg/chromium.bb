@@ -1016,17 +1016,24 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
                              int net_error,
                              const DnsResponse* response) {
     DCHECK(transaction);
+    base::TimeDelta duration = base::TimeTicks::Now() - start_time;
     // Run |callback_| last since the owning Job will then delete this DnsTask.
     if (net_error != OK) {
-      DNS_HISTOGRAM("AsyncDNS.TransactionFailure",
-                    base::TimeTicks::Now() - start_time);
+      DNS_HISTOGRAM("AsyncDNS.TransactionFailure", duration);
       OnFailure(net_error, DnsResponse::DNS_PARSE_OK);
       return;
     }
 
     CHECK(response);
-    DNS_HISTOGRAM("AsyncDNS.TransactionSuccess",
-                  base::TimeTicks::Now() - start_time);
+    DNS_HISTOGRAM("AsyncDNS.TransactionSuccess", duration);
+    switch (transaction->GetType()) {
+      case dns_protocol::kTypeA:
+        DNS_HISTOGRAM("AsyncDNS.TransactionSuccess_A", duration);
+        break;
+      case dns_protocol::kTypeAAAA:
+        DNS_HISTOGRAM("AsyncDNS.TransactionSuccess_AAAA", duration);
+        break;
+    }
     AddressList addr_list;
     base::TimeDelta ttl;
     DnsResponse::Result result = response->ParseToAddressList(&addr_list, &ttl);
@@ -1470,6 +1477,18 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job {
       return;
     }
     DNS_HISTOGRAM("AsyncDNS.ResolveSuccess", duration);
+    // Log DNS lookups based on |address_family|.
+    switch(key_.address_family) {
+      case ADDRESS_FAMILY_IPV4:
+        DNS_HISTOGRAM("AsyncDNS.ResolveSuccess_FAMILY_IPV4", duration);
+        break;
+      case ADDRESS_FAMILY_IPV6:
+        DNS_HISTOGRAM("AsyncDNS.ResolveSuccess_FAMILY_IPV6", duration);
+        break;
+      case ADDRESS_FAMILY_UNSPECIFIED:
+        DNS_HISTOGRAM("AsyncDNS.ResolveSuccess_FAMILY_UNSPEC", duration);
+        break;
+    }
 
     UmaAsyncDnsResolveStatus(RESOLVE_STATUS_DNS_SUCCESS);
     RecordTTL(ttl);
