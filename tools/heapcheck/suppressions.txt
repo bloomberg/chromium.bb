@@ -1629,3 +1629,55 @@
    fun:ash::CursorManager::SetDeviceScaleFactor
    fun:ash::Shell::Init
 }
+{
+   bug_169185_a
+   Heapcheck:Leak
+   fun:v8::internal::SlotsBufferAllocator::AllocateBuffer
+   fun:v8::internal::SlotsBuffer::AddTo
+   fun:v8::internal::MarkCompactCollector::RecordSlot
+   ...
+   fun:v8::internal::StaticMarkingVisitor::IterateBody
+   fun:v8::internal::IncrementalMarking::VisitObject
+   fun:v8::internal::IncrementalMarking::ProcessMarkingDeque
+   fun:v8::internal::IncrementalMarking::Step
+   ...
+   fun:v8::internal::*Space::AllocateRaw
+}
+{
+   bug_169185_b
+   Heapcheck:Leak
+   fun:v8::internal::SkipList::Update
+   fun:v8::internal::PagedSpace::AllocateRaw
+   fun:v8::internal::Heap::CreateCode
+   fun:v8::internal::Factory::NewCode
+   fun:v8::internal::CodeGenerator::MakeCodeEpilogue
+   fun:v8::internal::FullCodeGenerator::MakeCode
+   fun:v8::internal::GenerateCode
+   fun:v8::internal::MakeCode
+   fun:v8::internal::Compiler::CompileLazy
+   fun:v8::internal::CompileLazyHelper
+   fun:v8::internal::JSFunction::CompileLazy
+   fun:v8::internal::CallIC_Miss
+   ...
+   fun:v8::internal::Invoke
+}
+{
+   bug_169185_c
+   Heapcheck:Leak
+   fun:v8::internal::SkipList::Update
+   fun:v8::internal::PagedSpace::AllocateRaw
+   fun:v8::internal::Heap::CreateCode
+   fun:v8::internal::Factory::NewCode
+   fun:v8::internal::StubCompiler::GetCodeWithFlags
+   fun:v8::internal::StubCompiler::GetCodeWithFlags
+   fun:v8::internal::CallStubCompiler::GetCode
+   fun:v8::internal::CallStubCompiler::CompileCallGlobal
+   fun:v8::internal::StubCache::ComputeCallGlobal
+   fun:v8::internal::CallICBase::ComputeMonomorphicStub
+   fun:v8::internal::CallICBase::UpdateCaches
+   fun:v8::internal::CallICBase::LoadFunction
+   fun:v8::internal::CallIC_Miss
+   ...
+   fun:v8::internal::Invoke
+   fun:v8::internal::Execution::New
+}
