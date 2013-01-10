@@ -244,7 +244,7 @@ Gallery.prototype.initDom_ = function() {
   var onThumbnailError = this.context_.onThumbnailError || function() {};
 
   if (this.context_.allowMosaic) {
-    this.modeButton_ = util.createChild(this.toolbar_, 'button mode');
+    this.modeButton_ = util.createChild(this.toolbar_, 'button mode', 'button');
     this.modeButton_.addEventListener('click',
         this.toggleMode_.bind(this, null));
 
