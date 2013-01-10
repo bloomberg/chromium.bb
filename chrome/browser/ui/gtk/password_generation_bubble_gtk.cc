@@ -51,7 +51,8 @@ PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
 
   // We have two lines of content. The first is the title and learn more link.
   GtkWidget* title_line = gtk_hbox_new(FALSE,  0);
-  GtkWidget* title = gtk_label_new("Password Suggestion");
+  GtkWidget* title = gtk_label_new(
+      l10n_util::GetStringUTF8(IDS_PASSWORD_GENERATION_BUBBLE_TITLE).c_str());
   gtk_box_pack_start(GTK_BOX(title_line), title, FALSE, FALSE, 0);
   GtkWidget* learn_more_link = gtk_chrome_link_button_new(
       l10n_util::GetStringUTF8(IDS_LEARN_MORE).c_str());
@@ -71,7 +72,8 @@ PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
       GTK_ENTRY(text_field_), GTK_ENTRY_ICON_SECONDARY, GetImage(IDR_RELOAD));
   gtk_entry_set_icon_tooltip_text(
       GTK_ENTRY(text_field_), GTK_ENTRY_ICON_SECONDARY, "Regenerate");
-  GtkWidget* accept_button = gtk_button_new_with_label("Try It");
+  GtkWidget* accept_button = gtk_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_PASSWORD_GENERATION_BUTTON_TEXT).c_str());
   gtk_box_pack_start(GTK_BOX(password_line), text_field_, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(password_line), accept_button, TRUE, TRUE, 0);
 
