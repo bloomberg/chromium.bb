@@ -154,6 +154,7 @@ ButterBar.prototype.hide_ = function(opt_force) {
 
   if (opt_force || delay <= 0) {
     this.butter_.classList.remove('visible');
+    this.butter_.querySelector('.progress-bar').hidden = true;
   } else {
     // Reschedule hide to comply with the minimal display time.
     this.hideTimeout_ = setTimeout(function() {
