@@ -6,6 +6,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -38,7 +39,7 @@ class PrintPreviewTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(PrintPreviewTest, PrintCommands) {
   // We start off at about:blank page.
   // Make sure there is 1 tab and print is enabled.
-  ASSERT_EQ(1, browser()->tab_count());
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
   ASSERT_TRUE(chrome::IsCommandEnabled(browser(), IDC_PRINT));
 

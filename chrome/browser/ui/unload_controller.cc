@@ -82,7 +82,7 @@ bool UnloadController::ShouldCloseWindow() {
 
 bool UnloadController::TabsNeedBeforeUnloadFired() {
   if (tabs_needing_before_unload_fired_.empty()) {
-    for (int i = 0; i < browser_->tab_count(); ++i) {
+    for (int i = 0; i < browser_->tab_strip_model()->count(); ++i) {
       content::WebContents* contents =
           browser_->tab_strip_model()->GetWebContentsAt(i);
       if (contents->NeedToFireBeforeUnload())

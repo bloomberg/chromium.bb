@@ -84,8 +84,9 @@ int GetIndexOfSingletonTab(NavigateParams* params) {
       &reverse_on_redirect);
 
   // If there are several matches: prefer the active tab by starting there.
-  int start_index = std::max(0, params->browser->active_index());
-  int tab_count = params->browser->tab_count();
+  int start_index =
+      std::max(0, params->browser->tab_strip_model()->active_index());
+  int tab_count = params->browser->tab_strip_model()->count();
   for (int i = 0; i < tab_count; ++i) {
     int tab_index = (start_index + i) % tab_count;
     content::WebContents* tab =

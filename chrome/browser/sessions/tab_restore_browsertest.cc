@@ -51,14 +51,14 @@ class TabRestoreTest : public InProcessBrowserTest {
   // Adds tabs to the given browser, all navigated to url1_. Returns
   // the final number of tabs.
   int AddSomeTabs(Browser* browser, int how_many) {
-    int starting_tab_count = browser->tab_count();
+    int starting_tab_count = browser->tab_strip_model()->count();
 
     for (int i = 0; i < how_many; ++i) {
       ui_test_utils::NavigateToURLWithDisposition(
           browser, url1_, NEW_FOREGROUND_TAB,
           ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
     }
-    int tab_count = browser->tab_count();
+    int tab_count = browser->tab_strip_model()->count();
     EXPECT_EQ(starting_tab_count + how_many, tab_count);
     return tab_count;
   }
@@ -91,7 +91,7 @@ class TabRestoreTest : public InProcessBrowserTest {
     } else {
       browser = GetBrowser(expected_window_index);
     }
-    int tab_count = browser->tab_count();
+    int tab_count = browser->tab_strip_model()->count();
     ASSERT_GT(tab_count, 0);
 
     // Restore the tab.
@@ -110,14 +110,15 @@ class TabRestoreTest : public InProcessBrowserTest {
       EXPECT_EQ(++window_count, new_window_count);
       browser = GetBrowser(expected_window_index);
     } else {
-      EXPECT_EQ(++tab_count, browser->tab_count());
+      EXPECT_EQ(++tab_count, browser->tab_strip_model()->count());
     }
 
     // Get a handle to the restored tab.
-    ASSERT_GT(browser->tab_count(), expected_tabstrip_index);
+    ASSERT_GT(browser->tab_strip_model()->count(), expected_tabstrip_index);
 
     // Ensure that the tab and window are active.
-    EXPECT_EQ(expected_tabstrip_index, browser->active_index());
+    EXPECT_EQ(expected_tabstrip_index,
+              browser->tab_strip_model()->active_index());
   }
 
   void GoBack(Browser* browser) {
@@ -150,50 +151,52 @@ class TabRestoreTest : public InProcessBrowserTest {
 // Close the end tab in the current window, then restore it. The tab should be
 // in its original position, and active.
 IN_PROC_BROWSER_TEST_F(TabRestoreTest, Basic) {
-  int starting_tab_count = browser()->tab_count();
+  int starting_tab_count = browser()->tab_strip_model()->count();
   int tab_count = AddSomeTabs(browser(), 1);
 
   int closed_tab_index = tab_count - 1;
   CloseTab(closed_tab_index);
-  EXPECT_EQ(starting_tab_count, browser()->tab_count());
+  EXPECT_EQ(starting_tab_count, browser()->tab_strip_model()->count());
 
   ASSERT_NO_FATAL_FAILURE(RestoreTab(0, closed_tab_index));
 
   // And make sure everything looks right.
-  EXPECT_EQ(starting_tab_count + 1, browser()->tab_count());
-  EXPECT_EQ(closed_tab_index, browser()->active_index());
-  EXPECT_EQ(url1_, chrome::GetActiveWebContents(browser())->GetURL());
+  EXPECT_EQ(starting_tab_count + 1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(closed_tab_index, browser()->tab_strip_model()->active_index());
+  EXPECT_EQ(url1_,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 // Close a tab not at the end of the current window, then restore it. The tab
 // should be in its original position, and active.
 IN_PROC_BROWSER_TEST_F(TabRestoreTest, MiddleTab) {
-  int starting_tab_count = browser()->tab_count();
+  int starting_tab_count = browser()->tab_strip_model()->count();
   AddSomeTabs(browser(), 3);
 
   // Close one in the middle
   int closed_tab_index = starting_tab_count + 1;
   CloseTab(closed_tab_index);
-  EXPECT_EQ(starting_tab_count + 2, browser()->tab_count());
+  EXPECT_EQ(starting_tab_count + 2, browser()->tab_strip_model()->count());
 
   ASSERT_NO_FATAL_FAILURE(RestoreTab(0, closed_tab_index));
 
   // And make sure everything looks right.
-  EXPECT_EQ(starting_tab_count + 3, browser()->tab_count());
-  EXPECT_EQ(closed_tab_index, browser()->active_index());
-  EXPECT_EQ(url1_, chrome::GetActiveWebContents(browser())->GetURL());
+  EXPECT_EQ(starting_tab_count + 3, browser()->tab_strip_model()->count());
+  EXPECT_EQ(closed_tab_index, browser()->tab_strip_model()->active_index());
+  EXPECT_EQ(url1_,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 // Close a tab, switch windows, then restore the tab. The tab should be in its
 // original window and position, and active.
 IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreToDifferentWindow) {
-  int starting_tab_count = browser()->tab_count();
+  int starting_tab_count = browser()->tab_strip_model()->count();
   AddSomeTabs(browser(), 3);
 
   // Close one in the middle
   int closed_tab_index = starting_tab_count + 1;
   CloseTab(closed_tab_index);
-  EXPECT_EQ(starting_tab_count + 2, browser()->tab_count());
+  EXPECT_EQ(starting_tab_count + 2, browser()->tab_strip_model()->count());
 
   // Create a new browser.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -205,9 +208,10 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreToDifferentWindow) {
   ASSERT_NO_FATAL_FAILURE(RestoreTab(0, closed_tab_index));
 
   // And make sure everything looks right.
-  EXPECT_EQ(starting_tab_count + 3, browser()->tab_count());
-  EXPECT_EQ(closed_tab_index, browser()->active_index());
-  EXPECT_EQ(url1_, chrome::GetActiveWebContents(browser())->GetURL());
+  EXPECT_EQ(starting_tab_count + 3, browser()->tab_strip_model()->count());
+  EXPECT_EQ(closed_tab_index, browser()->tab_strip_model()->active_index());
+  EXPECT_EQ(url1_,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 // Close a tab, open a new window, close the first window, then restore the
@@ -235,8 +239,9 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, DISABLED_BasicRestoreFromClosedWindow) {
 
   // Tab should be in a new window.
   Browser* browser = GetBrowser(1);
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
-  // And make sure the URLs matches.
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  // And make sure the URLs match.
   EXPECT_EQ(url2_, web_contents->GetURL());
   GoBack(browser);
   EXPECT_EQ(url1_, web_contents->GetURL());
@@ -245,17 +250,17 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, DISABLED_BasicRestoreFromClosedWindow) {
 // Restore a tab then make sure it doesn't restore again.
 IN_PROC_BROWSER_TEST_F(TabRestoreTest, DontLoadRestoredTab) {
   // Add two tabs
-  int starting_tab_count = browser()->tab_count();
+  int starting_tab_count = browser()->tab_strip_model()->count();
   AddSomeTabs(browser(), 2);
-  ASSERT_EQ(browser()->tab_count(), starting_tab_count + 2);
+  ASSERT_EQ(browser()->tab_strip_model()->count(), starting_tab_count + 2);
 
   // Close one of them.
   CloseTab(0);
-  ASSERT_EQ(browser()->tab_count(), starting_tab_count + 1);
+  ASSERT_EQ(browser()->tab_strip_model()->count(), starting_tab_count + 1);
 
   // Restore it.
   ASSERT_NO_FATAL_FAILURE(RestoreTab(0, 0));
-  ASSERT_EQ(browser()->tab_count(), starting_tab_count + 2);
+  ASSERT_EQ(browser()->tab_strip_model()->count(), starting_tab_count + 2);
 
   // Make sure that there's nothing else to restore.
   ASSERT_FALSE(chrome::CanRestoreTab(browser()));
@@ -264,13 +269,13 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, DontLoadRestoredTab) {
 // Open a window with multiple tabs, close a tab, then close the window.
 // Restore both and make sure the tab goes back into the window.
 IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowAndTab) {
-  int starting_tab_count = browser()->tab_count();
+  int starting_tab_count = browser()->tab_strip_model()->count();
   AddSomeTabs(browser(), 3);
 
   // Close one in the middle
   int closed_tab_index = starting_tab_count + 1;
   CloseTab(closed_tab_index);
-  EXPECT_EQ(starting_tab_count + 2, browser()->tab_count());
+  EXPECT_EQ(starting_tab_count + 2, browser()->tab_strip_model()->count());
 
   // Create a new browser.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -290,12 +295,13 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowAndTab) {
   // indicates the expected active tab.
   ASSERT_NO_FATAL_FAILURE(RestoreTab(1, starting_tab_count + 1));
   Browser* browser = GetBrowser(1);
-  EXPECT_EQ(starting_tab_count + 2, browser->tab_count());
+  EXPECT_EQ(starting_tab_count + 2, browser->tab_strip_model()->count());
 
   // Restore the closed tab.
   ASSERT_NO_FATAL_FAILURE(RestoreTab(1, closed_tab_index));
-  EXPECT_EQ(starting_tab_count + 3, browser->tab_count());
-  EXPECT_EQ(url1_, chrome::GetActiveWebContents(browser)->GetURL());
+  EXPECT_EQ(starting_tab_count + 3, browser->tab_strip_model()->count());
+  EXPECT_EQ(url1_,
+            browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 // Open a window with two tabs, close both (closing the window), then restore
@@ -316,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreIntoSameWindow) {
   EXPECT_EQ(2u, BrowserList::size());
 
   // Close all but one tab in the first browser, left to right.
-  while (browser()->tab_count() > 1)
+  while (browser()->tab_strip_model()->count() > 1)
     CloseTab(0);
 
   // Close the last tab, closing the browser.
@@ -330,13 +336,15 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreIntoSameWindow) {
   // Restore the last-closed tab into a new window.
   ASSERT_NO_FATAL_FAILURE(RestoreTab(1, 0));
   Browser* browser = GetBrowser(1);
-  EXPECT_EQ(1, browser->tab_count());
-  EXPECT_EQ(url2_, chrome::GetActiveWebContents(browser)->GetURL());
+  EXPECT_EQ(1, browser->tab_strip_model()->count());
+  EXPECT_EQ(url2_,
+            browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 
   // Restore the next-to-last-closed tab into the same window.
   ASSERT_NO_FATAL_FAILURE(RestoreTab(1, 0));
-  EXPECT_EQ(2, browser->tab_count());
-  EXPECT_EQ(url1_, chrome::GetActiveWebContents(browser)->GetURL());
+  EXPECT_EQ(2, browser->tab_strip_model()->count());
+  EXPECT_EQ(url1_,
+            browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 // Tests that a duplicate history entry is not created when we restore a page
@@ -346,17 +354,17 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWithExistingSiteInstance) {
 
   GURL http_url1(test_server()->GetURL("files/title1.html"));
   GURL http_url2(test_server()->GetURL("files/title2.html"));
-  int tab_count = browser()->tab_count();
+  int tab_count = browser()->tab_strip_model()->count();
 
   // Add a tab
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), http_url1, NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_EQ(++tab_count, browser()->tab_count());
+  EXPECT_EQ(++tab_count, browser()->tab_strip_model()->count());
 
   // Navigate to another same-site URL.
   content::WebContents* tab =
-      chrome::GetWebContentsAt(browser(), tab_count - 1);
+      browser()->tab_strip_model()->GetWebContentsAt(tab_count - 1);
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
@@ -380,9 +388,11 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWithExistingSiteInstance) {
   ASSERT_NO_FATAL_FAILURE(RestoreTab(0, tab_count - 1));
 
   // And make sure the URLs match.
-  EXPECT_EQ(http_url2, chrome::GetActiveWebContents(browser())->GetURL());
+  EXPECT_EQ(http_url2,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
   GoBack(browser());
-  EXPECT_EQ(http_url1, chrome::GetActiveWebContents(browser())->GetURL());
+  EXPECT_EQ(http_url1,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 // Tests that the SiteInstances used for entries in a restored tab's history
@@ -395,13 +405,13 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest,
   GURL http_url1(test_server()->GetURL("files/title1.html"));
   GURL http_url2(test_server()->GetURL("files/title2.html"));
 
-  int tab_count = browser()->tab_count();
+  int tab_count = browser()->tab_strip_model()->count();
 
   // Add a tab
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), http_url1, NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_EQ(++tab_count, browser()->tab_count());
+  EXPECT_EQ(++tab_count, browser()->tab_strip_model()->count());
 
   // Navigate to more URLs, then a cross-site URL.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -428,9 +438,11 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest,
   ASSERT_NO_FATAL_FAILURE(RestoreTab(0, tab_count - 1));
 
   // And make sure the URLs match.
-  EXPECT_EQ(url1_, chrome::GetActiveWebContents(browser())->GetURL());
+  EXPECT_EQ(url1_,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
   GoBack(browser());
-  EXPECT_EQ(http_url1, chrome::GetActiveWebContents(browser())->GetURL());
+  EXPECT_EQ(http_url1,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 
   // Navigating to a new URL should clear the forward list, because the max
   // page ID of the renderer should have been updated when we restored the tab.
@@ -438,7 +450,8 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest,
       browser(), http_url2, CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   EXPECT_FALSE(chrome::CanGoForward(browser()));
-  EXPECT_EQ(http_url2, chrome::GetActiveWebContents(browser())->GetURL());
+  EXPECT_EQ(http_url2,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindow) {
@@ -450,7 +463,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindow) {
   EXPECT_EQ(++window_count, BrowserList::size());
 
   // Create two more tabs, one with url1, the other url2.
-  int initial_tab_count = browser()->tab_count();
+  int initial_tab_count = browser()->tab_strip_model()->count();
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url1_, NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
@@ -478,15 +491,16 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindow) {
   EXPECT_EQ(window_count, BrowserList::size());
 
   Browser* browser = GetBrowser(1);
-  EXPECT_EQ(initial_tab_count + 2, browser->tab_count());
+  EXPECT_EQ(initial_tab_count + 2, browser->tab_strip_model()->count());
   load_stop_observer.Wait();
 
   content::WebContents* restored_tab =
-      chrome::GetWebContentsAt(browser, initial_tab_count);
+      browser->tab_strip_model()->GetWebContentsAt(initial_tab_count);
   EnsureTabFinishedRestoring(restored_tab);
   EXPECT_EQ(url1_, restored_tab->GetURL());
 
-  restored_tab = chrome::GetWebContentsAt(browser, initial_tab_count + 1);
+  restored_tab =
+      browser->tab_strip_model()->GetWebContentsAt(initial_tab_count + 1);
   EnsureTabFinishedRestoring(restored_tab);
   EXPECT_EQ(url2_, restored_tab->GetURL());
 }
@@ -504,7 +518,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabWithSpecialURL) {
 
   // Restore the closed tab.
   ASSERT_NO_FATAL_FAILURE(RestoreTab(0, 1));
-  content::WebContents* tab = chrome::GetWebContentsAt(browser(), 1);
+  content::WebContents* tab = browser()->tab_strip_model()->GetWebContentsAt(1);
   EnsureTabFinishedRestoring(tab);
 
   // See if content is as expected.
@@ -534,7 +548,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabWithSpecialURLOnBack) {
 
   // Restore the closed tab.
   ASSERT_NO_FATAL_FAILURE(RestoreTab(0, 1));
-  content::WebContents* tab = chrome::GetWebContentsAt(browser(), 1);
+  content::WebContents* tab = browser()->tab_strip_model()->GetWebContentsAt(1);
   EnsureTabFinishedRestoring(tab);
   ASSERT_EQ(http_url, tab->GetURL());
 

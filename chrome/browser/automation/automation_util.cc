@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/automation_id.h"
@@ -163,9 +162,9 @@ WebContents* GetWebContentsAt(int browser_index, int tab_index) {
   if (tab_index < 0)
     return NULL;
   Browser* browser = GetBrowserAt(browser_index);
-  if (!browser || tab_index >= browser->tab_count())
+  if (!browser || tab_index >= browser->tab_strip_model()->count())
     return NULL;
-  return chrome::GetWebContentsAt(browser, tab_index);
+  return browser->tab_strip_model()->GetWebContentsAt(tab_index);
 }
 
 #if defined(OS_CHROMEOS)
@@ -208,8 +207,10 @@ Browser* GetBrowserForTab(WebContents* tab) {
   BrowserList::const_iterator browser_iter = BrowserList::begin();
   for (; browser_iter != BrowserList::end(); ++browser_iter) {
     Browser* browser = *browser_iter;
-    for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
-      if (chrome::GetWebContentsAt(browser, tab_index) == tab)
+    for (int tab_index = 0;
+         tab_index < browser->tab_strip_model()->count();
+         ++tab_index) {
+      if (browser->tab_strip_model()->GetWebContentsAt(tab_index) == tab)
         return browser;
     }
   }

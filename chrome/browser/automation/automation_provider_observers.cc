@@ -55,10 +55,10 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/login/login_prompt.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
@@ -954,7 +954,7 @@ bool ExecuteBrowserCommandObserver::CreateAndRegisterObserver(
     case IDC_FORWARD:
     case IDC_RELOAD: {
       new NavigationNotificationObserver(
-          &chrome::GetActiveWebContents(browser)->GetController(),
+          &browser->tab_strip_model()->GetActiveWebContents()->GetController(),
           automation, reply_message, 1, false, use_json_interface);
       break;
     }
@@ -2324,8 +2324,9 @@ AllViewsStoppedLoadingObserver::AllViewsStoppedLoadingObserver(
        iter != BrowserList::end();
        ++iter) {
     Browser* browser = *iter;
-    for (int i = 0; i < browser->tab_count(); ++i) {
-      WebContents* web_contents = chrome::GetWebContentsAt(browser, i);
+    for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
+      WebContents* web_contents =
+          browser->tab_strip_model()->GetWebContentsAt(i);
       AutomationTabHelper* automation_tab_helper =
           AutomationTabHelper::FromWebContents(web_contents);
       StartObserving(automation_tab_helper);

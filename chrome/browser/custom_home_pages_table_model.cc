@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -120,7 +121,7 @@ void CustomHomePagesTableModel::MoveURLs(int insert_before,
     if (skip_count < index_list.size() && index_list[skip_count] == i)
       skip_count++;
     else
-      entries_[i - skip_count]=entries_[i];
+      entries_[i - skip_count] = entries_[i];
   }
 
   // Moving items down created a gap. We start compacting up after it.
@@ -185,7 +186,9 @@ void CustomHomePagesTableModel::SetToCurrentlyOpenPages() {
     if (browser->profile() != profile_)
       continue;  // Skip incognito browsers.
 
-    for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
+    for (int tab_index = 0;
+         tab_index < browser->tab_strip_model()->count();
+         ++tab_index) {
       const GURL url = chrome::GetWebContentsAt(browser, tab_index)->GetURL();
       if (ShouldAddPage(url))
         Add(add_index++, url);

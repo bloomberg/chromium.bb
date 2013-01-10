@@ -17,11 +17,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -53,7 +53,7 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
   std::vector<WebContents*> GetBlockedContents(Browser* browser) {
     // Do a round trip to the renderer first to flush any in-flight IPCs to
     // create a to-be-blocked window.
-    WebContents* tab = chrome::GetActiveWebContents(browser);
+    WebContents* tab = browser->tab_strip_model()->GetActiveWebContents();
     CHECK(content::ExecuteScript(tab, ""));
     BlockedContentTabHelper* blocked_content_tab_helper =
         BlockedContentTabHelper::FromWebContents(tab);
@@ -83,8 +83,9 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
     // tab in only one browser window and the URL of current tab must be equal
     // to the original URL.
     EXPECT_EQ(1u, chrome::GetBrowserCount(browser->profile()));
-    EXPECT_EQ(1, browser->tab_count());
-    WebContents* web_contents = chrome::GetActiveWebContents(browser);
+    EXPECT_EQ(1, browser->tab_strip_model()->count());
+    WebContents* web_contents =
+        browser->tab_strip_model()->GetActiveWebContents();
     EXPECT_EQ(url, web_contents->GetURL());
 
     std::vector<WebContents*> blocked_contents = GetBlockedContents(browser);

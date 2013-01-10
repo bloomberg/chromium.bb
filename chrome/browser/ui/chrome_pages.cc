@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -217,7 +218,7 @@ void ShowSyncSetup(Browser* browser, SyncPromoUI::Source source) {
       }
     }
 
-    DCHECK_GT(browser->tab_count(), 0);
+    DCHECK_GT(browser->tab_strip_model()->count(), 0);
   }
 }
 

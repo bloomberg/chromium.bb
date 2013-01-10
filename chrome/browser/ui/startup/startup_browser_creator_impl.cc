@@ -834,7 +834,7 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
   }
   if (!chrome::GetActiveWebContents(browser)) {
     // TODO: this is a work around for 110909. Figure out why it's needed.
-    if (!browser->tab_count())
+    if (!browser->tab_strip_model()->count())
       chrome::AddBlankTabAt(browser, -1, true);
     else
       browser->tab_strip_model()->ActivateTabAt(0, false);
@@ -853,7 +853,7 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
 void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
     Browser* browser,
     chrome::startup::IsProcessStartup is_process_startup) {
-  if (!browser || !profile_ || browser->tab_count() == 0)
+  if (!browser || !profile_ || browser->tab_strip_model()->count() == 0)
     return;
 
   if (HasPendingUncleanExit(browser->profile()))

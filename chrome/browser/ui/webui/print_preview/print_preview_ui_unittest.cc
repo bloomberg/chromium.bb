@@ -81,7 +81,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
       controller->GetOrCreatePreviewDialog(initiator_tab);
 
   EXPECT_NE(initiator_tab, preview_dialog);
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(1U, GetConstrainedWindowCount(initiator_tab));
 
   PrintPreviewUI* preview_ui = static_cast<PrintPreviewUI*>(
@@ -136,7 +136,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
       controller->GetOrCreatePreviewDialog(initiator_tab);
 
   EXPECT_NE(initiator_tab, preview_dialog);
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(1U, GetConstrainedWindowCount(initiator_tab));
 
   PrintPreviewUI* preview_ui = static_cast<PrintPreviewUI*>(
@@ -198,7 +198,7 @@ TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
       controller->GetOrCreatePreviewDialog(initiator_tab);
 
   EXPECT_NE(initiator_tab, preview_dialog);
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(1U, GetConstrainedWindowCount(initiator_tab));
 
   PrintPreviewUI* preview_ui = static_cast<PrintPreviewUI*>(
@@ -241,13 +241,13 @@ TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
 }
 
 TEST_F(PrintPreviewUIUnitTest, InitiatorTabGetsFocusOnPrintPreviewDialogClose) {
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   WebContents* initiator_tab =
       WebContentsTester::CreateTestWebContentsCountFocus(profile(), NULL);
   WebContentsTester* initiator_tester = WebContentsTester::For(initiator_tab);
   chrome::AddWebContents(browser(), NULL, initiator_tab,
                          NEW_FOREGROUND_TAB, gfx::Rect(), false, NULL);
-  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(0, initiator_tester->GetNumberOfFocusCalls());
 
   printing::PrintPreviewDialogController* controller =
@@ -261,7 +261,7 @@ TEST_F(PrintPreviewUIUnitTest, InitiatorTabGetsFocusOnPrintPreviewDialogClose) {
       controller->GetOrCreatePreviewDialog(initiator_tab);
 
   EXPECT_NE(initiator_tab, preview_dialog);
-  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1U, GetConstrainedWindowCount(initiator_tab));
   EXPECT_EQ(0, initiator_tester->GetNumberOfFocusCalls());
 
@@ -271,7 +271,7 @@ TEST_F(PrintPreviewUIUnitTest, InitiatorTabGetsFocusOnPrintPreviewDialogClose) {
 
   preview_ui->OnPrintPreviewDialogClosed();
 
-  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(0U, GetConstrainedWindowCount(initiator_tab));
   EXPECT_EQ(1, initiator_tester->GetNumberOfFocusCalls());
 }

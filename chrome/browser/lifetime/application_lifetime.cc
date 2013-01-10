@@ -191,7 +191,7 @@ void CloseAllBrowsers() {
       // session we need to make sure the browser is destroyed now. So, invoke
       // DestroyBrowser to make sure the browser is deleted and cleanup can
       // happen.
-      while (browser->tab_count())
+      while (browser->tab_strip_model()->count())
         delete browser->tab_strip_model()->GetWebContentsAt(0);
       browser->window()->DestroyBrowser();
       i = BrowserList::begin();

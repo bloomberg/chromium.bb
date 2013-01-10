@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
@@ -524,8 +525,10 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
     WebContents* new_contents = OpenApplication(params);
 
     // This will also destroy the handler, so do not perform any actions after.
-    if (new_contents != old_contents && browser && browser->tab_count() > 1)
+    if (new_contents != old_contents && browser &&
+        browser->tab_strip_model()->count() > 1) {
       chrome::CloseWebContents(browser, old_contents, true);
+    }
   }
 }
 

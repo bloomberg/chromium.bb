@@ -12,7 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -108,27 +108,27 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, ProcessOverflow) {
   GURL extension2_url = extension2->url();
 
   // Get tab processes.
-  ASSERT_EQ(9, browser()->tab_count());
+  ASSERT_EQ(9, browser()->tab_strip_model()->count());
   content::RenderProcessHost* isolated1_host =
-      chrome::GetWebContentsAt(browser(), 0)->GetRenderProcessHost();
+      browser()->tab_strip_model()->GetWebContentsAt(0)->GetRenderProcessHost();
   content::RenderProcessHost* ntp1_host =
-      chrome::GetWebContentsAt(browser(), 1)->GetRenderProcessHost();
+      browser()->tab_strip_model()->GetWebContentsAt(1)->GetRenderProcessHost();
   content::RenderProcessHost* hosted1_host =
-      chrome::GetWebContentsAt(browser(), 2)->GetRenderProcessHost();
+      browser()->tab_strip_model()->GetWebContentsAt(2)->GetRenderProcessHost();
   content::RenderProcessHost* web1_host =
-      chrome::GetWebContentsAt(browser(), 3)->GetRenderProcessHost();
+      browser()->tab_strip_model()->GetWebContentsAt(3)->GetRenderProcessHost();
 
   content::RenderProcessHost* isolated2_host =
-      chrome::GetWebContentsAt(browser(), 4)->GetRenderProcessHost();
+      browser()->tab_strip_model()->GetWebContentsAt(4)->GetRenderProcessHost();
   content::RenderProcessHost* ntp2_host =
-      chrome::GetWebContentsAt(browser(), 5)->GetRenderProcessHost();
+      browser()->tab_strip_model()->GetWebContentsAt(5)->GetRenderProcessHost();
   content::RenderProcessHost* hosted2_host =
-      chrome::GetWebContentsAt(browser(), 6)->GetRenderProcessHost();
+      browser()->tab_strip_model()->GetWebContentsAt(6)->GetRenderProcessHost();
   content::RenderProcessHost* web2_host =
-      chrome::GetWebContentsAt(browser(), 7)->GetRenderProcessHost();
+      browser()->tab_strip_model()->GetWebContentsAt(7)->GetRenderProcessHost();
 
   content::RenderProcessHost* second_isolated1_host =
-      chrome::GetWebContentsAt(browser(), 8)->GetRenderProcessHost();
+      browser()->tab_strip_model()->GetWebContentsAt(8)->GetRenderProcessHost();
 
   // Get extension processes.
   ExtensionProcessManager* process_manager =

@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabrestore.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/navigation_controller.h"
@@ -26,11 +25,11 @@ const SessionID& BrowserTabRestoreServiceDelegate::GetSessionID() const {
 }
 
 int BrowserTabRestoreServiceDelegate::GetTabCount() const {
-  return browser_->tab_count();
+  return browser_->tab_strip_model()->count();
 }
 
 int BrowserTabRestoreServiceDelegate::GetSelectedIndex() const {
-  return browser_->active_index();
+  return browser_->tab_strip_model()->active_index();
 }
 
 std::string BrowserTabRestoreServiceDelegate::GetAppName() const {
@@ -39,11 +38,11 @@ std::string BrowserTabRestoreServiceDelegate::GetAppName() const {
 
 WebContents* BrowserTabRestoreServiceDelegate::GetWebContentsAt(
     int index) const {
-  return chrome::GetWebContentsAt(browser_, index);
+  return browser_->tab_strip_model()->GetWebContentsAt(index);
 }
 
 WebContents* BrowserTabRestoreServiceDelegate::GetActiveWebContents() const {
-  return chrome::GetActiveWebContents(browser_);
+  return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
 bool BrowserTabRestoreServiceDelegate::IsTabPinned(int index) const {

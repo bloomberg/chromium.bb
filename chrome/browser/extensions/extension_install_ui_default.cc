@@ -148,7 +148,7 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
   Browser* browser =
       chrome::FindOrCreateTabbedBrowser(current_profile,
                                         chrome::GetActiveDesktop());
-  if (browser->tab_count() == 0)
+  if (browser->tab_strip_model()->count() == 0)
     chrome::AddBlankTabAt(browser, -1, true);
   browser->window()->Show();
 

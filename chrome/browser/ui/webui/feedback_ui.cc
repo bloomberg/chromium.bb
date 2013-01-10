@@ -169,7 +169,7 @@ std::string GetUserEmail() {
 // Returns the index of the feedback tab if already open, -1 otherwise
 int GetIndexOfFeedbackTab(Browser* browser) {
   GURL feedback_url(chrome::kChromeUIFeedbackURL);
-  for (int i = 0; i < browser->tab_count(); ++i) {
+  for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
     WebContents* tab = browser->tab_strip_model()->GetWebContentsAt(i);
     if (tab && tab->GetURL().GetWithEmptyPath() == feedback_url)
       return i;
@@ -452,7 +452,7 @@ bool FeedbackHandler::Init() {
 
     Browser* browser = chrome::FindBrowserWithID(session_id);
     // Sanity checks.
-    if (!browser || index >= browser->tab_count())
+    if (!browser || index >= browser->tab_strip_model()->count())
       return false;
 
     if (index >= 0) {

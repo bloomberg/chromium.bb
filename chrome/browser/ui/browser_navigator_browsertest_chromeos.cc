@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -39,8 +39,8 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
   Browser* incognito_browser = CreateIncognitoBrowser();
 
   EXPECT_EQ(2u, BrowserList::size());
-  EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(1, incognito_browser->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(1, incognito_browser->tab_strip_model()->count());
 
   // Navigate to the settings page.
   chrome::NavigateParams p(MakeNavigateParams(incognito_browser));
@@ -53,9 +53,10 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
   // Settings page should be opened in incognito window.
   EXPECT_NE(browser(), p.browser);
   EXPECT_EQ(incognito_browser, p.browser);
-  EXPECT_EQ(2, incognito_browser->tab_count());
+  EXPECT_EQ(2, incognito_browser->tab_strip_model()->count());
   EXPECT_EQ(GURL("chrome://chrome/settings"),
-            chrome::GetActiveWebContents(incognito_browser)->GetURL());
+            incognito_browser->tab_strip_model()->GetActiveWebContents()->
+                GetURL());
 }
 
 }  // namespace

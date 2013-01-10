@@ -1479,7 +1479,7 @@ enum {
 
 - (NSInteger)numberOfTabs {
   // count() includes pinned tabs.
-  return browser_->tab_count();
+  return browser_->tab_strip_model()->count();
 }
 
 - (BOOL)hasLiveTabs {

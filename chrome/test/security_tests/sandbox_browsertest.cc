@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
@@ -21,6 +22,6 @@ class SandboxTest : public InProcessBrowserTest {
 #if defined(OS_WIN)
 // Verifies that chrome is running properly.
 IN_PROC_BROWSER_TEST_F(SandboxTest, ExecuteDll) {
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
 }
 #endif
