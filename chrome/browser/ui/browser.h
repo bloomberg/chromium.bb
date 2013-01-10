@@ -51,7 +51,6 @@ class BrowserSyncedWindowDelegate;
 class BrowserToolbarModelDelegate;
 class BrowserTabRestoreServiceDelegate;
 class BrowserWindow;
-class DeviceAttachedIntentSource;
 class FindBarController;
 class FullscreenController;
 class PrefService;
@@ -930,11 +929,6 @@ class Browser : public TabStripModelObserver,
   scoped_ptr<chrome::BrowserInstantController> instant_controller_;
 
   BookmarkBar::State bookmark_bar_state_;
-
-#if 0
-  // Device attach web intent is disabled for M22. See crbug.com/144326.
-  scoped_ptr<DeviceAttachedIntentSource> device_attached_intent_source_;
-#endif
 
   scoped_ptr<FullscreenController> fullscreen_controller_;
 

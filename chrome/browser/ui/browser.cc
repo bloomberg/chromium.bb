@@ -60,7 +60,6 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_url_tracker.h"
-#include "chrome/browser/intents/device_attached_intent_source.h"
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/intents/web_intents_reporting.h"
 #include "chrome/browser/intents/web_intents_util.h"
@@ -425,12 +424,6 @@ Browser::Browser(const CreateParams& params)
 
   if (is_type_tabbed())
     instant_controller_.reset(new chrome::BrowserInstantController(this));
-
-#if 0
-  // Disabled for M22. See http://crbug.com/144326.
-  device_attached_intent_source_.reset(
-      new DeviceAttachedIntentSource(this, (this)));
-#endif
 
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_INIT);
 

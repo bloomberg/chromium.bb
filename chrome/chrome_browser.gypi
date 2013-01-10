@@ -939,8 +939,6 @@
         'browser/intents/cws_intents_registry.cc',
         'browser/intents/cws_intents_registry.h',
         'browser/intents/cws_intents_registry_factory.cc',
-        'browser/intents/device_attached_intent_source.cc',
-        'browser/intents/device_attached_intent_source.h',
         'browser/intents/cws_intents_registry_factory.h',
         'browser/intents/default_web_intent_service.cc',
         'browser/intents/default_web_intent_service.h',
