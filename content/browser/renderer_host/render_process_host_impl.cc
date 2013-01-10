@@ -68,6 +68,7 @@
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
+#include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
@@ -539,6 +540,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   gpu_message_filter_ = new GpuMessageFilter(GetID(), widget_helper_.get());
   channel_->AddFilter(gpu_message_filter_);
 #if defined(ENABLE_WEBRTC)
+  peer_connection_tracker_host_ = new PeerConnectionTrackerHost();
+  channel_->AddFilter(peer_connection_tracker_host_);
   channel_->AddFilter(new MediaStreamDispatcherHost(GetID()));
 #endif
 #if defined(ENABLE_PLUGINS)

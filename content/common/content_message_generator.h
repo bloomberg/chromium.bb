@@ -33,6 +33,7 @@
 #include "content/common/media/audio_messages.h"
 #include "content/common/media/media_player_messages.h"
 #include "content/common/media/media_stream_messages.h"
+#include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/common/media/video_capture_messages.h"
 #include "content/common/mime_registry_messages.h"
 #include "content/common/p2p_messages.h"

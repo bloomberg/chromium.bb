@@ -64,6 +64,7 @@ class IndexedDBDispatcher;
 class MediaStreamCenter;
 class MediaStreamDependencyFactory;
 class P2PSocketDispatcher;
+class PeerConnectionTracker;
 class RendererWebKitPlatformSupportImpl;
 class RenderProcessObserver;
 class VideoCaptureImplManager;
@@ -203,6 +204,10 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // Returns a factory used for creating RTC PeerConnection objects.
   MediaStreamDependencyFactory* GetMediaStreamDependencyFactory();
 
+  PeerConnectionTracker* peer_connection_tracker() {
+    return peer_connection_tracker_.get();
+  }
+
   // Current P2PSocketDispatcher. Set to NULL if P2P API is disabled.
   P2PSocketDispatcher* p2p_socket_dispatcher() {
     return p2p_socket_dispatcher_.get();
@@ -322,6 +327,10 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_refptr<DevToolsAgentFilter> devtools_agent_message_filter_;
 
   scoped_ptr<MediaStreamDependencyFactory> media_stream_factory_;
+
+  // This is used to communicate to the browser process the status
+  // of all the peer connections created in the renderer.
+  scoped_ptr<PeerConnectionTracker> peer_connection_tracker_;
 
   // Dispatches all P2P sockets.
   scoped_refptr<P2PSocketDispatcher> p2p_socket_dispatcher_;

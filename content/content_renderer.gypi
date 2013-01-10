@@ -344,6 +344,8 @@
         'renderer/media/media_stream_impl.cc',
         'renderer/media/peer_connection_handler_base.cc',
         'renderer/media/peer_connection_handler_base.h',
+        'renderer/media/peer_connection_tracker.cc',
+        'renderer/media/peer_connection_tracker.h',
         'renderer/media/rtc_data_channel_handler.cc',
         'renderer/media/rtc_data_channel_handler.h',
         'renderer/media/rtc_media_constraints.cc',

@@ -13,8 +13,10 @@
 #include "base/utf_string_conversions.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
+#include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/rtc_data_channel_handler.h"
 #include "content/renderer/media/rtc_media_constraints.h"
+#include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaConstraints.h"
 // TODO(hta): Move the following include to WebRTCStatsRequest.h file.
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
@@ -210,7 +212,7 @@ class StatsResponse : public webrtc::StatsObserver {
   talk_base::scoped_refptr<LocalRTCStatsResponse> response_;
 };
 
-// Implementation of LocalRTCStatsRequest
+// Implementation of LocalRTCStatsRequest.
 LocalRTCStatsRequest::LocalRTCStatsRequest(WebKit::WebRTCStatsRequest impl)
     : impl_(impl),
       response_(NULL) {
@@ -243,7 +245,7 @@ void LocalRTCStatsRequest::requestSucceeded(
   impl_.requestSucceeded(response->webKitStatsResponse());
 }
 
-// Implementation of LocalRTCStatsResponse
+// Implementation of LocalRTCStatsResponse.
 WebKit::WebRTCStatsResponse LocalRTCStatsResponse::webKitStatsResponse() const {
   return impl_;
 }
@@ -265,6 +267,13 @@ void LocalRTCStatsResponse::addStatistic(size_t report,
   impl_.addStatistic(report, is_local, name, value);
 }
 
+static PeerConnectionTracker* GetPeerConnectionTracker() {
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  if (render_thread)
+    return render_thread->peer_connection_tracker();
+  return NULL;
+}
+
 RTCPeerConnectionHandler::RTCPeerConnectionHandler(
     WebKit::WebRTCPeerConnectionHandlerClient* client,
     MediaStreamDependencyFactory* dependency_factory)
@@ -274,6 +283,8 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
 }
 
 RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {
+  if (GetPeerConnectionTracker())
+    GetPeerConnectionTracker()->UnregisterPeerConnection(this);
 }
 
 void RTCPeerConnectionHandler::associateWithFrame(WebKit::WebFrame* frame) {
@@ -295,6 +306,11 @@ bool RTCPeerConnectionHandler::initialize(
   if (!native_peer_connection_) {
     LOG(ERROR) << "Failed to initialize native PeerConnection.";
     return false;
+  }
+
+  if (GetPeerConnectionTracker()) {
+    GetPeerConnectionTracker()->RegisterPeerConnection(
+        this, servers, constraints, frame_);
   }
   return true;
 }

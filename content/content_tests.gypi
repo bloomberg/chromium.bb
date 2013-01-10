@@ -524,6 +524,7 @@
         }],
         ['enable_webrtc==1', {
           'sources': [
+            'browser/media/webrtc_internals_unittest.cc',
             'browser/renderer_host/p2p/socket_host_test_utils.h',
             'browser/renderer_host/p2p/socket_host_tcp_unittest.cc',
             'browser/renderer_host/p2p/socket_host_tcp_server_unittest.cc',

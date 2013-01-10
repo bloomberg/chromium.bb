@@ -61,6 +61,7 @@
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/media_stream_center.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
+#include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
@@ -332,6 +333,10 @@ void RenderThreadImpl::Init() {
 
 #if defined(ENABLE_WEBRTC)
   webrtc::SetupEventTracer(&GetCategoryEnabled, &AddTraceEvent);
+
+  peer_connection_tracker_.reset(new PeerConnectionTracker());
+  AddObserver(peer_connection_tracker_.get());
+
   p2p_socket_dispatcher_ = new P2PSocketDispatcher(GetIOMessageLoopProxy());
   AddFilter(p2p_socket_dispatcher_);
 #endif  // defined(ENABLE_WEBRTC)
