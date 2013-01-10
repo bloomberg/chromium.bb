@@ -370,7 +370,6 @@ void FaviconHandler::ProcessCurrentUrl() {
 void FaviconHandler::OnDidDownloadFavicon(
     int id,
     const GURL& image_url,
-    bool errored,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {
   DownloadRequests::iterator i = download_requests_.find(id);
@@ -391,7 +390,7 @@ void FaviconHandler::OnDidDownloadFavicon(
     // The downloaded icon is still valid when there is no FaviconURL update
     // during the downloading.
     bool request_next_icon = true;
-    if (!errored) {
+    if (!bitmaps.empty()) {
       request_next_icon = !UpdateFaviconCandidate(
           i->second.url, image_url, image, score, i->second.icon_type);
     }

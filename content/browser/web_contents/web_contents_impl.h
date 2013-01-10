@@ -566,7 +566,6 @@ class CONTENT_EXPORT WebContentsImpl
       const BrowserPluginHostMsg_CreateGuest_Params& params);
   void OnDidDownloadFavicon(int id,
                             const GURL& image_url,
-                            bool errored,
                             int requested_size,
                             const std::vector<SkBitmap>& bitmaps);
   void OnUpdateFaviconURL(int32 page_id,

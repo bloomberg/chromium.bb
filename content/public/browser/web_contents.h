@@ -423,7 +423,6 @@ class WebContents : public PageNavigator,
 
   typedef base::Callback<void(int, /* id */
                               const GURL&, /* image_url */
-                              bool, /* errored */
                               int,  /* requested_size */
                               const std::vector<SkBitmap>& /* bitmaps*/)>
       FaviconDownloadCallback;

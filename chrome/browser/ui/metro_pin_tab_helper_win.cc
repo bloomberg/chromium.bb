@@ -247,7 +247,6 @@ class MetroPinTabHelper::FaviconChooser {
   // Update the |best_candidate_| with the newly downloaded favicons provided.
   void UpdateCandidate(int id,
                        const GURL& image_url,
-                       bool errored,
                        int requested_size,
                        const std::vector<SkBitmap>& bitmaps);
 
@@ -291,7 +290,6 @@ void MetroPinTabHelper::FaviconChooser::UseChosenCandidate() {
 void MetroPinTabHelper::FaviconChooser::UpdateCandidate(
     int id,
     const GURL& image_url,
-    bool errored,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {
   const int kMaxIconSize = 32;
@@ -306,30 +304,28 @@ void MetroPinTabHelper::FaviconChooser::UpdateCandidate(
   in_progress_requests_.erase(iter);
 
   // Process the bitmaps, keeping the one that is best so far.
-   if (!errored) {
-    for (std::vector<SkBitmap>::const_iterator iter = bitmaps.begin();
-         iter != bitmaps.end();
-         ++iter) {
+  for (std::vector<SkBitmap>::const_iterator iter = bitmaps.begin();
+       iter != bitmaps.end();
+       ++iter) {
 
-      // If the new bitmap is too big, ignore it.
-      if (iter->height() > kMaxIconSize || iter->width() > kMaxIconSize)
-        continue;
+    // If the new bitmap is too big, ignore it.
+    if (iter->height() > kMaxIconSize || iter->width() > kMaxIconSize)
+      continue;
 
-      // If we don't have a best candidate yet, this is better so just grab it.
-      if (best_candidate_.isNull()) {
-        best_candidate_ = *gfx::ImageSkia(*iter).DeepCopy().get();
-        continue;
-      }
-
-      // If it is smaller than our best one so far, ignore it.
-      if (iter->height() <= best_candidate_.height() ||
-          iter->width() <= best_candidate_.width()) {
-        continue;
-      }
-
-      // Othewise it is our new best candidate.
+    // If we don't have a best candidate yet, this is better so just grab it.
+    if (best_candidate_.isNull()) {
       best_candidate_ = *gfx::ImageSkia(*iter).DeepCopy().get();
+      continue;
     }
+
+    // If it is smaller than our best one so far, ignore it.
+    if (iter->height() <= best_candidate_.height() ||
+        iter->width() <= best_candidate_.width()) {
+      continue;
+    }
+
+    // Othewise it is our new best candidate.
+    best_candidate_ = *gfx::ImageSkia(*iter).DeepCopy().get();
   }
 
   // If there are no more outstanding requests, pin the page on the FILE thread.
@@ -430,12 +426,10 @@ void MetroPinTabHelper::DidUpdateFaviconURL(
 void MetroPinTabHelper::DidDownloadFavicon(
     int id,
     const GURL& image_url,
-    bool errored,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {
   if (favicon_chooser_.get()) {
-    favicon_chooser_->UpdateCandidate(id, image_url, errored,
-                                      requested_size, bitmaps);
+    favicon_chooser_->UpdateCandidate(id, image_url, requested_size, bitmaps);
   }
 }
 

@@ -2354,7 +2354,6 @@ void WebContentsImpl::OnBrowserPluginCreateGuest(
 void WebContentsImpl::OnDidDownloadFavicon(
     int id,
     const GURL& image_url,
-    bool errored,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {
   FaviconDownloadMap::iterator iter = favicon_download_map_.find(id);
@@ -2364,7 +2363,7 @@ void WebContentsImpl::OnDidDownloadFavicon(
     return;
   }
   if (!iter->second.is_null()) {
-    iter->second.Run(id, image_url, errored, requested_size, bitmaps);
+    iter->second.Run(id, image_url, requested_size, bitmaps);
   }
   favicon_download_map_.erase(id);
 }

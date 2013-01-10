@@ -57,7 +57,6 @@ class BalloonViewAsh::ImageDownload
   // FaviconHelper callback.
   virtual void Downloaded(int download_id,
                           const GURL& image_url,
-                          bool errored,
                           int requested_size,
                           const std::vector<SkBitmap>& bitmaps);
 
@@ -99,7 +98,6 @@ BalloonViewAsh::ImageDownload::~ImageDownload() {
 void BalloonViewAsh::ImageDownload::Downloaded(
     int download_id,
     const GURL& image_url,
-    bool errored,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {
   if (bitmaps.empty())

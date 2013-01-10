@@ -166,13 +166,12 @@ void FaviconTabHelper::DidUpdateFaviconURL(
 void FaviconTabHelper::DidDownloadFavicon(
     int id,
     const GURL& image_url,
-    bool errored,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {
   favicon_handler_->OnDidDownloadFavicon(
-      id, image_url, errored, requested_size, bitmaps);
+      id, image_url, requested_size, bitmaps);
   if (touch_icon_handler_.get()) {
     touch_icon_handler_->OnDidDownloadFavicon(
-        id, image_url, errored, requested_size, bitmaps);
+        id, image_url, requested_size, bitmaps);
   }
 }

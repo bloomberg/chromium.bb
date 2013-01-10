@@ -105,7 +105,6 @@ class FaviconHandler {
   // |bitmaps| is a list of all the frames of the icon at |image_url|.
   void OnDidDownloadFavicon(int id,
                             const GURL& image_url,
-                            bool errored,
                             int requested_size,
                             const std::vector<SkBitmap>& bitmaps);
 

@@ -48,7 +48,6 @@ class FaviconBitmapHandler : public content::WebContentsObserver {
   void DidDownloadFavicon(
       int id,
       const GURL& image_url,
-      bool errored,
       int requested_size,
       const std::vector<SkBitmap>& bitmaps);
 
@@ -123,7 +122,6 @@ bool FaviconBitmapHandler::HasPendingDownloads() const {
 void FaviconBitmapHandler::DidDownloadFavicon(
     int id,
     const GURL& image_url,
-    bool errored,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {
   UrlSet::iterator iter = pending_requests_.find(image_url);
@@ -134,7 +132,7 @@ void FaviconBitmapHandler::DidDownloadFavicon(
   pending_requests_.erase(iter);
 
   // Favicon bitmaps are ordered by decreasing width.
-  if (!errored && !bitmaps.empty())
+  if (!bitmaps.empty())
     AddFavicon(image_url, bitmaps[0]);
 }
 

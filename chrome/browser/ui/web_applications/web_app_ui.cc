@@ -65,7 +65,6 @@ class UpdateShortcutWorker : public content::NotificationObserver {
   void DidDownloadFavicon(
       int id,
       const GURL& image_url,
-      bool errored,
       int requested_size,
       const std::vector<SkBitmap>& bitmaps);
 
@@ -168,7 +167,6 @@ void UpdateShortcutWorker::DownloadIcon() {
 void UpdateShortcutWorker::DidDownloadFavicon(
     int id,
     const GURL& image_url,
-    bool errored,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {
   std::vector<ui::ScaleFactor> scale_factors;
@@ -179,7 +177,7 @@ void UpdateShortcutWorker::DidDownloadFavicon(
                                                 scale_factors,
                                                 requested_size);
 
-  if (!errored && !bitmaps.empty() && !bitmaps[closest_index].isNull()) {
+  if (!bitmaps.empty() && !bitmaps[closest_index].isNull()) {
     // Update icon with download image and update shortcut.
     shortcut_info_.favicon = gfx::Image(bitmaps[closest_index]);
     extensions::TabHelper* extensions_tab_helper =

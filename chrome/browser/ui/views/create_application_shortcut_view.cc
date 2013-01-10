@@ -452,7 +452,6 @@ void CreateUrlApplicationShortcutView::FetchIcon() {
 void CreateUrlApplicationShortcutView::DidDownloadFavicon(
     int id,
     const GURL& image_url,
-    bool errored,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {
   if (id != pending_download_id_)
@@ -473,7 +472,7 @@ void CreateUrlApplicationShortcutView::DidDownloadFavicon(
     image = bitmaps[closest_index];
   }
 
-  if (!errored && !image.isNull()) {
+  if (!image.isNull()) {
     shortcut_info_.favicon = gfx::Image(image);
     static_cast<AppInfoView*>(app_info_)->UpdateIcon(shortcut_info_.favicon);
   } else {

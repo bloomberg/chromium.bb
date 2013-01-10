@@ -37,10 +37,9 @@ IPC_MESSAGE_ROUTED2(IconHostMsg_UpdateFaviconURL,
                     int32 /* page_id */,
                     std::vector<content::FaviconURL> /* urls of the favicon */)
 
-IPC_MESSAGE_ROUTED5(IconHostMsg_DidDownloadFavicon,
+IPC_MESSAGE_ROUTED4(IconHostMsg_DidDownloadFavicon,
                     int /* Identifier of the request */,
                     GURL /* URL of the image */,
-                    bool /* true if there was a network error */,
                     int /* Preferred icon size passed to
                            IconMsg_DownloadFavicon */,
                     std::vector<SkBitmap> /* image_data */)

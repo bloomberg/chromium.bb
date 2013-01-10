@@ -44,7 +44,6 @@ class MetroPinTabHelper
   // Favicon download callback.
   void DidDownloadFavicon(int id,
                           const GURL& image_url,
-                          bool errored,
                           int requested_size,
                           const std::vector<SkBitmap>& bitmaps);
 

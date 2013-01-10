@@ -101,7 +101,6 @@ void FaviconHelper::OnDownloadFavicon(int id,
   Send(new IconHostMsg_DidDownloadFavicon(routing_id(),
                                           id,
                                           image_url,
-                                          result_images.empty(),
                                           image_size,
                                           result_images));
 }
@@ -129,7 +128,6 @@ void FaviconHelper::DidDownloadFavicon(
   Send(new IconHostMsg_DidDownloadFavicon(routing_id(),
                                           fetcher->id(),
                                           fetcher->image_url(),
-                                          images.empty(),
                                           requested_size,
                                           images));
 

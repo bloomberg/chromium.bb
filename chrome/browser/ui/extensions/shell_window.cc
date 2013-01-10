@@ -449,7 +449,6 @@ void ShellWindow::OnImageLoaded(const gfx::Image& image,
 
 void ShellWindow::DidDownloadFavicon(int id,
                                      const GURL& image_url,
-                                     bool errored,
                                      int requested_size,
                                      const std::vector<SkBitmap>& bitmaps) {
   if (image_url != app_icon_url_ || bitmaps.empty())
