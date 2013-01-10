@@ -38,6 +38,7 @@
   min-width: 400px;
   padding: 0;
   position: relative;
+  z-index: 0;
 }
 
 /* If the options page is loading don't do the transition. */
@@ -78,6 +79,7 @@
   right: 7px;
   top: 7px;
   width: 14px;
+  z-index: 1;
 }
 
 html[dir='rtl'] .overlay .page > .close-button {
