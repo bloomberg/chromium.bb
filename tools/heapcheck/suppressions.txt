@@ -410,6 +410,22 @@
    fun:net::URLRequest::Start
    fun:URLRequestTest_CancelTest_DuringCookiePolicy_Test::TestBody
 }
+{
+   bug_34994_a
+   Heapcheck:Leak
+   ...
+   fun:v8::internal::Invoke
+   fun:v8::internal::Execution::Call
+   fun:v8::Script::Run
+}
+{
+   bug_34994_b
+   Heapcheck:Leak
+   ...
+   fun:v8::internal::Invoke
+   fun:v8::internal::Execution::Call
+   fun:v8::Function::Call
+}
 # TODO(glider): sometimes the stacks differ between the bot and the local run,
 # e.g. "base::subtle::RefCountedBase::RefCountedBase" vs. "RefCountedBase".
 {
