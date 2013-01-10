@@ -48,7 +48,7 @@ void SimulateGPUCrash(Browser* browser) {
 
 } // namespace
 
-class GPUCrashTest : public InProcessBrowserTest {
+class WebGLInfobarTest : public InProcessBrowserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) {
     // GPU tests require gpu acceleration.
@@ -63,34 +63,7 @@ class GPUCrashTest : public InProcessBrowserTest {
   FilePath gpu_test_dir_;
 };
 
-IN_PROC_BROWSER_TEST_F(GPUCrashTest, Kill) {
-  // crbug.com/162982, flaky on Mac Retina Release.
-  if (GPUTestBotConfig::CurrentConfigMatches("MAC NVIDIA 0x0fd5 RELEASE"))
-    return;
-
-  content::DOMMessageQueue message_queue;
-
-  content::GpuDataManager::GetInstance()->
-      DisableDomainBlockingFor3DAPIsForTesting();
-
-  // Load page and wait for it to load.
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::NotificationService::AllSources());
-  ui_test_utils::NavigateToURL(
-      browser(),
-      content::GetFileUrlWithQuery(
-          gpu_test_dir_.AppendASCII("webgl.html"), "query=kill"));
-  observer.Wait();
-
-  SimulateGPUCrash(browser());
-
-  std::string m;
-  ASSERT_TRUE(message_queue.WaitForMessage(&m));
-  EXPECT_EQ("\"SUCCESS\"", m);
-}
-
-IN_PROC_BROWSER_TEST_F(GPUCrashTest, ContextLossRaisesInfobar) {
+IN_PROC_BROWSER_TEST_F(WebGLInfobarTest, ContextLossRaisesInfobar) {
   // crbug.com/162982, flaky on Mac Retina Release.
   if (GPUTestBotConfig::CurrentConfigMatches("MAC NVIDIA 0x0fd5 RELEASE"))
     return;
@@ -115,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(GPUCrashTest, ContextLossRaisesInfobar) {
                 chrome::GetActiveWebContents(browser()))->GetInfoBarCount());
 }
 
-IN_PROC_BROWSER_TEST_F(GPUCrashTest, ContextLossInfobarReload) {
+IN_PROC_BROWSER_TEST_F(WebGLInfobarTest, ContextLossInfobarReload) {
   // crbug.com/162982, flaky on Mac Retina Release.
   if (GPUTestBotConfig::CurrentConfigMatches("MAC NVIDIA 0x0fd5 RELEASE"))
     return;
@@ -164,17 +137,3 @@ IN_PROC_BROWSER_TEST_F(GPUCrashTest, ContextLossInfobarReload) {
 // There isn't any point in adding a test which calls Accept() on the
 // ThreeDAPIInfoBarDelegate; doing so doesn't remove the infobar, and
 // there's no concrete event that could be observed in response.
-
-IN_PROC_BROWSER_TEST_F(GPUCrashTest, WebkitLoseContext) {
-  content::DOMMessageQueue message_queue;
-
-  ui_test_utils::NavigateToURL(
-      browser(),
-      content::GetFileUrlWithQuery(
-          gpu_test_dir_.AppendASCII("webgl.html"),
-          "query=WEBGL_lose_context"));
-
-  std::string m;
-  ASSERT_TRUE(message_queue.WaitForMessage(&m));
-  EXPECT_EQ("\"SUCCESS\"", m);
-}

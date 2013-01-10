@@ -2238,10 +2238,10 @@
         'test/gpu/test_support_gpu.gypi'
       ],
       'sources': [
-        'test/gpu/gpu_crash_browsertest.cc',
         'test/gpu/gpu_feature_browsertest.cc',
         'test/gpu/gpu_mapsgl_endurance_browsertest.cc',
         'test/gpu/gpu_pixel_browsertest.cc',
+        'test/gpu/webgl_infobar_browsertest.cc',
       ],
     },
     {
