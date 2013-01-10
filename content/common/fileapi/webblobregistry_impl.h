@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_FILEAPI_WEBBLOBREGISTRY_IMPL_H_
 #define CONTENT_COMMON_FILEAPI_WEBBLOBREGISTRY_IMPL_H_
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebBlobRegistry.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebBlobRegistry.h"
 
 namespace WebKit {
 class WebBlobData;

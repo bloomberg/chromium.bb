@@ -8,9 +8,9 @@
 #include "base/shared_memory.h"
 #include "content/common/child_thread.h"
 #include "content/common/fileapi/webblob_messages.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebBlobData.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebBlobData.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/blob/blob_data.h"
 
