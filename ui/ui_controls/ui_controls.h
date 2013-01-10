@@ -5,13 +5,8 @@
 #ifndef UI_UI_CONTROLS_UI_CONTROLS_H_
 #define UI_UI_CONTROLS_UI_CONTROLS_H_
 
-#include "build/build_config.h"
-
-#if defined(OS_WIN)
-#include <wtypes.h>
-#endif
-
 #include "base/callback_forward.h"
+#include "build/build_config.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/base/ui_export.h"
@@ -73,16 +68,16 @@ enum MouseButtonState {
 // the cursor currently is, so be sure to move the cursor before calling this
 // (and be sure the cursor has arrived!).
 UI_EXPORT bool SendMouseEvents(MouseButton type, int state);
-UI_EXPORT bool SendMouseEventsNotifyWhenDone(
-    MouseButton type, int state,
-    const base::Closure& task);
+UI_EXPORT bool SendMouseEventsNotifyWhenDone(MouseButton type,
+                                             int state,
+                                             const base::Closure& task);
+
 // Same as SendMouseEvents with UP | DOWN.
 UI_EXPORT bool SendMouseClick(MouseButton type);
 
 #if defined(TOOLKIT_VIEWS)
 // Runs |closure| after processing all pending ui events.
-UI_EXPORT void RunClosureAfterAllPendingUIEvents(
-    const base::Closure& closure);
+UI_EXPORT void RunClosureAfterAllPendingUIEvents(const base::Closure& closure);
 #endif
 
 #if defined(USE_AURA)
