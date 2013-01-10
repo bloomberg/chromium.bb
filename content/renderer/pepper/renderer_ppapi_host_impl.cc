@@ -14,7 +14,7 @@
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/host_dispatcher.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "ui/gfx/point.h"
 #include "webkit/plugins/ppapi/fullscreen_container.h"
 #include "webkit/plugins/ppapi/host_globals.h"
