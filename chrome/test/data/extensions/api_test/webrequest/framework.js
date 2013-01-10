@@ -26,15 +26,20 @@ var ignoreUnexpected = false;
 var logAllRequests = false;
 
 function runTests(tests) {
-  chrome.tabs.create({url: "about:blank"}, function(tab) {
-    tabId = tab.id;
-    tabIdMap = {};
-    tabIdMap[tabId] = 0;
-    chrome.test.getConfig(function(config) {
-      testServerPort = config.testServer.port;
-      chrome.test.runTests(tests);
-    });
-  });
+  var waitForAboutBlank = function(_, info, tab) {
+    if (info.status == "complete" && tab.url == "about:blank") {
+      tabId = tab.id;
+      tabIdMap = {};
+      tabIdMap[tabId] = 0;
+      chrome.tabs.onUpdated.removeListener(waitForAboutBlank);
+      chrome.test.getConfig(function(config) {
+        testServerPort = config.testServer.port;
+        chrome.test.runTests(tests);
+      });
+    }
+  };
+  chrome.tabs.onUpdated.addListener(waitForAboutBlank);
+  chrome.tabs.create({url: "about:blank"});
 }
 
 // Returns an URL from the test server, fixing up the port. Must be called
@@ -166,6 +171,7 @@ function captureEvent(name, details, callback) {
   // us specify special return values per event.
   var currentIndex = capturedEventData.length;
   var extraOptions;
+  var retval;
   if (expectedEventData.length > currentIndex) {
     retval =
         expectedEventData[currentIndex].retval_function ?
