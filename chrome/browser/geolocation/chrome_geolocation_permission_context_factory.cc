@@ -28,6 +28,10 @@ class Service : public ProfileKeyedService {
     return context_.get();
   }
 
+  virtual void Shutdown() OVERRIDE {
+    context()->ShutdownOnUIThread();
+  }
+
  private:
   scoped_refptr<ChromeGeolocationPermissionContext> context_;
 

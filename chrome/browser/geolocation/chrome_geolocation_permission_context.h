@@ -35,6 +35,9 @@ class ChromeGeolocationPermissionContext
       int bridge_id,
       const GURL& requesting_frame) OVERRIDE;
 
+  // Called on the UI thread when the profile is about to be destroyed.
+  void ShutdownOnUIThread();
+
  protected:
   virtual ~ChromeGeolocationPermissionContext();
 
@@ -81,9 +84,9 @@ class ChromeGeolocationPermissionContext
   // Removes any pending InfoBar request.
   void CancelPendingInfoBarRequest(const GeolocationPermissionRequestID& id);
 
-  // This must only be accessed from the UI thread.
+  // These must only be accessed from the UI thread.
   Profile* const profile_;
-
+  bool shutting_down_;
   scoped_ptr<GeolocationInfoBarQueueController>
       geolocation_infobar_queue_controller_;
 
