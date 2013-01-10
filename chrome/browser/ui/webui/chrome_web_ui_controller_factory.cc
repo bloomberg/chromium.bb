@@ -35,9 +35,6 @@
 #include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/browser/ui/webui/local_omnibox_popup/local_omnibox_popup_ui.h"
 #include "chrome/browser/ui/webui/media/media_internals_ui.h"
-#if !defined(DISABLE_NACL)
-#include "chrome/browser/ui/webui/nacl_ui.h"
-#endif
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
@@ -67,6 +64,10 @@
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
+
+#if !defined(DISABLE_NACL)
+#include "chrome/browser/ui/webui/nacl_ui.h"
+#endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/ui/webui/policy_ui.h"
@@ -583,7 +584,7 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   }
 #endif
 
-  if (!content::GetContentClient()->HasWebUIScheme(page_url))
+  if (!content::HasWebUIScheme(page_url))
     return NULL;
 
 #if defined(OS_WIN)

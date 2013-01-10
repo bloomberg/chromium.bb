@@ -625,11 +625,6 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
 #endif
 }
 
-content::WebUIControllerFactory*
-    ChromeContentBrowserClient::GetWebUIControllerFactory() {
-  return ChromeWebUIControllerFactory::GetInstance();
-}
-
 GURL ChromeContentBrowserClient::GetEffectiveURL(
     content::BrowserContext* browser_context, const GURL& url) {
   Profile* profile = Profile::FromBrowserContext(browser_context);

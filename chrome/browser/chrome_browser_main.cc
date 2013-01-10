@@ -92,6 +92,7 @@
 #include "chrome/browser/ui/uma_browsing_activity_observer.h"
 #include "chrome/browser/ui/user_data_dir_dialog.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -1390,6 +1391,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   std::vector<Profile*> last_opened_profiles =
       g_browser_process->profile_manager()->GetLastOpenedProfiles();
 #endif
+
+  content::WebUIControllerFactory::RegisterFactory(
+      ChromeWebUIControllerFactory::GetInstance());
 
   if (browser_creator_->Start(parsed_command_line(), FilePath(),
                               profile_, last_opened_profiles, &result_code)) {

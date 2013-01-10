@@ -26,10 +26,6 @@ WebContentsViewDelegate* ContentBrowserClient::GetWebContentsViewDelegate(
   return NULL;
 }
 
-WebUIControllerFactory* ContentBrowserClient::GetWebUIControllerFactory() {
-  return NULL;
-}
-
 GURL ContentBrowserClient::GetEffectiveURL(BrowserContext* browser_context,
                                            const GURL& url) {
   return url;

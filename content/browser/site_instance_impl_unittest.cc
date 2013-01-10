@@ -15,7 +15,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/web_ui_controller_factory.h"
+#include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -47,11 +47,11 @@ class SiteInstanceTestWebUIControllerFactory : public WebUIControllerFactory {
   }
   virtual bool UseWebUIForURL(BrowserContext* browser_context,
                               const GURL& url) const OVERRIDE {
-    return GetContentClient()->HasWebUIScheme(url);
+    return HasWebUIScheme(url);
   }
   virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
                                       const GURL& url) const OVERRIDE {
-    return GetContentClient()->HasWebUIScheme(url);
+    return HasWebUIScheme(url);
   }
   virtual bool IsURLAcceptableForWebUI(
       BrowserContext* browser_context,
@@ -61,24 +61,15 @@ class SiteInstanceTestWebUIControllerFactory : public WebUIControllerFactory {
   }
 };
 
-class SiteInstanceTestClient : public TestContentClient {
- public:
-  SiteInstanceTestClient() {
-  }
-
-  virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE {
-    return url.SchemeIs(chrome::kChromeUIScheme);
-  }
-};
-
 class SiteInstanceTestBrowserClient : public TestContentBrowserClient {
  public:
   SiteInstanceTestBrowserClient()
       : privileged_process_id_(-1) {
+    WebUIControllerFactory::RegisterFactory(&factory_);
   }
 
-  virtual WebUIControllerFactory* GetWebUIControllerFactory() OVERRIDE {
-    return &factory_;
+  ~SiteInstanceTestBrowserClient() {
+    WebUIControllerFactoryRegistry::UnregisterFactoryForTesting(&factory_);
   }
 
   virtual bool IsSuitableHost(RenderProcessHost* process_host,
@@ -103,14 +94,11 @@ class SiteInstanceTest : public testing::Test {
         file_user_blocking_thread_(BrowserThread::FILE_USER_BLOCKING,
                                    &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_),
-        old_client_(NULL),
         old_browser_client_(NULL) {
   }
 
   virtual void SetUp() {
-    old_client_ = GetContentClient();
     old_browser_client_ = GetContentClient()->browser();
-    SetContentClient(&client_);
     GetContentClient()->set_browser_for_testing(&browser_client_);
     url_util::AddStandardScheme(kPrivilegedScheme);
     url_util::AddStandardScheme(chrome::kChromeUIScheme);
@@ -121,7 +109,6 @@ class SiteInstanceTest : public testing::Test {
     EXPECT_TRUE(RenderProcessHost::AllHostsIterator().IsAtEnd());
 
     GetContentClient()->set_browser_for_testing(old_browser_client_);
-    SetContentClient(old_client_);
 
     // http://crbug.com/143565 found SiteInstanceTest leaking an
     // AppCacheDatabase. This happens because some part of the test indirectly
@@ -153,9 +140,7 @@ class SiteInstanceTest : public testing::Test {
   TestBrowserThread file_user_blocking_thread_;
   TestBrowserThread io_thread_;
 
-  SiteInstanceTestClient client_;
   SiteInstanceTestBrowserClient browser_client_;
-  ContentClient* old_client_;
   ContentBrowserClient* old_browser_client_;
 };
 
