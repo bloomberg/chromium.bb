@@ -1571,10 +1571,6 @@ const char kUseMockKeychain[]               = "use-mock-keychain";
 #endif
 
 #if defined(OS_WIN)
-// Disables profile desktop shortcuts handling, preventing their creation,
-// modification or removal.
-const char kDisableDesktopShortcuts[]       = "disable-desktop-shortcuts";
-
 // For the DelegateExecute verb handler to launch Chrome in metro mode on
 // Windows 8 and higher.  Used when relaunching metro Chrome.
 const char kForceImmersive[]                 = "force-immersive";
