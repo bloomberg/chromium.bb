@@ -423,7 +423,7 @@ bool DialServiceImpl::CheckResult(const char* operation, int result) {
   if (result < net::OK && result != net::ERR_IO_PENDING) {
     CloseSocket();
     std::string error_str(net::ErrorToString(result));
-    DVLOG(ERROR) << "dial socket error: " << error_str;
+    DVLOG(0) << "dial socket error: " << error_str;
     FOR_EACH_OBSERVER(Observer, observer_list_, OnError(this, error_str));
     return false;
   }

@@ -85,8 +85,8 @@ void BalsaFrame::Reset() {
 const char* BalsaFrameEnums::ParseStateToString(
     BalsaFrameEnums::ParseState error_code) {
   switch (error_code) {
-    case ERROR:
-      return "ERROR";
+    case PARSE_ERROR:
+      return "PARSE_ERROR";
     case READING_HEADER_AND_FIRSTLINE:
       return "READING_HEADER_AND_FIRSTLINE";
     case READING_CHUNK_LENGTH:

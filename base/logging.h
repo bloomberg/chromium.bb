@@ -330,6 +330,7 @@ const LogSeverity LOG_DFATAL = LOG_FATAL;
 #define COMPACT_GOOGLE_LOG_DFATAL \
   COMPACT_GOOGLE_LOG_EX_DFATAL(LogMessage)
 
+#if defined(OS_WIN)
 // wingdi.h defines ERROR to be 0. When we call LOG(ERROR), it gets
 // substituted with 0, and it expands to COMPACT_GOOGLE_LOG_0. To allow us
 // to keep using this syntax, we define this macro to do the same thing
@@ -341,6 +342,7 @@ const LogSeverity LOG_DFATAL = LOG_FATAL;
 #define COMPACT_GOOGLE_LOG_0 COMPACT_GOOGLE_LOG_ERROR
 // Needed for LOG_IS_ON(ERROR).
 const LogSeverity LOG_0 = LOG_ERROR;
+#endif
 
 // As special cases, we can assume that LOG_IS_ON(ERROR_REPORT) and
 // LOG_IS_ON(FATAL) always hold.  Also, LOG_IS_ON(DFATAL) always holds

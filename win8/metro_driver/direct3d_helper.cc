@@ -15,7 +15,7 @@ namespace {
 void CheckIfFailed(HRESULT hr) {
   DCHECK(!FAILED(hr));
   if (FAILED(hr))
-    DVLOG(ERROR) << "Direct3D call failed, hr = " << hr;
+    DVLOG(0) << "Direct3D call failed, hr = " << hr;
 }
 
 float GetLogicalDpi() {

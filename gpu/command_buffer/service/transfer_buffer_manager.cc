@@ -41,13 +41,13 @@ bool TransferBufferManager::RegisterTransferBuffer(
     base::SharedMemory* shared_memory,
     size_t size) {
   if (id <= 0) {
-    DVLOG(ERROR) << "Cannot register transfer buffer with non-positive ID.";
+    DVLOG(0) << "Cannot register transfer buffer with non-positive ID.";
     return false;
   }
 
   // Fail if the ID is in use.
   if (registered_buffers_.find(id) != registered_buffers_.end()) {
-    DVLOG(ERROR) << "Buffer ID already in use.";
+    DVLOG(0) << "Buffer ID already in use.";
     return false;
   }
 
@@ -55,7 +55,7 @@ bool TransferBufferManager::RegisterTransferBuffer(
   base::SharedMemoryHandle duped_shared_memory_handle;
   if (!shared_memory->ShareToProcess(base::GetCurrentProcessHandle(),
                                      &duped_shared_memory_handle)) {
-    DVLOG(ERROR) << "Failed to duplicate shared memory handle.";
+    DVLOG(0) << "Failed to duplicate shared memory handle.";
     return false;
   }
   scoped_ptr<SharedMemory> duped_shared_memory(
@@ -63,7 +63,7 @@ bool TransferBufferManager::RegisterTransferBuffer(
 
   // Map the shared memory into this process. This validates the size.
   if (!duped_shared_memory->Map(size)) {
-    DVLOG(ERROR) << "Failed to map shared memory.";
+    DVLOG(0) << "Failed to map shared memory.";
     return false;
   }
 
@@ -85,7 +85,7 @@ bool TransferBufferManager::RegisterTransferBuffer(
 void TransferBufferManager::DestroyTransferBuffer(int32 id) {
   BufferMap::iterator it = registered_buffers_.find(id);
   if (it == registered_buffers_.end()) {
-    DVLOG(ERROR) << "Transfer buffer ID was not registered.";
+    DVLOG(0) << "Transfer buffer ID was not registered.";
     return;
   }
 
