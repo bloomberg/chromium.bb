@@ -10,10 +10,9 @@
 namespace remoting {
 
 MouseClampingFilter::MouseClampingFilter(
-    protocol::InputStub* input_stub,
-    protocol::VideoStub* video_stub)
+    protocol::InputStub* input_stub)
     : input_filter_(input_stub),
-      video_stub_(video_stub) {
+      video_stub_(NULL) {
 }
 
 MouseClampingFilter::~MouseClampingFilter() {

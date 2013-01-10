@@ -16,11 +16,14 @@ namespace remoting {
 // received video frame.
 class MouseClampingFilter : public protocol::VideoStub {
  public:
-  MouseClampingFilter(protocol::InputStub* input_stub,
-                      protocol::VideoStub* video_stub);
+  explicit MouseClampingFilter(protocol::InputStub* input_stub);
   virtual ~MouseClampingFilter();
 
   protocol::InputStub* input_filter() { return &input_filter_; }
+
+  void set_video_stub(protocol::VideoStub* video_stub) {
+    video_stub_ = video_stub;
+  }
 
   // protocol::VideoStub implementation.
   virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,

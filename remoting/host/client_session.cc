@@ -43,7 +43,7 @@ ClientSession::ClientSession(
       client_jid_(connection_->session()->jid()),
       input_tracker_(&host_input_filter_),
       remote_input_filter_(&input_tracker_),
-      mouse_clamping_filter_(&remote_input_filter_, connection_->video_stub()),
+      mouse_clamping_filter_(&remote_input_filter_),
       disable_input_filter_(mouse_clamping_filter_.input_filter()),
       disable_clipboard_filter_(clipboard_echo_filter_.host_filter()),
       auth_input_filter_(&disable_input_filter_),
@@ -108,6 +108,7 @@ void ClientSession::OnConnectionAuthenticated(
   auth_clipboard_filter_.set_enabled(true);
 
   clipboard_echo_filter_.set_client_stub(connection_->client_stub());
+  mouse_clamping_filter_.set_video_stub(connection_->video_stub());
 
   if (max_duration_ > base::TimeDelta()) {
     // TODO(simonmorris): Let Disconnect() tell the client that the
