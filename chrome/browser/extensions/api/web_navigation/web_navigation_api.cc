@@ -363,6 +363,10 @@ void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
     bool is_error_page,
     bool is_iframe_srcdoc,
     content::RenderViewHost* render_view_host) {
+  DVLOG(2) << "DidStartProvisionalLoad("
+           << "render_view_host=" << render_view_host
+           << ", frame_num=" << frame_num
+           << ", url=" << validated_url << ")";
   if (!render_view_host_)
     render_view_host_ = render_view_host;
   if (render_view_host != render_view_host_ &&
@@ -399,6 +403,10 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
     const GURL& url,
     content::PageTransition transition_type,
     content::RenderViewHost* render_view_host) {
+  DVLOG(2) << "DidCommitProvisionalLoad("
+           << "render_view_host=" << render_view_host
+           << ", frame_num=" << frame_num
+           << ", url=" << url << ")";
   if (render_view_host != render_view_host_ &&
       render_view_host != pending_render_view_host_)
     return;
@@ -476,6 +484,10 @@ void WebNavigationTabObserver::DidFailProvisionalLoad(
     int error_code,
     const string16& error_description,
     content::RenderViewHost* render_view_host) {
+  DVLOG(2) << "DidFailProvisionalLoad("
+           << "render_view_host=" << render_view_host
+           << ", frame_num=" << frame_num
+           << ", url=" << validated_url << ")";
   if (render_view_host != render_view_host_ &&
       render_view_host != pending_render_view_host_)
     return;
@@ -505,6 +517,9 @@ void WebNavigationTabObserver::DidFailProvisionalLoad(
 void WebNavigationTabObserver::DocumentLoadedInFrame(
     int64 frame_num,
     content::RenderViewHost* render_view_host) {
+  DVLOG(2) << "DocumentLoadedInFrame("
+           << "render_view_host=" << render_view_host
+           << ", frame_num=" << frame_num << ")";
   if (render_view_host != render_view_host_)
     return;
   FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
@@ -521,6 +536,10 @@ void WebNavigationTabObserver::DidFinishLoad(
     const GURL& validated_url,
     bool is_main_frame,
     content::RenderViewHost* render_view_host) {
+  DVLOG(2) << "DidFinishLoad("
+           << "render_view_host=" << render_view_host
+           << ", frame_num=" << frame_num
+           << ", url=" << validated_url << ")";
   if (render_view_host != render_view_host_)
     return;
   FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
@@ -548,6 +567,10 @@ void WebNavigationTabObserver::DidFailLoad(
     int error_code,
     const string16& error_description,
     content::RenderViewHost* render_view_host) {
+  DVLOG(2) << "DidFailLoad("
+           << "render_view_host=" << render_view_host
+           << ", frame_num=" << frame_num
+           << ", url=" << validated_url << ")";
   if (render_view_host != render_view_host_)
     return;
   FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
