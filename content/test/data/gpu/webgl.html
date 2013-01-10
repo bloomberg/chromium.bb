@@ -34,6 +34,7 @@ function testContextLost(e) {
   if (extension) {
     setTimeout(function() {
       extension.restoreContext();
+      extension = null;
     }, 0);
   }
 }
@@ -85,31 +86,21 @@ function onLoad() {
   canvas = document.getElementById("canvas1");
   w = canvas.width;
   h = canvas.height;
-  if (!canvas) {
-    document.title = "FAILED: canvas element not found";
+  if (!canvas)
     return;
-  }
   canvas.addEventListener("webglcontextlost", testContextLost, false);
   canvas.addEventListener("webglcontextrestored", testContextRestored, false);
 
   gl = canvas.getContext("experimental-webgl");
-  if (!gl) {
-    document.title = "FAILED: could not get webgl context for canvas";
+  if (!gl)
     return;
-  }
 
-  if (!testHorizontalBands()) {
-    document.title = "FAILED: did not render correctly";
+  if (!testHorizontalBands())
     return;
-  }
 
   var query = /query=(.*)/.exec(window.location.href);
-  if (query) {
+  if (query)
     contextLostTest(query[1]);
-  } else {
-    var renderer = gl.getParameter(gl.RENDERER);
-    document.title = "SUCCESS: " + renderer;
-  }
 }
 </script>
 </head>
