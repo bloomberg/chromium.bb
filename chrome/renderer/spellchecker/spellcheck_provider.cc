@@ -11,11 +11,11 @@
 #include "chrome/common/spellcheck_result.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "content/public/renderer/render_view.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingType.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 using WebKit::WebFrame;

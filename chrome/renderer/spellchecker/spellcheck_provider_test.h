@@ -10,9 +10,9 @@
 #include "base/string16.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
 namespace IPC {
   class Message;
