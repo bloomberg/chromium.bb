@@ -102,6 +102,7 @@ class DisplayManager;
 class DragDropController;
 class EventClientImpl;
 class EventRewriterEventFilter;
+class EventTransformationHandler;
 class FocusCycler;
 class MouseCursorEventFilter;
 class OutputConfiguratorAnimation;
@@ -316,6 +317,9 @@ class ASH_EXPORT Shell
   }
   internal::MouseCursorEventFilter* mouse_cursor_filter() {
     return mouse_cursor_filter_.get();
+  }
+  internal::EventTransformationHandler* event_transformation_handler() {
+    return event_transformation_handler_.get();
   }
   CursorManager* cursor_manager() { return &cursor_manager_; }
 
@@ -535,6 +539,8 @@ class ASH_EXPORT Shell
   scoped_ptr<internal::ScreenPositionController> screen_position_controller_;
   scoped_ptr<internal::SystemModalContainerEventFilter> modality_filter_;
   scoped_ptr<internal::EventClientImpl> event_client_;
+  scoped_ptr<internal::EventTransformationHandler>
+      event_transformation_handler_;
   scoped_ptr<RootWindowHostFactory> root_window_host_factory_;
 
   // An event filter that rewrites or drops an event.

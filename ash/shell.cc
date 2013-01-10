@@ -15,6 +15,7 @@
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/event_transformation_handler.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/screen_position_controller.h"
 #include "ash/drag_drop/drag_drop_controller.h"
@@ -468,6 +469,9 @@ void Shell::Init() {
   accelerator_filter_.reset(new internal::AcceleratorFilter);
   AddPreTargetHandler(accelerator_filter_.get());
 #endif
+
+  event_transformation_handler_.reset(new internal::EventTransformationHandler);
+  AddPreTargetHandler(event_transformation_handler_.get());
 
   system_gesture_filter_.reset(new internal::SystemGestureEventFilter);
   AddPreTargetHandler(system_gesture_filter_.get());

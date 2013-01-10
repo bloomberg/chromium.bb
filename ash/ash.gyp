@@ -81,6 +81,8 @@
         'display/display_error_dialog.h',
         'display/display_manager.cc',
         'display/display_manager.h',
+        'display/event_transformation_handler.cc',
+        'display/event_transformation_handler.h',
         'display/mouse_cursor_event_filter.cc',
         'display/mouse_cursor_event_filter.h',
         'display/output_configurator_animation.cc',

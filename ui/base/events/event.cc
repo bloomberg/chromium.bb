@@ -639,6 +639,11 @@ ScrollEvent::ScrollEvent(EventType type,
   CHECK(IsScrollEvent());
 }
 
+void ScrollEvent::Scale(const float factor) {
+  x_offset_ *= factor;
+  y_offset_ *= factor;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // GestureEvent
 
