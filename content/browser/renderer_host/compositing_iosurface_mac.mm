@@ -668,6 +668,8 @@ bool CompositingIOSurfaceMac::SynchronousCopyTo(
   glUniform1i(blit_rgb_sampler_location_, texture_unit);
   glActiveTexture(GL_TEXTURE0 + texture_unit);
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_);
+  glTexParameterf(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameterf(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
   SurfaceQuad quad;
   quad.set_rect(0.0f, 0.0f, dst_pixel_size.width(), dst_pixel_size.height());
