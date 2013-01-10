@@ -5,7 +5,7 @@
 #include "content/renderer/android/content_detector.h"
 
 #include "base/logging.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHitTestResult.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSurroundingText.h"
 
