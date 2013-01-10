@@ -71,6 +71,24 @@ public:
 
     virtual void onTimerTick() OVERRIDE
     {
+        // In single threaded mode we attempt to simulate changing the current
+        // thread by maintaining a fake thread id. When we switch from one
+        // thread to another, we construct DebugScopedSetXXXThread objects that
+        // update the thread id. This lets DCHECKS that ensure we're on the
+        // right thread to work correctly in single threaded mode. The problem
+        // here is that the timer tasks are run via the message loop, and when
+        // they run, we've had no chance to construct a DebugScopedSetXXXThread
+        // object. The result is that we report that we're running on the main
+        // thread. In multi-threaded mode, this timer is run on the compositor
+        // thread, so to keep this consistent in single-threaded mode, we'll
+        // construct a DebugScopedSetImplThread object. There is no need to do
+        // this in multi-threaded mode since the real thread id's will be
+        // correct. In fact, setting fake thread id's interferes with the real
+        // thread id's and causes breakage.
+        scoped_ptr<DebugScopedSetImplThread> setImplThread;
+        if (!m_layerTreeHostImpl->proxy()->hasImplThread())
+            setImplThread.reset(new DebugScopedSetImplThread(m_layerTreeHostImpl->proxy()));
+
         m_layerTreeHostImpl->animate(base::TimeTicks::Now(), base::Time::Now());
     }
 
