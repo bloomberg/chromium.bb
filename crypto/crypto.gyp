@@ -129,6 +129,10 @@
             'capi_util.cc',
           ],
         }],
+        [ 'OS == "win"', {
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [4267, ],
+        }],
         [ 'use_openssl==1', {
             # TODO(joth): Use a glob to match exclude patterns once the
             #             OpenSSL file set is complete.
@@ -318,6 +322,10 @@
           'dependencies': [
             '../third_party/nss/nss.gyp:nspr',
           ],
+        }],
+        [ 'OS == "win"', {
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [4267, ],
         }],
         [ 'use_openssl==1', {
           'sources!': [
