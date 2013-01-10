@@ -123,6 +123,14 @@ WEBKIT_STORAGE_EXPORT bool CrackIsolatedFileSystemName(
     const std::string& filesystem_name,
     std::string* filesystem_id);
 
+// Returns the root URI for an isolated filesystem for origin |origin_url|
+// and |filesystem_id|. If the |optional_root_name| is given the resulting
+// root URI will point to the subfolder within the isolated filesystem.
+WEBKIT_STORAGE_EXPORT std::string GetIsolatedFileSystemRootURIString(
+    const GURL& origin_url,
+    const std::string& filesystem_id,
+    const std::string& optional_root_name);
+
 }  // namespace fileapi
 
 #endif  // WEBKIT_FILEAPI_FILE_SYSTEM_UTIL_H_

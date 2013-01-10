@@ -56,14 +56,12 @@ v8::Handle<v8::Value> MediaGalleriesCustomBindings::GetMediaFileSystemObject(
 
   WebKit::WebFrame* webframe = WebKit::WebFrame::frameForCurrentContext();
   const GURL origin = GURL(webframe->document().securityOrigin().toString());
-  const GURL root_url =
-      fileapi::GetFileSystemRootURI(origin, fileapi::kFileSystemTypeIsolated);
-  const std::string url =
-      base::StringPrintf("%s%s/%s/", root_url.spec().c_str(), fsid.c_str(),
-                         extension_misc::kMediaFileSystemPathPart);
+  const std::string root_url =
+      fileapi::GetIsolatedFileSystemRootURIString(
+          origin, fsid, extension_misc::kMediaFileSystemPathPart);
   return webframe->createFileSystem(WebKit::WebFileSystem::TypeIsolated,
                                     WebKit::WebString::fromUTF8(name),
-                                    WebKit::WebString::fromUTF8(url));
+                                    WebKit::WebString::fromUTF8(root_url));
 }
 
 v8::Handle<v8::Value> MediaGalleriesCustomBindings::ExtractEmbeddedThumbnails(

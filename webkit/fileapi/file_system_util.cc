@@ -273,4 +273,20 @@ bool CrackIsolatedFileSystemName(const std::string& filesystem_name,
   return true;
 }
 
+std::string GetIsolatedFileSystemRootURIString(
+    const GURL& origin_url,
+    const std::string& filesystem_id,
+    const std::string& optional_root_name) {
+  std::string root = GetFileSystemRootURI(origin_url,
+                                          kFileSystemTypeIsolated).spec();
+  root.append(filesystem_id);
+  root.append("/");
+  if (!optional_root_name.empty()) {
+    DCHECK(!FilePath::FromUTF8Unsafe(optional_root_name).ReferencesParent());
+    root.append(optional_root_name);
+    root.append("/");
+  }
+  return root;
+}
+
 }  // namespace fileapi
