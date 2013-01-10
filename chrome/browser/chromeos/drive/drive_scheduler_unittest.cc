@@ -9,7 +9,7 @@
 #include "base/json/json_reader.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
-#include "chrome/browser/google_apis/dummy_drive_service.h"
+#include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
@@ -29,168 +29,6 @@ namespace drive {
 
 namespace {
 
-class FakeDriveService : public google_apis::DummyDriveService {
-  virtual void GetResourceList(
-      const GURL& feed_url,
-      int64 start_changestamp,
-      const std::string& search_query,
-      bool shared_with_me,
-      const std::string& directory_resource_id,
-      const google_apis::GetResourceListCallback& callback) OVERRIDE {
-    // TODO: Make this more flexible.
-    if (feed_url == GURL("http://example.com/gdata/root_feed.json")) {
-      // Make some sample data.
-      scoped_ptr<base::Value> feed_data = google_apis::test_util::LoadJSONFile(
-          "gdata/root_feed.json");
-      scoped_ptr<google_apis::ResourceList> resource_list =
-          google_apis::ResourceList::ExtractAndParse(*feed_data);
-      base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-          base::Bind(callback,
-                     google_apis::HTTP_SUCCESS,
-                     base::Passed(&resource_list)));
-    } else {
-      scoped_ptr<google_apis::ResourceList> resource_list;
-      base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-          base::Bind(callback,
-                     google_apis::GDATA_PARSE_ERROR,
-                     base::Passed(&resource_list)));
-    }
-  }
-
-  virtual void GetAccountMetadata(
-      const google_apis::GetAccountMetadataCallback& callback) OVERRIDE {
-    // The contents don't matter here, so just return empty metadata.
-    scoped_ptr<google_apis::AccountMetadataFeed> account_metadata(
-        new google_apis::AccountMetadataFeed);
-
-    base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-        base::Bind(callback,
-                   google_apis::HTTP_SUCCESS,
-                   base::Passed(&account_metadata)));
-  }
-
-  virtual void GetApplicationInfo(
-      const google_apis::GetDataCallback& callback) OVERRIDE {
-    // The contents don't matter here, so just return an empty dictionary.
-    scoped_ptr<base::Value> data(new base::DictionaryValue);
-
-    base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-        base::Bind(callback,
-                   google_apis::HTTP_SUCCESS,
-                   base::Passed(&data)));
-  }
-
-  virtual void DeleteResource(
-      const GURL& edit_url,
-      const google_apis::EntryActionCallback& callback) {
-    if (edit_url == GURL("/feeds/default/private/full/some_file"))
-      callback.Run(google_apis::HTTP_SUCCESS);
-    else
-      callback.Run(google_apis::HTTP_NOT_FOUND);
-  }
-
-  virtual void GetResourceEntry(
-      const std::string& resource_id,
-      const google_apis::GetResourceEntryCallback& callback) {
-    if (resource_id == "file:2_file_resource_id") {
-      scoped_ptr<Value> data = google_apis::test_util::LoadJSONFile(
-          "gdata/file_entry.json");
-
-      // Parsing ResourceEntry is cheap enough to do on UI thread.
-      scoped_ptr<google_apis::ResourceEntry> entry =
-          google_apis::ResourceEntry::ExtractAndParse(*data);
-      if (!entry) {
-        callback.Run(google_apis::GDATA_PARSE_ERROR,
-                     scoped_ptr<google_apis::ResourceEntry>());
-        return;
-      }
-
-      callback.Run(google_apis::HTTP_SUCCESS, entry.Pass());
-    } else {
-      callback.Run(google_apis::HTTP_NOT_FOUND,
-                   scoped_ptr<google_apis::ResourceEntry>());
-    }
-  }
-
-  virtual void CopyHostedDocument(
-      const std::string& resource_id,
-      const FilePath::StringType& new_name,
-      const google_apis::GetResourceEntryCallback& callback) {
-    if (resource_id == "file:2_file_resource_id") {
-      scoped_ptr<Value> data = google_apis::test_util::LoadJSONFile(
-          "gdata/file_entry.json");
-
-      // Parsing ResourceEntry is cheap enough to do on UI thread.
-      scoped_ptr<google_apis::ResourceEntry> entry =
-          google_apis::ResourceEntry::ExtractAndParse(*data);
-      if (!entry) {
-        callback.Run(google_apis::GDATA_PARSE_ERROR,
-                     scoped_ptr<google_apis::ResourceEntry>());
-        return;
-      }
-
-      callback.Run(google_apis::HTTP_SUCCESS, entry.Pass());
-    } else {
-      callback.Run(google_apis::HTTP_NOT_FOUND,
-                   scoped_ptr<google_apis::ResourceEntry>());
-    }
-  }
-
-  virtual void AddNewDirectory(
-      const GURL& parent_content_url,
-      const FilePath::StringType& directory_name,
-      const google_apis::GetResourceEntryCallback& callback) {
-    scoped_ptr<Value> data = google_apis::test_util::LoadJSONFile(
-        "gdata/directory_entry.json");
-
-    // Parsing ResourceEntry is cheap enough to do on UI thread.
-    scoped_ptr<google_apis::ResourceEntry> entry =
-        google_apis::ResourceEntry::ExtractAndParse(*data);
-    if (!entry) {
-      callback.Run(google_apis::GDATA_PARSE_ERROR,
-                   scoped_ptr<google_apis::ResourceEntry>());
-      return;
-    }
-
-    callback.Run(google_apis::HTTP_SUCCESS, entry.Pass());
-  }
-
-  virtual void RenameResource(
-      const GURL& edit_url,
-      const FilePath::StringType& new_name,
-      const google_apis::EntryActionCallback& callback) {
-    if (edit_url == GURL("/feeds/default/private/full/some_file"))
-      callback.Run(google_apis::HTTP_SUCCESS);
-    else
-      callback.Run(google_apis::HTTP_NOT_FOUND);
-  }
-
-  virtual void AddResourceToDirectory(
-      const GURL& parent_content_url,
-      const GURL& edit_url,
-      const google_apis::EntryActionCallback& callback) {
-    if (parent_content_url ==
-        GURL("/feeds/default/private/full/some_directory") &&
-        edit_url == GURL("/feeds/default/private/full/some_file"))
-      callback.Run(google_apis::HTTP_SUCCESS);
-    else
-      callback.Run(google_apis::HTTP_NOT_FOUND);
-  }
-
-  virtual void RemoveResourceFromDirectory(
-      const GURL& parent_content_url,
-      const std::string& resource_id,
-      const google_apis::EntryActionCallback& callback) {
-    if (parent_content_url ==
-        GURL("/feeds/default/private/full/some_directory") &&
-        resource_id == "file:2_file_resource_id")
-      callback.Run(google_apis::HTTP_SUCCESS);
-    else
-      callback.Run(google_apis::HTTP_NOT_FOUND);
-  }
-
-};
-
 class MockNetworkChangeNotifier : public net::NetworkChangeNotifier {
  public:
   MOCK_CONST_METHOD0(GetCurrentConnectionType,
@@ -209,7 +47,14 @@ class DriveSchedulerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     mock_network_change_notifier_.reset(new MockNetworkChangeNotifier);
 
-    fake_drive_service_.reset(new FakeDriveService());
+    fake_drive_service_.reset(new google_apis::FakeDriveService());
+    fake_drive_service_->LoadResourceListForWapi(
+        "gdata/root_feed.json");
+    fake_drive_service_->LoadAccountMetadataForWapi(
+        "gdata/account_metadata.json");
+    fake_drive_service_->LoadApplicationInfoForDriveApi(
+        "drive/applist.json");
+
     scheduler_.reset(new DriveScheduler(profile_.get(),
                                         fake_drive_service_.get()));
 
@@ -263,7 +108,7 @@ class DriveSchedulerTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<DriveScheduler> scheduler_;
   scoped_ptr<MockNetworkChangeNotifier> mock_network_change_notifier_;
-  scoped_ptr<FakeDriveService> fake_drive_service_;
+  scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
 };
 
 TEST_F(DriveSchedulerTest, GetApplicationInfo) {
@@ -346,7 +191,7 @@ TEST_F(DriveSchedulerTest, DeleteResource) {
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
 
   scheduler_->DeleteResource(
-      GURL("/feeds/default/private/full/some_file"),
+      GURL("https://file1_link_self/file:2_file_resource_id"),
       base::Bind(
           &google_apis::test_util::CopyResultsFromEntryActionCallback,
           &error));
@@ -362,7 +207,7 @@ TEST_F(DriveSchedulerTest, CopyHostedDocument) {
   scoped_ptr<google_apis::ResourceEntry> entry;
 
   scheduler_->CopyHostedDocument(
-      "file:2_file_resource_id",  // resource ID
+      "document:5_document_resource_id",  // resource ID
       FILE_PATH_LITERAL("New Document"),  // new name
       base::Bind(
           &google_apis::test_util::CopyResultsFromGetResourceEntryCallback,
@@ -380,7 +225,7 @@ TEST_F(DriveSchedulerTest, RenameResource) {
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
 
   scheduler_->RenameResource(
-      GURL("/feeds/default/private/full/some_file"),
+      GURL("https://file1_link_self/file:2_file_resource_id"),
       FILE_PATH_LITERAL("New Name"),
       base::Bind(
           &google_apis::test_util::CopyResultsFromEntryActionCallback,
@@ -396,8 +241,8 @@ TEST_F(DriveSchedulerTest, AddResourceToDirectory) {
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
 
   scheduler_->AddResourceToDirectory(
-      GURL("/feeds/default/private/full/some_directory"),
-      GURL("/feeds/default/private/full/some_file"),
+      GURL("https://dir_1_self_link/folder:1_folder_resource_id"),
+      GURL("https://file1_link_self/file:2_file_resource_id"),
       base::Bind(
           &google_apis::test_util::CopyResultsFromEntryActionCallback,
           &error));
@@ -412,8 +257,8 @@ TEST_F(DriveSchedulerTest, RemoveResourceFromDirectory) {
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
 
   scheduler_->RemoveResourceFromDirectory(
-      GURL("/feeds/default/private/full/some_directory"),
-      "file:2_file_resource_id",  // resource ID
+      GURL("https://dir_1_self_link/folder:1_folder_resource_id"),
+      "file:subdirectory_file_1_id",  // resource ID
       base::Bind(
           &google_apis::test_util::CopyResultsFromEntryActionCallback,
           &error));
@@ -429,7 +274,7 @@ TEST_F(DriveSchedulerTest, AddNewDirectory) {
   scoped_ptr<google_apis::ResourceEntry> entry;
 
   scheduler_->AddNewDirectory(
-      GURL("/feeds/default/private/full/folder%3Aroot"),
+      GURL(),  // Root directory.
       FILE_PATH_LITERAL("New Directory"),
       base::Bind(
           &google_apis::test_util::CopyResultsFromGetResourceEntryCallback,

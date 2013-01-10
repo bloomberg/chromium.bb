@@ -22,7 +22,7 @@
 #include "chrome/browser/chromeos/drive/mock_drive_cache_observer.h"
 #include "chrome/browser/chromeos/drive/stale_cache_files_remover.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
-#include "chrome/browser/google_apis/dummy_drive_service.h"
+#include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -41,39 +41,6 @@ namespace drive {
 namespace {
 
 const int64 kLotsOfSpace = kMinFreeSpace * 10;
-
-// Fake DriveService implementation that just returns an empty resource list,
-// and empty account metadata. This implementation is sufficient to simulate
-// an empty file system.
-class FakeDriveService : public google_apis::DummyDriveService {
-  // DummyDriveService overrides.
-  virtual void GetResourceList(
-      const GURL& feed_url,
-      int64 start_changestamp,
-      const std::string& search_query,
-      bool shared_with_me,
-      const std::string& directory_resource_id,
-      const google_apis::GetResourceListCallback& callback) OVERRIDE {
-    scoped_ptr<google_apis::ResourceList> resource_list(
-        new google_apis::ResourceList);
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback,
-                   google_apis::HTTP_SUCCESS,
-                   base::Passed(&resource_list)));
-  }
-
-  virtual void GetAccountMetadata(
-      const google_apis::GetAccountMetadataCallback& callback) OVERRIDE {
-    scoped_ptr<google_apis::AccountMetadataFeed> metadata(
-        new google_apis::AccountMetadataFeed);
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback,
-                   google_apis::HTTP_SUCCESS,
-                   base::Passed(&metadata)));
-  }
-};
 
 }  // namespace
 
@@ -94,7 +61,12 @@ class StaleCacheFilesRemoverTest : public testing::Test {
 
     profile_.reset(new TestingProfile);
 
-    fake_drive_service_.reset(new FakeDriveService);
+    fake_drive_service_.reset(new google_apis::FakeDriveService);
+    fake_drive_service_->LoadResourceListForWapi(
+        "gdata/root_feed.json");
+    fake_drive_service_->LoadAccountMetadataForWapi(
+        "gdata/account_metadata.json");
+
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
     scoped_refptr<base::SequencedWorkerPool> pool =
@@ -154,7 +126,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   DriveCache* cache_;
   DriveFileSystem* file_system_;
-  scoped_ptr<FakeDriveService> fake_drive_service_;
+  scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<DriveWebAppsRegistry> drive_webapps_registry_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
   scoped_ptr<StrictMock<MockDriveCacheObserver> > mock_cache_observer_;
