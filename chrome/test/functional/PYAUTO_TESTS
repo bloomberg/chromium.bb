@@ -160,6 +160,8 @@
       # -imports.ImportsTest.testFirefoxImportFromPrefs
       # Disabled on vista in the actual test. crbug.com/89767
       # -imports.ImportsTest.testImportFirefoxPasswordsFromPrefs
+      # crbug.com/168809
+      '-instant.InstantTest.testInstantCaseSensitivity',
       # crbug.com/125424
       '-media.media_basic_playback.MediaBasicPlaybackTest.testBasicPlaybackMatrix',
       # crbug.com/117569
