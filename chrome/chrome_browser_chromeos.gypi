@@ -190,8 +190,6 @@
         'browser/chromeos/dbus/proxy_resolution_service_provider.cc',
         'browser/chromeos/dbus/proxy_resolution_service_provider.h',
         'browser/chromeos/device_hierarchy_observer.h',
-        'browser/chromeos/drive/drive_api_service.cc',
-        'browser/chromeos/drive/drive_api_service.h',
         'browser/chromeos/drive/drive_cache.cc',
         'browser/chromeos/drive/drive_cache.h',
         'browser/chromeos/drive/drive_cache_metadata.cc',

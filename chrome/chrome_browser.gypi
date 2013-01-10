@@ -670,6 +670,8 @@
         'browser/google_apis/drive_api_operations.h',
         'browser/google_apis/drive_api_parser.cc',
         'browser/google_apis/drive_api_parser.h',
+        'browser/google_apis/drive_api_service.cc',
+        'browser/google_apis/drive_api_service.h',
         'browser/google_apis/drive_api_url_generator.cc',
         'browser/google_apis/drive_api_url_generator.h',
         'browser/google_apis/drive_api_util.cc',
