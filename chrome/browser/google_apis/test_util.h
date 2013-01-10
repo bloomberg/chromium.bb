@@ -81,6 +81,13 @@ void CopyResultsFromGetAccountMetadataCallback(
     GDataErrorCode error_in,
     scoped_ptr<AccountMetadataFeed> account_metadata_in);
 
+// Copies the results from DownloadActionCallback.
+void CopyResultsFromDownloadActionCallback(
+    GDataErrorCode* error_out,
+    FilePath* temp_file_out,
+    GDataErrorCode error_in,
+    const FilePath& temp_file_in);
+
 // Returns a HttpResponse created from the given file path.
 scoped_ptr<test_server::HttpResponse> CreateHttpResponseFromFile(
     const FilePath& file_path);

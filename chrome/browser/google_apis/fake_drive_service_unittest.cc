@@ -4,6 +4,8 @@
 
 #include "chrome/browser/google_apis/fake_drive_service.h"
 
+#include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
@@ -164,6 +166,56 @@ TEST_F(FakeDriveServiceTest, DeleteResource_NonexistingFile) {
       GURL("https://file1_link_self/file:nonexisting_resource_id"),
       base::Bind(&test_util::CopyResultsFromEntryActionCallback,
                  &error));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_NOT_FOUND, error);
+}
+
+TEST_F(FakeDriveServiceTest, DownloadFile_ExistingFile) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  const GURL kContentUrl("https://file_content_url/");
+  const FilePath kOutputFilePath = temp_dir.path().AppendASCII("whatever.txt");
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  FilePath output_file_path;
+  fake_service_.DownloadFile(
+      FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
+      kOutputFilePath,
+      kContentUrl,
+      base::Bind(&test_util::CopyResultsFromDownloadActionCallback,
+                 &error,
+                 &output_file_path),
+      GetContentCallback());
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(output_file_path, kOutputFilePath);
+  std::string content;
+  ASSERT_TRUE(file_util::ReadFileToString(output_file_path, &content));
+  EXPECT_EQ(kContentUrl.spec(), content);
+}
+
+TEST_F(FakeDriveServiceTest, DownloadFile_NonexistingFile) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  const GURL kContentUrl("https://non_existing_content_url/");
+  const FilePath kOutputFilePath = temp_dir.path().AppendASCII("whatever.txt");
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  FilePath output_file_path;
+  fake_service_.DownloadFile(
+      FilePath::FromUTF8Unsafe("/drive/whatever.txt"),  // virtual path
+      kOutputFilePath,
+      kContentUrl,
+      base::Bind(&test_util::CopyResultsFromDownloadActionCallback,
+                 &error,
+                 &output_file_path),
+      GetContentCallback());
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);

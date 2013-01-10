@@ -4,6 +4,7 @@
 
 #include "chrome/browser/google_apis/fake_drive_service.h"
 
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
@@ -224,6 +225,29 @@ void FakeDriveService::DownloadFile(
     const GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!download_action_callback.is_null());
+
+  base::DictionaryValue* entry = FindEntryByContentUrl(content_url);
+  if (!entry) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(download_action_callback, HTTP_NOT_FOUND, FilePath()));
+    return;
+  }
+
+  // Write the content URL as the content of the file.
+  if (static_cast<int>(content_url.spec().size()) !=
+      file_util::WriteFile(local_cache_path,
+                           content_url.spec().data(),
+                           content_url.spec().size())) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(download_action_callback, GDATA_FILE_ERROR, FilePath()));
+    return;
+  }
+
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(download_action_callback, HTTP_SUCCESS, local_cache_path));
 }
 
 void FakeDriveService::CopyHostedDocument(

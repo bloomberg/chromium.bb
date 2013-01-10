@@ -117,6 +117,15 @@ void CopyResultsFromGetAccountMetadataCallback(
   *error_out = error_in;
 }
 
+void CopyResultsFromDownloadActionCallback(
+    GDataErrorCode* error_out,
+    FilePath* temp_file_out,
+    GDataErrorCode error_in,
+    const FilePath& temp_file_in) {
+  *error_out = error_in;
+  *temp_file_out = temp_file_in;
+}
+
 // Returns a HttpResponse created from the given file path.
 scoped_ptr<test_server::HttpResponse> CreateHttpResponseFromFile(
     const FilePath& file_path) {
