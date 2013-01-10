@@ -61,7 +61,6 @@ Histogram* StatisticsRecorder::RegisterOrDeleteDuplicate(Histogram* histogram) {
   {
     base::AutoLock auto_lock(*lock_);
     if (histograms_ == NULL) {
-      ANNOTATE_LEAKING_OBJECT_PTR(histogram);  // see crbug.com/79322
       histogram_to_return = histogram;
     } else {
       const string& name = histogram->histogram_name();
