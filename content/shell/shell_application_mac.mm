@@ -33,7 +33,7 @@
                                   GURL("about:blank"),
                                   NULL,
                                   MSG_ROUTING_NONE,
-                                  NULL);
+                                  gfx::Size());
 }
 
 @end

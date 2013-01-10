@@ -29,7 +29,6 @@
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/webkit_test_controller.h"
-#include "ui/gfx/size.h"
 
 // Content area size for newly created windows.
 static const int kTestWindowWidth = 800;
@@ -121,15 +120,13 @@ Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
                               const GURL& url,
                               SiteInstance* site_instance,
                               int routing_id,
-                              WebContents* base_web_contents) {
+                              const gfx::Size& initial_size) {
   WebContents::CreateParams create_params(browser_context, site_instance);
   create_params.routing_id = routing_id;
-  if (base_web_contents) {
-    create_params.initial_size =
-        base_web_contents->GetView()->GetContainerSize();
-  } else {
+  if (!initial_size.IsEmpty())
+    create_params.initial_size = initial_size;
+  else
     create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
-  }
   WebContents* web_contents = WebContents::Create(create_params);
   Shell* shell = CreateShell(web_contents);
   if (!url.is_empty())
@@ -185,7 +182,7 @@ void Shell::ShowDevTools() {
       DevToolsAgentHost::GetFor(web_contents()->GetRenderViewHost()));
   dev_tools_ = CreateNewWindow(
       web_contents()->GetBrowserContext(),
-      url, NULL, MSG_ROUTING_NONE, NULL);
+      url, NULL, MSG_ROUTING_NONE, gfx::Size());
 }
 
 void Shell::CloseDevTools() {

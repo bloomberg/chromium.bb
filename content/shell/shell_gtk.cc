@@ -275,7 +275,7 @@ gboolean Shell::OnNewWindowKeyPressed(GtkAccelGroup* accel_group,
                          GURL(),
                          NULL,
                          MSG_ROUTING_NONE,
-                         NULL);
+                         gfx::Size());
   return TRUE;
 }
 

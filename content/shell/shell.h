@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "ipc/ipc_channel.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/size.h"
 
 #if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>
@@ -68,7 +69,7 @@ class Shell : public WebContentsDelegate,
                                 const GURL& url,
                                 SiteInstance* site_instance,
                                 int routing_id,
-                                WebContents* base_web_contents);
+                                const gfx::Size& initial_size);
 
   // Returns the Shell object corresponding to the given RenderViewHost.
   static Shell* FromRenderViewHost(RenderViewHost* rvh);

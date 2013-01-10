@@ -213,7 +213,7 @@ void ShellWebContentsViewDelegate::MenuItemSelected(int selection) {
                              params_.link_url,
                              NULL,
                              MSG_ROUTING_NONE,
-                             NULL);
+                             gfx::Size());
       break;
     }
     case ShellContextMenuItemBackId:
@@ -240,7 +240,7 @@ void ShellWebContentsViewDelegate::MenuItemSelected(int selection) {
                              url,
                              NULL,
                              MSG_ROUTING_NONE,
-                             NULL);
+                             gfx::Size());
       break;
     }
   }

@@ -134,7 +134,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
                            GetStartupURL(),
                            NULL,
                            MSG_ROUTING_NONE,
-                           NULL);
+                           gfx::Size());
   }
 
   if (parameters_.ui_task) {

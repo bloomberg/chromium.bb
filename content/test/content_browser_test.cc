@@ -138,7 +138,7 @@ Shell* ContentBrowserTest::CreateBrowser() {
       GURL(chrome::kAboutBlankURL),
       NULL,
       MSG_ROUTING_NONE,
-      NULL);
+      gfx::Size());
 }
 
 Shell* ContentBrowserTest::CreateOffTheRecordBrowser() {
@@ -149,7 +149,7 @@ Shell* ContentBrowserTest::CreateOffTheRecordBrowser() {
       GURL(chrome::kAboutBlankURL),
       NULL,
       MSG_ROUTING_NONE,
-      NULL);
+      gfx::Size());
 }
 
 }  // namespace content

@@ -245,7 +245,7 @@ void ShellWebContentsViewDelegate::ActionPerformed(int tag) {
                              params_.link_url,
                              NULL,
                              MSG_ROUTING_NONE,
-                             NULL);
+                             gfx::Size());
       break;
     }
     case ShellContextMenuItemBackTag:
@@ -273,7 +273,7 @@ void ShellWebContentsViewDelegate::ActionPerformed(int tag) {
                              url,
                              NULL,
                              MSG_ROUTING_NONE,
-                             NULL);
+                             gfx::Size());
       break;
     }
   }

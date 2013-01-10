@@ -57,7 +57,7 @@ void LaunchShell(JNIEnv* env, jclass clazz, jstring jurl) {
                          url,
                          NULL,
                          MSG_ROUTING_NONE,
-                         NULL);
+                         gfx::Size());
 }
 
 }  // namespace content

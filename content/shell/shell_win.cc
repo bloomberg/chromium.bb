@@ -201,7 +201,7 @@ LRESULT CALLBACK Shell::WndProc(HWND hwnd, UINT message, WPARAM wParam,
         case IDM_NEW_WINDOW:
           CreateNewWindow(
               shell->web_contents()->GetBrowserContext(),
-              GURL(), NULL, MSG_ROUTING_NONE, NULL);
+              GURL(), NULL, MSG_ROUTING_NONE, gfx::Size());
           break;
         case IDM_CLOSE_WINDOW:
           DestroyWindow(hwnd);

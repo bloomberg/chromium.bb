@@ -164,12 +164,16 @@ bool WebKitTestController::PrepareForLayoutTest(
   content::ShellBrowserContext* browser_context =
       static_cast<content::ShellContentBrowserClient*>(
           content::GetContentClient()->browser())->browser_context();
+  gfx::Size initial_size;
+  // The W3C SVG layout tests use a different size than the other layout tests.
+  if (test_url.spec().find("W3C-SVG-1.1") != std::string::npos)
+    initial_size = gfx::Size(480, 360);
   main_window_ = content::Shell::CreateNewWindow(
       browser_context,
       GURL(),
       NULL,
       MSG_ROUTING_NONE,
-      NULL);
+      initial_size);
   WebContentsObserver::Observe(main_window_->web_contents());
   main_window_->LoadURL(test_url);
   if (test_url.spec().find("/dumpAsText/") != std::string::npos ||

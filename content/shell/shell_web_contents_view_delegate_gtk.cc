@@ -219,7 +219,7 @@ void ShellWebContentsViewDelegate::OnOpenURLMenuActivated(GtkWidget* widget) {
                          params_.link_url,
                          NULL,
                          MSG_ROUTING_NONE,
-                         NULL);
+                         gfx::Size());
 }
 
 void ShellWebContentsViewDelegate::OnCutMenuActivated(GtkWidget* widget) {
@@ -250,7 +250,7 @@ void ShellWebContentsViewDelegate::OnInspectMenuActivated(GtkWidget* widget) {
                          url,
                          NULL,
                          MSG_ROUTING_NONE,
-                         NULL);
+                         gfx::Size());
 }
 
 }  // namespace content

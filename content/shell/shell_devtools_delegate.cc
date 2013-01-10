@@ -69,7 +69,7 @@ RenderViewHost* ShellDevToolsDelegate::CreateNewTarget() {
                                         GURL(chrome::kAboutBlankURL),
                                         NULL,
                                         MSG_ROUTING_NONE,
-                                        NULL);
+                                        gfx::Size());
   return shell->web_contents()->GetRenderViewHost();
 }
 
