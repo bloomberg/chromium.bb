@@ -4241,6 +4241,7 @@ display_create(int argc, char *argv[])
 	d->display = wl_display_connect(NULL);
 	if (d->display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
+		free(d);
 		return NULL;
 	}
 
