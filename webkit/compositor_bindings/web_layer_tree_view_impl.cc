@@ -50,6 +50,7 @@ bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSetti
     settings.initialDebugState.showPaintRects = webSettings.showPaintRects;
     settings.initialDebugState.showPlatformLayerTree = webSettings.showPlatformLayerTree;
     settings.initialDebugState.showDebugBorders = webSettings.showDebugBorders;
+    settings.implSidePainting = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnableImplSidePainting);
     m_layerTreeHost = LayerTreeHost::create(this, settings, implThread.Pass());
     if (!m_layerTreeHost.get())
         return false;

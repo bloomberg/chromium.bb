@@ -38,7 +38,6 @@ LayerTreeSettings::LayerTreeSettings()
 {
     // TODO(danakj): Move this to chromium when we don't go through the WebKit API anymore.
     compositorFrameMessage = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnableCompositorFrameMessage);
-    implSidePainting = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnableImplSidePainting);
     partialSwapEnabled = CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePartialSwap);
     backgroundColorInsteadOfCheckerboard = CommandLine::ForCurrentProcess()->HasSwitch(switches::kBackgroundColorInsteadOfCheckerboard);
     showOverdrawInTracing = CommandLine::ForCurrentProcess()->HasSwitch(switches::kTraceOverdraw);
