@@ -417,6 +417,7 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 		break;
 	default:
 		weston_log("unknown recorder format\n");
+		free(recorder);
 		return;
 	}
 
@@ -425,6 +426,7 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 
 	if (recorder->fd < 0) {
 		weston_log("problem opening output file %s: %m\n", filename);
+		free(recorder);
 		return;
 	}
 
