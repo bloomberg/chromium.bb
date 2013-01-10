@@ -10,6 +10,8 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/threading/platform_thread.h"
 #include "media/base/audio_renderer_mixer.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/fake_audio_render_callback.h"
@@ -286,6 +288,12 @@ class AudioRendererMixerTest
   DISALLOW_COPY_AND_ASSIGN(AudioRendererMixerTest);
 };
 
+class AudioRendererMixerBehavioralTest : public AudioRendererMixerTest {};
+
+ACTION_P(SignalEvent, event) {
+  event->Signal();
+}
+
 // Verify a mixer with no inputs returns silence for all requested frames.
 TEST_P(AudioRendererMixerTest, NoInputs) {
   FillAudioData(1.0f);
@@ -373,10 +381,11 @@ TEST_P(AudioRendererMixerTest, ManyInputMixedStopPlay) {
     mixer_inputs_[i]->Stop();
 }
 
-TEST_P(AudioRendererMixerTest, OnRenderError) {
+TEST_P(AudioRendererMixerBehavioralTest, OnRenderError) {
   InitializeInputs(kMixerInputs);
   for (size_t i = 0; i < mixer_inputs_.size(); ++i) {
     mixer_inputs_[i]->Start();
+    mixer_inputs_[i]->Play();
     EXPECT_CALL(*fake_callbacks_[i], OnRenderError()).Times(1);
   }
 
@@ -387,7 +396,7 @@ TEST_P(AudioRendererMixerTest, OnRenderError) {
 
 // Ensure constructing an AudioRendererMixerInput, but not initializing it does
 // not call RemoveMixer().
-TEST_P(AudioRendererMixerTest, NoInitialize) {
+TEST_P(AudioRendererMixerBehavioralTest, NoInitialize) {
   EXPECT_CALL(*this, RemoveMixer(testing::_)).Times(0);
   scoped_refptr<AudioRendererMixerInput> audio_renderer_mixer =
       new AudioRendererMixerInput(
@@ -395,6 +404,46 @@ TEST_P(AudioRendererMixerTest, NoInitialize) {
                      base::Unretained(this)),
           base::Bind(&AudioRendererMixerTest::RemoveMixer,
                      base::Unretained(this)));
+}
+
+// Ensure the physical stream is paused after a certain amount of time with no
+// inputs playing.  The test will hang if the behavior is incorrect.
+TEST_P(AudioRendererMixerBehavioralTest, MixerPausesStream) {
+  const base::TimeDelta kPauseTime = base::TimeDelta::FromMilliseconds(500);
+  // This value can't be too low or valgrind, tsan will timeout on the bots.
+  const base::TimeDelta kTestTimeout = 10 * kPauseTime;
+  mixer_->set_pause_delay_for_testing(kPauseTime);
+
+  base::WaitableEvent pause_event(true, false);
+  EXPECT_CALL(*sink_, Pause(testing::_))
+      .Times(2).WillRepeatedly(SignalEvent(&pause_event));
+  InitializeInputs(1);
+
+  // Ensure never playing the input results in a sink pause.
+  const base::TimeDelta kSleepTime = base::TimeDelta::FromMilliseconds(100);
+  base::Time start_time = base::Time::Now();
+  while (!pause_event.IsSignaled()) {
+    mixer_callback_->Render(audio_bus_.get(), 0);
+    base::PlatformThread::Sleep(kSleepTime);
+    ASSERT_TRUE(base::Time::Now() - start_time < kTestTimeout);
+  }
+  pause_event.Reset();
+
+  // Playing the input for the first time should cause a sink play.
+  mixer_inputs_[0]->Start();
+  EXPECT_CALL(*sink_, Play());
+  mixer_inputs_[0]->Play();
+  mixer_inputs_[0]->Pause(false);
+
+  // Ensure once the input is paused the sink eventually pauses.
+  start_time = base::Time::Now();
+  while (!pause_event.IsSignaled()) {
+    mixer_callback_->Render(audio_bus_.get(), 0);
+    base::PlatformThread::Sleep(kSleepTime);
+    ASSERT_TRUE(base::Time::Now() - start_time < kTestTimeout);
+  }
+
+  mixer_inputs_[0]->Stop();
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -407,5 +456,13 @@ INSTANTIATE_TEST_CASE_P(
 
         // Downsampling.
         std::tr1::make_tuple(48000, 41000, 0.042)));
+
+// Test cases for behavior which is independent of parameters.  Values() doesn't
+// support single item lists and we don't want these test cases to run for every
+// parameter set.
+INSTANTIATE_TEST_CASE_P(
+    AudioRendererMixerBehavioralTest, AudioRendererMixerBehavioralTest,
+    testing::ValuesIn(std::vector<AudioRendererMixerTestData>(
+        1, std::tr1::make_tuple(44100, 44100, 0))));
 
 }  // namespace media

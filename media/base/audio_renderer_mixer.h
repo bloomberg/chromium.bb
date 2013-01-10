@@ -8,6 +8,7 @@
 #include <list>
 
 #include "base/synchronization/lock.h"
+#include "base/time.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/audio_renderer_sink.h"
@@ -29,6 +30,10 @@ class MEDIA_EXPORT AudioRendererMixer
   void AddMixerInput(const scoped_refptr<AudioRendererMixerInput>& input);
   void RemoveMixerInput(const scoped_refptr<AudioRendererMixerInput>& input);
 
+  void set_pause_delay_for_testing(base::TimeDelta delay) {
+    pause_delay_ = delay;
+  }
+
  private:
   // AudioRendererSink::RenderCallback implementation.
   virtual int Render(AudioBus* audio_bus,
@@ -47,6 +52,12 @@ class MEDIA_EXPORT AudioRendererMixer
 
   // Handles mixing and resampling between input and output parameters.
   AudioConverter audio_converter_;
+
+  // Handles physical stream pause when no inputs are playing.  For latency
+  // reasons we don't want to immediately pause the physical stream.
+  base::TimeDelta pause_delay_;
+  base::Time last_play_time_;
+  bool playing_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererMixer);
 };

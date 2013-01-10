@@ -10,11 +10,17 @@
 
 namespace media {
 
+enum { kPauseDelaySeconds = 10 };
+
 AudioRendererMixer::AudioRendererMixer(
     const AudioParameters& input_params, const AudioParameters& output_params,
     const scoped_refptr<AudioRendererSink>& sink)
     : audio_sink_(sink),
-      audio_converter_(input_params, output_params, true) {
+      audio_converter_(input_params, output_params, true),
+      pause_delay_(base::TimeDelta::FromSeconds(kPauseDelaySeconds)),
+      last_play_time_(base::Time::Now()),
+      // Initialize |playing_| to true since Start() results in an auto-play.
+      playing_(true) {
   audio_sink_->Initialize(output_params, this);
   audio_sink_->Start();
 }
@@ -31,6 +37,13 @@ AudioRendererMixer::~AudioRendererMixer() {
 void AudioRendererMixer::AddMixerInput(
     const scoped_refptr<AudioRendererMixerInput>& input) {
   base::AutoLock auto_lock(mixer_inputs_lock_);
+
+  if (!playing_) {
+    playing_ = true;
+    last_play_time_ = base::Time::Now();
+    audio_sink_->Play();
+  }
+
   mixer_inputs_.push_back(input);
   audio_converter_.AddInput(input);
 }
@@ -45,6 +58,17 @@ void AudioRendererMixer::RemoveMixerInput(
 int AudioRendererMixer::Render(AudioBus* audio_bus,
                                int audio_delay_milliseconds) {
   base::AutoLock auto_lock(mixer_inputs_lock_);
+
+  // If there are no mixer inputs and we haven't seen one for a while, pause the
+  // sink to avoid wasting resources when media elements are present but remain
+  // in the pause state.
+  base::Time now = base::Time::Now();
+  if (!mixer_inputs_.empty()) {
+    last_play_time_ = now;
+  } else if (now - last_play_time_ >= pause_delay_ && playing_) {
+    audio_sink_->Pause(false);
+    playing_ = false;
+  }
 
   // Set the delay information for each mixer input.
   for (AudioRendererMixerInputSet::iterator it = mixer_inputs_.begin();
