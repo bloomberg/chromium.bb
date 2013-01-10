@@ -401,7 +401,6 @@ include_rules = [
     '+googleurl',
     '+ipc',
     '+library_loaders',
-    '+unicode',
     '+testing',
     '+third_party/icu/public'
 ]
@@ -410,6 +409,7 @@ skip_child_includes = [
     'breakpad',
     'chrome_frame',
     'delegate_execute',
+    'googleurl',
     'metro_driver',
     'native_client_sdk',
     'o3d',
