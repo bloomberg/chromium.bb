@@ -526,6 +526,12 @@ bool PluginModule::IsProxied() const {
   return !!out_of_process_proxy_;
 }
 
+base::ProcessId PluginModule::GetPeerProcessId() {
+  if (out_of_process_proxy_.get())
+    return out_of_process_proxy_->GetPeerProcessId();
+  return base::kNullProcessId;
+}
+
 // static
 const PPB_Core* PluginModule::GetCore() {
   return &core_interface;

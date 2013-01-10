@@ -6,6 +6,8 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/metrics/histogram.h"
+#include "base/process_util.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
@@ -181,16 +183,53 @@ PluginObserver::~PluginObserver() {
 #endif
 }
 
-void PluginObserver::PluginCrashed(const FilePath& plugin_path) {
+void PluginObserver::PluginCrashed(const FilePath& plugin_path,
+                                   base::ProcessId plugin_pid) {
   DCHECK(!plugin_path.value().empty());
 
   string16 plugin_name =
       PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);
+  string16 infobar_text;
+#if defined(OS_WIN)
+  // Find out whether the plugin process is still alive.
+  // Note: Although the chances are slim, it is possible that after the plugin
+  // process died, |plugin_pid| has been reused by a new process. The
+  // consequence is that we will display |IDS_PLUGIN_DISCONNECTED_PROMPT| rather
+  // than |IDS_PLUGIN_CRASHED_PROMPT| to the user, which seems acceptable.
+  base::ProcessHandle plugin_handle = base::kNullProcessHandle;
+  bool open_result = base::OpenProcessHandleWithAccess(
+      plugin_pid, PROCESS_QUERY_INFORMATION | SYNCHRONIZE, &plugin_handle);
+  bool is_running = false;
+  if (open_result) {
+    is_running = base::GetTerminationStatus(plugin_handle, NULL) ==
+        base::TERMINATION_STATUS_STILL_RUNNING;
+    base::CloseProcessHandle(plugin_handle);
+  }
+
+  if (is_running) {
+    infobar_text = l10n_util::GetStringFUTF16(IDS_PLUGIN_DISCONNECTED_PROMPT,
+                                              plugin_name);
+    UMA_HISTOGRAM_COUNTS("Plugin.ShowDisconnectedInfobar", 1);
+  } else {
+    infobar_text = l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT,
+                                              plugin_name);
+    UMA_HISTOGRAM_COUNTS("Plugin.ShowCrashedInfobar", 1);
+  }
+#else
+  // Calling the POSIX version of base::GetTerminationStatus() may affect other
+  // code which is interested in the process termination status. (Please see the
+  // comment of the function.) Therefore, a better way is needed to distinguish
+  // disconnections from crashes.
+  infobar_text = l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT,
+                                            plugin_name);
+  UMA_HISTOGRAM_COUNTS("Plugin.ShowCrashedInfobar", 1);
+#endif
+
   gfx::Image* icon = &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_PLUGIN_CRASHED);
   SimpleAlertInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents()), icon,
-      l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT, plugin_name), true);
+      InfoBarService::FromWebContents(web_contents()), icon, infobar_text,
+      true);
 }
 
 bool PluginObserver::OnMessageReceived(const IPC::Message& message) {

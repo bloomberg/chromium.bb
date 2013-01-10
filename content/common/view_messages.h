@@ -2007,10 +2007,14 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_AddMessageToConsole,
                     int32, /* line number */
                     string16 /* source id */)
 
-// Sent by the renderer process to indicate that a plugin instance has
-// crashed.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_CrashedPlugin,
-                    FilePath /* plugin_path */)
+// Sent by the renderer process to indicate that a plugin instance has crashed.
+// Note: |plugin_pid| should not be trusted. The corresponding process has
+// probably died. Moreover, the ID may have been reused by a new process. Any
+// usage other than displaying it in a prompt to the user is very likely to be
+// wrong.
+IPC_MESSAGE_ROUTED2(ViewHostMsg_CrashedPlugin,
+                    FilePath /* plugin_path */,
+                    base::ProcessId /* plugin_pid */)
 
 // Displays a box to confirm that the user wants to navigate away from the
 // page. Replies true if yes, false otherwise, the reply string is ignored,

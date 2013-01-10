@@ -2263,9 +2263,10 @@ void WebContentsImpl::OnFindMatchRectsReply(
 }
 #endif
 
-void WebContentsImpl::OnCrashedPlugin(const FilePath& plugin_path) {
+void WebContentsImpl::OnCrashedPlugin(const FilePath& plugin_path,
+                                      base::ProcessId plugin_pid) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    PluginCrashed(plugin_path));
+                    PluginCrashed(plugin_path, plugin_pid));
 }
 
 void WebContentsImpl::OnAppCacheAccessed(const GURL& manifest_url,

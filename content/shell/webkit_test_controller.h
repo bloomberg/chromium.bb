@@ -99,7 +99,8 @@ class WebKitTestController : public base::NonThreadSafe,
 
   // WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void PluginCrashed(const FilePath& plugin_path) OVERRIDE;
+  virtual void PluginCrashed(const FilePath& plugin_path,
+                             base::ProcessId plugin_pid) OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;

@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/process.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -547,7 +548,7 @@ class CONTENT_EXPORT WebContentsImpl
                              const std::vector<gfx::RectF>& rects,
                              const gfx::RectF& active_rect);
 #endif
-  void OnCrashedPlugin(const FilePath& plugin_path);
+  void OnCrashedPlugin(const FilePath& plugin_path, base::ProcessId plugin_pid);
   void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
   void OnOpenColorChooser(int color_chooser_id, SkColor color);
   void OnEndColorChooser(int color_chooser_id);

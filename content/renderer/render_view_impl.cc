@@ -895,8 +895,9 @@ WebKit::WebView* RenderViewImpl::webview() const {
   return static_cast<WebKit::WebView*>(webwidget());
 }
 
-void RenderViewImpl::PluginCrashed(const FilePath& plugin_path) {
-  Send(new ViewHostMsg_CrashedPlugin(routing_id_, plugin_path));
+void RenderViewImpl::PluginCrashed(const FilePath& plugin_path,
+                                   base::ProcessId plugin_pid) {
+  Send(new ViewHostMsg_CrashedPlugin(routing_id_, plugin_path, plugin_pid));
 }
 
 void RenderViewImpl::RegisterPluginDelegate(WebPluginDelegateProxy* delegate) {

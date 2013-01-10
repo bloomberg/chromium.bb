@@ -122,6 +122,10 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
 
   bool IsProxied() const;
 
+  // Returns the peer process ID if the plugin is running out of process;
+  // returns |base::kNullProcessId| otherwise.
+  base::ProcessId GetPeerProcessId();
+
   static const PPB_Core* GetCore();
 
   // Returns a pointer to the local GetInterface function for retrieving

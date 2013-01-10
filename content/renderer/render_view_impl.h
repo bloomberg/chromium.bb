@@ -13,6 +13,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/process.h"
 #include "base/timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -298,7 +299,7 @@ class CONTENT_EXPORT RenderViewImpl
   // (See also WebPluginPageDelegate implementation.)
 
   // Notification that the given plugin has crashed.
-  void PluginCrashed(const FilePath& plugin_path);
+  void PluginCrashed(const FilePath& plugin_path, base::ProcessId plugin_pid);
 
   // Creates a fullscreen container for a pepper plugin instance.
   RenderWidgetFullscreenPepper* CreatePepperFullscreenContainer(

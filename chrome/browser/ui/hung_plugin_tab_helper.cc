@@ -229,7 +229,8 @@ HungPluginTabHelper::HungPluginTabHelper(content::WebContents* contents)
 HungPluginTabHelper::~HungPluginTabHelper() {
 }
 
-void HungPluginTabHelper::PluginCrashed(const FilePath& plugin_path) {
+void HungPluginTabHelper::PluginCrashed(const FilePath& plugin_path,
+                                        base::ProcessId plugin_pid) {
   // TODO(brettw) ideally this would take the child process ID. When we do this
   // for NaCl plugins, we'll want to know exactly which process it was since
   // the path won't be useful.

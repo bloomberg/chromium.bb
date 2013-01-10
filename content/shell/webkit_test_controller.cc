@@ -12,6 +12,7 @@
 #include "base/process_util.h"
 #include "base/run_loop.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -266,9 +267,11 @@ bool WebKitTestController::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void WebKitTestController::PluginCrashed(const FilePath& plugin_path) {
+void WebKitTestController::PluginCrashed(const FilePath& plugin_path,
+                                         base::ProcessId plugin_pid) {
   DCHECK(CalledOnValidThread());
-  printer_->AddErrorMessage("#CRASHED - plugin");
+  printer_->AddErrorMessage(
+      base::StringPrintf("#CRASHED - plugin (pid %d)", plugin_pid));
 }
 
 void WebKitTestController::RenderViewCreated(RenderViewHost* render_view_host) {

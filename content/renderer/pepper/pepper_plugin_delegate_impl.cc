@@ -150,10 +150,10 @@ class HostDispatcherWrapper
   }
 
   // OutOfProcessProxy implementation.
-  virtual const void* GetProxiedInterface(const char* name) {
+  virtual const void* GetProxiedInterface(const char* name) OVERRIDE {
     return dispatcher_->GetProxiedInterface(name);
   }
-  virtual void AddInstance(PP_Instance instance) {
+  virtual void AddInstance(PP_Instance instance) OVERRIDE {
     ppapi::proxy::HostDispatcher::SetForInstance(instance, dispatcher_.get());
 
     RendererPpapiHostImpl* host =
@@ -177,7 +177,7 @@ class HostDispatcherWrapper
           is_external_));
     }
   }
-  virtual void RemoveInstance(PP_Instance instance) {
+  virtual void RemoveInstance(PP_Instance instance) OVERRIDE {
     ppapi::proxy::HostDispatcher::RemoveForInstance(instance);
 
     RendererPpapiHostImpl* host =
@@ -190,6 +190,9 @@ class HostDispatcherWrapper
           instance,
           is_external_));
     }
+  }
+  virtual base::ProcessId GetPeerProcessId() OVERRIDE {
+    return peer_pid_;
   }
 
   ppapi::proxy::HostDispatcher* dispatcher() { return dispatcher_.get(); }
@@ -760,7 +763,8 @@ bool PepperPluginDelegateImpl::CanComposeInline() const {
 
 void PepperPluginDelegateImpl::PluginCrashed(
     webkit::ppapi::PluginInstance* instance) {
-  render_view_->PluginCrashed(instance->module()->path());
+  render_view_->PluginCrashed(instance->module()->path(),
+                              instance->module()->GetPeerProcessId());
   UnSetAndDeleteLockTargetAdapter(instance);
 }
 

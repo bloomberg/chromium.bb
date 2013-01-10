@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_OBSERVER_H_
 #define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_OBSERVER_H_
 
+#include "base/process.h"
 #include "base/process_util.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_controller.h"
@@ -109,7 +110,12 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                                 bool blocked_by_policy) {}
 
   // Notification that a plugin has crashed.
-  virtual void PluginCrashed(const FilePath& plugin_path) {}
+  // |plugin_pid| is the process ID identifying the plugin process. Note that
+  // this ID is supplied by the renderer, so should not be trusted. Besides, the
+  // corresponding process has probably died at this point. The ID may even have
+  // been reused by a new process.
+  virtual void PluginCrashed(const FilePath& plugin_path,
+                             base::ProcessId plugin_pid) {}
 
   // Notication that the given plugin has hung or become unhung. This
   // notification is only for Pepper plugins.

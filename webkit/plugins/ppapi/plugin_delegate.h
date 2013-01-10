@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
+#include "base/process.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/time.h"
@@ -154,6 +155,8 @@ class PluginDelegate {
     // regular instance shutdown so the out-of-process code can clean up its
     // tracking information.
     virtual void RemoveInstance(PP_Instance instance) = 0;
+
+    virtual base::ProcessId GetPeerProcessId() = 0;
   };
 
   // Represents an image. This is to allow the browser layer to supply a correct
