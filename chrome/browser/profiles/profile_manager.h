@@ -263,6 +263,10 @@ class ProfileManager : public base::NonThreadSafe,
   // entry.
   ProfileInfo* RegisterProfile(Profile* profile, bool created);
 
+  // Returns ProfileInfo associated with given |path|, registred earlier with
+  // RegisterProfile.
+  ProfileInfo* GetProfileInfoByPath(const FilePath& path) const;
+
   typedef std::pair<FilePath, string16> ProfilePathAndName;
   typedef std::vector<ProfilePathAndName> ProfilePathAndNames;
   ProfilePathAndNames GetSortedProfilesFromDirectoryMap();

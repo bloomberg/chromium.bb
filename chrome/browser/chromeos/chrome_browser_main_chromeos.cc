@@ -505,6 +505,12 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     app_order_loader_.reset(
         new default_app_order::ExternalLoader(false /* async */));
 
+  // TODO(antrim): SessionStarted notification should be moved to
+  // PostProfileInit at some point, as NOTIFICATION_SESSION_STARTED should
+  // go after NOTIFICATION_LOGIN_USER_PROFILE_PREPARED, which requires
+  // loaded profile (and, thus, should be fired in PostProfileInit, as
+  // synchronous profile loading does not emit it).
+
     user_manager->SessionStarted();
   }
 

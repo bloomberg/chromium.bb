@@ -362,6 +362,12 @@ Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
       return profile->GetOffTheRecordProfile();
     return profile;
   }
+
+  ProfileInfo* profile_info = GetProfileInfoByPath(default_profile_dir);
+  // Fallback to default off-the-record profile, if user profile has not fully
+  // loaded yet.
+  if (profile_info && !profile_info->created)
+    default_profile_dir = GetDefaultProfileDir(user_data_dir);
 #endif
   return GetProfile(default_profile_dir);
 }
@@ -489,9 +495,15 @@ ProfileManager::ProfileInfo* ProfileManager::RegisterProfile(
   return info;
 }
 
-Profile* ProfileManager::GetProfileByPath(const FilePath& path) const {
+ProfileManager::ProfileInfo* ProfileManager::GetProfileInfoByPath(
+    const FilePath& path) const {
   ProfilesInfoMap::const_iterator iter = profiles_info_.find(path);
-  return (iter == profiles_info_.end()) ? NULL : iter->second->profile.get();
+  return (iter == profiles_info_.end()) ? NULL : iter->second.get();
+}
+
+Profile* ProfileManager::GetProfileByPath(const FilePath& path) const {
+  ProfileInfo* profile_info = GetProfileInfoByPath(path);
+  return profile_info ? profile_info->profile.get() : NULL;
 }
 
 // static
