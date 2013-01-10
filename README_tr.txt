@@ -1,4 +1,3 @@
 Source
 ======
-https://addons.mozilla.org/en-US/firefox/addon/turkce-imla-denetimi/
-
+https://tr-spell.googlecode.com/files/firefox-tr-dict-v0.3.2.xpi

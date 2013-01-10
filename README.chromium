@@ -17,6 +17,7 @@ URL: http://bgoffice.sourceforge.net/
      https://dsso.googlecode.com/files/sv-2.12.zip
      http://sourceforge.net/projects/magyarispell/
      https://spellcheck-ko.googlecode.com/files/ko-aff-dic-0.5.6.zip
+     https://tr-spell.googlecode.com/files/firefox-tr-dict-v0.3.2.xpi
      http://wiki.services.openoffice.org/wiki/Dictionaries
      http://wordlist.sourceforge.net/
      http://www.broffice.org/
@@ -171,3 +172,9 @@ up to 3-0.
 On Jan 8, 2013, we added back et_EE and tr_TR .dic and .aff files to add MD5
 checksums to their .bdic files. We used version 3-0 again, because these files
 were not updated with the rest of the dictionaries on Dec 26, 2012.
+
+On Jan 9, 2013, we changed the download location of tr_TR from a Firefox website
+to a Google code website. The only difference between the two locations is that
+the tr_TR affix file from the Google code website includes a "FLAG num"
+directive, which prevents Chrome's heapcheck tests from crashing. Given that aff
+file changed, we used version 4-0.
