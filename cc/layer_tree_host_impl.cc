@@ -71,6 +71,7 @@ public:
 
     virtual void onTimerTick() OVERRIDE
     {
+        DebugScopedSetImplThread setImplThread(m_layerTreeHostImpl->proxy());
         m_layerTreeHostImpl->animate(base::TimeTicks::Now(), base::Time::Now());
     }
 
