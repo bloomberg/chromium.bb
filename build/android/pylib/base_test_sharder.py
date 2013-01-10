@@ -136,6 +136,9 @@ class BaseTestSharder(object):
         break
       else:
         final_results.ok += test_results.ok
+        # Timed out tests are not reported in GetAllBroken().
+        if test_results.timed_out:
+          final_results.timed_out = True
         self.tests = []
         for t in test_results.GetAllBroken():
           self.tests += [t.name]
