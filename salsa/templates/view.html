@@ -8,8 +8,10 @@
     <ul>
       <li> Name: {{ experiment.name }}
       <li> Description: {{ experiment.description }}
+      <li> Participant Instructions: {{ experiment.instructions|safe }}
       <li> Device: {{ experiment.device }}
-      <li> Owner: {{ experiment.owner }}
+      <li> Owner:
+        <a href="mailto:{{ experiment.owner }}">{{ experiment.owner }}</a>
       <li> Created: {{ experiment.created }}
       <li> Participant URL:
         <a href="{{ experiment_url }}"> {{ experiment_url }} </a>

@@ -13,10 +13,13 @@ class CreateNewExperiment(webapp2.RequestHandler):
         exp = {
             'name': self.request.get('exp_name'),
             'description': self.request.get('exp_description'),
+            'instructions': self.request.get('exp_instructions'),
             'device': self.request.get('exp_device'),
             'owner': users.get_current_user()
         }
-        if not exp.get('name') or not exp.get('owner') or not exp.get('device'):
+
+        required_keys = ['name', 'owner', 'device', 'instructions']
+        if not all(exp.get(key) for key in required_keys):
             return None
         return exp
 
@@ -73,6 +76,8 @@ class CreateNewExperiment(webapp2.RequestHandler):
         the POSTed form data.  The format is as follows:
             exp_name = main Experiment name
             exp_description = main Experiment description
+            exp_instructions = Instructions on how to test the treatments to be
+                               given to the participants
             exp_device = Which device(s) are allowed for this experiment
             treat##_name = the name of treatment ##
             treat##_prop##_name = the name of a property to be changed for
@@ -91,6 +96,7 @@ class CreateNewExperiment(webapp2.RequestHandler):
             exp = Experiment()
             exp.name = experiment.get('name')
             exp.description = experiment.get('description')
+            exp.instructions = experiment.get('instructions')
             exp.device = experiment.get('device')
             exp.owner = experiment.get('owner')
             exp.put()

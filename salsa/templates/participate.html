@@ -153,8 +153,8 @@
   </p>
 
   <p>
-    Once you have applied a treatment, please complete the mouse exercise as it
-    will help you experience the changes and judge them more accurately.
+    Once you have applied a treatment, please follow the instructions on how
+    to best experience the changes and judge them more accurately.
     Finally, once you have tried all of the treatments, use the form on the
     right to rank your experiences and click "Submit" to record your responses.
   </p>
@@ -191,10 +191,7 @@
               {% endfor %}
             </div>
 
-            <p>
-              click <a href="exercises/LeftClickMe/experiment.html">here</a>
-              to complete the exercise
-            </p>
+            {{ experiment.instructions|safe }}
           </div>
         </div>
       {% endfor %}
