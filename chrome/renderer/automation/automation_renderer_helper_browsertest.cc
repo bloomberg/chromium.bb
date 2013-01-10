@@ -14,7 +14,7 @@
 #include "chrome/renderer/automation/automation_renderer_helper.h"
 #include "content/public/renderer/render_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
 
 namespace {
