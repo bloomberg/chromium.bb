@@ -1983,6 +1983,9 @@ void WebContentsImpl::DidStartProvisionalLoadForFrame(
       render_view_host->GetProcess();
   RenderViewHost::FilterURL(render_process_host, false, &validated_url);
 
+  if (is_main_frame)
+    DidChangeLoadProgress(0);
+
   // Notify observers about the start of the provisional load.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidStartProvisionalLoadForFrame(frame_id, parent_frame_id,

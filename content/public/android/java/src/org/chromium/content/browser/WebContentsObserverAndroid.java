@@ -66,6 +66,26 @@ public abstract class WebContentsObserverAndroid {
     }
 
     /**
+     * Notifies that a load is started for a given frame.
+     * @param frameId A positive, non-zero integer identifying the navigating frame.
+     * @param parentFrameId The frame identifier of the frame containing the navigating frame,
+     *                      or -1 if the frame is not contained in another frame.
+     * @param isMainFrame Whether the load is happening for the main frame.
+     * @param validatedUrl The validated URL that is being navigated to.
+     * @param isErrorPage Whether this is navigating to an error page.
+     * @param isIframeSrcdoc Whether this is navigating to about:srcdoc.
+     */
+    @CalledByNative
+    public void didStartProvisionalLoadForFrame(
+            long frameId,
+            long parentFrameId,
+            boolean isMainFrame,
+            String validatedUrl,
+            boolean isErrorPage,
+            boolean isIframeSrcdoc) {
+    }
+
+    /**
      * Destroy the corresponding native object.
      */
     @CalledByNative
