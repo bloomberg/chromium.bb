@@ -172,6 +172,7 @@ void CompositorImpl::SetVisible(bool visible) {
   } else if (!host_.get()) {
     cc::LayerTreeSettings settings;
     settings.refreshRate = 60.0;
+    settings.implSidePainting = false;
 
     // Do not clear the framebuffer when rendering into external GL contexts
     // like Android View System's.
