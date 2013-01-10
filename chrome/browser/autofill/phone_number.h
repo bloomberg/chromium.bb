@@ -56,8 +56,13 @@ class PhoneNumber : public FormGroup {
     // returns true.  For all other field types returs false.
     bool SetInfo(AutofillFieldType type, const string16& value);
 
-    // Returns true if parsing was successful, false otherwise.
-    bool ParseNumber(const std::string& region, string16* value);
+    // Parses the number built up from pieces stored via SetInfo() according to
+    // the specified |profile|'s country code, falling back to the given
+    // |app_locale| if the |profile| has no associated country code.  Returns
+    // true if parsing was successful, false otherwise.
+    bool ParseNumber(const AutofillProfile& profile,
+                     const std::string& app_locale,
+                     string16* value);
 
     // Returns true if both |phone_| and |whole_number_| are empty.
     bool IsEmpty() const;
@@ -72,13 +77,6 @@ class PhoneNumber : public FormGroup {
  private:
   // FormGroup:
   virtual void GetSupportedTypes(FieldTypeSet* supported_types) const OVERRIDE;
-
-  // Returns the region code for this phone number, which is an ISO 3166
-  // 2-letter country code.  The name "region" is chosen since "country code"
-  // already refers to part of a phone number.  The returned value is based on
-  // the |profile_|; if the |profile_| does not have a country code associated
-  // with it, falls back to the country code corresponding to the |app_locale|.
-  std::string GetRegion(const std::string& app_locale) const;
 
   // Updates the cached parsed number if the profile's region has changed
   // since the last time the cache was updated.

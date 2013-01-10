@@ -294,8 +294,7 @@ bool PersonalDataManager::ImportFormData(
   // Construct the phone number. Reject the profile if the number is invalid.
   if (imported_profile.get() && !home.IsEmpty()) {
     string16 constructed_number;
-    if (!home.ParseNumber(imported_profile->CountryCode(),
-                          &constructed_number) ||
+    if (!home.ParseNumber(*imported_profile, app_locale, &constructed_number) ||
         !imported_profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, constructed_number,
                                    app_locale)) {
       imported_profile.reset();
