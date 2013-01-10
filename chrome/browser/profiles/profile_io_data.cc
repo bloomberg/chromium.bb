@@ -639,9 +639,10 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
       chrome::kDataScheme, new net::DataProtocolHandler());
   DCHECK(set_protocol);
 #if defined(OS_CHROMEOS)
-  if (!is_incognito()) {
+  if (!is_incognito() && profile_params_.get()) {
     set_protocol = job_factory->SetProtocolHandler(
-        chrome::kDriveScheme, new drive::DriveProtocolHandler());
+        chrome::kDriveScheme,
+        new drive::DriveProtocolHandler(profile_params_->profile));
     DCHECK(set_protocol);
   }
 #endif  // defined(OS_CHROMEOS)

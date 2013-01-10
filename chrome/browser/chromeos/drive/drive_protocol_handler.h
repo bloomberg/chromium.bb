@@ -11,12 +11,15 @@ namespace drive {
 
 class DriveProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  DriveProtocolHandler();
+  explicit DriveProtocolHandler(void* profile_id);
   virtual ~DriveProtocolHandler();
   // Creates URLRequestJobs for drive:// URLs.
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE;
+
+  // The profile for processing Drive accesses. Should not be NULL.
+  void* profile_id_;
 };
 
 }  // namespace drive

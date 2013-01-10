@@ -17,6 +17,7 @@
 #include "base/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
@@ -92,20 +93,24 @@ bool ParseDriveUrl(const std::string& path, std::string* resource_id) {
 }
 
 // Helper function to get DriveSystemService from Profile.
-DriveSystemService* GetSystemService() {
-  return DriveSystemServiceFactory::GetForProfile(
-      ProfileManager::GetDefaultProfile());
+DriveSystemService* GetSystemService(void* profile_id) {
+  Profile* profile = reinterpret_cast<Profile*>(profile_id);
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+    return NULL;
+
+  return DriveSystemServiceFactory::GetForProfile(profile);
 }
 
 // Helper function to get DriveFileSystem from Profile on UI thread.
-DriveFileSystemInterface* GetFileSystemOnUIThread() {
-  DriveSystemService* system_service = GetSystemService();
+DriveFileSystemInterface* GetFileSystemOnUIThread(void* profile_id) {
+  DriveSystemService* system_service = GetSystemService(profile_id);
   return system_service ? system_service->file_system() : NULL;
 }
 
 // Helper function to cancel Drive download operation on UI thread.
-void CancelDriveDownloadOnUIThread(const FilePath& drive_file_path) {
-  DriveSystemService* system_service = GetSystemService();
+void CancelDriveDownloadOnUIThread(
+    void* profile_id, const FilePath& drive_file_path) {
+  DriveSystemService* system_service = GetSystemService(profile_id);
   if (system_service)
     system_service->drive_service()->CancelForFilePath(drive_file_path);
 }
@@ -115,7 +120,8 @@ void CancelDriveDownloadOnUIThread(const FilePath& drive_file_path) {
 // formatted as drive://<resource-id>.
 class DriveURLRequestJob : public net::URLRequestJob {
  public:
-  DriveURLRequestJob(net::URLRequest* request,
+  DriveURLRequestJob(void* profile_id,
+                     net::URLRequest* request,
                      net::NetworkDelegate* network_delegate);
 
   // net::URLRequestJob overrides:
@@ -188,6 +194,9 @@ class DriveURLRequestJob : public net::URLRequestJob {
   // Helper method to close |stream_|.
   void CloseFileStream();
 
+  // The profile for processing Drive accesses. Should not be NULL and needs to
+  // be checked with ProfileManager::IsValidProfile before using it.
+  void* profile_id_;
   DriveFileSystemInterface* file_system_;
 
   bool error_;  // True if we've encountered an error.
@@ -211,9 +220,11 @@ class DriveURLRequestJob : public net::URLRequestJob {
   DISALLOW_COPY_AND_ASSIGN(DriveURLRequestJob);
 };
 
-DriveURLRequestJob::DriveURLRequestJob(net::URLRequest* request,
+DriveURLRequestJob::DriveURLRequestJob(void* profile_id,
+                                       net::URLRequest* request,
                                        net::NetworkDelegate* network_delegate)
     : net::URLRequestJob(request, network_delegate),
+      profile_id_(profile_id),
       file_system_(NULL),
       error_(false),
       headers_set_(false),
@@ -292,7 +303,7 @@ void DriveURLRequestJob::Start() {
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&GetFileSystemOnUIThread),
+      base::Bind(&GetFileSystemOnUIThread, profile_id_),
       base::Bind(&DriveURLRequestJob::StartAsync,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -321,6 +332,7 @@ void DriveURLRequestJob::Kill() {
         BrowserThread::UI,
         FROM_HERE,
         base::Bind(&CancelDriveDownloadOnUIThread,
+                   profile_id_,
                    drive_file_path_));
   }
 
@@ -909,7 +921,8 @@ void DriveURLRequestJob::HeadersCompleted(int status_code,
 ///////////////////////////////////////////////////////////////////////////////
 // DriveProtocolHandler class
 
-DriveProtocolHandler::DriveProtocolHandler() {
+DriveProtocolHandler::DriveProtocolHandler(void* profile_id)
+  : profile_id_(profile_id) {
 }
 
 DriveProtocolHandler::~DriveProtocolHandler() {
@@ -918,7 +931,7 @@ DriveProtocolHandler::~DriveProtocolHandler() {
 net::URLRequestJob* DriveProtocolHandler::MaybeCreateJob(
     net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   DVLOG(1) << "Handling url: " << request->url().spec();
-  return new DriveURLRequestJob(request, network_delegate);
+  return new DriveURLRequestJob(profile_id_, request, network_delegate);
 }
 
 }  // namespace drive
