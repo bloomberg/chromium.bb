@@ -14,4 +14,26 @@ NaClStartParams::NaClStartParams()
 NaClStartParams::~NaClStartParams() {
 }
 
+NaClLaunchParams::NaClLaunchParams()
+    : render_view_id(0),
+      permission_bits(0) {
+}
+
+NaClLaunchParams::NaClLaunchParams(const std::string& manifest_url_,
+                                   int render_view_id_,
+                                   uint32 permission_bits_)
+    : manifest_url(manifest_url_),
+      render_view_id(render_view_id_),
+      permission_bits(permission_bits_) {
+}
+
+NaClLaunchParams::NaClLaunchParams(const NaClLaunchParams& l) {
+  manifest_url = l.manifest_url;
+  render_view_id = l.render_view_id;
+  permission_bits = l.permission_bits;
+}
+
+NaClLaunchParams::~NaClLaunchParams() {
+}
+
 }  // namespace nacl

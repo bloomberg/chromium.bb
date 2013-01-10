@@ -100,9 +100,9 @@ PP_NaClResult LaunchSelLdr(PP_Instance instance,
       ppapi::PpapiPermissions::GetForCommandLine(perm_bits);
 
   if (!sender->Send(new ChromeViewHostMsg_LaunchNaCl(
-          instance_info.url,
-          routing_id,
-          perm_bits,
+          nacl::NaClLaunchParams(instance_info.url.spec(),
+                                 routing_id,
+                                 perm_bits),
           &result_socket,
           &instance_info.channel_handle,
           &instance_info.plugin_pid,

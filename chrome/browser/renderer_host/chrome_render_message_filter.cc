@@ -173,14 +173,14 @@ net::HostResolver* ChromeRenderMessageFilter::GetHostResolver() {
 }
 
 #if !defined(DISABLE_NACL)
-void ChromeRenderMessageFilter::OnLaunchNaCl(const GURL& manifest_url,
-                                             int render_view_id,
-                                             uint32 permission_bits,
-                                             IPC::Message* reply_msg) {
-  NaClProcessHost* host = new NaClProcessHost(manifest_url,
-                                              render_view_id,
-                                              permission_bits,
-                                              off_the_record_);
+void ChromeRenderMessageFilter::OnLaunchNaCl(
+    const nacl::NaClLaunchParams& launch_params,
+    IPC::Message* reply_msg) {
+  NaClProcessHost* host = new NaClProcessHost(
+      GURL(launch_params.manifest_url),
+      launch_params.render_view_id,
+      launch_params.permission_bits,
+      off_the_record_);
   host->Launch(this, reply_msg, extension_info_map_);
 }
 

@@ -179,6 +179,12 @@ IPC_STRUCT_TRAITS_BEGIN(chrome::search::Mode)
   IPC_STRUCT_TRAITS_MEMBER(origin)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(nacl::NaClLaunchParams)
+  IPC_STRUCT_TRAITS_MEMBER(manifest_url)
+  IPC_STRUCT_TRAITS_MEMBER(render_view_id)
+  IPC_STRUCT_TRAITS_MEMBER(permission_bits)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(RendererContentSettingRules)
   IPC_STRUCT_TRAITS_MEMBER(image_rules)
   IPC_STRUCT_TRAITS_MEMBER(script_rules)
@@ -541,10 +547,8 @@ IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_ForwardMessageToExternalHost,
 // a new instance of the Native Client process. The browser will launch
 // the process and return an IPC channel handle. This handle will only
 // be valid if the NaCl IPC proxy is enabled.
-IPC_SYNC_MESSAGE_CONTROL3_4(ChromeViewHostMsg_LaunchNaCl,
-                            GURL /* manifest_url */,
-                            int /* render_view_id */,
-                            uint32 /* permission_bits */,
+IPC_SYNC_MESSAGE_CONTROL1_4(ChromeViewHostMsg_LaunchNaCl,
+                            nacl::NaClLaunchParams /* launch_params */,
                             nacl::FileDescriptor /* imc channel handle */,
                             IPC::ChannelHandle /* ipc_channel_handle */,
                             base::ProcessId /* plugin_pid */,

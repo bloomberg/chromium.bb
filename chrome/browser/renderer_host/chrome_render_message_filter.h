@@ -21,6 +21,10 @@ struct ExtensionHostMsg_Request_Params;
 class ExtensionInfoMap;
 class GURL;
 
+namespace nacl {
+struct NaClLaunchParams;
+}
+
 namespace net {
 class HostResolver;
 class URLRequestContextGetter;
@@ -78,9 +82,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   virtual ~ChromeRenderMessageFilter();
 
 #if !defined(DISABLE_NACL)
-  void OnLaunchNaCl(const GURL& manifest_url,
-                    int render_view_id,
-                    uint32 permission_bits,
+  void OnLaunchNaCl(const nacl::NaClLaunchParams& launch_params,
                     IPC::Message* reply_msg);
   void OnGetReadonlyPnaclFd(const std::string& filename,
                             IPC::Message* reply_msg);
