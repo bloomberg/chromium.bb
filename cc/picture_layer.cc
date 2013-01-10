@@ -51,7 +51,11 @@ void PictureLayer::setLayerTreeHost(LayerTreeHost* host) {
 
 void PictureLayer::setNeedsDisplayRect(const gfx::RectF& layer_rect) {
   gfx::Rect rect = gfx::ToEnclosedRect(layer_rect);
-  pending_invalidation_.Union(rect);
+  if (!rect.IsEmpty()) {
+    // Clamp invalidation to the layer bounds.
+    rect.Intersect(gfx::Rect(bounds()));
+    pending_invalidation_.Union(rect);
+  }
   Layer::setNeedsDisplayRect(layer_rect);
 }
 
