@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chrome_metrics_helper.h"
+#include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 
 #include "base/base64.h"
 #include "base/memory/singleton.h"
@@ -16,14 +16,17 @@
 
 using content::BrowserThread;
 
-ChromeMetricsHelper* ChromeMetricsHelper::GetInstance() {
-  return Singleton<ChromeMetricsHelper>::get();
+namespace chrome_variations {
+
+VariationsHttpHeaderProvider* VariationsHttpHeaderProvider::GetInstance() {
+  return Singleton<VariationsHttpHeaderProvider>::get();
 }
 
-void ChromeMetricsHelper::AppendHeaders(const GURL& url,
-                                        bool incognito,
-                                        bool uma_enabled,
-                                        net::HttpRequestHeaders* headers) {
+void VariationsHttpHeaderProvider::AppendHeaders(
+    const GURL& url,
+    bool incognito,
+    bool uma_enabled,
+    net::HttpRequestHeaders* headers) {
   // Note the criteria for attaching Chrome experiment headers:
   // 1. We only transmit to *.google.<TLD> domains. NOTE that this use of
   //    google_util helpers to check this does not guarantee that the URL is
@@ -46,32 +49,40 @@ void ChromeMetricsHelper::AppendHeaders(const GURL& url,
   // Lazily initialize the header, if not already done, before attempting to
   // transmit it.
   InitVariationIDsCacheIfNeeded();
-  base::AutoLock scoped_lock(lock_);
-  if (!variation_ids_header_.empty())
-    headers->SetHeaderIfMissing("X-Chrome-Variations", variation_ids_header_);
+
+  std::string variation_ids_header_copy;
+  {
+    base::AutoLock scoped_lock(lock_);
+    variation_ids_header_copy = variation_ids_header_;
+  }
+
+  if (!variation_ids_header_copy.empty()) {
+    headers->SetHeaderIfMissing("X-Chrome-Variations",
+                                variation_ids_header_copy);
+  }
 }
 
-ChromeMetricsHelper::ChromeMetricsHelper()
+VariationsHttpHeaderProvider::VariationsHttpHeaderProvider()
     : variation_ids_cache_initialized_(false) {
 }
 
-ChromeMetricsHelper::~ChromeMetricsHelper() {
+VariationsHttpHeaderProvider::~VariationsHttpHeaderProvider() {
 }
 
-void ChromeMetricsHelper::OnFieldTrialGroupFinalized(
+void VariationsHttpHeaderProvider::OnFieldTrialGroupFinalized(
     const std::string& trial_name,
     const std::string& group_name) {
-  chrome_variations::VariationID new_id =
-      chrome_variations::GetGoogleVariationID(
-          chrome_variations::GOOGLE_WEB_PROPERTIES, trial_name, group_name);
-  if (new_id == chrome_variations::kEmptyID)
+  VariationID new_id =
+      GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, trial_name, group_name);
+  if (new_id == kEmptyID)
     return;
+
   base::AutoLock scoped_lock(lock_);
   variation_ids_set_.insert(new_id);
   UpdateVariationIDsHeaderValue();
 }
 
-void ChromeMetricsHelper::InitVariationIDsCacheIfNeeded() {
+void VariationsHttpHeaderProvider::InitVariationIDsCacheIfNeeded() {
   base::AutoLock scoped_lock(lock_);
   if (variation_ids_cache_initialized_)
     return;
@@ -84,12 +95,12 @@ void ChromeMetricsHelper::InitVariationIDsCacheIfNeeded() {
   base::FieldTrial::ActiveGroups initial_groups;
   base::FieldTrialList::GetActiveFieldTrialGroups(&initial_groups);
   for (base::FieldTrial::ActiveGroups::const_iterator it =
-       initial_groups.begin(); it != initial_groups.end(); ++it) {
-    const chrome_variations::VariationID id =
-        chrome_variations::GetGoogleVariationID(
-            chrome_variations::GOOGLE_WEB_PROPERTIES, it->trial_name,
-            it->group_name);
-    if (id != chrome_variations::kEmptyID)
+           initial_groups.begin();
+       it != initial_groups.end(); ++it) {
+    const VariationID id =
+        GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, it->trial_name,
+                             it->group_name);
+    if (id != kEmptyID)
       variation_ids_set_.insert(id);
   }
   UpdateVariationIDsHeaderValue();
@@ -97,7 +108,9 @@ void ChromeMetricsHelper::InitVariationIDsCacheIfNeeded() {
   variation_ids_cache_initialized_ = true;
 }
 
-void ChromeMetricsHelper::UpdateVariationIDsHeaderValue() {
+void VariationsHttpHeaderProvider::UpdateVariationIDsHeaderValue() {
+  lock_.AssertAcquired();
+
   // The header value is a serialized protobuffer of Variation IDs which is
   // base64 encoded before transmitting as a string.
   if (variation_ids_set_.empty())
@@ -113,9 +126,10 @@ void ChromeMetricsHelper::UpdateVariationIDsHeaderValue() {
   }
 
   metrics::ChromeVariations proto;
-  for (std::set<chrome_variations::VariationID>::const_iterator it =
-      variation_ids_set_.begin(); it != variation_ids_set_.end(); ++it)
+  for (std::set<VariationID>::const_iterator it = variation_ids_set_.begin();
+       it != variation_ids_set_.end(); ++it) {
     proto.add_variation_id(*it);
+  }
 
   std::string serialized;
   proto.SerializeToString(&serialized);
@@ -132,3 +146,5 @@ void ChromeMetricsHelper::UpdateVariationIDsHeaderValue() {
                  << serialized;
   }
 }
+
+}  // namespace chrome_variations

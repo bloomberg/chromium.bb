@@ -9,7 +9,6 @@
 #include "base/base64.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_metrics_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_resource_throttle.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/browser/net/resource_prefetch_predictor_observer.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -173,9 +173,11 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     ProfileIOData* io_data = ProfileIOData::FromResourceContext(
         resource_context);
     bool incognito = io_data->is_incognito();
-    ChromeMetricsHelper::GetInstance()->AppendHeaders(
-        request->url(), incognito,
-        !incognito && io_data->GetMetricsEnabledStateOnIOThread(), &headers);
+    chrome_variations::VariationsHttpHeaderProvider::GetInstance()->
+        AppendHeaders(request->url(),
+                      incognito,
+                      !incognito && io_data->GetMetricsEnabledStateOnIOThread(),
+                      &headers);
     request->SetExtraRequestHeaders(headers);
   }
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROME_METRICS_HELPER_H_
-#define CHROME_BROWSER_CHROME_METRICS_HELPER_H_
+#ifndef CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_HTTP_HEADER_PROVIDER_H_
+#define CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_HTTP_HEADER_PROVIDER_H_
 
 #include <set>
 #include <string>
@@ -27,12 +27,14 @@ class ProfileIOData;
 
 template <typename T> struct DefaultSingletonTraits;
 
+namespace chrome_variations {
+
 // A helper class for maintaining Chrome experiments and metrics state
 // transmitted in custom HTTP request headers.
 // This class is a thread-safe singleton.
-class ChromeMetricsHelper : base::FieldTrialList::Observer {
+class VariationsHttpHeaderProvider : base::FieldTrialList::Observer {
  public:
-  static ChromeMetricsHelper* GetInstance();
+  static VariationsHttpHeaderProvider* GetInstance();
 
   // Adds Chrome experiment and metrics state as custom headers to |headers|.
   // Some headers may not be set given the |incognito| mode or whether
@@ -44,10 +46,10 @@ class ChromeMetricsHelper : base::FieldTrialList::Observer {
                      net::HttpRequestHeaders* headers);
 
  private:
-  friend struct DefaultSingletonTraits<ChromeMetricsHelper>;
+  friend struct DefaultSingletonTraits<VariationsHttpHeaderProvider>;
 
-  ChromeMetricsHelper();
-  virtual ~ChromeMetricsHelper();
+  VariationsHttpHeaderProvider();
+  virtual ~VariationsHttpHeaderProvider();
 
   // base::FieldTrialList::Observer implementation.
   // This will add the variation ID associated with |trial_name| and
@@ -62,7 +64,8 @@ class ChromeMetricsHelper : base::FieldTrialList::Observer {
   void InitVariationIDsCacheIfNeeded();
 
   // Takes whatever is currently in |variation_ids_set_| and recreates
-  // |variation_ids_header_| with it.
+  // |variation_ids_header_| with it.  Assumes the the |lock_| is currently
+  // held.
   void UpdateVariationIDsHeaderValue();
 
   // Guards |variation_ids_cache_initialized_|, |variation_ids_set_| and
@@ -77,7 +80,9 @@ class ChromeMetricsHelper : base::FieldTrialList::Observer {
   std::set<chrome_variations::VariationID> variation_ids_set_;
   std::string variation_ids_header_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeMetricsHelper);
+  DISALLOW_COPY_AND_ASSIGN(VariationsHttpHeaderProvider);
 };
 
-#endif  // CHROME_BROWSER_CHROME_METRICS_HELPER_H_
+}  // namespace chrome_variations
+
+#endif  // CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_HTTP_HEADER_PROVIDER_H_
