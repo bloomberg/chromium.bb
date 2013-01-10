@@ -218,7 +218,7 @@ class BluetoothInputClientImpl: public BluetoothInputClient,
     if (response) {
       dbus::MessageReader reader(response);
       error_name = response->GetErrorName();
-      error_message = reader.PopString(&error_message);
+      reader.PopString(&error_message);
     } else {
       error_name = kNoResponseError;
       error_message = "";
