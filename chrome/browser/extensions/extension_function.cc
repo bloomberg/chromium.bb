@@ -289,6 +289,13 @@ void UIThreadExtensionFunction::SendResponse(bool success) {
   }
 }
 
+void UIThreadExtensionFunction::WriteToConsole(
+    content::ConsoleMessageLevel level,
+    const std::string& message) {
+  render_view_host_->Send(new ExtensionMsg_AddMessageToConsole(
+      render_view_host_->GetRoutingID(), level, message));
+}
+
 IOThreadExtensionFunction::IOThreadExtensionFunction()
     : routing_id_(-1) {
 }

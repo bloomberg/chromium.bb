@@ -4,14 +4,19 @@
 
 // This file tests the chrome.alarms extension API.
 
-#include "base/values.h"
 #include "base/test/mock_time_provider.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/api/alarms/alarm_manager.h"
 #include "chrome/browser/extensions/api/alarms/alarms_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/mock_render_process_host.h"
+#include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,6 +59,10 @@ class ExtensionAlarmsTest : public BrowserWithTestWindowTest {
     extension_ = utils::CreateEmptyExtensionWithLocation(
         extensions::Extension::LOAD);
 
+    // Make sure there's a RenderViewHost for alarms to warn into.
+    AddTab(browser(), extension_->GetBackgroundURL());
+    contents_ = chrome::GetActiveWebContents(browser());
+
     current_time_ = base::Time::FromDoubleT(10);
     ON_CALL(mock_time_, Now())
         .WillByDefault(testing::ReturnPointee(&current_time_));
@@ -63,6 +72,7 @@ class ExtensionAlarmsTest : public BrowserWithTestWindowTest {
       UIThreadExtensionFunction* function, const std::string& args) {
     scoped_refptr<UIThreadExtensionFunction> delete_function(function);
     function->set_extension(extension_.get());
+    function->SetRenderViewHost(contents_->GetRenderViewHost());
     return utils::RunFunctionAndReturnSingleResult(function, args, browser());
   }
 
@@ -86,6 +96,7 @@ class ExtensionAlarmsTest : public BrowserWithTestWindowTest {
   std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
                                         const std::string& args) {
     function->set_extension(extension_.get());
+    function->SetRenderViewHost(contents_->GetRenderViewHost());
     return utils::RunFunctionAndReturnError(function, args, browser());
   }
 
@@ -134,6 +145,7 @@ class ExtensionAlarmsTest : public BrowserWithTestWindowTest {
   AlarmManager* alarm_manager_;
   AlarmDelegate* alarm_delegate_;
   scoped_refptr<extensions::Extension> extension_;
+  content::WebContents* contents_;
 };
 
 TEST_F(ExtensionAlarmsTest, Create) {
@@ -184,7 +196,7 @@ TEST_F(ExtensionAlarmsTest, CreateRepeating) {
 
   current_time_ += base::TimeDelta::FromSeconds(1);
   // Wait again, and ensure the alarm fires again.
-  alarm_manager_->ScheduleNextPoll(base::TimeDelta::FromSeconds(0));
+  alarm_manager_->ScheduleNextPoll();
   MessageLoop::current()->Run();
 
   ASSERT_EQ(2u, alarm_delegate_->alarms_seen.size());
@@ -259,10 +271,17 @@ TEST_F(ExtensionAlarmsTest, CreateDupe) {
 
 TEST_F(ExtensionAlarmsTest, CreateDelayBelowMinimum) {
   // Create an alarm with delay below the minimum accepted value.
-  std::string error = RunFunctionAndReturnError(
-      new AlarmsCreateFunction(&base::MockTimeProvider::StaticNow),
-      "[\"negative\", {\"delayInMinutes\": -0.2}]");
-  EXPECT_FALSE(error.empty());
+  CreateAlarm("[\"negative\", {\"delayInMinutes\": -0.2}]");
+  IPC::TestSink& sink = static_cast<content::MockRenderProcessHost*>(
+      contents_->GetRenderViewHost()->GetProcess())->sink();
+  const IPC::Message* warning = sink.GetUniqueMessageMatching(
+      ExtensionMsg_AddMessageToConsole::ID);
+  ASSERT_TRUE(warning);
+  content::ConsoleMessageLevel level;
+  std::string message;
+  ExtensionMsg_AddMessageToConsole::Read(warning, &level, &message);
+  EXPECT_EQ(content::CONSOLE_MESSAGE_LEVEL_WARNING, level);
+  EXPECT_THAT(message, testing::HasSubstr("delay is less than minimum of 1"));
 }
 
 TEST_F(ExtensionAlarmsTest, Get) {
@@ -357,7 +376,7 @@ TEST_F(ExtensionAlarmsTest, Clear) {
 
   // Now wait for the alarms to fire, and ensure the cancelled alarms don't
   // fire.
-  alarm_manager_->ScheduleNextPoll(base::TimeDelta::FromSeconds(0));
+  alarm_manager_->ScheduleNextPoll();
   MessageLoop::current()->Run();
 
   ASSERT_EQ(1u, alarm_delegate_->alarms_seen.size());
@@ -476,15 +495,18 @@ TEST_F(ExtensionAlarmsSchedulingTest, ReleasedExtensionPollsInfrequently) {
   CreateAlarm("[\"a\", {\"when\": 300010}]");
   CreateAlarm("[\"b\", {\"when\": 340000}]");
 
-  // In released extensions, we set the granularity to at least 1
-  // minute, but AddAlarm schedules its next poll precisely.
+  // On startup (when there's no "last poll"), we let alarms fire as
+  // soon as they're scheduled.
   EXPECT_DOUBLE_EQ(300010, alarm_manager_->next_poll_time_.ToJsTime());
 
-  // Run an iteration to see the effect of the granularity.
-  current_time_ = base::Time::FromJsTime(300020);
-  MessageLoop::current()->Run();
-  EXPECT_DOUBLE_EQ(300020, alarm_manager_->last_poll_time_.ToJsTime());
-  EXPECT_DOUBLE_EQ(360020, alarm_manager_->next_poll_time_.ToJsTime());
+  alarm_manager_->last_poll_time_ = base::Time::FromJsTime(290000);
+  // In released extensions, we set the granularity to at least 5
+  // minutes, which makes AddAlarm schedule the next poll after the
+  // extension requested.
+  alarm_manager_->ScheduleNextPoll();
+  EXPECT_DOUBLE_EQ((alarm_manager_->last_poll_time_ +
+                    base::TimeDelta::FromMinutes(1)).ToJsTime(),
+                   alarm_manager_->next_poll_time_.ToJsTime());
 }
 
 TEST_F(ExtensionAlarmsSchedulingTest, TimerRunning) {

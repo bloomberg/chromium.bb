@@ -52,12 +52,14 @@ chrome.browserAction.onClicked.addListener(function() {
   });
 });
 
-chrome.experimental.keybinding.onCommand.addListener(function(command) {
+chrome.commands.onCommand.addListener(function(command) {
   chrome.tabs.create({url: "http://www.google.com/"});
 });
 
 chrome.runtime.onMessage.addListener(function(msg, _, sendResponse) {
   if (msg.setAlarm) {
+    // For testing only.  delayInMinutes will be rounded up to at least 5 in a
+    // packed or released extension.
     chrome.alarms.create({delayInMinutes: 0.1});
   } else if (msg.delayedResponse) {
     // Note: setTimeout itself does NOT keep the page awake. We return true

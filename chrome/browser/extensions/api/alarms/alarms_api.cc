@@ -19,47 +19,18 @@ namespace {
 
 const char kDefaultAlarmName[] = "";
 const char kAlarmNotFound[] = "No alarm named '*' exists.";
-const char kDelayLessThanMinimum[] = "* is less than minimum of * minutes.";
-const char kDelayIsNonInteger[] = "* is not an integer value.";
 const char kBothRelativeAndAbsoluteTime[] =
     "Cannot set both when and delayInMinutes.";
 const char kNoScheduledTime[] =
     "Must set at least one of when, delayInMinutes, or periodInMinutes.";
-const int kReleaseDelayMinimum = 5;
+const int kReleaseDelayMinimum = 1;
 const int kDevDelayMinimum = 0;
 
-bool ValidateDelay(double delay_in_minutes,
-                   const Extension* extension,
-                   const std::string& delay_or_period,
-                   std::string* error) {
-  double delay_minimum = kDevDelayMinimum;
-  if (extension->location() != Extension::LOAD) {
-    // In release mode we check for integer delay values and a stricter delay
-    // minimum.
-    if (delay_in_minutes != static_cast<int>(delay_in_minutes)) {
-      *error = ErrorUtils::FormatErrorMessage(
-          kDelayIsNonInteger,
-          delay_or_period);
-      return false;
-    }
-    delay_minimum = kReleaseDelayMinimum;
-  }
-
-  // Validate against our found delay minimum.
-  if (delay_in_minutes < delay_minimum) {
-    *error = ErrorUtils::FormatErrorMessage(
-        kDelayLessThanMinimum,
-        delay_or_period,
-        base::DoubleToString(delay_minimum));
-    return false;
-  }
-
-  return true;
-}
-
-bool ValidateAlarmCreateInfo(const alarms::AlarmCreateInfo& create_info,
+bool ValidateAlarmCreateInfo(const std::string& alarm_name,
+                             const alarms::AlarmCreateInfo& create_info,
                              const Extension* extension,
-                             std::string* error) {
+                             std::string* error,
+                             std::vector<std::string>* warnings) {
   if (create_info.delay_in_minutes.get() &&
       create_info.when.get()) {
     *error = kBothRelativeAndAbsoluteTime;
@@ -79,14 +50,36 @@ bool ValidateAlarmCreateInfo(const alarms::AlarmCreateInfo& create_info,
   // gets delayed past the boundary).  However, it's still worth warning about
   // relative delays that are shorter than we'll honor.
   if (create_info.delay_in_minutes.get()) {
-    if (!ValidateDelay(*create_info.delay_in_minutes,
-                       extension, "Delay", error))
-      return false;
+    if (*create_info.delay_in_minutes < kReleaseDelayMinimum) {
+      COMPILE_ASSERT(kReleaseDelayMinimum == 1, update_warning_message_below);
+      if (extension->location() == Extension::LOAD)
+        warnings->push_back(ErrorUtils::FormatErrorMessage(
+            "Alarm delay is less than minimum of 1 minutes."
+            " In released .crx, alarm \"*\" will fire in approximately"
+            " 1 minutes.",
+            alarm_name));
+      else
+        warnings->push_back(ErrorUtils::FormatErrorMessage(
+            "Alarm delay is less than minimum of 1 minutes."
+            " Alarm \"*\" will fire in approximately 1 minutes.",
+            alarm_name));
+    }
   }
   if (create_info.period_in_minutes.get()) {
-    if (!ValidateDelay(*create_info.period_in_minutes,
-                       extension, "Period", error))
-      return false;
+    if (*create_info.period_in_minutes < kReleaseDelayMinimum) {
+      COMPILE_ASSERT(kReleaseDelayMinimum == 1, update_warning_message_below);
+      if (extension->location() == Extension::LOAD)
+        warnings->push_back(ErrorUtils::FormatErrorMessage(
+            "Alarm period is less than minimum of 1 minutes."
+            " In released .crx, alarm \"*\" will fire approximately"
+            " every 1 minutes.",
+            alarm_name));
+      else
+        warnings->push_back(ErrorUtils::FormatErrorMessage(
+            "Alarm period is less than minimum of 1 minutes."
+            " Alarm \"*\" will fire approximately every 1 minutes.",
+            alarm_name));
+    }
   }
 
   return true;
@@ -102,11 +95,17 @@ bool AlarmsCreateFunction::RunImpl() {
   scoped_ptr<alarms::Create::Params> params(
       alarms::Create::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
+  const std::string& alarm_name =
+      params->name.get() ? *params->name : kDefaultAlarmName;
+  std::vector<std::string> warnings;
   if (!ValidateAlarmCreateInfo(
-          params->alarm_info, GetExtension(), &error_))
+          alarm_name, params->alarm_info, GetExtension(), &error_, &warnings))
     return false;
+  for (std::vector<std::string>::const_iterator it = warnings.begin();
+       it != warnings.end(); ++it)
+    WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_WARNING, *it);
 
-  Alarm alarm(params->name.get() ? *params->name : kDefaultAlarmName,
+  Alarm alarm(alarm_name,
               params->alarm_info,
               base::TimeDelta::FromMinutes(
                   GetExtension()->location() == Extension::LOAD ?

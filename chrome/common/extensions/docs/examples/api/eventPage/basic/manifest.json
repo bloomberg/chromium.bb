@@ -3,7 +3,7 @@
   "description": "Demonstrates usage and features of the event page",
   "version": "1.0",
   "manifest_version": 2,
-  "permissions": ["alarms", "tabs", "bookmarks", "experimental", "keybinding", "http://*.google.com/*"],
+  "permissions": ["alarms", "tabs", "bookmarks", "declarativeWebRequest", "*://*.google.com/*"],
   "background": {
     "scripts": ["background.js"],
     "persistent": false

@@ -49,9 +49,18 @@ namespace alarms {
     // the same name (or no name if none is specified), it will be cancelled and
     // replaced by this alarm.
     //
-    // Note that granularity is not guaranteed: times are more of a hint to the
-    // browser. For performance reasons, alarms may be delayed an arbitrary
-    // amount of time before firing.
+    // In order to reduce the load on the user's machine, Chrome limits alarms
+    // to at most once every 1 minutes but may delay them an arbitrary amount
+    // more.  That is, setting <code>$ref:[alarms.AlarmCreateInfo.delayInMinutes
+    // delayInMinutes]</code> or
+    // <code>$ref:[alarms.AlarmCreateInfo.periodInMinutes
+    // periodInMinutes]</code> to less than <code>1</code> will not be honored
+    // and will cause a warning.  <code>$ref:[alarms.AlarmCreateInfo.when
+    // when]</code> can be set to less than 1 minutes after "now" without
+    // warning but won't actually cause the alarm to fire for at least 1 minutes.
+    //
+    // To help you debug your app or extension, when you've loaded it unpacked,
+    // there's no limit to how often the alarm can fire.
     //
     // |name|: Optional name to identify this alarm. Defaults to the empty
     // string.

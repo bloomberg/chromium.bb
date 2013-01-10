@@ -123,8 +123,8 @@ class AlarmManager
                        scoped_ptr<base::Value> value);
 
   // Schedules the next poll of alarms for when the next soonest alarm runs,
-  // but do not more often than min_period.
-  void ScheduleNextPoll(base::TimeDelta min_period);
+  // but not more often than the minimum granularity of all alarms.
+  void ScheduleNextPoll();
 
   // Polls the alarms, running any that have elapsed. After running them and
   // rescheduling repeating alarms, schedule the next poll.

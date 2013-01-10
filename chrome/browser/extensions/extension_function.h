@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_view_host_observer.h"
+#include "content/public/common/console_message_level.h"
 #include "ipc/ipc_message.h"
 
 class Browser;
@@ -316,6 +317,10 @@ class UIThreadExtensionFunction : public ExtensionFunction {
       const extensions::WindowController* window_controller) const;
 
  protected:
+  // Emits a message to the extension's devtools console.
+  void WriteToConsole(content::ConsoleMessageLevel level,
+                      const std::string& message);
+
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<UIThreadExtensionFunction>;
