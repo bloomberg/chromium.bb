@@ -780,5 +780,37 @@ class LayerTreeHostContextTestDontUseLostResources :
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestDontUseLostResources)
 
+class LayerTreeHostContextTestFailsImmediately :
+    public LayerTreeHostContextTest {
+ public:
+  LayerTreeHostContextTestFailsImmediately()
+      : LayerTreeHostContextTest() {
+  }
+
+  virtual ~LayerTreeHostContextTestFailsImmediately() {}
+
+  virtual void beginTest() OVERRIDE {
+    postSetNeedsCommitToMainThread();
+  }
+
+  virtual void afterTest() OVERRIDE {
+  }
+
+  virtual scoped_ptr<FakeWebGraphicsContext3D> CreateContext3d() OVERRIDE {
+    scoped_ptr<FakeWebGraphicsContext3D> context =
+        LayerTreeHostContextTest::CreateContext3d();
+    context->loseContextCHROMIUM();
+    return context.Pass();
+  }
+
+  virtual void didRecreateOutputSurface(bool succeeded) OVERRIDE {
+    EXPECT_FALSE(succeeded);
+    // If we make it this far without crashing, we pass!
+    endTest();
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestFailsImmediately);
+
 }  // namespace
 }  // namespace cc
