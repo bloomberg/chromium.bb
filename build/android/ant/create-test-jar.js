@@ -14,7 +14,6 @@ importClass(org.apache.tools.ant.types.FileSet);
 importClass(org.apache.tools.ant.types.ZipFileSet);
 importClass(org.apache.tools.ant.taskdefs.Zip);
 
-var echo = project.createTask("echo");
 var jarTask = project.createTask("jar");
 
 // Do not allow duplicates in the jar, the default behavior of Jar task
@@ -64,7 +63,4 @@ for (var i in excludedClasses) {
 }
 
 jarTask.setExcludes(exclusionString);
-echo.setMessage("Creating test jar: " +
-                jarTask.getDestFile().getAbsolutePath());
-echo.perform();
 jarTask.perform();

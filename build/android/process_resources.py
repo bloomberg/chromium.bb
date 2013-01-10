@@ -63,6 +63,7 @@ def main():
                          '-M', dummy_manifest,
                          '-S', options.res_dir,
                          '-I', android_jar,
+                         '--output-text-symbols', options.R_dir,
                          '-J', options.R_dir])
 
   # Crunch image resources. This shrinks png files and is necessary for 9-patch

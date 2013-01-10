@@ -41,6 +41,9 @@
   <path id="project.library.res.folder.path">
     <filelist files="${ADDITIONAL_RES_DIRS}"/>
   </path>
+  <path id="project.library.bin.r.file.path">
+    <filelist files="${ADDITIONAL_R_TEXT_FILES}"/>
+  </path>
   <script language="javascript">
     var before = project.getProperty("ADDITIONAL_RES_PACKAGES");
     project.setProperty("project.library.packages", before.replaceAll(" ", ";"));

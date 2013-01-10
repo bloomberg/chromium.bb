@@ -12,7 +12,7 @@
     <application>
         <uses-library android:name="android.test.runner" />
     </application>
-    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="16" />
+    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="17" />
     <instrumentation android:name="android.test.InstrumentationTestRunner"
         android:targetPackage="org.chromium.chrome.testshell"
         android:label="Tests for org.chromium.chrome.testshell"/>

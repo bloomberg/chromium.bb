@@ -185,7 +185,7 @@ public class ModalDialogTest extends ChromiumTestShellTestBase {
         JavascriptAppModalDialog jsDialog = getCurrentDialog();
         assertNotNull("No dialog showing.", jsDialog);
         checkButtonPresenceVisibilityText(
-                jsDialog, 0, org.chromium.content.R.string.stay_on_this_page,
+                jsDialog, 0, org.chromium.chrome.R.string.stay_on_this_page,
                 "Stay on this page");
         clickCancel(jsDialog);
 
@@ -195,7 +195,7 @@ public class ModalDialogTest extends ChromiumTestShellTestBase {
         jsDialog = getCurrentDialog();
         assertNotNull("No dialog showing.", jsDialog);
         checkButtonPresenceVisibilityText(
-                jsDialog, 2, org.chromium.content.R.string.leave_this_page,
+                jsDialog, 2, org.chromium.chrome.R.string.leave_this_page,
                 "Leave this page");
 
         final TestCallbackHelperContainer.OnPageFinishedHelper onPageLoaded =
@@ -221,10 +221,10 @@ public class ModalDialogTest extends ChromiumTestShellTestBase {
         assertNotNull("No dialog showing.", jsDialog);
 
         checkButtonPresenceVisibilityText(
-                jsDialog, 0, org.chromium.content.R.string.dont_reload_this_page,
+                jsDialog, 0, org.chromium.chrome.R.string.dont_reload_this_page,
                 "Don't reload this page");
         checkButtonPresenceVisibilityText(
-                jsDialog, 2, org.chromium.content.R.string.reload_this_page,
+                jsDialog, 2, org.chromium.chrome.R.string.reload_this_page,
                 "Reload this page");
     }
 

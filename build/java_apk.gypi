@@ -165,6 +165,7 @@
         '-DJAR_NAME=<(jar_name)',
         '-DPACKAGE_NAME=<(package_name)',
         '-DRESOURCE_DIR=<(resource_dir)',
+        '-DADDITIONAL_R_TEXT_FILES=>(additional_R_text_files)',
         '-DADDITIONAL_RES_DIRS=>(additional_res_dirs)',
         '-DADDITIONAL_RES_PACKAGES=>(additional_res_packages)',
         '-DAPP_MANIFEST_VERSION_NAME=<(app_manifest_version_name)',
@@ -189,6 +190,7 @@
         # listed in the AndroidManifest.xml, which is unavoidable).
         'additional_res_dirs': ['<(DEPTH)/build/android/ant/empty/res'],
         'additional_res_packages': ['<(R_package)'],
+        'additional_R_text_files': ['<(PRODUCT_DIR)/<(package_name)/R.txt'],
       },
     }],
   ],
