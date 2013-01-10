@@ -7,30 +7,25 @@
 
 #include "base/compiler_specific.h"
 #include "remoting/protocol/mouse_input_filter.h"
-#include "remoting/protocol/video_stub.h"
 
 namespace remoting {
 
-// Filtering VideoStub implementation which configures a MouseInputFilter to
-// clamp mouse events to fall within the dimensions of the most-recently
-// received video frame.
-class MouseClampingFilter : public protocol::VideoStub {
+class VideoFrameCapturer;
+
+// Filtering InputStub implementation which clamps mouse each mouse event to
+// the current dimensions of a VideoFrameCapturer instance before passing
+// them on to the target |input_stub|.
+class MouseClampingFilter : public protocol::MouseInputFilter {
  public:
-  MouseClampingFilter(protocol::InputStub* input_stub,
-                      protocol::VideoStub* video_stub);
+  MouseClampingFilter(VideoFrameCapturer* capturer,
+                      protocol::InputStub* input_stub);
   virtual ~MouseClampingFilter();
 
-  protocol::InputStub* input_filter() { return &input_filter_; }
-
-  // protocol::VideoStub implementation.
-  virtual void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
-                                  const base::Closure& done) OVERRIDE;
+  // InputStub overrides.
+  virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
 
  private:
-  // Clamps mouse event coordinates to the video dimensions.
-  protocol::MouseInputFilter input_filter_;
-
-  protocol::VideoStub* video_stub_;
+  VideoFrameCapturer* capturer_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseClampingFilter);
 };

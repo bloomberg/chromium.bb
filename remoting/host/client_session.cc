@@ -41,10 +41,13 @@ ClientSession::ClientSession(
       connection_factory_(connection_.get()),
       desktop_environment_(desktop_environment_factory->Create()),
       client_jid_(connection_->session()->jid()),
-      input_tracker_(&host_input_filter_),
+      host_clipboard_stub_(desktop_environment_->event_executor()),
+      host_input_stub_(desktop_environment_->event_executor()),
+      input_tracker_(host_input_stub_),
       remote_input_filter_(&input_tracker_),
-      mouse_clamping_filter_(&remote_input_filter_, connection_->video_stub()),
-      disable_input_filter_(mouse_clamping_filter_.input_filter()),
+      mouse_clamping_filter_(desktop_environment_->video_capturer(),
+                             &remote_input_filter_),
+      disable_input_filter_(&mouse_clamping_filter_),
       disable_clipboard_filter_(clipboard_echo_filter_.host_filter()),
       auth_input_filter_(&disable_input_filter_),
       auth_clipboard_filter_(&disable_clipboard_filter_),
@@ -63,6 +66,7 @@ ClientSession::ClientSession(
   connection_->set_clipboard_stub(&auth_clipboard_filter_);
   connection_->set_host_stub(this);
   connection_->set_input_stub(&auth_input_filter_);
+  clipboard_echo_filter_.set_host_stub(host_clipboard_stub_);
 
   // |auth_*_filter_|'s states reflect whether the session is authenticated.
   auth_input_filter_.set_enabled(false);
@@ -123,11 +127,6 @@ void ClientSession::OnConnectionChannelsConnected(
     protocol::ConnectionToClient* connection) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
-
-  // Connect the host clipboard and input stubs.
-  host_input_filter_.set_input_stub(desktop_environment_->event_executor());
-  clipboard_echo_filter_.set_host_stub(desktop_environment_->event_executor());
-
   SetDisableInputs(false);
 
   // Let the desktop environment notify us of local clipboard changes.
@@ -149,7 +148,7 @@ void ClientSession::OnConnectionChannelsConnected(
       desktop_environment_->video_capturer(),
       video_encoder.Pass(),
       connection_->client_stub(),
-      &mouse_clamping_filter_);
+      connection_->video_stub());
   ++active_recorders_;
 
   // Create an AudioScheduler if audio is enabled, to pump audio samples.

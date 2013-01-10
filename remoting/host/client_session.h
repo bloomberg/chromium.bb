@@ -133,6 +133,10 @@ class ClientSession
     return connection_.get();
   }
 
+  DesktopEnvironment* desktop_environment() const {
+    return desktop_environment_.get();
+  }
+
   const std::string& client_jid() { return client_jid_; }
 
   bool is_authenticated() { return auth_input_filter_.enabled();  }
@@ -177,8 +181,11 @@ class ClientSession
 
   std::string client_jid_;
 
-  // Filter used as the final element in the input pipeline.
-  protocol::InputFilter host_input_filter_;
+  // The host clipboard and input stubs to which this object delegates.
+  // These are the final elements in the clipboard & input pipelines, which
+  // appear in order below.
+  protocol::ClipboardStub* host_clipboard_stub_;
+  protocol::InputStub* host_input_stub_;
 
   // Tracker used to release pressed keys and buttons when disconnecting.
   protocol::InputEventTracker input_tracker_;
@@ -190,8 +197,7 @@ class ClientSession
   MouseClampingFilter mouse_clamping_filter_;
 
   // Filter to used to stop clipboard items sent from the client being echoed
-  // back to it.  It is the final element in the clipboard (client -> host)
-  // pipeline.
+  // back to it.
   protocol::ClipboardEchoFilter clipboard_echo_filter_;
 
   // Filters used to manage enabling & disabling of input & clipboard.
