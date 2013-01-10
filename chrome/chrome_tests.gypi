@@ -1177,6 +1177,7 @@
         'browser/task_manager/task_manager_browsertest_util.h',
         'browser/task_manager/task_manager_notification_browsertest.cc',
         'browser/translate/translate_manager_browsertest.cc',
+        'browser/ui/app_list/app_list_controller_browsertest.cc',
         'browser/ui/ash/caps_lock_handler_browsertest.cc',
         'browser/ui/ash/chrome_shell_delegate_browsertest.cc',
         'browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc',
@@ -1630,6 +1631,11 @@
             # build time dependency.
             '../v8/tools/gyp/v8.gyp:v8_shell#host',
             '../webkit/webkit.gyp:copy_npapi_test_plugin',
+          ],
+        }],
+        ['enable_app_list==0', {
+          'sources/': [
+            ['exclude', '^browser/ui/app_list/'],
           ],
         }],
       ],  # conditions

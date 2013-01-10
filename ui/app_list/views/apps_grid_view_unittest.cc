@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/apps_grid_view.h"
+#include "ui/app_list/views/apps_grid_view.h"
 
 #include <string>
 
@@ -14,10 +14,10 @@
 #include "base/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_item_model.h"
-#include "ui/app_list/app_list_item_view.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/pagination_model.h"
-#include "ui/app_list/test/apps_grid_view_test_api.h"
+#include "ui/app_list/views/app_list_item_view.h"
+#include "ui/app_list/views/test/apps_grid_view_test_api.h"
 
 namespace app_list {
 namespace test {

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/contents_view.h"
+#include "ui/app_list/views/contents_view.h"
 
 #include <algorithm>
 
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_view.h"
-#include "ui/app_list/apps_grid_view.h"
 #include "ui/app_list/pagination_model.h"
-#include "ui/app_list/search_result_list_view.h"
+#include "ui/app_list/views/app_list_view.h"
+#include "ui/app_list/views/apps_grid_view.h"
+#include "ui/app_list/views/search_result_list_view.h"
 #include "ui/base/events/event.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/view_model.h"

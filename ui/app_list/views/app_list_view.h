@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_APP_LIST_VIEW_H_
-#define UI_APP_LIST_APP_LIST_VIEW_H_
+#ifndef UI_APP_LIST_VIEWS_APP_LIST_VIEW_H_
+#define UI_APP_LIST_VIEWS_APP_LIST_VIEW_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -115,4 +115,4 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_APP_LIST_VIEW_H_
+#endif  // UI_APP_LIST_VIEWS_APP_LIST_VIEW_H_

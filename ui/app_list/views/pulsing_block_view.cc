@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/pulsing_block_view.h"
+#include "ui/app_list/views/pulsing_block_view.h"
 
 #include <vector>
 
 #include "base/rand_util.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
-#include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/transform_util.h"
 

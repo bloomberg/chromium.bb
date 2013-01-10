@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_PAGE_SWITCHER_H_
-#define UI_APP_LIST_PAGE_SWITCHER_H_
+#ifndef UI_APP_LIST_VIEWS_PAGE_SWITCHER_H_
+#define UI_APP_LIST_VIEWS_PAGE_SWITCHER_H_
 
 #include "base/basictypes.h"
 #include "ui/app_list/pagination_model_observer.h"
@@ -57,4 +57,4 @@ class PageSwitcher : public views::View,
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_PAGE_SWITCHER_H_
+#endif  // UI_APP_LIST_VIEWS_PAGE_SWITCHER_H_

@@ -135,13 +135,17 @@
             'enable_touch_ui%': 1,
           }],
 
-          # Enable App Launcher & Message Center only on ChromeOS and Windows
-          # for now.
-          ['use_ash==1 or OS=="win"', {
+          # Enable App Launcher only on ChromeOS, Windows and OSX.
+          ['use_ash==1 or OS=="win" or OS=="mac"', {
             'enable_app_list%': 1,
-            'enable_message_center%': 1,
           }, {
             'enable_app_list%': 0,
+          }],
+
+          # Enable Message Center only on ChromeOS and Windows for now.
+          ['use_ash==1 or OS=="win"', {
+            'enable_message_center%': 1,
+          }, {
             'enable_message_center%': 0,
           }],
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_SEARCH_RESULT_VIEW_H_
-#define UI_APP_LIST_SEARCH_RESULT_VIEW_H_
+#ifndef UI_APP_LIST_VIEWS_SEARCH_RESULT_VIEW_H_
+#define UI_APP_LIST_VIEWS_SEARCH_RESULT_VIEW_H_
 
 #include <string>
 #include <vector>
@@ -85,4 +85,4 @@ class SearchResultView : public views::CustomButton,
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_SEARCH_RESULT_VIEW_H_
+#endif  // UI_APP_LIST_VIEWS_SEARCH_RESULT_VIEW_H_

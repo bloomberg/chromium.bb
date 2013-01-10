@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_SEARCH_BOX_VIEW_H_
-#define UI_APP_LIST_SEARCH_BOX_VIEW_H_
+#ifndef UI_APP_LIST_VIEWS_SEARCH_BOX_VIEW_H_
+#define UI_APP_LIST_VIEWS_SEARCH_BOX_VIEW_H_
 
 #include <string>
 
 #include "ui/app_list/search_box_model_observer.h"
-#include "ui/views/view.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/view.h"
 
 namespace views {
 class ImageView;
@@ -76,5 +76,4 @@ class SearchBoxView : public views::View,
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_SEARCH_BOX_VIEW_H_
-
+#endif  // UI_APP_LIST_VIEWS_SEARCH_BOX_VIEW_H_

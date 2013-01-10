@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/app_list_item_view.h"
+#include "ui/app_list/views/app_list_item_view.h"
 
 #include <algorithm>
 
 #include "base/utf_string_conversions.h"
 #include "ui/app_list/app_list_item_model.h"
-#include "ui/app_list/apps_grid_view.h"
+#include "ui/app_list/views/apps_grid_view.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"

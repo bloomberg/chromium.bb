@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/apps_grid_view.h"
+#include "ui/app_list/views/apps_grid_view.h"
 
 #include <algorithm>
 
-#include "ui/app_list/app_list_item_view.h"
 #include "ui/app_list/apps_grid_view_delegate.h"
-#include "ui/app_list/page_switcher.h"
 #include "ui/app_list/pagination_model.h"
-#include "ui/app_list/pulsing_block_view.h"
+#include "ui/app_list/views/app_list_item_view.h"
+#include "ui/app_list/views/page_switcher.h"
+#include "ui/app_list/views/pulsing_block_view.h"
 #include "ui/base/animation/animation.h"
 #include "ui/base/events/event.h"
 #include "ui/views/border.h"

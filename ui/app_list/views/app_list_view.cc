@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/app_list_view.h"
+#include "ui/app_list/views/app_list_view.h"
 
 #include <algorithm>
 
 #include "base/string_util.h"
-#include "ui/app_list/app_list_background.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_model.h"
-#include "ui/app_list/app_list_item_view.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
-#include "ui/app_list/contents_view.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/search_box_model.h"
-#include "ui/app_list/search_box_view.h"
+#include "ui/app_list/views/app_list_background.h"
+#include "ui/app_list/views/app_list_item_view.h"
+#include "ui/app_list/views/contents_view.h"
+#include "ui/app_list/views/search_box_view.h"
 #include "ui/base/events/event.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/path.h"

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/search_result_list_view.h"
+#include "ui/app_list/views/search_result_list_view.h"
 
 #include <algorithm>
 
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "ui/app_list/search_result_list_view_delegate.h"
-#include "ui/app_list/search_result_view.h"
+#include "ui/app_list/views/search_result_view.h"
 #include "ui/base/events/event.h"
 #include "ui/views/layout/box_layout.h"
 

@@ -297,6 +297,7 @@
         'browser/ui/cocoa/animatable_image.mm',
         'browser/ui/cocoa/animatable_view.h',
         'browser/ui/cocoa/animatable_view.mm',
+        'browser/ui/cocoa/app_list/app_list_controller_cocoa.mm',
         'browser/ui/cocoa/applescript/apple_event_util.h',
         'browser/ui/cocoa/applescript/apple_event_util.mm',
         'browser/ui/cocoa/applescript/bookmark_folder_applescript.h',
