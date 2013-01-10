@@ -367,7 +367,13 @@ void BluetoothDeviceChromeOs::OnCreateDeviceError(
     const ConnectErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
+  // The default |error_code| is an unknown error.
   ConnectErrorCode error_code = ERROR_UNKNOWN;
+
+  // Report any error in the log, even if we know the possible source of it.
+  LOG(WARNING) << "Connection failed (on CreatePairedDevice): "
+               << "\"" << name_ << "\" (" << address_ << "): "
+               << error_name << ": \"" << error_message << "\"";
 
   // Determines the right error code from error_name, assuming the error name
   // comes from CreatePairedDevice bluez function.
@@ -379,10 +385,6 @@ void BluetoothDeviceChromeOs::OnCreateDeviceError(
     error_code = ERROR_AUTH_REJECTED;
   } else if (error_name == bluetooth_adapter::kErrorAuthenticationTimeout) {
     error_code = ERROR_AUTH_TIMEOUT;
-  } else {
-    // Another unknown error was returned by bluez, report it in the log.
-    LOG(WARNING) << "Connection failed (on CreatePairedDevice): " << address_
-                 << ": " << error_name << ": " << error_message;
   }
   error_callback.Run(error_code);
 }
@@ -503,7 +505,14 @@ void BluetoothDeviceChromeOs::OnConnectError(
     const dbus::ObjectPath& device_path,
     const std::string& error_name,
     const std::string& error_message) {
+  // The default |error_code| is an unknown error.
   ConnectErrorCode error_code = ERROR_UNKNOWN;
+
+  // Report any error in the log, even if we know the possible source of it.
+  LOG(WARNING) << "Connection failed (on Connect): "
+               << interface_name << ": "
+               << "\"" << name_ << "\" (" << address_ << "): "
+               << error_name << ": \"" << error_message << "\"";
 
   // Determines the right error code from error_name, assuming the error name
   // comes from Connect bluez function.
@@ -513,11 +522,6 @@ void BluetoothDeviceChromeOs::OnConnectError(
     error_code = ERROR_INPROGRESS;
   } else if (error_name == bluetooth_adapter::kErrorNotSupported) {
     error_code = ERROR_UNSUPPORTED_DEVICE;
-  } else {
-    // Another unknown error was returned by bluez, report it in the log.
-    LOG(WARNING) << "Connection failed (on Connect): " << address_
-                 << ": " << interface_name
-                 << ": " << error_name << ": " << error_message;
   }
 
   error_callback.Run(error_code);
