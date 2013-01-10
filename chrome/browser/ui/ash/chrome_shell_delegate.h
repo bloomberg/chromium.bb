@@ -61,7 +61,9 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual void ToggleSpokenFeedback(
       ash::AccessibilityNotificationVisibility notify) OVERRIDE;
   virtual bool IsHighContrastEnabled() const OVERRIDE;
-  virtual void SetMagnifier(ash::MagnifierType type) OVERRIDE;
+  virtual void SetMagnifierEnabled(bool enabled) OVERRIDE;
+  virtual void SetMagnifierType(ash::MagnifierType type) OVERRIDE;
+  virtual bool IsMagnifierEnabled() const OVERRIDE;
   virtual ash::MagnifierType GetMagnifierType() const OVERRIDE;
   virtual bool ShouldAlwaysShowAccessibilityMenu() const OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;

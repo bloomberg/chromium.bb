@@ -149,10 +149,8 @@ void CoreOobeHandler::HandleEnableScreenMagnifier(const base::ListValue* args) {
     return;
   }
   // TODO(nkostylev): Add support for partial screen magnifier.
-  ash::MagnifierType type = enabled ? ash::MAGNIFIER_FULL :
-                                      ash::MAGNIFIER_OFF;
   DCHECK(MagnificationManager::Get());
-  MagnificationManager::Get()->SetMagnifier(type);
+  MagnificationManager::Get()->SetMagnifierEnabled(enabled);
 }
 
 void CoreOobeHandler::HandleEnableSpokenFeedback(const base::ListValue* args) {
@@ -173,15 +171,13 @@ void CoreOobeHandler::ShowOobeUI(bool show) {
 
 void CoreOobeHandler::UpdateA11yState() {
   DCHECK(MagnificationManager::Get());
-  ash::MagnifierType type = MagnificationManager::Get()->GetMagnifierType();
-
   base::DictionaryValue a11y_info;
   a11y_info.SetBoolean("highContrastEnabled",
                        accessibility::IsHighContrastEnabled());
   a11y_info.SetBoolean("spokenFeedbackEnabled",
                        accessibility::IsSpokenFeedbackEnabled());
   a11y_info.SetBoolean("screenMagnifierEnabled",
-                       type != ash::MAGNIFIER_OFF);
+                       MagnificationManager::Get()->IsMagnifierEnabled());
   web_ui()->CallJavascriptFunction("cr.ui.Oobe.refreshA11yInfo", a11y_info);
 }
 

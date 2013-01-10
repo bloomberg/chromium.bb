@@ -271,6 +271,7 @@ extern const char kLanguageXkbAutoRepeatInterval[];
 extern const char kSpokenFeedbackEnabled[];
 extern const char kHighContrastEnabled[];
 extern const char kScreenMagnifierEnabled[];
+extern const char kScreenMagnifierType[];
 extern const char kScreenMagnifierScale[];
 extern const char kVirtualKeyboardEnabled[];
 extern const char kShouldAlwaysShowAccessibilityMenu[];

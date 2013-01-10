@@ -25,7 +25,8 @@ ShellDelegateImpl::ShellDelegateImpl()
       locked_(false),
       spoken_feedback_enabled_(false),
       high_contrast_enabled_(false),
-      screen_magnifier_type_(MAGNIFIER_OFF) {
+      screen_magnifier_enabled_(false),
+      screen_magnifier_type_(kDefaultMagnifierType) {
 }
 
 ShellDelegateImpl::~ShellDelegateImpl() {
@@ -134,8 +135,16 @@ bool ShellDelegateImpl::IsHighContrastEnabled() const {
   return high_contrast_enabled_;
 }
 
-void ShellDelegateImpl::SetMagnifier(MagnifierType type) {
+void ShellDelegateImpl::SetMagnifierEnabled(bool enabled) {
+  screen_magnifier_enabled_ = enabled;
+}
+
+void ShellDelegateImpl::SetMagnifierType(MagnifierType type) {
   screen_magnifier_type_ = type;
+}
+
+bool ShellDelegateImpl::IsMagnifierEnabled() const {
+  return screen_magnifier_enabled_;
 }
 
 MagnifierType ShellDelegateImpl::GetMagnifierType() const {

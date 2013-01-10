@@ -355,19 +355,35 @@ void ChromeShellDelegate::ToggleHighContrast() {
 #endif
 }
 
+bool ChromeShellDelegate::IsMagnifierEnabled() const {
+#if defined(OS_CHROMEOS)
+  DCHECK(chromeos::MagnificationManager::Get());
+  return chromeos::MagnificationManager::Get()->IsMagnifierEnabled();
+#else
+  return false;
+#endif
+}
+
 ash::MagnifierType ChromeShellDelegate::GetMagnifierType() const {
 #if defined(OS_CHROMEOS)
   DCHECK(chromeos::MagnificationManager::Get());
   return chromeos::MagnificationManager::Get()->GetMagnifierType();
 #else
-  return ash::MAGNIFIER_OFF;
+  return ash::kDefaultMagnifierType;
 #endif
 }
 
-void ChromeShellDelegate::SetMagnifier(ash::MagnifierType type) {
+void ChromeShellDelegate::SetMagnifierEnabled(bool enabled) {
 #if defined(OS_CHROMEOS)
   DCHECK(chromeos::MagnificationManager::Get());
-  return chromeos::MagnificationManager::Get()->SetMagnifier(type);
+  return chromeos::MagnificationManager::Get()->SetMagnifierEnabled(enabled);
+#endif
+}
+
+void ChromeShellDelegate::SetMagnifierType(ash::MagnifierType type) {
+#if defined(OS_CHROMEOS)
+  DCHECK(chromeos::MagnificationManager::Get());
+  return chromeos::MagnificationManager::Get()->SetMagnifierType(type);
 #endif
 }
 
