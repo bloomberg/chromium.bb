@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api_constants.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
+#include "chrome/common/extensions/api/speech/tts_engine_manifest_handler.h"
 #include "chrome/common/extensions/extension.h"
 
 using extensions::Extension;
@@ -55,10 +56,13 @@ void GetExtensionVoices(Profile* profile, ListValue* result_voices) {
       continue;
     }
 
-    const std::vector<Extension::TtsVoice>& tts_voices =
-        extension->tts_voices();
-    for (size_t i = 0; i < tts_voices.size(); ++i) {
-      const Extension::TtsVoice& voice = tts_voices[i];
+    const std::vector<extensions::TtsVoice>* tts_voices =
+        extensions::TtsVoice::GetTtsVoices(extension);
+    if (!tts_voices)
+      continue;
+
+    for (size_t i = 0; i < tts_voices->size(); ++i) {
+      const extensions::TtsVoice& voice = tts_voices->at(i);
       DictionaryValue* result_voice = new DictionaryValue();
       if (!voice.voice_name.empty())
         result_voice->SetString(constants::kVoiceNameKey, voice.voice_name);
@@ -135,10 +139,13 @@ bool GetMatchingExtensionVoice(
         continue;
       }
 
-      const std::vector<Extension::TtsVoice>& tts_voices =
-          extension->tts_voices();
-      for (size_t i = 0; i < tts_voices.size(); ++i) {
-        const Extension::TtsVoice& voice = tts_voices[i];
+      const std::vector<extensions::TtsVoice>* tts_voices =
+          extensions::TtsVoice::GetTtsVoices(extension);
+      if (!tts_voices)
+        continue;
+
+      for (size_t i = 0; i < tts_voices->size(); ++i) {
+        const extensions::TtsVoice& voice = tts_voices->at(i);
         if (!voice.voice_name.empty() &&
             !utterance->voice_name().empty() &&
             voice.voice_name != utterance->voice_name()) {
@@ -190,8 +197,12 @@ void ExtensionTtsEngineSpeak(Utterance* utterance,
   // See if the engine supports the "end" event; if so, we can keep the
   // utterance around and track it. If not, we're finished with this
   // utterance now.
-  const std::set<std::string> event_types =
-      extension->tts_voices()[voice_index].event_types;
+  const std::vector<extensions::TtsVoice>* tts_voices =
+      extensions::TtsVoice::GetTtsVoices(extension);
+  std::set<std::string> event_types;
+  if (tts_voices)
+    event_types = tts_voices->at(voice_index).event_types;
+
   bool sends_end_event =
       (event_types.find(constants::kEventTypeEnd) != event_types.end());
 
@@ -255,8 +266,15 @@ bool ExtensionTtsEngineSendTtsEventFunction::RunImpl() {
   // Make sure the extension has included this event type in its manifest.
   bool event_type_allowed = false;
   const Extension* extension = GetExtension();
-  for (size_t i = 0; i < extension->tts_voices().size(); i++) {
-    const Extension::TtsVoice& voice = extension->tts_voices()[i];
+  const std::vector<extensions::TtsVoice>* tts_voices =
+      extensions::TtsVoice::GetTtsVoices(extension);
+  if (!tts_voices) {
+    error_ = constants::kErrorUndeclaredEventType;
+    return false;
+  }
+
+  for (size_t i = 0; i < tts_voices->size(); i++) {
+    const extensions::TtsVoice& voice = tts_voices->at(i);
     if (voice.event_types.find(event_type) != voice.event_types.end()) {
       event_type_allowed = true;
       break;

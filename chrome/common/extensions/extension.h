@@ -175,17 +175,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     std::string mime_type;
   };
 
-  struct TtsVoice {
-    // Define out of line constructor/destructor to please Clang.
-    TtsVoice();
-    ~TtsVoice();
-
-    std::string voice_name;
-    std::string lang;
-    std::string gender;
-    std::set<std::string> event_types;
-  };
-
   // OAuth2 info included in the extension.
   struct OAuth2Info {
     OAuth2Info();
@@ -742,7 +731,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   }
   bool incognito_split_mode() const { return incognito_split_mode_; }
   bool offline_enabled() const { return offline_enabled_; }
-  const std::vector<TtsVoice>& tts_voices() const { return tts_voices_; }
   const OAuth2Info& oauth2_info() const { return oauth2_info_; }
   const std::vector<webkit_glue::WebIntentServiceData>&
       intents_services() const {
@@ -1208,9 +1196,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Should this app be shown in the browser New Tab Page.
   bool display_in_new_tab_page_;
-
-  // List of text-to-speech voices that this extension provides, if any.
-  std::vector<TtsVoice> tts_voices_;
 
   // The OAuth2 client id and scopes, if specified by the extension.
   OAuth2Info oauth2_info_;

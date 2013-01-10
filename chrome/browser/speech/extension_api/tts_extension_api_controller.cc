@@ -17,6 +17,7 @@
 #include "chrome/browser/speech/extension_api/tts_extension_api_constants.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api_platform.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
+#include "chrome/common/extensions/api/speech/tts_engine_manifest_handler.h"
 #include "chrome/common/extensions/extension.h"
 
 namespace constants = tts_extension_api_constants;
@@ -180,8 +181,11 @@ void ExtensionTtsController::SpeakNow(Utterance* utterance) {
 
     ExtensionTtsEngineSpeak(utterance, extension, voice_index);
 
-    const std::set<std::string> event_types =
-        extension->tts_voices()[voice_index].event_types;
+    const std::vector<extensions::TtsVoice>* tts_voices =
+        extensions::TtsVoice::GetTtsVoices(extension);
+    std::set<std::string> event_types;
+    if (tts_voices)
+      event_types = tts_voices->at(voice_index).event_types;
     bool sends_end_event =
         (event_types.find(constants::kEventTypeEnd) != event_types.end());
     if (!sends_end_event) {

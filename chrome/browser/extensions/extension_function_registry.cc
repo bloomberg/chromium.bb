@@ -27,8 +27,6 @@
 #include "chrome/browser/extensions/system/system_api.h"
 #include "chrome/browser/infobars/infobar_extension_api.h"
 #include "chrome/browser/rlz/rlz_extension_api.h"
-#include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
-#include "chrome/browser/speech/extension_api/tts_extension_api.h"
 #include "chrome/browser/speech/speech_input_extension_api.h"
 #include "chrome/common/extensions/api/generated_api.h"
 
@@ -159,13 +157,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<GetFocusedControlFunction>();
   RegisterFunction<SetAccessibilityEnabledFunction>();
   RegisterFunction<GetAlertsForTabFunction>();
-
-  // Text-to-speech.
-  RegisterFunction<ExtensionTtsEngineSendTtsEventFunction>();
-  RegisterFunction<ExtensionTtsGetVoicesFunction>();
-  RegisterFunction<ExtensionTtsIsSpeakingFunction>();
-  RegisterFunction<ExtensionTtsSpeakFunction>();
-  RegisterFunction<ExtensionTtsStopSpeakingFunction>();
 
   // Commands.
   RegisterFunction<GetAllCommandsFunction>();

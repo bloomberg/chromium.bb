@@ -132,6 +132,8 @@
         'common/extensions/api/input_ime/input_components_handler.h',
         'common/extensions/api/omnibox/omnibox_handler.cc',
         'common/extensions/api/omnibox/omnibox_handler.h',
+        'common/extensions/api/speech/tts_engine_manifest_handler.cc',
+        'common/extensions/api/speech/tts_engine_manifest_handler.h',
         'common/extensions/command.cc',
         'common/extensions/command.h',
         'common/extensions/csp_validator.cc',

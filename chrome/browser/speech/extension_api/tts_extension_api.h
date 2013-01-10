@@ -7,36 +7,64 @@
 
 #include <string>
 
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
 
-class ExtensionTtsSpeakFunction
+class Profile;
+
+namespace extensions {
+
+class TtsSpeakFunction
     : public AsyncExtensionFunction {
  private:
-  virtual ~ExtensionTtsSpeakFunction() {}
+  virtual ~TtsSpeakFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("tts.speak")
 };
 
-class ExtensionTtsStopSpeakingFunction : public SyncExtensionFunction {
+class TtsStopSpeakingFunction : public SyncExtensionFunction {
  private:
-  virtual ~ExtensionTtsStopSpeakingFunction() {}
+  virtual ~TtsStopSpeakingFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("tts.stop")
 };
 
-class ExtensionTtsIsSpeakingFunction : public SyncExtensionFunction {
+class TtsIsSpeakingFunction : public SyncExtensionFunction {
  private:
-  virtual ~ExtensionTtsIsSpeakingFunction() {}
+  virtual ~TtsIsSpeakingFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("tts.isSpeaking")
 };
 
-class ExtensionTtsGetVoicesFunction : public SyncExtensionFunction {
+class TtsGetVoicesFunction : public SyncExtensionFunction {
  private:
-  virtual ~ExtensionTtsGetVoicesFunction() {}
+  virtual ~TtsGetVoicesFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("tts.getVoices")
 };
+
+class TtsAPI : public ProfileKeyedAPI {
+ public:
+  explicit TtsAPI(Profile* profile);
+  virtual ~TtsAPI();
+
+  // Convenience method to get the TtsAPI for a profile.
+  static TtsAPI* Get(Profile* profile);
+
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<TtsAPI>* GetFactoryInstance();
+
+ private:
+  friend class ProfileKeyedAPIFactory<TtsAPI>;
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() {
+    return "TtsAPI";
+  }
+  static const bool kServiceIsNULLWhileTesting = true;
+};
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_SPEECH_EXTENSION_API_TTS_EXTENSION_API_H_
