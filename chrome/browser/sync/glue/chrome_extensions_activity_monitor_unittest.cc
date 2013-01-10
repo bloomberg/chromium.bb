@@ -8,7 +8,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
+#include "chrome/browser/extensions/api/bookmarks/bookmark_api.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
@@ -86,20 +86,18 @@ class SyncChromeExtensionsActivityMonitorTest : public testing::Test {
 // 2.  Only the mutating events should be recorded by the
 // syncer::ExtensionsActivityMonitor.
 TEST_F(SyncChromeExtensionsActivityMonitorTest, Basic) {
-  FireBookmarksApiEvent<extensions::BookmarksRemoveFunction>(extension1_, 1);
-  FireBookmarksApiEvent<extensions::BookmarksMoveFunction>(extension1_, 1);
-  FireBookmarksApiEvent<extensions::BookmarksUpdateFunction>(extension1_, 2);
-  FireBookmarksApiEvent<extensions::BookmarksCreateFunction>(extension1_, 3);
-  FireBookmarksApiEvent<extensions::BookmarksSearchFunction>(extension1_, 5);
+  FireBookmarksApiEvent<extensions::RemoveBookmarkFunction>(extension1_, 1);
+  FireBookmarksApiEvent<extensions::MoveBookmarkFunction>(extension1_, 1);
+  FireBookmarksApiEvent<extensions::UpdateBookmarkFunction>(extension1_, 2);
+  FireBookmarksApiEvent<extensions::CreateBookmarkFunction>(extension1_, 3);
+  FireBookmarksApiEvent<extensions::SearchBookmarksFunction>(extension1_, 5);
   const uint32 writes_by_extension1 = 1 + 1 + 2 + 3;
 
-  FireBookmarksApiEvent<extensions::BookmarksRemoveTreeFunction>(
-      extension2_, 8);
-  FireBookmarksApiEvent<extensions::BookmarksGetSubTreeFunction>(
-      extension2_, 13);
-  FireBookmarksApiEvent<extensions::BookmarksGetChildrenFunction>(
+  FireBookmarksApiEvent<extensions::RemoveTreeBookmarkFunction>(extension2_, 8);
+  FireBookmarksApiEvent<extensions::GetBookmarkTreeFunction>(extension2_, 13);
+  FireBookmarksApiEvent<extensions::GetBookmarkChildrenFunction>(
       extension2_, 21);
-  FireBookmarksApiEvent<extensions::BookmarksGetTreeFunction>(extension2_, 33);
+  FireBookmarksApiEvent<extensions::GetBookmarksFunction>(extension2_, 33);
   const uint32 writes_by_extension2 = 8;
 
   syncer::ExtensionsActivityMonitor::Records results;
@@ -117,8 +115,8 @@ TEST_F(SyncChromeExtensionsActivityMonitorTest, Basic) {
 // and put the old records back.  Those should be merged with the new
 // records correctly.
 TEST_F(SyncChromeExtensionsActivityMonitorTest, Put) {
-  FireBookmarksApiEvent<extensions::BookmarksCreateFunction>(extension1_, 5);
-  FireBookmarksApiEvent<extensions::BookmarksMoveFunction>(extension2_, 8);
+  FireBookmarksApiEvent<extensions::CreateBookmarkFunction>(extension1_, 5);
+  FireBookmarksApiEvent<extensions::MoveBookmarkFunction>(extension2_, 8);
 
   syncer::ExtensionsActivityMonitor::Records results;
   monitor_.GetAndClearRecords(&results);
@@ -127,8 +125,8 @@ TEST_F(SyncChromeExtensionsActivityMonitorTest, Put) {
   EXPECT_EQ(5U, results[id1_].bookmark_write_count);
   EXPECT_EQ(8U, results[id2_].bookmark_write_count);
 
-  FireBookmarksApiEvent<extensions::BookmarksGetTreeFunction>(extension2_, 3);
-  FireBookmarksApiEvent<extensions::BookmarksUpdateFunction>(extension2_, 2);
+  FireBookmarksApiEvent<extensions::GetBookmarksFunction>(extension2_, 3);
+  FireBookmarksApiEvent<extensions::UpdateBookmarkFunction>(extension2_, 2);
 
   // Simulate a commit failure, which augments the active record set with the
   // refugee records.
@@ -147,7 +145,7 @@ TEST_F(SyncChromeExtensionsActivityMonitorTest, Put) {
 // times.  The mintor should correctly clear its records every time
 // they're returned.
 TEST_F(SyncChromeExtensionsActivityMonitorTest, MultiGet) {
-  FireBookmarksApiEvent<extensions::BookmarksCreateFunction>(extension1_, 5);
+  FireBookmarksApiEvent<extensions::CreateBookmarkFunction>(extension1_, 5);
 
   syncer::ExtensionsActivityMonitor::Records results;
   monitor_.GetAndClearRecords(&results);
@@ -158,7 +156,7 @@ TEST_F(SyncChromeExtensionsActivityMonitorTest, MultiGet) {
   monitor_.GetAndClearRecords(&results);
   EXPECT_TRUE(results.empty());
 
-  FireBookmarksApiEvent<extensions::BookmarksCreateFunction>(extension1_, 3);
+  FireBookmarksApiEvent<extensions::CreateBookmarkFunction>(extension1_, 3);
   monitor_.GetAndClearRecords(&results);
 
   EXPECT_EQ(1U, results.size());

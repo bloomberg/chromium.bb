@@ -152,16 +152,16 @@ const ProcessStrategy &RunPageCyclerFunction::GetProcessStrategy() {
   return *process_strategy_;
 }
 
-// RecordCaptureURLsFunction  ------------------------------------------------
+// CaptureURLsFunction  ------------------------------------------------
 
-RecordCaptureURLsFunction::RecordCaptureURLsFunction()
+CaptureURLsFunction::CaptureURLsFunction()
     : RunPageCyclerFunction(new ProductionProcessStrategy()) {}
 
-RecordCaptureURLsFunction::RecordCaptureURLsFunction(ProcessStrategy* strategy)
+CaptureURLsFunction::CaptureURLsFunction(ProcessStrategy* strategy)
     : RunPageCyclerFunction(strategy) {}
 
 // Fetch data for possible optional switch for an extension to load.
-bool RecordCaptureURLsFunction::ParseJSParameters() {
+bool CaptureURLsFunction::ParseJSParameters() {
   scoped_ptr<record::CaptureURLs::Params> params(
       record::CaptureURLs::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -174,34 +174,34 @@ bool RecordCaptureURLsFunction::ParseJSParameters() {
   return true;
 }
 
-// RecordCaptureURLsFunction adds "record-mode" to sub-browser call, and returns
+// CaptureURLsFunction adds "record-mode" to sub-browser call, and returns
 // just the (possibly empty) error list.
-void RecordCaptureURLsFunction::AddSwitches(CommandLine* line) {
+void CaptureURLsFunction::AddSwitches(CommandLine* line) {
   if (!line->HasSwitch(switches::kRecordMode))
     line->AppendSwitch(switches::kRecordMode);
 }
 
-void RecordCaptureURLsFunction::Finish() {
+void CaptureURLsFunction::Finish() {
   results_ = record::CaptureURLs::Results::Create(errors_);
   SendResponse(true);
 }
 
-// RecordReplayURLsFunction ------------------------------------------------
+// ReplayURLsFunction ------------------------------------------------
 
-RecordReplayURLsFunction::RecordReplayURLsFunction()
+ReplayURLsFunction::ReplayURLsFunction()
     : RunPageCyclerFunction(new ProductionProcessStrategy()),
     run_time_ms_(0.0) {
 }
 
-RecordReplayURLsFunction::RecordReplayURLsFunction(ProcessStrategy* strategy)
+ReplayURLsFunction::ReplayURLsFunction(ProcessStrategy* strategy)
     : RunPageCyclerFunction(strategy), run_time_ms_(0.0) {
 }
 
-RecordReplayURLsFunction::~RecordReplayURLsFunction() {}
+ReplayURLsFunction::~ReplayURLsFunction() {}
 
 // Fetch data for possible optional switches for a repeat count and an
 // extension to load.
-bool RecordReplayURLsFunction::ParseJSParameters() {
+bool ReplayURLsFunction::ParseJSParameters() {
   scoped_ptr<record::ReplayURLs::Params> params(
       record::ReplayURLs::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -228,7 +228,7 @@ bool RecordReplayURLsFunction::ParseJSParameters() {
 // plus temp file into which to place stats. (Can't do this in
 // ParseJSParameters because file creation can't go on the UI thread.)
 // Plus, initialize time to create run time statistic.
-void RecordReplayURLsFunction::AddSwitches(CommandLine* line) {
+void ReplayURLsFunction::AddSwitches(CommandLine* line) {
   file_util::CreateTemporaryFile(&stats_file_path_);
 
   if (!extension_path_.empty())
@@ -240,13 +240,13 @@ void RecordReplayURLsFunction::AddSwitches(CommandLine* line) {
 }
 
 // Read stats file, and get run time.
-void RecordReplayURLsFunction::ReadReplyFiles() {
+void ReplayURLsFunction::ReadReplyFiles() {
   file_util::ReadFileToString(stats_file_path_, &stats_);
 
   run_time_ms_ = (base::Time::NowFromSystemTime() - timer_).InMillisecondsF();
 }
 
-void RecordReplayURLsFunction::Finish() {
+void ReplayURLsFunction::Finish() {
   record::ReplayURLsResult result;
 
   result.run_time = run_time_ms_;

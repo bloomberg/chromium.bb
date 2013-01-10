@@ -31,16 +31,14 @@ CloudPrintTestsDelegate::~CloudPrintTestsDelegate() {
   instance_ = NULL;
 }
 
-CloudPrintPrivateSetupConnectorFunction::
-    CloudPrintPrivateSetupConnectorFunction() {
+CloudPrintSetupConnectorFunction::CloudPrintSetupConnectorFunction() {
 }
 
-CloudPrintPrivateSetupConnectorFunction::
-    ~CloudPrintPrivateSetupConnectorFunction() {
+CloudPrintSetupConnectorFunction::~CloudPrintSetupConnectorFunction() {
 }
 
 
-bool CloudPrintPrivateSetupConnectorFunction::RunImpl() {
+bool CloudPrintSetupConnectorFunction::RunImpl() {
   using extensions::api::cloud_print_private::SetupConnector::Params;
   scoped_ptr<Params> params(Params::Create(*args_));
   if (CloudPrintTestsDelegate::instance()) {
@@ -62,13 +60,13 @@ bool CloudPrintPrivateSetupConnectorFunction::RunImpl() {
   return true;
 }
 
-CloudPrintPrivateGetHostNameFunction::CloudPrintPrivateGetHostNameFunction() {
+CloudPrintGetHostNameFunction::CloudPrintGetHostNameFunction() {
 }
 
-CloudPrintPrivateGetHostNameFunction::~CloudPrintPrivateGetHostNameFunction() {
+CloudPrintGetHostNameFunction::~CloudPrintGetHostNameFunction() {
 }
 
-bool CloudPrintPrivateGetHostNameFunction::RunImpl() {
+bool CloudPrintGetHostNameFunction::RunImpl() {
   SetResult(Value::CreateStringValue(
       CloudPrintTestsDelegate::instance() ?
       CloudPrintTestsDelegate::instance()->GetHostName() :
@@ -77,19 +75,19 @@ bool CloudPrintPrivateGetHostNameFunction::RunImpl() {
   return true;
 }
 
-CloudPrintPrivateGetPrintersFunction::CloudPrintPrivateGetPrintersFunction() {
+CloudPrintGetPrintersFunction::CloudPrintGetPrintersFunction() {
 }
 
-CloudPrintPrivateGetPrintersFunction::~CloudPrintPrivateGetPrintersFunction() {
+CloudPrintGetPrintersFunction::~CloudPrintGetPrintersFunction() {
 }
 
-void CloudPrintPrivateGetPrintersFunction::ReturnResult(
+void CloudPrintGetPrintersFunction::ReturnResult(
     const base::ListValue* printers) {
   SetResult(printers->DeepCopy());
   SendResponse(true);
 }
 
-void CloudPrintPrivateGetPrintersFunction::CollectPrinters() {
+void CloudPrintGetPrintersFunction::CollectPrinters() {
   scoped_ptr<base::ListValue> result(new base::ListValue());
   if (CloudPrintTestsDelegate::instance()) {
     std::vector<std::string> printers =
@@ -106,14 +104,14 @@ void CloudPrintPrivateGetPrintersFunction::CollectPrinters() {
       result->Append(Value::CreateStringValue(printers[i].printer_name));
   }
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&CloudPrintPrivateGetPrintersFunction::ReturnResult, this,
+      base::Bind(&CloudPrintGetPrintersFunction::ReturnResult, this,
                  base::Owned(result.release())));
 }
 
 
-bool CloudPrintPrivateGetPrintersFunction::RunImpl() {
+bool CloudPrintGetPrintersFunction::RunImpl() {
   content::BrowserThread::GetBlockingPool()->PostTask(FROM_HERE,
-      base::Bind(&CloudPrintPrivateGetPrintersFunction::CollectPrinters, this));
+      base::Bind(&CloudPrintGetPrintersFunction::CollectPrinters, this));
   return true;
 }
 
