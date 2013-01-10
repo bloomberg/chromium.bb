@@ -7,15 +7,11 @@
 
 namespace ash {
 
-// Note: Do not change these values; UMA and prefs depend on them.
 enum MagnifierType {
-  MAGNIFIER_FULL    = 1,
-  MAGNIFIER_PARTIAL = 2,
+  MAGNIFIER_OFF,
+  MAGNIFIER_FULL,
+  MAGNIFIER_PARTIAL,
 };
-
-const int kMaxMagnifierType = 2;
-
-const MagnifierType kDefaultMagnifierType = MAGNIFIER_FULL;
 
 }  // namespace ash
 

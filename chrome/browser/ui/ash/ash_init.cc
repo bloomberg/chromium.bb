@@ -96,14 +96,12 @@ void OpenAsh() {
       chromeos::accessibility::IsHighContrastEnabled());
 
   DCHECK(chromeos::MagnificationManager::Get());
-  bool magnifier_enabled =
-      chromeos::MagnificationManager::Get()->IsMagnifierEnabled();
   ash::MagnifierType magnifier_type =
       chromeos::MagnificationManager::Get()->GetMagnifierType();
-  ash::Shell::GetInstance()->magnification_controller()->
-      SetEnabled(magnifier_enabled && magnifier_type == ash::MAGNIFIER_FULL);
-  ash::Shell::GetInstance()->partial_magnification_controller()->
-      SetEnabled(magnifier_enabled && magnifier_type == ash::MAGNIFIER_PARTIAL);
+  ash::Shell::GetInstance()->magnification_controller()->SetEnabled(
+      magnifier_type == ash::MAGNIFIER_FULL);
+  ash::Shell::GetInstance()->partial_magnification_controller()->SetEnabled(
+      magnifier_type == ash::MAGNIFIER_PARTIAL);
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableZeroBrowsersOpenForTests)) {

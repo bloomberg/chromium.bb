@@ -44,7 +44,7 @@ uint32 GetAccessibilityState() {
     state |= A11Y_SPOKEN_FEEDBACK;
   if (shell_delegate->IsHighContrastEnabled())
     state |= A11Y_HIGH_CONTRAST;
-  if (shell_delegate->IsMagnifierEnabled())
+  if (shell_delegate->GetMagnifierType() != ash::MAGNIFIER_OFF)
     state |= A11Y_SCREEN_MAGNIFIER;
   return state;
 }
@@ -138,7 +138,8 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGH_CONTRAST_MODE),
       high_contrast_enabled_ ? gfx::Font::BOLD : gfx::Font::NORMAL,
       high_contrast_enabled_);
-  screen_magnifier_enabled_ = shell_delegate->IsMagnifierEnabled();
+  screen_magnifier_enabled_ =
+      shell_delegate->GetMagnifierType() == ash::MAGNIFIER_FULL;
   screen_magnifier_view_ = AddScrollListItem(
       bundle.GetLocalizedString(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SCREEN_MAGNIFIER),
@@ -197,7 +198,10 @@ void AccessibilityDetailedView::ClickedOn(views::View* sender) {
   } else if (sender == high_contrast_view_) {
     shell_delegate->ToggleHighContrast();
   } else if (sender == screen_magnifier_view_) {
-    shell_delegate->SetMagnifierEnabled(!shell_delegate->IsMagnifierEnabled());
+    bool screen_magnifier_enabled =
+        shell_delegate->GetMagnifierType() == ash::MAGNIFIER_FULL;
+    shell_delegate->SetMagnifier(
+        screen_magnifier_enabled ? ash::MAGNIFIER_OFF : ash::MAGNIFIER_FULL);
   }
 }
 

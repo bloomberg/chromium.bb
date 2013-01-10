@@ -111,7 +111,6 @@ class Preferences : public PrefServiceObserver {
   BooleanPrefMember vert_edge_scroll_enabled_;
   BooleanPrefMember accessibility_enabled_;
   BooleanPrefMember screen_magnifier_enabled_;
-  IntegerPrefMember screen_magnifier_type_;
   DoublePrefMember screen_magnifier_scale_;
   IntegerPrefMember speed_factor_;
   IntegerPrefMember mouse_sensitivity_;

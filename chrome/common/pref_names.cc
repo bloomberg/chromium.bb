@@ -743,10 +743,6 @@ const char kSpokenFeedbackEnabled[] = "settings.accessibility";
 const char kHighContrastEnabled[] = "settings.a11y.high_contrast_enabled";
 // A boolean pref which determines whether screen magnifier is enabled.
 const char kScreenMagnifierEnabled[] = "settings.a11y.screen_magnifier";
-// A integer pref which determines what type of screen magnifier is enabled.
-// Note that: 'screen_magnifier_type' had been used as string pref. Hence,
-// we are using another name pref here.
-const char kScreenMagnifierType[] = "settings.a11y.screen_magnifier_type2";
 // A double pref which determines a zooming scale of the screen magnifier.
 const char kScreenMagnifierScale[] = "settings.a11y.screen_magnifier_scale";
 // A boolean pref which determines whether virtual keyboard is enabled.

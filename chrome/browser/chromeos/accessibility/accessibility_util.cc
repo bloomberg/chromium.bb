@@ -50,6 +50,10 @@ using content::RenderViewHost;
 namespace chromeos {
 namespace accessibility {
 
+const char kScreenMagnifierOff[] = "";
+const char kScreenMagnifierFull[] = "full";
+const char kScreenMagnifierPartial[] = "partial";
+
 // Helper class that directly loads an extension's content scripts into
 // all of the frames corresponding to a given RenderViewHost.
 class ContentScriptLoader {
@@ -119,14 +123,10 @@ void UpdateChromeOSAccessibilityHistograms() {
                         IsHighContrastEnabled());
   UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosVirtualKeyboard",
                         IsVirtualKeyboardEnabled());
-  if (MagnificationManager::Get()) {
-    uint32 type = MagnificationManager::Get()->IsMagnifierEnabled() ?
-                      MagnificationManager::Get()->GetMagnifierType() : 0;
-    // '0' means magnifier is disabled.
+  if (MagnificationManager::Get())
     UMA_HISTOGRAM_ENUMERATION("Accessibility.CrosScreenMagnifier",
-                              type,
-                              ash::kMaxMagnifierType + 1);
-  }
+                              MagnificationManager::Get()->GetMagnifierType(),
+                              3);
 }
 
 void Initialize() {
@@ -288,6 +288,27 @@ bool IsVirtualKeyboardEnabled() {
   bool virtual_keyboard_enabled = prefs &&
       prefs->GetBoolean(prefs::kVirtualKeyboardEnabled);
   return virtual_keyboard_enabled;
+}
+
+ash::MagnifierType MagnifierTypeFromName(const char type_name[]) {
+  if (0 == strcmp(type_name, kScreenMagnifierFull))
+    return ash::MAGNIFIER_FULL;
+  else if (0 == strcmp(type_name, kScreenMagnifierPartial))
+    return ash::MAGNIFIER_PARTIAL;
+  else
+    return ash::MAGNIFIER_OFF;
+}
+
+const char* ScreenMagnifierNameFromType(ash::MagnifierType type) {
+  switch (type) {
+    case ash::MAGNIFIER_OFF:
+      return kScreenMagnifierOff;
+    case ash::MAGNIFIER_FULL:
+      return kScreenMagnifierFull;
+    case ash::MAGNIFIER_PARTIAL:
+      return kScreenMagnifierPartial;
+  }
+  return kScreenMagnifierOff;
 }
 
 void MaybeSpeak(const std::string& utterance) {

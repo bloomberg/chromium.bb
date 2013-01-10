@@ -24,19 +24,9 @@ struct AccessibilityStatusEventDetails {
   AccessibilityStatusEventDetails(
       bool enabled, ash::AccessibilityNotificationVisibility notify)
     : enabled(enabled),
-      magnifier_type(ash::kDefaultMagnifierType),
-      notify(notify) {}
-
-  AccessibilityStatusEventDetails(
-      bool enabled,
-      ash::MagnifierType magnifier_type,
-      ash::AccessibilityNotificationVisibility notify)
-    : enabled(enabled),
-      magnifier_type(magnifier_type),
       notify(notify) {}
 
   bool enabled;
-  ash::MagnifierType magnifier_type;
   ash::AccessibilityNotificationVisibility notify;
 };
 
@@ -73,6 +63,12 @@ bool IsHighContrastEnabled();
 
 // Returns true if the Virtual Keyboard is enabled, or false if not.
 bool IsVirtualKeyboardEnabled();
+
+// Translates from a string to MagnifierType.
+ash::MagnifierType MagnifierTypeFromName(const char type_name[]);
+
+// Translates from a MagnifierType to type string.
+const char* ScreenMagnifierNameFromType(ash::MagnifierType type);
 
 // Speaks the given text if the accessibility pref is already set.
 void MaybeSpeak(const std::string& utterance);

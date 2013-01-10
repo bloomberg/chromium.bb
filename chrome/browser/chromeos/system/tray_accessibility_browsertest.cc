@@ -30,8 +30,8 @@
 
 namespace chromeos {
 
-void SetMagnifierEnabled(bool enabled) {
-  MagnificationManager::Get()->SetMagnifierEnabled(enabled);
+namespace {
+  ui::MouseEvent& dummyEvent = *((ui::MouseEvent*)0);
 }
 
 class TrayAccessibilityTest : public CrosInProcessBrowserTest {
@@ -150,13 +150,13 @@ IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, ShowTrayIcon) {
   EXPECT_FALSE(IsTrayIconVisible());
 
   // Toggling magnifier the visibillity of the icon.
-  SetMagnifierEnabled(true);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_FULL);
   EXPECT_TRUE(IsTrayIconVisible());
-  SetMagnifierEnabled(false);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_OFF);
   EXPECT_FALSE(IsTrayIconVisible());
 
   // Enabling all accessibility features.
-  SetMagnifierEnabled(true);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_FULL);
   EXPECT_TRUE(IsTrayIconVisible());
   accessibility::EnableHighContrast(true);
   EXPECT_TRUE(IsTrayIconVisible());
@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, ShowTrayIcon) {
   EXPECT_TRUE(IsTrayIconVisible());
   accessibility::EnableHighContrast(false);
   EXPECT_TRUE(IsTrayIconVisible());
-  SetMagnifierEnabled(false);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_OFF);
   EXPECT_FALSE(IsTrayIconVisible());
 
   // Confirms that prefs::kShouldAlwaysShowAccessibilityMenu doesn't affect
@@ -208,13 +208,13 @@ IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, ShowMenu) {
   EXPECT_FALSE(CanCreateMenuItem());
 
   // Toggling screen magnifier changes the visibillity of the menu.
-  SetMagnifierEnabled(true);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_FULL);
   EXPECT_TRUE(CanCreateMenuItem());
-  SetMagnifierEnabled(false);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_OFF);
   EXPECT_FALSE(CanCreateMenuItem());
 
   // Enabling all accessibility features.
-  SetMagnifierEnabled(true);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_FULL);
   EXPECT_TRUE(CanCreateMenuItem());
   accessibility::EnableHighContrast(true);
   EXPECT_TRUE(CanCreateMenuItem());
@@ -224,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, ShowMenu) {
   EXPECT_TRUE(CanCreateMenuItem());
   accessibility::EnableHighContrast(false);
   EXPECT_TRUE(CanCreateMenuItem());
-  SetMagnifierEnabled(false);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_OFF);
   EXPECT_FALSE(CanCreateMenuItem());
 }
 
@@ -255,13 +255,13 @@ IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, ShowMenuWithShowMenuOption) {
   EXPECT_TRUE(CanCreateMenuItem());
 
   // The menu is keeping visible regardless of toggling screen magnifier.
-  SetMagnifierEnabled(true);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_FULL);
   EXPECT_TRUE(CanCreateMenuItem());
-  SetMagnifierEnabled(false);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_OFF);
   EXPECT_TRUE(CanCreateMenuItem());
 
   // Enabling all accessibility features.
-  SetMagnifierEnabled(true);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_FULL);
   EXPECT_TRUE(CanCreateMenuItem());
   accessibility::EnableHighContrast(true);
   EXPECT_TRUE(CanCreateMenuItem());
@@ -271,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, ShowMenuWithShowMenuOption) {
   EXPECT_TRUE(CanCreateMenuItem());
   accessibility::EnableHighContrast(false);
   EXPECT_TRUE(CanCreateMenuItem());
-  SetMagnifierEnabled(false);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_OFF);
   EXPECT_TRUE(CanCreateMenuItem());
 
   // Sets prefs::kShouldAlwaysShowAccessibilityMenu = true.
@@ -300,13 +300,13 @@ IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, ShowMenuWithShowOnLoginScreen) {
   EXPECT_TRUE(CanCreateMenuItem());
 
   // The menu is keeping visible regardless of toggling screen magnifier.
-  SetMagnifierEnabled(true);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_FULL);
   EXPECT_TRUE(CanCreateMenuItem());
-  SetMagnifierEnabled(false);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_OFF);
   EXPECT_TRUE(CanCreateMenuItem());
 
   // Enabling all accessibility features.
-  SetMagnifierEnabled(true);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_FULL);
   EXPECT_TRUE(CanCreateMenuItem());
   accessibility::EnableHighContrast(true);
   EXPECT_TRUE(CanCreateMenuItem());
@@ -316,7 +316,7 @@ IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, ShowMenuWithShowOnLoginScreen) {
   EXPECT_TRUE(CanCreateMenuItem());
   accessibility::EnableHighContrast(false);
   EXPECT_TRUE(CanCreateMenuItem());
-  SetMagnifierEnabled(false);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_OFF);
   EXPECT_TRUE(CanCreateMenuItem());
 
   // Sets prefs::kShouldAlwaysShowAccessibilityMenu = true.
@@ -362,14 +362,17 @@ IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, ClickDetailMenu) {
   // Confirms that the check item toggles the magnifier.
   EXPECT_FALSE(accessibility::IsHighContrastEnabled());
 
-  EXPECT_FALSE(MagnificationManager::Get()->IsMagnifierEnabled());
+  EXPECT_EQ(ash::MAGNIFIER_OFF,
+            MagnificationManager::Get()->GetMagnifierType());
   EXPECT_TRUE(CreateDetailedMenu());
   ClickScreenMagnifierOnDetailMenu();
-  EXPECT_TRUE(MagnificationManager::Get()->IsMagnifierEnabled());
+  EXPECT_EQ(ash::MAGNIFIER_FULL,
+            MagnificationManager::Get()->GetMagnifierType());
 
   EXPECT_TRUE(CreateDetailedMenu());
   ClickScreenMagnifierOnDetailMenu();
-  EXPECT_FALSE(MagnificationManager::Get()->IsMagnifierEnabled());
+  EXPECT_EQ(ash::MAGNIFIER_OFF,
+            MagnificationManager::Get()->GetMagnifierType());
 }
 
 IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
@@ -413,7 +416,7 @@ IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   CloseDetailMenu();
 
   // Enabling full screen magnifier.
-  SetMagnifierEnabled(true);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_FULL);
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
   EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
@@ -421,7 +424,7 @@ IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   CloseDetailMenu();
 
   // Disabling screen magnifier.
-  SetMagnifierEnabled(false);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_OFF);
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
   EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
@@ -431,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   // Enabling all of the a11y features.
   accessibility::EnableSpokenFeedback(true, NULL, ash::A11Y_NOTIFICATION_NONE);
   accessibility::EnableHighContrast(true);
-  SetMagnifierEnabled(true);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_FULL);
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_TRUE(IsSpokenFeedbackEnabledOnDetailMenu());
   EXPECT_TRUE(IsHighContrastEnabledOnDetailMenu());
@@ -441,7 +444,7 @@ IN_PROC_BROWSER_TEST_F(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   // Disabling all of the a11y features.
   accessibility::EnableSpokenFeedback(false, NULL, ash::A11Y_NOTIFICATION_NONE);
   accessibility::EnableHighContrast(false);
-  SetMagnifierEnabled(false);
+  MagnificationManager::Get()->SetMagnifier(ash::MAGNIFIER_OFF);
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
   EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
