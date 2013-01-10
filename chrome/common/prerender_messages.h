@@ -9,7 +9,7 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebReferrerPolicy.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
 #include "ui/gfx/size.h"
 
 #define IPC_MESSAGE_START PrerenderMsgStart
