@@ -44,7 +44,7 @@ sudo apt-get -f install
 # be installed manually on late-model versions.
 
 # common
-sudo apt-get -y install python-pexpect xvfb x11-utils
+sudo apt-get -y install lighttpd python-pexpect xvfb x11-utils
 
 if /usr/bin/lsb_release -r -s | grep -q "12."; then
   # Ubuntu 12.x
