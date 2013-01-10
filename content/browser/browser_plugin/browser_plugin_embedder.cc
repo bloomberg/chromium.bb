@@ -136,6 +136,10 @@ void BrowserPluginEmbedder::CreateGuest(
   *guest_renderer_prefs = *web_contents()->GetMutableRendererPrefs();
 
   guest_renderer_prefs->throttle_input_events = false;
+  // We would like the guest to report changes to frame names so that we can
+  // update the BrowserPlugin's corresponding 'name' attribute.
+  // TODO(fsamuel): Remove this once http://crbug.com/169110 is addressed.
+  guest_renderer_prefs->report_frame_name_changes = true;
   // Navigation is disabled in Chrome Apps. We want to make sure guest-initiated
   // navigations still continue to function inside the app.
   guest_renderer_prefs->browser_handles_all_top_level_requests = false;

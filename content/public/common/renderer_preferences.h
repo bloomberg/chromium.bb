@@ -107,6 +107,14 @@ struct CONTENT_EXPORT RendererPreferences {
 
   // Specifies whether renderer input event throttle is enabled.
   bool throttle_input_events;
+
+  // Specifies whether the renderer reports frame name changes to the browser
+  // process.
+  // TODO(fsamuel): This is a short-term workaround to avoid regressing
+  // Sunspider. We need to find an efficient way to report changes to frame
+  // names to the browser process. See http://crbug.com/169110 for more
+  // information.
+  bool report_frame_name_changes;
 };
 
 }  // namespace content
