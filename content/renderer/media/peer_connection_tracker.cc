@@ -64,7 +64,12 @@ void PeerConnectionTracker::UnregisterPeerConnection(
   std::map<RTCPeerConnectionHandler*, int>::iterator it =
       peer_connection_id_map_.find(pc_handler);
 
-  DCHECK(it != peer_connection_id_map_.end());
+  if (it == peer_connection_id_map_.end()) {
+    // The PeerConnection might not have been registered if its initilization
+    // failed.
+    return;
+  }
+
   RenderThreadImpl::current()->Send(
       new PeerConnectionTrackerHost_RemovePeerConnection(it->second));
 
