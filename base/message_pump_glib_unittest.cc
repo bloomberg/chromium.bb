@@ -311,7 +311,7 @@ class ConcurrentHelper : public base::RefCounted<ConcurrentHelper>  {
       --task_count_;
     }
     if (task_count_ == 0 && event_count_ == 0) {
-        MessageLoop::current()->Quit();
+        MessageLoop::current()->QuitWhenIdle();
     } else {
       MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(&ConcurrentHelper::FromTask, this));
@@ -323,7 +323,7 @@ class ConcurrentHelper : public base::RefCounted<ConcurrentHelper>  {
       --event_count_;
     }
     if (task_count_ == 0 && event_count_ == 0) {
-        MessageLoop::current()->Quit();
+        MessageLoop::current()->QuitWhenIdle();
     } else {
       injector_->AddEventAsTask(
           0, base::Bind(&ConcurrentHelper::FromEvent, this));
@@ -353,7 +353,7 @@ TEST_F(MessagePumpGLibTest, TestConcurrentEventPostedTask) {
   // We use the helper class above. We keep both event and posted task queues
   // full, the helper verifies that both tasks and events get processed.
   // If that is not the case, either event_count_ or task_count_ will not get
-  // to 0, and MessageLoop::Quit() will never be called.
+  // to 0, and MessageLoop::QuitWhenIdle() will never be called.
   scoped_refptr<ConcurrentHelper> helper = new ConcurrentHelper(injector());
 
   // Add 2 events to the queue to make sure it is always full (when we remove
@@ -514,7 +514,7 @@ void TestGLibLoopInternal(EventInjector* injector) {
 
   ASSERT_EQ(3, task_count);
   EXPECT_EQ(4, injector->processed_events());
-  MessageLoop::current()->Quit();
+  MessageLoop::current()->QuitWhenIdle();
 }
 
 void TestGtkLoopInternal(EventInjector* injector) {
@@ -549,7 +549,7 @@ void TestGtkLoopInternal(EventInjector* injector) {
 
   ASSERT_EQ(3, task_count);
   EXPECT_EQ(4, injector->processed_events());
-  MessageLoop::current()->Quit();
+  MessageLoop::current()->QuitWhenIdle();
 }
 
 }  // namespace

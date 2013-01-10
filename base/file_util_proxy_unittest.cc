@@ -40,7 +40,7 @@ class FileUtilProxyTest : public testing::Test {
 
   void DidFinish(PlatformFileError error) {
     error_ = error;
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitWhenIdle();
   }
 
   void DidCreateOrOpen(PlatformFileError error,
@@ -49,7 +49,7 @@ class FileUtilProxyTest : public testing::Test {
     error_ = error;
     file_ = file.ReleaseValue();
     created_ = created;
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitWhenIdle();
   }
 
   void DidCreateTemporary(PlatformFileError error,
@@ -58,14 +58,14 @@ class FileUtilProxyTest : public testing::Test {
     error_ = error;
     file_ = file.ReleaseValue();
     path_ = path;
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitWhenIdle();
   }
 
   void DidGetFileInfo(PlatformFileError error,
                       const PlatformFileInfo& file_info) {
     error_ = error;
     file_info_ = file_info;
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitWhenIdle();
   }
 
   void DidRead(PlatformFileError error,
@@ -74,14 +74,14 @@ class FileUtilProxyTest : public testing::Test {
     error_ = error;
     buffer_.resize(bytes_read);
     memcpy(&buffer_[0], data, bytes_read);
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitWhenIdle();
   }
 
   void DidWrite(PlatformFileError error,
                 int bytes_written) {
     error_ = error;
     bytes_written_ = bytes_written;
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitWhenIdle();
   }
 
  protected:

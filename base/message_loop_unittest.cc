@@ -146,7 +146,7 @@ void RunTest_PostTask_SEH(MessageLoop::Type message_loop_type) {
 static void SlowFunc(TimeDelta pause, int* quit_counter) {
     PlatformThread::Sleep(pause);
     if (--(*quit_counter) == 0)
-      MessageLoop::current()->Quit();
+      MessageLoop::current()->QuitWhenIdle();
 }
 
 // This function records the time when Run was called in a Time object, which is
@@ -341,7 +341,7 @@ void SubPumpFunc() {
     TranslateMessage(&msg);
     DispatchMessage(&msg);
   }
-  MessageLoop::current()->Quit();
+  MessageLoop::current()->QuitWhenIdle();
 }
 
 void RunTest_PostDelayedTask_SharedTimer_SubPump() {
@@ -459,7 +459,7 @@ void NestingFunc(int* depth) {
     MessageLoop::current()->SetNestableTasksAllowed(true);
     MessageLoop::current()->Run();
   }
-  MessageLoop::current()->Quit();
+  MessageLoop::current()->QuitWhenIdle();
 }
 
 #if defined(OS_WIN)
@@ -502,7 +502,7 @@ class Crasher : public base::RefCounted<Crasher> {
 #error "needs architecture support"
 #endif
 
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitWhenIdle();
   }
   // Points the bad array to a valid memory location.
   static void FixError() {
@@ -726,7 +726,7 @@ void RecursiveSlowFunc(TaskList* order, int cookie, int depth,
 
 void QuitFunc(TaskList* order, int cookie) {
   order->RecordStart(QUITMESSAGELOOP, cookie);
-  MessageLoop::current()->Quit();
+  MessageLoop::current()->QuitWhenIdle();
   order->RecordEnd(QUITMESSAGELOOP, cookie);
 }
 
@@ -1780,7 +1780,7 @@ void PostNTasksThenQuit(int posts_remaining) {
         FROM_HERE,
         base::Bind(&PostNTasksThenQuit, posts_remaining - 1));
   } else {
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitWhenIdle();
   }
 }
 
@@ -1892,10 +1892,10 @@ namespace {
 class QuitDelegate : public MessageLoopForIO::Watcher {
  public:
   virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE {
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitWhenIdle();
   }
   virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE {
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitWhenIdle();
   }
 };
 

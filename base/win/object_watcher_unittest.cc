@@ -16,7 +16,7 @@ namespace {
 class QuitDelegate : public ObjectWatcher::Delegate {
  public:
   virtual void OnObjectSignaled(HANDLE object) {
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitWhenIdle();
   }
 };
 

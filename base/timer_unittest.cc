@@ -35,7 +35,7 @@ class OneShotTimerTester {
  private:
   void Run() {
     *did_run_ = true;
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitWhenIdle();
   }
   bool* did_run_;
   base::OneShotTimer<OneShotTimerTester> timer_;
@@ -56,7 +56,7 @@ class OneShotSelfDeletingTimerTester {
   void Run() {
     *did_run_ = true;
     timer_.reset();
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitWhenIdle();
   }
   bool* did_run_;
   scoped_ptr<base::OneShotTimer<OneShotSelfDeletingTimerTester> > timer_;
@@ -76,7 +76,7 @@ class RepeatingTimerTester {
   void Run() {
     if (--counter_ == 0) {
       *did_run_ = true;
-      MessageLoop::current()->Quit();
+      MessageLoop::current()->QuitWhenIdle();
     }
   }
   bool* did_run_;
@@ -446,12 +446,12 @@ void ClearAllCallbackHappened() {
 
 void SetCallbackHappened1() {
   g_callback_happened1 = true;
-  MessageLoop::current()->Quit();
+  MessageLoop::current()->QuitWhenIdle();
 }
 
 void SetCallbackHappened2() {
   g_callback_happened2 = true;
-  MessageLoop::current()->Quit();
+  MessageLoop::current()->QuitWhenIdle();
 }
 
 TEST(TimerTest, ContinuationStopStart) {

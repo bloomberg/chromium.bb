@@ -21,8 +21,8 @@ namespace {
 
 // We use this thread-local variable to record whether or not a thread exited
 // because its Stop method was called.  This allows us to catch cases where
-// MessageLoop::Quit() is called directly, which is unexpected when using a
-// Thread to setup and run a MessageLoop.
+// MessageLoop::QuitWhenIdle() is called directly, which is unexpected when
+// using a Thread to setup and run a MessageLoop.
 base::LazyInstance<base::ThreadLocalBoolean> lazy_tls_bool =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -30,7 +30,7 @@ base::LazyInstance<base::ThreadLocalBoolean> lazy_tls_bool =
 
 // This is used to trigger the message loop to exit.
 void ThreadQuitHelper() {
-  MessageLoop::current()->Quit();
+  MessageLoop::current()->QuitWhenIdle();
   Thread::SetThreadWasQuitProperly(true);
 }
 

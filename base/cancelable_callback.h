@@ -28,7 +28,7 @@
 //
 // void TimeoutCallback(const std::string& timeout_message) {
 //   FAIL() << timeout_message;
-//   MessageLoop::current()->Quit();
+//   MessageLoop::current()->QuitWhenIdle();
 // }
 //
 // CancelableClosure timeout(base::Bind(&TimeoutCallback, "Test timed out."));

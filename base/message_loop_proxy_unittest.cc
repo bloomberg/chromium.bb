@@ -84,7 +84,7 @@ class MessageLoopProxyTest : public testing::Test {
 
   static void RecordLoopAndQuit(scoped_refptr<LoopRecorder> recorder) {
     recorder->RecordRun();
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitWhenIdle();
   }
 
   void UnblockTaskThread() {

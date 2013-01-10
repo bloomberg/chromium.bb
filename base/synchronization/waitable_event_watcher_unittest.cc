@@ -26,7 +26,7 @@ const int kNumTestingMessageLoops = arraysize(testing_message_loops);
 class QuitDelegate : public WaitableEventWatcher::Delegate {
  public:
   virtual void OnWaitableEventSignaled(WaitableEvent* event) OVERRIDE {
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitWhenIdle();
   }
 };
 
