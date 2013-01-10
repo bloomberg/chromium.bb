@@ -470,8 +470,8 @@ DFA::DFA(Prog* prog, Prog::MatchKind kind, int64 max_mem)
   // At minimum, the search requires room for two states in order
   // to limp along, restarting frequently.  We'll get better performance
   // if there is room for a larger number of states, say 20.
-  int one_state = sizeof(State) + (prog_->size()+nmark)*sizeof(int) +
-                  (prog_->bytemap_range()+1)*sizeof(State*);
+  size_t one_state = sizeof(State) + (prog_->size()+nmark)*sizeof(int) +
+                     (prog_->bytemap_range()+1)*sizeof(State*);
   if (state_budget_ < 20*one_state) {
     LOG(INFO) << StringPrintf("DFA out of memory: prog size %lld mem %lld",
                               prog_->size(), max_mem);

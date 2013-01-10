@@ -1,0 +1,31 @@
+diff --git a/third_party/re2/re2/dfa.cc b/third_party/re2/re2/dfa.cc
+index 32c8c33..36ec66f 100644
+--- a/third_party/re2/re2/dfa.cc
++++ b/third_party/re2/re2/dfa.cc
+@@ -470,8 +470,8 @@ DFA::DFA(Prog* prog, Prog::MatchKind kind, int64 max_mem)
+   // At minimum, the search requires room for two states in order
+   // to limp along, restarting frequently.  We'll get better performance
+   // if there is room for a larger number of states, say 20.
+-  int one_state = sizeof(State) + (prog_->size()+nmark)*sizeof(int) +
+-                  (prog_->bytemap_range()+1)*sizeof(State*);
++  size_t one_state = sizeof(State) + (prog_->size()+nmark)*sizeof(int) +
++                     (prog_->bytemap_range()+1)*sizeof(State*);
+   if (state_budget_ < 20*one_state) {
+     LOG(INFO) << StringPrintf("DFA out of memory: prog size %lld mem %lld",
+                               prog_->size(), max_mem);
+diff --git a/third_party/re2/util/logging.h b/third_party/re2/util/logging.h
+index 7302ea6..4478f9b 100644
+--- a/third_party/re2/util/logging.h
++++ b/third_party/re2/util/logging.h
+@@ -59,7 +59,11 @@ class LogMessage {
+   void Flush() {
+     stream() << "\n";
+     string s = str_.str();
++#ifdef WIN32
++    write(2, s.data(), static_cast<unsigned int>(s.size()));
++#else
+     if(write(2, s.data(), s.size()) < 0) {}  // shut up gcc
++#endif
+     flushed_ = true;
+   }
+   ~LogMessage() {

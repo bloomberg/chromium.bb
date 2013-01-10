@@ -24,3 +24,4 @@ Local Modifications (to be applied in this order):
   bit from non-executable .py file.
   (patches/remove-testinstall.cc-and-fix-filepermissions.patch)
 - Remove static initializers (patches/remove-static-initializers.patch)
+- Support for Windows x64 (patches/msvc-x64.patch)
