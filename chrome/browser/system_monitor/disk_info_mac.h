@@ -22,11 +22,6 @@ class DiskInfoMac {
   // dictionary. This function must be called on the file thread.
   static DiskInfoMac BuildDiskInfoOnFileThread(CFDictionaryRef dict);
 
-  // Construct a disk info object from info from an ImageCature device.
-  static DiskInfoMac BuildDiskInfoFromICDevice(std::string device_id,
-                                               string16 device_name,
-                                               FilePath mount_point);
-
   const std::string& bsd_name() const { return bsd_name_; }
   const std::string& device_id() const { return device_id_; }
   const std::string& model_name() const { return model_name_; }
