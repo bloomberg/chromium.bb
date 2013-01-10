@@ -780,27 +780,34 @@ void ChromeBrowserMainPartsChromeos::SetupZramFieldTrial() {
   // newline.  "x" means the user has opted out.  "0" through "8" are the valid
   // group names.  (See src/platform/init/swap-exp.conf in chromiumos repo for
   // group meanings.)
-  std::string zram_group = zram_file_content.substr(0, 1);
-  if (zram_group.compare("x") == 0)
+  if (zram_file_content.empty()) {
+    LOG(WARNING) << "zram field trial: " << kZramGroupPath.value()
+                 << " is empty";
     return;
+  }
+  char zram_group = zram_file_content[0];
+  if (zram_group == 'x')
+    return;
+  if (zram_group < '0' || zram_group > '8') {
+    LOG(WARNING) << "zram field trial: invalid group \"" << zram_group << "\"";
+    return;
+  }
+  LOG(WARNING) << "zram field trial: group " << zram_group;
   const base::FieldTrial::Probability kDivisor = 1;  // on/off only
   scoped_refptr<base::FieldTrial> trial =
       base::FieldTrialList::FactoryGetFieldTrial(
           "ZRAM", kDivisor, "default", 2013, 12, 31, NULL);
   // Assign probability of 1 to the group Chrome OS has picked.  Assign 0 to
   // all other choices.
-  const char* const kGroups[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8" };
-  bool matched = false;
-  for (size_t i = 0; i < arraysize(kGroups); ++i) {
-    bool match = zram_group.compare(kGroups[i]) == 0;
-    trial->AppendGroup(kGroups[i], match ? 1 : 0);
-    if (match) {
-      matched = true;
-      LOG(WARNING) << "zram field trial: group " << kGroups[i];
-    }
-  }
-  if (!matched)
-    LOG(WARNING) << "zram field trial: invalid group \"" << zram_group << "\"";
+  trial->AppendGroup("2GB_RAM_no_swap", zram_group == '0' ? 1 : 0);
+  trial->AppendGroup("2GB_RAM_2GB_swap", zram_group == '1' ? 1 : 0);
+  trial->AppendGroup("2GB_RAM_3GB_swap", zram_group == '2' ? 1 : 0);
+  trial->AppendGroup("4GB_RAM_no_swap", zram_group == '3' ? 1 : 0);
+  trial->AppendGroup("4GB_RAM_4GB_swap", zram_group == '4' ? 1 : 0);
+  trial->AppendGroup("4GB_RAM_6GB_swap", zram_group == '5' ? 1 : 0);
+  trial->AppendGroup("snow_no_swap", zram_group == '6' ? 1 : 0);
+  trial->AppendGroup("snow_1GB_swap", zram_group == '7' ? 1 : 0);
+  trial->AppendGroup("snow_2GB_swap", zram_group == '8' ? 1 : 0);
 }
 
 }  //  namespace chromeos
