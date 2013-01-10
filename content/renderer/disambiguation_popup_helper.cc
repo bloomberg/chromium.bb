@@ -4,7 +4,7 @@
 
 #include "content/renderer/disambiguation_popup_helper.h"
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "ui/gfx/size_conversions.h"
 
 using WebKit::WebRect;

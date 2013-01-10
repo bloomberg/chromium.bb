@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_DISAMBIGUATION_POPUP_HELPER_H_
 
 #include "content/common/content_export.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 
 namespace gfx {
 class Rect;
