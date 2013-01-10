@@ -1706,7 +1706,7 @@ void ExtensionWebRequestEventRouter::ClearSignaled(uint64 request_id,
   iter->second &= ~event_type;
 }
 
-// Special QuotaLimitHeuristic for WebRequestHandlerBehaviorChanged.
+// Special QuotaLimitHeuristic for WebRequestHandlerBehaviorChangedFunction.
 //
 // Each call of webRequest.handlerBehaviorChanged() clears the in-memory cache
 // of WebKit at the time of the next page load (top level navigation event).
@@ -1955,7 +1955,7 @@ bool WebRequestEventHandled::RunImpl() {
   return true;
 }
 
-void WebRequestHandlerBehaviorChanged::GetQuotaLimitHeuristics(
+void WebRequestHandlerBehaviorChangedFunction::GetQuotaLimitHeuristics(
     QuotaLimitHeuristics* heuristics) const {
   QuotaLimitHeuristic::Config config = {
     // See web_request.json for current value.
@@ -1969,7 +1969,7 @@ void WebRequestHandlerBehaviorChanged::GetQuotaLimitHeuristics(
   heuristics->push_back(heuristic);
 }
 
-void WebRequestHandlerBehaviorChanged::OnQuotaExceeded(
+void WebRequestHandlerBehaviorChangedFunction::OnQuotaExceeded(
     const std::string& violation_error) {
   // Post warning message.
   ExtensionWarningSet warnings;
@@ -1985,7 +1985,7 @@ void WebRequestHandlerBehaviorChanged::OnQuotaExceeded(
   Run();
 }
 
-bool WebRequestHandlerBehaviorChanged::RunImpl() {
+bool WebRequestHandlerBehaviorChangedFunction::RunImpl() {
   helpers::ClearCacheOnNavigation();
   return true;
 }

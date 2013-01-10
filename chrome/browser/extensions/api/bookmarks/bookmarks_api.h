@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_BOOKMARKS_BOOKMARK_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_BOOKMARKS_BOOKMARK_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_BOOKMARKS_BOOKMARKS_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_BOOKMARKS_BOOKMARKS_API_H_
 
 #include <list>
 #include <string>
@@ -116,73 +116,73 @@ class BookmarksFunction : public AsyncExtensionFunction,
   content::NotificationRegistrar registrar_;
 };
 
-class GetBookmarksFunction : public BookmarksFunction {
+class BookmarksGetTreeFunction : public BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.get")
 
  protected:
-  virtual ~GetBookmarksFunction() {}
+  virtual ~BookmarksGetTreeFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class GetBookmarkChildrenFunction : public BookmarksFunction {
+class BookmarksGetChildrenFunction : public BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.getChildren")
 
  protected:
-  virtual ~GetBookmarkChildrenFunction() {}
+  virtual ~BookmarksGetChildrenFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class GetBookmarkRecentFunction : public BookmarksFunction {
+class BookmarksGetFunction : public BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.getRecent")
 
  protected:
-  virtual ~GetBookmarkRecentFunction() {}
+  virtual ~BookmarksGetFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class GetBookmarkTreeFunction : public BookmarksFunction {
+class BookmarksGetSubTreeFunction : public BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.getTree")
 
  protected:
-  virtual ~GetBookmarkTreeFunction() {}
+  virtual ~BookmarksGetSubTreeFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class GetBookmarkSubTreeFunction : public BookmarksFunction {
+class BookmarksGetRecentFunction : public BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.getSubTree")
 
  protected:
-  virtual ~GetBookmarkSubTreeFunction() {}
+  virtual ~BookmarksGetRecentFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class SearchBookmarksFunction : public BookmarksFunction {
+class BookmarksSearchFunction : public BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.search")
 
  protected:
-  virtual ~SearchBookmarksFunction() {}
+  virtual ~BookmarksSearchFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class RemoveBookmarkFunction : public BookmarksFunction {
+class BookmarksRemoveFunction : public BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.remove")
 
@@ -195,21 +195,21 @@ class RemoveBookmarkFunction : public BookmarksFunction {
       QuotaLimitHeuristics* heuristics) const OVERRIDE;
 
  protected:
-  virtual ~RemoveBookmarkFunction() {}
+  virtual ~BookmarksRemoveFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class RemoveTreeBookmarkFunction : public RemoveBookmarkFunction {
+class BookmarksRemoveTreeFunction : public BookmarksRemoveFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.removeTree")
 
  protected:
-  virtual ~RemoveTreeBookmarkFunction() {}
+  virtual ~BookmarksRemoveTreeFunction() {}
 };
 
-class CreateBookmarkFunction : public BookmarksFunction {
+class BookmarksCreateFunction : public BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.create")
 
@@ -218,13 +218,13 @@ class CreateBookmarkFunction : public BookmarksFunction {
       QuotaLimitHeuristics* heuristics) const OVERRIDE;
 
  protected:
-  virtual ~CreateBookmarkFunction() {}
+  virtual ~BookmarksCreateFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class MoveBookmarkFunction : public BookmarksFunction {
+class BookmarksMoveFunction : public BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.move")
 
@@ -236,13 +236,13 @@ class MoveBookmarkFunction : public BookmarksFunction {
       QuotaLimitHeuristics* heuristics) const OVERRIDE;
 
  protected:
-  virtual ~MoveBookmarkFunction() {}
+  virtual ~BookmarksMoveFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class UpdateBookmarkFunction : public BookmarksFunction {
+class BookmarksUpdateFunction : public BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.update")
 
@@ -254,7 +254,7 @@ class UpdateBookmarkFunction : public BookmarksFunction {
       QuotaLimitHeuristics* heuristics) const OVERRIDE;
 
  protected:
-  virtual ~UpdateBookmarkFunction() {}
+  virtual ~BookmarksUpdateFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -286,7 +286,7 @@ class BookmarksIOFunction : public BookmarksFunction,
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 };
 
-class ImportBookmarksFunction : public BookmarksIOFunction {
+class BookmarksImportFunction : public BookmarksIOFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.import");
 
@@ -295,13 +295,13 @@ class ImportBookmarksFunction : public BookmarksIOFunction {
       OVERRIDE;
 
  private:
-  virtual ~ImportBookmarksFunction() {}
+  virtual ~BookmarksImportFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class ExportBookmarksFunction : public BookmarksIOFunction {
+class BookmarksExportFunction : public BookmarksIOFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.export");
 
@@ -310,7 +310,7 @@ class ExportBookmarksFunction : public BookmarksIOFunction {
       OVERRIDE;
 
  private:
-  virtual ~ExportBookmarksFunction() {}
+  virtual ~BookmarksExportFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -318,4 +318,4 @@ class ExportBookmarksFunction : public BookmarksIOFunction {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_BOOKMARKS_BOOKMARK_API_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_BOOKMARKS_BOOKMARKS_API_H_

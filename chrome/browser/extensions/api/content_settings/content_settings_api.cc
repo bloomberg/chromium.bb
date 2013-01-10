@@ -62,7 +62,7 @@ namespace extensions {
 namespace helpers = content_settings_helpers;
 namespace keys = content_settings_api_constants;
 
-bool ClearContentSettingsFunction::RunImpl() {
+bool ContentSettingsClearFunction::RunImpl() {
   ContentSettingsType content_type;
   EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
 
@@ -96,7 +96,7 @@ bool ClearContentSettingsFunction::RunImpl() {
   return true;
 }
 
-bool GetContentSettingFunction::RunImpl() {
+bool ContentSettingsGetFunction::RunImpl() {
   ContentSettingsType content_type;
   EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
 
@@ -169,7 +169,7 @@ bool GetContentSettingFunction::RunImpl() {
   return true;
 }
 
-bool SetContentSettingFunction::RunImpl() {
+bool ContentSettingsSetFunction::RunImpl() {
   ContentSettingsType content_type;
   EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
 
@@ -250,7 +250,7 @@ bool SetContentSettingFunction::RunImpl() {
   return true;
 }
 
-bool GetResourceIdentifiersFunction::RunImpl() {
+bool ContentSettingsGetResourceIdentifiersFunction::RunImpl() {
   ContentSettingsType content_type;
   EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
 
@@ -261,14 +261,15 @@ bool GetResourceIdentifiersFunction::RunImpl() {
 
   if (!g_testing_plugins_) {
     PluginService::GetInstance()->GetPlugins(
-        base::Bind(&GetResourceIdentifiersFunction::OnGotPlugins, this));
+        base::Bind(&ContentSettingsGetResourceIdentifiersFunction::OnGotPlugins,
+                   this));
   } else {
     OnGotPlugins(*g_testing_plugins_);
   }
   return true;
 }
 
-void GetResourceIdentifiersFunction::OnGotPlugins(
+void ContentSettingsGetResourceIdentifiersFunction::OnGotPlugins(
     const std::vector<webkit::WebPluginInfo>& plugins) {
   PluginFinder* finder = PluginFinder::GetInstance();
   std::set<std::string> group_identifiers;
@@ -289,11 +290,13 @@ void GetResourceIdentifiersFunction::OnGotPlugins(
   SetResult(list);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE, base::Bind(
-          &GetResourceIdentifiersFunction::SendResponse, this, true));
+          &ContentSettingsGetResourceIdentifiersFunction::SendResponse,
+          this,
+          true));
 }
 
 // static
-void GetResourceIdentifiersFunction::SetPluginsForTesting(
+void ContentSettingsGetResourceIdentifiersFunction::SetPluginsForTesting(
     const std::vector<webkit::WebPluginInfo>* plugins) {
   g_testing_plugins_ = plugins;
 }

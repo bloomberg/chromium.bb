@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/bookmarks/bookmark_api.h"
+#include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
 
 #include "base/bind.h"
 #include "base/file_path.h"
@@ -303,7 +303,7 @@ void BookmarkAPI::OnListenerAdded(const EventListenerInfo& details) {
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
-bool GetBookmarksFunction::RunImpl() {
+bool BookmarksGetTreeFunction::RunImpl() {
   scoped_ptr<bookmarks::Get::Params> params(
       bookmarks::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -343,7 +343,7 @@ bool GetBookmarksFunction::RunImpl() {
   return true;
 }
 
-bool GetBookmarkChildrenFunction::RunImpl() {
+bool BookmarksGetChildrenFunction::RunImpl() {
   scoped_ptr<bookmarks::GetChildren::Params> params(
       bookmarks::GetChildren::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -369,7 +369,7 @@ bool GetBookmarkChildrenFunction::RunImpl() {
   return true;
 }
 
-bool GetBookmarkRecentFunction::RunImpl() {
+bool BookmarksGetFunction::RunImpl() {
   scoped_ptr<bookmarks::GetRecent::Params> params(
       bookmarks::GetRecent::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -393,7 +393,7 @@ bool GetBookmarkRecentFunction::RunImpl() {
   return true;
 }
 
-bool GetBookmarkTreeFunction::RunImpl() {
+bool BookmarksGetSubTreeFunction::RunImpl() {
   std::vector<linked_ptr<BookmarkTreeNode> > nodes;
   const BookmarkNode* node =
       BookmarkModelFactory::GetForProfile(profile())->root_node();
@@ -402,7 +402,7 @@ bool GetBookmarkTreeFunction::RunImpl() {
   return true;
 }
 
-bool GetBookmarkSubTreeFunction::RunImpl() {
+bool BookmarksGetRecentFunction::RunImpl() {
   scoped_ptr<bookmarks::GetSubTree::Params> params(
       bookmarks::GetSubTree::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -424,7 +424,7 @@ bool GetBookmarkSubTreeFunction::RunImpl() {
   return true;
 }
 
-bool SearchBookmarksFunction::RunImpl() {
+bool BookmarksSearchFunction::RunImpl() {
   scoped_ptr<bookmarks::Search::Params> params(
       bookmarks::Search::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -450,7 +450,7 @@ bool SearchBookmarksFunction::RunImpl() {
 }
 
 // static
-bool RemoveBookmarkFunction::ExtractIds(const ListValue* args,
+bool BookmarksRemoveFunction::ExtractIds(const ListValue* args,
                                         std::list<int64>* ids,
                                         bool* invalid_id) {
   std::string id_string;
@@ -464,7 +464,7 @@ bool RemoveBookmarkFunction::ExtractIds(const ListValue* args,
   return true;
 }
 
-bool RemoveBookmarkFunction::RunImpl() {
+bool BookmarksRemoveFunction::RunImpl() {
   if (!EditBookmarksEnabled())
     return false;
 
@@ -479,7 +479,7 @@ bool RemoveBookmarkFunction::RunImpl() {
   }
 
   bool recursive = false;
-  if (name() == RemoveTreeBookmarkFunction::function_name())
+  if (name() == BookmarksRemoveTreeFunction::function_name())
     recursive = true;
 
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
@@ -489,7 +489,7 @@ bool RemoveBookmarkFunction::RunImpl() {
   return true;
 }
 
-bool CreateBookmarkFunction::RunImpl() {
+bool BookmarksCreateFunction::RunImpl() {
   if (!EditBookmarksEnabled())
     return false;
 
@@ -561,14 +561,14 @@ bool CreateBookmarkFunction::RunImpl() {
 }
 
 // static
-bool MoveBookmarkFunction::ExtractIds(const ListValue* args,
+bool BookmarksMoveFunction::ExtractIds(const ListValue* args,
                                       std::list<int64>* ids,
                                       bool* invalid_id) {
   // For now, Move accepts ID parameters in the same way as an Update.
-  return UpdateBookmarkFunction::ExtractIds(args, ids, invalid_id);
+  return BookmarksUpdateFunction::ExtractIds(args, ids, invalid_id);
 }
 
-bool MoveBookmarkFunction::RunImpl() {
+bool BookmarksMoveFunction::RunImpl() {
   if (!EditBookmarksEnabled())
     return false;
 
@@ -635,14 +635,14 @@ bool MoveBookmarkFunction::RunImpl() {
 }
 
 // static
-bool UpdateBookmarkFunction::ExtractIds(const ListValue* args,
+bool BookmarksUpdateFunction::ExtractIds(const ListValue* args,
                                         std::list<int64>* ids,
                                         bool* invalid_id) {
   // For now, Update accepts ID parameters in the same way as an Remove.
-  return RemoveBookmarkFunction::ExtractIds(args, ids, invalid_id);
+  return BookmarksRemoveFunction::ExtractIds(args, ids, invalid_id);
 }
 
-bool UpdateBookmarkFunction::RunImpl() {
+bool BookmarksUpdateFunction::RunImpl() {
   if (!EditBookmarksEnabled())
     return false;
 
@@ -719,7 +719,7 @@ class BookmarkBucketMapper : public BucketMapper {
 class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
  public:
   explicit CreateBookmarkBucketMapper(Profile* profile) : profile_(profile) {}
-  // TODO(tim): This should share code with CreateBookmarkFunction::RunImpl,
+  // TODO(tim): This should share code with BookmarksCreateFunction::RunImpl,
   // but I can't figure out a good way to do that with all the macros.
   virtual void GetBucketsForArgs(const ListValue* args, BucketList* buckets) {
     const DictionaryValue* json;
@@ -763,7 +763,7 @@ class RemoveBookmarksBucketMapper : public BookmarkBucketMapper<std::string> {
     typedef std::list<int64> IdList;
     IdList ids;
     bool invalid_id = false;
-    if (!RemoveBookmarkFunction::ExtractIds(args, &ids, &invalid_id) ||
+    if (!BookmarksRemoveFunction::ExtractIds(args, &ids, &invalid_id) ||
         invalid_id) {
       return;
     }
@@ -856,22 +856,22 @@ class BookmarksQuotaLimitFactory {
 };
 
 // And finally, building the individual heuristics for each function.
-void RemoveBookmarkFunction::GetQuotaLimitHeuristics(
+void BookmarksRemoveFunction::GetQuotaLimitHeuristics(
     QuotaLimitHeuristics* heuristics) const {
   BookmarksQuotaLimitFactory::BuildForRemove(heuristics, profile());
 }
 
-void MoveBookmarkFunction::GetQuotaLimitHeuristics(
+void BookmarksMoveFunction::GetQuotaLimitHeuristics(
     QuotaLimitHeuristics* heuristics) const {
-  BookmarksQuotaLimitFactory::Build<MoveBookmarkFunction>(heuristics);
+  BookmarksQuotaLimitFactory::Build<BookmarksMoveFunction>(heuristics);
 }
 
-void UpdateBookmarkFunction::GetQuotaLimitHeuristics(
+void BookmarksUpdateFunction::GetQuotaLimitHeuristics(
     QuotaLimitHeuristics* heuristics) const {
-  BookmarksQuotaLimitFactory::Build<UpdateBookmarkFunction>(heuristics);
+  BookmarksQuotaLimitFactory::Build<BookmarksUpdateFunction>(heuristics);
 };
 
-void CreateBookmarkFunction::GetQuotaLimitHeuristics(
+void BookmarksCreateFunction::GetQuotaLimitHeuristics(
     QuotaLimitHeuristics* heuristics) const {
   BookmarksQuotaLimitFactory::BuildForCreate(heuristics, profile());
 }
@@ -949,14 +949,14 @@ void BookmarksIOFunction::MultiFilesSelected(
   NOTREACHED() << "Should not be able to select multiple files";
 }
 
-bool ImportBookmarksFunction::RunImpl() {
+bool BookmarksImportFunction::RunImpl() {
   if (!EditBookmarksEnabled())
     return false;
   SelectFile(ui::SelectFileDialog::SELECT_OPEN_FILE);
   return true;
 }
 
-void ImportBookmarksFunction::FileSelected(const FilePath& path,
+void BookmarksImportFunction::FileSelected(const FilePath& path,
                                            int index,
                                            void* params) {
 #if !defined(OS_ANDROID)
@@ -976,12 +976,12 @@ void ImportBookmarksFunction::FileSelected(const FilePath& path,
   Release();  // Balanced in BookmarksIOFunction::SelectFile()
 }
 
-bool ExportBookmarksFunction::RunImpl() {
+bool BookmarksExportFunction::RunImpl() {
   SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE);
   return true;
 }
 
-void ExportBookmarksFunction::FileSelected(const FilePath& path,
+void BookmarksExportFunction::FileSelected(const FilePath& path,
                                            int index,
                                            void* params) {
 #if !defined(OS_ANDROID)

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_factory.h"
 
-#include "chrome/browser/extensions/api/bookmarks/bookmark_api.h"
+#include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 

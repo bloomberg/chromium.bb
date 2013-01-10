@@ -163,8 +163,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptExtensionAPIs) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptPermissionsApi) {
-  RequestPermissionsFunction::SetIgnoreUserGestureForTests(true);
-  RequestPermissionsFunction::SetAutoConfirmForTests(true);
+  PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
+  PermissionsRequestFunction::SetAutoConfirmForTests(true);
   host_resolver()->AddRule("*.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/permissions")) << message_;

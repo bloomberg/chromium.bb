@@ -14,15 +14,17 @@ class Code(object):
     self._indent_size = indent_size
     self._comment_length = comment_length
 
-  def Append(self, line='', substitute=True):
+  def Append(self, line='', substitute=True, indent_level=None):
     """Appends a line of code at the current indent level or just a newline if
     line is not specified. Trailing whitespace is stripped.
 
     substitute: indicated whether this line should be affected by
     code.Substitute().
     """
-    self._code.append(Line(((' ' * self._indent_level) + line).rstrip(),
-        substitute=substitute))
+    if indent_level is None:
+      indent_level = self._indent_level
+    self._code.append(Line(((' ' * indent_level) + line).rstrip(),
+                      substitute=substitute))
     return self
 
   def IsEmpty(self):

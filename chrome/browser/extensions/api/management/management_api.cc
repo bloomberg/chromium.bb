@@ -219,7 +219,7 @@ ExtensionService* AsyncManagementFunction::service() {
   return profile()->GetExtensionService();
 }
 
-bool GetAllExtensionsFunction::RunImpl() {
+bool ManagementGetAllFunction::RunImpl() {
   ExtensionInfoList extensions;
   ExtensionSystem* system = ExtensionSystem::Get(profile());
 
@@ -231,7 +231,7 @@ bool GetAllExtensionsFunction::RunImpl() {
   return true;
 }
 
-bool GetExtensionByIdFunction::RunImpl() {
+bool ManagementGetFunction::RunImpl() {
   scoped_ptr<management::Get::Params> params(
       management::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -250,7 +250,7 @@ bool GetExtensionByIdFunction::RunImpl() {
   return true;
 }
 
-bool GetPermissionWarningsByIdFunction::RunImpl() {
+bool ManagementGetPermissionWarningsByIdFunction::RunImpl() {
   scoped_ptr<management::GetPermissionWarningsById::Params> params(
       management::GetPermissionWarningsById::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -269,12 +269,13 @@ bool GetPermissionWarningsByIdFunction::RunImpl() {
 
 namespace {
 
-// This class helps GetPermissionWarningsByManifestFunction manage
+// This class helps ManagementGetPermissionWarningsByManifestFunction manage
 // sending manifest JSON strings to the utility process for parsing.
 class SafeManifestJSONParser : public UtilityProcessHostClient {
  public:
-  SafeManifestJSONParser(GetPermissionWarningsByManifestFunction* client,
-                         const std::string& manifest)
+  SafeManifestJSONParser(
+      ManagementGetPermissionWarningsByManifestFunction* client,
+      const std::string& manifest)
       : client_(client),
         manifest_(manifest) {}
 
@@ -345,7 +346,7 @@ class SafeManifestJSONParser : public UtilityProcessHostClient {
   ~SafeManifestJSONParser() {}
 
   // The client who we'll report results back to.
-  GetPermissionWarningsByManifestFunction* client_;
+  ManagementGetPermissionWarningsByManifestFunction* client_;
 
   // Data to parse.
   std::string manifest_;
@@ -358,7 +359,7 @@ class SafeManifestJSONParser : public UtilityProcessHostClient {
 
 }  // namespace
 
-bool GetPermissionWarningsByManifestFunction::RunImpl() {
+bool ManagementGetPermissionWarningsByManifestFunction::RunImpl() {
   scoped_ptr<management::GetPermissionWarningsByManifest::Params> params(
       management::GetPermissionWarningsByManifest::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -374,7 +375,7 @@ bool GetPermissionWarningsByManifestFunction::RunImpl() {
   return true;
 }
 
-void GetPermissionWarningsByManifestFunction::OnParseSuccess(
+void ManagementGetPermissionWarningsByManifestFunction::OnParseSuccess(
     DictionaryValue* parsed_manifest) {
   CHECK(parsed_manifest);
 
@@ -395,7 +396,7 @@ void GetPermissionWarningsByManifestFunction::OnParseSuccess(
   Release();
 }
 
-void GetPermissionWarningsByManifestFunction::OnParseFailure(
+void ManagementGetPermissionWarningsByManifestFunction::OnParseFailure(
     const std::string& error) {
   error_ = error;
   SendResponse(false);
@@ -404,7 +405,7 @@ void GetPermissionWarningsByManifestFunction::OnParseFailure(
   Release();
 }
 
-bool LaunchAppFunction::RunImpl() {
+bool ManagementLaunchAppFunction::RunImpl() {
   scoped_ptr<management::LaunchApp::Params> params(
       management::LaunchApp::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -436,13 +437,13 @@ bool LaunchAppFunction::RunImpl() {
   return true;
 }
 
-SetEnabledFunction::SetEnabledFunction() {
+ManagementSetEnabledFunction::ManagementSetEnabledFunction() {
 }
 
-SetEnabledFunction::~SetEnabledFunction() {
+ManagementSetEnabledFunction::~ManagementSetEnabledFunction() {
 }
 
-bool SetEnabledFunction::RunImpl() {
+bool ManagementSetEnabledFunction::RunImpl() {
   scoped_ptr<management::SetEnabled::Params> params(
       management::SetEnabled::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -487,30 +488,30 @@ bool SetEnabledFunction::RunImpl() {
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&SetEnabledFunction::SendResponse, this, true));
+      base::Bind(&ManagementSetEnabledFunction::SendResponse, this, true));
 
   return true;
 }
 
-void SetEnabledFunction::InstallUIProceed() {
+void ManagementSetEnabledFunction::InstallUIProceed() {
   service()->EnableExtension(extension_id_);
   SendResponse(true);
   Release();
 }
 
-void SetEnabledFunction::InstallUIAbort(bool user_initiated) {
+void ManagementSetEnabledFunction::InstallUIAbort(bool user_initiated) {
   error_ = keys::kUserDidNotReEnableError;
   SendResponse(false);
   Release();
 }
 
-UninstallFunction::UninstallFunction() {
+ManagementUninstallFunction::ManagementUninstallFunction() {
 }
 
-UninstallFunction::~UninstallFunction() {
+ManagementUninstallFunction::~ManagementUninstallFunction() {
 }
 
-bool UninstallFunction::RunImpl() {
+bool ManagementUninstallFunction::RunImpl() {
   scoped_ptr<management::Uninstall::Params> params(
       management::Uninstall::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -552,11 +553,11 @@ bool UninstallFunction::RunImpl() {
 }
 
 // static
-void UninstallFunction::SetAutoConfirmForTest(bool should_proceed) {
+void ManagementUninstallFunction::SetAutoConfirmForTest(bool should_proceed) {
   auto_confirm_for_test = should_proceed ? PROCEED : ABORT;
 }
 
-void UninstallFunction::Finish(bool should_uninstall) {
+void ManagementUninstallFunction::Finish(bool should_uninstall) {
   if (should_uninstall) {
     bool success = service()->UninstallExtension(
         extension_id_,
@@ -573,12 +574,12 @@ void UninstallFunction::Finish(bool should_uninstall) {
 
 }
 
-void UninstallFunction::ExtensionUninstallAccepted() {
+void ManagementUninstallFunction::ExtensionUninstallAccepted() {
   Finish(true);
   Release();
 }
 
-void UninstallFunction::ExtensionUninstallCanceled() {
+void ManagementUninstallFunction::ExtensionUninstallCanceled() {
   Finish(false);
   Release();
 }
