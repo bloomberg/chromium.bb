@@ -17,11 +17,15 @@ import urllib
 GS_PATH_DEFAULT = 'default' # Means gs://chromeos-archive/ + bot_id
 
 # Contains the valid build config suffixes in the order that they are dumped.
+CONFIG_TYPE_RELEASE = 'release'
+CONFIG_TYPE_FULL = 'full'
+CONFIG_TYPE_FIRMWARE = 'firmware'
+
 CONFIG_TYPE_DUMP_ORDER = (
     'paladin',
     'incremental',
-    'full',
-    'release',
+    CONFIG_TYPE_FULL,
+    CONFIG_TYPE_RELEASE,
     'release-group',
     'sdk',
     'chromium-pfq',
@@ -31,7 +35,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     'chrome-pfq-informational',
     'pre-flight-branch',
     'factory',
-    'firmware',
+    CONFIG_TYPE_FIRMWARE,
     'toolchain-major',
     'toolchain-minor',
     'asan',
@@ -153,6 +157,37 @@ def GetCanariesForChromeLKGM(configs=config):
       builders.append(build_name)
 
   return builders
+
+
+def FindFullConfigsForBoard(board):
+  """Returns full builder configs for a board.
+
+  Returns:
+    A tuple containing a list of matching external configs and a list of
+    matching internal configs for a board.
+  """
+  ext_cfgs = []
+  int_cfgs = []
+
+  for name, c in config.iteritems():
+    if c['boards'] and board in c['boards']:
+      if name.endswith('-%s' % CONFIG_TYPE_RELEASE):
+        int_cfgs.append(copy.deepcopy(c))
+      elif name.endswith('-%s' % CONFIG_TYPE_FULL):
+        ext_cfgs.append(copy.deepcopy(c))
+
+  return ext_cfgs, int_cfgs
+
+
+def FindCanonicalConfigForBoard(board):
+  """Get the canonical cbuildbot builder config for a board."""
+  ext_cfgs, int_cfgs = FindFullConfigsForBoard(board)
+  # If both external and internal builds exist for this board, prefer the
+  # internal one.
+  both = int_cfgs + ext_cfgs
+  if not both:
+    raise ValueError('Invalid board specified: %s.' % board)
+  return both[0]
 
 
 # Enumeration of valid settings; any/all config settings must be in this.
@@ -292,7 +327,7 @@ _settings = dict(
 
 # gs_path -- Google Storage path to offload files to.
 #            None - No upload
-#            GS_PATH_DEFAULT - 'gs://chromeos-archive/' + bot_id
+#            GS_PATH_DEFAULT - 'gs://chromeos-image-archive/' + bot_id
 #            value - Upload to explicit path
   gs_path=GS_PATH_DEFAULT,
 
@@ -1153,6 +1188,8 @@ _firmware_release = _release.derive(
   description='Firmware Builds',
 )
 
+_depthcharge_release = _firmware_release.derive(useflags=['depthcharge'])
+
 _x86_firmware_boards = (
   'butterfly',
   'kiev',
@@ -1163,28 +1200,36 @@ _x86_firmware_boards = (
   'stumpy',
   'x86-mario',
 )
-for board in _x86_firmware_boards:
-  _firmware_release.add_config(board + '-firmware',
-    boards=[board],
-  )
 
 _x86_depthcharge_firmware_boards = (
   'link',
 )
-_depthcharge_release = _firmware_release.derive(useflags=['depthcharge'])
-for board in _x86_depthcharge_firmware_boards:
-  _depthcharge_release.add_config(board + '-depthcharge-firmware',
-    boards=[board],
-  )
 
 _arm_firmware_boards = (
   'daisy',
 )
-for board in _arm_firmware_boards:
-  _firmware_release.add_config(board + '-firmware',
-    arm,
-    boards=[board],
-  )
+
+def _AddFirmwareConfigs():
+  """Add x86 and arm firmware configs."""
+  for board in _x86_firmware_boards:
+    _firmware_release.add_config('%s-%s' % (board, CONFIG_TYPE_FIRMWARE),
+      boards=[board],
+    )
+
+  for board in _x86_depthcharge_firmware_boards:
+    _depthcharge_release.add_config(
+        '%s-%s-%s' % (board, 'depthcharge', CONFIG_TYPE_FIRMWARE),
+        boards=[board],
+    )
+
+  for board in _arm_firmware_boards:
+    _firmware_release.add_config('%s-%s' % (board, CONFIG_TYPE_FIRMWARE),
+      arm,
+      boards=[board],
+    )
+
+_AddFirmwareConfigs()
+
 
 # This is an example factory branch configuration for x86.
 # Modify it to match your factory branch.

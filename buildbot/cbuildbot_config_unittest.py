@@ -365,5 +365,39 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
       self.assertFalse(config['use_lkgm'] and config['use_chrome_lkgm'])
 
 
+class FindFullTest(cros_test_lib.TestCase):
+  """Test locating of official build for a board."""
+
+  def _RunTest(self, board, external_expected=None, internal_expected=None):
+    def check_expected(l, expected):
+      if expected is not None:
+        self.assertEquals(l[0]['name'], expected)
+
+    external, internal = cbuildbot_config.FindFullConfigsForBoard(board)
+    self.assertFalse(
+        all(v is None for v in [external_expected, internal_expected]))
+    check_expected(external, external_expected)
+    check_expected(internal, internal_expected)
+
+  def testExternal(self):
+    """Test finding of a full builder."""
+    self._RunTest('amd64-generic', external_expected='amd64-generic-full')
+
+  def testInternal(self):
+    """Test finding of a release builder."""
+    self._RunTest('lumpy', internal_expected='lumpy-release')
+
+  def testBoth(self):
+    """Both an external and internal config exist for board."""
+    self._RunTest('daisy', external_expected='daisy-full',
+                  internal_expected='daisy-release')
+
+  def testCanonicalResolution(self):
+    """Test prefer internal over external when both exist."""
+    self.assertEquals(
+        'daisy-release',
+        cbuildbot_config.FindCanonicalConfigForBoard('daisy')['name'])
+
+
 if __name__ == '__main__':
   cros_test_lib.main()

@@ -1948,7 +1948,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
       # TODO: When we support branches fully, the friendly name of the branch
       # needs to be used with PushImages
       sign_types = []
-      if config['name'].endswith('-firmware'):
+      if config['name'].endswith('-%s' % cbuildbot_config.CONFIG_TYPE_FIRMWARE):
         sign_types += ['firmware']
       commands.PushImages(buildroot,
                           board=board,
