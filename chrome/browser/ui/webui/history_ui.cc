@@ -105,78 +105,42 @@ void SetURLAndTitle(DictionaryValue* result,
   result->SetString("title", title_to_set);
 }
 
-};  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// HistoryUIHTMLSource
-//
-////////////////////////////////////////////////////////////////////////////////
-class HistoryUIHTMLSource : public ChromeWebUIDataSource {
- public:
-  HistoryUIHTMLSource();
-
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id) OVERRIDE;
-
-  virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
-
- private:
-  ~HistoryUIHTMLSource();
-
-  DISALLOW_COPY_AND_ASSIGN(HistoryUIHTMLSource);
-};
-
-HistoryUIHTMLSource::HistoryUIHTMLSource()
-    : ChromeWebUIDataSource(chrome::kChromeUIHistoryFrameHost) {
-  AddLocalizedString("loading", IDS_HISTORY_LOADING);
-  AddLocalizedString("title", IDS_HISTORY_TITLE);
-  AddLocalizedString("newest", IDS_HISTORY_NEWEST);
-  AddLocalizedString("newer", IDS_HISTORY_NEWER);
-  AddLocalizedString("older", IDS_HISTORY_OLDER);
-  AddLocalizedString("searchresultsfor", IDS_HISTORY_SEARCHRESULTSFOR);
-  AddLocalizedString("history", IDS_HISTORY_BROWSERESULTS);
-  AddLocalizedString("cont", IDS_HISTORY_CONTINUED);
-  AddLocalizedString("searchbutton", IDS_HISTORY_SEARCH_BUTTON);
-  AddLocalizedString("noresults", IDS_HISTORY_NO_RESULTS);
-  AddLocalizedString("noitems", IDS_HISTORY_NO_ITEMS);
-  AddLocalizedString("edithistory", IDS_HISTORY_START_EDITING_HISTORY);
-  AddLocalizedString("doneediting", IDS_HISTORY_STOP_EDITING_HISTORY);
-  AddLocalizedString("removeselected", IDS_HISTORY_REMOVE_SELECTED_ITEMS);
-  AddLocalizedString("clearallhistory",
-                     IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG);
-  AddString("deletewarning",
+ChromeWebUIDataSource* CreateHistoryUIHTMLSource() {
+  ChromeWebUIDataSource* source =
+      new ChromeWebUIDataSource(chrome::kChromeUIHistoryFrameHost);
+  source->AddLocalizedString("loading", IDS_HISTORY_LOADING);
+  source->AddLocalizedString("title", IDS_HISTORY_TITLE);
+  source->AddLocalizedString("newest", IDS_HISTORY_NEWEST);
+  source->AddLocalizedString("newer", IDS_HISTORY_NEWER);
+  source->AddLocalizedString("older", IDS_HISTORY_OLDER);
+  source->AddLocalizedString("searchresultsfor", IDS_HISTORY_SEARCHRESULTSFOR);
+  source->AddLocalizedString("history", IDS_HISTORY_BROWSERESULTS);
+  source->AddLocalizedString("cont", IDS_HISTORY_CONTINUED);
+  source->AddLocalizedString("searchbutton", IDS_HISTORY_SEARCH_BUTTON);
+  source->AddLocalizedString("noresults", IDS_HISTORY_NO_RESULTS);
+  source->AddLocalizedString("noitems", IDS_HISTORY_NO_ITEMS);
+  source->AddLocalizedString("edithistory", IDS_HISTORY_START_EDITING_HISTORY);
+  source->AddLocalizedString("doneediting", IDS_HISTORY_STOP_EDITING_HISTORY);
+  source->AddLocalizedString("removeselected",
+                             IDS_HISTORY_REMOVE_SELECTED_ITEMS);
+  source->AddLocalizedString("clearallhistory",
+                             IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG);
+  source->AddString(
+      "deletewarning",
       l10n_util::GetStringFUTF16(IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING,
                                  UTF8ToUTF16(kIncognitoModeShortcut)));
-  AddLocalizedString("actionMenuDescription",
-                     IDS_HISTORY_ACTION_MENU_DESCRIPTION);
-  AddLocalizedString("removeFromHistory", IDS_HISTORY_REMOVE_PAGE);
-  AddLocalizedString("moreFromSite", IDS_HISTORY_MORE_FROM_SITE);
+  source->AddLocalizedString("actionMenuDescription",
+                             IDS_HISTORY_ACTION_MENU_DESCRIPTION);
+  source->AddLocalizedString("removeFromHistory", IDS_HISTORY_REMOVE_PAGE);
+  source->AddLocalizedString("moreFromSite", IDS_HISTORY_MORE_FROM_SITE);
+  source->set_json_path(kStringsJsFile);
+  source->add_resource_path(kHistoryJsFile, IDR_HISTORY_JS);
+  source->set_default_resource(IDR_HISTORY_HTML);
+  source->set_use_json_js_format_v2();
+  return source;
 }
 
-HistoryUIHTMLSource::~HistoryUIHTMLSource() {
-}
-
-void HistoryUIHTMLSource::StartDataRequest(const std::string& path,
-                                           bool is_incognito,
-                                           int request_id) {
-  if (path == kStringsJsFile) {
-    SendLocalizedStringsAsJSON(request_id);
-  } else {
-    int idr = path == kHistoryJsFile ? IDR_HISTORY_JS : IDR_HISTORY_HTML;
-    SendFromResourceBundle(request_id, idr);
-  }
-}
-
-std::string HistoryUIHTMLSource::GetMimeType(const std::string& path) const {
-  if (path == kStringsJsFile || path == kHistoryJsFile)
-    return "application/javascript";
-
-  return "text/html";
-}
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -542,9 +506,8 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new BrowsingHistoryHandler());
 
   // Set up the chrome://history-frame/ source.
-  HistoryUIHTMLSource* html_source = new HistoryUIHTMLSource();
-  html_source->set_use_json_js_format_v2();
-  ChromeURLDataManager::AddDataSource(Profile::FromWebUI(web_ui), html_source);
+  ChromeURLDataManager::AddDataSource(Profile::FromWebUI(web_ui),
+                                      CreateHistoryUIHTMLSource());
 }
 
 // static
