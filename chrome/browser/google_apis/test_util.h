@@ -20,6 +20,7 @@ class Value;
 namespace google_apis {
 
 class AccountMetadataFeed;
+class AuthenticatedOperationInterface;
 class ResourceEntry;
 class ResourceList;
 
@@ -60,6 +61,12 @@ void CopyResultsFromGetDataCallback(GDataErrorCode* error_out,
                                     GDataErrorCode error_in,
                                     scoped_ptr<base::Value> value_in);
 
+// Copies the results from GetDataCallback and quit the message loop.
+void CopyResultsFromGetDataCallbackAndQuit(GDataErrorCode* error_out,
+                                           scoped_ptr<base::Value>* value_out,
+                                           GDataErrorCode error_in,
+                                           scoped_ptr<base::Value> value_in);
+
 // Copies the results from GetResourceEntryCallback.
 void CopyResultsFromGetResourceEntryCallback(
     GDataErrorCode* error_out,
@@ -91,6 +98,18 @@ void CopyResultsFromDownloadActionCallback(
 // Returns a HttpResponse created from the given file path.
 scoped_ptr<test_server::HttpResponse> CreateHttpResponseFromFile(
     const FilePath& file_path);
+
+// Does nothing for ReAuthenticateCallback(). This function should be used
+// if it is not expected to reach this method as there won't be any
+// authentication failures in the test.
+void DoNothingForReAuthenticateCallback(
+    AuthenticatedOperationInterface* operation);
+
+// Returns true if |json_data| is not NULL and equals to the content in
+// |expected_json_file_path|. The failure reason will be logged into LOG(ERROR)
+// if necessary.
+bool VerifyJsonData(const FilePath& expected_json_file_path,
+                    const base::Value* json_data);
 
 }  // namespace test_util
 }  // namespace google_apis
