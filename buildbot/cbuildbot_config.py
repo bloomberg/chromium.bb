@@ -1149,6 +1149,15 @@ for board in _x86_firmware_boards:
     boards=[board],
   )
 
+_x86_depthcharge_firmware_boards = (
+  'link',
+)
+_depthcharge_release = _firmware_release.derive(useflags=['depthcharge'])
+for board in _x86_firmware_boards:
+  _depthcharge_release.add_config(board + '-depthcharge-firmware',
+    boards=[board],
+  )
+
 _arm_firmware_boards = (
   'daisy',
 )
