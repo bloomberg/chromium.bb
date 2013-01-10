@@ -104,7 +104,7 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   bool MatchesContentsAndExtensionId(WebContents* web_contents,
                                      const std::string& extension_id);
   void Close();
-  void SendMessageToBackend(DebuggerSendCommandFunction* function,
+  void SendMessageToBackend(SendCommandDebuggerFunction* function,
                             const std::string& method,
                             SendCommand::Params::CommandParams* command_params);
 
@@ -129,7 +129,7 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   int tab_id_;
   content::NotificationRegistrar registrar_;
   int last_request_id_;
-  typedef std::map<int, scoped_refptr<DebuggerSendCommandFunction> >
+  typedef std::map<int, scoped_refptr<SendCommandDebuggerFunction> >
       PendingRequests;
   PendingRequests pending_requests_;
   ExtensionDevToolsInfoBarDelegate* infobar_delegate_;
@@ -249,7 +249,7 @@ void ExtensionDevToolsClientHost::Close() {
 }
 
 void ExtensionDevToolsClientHost::SendMessageToBackend(
-    DebuggerSendCommandFunction* function,
+    SendCommandDebuggerFunction* function,
     const std::string& method,
     SendCommand::Params::CommandParams* command_params) {
   DictionaryValue protocol_request;
@@ -343,7 +343,7 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
     extensions::ExtensionSystem::Get(profile)->event_router()->
         DispatchEventToExtension(extension_id_, event.Pass());
   } else {
-    DebuggerSendCommandFunction* function = pending_requests_[id];
+    SendCommandDebuggerFunction* function = pending_requests_[id];
     if (!function)
       return;
 
@@ -457,11 +457,11 @@ bool DebuggerFunction::InitClientHost() {
   return true;
 }
 
-DebuggerAttachFunction::DebuggerAttachFunction() {}
+AttachDebuggerFunction::AttachDebuggerFunction() {}
 
-DebuggerAttachFunction::~DebuggerAttachFunction() {}
+AttachDebuggerFunction::~AttachDebuggerFunction() {}
 
-bool DebuggerAttachFunction::RunImpl() {
+bool AttachDebuggerFunction::RunImpl() {
   scoped_ptr<Attach::Params> params(Attach::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -497,11 +497,11 @@ bool DebuggerAttachFunction::RunImpl() {
   return true;
 }
 
-DebuggerDetachFunction::DebuggerDetachFunction() {}
+DetachDebuggerFunction::DetachDebuggerFunction() {}
 
-DebuggerDetachFunction::~DebuggerDetachFunction() {}
+DetachDebuggerFunction::~DetachDebuggerFunction() {}
 
-bool DebuggerDetachFunction::RunImpl() {
+bool DetachDebuggerFunction::RunImpl() {
   scoped_ptr<Detach::Params> params(Detach::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -514,11 +514,11 @@ bool DebuggerDetachFunction::RunImpl() {
   return true;
 }
 
-DebuggerSendCommandFunction::DebuggerSendCommandFunction() {}
+SendCommandDebuggerFunction::SendCommandDebuggerFunction() {}
 
-DebuggerSendCommandFunction::~DebuggerSendCommandFunction() {}
+SendCommandDebuggerFunction::~SendCommandDebuggerFunction() {}
 
-bool DebuggerSendCommandFunction::RunImpl() {
+bool SendCommandDebuggerFunction::RunImpl() {
   scoped_ptr<SendCommand::Params> params(SendCommand::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -531,7 +531,7 @@ bool DebuggerSendCommandFunction::RunImpl() {
   return true;
 }
 
-void DebuggerSendCommandFunction::SendResponseBody(
+void SendCommandDebuggerFunction::SendResponseBody(
     DictionaryValue* response) {
   Value* error_body;
   if (response->Get("error", &error_body)) {

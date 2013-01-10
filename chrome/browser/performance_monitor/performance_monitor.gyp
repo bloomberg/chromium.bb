@@ -8,14 +8,14 @@
       'target_name': 'performance_monitor',
       'type': 'static_library',
       'sources': [
-        '<@(schema_files)',
+        '<@(json_schema_files)',
       ],
       'includes': [
         '../../../build/json_schema_compile.gypi',
       ],
       'variables': {
         'chromium_code': 1,
-        'schema_files': [
+        'json_schema_files': [
           'events.json',
         ],
         'cc_dir': 'chrome/browser/performance_monitor',

@@ -88,6 +88,12 @@ bool AutotestPrivateLoginStatusFunction::RunImpl() {
 }
 
 AutotestPrivateAPI::AutotestPrivateAPI() : test_mode_(false) {
+  ExtensionFunctionRegistry* registry =
+      ExtensionFunctionRegistry::GetInstance();
+  registry->RegisterFunction<AutotestPrivateLogoutFunction>();
+  registry->RegisterFunction<AutotestPrivateRestartFunction>();
+  registry->RegisterFunction<AutotestPrivateShutdownFunction>();
+  registry->RegisterFunction<AutotestPrivateLoginStatusFunction>();
 }
 
 AutotestPrivateAPI::~AutotestPrivateAPI() {

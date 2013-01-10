@@ -10,10 +10,10 @@
 //  - Display 'save as' dialog using FileSelectorImpl which waits for the user
 //    feedback.
 //  - Once the user selects the file path (or cancels the selection),
-//    FileSelectorImpl notifies FileBrowserHandlerInternalSelectFileFunction of
-//    the selection result by calling FileHandlerSelectFile::OnFilePathSelected.
-//  - If the selection was canceled,
-//    FileBrowserHandlerInternalSelectFileFunction returns reporting failure.
+//    FileSelectorImpl notifies FileHandlerSelectFileFunction of the selection
+//    result by calling FileHandlerSelectFile::OnFilePathSelected.
+//  - If the selection was canceled, FileHandlerSelectFileFunction returns
+//    reporting failure.
 //  - If the file path was selected, the function opens external file system
 //    needed to create FileEntry object for the selected path
 //    (opening file system will create file system name and root url for the
@@ -119,11 +119,10 @@ class FileSelectorImpl : public FileSelector,
   // After this method is called, the selector implementation should not be
   // deleted by the caller. It will delete itself after it receives response
   // from SelectFielDialog.
-  virtual void SelectFile(
-      const FilePath& suggested_name,
-      const std::vector<std::string>& allowed_extensions,
-      Browser* browser,
-      FileBrowserHandlerInternalSelectFileFunction* function) OVERRIDE;
+  virtual void SelectFile(const FilePath& suggested_name,
+                          const std::vector<std::string>& allowed_extensions,
+                          Browser* browser,
+                          FileHandlerSelectFileFunction* function) OVERRIDE;
 
   // ui::SelectFileDialog::Listener overrides.
   virtual void FileSelected(const FilePath& path,
@@ -159,7 +158,7 @@ class FileSelectorImpl : public FileSelector,
   scoped_refptr<ui::SelectFileDialog> dialog_;
 
   // Extension function that uses the selector.
-  scoped_refptr<FileBrowserHandlerInternalSelectFileFunction> function_;
+  scoped_refptr<FileHandlerSelectFileFunction> function_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSelectorImpl);
 };
@@ -178,7 +177,7 @@ void FileSelectorImpl::SelectFile(
     const FilePath& suggested_name,
     const std::vector<std::string>& allowed_extensions,
     Browser* browser,
-    FileBrowserHandlerInternalSelectFileFunction* function) {
+    FileHandlerSelectFileFunction* function) {
   // We will hold reference to the function until it is notified of selection
   // result.
   function_ = function;
@@ -290,25 +289,22 @@ void RunOpenFileSystemCallback(
 
 }  // namespace
 
-FileBrowserHandlerInternalSelectFileFunction::
-    FileBrowserHandlerInternalSelectFileFunction()
-        : file_selector_factory_(new FileSelectorFactoryImpl()),
-          user_gesture_check_enabled_(true) {
+FileHandlerSelectFileFunction::FileHandlerSelectFileFunction()
+    : file_selector_factory_(new FileSelectorFactoryImpl()),
+      user_gesture_check_enabled_(true) {
 }
 
-FileBrowserHandlerInternalSelectFileFunction::
-    FileBrowserHandlerInternalSelectFileFunction(
-        FileSelectorFactory* file_selector_factory,
-        bool enable_user_gesture_check)
-        : file_selector_factory_(file_selector_factory),
-          user_gesture_check_enabled_(enable_user_gesture_check) {
+FileHandlerSelectFileFunction::FileHandlerSelectFileFunction(
+    FileSelectorFactory* file_selector_factory,
+    bool enable_user_gesture_check)
+    : file_selector_factory_(file_selector_factory),
+      user_gesture_check_enabled_(enable_user_gesture_check) {
   DCHECK(file_selector_factory);
 }
 
-FileBrowserHandlerInternalSelectFileFunction::
-    ~FileBrowserHandlerInternalSelectFileFunction() {}
+FileHandlerSelectFileFunction::~FileHandlerSelectFileFunction() {}
 
-bool FileBrowserHandlerInternalSelectFileFunction::RunImpl() {
+bool FileHandlerSelectFileFunction::RunImpl() {
   scoped_ptr<SelectFile::Params> params(SelectFile::Params::Create(*args_));
 
   FilePath suggested_name(params->selection_params.suggested_name);
@@ -329,7 +325,7 @@ bool FileBrowserHandlerInternalSelectFileFunction::RunImpl() {
   return true;
 }
 
-void FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected(
+void FileHandlerSelectFileFunction::OnFilePathSelected(
     bool success,
     const FilePath& full_path) {
   if (!success) {
@@ -346,12 +342,11 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected(
           source_url_.GetOrigin(), fileapi::kFileSystemTypeExternal, false,
           base::Bind(
               &RunOpenFileSystemCallback,
-              base::Bind(&FileBrowserHandlerInternalSelectFileFunction::
-                             OnFileSystemOpened,
+              base::Bind(&FileHandlerSelectFileFunction::OnFileSystemOpened,
                          this)));
 };
 
-void FileBrowserHandlerInternalSelectFileFunction::OnFileSystemOpened(
+void FileHandlerSelectFileFunction::OnFileSystemOpened(
     bool success,
     const std::string& file_system_name,
     const GURL& file_system_root) {
@@ -369,7 +364,7 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFileSystemOpened(
   GrantPermissions();
 }
 
-void FileBrowserHandlerInternalSelectFileFunction::GrantPermissions() {
+void FileHandlerSelectFileFunction::GrantPermissions() {
   fileapi::ExternalFileSystemMountPointProvider* external_provider =
       BrowserContext::GetDefaultStoragePartition(profile_)->
       GetFileSystemContext()->external_provider();
@@ -405,12 +400,11 @@ void FileBrowserHandlerInternalSelectFileFunction::GrantPermissions() {
       profile(),
       gdata_paths.Pass(),
       &permissions_to_grant_,
-      base::Bind(&FileBrowserHandlerInternalSelectFileFunction::
-                     OnGotPermissionsToGrant,
+      base::Bind(&FileHandlerSelectFileFunction::OnGotPermissionsToGrant,
                  this));
 }
 
-void FileBrowserHandlerInternalSelectFileFunction::OnGotPermissionsToGrant() {
+void FileHandlerSelectFileFunction::OnGotPermissionsToGrant() {
   // At this point all needed permissions should be collected, so let's grant
   // them.
   for (size_t i = 0; i < permissions_to_grant_.size(); i++) {
@@ -423,7 +417,7 @@ void FileBrowserHandlerInternalSelectFileFunction::OnGotPermissionsToGrant() {
   Respond(true);
 }
 
-void FileBrowserHandlerInternalSelectFileFunction::Respond(bool success) {
+void FileHandlerSelectFileFunction::Respond(bool success) {
   scoped_ptr<SelectFile::Results::Result> result(
       new SelectFile::Results::Result());
   result->success = success;

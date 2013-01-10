@@ -15,48 +15,48 @@
 class ExtensionService;
 
 // chrome.permissions.contains
-class PermissionsContainsFunction : public SyncExtensionFunction {
+class ContainsPermissionsFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("permissions.contains")
 
  protected:
-  virtual ~PermissionsContainsFunction() {}
+  virtual ~ContainsPermissionsFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
 // chrome.permissions.getAll
-class PermissionsGetAllFunction : public SyncExtensionFunction {
+class GetAllPermissionsFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("permissions.getAll")
 
  protected:
-  virtual ~PermissionsGetAllFunction() {}
+  virtual ~GetAllPermissionsFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
 // chrome.permissions.remove
-class PermissionsRemoveFunction : public SyncExtensionFunction {
+class RemovePermissionsFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("permissions.remove")
 
  protected:
-  virtual ~PermissionsRemoveFunction() {}
+  virtual ~RemovePermissionsFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
 // chrome.permissions.request
-class PermissionsRequestFunction : public AsyncExtensionFunction,
+class RequestPermissionsFunction : public AsyncExtensionFunction,
                                    public ExtensionInstallPrompt::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("permissions.request")
 
-  PermissionsRequestFunction();
+  RequestPermissionsFunction();
 
   // FOR TESTS ONLY to bypass the confirmation UI.
   static void SetAutoConfirmForTests(bool should_proceed);
@@ -67,7 +67,7 @@ class PermissionsRequestFunction : public AsyncExtensionFunction,
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
  protected:
-  virtual ~PermissionsRequestFunction();
+  virtual ~RequestPermissionsFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;

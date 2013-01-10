@@ -36,40 +36,40 @@ class CloudPrintTestsDelegate {
   static CloudPrintTestsDelegate* instance_;
 };
 
-class CloudPrintPrivateSetupConnectorFunction : public AsyncExtensionFunction {
+class CloudPrintSetupConnectorFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("cloudPrintPrivate.setupConnector");
 
-  CloudPrintPrivateSetupConnectorFunction();
+  CloudPrintSetupConnectorFunction();
 
  protected:
-  virtual ~CloudPrintPrivateSetupConnectorFunction();
+  virtual ~CloudPrintSetupConnectorFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class CloudPrintPrivateGetHostNameFunction : public AsyncExtensionFunction {
+class CloudPrintGetHostNameFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("cloudPrintPrivate.getHostName");
 
-  CloudPrintPrivateGetHostNameFunction();
+  CloudPrintGetHostNameFunction();
 
  protected:
-  virtual ~CloudPrintPrivateGetHostNameFunction();
+  virtual ~CloudPrintGetHostNameFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class CloudPrintPrivateGetPrintersFunction : public AsyncExtensionFunction {
+class CloudPrintGetPrintersFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("cloudPrintPrivate.getPrinters");
 
-  CloudPrintPrivateGetPrintersFunction();
+  CloudPrintGetPrintersFunction();
 
  protected:
-  virtual ~CloudPrintPrivateGetPrintersFunction();
+  virtual ~CloudPrintGetPrintersFunction();
 
   void CollectPrinters();
   void ReturnResult(const base::ListValue* printers);

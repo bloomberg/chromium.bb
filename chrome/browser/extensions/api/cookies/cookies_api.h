@@ -87,14 +87,14 @@ class CookiesFunction : public AsyncExtensionFunction {
 };
 
 // Implements the cookies.get() extension function.
-class CookiesGetFunction : public CookiesFunction {
+class GetCookieFunction : public CookiesFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.get")
 
-  CookiesGetFunction();
+  GetCookieFunction();
 
  protected:
-  virtual ~CookiesGetFunction();
+  virtual ~GetCookieFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -110,14 +110,14 @@ class CookiesGetFunction : public CookiesFunction {
 };
 
 // Implements the cookies.getAll() extension function.
-class CookiesGetAllFunction : public CookiesFunction {
+class GetAllCookiesFunction : public CookiesFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.getAll")
 
-  CookiesGetAllFunction();
+  GetAllCookiesFunction();
 
  protected:
-  virtual ~CookiesGetAllFunction();
+  virtual ~GetAllCookiesFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -133,14 +133,14 @@ class CookiesGetAllFunction : public CookiesFunction {
 };
 
 // Implements the cookies.set() extension function.
-class CookiesSetFunction : public CookiesFunction {
+class SetCookieFunction : public CookiesFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.set")
 
-  CookiesSetFunction();
+  SetCookieFunction();
 
  protected:
-  virtual ~CookiesSetFunction();
+  virtual ~SetCookieFunction();
   virtual bool RunImpl() OVERRIDE;
 
  private:
@@ -156,14 +156,14 @@ class CookiesSetFunction : public CookiesFunction {
 };
 
 // Implements the cookies.remove() extension function.
-class CookiesRemoveFunction : public CookiesFunction {
+class RemoveCookieFunction : public CookiesFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.remove")
 
-  CookiesRemoveFunction();
+  RemoveCookieFunction();
 
  protected:
-  virtual ~CookiesRemoveFunction();
+  virtual ~RemoveCookieFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -179,15 +179,15 @@ class CookiesRemoveFunction : public CookiesFunction {
 };
 
 // Implements the cookies.getAllCookieStores() extension function.
-class CookiesGetAllCookieStoresFunction : public CookiesFunction {
+class GetAllCookieStoresFunction : public CookiesFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.getAllCookieStores")
 
  protected:
-  virtual ~CookiesGetAllCookieStoresFunction() {}
+  virtual ~GetAllCookieStoresFunction() {}
 
   // ExtensionFunction:
-  // CookiesGetAllCookieStoresFunction is sync.
+  // GetAllCookieStoresFunction is sync.
   virtual void Run() OVERRIDE;
   virtual bool RunImpl() OVERRIDE;
 };

@@ -12,15 +12,15 @@
 #include "base/string_split.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/i18n.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/extensions/api/i18n.h"
 
 namespace GetAcceptLanguages = extensions::api::i18n::GetAcceptLanguages;
 
 // Errors.
 static const char kEmptyAcceptLanguagesError[] = "accept-languages is empty.";
 
-bool I18nGetAcceptLanguagesFunction::RunImpl() {
+bool GetAcceptLanguagesFunction::RunImpl() {
   std::string accept_languages =
       profile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
   // Currently, there are 2 ways to set browser's accept-languages: through UI

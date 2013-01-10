@@ -52,7 +52,7 @@ bool ignore_user_gesture_for_tests = false;
 
 }  // namespace
 
-bool PermissionsContainsFunction::RunImpl() {
+bool ContainsPermissionsFunction::RunImpl() {
   scoped_ptr<Contains::Params> params(Contains::Params::Create(*args_));
 
   scoped_refptr<PermissionSet> permissions =
@@ -65,14 +65,14 @@ bool PermissionsContainsFunction::RunImpl() {
   return true;
 }
 
-bool PermissionsGetAllFunction::RunImpl() {
+bool GetAllPermissionsFunction::RunImpl() {
   scoped_ptr<Permissions> permissions =
       helpers::PackPermissionSet(GetExtension()->GetActivePermissions());
   results_ = GetAll::Results::Create(*permissions);
   return true;
 }
 
-bool PermissionsRemoveFunction::RunImpl() {
+bool RemovePermissionsFunction::RunImpl() {
   scoped_ptr<Remove::Params> params(Remove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -110,19 +110,19 @@ bool PermissionsRemoveFunction::RunImpl() {
 }
 
 // static
-void PermissionsRequestFunction::SetAutoConfirmForTests(bool should_proceed) {
+void RequestPermissionsFunction::SetAutoConfirmForTests(bool should_proceed) {
   auto_confirm_for_tests = should_proceed ? PROCEED : ABORT;
 }
 
 // static
-void PermissionsRequestFunction::SetIgnoreUserGestureForTests(
+void RequestPermissionsFunction::SetIgnoreUserGestureForTests(
     bool ignore) {
   ignore_user_gesture_for_tests = ignore;
 }
 
-PermissionsRequestFunction::PermissionsRequestFunction() {}
+RequestPermissionsFunction::RequestPermissionsFunction() {}
 
-void PermissionsRequestFunction::InstallUIProceed() {
+void RequestPermissionsFunction::InstallUIProceed() {
   PermissionsUpdater perms_updater(profile());
   perms_updater.AddPermissions(GetExtension(), requested_permissions_.get());
 
@@ -132,16 +132,16 @@ void PermissionsRequestFunction::InstallUIProceed() {
   Release();  // Balanced in RunImpl().
 }
 
-void PermissionsRequestFunction::InstallUIAbort(bool user_initiated) {
+void RequestPermissionsFunction::InstallUIAbort(bool user_initiated) {
   results_ = Request::Results::Create(false);
   SendResponse(true);
 
   Release();  // Balanced in RunImpl().
 }
 
-PermissionsRequestFunction::~PermissionsRequestFunction() {}
+RequestPermissionsFunction::~RequestPermissionsFunction() {}
 
-bool PermissionsRequestFunction::RunImpl() {
+bool RequestPermissionsFunction::RunImpl() {
   if (!user_gesture() && !ignore_user_gesture_for_tests) {
     error_ = kUserGestureRequiredError;
     return false;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DECLARATIVE_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DECLARATIVE_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DECLARATIVE_API_H__
+#define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DECLARATIVE_API_H__
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -31,34 +31,34 @@ class RulesFunction : public AsyncExtensionFunction {
   scoped_refptr<RulesRegistry> rules_registry_;
 };
 
-class EventsAddRulesFunction : public RulesFunction {
+class AddRulesFunction : public RulesFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("events.addRules");
 
  protected:
-  virtual ~EventsAddRulesFunction() {}
+  virtual ~AddRulesFunction() {}
 
   // RulesFunction:
   virtual bool RunImplOnCorrectThread() OVERRIDE;
 };
 
-class EventsRemoveRulesFunction : public RulesFunction {
+class RemoveRulesFunction : public RulesFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("events.removeRules");
 
  protected:
-  virtual ~EventsRemoveRulesFunction() {}
+  virtual ~RemoveRulesFunction() {}
 
   // RulesFunction:
   virtual bool RunImplOnCorrectThread() OVERRIDE;
 };
 
-class EventsGetRulesFunction : public RulesFunction {
+class GetRulesFunction : public RulesFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("events.getRules");
 
  protected:
-  virtual ~EventsGetRulesFunction() {}
+  virtual ~GetRulesFunction() {}
 
   // RulesFunction:
   virtual bool RunImplOnCorrectThread() OVERRIDE;
@@ -66,4 +66,4 @@ class EventsGetRulesFunction : public RulesFunction {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DECLARATIVE_API_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_DECLARATIVE_API_H__

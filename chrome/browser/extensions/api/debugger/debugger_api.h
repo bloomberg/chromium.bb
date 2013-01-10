@@ -39,43 +39,43 @@ class DebuggerFunction : public AsyncExtensionFunction {
 };
 
 // Implements the debugger.attach() extension function.
-class DebuggerAttachFunction : public DebuggerFunction {
+class AttachDebuggerFunction : public DebuggerFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("debugger.attach")
 
-  DebuggerAttachFunction();
+  AttachDebuggerFunction();
 
  protected:
-  virtual ~DebuggerAttachFunction();
+  virtual ~AttachDebuggerFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
 // Implements the debugger.detach() extension function.
-class DebuggerDetachFunction : public DebuggerFunction {
+class DetachDebuggerFunction : public DebuggerFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("debugger.detach")
 
-  DebuggerDetachFunction();
+  DetachDebuggerFunction();
 
  protected:
-  virtual ~DebuggerDetachFunction();
+  virtual ~DetachDebuggerFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
 // Implements the debugger.sendCommand() extension function.
-class DebuggerSendCommandFunction : public DebuggerFunction {
+class SendCommandDebuggerFunction : public DebuggerFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("debugger.sendCommand")
 
-  DebuggerSendCommandFunction();
+  SendCommandDebuggerFunction();
   void SendResponseBody(base::DictionaryValue* result);
 
  protected:
-  virtual ~DebuggerSendCommandFunction();
+  virtual ~SendCommandDebuggerFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;

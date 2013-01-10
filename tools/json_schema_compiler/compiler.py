@@ -69,16 +69,13 @@ def handle_single_schema(filename, dest_dir, root, root_namespace):
       referenced_api_defs = json_schema.Load(referenced_schema_path)
 
       for namespace in referenced_api_defs:
-        api_model.AddNamespace(
-            namespace,
+        api_model.AddNamespace(namespace,
             os.path.relpath(referenced_schema_path, opts.root))
 
     # Gets the relative path from opts.root to the schema to correctly determine
     # the include path.
     relpath = os.path.relpath(schema, opts.root)
-    namespace = api_model.AddNamespace(target_namespace,
-                                       relpath,
-                                       include_compiler_options=True)
+    namespace = api_model.AddNamespace(target_namespace, relpath)
     if not namespace:
       continue
 
@@ -133,9 +130,7 @@ def handle_bundle_schema(filenames, dest_dir, root, root_namespace):
   relpath = os.path.relpath(os.path.normpath(filenames[0]), root)
 
   for target_namespace, schema_filename in zip(api_defs, filenames):
-    namespace = api_model.AddNamespace(target_namespace,
-                                       relpath,
-                                       include_compiler_options=True)
+    namespace = api_model.AddNamespace(target_namespace, relpath)
     path, filename = os.path.split(schema_filename)
     short_filename, extension = os.path.splitext(filename)
 
