@@ -29,10 +29,6 @@
 #include "ui/gfx/size.h"
 #include "webkit/glue/resource_type.h"
 
-#if defined(OS_WIN)
-#include "base/win/scoped_handle.h"
-#endif
-
 struct BrowserPluginHostMsg_CreateGuest_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct ViewMsg_PostMessage_Params;
@@ -790,13 +786,6 @@ class CONTENT_EXPORT WebContentsImpl
   // Pointer to the JavaScript dialog creator, lazily assigned. Used because the
   // delegate of this WebContentsImpl is nulled before its destructor is called.
   JavaScriptDialogCreator* dialog_creator_;
-
-#if defined(OS_WIN)
-  // Handle to an event that's set when the page is showing a message box (or
-  // equivalent constrained window).  Plugin processes check this to know if
-  // they should pump messages then.
-  base::win::ScopedHandle message_box_active_;
-#endif
 
   // Set to true when there is an active "before unload" dialog.  When true,
   // we've forced the throbber to start in Navigate, and we need to remember to

@@ -161,16 +161,6 @@ static int StartDownload(content::RenderViewHost* rvh,
   return g_next_favicon_download_id;
 }
 
-#if defined(OS_WIN)
-
-BOOL CALLBACK InvalidateWindow(HWND hwnd, LPARAM lparam) {
-  // Note: erase is required to properly paint some widgets borders. This can
-  // be seen with textfields.
-  InvalidateRect(hwnd, NULL, TRUE);
-  return TRUE;
-}
-#endif
-
 ViewMsg_Navigate_Type::Value GetNavigationType(
     BrowserContext* browser_context, const NavigationEntryImpl& entry,
     NavigationController::ReloadType reload_type) {
@@ -312,9 +302,6 @@ WebContentsImpl::WebContentsImpl(
       is_being_destroyed_(false),
       notify_disconnection_(false),
       dialog_creator_(NULL),
-#if defined(OS_WIN)
-      message_box_active_(CreateEvent(NULL, TRUE, FALSE, NULL)),
-#endif
       is_showing_before_unload_dialog_(false),
       opener_web_ui_type_(WebUI::kNoWebUI),
       closed_by_user_gesture_(false),
