@@ -522,24 +522,40 @@ class CdmWrapper : public pp::Instance,
                             uint32_t system_code) OVERRIDE;
 
  private:
+  struct SessionInfo {
+    SessionInfo(const std::string& key_system_in,
+                const std::string& session_id_in)
+        : key_system(key_system_in),
+          session_id(session_id_in) {}
+    const std::string key_system;
+    const std::string session_id;
+  };
+
   typedef linked_ptr<DecryptedBlockImpl> LinkedDecryptedBlock;
   typedef linked_ptr<VideoFrameImpl> LinkedVideoFrame;
   typedef linked_ptr<AudioFramesImpl> LinkedAudioFrames;
 
-  void SendUnknownKeyError(const std::string& session_id);
+  void SendUnknownKeyError(const std::string& key_system,
+                           const std::string& session_id);
 
-  void SendKeyAdded(const std::string& session_id);
+  void SendKeyAdded(const std::string& key_system,
+                    const std::string& session_id);
+
+  void SendKeyErrorInternal(const std::string& key_system,
+                            const std::string& session_id,
+                            cdm::MediaKeyError error_code,
+                            uint32_t system_code);
 
   // <code>PPB_ContentDecryptor_Private</code> dispatchers. These are passed to
   // <code>callback_factory_</code> to ensure that calls into
   // <code>PPP_ContentDecryptor_Private</code> are asynchronous.
-  void KeyAdded(int32_t result, const std::string& session_id);
+  void KeyAdded(int32_t result, const SessionInfo& session_info);
   void KeyMessage(int32_t result,
-                  const std::string& session_id,
+                  const SessionInfo& session_info,
                   const std::string& message,
                   const std::string& default_url);
   void KeyError(int32_t result,
-                const std::string& session_id,
+                const SessionInfo& session_info,
                 cdm::MediaKeyError error_code,
                 uint32_t system_code);
   void DeliverBlock(int32_t result,
@@ -594,6 +610,7 @@ CdmWrapper::~CdmWrapper() {
 void CdmWrapper::GenerateKeyRequest(const std::string& key_system,
                                     const std::string& type,
                                     pp::VarArrayBuffer init_data) {
+  PP_DCHECK(!key_system.empty());
   PP_DCHECK(key_system_.empty() || key_system_ == key_system);
 
   if (!cdm_) {
@@ -601,18 +618,24 @@ void CdmWrapper::GenerateKeyRequest(const std::string& key_system,
                              &allocator_, this);
     PP_DCHECK(cdm_);
     if (!cdm_) {
-      SendUnknownKeyError("");
+      SendUnknownKeyError(key_system, "");
       return;
     }
   }
 
+  // Must be set here in case the CDM synchronously calls a cdm::Host method.
+  // Clear below on error.
+  // TODO(ddorwin): Remove this when key_system is added to cdm::Host methods.
+  key_system_ = key_system;
   cdm::Status status = cdm_->GenerateKeyRequest(
       type.data(), type.size(),
       static_cast<const uint8_t*>(init_data.Map()),
       init_data.ByteLength());
   PP_DCHECK(status == cdm::kSuccess || status == cdm::kSessionError);
-  if (status != cdm::kSuccess)
+  if (status != cdm::kSuccess) {
+    key_system_.clear();  // See comment above.
     return;
+  }
 
   key_system_ = key_system;
 }
@@ -622,7 +645,7 @@ void CdmWrapper::AddKey(const std::string& session_id,
                         pp::VarArrayBuffer init_data) {
   PP_DCHECK(cdm_);  // GenerateKeyRequest() should have succeeded.
   if (!cdm_) {
-    SendUnknownKeyError(session_id);
+    SendUnknownKeyError(key_system_, session_id);
     return;
   }
 
@@ -632,7 +655,7 @@ void CdmWrapper::AddKey(const std::string& session_id,
   int init_data_size = init_data.ByteLength();
 
   if (!key_ptr || key_size <= 0 || !init_data_ptr || init_data_size <= 0) {
-    SendUnknownKeyError(session_id);
+    SendUnknownKeyError(key_system_, session_id);
     return;
   }
 
@@ -641,17 +664,17 @@ void CdmWrapper::AddKey(const std::string& session_id,
                                     init_data_ptr, init_data_size);
   PP_DCHECK(status == cdm::kSuccess || status == cdm::kSessionError);
   if (status != cdm::kSuccess) {
-    SendUnknownKeyError(session_id);
+    SendUnknownKeyError(key_system_, session_id);
     return;
   }
 
-  SendKeyAdded(session_id);
+  SendKeyAdded(key_system_, session_id);
 }
 
 void CdmWrapper::CancelKeyRequest(const std::string& session_id) {
   PP_DCHECK(cdm_);  // GenerateKeyRequest() should have succeeded.
   if (!cdm_) {
-    SendUnknownKeyError(session_id);
+    SendUnknownKeyError(key_system_, session_id);
     return;
   }
 
@@ -659,7 +682,7 @@ void CdmWrapper::CancelKeyRequest(const std::string& session_id) {
                                               session_id.size());
   PP_DCHECK(status == cdm::kSuccess || status == cdm::kSessionError);
   if (status != cdm::kSuccess)
-    SendUnknownKeyError(session_id);
+    SendUnknownKeyError(key_system_, session_id);
 }
 
 // Note: In the following decryption/decoding related functions, errors are NOT
@@ -852,9 +875,11 @@ void CdmWrapper::SendKeyMessage(
     const char* session_id, int32_t session_id_length,
     const char* message, int32_t message_length,
     const char* default_url, int32_t default_url_length) {
+  PP_DCHECK(!key_system_.empty());
   PostOnMain(callback_factory_.NewCallback(
       &CdmWrapper::KeyMessage,
-      std::string(session_id, session_id_length),
+      SessionInfo(key_system_,
+                  std::string(session_id, session_id_length)),
       std::string(message, message_length),
       std::string(default_url, default_url_length)));
 }
@@ -863,51 +888,69 @@ void CdmWrapper::SendKeyError(const char* session_id,
                               int32_t session_id_length,
                               cdm::MediaKeyError error_code,
                               uint32_t system_code) {
+  SendKeyErrorInternal(key_system_,
+                       std::string(session_id, session_id_length),
+                       error_code,
+                       system_code);
+}
+
+void CdmWrapper::SendUnknownKeyError(const std::string& key_system,
+                                     const std::string& session_id) {
+  SendKeyErrorInternal(key_system, session_id, cdm::kUnknownError, 0);
+}
+
+
+void CdmWrapper::SendKeyAdded(const std::string& key_system,
+                              const std::string& session_id) {
   PostOnMain(callback_factory_.NewCallback(
-      &CdmWrapper::KeyError,
-      std::string(session_id, session_id_length),
-      error_code,
-      system_code));
+      &CdmWrapper::KeyAdded,
+      SessionInfo(key_system_, session_id)));
 }
 
-void CdmWrapper::SendUnknownKeyError(const std::string& session_id) {
-  SendKeyError(session_id.data(), session_id.size(), cdm::kUnknownError, 0);
+void CdmWrapper::SendKeyErrorInternal(const std::string& key_system,
+                                      const std::string& session_id,
+                                      cdm::MediaKeyError error_code,
+                                      uint32_t system_code) {
+  PP_DCHECK(!key_system.empty());
+  PostOnMain(callback_factory_.NewCallback(&CdmWrapper::KeyError,
+                                           SessionInfo(key_system_, session_id),
+                                           error_code,
+                                           system_code));
 }
 
-void CdmWrapper::SendKeyAdded(const std::string& session_id) {
-  PostOnMain(callback_factory_.NewCallback(&CdmWrapper::KeyAdded,session_id));
-}
-
-void CdmWrapper::KeyAdded(int32_t result, const std::string& session_id) {
+void CdmWrapper::KeyAdded(int32_t result, const SessionInfo& session_info) {
   PP_DCHECK(result == PP_OK);
-  PP_DCHECK(!key_system_.empty());
-  pp::ContentDecryptor_Private::KeyAdded(key_system_, session_id);
+  PP_DCHECK(!session_info.key_system.empty());
+  pp::ContentDecryptor_Private::KeyAdded(session_info.key_system,
+                                         session_info.session_id);
 }
 
 void CdmWrapper::KeyMessage(int32_t result,
-                            const std::string& session_id,
+                            const SessionInfo& session_info,
                             const std::string& message,
                             const std::string& default_url) {
   PP_DCHECK(result == PP_OK);
+  PP_DCHECK(!session_info.key_system.empty());
 
   pp::VarArrayBuffer message_array_buffer(message.size());
   if (message.size() > 0) {
     memcpy(message_array_buffer.Map(), message.data(), message.size());
   }
 
-  PP_DCHECK(!key_system_.empty());
   pp::ContentDecryptor_Private::KeyMessage(
-      key_system_, session_id, message_array_buffer, default_url);
+      session_info.key_system, session_info.session_id,
+      message_array_buffer, default_url);
 }
 
 void CdmWrapper::KeyError(int32_t result,
-                          const std::string& session_id,
+                          const SessionInfo& session_info,
                           cdm::MediaKeyError error_code,
                           uint32_t system_code) {
   PP_DCHECK(result == PP_OK);
-  PP_DCHECK(!key_system_.empty());
+  PP_DCHECK(!session_info.key_system.empty());
   pp::ContentDecryptor_Private::KeyError(
-      key_system_, session_id, error_code, system_code);
+      session_info.key_system, session_info.session_id,
+      error_code, system_code);
 }
 
 void CdmWrapper::DeliverBlock(int32_t result,
