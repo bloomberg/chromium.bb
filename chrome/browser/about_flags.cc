@@ -430,15 +430,6 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnablePnacl)
   },
-  // TODO(bbudge): When NaCl switches to the IPC-based proxy, remove this
-  // flag entry.
-  {
-    "enable-nacl-srpc-proxy",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_ENABLE_NACL_SRPC_PROXY_NAME,
-    IDS_FLAGS_ENABLE_NACL_SRPC_PROXY_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableNaClSRPCProxy)
-  },
   {
     "extension-apis",  // FLAGS:RECORD_UMA
     IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME,
