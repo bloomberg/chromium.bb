@@ -40,7 +40,7 @@
 #include "content/public/common/process_type.h"
 #include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
