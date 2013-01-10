@@ -244,8 +244,6 @@ class ChromotingHostTest : public testing::Test {
         desktop_environment_factory_.get(),
         base::TimeDelta());
     connection_ptr->set_host_stub(client);
-    connection_ptr->set_input_stub(
-        client->desktop_environment()->event_executor());
 
     ui_task_runner_->PostTask(
         FROM_HERE, base::Bind(&ChromotingHostTest::AddClientToHost,
