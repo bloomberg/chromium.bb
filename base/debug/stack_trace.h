@@ -86,7 +86,11 @@ namespace internal {
 // conversion was successful or NULL otherwise. It never writes more than "sz"
 // bytes. Output will be truncated as needed, and a NUL character is always
 // appended.
-BASE_EXPORT char *itoa_r(intptr_t i, char *buf, size_t sz, int base);
+BASE_EXPORT char *itoa_r(intptr_t i,
+                         char *buf,
+                         size_t sz,
+                         int base,
+                         size_t padding);
 #endif  // defined(OS_POSIX) && !defined(OS_ANDROID)
 
 }  // namespace internal

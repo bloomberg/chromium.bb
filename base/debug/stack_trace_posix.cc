@@ -114,7 +114,8 @@ class BacktraceOutputHandler {
 void OutputPointer(void* pointer, BacktraceOutputHandler* handler) {
   char buf[1024] = { '\0' };
   handler->HandleOutput(" [0x");
-  internal::itoa_r(reinterpret_cast<intptr_t>(pointer), buf, sizeof(buf), 16);
+  internal::itoa_r(reinterpret_cast<intptr_t>(pointer),
+                   buf, sizeof(buf), 16, 12);
   handler->HandleOutput(buf);
   handler->HandleOutput("]");
 }
@@ -127,7 +128,8 @@ void ProcessBacktrace(void *const *trace,
 
 #if defined(USE_SYMBOLIZE)
   for (int i = 0; i < size; ++i) {
-    handler->HandleOutput("\t");
+    OutputPointer(trace[i], handler);
+    handler->HandleOutput(" ");
 
     char buf[1024] = { '\0' };
 
@@ -139,7 +141,6 @@ void ProcessBacktrace(void *const *trace,
     else
       handler->HandleOutput("<unknown>");
 
-    OutputPointer(trace[i], handler);
     handler->HandleOutput("\n");
   }
 #else
@@ -183,13 +184,57 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, ucontext_t* context) {
 
   char buf[1024] = "Received signal ";
   size_t buf_len = strlen(buf);
-  internal::itoa_r(signal, buf + buf_len, sizeof(buf) - buf_len, 10);
+  internal::itoa_r(signal, buf + buf_len, sizeof(buf) - buf_len, 10, 0);
   RAW_LOG(ERROR, buf);
 
   debug::StackTrace().PrintBacktrace();
 
-  // TODO(shess): Port to Linux.
-#if defined(OS_MACOSX)
+#if defined(OS_LINUX)
+  // TODO(phajdan.jr): Port to 32-bit.
+#if ARCH_CPU_X86_FAMILY && ARCH_CPU_64_BITS
+  const struct {
+    const char* label;
+    greg_t value;
+  } registers[] = {
+    { "  r8: ", context->uc_mcontext.gregs[REG_R8] },
+    { "  r9: ", context->uc_mcontext.gregs[REG_R9] },
+    { " r10: ", context->uc_mcontext.gregs[REG_R10] },
+    { " r11: ", context->uc_mcontext.gregs[REG_R11] },
+    { " r12: ", context->uc_mcontext.gregs[REG_R12] },
+    { " r13: ", context->uc_mcontext.gregs[REG_R13] },
+    { " r14: ", context->uc_mcontext.gregs[REG_R14] },
+    { " r15: ", context->uc_mcontext.gregs[REG_R15] },
+    { "  di: ", context->uc_mcontext.gregs[REG_RDI] },
+    { "  si: ", context->uc_mcontext.gregs[REG_RSI] },
+    { "  bp: ", context->uc_mcontext.gregs[REG_RBP] },
+    { "  bx: ", context->uc_mcontext.gregs[REG_RBX] },
+    { "  dx: ", context->uc_mcontext.gregs[REG_RDX] },
+    { "  ax: ", context->uc_mcontext.gregs[REG_RAX] },
+    { "  cx: ", context->uc_mcontext.gregs[REG_RCX] },
+    { "  sp: ", context->uc_mcontext.gregs[REG_RSP] },
+    { "  ip: ", context->uc_mcontext.gregs[REG_RIP] },
+    { " efl: ", context->uc_mcontext.gregs[REG_EFL] },
+    { " cgf: ", context->uc_mcontext.gregs[REG_CSGSFS] },
+    { " erf: ", context->uc_mcontext.gregs[REG_ERR] },
+    { " trp: ", context->uc_mcontext.gregs[REG_TRAPNO] },
+    { " msk: ", context->uc_mcontext.gregs[REG_OLDMASK] },
+    { " cr2: ", context->uc_mcontext.gregs[REG_CR2] },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(registers); i++) {
+    HANDLE_EINTR(write(STDERR_FILENO,
+                       registers[i].label,
+                       strlen(registers[i].label)));
+    internal::itoa_r(registers[i].value, buf, sizeof(buf), 16, 16);
+    HANDLE_EINTR(write(STDERR_FILENO, buf, strlen(buf)));
+
+    if ((i + 1) % 4 == 0) {
+      HANDLE_EINTR(write(STDERR_FILENO, "\n", 1));
+    }
+  }
+  HANDLE_EINTR(write(STDERR_FILENO, "\n", 1));
+#endif
+#elif defined(OS_MACOSX)
   // TODO(shess): Port to 64-bit.
 #if ARCH_CPU_X86_FAMILY && ARCH_CPU_32_BITS
   size_t len;
@@ -347,7 +392,7 @@ void StackTrace::OutputToStream(std::ostream* os) const {
 namespace internal {
 
 // NOTE: code from sandbox/linux/seccomp-bpf/demo.cc.
-char *itoa_r(intptr_t i, char *buf, size_t sz, int base) {
+char *itoa_r(intptr_t i, char *buf, size_t sz, int base, size_t padding) {
   // Make sure we can write at least one NUL byte.
   size_t n = 1;
   if (n > sz)
@@ -387,7 +432,10 @@ char *itoa_r(intptr_t i, char *buf, size_t sz, int base) {
     // Output the next digit.
     *ptr++ = "0123456789abcdef"[j % base];
     j /= base;
-  } while (j);
+
+    if (padding > 0)
+      padding--;
+  } while (j > 0 || padding > 0);
 
   // Terminate the output with a NUL character.
   *ptr = '\000';
