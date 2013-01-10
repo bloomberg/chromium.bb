@@ -668,3 +668,23 @@ bool GoogleUpdateSettings::SetExperimentLabels(
 
   return success;
 }
+
+bool GoogleUpdateSettings::ReadExperimentLabels(
+    bool system_install,
+    string16* experiment_labels) {
+  HKEY reg_root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+
+  // If this distribution does not set the experiment labels, don't bother
+  // reading.
+  bool success = false;
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  if (dist->ShouldSetExperimentLabels()) {
+    string16 client_state_path(
+        system_install ? dist->GetStateMediumKey() : dist->GetStateKey());
+    RegKey client_state(reg_root, client_state_path.c_str(), KEY_QUERY_VALUE);
+    success = client_state.ReadValue(google_update::kExperimentLabels,
+                                     experiment_labels) == ERROR_SUCCESS;
+  }
+
+  return success;
+}

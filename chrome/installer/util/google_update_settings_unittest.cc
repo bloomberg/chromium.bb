@@ -119,6 +119,7 @@ class GoogleUpdateSettingsTest : public testing::Test {
     BrowserDistribution* chrome =
         BrowserDistribution::GetSpecificDistribution(
             BrowserDistribution::CHROME_BROWSER);
+    std::wstring value;
 #if defined(GOOGLE_CHROME_BUILD)
     EXPECT_TRUE(chrome->ShouldSetExperimentLabels());
 
@@ -127,7 +128,6 @@ class GoogleUpdateSettingsTest : public testing::Test {
 
     // Validate that something is written. Only worry about the label itself.
     RegKey key;
-    std::wstring value;
     HKEY root = install == SYSTEM_INSTALL ?
         HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
     string16 state_key = install == SYSTEM_INSTALL ?
@@ -137,6 +137,9 @@ class GoogleUpdateSettingsTest : public testing::Test {
               key.Open(root, state_key.c_str(), KEY_QUERY_VALUE));
     EXPECT_EQ(ERROR_SUCCESS,
         key.ReadValue(google_update::kExperimentLabels, &value));
+    EXPECT_EQ(kTestExperimentLabel, value);
+    EXPECT_TRUE(GoogleUpdateSettings::ReadExperimentLabels(
+        install == SYSTEM_INSTALL, &value));
     EXPECT_EQ(kTestExperimentLabel, value);
     key.Close();
 
@@ -148,9 +151,13 @@ class GoogleUpdateSettingsTest : public testing::Test {
               key.Open(root, state_key.c_str(), KEY_QUERY_VALUE));
     EXPECT_EQ(ERROR_FILE_NOT_FOUND,
         key.ReadValue(google_update::kExperimentLabels, &value));
+    EXPECT_FALSE(GoogleUpdateSettings::ReadExperimentLabels(
+        install == SYSTEM_INSTALL, &value));
     key.Close();
 #else
     EXPECT_FALSE(chrome->ShouldSetExperimentLabels());
+    EXPECT_FALSE(GoogleUpdateSettings::ReadExperimentLabels(
+        install == SYSTEM_INSTALL, &value));
 #endif  // GOOGLE_CHROME_BUILD
   }
 
