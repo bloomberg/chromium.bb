@@ -1,23 +1,12 @@
 {
-  "description": "**THIS IS OBSOLETE, EDIT image_decoding_benchmark.json instead***",
+  "description": "A collection of image-heavy sites.",
+  "user_agent_type": "desktop",
   "pages": [
     {
-      "url": "file:///../../../chrome/test/data/image_decoding/image_decoding.html?gif",
-      "post_navigate_javascript_to_execute": "runBenchmark();",
-      "wait_for_javascript_expression": "isDone",
-      "image_decoding_benchmark_limit_results_to_min_iterations": true
+      "url": "http://www.free-pictures-photos.com/aviation/airplane-306.jpg"
     },
     {
-      "url": "file:///../../../chrome/test/data/image_decoding/image_decoding.html?jpg",
-      "post_navigate_javascript_to_execute": "runBenchmark();",
-      "wait_for_javascript_expression": "isDone",
-      "image_decoding_benchmark_limit_results_to_min_iterations": true
-    },
-    {
-      "url": "file:///../../../chrome/test/data/image_decoding/image_decoding.html?png",
-      "post_navigate_javascript_to_execute": "runBenchmark();",
-      "wait_for_javascript_expression": "isDone",
-      "image_decoding_benchmark_limit_results_to_min_iterations": true
+      "url": "http://upload.wikimedia.org/wikipedia/commons/c/cb/General_history%2C_Alaska_Yukon_Pacific_Exposition%2C_fully_illustrated_-_meet_me_in_Seattle_1909_-_Page_78.jpg"
     }
   ]
 }
