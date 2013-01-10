@@ -99,6 +99,10 @@ class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
   virtual void PushAlreadyLocked();
   virtual void PopAlreadyLocked();
 
+  // The VideoDecoder needs to be able to call Graphics3D Flush() after taking
+  // the proxy lock. Hence it needs access to ScopedNoLocking.
+  friend class PPB_VideoDecoder_Shared;
+
   scoped_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
   scoped_ptr<gpu::TransferBuffer> transfer_buffer_;
   scoped_ptr<gpu::gles2::GLES2Implementation> gles2_impl_;
