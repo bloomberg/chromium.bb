@@ -113,7 +113,7 @@
             ],
           },
           'msvs_disabled_warnings': [
-            4018, 4244,
+            4018, 4244, 4267,
           ],
           'conditions': [
             ['OS=="linux"', {
