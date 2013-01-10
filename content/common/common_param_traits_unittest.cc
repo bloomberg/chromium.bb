@@ -23,7 +23,6 @@ TEST(IPCMessageTest, Serialize) {
   const char* serialize_cases[] = {
     "http://www.google.com/",
     "http://user:pass@host.com:888/foo;bar?baz#nop",
-    "#inva://idurl/",
   };
 
   for (size_t i = 0; i < arraysize(serialize_cases); i++) {
@@ -47,6 +46,15 @@ TEST(IPCMessageTest, Serialize) {
     EXPECT_EQ(input.path(), output.path());
     EXPECT_EQ(input.query(), output.query());
     EXPECT_EQ(input.ref(), output.ref());
+  }
+
+  // Test an invalid GURL.
+  {
+    IPC::Message msg;
+    msg.WriteString("#inva://idurl/");
+    GURL output;
+    PickleIterator iter(msg);
+    EXPECT_FALSE(IPC::ParamTraits<GURL>::Read(&msg, &iter, &output));
   }
 
   // Also test the corrupt case.

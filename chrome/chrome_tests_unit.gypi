@@ -1446,7 +1446,6 @@
         'common/child_process_logging_mac_unittest.mm',
         'common/chrome_paths_unittest.cc',
         'common/cloud_print/cloud_print_helpers_unittest.cc',
-        'common/common_param_traits_unittest.cc',
         'common/chrome_content_client_unittest.cc',
         'common/content_settings_helper_unittest.cc',
         'common/content_settings_pattern_parser_unittest.cc',

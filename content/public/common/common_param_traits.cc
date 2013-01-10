@@ -58,13 +58,8 @@ void ParamTraits<GURL>::Write(Message* m, const GURL& p) {
   // type as GURL. See https://crbug.com/166486 for additional work in
   // this area.
   if (!p.is_valid()) {
-    GURL reconstructed_url(p.possibly_invalid_spec());
-    if (reconstructed_url.is_valid()) {
-      DLOG(WARNING) << "GURL string " << p.possibly_invalid_spec()
-                    << " (marked invalid) but parsed as valid.";
-      m->WriteString(std::string());
-      return;
-    }
+    m->WriteString(std::string());
+    return;
   }
 
   m->WriteString(p.possibly_invalid_spec());
@@ -78,6 +73,10 @@ bool ParamTraits<GURL>::Read(const Message* m, PickleIterator* iter, GURL* p) {
     return false;
   }
   *p = GURL(s);
+  if (!s.empty() && !p->is_valid()) {
+    *p = GURL();
+    return false;
+  }
   return true;
 }
 
