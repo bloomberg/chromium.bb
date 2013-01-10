@@ -27,6 +27,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/browser/webdata/keyword_table.h"
+#include "chrome/browser/webdata/web_data_request_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "sql/init_status.h"
 
@@ -100,106 +101,6 @@ class WebDataService
       public AutofillWebData,
       public RefcountedProfileKeyedService {
  public:
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Internal requests
-  //
-  // Every request is processed using a request object. The object contains
-  // both the request parameters and the results.
-  //////////////////////////////////////////////////////////////////////////////
-  class WebDataRequest {
-   public:
-    WebDataRequest(WebDataService* service,
-                   Handle handle,
-                   WebDataServiceConsumer* consumer);
-
-    virtual ~WebDataRequest();
-
-    Handle GetHandle() const;
-
-    // Retrieves the |consumer_| set in the constructor.  If the request was
-    // cancelled via the |Cancel()| method then |true| is returned and
-    // |*consumer| is set to NULL.  The |consumer| parameter may be set to NULL
-    // if only the return value is desired.
-    bool IsCancelled(WebDataServiceConsumer** consumer) const;
-
-    // This can be invoked from any thread. From this point we assume that
-    // our consumer_ reference is invalid.
-    void Cancel();
-
-    // Invoked by the service when this request has been completed.
-    // This will notify the service in whatever thread was used to create this
-    // request.
-    void RequestComplete();
-
-    // The result is owned by the request.
-    void SetResult(WDTypedResult* r);
-    const WDTypedResult* GetResult() const;
-
-   private:
-    scoped_refptr<WebDataService> service_;
-    MessageLoop* message_loop_;
-    Handle handle_;
-
-    // A lock to protect against simultaneous cancellations of the request.
-    // Cancellation affects both the |cancelled_| flag and |consumer_|.
-    mutable base::Lock cancel_lock_;
-    bool cancelled_;
-    WebDataServiceConsumer* consumer_;
-
-    WDTypedResult* result_;
-
-    DISALLOW_COPY_AND_ASSIGN(WebDataRequest);
-  };
-
-  //
-  // Internally we use instances of the following template to represent
-  // requests.
-  //
-  template <class T>
-  class GenericRequest : public WebDataRequest {
-   public:
-    GenericRequest(WebDataService* service,
-                   Handle handle,
-                   WebDataServiceConsumer* consumer,
-                   const T& arg)
-        : WebDataRequest(service, handle, consumer),
-          arg_(arg) {
-    }
-
-    virtual ~GenericRequest() {
-    }
-
-    const T& arg() const { return arg_; }
-
-   private:
-    T arg_;
-  };
-
-  template <class T, class U>
-  class GenericRequest2 : public WebDataRequest {
-   public:
-    GenericRequest2(WebDataService* service,
-                    Handle handle,
-                    WebDataServiceConsumer* consumer,
-                    const T& arg1,
-                    const U& arg2)
-        : WebDataRequest(service, handle, consumer),
-          arg1_(arg1),
-          arg2_(arg2) {
-    }
-
-    virtual ~GenericRequest2() { }
-
-    const T& arg1() const { return arg1_; }
-
-    const U& arg2() const { return arg2_; }
-
-   private:
-    T arg1_;
-    U arg2_;
-  };
-
   WebDataService();
 
   // WebDataServiceBase implementation.
@@ -427,9 +328,6 @@ class WebDataService
   // Invoked by request implementations when a request has been processed.
   void RequestCompleted(Handle h);
 
-  // Register the request as a pending request.
-  void RegisterRequest(WebDataRequest* request);
-
   //////////////////////////////////////////////////////////////////////////////
   //
   // The following methods are only invoked in the web data service thread.
@@ -470,9 +368,6 @@ class WebDataService
 
   // Schedule a commit if one is not already pending.
   void ScheduleCommit();
-
-  // Return the next request handle.
-  int GetNextRequestHandle();
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -565,6 +460,11 @@ class WebDataService
   void RemoveAutofillProfilesAndCreditCardsModifiedBetweenImpl(
       GenericRequest2<base::Time, base::Time>* request);
 
+  // Callbacks to ensure that sensitive info is destroyed if request is
+  // cancelled.
+  void DestroyAutofillProfileResult(const WDTypedResult* result);
+  void DestroyAutofillCreditCardResult(const WDTypedResult* result);
+
   // True once initialization has started.
   bool is_running_;
 
@@ -574,6 +474,9 @@ class WebDataService
   // Our database.  We own the |db_|, but don't use a |scoped_ptr| because the
   // |db_| lifetime must be managed on the database thread.
   WebDatabase* db_;
+
+  // Keeps track of all pending requests made to the db.
+  WebDataRequestManager request_manager_;
 
   // Syncable services for the database data.  We own the services, but don't
   // use |scoped_ptr|s because the lifetimes must be managed on the database
@@ -589,15 +492,6 @@ class WebDataService
 
   // Whether we should commit the database.
   bool should_commit_;
-
-  // A lock to protect pending requests and next request handle.
-  base::Lock pending_lock_;
-
-  // Next handle to be used for requests. Incremented for each use.
-  Handle next_request_handle_;
-
-  typedef std::map<Handle, WebDataRequest*> RequestMap;
-  RequestMap pending_requests_;
 
   // MessageLoop the WebDataService is created on.
   MessageLoop* main_loop_;

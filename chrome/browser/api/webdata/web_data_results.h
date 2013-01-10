@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_API_WEBDATA_WEB_DATA_RESULTS_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
+
+class WDTypedResult;
 
 //
 // Result types for WebDataService.
@@ -29,32 +32,47 @@ typedef enum {
   WEB_INTENTS_DEFAULTS_RESULT, // WDResult<std::vector<DefaultWebIntentService>>
 } WDResultType;
 
+
+typedef base::Callback<void(const WDTypedResult*)> DestroyCallback;
+
 //
 // The top level class for a result.
 //
 class WDTypedResult {
  public:
-  virtual ~WDTypedResult() {}
+  virtual ~WDTypedResult();
 
   // Return the result type.
   WDResultType GetType() const {
     return type_;
   }
 
- protected:
-  explicit WDTypedResult(WDResultType type) : type_(type) {
+  void Destroy() const {
+    if (!callback_.is_null()) {
+      callback_.Run(this);
+    }
   }
+
+ protected:
+  explicit WDTypedResult(WDResultType type);
+
+  WDTypedResult(WDResultType type, const DestroyCallback& callback);
 
  private:
   WDResultType type_;
+  DestroyCallback callback_;
   DISALLOW_COPY_AND_ASSIGN(WDTypedResult);
 };
 
 // A result containing one specific pointer or literal value.
 template <class T> class WDResult : public WDTypedResult {
  public:
+  WDResult(WDResultType type, const T& v)
+      : WDTypedResult(type), value_(v) {
+  }
 
-  WDResult(WDResultType type, const T& v) : WDTypedResult(type), value_(v) {
+  WDResult(WDResultType type, const DestroyCallback& callback, const T& v)
+      : WDTypedResult(type, callback), value_(v) {
   }
 
   virtual ~WDResult() {
@@ -73,7 +91,12 @@ template <class T> class WDResult : public WDTypedResult {
 
 template <class T> class WDObjectResult : public WDTypedResult {
  public:
-  explicit WDObjectResult(WDResultType type) : WDTypedResult(type) {
+  explicit WDObjectResult(WDResultType type)
+    : WDTypedResult(type) {
+  }
+
+  WDObjectResult(WDResultType type, const DestroyCallback& callback)
+    : WDTypedResult(type, callback) {
   }
 
   T* GetValue() const {
