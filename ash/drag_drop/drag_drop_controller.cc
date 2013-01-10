@@ -225,7 +225,7 @@ void DragDropController::DragUpdate(aura::Window* target,
       else if (op & ui::DragDropTypes::DRAG_LINK)
         cursor = ui::kCursorAlias;
       else if (op & ui::DragDropTypes::DRAG_MOVE)
-        cursor = ui::kCursorMove;
+        cursor = ui::kCursorGrabbing;
       ash::Shell::GetInstance()->cursor_manager()->SetCursor(cursor);
     }
   }
