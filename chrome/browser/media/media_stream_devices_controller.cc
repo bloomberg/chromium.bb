@@ -224,11 +224,11 @@ void MediaStreamDevicesController::HandleTapMediaRequest() {
 
     if (request_.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE) {
       devices.push_back(content::MediaStreamDevice(
-          content::MEDIA_TAB_VIDEO_CAPTURE, "", ""));
+          content::MEDIA_TAB_AUDIO_CAPTURE, "", ""));
     }
     if (request_.video_type == content::MEDIA_TAB_VIDEO_CAPTURE) {
       devices.push_back(content::MediaStreamDevice(
-          content::MEDIA_TAB_AUDIO_CAPTURE, "", ""));
+          content::MEDIA_TAB_VIDEO_CAPTURE, "", ""));
     }
 
     callback_.Run(devices);

@@ -149,7 +149,7 @@ void MediaStreamDispatcherHost::OnGenerateStream(
     // refactored. http://crbug.com/163100
     const std::string& device_id =
         WebContentsCaptureUtil::AppendWebContentsDeviceScheme(
-            components.video_device_id.empty() ?
+            !components.video_device_id.empty() ?
             components.video_device_id : components.audio_device_id);
 
     // TODO(justinlin): Cleanup/get rid of GenerateStreamForDevice and merge

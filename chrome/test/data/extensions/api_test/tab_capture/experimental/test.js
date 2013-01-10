@@ -10,7 +10,7 @@ chrome.test.runTests([
     var tabCaptureEvents = [];
 
     var tabMediaRequestCallback = function(stream) {
-      chrome.test.assertTrue(stream !== undefined);
+      chrome.test.assertTrue(stream != null);
       stream.stop();
     };
 
@@ -49,7 +49,7 @@ chrome.test.runTests([
     }
 
     var tabMediaRequestCallback = function(stream) {
-      chrome.test.assertTrue(stream !== undefined);
+      chrome.test.assertTrue(stream != null);
       activeStream = stream;
       tabCapture.getCapturedTabs(capturedTabsAfterOpen);
     };
@@ -63,13 +63,13 @@ chrome.test.runTests([
     var tabMediaRequestCallback2 = function(stream) {
       chrome.test.assertLastError(
           'Cannot capture a tab with an active stream.');
-      chrome.test.assertTrue(stream === undefined);
+      chrome.test.assertTrue(stream == null);
       stream1.stop();
       chrome.test.succeed();
     };
 
     var tabMediaRequestCallback = function(stream) {
-      chrome.test.assertTrue(stream !== undefined);
+      chrome.test.assertTrue(stream != null);
       stream1 = stream;
       tabCapture.capture({audio: true, video: true}, tabMediaRequestCallback2);
     };
@@ -79,7 +79,8 @@ chrome.test.runTests([
 
   function supportsMediaConstraints() {
     var tabMediaRequestCallback = function(stream) {
-      chrome.test.assertTrue(stream !== null);
+      chrome.test.assertTrue(stream != null);
+      stream.stop();
       chrome.test.succeed();
     };
 
@@ -99,7 +100,8 @@ chrome.test.runTests([
 
   function onlyVideo() {
     var tabMediaRequestCallback = function(stream) {
-      chrome.test.assertTrue(stream !== null);
+      chrome.test.assertTrue(stream != null);
+      stream.stop();
       chrome.test.succeed();
     };
 
@@ -108,7 +110,8 @@ chrome.test.runTests([
 
   function onlyAudio() {
     var tabMediaRequestCallback = function(stream) {
-      chrome.test.assertTrue(stream !== null);
+      chrome.test.assertTrue(stream != null);
+      stream.stop();
       chrome.test.succeed();
     };
 
@@ -117,7 +120,7 @@ chrome.test.runTests([
 
   function noAudioOrVideoRequested() {
     var tabMediaRequestCallback = function(stream) {
-      chrome.test.assertTrue(stream === undefined);
+      chrome.test.assertTrue(stream == null);
       chrome.test.succeed();
     };
 
