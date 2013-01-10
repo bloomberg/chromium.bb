@@ -26,6 +26,7 @@ import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.HistoryUtils;
+import org.chromium.content.common.DeviceInfo;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.regex.Matcher;
@@ -848,6 +849,8 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
                 AwContents awContents,
                 TestAwContentsClient contentViewClient) throws Throwable {
             super(awContents, contentViewClient);
+            // Font autosizing doesn't step in for narrow layout widths.
+            mContentSettings.setUseWideViewPort(true);
         }
 
         @Override
@@ -1049,6 +1052,59 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
         private int mIndex;
         private TestWebServer mWebServer;
+    }
+
+    // To verify whether UseWideViewport works, we check, if the page width specified
+    // in the "meta viewport" tag is applied. When UseWideViewport is turned off, the
+    // "viewport" tag is ignored, and the layout width is set to device width in DIP pixels.
+    // We specify a very high width value to make sure that it doesn't intersect with
+    // device screen widths (in DIP pixels).
+    class AwSettingsUseWideViewportTestHelper extends AwSettingsTestHelper<Boolean> {
+        static private final String VIEWPORT_TAG_LAYOUT_WIDTH = "3000";
+
+        AwSettingsUseWideViewportTestHelper(
+                AwContents awContents,
+                TestAwContentsClient contentViewClient) throws Throwable {
+            super(awContents, contentViewClient, true);
+        }
+
+        @Override
+        protected Boolean getAlteredValue() {
+            return ENABLED;
+        }
+
+        @Override
+        protected Boolean getInitialValue() {
+            return DISABLED;
+        }
+
+        @Override
+        protected Boolean getCurrentValue() {
+            return mContentSettings.getUseWideViewPort();
+        }
+
+        @Override
+        protected void setCurrentValue(Boolean value) {
+            mContentSettings.setUseWideViewPort(value);
+        }
+
+        @Override
+        protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
+            loadDataSync(getData());
+            final String bodyWidth = getTitleOnUiThread();
+            if (value) {
+                assertTrue(bodyWidth, VIEWPORT_TAG_LAYOUT_WIDTH.equals(bodyWidth));
+            } else {
+                assertFalse(bodyWidth, VIEWPORT_TAG_LAYOUT_WIDTH.equals(bodyWidth));
+            }
+        }
+
+        private String getData() {
+            return "<html><head>" +
+                    "<meta name='viewport' content='width=" + VIEWPORT_TAG_LAYOUT_WIDTH + "' />" +
+                    "</head>" +
+                    "<body onload='document.title=document.body.clientWidth'></body></html>";
+        }
     }
 
     // The test verifies that JavaScript is disabled upon WebView
@@ -2010,6 +2066,75 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         } finally {
             if (webServer != null) webServer.shutdown();
         }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testUseWideViewportWithTwoViews() throws Throwable {
+        ViewPair views = createViews();
+        runPerViewSettingsTest(
+            new AwSettingsUseWideViewportTestHelper(views.getContents0(), views.getClient0()),
+            new AwSettingsUseWideViewportTestHelper(views.getContents1(), views.getClient1()));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testUseWideViewportLayoutWidth() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(contentClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        ContentSettings settings = getContentSettingsOnUiThread(awContents);
+        CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
+
+        final String pageTemplate = "<html><head>%s</head>" +
+                "<body onload='document.title=document.body.clientWidth'></body></html>";
+        final String pageNoViewport = String.format(pageTemplate, "");
+        final String pageViewportDeviceWidth = String.format(
+                pageTemplate,
+                "<meta name='viewport' content='width=device-width' />");
+        final String viewportTagSpecifiedWidth = "3000";
+        final String pageViewportSpecifiedWidth = String.format(
+                pageTemplate,
+                "<meta name='viewport' content='width=" + viewportTagSpecifiedWidth + "' />");
+
+        DeviceInfo deviceInfo = DeviceInfo.create(getInstrumentation().getTargetContext());
+        int displayWidth = (int) (deviceInfo.getWidth() / deviceInfo.getDPIScale());
+
+        settings.setJavaScriptEnabled(true);
+        assertFalse(settings.getUseWideViewPort());
+        // When UseWideViewPort is off, "meta viewport" tags are ignored,
+        // and the layout width is set to device width in CSS pixels.
+        // Thus, all 3 pages will have the same body width.
+        loadDataSync(awContents, onPageFinishedHelper, pageNoViewport, "text/html", false);
+        int actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
+        // Avoid rounding errors.
+        assertTrue("Expected: " + displayWidth + ", Actual: " + actualWidth,
+                Math.abs(displayWidth - actualWidth) <= 1);
+        loadDataSync(awContents, onPageFinishedHelper, pageViewportDeviceWidth, "text/html", false);
+        actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
+        assertTrue("Expected: " + displayWidth + ", Actual: " + actualWidth,
+                Math.abs(displayWidth - actualWidth) <= 1);
+        loadDataSync(
+                awContents, onPageFinishedHelper, pageViewportSpecifiedWidth, "text/html", false);
+        actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
+        assertTrue("Expected: " + displayWidth + ", Actual: " + actualWidth,
+                Math.abs(displayWidth - actualWidth) <= 1);
+
+        settings.setUseWideViewPort(true);
+        // When UseWideViewPort is on, "meta viewport" tag is used.
+        // If there is no viewport tag, or width isn't specified,
+        // then layout width is set to max(980, <device-width-in-DIP-pixels>)
+        loadDataSync(awContents, onPageFinishedHelper, pageNoViewport, "text/html", false);
+        actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
+        assertTrue("Expected: >= 980 , Actual: " + actualWidth, actualWidth >= 980);
+        loadDataSync(awContents, onPageFinishedHelper, pageViewportDeviceWidth, "text/html", false);
+        actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
+        assertTrue("Expected: " + displayWidth + ", Actual: " + actualWidth,
+                Math.abs(displayWidth - actualWidth) <= 1);
+        loadDataSync(
+                awContents, onPageFinishedHelper, pageViewportSpecifiedWidth, "text/html", false);
+        assertEquals(viewportTagSpecifiedWidth, getTitleOnUiThread(awContents));
     }
 
     static class ViewPair {

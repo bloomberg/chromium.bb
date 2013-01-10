@@ -3277,9 +3277,7 @@ void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
   webview()->enableFixedLayoutMode(enable_fixed_layout || enable_viewport);
   webview()->settings()->setFixedElementsLayoutRelativeToFrame(true);
 
-  if (enable_viewport) {
-    webview()->settings()->setViewportEnabled(true);
-  } else if (enable_fixed_layout) {
+  if (!enable_viewport && enable_fixed_layout) {
     std::string str =
         command_line.GetSwitchValueASCII(switches::kEnableFixedLayout);
     std::vector<std::string> tokens;

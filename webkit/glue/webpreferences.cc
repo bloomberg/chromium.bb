@@ -138,6 +138,7 @@ WebPreferences::WebPreferences()
       editing_behavior(EDITING_BEHAVIOR_MAC),
 #endif
       supports_multiple_windows(true),
+      viewport_enabled(false),
       cookie_enabled(true)
 #if defined(OS_ANDROID)
       ,
@@ -474,6 +475,8 @@ void WebPreferences::Apply(WebView* web_view) const {
       static_cast<WebSettings::EditingBehavior>(editing_behavior));
 
   settings->setSupportsMultipleWindows(supports_multiple_windows);
+
+  settings->setViewportEnabled(viewport_enabled);
 
 #if defined(OS_ANDROID)
   settings->setAllowCustomScrollbarInMainFrame(false);

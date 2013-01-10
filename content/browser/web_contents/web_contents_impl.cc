@@ -652,6 +652,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
 
   prefs.number_of_cpu_cores = base::SysInfo::NumberOfProcessors();
 
+  prefs.viewport_enabled = command_line.HasSwitch(switches::kEnableViewport);
+
   prefs.deferred_image_decoding_enabled =
       command_line.HasSwitch(switches::kEnableDeferredImageDecoding);
 

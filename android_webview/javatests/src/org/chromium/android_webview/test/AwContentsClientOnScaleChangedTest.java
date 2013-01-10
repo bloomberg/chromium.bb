@@ -56,6 +56,7 @@ public class AwContentsClientOnScaleChangedTest extends AndroidWebViewTestBase {
 
     @SmallTest
     public void testScaleUp() throws Throwable {
+        getContentSettingsOnUiThread(mAwContents).setUseWideViewPort(true);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
              CommonResources.ABOUT_HTML, "text/html", false);
         ContentViewCore core = mAwContents.getContentViewCore();

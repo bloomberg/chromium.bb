@@ -80,6 +80,8 @@ struct ContentSettings::FieldIds {
         GetFieldID(env, clazz, "mSupportMultipleWindows", "Z");
     dom_storage_enabled =
         GetFieldID(env, clazz, "mDomStorageEnabled", "Z");
+    use_wide_viewport =
+        GetFieldID(env, clazz, "mUseWideViewport", "Z");
   }
 
   // Field ids
@@ -104,6 +106,7 @@ struct ContentSettings::FieldIds {
   jfieldID java_script_can_open_windows_automatically;
   jfieldID support_multiple_windows;
   jfieldID dom_storage_enabled;
+  jfieldID use_wide_viewport;
 };
 
 ContentSettings::ContentSettings(JNIEnv* env,
@@ -257,6 +260,12 @@ void ContentSettings::SyncFromNativeImpl() {
       field_ids_->dom_storage_enabled,
       prefs.local_storage_enabled);
   CheckException(env);
+
+  env->SetBooleanField(
+      obj,
+      field_ids_->use_wide_viewport,
+      prefs.viewport_enabled);
+  CheckException(env);
 }
 
 void ContentSettings::SyncToNativeImpl() {
@@ -360,6 +369,9 @@ void ContentSettings::SyncToNativeImpl() {
 
   prefs.local_storage_enabled = env->GetBooleanField(
       obj, field_ids_->dom_storage_enabled);
+
+  prefs.viewport_enabled = env->GetBooleanField(
+      obj, field_ids_->use_wide_viewport);
 
   render_view_host->UpdateWebkitPreferences(prefs);
 }

@@ -109,7 +109,7 @@ public class DeviceInfo {
   }
 
   @CalledByNative
-  private static DeviceInfo create(Context context) {
+  public static DeviceInfo create(Context context) {
       return new DeviceInfo(context);
   }
 }

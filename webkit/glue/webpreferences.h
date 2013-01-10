@@ -153,6 +153,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   int number_of_cpu_cores;
   EditingBehavior editing_behavior;
   bool supports_multiple_windows;
+  bool viewport_enabled;
 
   // This flags corresponds to a Page's Settings' setCookieEnabled state. It
   // only controls whether or not the "document.cookie" field is properly
