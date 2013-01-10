@@ -367,7 +367,7 @@ BubbleBorder::BorderImages* BubbleBorder::GetBorderImages(Shadow shadow) {
     case SMALL_SHADOW:
       images = new BorderImages(kSmallShadowImages,
                                 arraysize(kSmallShadowImages),
-                                9, 0, 3);
+                                6, 0, 3);
       break;
     case SHADOW_COUNT:
       NOTREACHED();

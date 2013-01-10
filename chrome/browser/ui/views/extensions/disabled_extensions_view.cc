@@ -86,10 +86,6 @@ DisabledExtensionsView::DisabledExtensionsView(
   set_move_with_anchor(true);
   set_close_on_esc(true);
 
-  // TODO(finnur): Until http://crbug.com/165808 is fixed, we need to turn off
-  // the shadow because it causes the bubble to overlap the window border.
-  set_shadow(views::BubbleBorder::NO_SHADOW);
-
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_insets(gfx::Insets(5, 0, 5, 0));
 
