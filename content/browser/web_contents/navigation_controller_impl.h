@@ -23,6 +23,7 @@ class PlatformBitmap;
 
 namespace content {
 class NavigationEntryImpl;
+class RenderViewHost;
 class WebContentsImpl;
 class SiteInstance;
 struct LoadCommittedDetails;
@@ -199,6 +200,12 @@ class CONTENT_EXPORT NavigationControllerImpl
   void SetGetTimestampCallbackForTest(
       const base::Callback<base::Time()>& get_timestamp_callback);
 
+  // Takes a screenshot of the page at the current state.
+  void TakeScreenshot();
+
+  void SetTakeScreenshotCallbackForTest(
+      const base::Callback<void(RenderViewHost*)>& take_screenshot_callback);
+
  private:
   friend class RestoreHelper;
   friend class WebContentsImpl;  // For invoking OnReservedPageIDRange.
@@ -312,9 +319,6 @@ class CONTENT_EXPORT NavigationControllerImpl
   // specified |offset|.  The index returned is not guaranteed to be valid.
   int GetIndexForOffset(int offset) const;
 
-  // Takes a screenshot of the page at the current state.
-  void TakeScreenshot();
-
   // The callback invoked when taking the screenshot of the page is complete.
   // This sets the screenshot on the navigation entry.
   void OnScreenshotTaken(int unique_id,
@@ -390,6 +394,10 @@ class CONTENT_EXPORT NavigationControllerImpl
 
   // Used to get timestamps for newly-created navigation entries.
   base::Callback<base::Time()> get_timestamp_callback_;
+
+  // A callback that gets called before taking the screenshot of the page. This
+  // is used only for testing.
+  base::Callback<void(RenderViewHost*)> take_screenshot_callback_;
 
   // Used to smooth out timestamps from |get_timestamp_callback_|.
   // Without this, whenever there is a run of redirects or

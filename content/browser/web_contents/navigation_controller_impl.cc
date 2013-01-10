@@ -493,6 +493,9 @@ void NavigationControllerImpl::TakeScreenshot() {
   if (!view)
     return;
 
+  if (!take_screenshot_callback_.is_null())
+    take_screenshot_callback_.Run(render_view_host);
+
   skia::PlatformBitmap* temp_bitmap = new skia::PlatformBitmap;
   render_view_host->CopyFromBackingStore(gfx::Rect(),
       view->GetViewBounds().size(),
@@ -753,12 +756,6 @@ void NavigationControllerImpl::DocumentLoadedInFrame() {
 bool NavigationControllerImpl::RendererDidNavigate(
     const ViewHostMsg_FrameNavigate_Params& params,
     LoadCommittedDetails* details) {
-  // When navigating away from the current page, take a screenshot of it in the
-  // current state so that it can be used during an overscroll-navigation
-  // gesture.
-  if (details->is_main_frame)
-    TakeScreenshot();
-
   // Save the previous state before we clobber it.
   if (GetLastCommittedEntry()) {
     details->previous_url = GetLastCommittedEntry()->GetURL();
@@ -1681,6 +1678,11 @@ void NavigationControllerImpl::InsertEntriesFrom(
 void NavigationControllerImpl::SetGetTimestampCallbackForTest(
     const base::Callback<base::Time()>& get_timestamp_callback) {
   get_timestamp_callback_ = get_timestamp_callback;
+}
+
+void NavigationControllerImpl::SetTakeScreenshotCallbackForTest(
+    const base::Callback<void(RenderViewHost*)>& take_screenshot_callback) {
+  take_screenshot_callback_ = take_screenshot_callback;
 }
 
 }  // namespace content

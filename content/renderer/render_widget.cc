@@ -967,7 +967,7 @@ void RenderWidget::DoDeferredUpdate() {
   }
 
   // Suppress updating when we are hidden.
-  if (is_hidden_ || size_.IsEmpty()) {
+  if (is_hidden_ || size_.IsEmpty() || is_swapped_out_) {
     paint_aggregator_.ClearPendingUpdate();
     needs_repainting_on_restore_ = true;
     TRACE_EVENT0("renderer", "EarlyOut_NotVisible");

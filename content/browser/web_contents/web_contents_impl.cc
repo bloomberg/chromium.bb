@@ -2670,8 +2670,17 @@ void WebContentsImpl::RenderViewDeleted(RenderViewHost* rvh) {
 void WebContentsImpl::DidNavigate(
     RenderViewHost* rvh,
     const ViewHostMsg_FrameNavigate_Params& params) {
-  if (PageTransitionIsMainFrame(params.transition))
+  if (PageTransitionIsMainFrame(params.transition)) {
+    // When overscroll navigation gesture is enabled, a screenshot of the page
+    // in its current state is taken so that it can be used during the
+    // nav-gesture. It is necessary to take the screenshot here, before calling
+    // RenderViewHostManager::DidNavigateMainFrame, because that can change
+    // WebContents::GetRenderViewHost to return the new host, instead of the one
+    // that may have just been swapped out.
+    controller_.TakeScreenshot();
+
     render_manager_.DidNavigateMainFrame(rvh);
+  }
 
   // Update the site of the SiteInstance if it doesn't have one yet, unless
   // this is for about:blank.  In that case, the SiteInstance can still be

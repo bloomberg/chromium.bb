@@ -25,6 +25,43 @@
 
 namespace content {
 
+// A dummy callback to reset the screenshot-taker callback.
+void DummyCallback(RenderViewHost* host) {
+}
+
+// This class keeps track of the RenderViewHost whose screenshot was captured.
+class ScreenshotTracker {
+ public:
+  explicit ScreenshotTracker(NavigationControllerImpl* controller)
+      : screenshot_taken_for_(NULL),
+        controller_(controller) {
+    controller_->SetTakeScreenshotCallbackForTest(
+        base::Bind(&ScreenshotTracker::TakeScreenshotCallback,
+                   base::Unretained(this)));
+  }
+
+  virtual ~ScreenshotTracker() {
+    controller_->SetTakeScreenshotCallbackForTest(
+        base::Bind(&DummyCallback));
+  }
+
+  RenderViewHost* screenshot_taken_for() { return screenshot_taken_for_; }
+
+  void Reset() {
+    screenshot_taken_for_ = NULL;
+  }
+
+ private:
+  void TakeScreenshotCallback(RenderViewHost* host) {
+    screenshot_taken_for_ = host;
+  }
+
+  RenderViewHost* screenshot_taken_for_;
+  NavigationControllerImpl* controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenshotTracker);
+};
+
 class WebContentsViewAuraTest : public ContentBrowserTest {
  public:
   WebContentsViewAuraTest() {}
@@ -360,6 +397,60 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     entry = NavigationEntryImpl::FromNavigationEntry(
         web_contents->GetController().GetEntryAtIndex(4));
     EXPECT_TRUE(entry->screenshot().get());
+  }
+}
+
+// Tests that screenshot is taken correctly when navigation causes a
+// RenderViewHost to be swapped out.
+IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
+                       ScreenshotForSwappedOutRenderViews) {
+  ASSERT_NO_FATAL_FAILURE(
+      StartTestWithPage("files/overscroll_navigation.html"));
+  // Create a new server with a different site.
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS,
+      net::TestServer::kLocalhost,
+      FilePath(FILE_PATH_LITERAL("content/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  struct {
+    GURL url;
+    int transition;
+  } navigations[] = {
+    { https_server.GetURL("files/title1.html"),
+      PAGE_TRANSITION_TYPED | PAGE_TRANSITION_FROM_ADDRESS_BAR },
+    { test_server()->GetURL("files/title2.html"),
+      PAGE_TRANSITION_AUTO_BOOKMARK },
+    { https_server.GetURL("files/title3.html"),
+      PAGE_TRANSITION_TYPED | PAGE_TRANSITION_FROM_ADDRESS_BAR },
+    { GURL(), 0 }
+  };
+
+  ScreenshotTracker tracker(&web_contents->GetController());
+  for (int i = 0; !navigations[i].url.is_empty(); ++i) {
+    // Navigate via the user initiating a navigation from the UI.
+    NavigationController::LoadURLParams params(navigations[i].url);
+    params.transition_type = PageTransitionFromInt(navigations[i].transition);
+
+    RenderViewHost* old_host = web_contents->GetRenderViewHost();
+    web_contents->GetController().LoadURLWithParams(params);
+    WaitForLoadStop(web_contents);
+
+    EXPECT_NE(old_host, web_contents->GetRenderViewHost())
+        << navigations[i].url.spec();
+    EXPECT_EQ(old_host, tracker.screenshot_taken_for());
+    tracker.Reset();
+
+    NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
+        web_contents->GetController().GetEntryAtOffset(-1));
+    EXPECT_TRUE(entry->screenshot().get());
+
+    entry = NavigationEntryImpl::FromNavigationEntry(
+        web_contents->GetController().GetActiveEntry());
+    EXPECT_FALSE(entry->screenshot().get());
   }
 }
 
