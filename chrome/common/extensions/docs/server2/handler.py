@@ -79,7 +79,7 @@ def _GetURLFromBranch(branch):
       return url_constants.SVN_TRUNK_URL + '/src'
     return url_constants.SVN_BRANCH_URL + '/' + branch + '/src'
 
-def _SplitFilenameUnix(files):
+def _SplitFilenameUnix(base_dir, files):
   return [UnixName(os.path.splitext(f.split('/')[-1])[0]) for f in files]
 
 def _CreateMemcacheFileSystem(branch, branch_memcache):
@@ -171,6 +171,7 @@ def _GetInstanceForBranch(channel_name, local_path):
       KNOWN_ISSUES_DATA_SOURCE,
       sidenav_data_source_factory,
       cache_factory,
+      ref_resolver_factory,
       PUBLIC_TEMPLATE_PATH,
       PRIVATE_TEMPLATE_PATH)
   example_zipper = ExampleZipper(file_system,
@@ -276,14 +277,14 @@ class Handler(webapp.RequestHandler):
     factory = CompiledFileSystem.Factory(file_system, branch_memcache)
 
     needs_render = self._ValueHolder(False)
-    invalidation_cache = factory.Create(lambda _: needs_render.Set(True),
+    invalidation_cache = factory.Create(lambda _, __: needs_render.Set(True),
                                         compiled_fs.CRON_INVALIDATION,
                                         version=_VERSION)
     for path in [TEMPLATE_PATH, EXAMPLES_PATH, API_PATH]:
       invalidation_cache.GetFromFile(path + '/')
 
     if needs_render.Get():
-      file_listing_cache = factory.Create(lambda x: x,
+      file_listing_cache = factory.Create(lambda _, x: x,
                                           compiled_fs.CRON_FILE_LISTING)
       self._Render(file_listing_cache.GetFromFileListing(PUBLIC_TEMPLATE_PATH),
                    channel)
@@ -291,7 +292,7 @@ class Handler(webapp.RequestHandler):
       # If |needs_render| was True, this page was already rendered, and we don't
       # need to render again.
       github_invalidation_cache = GITHUB_COMPILED_FILE_SYSTEM.Create(
-          lambda _: needs_render.Set(True),
+          lambda _, __: needs_render.Set(True),
           compiled_fs.CRON_GITHUB_INVALIDATION)
       if needs_render.Get():
         self._Render([PUBLIC_TEMPLATE_PATH + '/apps/samples.html'], channel)

@@ -54,7 +54,7 @@ class APIListDataSource(object):
         'experimental': experimental_apis
       }
 
-    def _ListAPIs(self, apis):
+    def _ListAPIs(self, base_dir, apis):
       api_names = set(SanitizeAPIName(name, self._api_path) for name in apis)
       return {
         'apps': self._GetAPIsInSubdirectory(api_names, 'apps'),

@@ -22,7 +22,7 @@ class ServerInstance(object):
                cache_factory):
     self._template_data_source_factory = template_data_source_factory
     self._example_zipper = example_zipper
-    self._cache = cache_factory.Create(lambda x: x, compiled_fs.STATIC)
+    self._cache = cache_factory.Create(lambda _, x: x, compiled_fs.STATIC)
     mimetypes.init()
 
   def _FetchStaticResource(self, path, response):

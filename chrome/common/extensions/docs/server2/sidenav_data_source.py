@@ -36,7 +36,7 @@ class SidenavDataSource(object):
         if 'items' in item:
           self._AddLevels(item['items'], level + 1)
 
-    def _CreateSidenavDict(self, json_str):
+    def _CreateSidenavDict(self, json_path, json_str):
       items = json.loads(json_str)
       self._AddLevels(items, 2);
       return items

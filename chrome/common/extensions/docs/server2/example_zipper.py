@@ -18,7 +18,7 @@ class ExampleZipper(object):
                                            compiled_fs.ZIP)
     self._file_system = file_system
 
-  def _MakeZipFile(self, files):
+  def _MakeZipFile(self, base_dir, files):
     zip_path = os.path.commonprefix(files).rsplit('/', 1)[-2]
     prefix = zip_path.rsplit('/', 1)[-2]
     if zip_path + '/manifest.json' not in files:

@@ -3,8 +3,9 @@
 # found in the LICENSE file.
 
 from HTMLParser import HTMLParser
-import re
 import logging
+import os
+import re
 
 from docs_server_utils import FormatKey
 from file_system import FileNotFoundError
@@ -13,7 +14,7 @@ from third_party.handlebar import Handlebar
 
 # Increment this version if there are changes to the table of contents dict that
 # IntroDataSource caches.
-_VERSION = 3
+_VERSION = 4
 
 _H1_REGEX = re.compile('<h1[^>.]*?>.*?</h1>', flags=re.DOTALL)
 
@@ -71,8 +72,11 @@ class IntroDataSource(object):
       self._ref_resolver = ref_resolver_factory.Create()
       self._base_paths = base_paths
 
-    def _MakeIntroDict(self, intro):
-      intro_with_links = self._ref_resolver.ResolveAllLinks(intro, 'intro')
+    def _MakeIntroDict(self, intro_path, intro):
+      # Guess the name of the API from the path to the intro.
+      api_name = os.path.splitext(intro_path.split('/')[-1])[0]
+      intro_with_links = self._ref_resolver.ResolveAllLinks(intro,
+                                                            namespace=api_name)
       apps_parser = _IntroParser()
       apps_parser.feed(Handlebar(intro_with_links).render(
           { 'is_apps': True }).text)

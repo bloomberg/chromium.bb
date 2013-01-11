@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 from file_system import FileNotFoundError
-import object_store
 import logging
+import object_store
 import string
 
 def _ClassifySchemaNode(node_name, api):
@@ -29,8 +29,8 @@ def _ClassifySchemaNode(node_name, api):
           return group, node_name
   return None
 
-def _MakeKey(namespace_name, ref, title):
-  return '%s.%s.%s' % (namespace_name, ref, title)
+def _MakeKey(namespace, ref, title):
+  return '%s.%s.%s' % (namespace, ref, title)
 
 class ReferenceResolver(object):
   """Resolves references to $ref's by searching through the APIs to find the
@@ -66,7 +66,7 @@ class ReferenceResolver(object):
     self._api_list_data_source = api_list_data_source
     self._object_store = object_store
 
-  def _GetRefLink(self, ref, api_list, namespace_name, title):
+  def _GetRefLink(self, ref, api_list, namespace, title):
     parts = ref.split('.')
     for i, part in enumerate(parts):
       api_name = '.'.join(parts[:i])
@@ -97,8 +97,8 @@ class ReferenceResolver(object):
       else:
         text = ref
       category, node_name = node_info
-      if text.startswith('%s.' % namespace_name):
-        text = text[len('%s.' % namespace_name):]
+      if namespace is not None and text.startswith('%s.' % namespace):
+        text = text[len('%s.' % namespace):]
       return {
         'href': '%s.html#%s-%s' % (api_name, category, name.replace('.', '-')),
         'text': title if title else text,
@@ -106,9 +106,9 @@ class ReferenceResolver(object):
       }
     return None
 
-  def GetLink(self, ref, namespace, title=None):
-    """Resolve $ref |ref| in namespace |namespace|, returning None if it cannot
-    be resolved.
+  def GetLink(self, ref, namespace=None, title=None):
+    """Resolve $ref |ref| in namespace |namespace| if not None, returning None
+    if it cannot be resolved.
     """
     link = self._object_store.Get(_MakeKey(namespace, ref, title),
                                   object_store.REFERENCE_RESOLVER).Get()
@@ -118,8 +118,8 @@ class ReferenceResolver(object):
     api_list = self._api_list_data_source.GetAllNames()
     link = self._GetRefLink(ref, api_list, namespace, title)
 
-    if link is None:
-      # Try to resolve the ref in the current namespace.
+    if link is None and namespace is not None:
+      # Try to resolve the ref in the current namespace if there is one.
       link = self._GetRefLink('%s.%s' % (namespace, ref),
                               api_list,
                               namespace,
@@ -131,14 +131,15 @@ class ReferenceResolver(object):
                              object_store.REFERENCE_RESOLVER)
     return link
 
-  def SafeGetLink(self, ref, namespace, title=None):
-    """Resolve $ref |ref| in namespace |namespace|. If it cannot be resolved,
-    pretend like it is a link to a type.
+  def SafeGetLink(self, ref, namespace=None, title=None):
+    """Resolve $ref |ref| in namespace |namespace|, or globally if None. If it
+    cannot be resolved, pretend like it is a link to a type.
     """
-    ref_data = self.GetLink(ref, namespace, title=title)
+    ref_data = self.GetLink(ref, namespace=namespace, title=title)
     if ref_data is not None:
       return ref_data
-    logging.error('$ref %s could not be resolved.' % ref)
+    logging.error('$ref %s could not be resolved in namespace %s.' %
+                      (ref, namespace))
     type_name = ref.rsplit('.', 1)[-1]
     return {
       'href': '#type-%s' % type_name,
@@ -146,10 +147,10 @@ class ReferenceResolver(object):
       'name': ref
     }
 
-  def ResolveAllLinks(self, text, namespace):
+  def ResolveAllLinks(self, text, namespace=None):
     """This method will resolve all $ref links in |text| using namespace
-    |namespace|. Any links that cannot be resolved will be replaced using the
-    default link format that |SafeGetLink| uses.
+    |namespace| if not None. Any links that cannot be resolved will be replaced
+    using the default link format that |SafeGetLink| uses.
     """
     if text is None or '$ref:' not in text:
       return text
@@ -182,7 +183,7 @@ class ReferenceResolver(object):
       while not ref[-1].isalnum():
         rest = '%s%s' % (ref[-1], rest)
         ref = ref[:-1]
-      ref_dict = self.SafeGetLink(ref, namespace, title=title)
+      ref_dict = self.SafeGetLink(ref, namespace=namespace, title=title)
       formatted_text.append('<a href="%(href)s">%(text)s</a>%(rest)s' %
           { 'href': ref_dict['href'], 'text': ref_dict['text'], 'rest': rest })
     return ''.join(formatted_text)

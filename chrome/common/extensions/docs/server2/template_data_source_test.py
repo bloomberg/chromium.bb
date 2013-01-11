@@ -8,9 +8,11 @@ import os
 import sys
 import unittest
 
-from in_memory_object_store import InMemoryObjectStore
+from api_data_source import APIDataSource
 from compiled_file_system import CompiledFileSystem
+from in_memory_object_store import InMemoryObjectStore
 from local_file_system import LocalFileSystem
+from reference_resolver import ReferenceResolver
 from template_data_source import TemplateDataSource
 from third_party.handlebar import Handlebar
 
@@ -24,7 +26,7 @@ class _FakeFactory(object):
     else:
       self._input_dict = input_dict
 
-  def Create(self, *args):
+  def Create(self, *args, **optargs):
     return self._input_dict
 
 class TemplateDataSourceTest(unittest.TestCase):
@@ -32,7 +34,6 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._base_path = os.path.join(sys.path[0],
                                    'test_data',
                                    'template_data_source')
-    self._fake_api_data_source_factory = _FakeFactory()
     self._fake_api_list_data_source_factory = _FakeFactory()
     self._fake_intro_data_source_factory = _FakeFactory()
     self._fake_samples_data_source_factory = _FakeFactory()
@@ -51,15 +52,24 @@ class TemplateDataSourceTest(unittest.TestCase):
         self._ReadLocalFile(name + '_expected.html'),
         data_source.Render(template_name))
 
-  def _CreateTemplateDataSource(self, input_dict, cache_factory):
+  def _CreateTemplateDataSource(self, cache_factory, api_data=None):
+    if api_data is None:
+      api_data_factory = APIDataSource.Factory(cache_factory, 'fake_path')
+    else:
+      api_data_factory = _FakeFactory(api_data)
+    reference_resolver_factory = ReferenceResolver.Factory(
+        api_data_factory,
+        self._fake_api_list_data_source_factory,
+        self._object_store)
     return (TemplateDataSource.Factory('fake_channel',
-                                       _FakeFactory(input_dict),
+                                       api_data_factory,
                                        self._fake_api_list_data_source_factory,
                                        self._fake_intro_data_source_factory,
                                        self._fake_samples_data_source_factory,
                                        self._fake_known_issues_data_source,
                                        self._fake_sidenav_data_source_factory,
                                        cache_factory,
+                                       reference_resolver_factory,
                                        '.',
                                        '.')
             .Create(_FakeRequest(), 'extensions/foo'))
@@ -68,8 +78,7 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._base_path = os.path.join(self._base_path, 'simple')
     fetcher = LocalFileSystem(self._base_path)
     cache_factory = CompiledFileSystem.Factory(fetcher, self._object_store)
-    t_data_source = self._CreateTemplateDataSource(
-        self._fake_api_data_source_factory, cache_factory)
+    t_data_source = self._CreateTemplateDataSource(cache_factory)
     template_a1 = Handlebar(self._ReadLocalFile('test1.html'))
     self.assertEqual(template_a1.render({}, {'templates': {}}).text,
         t_data_source.get('test1').render({}, {'templates': {}}).text)
@@ -84,8 +93,7 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._base_path = os.path.join(self._base_path, 'partials')
     fetcher = LocalFileSystem(self._base_path)
     cache_factory = CompiledFileSystem.Factory(fetcher, self._object_store)
-    t_data_source = self._CreateTemplateDataSource(
-        self._fake_api_data_source_factory, cache_factory)
+    t_data_source = self._CreateTemplateDataSource(cache_factory)
     self.assertEqual(
         self._ReadLocalFile('test_expected.html'),
         t_data_source.get('test_tmpl').render(
@@ -99,13 +107,13 @@ class TemplateDataSourceTest(unittest.TestCase):
     self._RenderTest(
         'test1',
         self._CreateTemplateDataSource(
-            json.loads(self._ReadLocalFile('test1.json')),
-                           cache_factory))
+            cache_factory,
+            api_data=json.loads(self._ReadLocalFile('test1.json'))))
     self._RenderTest(
         'test2',
         self._CreateTemplateDataSource(
-            json.loads(self._ReadLocalFile('test2.json')),
-                           cache_factory))
+            cache_factory,
+            api_data=json.loads(self._ReadLocalFile('test2.json'))))
 
 if __name__ == '__main__':
   unittest.main()

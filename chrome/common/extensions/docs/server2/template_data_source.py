@@ -10,6 +10,9 @@ from file_system import FileNotFoundError
 from third_party.handlebar import Handlebar
 import url_constants
 
+# Increment this if there are changes to the data stored about templates.
+_VERSION = 1
+
 EXTENSIONS_URL = '/chrome/extensions'
 
 def _MakeChannelDict(channel_name):
@@ -49,6 +52,7 @@ class TemplateDataSource(object):
                  known_issues_data_source,
                  sidenav_data_source_factory,
                  cache_factory,
+                 ref_resolver_factory,
                  public_template_path,
                  private_template_path):
       self._branch_info = _MakeChannelDict(channel_name)
@@ -58,11 +62,17 @@ class TemplateDataSource(object):
       self._samples_data_source_factory = samples_data_source_factory
       self._known_issues_data_source = known_issues_data_source
       self._sidenav_data_source_factory = sidenav_data_source_factory
-      self._cache = cache_factory.Create(Handlebar, compiled_fs.HANDLEBAR)
+      self._cache = cache_factory.Create(self._CreateTemplate,
+                                         compiled_fs.HANDLEBAR,
+                                         version=_VERSION)
+      self._ref_resolver = ref_resolver_factory.Create()
       self._public_template_path = public_template_path
       self._private_template_path = private_template_path
       self._static_resources = (
           (('/' + channel_name) if channel_name != 'local' else '') + '/static')
+
+    def _CreateTemplate(self, template_name, text):
+      return Handlebar(self._ref_resolver.ResolveAllLinks(text))
 
     def Create(self, request, path):
       """Returns a new TemplateDataSource bound to |request|.

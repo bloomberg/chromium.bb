@@ -42,7 +42,7 @@ class SamplesDataSource(object):
                                                     compiled_fs.EXTENSIONS,
                                                     version=_VERSION)
       self._apps_cache = github_cache_factory.Create(
-          lambda x: self._MakeSamplesList(x, is_apps=True),
+          lambda x, y: self._MakeSamplesList(x, y, is_apps=True),
           compiled_fs.APPS,
           version=_VERSION)
       self._ref_resolver = ref_resolver_factory.Create()
@@ -99,7 +99,7 @@ class SamplesDataSource(object):
             l10n_data['locales'][path[len(locales_path):].split('/')[0]] = json_
       return l10n_data
 
-    def _MakeSamplesList(self, files, is_apps=False):
+    def _MakeSamplesList(self, base_dir, files, is_apps=False):
       file_system = self._github_file_system if is_apps else self._file_system
       samples_list = []
       for filename in sorted(files):

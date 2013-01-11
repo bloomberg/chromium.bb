@@ -45,15 +45,14 @@ class CompiledFileSystem(object):
 
     def Create(self, populate_function, namespace, version=None):
       """Create a CompiledFileSystem that populates the cache by calling
-      |populate_function| on the raw filesystem data. The keys to the cache
-      are put in the namespace specified by |namespace|, and optionally adding
-      |version|.
-      """
+      |populate_function| with (path, data), where |data| is the data that was
+      fetched from |path|. The keys to the cache are put in the namespace
+      specified by |namespace|, and optionally adding |version|.  """
       return CompiledFileSystem(self._file_system,
-                             populate_function,
-                             self._object_store,
-                             namespace,
-                             version=version)
+                                populate_function,
+                                self._object_store,
+                                namespace,
+                                version=version)
 
   def __init__(self,
                file_system,
@@ -91,7 +90,8 @@ class CompiledFileSystem(object):
                                          time=0).Get()
     if (cache_entry is not None) and (version == cache_entry.version):
       return cache_entry._cache_data
-    cache_data = self._populate_function(self._file_system.ReadSingle(path))
+    cache_data = self._populate_function(path,
+                                         self._file_system.ReadSingle(path))
     self._object_store.Set(self._MakeKey(path),
                            _CacheEntry(cache_data, version),
                            object_store.FILE_SYSTEM_CACHE,
@@ -111,8 +111,10 @@ class CompiledFileSystem(object):
         time=0).Get()
     if (cache_entry is not None) and (version == cache_entry.version):
         return cache_entry._cache_data
-    cache_data = self._populate_function(self._RecursiveList(
-        [path + f for f in self._file_system.ReadSingle(path)]))
+    cache_data = self._populate_function(
+        path,
+        self._RecursiveList(
+            [path + f for f in self._file_system.ReadSingle(path)]))
     self._object_store.Set(self._MakeKey(path),
                            _CacheEntry(cache_data, version),
                            object_store.FILE_SYSTEM_CACHE_LISTING,

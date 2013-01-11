@@ -64,13 +64,14 @@ class _JSCModel(object):
   def _FormatDescription(self, description):
     if self._disable_refs:
       return description
-    return self._ref_resolver.ResolveAllLinks(description, self._namespace.name)
+    return self._ref_resolver.ResolveAllLinks(description,
+                                              namespace=self._namespace.name)
 
   def _GetLink(self, link):
     if self._disable_refs:
       type_name = link.split('.', 1)[-1]
       return { 'href': '#type-%s' % type_name, 'text': link, 'name': link }
-    return self._ref_resolver.SafeGetLink(link, self._namespace.name)
+    return self._ref_resolver.SafeGetLink(link, namespace=self._namespace.name)
 
   def ToDict(self):
     if self._namespace is None:
@@ -248,11 +249,11 @@ class APIDataSource(object):
                                                      compiled_fs.PERMS,
                                                      version=_VERSION)
       self._json_cache = cache_factory.Create(
-          lambda api: self._LoadJsonAPI(api, False),
+          lambda api_name, api: self._LoadJsonAPI(api, False),
           compiled_fs.JSON,
           version=_VERSION)
       self._idl_cache = cache_factory.Create(
-          lambda api: self._LoadIdlAPI(api, False),
+          lambda api_name, api: self._LoadIdlAPI(api, False),
           compiled_fs.IDL,
           version=_VERSION)
 
@@ -260,11 +261,11 @@ class APIDataSource(object):
       # $refs in an API. This is needed to prevent infinite recursion in
       # ReferenceResolver.
       self._json_cache_no_refs = cache_factory.Create(
-          lambda api: self._LoadJsonAPI(api, True),
+          lambda api_name, api: self._LoadJsonAPI(api, True),
           compiled_fs.JSON_NO_REFS,
           version=_VERSION)
       self._idl_cache_no_refs = cache_factory.Create(
-          lambda api: self._LoadIdlAPI(api, True),
+          lambda api_name, api: self._LoadIdlAPI(api, True),
           compiled_fs.IDL_NO_REFS,
           version=_VERSION)
       self._idl_names_cache = cache_factory.Create(self._GetIDLNames,
@@ -313,7 +314,7 @@ class APIDataSource(object):
                            samples,
                            disable_refs)
 
-    def _LoadPermissions(self, json_str):
+    def _LoadPermissions(self, file_name, json_str):
       return json_parse.Parse(json_str)
 
     def _LoadJsonAPI(self, api, disable_refs):
@@ -329,13 +330,13 @@ class APIDataSource(object):
           self._ref_resolver_factory.Create() if not disable_refs else None,
           disable_refs).ToDict()
 
-    def _GetIDLNames(self, apis):
+    def _GetIDLNames(self, base_dir, apis):
       return [
         model.UnixName(os.path.splitext(api[len('%s/' % self._base_path):])[0])
         for api in apis if api.endswith('.idl')
       ]
 
-    def _GetAllNames(self, apis):
+    def _GetAllNames(self, base_dir, apis):
       return [
         model.UnixName(os.path.splitext(api[len('%s/' % self._base_path):])[0])
         for api in apis
