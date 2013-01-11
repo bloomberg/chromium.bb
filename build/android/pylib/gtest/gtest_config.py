@@ -6,6 +6,7 @@
 
 # Add new suites here before upgrading them to the stable list below.
 EXPERIMENTAL_TEST_SUITES = [
+    'sandbox_linux_unittests',
 ]
 
 # Do not modify this list without approval of an android owner.
@@ -19,7 +20,6 @@ STABLE_TEST_SUITES = [
     'ipc_tests',
     'media_unittests',
     'net_unittests',
-    'sandbox_linux_unittests',
     'sql_unittests',
     'sync_unit_tests',
     'ui_unittests',
