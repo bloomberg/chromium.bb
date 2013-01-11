@@ -33,6 +33,8 @@ using content::BrowserContext;
 
 namespace {
 
+const string16::value_type kCreditCardPrefix[] = {'*', 0};
+
 template<typename T>
 class FormGroupMatchesByGUIDFunctor {
  public:
@@ -618,6 +620,42 @@ void PersonalDataManager::GetProfileSuggestions(
 
   // No icons for profile suggestions.
   icons->resize(labels->size());
+}
+
+void PersonalDataManager::GetCreditCardSuggestions(
+    AutofillFieldType type,
+    const string16& field_contents,
+    std::vector<string16>* labels,
+    std::vector<string16>* sub_labels,
+    std::vector<string16>* icons,
+    std::vector<GUIDPair>* guid_pairs) {
+  const std::string app_locale = AutofillCountry::ApplicationLocale();
+  for (std::vector<CreditCard*>::const_iterator iter = credit_cards().begin();
+       iter != credit_cards().end(); ++iter) {
+    CreditCard* credit_card = *iter;
+
+    // The value of the stored data for this field type in the |credit_card|.
+    string16 creditcard_field_value = credit_card->GetInfo(type, app_locale);
+    if (!creditcard_field_value.empty() &&
+        StartsWith(creditcard_field_value, field_contents, false)) {
+      if (type == CREDIT_CARD_NUMBER)
+        creditcard_field_value = credit_card->ObfuscatedNumber();
+
+      string16 sub_label;
+      if (credit_card->number().empty()) {
+        // If there is no CC number, return name to show something.
+        sub_label = credit_card->GetInfo(CREDIT_CARD_NAME, app_locale);
+      } else {
+        sub_label = kCreditCardPrefix;
+        sub_label.append(credit_card->LastFourDigits());
+      }
+
+      labels->push_back(creditcard_field_value);
+      sub_labels->push_back(sub_label);
+      icons->push_back(UTF8ToUTF16(credit_card->type()));
+      guid_pairs->push_back(GUIDPair(credit_card->guid(), 0));
+    }
+  }
 }
 
 PersonalDataManager::PersonalDataManager()

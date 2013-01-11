@@ -66,6 +66,9 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
   // by the Textfield.
   virtual void UpdateBorder() = 0;
 
+  // Updates the color of the border with the state desired by the Textfield.
+  virtual void UpdateBorderColor() = 0;
+
   // Updates the text color used when painting the native text field.
   virtual void UpdateTextColor() = 0;
 

@@ -117,6 +117,7 @@ class AutofillDialogController : public AutofillPopupDelegate,
   // Returns the model for suggestions for fields that fall under |section|.
   ui::MenuModel* MenuModelForSection(DialogSection section);
   string16 SuggestionTextForSection(DialogSection section);
+  bool InputIsValid(const DetailInput* input, const string16& value);
 
   // Called when the view has been closed. The value for |action| indicates
   // whether the Autofill operation should be aborted.

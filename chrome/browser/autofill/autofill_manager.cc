@@ -84,8 +84,6 @@ const size_t kMaxRecentFormSignaturesToRemember = 3;
 // cache, simply to prevent unbounded memory consumption.
 const size_t kMaxFormCacheSize = 100;
 
-const string16::value_type kCreditCardPrefix[] = {'*', 0};
-
 // Removes duplicate suggestions whilst preserving their original order.
 void RemoveDuplicateSuggestions(std::vector<string16>* values,
                                 std::vector<string16>* labels,
@@ -1171,34 +1169,12 @@ void AutofillManager::GetCreditCardSuggestions(
     std::vector<string16>* labels,
     std::vector<string16>* icons,
     std::vector<int>* unique_ids) const {
-  const std::string app_locale = AutofillCountry::ApplicationLocale();
-  for (std::vector<CreditCard*>::const_iterator iter =
-           personal_data_->credit_cards().begin();
-       iter != personal_data_->credit_cards().end(); ++iter) {
-    CreditCard* credit_card = *iter;
+  std::vector<GUIDPair> guid_pairs;
+  personal_data_->GetCreditCardSuggestions(
+      type, field.value, values, labels, icons, &guid_pairs);
 
-    // The value of the stored data for this field type in the |credit_card|.
-    string16 creditcard_field_value = credit_card->GetInfo(type, app_locale);
-    if (!creditcard_field_value.empty() &&
-        StartsWith(creditcard_field_value, field.value, false)) {
-      if (type == CREDIT_CARD_NUMBER)
-        creditcard_field_value = credit_card->ObfuscatedNumber();
-
-      string16 label;
-      if (credit_card->number().empty()) {
-        // If there is no CC number, return name to show something.
-        label = credit_card->GetInfo(CREDIT_CARD_NAME, app_locale);
-      } else {
-        label = kCreditCardPrefix;
-        label.append(credit_card->LastFourDigits());
-      }
-
-      values->push_back(creditcard_field_value);
-      labels->push_back(label);
-      icons->push_back(UTF8ToUTF16(credit_card->type()));
-      unique_ids->push_back(PackGUIDs(GUIDPair(credit_card->guid(), 0),
-                                      GUIDPair(std::string(), 0)));
-    }
+  for (size_t i = 0; i < guid_pairs.size(); ++i) {
+    unique_ids->push_back(PackGUIDs(guid_pairs[i], GUIDPair(std::string(), 0)));
   }
 }
 

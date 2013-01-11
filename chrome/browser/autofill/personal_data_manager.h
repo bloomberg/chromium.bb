@@ -143,6 +143,17 @@ class PersonalDataManager
       std::vector<string16>* icons,
       std::vector<GUIDPair>* guid_pairs);
 
+  // Gets credit cards that can suggest data for |type|. See
+  // GetProfileSuggestions for argument descriptions. The variant in each
+  // GUID pair should be ignored.
+  void GetCreditCardSuggestions(
+      AutofillFieldType type,
+      const string16& field_contents,
+      std::vector<string16>* labels,
+      std::vector<string16>* sub_labels,
+      std::vector<string16>* icons,
+      std::vector<GUIDPair>* guid_pairs);
+
   // Re-loads profiles and credit cards from the WebDatabase asynchronously.
   // In the general case, this is a no-op and will re-create the same
   // in-memory model as existed prior to the call.  If any change occurred to

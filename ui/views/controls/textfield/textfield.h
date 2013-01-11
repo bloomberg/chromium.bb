@@ -145,6 +145,13 @@ class VIEWS_EXPORT Textfield : public View {
   bool draw_border() const { return draw_border_; }
   void RemoveBorder();
 
+  // Sets the border color (if one is in use).
+  void SetBorderColor(SkColor color);
+  // Reverts the textfield to the system default border color.
+  void UseDefaultBorderColor();
+  SkColor border_color() const { return border_color_; }
+  bool use_default_border_color() const { return use_default_border_color_; }
+
   // Sets the text to display when empty.
   void set_placeholder_text(const string16& text) {
     placeholder_text_ = text;
@@ -286,6 +293,12 @@ class VIEWS_EXPORT Textfield : public View {
 
   // Should we use the system background color instead of |background_color_|?
   bool use_default_background_color_;
+
+  // Border color.  Only used if |use_default_border_color_| is false.
+  SkColor border_color_;
+
+  // Should we use the system border color instead of |border_color_|?
+  bool use_default_border_color_;
 
   // TODO(beng): remove this once NativeTextfieldWin subclasses
   //             NativeControlWin.

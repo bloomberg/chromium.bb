@@ -66,6 +66,8 @@ Textfield::Textfield()
       use_default_text_color_(true),
       background_color_(SK_ColorWHITE),
       use_default_background_color_(true),
+      border_color_(SK_ColorWHITE),
+      use_default_border_color_(true),
       initialized_(false),
       horizontal_margins_were_set_(false),
       vertical_margins_were_set_(false),
@@ -278,6 +280,20 @@ void Textfield::RemoveBorder() {
     native_wrapper_->UpdateBorder();
 }
 
+void Textfield::SetBorderColor(SkColor color) {
+  border_color_ = color;
+  use_default_border_color_ = false;
+  native_wrapper_->UpdateBorderColor();
+}
+
+void Textfield::UseDefaultBorderColor() {
+  if (use_default_border_color_)
+    return;
+
+  use_default_border_color_ = true;
+  native_wrapper_->UpdateBorderColor();
+}
+
 bool Textfield::GetHorizontalMargins(int* left, int* right) {
   if (!horizontal_margins_were_set_)
     return false;
@@ -303,6 +319,7 @@ void Textfield::UpdateAllProperties() {
     native_wrapper_->UpdateFont();
     native_wrapper_->UpdateEnabled();
     native_wrapper_->UpdateBorder();
+    native_wrapper_->UpdateBorderColor();
     native_wrapper_->UpdateIsObscured();
     native_wrapper_->UpdateHorizontalMargins();
     native_wrapper_->UpdateVerticalMargins();

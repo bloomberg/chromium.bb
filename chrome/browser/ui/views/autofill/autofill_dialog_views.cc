@@ -12,6 +12,7 @@
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
@@ -22,12 +23,16 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
 namespace autofill {
 
 namespace {
+
+// Size of the triangular mark that indicates an invalid textfield.
+const int kDogEarSize = 10;
 
 // Returns a label that describes a details section.
 views::Label* CreateDetailsSectionLabel(const string16& text) {
@@ -41,6 +46,57 @@ views::Label* CreateDetailsSectionLabel(const string16& text) {
 }
 
 }  // namespace
+
+// AutofillDialogViews::DecoratedTextfield -------------------------------------
+
+AutofillDialogViews::DecoratedTextfield::DecoratedTextfield(
+    const string16& default_value,
+    const string16& placeholder,
+    views::TextfieldController* controller)
+    : textfield_(new views::Textfield()),
+      invalid_(false) {
+  textfield_->set_placeholder_text(placeholder);
+  textfield_->SetText(default_value);
+  textfield_->SetController(controller);
+  SetLayoutManager(new views::FillLayout());
+  AddChildView(textfield_);
+}
+
+AutofillDialogViews::DecoratedTextfield::~DecoratedTextfield() {}
+
+void AutofillDialogViews::DecoratedTextfield::SetInvalid(bool invalid) {
+  invalid_ = invalid;
+  if (invalid)
+    textfield_->SetBorderColor(SK_ColorRED);
+  else
+    textfield_->UseDefaultBorderColor();
+  SchedulePaint();
+}
+
+void AutofillDialogViews::DecoratedTextfield::PaintChildren(
+    gfx::Canvas* canvas) {}
+
+void AutofillDialogViews::DecoratedTextfield::OnPaint(gfx::Canvas* canvas) {
+  // Draw the textfield first.
+  canvas->Save();
+  if (FlipCanvasOnPaintForRTLUI()) {
+    canvas->Translate(gfx::Vector2d(width(), 0));
+    canvas->Scale(-1, 1);
+  }
+  views::View::PaintChildren(canvas);
+  canvas->Restore();
+
+  // Then draw extra stuff on top.
+  if (invalid_) {
+    SkPath dog_ear;
+    dog_ear.moveTo(width() - kDogEarSize, 0);
+    dog_ear.lineTo(width(), 0);
+    dog_ear.lineTo(width(), kDogEarSize);
+    dog_ear.close();
+    canvas->ClipPath(dog_ear);
+    canvas->DrawColor(SK_ColorRED);
+  }
+}
 
 // AutofillDialogViews::SectionContainer ---------------------------------------
 
@@ -179,7 +235,7 @@ void AutofillDialogViews::UpdateSection(DialogSection section) {
     if (input == group->textfields.end())
       continue;
 
-    input->second->SetText(iter->autofilled_value);
+    input->second->textfield()->SetText(iter->autofilled_value);
   }
 
   UpdateDetailsGroupState(*group);
@@ -190,7 +246,7 @@ void AutofillDialogViews::GetUserInput(DialogSection section,
   DetailsGroup* group = GroupForSection(section);
   for (TextfieldMap::iterator it = group->textfields.begin();
        it != group->textfields.end(); ++it) {
-    output->insert(std::make_pair(it->first, it->second->text()));
+    output->insert(std::make_pair(it->first, it->second->textfield()->text()));
   }
 }
 
@@ -240,6 +296,9 @@ bool AutofillDialogViews::Cancel() {
 }
 
 bool AutofillDialogViews::Accept() {
+  if (!ValidateForm())
+    return false;
+
   did_submit_ = true;
   return true;
 }
@@ -274,15 +333,15 @@ void AutofillDialogViews::ButtonPressed(views::Button* sender,
 void AutofillDialogViews::ContentsChanged(views::Textfield* sender,
                                           const string16& new_contents) {
   const DetailsGroup& group =
-      sender->parent() == email_.manual_input ? email_ :
-      sender->parent() == cc_.manual_input ? cc_ :
-      sender->parent() == billing_.manual_input ? billing_ :
-                                                  shipping_;
+      sender->parent()->parent() == email_.manual_input ? email_ :
+      sender->parent()->parent() == cc_.manual_input ? cc_ :
+      sender->parent()->parent() == billing_.manual_input ? billing_ :
+                                                            shipping_;
 
   for (TextfieldMap::const_iterator iter = group.textfields.begin();
        iter != group.textfields.end();
        ++iter) {
-    if (iter->second == sender) {
+    if (iter->second->textfield() == sender) {
       controller_->UserEditedInput(iter->first,
                                    group.section,
                                    GetWidget()->GetNativeView(),
@@ -302,6 +361,7 @@ bool AutofillDialogViews::HandleKeyEvent(views::Textfield* sender,
 void AutofillDialogViews::OnWillChangeFocus(
     views::View* focused_before,
     views::View* focused_now) {
+  // TODO(estade): Check + update validity of text field.
   controller_->FocusMoved();
 }
 
@@ -514,10 +574,10 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
         }
       }
     } else {
-      views::Textfield* field = new views::Textfield();
-      field->set_placeholder_text(ASCIIToUTF16(input.placeholder_text));
-      field->SetText(input.autofilled_value);
-      field->SetController(this);
+      DecoratedTextfield* field = new DecoratedTextfield(
+          input.autofilled_value,
+          ASCIIToUTF16(input.placeholder_text),
+          this);
       textfields->insert(std::make_pair(&input, field));
       layout->AddView(field);
     }
@@ -553,6 +613,22 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
 
   if (GetWidget())
     GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
+}
+
+bool AutofillDialogViews::ValidateForm() {
+  // TODO(estade): work for all sections, not just billing.
+  bool all_valid = true;
+  if (billing_.manual_input->visible()) {
+    for (TextfieldMap::iterator iter = billing_.textfields.begin();
+         iter != billing_.textfields.end(); ++iter) {
+      if (!controller_->InputIsValid(iter->first,
+                                     iter->second->textfield()->text())) {
+        iter->second->SetInvalid(true);
+        all_valid = false;
+      }
+    }
+  }
+  return all_valid;
 }
 
 AutofillDialogViews::DetailsGroup* AutofillDialogViews::

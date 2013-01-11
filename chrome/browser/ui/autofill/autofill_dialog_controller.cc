@@ -359,6 +359,12 @@ string16 AutofillDialogController::SuggestionTextForSection(
   return string16();
 }
 
+bool AutofillDialogController::InputIsValid(const DetailInput* input,
+                                            const string16& value) {
+  // TODO(estade): do more complicated checks.
+  return !value.empty();
+}
+
 void AutofillDialogController::ViewClosed(DialogAction action) {
   if (action == ACTION_SUBMIT) {
     FillOutputForSection(SECTION_EMAIL);
@@ -388,28 +394,37 @@ void AutofillDialogController::UserEditedInput(
     gfx::NativeView view,
     const gfx::Rect& content_bounds,
     const string16& field_contents) {
-  // TODO(estade): supporting CC will require some refactoring.
-  if (section == SECTION_CC)
-    return;
-
   std::vector<string16> popup_values, popup_labels, popup_icons;
   std::vector<AutofillFieldType> field_types;
 
   // TODO(estade): add field types from email section?
   const DetailInputs& inputs = RequestedFieldsForSection(section);
-  field_types.reserve(inputs.size());
-  for (DetailInputs::const_iterator iter = inputs.begin();
-       iter != inputs.end(); ++iter) {
-    field_types.push_back(iter->type);
+
+  if (section == SECTION_CC) {
+    GetManager()->GetCreditCardSuggestions(input->type,
+                                           field_contents,
+                                           &popup_values,
+                                           &popup_labels,
+                                           &popup_icons,
+                                           &popup_guids_);
+  } else {
+    field_types.reserve(inputs.size());
+    for (DetailInputs::const_iterator iter = inputs.begin();
+         iter != inputs.end(); ++iter) {
+      field_types.push_back(iter->type);
+    }
+    GetManager()->GetProfileSuggestions(input->type,
+                                        field_contents,
+                                        false,
+                                        field_types,
+                                        &popup_values,
+                                        &popup_labels,
+                                        &popup_icons,
+                                        &popup_guids_);
   }
-  GetManager()->GetProfileSuggestions(input->type,
-                                      field_contents,
-                                      false,
-                                      field_types,
-                                      &popup_values,
-                                      &popup_labels,
-                                      &popup_icons,
-                                      &popup_guids_);
+
+  if (popup_values.empty())
+    return;
 
   // TODO(estade): do we need separators and control rows like 'Clear
   // Form'?
@@ -441,14 +456,18 @@ void AutofillDialogController::DidSelectSuggestion(int identifier) {
 void AutofillDialogController::DidAcceptSuggestion(const string16& value,
                                                    int identifier) {
   const PersonalDataManager::GUIDPair& pair = popup_guids_[identifier];
-  // TODO(estade): need to use the variant, |pair.second|.
-  AutofillProfile* profile = GetManager()->GetProfileByGUID(pair.first);
+
+  FormGroup* form_group = section_showing_popup_ == SECTION_CC ?
+      static_cast<FormGroup*>(GetManager()->GetCreditCardByGUID(pair.first)) :
+      // TODO(estade): need to use the variant, |pair.second|.
+      static_cast<FormGroup*>(GetManager()->GetProfileByGUID(pair.first));
+
   // TODO(estade): we shouldn't let this happen.
-  if (!profile)
+  if (!form_group)
     return;
 
   FillInputFromFormGroup(
-      profile,
+      form_group,
       MutableRequestedFieldsForSection(section_showing_popup_));
   view_->UpdateSection(section_showing_popup_);
 

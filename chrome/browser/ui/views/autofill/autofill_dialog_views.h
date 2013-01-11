@@ -80,7 +80,33 @@ class AutofillDialogViews : public AutofillDialogView,
                                 views::View* focused_now) OVERRIDE;
 
  private:
-  typedef std::map<const DetailInput*, views::Textfield*> TextfieldMap;
+  // A class which holds a textfield and draws extra stuff on top, like credit
+  // card icons or invalid content indications.
+  class DecoratedTextfield : public views::View {
+   public:
+    DecoratedTextfield(const string16& default_value,
+                       const string16& placeholder,
+                       views::TextfieldController* controller);
+    virtual ~DecoratedTextfield();
+
+    // The wrapped text field.
+    views::Textfield* textfield() { return textfield_; }
+
+    // Sets whether to indicate the textfield has invalid content.
+    void SetInvalid(bool invalid);
+
+    // views::View implementation.
+    virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
+    virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+
+   private:
+    views::Textfield* textfield_;
+    bool invalid_;
+
+    DISALLOW_COPY_AND_ASSIGN(DecoratedTextfield);
+  };
+
+  typedef std::map<const DetailInput*, DecoratedTextfield*> TextfieldMap;
   typedef std::map<const DetailInput*, views::Combobox*> ComboboxMap;
 
   // A view that packs a label on the left and some related controls
@@ -168,6 +194,10 @@ class AutofillDialogViews : public AutofillDialogView,
   // Gets a pointer to the DetailsGroup that's associated with the given section
   // of the dialog.
   DetailsGroup* GroupForSection(DialogSection section);
+
+  // Checks all manual inputs in the form for validity. Decorates the invalid
+  // ones and returns true if all were valid.
+  bool ValidateForm();
 
   // The controller that drives this view. Weak pointer, always non-NULL.
   AutofillDialogController* const controller_;
