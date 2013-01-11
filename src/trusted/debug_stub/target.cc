@@ -220,7 +220,7 @@ void Target::Run(Session *ses) {
   do {
     bool ignore_input_from_gdb = step_over_breakpoint_thread_ != 0 ||
         !initial_breakpoint_seen;
-    ses->WaitForDebugStubEvent(100, nap_, ignore_input_from_gdb);
+    ses->WaitForDebugStubEvent(nap_, ignore_input_from_gdb);
 
     // Lock to prevent anyone else from modifying threads
     // or updating the signal information.

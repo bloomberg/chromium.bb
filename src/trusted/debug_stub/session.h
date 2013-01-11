@@ -65,10 +65,8 @@ class Session {
   virtual bool IsDataAvailable();
   virtual bool Connected();
 
-  void WaitForDebugStubEvent(int timeout_ms,
-                             struct NaClApp *nap,
-                             bool ignore_gdb) {
-    io_->WaitForDebugStubEvent(timeout_ms, nap, ignore_gdb);
+  void WaitForDebugStubEvent(struct NaClApp *nap, bool ignore_gdb) {
+    io_->WaitForDebugStubEvent(nap, ignore_gdb);
   }
 
  protected:

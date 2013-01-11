@@ -34,7 +34,8 @@ struct StartupInfo {
 
 static int HandleException(const struct StartupInfo *startup_info,
                            HANDLE process_handle, DWORD windows_thread_id,
-                           HANDLE thread_handle, DWORD exception_code);
+                           HANDLE thread_handle, DWORD exception_code,
+                           HANDLE *exception_event);
 
 
 static BOOL GetAddrProtection(HANDLE process_handle, uintptr_t addr,
@@ -131,6 +132,7 @@ void NaClDebugExceptionHandlerRun(HANDLE process_handle,
   ThreadHandleMap *map;
   HANDLE thread_handle;
   DWORD exception_code;
+  HANDLE exception_event = INVALID_HANDLE_VALUE;
 
   if (info_size != sizeof(struct StartupInfo)) {
     return;
@@ -179,7 +181,7 @@ void NaClDebugExceptionHandlerRun(HANDLE process_handle,
               debug_event.u.Exception.ExceptionRecord.ExceptionCode;
           if (HandleException(startup_info, process_handle,
                               debug_event.dwThreadId, thread_handle,
-                              exception_code)) {
+                              exception_code, &exception_event)) {
             continue_status = DBG_CONTINUE;
           } else if (exception_code == EXCEPTION_BREAKPOINT) {
             /*
@@ -214,6 +216,9 @@ void NaClDebugExceptionHandlerRun(HANDLE process_handle,
     }
   }
   DestroyThreadHandleMap(map);
+  if (exception_event != INVALID_HANDLE_VALUE) {
+    CloseHandle(exception_event);
+  }
   if (error) {
     TerminateProcess(process_handle, -1);
   }
@@ -303,7 +308,8 @@ static BOOL QueueFaultedThread(HANDLE process_handle, HANDLE thread_handle,
                                struct NaClApp *nap_remote,
                                struct NaClApp *app_copy,
                                struct NaClAppThread *natp_remote,
-                               int exception_code) {
+                               int exception_code,
+                               HANDLE *exception_event) {
   /*
    * Increment faulted_thread_count.  This needs to be atomic.  It
    * will be atomic because the target process is suspended.
@@ -314,6 +320,21 @@ static BOOL QueueFaultedThread(HANDLE process_handle, HANDLE thread_handle,
     return FALSE;
   }
   if (!WRITE_MEM(process_handle, &natp_remote->fault_signal, &exception_code)) {
+    return FALSE;
+  }
+  if (app_copy->faulted_thread_event == INVALID_HANDLE_VALUE) {
+    return FALSE;
+  }
+  if (*exception_event == INVALID_HANDLE_VALUE) {
+    if (!DuplicateHandle(process_handle, app_copy->faulted_thread_event,
+                         GetCurrentProcess(), exception_event,
+                         /* dwDesiredAccess, ignored */ 0,
+                         /* bInheritHandle= */ FALSE,
+                         DUPLICATE_SAME_ACCESS)) {
+      return FALSE;
+    }
+  }
+  if (!SetEvent(*exception_event)) {
     return FALSE;
   }
   /*
@@ -329,7 +350,8 @@ static BOOL QueueFaultedThread(HANDLE process_handle, HANDLE thread_handle,
 
 static BOOL HandleException(const struct StartupInfo *startup_info,
                             HANDLE process_handle, DWORD windows_thread_id,
-                            HANDLE thread_handle, DWORD exception_code) {
+                            HANDLE thread_handle, DWORD exception_code,
+                            HANDLE *exception_event) {
   CONTEXT context;
   uint32_t nacl_thread_index;
   uintptr_t addr_space_size;
@@ -405,7 +427,7 @@ static BOOL HandleException(const struct StartupInfo *startup_info,
   if (app_copy.enable_faulted_thread_queue) {
     return QueueFaultedThread(process_handle, thread_handle,
                               appthread_copy.nap, &app_copy, natp_remote,
-                              exception_code);
+                              exception_code, exception_event);
   }
 
   exception_stack = appthread_copy.exception_stack;

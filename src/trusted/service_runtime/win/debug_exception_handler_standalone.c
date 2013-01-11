@@ -162,6 +162,7 @@ static int NaClDebugExceptionHandlerStandaloneMain(int argc, char **argv) {
                                PROCESS_VM_OPERATION |
                                PROCESS_VM_READ |
                                PROCESS_VM_WRITE |
+                               PROCESS_DUP_HANDLE |
                                SYNCHRONIZE,
                                /* bInheritHandle= */ FALSE,
                                target_pid);

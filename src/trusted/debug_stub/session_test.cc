@@ -52,10 +52,8 @@ class DCSocketTransport : public port::ITransport {
     return true;
   }
 
-  virtual void WaitForDebugStubEvent(int timeout_ms,
-                                     struct NaClApp *nap,
+  virtual void WaitForDebugStubEvent(struct NaClApp *nap,
                                      bool ignore_gdb) {
-    UNREFERENCED_PARAMETER(timeout_ms);
     UNREFERENCED_PARAMETER(nap);
     UNREFERENCED_PARAMETER(ignore_gdb);
   }

@@ -377,7 +377,13 @@ struct NaClApp {
    * fault_signal is non-zero.
    */
   Atomic32                  faulted_thread_count;
-#if !NACL_WINDOWS
+#if NACL_WINDOWS
+  /*
+   * An event that is signaled by debug exception handler process when it fills
+   * fault_signal field with non-zero value for some NaClAppThread.
+   */
+  HANDLE                    faulted_thread_event;
+#else
   /*
    * A file descriptor of a pipe which becomes available for reading in
    * the event that fault_signal for some NaClAppThread becomes non-zero.

@@ -33,6 +33,9 @@ class Transport : public ITransport {
       pos_(0),
       size_(0) {
     handle_ = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+#if NACL_WINDOWS
+    CreateSocketEvent();
+#endif
   }
 
   explicit Transport(NaClSocketHandle s)
@@ -40,11 +43,34 @@ class Transport : public ITransport {
       pos_(0),
       size_(0),
       handle_(s) {
+#if NACL_WINDOWS
+    CreateSocketEvent();
+#endif
   }
 
   ~Transport() {
     if (handle_ != NACL_INVALID_SOCKET) NaClCloseSocket(handle_);
+#if NACL_WINDOWS
+    if (!WSACloseEvent(socket_event_)) {
+      NaClLog(LOG_FATAL,
+              "Transport::~Transport: Failed to close socket event\n");
+    }
+#endif
   }
+
+#if NACL_WINDOWS
+  void CreateSocketEvent() {
+    socket_event_ = WSACreateEvent();
+    if (socket_event_ == WSA_INVALID_EVENT) {
+      NaClLog(LOG_FATAL,
+              "Transport::CreateSocketEvent: Failed to create socket event\n");
+    }
+    if (WSAEventSelect(handle_, socket_event_, FD_READ) == SOCKET_ERROR) {
+      NaClLog(LOG_FATAL,
+              "Transport::CreateSocketEvent: Failed to bind event to socket\n");
+    }
+  }
+#endif
 
   // Read from this transport, return true on success.
   virtual bool Read(void *ptr, int32_t len);
@@ -77,8 +103,7 @@ class Transport : public ITransport {
     return false;
   }
 
-  virtual void WaitForDebugStubEvent(int timeout_ms,
-                                     struct NaClApp *nap,
+  virtual void WaitForDebugStubEvent(struct NaClApp *nap,
                                      bool ignore_input_from_gdb);
 
 // On windows, the header that defines this has other definition
@@ -105,6 +130,9 @@ class Transport : public ITransport {
   int32_t pos_;
   int32_t size_;
   NaClSocketHandle handle_;
+#if NACL_WINDOWS
+  HANDLE socket_event_;
+#endif
 };
 
 void Transport::CopyFromBuffer(char **dst, int32_t *len) {
@@ -124,6 +152,23 @@ bool Transport::ReadSomeData() {
     }
     if (result == 0)
       return false;
+#if NACL_WINDOWS
+    // WSAEventSelect sets socket to non-blocking mode. This is essential
+    // for socket event notification to work, there is no workaround.
+    // See remarks section at the page
+    // http://msdn.microsoft.com/en-us/library/windows/desktop/ms741576(v=vs.85).aspx
+    if (NaClSocketGetLastError() == WSAEWOULDBLOCK) {
+      if (WaitForSingleObject(socket_event_, INFINITE) == WAIT_FAILED) {
+        NaClLog(LOG_FATAL,
+                "Transport::ReadSomeData: Failed to wait on socket event\n");
+      }
+      if (!ResetEvent(socket_event_)) {
+        NaClLog(LOG_FATAL,
+                "Transport::ReadSomeData: Failed to reset socket event\n");
+      }
+      continue;
+    }
+#endif
     if (NaClSocketGetLastError() != EINTR)
       return false;
   }
@@ -164,17 +209,36 @@ bool Transport::Write(const void *ptr, int32_t len) {
   return true;
 }
 
-void Transport::WaitForDebugStubEvent(int timeout_ms,
-                                      struct NaClApp *nap,
+void Transport::WaitForDebugStubEvent(struct NaClApp *nap,
                                       bool ignore_input_from_gdb) {
+  bool wait = true;
   // If we are told to ignore messages from gdb, we will exit from this
   // function only if new data is sent by gdb.
   if ((pos_ < size_ && !ignore_input_from_gdb) ||
       nap->faulted_thread_count > 0) {
     // Clear faulted thread events to save debug stub loop iterations.
-    timeout_ms = 0;
+    wait = false;
   }
-#if !NACL_WINDOWS
+#if NACL_WINDOWS
+  HANDLE handles[2];
+  handles[0] = nap->faulted_thread_event;
+  handles[1] = socket_event_;
+  int count = size_ < kBufSize ? 2 : 1;
+  int result = WaitForMultipleObjects(count, handles, FALSE,
+                                      wait ? INFINITE : 0);
+  if (result == WAIT_OBJECT_0 + 1) {
+    if (!ResetEvent(socket_event_)) {
+      NaClLog(LOG_FATAL,
+              "Transport::WaitForDebugStubEvent: "
+              "Failed to reset socket event\n");
+    }
+    return;
+  }
+  if (result == WAIT_TIMEOUT || result == WAIT_OBJECT_0)
+    return;
+  NaClLog(LOG_FATAL,
+          "Transport::WaitForDebugStubEvent: Wait for events failed\n");
+#else
   fd_set fds;
 
   FD_ZERO(&fds);
@@ -188,7 +252,7 @@ void Transport::WaitForDebugStubEvent(int timeout_ms,
   int ret;
   // We don't need sleep-polling on Linux now, so we set either zero or infinite
   // timeout.
-  if (timeout_ms > 0) {
+  if (wait) {
     ret = select(max_fd + 1, &fds, NULL, NULL, NULL);
   } else {
     struct timeval timeout;
@@ -214,14 +278,6 @@ void Transport::WaitForDebugStubEvent(int timeout_ms,
     if (FD_ISSET(handle_, &fds))
       ReadSomeData();
   }
-#else
-  // Use polling where we haven't implemented proper waiting for debug event.
-  // TODO(mseaborn): This is slow.  We should use proper thread
-  // wakeups instead.
-  // See http://code.google.com/p/nativeclient/issues/detail?id=2952
-  UNREFERENCED_PARAMETER(nap);
-  UNREFERENCED_PARAMETER(ignore_input_from_gdb);
-  IPlatform::Relinquish(timeout_ms);
 #endif
 }
 

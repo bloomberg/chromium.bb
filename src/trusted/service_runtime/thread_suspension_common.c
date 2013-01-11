@@ -80,7 +80,14 @@ void NaClAppThreadSetSuspendedRegisters(struct NaClAppThread *natp,
 }
 
 int NaClFaultedThreadQueueEnable(struct NaClApp *nap) {
-#if !NACL_WINDOWS
+#if NACL_WINDOWS
+  nap->faulted_thread_event = CreateEvent(NULL, TRUE, FALSE, NULL);
+  if (nap->faulted_thread_event == NULL) {
+    NaClLog(LOG_FATAL,
+            "NaClFaultedThreadQueueEnable: Failed to create event object for "
+            "faulted thread events\n");
+  }
+#else
   int fds[2];
 #if NACL_LINUX
   int ret = pipe2(fds, O_CLOEXEC);

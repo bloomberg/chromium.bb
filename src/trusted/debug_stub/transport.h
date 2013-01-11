@@ -32,8 +32,7 @@ class ITransport {
   virtual bool IsDataAvailable() = 0;
 
   // Wait until there is input from GDB or some NaCl thread is faulted.
-  virtual void WaitForDebugStubEvent(int timeout_ms,
-                                     struct NaClApp *nap,
+  virtual void WaitForDebugStubEvent(struct NaClApp *nap,
                                      bool ignore_gdb) = 0;
 
   // Disconnect the transport, R/W and Select will now throw an exception
