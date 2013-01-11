@@ -1128,6 +1128,7 @@ _firmware_release = _release.derive(
   unittests=False,
   vm_tests=None,
   prebuilts=False,
+  dev_installer_prebuilts=False,
   upload_hw_test_artifacts=False,
   signer_tests=False,
   trybot_list=False,
