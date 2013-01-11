@@ -307,6 +307,11 @@ cr.define('print_preview', function() {
       chrome.send('manageCloudPrinters');
     },
 
+    /** Forces browser to open a new tab with the given URL address. */
+    startForceOpenNewTab: function(url) {
+      chrome.send('forceOpenNewTab', [url]);
+    },
+
     /**
      * @param {!Object} initialSettings Object containing all initial settings.
      */

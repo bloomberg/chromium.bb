@@ -142,6 +142,15 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // of two elements: the bucket name, and the bucket event.
   void HandleReportUiEvent(const base::ListValue* args);
 
+  // Forces the opening of a new tab. |args| should consist of one element: the
+  // URL to set the new tab to.
+  //
+  // NOTE: This is needed to open FedEx confirmation window as a new tab.
+  // Javascript's "window.open" opens a new window popup (since initiated from
+  // async HTTP request) and worse yet, on Windows and Chrome OS, the opened
+  // window opens behind the initiator window.
+  void HandleForceOpenNewTab(const base::ListValue* args);
+
   void SendInitialSettings(
       const std::string& default_printer,
       const std::string& cloud_print_data);

@@ -35,6 +35,8 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/printing/printer_manager_dialog.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
@@ -319,6 +321,9 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("printWithCloudPrint",
       base::Bind(&PrintPreviewHandler::HandlePrintWithCloudPrint,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("forceOpenNewTab",
+        base::Bind(&PrintPreviewHandler::HandleForceOpenNewTab,
+                   base::Unretained(this)));
 }
 
 WebContents* PrintPreviewHandler::preview_web_contents() const {
@@ -725,6 +730,18 @@ void PrintPreviewHandler::HandleReportUiEvent(const ListValue* args) {
     default:
       break;
   }
+}
+
+void PrintPreviewHandler::HandleForceOpenNewTab(const ListValue* args) {
+  std::string url;
+  if (!args->GetString(0, &url))
+    return;
+  Browser* browser = chrome::FindBrowserWithWebContents(GetInitiatorTab());
+  if (!browser)
+    return;
+  chrome::AddSelectedTabWithURL(browser,
+                                GURL(url),
+                                content::PAGE_TRANSITION_LINK);
 }
 
 void PrintPreviewHandler::SendInitialSettings(

@@ -579,7 +579,7 @@ cr.define('print_preview', function() {
                  this.uiState_);
       if (this.destinationStore_.selectedDestination.id ==
               print_preview.Destination.GooglePromotedId.FEDEX) {
-        window.open(
+        this.nativeLayer_.startForceOpenNewTab(
             'https://www.google.com/cloudprint/fedexcode.html?jobid=' +
             event.jobId);
       }
