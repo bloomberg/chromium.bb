@@ -25,6 +25,8 @@ sys.path.insert(1, os.path.join(chrome_src, 'tools', 'generate_shim_headers'))
 sys.path.insert(1, os.path.join(chrome_src, 'tools', 'grit'))
 sys.path.insert(1, os.path.join(chrome_src, 'chrome', 'tools', 'build'))
 sys.path.insert(1, os.path.join(chrome_src, 'native_client', 'build'))
+sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'WebKit',
+    'Source', 'WebCore', 'WebCore.gyp', 'scripts'))
 
 
 # On Windows, Psyco shortens warm runs of build/gyp_chromium by about
