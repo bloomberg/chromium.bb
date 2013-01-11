@@ -269,6 +269,9 @@ bool SendNavigateToURLJSONRequest(
   DictionaryValue reply_dict;
   if (!SendAutomationJSONRequest(sender, dict, &reply_dict, error))
     return false;
+  // We don't expect a navigation result for asynchronous navigations.
+  if (navigation_count == 0)
+    return true;
   int response = 0;
   if (!reply_dict.GetInteger("result", &response))
     return false;

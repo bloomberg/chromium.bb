@@ -269,6 +269,19 @@ class DesiredCapabilitiesTest(ChromeDriverTest):
     driver.execute_script('window.open("about:blank")')
     self.assertEquals(2, len(driver.window_handles))
 
+  def testLoadAsync(self):
+    """Test that chromedriver can load pages asynchronously."""
+    driver = self.GetNewDriver({'chrome.loadAsync': True})
+
+    # Check that navigate doesn't wait for the page to load.
+    driver.get(self.GetTestDataUrl() + '/hang')
+
+    # Check that the navigation actually starts.
+    def IsEmptyPage(driver):
+      return driver.current_url.endswith('empty.html')
+    driver.get(self.GetTestDataUrl() + '/empty.html')
+    WebDriverWait(driver, 10).until(IsEmptyPage)
+
 
 class DetachProcessTest(ChromeDriverTest):
 
