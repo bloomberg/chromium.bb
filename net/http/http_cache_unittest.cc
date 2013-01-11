@@ -1712,6 +1712,139 @@ TEST(HttpCache, ETagGET_ConditionalRequest_304) {
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 }
 
+class RevalidationServer {
+ public:
+  RevalidationServer() {
+    s_etag_used_ = false;
+    s_last_modified_used_ = false;
+  }
+
+  bool EtagUsed() { return s_etag_used_; }
+  bool LastModifiedUsed() { return s_last_modified_used_; }
+
+  static void Handler(const net::HttpRequestInfo* request,
+                      std::string* response_status,
+                      std::string* response_headers,
+                      std::string* response_data);
+
+ private:
+  static bool s_etag_used_;
+  static bool s_last_modified_used_;
+};
+bool RevalidationServer::s_etag_used_ = false;
+bool RevalidationServer::s_last_modified_used_ = false;
+
+void RevalidationServer::Handler(const net::HttpRequestInfo* request,
+                                 std::string* response_status,
+                                 std::string* response_headers,
+                                 std::string* response_data) {
+  if (request->extra_headers.HasHeader(net::HttpRequestHeaders::kIfNoneMatch))
+      s_etag_used_ = true;
+
+  if (request->extra_headers.HasHeader(
+          net::HttpRequestHeaders::kIfModifiedSince)) {
+      s_last_modified_used_ = true;
+  }
+
+  if (s_etag_used_ || s_last_modified_used_) {
+    response_status->assign("HTTP/1.1 304 Not Modified");
+    response_headers->assign(kTypicalGET_Transaction.response_headers);
+    response_data->clear();
+  } else {
+    response_status->assign(kTypicalGET_Transaction.status);
+    response_headers->assign(kTypicalGET_Transaction.response_headers);
+    response_data->assign(kTypicalGET_Transaction.data);
+  }
+}
+
+// Tests revalidation after a vary match.
+TEST(HttpCache, SimpleGET_LoadValidateCache_VaryMatch) {
+  MockHttpCache cache;
+
+  // Write to the cache.
+  MockTransaction transaction(kTypicalGET_Transaction);
+  transaction.request_headers = "Foo: bar\n";
+  transaction.response_headers =
+      "Date: Wed, 28 Nov 2007 09:40:09 GMT\n"
+      "Last-Modified: Wed, 28 Nov 2007 00:40:09 GMT\n"
+      "Etag: \"foopy\"\n"
+      "Cache-Control: max-age=0\n"
+      "Vary: Foo\n";
+  AddMockTransaction(&transaction);
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  // Read from the cache.
+  RevalidationServer server;
+  transaction.handler = server.Handler;
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  EXPECT_TRUE(server.EtagUsed());
+  EXPECT_TRUE(server.LastModifiedUsed());
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+  RemoveMockTransaction(&transaction);
+}
+
+// Tests revalidation after a vary mismatch if etag is present.
+TEST(HttpCache, SimpleGET_LoadValidateCache_VaryMismatch) {
+  MockHttpCache cache;
+
+  // Write to the cache.
+  MockTransaction transaction(kTypicalGET_Transaction);
+  transaction.request_headers = "Foo: bar\n";
+  transaction.response_headers =
+      "Date: Wed, 28 Nov 2007 09:40:09 GMT\n"
+      "Last-Modified: Wed, 28 Nov 2007 00:40:09 GMT\n"
+      "Etag: \"foopy\"\n"
+      "Cache-Control: max-age=0\n"
+      "Vary: Foo\n";
+  AddMockTransaction(&transaction);
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  // Read from the cache and revalidate the entry.
+  RevalidationServer server;
+  transaction.handler = server.Handler;
+  transaction.request_headers = "Foo: none\n";
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  EXPECT_TRUE(server.EtagUsed());
+  EXPECT_FALSE(server.LastModifiedUsed());
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+  RemoveMockTransaction(&transaction);
+}
+
+// Tests lack of revalidation after a vary mismatch and no etag.
+TEST(HttpCache, SimpleGET_LoadDontValidateCache_VaryMismatch) {
+  MockHttpCache cache;
+
+  // Write to the cache.
+  MockTransaction transaction(kTypicalGET_Transaction);
+  transaction.request_headers = "Foo: bar\n";
+  transaction.response_headers =
+      "Date: Wed, 28 Nov 2007 09:40:09 GMT\n"
+      "Last-Modified: Wed, 28 Nov 2007 00:40:09 GMT\n"
+      "Cache-Control: max-age=0\n"
+      "Vary: Foo\n";
+  AddMockTransaction(&transaction);
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  // Read from the cache and don't revalidate the entry.
+  RevalidationServer server;
+  transaction.handler = server.Handler;
+  transaction.request_headers = "Foo: none\n";
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  EXPECT_FALSE(server.EtagUsed());
+  EXPECT_FALSE(server.LastModifiedUsed());
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+  RemoveMockTransaction(&transaction);
+}
+
 static void ETagGet_UnconditionalRequest_Handler(
     const net::HttpRequestInfo* request,
     std::string* response_status,

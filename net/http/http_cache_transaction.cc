@@ -145,6 +145,7 @@ HttpCache::Transaction::Transaction(
       handling_206_(false),
       cache_pending_(false),
       done_reading_(false),
+      vary_mismatch_(false),
       io_buf_len_(0),
       read_offset_(0),
       effective_load_flags_(0),
@@ -732,7 +733,6 @@ int HttpCache::Transaction::DoGetBackendComplete(int result) {
     if (effective_load_flags_ & LOAD_ONLY_FROM_CACHE) {
       mode_ = READ;
     } else if (effective_load_flags_ & LOAD_BYPASS_CACHE) {
-      UpdateTransactionPattern(PATTERN_NOT_COVERED);
       mode_ = WRITE;
     } else {
       mode_ = READ_WRITE;
@@ -1917,6 +1917,7 @@ bool HttpCache::Transaction::RequiresValidation() {
 
   if (response_.vary_data.is_valid() &&
       !response_.vary_data.MatchesRequest(*request_, *response_.headers)) {
+    vary_mismatch_ = true;
     return true;
   }
 
@@ -1957,14 +1958,14 @@ bool HttpCache::Transaction::ConditionalizeRequest() {
   // TODO(darin): Or should we use the last?
 
   std::string etag_value;
-  response_.headers->EnumerateHeader(NULL, "etag", &etag_value);
+  if (response_.headers->GetHttpVersion() >= HttpVersion(1, 1))
+    response_.headers->EnumerateHeader(NULL, "etag", &etag_value);
 
   std::string last_modified_value;
-  response_.headers->EnumerateHeader(NULL, "last-modified",
-                                     &last_modified_value);
-
-  if (response_.headers->GetHttpVersion() < HttpVersion(1, 1))
-    etag_value.clear();
+  if (!vary_mismatch_) {
+    response_.headers->EnumerateHeader(NULL, "last-modified",
+                                       &last_modified_value);
+  }
 
   if (etag_value.empty() && last_modified_value.empty())
     return false;

@@ -405,6 +405,7 @@ class HttpCache::Transaction : public HttpTransaction {
   bool handling_206_;  // We must deal with this 206 response.
   bool cache_pending_;  // We are waiting for the HttpCache.
   bool done_reading_;
+  bool vary_mismatch_;  // The request doesn't match the stored vary data.
   scoped_refptr<IOBuffer> read_buf_;
   int io_buf_len_;
   int read_offset_;
