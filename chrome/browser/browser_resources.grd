@@ -189,6 +189,8 @@
                  file="resources\print_preview\images\pdf.png" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_IMAGES_THIRD_PARTY"
                  file="resources\print_preview\images\third_party.png" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_IMAGES_THIRD_PARTY_FEDEX"
+                 file="resources\print_preview\images\third_party_fedex.png" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_IMAGES_MOBILE"
                  file="resources\print_preview\images\mobile.png" type="BINDATA" />
         <include name="IDR_PRINT_PREVIEW_IMAGES_MOBILE_SHARED"

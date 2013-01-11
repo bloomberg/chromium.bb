@@ -179,6 +179,8 @@ void PrintPreviewDataSource::Init() {
                     IDR_PRINT_PREVIEW_IMAGES_PRINTER_SHARED);
   add_resource_path("images/third_party.png",
                     IDR_PRINT_PREVIEW_IMAGES_THIRD_PARTY);
+  add_resource_path("images/third_party_fedex.png",
+                    IDR_PRINT_PREVIEW_IMAGES_THIRD_PARTY_FEDEX);
   add_resource_path("images/google_doc.png",
                     IDR_PRINT_PREVIEW_IMAGES_GOOGLE_DOC);
   add_resource_path("images/pdf.png", IDR_PRINT_PREVIEW_IMAGES_PDF);

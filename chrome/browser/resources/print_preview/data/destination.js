@@ -156,7 +156,8 @@ cr.define('print_preview', function() {
     MOBILE_SHARED: 'images/mobile_shared.png',
     THIRD_PARTY: 'images/third_party.png',
     PDF: 'images/pdf.png',
-    DOCS: 'images/google_doc.png'
+    DOCS: 'images/google_doc.png',
+    FEDEX: 'images/third_party_fedex.png'
   };
 
   Destination.prototype = {
@@ -267,7 +268,7 @@ cr.define('print_preview', function() {
       if (this.id_ == Destination.GooglePromotedId.DOCS) {
         return Destination.IconUrl_.DOCS;
       } else if (this.id_ == Destination.GooglePromotedId.FEDEX) {
-        return Destination.IconUrl_.THIRD_PARTY;
+        return Destination.IconUrl_.FEDEX;
       } else if (this.id_ == Destination.GooglePromotedId.SAVE_AS_PDF) {
         return Destination.IconUrl_.PDF;
       } else if (this.isLocal) {
