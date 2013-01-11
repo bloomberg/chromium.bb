@@ -42,19 +42,8 @@ if env.Bit('host_windows') or env.Bit('host_mac'):
                             '--expected_process_type=browser'])
   env.AddNodeToTestSuite(
       node, ['chrome_browser_tests'], 'run_breakpad_browser_process_crash_test',
-      # For some strange reason, this test sometimes fails on the
-      # second run (for the SRPC PPAPI proxy) on the Windows 32-bit
-      # and 64-bit buildbots.  The failure modes are that the browser
-      # process hangs, or that a .dmp file is produced with no .txt
-      # file.  Maybe there is a problem with the command line getting
-      # too long?
-      # TODO(mseaborn): Remove this when the "--enable-nacl-srpc-proxy"
-      # option is removed, or investigate and fix.
       is_broken=(env.PPAPIBrowserTesterIsBroken() or
-                 env.Bit('running_on_valgrind') or
-                 (env.Bit('host_windows') and
-                  '--enable-nacl-srpc-proxy' in
-                      os.environ.get('NACL_BROWSER_FLAGS', ''))))
+                 env.Bit('running_on_valgrind')))
 
 # This crash in trusted code should produce a crash dump.
 crash_test_url = 'trusted_crash_in_startup.html'

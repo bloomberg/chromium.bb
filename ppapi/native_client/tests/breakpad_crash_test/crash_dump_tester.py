@@ -141,6 +141,13 @@ def Main(cleanup_funcs):
              '%r file\n' % (dump_file, second_file))
       if not os.path.exists(second_file):
         sys.stdout.write(msg)
+        # TODO(mseaborn): Investigate and remove this workaround.
+        if (options.expected_process_type_for_crash == 'browser' and
+            sys.platform == 'win32'):
+          sys.stdout.write('crash_dump_tester: Ignoring this error on Windows '
+                           'because the .txt file is sometimes missing -- '
+                           'see http://crbug.com/169394\n')
+          continue
         failed = True
         continue
       # Check that the crash dump comes from the NaCl process.
