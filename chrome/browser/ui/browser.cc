@@ -655,7 +655,7 @@ void Browser::OnWindowClosing() {
     tab_restore_service->BrowserClosing(tab_restore_service_delegate());
 #endif
 
-  if (tab_restore_service && is_type_tabbed() && tab_count())
+  if (tab_restore_service && is_type_tabbed() && tab_strip_model_->count())
     tab_restore_service->BrowserClosing(tab_restore_service_delegate());
 
   // TODO(sky): convert session/tab restore to use notification.
@@ -1445,9 +1445,9 @@ void Browser::OnStartDownload(WebContents* source,
   shelf->AddDownload(download);
 
   // If the download occurs in a new tab, and it's not a save page
-  // download (started before initial navigation completed) close it.
-  if (source->GetController().IsInitialNavigation() && tab_count() > 1 &&
-      !download->IsSavePackageDownload())
+  // download (started before initial navigation completed), close it.
+  if (source->GetController().IsInitialNavigation() &&
+      tab_strip_model_->count() > 1 && !download->IsSavePackageDownload())
     CloseContents(source);
 }
 
@@ -2019,7 +2019,7 @@ void Browser::ProcessPendingUIUpdates() {
   for (UpdateMap::const_iterator i = scheduled_updates_.begin();
        i != scheduled_updates_.end(); ++i) {
     bool found = false;
-    for (int tab = 0; tab < tab_count(); tab++) {
+    for (int tab = 0; tab < tab_strip_model_->count(); tab++) {
       if (tab_strip_model_->GetWebContentsAt(tab) == i->first) {
         found = true;
         break;
@@ -2098,7 +2098,7 @@ void Browser::SyncHistoryWithTabs(int index) {
   SessionService* session_service =
       SessionServiceFactory::GetForProfileIfExisting(profile());
   if (session_service) {
-    for (int i = index; i < tab_count(); ++i) {
+    for (int i = index; i < tab_strip_model_->count(); ++i) {
       WebContents* web_contents = tab_strip_model_->GetWebContentsAt(i);
       if (web_contents) {
         SessionTabHelper* session_tab_helper =

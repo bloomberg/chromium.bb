@@ -23,10 +23,10 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
@@ -177,7 +177,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchReply) {
   // Navigate to a boring page: we don't care what it is, but we require some
   // source WebContents to launch the Web Intent "from".
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
 
   extensions::LaunchPlatformAppWithWebIntent(
@@ -421,7 +422,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Isolation) {
   std::string cookie_value;
   automation_util::GetCookies(
       set_cookie_url,
-      chrome::GetWebContentsAt(browser(), 0),
+      browser()->tab_strip_model()->GetWebContentsAt(0),
       &cookie_size,
       &cookie_value);
   ASSERT_EQ("testCookie=1", cookie_value);
@@ -577,7 +578,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OpenLink) {
       content::Source<content::WebContentsDelegate>(browser()));
   LoadAndLaunchPlatformApp("open_link");
   observer.Wait();
-  ASSERT_EQ(2, browser()->tab_count());
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MutationEventsDisabled) {

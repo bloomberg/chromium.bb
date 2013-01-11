@@ -280,7 +280,8 @@ void TabLoader::LoadNextTab() {
     content::WebContents* contents = tab->GetWebContents();
     if (contents) {
       Browser* browser = chrome::FindBrowserWithWebContents(contents);
-      if (browser && chrome::GetActiveWebContents(browser) != contents) {
+      if (browser &&
+          browser->tab_strip_model()->GetActiveWebContents() != contents) {
         // By default tabs are marked as visible. As only the active tab is
         // visible we need to explicitly tell non-active tabs they are hidden.
         // Without this call non-active tabs are not marked as backgrounded.
@@ -570,7 +571,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
           RestoreTabsToBrowser(*(*i), browser, selected_tab_index);
       ShowBrowser(browser, selected_tab_index);
       tab_loader_->TabIsLoading(
-          &chrome::GetActiveWebContents(browser)->GetController());
+          &browser->tab_strip_model()->GetActiveWebContents()->GetController());
       NotifySessionServiceOfRestoredTabs(browser, initial_tab_count);
     }
 
@@ -607,7 +608,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
                                  NULL,
                                  tab.user_agent_override);
     } else {
-      int tab_index = use_new_window ? 0 : browser->active_index() + 1;
+      int tab_index =
+          use_new_window ? 0 : browser->tab_strip_model()->active_index() + 1;
       WebContents* web_contents = chrome::AddRestoredTab(
           browser,
           tab.navigations,
@@ -627,7 +629,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
       browser->tab_strip_model()->ActivateTabAt(0, true);
       browser->window()->Show();
     }
-    NotifySessionServiceOfRestoredTabs(browser, browser->tab_count());
+    NotifySessionServiceOfRestoredTabs(browser,
+                                       browser->tab_strip_model()->count());
 
     // Since FinishedTabCreation() is not called here, |this| will leak if we
     // are not in sychronous mode.
@@ -837,8 +840,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
       }
       if ((*i)->type == Browser::TYPE_TABBED)
         last_browser = browser;
-      WebContents* active_tab = chrome::GetActiveWebContents(browser);
-      int initial_tab_count = browser->tab_count();
+      WebContents* active_tab =
+          browser->tab_strip_model()->GetActiveWebContents();
+      int initial_tab_count = browser->tab_strip_model()->count();
       int selected_tab_index = std::max(
           0,
           std::min((*i)->selected_tab_index,
@@ -852,12 +856,13 @@ class SessionRestoreImpl : public content::NotificationObserver {
       }
       if (clobber_existing_tab_ && i == windows->begin() &&
           (*i)->type == Browser::TYPE_TABBED && active_tab &&
-          browser == browser_ && browser->tab_count() > initial_tab_count) {
+          browser == browser_ &&
+          browser->tab_strip_model()->count() > initial_tab_count) {
         chrome::CloseWebContents(browser, active_tab, true);
         selected_tab_to_activate = -1;
       }
       tab_loader_->TabIsLoading(
-          &chrome::GetActiveWebContents(browser)->GetController());
+          &browser->tab_strip_model()->GetActiveWebContents()->GetController());
       NotifySessionServiceOfRestoredTabs(browser, initial_tab_count);
     }
 
@@ -924,7 +929,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     WebContents* selected_web_contents = NULL;
     // If browser already has tabs, we want to restore the new ones after the
     // existing ones. E.g., this happens in Win8 Metro where we merge windows.
-    int tab_index_offset = browser->tab_count();
+    int tab_index_offset = browser->tab_strip_model()->count();
     for (int i = 0; i < static_cast<int>(window.tabs.size()); ++i) {
       const SessionTab& tab = *(window.tabs[i]);
       // Don't schedule a load for the selected tab, as ShowBrowser() will do
@@ -1020,7 +1025,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
   void ShowBrowser(Browser* browser, int selected_tab_index) {
     DCHECK(browser);
-    DCHECK(browser->tab_count());
+    DCHECK(browser->tab_strip_model()->count());
     browser->tab_strip_model()->ActivateTabAt(selected_tab_index, true);
 
     if (browser_ == browser)
@@ -1040,7 +1045,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
     // TODO(jcampan): http://crbug.com/8123 we should not need to set the
     //                initial focus explicitly.
-    chrome::GetActiveWebContents(browser)->GetView()->SetInitialFocus();
+    browser->tab_strip_model()->GetActiveWebContents()->
+        GetView()->SetInitialFocus();
 
     if (!browser_shown_) {
       browser_shown_ = true;
@@ -1077,9 +1083,10 @@ class SessionRestoreImpl : public content::NotificationObserver {
         SessionServiceFactory::GetForProfile(profile_);
     if (!session_service)
       return;
-    for (int i = initial_count; i < browser->tab_count(); ++i)
-      session_service->TabRestored(chrome::GetWebContentsAt(browser, i),
-                                   browser->tab_strip_model()->IsTabPinned(i));
+    TabStripModel* tab_strip = browser->tab_strip_model();
+    for (int i = initial_count; i < tab_strip->count(); ++i)
+      session_service->TabRestored(tab_strip->GetWebContentsAt(i),
+                                   tab_strip->IsTabPinned(i));
   }
 
   // The profile to create the sessions for.

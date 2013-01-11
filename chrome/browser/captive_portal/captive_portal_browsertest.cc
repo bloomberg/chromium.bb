@@ -1052,7 +1052,7 @@ void CaptivePortalBrowserTest::NavigateToPageExpectNoTest(
   // should be no new tabs.
   EXPECT_EQ(0, portal_observer.num_results_received());
   EXPECT_FALSE(CheckPending(browser));
-  EXPECT_EQ(1, browser->tab_count());
+  EXPECT_EQ(1, browser->tab_strip_model()->count());
   EXPECT_EQ(expected_navigations, navigation_observer.num_navigations());
   EXPECT_EQ(0, NumLoadingTabs());
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
@@ -1075,7 +1075,7 @@ void CaptivePortalBrowserTest::SlowLoadNoCaptivePortal(
 
   portal_observer.WaitForResults(1);
 
-  ASSERT_EQ(1, browser->tab_count());
+  ASSERT_EQ(1, browser->tab_strip_model()->count());
   EXPECT_EQ(expected_result, portal_observer.captive_portal_result());
   EXPECT_EQ(1, portal_observer.num_results_received());
   EXPECT_EQ(0, navigation_observer.num_navigations());
@@ -1089,7 +1089,7 @@ void CaptivePortalBrowserTest::SlowLoadNoCaptivePortal(
   URLRequestTimeoutOnDemandJob::FailJobs(1);
   navigation_observer.WaitForNavigations(1);
 
-  ASSERT_EQ(1, browser->tab_count());
+  ASSERT_EQ(1, browser->tab_strip_model()->count());
   EXPECT_EQ(1, portal_observer.num_results_received());
   EXPECT_FALSE(CheckPending(browser));
   EXPECT_EQ(0, NumLoadingTabs());
@@ -1113,8 +1113,8 @@ void CaptivePortalBrowserTest::FastTimeoutNoCaptivePortal(
   CaptivePortalObserver portal_observer(browser->profile());
 
   // Neither of these should be changed by the navigation.
-  int active_index = browser->active_index();
-  int expected_tab_count = browser->tab_count();
+  int active_index = browser->tab_strip_model()->active_index();
+  int expected_tab_count = browser->tab_strip_model()->count();
 
   ui_test_utils::NavigateToURL(
       browser,
@@ -1144,7 +1144,7 @@ void CaptivePortalBrowserTest::FastTimeoutNoCaptivePortal(
   EXPECT_FALSE(CheckPending(browser));
 
   // Make sure no login tab was opened.
-  EXPECT_EQ(expected_tab_count, browser->tab_count());
+  EXPECT_EQ(expected_tab_count, browser->tab_strip_model()->count());
 }
 
 void CaptivePortalBrowserTest::SlowLoadBehindCaptivePortal(

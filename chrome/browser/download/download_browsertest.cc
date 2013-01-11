@@ -529,7 +529,7 @@ class DownloadTest : public InProcessBrowserTest {
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
     CheckDownloadStatesForBrowser(browser, 1, DownloadItem::COMPLETE);
 
-    EXPECT_EQ(2, browser->tab_count());
+    EXPECT_EQ(2, browser->tab_strip_model()->count());
 
     // TODO(ahendrickson): check download status text after downloading.
 
@@ -1374,7 +1374,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
       ui_test_utils::GetBrowserNotInSet(original_browsers);
   ASSERT_TRUE(download_browser != NULL);
   EXPECT_NE(download_browser, browser());
-  EXPECT_EQ(1, download_browser->tab_count());
+  EXPECT_EQ(1, download_browser->tab_strip_model()->count());
   EXPECT_TRUE(download_browser->window()->IsDownloadShelfVisible());
 
 #if !defined(OS_MACOSX)

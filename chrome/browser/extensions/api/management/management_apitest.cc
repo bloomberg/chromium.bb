@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest.h"
@@ -222,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchTabApp) {
   // Code below assumes that the test starts with a single browser window
   // hosting one tab.
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
-  ASSERT_EQ(1, browser()->tab_count());
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
   // Load an app with app.launch.container = "tab".
   std::string app_id;
@@ -231,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchTabApp) {
 
   // Check that the app opened in a new tab of the existing browser.
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
-  ASSERT_EQ(2, browser()->tab_count());
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
 
   // Unload the extension.
   UninstallExtension(app_id);
@@ -253,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchTabApp) {
   // App windows are not yet implemented on mac os.  We should fall back
   // to a normal tab.
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
-  ASSERT_EQ(2, browser()->tab_count());
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
 #else
   // Find the app's browser.  Opening in a new window will create
   // a new browser.

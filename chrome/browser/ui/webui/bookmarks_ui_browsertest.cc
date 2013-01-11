@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(BookmarksTest, TwoCommandsOneTab) {
   chrome::ShowBookmarkManager(browser());
   navigation_observer.Wait();
 
-  ASSERT_EQ(1, browser()->tab_count());
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
 }
 
 IN_PROC_BROWSER_TEST_F(BookmarksTest, BookmarksLoaded) {

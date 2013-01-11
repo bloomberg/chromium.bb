@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -55,7 +56,7 @@ void WaitForTabsAndPopups(Browser* browser,
   base::TimeTicks end_time = base::TimeTicks::Now() + kWaitTime;
   while (base::TimeTicks::Now() < end_time) {
     if (chrome::GetBrowserCount(browser->profile()) == num_browsers &&
-        browser->tab_count() == num_tabs &&
+        browser->tab_strip_model()->count() == num_tabs &&
         PanelManager::GetInstance()->num_panels() == num_panels)
       break;
 
@@ -63,7 +64,7 @@ void WaitForTabsAndPopups(Browser* browser,
   }
 
   EXPECT_EQ(num_browsers, chrome::GetBrowserCount(browser->profile()));
-  EXPECT_EQ(num_tabs, browser->tab_count());
+  EXPECT_EQ(num_tabs, browser->tab_strip_model()->count());
   EXPECT_EQ(num_panels, PanelManager::GetInstance()->num_panels());
 
   int num_popups_seen = 0;
@@ -387,8 +388,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenExtension) {
       last_loaded_extension_id_ + "/test.html");
   ui_test_utils::NavigateToURL(browser(), start_url);
   WebContents* newtab = NULL;
-  ASSERT_NO_FATAL_FAILURE(OpenWindow(chrome::GetActiveWebContents(browser()),
-                          start_url.Resolve("newtab.html"), true, &newtab));
+  ASSERT_NO_FATAL_FAILURE(
+      OpenWindow(browser()->tab_strip_model()->GetActiveWebContents(),
+      start_url.Resolve("newtab.html"), true, &newtab));
 
   bool result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(newtab, "testExtensionApi()",
@@ -405,7 +407,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenInvalidExtension) {
   GURL start_url(std::string("chrome-extension://") +
       last_loaded_extension_id_ + "/test.html");
   ui_test_utils::NavigateToURL(browser(), start_url);
-  ASSERT_NO_FATAL_FAILURE(OpenWindow(chrome::GetActiveWebContents(browser()),
+  ASSERT_NO_FATAL_FAILURE(
+      OpenWindow(browser()->tab_strip_model()->GetActiveWebContents(),
       GURL("chrome-extension://thisissurelynotavalidextensionid/newtab.html"),
       false, NULL));
 
@@ -422,7 +425,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
 
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
   WebContents* newtab = NULL;
-  ASSERT_NO_FATAL_FAILURE(OpenWindow(chrome::GetActiveWebContents(browser()),
+  ASSERT_NO_FATAL_FAILURE(
+      OpenWindow(browser()->tab_strip_model()->GetActiveWebContents(),
       GURL(std::string("chrome-extension://") + last_loaded_extension_id_ +
           "/newtab.html"), false, &newtab));
 

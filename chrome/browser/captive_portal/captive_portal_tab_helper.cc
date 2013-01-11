@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -251,7 +252,8 @@ void CaptivePortalTabHelper::OpenLoginTab() {
   // TODO(mmenke):  Consider focusing that tab, at least if this is the tab
   //                helper for the currently active tab for the profile.
   for (int i = 0; i < browser->tab_count(); ++i) {
-    content::WebContents* web_contents = chrome::GetWebContentsAt(browser, i);
+    content::WebContents* web_contents =
+        browser->tab_strip_model()->GetWebContentsAt(i);
     captive_portal::CaptivePortalTabHelper* captive_portal_tab_helper =
         captive_portal::CaptivePortalTabHelper::FromWebContents(web_contents);
     if (captive_portal_tab_helper->IsLoginTab())

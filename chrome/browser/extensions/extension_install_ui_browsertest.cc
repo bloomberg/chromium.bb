@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "content/public/browser/web_contents.h"
 
@@ -26,7 +26,8 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
   // Checks that a theme info bar is currently visible and issues an undo to
   // revert to the previous theme.
   void VerifyThemeInfoBarAndUndoInstall() {
-    WebContents* web_contents = chrome::GetActiveWebContents(browser());
+    WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(web_contents);
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(web_contents);
@@ -122,14 +123,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
                        AppInstallConfirmation) {
-  int num_tabs = browser()->tab_count();
+  int num_tabs = browser()->tab_strip_model()->count();
 
   FilePath app_dir = test_data_dir_.AppendASCII("app");
   ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(app_dir, 1, browser()));
 
   if (NewTabUI::ShouldShowApps()) {
-    EXPECT_EQ(num_tabs + 1, browser()->tab_count());
-    WebContents* web_contents = chrome::GetActiveWebContents(browser());
+    EXPECT_EQ(num_tabs + 1, browser()->tab_strip_model()->count());
+    WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(web_contents);
     EXPECT_TRUE(StartsWithASCII(web_contents->GetURL().spec(),
                                 "chrome://newtab/", false));
@@ -142,17 +144,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
                        AppInstallConfirmation_Incognito) {
   Browser* incognito_browser = CreateIncognitoBrowser();
 
-  int num_incognito_tabs = incognito_browser->tab_count();
-  int num_normal_tabs = browser()->tab_count();
+  int num_incognito_tabs = incognito_browser->tab_strip_model()->count();
+  int num_normal_tabs = browser()->tab_strip_model()->count();
 
   FilePath app_dir = test_data_dir_.AppendASCII("app");
   ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(app_dir, 1,
                                                 incognito_browser));
 
-  EXPECT_EQ(num_incognito_tabs, incognito_browser->tab_count());
+  EXPECT_EQ(num_incognito_tabs,
+            incognito_browser->tab_strip_model()->count());
   if (NewTabUI::ShouldShowApps()) {
-    EXPECT_EQ(num_normal_tabs + 1, browser()->tab_count());
-    WebContents* web_contents = chrome::GetActiveWebContents(browser());
+    EXPECT_EQ(num_normal_tabs + 1, browser()->tab_strip_model()->count());
+    WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(web_contents);
     EXPECT_TRUE(StartsWithASCII(web_contents->GetURL().spec(),
                                 "chrome://newtab/", false));

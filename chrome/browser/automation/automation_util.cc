@@ -512,7 +512,9 @@ bool GetTabForId(const AutomationId& id, WebContents** tab) {
   BrowserList::const_iterator iter = BrowserList::begin();
   for (; iter != BrowserList::end(); ++iter) {
     Browser* browser = *iter;
-    for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
+    for (int tab_index = 0;
+         tab_index < browser->tab_strip_model()->count();
+         ++tab_index) {
       WebContents* web_contents =
           browser->tab_strip_model()->GetWebContentsAt(tab_index);
       SessionTabHelper* session_tab_helper =

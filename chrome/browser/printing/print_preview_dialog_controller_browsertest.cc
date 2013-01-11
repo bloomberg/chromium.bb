@@ -54,7 +54,7 @@ class TabDestroyedObserver : public content::WebContentsObserver {
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
                        NavigateFromInitiatorTab) {
   // Lets start with one tab.
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
   // Create a reference to initiator tab contents.
   WebContents* initiator_tab =
@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
       tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // New print preview tab is created.
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   ASSERT_TRUE(preview_tab);
   ASSERT_NE(initiator_tab, preview_tab);
   TabDestroyedObserver observer(preview_tab);
@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
       tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // New preview tab is created.
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_TRUE(new_preview_tab);
 }
 
@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
                        ReloadInitiatorTab) {
   // Lets start with one tab.
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
   // Create a reference to initiator tab contents.
   WebContents* initiator_tab =
@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
       tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // New print preview tab is created.
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   ASSERT_TRUE(preview_tab);
   ASSERT_NE(initiator_tab, preview_tab);
   TabDestroyedObserver tab_destroyed_observer(preview_tab);
@@ -137,6 +137,6 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   WebContents* new_preview_tab =
       tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_TRUE(new_preview_tab);
 }

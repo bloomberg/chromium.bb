@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -104,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BrowserActionCreateTab) {
   ExtensionProcessManager* pm =
       extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
-  int num_tabs_before = browser()->tab_count();
+  int num_tabs_before = browser()->tab_strip_model()->count();
 
   // Observe background page being created and closed after
   // the browser action is clicked.
@@ -114,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BrowserActionCreateTab) {
 
   // Background page created a new tab before it closed.
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
-  EXPECT_EQ(num_tabs_before + 1, browser()->tab_count());
+  EXPECT_EQ(num_tabs_before + 1, browser()->tab_strip_model()->count());
   EXPECT_EQ(std::string(chrome::kChromeUIExtensionsURL),
             browser()->tab_strip_model()->GetActiveWebContents()->
                 GetURL().spec());
@@ -128,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest,
   ExtensionProcessManager* pm =
       extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
-  int num_tabs_before = browser()->tab_count();
+  int num_tabs_before = browser()->tab_strip_model()->count();
 
   // Observe background page being created and closed after
   // the browser action is clicked.
@@ -138,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest,
 
   // Background page is closed after creating a new tab.
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
-  EXPECT_EQ(num_tabs_before + 1, browser()->tab_count());
+  EXPECT_EQ(num_tabs_before + 1, browser()->tab_strip_model()->count());
 }
 
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BroadcastEvent) {
@@ -371,7 +370,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, Messaging) {
   ExtensionProcessManager* pm =
       extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
   // Navigate to a page that opens a message channel to the background page.
   ResultCatcher catcher;
