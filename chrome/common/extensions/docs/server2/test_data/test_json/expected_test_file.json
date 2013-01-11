@@ -37,8 +37,7 @@
             "description": null
           }
         ],
-        "optional": false,
-        "description": null
+        "optional": false
       },
       "returns": null,
       "parameters": [
@@ -94,6 +93,7 @@
         {
           "last": true,
           "name": "callback",
+          "description": null,
           "parent_name": "get",
           "id": "property-get-callback",
           "optional": false,

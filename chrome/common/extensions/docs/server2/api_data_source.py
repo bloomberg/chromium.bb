@@ -17,7 +17,7 @@ import third_party.json_schema_compiler.idl_parser as idl_parser
 # the caches used by APIDataSource. This would include changes to model.py in
 # JSON schema compiler! This allows the cache to be invalidated without having
 # to flush memcache on the production server.
-_VERSION = 11
+_VERSION = 12
 
 def _RemoveNoDocs(item):
   if json_parse.IsDict(item):
@@ -157,7 +157,6 @@ class _JSCModel(object):
       return None
     callback_dict = {
       'name': callback.simple_name,
-      'description': self._FormatDescription(callback.description),
       'simple_type': {'simple_type': 'function'},
       'optional': callback.optional,
       'parameters': []
@@ -209,6 +208,7 @@ class _JSCModel(object):
   def _GenerateCallbackProperty(self, callback):
     property_dict = {
       'name': callback.simple_name,
+      'description': self._FormatDescription(callback.description),
       'optional': callback.optional,
       'id': _CreateId(callback, 'property'),
       'simple_type': 'function',
