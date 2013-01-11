@@ -117,16 +117,20 @@ function LogHTML(html) {
   window.document.getElementById("console").innerHTML += html;
 }
 
+function sendAutomationMessage(msg) {
+  if (window.domAutomationController) {
+    window.domAutomationController.setAutomationId(0);
+    window.domAutomationController.send(msg);
+  }
+}
+
 // If something goes really wrong, the test running inside the plugin may not
 // terminate.  For example, if the plugin does not load, the test will never
 // send "PASS" to the browser.  In this case we should explicitly use the
 // automation controller to terminate the test.
 function InternalError(msg) {
   LogHTML("<p>" + msg);
-  if (window.domAutomationController) {
-    domAutomationController.setAutomationId(0);
-    domAutomationController.send(msg);
-  }
+  SendAutomationMessage(msg);
 }
 
 function SetCookie(key_value_string) {
@@ -204,6 +208,13 @@ function handleTestingMessage(message_event) {
   }
 }
 
+function sendProgress() {
+  LogHTML("...");
+  // We send "..." to signal that we're still working. See
+  // ppapi/tests/testing_instance.h for how this works.
+  sendAutomationMessage("...");
+}
+
 onload = function() {
   var testcase = ExtractSearchParameter("testcase");
   var mode = ExtractSearchParameter("mode");
@@ -248,6 +259,7 @@ onload = function() {
 
     var container = document.getElementById("container");
     container.addEventListener("message", handleTestingMessage, true);
+
     // "error" and "crash" events will only fire for NaCl, but adding these
     // listeners doesn't hurt in the non-NaCl cases.
     obj.addEventListener("error", function() {
@@ -256,14 +268,23 @@ onload = function() {
     obj.addEventListener("crash", function() {
       InternalError("Plugin crashed. '" + obj.lastError + "'");
     }, true);
+
+    // NaCl sends progress events while loading. When we get one, notify the
+    // domAutomationController so that it knows we're still working.
+    obj.addEventListener("loadstart", sendProgress, true);
+    obj.addEventListener("progress", sendProgress, true);
+    obj.addEventListener("load", sendProgress, true);
+    obj.addEventListener("loadend", sendProgress, true);
+
     // Register a bad dispatchEvent to make sure it isn't used. See 'EVIL' note
     // below.
     var original = obj.dispatchEvent;
     obj.dispatchEvent = function() {
       LogHTML("<p>Bad dispatchEvent called! " +
               "see <a href='http://crbug.com/109775'>crbug.com/109775</a>)");
-      // Pass it on anyways, we need the event to detect load errors.
-      original.apply(obj, arguments);
+      // Pass it on anyways, we need the event to detect load progress and
+      // errors.
+      return original.apply(obj, arguments);
     }
     container.appendChild(obj);
   }
