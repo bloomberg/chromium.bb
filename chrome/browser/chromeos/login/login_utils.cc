@@ -232,7 +232,6 @@ class LoginUtilsImpl
       const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
   virtual void StopBackgroundFetchers() OVERRIDE;
   virtual void InitRlzDelayed(Profile* user_profile) OVERRIDE;
-  virtual void CompleteProfileCreate(Profile* user_profile) OVERRIDE;
 
   // OAuth1TokenFetcher::Delegate overrides.
   void OnOAuth1AccessTokenAvailable(const std::string& token,
@@ -306,6 +305,10 @@ class LoginUtilsImpl
   void OnProfileCreated(Profile* profile,
                         Profile::CreateStatus status);
 
+  // Callback to resume profile creation after transferring auth data from
+  // the authentication profile.
+  void CompleteProfileCreate(Profile* user_profile);
+
   // Finalized profile preparation.
   void FinalizePrepareProfile(Profile* user_profile);
 
@@ -318,7 +321,7 @@ class LoginUtilsImpl
   std::string password_;
   bool pending_requests_;
   bool using_oauth_;
-  // True if the authenrication profile's cookie jar should contain
+  // True if the authentication profile's cookie jar should contain
   // authentication cookies from the authentication extension log in flow.
   bool has_web_auth_cookies_;
   // Has to be scoped_refptr, see comment for CreateAuthenticator(...).
@@ -521,9 +524,6 @@ void LoginUtilsImpl::OnProfileCreated(
     Profile* user_profile,
     Profile::CreateStatus status) {
   CHECK(user_profile);
-
-  if (delegate_)
-    delegate_->OnProfileCreated(user_profile);
 
   switch (status) {
     case Profile::CREATE_STATUS_INITIALIZED:

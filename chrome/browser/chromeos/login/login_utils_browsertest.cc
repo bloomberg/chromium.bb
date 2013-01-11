@@ -145,8 +145,7 @@ class LoginUtilsTest : public testing::Test,
         mock_async_method_caller_(NULL),
         connector_(NULL),
         cryptohome_(NULL),
-        prepared_profile_(NULL),
-        created_profile_(NULL) {}
+        prepared_profile_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
     // This test is not a full blown InProcessBrowserTest, and doesn't have
@@ -358,10 +357,6 @@ class LoginUtilsTest : public testing::Test,
     prepared_profile_ = profile;
   }
 
-  virtual void OnProfileCreated(Profile* profile) OVERRIDE {
-    created_profile_ = profile;
-  }
-
 #if defined(ENABLE_RLZ)
   virtual void OnRlzInitialized(Profile* profile) OVERRIDE {
     rlz_initialized_cb_.Run();
@@ -379,7 +374,7 @@ class LoginUtilsTest : public testing::Test,
     FAIL() << "OnLoginSuccess not expected";
   }
 
-  void LockDevice(const std::string& username) {
+  void EnrollDevice(const std::string& username) {
     EXPECT_CALL(*cryptohome_, InstallAttributesIsFirstInstall())
         .WillOnce(Return(true))
         .WillRepeatedly(Return(false));
@@ -407,7 +402,9 @@ class LoginUtilsTest : public testing::Test,
 
     const bool kPendingRequests = false;
     const bool kUsingOAuth = true;
-    const bool kHasCookies = true;
+    // Setting |kHasCookies| to false prevents ProfileAuthData::Transfer from
+    // waiting for an IO task before proceeding.
+    const bool kHasCookies = false;
     LoginUtils::Get()->PrepareProfile(username, std::string(), "password",
                                       kPendingRequests, kUsingOAuth,
                                       kHasCookies, this);
@@ -489,7 +486,6 @@ class LoginUtilsTest : public testing::Test,
   policy::BrowserPolicyConnector* connector_;
   MockCryptohomeLibrary* cryptohome_;
   Profile* prepared_profile_;
-  Profile* created_profile_;
 
   base::Closure rlz_initialized_cb_;
 
@@ -508,17 +504,14 @@ class LoginUtilsBlockingLoginTest
 
 TEST_F(LoginUtilsTest, NormalLoginDoesntBlock) {
   UserManager* user_manager = UserManager::Get();
-  ASSERT_TRUE(!user_manager->IsUserLoggedIn());
+  EXPECT_FALSE(user_manager->IsUserLoggedIn());
   EXPECT_FALSE(connector_->IsEnterpriseManaged());
   EXPECT_FALSE(prepared_profile_);
+  EXPECT_EQ(policy::USER_AFFILIATION_NONE,
+            connector_->GetUserAffiliation(kUsername));
 
   // The profile will be created without waiting for a policy response.
   PrepareProfile(kUsername);
-
-  // This should shortcut cookie transfer step that is missing due to
-  // IO thread being mocked.
-  EXPECT_TRUE(created_profile_);
-  LoginUtils::Get()->CompleteProfileCreate(created_profile_);
 
   EXPECT_TRUE(prepared_profile_);
   ASSERT_TRUE(user_manager->IsUserLoggedIn());
@@ -527,25 +520,22 @@ TEST_F(LoginUtilsTest, NormalLoginDoesntBlock) {
 
 TEST_F(LoginUtilsTest, EnterpriseLoginDoesntBlockForNormalUser) {
   UserManager* user_manager = UserManager::Get();
-  ASSERT_TRUE(!user_manager->IsUserLoggedIn());
+  EXPECT_FALSE(user_manager->IsUserLoggedIn());
   EXPECT_FALSE(connector_->IsEnterpriseManaged());
   EXPECT_FALSE(prepared_profile_);
 
   // Enroll the device.
-  LockDevice(kUsername);
+  EnrollDevice(kUsername);
 
-  ASSERT_TRUE(!user_manager->IsUserLoggedIn());
+  EXPECT_FALSE(user_manager->IsUserLoggedIn());
   EXPECT_TRUE(connector_->IsEnterpriseManaged());
   EXPECT_EQ(kDomain, connector_->GetEnterpriseDomain());
   EXPECT_FALSE(prepared_profile_);
+  EXPECT_EQ(policy::USER_AFFILIATION_NONE,
+            connector_->GetUserAffiliation(kUsernameOtherDomain));
 
   // Login with a non-enterprise user shouldn't block.
   PrepareProfile(kUsernameOtherDomain);
-
-  // This should shortcut cookie transfer step that is missing due to
-  // IO thread being mocked.
-  EXPECT_TRUE(created_profile_);
-  LoginUtils::Get()->CompleteProfileCreate(created_profile_);
 
   EXPECT_TRUE(prepared_profile_);
   ASSERT_TRUE(user_manager->IsUserLoggedIn());
@@ -561,11 +551,6 @@ TEST_F(LoginUtilsTest, RlzInitialized) {
   rlz_initialized_cb_ = wait_for_rlz_init.QuitClosure();
 
   PrepareProfile(kUsername);
-
-  // This should shortcut cookie transfer step that is missing due to
-  // IO thread being mocked.
-  EXPECT_TRUE(created_profile_);
-  LoginUtils::Get()->CompleteProfileCreate(created_profile_);
 
   wait_for_rlz_init.Run();
   // Wait for blocking RLZ tasks to complete.
@@ -585,23 +570,27 @@ TEST_F(LoginUtilsTest, RlzInitialized) {
 
 TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
   UserManager* user_manager = UserManager::Get();
-  ASSERT_TRUE(!user_manager->IsUserLoggedIn());
+  EXPECT_FALSE(user_manager->IsUserLoggedIn());
   EXPECT_FALSE(connector_->IsEnterpriseManaged());
   EXPECT_FALSE(prepared_profile_);
 
   // Enroll the device.
-  LockDevice(kUsername);
+  EnrollDevice(kUsername);
 
-  ASSERT_TRUE(!user_manager->IsUserLoggedIn());
+  EXPECT_FALSE(user_manager->IsUserLoggedIn());
   EXPECT_TRUE(connector_->IsEnterpriseManaged());
   EXPECT_EQ(kDomain, connector_->GetEnterpriseDomain());
   EXPECT_FALSE(prepared_profile_);
+  EXPECT_EQ(policy::USER_AFFILIATION_MANAGED,
+            connector_->GetUserAffiliation(kUsername));
+  EXPECT_FALSE(user_manager->IsKnownUser(kUsername));
 
   // Login with a user of the enterprise domain waits for policy.
   PrepareProfile(kUsername);
 
   EXPECT_FALSE(prepared_profile_);
   ASSERT_TRUE(user_manager->IsUserLoggedIn());
+  EXPECT_TRUE(user_manager->IsCurrentUserNew());
 
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   net::TestURLFetcher* fetcher;
@@ -668,12 +657,8 @@ TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
     fetcher->set_url(fetcher->GetOriginalURL());
     fetcher->set_response_code(500);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
+    RunUntilIdle();
   }
-
-  // This should shortcut cookie transfer step that is missing due to
-  // IO thread being mocked.
-  EXPECT_TRUE(created_profile_);
-  LoginUtils::Get()->CompleteProfileCreate(created_profile_);
 
   // The profile is finally ready:
   EXPECT_TRUE(prepared_profile_);

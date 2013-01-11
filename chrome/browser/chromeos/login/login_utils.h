@@ -29,17 +29,13 @@ class LoginUtils {
  public:
   class Delegate {
    public:
-   // Called after profile is loaded and prepared for the session.
+    // Called after profile is loaded and prepared for the session.
     virtual void OnProfilePrepared(Profile* profile) = 0;
 
 #if defined(ENABLE_RLZ)
     // Called after post-profile RLZ initialization.
     virtual void OnRlzInitialized(Profile* profile) {}
 #endif
-
-    // Called immediately after profile is created, should be used as a test
-    // se
-    virtual void OnProfileCreated(Profile* profile) {}
   };
 
   // Get LoginUtils singleton object. If it was not set before, new default
@@ -119,9 +115,6 @@ class LoginUtils {
 
   // Initialize RLZ.
   virtual void InitRlzDelayed(Profile* user_profile) = 0;
-
-  // Completed profile creation process.
-  virtual void CompleteProfileCreate(Profile* user_profile) {}
 
  protected:
   friend class ::BrowserGuestSessionNavigatorTest;
