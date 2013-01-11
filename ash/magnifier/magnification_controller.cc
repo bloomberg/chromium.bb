@@ -33,6 +33,10 @@ const float kNonMagnifiedScale = 1.0f;
 const float kInitialMagnifiedScale = 2.0f;
 const float kScrollScaleChangeFactor = 0.05f;
 
+// Threadshold of panning. If the cursor moves to within pixels (in DIP) of
+// |kPanningMergin| from the edge, the view-port moves.
+const int kPanningMergin = 100;
+
 }  // namespace
 
 namespace ash {
@@ -296,40 +300,45 @@ void MagnificationControllerImpl::OnMouseMove(const gfx::Point& location) {
   const gfx::Rect window_rect = gfx::ToEnclosingRect(GetWindowRectDIP(scale_));
   const int left = window_rect.x();
   const int right = window_rect.right();
-  const int width_margin = static_cast<int>(0.1f * window_rect.width());
-  const int width_offset = static_cast<int>(0.5f * window_rect.width());
+  int margin = kPanningMergin / scale_;  // No need to consider DPI.
 
-  if (mouse.x() < left + width_margin) {
-    x -= width_offset;
+  int x_diff = 0;
+
+  if (mouse.x() < left + margin) {
+    // Panning left.
+    x_diff = mouse.x() - (left + margin);
     start_zoom = true;
-  } else if (right - width_margin < mouse.x()) {
-    x += width_offset;
+  } else if (right - margin < mouse.x()) {
+    // Panning right.
+    x_diff = mouse.x() - (right - margin);
     start_zoom = true;
   }
+  x = left + x_diff;
 
   const int top = window_rect.y();
   const int bottom = window_rect.bottom();
-  // Uses same margin with x-axis's one.
-  const int height_margin = width_margin;
-  const int height_offset = static_cast<int>(0.5f * window_rect.height());
 
-  if (mouse.y() < top + height_margin) {
-    y -= height_offset;
+  int y_diff = 0;
+  if (mouse.y() < top + margin) {
+    // Panning up.
+    y_diff = mouse.y() - (top + margin);
     start_zoom = true;
-  } else if (bottom - height_margin < mouse.y()) {
-    y += height_offset;
+  } else if (bottom - margin < mouse.y()) {
+    // Panning down.
+    y_diff = mouse.y() - (bottom - margin);
     start_zoom = true;
   }
+  y = top + y_diff;
 
   if (start_zoom && !is_on_animation_) {
-    bool ret = RedrawDIP(gfx::Point(x, y), scale_, true);
+    // No animation on panning.
+    bool animate = false;
+    bool ret = RedrawDIP(gfx::Point(x, y), scale_, animate);
 
     if (ret) {
-      int x_diff = origin_.x() - window_rect.x();
-      int y_diff = origin_.y() - window_rect.y();
       // If the magnified region is moved, hides the mouse cursor and moves it.
       if (x_diff != 0 || y_diff != 0)
-        AfterAnimationMoveCursorTo(mouse);
+        root_window_->MoveCursorTo(mouse);
     }
   }
 }
