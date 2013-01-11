@@ -18,3 +18,5 @@ Local Additions:
   chrome primitives in place of some posix primitives
 * env_idb.h allows IndexedDB to emit uma stats under separate histograms from
   other LevelDB consumers.
+* ChromiumEnv wraps low-level I/O calls that may be interrupted with a
+  HANDLE_EINTR macro that retries the call.

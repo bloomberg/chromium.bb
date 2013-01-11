@@ -13,6 +13,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_info.h"
@@ -57,7 +58,7 @@ int fdatasync(int fildes) {
 #if defined(OS_WIN)
   return _commit(fildes);
 #else
-  return fsync(fildes);
+  return HANDLE_EINTR(fsync(fildes));
 #endif
 }
 #endif
@@ -92,11 +93,11 @@ std::string FilePathToString(const ::FilePath& file_path) {
 bool sync_parent(const std::string& fname) {
 #if !defined(OS_WIN)
   FilePath parent_dir = CreateFilePath(fname).DirName();
-  int parent_fd = open(FilePathToString(parent_dir).c_str(), O_RDONLY);
+  int parent_fd = HANDLE_EINTR(open(FilePathToString(parent_dir).c_str(), O_RDONLY));
   if (parent_fd < 0)
     return false;
-  fsync(parent_fd);
-  close(parent_fd);
+  HANDLE_EINTR(fsync(parent_fd));
+  HANDLE_EINTR(close(parent_fd));
 #endif
   return true;
 }
