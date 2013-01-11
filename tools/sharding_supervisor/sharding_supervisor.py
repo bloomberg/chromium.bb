@@ -503,6 +503,7 @@ class ShardingSupervisor(object):
     sharded_description = re.compile(r": (?:\d+>)?(.*)")
     gtest_filters = [sharded_description.search(line).group(1)
                      for line in self.failed_tests]
+    sys.stdout.write("\nRETRY GTEST FILTERS: %r\n" % gtest_filters)
     failed_retries = []
 
     for test_filter in gtest_filters:
@@ -510,6 +511,7 @@ class ShardingSupervisor(object):
       # Don't update the xml output files during retry.
       stripped_gtests_args = RemoveGTestOutput(self.gtest_args)
       args.extend(stripped_gtests_args)
+      sys.stdout.write("\nRETRY COMMAND: %r\n" % args)
       rerun = subprocess.Popen(args)
       rerun.wait()
       if rerun.returncode != 0:
