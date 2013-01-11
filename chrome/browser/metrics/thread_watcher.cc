@@ -534,7 +534,7 @@ void ThreadWatcherList::ParseCommandLine(
   if (channel == chrome::VersionInfo::CHANNEL_STABLE)
     crash_on_hang_thread_names = "";
   else
-    crash_on_hang_thread_names = "UI:3,IO:3";
+    crash_on_hang_thread_names = "UI:3,IO:9";
 
   bool has_command_line_overwrite = false;
   if (command_line.HasSwitch(switches::kCrashOnHangThreads)) {
