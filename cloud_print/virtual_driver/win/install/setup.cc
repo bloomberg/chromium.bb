@@ -83,7 +83,7 @@ void DeleteGoogleUpdateKeys() {
 HRESULT GetNativeSystemPath(FilePath* path) {
   if (cloud_print::IsSystem64Bit()) {
     if (!PathService::Get(base::DIR_WINDOWS, path)) {
-      return ERROR_PATH_NOT_FOUND;
+      return HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND);
     }
     // Sysnative will bypass filesystem redirection and give us
     // the location of the 64bit system32 from a 32 bit process.
@@ -91,7 +91,7 @@ HRESULT GetNativeSystemPath(FilePath* path) {
   } else {
     if (!PathService::Get(base::DIR_SYSTEM, path)) {
       LOG(ERROR) << "Unable to get system path.";
-      return ERROR_PATH_NOT_FOUND;
+      return HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND);
     }
   }
   return S_OK;
@@ -117,7 +117,7 @@ HRESULT RegisterPortMonitor(bool install, const FilePath& install_path) {
   result = GetPortMonitorTargetPath(&target_path);
   if (!SUCCEEDED(result)) {
     LOG(ERROR) << "Unable to get port monitor target path.";
-    return result;
+    return HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND);
   }
   string16 source;
   source = cloud_print::GetPortMonitorDllName();
@@ -126,7 +126,7 @@ HRESULT RegisterPortMonitor(bool install, const FilePath& install_path) {
     if (!file_util::CopyFileW(source_path, target_path)) {
       LOG(ERROR) << "Unable copy port monitor dll from " <<
           source_path.value() << " to " << target_path.value();
-      return ERROR_ACCESS_DENIED;
+      return cloud_print::GetLastHResult();
     }
   } else if (!file_util::PathExists(source_path)) {
     // Already removed.  Just "succeed" silently.
@@ -149,7 +149,7 @@ HRESULT RegisterPortMonitor(bool install, const FilePath& install_path) {
   FilePath final_path;
   if (!PathService::Get(base::DIR_SYSTEM, &final_path)) {
     LOG(ERROR) << "Unable to get system path.";
-    return ERROR_PATH_NOT_FOUND;
+    return HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND);
   }
   final_path = final_path.Append(cloud_print::GetPortMonitorDllName());
   command_line.AppendArgPath(final_path);
@@ -159,7 +159,7 @@ HRESULT RegisterPortMonitor(bool install, const FilePath& install_path) {
   options.wait = true;
   if (!base::LaunchProcess(command_line, options, &process_handle)) {
     LOG(ERROR) << "Unable to launch regsvr32.exe.";
-    return ERROR_NOT_SUPPORTED;
+    return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
   }
   base::win::ScopedHandle scoped_process_handle(process_handle);
 
@@ -177,7 +177,7 @@ HRESULT RegisterPortMonitor(bool install, const FilePath& install_path) {
   } else {
     if (!file_util::Delete(target_path, false)) {
       LOG(ERROR) << "Unable to delete " << target_path.value();
-      return ERROR_ACCESS_DENIED;
+      return HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED);
     }
   }
   return S_OK;
@@ -430,26 +430,28 @@ HRESULT InstallVirtualDriver(const FilePath& install_path) {
 
   if (!IsOSSupported()) {
     LOG(ERROR) << "Requires XP SP3 or later.";
-    return ERROR_OLD_WIN_VERSION;
+    return HRESULT_FROM_WIN32(ERROR_OLD_WIN_VERSION);
   }
 
   if (!file_util::CreateDirectory(install_path)) {
     LOG(ERROR) << "Can't create install directory.";
-    return ERROR_ACCESS_DENIED;
+    return HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED);
   }
   SetupUninstall(install_path);
   result = RegisterPortMonitor(true, install_path);
-  if (!SUCCEEDED(result)) {
+  if (FAILED(result)) {
     LOG(ERROR) << "Unable to register port monitor.";
     return result;
   }
+
   result = InstallPpd(install_path);
-  if (!SUCCEEDED(result)) {
+  if (FAILED(result)) {
     LOG(ERROR) << "Unable to install Ppd.";
     return result;
   }
+
   result = InstallPrinter();
-  if (!SUCCEEDED(result)) {
+  if (FAILED(result)) {
     LOG(ERROR) << "Unable to install printer.";
     return result;
   }
@@ -477,12 +479,12 @@ HRESULT UninstallVirtualDriver() {
   }
   HRESULT result = S_OK;
   result = UninstallPrinter();
-  if (!SUCCEEDED(result)) {
+  if (FAILED(result)) {
     LOG(ERROR) << "Unable to uninstall Ppd.";
     return result;
   }
   result = UninstallPpd();
-  if (!SUCCEEDED(result)) {
+  if (FAILED(result)) {
     LOG(ERROR) << "Unable to remove Ppd.";
     // Put the printer back since we're not able to
     // complete the uninstallation.
@@ -492,7 +494,7 @@ HRESULT UninstallVirtualDriver() {
     return result;
   }
   result = RegisterPortMonitor(false, install_path);
-  if (!SUCCEEDED(result)) {
+  if (FAILED(result)) {
     LOG(ERROR) << "Unable to remove port monitor.";
     return result;
   }
@@ -514,7 +516,7 @@ HRESULT DoLaunchUninstall(const FilePath& installer_source, bool wait) {
     base::ProcessHandle process_handle;
     if (!base::LaunchProcess(command_line, options, &process_handle)) {
       LOG(ERROR) << "Unable to launch child uninstall.";
-      return ERROR_NOT_SUPPORTED;
+      return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
     }
     if (wait) {
       int exit_code = -1;
