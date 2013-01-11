@@ -106,6 +106,11 @@ void wl_display_remove_global(struct wl_display *display,
 uint32_t wl_display_get_serial(struct wl_display *display);
 uint32_t wl_display_next_serial(struct wl_display *display);
 
+void wl_display_add_destroy_listener(struct wl_display *display,
+				     struct wl_listener *listener);
+struct wl_listener *wl_display_get_destroy_listener(struct wl_display *display,
+						    wl_notify_func_t notify);
+
 struct wl_client *wl_client_create(struct wl_display *display, int fd);
 void wl_client_destroy(struct wl_client *client);
 void wl_client_flush(struct wl_client *client);

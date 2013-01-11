@@ -1,6 +1,7 @@
 TESTS =						\
 	array-test				\
 	client-test				\
+	display-test				\
 	connection-test				\
 	event-loop-test				\
 	fixed-test				\
@@ -22,6 +23,7 @@ test_runner_src = test-runner.c test-runner.h test-helpers.c
 
 array_test_SOURCES = array-test.c $(test_runner_src)
 client_test_SOURCES = client-test.c $(test_runner_src)
+display_test_SOURCES = display-test.c $(test_runner_src)
 connection_test_SOURCES = connection-test.c $(test_runner_src)
 event_loop_test_SOURCES = event-loop-test.c $(test_runner_src)
 fixed_test_SOURCES = fixed-test.c $(test_runner_src)

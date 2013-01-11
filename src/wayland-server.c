@@ -90,6 +90,8 @@ struct wl_display {
 	struct wl_list global_list;
 	struct wl_list socket_list;
 	struct wl_list client_list;
+
+	struct wl_signal destroy_signal;
 };
 
 struct wl_global {
@@ -1096,6 +1098,8 @@ wl_display_create(void)
 	wl_list_init(&display->client_list);
 	wl_list_init(&display->registry_resource_list);
 
+	wl_signal_init(&display->destroy_signal);
+
 	display->id = 1;
 	display->serial = 0;
 
@@ -1114,6 +1118,8 @@ wl_display_destroy(struct wl_display *display)
 {
 	struct wl_socket *s, *next;
 	struct wl_global *global, *gnext;
+
+	wl_signal_emit(&display->destroy_signal, display);
 
 	wl_list_for_each_safe(s, next, &display->socket_list, link) {
 		wl_event_source_remove(s->source);
@@ -1379,6 +1385,20 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 	wl_list_insert(display->socket_list.prev, &s->link);
 
 	return 0;
+}
+
+WL_EXPORT void
+wl_display_add_destroy_listener(struct wl_display *display,
+				struct wl_listener *listener)
+{
+	wl_signal_add(&display->destroy_signal, listener);
+}
+
+WL_EXPORT struct wl_listener *
+wl_display_get_destroy_listener(struct wl_display *display,
+				wl_notify_func_t notify)
+{
+	return wl_signal_get(&display->destroy_signal, notify);
 }
 
 WL_EXPORT struct wl_resource *
