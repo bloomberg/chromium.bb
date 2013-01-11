@@ -39,11 +39,25 @@
 // Unit tests don't need time-consuming asynchronous animations.
 @interface BookmarkBarControllerTestable : BookmarkBarController {
 }
+
 @end
+
 @implementation BookmarkBarControllerTestable
-- (BOOL)animationEnabled {
-  return NO;
+
+- (id)initWithBrowser:(Browser*)browser
+         initialWidth:(CGFloat)initialWidth
+             delegate:(id<BookmarkBarControllerDelegate>)delegate
+       resizeDelegate:(id<ViewResizer>)resizeDelegate {
+  if ((self = [super initWithBrowser:browser
+                        initialWidth:initialWidth
+                            delegate:delegate
+                      resizeDelegate:resizeDelegate])) {
+    [self setStateAnimationsEnabled:NO];
+    [self setInnerContentAnimationsEnabled:NO];
+  }
+  return self;
 }
+
 @end
 
 // Just like a BookmarkBarController but openURL: is stubbed out.
@@ -553,7 +567,6 @@ TEST_F(BookmarkBarControllerTest, NoItemContainerGoesAway) {
 // Confirm off the side button only enabled when reasonable.
 TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
-  [bar_ setIgnoreAnimations:YES];
 
   [bar_ loaded:model];
   EXPECT_TRUE([bar_ offTheSideButtonIsHidden]);
@@ -603,7 +616,6 @@ TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
 // in this area to reproduce the crash.
 TEST_F(BookmarkBarControllerTest, DeleteFromOffTheSideWhileItIsOpen) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
-  [bar_ setIgnoreAnimations:YES];
   [bar_ loaded:model];
 
   // Add a lot of bookmarks (per the bug).
@@ -1566,6 +1578,7 @@ TEST_F(BookmarkBarControllerTest, NodeDeletedWhileContextMenuIsOpen) {
 
 TEST_F(BookmarkBarControllerTest, CloseFolderOnAnimate) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  [bar_ setStateAnimationsEnabled:YES];
   const BookmarkNode* parent = model->bookmark_bar_node();
   const BookmarkNode* folder = model->AddFolder(parent,
                                                 parent->child_count(),

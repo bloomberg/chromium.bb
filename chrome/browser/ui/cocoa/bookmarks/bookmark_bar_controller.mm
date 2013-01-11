@@ -220,7 +220,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 - (void)setNodeForBarMenu;
 - (void)watchForExitEvent:(BOOL)watch;
 - (void)resetAllButtonPositionsWithAnimation:(BOOL)animate;
-- (BOOL)animationEnabled;
 
 @end
 
@@ -231,6 +230,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 @synthesize isAnimationRunning = isAnimationRunning_;
 @synthesize delegate = delegate_;
 @synthesize isEmpty = isEmpty_;
+@synthesize stateAnimationsEnabled = stateAnimationsEnabled_;
+@synthesize innerContentAnimationsEnabled = innerContentAnimationsEnabled_;
 
 - (id)initWithBrowser:(Browser*)browser
          initialWidth:(CGFloat)initialWidth
@@ -255,10 +256,11 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     defaultImage_.reset(
         rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
 
-    // Disable animations if the detached bookmark bar will be shown at the
-    // bottom of the new tab page.
-    if ([self shouldShowAtBottomWhenDetached])
-      ignoreAnimations_ = YES;
+    innerContentAnimationsEnabled_ = YES;
+    // Disable state animations (for example, showing or hiding the bookmark
+    // bar) if the detached bookmark bar will be shown at the bottom of the new
+    // tab page.
+    stateAnimationsEnabled_ = ![self shouldShowAtBottomWhenDetached];
 
     // Register for theme changes, bookmark button pulsing, ...
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
@@ -277,12 +279,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     [[self animatableView] setResizeDelegate:resizeDelegate];
   }
   return self;
-}
-
-// Can be overridden in a test subclass if a simplistic test is being confused
-// by asynchronous animation or is running needlessly slow.
-- (BOOL)animationEnabled {
-  return YES;
 }
 
 - (void)pulseBookmarkNotification:(NSNotification*)notification {
@@ -642,7 +638,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 - (IBAction)openBookmark:(id)sender {
   BOOL isMenuItem = [[sender cell] isFolderButtonCell];
-  BOOL animate = isMenuItem && [self animationEnabled];
+  BOOL animate = isMenuItem && innerContentAnimationsEnabled_;
   if (animate)
     [self doMenuFlashOnSeparateThread:sender];
   DCHECK([sender respondsToSelector:@selector(bookmarkNode)]);
@@ -993,7 +989,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 // (Private)
 - (void)showBookmarkBarWithAnimation:(BOOL)animate {
-  if (animate && !ignoreAnimations_) {
+  if (animate && stateAnimationsEnabled_) {
     // If |-doBookmarkBarAnimation| does the animation, we're done.
     if ([self doBookmarkBarAnimation])
       return;
@@ -1481,7 +1477,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   isAnimationRunning_ = YES;
 
   // Animate only if told to and if bar is enabled.
-  if (animate && !ignoreAnimations_ && barIsEnabled_) {
+  if (animate && stateAnimationsEnabled_ && barIsEnabled_) {
     [self closeAllBookmarkFolders];
     // Take care of any animation cases we know how to handle.
 
@@ -1510,7 +1506,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 - (void)updateState:(BookmarkBar::State)newState
          changeType:(BookmarkBar::AnimateChangeType)changeType {
   BOOL animate = changeType == BookmarkBar::ANIMATE_STATE_CHANGE &&
-                 !ignoreAnimations_;
+                 stateAnimationsEnabled_;
   [self moveToState:newState withAnimation:animate];
 }
 
@@ -2095,7 +2091,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // hypothetical drop with the new button having a left edge of |where|.
 // Gets called only by our view.
 - (void)setDropInsertionPos:(CGFloat)where {
-  BOOL animate = [self animationEnabled];
   if (!hasInsertionPos_ || where != insertionPos_) {
     insertionPos_ = where;
     hasInsertionPos_ = YES;
@@ -2119,7 +2114,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       if (left > insertionPos_)
         buttonFrame.origin.x += paddingWidth;
       left += bookmarks::kBookmarkHorizontalPadding;
-      if (animate)
+      if (innerContentAnimationsEnabled_)
         [[button animator] setFrame:buttonFrame];
       else
         [button setFrame:buttonFrame];
@@ -2132,7 +2127,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // This is generally useful, so is called from various places internally.
 - (void)resetAllButtonPositionsWithAnimation:(BOOL)animate {
   CGFloat left = bookmarks::kBookmarkHorizontalPadding;
-  animate &= [self animationEnabled];
+  animate &= innerContentAnimationsEnabled_;
 
   for (NSButton* button in buttons_.get()) {
     // Hidden buttons get no space.
@@ -2807,7 +2802,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       // If we are deleting a button whose folder is currently open, close it!
       [self closeAllBookmarkFolders];
     }
-    if (animate && !ignoreAnimations_ && [self isVisible] &&
+    if (animate && innerContentAnimationsEnabled_ && [self isVisible] &&
         [[self browserWindow] isMainWindow]) {
       NSPoint poofPoint = [oldButton screenLocationForRemoveAnimation];
       NSShowAnimationEffect(NSAnimationEffectDisappearingItemDefault, poofPoint,
@@ -2847,10 +2842,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // to minimize touching the object passed in (likely a mock).
 - (void)setButtonContextMenu:(id)menu {
   buttonContextMenu_ = menu;
-}
-
-- (void)setIgnoreAnimations:(BOOL)ignore {
-  ignoreAnimations_ = ignore;
 }
 
 @end

@@ -252,9 +252,13 @@ willAnimateFromState:(BookmarkBar::State)oldState
   // or a folder menu.
   BOOL showFolderMenus_;
 
-  // Set to YES to prevent any node animations. Useful for unit testing so that
-  // incomplete animations do not cause valgrind complaints.
-  BOOL ignoreAnimations_;
+  // If YES then state changes (for example, from hidden to shown) are animated.
+  // This is turned off for instant extended and for unit tests.
+  BOOL stateAnimationsEnabled_;
+
+  // If YES then changes inside the bookmark bar (for example, removing a
+  // bookmark) are animated. This is turned off for unit tests.
+  BOOL innerContentAnimationsEnabled_;
 
   // YES if there is a possible drop about to happen in the bar.
   BOOL hasInsertionPos_;
@@ -272,6 +276,8 @@ willAnimateFromState:(BookmarkBar::State)oldState
 @property(readonly, nonatomic) BOOL isAnimationRunning;
 @property(assign, nonatomic) id<BookmarkBarControllerDelegate> delegate;
 @property(readonly, nonatomic) BOOL isEmpty;
+@property(assign, nonatomic) BOOL stateAnimationsEnabled;
+@property(assign, nonatomic) BOOL innerContentAnimationsEnabled;
 
 // Initializes the bookmark bar controller with the given browser
 // profile and delegates.
@@ -407,8 +413,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (NSMenu *)menuForFolderNode:(const BookmarkNode*)node;
 - (NSMenu*)buttonContextMenu;
 - (void)setButtonContextMenu:(id)menu;
-// Set to YES in order to prevent animations.
-- (void)setIgnoreAnimations:(BOOL)ignore;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_CONTROLLER_H_
