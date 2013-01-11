@@ -148,6 +148,8 @@
       # crbug.com/105948
       '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
       '-autofill.AutofillTest.testPostalCodeAndStateLabelsBasedOnCountry',
+      # crbug.com/169512
+      '-downloads.DownloadsTest.testDownloadsPersistence',
       # crbug.com/111289
       '-extensions.ExtensionsTest.testAllowAccessFileURLs',
       # crbug.com/113090
