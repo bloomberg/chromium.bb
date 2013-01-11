@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/string_util.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -48,6 +49,11 @@ void ChromeWebUIDataSource::AddLocalizedStrings(
   localized_strings_.MergeDictionary(&localized_strings);
 }
 
+void ChromeWebUIDataSource::SetRequestFilter(
+    const HandleRequestCallback& callback) {
+  filter_callback_ = callback;
+}
+
 std::string ChromeWebUIDataSource::GetMimeType(const std::string& path) const {
   if (EndsWith(path, ".js", false))
     return "application/javascript";
@@ -64,17 +70,26 @@ std::string ChromeWebUIDataSource::GetMimeType(const std::string& path) const {
 void ChromeWebUIDataSource::StartDataRequest(const std::string& path,
                                              bool is_incognito,
                                              int request_id) {
+  if (!filter_callback_.is_null() &&
+      filter_callback_.Run(
+          path,
+          base::Bind(&ChromeURLDataManager::DataSource::SendResponse,
+              this, request_id))) {
+    return;
+  }
+
   if (!json_path_.empty() && path == json_path_) {
     SendLocalizedStringsAsJSON(request_id);
-  } else {
-    int resource_id = default_resource_;
-    std::map<std::string, int>::iterator result;
-    result = path_to_idr_map_.find(path);
-    if (result != path_to_idr_map_.end())
-      resource_id = result->second;
-    DCHECK_NE(resource_id, -1);
-    SendFromResourceBundle(request_id, resource_id);
+    return;
   }
+
+  int resource_id = default_resource_;
+  std::map<std::string, int>::iterator result;
+  result = path_to_idr_map_.find(path);
+  if (result != path_to_idr_map_.end())
+    resource_id = result->second;
+  DCHECK_NE(resource_id, -1);
+  SendFromResourceBundle(request_id, resource_id);
 }
 
 void ChromeWebUIDataSource::SendLocalizedStringsAsJSON(int request_id) {

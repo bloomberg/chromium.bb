@@ -19,7 +19,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -146,34 +145,35 @@ DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh, bool is_tab) {
                                rvh->GetRoutingID());
 }
 
-class InspectDataSource : public ChromeWebUIDataSource {
- public:
-  InspectDataSource();
+// Appends the inspectable workers to the list of RenderViews, and sends the
+// response back to the webui system.
+void SendDescriptors(ListValue* rvh_list,
+                     const ChromeWebUIDataSource::GotDataCallback& callback) {
+  std::vector<WorkerService::WorkerInfo> worker_info =
+      WorkerService::GetInstance()->GetWorkers();
+  for (size_t i = 0; i < worker_info.size(); ++i) {
+    rvh_list->Append(BuildTargetDescriptor(
+        kWorkerTargetType,
+        false,
+        worker_info[i].url,
+        UTF16ToUTF8(worker_info[i].name),
+        GURL(),
+        worker_info[i].process_id,
+        worker_info[i].route_id,
+        worker_info[i].handle));
+  }
 
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id);
- private:
-  virtual ~InspectDataSource() {}
-  void SendDescriptors(int request_id, ListValue* rvh_list);
-  DISALLOW_COPY_AND_ASSIGN(InspectDataSource);
-};
+  std::string json_string;
+  base::JSONWriter::Write(rvh_list, &json_string);
 
-InspectDataSource::InspectDataSource()
-    : ChromeWebUIDataSource(chrome::kChromeUIInspectHost,
-                            MessageLoop::current()) {
-  add_resource_path("inspect.css", IDR_INSPECT_CSS);
-  add_resource_path("inspect.js", IDR_INSPECT_JS);
-  set_default_resource(IDR_INSPECT_HTML);
+  callback.Run(base::RefCountedString::TakeString(&json_string));
 }
 
-void InspectDataSource::StartDataRequest(const std::string& path,
-                                         bool is_incognito,
-                                         int request_id) {
-  if (path != kDataFile) {
-    ChromeWebUIDataSource::StartDataRequest(path, is_incognito, request_id);
-    return;
-  }
+bool HandleRequestCallback(
+    const std::string& path,
+    const ChromeWebUIDataSource::GotDataCallback& callback) {
+  if (path != kDataFile)
+    return false;
 
   std::set<RenderViewHost*> tab_rvhs;
   for (TabContentsIterator it; !it.done(); ++it)
@@ -209,32 +209,18 @@ void InspectDataSource::StartDataRequest(const std::string& path,
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&InspectDataSource::SendDescriptors,
-                 this,
-                 request_id,
-                 base::Owned(rvh_list.release())));
+      base::Bind(&SendDescriptors, base::Owned(rvh_list.release()), callback));
+  return true;
 }
 
-void InspectDataSource::SendDescriptors(int request_id,
-                                        ListValue* rvh_list) {
-  std::vector<WorkerService::WorkerInfo> worker_info =
-      WorkerService::GetInstance()->GetWorkers();
-  for (size_t i = 0; i < worker_info.size(); ++i) {
-    rvh_list->Append(BuildTargetDescriptor(
-        kWorkerTargetType,
-        false,
-        worker_info[i].url,
-        UTF16ToUTF8(worker_info[i].name),
-        GURL(),
-        worker_info[i].process_id,
-        worker_info[i].route_id,
-        worker_info[i].handle));
-  }
-
-  std::string json_string;
-  base::JSONWriter::Write(rvh_list, &json_string);
-
-  SendResponse(request_id, base::RefCountedString::TakeString(&json_string));
+ChromeWebUIDataSource* CreateInspectUIHTMLSource() {
+  ChromeWebUIDataSource* source =
+      new ChromeWebUIDataSource(chrome::kChromeUIInspectHost);
+  source->add_resource_path("inspect.css", IDR_INSPECT_CSS);
+  source->add_resource_path("inspect.js", IDR_INSPECT_JS);
+  source->set_default_resource(IDR_INSPECT_HTML);
+  source->SetRequestFilter(base::Bind(&HandleRequestCallback));
+  return source;
 }
 
 class InspectMessageHandler : public WebUIMessageHandler {
@@ -375,10 +361,8 @@ InspectUI::InspectUI(content::WebUI* web_ui)
       observer_(new WorkerCreationDestructionListener(this)) {
   web_ui->AddMessageHandler(new InspectMessageHandler());
 
-  InspectDataSource* html_source = new InspectDataSource();
-
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, html_source);
+  ChromeURLDataManager::AddDataSource(profile, CreateInspectUIHTMLSource());
 
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_CONNECTED,

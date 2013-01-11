@@ -10,21 +10,30 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
+#include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_preview_data_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/print_preview/print_preview_data_source.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/print_messages.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/browser_resources.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
+#include "grit/google_chrome_strings.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
@@ -33,6 +42,15 @@ using content::WebContents;
 using printing::PageSizeMargins;
 
 namespace {
+
+#if defined(OS_MACOSX)
+// U+0028 U+21E7 U+2318 U+0050 U+0029 in UTF8
+const char kAdvancedPrintShortcut[] = "\x28\xE2\x8c\xA5\xE2\x8C\x98\x50\x29";
+#elif defined(OS_WIN)
+const char kAdvancedPrintShortcut[] = "(Ctrl+Shift+P)";
+#else
+const char kAdvancedPrintShortcut[] = "(Shift+Ctrl+P)";
+#endif
 
 // Thread-safe wrapper around a std::map to keep track of mappings from
 // PrintPreviewUI IDs to most recent print preview request IDs.
@@ -83,6 +101,238 @@ base::LazyInstance<PrintPreviewRequestIdMapWithLock>
 base::LazyInstance<IDMap<PrintPreviewUI> >
     g_print_preview_ui_id_map = LAZY_INSTANCE_INITIALIZER;
 
+// PrintPreviewUI serves data for chrome://print requests.
+//
+// The format for requesting PDF data is as follows:
+// chrome://print/<PrintPreviewUIID>/<PageIndex>/print.pdf
+//
+// Parameters (< > required):
+//    <PrintPreviewUIID> = PrintPreview UI ID
+//    <PageIndex> = Page index is zero-based or
+//                  |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to represent
+//                  a print ready PDF.
+//
+// Example:
+//    chrome://print/123/10/print.pdf
+//
+// Requests to chrome://print with paths not ending in /print.pdf are used
+// to return the markup or other resources for the print preview page itself.
+bool HandleRequestCallback(
+    const std::string& path,
+    const ChromeWebUIDataSource::GotDataCallback& callback) {
+  // ChromeWebUIDataSource handles most requests except for the print preview
+  // data.
+  if (!EndsWith(path, "/print.pdf", true))
+    return false;
+
+  // Print Preview data.
+  scoped_refptr<base::RefCountedBytes> data;
+  std::vector<std::string> url_substr;
+  base::SplitString(path, '/', &url_substr);
+  int preview_ui_id = -1;
+  int page_index = 0;
+  if (url_substr.size() == 3 &&
+      base::StringToInt(url_substr[0], &preview_ui_id),
+      base::StringToInt(url_substr[1], &page_index) &&
+      preview_ui_id >= 0) {
+    PrintPreviewDataService::GetInstance()->GetDataEntry(
+        preview_ui_id, page_index, &data);
+  }
+  if (data.get()) {
+    callback.Run(data);
+    return true;
+  }
+  // Invalid request.
+  scoped_refptr<base::RefCountedBytes> empty_bytes(new base::RefCountedBytes);
+  callback.Run(empty_bytes);
+  return true;
+}
+
+ChromeWebUIDataSource* CreatePrintPreviewUISource() {
+  ChromeWebUIDataSource* source =
+      new ChromeWebUIDataSource(chrome::kChromeUIPrintHost);
+#if defined(OS_CHROMEOS)
+  source->AddLocalizedString("title",
+                             IDS_PRINT_PREVIEW_GOOGLE_CLOUD_PRINT_TITLE);
+#else
+  source->AddLocalizedString("title", IDS_PRINT_PREVIEW_TITLE);
+#endif
+  source->AddLocalizedString("loading", IDS_PRINT_PREVIEW_LOADING);
+  source->AddLocalizedString("noPlugin", IDS_PRINT_PREVIEW_NO_PLUGIN);
+  source->AddLocalizedString("launchNativeDialog",
+                             IDS_PRINT_PREVIEW_NATIVE_DIALOG);
+  source->AddLocalizedString("previewFailed", IDS_PRINT_PREVIEW_FAILED);
+  source->AddLocalizedString("invalidPrinterSettings",
+                             IDS_PRINT_PREVIEW_INVALID_PRINTER_SETTINGS);
+  source->AddLocalizedString("printButton", IDS_PRINT_PREVIEW_PRINT_BUTTON);
+  source->AddLocalizedString("saveButton", IDS_PRINT_PREVIEW_SAVE_BUTTON);
+  source->AddLocalizedString("cancelButton", IDS_PRINT_PREVIEW_CANCEL_BUTTON);
+  source->AddLocalizedString("printing", IDS_PRINT_PREVIEW_PRINTING);
+  source->AddLocalizedString("printingToPDFInProgress",
+                             IDS_PRINT_PREVIEW_PRINTING_TO_PDF_IN_PROGRESS);
+#if defined(OS_MACOSX)
+  source->AddLocalizedString("openingPDFInPreview",
+                             IDS_PRINT_PREVIEW_OPENING_PDF_IN_PREVIEW);
+#endif
+  source->AddLocalizedString("destinationLabel",
+                             IDS_PRINT_PREVIEW_DESTINATION_LABEL);
+  source->AddLocalizedString("copiesLabel", IDS_PRINT_PREVIEW_COPIES_LABEL);
+  source->AddLocalizedString("examplePageRangeText",
+                             IDS_PRINT_PREVIEW_EXAMPLE_PAGE_RANGE_TEXT);
+  source->AddLocalizedString("layoutLabel", IDS_PRINT_PREVIEW_LAYOUT_LABEL);
+  source->AddLocalizedString("optionAllPages",
+                             IDS_PRINT_PREVIEW_OPTION_ALL_PAGES);
+  source->AddLocalizedString("optionBw", IDS_PRINT_PREVIEW_OPTION_BW);
+  source->AddLocalizedString("optionCollate", IDS_PRINT_PREVIEW_OPTION_COLLATE);
+  source->AddLocalizedString("optionColor", IDS_PRINT_PREVIEW_OPTION_COLOR);
+  source->AddLocalizedString("optionLandscape",
+                             IDS_PRINT_PREVIEW_OPTION_LANDSCAPE);
+  source->AddLocalizedString("optionPortrait",
+                             IDS_PRINT_PREVIEW_OPTION_PORTRAIT);
+  source->AddLocalizedString("optionTwoSided",
+                             IDS_PRINT_PREVIEW_OPTION_TWO_SIDED);
+  source->AddLocalizedString("pagesLabel", IDS_PRINT_PREVIEW_PAGES_LABEL);
+  source->AddLocalizedString("pageRangeTextBox",
+                             IDS_PRINT_PREVIEW_PAGE_RANGE_TEXT);
+  source->AddLocalizedString("pageRangeRadio",
+                             IDS_PRINT_PREVIEW_PAGE_RANGE_RADIO);
+  source->AddLocalizedString("printToPDF", IDS_PRINT_PREVIEW_PRINT_TO_PDF);
+  source->AddLocalizedString("printPreviewSummaryFormatShort",
+                             IDS_PRINT_PREVIEW_SUMMARY_FORMAT_SHORT);
+  source->AddLocalizedString("printPreviewSummaryFormatLong",
+                             IDS_PRINT_PREVIEW_SUMMARY_FORMAT_LONG);
+  source->AddLocalizedString("printPreviewSheetsLabelSingular",
+                             IDS_PRINT_PREVIEW_SHEETS_LABEL_SINGULAR);
+  source->AddLocalizedString("printPreviewSheetsLabelPlural",
+                             IDS_PRINT_PREVIEW_SHEETS_LABEL_PLURAL);
+  source->AddLocalizedString("printPreviewPageLabelSingular",
+                             IDS_PRINT_PREVIEW_PAGE_LABEL_SINGULAR);
+  source->AddLocalizedString("printPreviewPageLabelPlural",
+                             IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL);
+  const string16 shortcut_text(UTF8ToUTF16(kAdvancedPrintShortcut));
+#if defined(OS_CHROMEOS)
+  source->AddString(
+      "systemDialogOption",
+      l10n_util::GetStringFUTF16(
+          IDS_PRINT_PREVIEW_CLOUD_DIALOG_OPTION,
+          l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT),
+          shortcut_text));
+#else
+  source->AddString(
+      "systemDialogOption",
+      l10n_util::GetStringFUTF16(
+          IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION,
+          shortcut_text));
+#endif
+  source->AddString(
+      "cloudPrintDialogOption",
+      l10n_util::GetStringFUTF16(
+          IDS_PRINT_PREVIEW_CLOUD_DIALOG_OPTION_NO_SHORTCUT,
+          l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
+#if defined(OS_MACOSX)
+  source->AddLocalizedString("openPdfInPreviewOption",
+                             IDS_PRINT_PREVIEW_OPEN_PDF_IN_PREVIEW_APP);
+#endif
+  source->AddString(
+      "printWithCloudPrintWait",
+      l10n_util::GetStringFUTF16(
+        IDS_PRINT_PREVIEW_PRINT_WITH_CLOUD_PRINT_WAIT,
+        l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
+  source->AddLocalizedString("pageRangeInstruction",
+                             IDS_PRINT_PREVIEW_PAGE_RANGE_INSTRUCTION);
+  source->AddLocalizedString("copiesInstruction",
+                             IDS_PRINT_PREVIEW_COPIES_INSTRUCTION);
+  source->AddLocalizedString("incrementTitle",
+                             IDS_PRINT_PREVIEW_INCREMENT_TITLE);
+  source->AddLocalizedString("decrementTitle",
+                             IDS_PRINT_PREVIEW_DECREMENT_TITLE);
+  source->AddLocalizedString("printPagesLabel",
+                             IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL);
+  source->AddLocalizedString("optionsLabel", IDS_PRINT_PREVIEW_OPTIONS_LABEL);
+  source->AddLocalizedString("optionHeaderFooter",
+                             IDS_PRINT_PREVIEW_OPTION_HEADER_FOOTER);
+  source->AddLocalizedString("optionFitToPage",
+                             IDS_PRINT_PREVIEW_OPTION_FIT_TO_PAGE);
+  source->AddLocalizedString("marginsLabel", IDS_PRINT_PREVIEW_MARGINS_LABEL);
+  source->AddLocalizedString("defaultMargins",
+                             IDS_PRINT_PREVIEW_DEFAULT_MARGINS);
+  source->AddLocalizedString("noMargins", IDS_PRINT_PREVIEW_NO_MARGINS);
+  source->AddLocalizedString("customMargins", IDS_PRINT_PREVIEW_CUSTOM_MARGINS);
+  source->AddLocalizedString("minimumMargins",
+                             IDS_PRINT_PREVIEW_MINIMUM_MARGINS);
+  source->AddLocalizedString("top", IDS_PRINT_PREVIEW_TOP_MARGIN_LABEL);
+  source->AddLocalizedString("bottom", IDS_PRINT_PREVIEW_BOTTOM_MARGIN_LABEL);
+  source->AddLocalizedString("left", IDS_PRINT_PREVIEW_LEFT_MARGIN_LABEL);
+  source->AddLocalizedString("right", IDS_PRINT_PREVIEW_RIGHT_MARGIN_LABEL);
+  source->AddLocalizedString("destinationSearchTitle",
+                             IDS_PRINT_PREVIEW_DESTINATION_SEARCH_TITLE);
+  source->AddLocalizedString("userInfo", IDS_PRINT_PREVIEW_USER_INFO);
+  source->AddLocalizedString("cloudPrintPromotion",
+                             IDS_PRINT_PREVIEW_CLOUD_PRINT_PROMOTION);
+  source->AddLocalizedString("searchBoxPlaceholder",
+                             IDS_PRINT_PREVIEW_SEARCH_BOX_PLACEHOLDER);
+  source->AddLocalizedString("noDestinationsMessage",
+                             IDS_PRINT_PREVIEW_NO_DESTINATIONS_MESSAGE);
+  source->AddLocalizedString("showAllButtonText",
+                             IDS_PRINT_PREVIEW_SHOW_ALL_BUTTON_TEXT);
+  source->AddLocalizedString("destinationCount",
+                             IDS_PRINT_PREVIEW_DESTINATION_COUNT);
+  source->AddLocalizedString("recentDestinationsTitle",
+                             IDS_PRINT_PREVIEW_RECENT_DESTINATIONS_TITLE);
+  source->AddLocalizedString("localDestinationsTitle",
+                             IDS_PRINT_PREVIEW_LOCAL_DESTINATIONS_TITLE);
+  source->AddLocalizedString("cloudDestinationsTitle",
+                             IDS_PRINT_PREVIEW_CLOUD_DESTINATIONS_TITLE);
+  source->AddLocalizedString("manage", IDS_PRINT_PREVIEW_MANAGE);
+  source->AddLocalizedString("setupCloudPrinters",
+                             IDS_PRINT_PREVIEW_SETUP_CLOUD_PRINTERS);
+  source->AddLocalizedString("changeDestination",
+                             IDS_PRINT_PREVIEW_CHANGE_DESTINATION);
+  source->AddLocalizedString("offlineForYear",
+                             IDS_PRINT_PREVIEW_OFFLINE_FOR_YEAR);
+  source->AddLocalizedString("offlineForMonth",
+                             IDS_PRINT_PREVIEW_OFFLINE_FOR_MONTH);
+  source->AddLocalizedString("offlineForWeek",
+                             IDS_PRINT_PREVIEW_OFFLINE_FOR_WEEK);
+  source->AddLocalizedString("offline", IDS_PRINT_PREVIEW_OFFLINE);
+  source->AddLocalizedString("fedexTos", IDS_PRINT_PREVIEW_FEDEX_TOS);
+  source->AddLocalizedString("tosCheckboxLabel",
+                             IDS_PRINT_PREVIEW_TOS_CHECKBOX_LABEL);
+  source->AddLocalizedString("noDestsPromoTitle",
+                             IDS_PRINT_PREVIEW_NO_DESTS_PROMO_TITLE);
+  source->AddLocalizedString("noDestsPromoBody",
+                             IDS_PRINT_PREVIEW_NO_DESTS_PROMO_BODY);
+  source->AddLocalizedString("noDestsPromoGcpDesc",
+                             IDS_PRINT_PREVIEW_NO_DESTS_GCP_DESC);
+  source->AddLocalizedString(
+      "noDestsPromoAddPrinterButtonLabel",
+      IDS_PRINT_PREVIEW_NO_DESTS_PROMO_ADD_PRINTER_BUTTON_LABEL);
+  source->AddLocalizedString(
+      "noDestsPromoNotNowButtonLabel",
+      IDS_PRINT_PREVIEW_NO_DESTS_PROMO_NOT_NOW_BUTTON_LABEL);
+
+  source->set_json_path("strings.js");
+  source->add_resource_path("print_preview.js", IDR_PRINT_PREVIEW_JS);
+  source->add_resource_path("images/printer.png",
+                            IDR_PRINT_PREVIEW_IMAGES_PRINTER);
+  source->add_resource_path("images/printer_shared.png",
+                            IDR_PRINT_PREVIEW_IMAGES_PRINTER_SHARED);
+  source->add_resource_path("images/third_party.png",
+                            IDR_PRINT_PREVIEW_IMAGES_THIRD_PARTY);
+  source->add_resource_path("images/third_party_fedex.png",
+                            IDR_PRINT_PREVIEW_IMAGES_THIRD_PARTY_FEDEX);
+  source->add_resource_path("images/google_doc.png",
+                            IDR_PRINT_PREVIEW_IMAGES_GOOGLE_DOC);
+  source->add_resource_path("images/pdf.png", IDR_PRINT_PREVIEW_IMAGES_PDF);
+  source->add_resource_path("images/mobile.png",
+                            IDR_PRINT_PREVIEW_IMAGES_MOBILE);
+  source->add_resource_path("images/mobile_shared.png",
+                            IDR_PRINT_PREVIEW_IMAGES_MOBILE_SHARED);
+  source->set_default_resource(IDR_PRINT_PREVIEW_HTML);
+  source->SetRequestFilter(base::Bind(&HandleRequestCallback));
+  return source;
+}
+
 }  // namespace
 
 PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
@@ -94,7 +344,7 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
       dialog_closed_(false) {
   // Set up the chrome://print/ data source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, new PrintPreviewDataSource());
+  ChromeURLDataManager::AddDataSource(profile, CreatePrintPreviewUISource());
 
   // Set up the chrome://theme/ source.
   ChromeURLDataManager::AddDataSource(profile, new ThemeSource(profile));

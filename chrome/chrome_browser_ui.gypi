@@ -2066,8 +2066,6 @@
         'browser/ui/webui/predictors/predictors_handler.h',
         'browser/ui/webui/predictors/predictors_ui.cc',
         'browser/ui/webui/predictors/predictors_ui.h',
-        'browser/ui/webui/print_preview/print_preview_data_source.cc',
-        'browser/ui/webui/print_preview/print_preview_data_source.h',
         'browser/ui/webui/print_preview/print_preview_handler.cc',
         'browser/ui/webui/print_preview/print_preview_handler.h',
         'browser/ui/webui/print_preview/print_preview_ui.cc',
