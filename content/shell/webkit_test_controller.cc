@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -495,10 +496,18 @@ void WebKitTestController::OnRegisterIsolatedFileSystem(
     const std::vector<FilePath>& absolute_filenames,
     std::string* filesystem_id) {
   fileapi::IsolatedContext::FileInfoSet files;
-  for (size_t i = 0; i < absolute_filenames.size(); ++i)
+  ChildProcessSecurityPolicy* policy =
+      ChildProcessSecurityPolicy::GetInstance();
+  int renderer_id = main_window_->web_contents()->GetRenderViewHost()->
+      GetProcess()->GetID();
+  for (size_t i = 0; i < absolute_filenames.size(); ++i) {
     files.AddPath(absolute_filenames[i], NULL);
+    if (!policy->CanReadFile(renderer_id, absolute_filenames[i]))
+      policy->GrantReadFile(renderer_id, absolute_filenames[i]);
+  }
   *filesystem_id =
       fileapi::IsolatedContext::GetInstance()->RegisterDraggedFileSystem(files);
+  policy->GrantReadFileSystem(renderer_id, *filesystem_id);
 }
 
 void WebKitTestController::OnNotImplemented(

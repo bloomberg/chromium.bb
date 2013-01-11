@@ -104,16 +104,22 @@ IN_PROC_BROWSER_TEST_F(FileSystemBrowserTestWithLowQuota, QuotaTest) {
   SimpleTest(GetTestUrl("fileapi", "quota_test.html"));
 }
 
-
 IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, AsyncOperations) {
   RunLayoutTest("async-operations.html");
 }
 
-/* FAIL: NOT IMPLEMENTED: WebTestDelegate.registerIsolatedFileSystem
-IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, CrossFilesystemOp) {
+#if defined(OS_WIN)
+// Sending sync IPC to UI thread for RegisterIsolatedFileSystem
+// without pumping is not supported on windows. (See comments in
+// BrowserMessageFilter::CheckCanDispatchOnUI())
+// http://crbug/169240
+# define MAYBE_CrossFilesystemOp DISABLED_CrossFilesystemOp
+#else
+# define MAYBE_CrossFilesystemOp CrossFilesystemOp
+#endif
+IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, MAYBE_CrossFilesystemOp) {
   RunLayoutTest("cross-filesystem-op.html");
 }
-*/
 
 IN_PROC_BROWSER_TEST_F(FileSystemLayoutTest, DirectoryEntryToUri) {
   RunLayoutTest("directory-entry-to-uri.html");

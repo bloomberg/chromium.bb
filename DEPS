@@ -235,6 +235,9 @@ deps = {
   "src/content/test/data/layout_tests/LayoutTests/media":
     Var("webkit_trunk") + "/LayoutTests/media@" +
     Var("webkit_revision"),
+  "src/content/test/data/layout_tests/LayoutTests/editing/pasteboard/resources":
+    Var("webkit_trunk") + "/LayoutTests/editing/pasteboard/resources@" +
+    Var("webkit_revision"),
 
   "src/third_party/swig/Lib":
     "/trunk/deps/third_party/swig/Lib@" + Var("swig_revision"),
@@ -415,6 +418,7 @@ deps_os = {
     # Code that's not needed due to not building everything (especially WebKit).
     "src/build/util/support": None,
     "src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin": None,
+    "src/content/test/data/layout_tests/LayoutTests/editing/pasteboard/resources": None,
     "src/content/test/data/layout_tests/LayoutTests/fast/events": None,
     "src/content/test/data/layout_tests/LayoutTests/fast/filesystem_temp": None,
     "src/content/test/data/layout_tests/LayoutTests/fast/js/resources": None,
