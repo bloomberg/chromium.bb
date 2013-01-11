@@ -898,12 +898,12 @@ class NinjaWriter:
       extra_bindings.append(('postbuilds',
                              self.GetPostbuildCommand(spec, output, output)))
 
+    is_executable = spec['type'] == 'executable'
     if self.flavor == 'mac':
       ldflags = self.xcode_settings.GetLdflags(config_name,
           self.ExpandSpecial(generator_default_variables['PRODUCT_DIR']),
           self.GypPathToNinja)
     elif self.flavor == 'win':
-      is_executable = spec['type'] == 'executable'
       manifest_name = self.GypPathToUniqueOutput(
           self.ComputeOutputFileName(spec))
       ldflags, manifest_files = self.msvs_settings.GetLdflags(config_name,
@@ -911,6 +911,8 @@ class NinjaWriter:
       self.WriteVariableList('manifests', manifest_files)
     else:
       ldflags = config.get('ldflags', [])
+      if is_executable and len(solibs):
+        ldflags.append('-Wl,-rpath=\$$ORIGIN/lib/')
     self.WriteVariableList('ldflags',
                            gyp.common.uniquer(map(self.ExpandSpecial,
                                                   ldflags)))
@@ -1555,7 +1557,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.rule(
       'link',
       description='LINK $out',
-      command=('$ld $ldflags -o $out -Wl,-rpath=\$$ORIGIN/lib '
+      command=('$ld $ldflags -o $out '
                '-Wl,--start-group $in $solibs -Wl,--end-group $libs'))
   elif flavor == 'win':
     master_ninja.rule(
