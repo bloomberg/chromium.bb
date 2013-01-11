@@ -15,7 +15,7 @@ bool RegisterNativeMethods(JNIEnv* env,
                            size_t count) {
   const RegistrationMethod* end = method + count;
   while (method != end) {
-    if (!method->func(env) < 0) {
+    if (!method->func(env)) {
       DLOG(ERROR) << method->name << " failed registration!";
       return false;
     }
