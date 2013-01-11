@@ -64,9 +64,14 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
     TabStripModel* tab_strip,
     int tab_index,
     const Extension* extension) {
-  DictionaryValue *result = CreateTabValue(contents, tab_strip, tab_index);
-  ScrubTabValueForExtension(contents, extension, result);
-  return result;
+  // Only add privacy-sensitive data if the requesting extension has the tabs
+  // permission.
+  bool has_permission = extension && extension->HasAPIPermissionForTab(
+      GetTabId(contents), APIPermission::kTab);
+
+  return CreateTabValue(contents, tab_strip, tab_index,
+                        has_permission ? INCLUDE_PRIVACY_SENSITIVE_FIELDS :
+                            OMIT_PRIVACY_SENSITIVE_FIELDS);
 }
 
 ListValue* ExtensionTabUtil::CreateTabList(
@@ -87,7 +92,8 @@ ListValue* ExtensionTabUtil::CreateTabList(
 DictionaryValue* ExtensionTabUtil::CreateTabValue(
     const WebContents* contents,
     TabStripModel* tab_strip,
-    int tab_index) {
+    int tab_index,
+    IncludePrivacySensitiveFields include_privacy_sensitive_fields) {
   if (!tab_strip)
     ExtensionTabUtil::GetTabStripModel(contents, &tab_strip, &tab_index);
 
@@ -108,14 +114,14 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
   result->SetBoolean(keys::kIncognitoKey,
                      contents->GetBrowserContext()->IsOffTheRecord());
 
-  // Privacy-sensitive fields: these should be stripped off by
-  // ScrubTabValueForExtension if the extension should not see them.
-  result->SetString(keys::kUrlKey, contents->GetURL().spec());
-  result->SetString(keys::kTitleKey, contents->GetTitle());
-  if (!is_loading) {
-    NavigationEntry* entry = contents->GetController().GetActiveEntry();
-    if (entry && entry->GetFavicon().valid)
-      result->SetString(keys::kFaviconUrlKey, entry->GetFavicon().url.spec());
+  if (include_privacy_sensitive_fields == INCLUDE_PRIVACY_SENSITIVE_FIELDS) {
+    result->SetString(keys::kUrlKey, contents->GetURL().spec());
+    result->SetString(keys::kTitleKey, contents->GetTitle());
+    if (!is_loading) {
+      NavigationEntry* entry = contents->GetController().GetActiveEntry();
+      if (entry && entry->GetFavicon().valid)
+        result->SetString(keys::kFaviconUrlKey, entry->GetFavicon().url.spec());
+    }
   }
 
   if (tab_strip) {
@@ -125,19 +131,6 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
   }
 
   return result;
-}
-
-void ExtensionTabUtil::ScrubTabValueForExtension(const WebContents* contents,
-                                                 const Extension* extension,
-                                                 DictionaryValue* tab_info) {
-  bool has_permission = extension && extension->HasAPIPermissionForTab(
-      GetTabId(contents), APIPermission::kTab);
-
-  if (!has_permission) {
-    tab_info->Remove(keys::kUrlKey, NULL);
-    tab_info->Remove(keys::kTitleKey, NULL);
-    tab_info->Remove(keys::kFaviconUrlKey, NULL);
-  }
 }
 
 bool ExtensionTabUtil::GetTabStripModel(const WebContents* web_contents,

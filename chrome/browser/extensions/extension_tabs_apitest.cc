@@ -191,10 +191,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsOnUpdated) {
   ASSERT_TRUE(RunExtensionTest("tabs/on_updated")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsNoPermissions) {
-  ASSERT_TRUE(RunExtensionTest("tabs/no_permissions")) << message_;
-}
-
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        MAYBE_FocusWindowDoesNotExitFullscreen) {
   browser()->window()->EnterFullscreen(

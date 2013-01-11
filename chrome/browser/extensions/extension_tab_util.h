@@ -45,10 +45,6 @@ class ExtensionTabUtil {
       const Browser* browser,
       const extensions::Extension* extension);
 
-  // Creates a Tab object (see chrome/common/extensions/api/tabs.json) with
-  // information about the state of a browser tab.  Depending on the
-  // permissions of the extension, the object may or may not include sensitive
-  // data such as the tab's URL.
   static base::DictionaryValue* CreateTabValue(
       const content::WebContents* web_contents,
       const extensions::Extension* extension) {
@@ -60,23 +56,21 @@ class ExtensionTabUtil {
       int tab_index,
       const extensions::Extension* extension);
 
-  // Creates a Tab object but performs no extension permissions checks; the
-  // returned object will contain privacy-sensitive data.
+  enum IncludePrivacySensitiveFields {
+    INCLUDE_PRIVACY_SENSITIVE_FIELDS,
+    OMIT_PRIVACY_SENSITIVE_FIELDS
+  };
   static base::DictionaryValue* CreateTabValue(
-      const content::WebContents* web_contents) {
-    return CreateTabValue(web_contents, NULL, -1);
+      const content::WebContents* web_contents,
+      IncludePrivacySensitiveFields include_privacy_sensitive_fields) {
+    return CreateTabValue(web_contents, NULL, -1,
+                          include_privacy_sensitive_fields);
   }
   static base::DictionaryValue* CreateTabValue(
       const content::WebContents* web_contents,
       TabStripModel* tab_strip,
-      int tab_index);
-
-  // Removes any privacy-sensitive fields from a Tab object if appropriate,
-  // given the permissions of the extension and the tab in question.  The
-  // tab_info object is modified in place.
-  static void ScrubTabValueForExtension(const content::WebContents* contents,
-                                        const extensions::Extension* extension,
-                                        base::DictionaryValue* tab_info);
+      int tab_index,
+      IncludePrivacySensitiveFields include_privacy_sensitive_fields);
 
   // Gets the |tab_strip_model| and |tab_index| for the given |web_contents|.
   static bool GetTabStripModel(const content::WebContents* web_contents,

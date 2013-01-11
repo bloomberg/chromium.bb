@@ -124,7 +124,7 @@ class BrowserEventRouter : public TabStripModelObserver,
   // Packages |changed_properties| as a tab updated event for the tab |contents|
   // and dispatches the event to the extension.
   void DispatchTabUpdatedEvent(content::WebContents* contents,
-                               scoped_ptr<DictionaryValue> changed_properties);
+                               DictionaryValue* changed_properties);
 
   // Called to dispatch a deprecated style page action click event that was
   // registered like:

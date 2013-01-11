@@ -162,7 +162,7 @@ void MessageService::OpenChannelToExtension(
   std::string tab_json = "null";
   if (source_contents) {
     scoped_ptr<DictionaryValue> tab_value(ExtensionTabUtil::CreateTabValue(
-        source_contents));
+        source_contents, ExtensionTabUtil::INCLUDE_PRIVACY_SENSITIVE_FIELDS));
     base::JSONWriter::Write(tab_value.get(), &tab_json);
   }
 
@@ -202,7 +202,7 @@ void MessageService::OpenChannelToNativeApp(
   std::string tab_json = "null";
   if (source_contents) {
     scoped_ptr<DictionaryValue> tab_value(ExtensionTabUtil::CreateTabValue(
-        source_contents));
+        source_contents, ExtensionTabUtil::INCLUDE_PRIVACY_SENSITIVE_FIELDS));
     base::JSONWriter::Write(tab_value.get(), &tab_json);
   }
 
@@ -287,7 +287,7 @@ void MessageService::OpenChannelToTab(
   std::string tab_json = "null";
   if (source_contents) {
     scoped_ptr<DictionaryValue> tab_value(ExtensionTabUtil::CreateTabValue(
-        source_contents));
+        source_contents, ExtensionTabUtil::INCLUDE_PRIVACY_SENSITIVE_FIELDS));
     base::JSONWriter::Write(tab_value.get(), &tab_json);
   }
 

@@ -339,17 +339,17 @@ void BrowserEventRouter::TabMoved(WebContents* contents,
 
 void BrowserEventRouter::TabUpdated(WebContents* contents, bool did_navigate) {
   TabEntry* entry = GetTabEntry(contents);
-  scoped_ptr<DictionaryValue> changed_properties;
+  DictionaryValue* changed_properties = NULL;
 
   DCHECK(entry);
 
   if (did_navigate)
-    changed_properties.reset(entry->DidNavigate(contents));
+    changed_properties = entry->DidNavigate(contents);
   else
-    changed_properties.reset(entry->UpdateLoadState(contents));
+    changed_properties = entry->UpdateLoadState(contents);
 
   if (changed_properties)
-    DispatchTabUpdatedEvent(contents, changed_properties.Pass());
+    DispatchTabUpdatedEvent(contents, changed_properties);
 }
 
 void BrowserEventRouter::DispatchEvent(
@@ -396,27 +396,18 @@ void BrowserEventRouter::DispatchSimpleBrowserEvent(
                 EventRouter::USER_GESTURE_UNKNOWN);
 }
 
-static void WillDispatchTabUpdatedEvent(
-    WebContents* contents,
-    const DictionaryValue* changed_properties,
-    Profile* profile,
-    const Extension* extension,
-    ListValue* event_args) {
-  // Overwrite the second argument with the appropriate properties dictionary,
-  // depending on extension permissions.
-  DictionaryValue* properties_value = changed_properties->DeepCopy();
-  ExtensionTabUtil::ScrubTabValueForExtension(contents, extension,
-                                              properties_value);
-  event_args->Set(1, properties_value);
-
-  // Overwrite the third arg with our tab value as seen by this extension.
+static void WillDispatchTabUpdatedEvent(WebContents* contents,
+                                        Profile* profile,
+                                        const Extension* extension,
+                                        ListValue* event_args) {
   DictionaryValue* tab_value = ExtensionTabUtil::CreateTabValue(
       contents, extension);
+  // Overwrite the third arg with our tab value as seen by this extension.
   event_args->Set(2, tab_value);
 }
 
 void BrowserEventRouter::DispatchTabUpdatedEvent(
-    WebContents* contents, scoped_ptr<DictionaryValue> changed_properties) {
+    WebContents* contents, DictionaryValue* changed_properties) {
   DCHECK(changed_properties);
   DCHECK(contents);
 
@@ -427,9 +418,8 @@ void BrowserEventRouter::DispatchTabUpdatedEvent(
   // First arg: The id of the tab that changed.
   args_base->AppendInteger(ExtensionTabUtil::GetTabId(contents));
 
-  // Second arg: An object containing the changes to the tab state.  Filled in
-  // by WillDispatchTabUpdatedEvent as a copy of changed_properties, if the
-  // extension has the tabs permission.
+  // Second arg: An object containing the changes to the tab state.
+  args_base->Append(changed_properties);
 
   // Third arg: An object containing the state of the tab. Filled in by
   // WillDispatchTabUpdatedEvent.
@@ -439,8 +429,7 @@ void BrowserEventRouter::DispatchTabUpdatedEvent(
   event->restrict_to_profile = profile;
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
   event->will_dispatch_callback =
-      base::Bind(&WillDispatchTabUpdatedEvent,
-                 contents, changed_properties.get());
+      base::Bind(&WillDispatchTabUpdatedEvent, contents);
   ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
 }
 
@@ -512,10 +501,10 @@ void BrowserEventRouter::TabPinnedStateChanged(WebContents* contents,
   int tab_index;
 
   if (ExtensionTabUtil::GetTabStripModel(contents, &tab_strip, &tab_index)) {
-    scoped_ptr<DictionaryValue> changed_properties(new DictionaryValue());
+    DictionaryValue* changed_properties = new DictionaryValue();
     changed_properties->SetBoolean(tab_keys::kPinnedKey,
                                    tab_strip->IsTabPinned(tab_index));
-    DispatchTabUpdatedEvent(contents, changed_properties.Pass());
+    DispatchTabUpdatedEvent(contents, changed_properties);
   }
 }
 
@@ -602,7 +591,8 @@ void BrowserEventRouter::ExtensionActionExecuted(
   if (event_name) {
     scoped_ptr<ListValue> args(new ListValue());
     DictionaryValue* tab_value = ExtensionTabUtil::CreateTabValue(
-        web_contents);
+        web_contents,
+        ExtensionTabUtil::INCLUDE_PRIVACY_SENSITIVE_FIELDS);
     args->Append(tab_value);
 
     DispatchEventToExtension(profile,
