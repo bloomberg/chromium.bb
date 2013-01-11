@@ -6,7 +6,7 @@
     "Provider.Type": "openvpn",
     "Provider.Host": "vpn.my.domain.com",
     "OpenVPN.AuthRetry": "interact",
-    "OpenVPN.User": "some username",
+    "OpenVPN.User": "abc ${LOGIN_EMAIL} def",
     "OpenVPN.Password": "some password",
     "OpenVPN.StaticChallenge": "Please enter token OTP",
     "OpenVPN.CompLZO": "true",

@@ -370,5 +370,5 @@ bool CertificateImporter::ParseClientCertificate(
   return true;
 }
 
-}  // chromeos
-}  // onc
+}  // namespace onc
+}  // namespace chromeos

@@ -1,0 +1,35 @@
+{
+    "GUID": "{84391467-dd8b-4c66-9b52-860583038351}",
+    "Name": "TestOpenVPN",
+    "ProxySettings": {
+        "Type": "Direct"
+    },
+    "Type": "VPN",
+    "VPN": {
+        "Host": "terminus.muc",
+        "OpenVPN": {
+            "ClientCertPattern": {
+                "EnrollmentURI": [ "my.enrollment.url" ],
+                "IssuerCARef": [
+                    "def",
+                    "abc"
+                ],
+                "Subject": {
+                    "CommonName": "common_name",
+                    "Locality": "locality",
+                    "Organization": "organization",
+                    "OrganizationalUnit": "unit"
+                }
+            },
+            "ClientCertType": "Pattern",
+            "Password": "********",
+            "Port": 1234,
+            "Proto": "udp",
+            "Recommended": [ "Username", "Password" ],
+            "SaveCredentials": true,
+            "ServerCARef": "{126ea985-9ece-4250-8a32-6badf52a99e5}",
+            "Username": "hans"
+        },
+        "Type": "OpenVPN"
+    }
+}

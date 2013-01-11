@@ -506,6 +506,8 @@
         'browser/chromeos/net/network_change_notifier_network_library.h',
         'browser/chromeos/net/network_portal_detector.cc',
         'browser/chromeos/net/network_portal_detector.h',
+        'browser/chromeos/net/onc_utils.cc',
+        'browser/chromeos/net/onc_utils.h',
         'browser/chromeos/network_login_observer.cc',
         'browser/chromeos/network_login_observer.h',
         'browser/chromeos/network_message_observer.cc',

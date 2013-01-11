@@ -7,9 +7,9 @@
 #include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/network_event_log.h"
-#include "chromeos/network/onc/onc_constants.h"
 #include "crypto/encryptor.h"
 #include "crypto/hmac.h"
 #include "crypto/symmetric_key.h"
@@ -164,5 +164,56 @@ std::string GetSourceAsString(ONCSource source) {
   return "unknown";
 }
 
-}  // chromeos
-}  // onc
+void ExpandField(const std::string fieldname,
+                 const StringSubstitution& substitution,
+                 base::DictionaryValue* onc_object) {
+  std::string user_string;
+  if (!onc_object->GetStringWithoutPathExpansion(fieldname, &user_string))
+    return;
+
+  std::string login_id;
+  if (substitution.GetSubstitute(substitutes::kLoginIDField, &login_id)) {
+    ReplaceSubstringsAfterOffset(&user_string, 0,
+                                 onc::substitutes::kLoginIDField,
+                                 login_id);
+  }
+
+  std::string email;
+  if (substitution.GetSubstitute(substitutes::kEmailField, &email)) {
+    ReplaceSubstringsAfterOffset(&user_string, 0,
+                                 onc::substitutes::kEmailField,
+                                 email);
+  }
+
+  onc_object->SetStringWithoutPathExpansion(fieldname, user_string);
+}
+
+void ExpandStringsInOncObject(
+    const OncValueSignature& signature,
+    const StringSubstitution& substitution,
+    base::DictionaryValue* onc_object) {
+  if (&signature == &kEAPSignature) {
+    ExpandField(eap::kAnonymousIdentity, substitution, onc_object);
+    ExpandField(eap::kIdentity, substitution, onc_object);
+  } else if (&signature == &kL2TPSignature ||
+             &signature == &kOpenVPNSignature) {
+    ExpandField(vpn::kUsername, substitution, onc_object);
+  }
+
+  // Recurse into nested objects.
+  for (base::DictionaryValue::key_iterator it = onc_object->begin_keys();
+       it != onc_object->end_keys(); ++it) {
+    base::DictionaryValue* inner_object;
+    if (!onc_object->GetDictionaryWithoutPathExpansion(*it, &inner_object))
+      continue;
+
+    const OncFieldSignature* field_signature =
+        GetFieldSignature(signature, *it);
+
+    ExpandStringsInOncObject(*field_signature->value_signature,
+                             substitution, inner_object);
+  }
+}
+
+}  // namespace onc
+}  // namespace chromeos

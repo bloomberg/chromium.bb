@@ -17,6 +17,10 @@ struct StringTranslationEntry {
 // These are NULL-terminated arrays.
 extern const StringTranslationEntry kNetworkTypeTable[];
 extern const StringTranslationEntry kVPNTypeTable[];
+extern const StringTranslationEntry kWiFiSecurityTable[];
+extern const StringTranslationEntry kEAPOuterTable[];
+extern const StringTranslationEntry kEAP_PEAP_InnerTable[];
+extern const StringTranslationEntry kEAP_TTLS_InnerTable[];
 
 }  // namespace onc
 }  // namespace chromeos

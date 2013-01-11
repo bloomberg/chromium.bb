@@ -27,8 +27,9 @@ struct CHROMEOS_EXPORT OncValueSignature {
   const OncValueSignature* onc_array_entry_signature;
 };
 
-const OncFieldSignature* GetFieldSignature(const OncValueSignature& signature,
-                                           const std::string& onc_field_name);
+CHROMEOS_EXPORT const OncFieldSignature* GetFieldSignature(
+    const OncValueSignature& signature,
+    const std::string& onc_field_name);
 
 CHROMEOS_EXPORT extern const OncValueSignature kRecommendedSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kEAPSignature;

@@ -42,8 +42,17 @@ INSTANTIATE_TEST_CASE_P(
     ONCTranslatorOncToShillTest,
     ::testing::Values(
         std::make_pair("managed_ethernet.onc", "shill_ethernet.json"),
+        std::make_pair("valid_wifi_psk.onc", "shill_wifi_psk.json"),
+        std::make_pair("valid_wifi_clientcert.onc",
+                       "shill_wifi_clientcert.json"),
+        std::make_pair("valid_wifi_clientref.onc",
+                       "shill_wifi_clientref.json"),
         std::make_pair("valid_l2tpipsec.onc", "shill_l2tpipsec.json"),
-        std::make_pair("valid_openvpn.onc", "shill_openvpn.json")));
+        std::make_pair("valid_l2tpipsec_clientcert.onc",
+                       "shill_l2tpipsec_clientcert.json"),
+        std::make_pair("valid_openvpn.onc", "shill_openvpn.json"),
+        std::make_pair("valid_openvpn_clientcert.onc",
+                       "shill_openvpn_clientcert.json")));
 
 // Test the translation from Shill json to ONC.
 //

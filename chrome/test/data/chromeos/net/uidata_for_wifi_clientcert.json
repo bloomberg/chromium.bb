@@ -1,0 +1,13 @@
+{
+  "certificate_pattern": {
+    "EnrollmentURI": [
+      "chrome-extension://delkjfjibodjclmdijflfnimdmgdagfk/generate-cert.html"
+    ],
+    "IssuerCARef": [
+      "{58ac1967-a0e7-49e9-be68-123abc}",
+      "{42cb13cd-140c-4941-9fb6-456def}"
+    ]
+  },
+  "certificate_type": "pattern",
+  "onc_source": "user_policy"
+}

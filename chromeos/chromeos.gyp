@@ -262,6 +262,8 @@
         'dbus/mock_update_engine_client.h',
         'disks/mock_disk_mount_manager.cc',
         'disks/mock_disk_mount_manager.h',
+        'network/onc/onc_test_utils.cc',
+        'network/onc/onc_test_utils.h',
       ],
       'include_dirs': [
         '..',
@@ -346,8 +348,6 @@
         'network/onc/onc_certificate_importer_unittest.cc',
         'network/onc/onc_merger_unittest.cc',
         'network/onc/onc_normalizer_unittest.cc',
-        'network/onc/onc_test_utils.cc',
-        'network/onc/onc_test_utils.h',
         'network/onc/onc_translator_unittest.cc',
         'network/onc/onc_utils_unittest.cc',
         'network/onc/onc_validator_unittest.cc',

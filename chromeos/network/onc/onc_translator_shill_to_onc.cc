@@ -179,6 +179,13 @@ void ShillToONCTranslator::TranslateNetworkConfiguration() {
   std::string network_type;
   if (onc_object_->GetStringWithoutPathExpansion(kType, &network_type))
     TranslateAndAddNestedObject(network_type);
+
+  if (network_type == kVPN) {
+    std::string name;
+    shill_dictionary_->GetStringWithoutPathExpansion(flimflam::kNameProperty,
+                                                     &name);
+    onc_object_->SetStringWithoutPathExpansion(kName, name);
+  }
 }
 
 void ShillToONCTranslator::CopyPropertiesAccordingToSignature() {

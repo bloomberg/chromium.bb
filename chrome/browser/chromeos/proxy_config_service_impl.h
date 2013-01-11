@@ -106,7 +106,7 @@ class ProxyConfigServiceImpl
     bool SerializeForNetwork(std::string* output);
 
     // Encodes the proxy server as "<url-scheme>=<proxy-scheme>://<proxy>"
-    static void EncodeAndAppendProxyServer(const std::string& scheme,
+    static void EncodeAndAppendProxyServer(const std::string& url_scheme,
                                            const net::ProxyServer& server,
                                            std::string* spec);
 

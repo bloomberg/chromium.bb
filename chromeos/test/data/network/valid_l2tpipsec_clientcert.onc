@@ -1,0 +1,31 @@
+{ "GUID": "guid",
+  "Type": "VPN",
+  "Name": "MyL2TPVPN",
+  "VPN": {
+      "Type": "L2TP-IPsec",
+      "Host": "some.host.org",
+      "IPsec": {
+          "AuthenticationType": "Cert",
+          "ClientCertType": "Pattern",
+          "ClientCertPattern": {
+              "EnrollmentURI": [ "my.enrollment.url" ],
+              "IssuerCARef": [
+                  "def",
+                  "abc"
+              ],
+              "Issuer": {
+                  "CommonName": "common_name",
+                  "Locality": "locality",
+                  "Organization": "organization",
+                  "OrganizationalUnit": "unit"
+              }
+          },
+          "IKEVersion": 1,
+          "SaveCredentials": true
+      },
+      "L2TP": {
+          "Username": "some username",
+          "Password": "some password"
+      }
+  }
+}

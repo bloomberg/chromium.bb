@@ -1,0 +1,19 @@
+{
+  "certificate_pattern": {
+    "EnrollmentURI": [
+      "my.enrollment.url"
+    ],
+    "IssuerCARef": [
+      "def",
+      "abc"
+    ],
+    "Issuer": {
+      "CommonName": "common_name",
+      "Locality": "locality",
+      "Organization": "organization",
+      "OrganizationalUnit": "unit"
+    }
+  },
+  "certificate_type": "pattern",
+  "onc_source": "user_policy"
+}

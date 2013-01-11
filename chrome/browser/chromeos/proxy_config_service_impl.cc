@@ -363,7 +363,7 @@ bool ProxyConfigServiceImpl::ProxyConfig::SerializeForNetwork(
 
 // static
 void ProxyConfigServiceImpl::ProxyConfig::EncodeAndAppendProxyServer(
-    const std::string& scheme,
+    const std::string& url_scheme,
     const net::ProxyServer& server,
     std::string* spec) {
   if (!server.is_valid())
@@ -372,8 +372,8 @@ void ProxyConfigServiceImpl::ProxyConfig::EncodeAndAppendProxyServer(
   if (!spec->empty())
     *spec += ';';
 
-  if (!scheme.empty()) {
-    *spec += scheme;
+  if (!url_scheme.empty()) {
+    *spec += url_scheme;
     *spec += "=";
   }
   *spec += server.ToURI();

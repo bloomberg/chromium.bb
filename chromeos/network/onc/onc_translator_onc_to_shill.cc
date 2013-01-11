@@ -53,6 +53,8 @@ class LocalTranslator {
  private:
   void TranslateOpenVPN();
   void TranslateVPN();
+  void TranslateWiFi();
+  void TranslateEAP();
   void TranslateNetworkConfiguration();
 
   // Copies all entries from |onc_object_| to |shill_dictionary_| for which a
@@ -86,6 +88,10 @@ void LocalTranslator::TranslateFields() {
     TranslateVPN();
   else if (onc_signature_ == &kOpenVPNSignature)
     TranslateOpenVPN();
+  else if (onc_signature_ == &kWiFiSignature)
+    TranslateWiFi();
+  else if (onc_signature_ == &kEAPSignature)
+    TranslateEAP();
   else
     CopyFieldsAccordingToSignature();
 }
@@ -115,13 +121,58 @@ void LocalTranslator::TranslateOpenVPN() {
 }
 
 void LocalTranslator::TranslateVPN() {
-  TranslateWithTableAndSet(kType, kVPNTypeTable,
+  std::string type;
+  onc_object_->GetStringWithoutPathExpansion(kType, &type);
+  TranslateWithTableAndSet(type, kVPNTypeTable,
                            flimflam::kProviderTypeProperty);
+
+  CopyFieldsAccordingToSignature();
+}
+
+void LocalTranslator::TranslateWiFi() {
+  std::string security;
+  onc_object_->GetStringWithoutPathExpansion(wifi::kSecurity, &security);
+  TranslateWithTableAndSet(security, kWiFiSecurityTable,
+                           flimflam::kSecurityProperty);
+
+  CopyFieldsAccordingToSignature();
+}
+
+void LocalTranslator::TranslateEAP() {
+  std::string outer;
+  onc_object_->GetStringWithoutPathExpansion(eap::kOuter, &outer);
+  TranslateWithTableAndSet(outer, kEAPOuterTable, flimflam::kEapMethodProperty);
+
+  // Translate the inner protocol only for outer tunneling protocols.
+  if (outer == eap::kPEAP || outer == eap::kEAP_TTLS) {
+    // In ONC the Inner protocol defaults to "Automatic".
+    std::string inner = eap::kAutomatic;
+    // ONC's Inner == "Automatic" translates to omitting the Phase2 property in
+    // Shill.
+    onc_object_->GetStringWithoutPathExpansion(eap::kInner, &inner);
+    if (inner != eap::kAutomatic) {
+      const StringTranslationEntry* table =
+          outer == eap::kPEAP ? kEAP_PEAP_InnerTable : kEAP_TTLS_InnerTable;
+      TranslateWithTableAndSet(inner, table, flimflam::kEapPhase2AuthProperty);
+    }
+  }
+
   CopyFieldsAccordingToSignature();
 }
 
 void LocalTranslator::TranslateNetworkConfiguration() {
-  TranslateWithTableAndSet(kType, kNetworkTypeTable, flimflam::kTypeProperty);
+  std::string type;
+  onc_object_->GetStringWithoutPathExpansion(kType, &type);
+  TranslateWithTableAndSet(type, kNetworkTypeTable, flimflam::kTypeProperty);
+
+  // Shill doesn't allow setting the name for non-VPN networks.
+  if (type == kVPN) {
+    std::string name;
+    onc_object_->GetStringWithoutPathExpansion(kName, &name);
+    shill_dictionary_->SetStringWithoutPathExpansion(
+        flimflam::kNameProperty, name);
+  }
+
   CopyFieldsAccordingToSignature();
 }
 
@@ -149,13 +200,9 @@ void LocalTranslator::AddValueAccordingToSignature(
 }
 
 void LocalTranslator::TranslateWithTableAndSet(
-    const std::string& onc_field_name,
+    const std::string& onc_value,
     const StringTranslationEntry table[],
     const std::string& shill_property_name) {
-  std::string onc_value;
-  if (!onc_object_->GetStringWithoutPathExpansion(onc_field_name, &onc_value))
-    return;
-
   for (int i = 0; table[i].onc_value != NULL; ++i) {
     if (onc_value != table[i].onc_value)
       continue;
@@ -166,8 +213,7 @@ void LocalTranslator::TranslateWithTableAndSet(
   // As we previously validate ONC, this case should never occur. If it still
   // occurs, we should check here. Otherwise the failure will only show up much
   // later in Shill.
-  LOG(ERROR) << "Value '" << onc_value << "' for field '"
-             << onc_field_name << "' cannot be translated to Shill";
+  LOG(ERROR) << "Value '" << onc_value << "cannot be translated to Shill";
 }
 
 // Iterates recursively over |onc_object| and its |signature|. At each object

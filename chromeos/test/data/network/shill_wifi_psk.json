@@ -1,0 +1,9 @@
+{
+   "AutoConnect": true,
+   "GUID": "{64c4f86b-cf6a-4e4a-8eff-456def}",
+   "Passphrase": "some passphrase",
+   "SSID": "OpenWrt",
+   "Security": "psk",
+   "Type": "wifi",
+   "WiFi.HiddenSSID": false
+}

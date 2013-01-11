@@ -85,7 +85,7 @@ class CHROMEOS_EXPORT CertificateImporter {
   DISALLOW_COPY_AND_ASSIGN(CertificateImporter);
 };
 
-}  // chromeos
-}  // onc
+}  // namespace onc
+}  // namespace chromeos
 
 #endif  // CHROMEOS_NETWORK_ONC_ONC_CERTIFICATE_IMPORTER_H_
