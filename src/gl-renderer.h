@@ -53,10 +53,10 @@ gl_renderer_print_egl_error_state(void);
 #else
 
 typedef int EGLint;
-typedef int EGLDisplay;
-typedef int EGLSurface;
-typedef long int EGLNativeDisplayType;
-typedef long int EGLNativeWindowType;
+typedef void *EGLDisplay;
+typedef void *EGLSurface;
+typedef intptr_t EGLNativeDisplayType;
+typedef intptr_t EGLNativeWindowType;
 
 static const EGLint gl_renderer_opaque_attribs[];
 static const EGLint gl_renderer_alpha_attribs[];
