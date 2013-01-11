@@ -17,7 +17,6 @@
         "kernel_intercept.cc",
         "kernel_object.cc",
         "kernel_proxy.cc",
-        "kernel_wrap.cc",
         "kernel_wrap_glibc.cc",
         "kernel_wrap_newlib.cc",
         "kernel_wrap_win.cc",

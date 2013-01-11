@@ -219,6 +219,9 @@ int _write(int fd, const void* buf, size_t nbyte) {
   return ki_write(fd, buf, nbyte);
 }
 
+// Do nothing for Windows, we replace the library at link time.
+void kernel_wrap_init() {
+}
 EXTERN_C_END
 
 #endif   // defined(WIN32)

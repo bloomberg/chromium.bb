@@ -43,6 +43,7 @@ DECLARE(fdio, write)
 DECLARE(filename, open)
 DECLARE(filename, stat)
 
+
 int access(const char* path, int amode) {
   return ki_access(path, amode);
 }
@@ -152,20 +153,21 @@ int WRAP(write)(int fd, const void *buf, size_t count, size_t *nwrote) {
   return (*nwrote < 0) ? errno : 0;
 }
 
+
+void kernel_wrap_init() {
+  DO_WRAP(fdio, close);
+  DO_WRAP(fdio, dup);
+  DO_WRAP(fdio, fstat);
+  DO_WRAP(fdio, getdents);
+  DO_WRAP(fdio, read);
+  DO_WRAP(fdio, seek);
+  DO_WRAP(fdio, write);
+  DO_WRAP(filename, open);
+  DO_WRAP(filename, stat);
+}
+
+
 EXTERN_C_END
 
-static struct NaClMountsStaticInitializer {
-  NaClMountsStaticInitializer() {
-    DO_WRAP(fdio, close);
-    DO_WRAP(fdio, dup);
-    DO_WRAP(fdio, fstat);
-    DO_WRAP(fdio, getdents);
-    DO_WRAP(fdio, read);
-    DO_WRAP(fdio, seek);
-    DO_WRAP(fdio, write);
-    DO_WRAP(filename, open);
-    DO_WRAP(filename, stat);
-  }
-} nacl_mounts_static_initializer;
 
 #endif  // defined(__native_client__) && !defined(__GLIBC__)

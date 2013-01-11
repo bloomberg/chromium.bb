@@ -4,12 +4,11 @@
  */
 #include "nacl_mounts/kernel_intercept.h"
 #include "nacl_mounts/kernel_proxy.h"
+#include "nacl_mounts/kernel_wrap.h"
 #include "nacl_mounts/pepper_interface.h"
 #include "nacl_mounts/pepper_interface.h"
 #include "nacl_mounts/real_pepper_interface.h"
-#include "utils/macros.h"
 
-FORCE_LINK_THAT(kernel_wrap)
 
 static KernelProxy* s_kp;
 
@@ -20,6 +19,8 @@ void ki_init(void* kp) {
 void ki_init_ppapi(void* kp,
                    PP_Instance instance,
                    PPB_GetInterface get_browser_interface) {
+  kernel_wrap_init();
+
   if (kp == NULL) kp = new KernelProxy();
   s_kp = static_cast<KernelProxy*>(kp);
 
