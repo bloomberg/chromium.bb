@@ -302,20 +302,11 @@ def main():
 
   initial_state = states[entry]
 
-  # TODO(shcherbina): remove this fwait check in the next commit.
-  fwait_states = set()
-  fwait_states.add(initial_state.transitions[0x9b])
-  if options.bits == 64:
-    # fwait with rex prefix
-    fwait_states.add(initial_state.transitions[0x40].transitions[0x9b])
-
-  # Check that fwait states are the only accepting states that have outgoing
-  # transitions.
+  # Check that accepting states do not have outgoing transitions (that is,
+  # that instructions form prefix code).
   for state in states:
-    if state.is_final and state not in fwait_states:
+    if state.is_final:
       assert len(state.transitions) == 0, state.id
-  print '%d instructions start with fwait' % sum(s.num_suffixes
-                                                 for s in fwait_states)
 
   assert not initial_state.is_final
   assert not initial_state.any_byte
