@@ -44,9 +44,18 @@ class WebContents;
   // The desired height of the preview and units.
   CGFloat previewHeight_;
   InstantSizeUnits previewHeightUnits_;
+
+  // If true then a shadow is drawn below the preview. This is used to make
+  // instant omnibox "float" over the tab's web contents.
+  BOOL drawDropShadow_;
+
+  // View responsible for drawing a drop shadow.
+  scoped_nsobject<NSView> dropShadowView_;
 }
 
 @property(readonly, nonatomic) NSView* activeContainer;
+@property(readonly, nonatomic) NSView* dropShadowView;
+@property(readonly, nonatomic) BOOL drawDropShadow;
 
 // Initialization.
 - (id)initWithBrowser:(Browser*)browser
@@ -56,7 +65,8 @@ class WebContents;
 // hierarchy.  Hides the active view.  |preview| must not be NULL.
 - (void)showPreview:(content::WebContents*)preview
              height:(CGFloat)height
-        heightUnits:(InstantSizeUnits)heightUnits;
+        heightUnits:(InstantSizeUnits)heightUnits
+     drawDropShadow:(BOOL)drawDropShadow;
 
 // Closes the current preview and shows the active view.
 - (void)hidePreview;

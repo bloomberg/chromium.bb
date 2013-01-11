@@ -6,6 +6,7 @@
 
 #include "base/mac/bundle_locations.h"
 #include "chrome/browser/ui/cocoa/tab_contents/instant_preview_controller_mac.h"
+#include "chrome/browser/ui/cocoa/tab_contents/preview_drop_shadow_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 
@@ -16,6 +17,8 @@
 @end
 
 @implementation PreviewableContentsController
+
+@synthesize drawDropShadow = drawDropShadow_;
 
 - (id)initWithBrowser:(Browser*)browser
      windowController:(BrowserWindowController*)windowController {
@@ -46,11 +49,21 @@
 
 - (void)showPreview:(content::WebContents*)preview
              height:(CGFloat)height
-        heightUnits:(InstantSizeUnits)heightUnits {
+        heightUnits:(InstantSizeUnits)heightUnits
+     drawDropShadow:(BOOL)drawDropShadow {
   DCHECK(preview);
+
+  // If drawing drop shadow, clip the bottom 1-px-thick separator out of
+  // preview.
+  // TODO(sail): remove this when GWS gives chrome the height without the
+  // separator.
+  if (drawDropShadow && heightUnits != INSTANT_SIZE_PERCENT)
+    --height;
+
   if (previewContents_ == preview &&
       previewHeight_ == height &&
-      previewHeightUnits_ == heightUnits) {
+      previewHeightUnits_ == heightUnits &&
+      drawDropShadow_ == drawDropShadow) {
     return;
   }
 
@@ -61,10 +74,23 @@
   previewContents_ = preview;
   previewHeight_ = height;
   previewHeightUnits_ = heightUnits;
+  drawDropShadow_ = drawDropShadow;
 
   // Add the preview contents.
   previewContents_->GetView()->SetAllowOverlappingViews(true);
   [[self view] addSubview:previewContents_->GetNativeView()];
+
+  if (drawDropShadow_) {
+    if (!dropShadowView_) {
+      dropShadowView_.reset(
+          [[PreviewDropShadowView alloc] initWithFrame:NSZeroRect]);
+      [[self view] addSubview:dropShadowView_];
+    }
+  } else {
+    [dropShadowView_ removeFromSuperview];
+    dropShadowView_.reset();
+  }
+
   [self layoutViews];
 
   previewContents_->WasShown();
@@ -79,6 +105,10 @@
   [previewContents_->GetNativeView() removeFromSuperview];
   previewContents_->WasHidden();
   previewContents_ = nil;
+
+  drawDropShadow_ = false;
+  [dropShadowView_ removeFromSuperview];
+  dropShadowView_.reset();
 }
 
 - (void)onActivateTabWithContents:(content::WebContents*)contents {
@@ -100,6 +130,10 @@
   return activeContainer_.get();
 }
 
+- (NSView*)dropShadowView {
+  return dropShadowView_.get();
+}
+
 - (void)viewDidResize:(NSNotification*)note {
   [self layoutViews];
 }
@@ -108,10 +142,18 @@
   NSRect bounds = [[self view] bounds];
 
   if (previewContents_) {
-    NSRect frame = bounds;
-    frame.size.height = [self previewHeightInPixels];
-    frame.origin.y = NSMaxY(bounds) - NSHeight(frame);
-    [previewContents_->GetNativeView() setFrame:frame];
+    NSRect previewFrame = bounds;
+    previewFrame.size.height = [self previewHeightInPixels];
+    previewFrame.origin.y = NSMaxY(bounds) - NSHeight(previewFrame);
+    [previewContents_->GetNativeView() setFrame:previewFrame];
+
+    if (dropShadowView_) {
+      NSRect dropShadowFrame = bounds;
+      dropShadowFrame.size.height = [PreviewDropShadowView preferredHeight];
+      dropShadowFrame.origin.y =
+          NSMinY(previewFrame) - NSHeight(dropShadowFrame);
+      [dropShadowView_ setFrame:dropShadowFrame];
+    }
   }
 
   [activeContainer_ setFrame:bounds];

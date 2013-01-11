@@ -720,6 +720,8 @@
         'browser/ui/cocoa/tab_contents/favicon_util_mac.mm',
         'browser/ui/cocoa/tab_contents/instant_preview_controller_mac.h',
         'browser/ui/cocoa/tab_contents/instant_preview_controller_mac.mm',
+        'browser/ui/cocoa/tab_contents/preview_drop_shadow_view.h',
+        'browser/ui/cocoa/tab_contents/preview_drop_shadow_view.mm',
         'browser/ui/cocoa/tab_contents/previewable_contents_controller.h',
         'browser/ui/cocoa/tab_contents/previewable_contents_controller.mm',
         'browser/ui/cocoa/tab_contents/sad_tab_controller.h',

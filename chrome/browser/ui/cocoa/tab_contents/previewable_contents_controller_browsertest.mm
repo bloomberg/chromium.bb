@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/tab_contents/instant_preview_controller_mac.h"
+#include "chrome/browser/ui/cocoa/tab_contents/preview_drop_shadow_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
 #import "testing/gtest_mac.h"
@@ -96,4 +97,35 @@ IN_PROC_BROWSER_TEST_F(PreviewableContentsControllerTest, SizePixels) {
   // Resize the view and verify that the preview is also resized.
   [[controller_ view] setFrameSize:NSMakeSize(300, 400)];
   VerifyPreviewFrame(expected_height, units);
+}
+
+// Verify that a shadow is not shown when the preview covers the entire page
+// or when the preview is in NTP mode.
+IN_PROC_BROWSER_TEST_F(PreviewableContentsControllerTest, NoShadowFullHeight) {
+  chrome::search::Mode mode;
+  mode.mode = chrome::search::Mode::MODE_SEARCH_SUGGESTIONS;
+  instant_model_.SetPreviewState(mode, 100, INSTANT_SIZE_PERCENT);
+  EXPECT_FALSE([controller_ dropShadowView]);
+  EXPECT_FALSE([controller_ drawDropShadow]);
+
+  mode.mode = chrome::search::Mode::MODE_NTP;
+  instant_model_.SetPreviewState(mode, 10, INSTANT_SIZE_PERCENT);
+  EXPECT_FALSE([controller_ dropShadowView]);
+  EXPECT_FALSE([controller_ drawDropShadow]);
+}
+
+// Verify that a shadow is shown when the preview is in search mode.
+IN_PROC_BROWSER_TEST_F(PreviewableContentsControllerTest, NoShadowNTP) {
+  chrome::search::Mode mode;
+  mode.mode = chrome::search::Mode::MODE_SEARCH_SUGGESTIONS;
+  instant_model_.SetPreviewState(mode, 10, INSTANT_SIZE_PERCENT);
+  EXPECT_TRUE([controller_ dropShadowView]);
+  EXPECT_TRUE([controller_ drawDropShadow]);
+  EXPECT_NSEQ([controller_ view], [[controller_ dropShadowView] superview]);
+
+  NSRect dropShadowFrame = [[controller_ dropShadowView] frame];
+  NSRect controllerBounds = [[controller_ view] bounds];
+  EXPECT_EQ(NSWidth(controllerBounds), NSWidth(dropShadowFrame));
+  EXPECT_EQ([PreviewDropShadowView preferredHeight],
+            NSHeight(dropShadowFrame));
 }

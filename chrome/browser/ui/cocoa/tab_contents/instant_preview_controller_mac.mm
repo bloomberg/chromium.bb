@@ -24,9 +24,15 @@ InstantPreviewControllerMac::~InstantPreviewControllerMac() {
 void InstantPreviewControllerMac::PreviewStateChanged(
     const InstantModel& model) {
   if (model.mode().is_ntp() || model.mode().is_search_suggestions()) {
+    // Drop shadow is only needed if search mode is not |NTP| and preview does
+    // not fill up the entire contents page.
+    BOOL drawDropShadow = !model.mode().is_ntp() &&
+        !(model.height() == 100 &&
+          model.height_units() == INSTANT_SIZE_PERCENT);
     [preview_ showPreview:model.GetPreviewContents()
                    height:model.height()
-              heightUnits:model.height_units()];
+              heightUnits:model.height_units()
+           drawDropShadow:drawDropShadow];
   } else {
     [preview_ hidePreview];
   }
