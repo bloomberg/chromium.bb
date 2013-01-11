@@ -130,23 +130,6 @@ int64 MakeNode(UserShare* share,
   return node.GetId();
 }
 
-// Makes a non-folder child of a non-root node. Returns the id of the
-// newly-created node.
-int64 MakeNodeWithParent(UserShare* share,
-                         ModelType model_type,
-                         const std::string& client_tag,
-                         int64 parent_id) {
-  WriteTransaction trans(FROM_HERE, share);
-  ReadNode parent_node(&trans);
-  EXPECT_EQ(BaseNode::INIT_OK, parent_node.InitByIdLookup(parent_id));
-  WriteNode node(&trans);
-  WriteNode::InitUniqueByCreationResult result =
-      node.InitUniqueByCreation(model_type, parent_node, client_tag);
-  EXPECT_EQ(WriteNode::INIT_SUCCESS, result);
-  node.SetIsFolder(false);
-  return node.GetId();
-}
-
 // Makes a folder child of a non-root node. Returns the id of the
 // newly-created node.
 int64 MakeFolderWithParent(UserShare* share,
@@ -155,10 +138,21 @@ int64 MakeFolderWithParent(UserShare* share,
                            BaseNode* predecessor) {
   WriteTransaction trans(FROM_HERE, share);
   ReadNode parent_node(&trans);
-  EXPECT_EQ(BaseNode::INIT_OK, parent_node.InitByIdLookup(parent_id));
+  DCHECK_EQ(BaseNode::INIT_OK, parent_node.InitByIdLookup(parent_id));
   WriteNode node(&trans);
-  EXPECT_TRUE(node.InitByCreation(model_type, parent_node, predecessor));
+  DCHECK(node.InitBookmarkByCreation(parent_node, predecessor));
   node.SetIsFolder(true);
+  return node.GetId();
+}
+
+int64 MakeBookmarkWithParent(UserShare* share,
+                             int64 parent_id,
+                             BaseNode* predecessor) {
+  WriteTransaction trans(FROM_HERE, share);
+  ReadNode parent_node(&trans);
+  DCHECK_EQ(BaseNode::INIT_OK, parent_node.InitByIdLookup(parent_id));
+  WriteNode node(&trans);
+  DCHECK(node.InitBookmarkByCreation(parent_node, predecessor));
   return node.GetId();
 }
 
@@ -350,8 +344,7 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
 
     // we'll use this spare folder later
     WriteNode folder_node(&trans);
-    EXPECT_TRUE(folder_node.InitByCreation(BOOKMARKS,
-        root_node, NULL));
+    EXPECT_TRUE(folder_node.InitBookmarkByCreation(root_node, NULL));
     folder_id = folder_node.GetId();
 
     WriteNode wnode(&trans);
@@ -460,22 +453,21 @@ TEST_F(SyncApiTest, WriteEncryptedTitle) {
     trans.GetCryptographer()->AddKey(params);
   }
   test_user_share_.encryption_handler()->EnableEncryptEverything();
+  int bookmark_id;
   {
     WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
     ReadNode root_node(&trans);
     root_node.InitByRootLookup();
 
     WriteNode bookmark_node(&trans);
-    WriteNode::InitUniqueByCreationResult result =
-        bookmark_node.InitUniqueByCreation(BOOKMARKS,
-                                           root_node, "foo");
-    EXPECT_EQ(WriteNode::INIT_SUCCESS, result);
+    ASSERT_TRUE(bookmark_node.InitBookmarkByCreation(root_node, NULL));
+    bookmark_id = bookmark_node.GetId();
     bookmark_node.SetTitle(UTF8ToWide("foo"));
 
     WriteNode pref_node(&trans);
-    result =
+    WriteNode::InitUniqueByCreationResult result =
         pref_node.InitUniqueByCreation(PREFERENCES, root_node, "bar");
-    EXPECT_EQ(WriteNode::INIT_SUCCESS, result);
+    ASSERT_EQ(WriteNode::INIT_SUCCESS, result);
     pref_node.SetTitle(UTF8ToWide("bar"));
   }
   {
@@ -484,15 +476,13 @@ TEST_F(SyncApiTest, WriteEncryptedTitle) {
     root_node.InitByRootLookup();
 
     ReadNode bookmark_node(&trans);
-    EXPECT_EQ(BaseNode::INIT_OK,
-              bookmark_node.InitByClientTagLookup(BOOKMARKS,
-                                                  "foo"));
+    ASSERT_EQ(BaseNode::INIT_OK, bookmark_node.InitByIdLookup(bookmark_id));
     EXPECT_EQ("foo", bookmark_node.GetTitle());
     EXPECT_EQ(kEncryptedString,
               bookmark_node.GetEntry()->Get(syncable::NON_UNIQUE_NAME));
 
     ReadNode pref_node(&trans);
-    EXPECT_EQ(BaseNode::INIT_OK,
+    ASSERT_EQ(BaseNode::INIT_OK,
               pref_node.InitByClientTagLookup(PREFERENCES,
                                               "bar"));
     EXPECT_EQ(kEncryptedString, pref_node.GetTitle());
@@ -672,16 +662,14 @@ TEST_F(SyncApiTest, GetTotalNodeCountMultipleChildren) {
       BOOKMARKS,
       parent,
       NULL);
-  ignore_result(MakeNodeWithParent(
+  ignore_result(MakeBookmarkWithParent(
       test_user_share_.user_share(),
-      BOOKMARKS,
-      "c2",
-      parent));
-  ignore_result(MakeNodeWithParent(
+      parent,
+      NULL));
+  ignore_result(MakeBookmarkWithParent(
       test_user_share_.user_share(),
-      BOOKMARKS,
-      "c1c1",
-      child1));
+      child1,
+      NULL));
 
   {
     ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
@@ -1540,20 +1528,17 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   // First batch_size nodes are children of folder.
   size_t i;
   for (i = 0; i < batch_size; ++i) {
-    MakeNodeWithParent(sync_manager_.GetUserShare(), BOOKMARKS,
-                       base::StringPrintf("%"PRIuS"", i), folder);
+    MakeBookmarkWithParent(sync_manager_.GetUserShare(), folder, NULL);
   }
   // Next batch_size nodes are a different type and on their own.
   for (; i < 2*batch_size; ++i) {
-    MakeNodeWithParent(sync_manager_.GetUserShare(), SESSIONS,
-                       base::StringPrintf("%"PRIuS"", i),
-                       GetIdForDataType(SESSIONS));
+    MakeNode(sync_manager_.GetUserShare(), SESSIONS,
+             base::StringPrintf("%"PRIuS"", i));
   }
   // Last batch_size nodes are a third type that will not need encryption.
   for (; i < 3*batch_size; ++i) {
-    MakeNodeWithParent(sync_manager_.GetUserShare(), THEMES,
-                       base::StringPrintf("%"PRIuS"", i),
-                       GetIdForDataType(THEMES));
+    MakeNode(sync_manager_.GetUserShare(), THEMES,
+             base::StringPrintf("%"PRIuS"", i));
   }
 
   {
@@ -2150,10 +2135,11 @@ TEST_F(SyncManagerTest, CreateLocalBookmark) {
   std::string url = "url";
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    ReadNode root_node(&trans);
-    root_node.InitByRootLookup();
+    ReadNode bookmark_root(&trans);
+    ASSERT_EQ(BaseNode::INIT_OK,
+              bookmark_root.InitByTagLookup(ModelTypeToRootTag(BOOKMARKS)));
     WriteNode node(&trans);
-    ASSERT_TRUE(node.InitByCreation(BOOKMARKS, root_node, NULL));
+    ASSERT_TRUE(node.InitBookmarkByCreation(bookmark_root, NULL));
     node.SetIsFolder(false);
     node.SetTitle(UTF8ToWide(title));
 
@@ -2163,9 +2149,10 @@ TEST_F(SyncManagerTest, CreateLocalBookmark) {
   }
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    ReadNode root_node(&trans);
-    root_node.InitByRootLookup();
-    int64 child_id = root_node.GetFirstChildId();
+    ReadNode bookmark_root(&trans);
+    ASSERT_EQ(BaseNode::INIT_OK,
+              bookmark_root.InitByTagLookup(ModelTypeToRootTag(BOOKMARKS)));
+    int64 child_id = bookmark_root.GetFirstChildId();
 
     ReadNode node(&trans);
     ASSERT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(child_id));
