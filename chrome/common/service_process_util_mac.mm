@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -73,16 +74,15 @@ bool RemoveFromLaunchd() {
                                              name);
 }
 
-class ExecFilePathWatcherDelegate : public FilePathWatcher::Delegate {
+class ExecFilePathWatcherCallback {
  public:
-  ExecFilePathWatcherDelegate() {}
+  ExecFilePathWatcherCallback() {}
+  ~ExecFilePathWatcherCallback() {}
 
   bool Init(const FilePath& path);
-  virtual void OnFilePathChanged(const FilePath& path) OVERRIDE;
+  void NotifyPathChanged(const FilePath& path, bool error);
 
  private:
-  virtual ~ExecFilePathWatcherDelegate() {}
-
   FSRef executable_fsref_;
 };
 
@@ -319,24 +319,34 @@ bool ServiceProcessState::StateData::WatchExecutable() {
   }
 
   FilePath executable_path = FilePath([exe_path fileSystemRepresentation]);
-  scoped_refptr<ExecFilePathWatcherDelegate> delegate(
-      new ExecFilePathWatcherDelegate);
-  if (!delegate->Init(executable_path)) {
+  scoped_ptr<ExecFilePathWatcherCallback> callback(
+      new ExecFilePathWatcherCallback);
+  if (!callback->Init(executable_path)) {
     DLOG(ERROR) << "executable_watcher_.Init " << executable_path.value();
     return false;
   }
-  if (!executable_watcher_.Watch(executable_path, delegate)) {
+  if (!executable_watcher_.Watch(
+          executable_path,
+          false,
+          base::Bind(&ExecFilePathWatcherCallback::NotifyPathChanged,
+                     base::Owned(callback.release())))) {
     DLOG(ERROR) << "executable_watcher_.watch " << executable_path.value();
     return false;
   }
   return true;
 }
 
-bool ExecFilePathWatcherDelegate::Init(const FilePath& path) {
+bool ExecFilePathWatcherCallback::Init(const FilePath& path) {
   return base::mac::FSRefFromPath(path.value(), &executable_fsref_);
 }
 
-void ExecFilePathWatcherDelegate::OnFilePathChanged(const FilePath& path) {
+void ExecFilePathWatcherCallback::NotifyPathChanged(const FilePath& path,
+                                                    bool error) {
+  if (error) {
+    NOTREACHED();  // TODO(darin): Do something smarter?
+    return;
+  }
+
   base::mac::ScopedNSAutoreleasePool pool;
   bool needs_shutdown = false;
   bool needs_restart = false;
