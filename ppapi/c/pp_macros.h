@@ -3,15 +3,17 @@
  * found in the LICENSE file.
  */
 
-/* From pp_macros.idl modified Wed Aug 15 17:29:43 2012. */
+/* From pp_macros.idl modified Wed Jan  9 18:07:46 2013. */
 
 #ifndef PPAPI_C_PP_MACROS_H_
 #define PPAPI_C_PP_MACROS_H_
 
 
+#define PPAPI_RELEASE 25
+
 /**
  * @file
- * Defines the API ...
+ * Defines the common macros such as assert, inline, ...
  */
 
 

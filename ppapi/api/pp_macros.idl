@@ -4,7 +4,7 @@
  */
 
 /**
- * Defines the API ...
+ * Defines the common macros such as assert, inline, ...
  */
 
 #inline c

@@ -218,14 +218,14 @@ class HGen(GeneratorByFile):
       for struct in proto.struct_map:
         out.Write('struct %s;\n' % struct)
 
-    # If we are generating a single release, then create a macro for the highest
-    # available release number.
+    # Create a macro for the highest available release number.
     if filenode.GetProperty('NAME').endswith('pp_macros.idl'):
-      releasestr = GetOption('release')
+      releasestr = ' '.join(releases)
       if releasestr:
-        release_numbers = re.findall('\d+', releasestr)
-        if release_numbers:
-          out.Write('\n#define PPAPI_RELEASE %s\n' % release_numbers[0])
+        release_numbers = re.findall('[\d\_]+', releasestr)
+        release = re.findall('\d+', release_numbers[-1])[0]
+        if release:
+          out.Write('\n#define PPAPI_RELEASE %s\n' % release)
 
     # Generate all interface defines
     out.Write('\n')
