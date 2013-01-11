@@ -71,6 +71,9 @@ cr.define('options', function() {
     handleConfirm: function() {
       SettingsDialog.prototype.handleConfirm.call(this);
       chrome.send('commitStartupPrefChanges');
+      // Set the startup behavior to "open specific set of pages" so that the
+      // pages the user selected actually get opened on startup.
+      Preferences.setIntegerPref('session.restore_on_startup', 4, true);
     },
 
     /** @override */
