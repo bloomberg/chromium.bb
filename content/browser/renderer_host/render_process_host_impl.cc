@@ -870,6 +870,11 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     renderer_cmd->AppendSwitch(switches::kDisableMediaHistoryLogging);
 #endif
   }
+
+  // Enforce the extra command line flags for impl-side painting.
+  if (browser_cmd.HasSwitch(cc::switches::kEnableImplSidePainting) &&
+      !browser_cmd.HasSwitch(switches::kEnableDeferredImageDecoding))
+    renderer_cmd->AppendSwitch(switches::kEnableDeferredImageDecoding);
 }
 
 base::ProcessHandle RenderProcessHostImpl::GetHandle() {
