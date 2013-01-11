@@ -39,7 +39,7 @@ vars = {
   # and V8 without interference from each other.
   "webrtc_revision": "3353",
   "jsoncpp_revision": "248",
-  "nss_revision": "174690",
+  "nss_revision": "175939",
 }
 
 deps = {
