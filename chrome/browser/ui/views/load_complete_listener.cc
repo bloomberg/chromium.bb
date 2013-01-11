@@ -4,41 +4,35 @@
 
 #include "chrome/browser/ui/views/load_complete_listener.h"
 
-#include "chrome/common/chrome_notification_types.h"
-#include "content/public/browser/notification_registrar.h"
+#include "base/logging.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 
 LoadCompleteListener::LoadCompleteListener(Delegate* delegate)
     : delegate_(delegate) {
-  registrar_ = new content::NotificationRegistrar();
+  DCHECK(delegate);
   // Register for notification of when initial page load is complete to ensure
   // that we wait until start-up is complete before calling the callback.
-  registrar_->Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                  content::NotificationService::AllSources());
+  registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+                 content::NotificationService::AllSources());
 }
 
 LoadCompleteListener::~LoadCompleteListener() {
-  if (registrar_ && registrar_->IsRegistered(this,
-          content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-          content::NotificationService::AllSources())) {
-    registrar_->Remove(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                       content::NotificationService::AllSources());
+  if (registrar_.IsRegistered(this,
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::NotificationService::AllSources())) {
+    registrar_.Remove(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+                      content::NotificationService::AllSources());
   }
 }
 
-void LoadCompleteListener::Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
-      delegate_->OnLoadCompleted();
-      registrar_->Remove(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                         content::NotificationService::AllSources());
-      break;
-    }
-    default:
-      NOTREACHED() << "Unexpected notification type.";
-  }
+void LoadCompleteListener::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME, type);
+
+  delegate_->OnLoadCompleted();
+  registrar_.Remove(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+                    content::NotificationService::AllSources());
 }

@@ -5,20 +5,15 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_LOAD_COMPLETE_LISTENER_H_
 #define CHROME_BROWSER_UI_VIEWS_LOAD_COMPLETE_LISTENER_H_
 
-#include "content/public/browser/browser_thread.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "content/public/browser/notification_observer.h"
-
-namespace content {
-class NotificationSource;
-class NotificationRegistrar;
-class NotificationDetails;
-}
+#include "content/public/browser/notification_registrar.h"
 
 // A class which takes  a delegate which can be notified after the first page
 // load has been completed. This is particularly useful for triggering
 // IO-intensive tasks which should not be run until start-up is complete.
-class LoadCompleteListener
-    : public content::NotificationObserver {
+class LoadCompleteListener : public content::NotificationObserver {
  public:
   class Delegate {
    public:
@@ -33,13 +28,13 @@ class LoadCompleteListener
 
   virtual ~LoadCompleteListener();
 
-  // NotificationObserver implementation.
+ private:
+  // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
- private:
-  content::NotificationRegistrar* registrar_;
+  content::NotificationRegistrar registrar_;
 
   // Delegate to be notified after the first page load has completed.
   Delegate* delegate_;
