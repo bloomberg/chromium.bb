@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
@@ -16,10 +17,6 @@
 #include "net/url_request/url_request_status.h"
 
 namespace {
-
-// Endpoint to query for information about the signed-in user.
-static const char kUserInfoServiceURL[] =
-    "https://www.googleapis.com/oauth2/v1/userinfo";
 
 static const char kAuthorizationHeaderFormat[] =
     "Authorization: Bearer %s";
@@ -45,7 +42,8 @@ UserInfoFetcher::~UserInfoFetcher() {
 void UserInfoFetcher::Start(const std::string& access_token) {
   // Create a URLFetcher and start it.
   url_fetcher_.reset(net::URLFetcher::Create(
-      0, GURL(kUserInfoServiceURL), net::URLFetcher::GET, this));
+      0, GURL(GaiaUrls::GetInstance()->oauth_user_info_url()),
+      net::URLFetcher::GET, this));
   url_fetcher_->SetRequestContext(context_);
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                              net::LOAD_DO_NOT_SAVE_COOKIES);
