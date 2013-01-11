@@ -57,7 +57,8 @@ InputMethodEngineIBus::InputMethodEngineIBus()
 }
 
 InputMethodEngineIBus::~InputMethodEngineIBus() {
-  GetCurrentService()->UnsetEngine();
+  if (object_path_.IsValid())
+    GetCurrentService()->UnsetEngine();
   input_method::GetInputMethodManager()->RemoveInputMethodExtension(ibus_id_);
 }
 
