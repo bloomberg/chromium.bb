@@ -1112,7 +1112,9 @@ void SavePackage::OnReceivedSavableResourceLinksForCurrentPage(
   if (wait_state_ != RESOURCES_LIST)
     return;
 
-  DCHECK(resources_list.size() == referrers_list.size());
+  if (resources_list.size() != referrers_list.size())
+    return;
+
   all_save_items_count_ = static_cast<int>(resources_list.size()) +
                            static_cast<int>(frames_list.size());
 
