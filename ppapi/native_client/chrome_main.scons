@@ -33,12 +33,20 @@ def ExtendFileList(existing, additional):
 ppapi_scons_files = {}
 ppapi_scons_files['trusted_scons_files'] = []
 ppapi_scons_files['untrusted_irt_scons_files'] = []
+ppapi_scons_files['nonvariant_test_scons_files'] = []
 
-ppapi_scons_files['nonvariant_test_scons_files'] = [
+ppapi_scons_files['irt_variant_test_scons_files'] = [
     'tests/breakpad_crash_test/nacl.scons',
     'tests/nacl_browser/browser_dynamic_library/nacl.scons',
+    # 'inbrowser_test_runner' must be in the irt_variant list
+    # otherwise it will run no tests.
+    'tests/nacl_browser/inbrowser_test_runner/nacl.scons',
+    # Disabled by Brad Chen 4 Sep to try to green Chromium
+    # nacl_integration tests
+    #'tests/nacl_browser/fault_injection/nacl.scons',
     'tests/nacl_browser/manifest_file/nacl.scons',
     'tests/nacl_browser/nameservice/nacl.scons',
+    'tests/nacl_browser/pnacl_client_translator/nacl.scons',
     'tests/nacl_browser/postmessage_redir/nacl.scons',
     'tests/ppapi_browser/bad/nacl.scons',
     'tests/ppapi_browser/crash/nacl.scons',
@@ -47,16 +55,6 @@ ppapi_scons_files['nonvariant_test_scons_files'] = [
     'tests/ppapi_browser/ppb_instance/nacl.scons',
     'tests/ppapi_browser/ppp_instance/nacl.scons',
     'tests/ppapi_test_lib/nacl.scons',
-]
-
-ppapi_scons_files['irt_variant_test_scons_files'] = [
-    # 'inbrowser_test_runner' must be in the irt_variant list
-    # otherwise it will run no tests.
-    'tests/nacl_browser/inbrowser_test_runner/nacl.scons',
-    # Disabled by Brad Chen 4 Sep to try to green Chromium
-    # nacl_integration tests
-    #'tests/nacl_browser/fault_injection/nacl.scons',
-    'tests/nacl_browser/pnacl_client_translator/nacl.scons',
 ]
 
 ppapi_scons_files['untrusted_scons_files'] = [
