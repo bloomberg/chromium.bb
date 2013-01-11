@@ -41,6 +41,11 @@ function SlideMode(container, content, toolbar, prompt,
   this.onSpliceBound_ = this.onSplice_.bind(this);
   this.onContentBound_ = this.onContentChange_.bind(this);
 
+  // Unique numeric key, incremented per each load attempt used to discard
+  // old attempts. This can happen especially when changing selection fast or
+  // Internet connection is slow.
+  this.currentUniqueKey_ = 0;
+
   this.initListeners_();
   this.initDom_();
 }
@@ -454,13 +459,17 @@ SlideMode.prototype.loadSelectedItem_ = function() {
   }
 
   var selectedItem = this.getSelectedItem();
+  this.currentUniqueKey_++;
+  var selectedUniqueKey = this.currentUniqueKey_;
   var onMetadata = function(metadata) {
-    if (selectedItem != this.getSelectedItem()) return;
+    // Discard, since another load has been invoked after this one.
+    if (selectedUniqueKey != this.currentUniqueKey_) return;
     this.loadItem_(selectedItem.getUrl(), metadata,
         new ImageView.Effect.Slide(step, this.isSlideshowPlaying_()),
         function() {} /* no displayCallback */,
         function(loadType, delay) {
-          if (selectedItem != this.getSelectedItem()) return;
+          // Discard, since another load has been invoked after this one.
+          if (selectedUniqueKey != this.currentUniqueKey_) return;
           if (shouldPrefetch(loadType, step, this.sequenceLength_)) {
             this.requestPrefetch(step, delay);
           }

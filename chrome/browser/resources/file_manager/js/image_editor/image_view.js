@@ -653,7 +653,8 @@ ImageView.prototype.replace = function(
       var reverse = opt_effect.getReverse();
       this.setTransform(oldScreenImage, reverse);
       setTimeout(function() {
-        oldScreenImage.parentNode.removeChild(oldScreenImage);
+        if (oldScreenImage.parentNode)
+          oldScreenImage.parentNode.removeChild(oldScreenImage);
       }, reverse.getSafeInterval());
     }
   }.bind(this), 0);
@@ -757,7 +758,8 @@ ImageView.prototype.animateAndReplace = function(canvas, imageCropRect) {
   setTimeout(setFade.bind(null, false), 0);
 
   setTimeout(function() {
-    oldScreenImage.parentNode.removeChild(oldScreenImage);
+    if (oldScreenImage.parentNode)
+      oldScreenImage.parentNode.removeChild(oldScreenImage);
   }, effect.getSafeInterval());
 
   return effect.getSafeInterval();

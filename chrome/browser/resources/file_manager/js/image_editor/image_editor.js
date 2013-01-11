@@ -134,15 +134,20 @@ ImageEditor.prototype.openSession = function(
 ImageEditor.prototype.closeSession = function(callback) {
   this.getPrompt().hide();
   if (this.imageView_.isLoading()) {
-    if (this.commandQueue_)
+    if (this.commandQueue_) {
       console.warn('Inconsistent image editor state');
+      this.commandQueue_ = null;
+    }
     this.imageView_.cancelLoad();
     this.lockUI(false);
     callback();
     return;
   }
-  if (!this.commandQueue_)
-    return;  // Session is already closing, ignore the callback.
+  if (!this.commandQueue_) {
+    // Session is already closed.
+    callback();
+    return;
+  }
 
   this.executeWhenReady(callback);
   this.commandQueue_ = null;
