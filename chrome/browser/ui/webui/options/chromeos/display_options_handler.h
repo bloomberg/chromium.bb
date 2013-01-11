@@ -42,11 +42,14 @@ class DisplayOptionsHandler : public ::options::OptionsPageUIHandler,
 
  private:
   // Updates the display section visibility based on the current display
-  // configurations.
-  void UpdateDisplaySectionVisibility();
+  // configurations. Specify the number of display.
+  void UpdateDisplaySectionVisibility(size_t num_displays);
 
-  // Sends the current display information to the web_ui of options page.
-  void SendDisplayInfo();
+  // Sends all of the current display information to the web_ui of options page.
+  void SendAllDisplayInfo();
+
+  // Sends the specified display information to the web_ui of options page.
+  void SendDisplayInfo(const std::vector<const gfx::Display*> displays);
 
   // Called when the fade-out animation for mirroring status change is finished.
   void OnFadeOutForMirroringFinished(bool is_mirroring);
