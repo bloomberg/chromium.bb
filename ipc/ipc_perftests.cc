@@ -11,18 +11,13 @@
 #include <unistd.h>
 #endif
 
-#include <stdio.h>
 #include <string>
-#include <utility>
-
-#include "ipc/ipc_test_base.h"
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/debug_on_start_win.h"
 #include "base/perftimer.h"
 #include "base/pickle.h"
-#include "base/test/perf_test_suite.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "ipc/ipc_descriptors.h"
@@ -31,7 +26,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_multiprocess_test.h"
 #include "ipc/ipc_sender.h"
-#include "ipc/ipc_switches.h"
+#include "ipc/ipc_test_base.h"
 #include "testing/multiprocess_func_list.h"
 
 namespace {

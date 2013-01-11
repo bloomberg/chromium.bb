@@ -15,13 +15,8 @@
 #include <string>
 #include <utility>
 
-#include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/debug/debug_on_start_win.h"
-#include "base/perftimer.h"
 #include "base/pickle.h"
-#include "base/test/perf_test_suite.h"
-#include "base/test/test_suite.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "ipc/ipc_descriptors.h"

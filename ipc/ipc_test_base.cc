@@ -11,19 +11,12 @@
 #include <unistd.h>
 #endif
 
-#include <stdio.h>
-#include <string>
 #include <utility>
 
 #include "ipc/ipc_test_base.h"
 
-#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/debug_on_start_win.h"
-#include "base/perftimer.h"
-#include "base/pickle.h"
-#include "base/test/perf_test_suite.h"
-#include "base/test/test_suite.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "ipc/ipc_descriptors.h"
@@ -34,9 +27,6 @@
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_switches.h"
 #include "testing/multiprocess_func_list.h"
-
-// Define to enable IPC performance testing instead of the regular unit tests
-// #define PERFORMANCE_TEST
 
 const char kTestClientChannel[] = "T1";
 const char kReflectorChannel[] = "T2";
@@ -59,7 +49,7 @@ void IPCTestBase::TearDown() {
 
 #if defined(OS_WIN)
 base::ProcessHandle IPCTestBase::SpawnChild(IPCTestBase::ChildType child_type,
-                                            IPC::Channel *channel) {
+                                            IPC::Channel* channel) {
   // kDebugChildren support.
   bool debug_on_start =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kDebugChildren);
@@ -79,7 +69,7 @@ base::ProcessHandle IPCTestBase::SpawnChild(IPCTestBase::ChildType child_type,
 }
 #elif defined(OS_POSIX)
 base::ProcessHandle IPCTestBase::SpawnChild(IPCTestBase::ChildType child_type,
-                                            IPC::Channel *channel) {
+                                            IPC::Channel* channel) {
   // kDebugChildren support.
   bool debug_on_start =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kDebugChildren);
