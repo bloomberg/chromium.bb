@@ -46,12 +46,6 @@
 #include "base/posix/eintr_wrapper.h"
 #endif
 
-#if defined(SECCOMP_BPF_VALGRIND_HACKS)
-#if !defined(SECCOMP_BPF_STANDALONE)
-#include "base/third_party/valgrind/valgrind.h"
-#endif
-#endif
-
 
 // The Seccomp2 kernel ABI is not part of older versions of glibc.
 // As we can't break compilation with these versions of the library,
@@ -298,6 +292,10 @@ class Sandbox {
   typedef ErrorCode (*EvaluateSyscall)(int sysnum, void *aux);
   typedef std::vector<std::pair<EvaluateSyscall, void *> >Evaluators;
 
+  // A vector of BPF instructions that need to be installed as a filter
+  // program in the kernel.
+  typedef std::vector<struct sock_filter> Program;
+
   // Checks whether a particular system call number is valid on the current
   // architecture. E.g. on ARM there's a non-contiguous range of private
   // system calls.
@@ -380,14 +378,23 @@ class Sandbox {
   // enters Seccomp mode.
   static void StartSandbox() { StartSandboxInternal(false); }
 
+  // Assembles a BPF filter program from the current policy. After calling this
+  // function, you must not call any other sandboxing function.
+  // Typically, AssembleFilter() is only used by unit tests and by sandbox
+  // internals. It should not be used by production code.
+  static Program *AssembleFilter();
+
+  // Verify the correctness of a compiled program by comparing it against the
+  // current policy. This function should only ever be called by unit tests and
+  // by the sandbox internals. It should not be used by production code.
+  static void VerifyProgram(const Program& program);
+
  private:
   friend class CodeGen;
   friend class SandboxUnittestHelper;
   friend class ErrorCode;
   friend class Util;
   friend class Verifier;
-
-  typedef std::vector<struct sock_filter> Program;
 
   struct Range {
     Range(uint32_t f, uint32_t t, const ErrorCode& e)
@@ -451,12 +458,33 @@ class Sandbox {
   // evaluator.
   static ErrorCode RedirectToUserspaceEvalWrapper(int sysnum, void *aux);
 
+  // Assembles and installs a filter based on the policy that has previously
+  // been configured with SetSandboxPolicy().
   static void      InstallFilter(bool quiet);
+
+  // Finds all the ranges of system calls that need to be handled. Ranges are
+  // sorted in ascending order of system call numbers. There are no gaps in the
+  // ranges. System calls with identical ErrorCodes are coalesced into a single
+  // range.
   static void      FindRanges(Ranges *ranges);
+
+  // Returns a BPF program snippet that implements a jump table for the
+  // given range of system call numbers. This function runs recursively.
   static Instruction *AssembleJumpTable(CodeGen *gen,
                                         Ranges::const_iterator start,
                                         Ranges::const_iterator stop);
-  static Instruction *RetExpression(CodeGen *gen, const ErrorCode& cond);
+
+  // Returns a BPF program snippet that makes the BPF filter program exit
+  // with the given ErrorCode "err". N.B. the ErrorCode may very well be a
+  // conditional expression; if so, this function will recursively call
+  // CondExpression() and possibly RetExpression() to build a complex set of
+  // instructions.
+  static Instruction *RetExpression(CodeGen *gen, const ErrorCode& err);
+
+  // Returns a BPF program that evaluates the conditional expression in
+  // "cond" and returns the appropriate value from the BPF filter program.
+  // This function recursively calls RetExpression(); it should only ever be
+  // called from RetExpression().
   static Instruction *CondExpression(CodeGen *gen, const ErrorCode& cond);
 
   // Returns the fatal ErrorCode that is used to indicate that somebody

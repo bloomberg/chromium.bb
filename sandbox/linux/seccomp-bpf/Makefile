@@ -1,5 +1,5 @@
 DEF_CFLAGS = -g -O3 -Wall -Werror -Wextra -Wno-missing-field-initializers -fPIC -I.
-DEF_CPPFLAGS = -D_GNU_SOURCE -DSECCOMP_BPF_STANDALONE -DSECCOMP_BPF_VALGRIND_HACKS -include valgrind/valgrind.h -iquote ../../..
+DEF_CPPFLAGS = -D_GNU_SOURCE -DSECCOMP_BPF_STANDALONE -iquote ../../..
 DEF_LDFLAGS = -g -lpthread
 DEPFLAGS = -MMD -MF .$@.d
 MODS := demo sandbox_bpf basicblock codegen die errorcode syscall syscall_iterator util verifier

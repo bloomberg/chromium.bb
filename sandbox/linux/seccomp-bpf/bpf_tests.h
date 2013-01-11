@@ -87,9 +87,13 @@ class BpfTests : public UnitTests {
 
       arg->test()(arg->aux_);
     } else {
-      // TODO(markus): (crbug.com/141545) Call the compiler and verify the
-      //   policy. That's the least we can do, if we don't have kernel support.
-      playground2::Sandbox::SetSandboxPolicy(arg->policy(), NULL);
+      // Call the compiler and verify the policy. That's the least we can do,
+      // if we don't have kernel support.
+      playground2::Sandbox::SetSandboxPolicy(arg->policy(), &arg->aux_);
+      playground2::Sandbox::Program *program =
+          playground2::Sandbox::AssembleFilter();
+      playground2::Sandbox::VerifyProgram(*program);
+      delete program;
       sandbox::UnitTests::IgnoreThisTest();
     }
   }

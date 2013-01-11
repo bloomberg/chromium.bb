@@ -235,15 +235,6 @@ bool Sandbox::RunFunctionInPolicy(void (*code_in_sandbox)(),
 }
 
 bool Sandbox::KernelSupportSeccompBPF(int proc_fd) {
-#if defined(SECCOMP_BPF_VALGRIND_HACKS)
-  if (RUNNING_ON_VALGRIND) {
-    // Valgrind doesn't like our run-time test. Disable testing and assume we
-    // always support sandboxing. This feature should only ever be enabled when
-    // debugging.
-    return true;
-  }
-#endif
-
   return
     RunFunctionInPolicy(ProbeProcess, Sandbox::ProbeEvaluator, 0, proc_fd) &&
     RunFunctionInPolicy(TryVsyscallProcess, Sandbox::AllowAllEvaluator, 0,
@@ -426,6 +417,49 @@ void Sandbox::SetSandboxPolicy(EvaluateSyscall syscall_evaluator, void *aux) {
 }
 
 void Sandbox::InstallFilter(bool quiet) {
+  // We want to be very careful in not imposing any requirements on the
+  // policies that are set with SetSandboxPolicy(). This means, as soon as
+  // the sandbox is active, we shouldn't be relying on libraries that could
+  // be making system calls. This, for example, means we should avoid
+  // using the heap and we should avoid using STL functions.
+  // Temporarily copy the contents of the "program" vector into a
+  // stack-allocated array; and then explicitly destroy that object.
+  // This makes sure we don't ex- or implicitly call new/delete after we
+  // installed the BPF filter program in the kernel. Depending on the
+  // system memory allocator that is in effect, these operators can result
+  // in system calls to things like munmap() or brk().
+  Program *program = AssembleFilter();
+
+  // Make sure compilation resulted in BPF program that executes
+  // correctly. Otherwise, there is an internal error in our BPF compiler.
+  // There is really nothing the caller can do until the bug is fixed.
+#ifndef NDEBUG
+  VerifyProgram(*program);
+#endif
+
+  struct sock_filter bpf[program->size()];
+  const struct sock_fprog prog = {
+    static_cast<unsigned short>(program->size()), bpf };
+  memcpy(bpf, &(*program)[0], sizeof(bpf));
+  delete program;
+
+  // Release memory that is no longer needed
+  evaluators_.clear();
+  conds_.clear();
+
+  // Install BPF filter program
+  if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
+    SANDBOX_DIE(quiet ? NULL : "Kernel refuses to enable no-new-privs");
+  } else {
+    if (prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog)) {
+      SANDBOX_DIE(quiet ? NULL : "Kernel refuses to turn on BPF filters");
+    }
+  }
+
+  return;
+}
+
+Sandbox::Program *Sandbox::AssembleFilter() {
   // Verify that the user pushed a policy.
   if (evaluators_.empty()) {
   filter_failed:
@@ -586,68 +620,25 @@ void Sandbox::InstallFilter(bool quiet) {
   gen->Compile(head, program);
   delete gen;
 
-  // Make sure compilation resulted in BPF program that executes
-  // correctly. Otherwise, there is an internal error in our BPF compiler.
-  // There is really nothing the caller can do until the bug is fixed.
-#ifndef NDEBUG
-  {
-    // If we previously rewrote the BPF program so that it calls user-space
-    // whenever we return an "errno" value from the filter, then we have to
-    // wrap our system call evaluator to perform the same operation. Otherwise,
-    // the verifier would also report a mismatch in return codes.
-    Evaluators redirected_evaluators;
-    redirected_evaluators.push_back(
-        std::make_pair(RedirectToUserspaceEvalWrapper, &evaluators_));
+  return program;
+}
 
-    const char *err = NULL;
-    if (!Verifier::VerifyBPF(
-                       *program,
+void Sandbox::VerifyProgram(const Program& program) {
+  // If we previously rewrote the BPF program so that it calls user-space
+  // whenever we return an "errno" value from the filter, then we have to
+  // wrap our system call evaluator to perform the same operation. Otherwise,
+  // the verifier would also report a mismatch in return codes.
+  Evaluators redirected_evaluators;
+  redirected_evaluators.push_back(
+      std::make_pair(RedirectToUserspaceEvalWrapper, &evaluators_));
+
+  const char *err = NULL;
+  if (!Verifier::VerifyBPF(
+                       program,
                        has_unsafe_traps_ ? redirected_evaluators : evaluators_,
                        &err)) {
-      SANDBOX_DIE(err);
-    }
+    SANDBOX_DIE(err);
   }
-#endif
-
-  // We want to be very careful in not imposing any requirements on the
-  // policies that are set with setSandboxPolicy(). This means, as soon as
-  // the sandbox is active, we shouldn't be relying on libraries that could
-  // be making system calls. This, for example, means we should avoid
-  // using the heap and we should avoid using STL functions.
-  // Temporarily copy the contents of the "program" vector into a
-  // stack-allocated array; and then explicitly destroy that object.
-  // This makes sure we don't ex- or implicitly call new/delete after we
-  // installed the BPF filter program in the kernel. Depending on the
-  // system memory allocator that is in effect, these operators can result
-  // in system calls to things like munmap() or brk().
-  struct sock_filter bpf[program->size()];
-  const struct sock_fprog prog = {
-    static_cast<unsigned short>(program->size()), bpf };
-  memcpy(bpf, &(*program)[0], sizeof(bpf));
-  delete program;
-
-  // Release memory that is no longer needed
-  evaluators_.clear();
-  conds_.clear();
-
-#if defined(SECCOMP_BPF_VALGRIND_HACKS)
-  // Valgrind is really not happy about our sandbox. Disable it when running
-  // in Valgrind. This feature is dangerous and should never be enabled by
-  // default. We protect it behind a pre-processor option.
-  if (!RUNNING_ON_VALGRIND)
-#endif
-  {
-    // Install BPF filter program
-    if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
-      SANDBOX_DIE(quiet ? NULL : "Kernel refuses to enable no-new-privs");
-    } else {
-      if (prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog)) {
-        SANDBOX_DIE(quiet ? NULL : "Kernel refuses to turn on BPF filters");
-      }
-    }
-  }
-
-  return;
 }
 
 void Sandbox::FindRanges(Ranges *ranges) {
@@ -706,11 +697,11 @@ Instruction *Sandbox::AssembleJumpTable(CodeGen *gen,
   return gen->MakeInstruction(BPF_JMP+BPF_JGE+BPF_K, mid->from, jt, jf);
 }
 
-Instruction *Sandbox::RetExpression(CodeGen *gen, const ErrorCode& cond) {
-  if (cond.error_type_ == ErrorCode::ET_COND) {
-    return CondExpression(gen, cond);
+Instruction *Sandbox::RetExpression(CodeGen *gen, const ErrorCode& err) {
+  if (err.error_type_ == ErrorCode::ET_COND) {
+    return CondExpression(gen, err);
   } else {
-    return gen->MakeInstruction(BPF_RET+BPF_K, cond);
+    return gen->MakeInstruction(BPF_RET+BPF_K, err);
   }
 }
 
