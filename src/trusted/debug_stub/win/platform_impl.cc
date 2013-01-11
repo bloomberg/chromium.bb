@@ -33,10 +33,6 @@ static DWORD Reprotect(void *ptr, uint32_t len, DWORD newflags) {
 
 namespace port {
 
-void IPlatform::Relinquish(uint32_t msec) {
-  Sleep(msec);
-}
-
 bool IPlatform::GetMemory(uint64_t virt, uint32_t len, void *dst) {
   uint32_t oldFlags = Reprotect(reinterpret_cast<void*>(virt),
                                 len, PAGE_EXECUTE_READWRITE);

@@ -23,9 +23,6 @@ namespace port {
 
 class IPlatform {
  public:
-  //  Request the current thread relinquish execution of msec milliseconds
-  static void Relinquish(uint32_t msec);
-
   //  Called to get or set process memory.
   //  NOTE:  These functions should change the protection of the underlying
   //    page if needed to provide access.  It should only return false if

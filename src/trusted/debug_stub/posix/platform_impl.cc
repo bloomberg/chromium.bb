@@ -33,10 +33,6 @@
 
 namespace port {
 
-void IPlatform::Relinquish(uint32_t msec) {
-  usleep(msec * 1000);
-}
-
 // In order to read from a pointer that might not be valid, we use the
 // trick of getting the kernel to do it on our behalf.
 static bool SafeMemoryCopy(void *dest, void *src, size_t len) {
