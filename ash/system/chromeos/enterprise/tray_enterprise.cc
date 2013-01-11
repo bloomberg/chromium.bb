@@ -7,6 +7,8 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
+#include "ash/system/user/login_status.h"
+#include "base/logging.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
@@ -88,7 +90,12 @@ void TrayEnterprise::UpdateEnterpriseMessage() {
     default_view_->SetMessage(message);
 }
 
-views::View* TrayEnterprise::CreateDefaultView(user::LoginStatus /*status*/) {
+views::View* TrayEnterprise::CreateDefaultView(user::LoginStatus status) {
+  CHECK(default_view_ == NULL);
+  // For public accounts, enterprise ownership is indicated in the user details
+  // instead.
+  if (status == ash::user::LOGGED_IN_PUBLIC)
+    return NULL;
   default_view_ = new EnterpriseDefaultView(this);
   UpdateEnterpriseMessage();
   return default_view_;
