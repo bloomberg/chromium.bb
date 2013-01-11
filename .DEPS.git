@@ -179,6 +179,8 @@ deps_os = {
             None,
         'src/chrome/test/data/perf/frame_rate/content':
             None,
+        'src/content/test/data/layout_tests/LayoutTests/editing/pasteboard/resources':
+            None,
         'src/content/test/data/layout_tests/LayoutTests/fast/events':
             None,
         'src/content/test/data/layout_tests/LayoutTests/fast/filesystem_temp':
