@@ -246,7 +246,6 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     // coming from a renderer and we want to render the webpage contents to a
     // texture.
     DCHECK(handle.transport);
-    DCHECK(handle.parent_client_id);
     surface = new TextureImageTransportSurface(manager, stub, handle);
   } else {
     if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&

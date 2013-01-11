@@ -102,6 +102,7 @@ bool BrowserPluginManagerImpl::ShouldForwardToBrowserPlugin(
     case BrowserPluginMsg_ShouldAcceptTouchEvents::ID:
     case BrowserPluginMsg_UpdatedName::ID:
     case BrowserPluginMsg_UpdateRect::ID:
+    case BrowserPluginMsg_BuffersSwapped::ID:
       return true;
     default:
       break;

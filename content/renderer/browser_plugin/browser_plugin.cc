@@ -14,6 +14,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/browser_plugin/browser_plugin_bindings.h"
+#include "content/renderer/browser_plugin/browser_plugin_compositing_helper.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -152,6 +153,7 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPlugin, message)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_AdvanceFocus, OnAdvanceFocus)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_BuffersSwapped, OnBuffersSwapped)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestContentWindowReady,
                         OnGuestContentWindowReady)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestGone, OnGuestGone)
@@ -316,6 +318,20 @@ bool BrowserPlugin::UsesPendingDamageBuffer(
 void BrowserPlugin::OnAdvanceFocus(int instance_id, bool reverse) {
   DCHECK(render_view_);
   render_view_->GetWebView()->advanceFocus(reverse);
+}
+
+void BrowserPlugin::OnBuffersSwapped(int instance_id,
+                                     const gfx::Size& size,
+                                     std::string mailbox_name,
+                                     int gpu_route_id,
+                                     int gpu_host_id) {
+  DCHECK(instance_id == instance_id_);
+  EnableCompositing(true);
+
+  compositing_helper_->OnBuffersSwapped(size,
+                                        mailbox_name,
+                                        gpu_route_id,
+                                        gpu_host_id);
 }
 
 void BrowserPlugin::OnGuestContentWindowReady(int instance_id,
@@ -797,11 +813,16 @@ bool BrowserPlugin::initialize(WebPluginContainer* container) {
 }
 
 void BrowserPlugin::EnableCompositing(bool enable) {
-  if (enable) {
-    LOG(ERROR) << "BrowserPlugin compositing not yet implemented.";
+  if (compositing_enabled_ == enable)
     return;
+
+  if (enable && !compositing_helper_) {
+    compositing_helper_.reset(new BrowserPluginCompositingHelper(
+        container_,
+        render_view_routing_id_));
   }
 
+  compositing_helper_->EnableCompositing(enable);
   compositing_enabled_ = enable;
 }
 
@@ -809,6 +830,7 @@ void BrowserPlugin::destroy() {
   // The BrowserPlugin's WebPluginContainer is deleted immediately after this
   // call returns, so let's not keep a reference to it around.
   container_ = NULL;
+  compositing_helper_.reset();
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 

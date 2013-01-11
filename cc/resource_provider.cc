@@ -257,6 +257,7 @@ ResourceProvider::ResourceId ResourceProvider::createResourceFromTextureMailbox(
     ResourceId id = m_nextId++;
     Resource resource(textureId, gfx::Size(), 0, GL_LINEAR);
     resource.external = true;
+    resource.allocated = true;
     resource.mailbox.setName(name);
     resource.mailboxReleaseCallback = releaseCallback;
     m_resources[id] = resource;

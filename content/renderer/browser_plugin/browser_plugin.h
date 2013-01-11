@@ -26,6 +26,7 @@ struct BrowserPluginMsg_UpdateRect_Params;
 
 namespace content {
 
+class BrowserPluginCompositingHelper;
 class BrowserPluginManager;
 class MockBrowserPlugin;
 
@@ -245,6 +246,11 @@ class CONTENT_EXPORT BrowserPlugin :
   // IPC message handlers.
   // Please keep in alphabetical order.
   void OnAdvanceFocus(int instance_id, bool reverse);
+  void OnBuffersSwapped(int instance_id,
+                        const gfx::Size& size,
+                        std::string mailbox_name,
+                        int gpu_route_id,
+                        int gpu_host_id);
   void OnGuestContentWindowReady(int instance_id,
                                  int content_window_routing_id);
   void OnGuestGone(int instance_id, int process_id, int status);
@@ -331,6 +337,7 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // Used for HW compositing.
   bool compositing_enabled_;
+  scoped_ptr<BrowserPluginCompositingHelper> compositing_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPlugin);
 };

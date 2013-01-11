@@ -597,13 +597,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       WebKit::Platform::current()->compositorSupport();
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  // TODO(fsamuel): Guests don't currently support threaded compositing.
-  // This should go away with the new design of the browser plugin.
-  // The new design can be tracked at: http://crbug.com/134492.
-  bool is_guest = command_line.HasSwitch(switches::kGuestRenderer);
-  bool threaded = command_line.HasSwitch(switches::kEnableThreadedCompositing);
-
-  bool enable = threaded && !is_guest;
+  bool enable = command_line.HasSwitch(switches::kEnableThreadedCompositing);
   if (enable) {
     compositor_thread_.reset(new CompositorThread(this));
     AddFilter(compositor_thread_->GetMessageFilter());
