@@ -30,8 +30,6 @@ class BASE_EXPORT_PRIVATE SampleMap : public HistogramSamples {
   virtual HistogramBase::Count TotalCount() const OVERRIDE;
   virtual scoped_ptr<SampleCountIterator> Iterator() const OVERRIDE;
 
-  void ResetRedundantCount(HistogramBase::Count count);
-
  protected:
   virtual bool AddSubtractImpl(
       SampleCountIterator* iter,

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/pickle.h"
 #include "content/common/child_process.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/child_thread.h"
@@ -57,6 +58,9 @@ void ChildHistogramMessageFilter::UploadAllHistograms(int sequence_number) {
   base::StatisticsRecorder::CollectHistogramStats("ChildProcess");
 
   // Push snapshots into our pickled_histograms_ vector.
+  // Note: Before serializing, we set the kIPCSerializationSourceFlag for all
+  // the histograms, so that the receiving process can distinguish them from the
+  // local histograms.
   histogram_snapshot_manager_.PrepareDeltas(
       base::Histogram::kIPCSerializationSourceFlag, false);
 
@@ -73,10 +77,13 @@ void ChildHistogramMessageFilter::RecordDelta(
     const base::Histogram& histogram,
     const base::HistogramSamples& snapshot) {
   DCHECK_NE(0, snapshot.TotalCount());
-  std::string histogram_info =
-      base::Histogram::SerializeHistogramInfo(histogram, snapshot);
 
-  pickled_histograms_.push_back(histogram_info);
+  Pickle pickle;
+  histogram.SerializeInfo(&pickle);
+  snapshot.Serialize(&pickle);
+
+  pickled_histograms_.push_back(
+      std::string(static_cast<const char*>(pickle.data()), pickle.size()));
 }
 
 void ChildHistogramMessageFilter::InconsistencyDetected(

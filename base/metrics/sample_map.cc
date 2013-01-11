@@ -44,11 +44,6 @@ scoped_ptr<SampleCountIterator> SampleMap::Iterator() const {
   return scoped_ptr<SampleCountIterator>(new SampleMapIterator(sample_counts_));
 }
 
-void SampleMap::ResetRedundantCount(Count count) {
-  IncreaseRedundantCount(-redundant_count());
-  IncreaseRedundantCount(count);
-}
-
 bool SampleMap::AddSubtractImpl(SampleCountIterator* iter,
                                 HistogramSamples::Operator op) {
   Sample min;

@@ -90,6 +90,7 @@ class BASE_EXPORT StatisticsRecorder {
   typedef std::map<uint32, std::list<const BucketRanges*>*> RangesMap;
 
   friend struct DefaultLazyInstanceTraits<StatisticsRecorder>;
+  friend class HistogramBaseTest;
   friend class HistogramTest;
   friend class StatisticsRecorderTest;
 

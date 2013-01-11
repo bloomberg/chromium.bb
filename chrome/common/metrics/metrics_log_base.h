@@ -75,7 +75,7 @@ class MetricsLogBase {
                        base::TimeDelta load_time);
 
   // Record any changes in a given histogram for transmission.
-  void RecordHistogramDelta(const base::Histogram& histogram,
+  void RecordHistogramDelta(const std::string& histogram_name,
                             const base::HistogramSamples& snapshot);
 
   // Stop writing to this record and generate the encoded representation.

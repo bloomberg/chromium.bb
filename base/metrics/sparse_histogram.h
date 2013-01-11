@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_base.h"
+#include "base/metrics/sample_map.h"
 #include "base/synchronization/lock.h"
 
 namespace base {
@@ -33,24 +34,35 @@ class BASE_EXPORT_PRIVATE SparseHistogram : public HistogramBase {
                                         Sample maximum,
                                         size_t bucket_count) const OVERRIDE;
   virtual void Add(Sample value) OVERRIDE;
+  virtual void AddSamples(const HistogramSamples& samples) OVERRIDE;
+  virtual bool AddSamplesFromPickle(PickleIterator* iter) OVERRIDE;
+  virtual scoped_ptr<HistogramSamples> SnapshotSamples() const OVERRIDE;
   virtual void WriteHTMLGraph(std::string* output) const OVERRIDE;
   virtual void WriteAscii(std::string* output) const OVERRIDE;
-  virtual scoped_ptr<HistogramSamples> SnapshotSamples() const OVERRIDE;
+
+ protected:
+  // HistogramBase implementation:
+  virtual bool SerializeInfoImpl(Pickle* pickle) const OVERRIDE;
 
  private:
   // Clients should always use FactoryGet to create SparseHistogram.
   SparseHistogram(const std::string& name);
 
+  friend BASE_EXPORT_PRIVATE HistogramBase* DeserializeHistogramInfo(
+      PickleIterator* iter);
+  static HistogramBase* DeserializeInfoImpl(PickleIterator* iter);
+
   virtual void GetParameters(DictionaryValue* params) const OVERRIDE;
   virtual void GetCountAndBucketData(Count* count,
                                      ListValue* buckets) const OVERRIDE;
 
-  friend class SparseHistogramTest;  // For constuctor calling.
+  // For constuctor calling.
+  friend class SparseHistogramTest;
 
-  // Protects access to |sample_counts_| and |redundant_count_|.
+  // Protects access to |samples_|.
   mutable base::Lock lock_;
-  std::map<HistogramBase::Sample, HistogramBase::Count> sample_counts_;
-  HistogramBase::Count redundant_count_;
+
+  SampleMap samples_;
 
   DISALLOW_COPY_AND_ASSIGN(SparseHistogram);
 };

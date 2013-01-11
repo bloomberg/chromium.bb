@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/pickle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/histogram_controller.h"
@@ -272,7 +273,9 @@ void HistogramSynchronizer::OnHistogramDataCollected(
   for (std::vector<std::string>::const_iterator it = pickled_histograms.begin();
        it < pickled_histograms.end();
        ++it) {
-    base::Histogram::DeserializeHistogramInfo(*it);
+    Pickle pickle(it->data(), it->size());
+    PickleIterator iter(pickle);
+    base::DeserializeHistogramAndAddSamples(&iter);
   }
 
   if (!request)

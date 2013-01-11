@@ -5,8 +5,10 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram_base.h"
 #include "base/metrics/sample_map.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/pickle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -19,7 +21,7 @@ class SparseHistogramTest : public testing::Test {
 };
 
 TEST_F(SparseHistogramTest, BasicTest) {
-  scoped_ptr<SparseHistogram> histogram(NewSparseHistogram("Sparse1"));
+  scoped_ptr<SparseHistogram> histogram(NewSparseHistogram("Sparse"));
   scoped_ptr<HistogramSamples> snapshot(histogram->SnapshotSamples());
   EXPECT_EQ(0, snapshot->TotalCount());
   EXPECT_EQ(0, snapshot->sum());
@@ -35,6 +37,31 @@ TEST_F(SparseHistogramTest, BasicTest) {
   EXPECT_EQ(3, snapshot2->TotalCount());
   EXPECT_EQ(2, snapshot2->GetCount(100));
   EXPECT_EQ(1, snapshot2->GetCount(101));
+}
+
+TEST_F(SparseHistogramTest, Serialize) {
+  scoped_ptr<SparseHistogram> histogram(NewSparseHistogram("Sparse"));
+  histogram->SetFlags(HistogramBase::kIPCSerializationSourceFlag);
+
+  Pickle pickle;
+  histogram->SerializeInfo(&pickle);
+
+  PickleIterator iter(pickle);
+
+  int type;
+  EXPECT_TRUE(iter.ReadInt(&type));
+  EXPECT_EQ(SPARSE_HISTOGRAM, type);
+
+  std::string name;
+  EXPECT_TRUE(iter.ReadString(&name));
+  EXPECT_EQ("Sparse", name);
+
+  int flag;
+  EXPECT_TRUE(iter.ReadInt(&flag));
+  EXPECT_EQ(HistogramBase::kIPCSerializationSourceFlag, flag);
+
+  // No more data in the pickle.
+  EXPECT_FALSE(iter.SkipBytes(1));
 }
 
 }  // namespace base

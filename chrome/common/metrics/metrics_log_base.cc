@@ -452,9 +452,8 @@ void MetricsLogBase::EndElement() {
 // Internal state is being needlessly exposed, and it would be hard to reuse
 // this code. If we moved this into the Histogram class, then we could use
 // the same infrastructure for logging StatsCounters, RatesCounters, etc.
-void MetricsLogBase::RecordHistogramDelta(
-    const Histogram& histogram,
-    const HistogramSamples& snapshot) {
+void MetricsLogBase::RecordHistogramDelta(const std::string& histogram_name,
+                                          const HistogramSamples& snapshot) {
   DCHECK(!locked_);
   DCHECK_NE(0, snapshot.TotalCount());
 
@@ -464,9 +463,7 @@ void MetricsLogBase::RecordHistogramDelta(
 
   std::string base64_name_hash;
   uint64 numeric_name_hash;
-  CreateHashes(histogram.histogram_name(),
-               &base64_name_hash,
-               &numeric_name_hash);
+  CreateHashes(histogram_name, &base64_name_hash, &numeric_name_hash);
 
   // Write the XML version.
   WriteAttribute("name", base64_name_hash);

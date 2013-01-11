@@ -6,6 +6,7 @@
 
 #include "base/metrics/sample_map.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/pickle.h"
 #include "base/synchronization/lock.h"
 
 using std::map;
@@ -39,21 +40,25 @@ bool SparseHistogram::HasConstructionArguments(Sample minimum,
 
 void SparseHistogram::Add(Sample value) {
   base::AutoLock auto_lock(lock_);
-  sample_counts_[value]++;
-  redundant_count_ += 1;
+  samples_.Accumulate(value, 1);
 }
 
 scoped_ptr<HistogramSamples> SparseHistogram::SnapshotSamples() const {
   scoped_ptr<SampleMap> snapshot(new SampleMap());
 
   base::AutoLock auto_lock(lock_);
-  for(map<Sample, Count>::const_iterator it = sample_counts_.begin();
-      it != sample_counts_.end();
-      ++it) {
-    snapshot->Accumulate(it->first, it->second);
-  }
-  snapshot->ResetRedundantCount(redundant_count_);
+  snapshot->Add(samples_);
   return snapshot.PassAs<HistogramSamples>();
+}
+
+void SparseHistogram::AddSamples(const HistogramSamples& samples) {
+  base::AutoLock auto_lock(lock_);
+  samples_.Add(samples);
+}
+
+bool SparseHistogram::AddSamplesFromPickle(PickleIterator* iter) {
+  base::AutoLock auto_lock(lock_);
+  return samples_.AddFromPickle(iter);
 }
 
 void SparseHistogram::WriteHTMLGraph(string* output) const {
@@ -64,9 +69,26 @@ void SparseHistogram::WriteAscii(string* output) const {
   // TODO(kaiwang): Implement.
 }
 
+bool SparseHistogram::SerializeInfoImpl(Pickle* pickle) const {
+  return pickle->WriteString(histogram_name()) && pickle->WriteInt(flags());
+}
+
 SparseHistogram::SparseHistogram(const string& name)
-    : HistogramBase(name),
-      redundant_count_(0) {}
+    : HistogramBase(name) {}
+
+HistogramBase* SparseHistogram::DeserializeInfoImpl(PickleIterator* iter) {
+  string histogram_name;
+  int flags;
+  if (!iter->ReadString(&histogram_name) || !iter->ReadInt(&flags)) {
+    DLOG(ERROR) << "Pickle error decoding Histogram: " << histogram_name;
+    return NULL;
+  }
+
+  DCHECK(flags & HistogramBase::kIPCSerializationSourceFlag);
+  flags &= ~HistogramBase::kIPCSerializationSourceFlag;
+
+  return SparseHistogram::FactoryGet(histogram_name, flags);
+}
 
 void SparseHistogram::GetParameters(DictionaryValue* params) const {
   // TODO(kaiwang): Implement. (See HistogramBase::WriteJSON.)
