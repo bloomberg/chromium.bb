@@ -279,6 +279,9 @@ class MessageCenterContentsView : public views::View {
           IDS_MESSAGE_CENTER_NO_MESSAGES));
       label->SetFont(label->font().DeriveFont(1));
       label->SetEnabledColor(SK_ColorGRAY);
+      // Set transparent background to ensure that subpixel rendering
+      // is disabled. See crbug.com/169056
+      label->SetBackgroundColor(kTransparentColor);
       scroll_content_->AddChildView(label);
       button_view_->SetCloseAllVisible(false);
       scroller_->set_focusable(false);
