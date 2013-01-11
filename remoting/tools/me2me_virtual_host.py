@@ -73,29 +73,41 @@ class Config:
     self.changed = False
 
   def load(self):
-    try:
-      settings_file = open(self.path, 'r')
-      self.data = json.load(settings_file)
-      self.changed = False
-      settings_file.close()
-    except Exception:
-      return False
-    return True
+    """Loads the config from file.
+
+    Raises:
+      IOError: Error reading data
+      ValueError: Error parsing JSON
+    """
+    settings_file = open(self.path, 'r')
+    self.data = json.load(settings_file)
+    self.changed = False
+    settings_file.close()
 
   def save(self):
+    """Saves the config to file.
+
+    Raises:
+      IOError: Error writing data
+      TypeError: Error serialising JSON
+    """
     if not self.changed:
-      return True
+      return
     old_umask = os.umask(0066)
     try:
       settings_file = open(self.path, 'w')
       settings_file.write(json.dumps(self.data, indent=2))
       settings_file.close()
-    except Exception:
-      return False
+      self.changed = False
     finally:
       os.umask(old_umask)
-    self.changed = False
-    return True
+
+  def save_and_log_errors(self):
+    """Calls save(self), trapping and logging any errors."""
+    try:
+      save(self)
+    except (IOError, TypeError) as e:
+      logging.error("Failed to save config: " + str(e))
 
   def get(self, key):
     return self.data.get(key)
@@ -625,7 +637,10 @@ class SignalHandler:
   def __call__(self, signum, _stackframe):
     if signum == signal.SIGHUP:
       logging.info("SIGHUP caught, restarting host.")
-      self.host_config.load()
+      try:
+        self.host_config.load()
+      except (IOError, ValueError) as e:
+        logging.error("Failed to load config: " + str(e))
       for desktop in g_desktops:
         if desktop.host_proc:
           desktop.host_proc.send_signal(signal.SIGTERM)
@@ -867,8 +882,10 @@ Web Store: https://chrome.google.com/remotedesktop"""
 
   # Load the initial host configuration.
   host_config = Config(options.config)
-  if (not host_config.load()):
-    print >> sys.stderr, "Failed to load " + config_filename
+  try:
+    host_config.load()
+  except (IOError, ValueError) as e:
+    print >> sys.stderr, "Failed to load config: " + str(e)
     return 1
 
   # Register handler to re-load the configuration in response to signals.
@@ -1008,30 +1025,30 @@ Web Store: https://chrome.google.com/remotedesktop"""
         logging.info("Host configuration is invalid - exiting.")
         host_config.clear_auth()
         host_config.clear_host_info()
-        host_config.save()
+        host_config.save_and_log_errors()
         return 0
       elif os.WEXITSTATUS(status) == 101:
         logging.info("Host ID has been deleted - exiting.")
         host_config.clear_host_info()
-        host_config.save()
+        host_config.save_and_log_errors()
         return 0
       elif os.WEXITSTATUS(status) == 102:
         logging.info("OAuth credentials are invalid - exiting.")
         host_config.clear_auth()
-        host_config.save()
+        host_config.save_and_log_errors()
         return 0
       elif os.WEXITSTATUS(status) == 103:
         logging.info("Host domain is blocked by policy - exiting.")
         host_config.clear_auth()
         host_config.clear_host_info()
-        host_config.save()
+        host_config.save_and_log_errors()
         return 0
       # Nothing to do for Mac-only status 104 (login screen unsupported)
       elif os.WEXITSTATUS(status) == 105:
         logging.info("Username is blocked by policy - exiting.")
         host_config.clear_auth()
         host_config.clear_host_info()
-        host_config.save()
+        host_config.save_and_log_errors()
         return 0
 
 
