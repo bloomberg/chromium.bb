@@ -55,6 +55,7 @@
 #include "chrome/browser/ui/webui/tracing_ui.h"
 #include "chrome/browser/ui/webui/user_actions/user_actions_ui.h"
 #include "chrome/browser/ui/webui/version_ui.h"
+#include "chrome/browser/ui/webui/webrtc_internals_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/feature_switch.h"
@@ -232,6 +233,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<UserActionsUI>;
   if (url.host() == chrome::kChromeUIVersionHost)
     return &NewWebUI<VersionUI>;
+  if (url.host() == chrome::kChromeUIWebRTCInternalsHost)
+    return &NewWebUI<WebRTCInternalsUI>;
 
   /****************************************************************************
    * OS Specific #defines

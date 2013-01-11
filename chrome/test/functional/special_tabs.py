@@ -52,6 +52,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://gpu-internals': {},
     'chrome://histograms': { 'title': 'About Histograms' },
     'chrome://history': { 'title': 'History' },
+    'chrome://inspect': { 'title': 'Inspect with Chrome Developer Tools' },
     'chrome://media-internals': { 'title': 'Media Internals' },
     'chrome://memory-redirect': { 'title': 'About Memory' },
     'chrome://net-internals': {},
@@ -72,7 +73,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://terms': {},
     'chrome://version': { 'title': 'About Version' },
     'chrome://view-http-cache': {},
-    'chrome://inspect': { 'title': 'Inspect with Chrome Developer Tools' },
+    'chrome://webrtc-internals': { 'title': 'WebRTC Internals' },
   }
   broken_special_url_tabs = {
     # crashed under debug when invoked from location bar (bug 88223).
