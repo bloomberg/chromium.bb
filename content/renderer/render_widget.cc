@@ -108,11 +108,14 @@ const char* GetEventName(WebInputEvent::Type type) {
     CASE_TYPE(TouchMove);
     CASE_TYPE(TouchEnd);
     CASE_TYPE(TouchCancel);
-    // Don't include default, so that we get an error when new type is added.
+    default:
+      // Must include default to let WebKit::WebInputEvent add new event types
+      // before they're added here.
+      DLOG(WARNING) << "Unhandled WebInputEvent type in GetEventName.\n";
+      break;
   }
 #undef CASE_TYPE
-  NOTREACHED();
-  return "Undefined";
+  return "";
 }
 }
 namespace content {
