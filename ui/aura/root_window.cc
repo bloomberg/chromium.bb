@@ -665,10 +665,11 @@ void RootWindow::OnWindowHidden(Window* invisible,
         invisible, this, reason == WINDOW_DESTROYED);
   }
 
-  // Do not clear the capture, and the dispatch targets if the window is moving
-  // across root windows, because the target itself is actually still visible
-  // and clearing them stops further event processing, which can cause
-  // unexpected behaviors. See crbug.com/157583
+  // Do not clear the capture, and the |event_dispatch_target_| if the
+  // window is moving across root windows, because the target itself
+  // is actually still visible and clearing them stops further event
+  // processing, which can cause unexpected behaviors. See
+  // crbug.com/157583
   if (reason != WINDOW_MOVING) {
     Window* capture_window = aura::client::GetCaptureWindow(this);
     // If the ancestor of the capture window is hidden,
@@ -676,17 +677,18 @@ void RootWindow::OnWindowHidden(Window* invisible,
     if (invisible->Contains(capture_window) && invisible != this)
       capture_window->ReleaseCapture();
 
-    // If the ancestor of any event handler windows are invisible, release the
-    // pointer to those windows.
-    if (invisible->Contains(mouse_pressed_handler_))
-      mouse_pressed_handler_ = NULL;
-    if (invisible->Contains(mouse_moved_handler_))
-      mouse_moved_handler_ = NULL;
-    if (invisible->Contains(mouse_event_dispatch_target_))
-      mouse_event_dispatch_target_ = NULL;
     if (invisible->Contains(event_dispatch_target_))
       event_dispatch_target_ = NULL;
   }
+
+  // If the ancestor of any event handler windows are invisible, release the
+  // pointer to those windows.
+  if (invisible->Contains(mouse_pressed_handler_))
+    mouse_pressed_handler_ = NULL;
+  if (invisible->Contains(mouse_moved_handler_))
+    mouse_moved_handler_ = NULL;
+  if (invisible->Contains(mouse_event_dispatch_target_))
+    mouse_event_dispatch_target_ = NULL;
 
   CleanupGestureRecognizerState(invisible);
 }
