@@ -858,12 +858,7 @@ TEST_F(URLFetcherTest, SameThreadsTest) {
   MessageLoop::current()->Run();
 }
 
-#if defined(OS_MACOSX)
-// SIGSEGV on Mac: http://crbug.com/60426
-TEST_F(URLFetcherTest, DISABLED_DifferentThreadsTest) {
-#else
 TEST_F(URLFetcherTest, DifferentThreadsTest) {
-#endif
   TestServer test_server(TestServer::TYPE_HTTP,
                          TestServer::kLocalhost,
                          FilePath(kDocRoot));
@@ -1108,12 +1103,7 @@ TEST_F(URLFetcherMockDnsTest, StartOnlyWhenOnline) {
   EXPECT_EQ(200, completed_fetcher_->GetResponseCode());
 }
 
-#if defined(OS_MACOSX)
-// SIGSEGV on Mac: http://crbug.com/60426
-TEST_F(URLFetcherPostTest, DISABLED_Basic) {
-#else
 TEST_F(URLFetcherPostTest, Basic) {
-#endif
   TestServer test_server(TestServer::TYPE_HTTP,
                          TestServer::kLocalhost,
                          FilePath(kDocRoot));
@@ -1133,12 +1123,7 @@ TEST_F(URLFetcherEmptyPostTest, Basic) {
   MessageLoop::current()->Run();
 }
 
-#if defined(OS_MACOSX)
-// SIGSEGV on Mac: http://crbug.com/60426
-TEST_F(URLFetcherUploadProgressTest, DISABLED_Basic) {
-#else
 TEST_F(URLFetcherUploadProgressTest, Basic) {
-#endif
   TestServer test_server(TestServer::TYPE_HTTP,
                          TestServer::kLocalhost,
                          FilePath(kDocRoot));
@@ -1291,12 +1276,7 @@ TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
   MessageLoop::current()->Run();
 }
 
-#if defined(OS_MACOSX)
-// SIGSEGV on Mac: http://crbug.com/60426
-TEST_F(URLFetcherBadHTTPSTest, DISABLED_BadHTTPSTest) {
-#else
 TEST_F(URLFetcherBadHTTPSTest, BadHTTPSTest) {
-#endif
   TestServer::SSLOptions ssl_options(
       TestServer::SSLOptions::CERT_EXPIRED);
   TestServer test_server(TestServer::TYPE_HTTPS,
@@ -1308,12 +1288,7 @@ TEST_F(URLFetcherBadHTTPSTest, BadHTTPSTest) {
   MessageLoop::current()->Run();
 }
 
-#if defined(OS_MACOSX)
-// SIGSEGV on Mac: http://crbug.com/60426
-TEST_F(URLFetcherCancelTest, DISABLED_ReleasesContext) {
-#else
 TEST_F(URLFetcherCancelTest, ReleasesContext) {
-#endif
   TestServer test_server(TestServer::TYPE_HTTP,
                          TestServer::kLocalhost,
                          FilePath(kDocRoot));

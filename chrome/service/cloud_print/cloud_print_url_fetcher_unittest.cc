@@ -326,8 +326,7 @@ void CloudPrintURLFetcherRetryBackoffTest::OnRequestGiveUp() {
   io_message_loop_proxy()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
-// http://code.google.com/p/chromium/issues/detail?id=60426
-TEST_F(CloudPrintURLFetcherBasicTest, DISABLED_HandleRawResponse) {
+TEST_F(CloudPrintURLFetcherBasicTest, HandleRawResponse) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               net::TestServer::kLocalhost,
                               FilePath(kDocRoot));
@@ -338,8 +337,7 @@ TEST_F(CloudPrintURLFetcherBasicTest, DISABLED_HandleRawResponse) {
   MessageLoop::current()->Run();
 }
 
-// http://code.google.com/p/chromium/issues/detail?id=60426
-TEST_F(CloudPrintURLFetcherBasicTest, DISABLED_HandleRawData) {
+TEST_F(CloudPrintURLFetcherBasicTest, HandleRawData) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               net::TestServer::kLocalhost,
                               FilePath(kDocRoot));
@@ -362,8 +360,7 @@ TEST_F(CloudPrintURLFetcherOverloadTest, Protect) {
   MessageLoop::current()->Run();
 }
 
-// http://code.google.com/p/chromium/issues/detail?id=60426
-TEST_F(CloudPrintURLFetcherRetryBackoffTest, DISABLED_GiveUp) {
+TEST_F(CloudPrintURLFetcherRetryBackoffTest, GiveUp) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               net::TestServer::kLocalhost,
                               FilePath(kDocRoot));
