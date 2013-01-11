@@ -1162,9 +1162,13 @@ void ExtensionService::NotifyExtensionUnloaded(
       profile_, extension->GetChromeURLOverrides());
 
 #if defined(OS_CHROMEOS)
-  // Revoke external file access to third party extensions.
+  // Revoke external file access for the extension from its file system context.
+  // It is safe to access the extension's storage partition at this point. The
+  // storage partition may get destroyed only after the extension gets unloaded.
+  GURL site = extensions::ExtensionSystem::Get(profile_)->extension_service()->
+      GetSiteForExtensionId(extension->id());
   fileapi::FileSystemContext* filesystem_context =
-      BrowserContext::GetDefaultStoragePartition(profile_)->
+      BrowserContext::GetStoragePartitionForSite(profile_, site)->
           GetFileSystemContext();
   if (filesystem_context && filesystem_context->external_provider()) {
     filesystem_context->external_provider()->

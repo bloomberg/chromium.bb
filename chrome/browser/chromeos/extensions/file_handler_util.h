@@ -95,7 +95,8 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
  public:
   // Creates the appropriate FileTaskExecutor for the given |extension_id|.
   static FileTaskExecutor* Create(Profile* profile,
-                                  const GURL source_url,
+                                  const GURL& source_url,
+                                  const std::string& file_browser_id,
                                   int32 tab_id,
                                   const std::string& extension_id,
                                   const std::string& task_type,
@@ -114,8 +115,15 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
                                 const FileTaskFinishedCallback& done) = 0;
 
  protected:
-  explicit FileTaskExecutor(Profile* profile, const std::string& extension_id);
+  explicit FileTaskExecutor(Profile* profile,
+                            const GURL& source_url,
+                            const std::string& file_browser_id,
+                            const std::string& extension_id);
   virtual ~FileTaskExecutor();
+
+  // Checks if the file browser extension had file access permissions for the
+  // list of files.
+  bool FileBrowserHasAccessPermissionForFiles(const std::vector<GURL>& files);
 
   // Returns the profile that this task was created with.
   Profile* profile() { return profile_; }
@@ -133,6 +141,8 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
   friend class base::RefCountedThreadSafe<FileTaskExecutor>;
 
   Profile* profile_;
+  const GURL source_url_;
+  const std::string file_browser_id_;
   const std::string extension_id_;
 };
 

@@ -36,13 +36,17 @@ GURL GetVideoPlayerUrl();
 // Converts |full_file_path| into external filesystem: url. Returns false
 // if |full_file_path| is not managed by the external filesystem provider.
 bool ConvertFileToFileSystemUrl(Profile* profile,
-    const FilePath& full_file_path, const GURL& origin_url, GURL* url);
+                                const FilePath& full_file_path,
+                                const std::string& extension_id,
+                                GURL* url);
 
 // Converts |full_file_path| into |relative_path| within the external provider
 // in File API. Returns false if |full_file_path| is not managed by the
 // external filesystem provider.
 bool ConvertFileToRelativeFileSystemPath(Profile* profile,
-    const FilePath& full_file_path, FilePath* relative_path);
+                                         const std::string& extension_id,
+                                         const FilePath& full_file_path,
+                                         FilePath* relative_path);
 
 // Gets base file browser url for.
 GURL GetFileBrowserUrlWithParams(
@@ -91,7 +95,8 @@ bool ShouldBeOpenedWithPdfPlugin(Profile* profile, const char* file_extension);
 
 // Converts the vector of progress status to their JSON (Value) form.
 base::ListValue* ProgressStatusVectorToListValue(
-    Profile* profile, const GURL& origin_url,
+    Profile* profile,
+    const std::string& extension_id,
     const google_apis::OperationProgressStatusList& list);
 
 }  // namespace file_manager_util

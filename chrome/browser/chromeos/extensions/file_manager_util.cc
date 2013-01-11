@@ -63,6 +63,7 @@ using content::BrowserContext;
 using content::BrowserThread;
 using content::PluginService;
 using content::UserMetricsAction;
+using extensions::Extension;
 using file_handler_util::FileTaskExecutor;
 
 #define FILEBROWSER_EXTENSON_ID "hhaomjibdihmijegdhdafkllkbggdgoj"
@@ -185,14 +186,14 @@ std::string GetDialogTypeAsString(
 
 DictionaryValue* ProgessStatusToDictionaryValue(
     Profile* profile,
-    const GURL& origin_url,
+    const std::string& extension_id,
     const google_apis::OperationProgressStatus& status) {
   scoped_ptr<DictionaryValue> result(new DictionaryValue());
   GURL file_url;
   if (file_manager_util::ConvertFileToFileSystemUrl(profile,
           drive::util::GetSpecialRemoteRootPath().Append(
               FilePath(status.file_path)),
-          origin_url,
+          extension_id,
           &file_url)) {
     result->SetString("fileUrl", file_url.spec());
   }
@@ -291,12 +292,14 @@ GURL GetVideoPlayerUrl(const GURL& source_url) {
   return GURL(kVideoPlayerUrl + std::string("?") + source_url.spec());
 }
 
-bool ConvertFileToFileSystemUrl(
-    Profile* profile, const FilePath& full_file_path, const GURL& origin_url,
-    GURL* url) {
+bool ConvertFileToFileSystemUrl(Profile* profile,
+                                const FilePath& full_file_path,
+                                const std::string& extension_id,
+                                GURL* url) {
+  GURL origin_url = Extension::GetBaseURLFromExtensionId(extension_id);
   FilePath virtual_path;
-  if (!ConvertFileToRelativeFileSystemPath(profile, full_file_path,
-                                           &virtual_path)) {
+  if (!ConvertFileToRelativeFileSystemPath(profile, extension_id,
+           full_file_path, &virtual_path)) {
     return false;
   }
 
@@ -307,9 +310,22 @@ bool ConvertFileToFileSystemUrl(
 }
 
 bool ConvertFileToRelativeFileSystemPath(
-    Profile* profile, const FilePath& full_file_path, FilePath* virtual_path) {
+    Profile* profile,
+    const std::string& extension_id,
+    const FilePath& full_file_path,
+    FilePath* virtual_path) {
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  // May be NULL during unit_tests.
+  if (!service)
+    return false;
+
+  // File browser APIs are ment to be used only from extension context, so the
+  // extension's site is the one in whose file system context the virtual path
+  // should be found.
+  GURL site = service->GetSiteForExtensionId(extension_id);
   fileapi::ExternalFileSystemMountPointProvider* provider =
-      BrowserContext::GetDefaultStoragePartition(profile)->
+      BrowserContext::GetStoragePartitionForSite(profile, site)->
           GetFileSystemContext()->external_provider();
   if (!provider)
     return false;
@@ -461,9 +477,13 @@ void ExecuteHandler(Profile* profile,
 
   // If File Browser has not been open yet then it did not request access
   // to the file system. Do it now.
+  // File browser always runs in the site for its extension id, so that is the
+  // site for which file access permissions should be granted.
+  GURL site = extensions::ExtensionSystem::Get(profile)->extension_service()->
+      GetSiteForExtensionId(kFileBrowserDomain);
   fileapi::ExternalFileSystemMountPointProvider* external_provider =
-      BrowserContext::GetDefaultStoragePartition(
-          profile)->GetFileSystemContext()->external_provider();
+      BrowserContext::GetStoragePartitionForSite(profile, site)->
+          GetFileSystemContext()->external_provider();
   if (!external_provider)
     return;
   external_provider->GrantFullAccessToExtension(source_url.host());
@@ -471,7 +491,7 @@ void ExecuteHandler(Profile* profile,
   std::vector<GURL> urls;
   urls.push_back(url);
   scoped_refptr<FileTaskExecutor> executor = FileTaskExecutor::Create(profile,
-      source_url, 0 /* no tab id */, extension_id,
+      source_url, kFileBrowserDomain, 0 /* no tab id */, extension_id,
       file_handler_util::kTaskFile, action_id);
   executor->Execute(urls);
 }
@@ -488,8 +508,7 @@ void OpenFileBrowser(const FilePath& path,
 
   if (IsFileManagerPackaged() && !path.value().empty()) {
     GURL url;
-    if (!ConvertFileToFileSystemUrl(profile, path,
-        GetFileBrowserExtensionUrl().GetOrigin(), &url))
+    if (!ConvertFileToFileSystemUrl(profile, path, kFileBrowserDomain, &url))
       return;
 
     // Some values of |action_id| are not listed in the manifest and are used
@@ -508,7 +527,8 @@ void OpenFileBrowser(const FilePath& path,
   }
   if (!path.empty()) {
     FilePath virtual_path;
-    if (!ConvertFileToRelativeFileSystemPath(profile, path, &virtual_path))
+    if (!ConvertFileToRelativeFileSystemPath(profile, kFileBrowserDomain, path,
+                                             &virtual_path))
       return;
     url += "#/" + net::EscapeUrlEncodedData(virtual_path.value(), false);
   }
@@ -558,7 +578,8 @@ void OpenActionChoiceDialog(const FilePath& path) {
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
 
   FilePath virtual_path;
-  if (!ConvertFileToRelativeFileSystemPath(profile, path, &virtual_path))
+  if (!ConvertFileToRelativeFileSystemPath(profile, kFileBrowserDomain, path,
+                                           &virtual_path))
     return;
   std::string url = kActionChoiceUrl;
   url += "#/" + net::EscapeUrlEncodedData(virtual_path.value(), false);
@@ -596,8 +617,7 @@ void ViewFolder(const FilePath& path) {
 
 bool ExecuteDefaultHandler(Profile* profile, const FilePath& path) {
   GURL url;
-  if (!ConvertFileToFileSystemUrl(profile, path,
-      GetFileBrowserExtensionUrl().GetOrigin(), &url))
+  if (!ConvertFileToFileSystemUrl(profile, path, kFileBrowserDomain, &url))
     return false;
 
   const FileBrowserHandler* handler;
@@ -747,8 +767,7 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
   if (!IsFileManagerPackaged()) {
     if (internal_task_id == kFileBrowserPlayTaskId) {
       GURL url;
-      if (!ConvertFileToFileSystemUrl(profile, path,
-          GetFileBrowserExtensionUrl().GetOrigin(), &url))
+      if (!ConvertFileToFileSystemUrl(profile, path, kFileBrowserDomain, &url))
         return false;
       MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
       mediaplayer->PopupMediaPlayer();
@@ -757,8 +776,7 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
     }
     if (internal_task_id == kFileBrowserWatchTaskId) {
       GURL url;
-      if (!ConvertFileToFileSystemUrl(profile, path,
-          GetFileBrowserExtensionUrl().GetOrigin(), &url))
+      if (!ConvertFileToFileSystemUrl(profile, path, kFileBrowserDomain, &url))
         return false;
 
       ExtensionService* service =
@@ -844,14 +862,15 @@ bool ShouldBeOpenedWithPdfPlugin(Profile* profile, const char* file_extension) {
 }
 
 ListValue* ProgressStatusVectorToListValue(
-    Profile* profile, const GURL& origin_url,
+    Profile* profile,
+    const std::string& extension_id,
     const google_apis::OperationProgressStatusList& list) {
   scoped_ptr<ListValue> result_list(new ListValue());
   for (google_apis::OperationProgressStatusList::const_iterator iter =
            list.begin();
        iter != list.end(); ++iter) {
     result_list->Append(
-        ProgessStatusToDictionaryValue(profile, origin_url, *iter));
+        ProgessStatusToDictionaryValue(profile, extension_id, *iter));
   }
   return result_list.release();
 }

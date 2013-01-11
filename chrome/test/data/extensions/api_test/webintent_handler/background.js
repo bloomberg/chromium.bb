@@ -7,19 +7,27 @@ This extension is a platform app that provides a Web Intent handler; it accepts
 incoming requests and invokes chrome.test.succeed() immediately.
 */
 
-function launchedListener(args) {
-  if (!(args && args['intent'])) {
-    chrome.test.fail('Expected web intent on args: ' + args);
-    return;
-  }
-  var intent = args['intent'];
-  chrome.test.assertEq('http://webintents.org/view', intent['action']);
-  chrome.test.succeed();
+function launchedListener(launchData) {
+  chrome.test.assertFalse(!launchData, "No launchData");
+  chrome.test.assertFalse(!launchData.intent, "No launchData.intent");
+  chrome.test.assertEq(launchData.intent.action,
+      "http://webintents.org/view");
+  chrome.test.assertEq(launchData.intent.type,
+      "chrome-extension://fileentry");
+  chrome.test.assertFalse(!launchData.intent.data,
+      "No launchData.intent.data");
 
-  // Note that we're not using chrome.extension.sendRequest here to call back
-  // to the source app - the call is not available in v2 packaged apps. The
-  // most we can do for now is succeed or fail the test (to be caught by a
-  // ResultCatcher in external_filesystem_apitest.cc).
+  launchData.intent.data.file(function(file) {
+    var reader = new FileReader();
+    reader.onloadend = function(e) {
+      chrome.test.assertEq("hello, world!", reader.result);
+      chrome.test.succeed();
+    };
+    reader.onerror = function(e) {
+      chrome.test.fail("Error reading file contents.");
+    };
+    reader.readAsText(file);
+  });
 }
 
 chrome.app.runtime.onLaunched.addListener(launchedListener);

@@ -152,8 +152,7 @@ TestMountPoint kTestMountPoints[] = {
 class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
  public:
   ExtensionFileBrowserPrivateApiTest()
-      : disk_mount_manager_mock_(NULL),
-        test_mount_point_("/tmp") {
+      : disk_mount_manager_mock_(NULL) {
     InitMountPoints();
   }
 
@@ -183,13 +182,6 @@ class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
     disk_mount_manager_mock_ = NULL;
 
     ExtensionApiTest::TearDownInProcessBrowserTestFixture();
-  }
-
-  void AddTmpMountPoint() {
-    fileapi::ExternalFileSystemMountPointProvider* provider =
-        BrowserContext::GetDefaultStoragePartition(browser()->profile())->
-            GetFileSystemContext()->external_provider();
-    provider->AddLocalMountPoint(test_mount_point_);
   }
 
  private:
@@ -247,15 +239,11 @@ class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
   chromeos::disks::MockDiskMountManager* disk_mount_manager_mock_;
   DiskMountManager::DiskMap volumes_;
   DiskMountManager::MountPointMap mount_points_;
-
- private:
-  FilePath test_mount_point_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionFileBrowserPrivateApiTest, FileBrowserMount) {
   // We will call fileBrowserPrivate.unmountVolume once. To test that method, we
   // check that UnmountPath is really called with the same value.
-  AddTmpMountPoint();
   EXPECT_CALL(*disk_mount_manager_mock_, UnmountPath(_, _))
       .Times(0);
   EXPECT_CALL(*disk_mount_manager_mock_,

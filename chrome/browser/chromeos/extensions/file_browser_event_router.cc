@@ -440,16 +440,14 @@ void FileBrowserEventRouter::OnProgressUpdate(
 
   scoped_ptr<ListValue> event_list(
       file_manager_util::ProgressStatusVectorToListValue(
-          profile_,
-          file_manager_util::GetFileBrowserExtensionUrl().GetOrigin(),
-          list));
+          profile_, kFileBrowserDomain, list));
 
   scoped_ptr<ListValue> args(new ListValue());
   args->Append(event_list.release());
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::event_names::kOnFileTransfersUpdated, args.Pass()));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToExtension(std::string(kFileBrowserDomain), event.Pass());
+      DispatchEventToExtension(kFileBrowserDomain, event.Pass());
 }
 
 void FileBrowserEventRouter::OnDirectoryChanged(
@@ -467,7 +465,7 @@ void FileBrowserEventRouter::OnResourceListFetched(
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::event_names::kOnDocumentFeedFetched, args.Pass()));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToExtension(std::string(kFileBrowserDomain), event.Pass());
+      DispatchEventToExtension(kFileBrowserDomain, event.Pass());
 }
 
 void FileBrowserEventRouter::OnFileSystemMounted() {
@@ -614,7 +612,9 @@ void FileBrowserEventRouter::DispatchMountEvent(
       mount_info.mount_condition) {
     // Convert mount point path to relative path with the external file system
     // exposed within File API.
-    if (file_manager_util::ConvertFileToRelativeFileSystemPath(profile_,
+    if (file_manager_util::ConvertFileToRelativeFileSystemPath(
+            profile_,
+            kFileBrowserDomain,
             FilePath(mount_info.mount_path),
             &relative_mount_path)) {
       mount_info_value->SetString("mountPath",

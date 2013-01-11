@@ -85,10 +85,7 @@ function runFileSystemHandlerTest(entries) {
   reader.onerror = function(e) {
     errorCallback({message: 'Unable to read file.'});
   };
-  entry.file(function(file) {
-    reader.readAsText(file);
-  },
-  errorCallback);
+  entry.file(reader.readAsText.bind(reader), errorCallback);
 }
 
 function executeListener(id, details) {
@@ -111,14 +108,3 @@ function executeListener(id, details) {
 }
 
 chrome.fileBrowserHandler.onExecute.addListener(executeListener);
-
-// This extension just initializes its chrome.fileBrowserHandler.onExecute
-// event listener, the real testing is done when this extension's handler is
-// invoked from filebrowser_component tests. This event will be raised from that
-// component extension test and it simulates user action in the file browser.
-// tab.html part of this extension can run only after the component raises this
-// event, since that operation sets the propery security context and creates
-// event's payload with proper file Entry instances. tab.html will return
-// results of its execution to filebrowser_component test through a
-// cross-component message.
-chrome.test.succeed();

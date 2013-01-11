@@ -14,8 +14,11 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
@@ -173,9 +176,13 @@ class FileBrowserHandlerExtensionTest : public ExtensionApiTest {
   }
 
   // Creates new, test mount point.
-  void AddTmpMountPoint() {
+  void AddTmpMountPoint(const std::string& extension_id) {
+    Profile* profile = browser()->profile();
+
+    GURL site = extensions::ExtensionSystem::Get(profile)->
+        extension_service()->GetSiteForExtensionId(extension_id);
     fileapi::ExternalFileSystemMountPointProvider* provider =
-        BrowserContext::GetDefaultStoragePartition(browser()->profile())->
+        BrowserContext::GetStoragePartitionForSite(profile, site)->
             GetFileSystemContext()->external_provider();
     provider->AddLocalMountPoint(tmp_mount_point_);
   }
@@ -238,8 +245,6 @@ size_t FileBrowserHandlerExtensionTest::current_test_case_ = 0;
 // time. When the file is selected the test extension will verify that it can
 // create, read and write the file under the selected file path.
 IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, EndToEnd) {
-  AddTmpMountPoint();
-
   // Path that will be "selected" by file selector.
   const FilePath selected_path =
       GetFullPathOnTmpMountPoint(FilePath("test_file.txt"));
@@ -270,8 +275,18 @@ IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, EndToEnd) {
   // Selected path should still not exist.
   ASSERT_FALSE(file_util::PathExists(selected_path));
 
-  // Run the extension test.
-  ASSERT_TRUE(RunExtensionTest("file_browser/filehandler_create")) << message_;
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("file_browser/filehandler_create"));
+  ASSERT_TRUE(extension) << message_;
+
+  AddTmpMountPoint(extension->id());
+
+  ResultCatcher catcher;
+
+  GURL url = extension->GetResourceURL("test.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  ASSERT_TRUE(catcher.GetNextResult()) << message_;
 
   // Selected path should have been created by the test extension after the
   // extension function call.

@@ -33,7 +33,7 @@ using file_handler_util::FileTaskExecutor;
 DriveTaskExecutor::DriveTaskExecutor(Profile* profile,
                                      const std::string& app_id,
                                      const std::string& action_id)
-  : file_handler_util::FileTaskExecutor(profile, app_id),
+  : file_handler_util::FileTaskExecutor(profile, GURL(), "", app_id),
     action_id_(action_id),
     current_index_(0) {
   DCHECK("open-with" == action_id_);

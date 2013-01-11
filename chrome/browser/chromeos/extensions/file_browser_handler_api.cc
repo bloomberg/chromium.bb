@@ -341,7 +341,8 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected(
 
   // We have to open file system in order to create a FileEntry object for the
   // selected file path.
-  BrowserContext::GetDefaultStoragePartition(profile_)->
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  BrowserContext::GetStoragePartition(profile_, site_instance)->
       GetFileSystemContext()->OpenFileSystem(
           source_url_.GetOrigin(), fileapi::kFileSystemTypeExternal, false,
           base::Bind(
@@ -370,8 +371,9 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFileSystemOpened(
 }
 
 void FileBrowserHandlerInternalSelectFileFunction::GrantPermissions() {
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   fileapi::ExternalFileSystemMountPointProvider* external_provider =
-      BrowserContext::GetDefaultStoragePartition(profile_)->
+      BrowserContext::GetStoragePartition(profile_, site_instance)->
       GetFileSystemContext()->external_provider();
   DCHECK(external_provider);
 

@@ -50,10 +50,7 @@ function onGotEntryByUrl(entry) {
   reader.onerror = function(e) {
     errorCallback(reader.error);
   };
-  entry.file(function(file) {
-    reader.readAsText(file);
-  },
-  errorCallback);
+  entry.file(reader.readAsText.bind(reader), errorCallback);
 };
 
 function readEntryByUrl(entryUrl) {

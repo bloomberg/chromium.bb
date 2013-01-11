@@ -128,6 +128,7 @@ const DiskMountManager::Disk* GetVolumeAsDisk(const std::string& mount_path) {
 
 base::DictionaryValue* CreateValueFromDisk(
     Profile* profile,
+    const std::string& extension_id,
     const DiskMountManager::Disk* volume) {
   base::DictionaryValue* volume_info = new base::DictionaryValue();
 
@@ -135,7 +136,7 @@ base::DictionaryValue* CreateValueFromDisk(
   if (!volume->mount_path().empty()) {
     FilePath relative_mount_path;
     file_manager_util::ConvertFileToRelativeFileSystemPath(profile,
-        FilePath(volume->mount_path()), &relative_mount_path);
+        extension_id, FilePath(volume->mount_path()), &relative_mount_path);
     mount_path = relative_mount_path.value();
   }
 
@@ -158,6 +159,7 @@ base::DictionaryValue* CreateValueFromDisk(
 
 base::DictionaryValue* CreateValueFromMountPoint(Profile* profile,
     const DiskMountManager::MountPointInfo& mount_point_info,
+    const std::string& extension_id,
     const GURL& extension_source_url) {
 
   base::DictionaryValue *mount_info = new base::DictionaryValue();
@@ -170,7 +172,9 @@ base::DictionaryValue* CreateValueFromMountPoint(Profile* profile,
   FilePath relative_mount_path;
   // Convert mount point path to relative path with the external file system
   // exposed within File API.
-  if (file_manager_util::ConvertFileToRelativeFileSystemPath(profile,
+  if (file_manager_util::ConvertFileToRelativeFileSystemPath(
+          profile,
+          extension_id,
           FilePath(mount_point_info.mount_path),
           &relative_mount_path)) {
     mount_info->SetString("mountPath", relative_mount_path.value());
@@ -195,8 +199,9 @@ void AddDriveMountPoint(
     Profile* profile,
     const std::string& extension_id,
     content::RenderViewHost* render_view_host) {
+  content::SiteInstance* site_instance = render_view_host->GetSiteInstance();
   fileapi::ExternalFileSystemMountPointProvider* provider =
-      BrowserContext::GetDefaultStoragePartition(profile)->
+      BrowserContext::GetStoragePartition(profile, site_instance)->
       GetFileSystemContext()->external_provider();
   if (!provider)
     return;
@@ -612,8 +617,9 @@ bool RequestLocalFileSystemFunction::RunImpl() {
   if (!dispatcher() || !render_view_host() || !render_view_host()->GetProcess())
     return false;
 
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetDefaultStoragePartition(profile_)->
+      BrowserContext::GetStoragePartition(profile_, site_instance)->
           GetFileSystemContext();
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -1174,6 +1180,7 @@ bool ExecuteTasksFileBrowserFunction::RunImpl() {
   scoped_refptr<FileTaskExecutor> executor(
       FileTaskExecutor::Create(profile(),
                                source_url(),
+                               extension_->id(),
                                tab_id,
                                extension_id,
                                task_type,
@@ -1263,8 +1270,9 @@ int32 FileBrowserFunction::GetTabId() const {
 void FileBrowserFunction::GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
     const UrlList& file_urls,
     GetLocalPathsCallback callback) {
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetDefaultStoragePartition(profile())->
+      BrowserContext::GetStoragePartition(profile(), site_instance)->
           GetFileSystemContext();
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -1395,13 +1403,18 @@ bool ViewFilesFunction::RunImpl() {
     files.push_back(path);
   }
 
-  bool success = true;
-  for (size_t i = 0; i < files.size(); ++i) {
-    bool handled = file_manager_util::ExecuteBuiltinHandler(
-        GetCurrentBrowser(), files[i], internal_task_id);
-    if (!handled && files.size() == 1)
-      success = false;
+  Browser* browser = GetCurrentBrowser();
+  bool success = browser;
+
+  if (browser) {
+    for (size_t i = 0; i < files.size(); ++i) {
+      bool handled = file_manager_util::ExecuteBuiltinHandler(
+          browser, files[i], internal_task_id);
+      if (!handled && files.size() == 1)
+        success = false;
+    }
   }
+
   SetResult(Value::CreateBooleanValue(success));
   SendResponse(true);
   return true;
@@ -1616,7 +1629,7 @@ bool GetMountPointsFunction::RunImpl() {
        it != mount_points.end();
        ++it) {
     mounts->Append(CreateValueFromMountPoint(profile_, it->second,
-                   source_url_));
+        extension_->id(), source_url_));
   }
 
   SendResponse(true);
@@ -1827,7 +1840,7 @@ bool GetVolumeMetadataFunction::RunImpl() {
   const DiskMountManager::Disk* volume = GetVolumeAsDisk(file_path.value());
   if (volume) {
     DictionaryValue* volume_info =
-        CreateValueFromDisk(profile_, volume);
+        CreateValueFromDisk(profile_, extension_->id(), volume);
     SetResult(volume_info);
   }
 
@@ -2615,7 +2628,7 @@ ListValue* GetFileTransfersFunction::GetFileTransfersList() {
   google_apis::OperationProgressStatusList list =
       system_service->drive_service()->GetProgressStatusList();
   return file_manager_util::ProgressStatusVectorToListValue(
-      profile_, source_url_.GetOrigin(), list);
+      profile_, extension_->id(), list);
 }
 
 bool GetFileTransfersFunction::RunImpl() {
@@ -2664,7 +2677,7 @@ bool CancelFileTransfersFunction::RunImpl() {
     GURL file_url;
     if (file_manager_util::ConvertFileToFileSystemUrl(profile_,
             drive::util::GetSpecialRemoteRootPath().Append(file_path),
-            source_url_.GetOrigin(),
+            extension_->id(),
             &file_url)) {
       result->SetString("fileUrl", file_url.spec());
     }
@@ -2803,7 +2816,8 @@ bool SearchDriveFunction::RunImpl() {
   if (!search_params->GetString("nextFeed", &next_feed_))
     return false;
 
-  BrowserContext::GetDefaultStoragePartition(profile())->
+  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
+  BrowserContext::GetStoragePartition(profile(), site_instance)->
       GetFileSystemContext()->OpenFileSystem(
           source_url_.GetOrigin(), fileapi::kFileSystemTypeExternal, false,
           base::Bind(&SearchDriveFunction::OnFileSystemOpened, this));
