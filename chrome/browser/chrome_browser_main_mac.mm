@@ -22,7 +22,6 @@
 #include "chrome/browser/mac/keychain_reauthorize.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/metrics/metrics_service.h"
-#include "chrome/browser/system_monitor/image_capture_device_manager.h"
 #include "chrome/browser/system_monitor/removable_device_notifications_mac.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -284,9 +283,6 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
 void ChromeBrowserMainPartsMac::PreProfileInit() {
   removable_device_notifications_mac_ =
       new chrome::RemovableDeviceNotificationsMac();
-  if (base::mac::IsOSLionOrLater())
-    image_capture_device_manager_.reset(new chrome::ImageCaptureDeviceManager);
-
   ChromeBrowserMainPartsPosix::PreProfileInit();
 }
 
