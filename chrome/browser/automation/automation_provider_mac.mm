@@ -22,15 +22,3 @@
 void AutomationProvider::PrintAsync(int tab_handle) {
   NOTIMPLEMENTED();
 }
-
-void AutomationProvider::WindowSimulateDrag(
-    int handle,
-    const std::vector<gfx::Point>& drag_path,
-    int flags,
-    bool press_escape_en_route,
-    IPC::Message* reply_message) {
-  NOTIMPLEMENTED();
-  AutomationMsg_WindowDrag::WriteReplyParams(reply_message, false);
-  Send(reply_message);
-}
-

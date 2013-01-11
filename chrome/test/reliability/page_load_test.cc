@@ -353,22 +353,13 @@ class PageLoadTest : public UITest {
       if (result == AUTOMATION_MSG_NAVIGATION_SUCCESS) {
         if (g_page_down) {
           // Page down twice.
-          scoped_refptr<BrowserProxy> browser(
-              automation()->GetBrowserWindow(0));
-          if (browser.get()) {
-            scoped_refptr<WindowProxy> window(browser->GetWindow());
-            if (window.get()) {
-              if (browser->BringToFront()) {
-                // Sleep for 2 seconds between commands.
-                // This used to be settable but the flag went away.
-                base::TimeDelta sleep_time = base::TimeDelta::FromSeconds(2);
-                window->SimulateOSKeyPress(ui::VKEY_NEXT, 0);
-                base::PlatformThread::Sleep(sleep_time);
-                window->SimulateOSKeyPress(ui::VKEY_NEXT, 0);
-                base::PlatformThread::Sleep(sleep_time);
-              }
-            }
-          }
+          // Sleep for 2 seconds between commands.
+          // This used to be settable but the flag went away.
+          base::TimeDelta sleep_time = base::TimeDelta::FromSeconds(2);
+          tab_proxy->SimulateKeyPress(ui::VKEY_NEXT);
+          base::PlatformThread::Sleep(sleep_time);
+          tab_proxy->SimulateKeyPress(ui::VKEY_NEXT);
+          base::PlatformThread::Sleep(sleep_time);
         }
       }
     }

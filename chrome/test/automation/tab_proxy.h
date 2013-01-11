@@ -23,6 +23,7 @@
 #include "content/public/common/page_type.h"
 #include "content/public/common/security_style.h"
 #include "net/base/cert_status_flags.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class BrowserProxy;
@@ -225,6 +226,9 @@ class TabProxy : public AutomationResourceProxy {
   void Cut();
   void Copy();
   void Paste();
+
+  // Simulates a key press. |key| is the virtual key code of the key pressed.
+  void SimulateKeyPress(ui::KeyboardCode key);
 
   // These handlers issue asynchronous Reload, Stop and SaveAs notifications to
   // the chrome instance.

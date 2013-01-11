@@ -292,10 +292,8 @@ class AutomatedUITest : public AutomatedUITestBase {
 
   // Utility functions --------------------------------------------------------
 
-  // Calls SimulateOSKeyPress on the active window. Simulates a key press at
-  // the OS level. |key| is the key pressed  and |flags| specifies which
-  // modifiers keys are also pressed (as defined in chrome/views/event.h).
-  bool SimulateKeyPressInActiveWindow(ui::KeyboardCode key, int flags);
+  // Calls SimulateKeyPress on the active tab. |key| is the key pressed.
+  bool SimulateKeyPress(ui::KeyboardCode key);
 
   // Opens init file, reads it into the reader, and closes the file.
   // Returns false if there are any errors.

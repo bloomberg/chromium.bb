@@ -235,12 +235,6 @@ class AutomationProvider
   // Clear and reinitialize the automation IPC channel.
   bool ReinitializeChannel();
 
-  // IPC Message callbacks.
-  void WindowSimulateDrag(int handle,
-                          const std::vector<gfx::Point>& drag_path,
-                          int flags,
-                          bool press_escape_en_route,
-                          IPC::Message* reply_message);
   void HandleUnused(const IPC::Message& message, int handle);
   void GetFilteredInetHitCount(int* hit_count);
   void SetProxyConfig(const std::string& new_proxy_config);
@@ -282,6 +276,8 @@ class AutomationProvider
   void Cut(int tab_handle);
   void Copy(int tab_handle);
   void Paste(int tab_handle);
+
+  void KeyPress(int tab_handle, int key);
 
   void ReloadAsync(int tab_handle);
   void StopAsync(int tab_handle);

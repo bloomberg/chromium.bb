@@ -120,13 +120,6 @@ class TestingAutomationProvider : public AutomationProvider,
                            bool* success, gfx::Rect* bounds);
   void SetWindowBounds(int handle, const gfx::Rect& bounds, bool* result);
   void SetWindowVisible(int handle, bool visible, bool* result);
-  void WindowSimulateMouseMove(const IPC::Message& message,
-                               int handle,
-                               const gfx::Point& location);
-  void WindowSimulateKeyPress(const IPC::Message& message,
-                              int handle,
-                              int key,
-                              int flags);
   void GetTabCount(int handle, int* tab_count);
   void GetType(int handle, int* type_as_int);
   void GetTab(int win_handle, int tab_index, int* tab_handle);
@@ -1224,22 +1217,6 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: none
   void SendWebkitKeyEvent(base::DictionaryValue* args,
                           IPC::Message* message);
-
-  // Sends the key event from the OS level to the browser window,
-  // allowing it to be preprocessed by some external application (ie. IME).
-  // Will switch to the tab specified by tab_index before sending the event.
-  // The pair |windex| and |tab_index| or the single |auto_id| must be given
-  // to specify the tab.
-  // Example:
-  //   input: { "windex": 1,
-  //            "tab_index": 1,
-  //            "auto_id": { "type": 0, "id": "awoein" },
-  //            "keyCode": ui::VKEY_X,
-  //            "modifiers": automation::kShiftKeyMask,
-  //          }
-  //   output: none
-  void SendOSLevelKeyEventToTab(base::DictionaryValue* args,
-                                IPC::Message* message);
 
   // Processes the WebKit mouse event with the specified properties.
   // The pair |windex| and |tab_index| or the single |auto_id| must be given

@@ -67,6 +67,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/trace_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -362,10 +363,6 @@ bool AutomationProvider::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   bool deserialize_success = true;
   IPC_BEGIN_MESSAGE_MAP_EX(AutomationProvider, message, deserialize_success)
-#if !defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WindowDrag,
-                                    WindowSimulateDrag)
-#endif  // !defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(AutomationMsg_HandleUnused, HandleUnused)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetProxyConfig, SetProxyConfig)
     IPC_MESSAGE_HANDLER(AutomationMsg_PrintAsync, PrintAsync)
@@ -375,6 +372,7 @@ bool AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_Cut, Cut)
     IPC_MESSAGE_HANDLER(AutomationMsg_Copy, Copy)
     IPC_MESSAGE_HANDLER(AutomationMsg_Paste, Paste)
+    IPC_MESSAGE_HANDLER(AutomationMsg_KeyPress, KeyPress)
     IPC_MESSAGE_HANDLER(AutomationMsg_ReloadAsync, ReloadAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_StopAsync, StopAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetPageFontSize, OnSetPageFontSize)
@@ -621,6 +619,38 @@ void AutomationProvider::Paste(int tab_handle) {
   }
 
   view->Paste();
+}
+
+
+
+void AutomationProvider::KeyPress(int tab_handle, int key) {
+  RenderViewHost* view = GetViewForTab(tab_handle);
+  if (!view) {
+    NOTREACHED();
+    return;
+  }
+
+  content::NativeWebKeyboardEvent event;
+  event.nativeKeyCode = 0;
+  event.windowsKeyCode = key;
+  event.setKeyIdentifierFromWindowsKeyCode();
+  event.modifiers = 0;
+  event.isSystemKey = false;
+  event.timeStampSeconds = base::Time::Now().ToDoubleT();
+  event.skip_in_browser = true;
+
+  event.text[0] = key;
+  event.unmodifiedText[0] = key;
+  event.type = WebKit::WebInputEvent::RawKeyDown;
+  view->ForwardKeyboardEvent(event);
+
+  event.type = WebKit::WebInputEvent::Char;
+  view->ForwardKeyboardEvent(event);
+
+  event.type = WebKit::WebInputEvent::KeyUp;
+  event.text[0] = 0;
+  event.unmodifiedText[0] = 0;
+  view->ForwardKeyboardEvent(event);
 }
 
 void AutomationProvider::ReloadAsync(int tab_handle) {

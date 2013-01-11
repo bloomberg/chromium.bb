@@ -16,20 +16,6 @@
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/rect.h"
 
-bool WindowProxy::SimulateOSMouseMove(const gfx::Point& location) {
-  if (!is_valid()) return false;
-
-  return sender_->Send(
-      new AutomationMsg_WindowMouseMove(handle_, location));
-}
-
-bool WindowProxy::SimulateOSKeyPress(ui::KeyboardCode key, int flags) {
-  if (!is_valid()) return false;
-
-  return sender_->Send(
-      new AutomationMsg_WindowKeyPress(handle_, key, flags));
-}
-
 bool WindowProxy::GetViewBounds(int view_id, gfx::Rect* bounds,
                                 bool screen_coordinates) {
   if (!is_valid())

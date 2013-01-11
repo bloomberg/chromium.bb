@@ -147,7 +147,6 @@
 #include "ui/base/events/event_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/ui_controls/ui_controls.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/plugins/webplugininfo.h"
 
@@ -376,8 +375,6 @@ bool TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_TerminateSession, TerminateSession)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowViewBounds, WindowGetViewBounds)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetWindowBounds, SetWindowBounds)
-    IPC_MESSAGE_HANDLER(AutomationMsg_WindowMouseMove, WindowSimulateMouseMove)
-    IPC_MESSAGE_HANDLER(AutomationMsg_WindowKeyPress, WindowSimulateKeyPress)
     IPC_MESSAGE_HANDLER(AutomationMsg_TabCount, GetTabCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_Type, GetType)
     IPC_MESSAGE_HANDLER(AutomationMsg_Tab, GetTab)
@@ -670,35 +667,6 @@ void TestingAutomationProvider::ExecuteBrowserCommand(
   }
   AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message, false);
   Send(reply_message);
-}
-
-void TestingAutomationProvider::WindowSimulateMouseMove(
-    const IPC::Message& message,
-    int handle,
-    const gfx::Point& location) {
-  if (window_tracker_->ContainsHandle(handle))
-    ui_controls::SendMouseMove(location.x(), location.y());
-}
-
-void TestingAutomationProvider::WindowSimulateKeyPress(
-    const IPC::Message& message,
-    int handle,
-    int key,
-    int flags) {
-  if (!window_tracker_->ContainsHandle(handle))
-    return;
-
-  gfx::NativeWindow window = window_tracker_->GetResource(handle);
-  // The key event is sent to whatever window is active.
-  ui_controls::SendKeyPress(window, static_cast<ui::KeyboardCode>(key),
-                            ((flags & ui::EF_CONTROL_DOWN) ==
-                             ui::EF_CONTROL_DOWN),
-                            ((flags & ui::EF_SHIFT_DOWN) ==
-                             ui::EF_SHIFT_DOWN),
-                            ((flags & ui::EF_ALT_DOWN) ==
-                             ui::EF_ALT_DOWN),
-                            ((flags & ui::EF_COMMAND_DOWN) ==
-                             ui::EF_COMMAND_DOWN));
 }
 
 void TestingAutomationProvider::WebkitMouseClick(DictionaryValue* args,
@@ -1712,8 +1680,6 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::DragAndDropFilePaths;
   handler_map_["SendWebkitKeyEvent"] =
       &TestingAutomationProvider::SendWebkitKeyEvent;
-  handler_map_["SendOSLevelKeyEventToTab"] =
-      &TestingAutomationProvider::SendOSLevelKeyEventToTab;
   handler_map_["ProcessWebMouseEvent"] =
       &TestingAutomationProvider::ProcessWebMouseEvent;
   handler_map_["ActivateTab"] =
@@ -4697,63 +4663,6 @@ void TestingAutomationProvider::SendWebkitKeyEvent(
   }
   new InputEventAckNotificationObserver(this, reply_message, event.type, 1);
   view->ForwardKeyboardEvent(event);
-}
-
-void TestingAutomationProvider::SendOSLevelKeyEventToTab(
-    DictionaryValue* args,
-    IPC::Message* reply_message) {
-  if (SendErrorIfModalDialogActive(this, reply_message))
-    return;
-
-  int modifiers, keycode;
-  if (!args->GetInteger("keyCode", &keycode)) {
-    AutomationJSONReply(this, reply_message)
-        .SendError("'keyCode' missing or invalid.");
-    return;
-  }
-  if (!args->GetInteger("modifiers", &modifiers)) {
-    AutomationJSONReply(this, reply_message)
-        .SendError("'modifiers' missing or invalid.");
-    return;
-  }
-
-  std::string error;
-  Browser* browser;
-  WebContents* web_contents;
-  if (!GetBrowserAndTabFromJSONArgs(args, &browser, &web_contents, &error)) {
-    AutomationJSONReply(this, reply_message).SendError(error);
-    return;
-  }
-  // The key events will be sent to the browser window, we need the current tab
-  // containing the element we send the text in to be shown.
-  TabStripModel* tab_strip = browser->tab_strip_model();
-  tab_strip->ActivateTabAt(tab_strip->GetIndexOfWebContents(web_contents),
-                           true);
-
-  BrowserWindow* browser_window = browser->window();
-  if (!browser_window) {
-    AutomationJSONReply(this, reply_message)
-        .SendError("Could not get the browser window");
-    return;
-  }
-  gfx::NativeWindow window = browser_window->GetNativeWindow();
-  if (!window) {
-    AutomationJSONReply(this, reply_message)
-        .SendError("Could not get the browser window handle");
-    return;
-  }
-
-  bool control = !!(modifiers & automation::kControlKeyMask);
-  bool shift = !!(modifiers & automation::kShiftKeyMask);
-  bool alt = !!(modifiers & automation::kAltKeyMask);
-  bool meta = !!(modifiers & automation::kMetaKeyMask);
-  if (!ui_controls::SendKeyPressNotifyWhenDone(
-          window, static_cast<ui::KeyboardCode>(keycode),
-          control, shift, alt, meta,
-          base::Bind(SendSuccessReply, AsWeakPtr(), reply_message))) {
-    AutomationJSONReply(this, reply_message)
-        .SendError("Could not send the native key event");
-  }
 }
 
 namespace {

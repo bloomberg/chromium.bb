@@ -200,7 +200,7 @@ IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_SetWindowBounds,
 //         defined in chrome/views/event.h
 // Response:
 //   bool - true if the drag could be performed
-IPC_SYNC_MESSAGE_CONTROL4_1(AutomationMsg_WindowDrag,
+IPC_SYNC_MESSAGE_CONTROL4_1(AutomationMsg_DEPRECATED_WindowDrag,
                            int,
                            std::vector<gfx::Point>,
                            int,
@@ -247,7 +247,7 @@ IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_WindowForBrowser,
 //   int - the ui::KeyboardCode of the key that was pressed.
 //   int - the flags which identify the modifiers (shift, ctrl, alt)
 //         associated for, as defined in chrome/views/event.h
-IPC_MESSAGE_CONTROL3(AutomationMsg_WindowKeyPress,
+IPC_MESSAGE_CONTROL3(AutomationMsg_DEPRECATED_WindowKeyPress,
                      int,
                      int,
                      int)
@@ -769,7 +769,7 @@ IPC_SYNC_MESSAGE_CONTROL2_0(AutomationMsg_OpenNewBrowserWindowOfType,
 // Request:
 //   int - the handle of the window that's the context for this click
 //   gfx::Point - the location to move to
-IPC_MESSAGE_CONTROL2(AutomationMsg_WindowMouseMove,
+IPC_MESSAGE_CONTROL2(AutomationMsg_DEPRECATED_WindowMouseMove,
                      int,
                      gfx::Point)
 
@@ -957,6 +957,14 @@ IPC_SYNC_MESSAGE_CONTROL2_2(AutomationMsg_SendJSONRequest,
                             std::string /* JSON request */,
                             std::string /* JSON response */,
                             bool /* success */)
+
+// This message requests that a key press be performed.
+// Request:
+//   int - tab handle
+//   int - the ui::KeyboardCode of the key that was pressed.
+IPC_MESSAGE_CONTROL2(AutomationMsg_KeyPress,
+                     int /* tab_handle */,
+                     int /* key */)
 
 // Browser -> renderer messages.
 

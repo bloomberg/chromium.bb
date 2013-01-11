@@ -95,7 +95,6 @@
         '..',
       ],
       'sources': [
-        'test/reliability/automated_ui_test_interactive_test.cc',
         'test/reliability/automated_ui_tests.cc',
         'test/reliability/automated_ui_tests.h',
       ],

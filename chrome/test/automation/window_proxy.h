@@ -14,14 +14,12 @@
 #include "base/string16.h"
 #include "base/threading/thread.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
-#include "ui/base/keycodes/keyboard_codes.h"
 
 class BrowserProxy;
 class WindowProxy;
 
 namespace gfx {
-  class Point;
-  class Rect;
+class Rect;
 }
 
 // This class presents the interface to actions that can be performed on a given
@@ -34,16 +32,6 @@ class WindowProxy : public AutomationResourceProxy {
               AutomationHandleTracker* tracker,
               int handle)
     : AutomationResourceProxy(tracker, sender, handle) {}
-
-  // Moves the mouse pointer this location at the OS level.  |location| is
-  // in the window's coordinates.
-  bool SimulateOSMouseMove(const gfx::Point& location);
-
-  // Simulates a key press at the OS level. |key| is the virtual key code of the
-  // key pressed and |flags| specifies which modifiers keys are also pressed (as
-  // defined in chrome/views/event.h).  Note that this actually sends the event
-  // to the window that has focus.
-  bool SimulateOSKeyPress(ui::KeyboardCode key, int flags);
 
   // Gets the bounds (in window coordinates) that correspond to the view with
   // the given ID in this window.  Returns true if bounds could be obtained.

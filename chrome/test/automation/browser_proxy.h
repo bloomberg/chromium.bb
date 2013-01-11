@@ -87,14 +87,6 @@ class BrowserProxy : public AutomationResourceProxy {
   // desktop.
   bool ApplyAccelerator(int id) WARN_UNUSED_RESULT;
 
-  // Performs a drag operation between the start and end points (both defined
-  // in window coordinates).  |flags| specifies which buttons are pressed for
-  // the drag, as defined in chrome/views/event.h.
-  virtual bool SimulateDrag(const gfx::Point& start,
-                            const gfx::Point& end,
-                            int flags,
-                            bool press_escape_en_route) WARN_UNUSED_RESULT;
-
   // Block the thread until the tab count is |count|.
   // Returns true on success.
   bool WaitForTabCountToBecome(int count) WARN_UNUSED_RESULT;

@@ -428,6 +428,10 @@ void TabProxy::Paste() {
   sender_->Send(new AutomationMsg_Paste(handle_));
 }
 
+void TabProxy::SimulateKeyPress(ui::KeyboardCode key) {
+  sender_->Send(new AutomationMsg_KeyPress(handle_, key));
+}
+
 void TabProxy::ReloadAsync() {
   sender_->Send(new AutomationMsg_ReloadAsync(handle_));
 }

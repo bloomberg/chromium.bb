@@ -160,27 +160,6 @@ bool BrowserProxy::ApplyAccelerator(int id) {
   return RunCommandAsync(id);
 }
 
-bool BrowserProxy::SimulateDrag(const gfx::Point& start,
-                                const gfx::Point& end,
-                                int flags,
-                                bool press_escape_en_route) {
-  if (!is_valid())
-    return false;
-
-  std::vector<gfx::Point> drag_path;
-  drag_path.push_back(start);
-  drag_path.push_back(end);
-
-  bool result = false;
-
-  if (!sender_->Send(new AutomationMsg_WindowDrag(
-          handle_, drag_path, flags, press_escape_en_route, &result))) {
-    return false;
-  }
-
-  return result;
-}
-
 bool BrowserProxy::WaitForTabCountToBecome(int count) {
   bool success = false;
   if (!sender_->Send(new AutomationMsg_WaitForTabCountToBecome(

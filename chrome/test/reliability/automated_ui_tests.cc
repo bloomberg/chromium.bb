@@ -391,12 +391,6 @@ bool AutomatedUITest::DoAction(const std::string& action) {
     did_complete_action = PressDownArrow();
   } else if (LowerCaseEqualsASCII(action, "downloads")) {
     did_complete_action = ShowDownloads();
-  } else if (LowerCaseEqualsASCII(action, "dragtableft")) {
-    did_complete_action = DragActiveTab(false);
-  } else if (LowerCaseEqualsASCII(action, "dragtabout")) {
-    did_complete_action = DragTabOut();
-  } else if (LowerCaseEqualsASCII(action, "dragtabright")) {
-    did_complete_action = DragActiveTab(true);
   } else if (LowerCaseEqualsASCII(action, "duplicatetab")) {
     did_complete_action = DuplicateTab();
   } else if (LowerCaseEqualsASCII(action, "editsearchengines")) {
@@ -559,35 +553,35 @@ bool AutomatedUITest::Options() {
 }
 
 bool AutomatedUITest::PressDownArrow() {
-  return SimulateKeyPressInActiveWindow(ui::VKEY_DOWN, 0);
+  return SimulateKeyPress(ui::VKEY_DOWN);
 }
 
 bool AutomatedUITest::PressEnterKey() {
-  return SimulateKeyPressInActiveWindow(ui::VKEY_RETURN, 0);
+  return SimulateKeyPress(ui::VKEY_RETURN);
 }
 
 bool AutomatedUITest::PressEscapeKey() {
-  return SimulateKeyPressInActiveWindow(ui::VKEY_ESCAPE, 0);
+  return SimulateKeyPress(ui::VKEY_ESCAPE);
 }
 
 bool AutomatedUITest::PressPageDown() {
-  return SimulateKeyPressInActiveWindow(ui::VKEY_PRIOR, 0);
+  return SimulateKeyPress(ui::VKEY_PRIOR);
 }
 
 bool AutomatedUITest::PressPageUp() {
-  return SimulateKeyPressInActiveWindow(ui::VKEY_NEXT, 0);
+  return SimulateKeyPress(ui::VKEY_NEXT);
 }
 
 bool AutomatedUITest::PressSpaceBar() {
-  return SimulateKeyPressInActiveWindow(ui::VKEY_SPACE, 0);
+  return SimulateKeyPress(ui::VKEY_SPACE);
 }
 
 bool AutomatedUITest::PressTabKey() {
-  return SimulateKeyPressInActiveWindow(ui::VKEY_TAB, 0);
+  return SimulateKeyPress(ui::VKEY_TAB);
 }
 
 bool AutomatedUITest::PressUpArrow() {
-  return SimulateKeyPressInActiveWindow(ui::VKEY_UP, 0);
+  return SimulateKeyPress(ui::VKEY_UP);
 }
 
 bool AutomatedUITest::StarPage() {
@@ -677,18 +671,9 @@ bool AutomatedUITest::ForceCrash() {
   return true;
 }
 
-bool AutomatedUITest::SimulateKeyPressInActiveWindow(ui::KeyboardCode key,
-                                                     int flags) {
-  scoped_refptr<BrowserProxy> browser(active_browser());
-  scoped_refptr<WindowProxy> window(browser->GetWindow());
-  if (window.get() == NULL) {
-    AddErrorAttribute("active_window_not_found");
-    return false;
-  }
-  if (!window->SimulateOSKeyPress(key, flags)) {
-    AddWarningAttribute("failure_simulating_key_press");
-    return false;
-  }
+bool AutomatedUITest::SimulateKeyPress(ui::KeyboardCode key) {
+  scoped_refptr<TabProxy> tab(GetActiveTab());
+  tab->SimulateKeyPress(key);
   return true;
 }
 
