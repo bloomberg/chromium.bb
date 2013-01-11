@@ -462,15 +462,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 }
 
 // Tests that scripts are not duplicated after Scripts Panel switch.
-// Disabled - see http://crbug.com/124300
+// Disabled - see http://crbug.com/169593
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       TestNoScriptDuplicatesOnPanelSwitch) {
+                       DISABLED_TestNoScriptDuplicatesOnPanelSwitch) {
   RunTest("testNoScriptDuplicatesOnPanelSwitch", kDebuggerTestPage);
 }
 
 // Tests that debugger works correctly if pause event occurs when DevTools
 // frontend is being loaded.
-// http://crbug.com/106114
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
                        TestPauseWhenLoadingDevTools) {
   RunTest("testPauseWhenLoadingDevTools", kPauseWhenLoadingDevTools);
