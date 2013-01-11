@@ -106,7 +106,7 @@ deps = {
     (Var("googlecode_url") % "gyp") + "/trunk@1556",
 
   "src/tools/swarm_client":
-    "/trunk/tools/swarm_client@174179",
+    "/trunk/tools/swarm_client@176388",
 
   "src/v8":
     (Var("googlecode_url") % "v8") + "/trunk@" + Var("v8_revision"),
