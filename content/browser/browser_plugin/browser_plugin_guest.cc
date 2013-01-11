@@ -377,10 +377,6 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void BrowserPluginGuest::OnGo(int instance_id, int relative_index) {
-  web_contents()->GetController().GoToOffset(relative_index);
-}
-
 void BrowserPluginGuest::OnDragStatusUpdate(int instance_id,
                                             WebKit::WebDragStatus drag_status,
                                             const WebDropData& drop_data,
@@ -403,6 +399,10 @@ void BrowserPluginGuest::OnDragStatusUpdate(int instance_id,
     case WebKit::WebDragStatusUnknown:
       NOTREACHED();
   }
+}
+
+void BrowserPluginGuest::OnGo(int instance_id, int relative_index) {
+  web_contents()->GetController().GoToOffset(relative_index);
 }
 
 void BrowserPluginGuest::OnHandleInputEvent(

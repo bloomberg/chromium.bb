@@ -194,9 +194,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
 
   // Message handlers for messsages from embedder.
 
-  // If possible, navigate the guest to |relative_index| entries away from the
-  // current navigation entry.
-  virtual void OnGo(int instance_id, int relative_index);
   // Handles drag events from the embedder.
   // When dragging, the drag events go to the embedder first, and if the drag
   // happens on the browser plugin, then the plugin sends a corresponding
@@ -207,6 +204,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                           const WebDropData& drop_data,
                           WebKit::WebDragOperationsMask drag_mask,
                           const gfx::Point& location);
+  // If possible, navigate the guest to |relative_index| entries away from the
+  // current navigation entry.
+  virtual void OnGo(int instance_id, int relative_index);
   // Overriden in tests.
   virtual void OnHandleInputEvent(int instance_id,
                                   const gfx::Rect& guest_window_rect,
