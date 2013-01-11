@@ -17,6 +17,7 @@ import urllib2
 import zlib
 
 import run_isolated
+import run_test_cases
 
 
 # The maximum number of upload attempts to try when uploading a single file.
@@ -24,6 +25,9 @@ MAX_UPLOAD_ATTEMPTS = 5
 
 # The minimum size of files to upload directly to the blobstore.
 MIN_SIZE_FOR_DIRECT_BLOBSTORE = 20 * 1024
+
+# The number of files to check the isolate server for each query.
+ITEMS_PER_CONTAINS_QUERY = 100
 
 # A list of already compressed extension types that should not receive any
 # compression before being uploaded.
@@ -177,13 +181,12 @@ class UploadRemote(run_isolated.Remote):
     return upload_file
 
 
-def update_files_to_upload(query_url, queries, files_to_upload):
+def update_files_to_upload(query_url, queries, upload):
   """Queries the server to see which files from this batch already exist there.
 
   Arguments:
     queries: The hash files to potential upload to the server.
-    files_to_upload: Any new files that need to be upload are added to
-                     this list.
+    upload: Any new files that need to be upload are sent to this function.
   """
   body = ''.join(
       (binascii.unhexlify(meta_data['h']) for (_, meta_data) in queries))
@@ -198,7 +201,7 @@ def update_files_to_upload(query_url, queries, files_to_upload):
   hit = 0
   for i in range(len(response)):
     if response[i] == chr(0):
-      files_to_upload.append(queries[i])
+      upload(queries[i])
     else:
       hit += 1
   logging.info('Queried %d files, %d cache hit', len(queries), hit)
@@ -245,8 +248,22 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
   logging.info('upload tree(base_url=%s, indir=%s, files=%d)' %
                (base_url, indir, len(infiles)))
 
+  # Create a pool of workers to zip and upload any files missing from
+  # the server.
+  zipping_pool = run_isolated.ThreadPool(
+      num_threads=run_test_cases.num_processors())
+  remote_uploader = UploadRemote(namespace, base_url)
+
+  # Starts the zip and upload process for a given query. The query is assumed
+  # to be in the format (relfile, metadata).
+  def zip_and_upload(query):
+    relfile, metadata = query
+    infile = os.path.join(indir, relfile)
+    zipping_pool.add_task(zip_and_trigger_upload, infile, metadata,
+                          remote_uploader.add_item)
+
   # Generate the list of files that need to be uploaded (since some may already
-  # be on the server.
+  # be on the server).
   base_url = base_url.rstrip('/')
   contains_hash_url = base_url + '/content/contains/' + namespace
   to_upload = []
@@ -257,21 +274,13 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
       continue
 
     next_queries.append((relfile, metadata))
-    if len(next_queries) == 1000:
-      update_files_to_upload(contains_hash_url, next_queries, to_upload)
+    if len(next_queries) == ITEMS_PER_CONTAINS_QUERY:
+      update_files_to_upload(contains_hash_url, next_queries, zip_and_upload)
       next_queries = []
 
   if next_queries:
-    update_files_to_upload(contains_hash_url, next_queries, to_upload)
+    update_files_to_upload(contains_hash_url, next_queries, zip_and_upload)
 
-  # Zip the required files and then upload them.
-  # TODO(csharp): use num_processors().
-  zipping_pool = run_isolated.ThreadPool(num_threads=4)
-  remote_uploader = UploadRemote(namespace, base_url)
-  for relfile, metadata in to_upload:
-    infile = os.path.join(indir, relfile)
-    zipping_pool.add_task(zip_and_trigger_upload, infile, metadata,
-                          remote_uploader.add_item)
   logging.info('Waiting for all files to finish zipping')
   zipping_pool.join()
   logging.info('All files zipped.')
