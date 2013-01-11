@@ -174,7 +174,7 @@ body.loaded {
   -webkit-box-align: stretch;
   -webkit-box-flex: 1;
   -webkit-box-orient: horizontal;
-  background-color: white;  /* Makes #drag-image-container invisible. */
+  background-color: white;  /* Makes #drag-container invisible. */
   display: -webkit-box;
   overflow: hidden;
   position: relative;
@@ -693,23 +693,7 @@ button#detail-view:not([disabled]) {
   width: 100%;
 }
 
-/* Common styles for the grid view and draggable thumbnails. */
-.thumbnail-item {
-  padding: 0;
-  position: relative;
-  text-align: center;
-}
-
-.thumbnail-frame {
-  bottom: 0;
-  left: 0;
-  overflow: hidden;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-.img-container {
+body[type='full-page'] .thumbnail-frame > .img-container {
   position: relative;
 }
 
@@ -761,6 +745,9 @@ body[type='full-page'] list .filename-label > :hover,
   height: 182px;
   margin-left: 8px;
   margin-top: 7px;
+  padding: 0;
+  position: relative;
+  text-align: center;
   width: 242px;
 }
 
@@ -769,6 +756,12 @@ body[type='full-page'] list .filename-label > :hover,
     url('../images/files/ui/hashed_bg.gif') 1x,
     url('../images/files/ui/2x/hashed_bg.gif') 2x);
   border: 1px solid rgb(217, 217, 217);
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 .thumbnail-grid .thumbnail-item[selected] .thumbnail-frame,
@@ -988,6 +981,7 @@ input.rename {
   background-size: 45px 45px;
   height: 45px;
   overflow: hidden;
+  position: relative;
   width: 45px;
 }
 
@@ -1287,38 +1281,60 @@ body[overlay-visible] > :not(.overlay-pane) {
 }
 
 /* Invisible container for elements representing files while dragging. */
-#drag-image-container {
-  -webkit-box-orient: horizontal;
-  display: -webkit-box;
-  /* Only nodes in visible viewport will be rendered. */
+#drag-container {
   left: 0;
-  padding-left: 100px;
+  /* Hack for extra margins caused by setDragImage(). */
+  padding: 1000px 0 0 1000px;
   position: fixed;
   top: 0;
   z-index: -1;  /* below .dialog-container */
 }
 
-#drag-image-container > .thumbnail-item {
-  background-color: rgb(203, 219, 241);
-  border: 1px solid white; /* transparent white */
-  cursor: default;
-  display: inline-block;
-  height: 140px;
-  line-height: 20px;
-  margin: 0 0 0 -100px;
+#drag-container .drag-contents {
+  -webkit-border-radius: 3px;
+  -webkit-box-orient: horizontal;
+  -webkit-box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .2);
+  -webkit-transition: opacity 200ms ease-in;
+  background-color: #fafafa;
+  border: 1px solid #bbb;
+  display: -webkit-box;
+  margin-bottom: 5px;
+  padding: 6px;
+}
+
+#drag-container .thumbnail-item {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+#drag-container .img-container {
+  -webkit-box-flex: 0;
+  display: -webkit-box;
   overflow: hidden;
-  position: relative; /* to allow overlap */
-  white-space: pre;
-  width: 120px;
+  position: relative;
+}
+
+#drag-container .label {
+  -webkit-box-flex: 1;
+  font-weight: bold;
+  line-height: 24px;
+  max-width: 320px;
+  overflow: hidden;
+  padding: 0 5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#drag-container .drag-contents.drag-image-thumbnail  {
+  padding: 2px;
 }
 
 /* When changing these properties please preserve these conditions:
    1. width == height (so that the rotated thumbnail does not look off-center)
    2. width % 8 == 0 (to minimize rounding errors in the centering code) */
-#drag-image-container .img-container {
-  height: 112px;
-  margin: 4px;
-  width: 112px;
+#drag-container .img-container {
+  height: 64px;
+  width: 64px;
 }
 
 menu.file-context-menu {

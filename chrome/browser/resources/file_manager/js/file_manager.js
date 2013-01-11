@@ -444,19 +444,17 @@ DialogType.isModal = function(type) {
     this.copyManager_.addEventListener('copy-operation-complete',
         this.onCopyManagerOperationComplete_.bind(this));
 
-    var controller = this.fileTransferController_ = new FileTransferController(
-        FileGrid.renderDragThumbnail.bind(null,
-                                          this.document_,
-                                          this.metadataCache_),
-        this.copyManager_,
-        this.directoryModel_);
+    var controller = this.fileTransferController_ =
+        new FileTransferController(this.document_,
+                                   this.copyManager_,
+                                   this.directoryModel_);
     controller.attachDragSource(this.table_.list);
     controller.attachDropTarget(this.table_.list);
     controller.attachDragSource(this.grid_);
     controller.attachDropTarget(this.grid_);
     controller.attachDropTarget(this.rootsList_, true);
     controller.attachBreadcrumbsDropTarget(this.breadcrumbs_);
-    controller.attachCopyPasteHandlers(this.document_);
+    controller.attachCopyPasteHandlers();
     controller.addEventListener('selection-copied',
         this.blinkSelection.bind(this));
     controller.addEventListener('selection-cut',

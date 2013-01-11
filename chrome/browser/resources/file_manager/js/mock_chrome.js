@@ -505,6 +505,7 @@ chrome.fileBrowserPrivate = {
       NEW_FOLDER_BUTTON_LABEL: 'New folder',
       FILENAME_LABEL: 'File Name',
       PREPARING_LABEL: 'Preparing',
+      DRAGGING_MULTIPLE_ITEMS: '$1 items',
 
       DIMENSIONS_LABEL: 'Dimensions',
       DIMENSIONS_FORMAT: '$1 x $2',

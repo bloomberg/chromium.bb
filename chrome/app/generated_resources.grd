@@ -12519,6 +12519,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_PREPARING_LABEL" desc="Label informing about preparing the file.">
         Preparing
       </message>
+      <message name="IDS_FILE_BROWSER_DRAGGING_MULTIPLE_ITEMS" desc="Tooltip message for dragging multiple files.">
+        $1 items
+      </message>
 
       <message name="IDS_FILE_BROWSER_DIMENSIONS_LABEL" desc="Image dimensions label.">
         Dimensions

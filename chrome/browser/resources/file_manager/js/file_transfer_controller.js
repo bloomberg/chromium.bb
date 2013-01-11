@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var MAX_DRAG_THUMBAIL_COUNT = 4;
-
 /**
  * Global (placed in the window object) variable name to hold internal
  * file dragging information. Needed to show visual feedback while dragging
@@ -14,14 +12,14 @@ var DRAG_AND_DROP_GLOBAL_DATA = '__drag_and_drop_global_data';
 
 /**
  * @constructor
- * @param {function} dragNodeConstructor Constructor for draggable node.
+ * @param {HTMLDocument} doc Owning document.
  * @param {FileCopyManager} copyManager Copy manager instance.
  * @param {DirectoryModel} directoryModel Directory model instance.
  */
-function FileTransferController(dragNodeConstructor,
+function FileTransferController(doc,
                                 copyManager,
                                 directoryModel) {
-  this.dragNodeConstructor_ = dragNodeConstructor;
+  this.document_ = doc;
   this.copyManager_ = copyManager;
   this.directoryModel_ = directoryModel;
 
@@ -29,11 +27,12 @@ function FileTransferController(dragNodeConstructor,
       this.onSelectionChanged_.bind(this));
 
   /**
-   * DOM elements to represent selected files in drag operation.
-   * @type {Array.<Element>}
+   * DOM element to represent selected file in drag operation. Used if only
+   * one element is selected.
+   * @type {HTMLElement}
    * @private
    */
-  this.dragNodes_ = [];
+  this.preloadedThumbnailImageNode_ = null;
 
   /**
    * File objects for seletced files.
@@ -84,17 +83,21 @@ FileTransferController.prototype = {
 
   /**
    * Attach handlers of copy, cut and paste operations to the document.
-   * @param {HTMLDocument} doc Command dispatcher.
    */
-  attachCopyPasteHandlers: function(doc) {
-    this.document_ = doc;
-    doc.addEventListener('beforecopy', this.onBeforeCopy_.bind(this));
-    doc.addEventListener('copy', this.onCopy_.bind(this));
-    doc.addEventListener('beforecut', this.onBeforeCut_.bind(this));
-    doc.addEventListener('cut', this.onCut_.bind(this));
-    doc.addEventListener('beforepaste', this.onBeforePaste_.bind(this));
-    doc.addEventListener('paste', this.onPaste_.bind(this));
-    this.copyCommand_ = doc.querySelector('command#copy');
+  attachCopyPasteHandlers: function() {
+    this.document_.addEventListener('beforecopy',
+                                    this.onBeforeCopy_.bind(this));
+    this.document_.addEventListener('copy',
+                                    this.onCopy_.bind(this));
+    this.document_.addEventListener('beforecut',
+                                    this.onBeforeCut_.bind(this));
+    this.document_.addEventListener('cut',
+                                    this.onCut_.bind(this));
+    this.document_.addEventListener('beforepaste',
+                                    this.onBeforePaste_.bind(this));
+    this.document_.addEventListener('paste',
+                                    this.onPaste_.bind(this));
+    this.document_.copyCommand_ = this.document_.querySelector('command#copy');
   },
 
   /**
@@ -199,18 +202,74 @@ FileTransferController.prototype = {
     return toMove ? 'move' : 'copy';
   },
 
+  /**
+   * Preloads an image thumbnail for the specified file entry.
+   * @param {Entry} entry Entry to preload a thumbnail for.
+   */
+  preloadThumbnailImage_: function(entry) {
+    var imageUrl = entry.toURL();
+    var metadataTypes = 'thumbnail|filesystem';
+    this.preloadedThumbnailImageNode_ = this.document_.createElement('div');
+    this.preloadedThumbnailImageNode_.className = 'img-container';
+    this.directoryModel_.getMetadataCache().get(
+        imageUrl,
+        metadataTypes,
+        function(metadata) {
+          new ThumbnailLoader(imageUrl, metadata).
+              load(this.preloadedThumbnailImageNode_, true);
+        }.bind(this));
+  },
+
+  /**
+   * Renders a drag-and-drop thumbnail.
+   * @return {HTMLElement} Element containing the thumbnail.
+   */
+  renderThumbnail_: function() {
+    var length = this.selectedEntries_.length;
+
+    var container = this.document_.querySelector('#drag-container');
+    var contents = this.document_.createElement('div');
+    contents.className = 'drag-contents';
+    container.appendChild(contents);
+
+    var thumbnailImage;
+    if (this.preloadedThumbnailImageNode_)
+      thumbnailImage = this.preloadedThumbnailImageNode_.querySelector('img');
+
+    // Option 1. Multiple selection, render only a label.
+    if (length > 1) {
+      var label = this.document_.createElement('div');
+      label.className = 'label';
+      label.textContent = strf('DRAGGING_MULTIPLE_ITEMS', length);
+      contents.appendChild(label);
+      return container;
+    }
+
+    // Option 2. Thumbnail image available, then render it without
+    // a label.
+    if (thumbnailImage) {
+      contents.classList.add('drag-image-thumbnail');
+      contents.appendChild(this.preloadedThumbnailImageNode_);
+      return container;
+    }
+
+    // Option 3. Thumbnail not available. Render an icon and a label.
+    var entry = this.selectedEntries_[0];
+    var icon = this.document_.createElement('div');
+    icon.className = 'detail-icon';
+    icon.setAttribute('file-type-icon', FileType.getIcon(entry));
+    contents.appendChild(icon);
+    var label = this.document_.createElement('div');
+    label.className = 'label';
+    label.textContent = entry.name;
+    contents.appendChild(label);
+    return container;
+  },
+
   onDragStart_: function(list, event) {
     var dt = event.dataTransfer;
-    var doc = list.ownerDocument;
-    var container = doc.querySelector('#drag-image-container');
-    var length = this.dragNodes_.length;
-    for (var i = 0; i < length; i++) {
-      var listItem = this.dragNodes_[i];
-      listItem.selected = true;
-      listItem.style.zIndex = length - i;
-      container.appendChild(listItem);
-    }
-    dt.setDragImage(container, 0, 0);
+    var dragThumbnail = this.renderThumbnail_();
+    dt.setDragImage(dragThumbnail, 1000, 1000);
 
     if (this.canCopyOrDrag_(dt)) {
       if (this.canCutOrDrag_(dt))
@@ -220,14 +279,14 @@ FileTransferController.prototype = {
     } else {
       event.preventDefault();
     }
+
     window[DRAG_AND_DROP_GLOBAL_DATA] = {
       sourceRoot: this.directoryModel_.getCurrentRootPath()
     };
   },
 
   onDragEnd_: function(list, event) {
-    var doc = list.ownerDocument;
-    var container = doc.querySelector('#drag-image-container');
+    var container = this.document_.querySelector('#drag-container');
     container.textContent = '';
     this.setDropTarget_(null);
     this.setScrollSpeed_(null, 0);
@@ -478,18 +537,20 @@ FileTransferController.prototype = {
 
   onSelectionChanged_: function(event) {
     var entries = this.selectedEntries_;
-    var dragNodes = this.dragNodes_ = [];
     var files = this.selectedFileObjects_ = [];
+    this.preloadedThumbnailImageNode_ = null;
 
     var fileEntries = [];
     for (var i = 0; i < entries.length; i++) {
       if (entries[i].isFile)
         fileEntries.push(entries[i]);
-      // Items to drag are created in advance. Images must be loaded
-      // at the time the 'dragstart' event comes. Otherwise draggable
-      // image will be rendered without IMG tags.
-      if (dragNodes.length < MAX_DRAG_THUMBAIL_COUNT)
-        dragNodes.push(new this.dragNodeConstructor_(entries[i]));
+    }
+
+    if (entries.length == 1) {
+      // For single selection, the dragged element is created in advance,
+      // otherwise an image may not be loaded at the time the 'dragstart' event
+      // comes.
+      this.preloadThumbnailImage_(entries[0]);
     }
 
     // File object must be prepeared in advance for clipboard operations

@@ -56,19 +56,6 @@ FileGrid.prototype.updateListItemsMetadata = function(type, props) {
 };
 
 /**
- * Renders a thumbnail for Drag And Drop operations.
- * @param {HTMLDocument} doc Owner document.
- * @param {MetadataCache} metadataCache To retrieve metadata.
- * @param {Entry} entry Entry to render a thumbnail for.
- * @return {HTMLElement} Created element.
- */
-FileGrid.renderDragThumbnail = function(doc, metadataCache, entry) {
-  var item = doc.createElement('div');
-  FileGrid.decorateThumbnail(item, entry, metadataCache, true);
-  return item;
-};
-
-/**
  * Decorates thumbnail.
  * @param {HTMLElement} li List item.
  * @param {Entry} entry Entry to render a thumbnail for.
