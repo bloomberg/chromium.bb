@@ -244,7 +244,7 @@ aura::RootWindow* DesktopRootWindowHostLinux::InitRootWindow(
   aura::client::SetWindowMoveClient(root_window_,
                                     x11_window_move_client_.get());
 
-  focus_client_->FocusWindow(content_window_, NULL);
+  focus_client_->FocusWindow(content_window_);
   return root_window_;
 }
 
@@ -519,8 +519,7 @@ void DesktopRootWindowHostLinux::ClearNativeFocus() {
   if (content_window_ && aura::client::GetFocusClient(content_window_) &&
       content_window_->Contains(
           aura::client::GetFocusClient(content_window_)->GetFocusedWindow())) {
-    aura::client::GetFocusClient(content_window_)->FocusWindow(
-        content_window_, NULL);
+    aura::client::GetFocusClient(content_window_)->FocusWindow(content_window_);
   }
 }
 

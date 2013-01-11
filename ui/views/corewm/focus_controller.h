@@ -55,7 +55,7 @@ class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
   virtual aura::Window* GetActivatableWindow(aura::Window* window) OVERRIDE;
   virtual aura::Window* GetToplevelWindow(aura::Window* window) OVERRIDE;
   virtual bool OnWillFocusWindow(aura::Window* window,
-                                 const ui::Event* event) OVERRIDE;
+    const ui::Event* event) OVERRIDE;
   virtual bool CanActivateWindow(aura::Window* window) const OVERRIDE;
 
   // Overridden from aura::client::FocusClient:
@@ -63,8 +63,8 @@ class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
       aura::client::FocusChangeObserver* observer) OVERRIDE;
   virtual void RemoveObserver(
       aura::client::FocusChangeObserver* observer) OVERRIDE;
-  virtual void FocusWindow(aura::Window* window,
-                           const ui::Event* event) OVERRIDE;
+  virtual void FocusWindow(aura::Window* window) OVERRIDE;
+  virtual void ResetFocusWithinActiveWindow(aura::Window* window) OVERRIDE;
   virtual aura::Window* GetFocusedWindow() OVERRIDE;
   virtual void OnWindowHiddenInRootWindow(aura::Window* window,
                                           aura::RootWindow* root_window,

@@ -744,7 +744,7 @@ bool RootWindow::OnHostKeyEvent(ui::KeyEvent* event) {
   client::EventClient* client = client::GetEventClient(GetRootWindow());
   Window* focused_window = client::GetFocusClient(this)->GetFocusedWindow();
   if (client && !client->CanProcessEventsWithinSubtree(focused_window)) {
-    client::GetFocusClient(this)->FocusWindow(NULL, NULL);
+    client::GetFocusClient(this)->FocusWindow(NULL);
     return false;
   }
   ProcessEvent(focused_window ? focused_window : this, event);

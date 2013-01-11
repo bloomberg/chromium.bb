@@ -658,7 +658,7 @@ TEST_F(RootWindowTest, DeleteWindowDuringDispatch) {
   WindowTracker tracker;
   DeletingEventFilter* w1_filter = new DeletingEventFilter;
   w1->SetEventFilter(w1_filter);
-  client::GetFocusClient(w1.get())->FocusWindow(w11, NULL);
+  client::GetFocusClient(w1.get())->FocusWindow(w11);
 
   test::EventGenerator generator(root_window(), w11);
 

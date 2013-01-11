@@ -233,7 +233,7 @@ Shell::~Shell() {
   // effects (e.g. crashes) from changing focus during shutdown.
   // See bug crbug.com/134502.
   if (active_root_window_)
-    aura::client::GetFocusClient(active_root_window_)->FocusWindow(NULL, NULL);
+    aura::client::GetFocusClient(active_root_window_)->FocusWindow(NULL);
 
   // Please keep in same order as in Init() because it's easy to miss one.
   RemovePreTargetHandler(user_activity_detector_.get());

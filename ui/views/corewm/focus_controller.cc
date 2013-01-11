@@ -63,12 +63,12 @@ void FocusController::RemoveObserver(
 }
 
 void FocusController::ActivateWindow(aura::Window* window) {
-  FocusWindow(window, NULL);
+  FocusWindow(window);
 }
 
 void FocusController::DeactivateWindow(aura::Window* window) {
   if (window)
-    FocusWindow(rules_->GetNextActivatableWindow(window), NULL);
+    FocusWindow(rules_->GetNextActivatableWindow(window));
 }
 
 aura::Window* FocusController::GetActiveWindow() {
@@ -106,8 +106,7 @@ void FocusController::RemoveObserver(
   focus_observers_.RemoveObserver(observer);
 }
 
-void FocusController::FocusWindow(aura::Window* window,
-                                  const ui::Event* event) {
+void FocusController::FocusWindow(aura::Window* window) {
   if (updating_focus_)
     return;
 
@@ -132,6 +131,15 @@ void FocusController::FocusWindow(aura::Window* window,
   if (active_window_)
     DCHECK(active_window_->Contains(focusable));
   SetFocusedWindow(focusable);
+}
+
+void FocusController::ResetFocusWithinActiveWindow(aura::Window* window) {
+  DCHECK(window);
+  if (!active_window_)
+    return;
+  if (!active_window_->Contains(window))
+    return;
+  SetFocusedWindow(window);
 }
 
 aura::Window* FocusController::GetFocusedWindow() {
@@ -278,7 +286,7 @@ void FocusController::WindowLostFocusFromDispositionChange(
 }
 
 void FocusController::WindowFocusedFromInputEvent(aura::Window* window) {
-  FocusWindow(window, NULL);
+  FocusWindow(window);
 }
 
 }  // namespace corewm

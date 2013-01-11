@@ -28,7 +28,7 @@ namespace views {
 
 void FocusNativeView(gfx::NativeView view) {
 #if defined(USE_AURA)
-  aura::client::GetFocusClient(view)->FocusWindow(view, NULL);
+  aura::client::GetFocusClient(view)->FocusWindow(view);
 #elif defined(OS_WIN)
   SetFocus(view);
 #else

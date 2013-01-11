@@ -329,7 +329,7 @@ void ActivationController::ActivateWindowWithEvent(aura::Window* window,
   if (window &&
       !window->Contains(aura::client::GetFocusClient(window)->
           GetFocusedWindow())) {
-    aura::client::GetFocusClient(window)->FocusWindow(window, event);
+    aura::client::GetFocusClient(window)->FocusWindow(window);
   }
 
   if (window) {
@@ -424,7 +424,7 @@ void ActivationController::FocusWindowWithEvent(const ui::Event* event) {
   window = delegate_->WillFocusWindow(window);
   if (GetActiveWindow() != window) {
     aura::client::GetFocusClient(window)->FocusWindow(
-        FindFocusableWindowFor(window), event);
+        FindFocusableWindowFor(window));
   }
 }
 

@@ -594,7 +594,7 @@ void NativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
 void NativeWidgetAura::ClearNativeFocus() {
   aura::client::FocusClient* client = aura::client::GetFocusClient(window_);
   if (window_ && client && window_->Contains(client->GetFocusedWindow()))
-    client->FocusWindow(window_, NULL);
+    client->ResetFocusWithinActiveWindow(window_);
 }
 
 gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {

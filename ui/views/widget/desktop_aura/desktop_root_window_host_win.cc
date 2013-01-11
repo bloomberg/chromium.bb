@@ -142,7 +142,7 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
                                                        GetHWND()));
   aura::client::SetDragDropClient(root_window_, drag_drop_client_.get());
 
-  focus_client_->FocusWindow(content_window_, NULL);
+  focus_client_->FocusWindow(content_window_);
   root_window_->SetProperty(kContentWindowForRootWindow, content_window_);
 
   ui_controls::InstallUIControlsAura(CreateUIControlsAura(root_window_));

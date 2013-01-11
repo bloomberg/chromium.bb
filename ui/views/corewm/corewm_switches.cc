@@ -10,9 +10,9 @@ namespace views {
 namespace corewm {
 namespace switches {
 
-// When set uses the CoreWM FocusController in place of the Ash
-// ActivationController and aura FocusManager.
-const char kUseFocusController[] = "views-corewm-use-focus-controller";
+// When set uses the old ActivationController/FocusManager instead of the new
+// CoreWM FocusController.
+const char kDisableFocusController[] = "disable-focus-controller";
 
 // If present animations are disabled.
 const char kWindowAnimationsDisabled[] =
@@ -21,8 +21,8 @@ const char kWindowAnimationsDisabled[] =
 }  // namespace switches
 
 bool UseFocusController() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseFocusController);
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableFocusController);
 }
 
 }  // namespace corewm

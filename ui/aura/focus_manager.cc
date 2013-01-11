@@ -31,7 +31,7 @@ void FocusManager::RemoveObserver(client::FocusChangeObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void FocusManager::FocusWindow(Window* focused_window, const ui::Event* event) {
+void FocusManager::FocusWindow(Window* focused_window) {
   if (focused_window == focused_window_)
     return;
   if (focused_window && !focused_window->CanFocus())
@@ -45,7 +45,7 @@ void FocusManager::FocusWindow(Window* focused_window, const ui::Event* event) {
     DCHECK(root);
     if (client::GetActivationClient(root) &&
         !client::GetActivationClient(root)->OnWillFocusWindow(
-            focused_window, event)) {
+            focused_window, NULL)) {
       return;
     }
   }
@@ -62,6 +62,10 @@ void FocusManager::FocusWindow(Window* focused_window, const ui::Event* event) {
   observer = client::GetFocusChangeObserver(focused_window_);
   if (observer)
     observer->OnWindowFocused(focused_window_, old_focused_window);
+}
+
+void FocusManager::ResetFocusWithinActiveWindow(Window* window) {
+  FocusWindow(window);
 }
 
 Window* FocusManager::GetFocusedWindow() {
@@ -94,7 +98,7 @@ void FocusManager::OnWindowHiddenInRootWindow(
               focus_to, NULL)))) {
       focus_to = NULL;
     }
-    client::GetFocusClient(root_window)->FocusWindow(focus_to, NULL);
+    client::GetFocusClient(root_window)->FocusWindow(focus_to);
   }
 }
 

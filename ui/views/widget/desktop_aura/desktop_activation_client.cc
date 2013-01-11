@@ -68,7 +68,7 @@ void DesktopActivationClient::ActivateWindow(aura::Window* window) {
   if (window &&
       !window->Contains(aura::client::GetFocusClient(window)->
           GetFocusedWindow())) {
-    aura::client::GetFocusClient(window)->FocusWindow(window, NULL);
+    aura::client::GetFocusClient(window)->FocusWindow(window);
   }
 
   aura::Window* old_active = current_active_;
@@ -183,7 +183,7 @@ void DesktopActivationClient::FocusWindowWithEvent(const ui::Event* event) {
   aura::Window* window = static_cast<aura::Window*>(event->target());
   if (GetActiveWindow() != window) {
     aura::client::GetFocusClient(window)->FocusWindow(
-        FindFocusableWindowFor(window), event);
+        FindFocusableWindowFor(window));
   }
 }
 

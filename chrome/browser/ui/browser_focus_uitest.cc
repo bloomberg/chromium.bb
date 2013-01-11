@@ -735,7 +735,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
 
 // Focus stays on page with interstitials.
 // http://crbug.com/81451
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX) || (defined(OS_WIN) && !defined(USE_AURA))
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_InterstitialFocus) {
 #else
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {

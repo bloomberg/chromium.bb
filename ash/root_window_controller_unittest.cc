@@ -160,7 +160,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   aura::Window* d2 = CreateTestWindowInShellWithDelegate(
       &delete_on_blur_delegate, 0, gfx::Rect(50, 50, 100, 100));
   delete_on_blur_delegate.SetWindow(d2);
-  aura::client::GetFocusClient(root_windows[0])->FocusWindow(d2, NULL);
+  aura::client::GetFocusClient(root_windows[0])->FocusWindow(d2);
   tracker.Add(d2);
 
   UpdateDisplay("600x600");

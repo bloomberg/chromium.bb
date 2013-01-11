@@ -94,7 +94,7 @@ class RecurseFocusObserver : public aura::client::ActivationChangeObserver,
   virtual void OnWindowFocused(aura::Window* gained_focus,
                                aura::Window* lost_focus) OVERRIDE {
     DCHECK_NE(gained_focus, other_);
-    aura::client::GetFocusClient(other_)->FocusWindow(other_, NULL);
+    aura::client::GetFocusClient(other_)->FocusWindow(other_);
   }
 
   aura::Window* other_;
@@ -264,7 +264,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
   }
 
   void FocusWindow(aura::Window* window) {
-    aura::client::GetFocusClient(root_window())->FocusWindow(window, NULL);
+    aura::client::GetFocusClient(root_window())->FocusWindow(window);
   }
   aura::Window* GetFocusedWindow() {
     return aura::client::GetFocusClient(root_window())->GetFocusedWindow();

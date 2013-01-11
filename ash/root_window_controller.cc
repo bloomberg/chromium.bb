@@ -449,13 +449,13 @@ void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {
   // window may be deleted when losing focus (fullscreen flash for
   // example).  If the focused window is still alive after move, it'll
   // be re-focused below.
-  aura::client::GetFocusClient(dst)->FocusWindow(NULL, NULL);
+  aura::client::GetFocusClient(dst)->FocusWindow(NULL);
 
   ReparentAllWindows(root_window_.get(), dst);
 
   // Restore focused or active window if it's still alive.
   if (focused && tracker.Contains(focused) && dst->Contains(focused)) {
-    aura::client::GetFocusClient(dst)->FocusWindow(focused, NULL);
+    aura::client::GetFocusClient(dst)->FocusWindow(focused);
   } else if (active && tracker.Contains(active) && dst->Contains(active)) {
     activation_client->ActivateWindow(active);
   }

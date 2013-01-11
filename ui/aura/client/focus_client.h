@@ -28,8 +28,11 @@ class AURA_EXPORT FocusClient {
   virtual void RemoveObserver(FocusChangeObserver* observer) = 0;
 
   // Focuses |window|. Passing NULL clears focus.
-  // TODO(beng): |event| may be obsolete.
-  virtual void FocusWindow(Window* window, const ui::Event* event) = 0;
+  virtual void FocusWindow(Window* window) = 0;
+
+  // Sets focus to |window| if it's within the active window. Not intended as a
+  // general purpose API, use FocusWindow() instead.
+  virtual void ResetFocusWithinActiveWindow(Window* window) = 0;
 
   // Retrieves the focused window, or NULL if there is none.
   virtual Window* GetFocusedWindow() = 0;
