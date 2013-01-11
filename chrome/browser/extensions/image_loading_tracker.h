@@ -139,7 +139,6 @@ class ImageLoadingTracker : public content::NotificationObserver {
   friend class InfobarBridge;
   friend class Panel;
   friend class ShellWindow;
-  friend class extensions::AppShortcutManager;
   friend class extensions::IconImage;
   friend class extensions::TabHelper;
   FRIEND_TEST_ALL_PREFIXES(ImageLoadingTrackerTest, Cache);

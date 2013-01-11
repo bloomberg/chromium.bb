@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -50,7 +51,6 @@ ShellIntegration::ShortcutInfo ShortcutInfoForExtensionAndProfile(
 
 AppShortcutManager::AppShortcutManager(Profile* profile)
     : profile_(profile),
-      tracker_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  content::Source<Profile>(profile_));
@@ -60,9 +60,7 @@ AppShortcutManager::AppShortcutManager(Profile* profile)
 
 AppShortcutManager::~AppShortcutManager() {}
 
-void AppShortcutManager::OnImageLoaded(const gfx::Image& image,
-                                       const std::string& extension_id,
-                                       int index) {
+void AppShortcutManager::OnImageLoaded(const gfx::Image& image) {
   // If the image failed to load (e.g. if the resource being loaded was empty)
   // use the standard application icon.
   if (image.IsEmpty()) {
@@ -135,15 +133,15 @@ void AppShortcutManager::UpdateApplicationShortcuts(
     const Extension* extension) {
   shortcut_info_ = ShortcutInfoForExtensionAndProfile(extension, profile_);
 
-  std::vector<ImageLoadingTracker::ImageRepresentation> info_list;
+  std::vector<ImageLoader::ImageRepresentation> info_list;
   for (size_t i = 0; i < arraysize(kDesiredSizes); ++i) {
     int size = kDesiredSizes[i];
     ExtensionResource resource = extension->GetIconResource(
         size, ExtensionIconSet::MATCH_EXACTLY);
     if (!resource.empty()) {
-      info_list.push_back(ImageLoadingTracker::ImageRepresentation(
+      info_list.push_back(ImageLoader::ImageRepresentation(
           resource,
-          ImageLoadingTracker::ImageRepresentation::RESIZE_WHEN_LARGER,
+          ImageLoader::ImageRepresentation::RESIZE_WHEN_LARGER,
           gfx::Size(size, size),
           ui::SCALE_FACTOR_100P));
     }
@@ -154,25 +152,27 @@ void AppShortcutManager::UpdateApplicationShortcuts(
     int size = kDesiredSizes[i];
 
     // If there is no icon at the desired sizes, we will resize what we can get.
-    // Making a large icon smaller is prefered to making a small icon larger, so
-    // look for a larger icon first:
+    // Making a large icon smaller is preferred to making a small icon larger,
+    // so look for a larger icon first:
     ExtensionResource resource = extension->GetIconResource(
         size, ExtensionIconSet::MATCH_BIGGER);
     if (resource.empty()) {
       resource = extension->GetIconResource(
           size, ExtensionIconSet::MATCH_SMALLER);
     }
-    info_list.push_back(ImageLoadingTracker::ImageRepresentation(
+    info_list.push_back(ImageLoader::ImageRepresentation(
         resource,
-        ImageLoadingTracker::ImageRepresentation::RESIZE_WHEN_LARGER,
+        ImageLoader::ImageRepresentation::RESIZE_WHEN_LARGER,
         gfx::Size(size, size),
         ui::SCALE_FACTOR_100P));
   }
 
-  // |icon_resources| may still be empty at this point, in which case LoadImage
+  // |info_list| may still be empty at this point, in which case LoadImage
   // will call the OnImageLoaded callback with an empty image and exit
   // immediately.
-  tracker_.LoadImages(extension, info_list, ImageLoadingTracker::DONT_CACHE);
+  ImageLoader::Get(profile_)->LoadImagesAsync(extension, info_list,
+      base::Bind(&AppShortcutManager::OnImageLoaded,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void AppShortcutManager::DeleteApplicationShortcuts(

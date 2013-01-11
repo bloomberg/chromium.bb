@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_EXTENSIONS_APP_SHORTCUT_MANAGER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_observer.h"
@@ -17,20 +16,11 @@ class Profile;
 namespace extensions {
 
 // This class manages the installation of shortcuts for platform apps.
-class AppShortcutManager : public ImageLoadingTracker::Observer,
-                           public content::NotificationObserver {
+class AppShortcutManager : public content::NotificationObserver {
  public:
   explicit AppShortcutManager(Profile* profile);
 
   virtual ~AppShortcutManager();
-
-  // Implement ImageLoadingTracker::Observer. |tracker_| is used to
-  // load the application's icon, which is done when we start creating an
-  // application's shortcuts. This method receives the icon, and completes
-  // the process of installing the shortcuts.
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE;
 
   // content::NotificationObserver
   virtual void Observe(int type,
@@ -38,6 +28,7 @@ class AppShortcutManager : public ImageLoadingTracker::Observer,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  void OnImageLoaded(const gfx::Image& image);
   void UpdateApplicationShortcuts(const Extension* extension);
 
 #if defined(OS_WIN)
@@ -52,7 +43,6 @@ class AppShortcutManager : public ImageLoadingTracker::Observer,
 
   // Fields used when installing application shortcuts.
   ShellIntegration::ShortcutInfo shortcut_info_;
-  ImageLoadingTracker tracker_;
 
   base::WeakPtrFactory<AppShortcutManager> weak_factory_;
 
