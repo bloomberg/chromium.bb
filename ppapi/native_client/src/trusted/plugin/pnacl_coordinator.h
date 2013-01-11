@@ -116,12 +116,17 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
                             const nacl::string& component);
 
   // Run |translate_notify_callback_| with an error condition that is not
-  // PPAPI specific.
-  void ReportNonPpapiError(const nacl::string& message);
+  // PPAPI specific.  Also set ErrorInfo report.
+  void ReportNonPpapiError(PluginErrorCode err, const nacl::string& message);
   // Run when faced with a PPAPI error condition. Bring control back to the
   // plugin by invoking the |translate_notify_callback_|.
-  void ReportPpapiError(int32_t pp_error, const nacl::string& message);
-  void ReportPpapiError(int32_t pp_error);
+  // Also set ErrorInfo report.
+  void ReportPpapiError(PluginErrorCode err,
+                        int32_t pp_error, const nacl::string& message);
+  // Bring control back to the plugin by invoking the
+  // |translate_notify_callback_|.  This does not set the ErrorInfo report,
+  // it is assumed that it was already set.
+  void ExitWithError(int32_t pp_error);
 
   // Implement FileDownloader's template of the CallbackSource interface.
   // This method returns a callback which will be called by the FileDownloader

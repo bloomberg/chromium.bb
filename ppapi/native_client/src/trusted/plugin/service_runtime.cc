@@ -344,11 +344,10 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
                                             cache_identity,
                                             translate_callback));
     } else {
-      // TODO(jvoung): Separate the error codes?
       nacl::MutexLocker take(&mu_);
       *p->op_complete_ptr = true;  // done...
       *p->out_desc = -1;       // but failed.
-      p->error_info->SetReport(ERROR_MANIFEST_OPEN,
+      p->error_info->SetReport(ERROR_PNACL_NOT_ENABLED,
                                "ServiceRuntime: GetPnaclFd failed -- pnacl not "
                                "enabled with --enable-pnacl.");
       NaClXCondVarBroadcast(&cv_);

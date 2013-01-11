@@ -116,9 +116,11 @@ void PnaclResources::StartLoad() {
       nacl::string full_url;
       ErrorInfo error_info;
       if (!manifest_->ResolveURL(resource_urls_[i], &full_url, &error_info)) {
-        coordinator_->ReportNonPpapiError(nacl::string("failed to resolve ") +
-                                          resource_urls_[i] + ": " +
-                                          error_info.message() + ".");
+        coordinator_->ReportNonPpapiError(
+            ERROR_PNACL_RESOURCE_FETCH,
+            nacl::string("failed to resolve ") +
+            resource_urls_[i] + ": " +
+            error_info.message() + ".");
         break;
       }
       pp::CompletionCallback ready_callback =
@@ -128,8 +130,10 @@ void PnaclResources::StartLoad() {
               full_url);
       if (!plugin_->StreamAsFile(full_url,
                                  ready_callback.pp_completion_callback())) {
-        coordinator_->ReportNonPpapiError(nacl::string("failed to download ") +
-                                          resource_urls_[i] + ".");
+        coordinator_->ReportNonPpapiError(
+            ERROR_PNACL_RESOURCE_FETCH,
+            nacl::string("failed to download ") +
+            resource_urls_[i] + ".");
         break;
       }
     }
@@ -142,9 +146,11 @@ void PnaclResources::StartLoad() {
       nacl::string full_url;
       ErrorInfo error_info;
       if (!manifest_->ResolveURL(resource_urls_[i], &full_url, &error_info)) {
-        coordinator_->ReportNonPpapiError(nacl::string("failed to resolve ") +
-                                          url + ": " +
-                                          error_info.message() + ".");
+        coordinator_->ReportNonPpapiError(
+            ERROR_PNACL_RESOURCE_FETCH,
+            nacl::string("failed to resolve ") +
+            url + ": " +
+            error_info.message() + ".");
         break;
       }
       nacl::string filename = PnaclUrls::PnaclComponentURLToFilename(full_url);
@@ -152,6 +158,7 @@ void PnaclResources::StartLoad() {
       int32_t fd = PnaclResources::GetPnaclFD(plugin_, filename.c_str());
       if (fd < 0) {
         coordinator_->ReportNonPpapiError(
+            ERROR_PNACL_RESOURCE_FETCH,
             nacl::string("PnaclLocalResources::StartLoad failed for: ") +
             filename);
         result = PP_ERROR_FILENOTFOUND;
@@ -177,7 +184,8 @@ void PnaclResources::ResourceReady(int32_t pp_error,
                                                full_url,
                                                "resource " + url);
   if (fd < 0) {
-    coordinator_->ReportPpapiError(pp_error,
+    coordinator_->ReportPpapiError(ERROR_PNACL_RESOURCE_FETCH,
+                                   pp_error,
                                    "PnaclResources::ResourceReady failed.");
   } else {
     resource_wrappers_[url] =

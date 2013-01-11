@@ -1187,6 +1187,11 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
     PLUGIN_PRINTF(("Plugin::BitcodeDidTranslate error in Pnacl\n"));
     return;
   }
+
+  // TODO(dschuff,jvoung): We could have a UMA stat for total time taken
+  // to translate.  We may also want a breakdown (how long does it take
+  // to start up the LLC nexe process, LD nexe process, etc.).
+
   // Inform JavaScript that we successfully translated the bitcode to a nexe.
   EnqueueProgressEvent(kProgressEventProgress);
   nacl::scoped_ptr<nacl::DescWrapper>
@@ -1512,7 +1517,7 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
                                               translate_callback));
         return;
       } else {
-        error_info.SetReport(ERROR_UNKNOWN,
+        error_info.SetReport(ERROR_PNACL_NOT_ENABLED,
                              "PNaCl has not been enabled (e.g., by setting "
                              "the --enable-pnacl flag).");
       }
