@@ -69,6 +69,21 @@ void X509Certificate::Initialize() {
   ca_fingerprint_ = CalculateCAFingerprint(intermediate_ca_certs_);
 }
 
+bool X509Certificate::IsIssuedByEncoded(
+    const std::vector<std::string>& valid_issuers) {
+  x509_util_ios::NSSCertChain nss_chain(this);
+  // Convert to scoped CERTName* list.
+  std::vector<CERTName*> issuers;
+  crypto::ScopedPLArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
+  if (!x509_util::GetIssuersFromEncodedList(valid_issuers,
+                                            arena.get(),
+                                            &issuers)) {
+    return false;
+  }
+  return x509_util::IsCertificateIssuedBy(
+      nss_chain.cert_chain(), issuers);
+}
+
 // static
 X509Certificate* X509Certificate::CreateSelfSigned(
     crypto::RSAPrivateKey* key,

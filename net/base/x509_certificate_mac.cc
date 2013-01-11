@@ -18,6 +18,7 @@
 #include "base/memory/singleton.h"
 #include "base/pickle.h"
 #include "base/sha1.h"
+#include "base/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_string_conversions.h"
 #include "crypto/cssm_init.h"
@@ -44,6 +45,32 @@ void GetCertDistinguishedName(
     return;
   result->ParseDistinguishedName(distinguished_name.field()->Data,
                                  distinguished_name.field()->Length);
+}
+
+bool IsCertIssuerInEncodedList(X509Certificate::OSCertHandle cert_handle,
+                               const std::vector<std::string>& issuers) {
+  x509_util::CSSMCachedCertificate cached_cert;
+  if (cached_cert.Init(cert_handle) != CSSM_OK)
+    return false;
+
+  x509_util::CSSMFieldValue distinguished_name;
+  OSStatus status = cached_cert.GetField(&CSSMOID_X509V1IssuerNameStd,
+                                         &distinguished_name);
+  if (status || !distinguished_name.field())
+    return false;
+
+  base::StringPiece name_piece(
+      reinterpret_cast<const char*>(distinguished_name.field()->Data),
+      static_cast<size_t>(distinguished_name.field()->Length));
+
+  for (std::vector<std::string>::const_iterator it = issuers.begin();
+       it != issuers.end(); ++it) {
+    base::StringPiece issuer_piece(*it);
+    if (name_piece == issuer_piece)
+      return true;
+  }
+
+  return false;
 }
 
 void GetCertDateForOID(const x509_util::CSSMCachedCertificate& cached_cert,
@@ -331,6 +358,19 @@ void X509Certificate::Initialize() {
 
   fingerprint_ = CalculateFingerprint(cert_handle_);
   ca_fingerprint_ = CalculateCAFingerprint(intermediate_ca_certs_);
+}
+
+bool X509Certificate::IsIssuedByEncoded(
+    const std::vector<std::string>& valid_issuers) {
+  if (IsCertIssuerInEncodedList(cert_handle_, valid_issuers))
+    return true;
+
+  for (OSCertHandles::iterator it = intermediate_ca_certs_.begin();
+       it != intermediate_ca_certs_.end(); ++it) {
+    if (IsCertIssuerInEncodedList(*it, valid_issuers))
+      return true;
+  }
+  return false;
 }
 
 // static

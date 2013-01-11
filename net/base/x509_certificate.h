@@ -304,6 +304,10 @@ class NET_EXPORT X509Certificate
   CFArrayRef CreateOSCertChainForCert() const;
 #endif
 
+  // Do any of the given issuer names appear in this cert's chain of trust?
+  // |valid_issuers| is a list of DER-encoded X.509 DistinguishedNames.
+  bool IsIssuedByEncoded(const std::vector<std::string>& valid_issuers);
+
 #if defined(OS_WIN)
   // Returns a new PCCERT_CONTEXT containing this certificate and its
   // intermediate certificates, or NULL on failure. The returned

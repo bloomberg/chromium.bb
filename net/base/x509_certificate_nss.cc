@@ -10,6 +10,7 @@
 #include <nss.h>
 #include <pk11pub.h>
 #include <prtime.h>
+#include <seccomon.h>
 #include <secder.h>
 #include <sechash.h>
 
@@ -19,6 +20,7 @@
 #include "base/time.h"
 #include "crypto/nss_util.h"
 #include "crypto/rsa_private_key.h"
+#include "crypto/scoped_nss_types.h"
 #include "net/base/x509_util_nss.h"
 
 namespace net {
@@ -152,6 +154,25 @@ void X509Certificate::GetSubjectAltName(
 
 bool X509Certificate::VerifyNameMatch(const std::string& hostname) const {
   return CERT_VerifyCertName(cert_handle_, hostname.c_str()) == SECSuccess;
+}
+
+bool X509Certificate::IsIssuedByEncoded(
+    const std::vector<std::string>& valid_issuers) {
+  // Get certificate chain as scoped list of CERTCertificate objects.
+  std::vector<CERTCertificate*> cert_chain;
+  cert_chain.push_back(cert_handle_);
+  for (size_t n = 0; n < intermediate_ca_certs_.size(); ++n) {
+    cert_chain.push_back(intermediate_ca_certs_[n]);
+  }
+  // Convert encoded issuers to scoped CERTName* list.
+  std::vector<CERTName*> issuers;
+  crypto::ScopedPLArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
+  if (!x509_util::GetIssuersFromEncodedList(valid_issuers,
+                                            arena.get(),
+                                            &issuers)) {
+    return false;
+  }
+  return x509_util::IsCertificateIssuedBy(cert_chain, issuers);
 }
 
 // static

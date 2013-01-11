@@ -273,6 +273,37 @@ SECStatus PR_CALLBACK CollectCertsCallback(void* arg,
 
   return SECSuccess;
 }
+
+typedef scoped_ptr_malloc<
+    CERTName,
+    crypto::NSSDestroyer<CERTName, CERT_DestroyName> > ScopedCERTName;
+
+// Create a new CERTName object from its encoded representation.
+// |arena| is the allocation pool to use.
+// |data| points to a DER-encoded X.509 DistinguishedName.
+// Return a new CERTName pointer on success, or NULL.
+CERTName* CreateCertNameFromEncoded(PLArenaPool* arena,
+                                    const base::StringPiece& data) {
+  if (!arena)
+    return NULL;
+
+  ScopedCERTName name(PORT_ArenaZNew(arena, CERTName));
+  if (!name.get())
+    return NULL;
+
+  SECItem item;
+  item.len = static_cast<unsigned int>(data.length());
+  item.data = reinterpret_cast<unsigned char*>(
+      const_cast<char*>(data.data()));
+
+  SECStatus rv = SEC_ASN1DecodeItem(
+      arena, name.get(), SEC_ASN1_GET(CERT_NameTemplate), &item);
+  if (rv != SECSuccess)
+    return NULL;
+
+  return name.release();
+}
+
 #endif  // defined(USE_NSS) || defined(OS_IOS)
 
 }  // namespace
@@ -527,6 +558,41 @@ void GetPublicKeyInfo(CERTCertificate* handle,
       break;
   }
 }
+
+bool GetIssuersFromEncodedList(
+    const std::vector<std::string>& encoded_issuers,
+    PLArenaPool* arena,
+    std::vector<CERTName*>* out) {
+  std::vector<CERTName*> result;
+  for (size_t n = 0; n < encoded_issuers.size(); ++n) {
+    CERTName* name = CreateCertNameFromEncoded(arena, encoded_issuers[n]);
+    if (name != NULL)
+      result.push_back(name);
+  }
+
+  if (result.size() == encoded_issuers.size()) {
+    out->swap(result);
+    return true;
+  }
+
+  for (size_t n = 0; n < result.size(); ++n)
+    CERT_DestroyName(result[n]);
+  return false;
+}
+
+
+bool IsCertificateIssuedBy(const std::vector<CERTCertificate*>& cert_chain,
+                           const std::vector<CERTName*>& valid_issuers) {
+  for (size_t n = 0; n < cert_chain.size(); ++n) {
+    CERTName* cert_issuer = &cert_chain[n]->issuer;
+    for (size_t i = 0; i < valid_issuers.size(); ++i) {
+      if (CERT_CompareName(valid_issuers[i], cert_issuer) == SECEqual)
+        return true;
+    }
+  }
+  return false;
+}
+
 #endif  // defined(USE_NSS) || defined(OS_IOS)
 
 } // namespace x509_util

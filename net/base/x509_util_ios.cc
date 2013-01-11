@@ -12,6 +12,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "crypto/nss_util.h"
 #include "net/base/x509_certificate.h"
+#include "net/base/x509_util_nss.h"
 
 using base::mac::ScopedCFTypeRef;
 
@@ -132,6 +133,9 @@ CERTCertificate* NSSCertChain::cert_handle() const {
   return certs_.empty() ? NULL : certs_.front();
 }
 
+const std::vector<CERTCertificate*>& NSSCertChain::cert_chain() const {
+  return certs_;
+}
+
 }  // namespace x509_util_ios
 }  // namespace net
-

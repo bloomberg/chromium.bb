@@ -15,6 +15,7 @@ class PickleIterator;
 
 typedef struct CERTCertificateStr CERTCertificate;
 typedef struct CERTNameStr CERTName;
+typedef struct PLArenaPool PLArenaPool;
 typedef struct SECKEYPrivateKeyStr SECKEYPrivateKey;
 typedef struct SECItemStr SECItem;
 typedef struct SECKEYPublicKeyStr SECKEYPublicKey;
@@ -70,6 +71,27 @@ X509Certificate::OSCertHandle ReadOSCertHandleFromPickle(
 void GetPublicKeyInfo(CERTCertificate* handle,
                       size_t* size_bits,
                       X509Certificate::PublicKeyType* type);
+
+// Create a list of CERTName objects from a list of DER-encoded X.509
+// DistinguishedName items. All objects are created in a given arena.
+// |encoded_issuers| is the list of encoded DNs.
+// |arena| is the arena used for all allocations.
+// |out| will receive the result list on success.
+// Return true on success. On failure, the caller must free the
+// intermediate CERTName objects pushed to |out|.
+bool GetIssuersFromEncodedList(
+    const std::vector<std::string>& issuers,
+    PLArenaPool* arena,
+    std::vector<CERTName*>* out);
+
+// Returns true iff a certificate is issued by any of the issuers listed
+// by name in |valid_issuers|.
+// |cert_chain| is the certificate's chain.
+// |valid_issuers| is a list of strings, where each string contains
+// a DER-encoded X.509 Distinguished Name.
+bool IsCertificateIssuedBy(const std::vector<CERTCertificate*>& cert_chain,
+                           const std::vector<CERTName*>& valid_issuers);
+
 #endif  // defined(USE_NSS) || defined(OS_IOS)
 
 } // namespace x509_util

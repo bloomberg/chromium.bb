@@ -731,6 +731,106 @@ TEST(X509CertificateTest, IsIssuedBy) {
 #endif  // defined(OS_MACOSX)
 #endif  // !defined(OS_IOS)
 
+TEST(X509CertificateTest, IsIssuedByEncoded) {
+  FilePath certs_dir = GetTestCertsDirectory();
+
+  // Test a client certificate from MIT.
+  scoped_refptr<X509Certificate> mit_davidben_cert(
+      ImportCertFromFile(certs_dir, "mit.davidben.der"));
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), mit_davidben_cert);
+
+  std::string mit_issuer(reinterpret_cast<const char*>(MITDN),
+                         sizeof(MITDN));
+
+  // Test a certificate from Google, issued by Thawte
+  scoped_refptr<X509Certificate> google_cert(
+      ImportCertFromFile(certs_dir, "google.single.der"));
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), google_cert);
+
+  std::string thawte_issuer(reinterpret_cast<const char*>(ThawteDN),
+                            sizeof(ThawteDN));
+
+  // Check that the David Ben certificate is issued by MIT, but not
+  // by Thawte.
+  std::vector<std::string> issuers;
+  issuers.clear();
+  issuers.push_back(mit_issuer);
+  EXPECT_TRUE(mit_davidben_cert->IsIssuedByEncoded(issuers));
+  EXPECT_FALSE(google_cert->IsIssuedByEncoded(issuers));
+
+  // Check that the Google certificate is issued by Thawte and not
+  // by MIT.
+  issuers.clear();
+  issuers.push_back(thawte_issuer);
+  EXPECT_FALSE(mit_davidben_cert->IsIssuedByEncoded(issuers));
+  EXPECT_TRUE(google_cert->IsIssuedByEncoded(issuers));
+
+  // Check that they both pass when given a list of the two issuers.
+  issuers.clear();
+  issuers.push_back(mit_issuer);
+  issuers.push_back(thawte_issuer);
+  EXPECT_TRUE(mit_davidben_cert->IsIssuedByEncoded(issuers));
+  EXPECT_TRUE(google_cert->IsIssuedByEncoded(issuers));
+}
+
+TEST(X509CertificateTest, IsIssuedByEncodedWithIntermediates) {
+  FilePath certs_dir = GetTestCertsDirectory();
+
+  scoped_refptr<X509Certificate> server_cert =
+      ImportCertFromFile(certs_dir, "www_us_army_mil_cert.der");
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), server_cert);
+
+  // The intermediate CA certificate's policyConstraints extension has a
+  // requireExplicitPolicy field with SkipCerts=0.
+  scoped_refptr<X509Certificate> intermediate_cert =
+      ImportCertFromFile(certs_dir, "dod_ca_17_cert.der");
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), intermediate_cert);
+
+  std::string dod_ca_17_issuer(reinterpret_cast<const char*>(DodCA17DN),
+                               sizeof(DodCA17DN));
+
+  scoped_refptr<X509Certificate> root_cert =
+      ImportCertFromFile(certs_dir, "dod_root_ca_2_cert.der");
+
+  std::string dod_root_ca_2_issuer(
+      reinterpret_cast<const char*>(DodRootCA2DN), sizeof(DodRootCA2DN));
+
+  X509Certificate::OSCertHandles intermediates;
+  intermediates.push_back(intermediate_cert->os_cert_handle());
+  scoped_refptr<X509Certificate> cert_chain =
+      X509Certificate::CreateFromHandle(server_cert->os_cert_handle(),
+                                        intermediates);
+
+  std::vector<std::string> issuers;
+
+  // Check that the chain is issued by DOD CA-17.
+  issuers.clear();
+  issuers.push_back(dod_ca_17_issuer);
+  EXPECT_TRUE(cert_chain->IsIssuedByEncoded(issuers));
+
+  // Check that the chain is also issued by DoD Root CA 2.
+  issuers.clear();
+  issuers.push_back(dod_root_ca_2_issuer);
+  EXPECT_TRUE(cert_chain->IsIssuedByEncoded(issuers));
+
+  // Check that the chain is issued by either one of the two DOD issuers.
+  issuers.clear();
+  issuers.push_back(dod_ca_17_issuer);
+  issuers.push_back(dod_root_ca_2_issuer);
+  EXPECT_TRUE(cert_chain->IsIssuedByEncoded(issuers));
+
+  // Check that an empty issuers list returns false.
+  issuers.clear();
+  EXPECT_FALSE(cert_chain->IsIssuedByEncoded(issuers));
+
+  // Check that the chain is not issued by MIT
+  std::string mit_issuer(reinterpret_cast<const char*>(MITDN),
+                         sizeof(MITDN));
+  issuers.clear();
+  issuers.push_back(mit_issuer);
+  EXPECT_FALSE(cert_chain->IsIssuedByEncoded(issuers));
+}
+
 #if !defined(OS_IOS)  // TODO(ios): Unable to create certificates.
 #if defined(USE_NSS) || defined(OS_WIN) || defined(OS_MACOSX)
 // This test creates a self-signed cert from a private key and then verify the

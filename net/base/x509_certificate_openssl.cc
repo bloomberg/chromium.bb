@@ -233,6 +233,11 @@ bool GetDERAndCacheIfNeeded(X509Certificate::OSCertHandle cert,
   return true;
 }
 
+// Used to free a list of X509_NAMEs and the objects it points to.
+void sk_X509_NAME_free_all(STACK_OF(X509_NAME)* sk) {
+  sk_X509_NAME_pop_free(sk, X509_NAME_free);
+}
+
 }  // namespace
 
 // static
@@ -469,6 +474,58 @@ void X509Certificate::GetPublicKeyInfo(OSCertHandle cert_handle,
       *size_bits = EVP_PKEY_size(key) * 8;
       break;
   }
+}
+
+bool X509Certificate::IsIssuedByEncoded(
+    const std::vector<std::string>& valid_issuers) {
+  if (valid_issuers.empty())
+    return false;
+
+  // Convert to a temporary list of X509_NAME objects.
+  // It will own the objects it points to.
+  crypto::ScopedOpenSSL<STACK_OF(X509_NAME), sk_X509_NAME_free_all>
+      issuer_names(sk_X509_NAME_new_null());
+  if (!issuer_names.get())
+    return false;
+
+  for (std::vector<std::string>::const_iterator it = valid_issuers.begin();
+      it != valid_issuers.end(); ++it) {
+    const unsigned char* p =
+        reinterpret_cast<const unsigned char*>(it->data());
+    long len = static_cast<long>(it->length());
+    X509_NAME* ca_name = d2i_X509_NAME(NULL, &p, len);
+    if (ca_name == NULL)
+      return false;
+    sk_X509_NAME_push(issuer_names.get(), ca_name);
+  }
+
+  // Create a temporary list of X509_NAME objects corresponding
+  // to the certificate chain. It doesn't own the object it points to.
+  std::vector<X509_NAME*> cert_names;
+  X509_NAME* issuer = X509_get_issuer_name(cert_handle_);
+  if (issuer == NULL)
+    return false;
+
+  cert_names.push_back(issuer);
+  for (OSCertHandles::iterator it = intermediate_ca_certs_.begin();
+      it != intermediate_ca_certs_.end(); ++it) {
+    issuer = X509_get_issuer_name(*it);
+    if (issuer == NULL)
+      return false;
+    cert_names.push_back(issuer);
+  }
+
+  // and 'cert_names'.
+  for (size_t n = 0; n < cert_names.size(); ++n) {
+    for (int m = 0; m < sk_X509_NAME_num(issuer_names.get()); ++m) {
+      X509_NAME* issuer = sk_X509_NAME_value(issuer_names.get(), m);
+      if (X509_NAME_cmp(issuer, cert_names[n]) == 0) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 }  // namespace net

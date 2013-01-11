@@ -61,6 +61,7 @@ class NSSCertChain {
   explicit NSSCertChain(X509Certificate* certificate);
   ~NSSCertChain();
   CERTCertificate* cert_handle() const;
+  const std::vector<CERTCertificate*>& cert_chain() const;
  private:
   std::vector<CERTCertificate*> certs_;
 };
