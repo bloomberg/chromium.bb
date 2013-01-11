@@ -182,16 +182,13 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, MAYBE_ImmersiveMode) {
 }
 
 #if defined(USE_ASH)
-
-// Flakes on win aura trybots: http://crbug.com/169496
-#if defined(OS_WIN)
-#define MAYBE_ImmersiveShelf DISABLED_ImmersiveShelf
-#else
-#define MAYBE_ImmersiveShelf ImmersiveShelf
-#endif
-
 // Test shelf auto-hide toggling behavior.
-IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, MAYBE_ImmersiveShelf) {
+IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveShelf) {
+#if defined(OS_WIN)
+  // Not running in Ash, so this doesn't doesn't make sense.
+  if (!ash::Shell::HasInstance())
+    return;
+#endif
   ui::LayerAnimator::set_disable_animations_for_test(true);
 
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
