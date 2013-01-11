@@ -56,14 +56,8 @@ void ExtensionAppProvider::LaunchAppFromOmnibox(
   AppLauncherHandler::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_OMNIBOX_APP);
 
-  // Look at the preferences to find the right launch container.  If no
-  // preference is set, launch as a regular tab.
-  extension_misc::LaunchContainer launch_container =
-      service->extension_prefs()->GetLaunchContainer(
-          extension, extensions::ExtensionPrefs::LAUNCH_REGULAR);
-
   application_launch::OpenApplication(application_launch::LaunchParams(
-          profile, extension, launch_container, disposition));
+          profile, extension, disposition));
 }
 
 void ExtensionAppProvider::AddExtensionAppForTesting(

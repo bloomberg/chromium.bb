@@ -34,6 +34,12 @@ struct LaunchParams {
                extension_misc::LaunchContainer container,
                WindowOpenDisposition disposition);
 
+  // Helper to create LaunchParams using ExtensionPrefs::GetLaunchContainer with
+  // ExtensionPrefs::LAUNCH_REGULAR to check for a user-configured container.
+  LaunchParams(Profile* profile,
+               const extensions::Extension* extension,
+               WindowOpenDisposition disposition);
+
   // The profile to load the application from.
   Profile* profile;
 

@@ -505,12 +505,6 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
     params.override_url = GURL(url);
     OpenApplication(params);
   } else {
-    // Look at preference to find the right launch container.  If no preference
-    // is set, launch as a regular tab.
-    extension_misc::LaunchContainer launch_container =
-        extension_service_->extension_prefs()->GetLaunchContainer(
-            extension, ExtensionPrefs::LAUNCH_REGULAR);
-
     // To give a more "launchy" experience when using the NTP launcher, we close
     // it automatically.
     Browser* browser = chrome::FindBrowserWithWebContents(
@@ -519,7 +513,7 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
     if (browser)
       old_contents = chrome::GetActiveWebContents(browser);
 
-    LaunchParams params(profile, extension, launch_container,
+    LaunchParams params(profile, extension,
                         old_contents ? CURRENT_TAB : NEW_FOREGROUND_TAB);
     params.override_url = GURL(url);
     WebContents* new_contents = OpenApplication(params);

@@ -4977,12 +4977,6 @@ void TestingAutomationProvider::LaunchApp(
     return;
   }
 
-  // Look at preferences to find the right launch container.  If no preference
-  // is set, launch as a regular tab.
-  extension_misc::LaunchContainer launch_container =
-      service->extension_prefs()->GetLaunchContainer(
-          extension, extensions::ExtensionPrefs::LAUNCH_REGULAR);
-
   WebContents* old_contents = chrome::GetActiveWebContents(browser);
   if (!old_contents) {
     AutomationJSONReply(this, reply_message).SendError(
@@ -4990,11 +4984,12 @@ void TestingAutomationProvider::LaunchApp(
     return;
   }
 
+  application_launch::LaunchParams launch_params(
+      profile(), extension, CURRENT_TAB);
   // This observer will delete itself.
   new AppLaunchObserver(&old_contents->GetController(), this, reply_message,
-                        launch_container);
-  application_launch::OpenApplication(application_launch::LaunchParams(
-          profile(), extension, launch_container, CURRENT_TAB));
+                        launch_params.container);
+  application_launch::OpenApplication(launch_params);
 }
 
 // Sample JSON input: { "command": "SetAppLaunchType",

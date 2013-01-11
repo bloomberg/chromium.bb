@@ -422,7 +422,7 @@ bool ManagementLaunchAppFunction::RunImpl() {
   }
 
   // Look at prefs to find the right launch container.
-  // |default_pref_value| is set to LAUNCH_REGULAR so that if
+  // |default_pref_value| is set to LAUNCH_DEFAULT so that if
   // the user has not set a preference, we open the app in a tab.
   extension_misc::LaunchContainer launch_container =
       service()->extension_prefs()->GetLaunchContainer(

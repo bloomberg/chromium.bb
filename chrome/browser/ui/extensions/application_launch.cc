@@ -239,6 +239,24 @@ LaunchParams::LaunchParams(Profile* profile,
       override_url(),
       command_line(NULL) {}
 
+LaunchParams::LaunchParams(Profile* profile,
+                           const extensions::Extension* extension,
+                           WindowOpenDisposition disposition)
+    : profile(profile),
+      extension(extension),
+      container(extension_misc::LAUNCH_NONE),
+      disposition(disposition),
+      override_url(),
+      command_line(NULL) {
+  ExtensionService* service = profile->GetExtensionService();
+  DCHECK(service);
+
+  // Look up the app preference to find out the right launch container. Default
+  // is to launch as a regular tab.
+  container = service->extension_prefs()->GetLaunchContainer(
+      extension, extensions::ExtensionPrefs::LAUNCH_REGULAR);
+}
+
 WebContents* OpenApplication(const LaunchParams& params) {
   Profile* profile = params.profile;
   const extensions::Extension* extension = params.extension;
