@@ -209,7 +209,7 @@ void ExtensionInstallUI::OpenAppInstalledUI(Browser* browser,
         content::Source<WebContents>(params.target_contents),
         content::Details<const std::string>(&app_id));
   } else {
-#if defined(USE_ASH)
+#if defined(ENABLE_APP_LIST)
     chrome::ShowAppList();
 
     content::NotificationService::current()->Notify(
