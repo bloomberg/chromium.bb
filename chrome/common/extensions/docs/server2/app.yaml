@@ -1,5 +1,5 @@
 application: chrome-apps-doc
-version: 2-0-14
+version: 2-0-15
 runtime: python27
 api_version: 1
 threadsafe: false

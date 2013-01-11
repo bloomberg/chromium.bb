@@ -17,7 +17,7 @@ import third_party.json_schema_compiler.idl_parser as idl_parser
 # the caches used by APIDataSource. This would include changes to model.py in
 # JSON schema compiler! This allows the cache to be invalidated without having
 # to flush memcache on the production server.
-_VERSION = 10
+_VERSION = 11
 
 def _RemoveNoDocs(item):
   if json_parse.IsDict(item):
@@ -113,12 +113,14 @@ class _JSCModel(object):
     if (function.parent is not None and
         not isinstance(function.parent, model.Namespace)):
       function_dict['parent_name'] = function.parent.simple_name
-    else:
-      function_dict['parent_name'] = None
     if function.returns:
       function_dict['returns'] = self._GenerateProperty(function.returns)
     for param in function.params:
       function_dict['parameters'].append(self._GenerateProperty(param))
+    if function.callback is not None:
+      # Show the callback as an extra parameter.
+      function_dict['parameters'].append(
+          self._GenerateCallbackProperty(function.callback))
     if len(function_dict['parameters']) > 0:
       function_dict['parameters'][-1]['last'] = True
     return function_dict
@@ -142,8 +144,10 @@ class _JSCModel(object):
     if (event.parent is not None and
         not isinstance(event.parent, model.Namespace)):
       event_dict['parent_name'] = event.parent.simple_name
-    else:
-      event_dict['parent_name'] = None
+    if event.callback is not None:
+      # Show the callback as an extra parameter.
+      event_dict['parameters'].append(
+          self._GenerateCallbackProperty(event.callback))
     if len(event_dict['parameters']) > 0:
       event_dict['parameters'][-1]['last'] = True
     return event_dict
@@ -193,8 +197,6 @@ class _JSCModel(object):
     if (property_.parent is not None and
         not isinstance(property_.parent, model.Namespace)):
       property_dict['parent_name'] = property_.parent.simple_name
-    else:
-      property_dict['parent_name'] = None
     if property_.has_value:
       if isinstance(property_.value, int):
         property_dict['value'] = _FormatValue(property_.value)
@@ -202,6 +204,18 @@ class _JSCModel(object):
         property_dict['value'] = property_.value
     else:
       self._RenderTypeInformation(property_, property_dict)
+    return property_dict
+
+  def _GenerateCallbackProperty(self, callback):
+    property_dict = {
+      'name': callback.simple_name,
+      'optional': callback.optional,
+      'id': _CreateId(callback, 'property'),
+      'simple_type': 'function',
+    }
+    if (callback.parent is not None and
+        not isinstance(callback.parent, model.Namespace)):
+      property_dict['parent_name'] = callback.parent.simple_name
     return property_dict
 
   def _RenderTypeInformation(self, property_, dst_dict):

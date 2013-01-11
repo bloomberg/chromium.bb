@@ -2,7 +2,6 @@
   "functions": [
     {
       "name": "get",
-      "parent_name": null,
       "callback": {
         "simple_type": {
           "simple_type": "function"
@@ -47,7 +46,6 @@
           "functions": [],
           "parameters": [],
           "returns": null,
-          "last": true,
           "name": "a",
           "parent_name": "get",
           "id": "property-get-a",
@@ -92,6 +90,14 @@
           "optional": false,
           "properties": [],
           "description": "a param"
+        },
+        {
+          "last": true,
+          "name": "callback",
+          "parent_name": "get",
+          "id": "property-get-callback",
+          "optional": false,
+          "simple_type": "function"
         }
       ],
       "id": "method-get",
@@ -141,7 +147,6 @@
   ],
   "events": [
     {
-      "parent_name": null,
       "callback": null,
       "name": "EventA",
       "parameters": [
