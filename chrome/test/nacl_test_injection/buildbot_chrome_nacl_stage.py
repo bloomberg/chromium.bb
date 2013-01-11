@@ -240,26 +240,16 @@ def BuildAndTest(options):
 
   CleanTempDir()
 
-  # Until we are sure that it is OK to switch to the new
-  # Chrome-IPC-based PPAPI proxy (see
-  # http://code.google.com/p/chromium/issues/detail?id=116317), we
-  # also test the old SRPC-based PPAPI proxy.
-  # TODO(mseaborn): Remove the second run when the switch is complete.
-  for test_old_srpc_proxy in (False, True):
-    env2 = env.copy()
-    if test_old_srpc_proxy:
-      env2['NACL_BROWSER_FLAGS'] = '--enable-nacl-srpc-proxy'
+  if options.enable_newlib:
+    RunTests('nacl-newlib', cmd, nacl_dir, env)
 
-    if options.enable_newlib:
-      RunTests('nacl-newlib', cmd, nacl_dir, env2)
+  if options.enable_glibc:
+    RunTests('nacl-glibc', cmd + ['--nacl_glibc'], nacl_dir, env)
 
-    if options.enable_glibc:
-      RunTests('nacl-glibc', cmd + ['--nacl_glibc'], nacl_dir, env2)
-
-    if options.enable_pnacl:
-      # TODO(dschuff): remove this when streaming is the default
-      os.environ['NACL_STREAMING_TRANSLATION'] = 'true'
-      RunTests('pnacl', cmd + ['bitcode=1'], nacl_dir, env2)
+  if options.enable_pnacl:
+    # TODO(dschuff): remove this when streaming is the default
+    os.environ['NACL_STREAMING_TRANSLATION'] = 'true'
+    RunTests('pnacl', cmd + ['bitcode=1'], nacl_dir, env)
 
 
 def MakeCommandLineParser():

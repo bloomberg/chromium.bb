@@ -487,11 +487,6 @@ def PPAPIBrowserTester(env,
   if browser_flags is None:
     browser_flags = []
 
-  # This is used for passing "--enable-nacl-srpc-proxy" through.
-  # TODO(mseaborn): Remove this when the PPAPI proxy switch is complete.
-  # See http://code.google.com/p/chromium/issues/detail?id=116317
-  browser_flags.extend(os.environ.get('NACL_BROWSER_FLAGS', '').split())
-
   if env.Bit('pnacl_generate_pexe'):
     # We likely prefer to choose the 'portable' field in nmfs in this mode.
     args = args + ['--prefer_portable_in_manifest']
