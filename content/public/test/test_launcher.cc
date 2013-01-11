@@ -519,7 +519,7 @@ bool RunTests(TestLauncherDelegate* launcher_delegate,
         continue;
       }
 
-      base::Time start_time = base::Time::Now();
+      base::TimeTicks start_time = base::TimeTicks::Now();
       ++test_run_count;
       bool was_timeout = false;
       int exit_code = RunTest(launcher_delegate,
@@ -529,16 +529,18 @@ bool RunTests(TestLauncherDelegate* launcher_delegate,
                               &was_timeout);
       if (exit_code == 0) {
         // Test passed.
-        printer.OnTestEnd(test_info->name(), test_case->name(), true, false,
-                          false,
-                          (base::Time::Now() - start_time).InMillisecondsF());
+        printer.OnTestEnd(
+            test_info->name(), test_case->name(), true, false,
+            false,
+            (base::TimeTicks::Now() - start_time).InMillisecondsF());
       } else {
         failed_tests.push_back(test_name);
 
         bool ignore_failure = false;
-        printer.OnTestEnd(test_info->name(), test_case->name(), true, true,
-                          ignore_failure,
-                          (base::Time::Now() - start_time).InMillisecondsF());
+        printer.OnTestEnd(
+            test_info->name(), test_case->name(), true, true,
+            ignore_failure,
+            (base::TimeTicks::Now() - start_time).InMillisecondsF());
         if (ignore_failure)
           ignored_tests.insert(test_name);
 
