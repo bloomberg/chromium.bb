@@ -156,10 +156,22 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         boolean super_awakenScrollBars(int startDelay, boolean invalidate);
     }
 
+    /**
+     * Interface for subscribing to content size changes.
+     */
+    public static interface ContentSizeChangeListener {
+        /**
+         * Called when the content size changes.
+         * The containing view may want to adjust its size to match the content.
+         */
+        void onContentSizeChanged(int contentWidth, int contentHeight);
+    }
+
     private final Context mContext;
     private ViewGroup mContainerView;
     private InternalAccessDelegate mContainerViewInternals;
     private WebContentsObserverAndroid mWebContentsObserver;
+    private ContentSizeChangeListener mContentSizeChangeListener;
 
     private ContentViewClient mContentViewClient;
 
@@ -181,7 +193,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private int mNativeScrollX;
     private int mNativeScrollY;
 
-    // Cached content size from the native
+    // Cached content size from native.
     private int mContentWidth;
     private int mContentHeight;
 
@@ -703,6 +715,10 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             // Null Object, since we cut down on the number of JNI calls.
         }
         return mContentViewClient;
+    }
+
+    public void setContentSizeChangeListener(ContentSizeChangeListener listener) {
+        mContentSizeChangeListener = listener;
     }
 
     public int getBackgroundColor() {
@@ -1871,6 +1887,10 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             mPopupZoomer.hide(true);
             mContentWidth = newContentWidth;
             mContentHeight = newContentHeight;
+
+            if (mContentSizeChangeListener != null) {
+                mContentSizeChangeListener.onContentSizeChanged(width, height);
+            }
         }
     }
 

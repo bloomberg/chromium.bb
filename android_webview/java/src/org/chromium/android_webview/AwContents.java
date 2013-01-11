@@ -82,6 +82,10 @@ public class AwContents {
      * dispatching of view methods through the containing view.
      */
     public interface InternalAccessDelegate extends ContentViewCore.InternalAccessDelegate {
+        /**
+         * @see View#setMeasuredDimension(int, int)
+         */
+        void setMeasuredDimension(int measuredWidth, int measuredHeight);
     }
 
     private int mNativeAwContents;
@@ -90,7 +94,8 @@ public class AwContents {
     private AwContentsClient mContentsClient;
     private AwContentsIoThreadClient mIoThreadClient;
     private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
-    private ContentViewCore.InternalAccessDelegate mInternalAccessAdapter;
+    private InternalAccessDelegate mInternalAccessAdapter;
+    private final AwLayoutSizer mLayoutSizer;
     // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
     private final ClientCallbackHandler mClientCallbackHandler;
@@ -271,9 +276,21 @@ public class AwContents {
         }
     }
 
+    private class AwLayoutSizerDelegate implements AwLayoutSizer.Delegate {
+        @Override
+        public void requestLayout() {
+            mContainerView.requestLayout();
+        }
+
+        @Override
+        public void setMeasuredDimension(int measuredWidth, int measuredHeight) {
+            mInternalAccessAdapter.setMeasuredDimension(measuredWidth, measuredHeight);
+        }
+    }
+
     // TODO(kristianm): Delete this when privateBrowsing parameter is removed in Android
     public AwContents(ViewGroup containerView,
-            ContentViewCore.InternalAccessDelegate internalAccessAdapter,
+            InternalAccessDelegate internalAccessAdapter,
             AwContentsClient contentsClient,
             NativeWindow nativeWindow, boolean privateBrowsing,
             boolean isAccessFromFileURLsGrantedByDefault) {
@@ -289,7 +306,7 @@ public class AwContents {
      * TODO(benm): Remove the nativeWindow parameter.
      */
     public AwContents(ViewGroup containerView,
-            ContentViewCore.InternalAccessDelegate internalAccessAdapter,
+            InternalAccessDelegate internalAccessAdapter,
             AwContentsClient contentsClient,
             NativeWindow nativeWindow,
             boolean isAccessFromFileURLsGrantedByDefault) {
@@ -309,6 +326,8 @@ public class AwContents {
                 new AwNativeWindow(mContainerView.getContext()),
                 isAccessFromFileURLsGrantedByDefault);
         mContentViewCore.setContentViewClient(mContentsClient);
+        mLayoutSizer = new AwLayoutSizer(new AwLayoutSizerDelegate());
+        mContentViewCore.setContentSizeChangeListener(mLayoutSizer);
         mContentsClient.installWebContentsObserver(mContentViewCore);
 
         mSettings = new AwSettings(mContentViewCore.getContext());
@@ -377,6 +396,10 @@ public class AwContents {
             int c = mContentViewCore.getBackgroundColor();
             canvas.drawRGB(Color.red(c), Color.green(c), Color.blue(c));
         }
+    }
+
+    public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        mLayoutSizer.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     public int findAllSync(String searchString) {
