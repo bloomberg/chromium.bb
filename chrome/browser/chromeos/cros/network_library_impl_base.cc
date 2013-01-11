@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
+#include "chrome/browser/chromeos/cros/network_constants.h"
 #include "chrome/browser/chromeos/cros/onc_network_parser.h"
 #include "chrome/browser/chromeos/network_login_observer.h"
 #include "chromeos/network/onc/onc_certificate_importer.h"
@@ -1126,13 +1127,10 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
     VLOG(2) << "ONC file has " << network_configs->GetSize() << " networks";
     OncNetworkParser parser(*network_configs, source);
 
-    // Parse all networks. Bail out if that fails.
-    NetworkOncMap added_onc_map;
-    ScopedVector<Network> networks;
     for (int i = 0; i < parser.GetNetworkConfigsSize(); i++) {
       // Parse Open Network Configuration blob into a temporary Network object.
       bool marked_for_removal = false;
-      Network* network = parser.ParseNetwork(i, &marked_for_removal);
+      scoped_ptr<Network> network(parser.ParseNetwork(i, &marked_for_removal));
       if (!network) {
         LOG(ERROR) << "Error during ONC parsing network at index " << i
                    << " from " << onc::GetSourceAsString(source);
@@ -1147,45 +1145,30 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
           network->type() != TYPE_ETHERNET) {
         LOG(WARNING) << "Ignoring device-level policy-pushed network of type "
                      << network->type();
-        delete network;
         continue;
       }
 
-      networks.push_back(network);
-      if (!(source == onc::ONC_SOURCE_USER_IMPORT &&
-            marked_for_removal)) {
-        added_onc_map[network->unique_id()] = parser.GetNetworkConfig(i);
-      }
-
-      if (marked_for_removal)
+      if (source == onc::ONC_SOURCE_USER_IMPORT && marked_for_removal) {
+        // User import supports the removal of networks by ID.
         removal_ids.insert(network->unique_id());
-    }
-
-    // Update the ONC map.
-    for (NetworkOncMap::iterator iter(added_onc_map.begin());
-         iter != added_onc_map.end(); ++iter) {
-      const base::DictionaryValue*& entry = network_onc_map_[iter->first];
-      delete entry;
-      entry = iter->second->DeepCopy();
-    }
-
-    // Configure the networks. While doing so, collect unique identifiers of the
-    // networks that are defined in the ONC blob in |network_ids|. They're later
-    // used to clean out any previously-existing networks that had been
-    // configured through policy but are no longer specified in the updated ONC
-    // blob.
-    for (std::vector<Network*>::iterator iter(networks.begin());
-         iter != networks.end(); ++iter) {
-      Network* network = *iter;
+        continue;
+      }
 
       // Don't configure a network that is supposed to be removed. For
-      // policy-managed networks, the "remove" functionality of ONC is ignored.
-      if (source == onc::ONC_SOURCE_USER_IMPORT &&
-          removal_ids.find(network->unique_id()) != removal_ids.end()) {
+      // policy-managed networks, the "remove" functionality of ONC is
+      // irrelevant. Instead, in general, all previously configured networks
+      // that are no longer configured are removed.
+      if (marked_for_removal)
         continue;
-      }
 
-      DictionaryValue dict;
+      // Update the ONC map.
+      const base::DictionaryValue*& entry =
+          network_onc_map_[network->unique_id()];
+      delete entry;
+      entry = parser.GetNetworkConfig(i)->DeepCopy();
+
+      // Configure the network.
+      base::DictionaryValue dict;
       for (Network::PropertyMap::const_iterator props =
                network->property_map_.begin();
            props != network->property_map_.end(); ++props) {
@@ -1214,6 +1197,10 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
         CallConfigureService(network->unique_id(), &dict);
       }
 
+      // Store the unique identifier of the network that is defined in the ONC
+      // blob in |network_ids|. The identifiers are later used to clean out any
+      // previously-existing networks that had been configured through policy
+      // but are no longer specified in the updated ONC blob.
       network_ids.insert(network->unique_id());
     }
   }
