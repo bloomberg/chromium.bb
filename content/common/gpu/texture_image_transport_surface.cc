@@ -411,7 +411,6 @@ void TextureImageTransportSurface::AttachBackTextureToFBO() {
       GL_TEXTURE_2D,
       backbuffer_.service_id,
       0);
-  glFlush();
   CHECK_GL_ERROR();
 
 #ifndef NDEBUG
