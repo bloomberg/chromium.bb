@@ -217,14 +217,16 @@ def BuildAndTest(options):
 
   # Run nacl/chrome integration tests.
   # Note that we have to add nacl_irt_test to --mode in order to get
-  # the "_irt" variant of "chrome_browser_tests" to run.
+  # inbrowser_test_runner to run.
+  # TODO(mseaborn): Change it so that inbrowser_test_runner is not a
+  # special case.
   cmd = scons + ['--verbose', '-k', 'platform=x86-%d' % bits,
       '--mode=opt-host,nacl,nacl_irt_test',
       'chrome_browser_path=%s' % chrome_filename,
   ]
   if not options.integration_bot and not options.morenacl_bot:
     cmd.append('disable_flaky_tests=1')
-  cmd.append('chrome_browser_tests_irt')
+  cmd.append('chrome_browser_tests')
 
   # Download the toolchain(s).
   if options.enable_pnacl:
