@@ -12,6 +12,7 @@
         'some.gyp:*',
         '../base/base.gyp:*',
         '../chrome/chrome.gyp:*',
+        '../components/components.gyp:*',
         '../content/content.gyp:*',
         '../crypto/crypto.gyp:*',
         '../media/media.gyp:*',
