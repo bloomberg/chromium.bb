@@ -62,11 +62,13 @@ bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
   std::string renderer(StringToLowerASCII(gpu_info->gl_renderer));
   bool is_img = vendor.find("imagination") != std::string::npos;
   bool is_arm = vendor.find("arm") != std::string::npos;
+  bool is_qualcomm = vendor.find("qualcomm") != std::string::npos;
   bool is_mali_t604 = is_arm && renderer.find("mali-t604") != std::string::npos;
 
   // IMG: avoid context switching perf problems, crashes with share groups
   // Mali-T604: http://crbug.com/154715
-  if (is_img || is_mali_t604) {
+  // QualComm: Crashes with share groups
+  if (is_img || is_mali_t604 || is_qualcomm) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableVirtualGLContexts);
   }
