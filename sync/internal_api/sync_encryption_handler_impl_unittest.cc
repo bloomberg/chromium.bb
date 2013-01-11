@@ -103,7 +103,6 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
     syncable::WriteTransaction wtrans(FROM_HERE, syncable::UNITTEST, directory);
     syncable::MutableEntry node(&wtrans,
                                 syncable::CREATE,
-                                model_type,
                                 wtrans.root_id(),
                                 tag_name);
     node.Put(syncable::UNIQUE_SERVER_TAG, tag_name);

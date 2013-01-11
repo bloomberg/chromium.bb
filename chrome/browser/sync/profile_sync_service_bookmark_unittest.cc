@@ -81,12 +81,13 @@ class FakeServerChange {
     EXPECT_EQ(BaseNode::INIT_OK, parent.InitByIdLookup(parent_id));
     syncer::WriteNode node(trans_);
     if (predecessor_id == 0) {
-      EXPECT_TRUE(node.InitBookmarkByCreation(parent, NULL));
+      EXPECT_TRUE(node.InitByCreation(syncer::BOOKMARKS, parent, NULL));
     } else {
       syncer::ReadNode predecessor(trans_);
       EXPECT_EQ(BaseNode::INIT_OK, predecessor.InitByIdLookup(predecessor_id));
       EXPECT_EQ(predecessor.GetParentId(), parent.GetId());
-      EXPECT_TRUE(node.InitBookmarkByCreation(parent, &predecessor));
+      EXPECT_TRUE(node.InitByCreation(syncer::BOOKMARKS, parent,
+                                      &predecessor));
     }
     EXPECT_EQ(node.GetPredecessorId(), predecessor_id);
     EXPECT_EQ(node.GetParentId(), parent_id);
@@ -360,7 +361,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
         predecessor = &predecessor_node;
       }
       syncer::WriteNode node(&trans);
-      if (!node.InitBookmarkByCreation(root, predecessor))
+      if (!node.InitByCreation(type, root, predecessor))
         return false;
       node.SetIsFolder(true);
       node.GetMutableEntryForTest()->Put(

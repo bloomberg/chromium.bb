@@ -19,9 +19,15 @@ using std::string;
 namespace syncer {
 namespace syncable {
 
-void MutableEntry::Init(WriteTransaction* trans,
-                        ModelType model_type,
-                        const Id& parent_id,
+MutableEntry::MutableEntry(WriteTransaction* trans, Create,
+                           const Id& parent_id, const string& name)
+    : Entry(trans),
+      write_transaction_(trans) {
+  Init(trans, parent_id, name);
+}
+
+
+void MutableEntry::Init(WriteTransaction* trans, const Id& parent_id,
                         const string& name) {
   scoped_ptr<EntryKernel> kernel(new EntryKernel);
   kernel_ = NULL;
@@ -37,15 +43,9 @@ void MutableEntry::Init(WriteTransaction* trans,
   // We match the database defaults here
   kernel->put(BASE_VERSION, CHANGES_VERSION);
   kernel->put(SERVER_ORDINAL_IN_PARENT, NodeOrdinal::CreateInitialOrdinal());
-
-  // Normally the SPECIFICS setting code is wrapped in logic to deal with
-  // unknown fields and encryption.  Since all we want to do here is ensure that
-  // GetModelType() returns a correct value from the very beginning, these
-  // few lines are sufficient.
-  sync_pb::EntitySpecifics specifics;
-  AddDefaultFieldValue(model_type, &specifics);
-  kernel->put(SPECIFICS, specifics);
-
+  if (!trans->directory()->InsertEntry(trans, kernel.get())) {
+    return; // We failed inserting, nothing more to do.
+  }
   // Because this entry is new, it was originally deleted.
   kernel->put(IS_DEL, true);
   trans->SaveOriginal(kernel.get());
@@ -53,17 +53,6 @@ void MutableEntry::Init(WriteTransaction* trans,
 
   // Now swap the pointers.
   kernel_ = kernel.release();
-}
-
-MutableEntry::MutableEntry(WriteTransaction* trans,
-                           Create,
-                           ModelType model_type,
-                           const Id& parent_id,
-                           const string& name)
-    : Entry(trans),
-      write_transaction_(trans) {
-  Init(trans, model_type, parent_id, name);
-  DCHECK(trans->directory()->InsertEntry(trans, kernel_));
 }
 
 MutableEntry::MutableEntry(WriteTransaction* trans, CreateNewUpdateItem,

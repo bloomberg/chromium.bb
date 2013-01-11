@@ -29,21 +29,15 @@ class TestEntryFactory {
       const sync_pb::EntitySpecifics& specifics,
       const std::string& parent_id);
 
-  int64 CreateUnappliedNewBookmarkItemWithParent(
-      const std::string& item_id,
-      const sync_pb::EntitySpecifics& specifics,
-      const std::string& parent_id);
-
   // Create a new unapplied update without a parent.
   int64 CreateUnappliedNewItem(const std::string& item_id,
                                const sync_pb::EntitySpecifics& specifics,
                                bool is_unique);
 
-  // Create an unsynced unique_client_tag item in the database.  If item_id is a
-  // local ID, it will be treated as a create-new.  Otherwise, if it's a server
-  // ID, we'll fake the server data so that it looks like it exists on the
-  // server.  Returns the methandle of the created item in |metahandle_out| if
-  // not NULL.
+  // Create an unsynced item in the database.  If item_id is a local ID, it will
+  // be treated as a create-new.  Otherwise, if it's a server ID, we'll fake the
+  // server data so that it looks like it exists on the server.  Returns the
+  // methandle of the created item in |metahandle_out| if not NULL.
   void CreateUnsyncedItem(const syncable::Id& item_id,
                           const syncable::Id& parent_id,
                           const std::string& name,
@@ -51,13 +45,14 @@ class TestEntryFactory {
                           ModelType model_type,
                           int64* metahandle_out);
 
-  // Creates a bookmark that is both unsynced an an unapplied update.  Returns
-  // the metahandle of the created item.
-  int64 CreateUnappliedAndUnsyncedBookmarkItem(const std::string& name);
+  // Creates an item that is both unsynced an an unapplied update.  Returns the
+  // metahandle of the created item.
+  int64 CreateUnappliedAndUnsyncedItem(const std::string& name,
+                                       ModelType model_type);
 
-  // Creates a unique_client_tag item that has neither IS_UNSYNED or
-  // IS_UNAPPLIED_UPDATE.  The item is known to both the server and client.
-  // Returns the metahandle of the created item.
+  // Creates an item that has neither IS_UNSYNED or IS_UNAPPLIED_UPDATE.  The
+  // item is known to both the server and client.  Returns the metahandle of
+  // the created item.
   int64 CreateSyncedItem(const std::string& name,
                          ModelType model_type, bool is_folder);
 

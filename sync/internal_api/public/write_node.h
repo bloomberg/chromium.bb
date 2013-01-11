@@ -67,12 +67,15 @@ class SYNC_EXPORT WriteNode : public BaseNode {
       ModelType model_type,
       const std::string& tag) OVERRIDE;
 
-  // Create a new bookmark node with the specified parent and predecessor.  Use
-  // a NULL |predecessor| to indicate that this is to be the first child.
+  // Create a new node with the specified parent and predecessor.  |model_type|
+  // dictates the type of the item, and controls which EntitySpecifics proto
+  // extension can be used with this item.  Use a NULL |predecessor|
+  // to indicate that this is to be the first child.
   // |predecessor| must be a child of |new_parent| or NULL. Returns false on
   // failure.
-  bool InitBookmarkByCreation(const BaseNode& parent,
-                              const BaseNode* predecessor);
+  bool InitByCreation(ModelType model_type,
+                      const BaseNode& parent,
+                      const BaseNode* predecessor);
 
   // Create nodes using this function if they're unique items that
   // you want to fetch using client_tag. Note that the behavior of these
@@ -179,6 +182,9 @@ class SYNC_EXPORT WriteNode : public BaseNode {
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, EncryptBookmarksWithLegacyData);
 
   void* operator new(size_t size);  // Node is meant for stack use only.
+
+  // Helper to set model type. This will clear any specifics data.
+  void PutModelType(ModelType model_type);
 
   // Helper to set the previous node.
   bool PutPredecessor(const BaseNode* predecessor) WARN_UNUSED_RESULT;

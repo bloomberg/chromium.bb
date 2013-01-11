@@ -741,8 +741,7 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
       // Simulates effects of UpdateLocalDataFromServerData
       MutableEntry parent(&trans, GET_BY_SERVER_TAG,
                           syncer::ModelTypeToRootTag(syncer::AUTOFILL));
-      MutableEntry item(&trans, CREATE, syncer::AUTOFILL,
-                        parent.Get(syncer::syncable::ID), tag);
+      MutableEntry item(&trans, CREATE, parent.Get(syncer::syncable::ID), tag);
       ASSERT_TRUE(item.good());
       item.Put(SPECIFICS, entity_specifics);
       item.Put(SERVER_SPECIFICS, entity_specifics);

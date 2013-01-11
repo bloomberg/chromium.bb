@@ -71,7 +71,6 @@ void CreateTypeRoot(WriteTransaction* trans,
   std::string tag_name = syncer::ModelTypeToRootTag(type);
   syncable::MutableEntry node(trans,
                               syncable::CREATE,
-                              type,
                               TestIdFactory::root(),
                               tag_name);
   DCHECK(node.good());
