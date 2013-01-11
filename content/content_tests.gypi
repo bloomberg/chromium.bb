@@ -452,6 +452,7 @@
         '../webkit/fileapi/syncable/syncable_file_operation_runner_unittest.cc',
         '../webkit/fileapi/test_file_set.cc',
         '../webkit/fileapi/test_file_set.h',
+        '../webkit/fileapi/upload_file_system_file_element_reader_unittest.cc',
         '../webkit/fileapi/webfilewriter_base_unittest.cc',
         '../webkit/media/buffered_data_source_unittest.cc',
         '../webkit/media/buffered_resource_loader_unittest.cc',
