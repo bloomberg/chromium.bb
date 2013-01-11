@@ -75,8 +75,12 @@ def num_processors():
     import multiprocessing
     return multiprocessing.cpu_count()
   except:  # pylint: disable=W0702
-    # Mac OS 10.6
-    return int(os.sysconf('SC_NPROCESSORS_ONLN'))  # pylint: disable=E1101
+    try:
+      # Mac OS 10.6
+      return int(os.sysconf('SC_NPROCESSORS_ONLN'))  # pylint: disable=E1101
+    except:
+      # Some of the windows builders seem to get here.
+      return 4
 
 
 if subprocess.mswindows:
