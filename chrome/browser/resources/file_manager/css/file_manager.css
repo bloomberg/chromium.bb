@@ -81,8 +81,7 @@ body.loaded {
   -webkit-box-orient: block-axis;
   -webkit-box-pack: center;
   display: -webkit-box;
-  height: 35px;
-  overflow: hidden;
+  min-height: 35px;
 }
 
 #butter-bar .actions {
@@ -122,10 +121,10 @@ body.loaded {
   background-color: rgba(221, 75, 57, 0.2);
 }
 
-#butter-bar .content-message {
-  -webkit-box-align: begin;
-  -webkit-box-flex: 1.0;
-  -webkit-box-orient: vertical;
+#butter-bar .butter-message.single-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .progress-bar {

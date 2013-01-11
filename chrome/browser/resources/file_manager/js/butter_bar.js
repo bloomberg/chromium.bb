@@ -125,15 +125,19 @@ ButterBar.prototype.update_ = function(message, opt_options) {
     }.bind(this), timeout);
   }
 
-  this.butter_.querySelector('.butter-message').textContent = message;
+  var butterMessage = this.butter_.querySelector('.butter-message');
+   butterMessage.textContent = message;
   if (message && !this.isVisible_()) {
     // The butter bar is made visible on the first non-empty message.
     this.butter_.classList.add('visible');
     this.lastShowTime_ = Date.now();
   }
   if (opt_options && 'progress' in opt_options) {
+    butterMessage.classList.add('single-line');
     this.butter_.querySelector('.progress-track').style.width =
         (opt_options.progress * 100) + '%';
+  } else {
+    butterMessage.classList.remove('single-line');
   }
 };
 
