@@ -669,8 +669,7 @@ class MarkedInstruction : public Instruction {
       optional_prefixes_(),
       rex_(),
       opcode_in_modrm_(false),
-      opcode_in_imm_(false),
-      fwait_(false) {
+      opcode_in_imm_(false) {
     if (has_flag("branch_hint")) optional_prefixes_.insert("branch_hint");
     if (has_flag("condrep")) optional_prefixes_.insert("condrep");
     if (has_flag("rep")) optional_prefixes_.insert("rep");
@@ -699,7 +698,9 @@ class MarkedInstruction : public Instruction {
       if ((*opcodes_.begin()) == "rexw") {
         rex_.w_required = true;
       } else if ((*opcodes_.begin()) == "fwait") {
-        fwait_ = true;
+        fprintf(stderr, "%s: fwait pseudoprefix is not supported (%s)\n",
+                short_program_name, name().c_str());
+        exit(1);
       } else {
         static const char* prefix_bytes[] = {
           "0x66", "data16",
@@ -723,8 +724,7 @@ class MarkedInstruction : public Instruction {
                              optional_prefixes_,
                              rex_,
                              opcode_in_modrm_,
-                             opcode_in_imm_,
-                             fwait_);
+                             opcode_in_imm_);
   }
 
   MarkedInstruction with_operands(
@@ -734,8 +734,7 @@ class MarkedInstruction : public Instruction {
                              optional_prefixes_,
                              rex_,
                              opcode_in_modrm_,
-                             opcode_in_imm_,
-                             fwait_);
+                             opcode_in_imm_);
   }
 
   MarkedInstruction with_opcodes(
@@ -745,8 +744,7 @@ class MarkedInstruction : public Instruction {
                              optional_prefixes_,
                              rex_,
                              opcode_in_modrm_,
-                             opcode_in_imm_,
-                             fwait_);
+                             opcode_in_imm_);
   }
 
   MarkedInstruction with_flags(const std::set<std::string>& flags) const {
@@ -755,8 +753,7 @@ class MarkedInstruction : public Instruction {
                              optional_prefixes_,
                              rex_,
                              opcode_in_modrm_,
-                             opcode_in_imm_,
-                             fwait_);
+                             opcode_in_imm_);
   }
 
   MarkedInstruction with_flag(std::string flag) const {
@@ -872,10 +869,6 @@ class MarkedInstruction : public Instruction {
     return opcode_in_imm_;
   }
 
-  bool fwait(void) const {
-    return fwait_;
-  }
-
  private:
   // Prefixes which can affect the decoder state for this instruction, i.e. they
   // may make instruction use different size of immediate, different register or
@@ -926,25 +919,18 @@ class MarkedInstruction : public Instruction {
   // byte in a similar fashion, such as “vcmppd”.
   bool opcode_in_imm_ : 1;
 
-  // True if instruction includes “fwait” “prefix”.  Note that “fwait” is not
-  // actually a prefix, it's separate instruction, but assemblers and objdump
-  // recognize it as part of other instruction, such as “finit” or “fsave”.
-  bool fwait_ : 1;
-
   MarkedInstruction(const Instruction& instruction,
                     const std::multiset<std::string>& required_prefixes,
                     const std::multiset<std::string>& optional_prefixes,
                     const RexType& rex,
                     bool opcode_in_modrm,
-                    bool opcode_in_imm,
-                    bool fwait) :
+                    bool opcode_in_imm) :
     Instruction(instruction),
     required_prefixes_(required_prefixes),
     optional_prefixes_(optional_prefixes),
     rex_(rex),
     opcode_in_modrm_(opcode_in_modrm),
-    opcode_in_imm_(opcode_in_imm),
-    fwait_(fwait) {
+    opcode_in_imm_(opcode_in_imm) {
   }
 };
 
@@ -1019,15 +1005,6 @@ void PrintOperatorDelimiter(void) {
 void PrintLegacyPrefixes(const MarkedInstruction& instruction) {
   const std::multiset<std::string>& required_prefixes =
     instruction.required_prefixes();
-  if (instruction.fwait()) {
-    if (ia32_mode)
-      fprintf(out_file, "0x9b ");
-    else if ((required_prefixes.size() == 1) &&
-             (*required_prefixes.begin()) == "data16")
-      fprintf(out_file, "(REX_WRXB? 0x9b data16 | 0x9b ");
-    else
-      fprintf(out_file, "(REX_WRXB? 0x9b | 0x9b ");
-  }
   const std::multiset<std::string>& optional_prefixes =
     instruction.optional_prefixes();
   if ((required_prefixes.size() == 1) &&
@@ -1097,8 +1074,6 @@ void PrintREXPrefix(const MarkedInstruction& instruction) {
     fprintf(out_file, "REXW_RXB");
   else
     fprintf(out_file, "REX_RXB?");
-  if (instruction.fwait())
-    fprintf(out_file, ")");
   fprintf(out_file, " ");
 }
 
