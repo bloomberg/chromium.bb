@@ -35,13 +35,12 @@ TEST(SerialPortEnumeratorTest, ValidPortNamePatterns) {
 }
 
 TEST(SerialPortEnumeratorTest, InvalidPortNamePatterns) {
+#if defined(OS_WIN)
+#else
   const extensions::SerialPortEnumerator::StringSet port_patterns(
       extensions::SerialPortEnumerator::GenerateValidPatterns());
 
   const char *kInvalidNames[] = {
-#if defined(OS_WIN)
-    "/dev/ttyACM0",
-#else
     "",
     ".",
     "..",
@@ -56,7 +55,6 @@ TEST(SerialPortEnumeratorTest, InvalidPortNamePatterns) {
     "modem",
     "serial",
     "tty",
-#endif
   };
 
   for (size_t i = 0; i < arraysize(kInvalidNames); ++i) {
@@ -65,4 +63,5 @@ TEST(SerialPortEnumeratorTest, InvalidPortNamePatterns) {
       EXPECT_FALSE(MatchPattern(kInvalidNames[i], *j)) <<
           kInvalidNames[i] << " should not have matched " << *j;
   }
+#endif
 }

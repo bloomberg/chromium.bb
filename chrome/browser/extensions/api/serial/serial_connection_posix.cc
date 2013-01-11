@@ -71,4 +71,9 @@ SetControlSignals(const ControlSignals &control_signals) {
   return ioctl(file_, TIOCMSET, &status) == 0;
 }
 
+std::string SerialConnection::MaybeFixUpPortName(
+    const std::string &port_name) {
+  return port_name;
+}
+
 }  // namespace extensions

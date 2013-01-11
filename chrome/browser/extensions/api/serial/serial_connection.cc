@@ -31,7 +31,7 @@ bool SerialConnection::Open() {
   // validate the supplied path against the set of valid port names, and
   // it is a reasonable assumption that serial port names are ASCII.
   CHECK(IsStringASCII(port_));
-  FilePath file_path(FilePath::FromUTF8Unsafe(port_));
+  FilePath file_path(FilePath::FromUTF8Unsafe(MaybeFixUpPortName(port_)));
 
   file_ = base::CreatePlatformFile(file_path,
     base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |

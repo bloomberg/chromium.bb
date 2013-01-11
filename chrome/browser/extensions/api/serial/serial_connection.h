@@ -59,6 +59,9 @@ class SerialConnection : public ApiResource {
   // Do platform-specific work after a successful Open().
   bool PostOpen();
 
+  // Platform-specific port name adapter
+  static std::string MaybeFixUpPortName(const std::string &port_name);
+
  private:
   std::string port_;
   int bitrate_;

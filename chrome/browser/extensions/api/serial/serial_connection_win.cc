@@ -76,4 +76,14 @@ SetControlSignals(const ControlSignals &control_signals) {
   return true;
 }
 
+std::string SerialConnection::MaybeFixUpPortName(
+    const std::string &port_name) {
+  // For COM numbers less than 9, CreateFile is called with a string such as
+  // "COM1". For numbers greater than 9, a prefix of "\\\\.\\" must be added.
+  if (port_name.length() > std::string("COM9").length())
+    return std::string("\\\\.\\").append(port_name);
+
+  return port_name;
+}
+
 }  // namespace extensions
