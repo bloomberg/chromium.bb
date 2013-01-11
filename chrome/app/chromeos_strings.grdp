@@ -382,6 +382,12 @@ Press any key to continue exploring.
   <message name="IDS_LOGIN_OFFLINE_SIGNIN" desc="Sign in text on the offline login screen. Note: should by the same as the one used on the Gaia sign-in page.">
     Sign In
   </message>
+  <message name="IDS_LOGIN_OFFLINE_EMPTY_EMAIL" desc="Alert message about empty email on the offline login screen. Note: should by the same as the one used on the Gaia sign-in page.">
+    Enter your email address.
+  </message>
+  <message name="IDS_LOGIN_OFFLINE_EMPTY_PASSWORD" desc="Alert message about empty password on the offline login screen.">
+    Enter your password.
+  </message>
   <message name="IDS_LOGIN_OFFLINE_ERROR" desc="Error alert message on the offline login screen. Note: should by the same as the one used on the Gaia sign-in page.">
     The username or password you entered is incorrect.
   </message>

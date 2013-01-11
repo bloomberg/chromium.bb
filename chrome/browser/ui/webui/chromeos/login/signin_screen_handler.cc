@@ -840,6 +840,10 @@ void SigninScreenHandler::LoadAuthExtension(
         l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_PASSWORD));
     localized_strings->SetString("stringSignIn",
         l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_SIGNIN));
+    localized_strings->SetString("stringEmptyEmail",
+        l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_EMPTY_EMAIL));
+    localized_strings->SetString("stringEmptyPassword",
+        l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_EMPTY_PASSWORD));
     localized_strings->SetString("stringError",
         l10n_util::GetStringUTF16(IDS_LOGIN_OFFLINE_ERROR));
     params.Set("localizedStrings", localized_strings);

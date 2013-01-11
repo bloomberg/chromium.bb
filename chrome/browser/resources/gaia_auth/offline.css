@@ -205,7 +205,9 @@ input[type=email].form-error,
 input[type=number].form-error,
 input[type=password].form-error,
 input[type=text].form-error,
-input[type=url].form-error {
+input[type=url].form-error,
+input[type=text].field-error,
+input[type=password].field-error {
   border: 1px solid #dd4b39;
 }
 html {
@@ -251,6 +253,7 @@ html {
 .errormsg {
   display: none;
 }
-.form-error + .errormsg {
+.form-error + .errormsg,
+.field-error + .errormsg {
   display: block;
 }

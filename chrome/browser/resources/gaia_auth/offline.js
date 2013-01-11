@@ -15,17 +15,34 @@ function load() {
   $('password-label').textContent =
       decodeURIComponent(params['stringPassword']);
   $('submit-button').value = decodeURIComponent(params['stringSignIn']);
+  $('empty-email-alert').textContent =
+      decodeURIComponent(params['stringEmptyEmail']);
+  $('empty-password-alert').textContent =
+      decodeURIComponent(params['stringEmptyPassword']);
   $('errormsg-alert').textContent = decodeURIComponent(params['stringError']);
 
   // Setup actions.
   var form = $('offline-login-form');
   form.addEventListener('submit', function(e) {
-    var msg = {
-      'method': 'offlineLogin',
-      'email': form.email.value,
-      'password': form.password.value
-    };
-    window.parent.postMessage(msg, 'chrome://oobe/');
+    // Clear all previous errors.
+    form.email.classList.remove('field-error');
+    form.password.classList.remove('field-error');
+    form.password.classList.remove('form-error');
+
+    if (form.email.value == '') {
+      form.email.classList.add('field-error');
+      form.email.focus();
+    } else if (form.password.value == '') {
+      form.password.classList.add('field-error');
+      form.password.focus();
+    } else {
+      var msg = {
+        'method': 'offlineLogin',
+        'email': form.email.value,
+        'password': form.password.value
+      };
+      window.parent.postMessage(msg, 'chrome://oobe/');
+    }
     e.preventDefault();
   });
 
