@@ -20,6 +20,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/v8_value_converter_impl.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMCustomEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -29,7 +30,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "webkit/plugins/sad_plugin.h"
 
 #if defined (OS_WIN)
