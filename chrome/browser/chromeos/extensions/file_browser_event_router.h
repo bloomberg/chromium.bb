@@ -92,24 +92,6 @@ class FileBrowserEventRouter
   friend class FileBrowserPrivateAPI;
   friend class base::RefCountedThreadSafe<FileBrowserEventRouter>;
 
-  // Helper class for passing through file watch notification events.
-  class FileWatcherDelegate : public base::files::FilePathWatcher::Delegate {
-   public:
-    explicit FileWatcherDelegate(FileBrowserEventRouter* router);
-
-   protected:
-    virtual ~FileWatcherDelegate() {}
-
-   private:
-    // base::files::FilePathWatcher::Delegate overrides.
-    virtual void OnFilePathChanged(const FilePath& path) OVERRIDE;
-    virtual void OnFilePathError(const FilePath& path) OVERRIDE;
-
-    void HandleFileWatchOnUIThread(const FilePath& local_path, bool got_error);
-
-    FileBrowserEventRouter* router_;
-  };
-
   typedef std::map<std::string, int> ExtensionUsageRegistry;
 
   class FileWatcherExtensions {
@@ -130,7 +112,8 @@ class FileBrowserEventRouter
 
     const FilePath& GetVirtualPath() const;
 
-    bool Watch(const FilePath& path, FileWatcherDelegate* delegate);
+    bool Watch(const FilePath& path,
+               const base::files::FilePathWatcher::Callback& callback);
 
    private:
     linked_ptr<base::files::FilePathWatcher> file_watcher_;
@@ -198,7 +181,8 @@ class FileBrowserEventRouter
   // zero.
   void HandleRemoteUpdateRequestOnUIThread(bool start);
 
-  scoped_refptr<FileWatcherDelegate> delegate_;
+  base::WeakPtrFactory<FileBrowserEventRouter> weak_factory_;
+  base::files::FilePathWatcher::Callback file_watcher_callback_;
   WatcherMap file_watchers_;
   scoped_ptr<FileBrowserNotifications> notifications_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;

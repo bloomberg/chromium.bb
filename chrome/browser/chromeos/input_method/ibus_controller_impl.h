@@ -46,8 +46,7 @@ class IBusControllerImpl : public IBusControllerBase,
       const InputMethodProperty& new_prop,
       InputMethodPropertyList* prop_list);
 
-  static void IBusDaemonInitializationDone(IBusControllerImpl* controller,
-                                           const std::string& ibus_address);
+  void IBusDaemonInitializationDone(const std::string& ibus_address);
 
  private:
   enum IBusDaemonStatus{
