@@ -86,7 +86,8 @@ def GetBotStepMap():
 
       # Other waterfalls
       B('asan-builder', std_build_steps, None, None),
-      B('asan-tests', std_test_steps, T(std_tests, ['--asan']), None),
+      B('asan-tests', std_test_steps + ['bb_asan_tests_setup'],
+        T(std_tests, ['--asan']), None),
       B('fyi-builder-dbg',
         ['bb_check_webview_licenses', 'bb_compile', 'bb_compile_experimental',
          'bb_run_findbugs', 'bb_zip_build'], None, None),

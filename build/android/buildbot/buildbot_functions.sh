@@ -93,6 +93,11 @@ function bb_compile_setup {
   gclient runhooks
 }
 
+function bb_asan_tests_setup {
+  # Download or build the ASan runtime library.
+  ${SRC_ROOT}/tools/clang/scripts/update.sh
+}
+
 # Setup goma.  Used internally to buildbot_functions.sh.
 function bb_setup_goma_internal {
   export GOMA_API_KEY_FILE=${GOMA_DIR}/goma.key
