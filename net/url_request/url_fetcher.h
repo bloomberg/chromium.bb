@@ -196,9 +196,6 @@ class NET_EXPORT URLFetcher {
   // Retries up to |max_retries| times when requests fail with
   // ERR_NETWORK_CHANGED. If ERR_NETWORK_CHANGED is received after having
   // retried |max_retries| times then it is propagated to the observer.
-  // Each retry can be delayed if the network if currently offline, and will be
-  // attempted once the network connection is back. The first fetch is also
-  // delayed if the network is offline when Start() is invoked.
   virtual void SetAutomaticallyRetryOnNetworkChanges(int max_retries) = 0;
 
   // By default, the response is saved in a string. Call this method to save the

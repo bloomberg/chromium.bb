@@ -20,7 +20,6 @@
 #include "base/timer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/network_change_notifier.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
@@ -39,8 +38,7 @@ class URLRequestThrottlerEntryInterface;
 
 class URLFetcherCore
     : public base::RefCountedThreadSafe<URLFetcherCore>,
-      public URLRequest::Delegate,
-      public NetworkChangeNotifier::ConnectionTypeObserver {
+      public URLRequest::Delegate {
  public:
   URLFetcherCore(URLFetcher* fetcher,
                  const GURL& original_url,
@@ -127,10 +125,6 @@ class URLFetcherCore
   virtual void OnCertificateRequested(
       URLRequest* request,
       SSLCertRequestInfo* cert_request_info) OVERRIDE;
-
-  // Overridden from NetworkChangeNotifier::ConnectionTypeObserver:
-  virtual void OnConnectionTypeChanged(
-      NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
   URLFetcherDelegate* delegate() const { return delegate_; }
   static void CancelAll();
