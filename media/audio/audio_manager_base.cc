@@ -54,14 +54,7 @@ AudioManagerBase::AudioManagerBase()
 #if defined(OS_WIN)
   audio_thread_->init_com_with_mta(true);
 #endif
-#if defined(OS_MACOSX)
-  // On Mac, use a UI loop to get native message pump so that CoreAudio property
-  // listener callbacks fire.
-  CHECK(audio_thread_->StartWithOptions(
-      base::Thread::Options(MessageLoop::TYPE_UI, 0)));
-#else
   CHECK(audio_thread_->Start());
-#endif
   message_loop_ = audio_thread_->message_loop_proxy();
 }
 
