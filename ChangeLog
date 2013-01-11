@@ -1,3 +1,11 @@
+2013-01-11  Christian Egli  <christian.egli@sbs.ch>
+
+	* liblouis/Makefile.am:
+	* gnulib/Makefile.am:
+	* configure.ac:
+	* HACKING: Use the malloc and realloc modules from gnulib to
+	enable cross compilation to windows using mingw.
+
 2013-01-09  Christian Egli  <christian.egli@sbs.ch>
 
 	* tables/ko.ctb: Fixes for the Korean tables by Joseph Lee.

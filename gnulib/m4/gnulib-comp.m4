@@ -45,8 +45,13 @@ AC_DEFUN([gl_EARLY],
   # Code from module getopt-posix:
   # Code from module gettext-h:
   # Code from module include_next:
+  # Code from module malloc-gnu:
+  # Code from module malloc-posix:
   # Code from module nocrash:
   # Code from module progname:
+  # Code from module realloc-gnu:
+  # Code from module realloc-posix:
+  # Code from module snippet/_Noreturn:
   # Code from module snippet/arg-nonnull:
   # Code from module snippet/c++defs:
   # Code from module snippet/warn-on-use:
@@ -58,6 +63,7 @@ AC_DEFUN([gl_EARLY],
   dnl shouldn't hurt, though installers are on their own to set c99 mode.
   gl_PROG_CC_C99
   # Code from module stddef:
+  # Code from module stdlib:
   # Code from module sys_types:
   # Code from module unistd:
   # Code from module version-etc:
@@ -99,11 +105,32 @@ AC_DEFUN([gl_INIT],
   AC_SUBST([GNULIB_GL_UNISTD_H_GETOPT])
   AC_SUBST([LIBINTL])
   AC_SUBST([LTLIBINTL])
+  gl_FUNC_MALLOC_GNU
+  if test $REPLACE_MALLOC = 1; then
+    AC_LIBOBJ([malloc])
+  fi
+  gl_MODULE_INDICATOR([malloc-gnu])
+  gl_FUNC_MALLOC_POSIX
+  if test $REPLACE_MALLOC = 1; then
+    AC_LIBOBJ([malloc])
+  fi
+  gl_STDLIB_MODULE_INDICATOR([malloc-posix])
   AC_CHECK_DECLS([program_invocation_name], [], [], [#include <errno.h>])
   AC_CHECK_DECLS([program_invocation_short_name], [], [], [#include <errno.h>])
+  gl_FUNC_REALLOC_GNU
+  if test $REPLACE_REALLOC = 1; then
+    AC_LIBOBJ([realloc])
+  fi
+  gl_MODULE_INDICATOR([realloc-gnu])
+  gl_FUNC_REALLOC_POSIX
+  if test $REPLACE_REALLOC = 1; then
+    AC_LIBOBJ([realloc])
+  fi
+  gl_STDLIB_MODULE_INDICATOR([realloc-posix])
   gt_TYPE_SSIZE_T
   gl_STDARG_H
   gl_STDDEF_H
+  gl_STDLIB_H
   gl_SYS_TYPES_H
   AC_PROG_MKDIR_P
   gl_UNISTD_H
@@ -244,6 +271,7 @@ AC_DEFUN([gltests_LIBSOURCES], [
 # This macro records the list of files which have been installed by
 # gnulib-tool and may be removed by future gnulib-tool invocations.
 AC_DEFUN([gl_FILE_LIST], [
+  build-aux/snippet/_Noreturn.h
   build-aux/snippet/arg-nonnull.h
   build-aux/snippet/c++defs.h
   build-aux/snippet/warn-on-use.h
@@ -252,10 +280,13 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/getopt1.c
   lib/getopt_int.h
   lib/gettext.h
+  lib/malloc.c
   lib/progname.c
   lib/progname.h
+  lib/realloc.c
   lib/stdarg.in.h
   lib/stddef.in.h
+  lib/stdlib.in.h
   lib/sys_types.in.h
   lib/unistd.c
   lib/unistd.in.h
@@ -267,12 +298,15 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/getopt.m4
   m4/gnulib-common.m4
   m4/include_next.m4
+  m4/malloc.m4
   m4/nocrash.m4
   m4/off_t.m4
   m4/onceonly.m4
+  m4/realloc.m4
   m4/ssize_t.m4
   m4/stdarg.m4
   m4/stddef_h.m4
+  m4/stdlib_h.m4
   m4/sys_types_h.m4
   m4/unistd_h.m4
   m4/version-etc.m4
