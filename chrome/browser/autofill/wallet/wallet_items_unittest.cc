@@ -212,6 +212,7 @@ const char kLegalDocumentMissingDocumentBody[] =
 const char kWalletItemsWithRequiredActions[] =
     "{"
     "  \"google_transaction_id\":\"google_transaction_id\","
+    "  \"obfuscated_gaia_id\":\"\","
     "  \"required_action\":"
     "  ["
     "    \"  setup_wallet\","
@@ -224,6 +225,7 @@ const char kWalletItemsWithRequiredActions[] =
 const char kWalletItemsWithInvalidRequiredActions[] =
     "{"
     "  \"google_transaction_id\":\"google_transaction_id\","
+    "  \"obfuscated_gaia_id\":\"\","
     "  \"required_action\":"
     "  ["
     "    \"cvc_risk_CHALLENGE\","
@@ -286,6 +288,7 @@ const char kWalletItems[] =
     "    }"
     "  ],"
     "  \"default_address_id\":\"default_address_id\","
+    "  \"obfuscated_gaia_id\":\"obfuscated_gaia_id\","
     "  \"required_legal_document\":"
     "  ["
     "    {"
@@ -408,13 +411,13 @@ TEST_F(WalletItemsTest, CreateWalletItemsWithRequiredActions) {
   required_actions.push_back(GAIA_AUTH);
   required_actions.push_back(INVALID_FORM_FIELD);
 
-  WalletItems expected(required_actions, "google_transaction_id", "", "");
+  WalletItems expected(required_actions, "google_transaction_id", "", "", "");
   ASSERT_EQ(expected, *WalletItems::CreateWalletItems(*dict));
 
   DCHECK(!required_actions.empty());
   required_actions.pop_back();
   WalletItems different_required_actions(
-      required_actions, "google_transaction_id", "", "");
+      required_actions, "google_transaction_id", "", "", "");
   ASSERT_NE(expected, different_required_actions);
 }
 
@@ -429,7 +432,8 @@ TEST_F(WalletItemsTest, CreateWalletItems) {
   WalletItems expected(required_actions,
                        "google_transaction_id",
                        "default_instrument_id",
-                       "default_address_id");
+                       "default_address_id",
+                       "obfuscated_gaia_id");
 
   scoped_ptr<Address> billing_address(new Address("country_code",
                                                   "name",

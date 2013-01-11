@@ -246,11 +246,13 @@ bool WalletItems::LegalDocument::operator!=(const LegalDocument& other) const {
 WalletItems::WalletItems(const std::vector<RequiredAction>& required_actions,
                          const std::string& google_transaction_id,
                          const std::string& default_instrument_id,
-                         const std::string& default_address_id)
+                         const std::string& default_address_id,
+                         const std::string& obfuscated_gaia_id)
     : required_actions_(required_actions),
       google_transaction_id_(google_transaction_id),
       default_instrument_id_(default_instrument_id),
-      default_address_id_(default_address_id) {}
+      default_address_id_(default_address_id),
+      obfuscated_gaia_id_(obfuscated_gaia_id) {}
 
 WalletItems::~WalletItems() {}
 
@@ -289,10 +291,15 @@ scoped_ptr<WalletItems>
   if (!dictionary.GetString("default_address_id", &default_address_id))
     DVLOG(1) << "Response from Google wallet missing default_address_id";
 
+  std::string obfuscated_gaia_id;
+  if (!dictionary.GetString("obfuscated_gaia_id", &obfuscated_gaia_id))
+    DVLOG(1) << "Response from Google wallet missing obfuscated gaia id";
+
   scoped_ptr<WalletItems> wallet_items(new WalletItems(required_action,
                                                        google_transaction_id,
                                                        default_instrument_id,
-                                                       default_address_id));
+                                                       default_address_id,
+                                                       obfuscated_gaia_id));
 
   const ListValue* legal_docs;
   if (dictionary.GetList("required_legal_document", &legal_docs)) {
@@ -356,7 +363,8 @@ bool WalletItems::operator==(const WalletItems& other) const {
   return google_transaction_id_ == other.google_transaction_id_ &&
          default_instrument_id_ == other.default_instrument_id_ &&
          default_address_id_ == other.default_address_id_ &&
-         required_actions_ == other.required_actions_;
+         required_actions_ == other.required_actions_ &&
+         obfuscated_gaia_id_ == other.obfuscated_gaia_id_;
 }
 
 bool WalletItems::operator!=(const WalletItems& other) const {

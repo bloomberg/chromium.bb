@@ -172,9 +172,8 @@ class WalletItems {
     return default_instrument_id_;
   }
   const std::vector<Address*>& addresses() const { return addresses_.get(); }
-  const std::string& default_address_id() const {
-    return default_address_id_;
-  }
+  const std::string& default_address_id() const { return default_address_id_; }
+  const std::string& obfuscated_gaia_id() const { return obfuscated_gaia_id_; }
   const std::vector<LegalDocument*>& legal_documents() const {
     return legal_documents_.get();
   }
@@ -187,13 +186,15 @@ class WalletItems {
   WalletItems(const std::vector<RequiredAction>& required_actions,
               const std::string& google_transaction_id,
               const std::string& default_instrument_id,
-              const std::string& default_address_id);
+              const std::string& default_address_id,
+              const std::string& obfuscated_gaia_id);
   // Actions that must be completed by the user before a FullWallet can be
   // issued to them by the Online Wallet service.
   std::vector<RequiredAction> required_actions_;
   std::string google_transaction_id_;
   std::string default_instrument_id_;
   std::string default_address_id_;
+  std::string obfuscated_gaia_id_;
   ScopedVector<MaskedInstrument> instruments_;
   ScopedVector<Address> addresses_;
   ScopedVector<LegalDocument> legal_documents_;

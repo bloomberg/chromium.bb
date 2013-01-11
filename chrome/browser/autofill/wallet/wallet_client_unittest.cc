@@ -103,6 +103,7 @@ const char kGetWalletItemsValidResponse[] =
     "    }"
     "  ],"
     "  \"default_instrument_id\":\"default_instrument_id\","
+    "  \"obfuscated_gaia_id\":\"obfuscated_gaia_id\","
     "  \"address\":"
     "  ["
     "  ],"
