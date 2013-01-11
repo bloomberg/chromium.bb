@@ -82,6 +82,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_All) {
   ASSERT_TRUE(resource_list);
   // Do some sanity check.
   EXPECT_EQ(12U, resource_list->entries().size());
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, GetResourceList_InRootDirectory) {
@@ -104,6 +105,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_InRootDirectory) {
   ASSERT_TRUE(resource_list);
   // Do some sanity check. There are 7 entries in the root directory.
   EXPECT_EQ(7U, resource_list->entries().size());
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, GetResourceList_Search) {
@@ -127,6 +129,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_Search) {
   // Do some sanity check. There are 3 entries that contain "File" in their
   // titles.
   EXPECT_EQ(3U, resource_list->entries().size());
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, GetResourceList_NoNewEntries) {
@@ -154,6 +157,8 @@ TEST_F(FakeDriveServiceTest, GetResourceList_NoNewEntries) {
   // This should be empty as the latest changestamp was passed to
   // GetResourceList(), hence there should be no new entries.
   EXPECT_EQ(0U, resource_list->entries().size());
+  // It's considered loaded even if the result is empty.
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, GetResourceList_WithNewEntry) {
@@ -186,6 +191,7 @@ TEST_F(FakeDriveServiceTest, GetResourceList_WithNewEntry) {
   ASSERT_EQ(1U, resource_list->entries().size());
   EXPECT_EQ("new directory",
             UTF16ToUTF8(resource_list->entries()[0]->title()));
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, GetResourceList_Offline) {
@@ -226,6 +232,7 @@ TEST_F(FakeDriveServiceTest, GetAccountMetadata) {
   ASSERT_TRUE(account_metadata);
   // Do some sanity check.
   EXPECT_EQ(2U, account_metadata->installed_apps().size());
+  EXPECT_EQ(1, fake_service_.account_metadata_load_count());
 }
 
 TEST_F(FakeDriveServiceTest, GetAccountMetadata_Offline) {

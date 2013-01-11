@@ -22,6 +22,8 @@ namespace google_apis {
 FakeDriveService::FakeDriveService()
     : largest_changestamp_(0),
       resource_id_count_(0),
+      resource_list_load_count_(0),
+      account_metadata_load_count_(0),
       offline_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -196,6 +198,7 @@ void FakeDriveService::GetResourceList(
       ++i;
   }
 
+  ++resource_list_load_count_;
   MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback,
@@ -249,6 +252,8 @@ void FakeDriveService::GetAccountMetadata(
                    base::Passed(&null)));
     return;
   }
+
+  ++account_metadata_load_count_;
   scoped_ptr<AccountMetadataFeed> account_metadata =
       AccountMetadataFeed::CreateFrom(*account_metadata_value_);
   MessageLoop::current()->PostTask(

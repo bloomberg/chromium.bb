@@ -42,6 +42,16 @@ class FakeDriveService : public DriveServiceInterface {
   // also comments at LoadAccountMetadataForWapi().
   int64 largest_changestamp() const { return largest_changestamp_; }
 
+  // Returns the number of times the resource list is successfully loaded by
+  // GetResourceList().
+  int resource_list_load_count() const { return resource_list_load_count_; }
+
+  // Returns the number of times the account metadata is successfully loaded
+  // by GetAccountMetadata().
+  int account_metadata_load_count() const {
+    return account_metadata_load_count_;
+  }
+
   // DriveServiceInterface Overrides
   virtual void Initialize(Profile* profile) OVERRIDE;
   virtual void AddObserver(DriveServiceObserver* observer) OVERRIDE;
@@ -134,6 +144,8 @@ class FakeDriveService : public DriveServiceInterface {
   scoped_ptr<base::Value> app_info_value_;
   int64 largest_changestamp_;
   int resource_id_count_;
+  int resource_list_load_count_;
+  int account_metadata_load_count_;
   bool offline_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDriveService);
