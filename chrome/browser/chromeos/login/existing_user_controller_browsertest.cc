@@ -244,8 +244,10 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
+  // This is disabled twice: once right after signin but before checking for
+  // auto-enrollment, and again after doing an ownership status check.
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
-      .Times(1);
+      .Times(2);
   EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
       .Times(1)
       .WillOnce(WithArg<0>(Invoke(CreateAuthenticator)));
@@ -285,10 +287,15 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, AutoEnrollAfterSignIn) {
   EXPECT_CALL(*mock_user_manager_.user_manager(), IsCurrentUserNew())
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
-  // The UI should not be disabled if the enrollment screen is shown after
-  // the user signs in.
-  EXPECT_CALL(*mock_login_display_, SetUIEnabled(_))
-      .Times(0);
+  // The order of these expected calls matters: the UI if first disabled
+  // during the login sequence, and is enabled again for the enrollment screen.
+  Sequence uiEnabledSequence;
+  EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
+      .Times(1)
+      .InSequence(uiEnabledSequence);
+  EXPECT_CALL(*mock_login_display_, SetUIEnabled(true))
+      .Times(1)
+      .InSequence(uiEnabledSequence);
   existing_user_controller()->DoAutoEnrollment();
   existing_user_controller()->CompleteLogin(kUsername, kPassword);
   content::RunAllPendingInMessageLoop();
@@ -327,8 +334,10 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
   // The order of these expected calls matters: the UI if first disabled
   // during the login sequence, and is enabled again after login completion.
   Sequence uiEnabledSequence;
+  // This is disabled twice: once right after signin but before checking for
+  // auto-enrollment, and again after doing an ownership status check.
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
-      .Times(1)
+      .Times(2)
       .InSequence(uiEnabledSequence);
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(true))
       .Times(1)

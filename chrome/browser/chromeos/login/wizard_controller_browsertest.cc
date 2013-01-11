@@ -47,6 +47,9 @@ class MockOutShowHide : public T {
   template <class P> explicit  MockOutShowHide(P p) : T(p) {}
   template <class P> MockOutShowHide(P p, H* actor)
       : T(p, actor), actor_(actor) {}
+
+  H* actor() const { return actor_.get(); }
+
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
 
@@ -140,7 +143,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
   MockOutShowHide<MockUpdateScreen, MockUpdateScreenActor>* mock_update_screen_;
   MockOutShowHide<MockEulaScreen, MockEulaScreenActor>* mock_eula_screen_;
   MockOutShowHide<MockEnterpriseEnrollmentScreen,
-    MockEnterpriseEnrollmentScreenActor>* mock_enterprise_enrollment_screen_;
+      MockEnterpriseEnrollmentScreenActor>* mock_enterprise_enrollment_screen_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WizardControllerFlowTest);
@@ -217,6 +220,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowSkipUpdateEnroll) {
   EXPECT_CALL(*mock_update_screen_, StartUpdate()).Times(0);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(0);
   WizardController::default_controller()->SkipUpdateEnrollAfterEula();
+  EXPECT_CALL(*mock_enterprise_enrollment_screen_->actor(),
+              SetParameters(mock_enterprise_enrollment_screen_, false, ""))
+      .Times(1);
   EXPECT_CALL(*mock_enterprise_enrollment_screen_, Show()).Times(1);
   EXPECT_CALL(*mock_enterprise_enrollment_screen_, Hide()).Times(0);
   OnExit(ScreenObserver::EULA_ACCEPTED);
@@ -253,6 +259,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
             WizardController::default_controller()->current_screen());
   EXPECT_CALL(*mock_update_screen_, StartUpdate()).Times(0);
+  EXPECT_CALL(*mock_enterprise_enrollment_screen_->actor(),
+              SetParameters(mock_enterprise_enrollment_screen_, false, ""))
+      .Times(1);
   EXPECT_CALL(*mock_enterprise_enrollment_screen_, Show()).Times(1);
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
 
@@ -286,6 +295,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   // don't set expectations on those objects.
   ExistingUserController::current_controller()->CompleteLogin(kUsername,
                                                               kPassword);
+  // Run the tasks posted to complete the login:
+  MessageLoop::current()->RunUntilIdle();
+
   EnterpriseEnrollmentScreen* screen =
       WizardController::default_controller()->GetEnterpriseEnrollmentScreen();
   EXPECT_EQ(screen, WizardController::default_controller()->current_screen());

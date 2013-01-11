@@ -172,14 +172,18 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Invoked to complete login. Login might be suspended if auto-enrollment
   // has to be performed, and will resume once auto-enrollment completes.
-  void CompleteLoginInternal(std::string username, std::string password);
+  void CompleteLoginInternal(
+      const std::string& username,
+      const std::string& password,
+      DeviceSettingsService::OwnershipStatus ownership_status,
+      bool is_owner);
 
   // Creates |login_performer_| if necessary and calls login() on it.
-  void PerformLogin(const std::string& username,
-                    const std::string& password,
-                    LoginPerformer::AuthorizationMode auth_mode,
-                    DeviceSettingsService::OwnershipStatus ownership_status,
-                    bool is_owner);
+  // The string arguments aren't passed by const reference because this is
+  // posted as |resume_login_callback_| and resets it.
+  void PerformLogin(std::string username,
+                    std::string password,
+                    LoginPerformer::AuthorizationMode auth_mode);
 
   void set_login_performer_delegate(LoginPerformer::Delegate* d) {
     login_performer_delegate_.reset(d);
@@ -230,9 +234,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Whether everything is ready to launch the browser.
   bool ready_for_browser_launch_;
-
-  // Whether it's first login to the device and this user will be owner.
-  bool is_owner_login_;
 
   // The displayed email for the next login attempt set by |SetDisplayEmail|.
   std::string display_email_;

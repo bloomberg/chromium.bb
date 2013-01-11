@@ -64,9 +64,6 @@ namespace chromeos {
 
 namespace {
 
-// Url for setting up sync authentication.
-const char kSettingsSyncLoginURL[] = "chrome://settings/personal";
-
 // Major version where we still show GSG as "Release Notes" after the update.
 const long int kReleaseNotesTargetRelease = 19;
 
@@ -82,15 +79,6 @@ const char kGetStartedWebUrl[] =
 
 // Getting started guide application window size.
 const char kGSGAppWindowSize[] = "820,600";
-
-// Parameter to be added to GetStarted URL that contains board.
-const char kGetStartedBoardParam[] = "board";
-
-// Parameter to be added to GetStarted URL
-// when first user signs in for the first time (OOBE case).
-const char kGetStartedOwnerParam[] = "owner";
-const char kGetStartedOwnerParamValue[] = "true";
-const char kGetStartedInitialLocaleParam[] = "initial_locale";
 
 // URL for account creation.
 const char kCreateAccountURL[] =
@@ -152,7 +140,6 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
       num_login_attempts_(0),
       cros_settings_(CrosSettings::Get()),
       weak_factory_(this),
-      is_owner_login_(false),
       offline_failed_(false),
       is_login_in_progress_(false),
       password_changed_(false),
@@ -321,6 +308,10 @@ void ExistingUserController::CompleteLogin(const std::string& username,
     // Complete login event was generated already from UI. Ignore notification.
     return;
   }
+
+  // Disable UI while loading user profile.
+  login_display_->SetUIEnabled(false);
+
   if (!time_init_.is_null()) {
     base::TimeDelta delta = base::Time::Now() - time_init_;
     UMA_HISTOGRAM_MEDIUM_TIMES("Login.PromptToCompleteLoginTime", delta);
@@ -329,9 +320,23 @@ void ExistingUserController::CompleteLogin(const std::string& username,
 
   host_->OnCompleteLogin();
 
+  // Do an ownership check now to avoid auto-enrolling if the device has
+  // already been owned.
+  DeviceSettingsService::Get()->GetOwnershipStatusAsync(
+      base::Bind(&ExistingUserController::CompleteLoginInternal,
+                 weak_factory_.GetWeakPtr(),
+                 username, password));
+}
+
+void ExistingUserController::CompleteLoginInternal(
+    const std::string& username,
+    const std::string& password,
+    DeviceSettingsService::OwnershipStatus ownership_status,
+    bool is_owner) {
   // Auto-enrollment must have made a decision by now. It's too late to enroll
   // if the protocol isn't done at this point.
-  if (do_auto_enrollment_) {
+  if (do_auto_enrollment_ &&
+      ownership_status == DeviceSettingsService::OWNERSHIP_NONE) {
     VLOG(1) << "Forcing auto-enrollment before completing login";
     // The only way to get out of the enrollment screen from now on is to either
     // complete enrollment, or opt-out of it. So this controller shouldn't force
@@ -339,27 +344,17 @@ void ExistingUserController::CompleteLogin(const std::string& username,
     do_auto_enrollment_ = false;
     auto_enrollment_username_ = username;
     resume_login_callback_ = base::Bind(
-        &ExistingUserController::CompleteLoginInternal,
-        base::Unretained(this),
-        username,
-        password);
+        &ExistingUserController::PerformLogin,
+        weak_factory_.GetWeakPtr(),
+        username, password, LoginPerformer::AUTH_MODE_EXTENSION);
     ShowEnrollmentScreen(true, username);
+    // Enable UI for the enrollment screen. SetUIEnabled(true) will post a
+    // request to show the sign-in screen again when invoked at the sign-in
+    // screen; invoke SetUIEnabled() after navigating to the enrollment screen.
+    login_display_->SetUIEnabled(true);
   } else {
-    CompleteLoginInternal(username, password);
+    PerformLogin(username, password, LoginPerformer::AUTH_MODE_EXTENSION);
   }
-}
-
-void ExistingUserController::CompleteLoginInternal(std::string username,
-                                                   std::string password) {
-  // Disable UI while loading user profile.
-  login_display_->SetUIEnabled(false);
-
-  resume_login_callback_.Reset();
-
-  DeviceSettingsService::Get()->GetOwnershipStatusAsync(
-      base::Bind(&ExistingUserController::PerformLogin,
-                 weak_factory_.GetWeakPtr(), username, password,
-                 LoginPerformer::AUTH_MODE_EXTENSION));
 }
 
 string16 ExistingUserController::GetConnectedNetworkName() {
@@ -383,21 +378,16 @@ void ExistingUserController::Login(const std::string& username,
     online_succeeded_for_.clear();
   }
   num_login_attempts_++;
-
-  DeviceSettingsService::Get()->GetOwnershipStatusAsync(
-      base::Bind(&ExistingUserController::PerformLogin,
-                 weak_factory_.GetWeakPtr(), username, password,
-                 LoginPerformer::AUTH_MODE_INTERNAL));
+  PerformLogin(username, password, LoginPerformer::AUTH_MODE_INTERNAL);
 }
 
 void ExistingUserController::PerformLogin(
-    const std::string& username,
-    const std::string& password,
-    LoginPerformer::AuthorizationMode auth_mode,
-    DeviceSettingsService::OwnershipStatus ownership_status,
-    bool is_owner) {
-  // If the device is not owned yet, successfully logged in user will be owner.
-  is_owner_login_ = ownership_status == DeviceSettingsService::OWNERSHIP_NONE;
+    std::string username,
+    std::string password,
+    LoginPerformer::AuthorizationMode auth_mode) {
+  // Disable UI while loading user profile.
+  login_display_->SetUIEnabled(false);
+  resume_login_callback_.Reset();
 
   // Use the same LoginPerformer for subsequent login as it has state
   // such as Authenticator instance.
