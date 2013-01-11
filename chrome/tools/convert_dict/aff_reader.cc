@@ -254,7 +254,7 @@ void AffReader::AddAffix(std::string* rule) {
             printf("ERROR: Found 0 terms after slash in affix rule '%s', "
                       "but need at least 2.\n",
                    part.c_str());
-            return;
+            exit(1);
           }
           if (after_slash.size() == 1) {
             printf("WARNING: Found 1 term after slash in affix rule '%s', "
@@ -277,7 +277,7 @@ void AffReader::AddAffix(std::string* rule) {
         if (!EncodingToUTF8(part, &reencoded)) {
           printf("ERROR: Cannot encode affix rule part '%s' to utf8.\n",
                  part.c_str());
-          break;
+          exit(1);
         }
 
         *rule = rule->substr(0, part_start) + reencoded;
@@ -300,14 +300,14 @@ void AffReader::AddReplacement(std::string* rule) {
   if (!EncodingToUTF8(*rule, &utf8rule)) {
     printf("ERROR: Cannot encode replacement rule '%s' to utf8.\n",
            rule->c_str());
-    return;
+    exit(1);
   }
 
   // The first space separates key and value.
   size_t space_index = utf8rule.find(' ');
   if (space_index == std::string::npos) {
     printf("ERROR: Did not find a space in '%s'.\n", utf8rule.c_str());
-    return;
+    exit(1);
   }
   std::vector<std::string> split;
   split.push_back(utf8rule.substr(0, space_index));
@@ -329,7 +329,7 @@ void AffReader::HandleEncodedCommand(const std::string& line) {
   std::string utf8;
   if (!EncodingToUTF8(line, &utf8)) {
     printf("ERROR: Cannot encode command '%s' to utf8.\n", line.c_str());
-    return;
+    exit(1);
   }
   other_commands_.push_back(utf8);
 }

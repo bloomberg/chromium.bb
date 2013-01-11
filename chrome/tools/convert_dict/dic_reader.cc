@@ -20,7 +20,7 @@ namespace {
 typedef std::map<std::string, std::set<int> > WordSet;
 
 void SplitDicLine(const std::string& line, std::vector<std::string>* output) {
-  // We split the line on a slash not preceeded by a backslash. A slash at the
+  // We split the line on a slash not preceded by a backslash. A slash at the
   // beginning of the line is not a separator either.
   size_t slash_index = line.size();
   for (size_t i = 0; i < line.size(); i++) {

@@ -1188,8 +1188,8 @@ TEST_F(SpellCheckTest, EnglishWords) {
 // Checks that NOSUGGEST works in English dictionaries.
 TEST_F(SpellCheckTest, NoSuggest) {
   static const struct {
-    const char* misspelling;
     const char* input;
+    const char* suggestion;
     const char* locale;
     bool should_pass;
   } kTestCases[] = {
@@ -1211,45 +1211,46 @@ TEST_F(SpellCheckTest, NoSuggest) {
   size_t test_cases_size = ARRAYSIZE_UNSAFE(kTestCases);
   for (size_t i = 0; i < test_cases_size; ++i) {
     ReinitializeSpellCheck(kTestCases[i].locale);
-    size_t input_length = 0;
-    if (kTestCases[i].input != NULL)
-      input_length = strlen(kTestCases[i].input);
+    size_t suggestion_length = 0;
+    if (kTestCases[i].suggestion != NULL)
+      suggestion_length = strlen(kTestCases[i].suggestion);
 
     // First check that the NOSUGGEST flag didn't mark this word as not being in
     // the dictionary.
     int misspelling_start = 0;
     int misspelling_length = 0;
     bool result = spell_check()->SpellCheckWord(
-        ASCIIToUTF16(kTestCases[i].input).c_str(),
-        static_cast<int>(input_length),
+        ASCIIToUTF16(kTestCases[i].suggestion).c_str(),
+        static_cast<int>(suggestion_length),
         0,
         &misspelling_start,
         &misspelling_length, NULL);
 
-    EXPECT_EQ(kTestCases[i].should_pass, result) << kTestCases[i].input <<
-        " in " << kTestCases[i].input;
+    EXPECT_EQ(kTestCases[i].should_pass, result) << kTestCases[i].suggestion <<
+        " in " << kTestCases[i].locale;
 
     // Now verify that this test case does not show up as a suggestion.
     std::vector<string16> suggestions;
-    input_length = 0;
-    if (kTestCases[i].misspelling != NULL)
-      input_length = strlen(kTestCases[i].misspelling);
+    size_t input_length = 0;
+    if (kTestCases[i].input != NULL)
+      input_length = strlen(kTestCases[i].input);
     result = spell_check()->SpellCheckWord(
-        ASCIIToUTF16(kTestCases[i].misspelling).c_str(),
+        ASCIIToUTF16(kTestCases[i].input).c_str(),
         static_cast<int>(input_length),
         0,
         &misspelling_start,
         &misspelling_length,
         &suggestions);
-    // Check if the suggested words occur.
-    EXPECT_FALSE(result) << kTestCases[i].misspelling
+    // Input word should be a misspelling.
+    EXPECT_FALSE(result) << kTestCases[i].input
                          << " is not a misspelling in "
                          << kTestCases[i].locale;
+    // Check if the suggested words occur.
     for (int j = 0; j < static_cast<int>(suggestions.size()); j++) {
       for (size_t t = 0; t < test_cases_size; t++) {
         int compare_result =
-            suggestions.at(j).compare(ASCIIToUTF16(kTestCases[t].input));
-        EXPECT_FALSE(compare_result == 0) << kTestCases[t].input <<
+            suggestions.at(j).compare(ASCIIToUTF16(kTestCases[t].suggestion));
+        EXPECT_FALSE(compare_result == 0) << kTestCases[t].suggestion <<
             " in " << kTestCases[i].locale;
       }
     }
@@ -1258,20 +1259,55 @@ TEST_F(SpellCheckTest, NoSuggest) {
 
 // Check that the correct dictionary files are checked in.
 TEST_F(SpellCheckTest, DictionaryFiles) {
-  std::vector<std::string> locale_codes;
-  l10n_util::GetAcceptLanguagesForLocale("C", &locale_codes);
-  EXPECT_FALSE(locale_codes.empty());
-
   std::vector<std::string> spellcheck_languages;
   chrome::spellcheck_common::SpellCheckLanguages(&spellcheck_languages);
   EXPECT_FALSE(spellcheck_languages.empty());
-  EXPECT_LE(spellcheck_languages.size(), locale_codes.size());
 
   FilePath hunspell = GetHunspellDirectory();
   for (size_t i = 0; i < spellcheck_languages.size(); ++i) {
     FilePath dict = chrome::spellcheck_common::GetVersionedFileName(
         spellcheck_languages[i], hunspell);
     EXPECT_TRUE(file_util::PathExists(dict)) << dict.value() << " not found";
+  }
+}
+
+// Check for correct behavior around the maximum word length boundary.
+TEST_F(SpellCheckTest, MaxWordLengthBoundary) {
+  static const char* kTestCases[] = {
+    // 96 characters.
+    "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqr",
+    // 97 characters.
+    "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrs",
+    // 98 characters.
+    "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrst",
+    // 99 characters.
+    "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstu",
+    // 100 characters.
+    "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv",
+    // 101 characters.
+    "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvw",
+    // 102 characters.
+    "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx"
+  };
+
+  ReinitializeSpellCheck("en-US");
+  size_t test_cases_size = ARRAYSIZE_UNSAFE(kTestCases);
+  for (size_t i = 0; i < test_cases_size; ++i) {
+    size_t input_length = strlen(kTestCases[i]);
+
+    int misspelling_start = 0;
+    int misspelling_length = 0;
+    std::vector<string16> suggestions;
+    bool result = spell_check()->SpellCheckWord(
+        ASCIIToUTF16(kTestCases[i]).c_str(),
+        static_cast<int>(input_length),
+        0,
+        &misspelling_start,
+        &misspelling_length,
+        &suggestions);
+
+    EXPECT_FALSE(result) << kTestCases[i] << " is spelled correctly";
+    EXPECT_TRUE(suggestions.empty()) << kTestCases[i] << " has suggestions";
   }
 }
 
