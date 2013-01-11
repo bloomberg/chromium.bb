@@ -855,7 +855,7 @@ def GetPreferredTrySlaves(project, change):
       'linux_rel',
       'mac_asan',
       'mac_rel',
-      'win_aura',
+      'win7_aura',
       'win_rel',
   ]
 
