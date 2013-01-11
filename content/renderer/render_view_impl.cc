@@ -978,6 +978,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ExtendSelectionAndDelete,
                         OnExtendSelectionAndDelete)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectRange, OnSelectRange)
+    IPC_MESSAGE_HANDLER(ViewMsg_MoveCaret, OnMoveCaret)
     IPC_MESSAGE_HANDLER(ViewMsg_CopyImageAt, OnCopyImageAt)
     IPC_MESSAGE_HANDLER(ViewMsg_ExecuteEditCommand, OnExecuteEditCommand)
     IPC_MESSAGE_HANDLER(ViewMsg_Find, OnFind)
@@ -1441,6 +1442,15 @@ void RenderViewImpl::OnSelectRange(const gfx::Point& start,
   handling_select_range_ = true;
   webview()->focusedFrame()->selectRange(start, end);
   handling_select_range_ = false;
+}
+
+void RenderViewImpl::OnMoveCaret(const gfx::Point& point) {
+  if (!webview())
+    return;
+
+  Send(new ViewHostMsg_MoveCaret_ACK(routing_id_));
+
+  webview()->focusedFrame()->moveCaretSelectionTowardsWindowPoint(point);
 }
 
 void RenderViewImpl::OnSetHistoryLengthAndPrune(int history_length,

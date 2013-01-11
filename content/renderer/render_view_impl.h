@@ -987,6 +987,7 @@ class CONTENT_EXPORT RenderViewImpl
                            bool notify_result);
   void OnSelectAll();
   void OnSelectRange(const gfx::Point& start, const gfx::Point& end);
+  void OnMoveCaret(const gfx::Point& point);
   void OnSetAccessibilityMode(AccessibilityMode new_mode);
   void OnSetActive(bool active);
   void OnSetAltErrorPageURL(const GURL& gurl);

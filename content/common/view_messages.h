@@ -924,6 +924,11 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SelectRange,
                     gfx::Point /* start */,
                     gfx::Point /* end */)
 
+// Requests the renderer to move the caret selection toward the point.
+// Expects a MoveCaret_ACK message when finished.
+IPC_MESSAGE_ROUTED1(ViewMsg_MoveCaret,
+                    gfx::Point /* location */)
+
 // Copies the image at location x, y to the clipboard (if there indeed is an
 // image at that location).
 IPC_MESSAGE_ROUTED2(ViewMsg_CopyImageAt,
@@ -1937,6 +1942,7 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_SetTooltipText,
                     WebKit::WebTextDirection /* text direction hint */)
 
 IPC_MESSAGE_ROUTED0(ViewHostMsg_SelectRange_ACK)
+IPC_MESSAGE_ROUTED0(ViewHostMsg_MoveCaret_ACK)
 
 // Notification that the text selection has changed.
 // Note: The secound parameter is the character based offset of the string16

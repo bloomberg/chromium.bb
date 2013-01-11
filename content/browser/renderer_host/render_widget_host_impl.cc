@@ -138,6 +138,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       mouse_move_pending_(false),
       mouse_wheel_pending_(false),
       select_range_pending_(false),
+      move_caret_pending_(false),
       needs_repainting_on_restore_(false),
       is_unresponsive_(false),
       in_flight_event_count_(0),
@@ -339,6 +340,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnInputEventAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_BeginSmoothScroll, OnBeginSmoothScroll)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectRange_ACK, OnSelectRangeAck)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_MoveCaret_ACK, OnMsgMoveCaretAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnBlur)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
@@ -1207,6 +1209,10 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   select_range_pending_ = false;
   next_selection_range_.reset();
 
+  // Must reset these to ensure that MoveCaret works with a new renderer.
+  move_caret_pending_ = false;
+  next_move_caret_.reset();
+
   touch_event_queue_->Reset();
 
   // Must reset these to ensure that gesture events work with a new renderer.
@@ -1842,6 +1848,14 @@ void RenderWidgetHostImpl::OnSelectRangeAck() {
   }
 }
 
+void RenderWidgetHostImpl::OnMsgMoveCaretAck() {
+  move_caret_pending_ = false;
+  if (next_move_caret_.get()) {
+    scoped_ptr<gfx::Point> next(next_move_caret_.Pass());
+    MoveCaret(*next);
+  }
+}
+
 void RenderWidgetHostImpl::ProcessWheelAck(bool processed) {
   mouse_wheel_pending_ = false;
 
@@ -2223,6 +2237,16 @@ void RenderWidgetHostImpl::SelectRange(const gfx::Point& start,
 
   select_range_pending_ = true;
   Send(new ViewMsg_SelectRange(GetRoutingID(), start, end));
+}
+
+void RenderWidgetHostImpl::MoveCaret(const gfx::Point& point) {
+  if (move_caret_pending_) {
+    next_move_caret_.reset(new gfx::Point(point));
+    return;
+  }
+
+  move_caret_pending_ = true;
+  Send(new ViewMsg_MoveCaret(GetRoutingID(), point));
 }
 
 void RenderWidgetHostImpl::Undo() {

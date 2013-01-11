@@ -26,7 +26,7 @@ public class TouchUtils extends android.test.TouchUtils {
      * @param y Relative y location.
      * @return the absolute x and y location in an array.
      */
-    private static int[] getAbsoluteLocationFromRelative(View v, int x, int y) {
+    public static int[] getAbsoluteLocationFromRelative(View v, int x, int y) {
         int location[] = new int[2];
         v.getLocationOnScreen(location);
         location[0] += x;

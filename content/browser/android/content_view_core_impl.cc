@@ -1003,6 +1003,13 @@ void ContentViewCoreImpl::SelectBetweenCoordinates(JNIEnv* env, jobject obj,
   }
 }
 
+void ContentViewCoreImpl::MoveCaret(JNIEnv* env, jobject obj,
+                                    jint x, jint y) {
+  if (GetRenderWidgetHostViewAndroid()) {
+    GetRenderWidgetHostViewAndroid()->MoveCaret(gfx::Point(x, y));
+  }
+}
+
 jboolean ContentViewCoreImpl::CanGoBack(JNIEnv* env, jobject obj) {
   return web_contents_->GetController().CanGoBack();
 }

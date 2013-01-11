@@ -1729,7 +1729,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 @Override
                 public void setCursorPosition(int x, int y) {
                     if (mNativeContentViewCore != 0) {
-                        nativeSelectBetweenCoordinates(mNativeContentViewCore, x, y, x, y);
+                        nativeMoveCaret(mNativeContentViewCore, x, y);
                     }
                 }
 
@@ -2528,6 +2528,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     private native void nativeSelectBetweenCoordinates(
             int nativeContentViewCoreImpl, int x1, int y1, int x2, int y2);
+
+    private native void nativeMoveCaret(int nativeContentViewCoreImpl, int x, int y);
 
     private native boolean nativeCanGoBack(int nativeContentViewCoreImpl);
     private native boolean nativeCanGoForward(int nativeContentViewCoreImpl);

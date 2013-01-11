@@ -157,6 +157,8 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   // Select all text between the given coordinates.
   void SelectRange(const gfx::Point& start, const gfx::Point& end);
 
+  void MoveCaret(const gfx::Point& point);
+
  private:
   // The model object.
   RenderWidgetHostImpl* host_;
