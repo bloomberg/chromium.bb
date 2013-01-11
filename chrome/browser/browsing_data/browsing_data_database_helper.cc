@@ -15,8 +15,8 @@
 #include "content/public/browser/storage_partition.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 
 using content::BrowserContext;

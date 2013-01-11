@@ -12,7 +12,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 
 // Static
 bool BrowsingDataHelper::IsWebScheme(const std::string& scheme) {
