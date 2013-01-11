@@ -8,9 +8,9 @@
 #include "content/common/indexed_db/indexed_db_dispatcher.h"
 #include "content/common/indexed_db/proxy_webidbobjectstore_impl.h"
 #include "content/common/child_thread.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBObjectStore.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 using WebKit::WebIDBObjectStore;
 using WebKit::WebIDBTransactionCallbacks;

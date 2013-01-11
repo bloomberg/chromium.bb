@@ -11,10 +11,10 @@
 #include "content/common/indexed_db/indexed_db_dispatcher.h"
 #include "content/common/indexed_db/proxy_webidbobjectstore_impl.h"
 #include "content/common/indexed_db/proxy_webidbtransaction_impl.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBMetadata.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "webkit/glue/worker_task_runner.h"
 
 using WebKit::WebDOMStringList;

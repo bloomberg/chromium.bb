@@ -5,8 +5,8 @@
 #include "content/common/indexed_db/indexed_db_key_path.h"
 
 #include "base/logging.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 
 namespace content {
 

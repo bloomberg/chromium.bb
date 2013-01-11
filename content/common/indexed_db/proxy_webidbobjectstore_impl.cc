@@ -12,13 +12,13 @@
 #include "content/common/indexed_db/proxy_webidbindex_impl.h"
 #include "content/common/indexed_db/proxy_webidbtransaction_impl.h"
 #include "content/common/child_thread.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMStringList.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyRange.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 using WebKit::WebDOMStringList;
 using WebKit::WebExceptionCode;
