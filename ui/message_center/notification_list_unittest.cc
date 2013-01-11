@@ -347,11 +347,16 @@ TEST_F(NotificationListTest, NotificationOrderAndPriority) {
 TEST_F(NotificationListTest, MarkSinglePopupAsShown) {
   std::string id1 = AddNotification(NULL);
   std::string id2 = AddNotification(NULL);
-  ASSERT_EQ(2u, notification_list()->NotificationCount());
-  ASSERT_EQ(2u, GetPopupCounts());
+  std::string id3 = AddNotification(NULL);
+  ASSERT_EQ(3u, notification_list()->NotificationCount());
+  ASSERT_EQ(std::min(static_cast<size_t>(3u),
+                     NotificationList::kMaxVisiblePopupNotifications),
+            GetPopupCounts());
 
-  notification_list()->MarkSinglePopupAsShown(id2);
-  EXPECT_EQ(2u, notification_list()->NotificationCount());
+  notification_list()->MarkSinglePopupAsShown(id2, true);
+  notification_list()->MarkSinglePopupAsShown(id3, false);
+  EXPECT_EQ(3u, notification_list()->NotificationCount());
+  EXPECT_EQ(2u, notification_list()->unread_count());
   EXPECT_EQ(1u, GetPopupCounts());
   NotificationList::Notifications popups;
   notification_list()->GetPopupNotifications(&popups);
@@ -365,32 +370,36 @@ TEST_F(NotificationListTest, MarkSinglePopupAsShown) {
   NotificationList::Notifications::const_iterator iter = notifications.begin();
   EXPECT_EQ(id1, iter->id);
   iter++;
+  EXPECT_EQ(id3, iter->id);
+  iter++;
   EXPECT_EQ(id2, iter->id);
 
   // Trickier scenario.
   notification_list()->MarkPopupsAsShown(ui::notifications::DEFAULT_PRIORITY);
-  std::string id3 = AddNotification(NULL);
   std::string id4 = AddNotification(NULL);
   std::string id5 = AddNotification(NULL);
-  notification_list()->MarkSinglePopupAsShown(id4);
+  std::string id6 = AddNotification(NULL);
+  notification_list()->MarkSinglePopupAsShown(id5, true);
   popups.clear();
   notifications.clear();
   notification_list()->GetPopupNotifications(&popups);
   notification_list()->GetNotifications(&notifications);
   EXPECT_EQ(2u, popups.size());
   iter = popups.begin();
-  EXPECT_EQ(id5, iter->id);
+  EXPECT_EQ(id6, iter->id);
   iter++;
-  EXPECT_EQ(id3, iter->id);
-  EXPECT_EQ(5u, notifications.size());
+  EXPECT_EQ(id4, iter->id);
+  EXPECT_EQ(6u, notifications.size());
   iter = notifications.begin();
-  EXPECT_EQ(id5, iter->id);
-  iter++;
-  EXPECT_EQ(id3, iter->id);
+  EXPECT_EQ(id6, iter->id);
   iter++;
   EXPECT_EQ(id4, iter->id);
   iter++;
+  EXPECT_EQ(id5, iter->id);
+  iter++;
   EXPECT_EQ(id1, iter->id);
+  iter++;
+  EXPECT_EQ(id3, iter->id);
   iter++;
   EXPECT_EQ(id2, iter->id);
 }

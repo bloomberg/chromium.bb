@@ -261,7 +261,8 @@ void NotificationList::MarkPopupsAsShown(int priority) {
     iter->shown_as_popup = true;
 }
 
-void NotificationList::MarkSinglePopupAsShown(const std::string& id) {
+void NotificationList::MarkSinglePopupAsShown(
+    const std::string& id, bool mark_notification_as_read) {
   Notifications::iterator iter;
   if (!GetNotification(id, &iter))
     return;
@@ -269,9 +270,14 @@ void NotificationList::MarkSinglePopupAsShown(const std::string& id) {
   if (iter->shown_as_popup)
     return;
 
-  // Moves the item to the beginning of the already-shown items.
+   // Moves the item to the beginning of the already-shown items.
   Notification notification = *iter;
   notification.shown_as_popup = true;
+  if (mark_notification_as_read) {
+    --unread_count_;
+    notification.is_read = true;
+  }
+
   notifications_[notification.priority].erase(iter);
   for (Notifications::iterator iter2 =
            notifications_[notification.priority].begin();
