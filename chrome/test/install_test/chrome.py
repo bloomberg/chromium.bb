@@ -28,7 +28,23 @@ _EXTENSION = os.path.join(
 class Chrome(webdriver.Remote):
   """Extended WebDriver interface that uses helper extension."""
 
-  def __init__(self, url, desired_capabilities):
+  def __init__(self, url, desired_capabilities, options=None):
+    """Initializes Chrome object.
+
+    If both desired_capabilities and options have the same settings, the
+    settings from options will be used.
+
+    Args:
+      url: The URL of the ChromeDriver Service.
+      desired_capabilities: Chrome capabilities dictionary.
+      options: chrome_options.ChromeOptions object. Settings in options will
+          overwrite settings in desired_capabilities.
+
+    Raises:
+      RuntimeError: Unable to find helper extension.
+    """
+    if options is not None:
+      desired_capabilities.update(options.GetCapabilities())
     switches = desired_capabilities.get('chrome.switches', [])
     switches += ['--load-extension=' + _EXTENSION]
     desired_capabilities['chrome.switches'] = switches

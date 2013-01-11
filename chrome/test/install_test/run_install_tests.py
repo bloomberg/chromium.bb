@@ -15,7 +15,7 @@ list. Modules added to the list must be in the same directory or in a sub-
 directory that's in the same location as this script.
 
 Example:
-    $ python run_install_test.py --url=<chrome_builds_url> --filter=* \
+    $ python run_install_tests.py --url=<chrome_builds_url> --filter=* \
       --install-build=24.0.1290.0 --update-builds=24.0.1289.0,24.0.1290.0
 """
 
@@ -33,7 +33,7 @@ from common import unittest_util
 from common import util
 
 # To run tests from a module, append the module name to this list.
-_TEST_MODULES = ['sample_updater']
+_TEST_MODULES = ['sample_updater', 'theme_updater']
 
 for module in _TEST_MODULES:
   __import__(module)

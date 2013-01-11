@@ -83,7 +83,7 @@ class InstallTest(unittest.TestCase):
   def tearDown(self):
     """Called at the end of each unittest to do any test related cleanup."""
     # Confirm ChromeDriver was instantiated, before attempting to quit.
-    if self._driver != None:
+    if self._driver is not None:
       try:
         self._driver.quit()
       except WebDriverException:
@@ -96,13 +96,17 @@ class InstallTest(unittest.TestCase):
     self._service = service.Service(InstallTest._chrome_driver)
     self._service.start()
 
-  def StartChrome(self, caps={}):
+  def StartChrome(self, caps={}, options=None):
     """Creates a ChromeDriver instance.
+
+    If both caps and options have the same settings, the settings from options
+    will be used.
 
     Args:
       caps: Capabilities that will be passed to ChromeDriver.
+      options: ChromeOptions object that will be passed to ChromeDriver.
     """
-    self._driver = Chrome(self._service.service_url, caps)
+    self._driver = Chrome(self._service.service_url, caps, options)
 
   def Install(self, build, master_pref=None):
     """Helper method that installs the specified Chrome build.
@@ -143,6 +147,9 @@ class InstallTest(unittest.TestCase):
     Args:
       url: URL where the file is located.
       path: Location where file will be downloaded.
+
+    Raises:
+      RuntimeError: URL or file name is invalid.
     """
     if not util.DoesUrlExist(url):
       raise RuntimeError('Either the URL or the file name is invalid.')
