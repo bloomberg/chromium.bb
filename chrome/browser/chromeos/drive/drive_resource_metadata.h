@@ -55,10 +55,6 @@ const FilePath::CharType kDriveRootDirectory[] = FILE_PATH_LITERAL("drive");
 // unique ID given in About resource.
 const char kWAPIRootDirectoryResourceId[] = "folder:root";
 
-// The root directory resource ID for testing for WAPI.
-// TODO(haruki): Make Drive API equivalent work. http://crbug.com/157114
-const char kWAPIRootDirectoryResourceIdForTesting[] = "folder:testroot";
-
 // This should be incremented when incompatibility change is made in
 // drive.proto.
 const int32 kProtoVersion = 2;
@@ -144,9 +140,6 @@ class DriveResourceMetadata {
   // True if the file system feed is loaded from the cache or from the server.
   bool loaded() const { return loaded_; }
   void set_loaded(bool loaded) { loaded_ = loaded; }
-
-  // Sets root directory resource ID and put root to ResourceMap.
-  void InitializeRootEntry(const std::string& id);
 
   // Add |entry| to directory with path |directory_path| and invoke the
   // callback asynchronously.

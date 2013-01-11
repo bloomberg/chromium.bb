@@ -184,16 +184,13 @@ struct DriveFeedLoader::LoadRootFeedParams {
 struct DriveFeedLoader::UpdateMetadataParams {
   UpdateMetadataParams(bool is_delta_feed,
                        int64 feed_changestamp,
-                       const std::string& root_resource_id,
                        const FileOperationCallback& callback)
       : is_delta_feed(is_delta_feed),
         feed_changestamp(feed_changestamp),
-        root_resource_id(root_resource_id),
         callback(callback) {}
 
   const bool is_delta_feed;
   const int64 feed_changestamp;
-  const std::string root_resource_id;
   const FileOperationCallback callback;
 };
 
@@ -296,7 +293,6 @@ void DriveFeedLoader::OnGetAccountMetadata(
 
   int64 local_changestamp = resource_metadata_->largest_changestamp();
   int64 remote_changestamp = 0;
-  std::string root_id;
 
   // When account metadata successfully fetched, parse the latest changestamp.
   if (util::GDataToDriveFileError(status) == DRIVE_FILE_OK) {
@@ -326,7 +322,6 @@ void DriveFeedLoader::OnGetAccountMetadata(
                  weak_ptr_factory_.GetWeakPtr(),
                  UpdateMetadataParams(start_changestamp != 0,  // is_delta_feed
                                       remote_changestamp,
-                                      root_id,
                                       callback))));
   load_params->start_changestamp = start_changestamp;
   LoadFromServer(load_params.Pass());
@@ -409,7 +404,6 @@ void DriveFeedLoader::UpdateMetadataFromFeedAfterLoadFromServer(
   UpdateFromFeed(feed_list,
                  params.is_delta_feed,
                  params.feed_changestamp,
-                 params.root_resource_id,
                  base::Bind(&DriveFeedLoader::OnUpdateFromFeed,
                             weak_ptr_factory_.GetWeakPtr(),
                             params.callback));
@@ -639,22 +633,10 @@ void DriveFeedLoader::UpdateFromFeed(
     const ScopedVector<google_apis::ResourceList>& feed_list,
     bool is_delta_feed,
     int64 root_feed_changestamp,
-    const std::string& root_resource_id,
     const base::Closure& update_finished_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!update_finished_callback.is_null());
   DVLOG(1) << "Updating directory with a feed";
-
-  if (!is_delta_feed) {
-    // This is a full fetch and on full fetch the root has to be initialized
-    // before children are added by DriveFeedProcessor.
-    if (google_apis::util::IsDriveV2ApiEnabled()) {
-      resource_metadata_->InitializeRootEntry(root_resource_id);
-    } else {
-      // Use fixed root resource ID for WAPI.
-      resource_metadata_->InitializeRootEntry(kWAPIRootDirectoryResourceId);
-    }
-  }
 
   feed_processor_.reset(new DriveFeedProcessor(resource_metadata_));
   // Don't send directory content change notification while performing

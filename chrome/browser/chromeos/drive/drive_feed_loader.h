@@ -85,12 +85,10 @@ class DriveFeedLoader {
   //
   // See comments at DriveFeedProcessor::ApplyFeeds() for
   // |is_delta_feed| and |root_feed_changestamp|.
-  // |root_resource_id| is used for Drive API.
   // |update_finished_callback| must not be null.
   void UpdateFromFeed(const ScopedVector<google_apis::ResourceList>& feed_list,
                       bool is_delta_feed,
                       int64 root_feed_changestamp,
-                      const std::string& root_resource_id,
                       const base::Closure& update_finished_callback);
 
   // Indicates whether there is a feed refreshing server request is in flight.
