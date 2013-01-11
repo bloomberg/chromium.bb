@@ -374,25 +374,26 @@ void PictureLayerImpl::ManageTilings(float ideal_contents_scale) {
 
   // The active tree always has calcDrawProperties called on it first, and
   // any tilings added to the active tree will be synced to the pending tree.
-  // Therefore, only add tilings to the active tree.
-  if (layerTreeImpl()->IsActiveTree()) {
-    if (layerTreeImpl()->PinchGestureActive() && high_res) {
-      // If zooming out, if only available high-res tiling is very high
-      // resolution, create additional tilings closer to the ideal.
-      // When zooming in, add some additional tilings so that content
-      // "crisps up" prior to releasing pinch.
-      float ratio = PositiveRatio(
-          high_res->contents_scale(),
-          ideal_contents_scale);
-      if (ratio >= kMaxScaleRatioDuringPinch)
-        high_res = AddTiling(ideal_contents_scale);
-    } else {
-      // When not pinching or if no tilings, add exact contents scales.
-      if (!high_res || high_res->contents_scale() != ideal_contents_scale)
-        high_res = AddTiling(ideal_contents_scale);
-      if (!low_res || low_res->contents_scale() != low_res_contents_scale)
-        low_res = AddTiling(low_res_contents_scale);
-    }
+  if (layerTreeImpl()->IsActiveTree() &&
+      layerTreeImpl()->PinchGestureActive() && high_res) {
+    // If zooming out, if only available high-res tiling is very high
+    // resolution, create additional tilings closer to the ideal.
+    // When zooming in, add some additional tilings so that content
+    // "crisps up" prior to releasing pinch.
+    float ratio = PositiveRatio(
+        high_res->contents_scale(),
+        ideal_contents_scale);
+    if (ratio >= kMaxScaleRatioDuringPinch)
+      high_res = AddTiling(ideal_contents_scale);
+  } else if (layerTreeImpl()->IsActiveTree() ||
+             !layerTreeImpl()->PinchGestureActive()) {
+    // When not pinching or if no tilings, add exact contents scales.
+    // If this pending layer doesn't have an ideal tiling (because it has
+    // no active twin), then this will also create one.
+    if (!high_res || high_res->contents_scale() != ideal_contents_scale)
+      high_res = AddTiling(ideal_contents_scale);
+    if (!low_res || low_res->contents_scale() != low_res_contents_scale)
+      low_res = AddTiling(low_res_contents_scale);
   }
 
   if (high_res)
