@@ -16,7 +16,6 @@
     '../ui/native_theme/native_theme.gyp:native_theme',
     '../ui/surface/surface.gyp:surface',
     '../v8/tools/gyp/v8.gyp:v8',
-    '../webkit/compositor_bindings/compositor_bindings.gyp:webkit_compositor_bindings',
     '../webkit/support/webkit_support.gyp:glue',
     '../webkit/support/webkit_support.gyp:webkit_media',
     '../webkit/support/webkit_support.gyp:webkit_gpu',
