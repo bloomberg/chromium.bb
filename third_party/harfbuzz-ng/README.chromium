@@ -2,8 +2,8 @@ Name: harfbuzz-ng
 Short Name: harfbuzz-ng
 URL: http://freedesktop.org/wiki/Software/HarfBuzz
 Version: unknown
-Date: 20121102
-Revision: 431bef2e16c7888ca3960f5797432d3a20903550
+Date: 20120103
+Revision: 34e6c3e3e452bdf6f93df565a70453a6e74d4c6e (0.9.10)
 Security Critical: yes
 License: MIT
 License File: NOT_SHIPPED
@@ -12,4 +12,4 @@ Description:
 This is harfbuzz-ng, a new implementation of harfbuzz with a different
 API from the old one.
 
-I also deleted all unneeded files from the root directory (but left src/ alone).
+I also deleted all unneeded files from the root directory and src/ directory (hb-icu-le, hb-ucdn, hb-old, scripts to generate data tables, automake/conf files).

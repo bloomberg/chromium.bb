@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011  Google, Inc.
+ * Copyright © 2011,2012  Google, Inc.
  *
  *  This is part of HarfBuzz, a text shaping library.
  *
@@ -29,8 +29,6 @@
 
 #include "hb-private.hh"
 
-HB_BEGIN_DECLS
-
 %%{
   machine indic_syllable_machine;
   alphtype unsigned char;
@@ -42,78 +40,85 @@ HB_BEGIN_DECLS
 # Same order as enum indic_category_t.  Not sure how to avoid duplication.
 X    = 0;
 C    = 1;
-Ra   = 2;
-V    = 3;
-N    = 4;
-H    = 5;
-ZWNJ = 6;
-ZWJ  = 7;
-M    = 8;
-SM   = 9;
-VD   = 10;
-A    = 11;
-NBSP = 12;
+V    = 2;
+N    = 3;
+H    = 4;
+ZWNJ = 5;
+ZWJ  = 6;
+M    = 7;
+SM   = 8;
+VD   = 9;
+A    = 10;
+NBSP = 11;
+DOTTEDCIRCLE = 12;
+RS   = 13;
+Coeng = 14;
+Repha = 15;
+Ra    = 16;
+CM    = 17;
 
-c = C | Ra;
-z = ZWJ|ZWNJ;
-matra_group = M N? H?;
-syllable_tail = SM? (VD VD?)?;
+c = (C | Ra)CM*;		# is_consonant
+n = ((ZWNJ?.RS)? (N.N?)?);	# is_consonant_modifier
+z = ZWJ|ZWNJ;			# is_joiner
+h = H | Coeng;			# is_halant_or_coeng
+reph = (Ra H | Repha);		# possible reph
 
-action found_consonant_syllable { found_consonant_syllable (map, buffer, mask_array, last, p); }
-action found_vowel_syllable { found_vowel_syllable (map, buffer, mask_array, last, p); }
-action found_standalone_cluster { found_standalone_cluster (map, buffer, mask_array, last, p); }
-action found_non_indic { found_non_indic (map, buffer, mask_array, last, p); }
+cn = c.ZWJ?.n?;
+forced_rakar = ZWJ H ZWJ Ra;
+matra_group = z{0,3}.M.N?.(H | forced_rakar)?;
+syllable_tail =  (Coeng (cn|V))? (SM.ZWNJ?)? (VD VD?)?;
+place_holder = NBSP | DOTTEDCIRCLE;
+halant_group = (z?.h.(ZWJ.N?)?);
+final_halant_group = halant_group | h.ZWNJ;
+halant_or_matra_group = (final_halant_group | (h.ZWJ)? matra_group{0,4});
 
-action next_syllable { set_cluster (buffer, p, last); last = p; }
 
-consonant_syllable =	(c.N? (z.H|H.z?))* c.N? A? (H.z? | matra_group*)? syllable_tail %(found_consonant_syllable);
-vowel_syllable =	(Ra H)? V N? (z.H.c | ZWJ.c)? matra_group* syllable_tail %(found_vowel_syllable);
-standalone_cluster =	(Ra H)? NBSP N? (z? H c)? matra_group* syllable_tail %(found_standalone_cluster);
-non_indic = X %(found_non_indic);
+consonant_syllable =	Repha? (cn.halant_group){0,4} cn A? halant_or_matra_group? syllable_tail;
+vowel_syllable =	reph? V.n? (ZWJ | (halant_group.cn){0,4} halant_or_matra_group? syllable_tail);
+standalone_cluster =	reph? place_holder.n? (halant_group.cn){0,4} halant_or_matra_group? syllable_tail;
+broken_cluster =	reph? n? (halant_group.cn){0,4} halant_or_matra_group syllable_tail;
+other =			any;
 
-syllable =
-	  consonant_syllable
-	| vowel_syllable
-	| standalone_cluster
-	| non_indic
-	;
+main := |*
+	consonant_syllable	=> { found_syllable (consonant_syllable); };
+	vowel_syllable		=> { found_syllable (vowel_syllable); };
+	standalone_cluster	=> { found_syllable (standalone_cluster); };
+	broken_cluster		=> { found_syllable (broken_cluster); };
+	other			=> { found_syllable (non_indic_cluster); };
+*|;
 
-main := (syllable %(next_syllable))**;
 
 }%%
 
+#define found_syllable(syllable_type) \
+  HB_STMT_START { \
+    if (0) fprintf (stderr, "syllable %d..%d %s\n", last, p+1, #syllable_type); \
+    for (unsigned int i = last; i < p+1; i++) \
+      info[i].syllable() = (syllable_serial << 4) | syllable_type; \
+    last = p+1; \
+    syllable_serial++; \
+    if (unlikely (syllable_serial == 16)) syllable_serial = 1; \
+  } HB_STMT_END
 
 static void
-set_cluster (hb_buffer_t *buffer,
-	     unsigned int start, unsigned int end)
+find_syllables (hb_buffer_t *buffer)
 {
-  unsigned int cluster = buffer->info[start].cluster;
-
-  for (unsigned int i = start + 1; i < end; i++)
-    cluster = MIN (cluster, buffer->info[i].cluster);
-  for (unsigned int i = start; i < end; i++)
-    buffer->info[i].cluster = cluster;
-}
-
-static void
-find_syllables (const hb_ot_map_t *map, hb_buffer_t *buffer, hb_mask_t *mask_array)
-{
-  unsigned int p, pe, eof;
+  unsigned int p, pe, eof, ts HB_UNUSED, te, act;
   int cs;
+  hb_glyph_info_t *info = buffer->info;
   %%{
     write init;
-    getkey buffer->info[p].indic_category();
+    getkey info[p].indic_category();
   }%%
 
   p = 0;
   pe = eof = buffer->len;
 
   unsigned int last = 0;
+  unsigned int syllable_serial = 1;
   %%{
     write exec;
   }%%
 }
-
-HB_END_DECLS
 
 #endif /* HB_OT_SHAPE_COMPLEX_INDIC_MACHINE_HH */

@@ -77,8 +77,8 @@ hb_utf_prev (const uint8_t *text,
 	     const uint8_t *start,
 	     hb_codepoint_t *unicode)
 {
-  const uint8_t *end = text;
-  while (start < text && (*--text & 0xc0) == 0x80 && end - text < 4)
+  const uint8_t *end = text--;
+  while (start < text && (*text & 0xc0) == 0x80 && end - text < 4)
     text--;
 
   hb_codepoint_t c = *text, mask;
@@ -176,7 +176,7 @@ hb_utf_strlen (const uint16_t *text)
 
 static inline const uint32_t *
 hb_utf_next (const uint32_t *text,
-	     const uint32_t *end,
+	     const uint32_t *end HB_UNUSED,
 	     hb_codepoint_t *unicode)
 {
   *unicode = *text++;
@@ -185,7 +185,7 @@ hb_utf_next (const uint32_t *text,
 
 static inline const uint32_t *
 hb_utf_prev (const uint32_t *text,
-	     const uint32_t *start,
+	     const uint32_t *start HB_UNUSED,
 	     hb_codepoint_t *unicode)
 {
   *unicode = *--text;
