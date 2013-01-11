@@ -1009,8 +1009,8 @@ TEST_F(QuicConnectionTest, TestQueueLimitsOnSendStreamData) {
   // Queue the first packet.
   EXPECT_CALL(*scheduler_, TimeUntilSend(false)).WillOnce(testing::Return(
       QuicTime::Delta::FromMicroseconds(10)));
-  EXPECT_EQ(6u,
-            connection_.SendStreamData(1, "EnoughDataToQueue", 0, false, NULL));
+  EXPECT_EQ(6u, connection_.SendStreamData(
+      1, "EnoughDataToQueue", 0, false, NULL).bytes_consumed);
   EXPECT_EQ(6u, connection_.NumQueuedPackets());
 }
 
@@ -1022,8 +1022,8 @@ TEST_F(QuicConnectionTest, LoopThroughSendingPackets) {
 
   // Queue the first packet.
   EXPECT_CALL(*scheduler_, SentPacket(_, _, _)).Times(17);
-  EXPECT_EQ(17u,
-            connection_.SendStreamData(1, "EnoughDataToQueue", 0, false, NULL));
+  EXPECT_EQ(17u, connection_.SendStreamData(
+                1, "EnoughDataToQueue", 0, false, NULL).bytes_consumed);
 }
 
 }  // namespace

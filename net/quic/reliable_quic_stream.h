@@ -90,9 +90,15 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   void set_visitor(Visitor* visitor) { visitor_ = visitor; }
 
  protected:
-  // TODO(alyssar): document the return value -- whether it can be negative and
-  // how a failure is reported.
-  virtual int WriteData(base::StringPiece data, bool fin);
+  // Returns a pair with the number of bytes consumed from data, and a boolean
+  // indicating if the fin bit was consumed.  This does not indicate the data
+  // has been sent on the wire: it may have been turned into a packet and queued
+  // if the socket was unexpectedly blocked.
+  //
+  // The default implementation always consumed all bytes and any fin, but
+  // this behavior is not guaranteed for subclasses so callers should check the
+  // return value.
+  virtual QuicConsumedData WriteData(base::StringPiece data, bool fin);
 
   // Close the read side of the socket.  Further frames will not be accepted.
   virtual void CloseReadSide();
@@ -104,13 +110,13 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
 
   // Sends as much of 'data' to the connection as the connection will consume,
   // and then buffers any remaining data in queued_data_.
-  // Returns the number of bytes consumed or buffered, which should always equal
-  // data.size()
-  int WriteOrBuffer(base::StringPiece data, bool fin);
+  // Returns (data.size(), true) as it always consumed all data: it returns for
+  // convenience to have the same return type as WriteDataInternal.
+  QuicConsumedData WriteOrBuffer(base::StringPiece data, bool fin);
 
   // Sends as much of 'data' to the connection as the connection will consume.
   // Returns the number of bytes consumed by the connection.
-  int WriteDataInternal(base::StringPiece data, bool fin);
+  QuicConsumedData WriteDataInternal(base::StringPiece data, bool fin);
 
  private:
   friend class test::ReliableQuicStreamPeer;

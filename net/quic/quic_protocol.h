@@ -34,6 +34,19 @@ typedef uint64 QuicStreamOffset;
 typedef uint64 QuicPacketSequenceNumber;
 typedef uint8 QuicFecGroupNumber;
 
+// A struct for functions which consume data payloads and fins.
+// The first member of the pair indicates bytes consumed.
+// The second member of the pair indicates if an incoming fin was consumed.
+struct QuicConsumedData {
+  QuicConsumedData(size_t bytes_consumed, bool fin_consumed)
+      : bytes_consumed(bytes_consumed),
+        fin_consumed(fin_consumed) {
+  }
+  size_t bytes_consumed;
+  bool fin_consumed;
+};
+
+
 // TODO(rch): Consider Quic specific names for these constants.
 const size_t kMaxPacketSize = 1200;  // Maximum size in bytes of a QUIC packet.
 

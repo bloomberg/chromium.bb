@@ -394,13 +394,14 @@ void QuicConnection::OnPacketComplete() {
   }
 }
 
-size_t QuicConnection::SendStreamData(
+QuicConsumedData QuicConnection::SendStreamData(
     QuicStreamId id,
     StringPiece data,
     QuicStreamOffset offset,
     bool fin,
     QuicPacketSequenceNumber* last_packet) {
-  int total_bytes_consumed = 0;
+  size_t total_bytes_consumed = 0;
+  bool fin_consumed = false;
 
   while (queued_packets_.empty()) {
     vector<PacketPair> packets;
@@ -408,6 +409,7 @@ size_t QuicConnection::SendStreamData(
         packet_creator_.DataToStream(id, data, offset, fin, &packets);
     total_bytes_consumed += bytes_consumed;
     offset += bytes_consumed;
+    fin_consumed = fin && bytes_consumed == data.size();
     data.remove_prefix(bytes_consumed);
     DCHECK_LT(0u, packets.size());
 
@@ -432,7 +434,7 @@ size_t QuicConnection::SendStreamData(
       break;
     }
   }
-  return total_bytes_consumed;
+  return QuicConsumedData(total_bytes_consumed, fin_consumed);
 }
 
 void QuicConnection::SendRstStream(QuicStreamId id,

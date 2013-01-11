@@ -9,13 +9,14 @@
 using std::max;
 using std::min;
 using std::string;
+using testing::_;
 
 namespace net {
 namespace test {
 
 MockFramerVisitor::MockFramerVisitor() {
   // By default, we want to accept packets.
-  ON_CALL(*this, OnPacketHeader(testing::_))
+  ON_CALL(*this, OnPacketHeader(_))
       .WillByDefault(testing::Return(true));
 }
 
@@ -101,6 +102,8 @@ bool PacketSavingConnection::SendPacket(QuicPacketSequenceNumber number,
 
 MockSession::MockSession(QuicConnection* connection, bool is_server)
     : QuicSession(connection, is_server) {
+  ON_CALL(*this, WriteData(_, _, _, _))
+      .WillByDefault(testing::Return(QuicConsumedData(0, false)));
 }
 
 MockSession::~MockSession() {

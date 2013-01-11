@@ -46,10 +46,12 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   virtual bool OnCanWrite() OVERRIDE;
 
   // Called by streams when they want to write data to the peer.
-  // TODO(wtc): document the return value -- whether it can be negative and
-  // how a failure is reported.
-  virtual int WriteData(QuicStreamId id, base::StringPiece data,
-                        QuicStreamOffset offset, bool fin);
+  // Returns a pair with the number of bytes consumed from data, and a boolean
+  // indicating if the fin bit was consumed.  This does not indicate the data
+  // has been sent on the wire: it may have been turned into a packet and queued
+  // if the socket was unexpectedly blocked.
+  virtual QuicConsumedData WriteData(QuicStreamId id, base::StringPiece data,
+                                     QuicStreamOffset offset, bool fin);
   // Called by streams when they want to close the stream in both directions.
   void SendRstStream(QuicStreamId id,
                      QuicErrorCode error,

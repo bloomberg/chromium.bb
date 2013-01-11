@@ -127,13 +127,17 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
                  QuicConnectionHelperInterface* helper);
   virtual ~QuicConnection();
 
+
   // Send the data payload to the peer.
-  // TODO(wtc): document the return value.
-  size_t SendStreamData(QuicStreamId id,
-                        base::StringPiece data,
-                        QuicStreamOffset offset,
-                        bool fin,
-                        QuicPacketSequenceNumber* last_packet);
+  // Returns a pair with the number of bytes consumed from data, and a boolean
+  // indicating if the fin bit was consumed.  This does not indicate the data
+  // has been sent on the wire: it may have been turned into a packet and queued
+  // if the socket was unexpectedly blocked.
+  QuicConsumedData SendStreamData(QuicStreamId id,
+                                  base::StringPiece data,
+                                  QuicStreamOffset offset,
+                                  bool fin,
+                                  QuicPacketSequenceNumber* last_packet);
   // Send a stream reset frame to the peer.
   virtual void SendRstStream(QuicStreamId id,
                              QuicErrorCode error,

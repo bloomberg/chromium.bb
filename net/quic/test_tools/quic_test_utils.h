@@ -199,8 +199,9 @@ class MockSession : public QuicSession {
   MOCK_METHOD0(CreateOutgoingReliableStream, ReliableQuicStream*());
   MOCK_METHOD3(WriteData,
                void(QuicStreamId id, base::StringPiece data, bool fin));
-  MOCK_METHOD4(WriteData, int(QuicStreamId id, base::StringPiece data,
-                              QuicStreamOffset offset, bool fin));
+  MOCK_METHOD4(WriteData, QuicConsumedData(QuicStreamId id,
+                                           base::StringPiece data,
+                                           QuicStreamOffset offset, bool fin));
   MOCK_METHOD0(IsHandshakeComplete, bool());
 
  private:
