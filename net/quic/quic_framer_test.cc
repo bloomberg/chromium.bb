@@ -1543,6 +1543,13 @@ TEST_F(QuicFramerTest, CalculateLargestReceived) {
   EXPECT_EQ(4u, QuicFramer::CalculateLargestReceived(missing, missing.find(1)));
   EXPECT_EQ(6u, QuicFramer::CalculateLargestReceived(missing, missing.find(5)));
 
+  missing.insert(2);
+  // For 1, we can't go forward as 2 would be implicitly acked.  We must go
+  // backwards.
+  EXPECT_EQ(0u, QuicFramer::CalculateLargestReceived(missing, missing.find(1)));
+  // For 2, we've seen 3 and 4, so can admit to a largest received.
+  EXPECT_EQ(4u, QuicFramer::CalculateLargestReceived(missing, missing.find(2)));
+
   // 7+ are fun because there is no subsequent gap: we have to walk before
   // them to find 6.
   EXPECT_EQ(6u, QuicFramer::CalculateLargestReceived(missing, missing.find(7)));
@@ -1560,12 +1567,12 @@ TEST_F(QuicFramerTest, CalculateLargestReceived) {
   missing.insert(2);
   EXPECT_EQ(0u, QuicFramer::CalculateLargestReceived(missing, missing.find(7)));
 
-  // If we add a gap after 7-9, we will return that.
+  // If we add a gap after 7-9, we will return that only for 9.
   missing.insert(11);
-  EXPECT_EQ(10u, QuicFramer::CalculateLargestReceived(missing,
-                                                      missing.find(7)));
-  EXPECT_EQ(10u, QuicFramer::CalculateLargestReceived(missing,
-                                                      missing.find(8)));
+  EXPECT_EQ(0u, QuicFramer::CalculateLargestReceived(missing,
+                                                     missing.find(7)));
+  EXPECT_EQ(0u, QuicFramer::CalculateLargestReceived(missing,
+                                                     missing.find(8)));
   EXPECT_EQ(10u, QuicFramer::CalculateLargestReceived(missing,
                                                       missing.find(9)));
 }

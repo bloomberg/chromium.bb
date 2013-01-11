@@ -769,14 +769,11 @@ QuicPacketSequenceNumber QuicFramer::CalculateLargestReceived(
   QuicPacketSequenceNumber previous_missing = *it;
   ++it;
 
-  // Try to find a gap in the missing packets: any gap indicates a non-missing
-  // packet which we can then return.
-  for (; it != missing_packets.end(); ++it) {
-    if (previous_missing + 1 != *it) {
+  // See if the next thing is a gap in the missing packets: if it's a
+  // non-missing packet we can return it.
+  if (it != missing_packets.end() && previous_missing + 1 != *it) {
       return *it - 1;
     }
-    previous_missing = *it;
-  }
 
   // If we've hit the end of the list, and we're not missing any packets, try
   // finding a gap between the largest written and the beginning of the set.
