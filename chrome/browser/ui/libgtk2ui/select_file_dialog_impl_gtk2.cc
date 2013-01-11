@@ -14,6 +14,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -49,16 +50,15 @@ void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent) {
   g_object_set_data(G_OBJECT(dialog), kAuraTransientParent, parent);
 }
 
-// Makes sure that .jpg also shows .JPG. |data| is a std::string* in disguise.
+// Makes sure that .jpg also shows .JPG.
 gboolean FileFilterCaseInsensitive(const GtkFileFilterInfo* file_info,
-                                   gpointer data) {
-  std::string* file_extension = reinterpret_cast<std::string*>(data);
+                                   std::string* file_extension) {
   return EndsWith(file_info->filename, *file_extension, false);
 }
 
 // Deletes |data| when gtk_file_filter_add_custom() is done with it.
-void OnFileFilterDataDestroyed(gpointer data) {
-  delete reinterpret_cast<std::string*>(data);
+void OnFileFilterDataDestroyed(std::string* file_extension) {
+  delete file_extension;
 }
 
 }  // namespace
@@ -284,14 +284,15 @@ void SelectFileDialogImplGTK::AddFilters(GtkFileChooser* chooser) {
       if (!current_extension.empty()) {
         if (!filter)
           filter = gtk_file_filter_new();
-        // |file_extension| is freed in |OnFileFilterDataDestroyed()|.
-        std::string* file_extension = new std::string("." + current_extension);
-        gtk_file_filter_add_custom(filter,
-                                   GTK_FILE_FILTER_FILENAME,
-                                   &FileFilterCaseInsensitive,
-                                   reinterpret_cast<gpointer>(file_extension),
-                                   &OnFileFilterDataDestroyed);
+        scoped_ptr<std::string> file_extension(
+            new std::string("." + current_extension));
         fallback_labels.insert(std::string("*").append(*file_extension));
+        gtk_file_filter_add_custom(
+            filter,
+            GTK_FILE_FILTER_FILENAME,
+            reinterpret_cast<GtkFileFilterFunc>(FileFilterCaseInsensitive),
+            file_extension.release(),
+            reinterpret_cast<GDestroyNotify>(OnFileFilterDataDestroyed));
       }
     }
     // We didn't find any non-empty extensions to filter on.
