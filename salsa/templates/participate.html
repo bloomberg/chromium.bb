@@ -162,7 +162,7 @@
   <ul>
     <li> Name: {{ experiment.name }}
     <li> Owner:
-      <a href="mailto:{{ experiment.owner }}?cc=chromeos-tango@google.com">
+      <a href="mailto:{{ experiment.owner }}@google.com?cc=chromeos-tango@google.com">
         {{ experiment.owner }}
       </a>
     <li> Created: {{ experiment.created }}
@@ -173,8 +173,7 @@
                               {% else %}
                                 inactive
                               {% endif %}" onclick="expand(this)">
-          {# TODO: remove the treatment names before release #}
-          <h2> Treatment #{{ loop.index0 }} : {{ treatment.name }} </h2>
+          <h2> Treatment #{{ loop.index0 }} </h2>
           <div class="tooltip"> click to expand... </div>
           <div class="details">
             <div class="command">

@@ -11,7 +11,7 @@
       <li> Participant Instructions: {{ experiment.instructions|safe }}
       <li> Device: {{ experiment.device }}
       <li> Owner:
-        <a href="mailto:{{ experiment.owner }}">{{ experiment.owner }}</a>
+        <a href="mailto:{{ experiment.owner }}@google.com">{{ experiment.owner }}</a>
       <li> Created: {{ experiment.created }}
       <li> Participant URL:
         <a href="{{ experiment_url }}"> {{ experiment_url }} </a>
@@ -43,7 +43,7 @@
 
         {% for participant in experiment.participants %}
           <tr class="{{ loop.index|row_class }}">
-            <td> <a href="mailto:{{ participant }}">{{ participant }}</a> </td>
+            <td> <a href="mailto:{{ participant }}@google.com">{{ participant }}</a> </td>
             {% set participant_number = loop.index0 %}
             {% for treatment in treatments %}
               <td class="score">
@@ -106,7 +106,7 @@
     <p>
       Sorry, but you are neither the owner of this experiment nor an
       administrator, please contact the owner
-      (<a href="mailto:{{ experiment.owner }}"> {{ experiment.owner }}</a>)
+      (<a href="mailto:{{ experiment.owner }}@google.com"> {{ experiment.owner }}</a>)
       directly for details about this experiment.
     </p>
   {% endif %}
