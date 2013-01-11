@@ -383,6 +383,162 @@ below:
         Hours
       </message>
 
+      <message name="IDS_AX_MEDIA_DEFAULT" desc="Accessible description of a media control.">
+        media control
+      </message>
+
+      <message name="IDS_AX_MEDIA_AUDIO_ELEMENT" desc="Accessible description of audio">
+        audio
+      </message>
+
+      <message name="IDS_AX_MEDIA_VIDEO_ELEMENT" desc="Accessible description of video">
+        video
+      </message>
+
+      <message name="IDS_AX_MEDIA_MUTE_BUTTON" desc="accessibility role description for mute button">
+        mute
+      </message>
+
+      <message name="IDS_AX_MEDIA_UNMUTE_BUTTON" desc="accessibility role description for turn mute off button">
+        unmute
+      </message>
+
+      <message name="IDS_AX_MEDIA_PLAY_BUTTON" desc="accessibility role description for play button">
+        play
+      </message>
+
+      <message name="IDS_AX_MEDIA_PAUSE_BUTTON" desc="accessibility role description for pause button">
+        pause
+      </message>
+
+      <message name="IDS_AX_MEDIA_SLIDER" desc="accessibility role description for timeline slider">
+        movie time
+      </message>
+
+      <message name="IDS_AX_MEDIA_SLIDER_THUMB" desc="accessibility role description for timeline thumb">
+        movie timeline thumb
+      </message>
+
+      <message name="IDS_AX_MEDIA_REWIND_BUTTON" desc="accessibility role description for seek back 30 seconds button">
+        back 30 seconds
+      </message>
+
+      <message name="IDS_AX_MEDIA_RETURN_TO_REALTIME_BUTTON" desc="accessibility role description for return to real time button">
+        return to real time
+      </message>
+
+      <message name="IDS_AX_MEDIA_CURRENT_TIME_DISPLAY" desc="accessibility role description for elapsed time display">
+        elapsed time
+      </message>
+
+      <message name="IDS_AX_MEDIA_TIME_REMAINING_DISPLAY" desc="accessibility role description for time remaining display">
+        remaining time
+      </message>
+
+      <message name="IDS_AX_MEDIA_STATUS_DISPLAY" desc="accessibility role description for movie status">
+        status
+      </message>
+
+      <message name="IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON" desc="accessibility role description for enter fullscreen button">
+        enter full screen
+      </message>
+
+      <message name="IDS_AX_MEDIA_EXIT_FULL_SCREEN_BUTTON" desc="accessibility role description for exit fullscreen button">
+        exit full screen
+      </message>
+
+      <message name="IDS_AX_MEDIA_SEEK_FORWARD_BUTTON" desc="accessibility role description for fast forward button">
+        fast forward
+      </message>
+
+      <message name="IDS_AX_MEDIA_SEEK_BACK_BUTTON" desc="accessibility role description for fast reverse button">
+        fast reverse
+      </message>
+
+      <message name="IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_BUTTON" desc="accessibility role description for show closed captions button">
+        show closed captions
+      </message>
+
+      <message name="IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_BUTTON" desc="accessibility role description for hide closed captions button">
+        hide closed captions
+      </message>
+
+      <message name="IDS_AX_MEDIA_AUDIO_ELEMENT_HELP" desc="Accessible help of audio controls">
+        audio
+      </message>
+
+      <message name="IDS_AX_MEDIA_VIDEO_ELEMENT_HELP" desc="Accessible help of video">
+        video
+      </message>
+
+      <message name="IDS_AX_MEDIA_MUTE_BUTTON_HELP" desc="accessibility help description for mute button">
+        mute audio track
+      </message>
+
+      <message name="IDS_AX_MEDIA_UNMUTE_BUTTON_HELP" desc="accessibility help description for turn mute off button">
+        unmute audio track
+      </message>
+
+      <message name="IDS_AX_MEDIA_PLAY_BUTTON_HELP" desc="accessibility help description for play button">
+        begin playback
+      </message>
+
+      <message name="IDS_AX_MEDIA_PAUSE_BUTTON_HELP" desc="accessibility help description for pause button">
+        pause playback
+      </message>
+
+      <message name="IDS_AX_MEDIA_SLIDER_HELP" desc="accessibility help description for timeline slider">
+        movie time scrubber
+      </message>
+
+      <message name="IDS_AX_MEDIA_SLIDER_THUMB_HELP" desc="accessibility help description for timeline thumb">
+        movie time scrubber thumb
+      </message>
+
+      <message name="IDS_AX_MEDIA_REWIND_BUTTON_HELP" desc="accessibility help description for seek back 30 seconds button">
+        seek movie back 30 seconds
+      </message>
+
+      <message name="IDS_AX_MEDIA_RETURN_TO_REALTIME_BUTTON_HELP" desc="accessibility help description for return to real time button">
+        return streaming movie to real time
+      </message>
+
+      <message name="IDS_AX_MEDIA_CURRENT_TIME_DISPLAY_HELP" desc="accessibility help description for elapsed time display">
+        current time in seconds
+      </message>
+
+      <message name="IDS_AX_MEDIA_TIME_REMAINING_DISPLAY_HELP" desc="accessibility help description for time remaining display">
+        number of seconds ofmovie remaining
+      </message>
+
+      <message name="IDS_AX_MEDIA_STATUS_DISPLAY_HELP" desc="accessibility help description for movie status">
+        current movie status
+      </message>
+
+      <message name="IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON_HELP" desc="accessibility help description for enter fullscreen button">
+        play movie in full screen mode
+      </message>
+
+      <message name="IDS_AX_MEDIA_EXIT_FULL_SCREEN_BUTTON_HELP" desc="accessibility help description for exit fullscreen button">
+        exit full screen
+      </message>
+
+      <message name="IDS_AX_MEDIA_SEEK_FORWARD_BUTTON_HELP" desc="accessibility help description for fast forward button">
+        seek quickly forward
+      </message>
+
+      <message name="IDS_AX_MEDIA_SEEK_BACK_BUTTON_HELP" desc="accessibility help description for fast reverse button">
+        seek quickly back
+      </message>
+
+      <message name="IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_BUTTON_HELP" desc="accessibility help description for show closed captions button">
+        start displaying closed captions
+      </message>
+
+      <message name="IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_BUTTON_HELP" desc="accessibility help description for hide closed captions button">
+        stop displaying closed captions
+      </message>
+
       <message name="IDS_AX_MILLISECOND_FIELD_TEXT" desc="Accessible description of the millisecond field in a date/time control">
         Milliseconds
       </message>
