@@ -379,6 +379,8 @@
                    '|chrome/browser/tab_contents/spelling_menu'\
                    '|chrome/common/spellcheck_'\
                    '|chrome/renderer/spellchecker/'\
+                   '|third_party/hunspell/'\
+                   '|third_party/hunspell_dictionaries/'\
                    '|webkit/tools/test_shell/mock_spellcheck'
     },
     'sync': {
@@ -635,7 +637,8 @@
     'shell_window': ['jeremya+watch@chromium.org'],
     'site_instance': ['creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
     'spellcheck': ['groby+spellwatch@chromium.org',
-                   'rlp@chromium.org'],
+                   'rlp@chromium.org',
+                   'rouslan+spellwatch@chromium.org'],
     'sync': ['akalin@chromium.org',
              'haitaol@chromium.org',
              'rsimha@chromium.org',
