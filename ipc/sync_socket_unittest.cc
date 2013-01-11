@@ -22,7 +22,7 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
-// IPC messages for testing ---------------------------------------------------
+// IPC messages for testing ----------------------------------------------------
 
 #define IPC_MESSAGE_IMPL
 #include "ipc/ipc_message_macros.h"
@@ -44,12 +44,12 @@ IPC_MESSAGE_CONTROL1(MsgClassResponse, std::string)
 // Message class to tell the server to shut down.
 IPC_MESSAGE_CONTROL0(MsgClassShutdown)
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 namespace {
+
 const char kHelloString[] = "Hello, SyncSocket Client";
 const size_t kHelloStringLength = arraysize(kHelloString);
-}  // namespace
 
 // The SyncSocket server listener class processes two sorts of
 // messages from the client.
@@ -308,3 +308,5 @@ TEST_F(SyncSocketTest, NonBlockingWriteTest) {
   // Should be able to write more data to the buffer now.
   EXPECT_EQ(kHelloStringLength, pair[0].Send(kHelloString, kHelloStringLength));
 }
+
+}  // namespace

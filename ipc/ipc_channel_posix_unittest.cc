@@ -92,8 +92,6 @@ class IPCChannelPosixTestListener : public IPC::Listener {
   bool quit_only_on_message_;
 };
 
-}  // namespace
-
 class IPCChannelPosixTest : public base::MultiProcessTest {
  public:
   static void SetUpSocket(IPC::ChannelHandle *handle,
@@ -425,3 +423,5 @@ MULTIPROCESS_TEST_MAIN(IPCChannelPosixFailConnectionProc) {
   }
   return 0;
 }
+
+}  // namespace

@@ -16,7 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
-// IPC messages for testing ---------------------------------------------------
+// IPC messages for testing ----------------------------------------------------
 
 #define IPC_MESSAGE_IMPL
 #include "ipc/ipc_message_macros.h"
@@ -35,7 +35,9 @@ IPC_MESSAGE_CONTROL2(MsgDoMutex, std::wstring, int)
 // Used to generate an ID for a message that should not exist.
 IPC_MESSAGE_CONTROL0(MsgUnhandled)
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+
+namespace {
 
 TEST(IPCMessageIntegrity, ReadBeyondBufferStr) {
   //This was BUG 984408.
@@ -418,3 +420,5 @@ TEST_F(IPCFuzzingTest, MsgMapExMacro) {
   EXPECT_EQ(0, server.unhandled_msgs());
 #endif
 }
+
+}  // namespace

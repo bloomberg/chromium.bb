@@ -11,6 +11,8 @@
 #include "ipc/ipc_message_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
 TEST(IPCMessageTest, ListValue) {
   ListValue input;
   input.Set(0, Value::CreateDoubleValue(42.42));
@@ -67,3 +69,5 @@ TEST(IPCMessageTest, DictionaryValue) {
   iter = PickleIterator(bad_msg);
   EXPECT_FALSE(IPC::ReadParam(&bad_msg, &iter, &output));
 }
+
+}  // namespace

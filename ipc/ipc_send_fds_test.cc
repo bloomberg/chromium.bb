@@ -129,8 +129,6 @@ int TestDescriptorClient(ino_t expected_inode_num) {
   return 0;
 }
 
-}  // namespace
-
 class IPCSendFdsTest : public IPCTestBase {
 };
 
@@ -202,5 +200,7 @@ TEST_F(IPCSendFdsTest, DescriptorTest) {
                                                   &chan);
   TestDescriptorServer(chan, process_handle);
 }
+
+}  // namespace
 
 #endif  // defined(OS_POSIX)

@@ -34,6 +34,8 @@
 #include "ipc/ipc_test_base.h"
 #include "testing/multiprocess_func_list.h"
 
+namespace {
+
 const size_t kLongMessageStringNumBytes = 50000;
 
 class IPCChannelTest : public IPCTestBase {
@@ -334,3 +336,5 @@ MULTIPROCESS_IPC_TEST_MAIN(RunTestClient) {
   MessageLoop::current()->Run();
   return 0;
 }
+
+}  // namespace

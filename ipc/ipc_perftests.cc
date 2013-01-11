@@ -34,6 +34,8 @@
 #include "ipc/ipc_switches.h"
 #include "testing/multiprocess_func_list.h"
 
+namespace {
+
 // This test times the roundtrip IPC message cycle. It is enabled with a
 // special preprocessor define to enable it instead of the standard IPC
 // unit tests. This works around some funny termination conditions in the
@@ -203,3 +205,5 @@ MULTIPROCESS_IPC_TEST_MAIN(RunReflector) {
   MessageLoop::current()->Run();
   return 0;
 }
+
+}  // namespace

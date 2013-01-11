@@ -27,8 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::WaitableEvent;
-
-namespace IPC {
+using namespace IPC;
 
 namespace {
 
@@ -266,16 +265,12 @@ void RunTest(std::vector<Worker*> workers) {
   }
 }
 
-}  // namespace
-
 class IPCSyncChannelTest : public testing::Test {
  private:
   MessageLoop message_loop_;
 };
 
-//-----------------------------------------------------------------------------
-
-namespace {
+//------------------------------------------------------------------------------
 
 class SimpleServer : public Worker {
  public:
@@ -307,17 +302,13 @@ void Simple(bool pump_during_send) {
   RunTest(workers);
 }
 
-}  // namespace
-
 // Tests basic synchronous call
 TEST_F(IPCSyncChannelTest, Simple) {
   Simple(false);
   Simple(true);
 }
 
-//-----------------------------------------------------------------------------
-
-namespace {
+//------------------------------------------------------------------------------
 
 // Worker classes which override how the sync channel is created to use the
 // two-step initialization (calling the lightweight constructor and then
@@ -371,8 +362,6 @@ void TwoStep(bool create_server_pipe_now, bool create_client_pipe_now) {
   RunTest(workers);
 }
 
-}  // namespace
-
 // Tests basic two-step initialization, where you call the lightweight
 // constructor then Init.
 TEST_F(IPCSyncChannelTest, TwoStepInitialization) {
@@ -382,10 +371,7 @@ TEST_F(IPCSyncChannelTest, TwoStepInitialization) {
   TwoStep(true, true);
 }
 
-
-//-----------------------------------------------------------------------------
-
-namespace {
+//------------------------------------------------------------------------------
 
 class DelayClient : public Worker {
  public:
@@ -405,17 +391,13 @@ void DelayReply(bool pump_during_send) {
   RunTest(workers);
 }
 
-}  // namespace
-
 // Tests that asynchronous replies work
 TEST_F(IPCSyncChannelTest, DelayReply) {
   DelayReply(false);
   DelayReply(true);
 }
 
-//-----------------------------------------------------------------------------
-
-namespace {
+//------------------------------------------------------------------------------
 
 class NoHangServer : public Worker {
  public:
@@ -462,17 +444,13 @@ void NoHang(bool pump_during_send) {
   RunTest(workers);
 }
 
-}  // namespace
-
 // Tests that caller doesn't hang if receiver dies
 TEST_F(IPCSyncChannelTest, NoHang) {
   NoHang(false);
   NoHang(true);
 }
 
-//-----------------------------------------------------------------------------
-
-namespace {
+//------------------------------------------------------------------------------
 
 class UnblockServer : public Worker {
  public:
@@ -528,8 +506,6 @@ void Unblock(bool server_pump, bool client_pump, bool delete_during_send) {
   RunTest(workers);
 }
 
-}  // namespace
-
 // Tests that the caller unblocks to answer a sync message from the receiver.
 TEST_F(IPCSyncChannelTest, Unblock) {
   Unblock(false, false, false);
@@ -538,7 +514,7 @@ TEST_F(IPCSyncChannelTest, Unblock) {
   Unblock(true, true, false);
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 // Tests that the the SyncChannel object can be deleted during a Send.
 TEST_F(IPCSyncChannelTest, ChannelDeleteDuringSend) {
@@ -548,9 +524,7 @@ TEST_F(IPCSyncChannelTest, ChannelDeleteDuringSend) {
   Unblock(true, true, true);
 }
 
-//-----------------------------------------------------------------------------
-
-namespace {
+//------------------------------------------------------------------------------
 
 class RecursiveServer : public Worker {
  public:
@@ -610,8 +584,6 @@ void Recursive(
   RunTest(workers);
 }
 
-}  // namespace
-
 // Tests a server calling Send while another Send is pending.
 TEST_F(IPCSyncChannelTest, Recursive) {
   Recursive(false, false, false);
@@ -624,9 +596,7 @@ TEST_F(IPCSyncChannelTest, Recursive) {
   Recursive(true, true, true);
 }
 
-//-----------------------------------------------------------------------------
-
-namespace {
+//------------------------------------------------------------------------------
 
 void RecursiveNoHang(
     bool server_pump_first, bool server_pump_second, bool client_pump) {
@@ -636,8 +606,6 @@ void RecursiveNoHang(
   workers.push_back(new RecursiveClient(client_pump, true));
   RunTest(workers);
 }
-
-}  // namespace
 
 // Tests that if a caller makes a sync call during an existing sync call and
 // the receiver dies, neither of the Send() calls hang.
@@ -652,9 +620,7 @@ TEST_F(IPCSyncChannelTest, RecursiveNoHang) {
   RecursiveNoHang(true, true, true);
 }
 
-//-----------------------------------------------------------------------------
-
-namespace {
+//------------------------------------------------------------------------------
 
 class MultipleServer1 : public Worker {
  public:
@@ -755,8 +721,6 @@ void Multiple(bool server_pump, bool client_pump) {
   RunTest(workers);
 }
 
-}  // namespace
-
 // Tests that multiple SyncObjects on the same listener thread can unblock each
 // other.
 TEST_F(IPCSyncChannelTest, Multiple) {
@@ -766,9 +730,7 @@ TEST_F(IPCSyncChannelTest, Multiple) {
   Multiple(true, true);
 }
 
-//-----------------------------------------------------------------------------
-
-namespace {
+//------------------------------------------------------------------------------
 
 // This class provides server side functionality to test the case where
 // multiple sync channels are in use on the same thread on the client and
@@ -867,8 +829,6 @@ void QueuedReply(bool client_pump) {
   RunTest(workers);
 }
 
-}  // namespace
-
 // While a blocking send is in progress, the listener thread might answer other
 // synchronous messages.  This tests that if during the response to another
 // message the reply to the original messages comes, it is queued up correctly
@@ -880,9 +840,7 @@ TEST_F(IPCSyncChannelTest, QueuedReply) {
   QueuedReply(true);
 }
 
-//-----------------------------------------------------------------------------
-
-namespace {
+//------------------------------------------------------------------------------
 
 class ChattyClient : public Worker {
  public:
@@ -909,8 +867,6 @@ void ChattyServer(bool pump_during_send) {
   RunTest(workers);
 }
 
-}  // namespace
-
 // Tests http://b/1093251 - that sending lots of sync messages while
 // the receiver is waiting for a sync reply does not overflow the PostMessage
 // queue.
@@ -920,8 +876,6 @@ TEST_F(IPCSyncChannelTest, ChattyServer) {
 }
 
 //------------------------------------------------------------------------------
-
-namespace {
 
 class TimeoutServer : public Worker {
  public:
@@ -1009,8 +963,6 @@ void SendWithTimeoutMixedOKAndTimeout(bool pump_during_send) {
   RunTest(workers);
 }
 
-}  // namespace
-
 // Tests that SendWithTimeout does not time-out if the response comes back fast
 // enough.
 TEST_F(IPCSyncChannelTest, SendWithTimeoutOK) {
@@ -1032,8 +984,6 @@ TEST_F(IPCSyncChannelTest, DISABLED_SendWithTimeoutMixedOKAndTimeout) {
 }
 
 //------------------------------------------------------------------------------
-
-namespace {
 
 void NestedCallback(Worker* server) {
   // Sleep a bit so that we wake up after the reply has been received.
@@ -1069,8 +1019,6 @@ class DoneEventRaceServer : public Worker {
   }
 };
 
-}  // namespace
-
 // Tests http://b/1474092 - that if after the done_event is set but before
 // OnObjectSignaled is called another message is sent out, then after its
 // reply comes back OnObjectSignaled will be called for the first message.
@@ -1081,9 +1029,7 @@ TEST_F(IPCSyncChannelTest, DoneEventRace) {
   RunTest(workers);
 }
 
-//-----------------------------------------------------------------------------
-
-namespace {
+//------------------------------------------------------------------------------
 
 class TestSyncMessageFilter : public SyncMessageFilter {
  public:
@@ -1173,8 +1119,6 @@ class ServerSendAfterClose : public Worker {
   bool send_result_;
 };
 
-}  // namespace
-
 // Tests basic synchronous call
 TEST_F(IPCSyncChannelTest, SyncMessageFilter) {
   std::vector<Worker*> workers;
@@ -1199,9 +1143,7 @@ TEST_F(IPCSyncChannelTest, SendAfterClose) {
   server.Shutdown();
 }
 
-//-----------------------------------------------------------------------------
-
-namespace {
+//------------------------------------------------------------------------------
 
 class RestrictedDispatchServer : public Worker {
  public:
@@ -1376,8 +1318,6 @@ class RestrictedDispatchClient : public Worker {
   scoped_ptr<SyncChannel> non_restricted_channel_;
 };
 
-}  // namespace
-
 TEST_F(IPCSyncChannelTest, RestrictedDispatch) {
   WaitableEvent sent_ping_event(false, false);
   WaitableEvent wait_event(false, false);
@@ -1396,7 +1336,7 @@ TEST_F(IPCSyncChannelTest, RestrictedDispatch) {
   EXPECT_EQ(4, success);
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 // This test case inspired by crbug.com/108491
 // We create two servers that use the same ListenerThread but have
@@ -1424,8 +1364,6 @@ TEST_F(IPCSyncChannelTest, RestrictedDispatch) {
 //   event 1: indicate to client1 that client2 listener is in OnDoClient2Task
 //   event 2: indicate to server1 that client2 listener is in OnDoClient2Task
 //   event 3: indicate to client2 that server listener is in OnDoServerTask
-
-namespace {
 
 class RestrictedDispatchDeadlockServer : public Worker {
  public:
@@ -1606,8 +1544,6 @@ class RestrictedDispatchDeadlockClient1 : public Worker {
   bool done_issued_;
 };
 
-}  // namespace
-
 TEST_F(IPCSyncChannelTest, RestrictedDispatchDeadlock) {
   std::vector<Worker*> workers;
 
@@ -1650,14 +1586,13 @@ TEST_F(IPCSyncChannelTest, RestrictedDispatchDeadlock) {
   RunTest(workers);
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 // This test case inspired by crbug.com/120530
 // We create 4 workers that pipe to each other W1->W2->W3->W4->W1 then we send a
 // message that recurses through 3, 4 or 5 steps to make sure, say, W1 can
 // re-enter when called from W4 while it's sending a message to W2.
 // The first worker drives the whole test so it must be treated specially.
-namespace {
 
 class RestrictedDispatchPipeWorker : public Worker {
  public:
@@ -1737,8 +1672,6 @@ class RestrictedDispatchPipeWorker : public Worker {
   int* success_;
 };
 
-}  // namespace
-
 TEST_F(IPCSyncChannelTest, RestrictedDispatch4WayDeadlock) {
   int success = 0;
   std::vector<Worker*> workers;
@@ -1758,9 +1691,8 @@ TEST_F(IPCSyncChannelTest, RestrictedDispatch4WayDeadlock) {
   EXPECT_EQ(3, success);
 }
 
+//------------------------------------------------------------------------------
 
-//-----------------------------------------------------------------------------
-//
 // This test case inspired by crbug.com/122443
 // We want to make sure a reply message with the unblock flag set correctly
 // behaves as a reply, not a regular message.
@@ -1768,8 +1700,6 @@ TEST_F(IPCSyncChannelTest, RestrictedDispatch4WayDeadlock) {
 // during which it will dispatch a message comming from Client, at which point
 // it will send another message to Server2. While sending that second message it
 // will receive a reply from Server1 with the unblock flag.
-
-namespace {
 
 class ReentrantReplyServer1 : public Worker {
  public:
@@ -1861,8 +1791,6 @@ class ReentrantReplyClient : public Worker {
   WaitableEvent* server_ready_;
 };
 
-}  // namespace
-
 TEST_F(IPCSyncChannelTest, ReentrantReply) {
   std::vector<Worker*> workers;
   WaitableEvent server_ready(false, false);
@@ -1872,10 +1800,9 @@ TEST_F(IPCSyncChannelTest, ReentrantReply) {
   RunTest(workers);
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 // Generate a validated channel ID using Channel::GenerateVerifiedChannelID().
-namespace {
 
 class VerifiedServer : public Worker {
  public:
@@ -1957,12 +1884,10 @@ void Verified() {
 #endif
 }
 
-}  // namespace
-
 // Windows needs to send an out-of-band secret to verify the client end of the
 // channel. Test that we still connect correctly in that case.
 TEST_F(IPCSyncChannelTest, Verified) {
   Verified();
 }
 
-}  // namespace IPC
+}  // namespace

@@ -7,7 +7,9 @@
 #include "ipc/ipc_message_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace IPC {
+using namespace IPC;
+
+namespace {
 
 // Tests nesting of messages as parameters to other messages.
 TEST(IPCMessageUtilsTest, NestedMessages) {
@@ -66,4 +68,4 @@ TEST(IPCMessageUtilsTest, ParameterValidation) {
   ASSERT_FALSE(ParamTraits<FilePath>::Read(&message, &iter, &badPath));
 }
 
-}  // namespace IPC
+}  // namespace
