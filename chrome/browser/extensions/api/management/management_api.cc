@@ -34,6 +34,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -96,7 +97,7 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
   info->description = extension.description();
   info->options_url = extension.options_url().spec();
   info->homepage_url.reset(new std::string(
-      extension.GetHomepageURL().spec()));
+      extensions::ManifestURL::GetHomepageURL(&extension).spec()));
   info->may_disable = system->management_policy()->
       UserMayModifySettings(&extension, NULL);
   info->is_app = extension.is_app();

@@ -35,6 +35,7 @@
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/app_restore_service_factory.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/extensions/manifest_url_parser.h"
 #include "chrome/browser/extensions/web_intents_parser.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
@@ -263,6 +264,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #endif
   extensions::ManagedModeAPI::GetFactoryInstance();
   extensions::ManagementAPI::GetFactoryInstance();
+  extensions::ManifestURLParser::GetFactoryInstance();
   extensions::MediaGalleriesPrivateAPIFactory::GetInstance();
 #if defined(OS_CHROMEOS)
   extensions::MediaPlayerAPI::GetFactoryInstance();

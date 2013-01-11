@@ -9,6 +9,7 @@
 #include <string>
 
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/url_pattern.h"
@@ -529,8 +530,7 @@ void PermissionSet::InitImplicitExtensionPermissions(
   // Add the implied permissions.
   if (!extension->plugins().empty())
     apis_.insert(APIPermission::kPlugin);
-
-  if (!extension->devtools_url().is_empty())
+  if (!ManifestURL::GetDevToolsPage(extension).is_empty())
     apis_.insert(APIPermission::kDevtools);
 
   // Add the scriptable hosts.

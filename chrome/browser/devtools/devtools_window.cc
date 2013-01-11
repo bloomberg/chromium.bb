@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -484,11 +485,11 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
 
   for (ExtensionSet::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
-    if ((*extension)->devtools_url().is_empty())
+    if (extensions::ManifestURL::GetDevToolsPage(*extension).is_empty())
       continue;
     DictionaryValue* extension_info = new DictionaryValue();
-    extension_info->Set("startPage",
-        new StringValue((*extension)->devtools_url().spec()));
+    extension_info->Set("startPage", new StringValue(
+        extensions::ManifestURL::GetDevToolsPage(*extension).spec()));
     extension_info->Set("name", new StringValue((*extension)->name()));
     bool allow_experimental = (*extension)->HasAPIPermission(
         extensions::APIPermission::kExperimental);

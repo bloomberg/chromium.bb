@@ -47,6 +47,7 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/feature_switch.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
@@ -150,7 +151,7 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetBoolean("is_hosted_app", extension->is_hosted_app());
   extension_data->SetBoolean("is_platform_app", extension->is_platform_app());
   extension_data->SetBoolean("homepageProvided",
-                             extension->GetHomepageURL().is_valid());
+      extensions::ManifestURL::GetHomepageURL(extension).is_valid());
 
   string16 automatically_disabled_text;
   int disable_reasons =

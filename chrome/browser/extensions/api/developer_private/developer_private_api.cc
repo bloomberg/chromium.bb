@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/extensions/api/developer_private.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -97,7 +98,8 @@ scoped_ptr<developer::ItemInfo> DeveloperPrivateAPI::CreateItemInfo(
                                       NULL);
   info->icon = icon.spec();
 
-  info->homepage_url.reset(new std::string(item.GetHomepageURL().spec()));
+  info->homepage_url.reset(new std::string(
+      extensions::ManifestURL::GetHomepageURL(&item).spec()));
   if (!item.options_url().is_empty()) {
     info->options_url.reset(new std::string(item.options_url().spec()));
   }

@@ -636,6 +636,8 @@
         'browser/extensions/location_bar_controller.h',
         'browser/extensions/management_policy.cc',
         'browser/extensions/management_policy.h',
+        'browser/extensions/manifest_url_parser.cc',
+        'browser/extensions/manifest_url_parser.h',
         'browser/extensions/menu_manager.cc',
         'browser/extensions/menu_manager.h',
         'browser/extensions/message_handler.cc',

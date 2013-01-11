@@ -21,8 +21,11 @@
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/external_ipc_fuzzer.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/localized_error.h"
@@ -116,6 +119,14 @@ using WebKit::WebURLResponse;
 using WebKit::WebVector;
 
 namespace {
+
+// Explicitly register all extension ManifestHandlers needed to parse
+// fields used in the renderer.
+void RegisterExtensionManifestHandlers() {
+  extensions::ManifestHandler::Register(
+      extension_manifest_keys::kDevToolsPage,
+      new extensions::DevToolsPageHandler);
+}
 
 static void AppendParams(const std::vector<string16>& additional_names,
                          const std::vector<string16>& additional_values,
@@ -258,6 +269,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
       extension_scheme);
   WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(
       extension_resource_scheme);
+
+  RegisterExtensionManifestHandlers();
 }
 
 void ChromeContentRendererClient::RenderViewCreated(

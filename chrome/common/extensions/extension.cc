@@ -34,6 +34,7 @@
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/user_script.h"
@@ -470,7 +471,7 @@ void Extension::GetBasicInfo(bool enabled,
   info->SetString(info_keys::kOptionsUrlKey,
                   options_url().possibly_invalid_spec());
   info->SetString(info_keys::kHomepageUrlKey,
-                  GetHomepageURL().possibly_invalid_spec());
+                  ManifestURL::GetHomepageURL(this).possibly_invalid_spec());
   info->SetString(info_keys::kDetailsUrlKey,
                   details_url().possibly_invalid_spec());
   info->SetBoolean(info_keys::kPackagedAppKey, is_platform_app());
@@ -933,14 +934,6 @@ bool Extension::ShowConfigureContextMenus() const {
   // extension with options. All other menu items like uninstall have
   // no sense for component extensions.
   return location() != Extension::COMPONENT;
-}
-
-GURL Extension::GetHomepageURL() const {
-  if (homepage_url_.is_valid())
-    return homepage_url_;
-
-  return UpdatesFromGallery() ?
-      GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + id()) : GURL();
 }
 
 std::set<FilePath> Extension::GetBrowserImages() const {
@@ -1624,14 +1617,14 @@ bool Extension::InitFromValue(int flags, string16* error) {
     return false;
   }
 
+  finished_parsing_manifest_ = true;
+
   runtime_data_.SetActivePermissions(new PermissionSet(
       this, api_permissions, host_permissions));
   required_permission_set_ = new PermissionSet(
       this, api_permissions, host_permissions);
   optional_permission_set_ = new PermissionSet(
       optional_api_permissions, optional_host_permissions, URLPatternSet());
-
-  finished_parsing_manifest_ = true;
 
   return true;
 }
@@ -1971,7 +1964,6 @@ bool Extension::LoadSharedFeatures(
     const APIPermissionSet& api_permissions,
     string16* error) {
   if (!LoadDescription(error) ||
-      !LoadHomepageURL(error) ||
       !LoadUpdateURL(error) ||
       !LoadIcons(error) ||
       !LoadCommands(error) ||
@@ -2026,26 +2018,6 @@ bool Extension::LoadManifestVersion(string16* error) {
     return false;
   }
 
-  return true;
-}
-
-bool Extension::LoadHomepageURL(string16* error) {
-  if (!manifest_->HasKey(keys::kHomepageURL))
-    return true;
-  std::string tmp_homepage_url;
-  if (!manifest_->GetString(keys::kHomepageURL, &tmp_homepage_url)) {
-    *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kInvalidHomepageURL, "");
-    return false;
-  }
-  homepage_url_ = GURL(tmp_homepage_url);
-  if (!homepage_url_.is_valid() ||
-      (!homepage_url_.SchemeIs("http") &&
-       !homepage_url_.SchemeIs("https"))) {
-    *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kInvalidHomepageURL, tmp_homepage_url);
-    return false;
-  }
   return true;
 }
 
@@ -2665,7 +2637,6 @@ bool Extension::LoadExtensionFeatures(APIPermissionSet* api_permissions,
                           &converted_from_user_script_);
 
   if (!LoadManifestHandlerFeatures(error) ||
-      !LoadDevToolsPage(error) ||
       !LoadContentScripts(error) ||
       !LoadPageAction(error) ||
       !LoadBrowserAction(error) ||
@@ -2689,18 +2660,6 @@ bool Extension::LoadManifestHandlerFeatures(string16* error) {
     if (!ManifestHandler::Get(keys[i])->Parse(value, this, error))
       return false;
   }
-  return true;
-}
-
-bool Extension::LoadDevToolsPage(string16* error) {
-  if (!manifest_->HasKey(keys::kDevToolsPage))
-    return true;
-  std::string devtools_str;
-  if (!manifest_->GetString(keys::kDevToolsPage, &devtools_str)) {
-    *error = ASCIIToUTF16(errors::kInvalidDevToolsPage);
-    return false;
-  }
-  devtools_url_ = GetResourceURL(devtools_str);
   return true;
 }
 

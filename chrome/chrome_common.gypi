@@ -187,6 +187,8 @@
         'common/extensions/manifest.h',
         'common/extensions/manifest_handler.cc',
         'common/extensions/manifest_handler.h',
+        'common/extensions/manifest_url_handler.cc',
+        'common/extensions/manifest_url_handler.h',
         'common/extensions/matcher/regex_set_matcher.cc',
         'common/extensions/matcher/regex_set_matcher.h',
         'common/extensions/matcher/string_pattern.cc',

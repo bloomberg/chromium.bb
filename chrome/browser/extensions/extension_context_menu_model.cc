@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -73,7 +74,7 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
   } else if (command_id == NAME) {
     // The NAME links to the Homepage URL. If the extension doesn't have a
     // homepage, we just disable this menu item.
-    return extension->GetHomepageURL().is_valid();
+    return extensions::ManifestURL::GetHomepageURL(extension).is_valid();
   } else if (command_id == INSPECT_POPUP) {
     WebContents* web_contents = chrome::GetActiveWebContents(browser_);
     if (!web_contents)
@@ -101,9 +102,9 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
 
   switch (command_id) {
     case NAME: {
-      OpenURLParams params(extension->GetHomepageURL(), Referrer(),
-                           NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
-                           false);
+      OpenURLParams params(extensions::ManifestURL::GetHomepageURL(extension),
+                           Referrer(), NEW_FOREGROUND_TAB,
+                           content::PAGE_TRANSITION_LINK, false);
       browser_->OpenURL(params);
       break;
     }

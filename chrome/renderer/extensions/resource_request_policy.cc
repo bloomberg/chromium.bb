@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/page_transition_types.h"
 #include "extensions/common/constants.h"
@@ -68,7 +69,7 @@ bool ResourceRequestPolicy::CanRequestResource(
     // - devtools (chrome-extension:// URLs are loaded into frames of devtools
     //     to support the devtools extension APIs)
     bool is_dev_tools = page_url.SchemeIs(chrome::kChromeDevToolsScheme) &&
-        !extension->devtools_url().is_empty();
+                        !ManifestURL::GetDevToolsPage(extension).is_empty();
     bool transition_allowed =
         !content::PageTransitionIsWebTriggerable(transition_type);
     // - unreachable web page error page (to allow showing the icon of the

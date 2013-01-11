@@ -521,11 +521,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Whether context menu should be shown for page and browser actions.
   bool ShowConfigureContextMenus() const;
 
-  // Returns the Homepage URL for this extension. If homepage_url was not
-  // specified in the manifest, this returns the Google Gallery URL. For
-  // third-party extensions, this returns a blank GURL.
-  GURL GetHomepageURL() const;
-
   // Returns a list of paths (relative to the extension dir) for images that
   // the browser might load (like themes and page action icons).
   std::set<FilePath> GetBrowserImages() const;
@@ -703,7 +698,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     return has_background_page() && !background_page_is_persistent_;
   }
   const GURL& options_url() const { return options_url_; }
-  const GURL& devtools_url() const { return devtools_url_; }
   const GURL& details_url() const { return details_url_;}
   const PermissionSet* optional_permission_set() const {
     return optional_permission_set_.get();
@@ -862,7 +856,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                           string16* error);
   bool LoadDescription(string16* error);
   bool LoadManifestVersion(string16* error);
-  bool LoadHomepageURL(string16* error);
   bool LoadUpdateURL(string16* error);
   bool LoadIcons(string16* error);
   bool LoadCommands(string16* error);
@@ -895,7 +888,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadExtensionFeatures(APIPermissionSet* api_permissions,
                              string16* error);
   bool LoadManifestHandlerFeatures(string16* error);
-  bool LoadDevToolsPage(string16* error);
   bool LoadContentScripts(string16* error);
   bool LoadPageAction(string16* error);
   bool LoadBrowserAction(string16* error);
@@ -1111,9 +1103,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Optional URL to a page for setting options/preferences.
   GURL options_url_;
 
-  // Optional URL to a devtools extension page.
-  GURL devtools_url_;
-
   // URL to the webstore page of the extension.
   GURL details_url_;
 
@@ -1134,10 +1123,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // A file containing a list of sites for Managed Mode.
   FilePath content_pack_site_list_;
-
-  // The homepage for this extension. Useful if it is not hosted by Google and
-  // therefore does not have a Gallery URL.
-  GURL homepage_url_;
 
   // URL for fetching an update manifest
   GURL update_url_;
