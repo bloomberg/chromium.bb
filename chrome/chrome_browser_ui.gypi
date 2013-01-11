@@ -201,6 +201,8 @@
         'browser/ui/autofill/autofill_dialog_controller.h',
         'browser/ui/autofill/autofill_dialog_models.cc',
         'browser/ui/autofill/autofill_dialog_models.h',
+        'browser/ui/autofill/autofill_dialog_types.cc',
+        'browser/ui/autofill/autofill_dialog_types.h',
         'browser/ui/autofill/autofill_dialog_view.cc',
         'browser/ui/autofill/autofill_dialog_view.h',
         'browser/ui/autofill/autofill_popup_controller.h',

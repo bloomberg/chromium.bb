@@ -46,6 +46,7 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // AutofillDialogView implementation:
   virtual void Show() OVERRIDE;
+  virtual void UpdateNotificationArea() OVERRIDE;
   virtual void UpdateSection(DialogSection section) OVERRIDE;
   virtual void GetUserInput(DialogSection section,
                             DetailOutputMap* output) OVERRIDE;
@@ -173,7 +174,7 @@ class AutofillDialogViews : public AutofillDialogView,
   views::View* CreateDetailsContainer();
 
   // Creates and returns a view that holds the requesting host and intro text.
-  views::View* CreateIntroContainer();
+  views::View* CreateNotificationArea();
 
   // Creates a detail section (Shipping, Email, etc.) with the given label,
   // inputs View, and suggestion model. Relevant pointers are stored in |group|.
@@ -218,6 +219,9 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // An array of the DetailGroup structs.
   DetailGroupMap detail_groups_;
+
+  // Somewhere to show notification messages about errors, warnings, or promos.
+  views::Label* notification_label_;
 
   // The checkbox that controls whether to use the billing details for shipping
   // as well.

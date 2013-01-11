@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 
+#include <string>
+
 #include "base/logging.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -16,6 +18,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/common/form_data.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -127,6 +131,10 @@ AutofillDialogController::AutofillDialogController(
       section_showing_popup_(SECTION_BILLING) {
   // TODO(estade): |this| should observe PersonalDataManager.
   // TODO(estade): remove duplicates from |form|?
+
+  content::NavigationEntry* entry = contents->GetController().GetActiveEntry();
+  const GURL& active_url = entry ? entry->GetURL() : web_contents()->GetURL();
+  invoked_from_same_origin_ = active_url.GetOrigin() == source_url_.GetOrigin();
 }
 
 AutofillDialogController::~AutofillDialogController() {
@@ -209,31 +217,21 @@ string16 AutofillDialogController::DialogTitle() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_TITLE);
 }
 
-string16 AutofillDialogController::SecurityWarning() const {
-  return ShouldShowSecurityWarning() ?
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECURITY_WARNING) :
-      string16();
-}
+DialogNotification AutofillDialogController::Notification() const {
+  if (RequestingCreditCardInfo() && !TransmissionWillBeSecure()) {
+    return DialogNotification(
+        DialogNotification::SECURITY_WARNING,
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECURITY_WARNING));
+  }
 
-string16 AutofillDialogController::SiteLabel() const {
-  return UTF8ToUTF16(source_url_.host());
-}
+  if (!invoked_from_same_origin_) {
+    return DialogNotification(
+        DialogNotification::SECURITY_WARNING,
+        l10n_util::GetStringFUTF16(
+            IDS_AUTOFILL_DIALOG_SITE_WARNING, UTF8ToUTF16(source_url_.host())));
+  }
 
-string16 AutofillDialogController::IntroText() const {
-  return l10n_util::GetStringFUTF16(IDS_AUTOFILL_DIALOG_SITE_WARNING,
-                                    SiteLabel());
-}
-
-std::pair<string16, string16>
-    AutofillDialogController::GetIntroTextParts() const {
-  const char16 kFakeSite = '$';
-  std::vector<string16> pieces;
-  base::SplitStringDontTrim(
-      l10n_util::GetStringFUTF16(IDS_AUTOFILL_DIALOG_SITE_WARNING,
-                                 string16(1, kFakeSite)),
-      kFakeSite,
-      &pieces);
-  return std::make_pair(pieces[0], pieces[1]);
+  return DialogNotification();
 }
 
 string16 AutofillDialogController::LabelForSection(DialogSection section)
@@ -289,11 +287,10 @@ bool AutofillDialogController::RequestingCreditCardInfo() const {
   return false;
 }
 
-bool AutofillDialogController::ShouldShowSecurityWarning() const {
-  return RequestingCreditCardInfo() &&
-         (!source_url_.SchemeIs(chrome::kHttpsScheme) ||
-          net::IsCertStatusError(ssl_status_.cert_status) ||
-          net::IsCertStatusMinorError(ssl_status_.cert_status));
+bool AutofillDialogController::TransmissionWillBeSecure() const {
+  return source_url_.SchemeIs(chrome::kHttpsScheme) &&
+         !net::IsCertStatusError(ssl_status_.cert_status) &&
+         !net::IsCertStatusMinorError(ssl_status_.cert_status);
 }
 
 const DetailInputs& AutofillDialogController::RequestedFieldsForSection(

@@ -13,6 +13,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
@@ -208,7 +209,8 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
     : controller_(controller),
       did_submit_(false),
       window_(NULL),
-      contents_(NULL) {
+      contents_(NULL),
+      notification_label_(NULL) {
   DCHECK(controller);
   detail_groups_.insert(std::make_pair(SECTION_EMAIL,
                                        DetailsGroup(SECTION_EMAIL)));
@@ -226,6 +228,7 @@ AutofillDialogViews::~AutofillDialogViews() {
 
 void AutofillDialogViews::Show() {
   InitChildViews();
+  UpdateNotificationArea();
 
   // Ownership of |contents_| is handed off by this call. The
   // WebContentsModalDialog will take care of deleting itself after calling
@@ -411,48 +414,35 @@ void AutofillDialogViews::InitChildViews() {
                         0,
                         0);
 
-  string16 security_warning(controller_->SecurityWarning());
-  if (!security_warning.empty()) {
-    layout->StartRow(0, single_column_set);
-
-    views::Label* label = new views::Label(security_warning);
-    label->SetAutoColorReadabilityEnabled(false);
-    label->SetEnabledColor(SK_ColorRED);
-    label->SetFont(label->font().DeriveFont(0, gfx::Font::BOLD));
-    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    label->set_border(views::Border::CreateEmptyBorder(0, 0, 10, 0));
-
-    // TODO(dbeam): make this wrap when long. Just label->SetMultiline(true);
-    // didn't seem to be enough.
-
-    layout->AddView(label);
-  }
-
   layout->StartRow(0, single_column_set);
-  layout->AddView(CreateIntroContainer());
+  layout->AddView(CreateNotificationArea());
 
   layout->StartRowWithPadding(0, single_column_set,
                               0, views::kUnrelatedControlVerticalSpacing);
   layout->AddView(CreateDetailsContainer());
 }
 
-views::View* AutofillDialogViews::CreateIntroContainer() {
-  views::View* view = new views::View();
-  view->SetLayoutManager(
+views::View* AutofillDialogViews::CreateNotificationArea() {
+  views::View* notification_area = new views::View();
+  notification_area->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+  notification_area->set_background(
+      views::Background::CreateSolidBackground(SK_ColorTRANSPARENT));
 
-  std::pair<string16, string16> intro_text_parts =
-      controller_->GetIntroTextParts();
+  DCHECK(!notification_label_);
+  notification_label_ = new views::Label();
+  notification_label_->SetAutoColorReadabilityEnabled(false);
+  notification_area->AddChildView(notification_label_);
 
-  view->AddChildView(new views::Label(intro_text_parts.first));
+  return notification_area;
+}
 
-  views::Label* site_label = new views::Label(controller_->SiteLabel());
-  site_label->SetFont(site_label->font().DeriveFont(0, gfx::Font::BOLD));
-  view->AddChildView(site_label);
-
-  view->AddChildView(new views::Label(intro_text_parts.second));
-
-  return view;
+void AutofillDialogViews::UpdateNotificationArea() {
+  DCHECK(notification_label_);
+  const DialogNotification& notification = controller_->Notification();
+  notification_label_->parent()->background()->SetNativeControlColor(
+      notification.GetBackgroundColor());
+  notification_label_->SetText(notification.display_text());
 }
 
 views::View* AutofillDialogViews::CreateDetailsContainer() {
