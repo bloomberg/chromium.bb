@@ -54,7 +54,8 @@ bool ConfirmDeleteBookmarkNode(const BookmarkNode* node,
 // Shows the bookmark all tabs dialog.
 void ShowBookmarkAllTabsDialog(Browser* browser);
 
-// Returns true if |selection| has at least one bookmark of type url.
+// Returns true if HasBookmarkURLs() can open at least one bookmark of type url
+// in |selection|.
 bool HasBookmarkURLs(const std::vector<const BookmarkNode*>& selection);
 
 // Fills in the URL and title for a bookmark of |web_contents|.

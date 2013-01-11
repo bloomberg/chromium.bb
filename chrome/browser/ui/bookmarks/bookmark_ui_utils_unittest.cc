@@ -28,9 +28,20 @@ TEST(BookmarkUIUtilsTest, HasBookmarkURLs) {
 
   folder1.Remove(b2);
 
-  BookmarkNode* folder2 = new BookmarkNode(GURL::EmptyGURL());
-  folder2->Add(b2, 0);
-  folder1.Add(folder2, 0);
+  BookmarkNode* folder11 = new BookmarkNode(GURL::EmptyGURL());
+  folder11->Add(b2, 0);
+  folder1.Add(folder11, 0);
+  BookmarkNode folder2(GURL::EmptyGURL());
+  nodes.push_back(&folder2);
+  EXPECT_FALSE(chrome::HasBookmarkURLs(nodes));
+
+  folder2.Add(b2, 0);
+  EXPECT_TRUE(chrome::HasBookmarkURLs(nodes));
+
+  folder2.Remove(b2);
+  EXPECT_FALSE(chrome::HasBookmarkURLs(nodes));
+
+  nodes.push_back(b2);
   EXPECT_TRUE(chrome::HasBookmarkURLs(nodes));
 }
 
