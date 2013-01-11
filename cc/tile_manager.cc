@@ -555,6 +555,7 @@ void TileManager::OnRasterTaskCompleted(
     managed_tile_state.can_be_freed = false;
 
     resource_pool_->resource_provider()->beginSetPixels(resource->id());
+    resource_pool_->resource_provider()->shallowFlushIfSupported();
     managed_tile_state.resource = resource.Pass();
     tiles_with_pending_set_pixels_.push(tile);
 
