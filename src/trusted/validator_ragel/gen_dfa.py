@@ -177,7 +177,6 @@ def ParseDefFile(filename):
         r'0x[0-9a-f]{2}|'  # raw bytes
         r'data16|'
         r'rexw|'  # REX prefix with W-bit set
-        r'fwait|'  # fwait is treated as prefix
         r'/[0-7]|'  # opcode stored in ModRM byte
         r'/r|'  # register operand
         r'/m|'  # memory operand
