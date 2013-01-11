@@ -5,6 +5,7 @@
 #include "media/filters/pipeline_integration_test_base.h"
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "build/build_config.h"
 #include "media/base/decoder_buffer.h"
@@ -49,7 +50,35 @@ static const int k1280IsoFileDurationMs = 2736;
 // They do not exercise the Decrypting{Audio|Video}Decoder path.
 class FakeEncryptedMedia {
  public:
-  FakeEncryptedMedia()
+  // Defines the behavior of the "app" that responds to EME events.
+  class AppBase {
+   public:
+    virtual ~AppBase() {}
+
+    virtual void KeyAdded(const std::string& key_system,
+                          const std::string& session_id) = 0;
+
+    // Errors are not expected unless overridden.
+    virtual void KeyError(const std::string& key_system,
+                          const std::string& session_id,
+                          AesDecryptor::KeyError error_code,
+                          int system_code) {
+      FAIL() << "Unexpected Key Error";
+    }
+
+    virtual void KeyMessage(const std::string& key_system,
+                            const std::string& session_id,
+                            const std::string& message,
+                            const std::string& default_url) = 0;
+
+    virtual void NeedKey(const std::string& key_system,
+                         const std::string& session_id,
+                         const std::string& type,
+                         scoped_array<uint8> init_data, int init_data_length,
+                         AesDecryptor* decryptor) = 0;
+  };
+
+  FakeEncryptedMedia(AppBase* app)
       : decryptor_(base::Bind(&FakeEncryptedMedia::KeyAdded,
                               base::Unretained(this)),
                    base::Bind(&FakeEncryptedMedia::KeyError,
@@ -57,30 +86,59 @@ class FakeEncryptedMedia {
                    base::Bind(&FakeEncryptedMedia::KeyMessage,
                               base::Unretained(this)),
                    base::Bind(&FakeEncryptedMedia::NeedKey,
-                              base::Unretained(this))) {
+                              base::Unretained(this))),
+        app_(app) {
   }
 
   AesDecryptor* decryptor() {
     return &decryptor_;
   }
 
-  // Callbacks for firing key events.
+  // Callbacks for firing key events. Delegate to |app_|.
   void KeyAdded(const std::string& key_system, const std::string& session_id) {
-    EXPECT_EQ(kClearKeySystem, key_system);
-    EXPECT_FALSE(session_id.empty());
+    app_->KeyAdded(key_system, session_id);
   }
 
   void KeyError(const std::string& key_system,
                 const std::string& session_id,
                 AesDecryptor::KeyError error_code,
                 int system_code) {
-    FAIL() << "Unexpected Key Error";
+    app_->KeyError(key_system, session_id, error_code, system_code);
   }
 
   void KeyMessage(const std::string& key_system,
                   const std::string& session_id,
                   const std::string& message,
                   const std::string& default_url) {
+    app_->KeyMessage(key_system, session_id, message, default_url);
+  }
+
+  void NeedKey(const std::string& key_system,
+               const std::string& session_id,
+               const std::string& type,
+               scoped_array<uint8> init_data, int init_data_length) {
+    app_->NeedKey(key_system, session_id, type,
+                  init_data.Pass(), init_data_length, &decryptor_);
+  }
+
+ private:
+  AesDecryptor decryptor_;
+  scoped_ptr<AppBase> app_;
+};
+
+// Provides |kSecretKey| in response to needkey.
+class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
+ public:
+  virtual void KeyAdded(const std::string& key_system,
+                        const std::string& session_id) OVERRIDE {
+    EXPECT_EQ(kClearKeySystem, key_system);
+    EXPECT_FALSE(session_id.empty());
+  }
+
+  virtual void KeyMessage(const std::string& key_system,
+                          const std::string& session_id,
+                          const std::string& message,
+                          const std::string& default_url) OVERRIDE {
     EXPECT_EQ(kClearKeySystem, key_system);
     EXPECT_FALSE(session_id.empty());
     EXPECT_FALSE(message.empty());
@@ -89,10 +147,11 @@ class FakeEncryptedMedia {
     current_session_id_ = session_id;
   }
 
-  void NeedKey(const std::string& key_system,
-               const std::string& session_id,
-               const std::string& type,
-               scoped_array<uint8> init_data, int init_data_length) {
+  virtual void NeedKey(const std::string& key_system,
+                       const std::string& session_id,
+                       const std::string& type,
+                       scoped_array<uint8> init_data, int init_data_length,
+                       AesDecryptor* decryptor) OVERRIDE {
     current_key_system_ = key_system;
     current_session_id_ = session_id;
 
@@ -101,20 +160,46 @@ class FakeEncryptedMedia {
     // session (which will call KeyMessage).
     if (current_key_system_.empty()) {
       EXPECT_TRUE(current_session_id_.empty());
-      EXPECT_TRUE(decryptor_.GenerateKeyRequest(
+      EXPECT_TRUE(decryptor->GenerateKeyRequest(
           kClearKeySystem, type, kInitData, arraysize(kInitData)));
     }
 
     EXPECT_FALSE(current_key_system_.empty());
     EXPECT_FALSE(current_session_id_.empty());
-    decryptor_.AddKey(current_key_system_, kSecretKey, arraysize(kSecretKey),
+    decryptor->AddKey(current_key_system_, kSecretKey, arraysize(kSecretKey),
                       init_data.get(), init_data_length, current_session_id_);
   }
 
- private:
-  AesDecryptor decryptor_;
   std::string current_key_system_;
   std::string current_session_id_;
+};
+
+// Ignores needkey and does not perform a license request
+class NoResponseApp : public FakeEncryptedMedia::AppBase {
+ public:
+  virtual void KeyAdded(const std::string& key_system,
+                        const std::string& session_id) OVERRIDE {
+    EXPECT_EQ(kClearKeySystem, key_system);
+    EXPECT_FALSE(session_id.empty());
+    FAIL() << "Unexpected KeyAdded";
+  }
+
+  virtual void KeyMessage(const std::string& key_system,
+                          const std::string& session_id,
+                          const std::string& message,
+                          const std::string& default_url) OVERRIDE {
+    EXPECT_EQ(kClearKeySystem, key_system);
+    EXPECT_FALSE(session_id.empty());
+    EXPECT_FALSE(message.empty());
+    FAIL() << "Unexpected KeyMessage";
+  }
+
+  virtual void NeedKey(const std::string& key_system,
+                       const std::string& session_id,
+                       const std::string& type,
+                       scoped_array<uint8> init_data, int init_data_length,
+                       AesDecryptor* decryptor) OVERRIDE {
+  }
 };
 
 // Helper class that emulates calls made on the ChunkDemuxer by the
@@ -365,7 +450,7 @@ TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_WebM) {
 TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_Encrypted_WebM) {
   MockMediaSource source("bear-320x240-16x9-aspect-av_enc-av.webm", kWebM,
                          kAppendWholeFile);
-  FakeEncryptedMedia encrypted_media;
+  FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   StartPipelineWithEncryptedMedia(&source, &encrypted_media);
 
   scoped_refptr<DecoderBuffer> second_file =
@@ -393,7 +478,7 @@ TEST_F(PipelineIntegrationTest,
        MediaSource_ConfigChange_ClearThenEncrypted_WebM) {
   MockMediaSource source("bear-320x240-16x9-aspect.webm", kWebM,
                          kAppendWholeFile);
-  FakeEncryptedMedia encrypted_media;
+  FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   StartPipelineWithEncryptedMedia(&source, &encrypted_media);
 
   scoped_refptr<DecoderBuffer> second_file =
@@ -424,7 +509,7 @@ TEST_F(PipelineIntegrationTest,
        MediaSource_ConfigChange_EncryptedThenClear_WebM) {
   MockMediaSource source("bear-320x240-16x9-aspect-av_enc-av.webm", kWebM,
                          kAppendWholeFile);
-  FakeEncryptedMedia encrypted_media;
+  FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   StartPipelineWithEncryptedMedia(&source, &encrypted_media);
 
   scoped_refptr<DecoderBuffer> second_file =
@@ -480,9 +565,41 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_16x9AspectRatio) {
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
-TEST_F(PipelineIntegrationTest, EncryptedPlayback) {
+TEST_F(PipelineIntegrationTest, EncryptedPlayback_WebM) {
   MockMediaSource source("bear-320x240-av_enc-av.webm", kWebM, 219816);
-  FakeEncryptedMedia encrypted_media;
+  FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
+  StartPipelineWithEncryptedMedia(&source, &encrypted_media);
+
+  source.EndOfStream();
+  ASSERT_EQ(PIPELINE_OK, pipeline_status_);
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+  source.Abort();
+  Stop();
+}
+
+TEST_F(PipelineIntegrationTest, EncryptedPlayback_ClearStart_WebM) {
+  MockMediaSource source("bear-320x240-av_enc-av_clear-1s.webm",
+                         kWebM, kAppendWholeFile);
+  FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
+  StartPipelineWithEncryptedMedia(&source, &encrypted_media);
+
+  source.EndOfStream();
+  ASSERT_EQ(PIPELINE_OK, pipeline_status_);
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+  source.Abort();
+  Stop();
+}
+
+TEST_F(PipelineIntegrationTest, EncryptedPlayback_NoEncryptedFrames_WebM) {
+  MockMediaSource source("bear-320x240-av_enc-av_clear-all.webm",
+                         kWebM, kAppendWholeFile);
+  FakeEncryptedMedia encrypted_media(new NoResponseApp());
   StartPipelineWithEncryptedMedia(&source, &encrypted_media);
 
   source.EndOfStream();

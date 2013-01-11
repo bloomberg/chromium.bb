@@ -232,14 +232,6 @@ void AesDecryptor::Decrypt(StreamType stream_type,
                            const scoped_refptr<DecoderBuffer>& encrypted,
                            const DecryptCB& decrypt_cb) {
   CHECK(encrypted->GetDecryptConfig());
-  const std::string& key_id = encrypted->GetDecryptConfig()->key_id();
-
-  DecryptionKey* key = GetKey(key_id);
-  if (!key) {
-    DVLOG(1) << "Could not find a matching key for the given key ID.";
-    decrypt_cb.Run(kNoKey, NULL);
-    return;
-  }
 
   scoped_refptr<DecoderBuffer> decrypted;
   // An empty iv string signals that the frame is unencrypted.
@@ -248,6 +240,14 @@ void AesDecryptor::Decrypt(StreamType stream_type,
     decrypted = DecoderBuffer::CopyFrom(encrypted->GetData() + data_offset,
                                         encrypted->GetDataSize() - data_offset);
   } else {
+    const std::string& key_id = encrypted->GetDecryptConfig()->key_id();
+    DecryptionKey* key = GetKey(key_id);
+    if (!key) {
+      DVLOG(1) << "Could not find a matching key for the given key ID.";
+      decrypt_cb.Run(kNoKey, NULL);
+      return;
+    }
+
     crypto::SymmetricKey* decryption_key = key->decryption_key();
     decrypted = DecryptData(*encrypted, decryption_key);
     if (!decrypted) {
