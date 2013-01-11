@@ -430,7 +430,7 @@ const char kDisableWebsiteSettings[]         = "disable-website-settings";
 // for ChromeOS Aura, disable "zero window mode".
 // TODO(pkotwicz): Investigate if this bug can be removed.
 // (http://crbug.com/119175)
-extern const char kDisableZeroBrowsersOpenForTests[] =
+const char kDisableZeroBrowsersOpenForTests[] =
     "disable-zero-browsers-open-for-tests";
 
 // Use a specific disk cache location, rather than one derived from the
@@ -545,7 +545,7 @@ const char kEnableIPPooling[]               = "enable-ip-pooling";
 
 // Enables support for user profiles that are managed by another user and can
 // have restrictions applied.
-extern const char kEnableManagedUsers[]     = "enable-managed-users";
+const char kEnableManagedUsers[]     = "enable-managed-users";
 
 // Allows reporting memory info (JS heap size) to page.
 const char kEnableMemoryInfo[]              = "enable-memory-info";
