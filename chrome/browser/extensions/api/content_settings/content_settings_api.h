@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_CONTENT_SETTINGS_CONTENT_SETTINGS_API_H__
-#define CHROME_BROWSER_EXTENSIONS_API_CONTENT_SETTINGS_CONTENT_SETTINGS_API_H__
+#ifndef CHROME_BROWSER_EXTENSIONS_API_CONTENT_SETTINGS_CONTENT_SETTINGS_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_CONTENT_SETTINGS_CONTENT_SETTINGS_API_H_
 
 #include "chrome/browser/extensions/extension_function.h"
 
@@ -15,45 +15,46 @@ struct WebPluginInfo;
 
 namespace extensions {
 
-class ClearContentSettingsFunction : public SyncExtensionFunction {
+class ContentSettingsClearFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("contentSettings.clear")
 
  protected:
-  virtual ~ClearContentSettingsFunction() {}
+  virtual ~ContentSettingsClearFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class GetContentSettingFunction : public SyncExtensionFunction {
+class ContentSettingsGetFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("contentSettings.get")
 
  protected:
-  virtual ~GetContentSettingFunction() {}
+  virtual ~ContentSettingsGetFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class SetContentSettingFunction : public SyncExtensionFunction {
+class ContentSettingsSetFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("contentSettings.set")
 
  protected:
-  virtual ~SetContentSettingFunction() {}
+  virtual ~ContentSettingsSetFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class GetResourceIdentifiersFunction : public AsyncExtensionFunction {
+class ContentSettingsGetResourceIdentifiersFunction
+    : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("contentSettings.getResourceIdentifiers")
 
  protected:
-  virtual ~GetResourceIdentifiersFunction() {}
+  virtual ~ContentSettingsGetResourceIdentifiersFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -73,4 +74,4 @@ class GetResourceIdentifiersFunction : public AsyncExtensionFunction {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_CONTENT_SETTINGS_CONTENT_SETTINGS_API_H__
+#endif  // CHROME_BROWSER_EXTENSIONS_API_CONTENT_SETTINGS_CONTENT_SETTINGS_API_H_

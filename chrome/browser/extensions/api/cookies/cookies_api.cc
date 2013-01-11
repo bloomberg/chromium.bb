@@ -189,13 +189,13 @@ bool CookiesFunction::ParseStoreContext(
   return true;
 }
 
-GetCookieFunction::GetCookieFunction() {
+CookiesGetFunction::CookiesGetFunction() {
 }
 
-GetCookieFunction::~GetCookieFunction() {
+CookiesGetFunction::~CookiesGetFunction() {
 }
 
-bool GetCookieFunction::RunImpl() {
+bool CookiesGetFunction::RunImpl() {
   parsed_args_ = Get::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parsed_args_.get());
 
@@ -216,23 +216,23 @@ bool GetCookieFunction::RunImpl() {
 
   bool rv = BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&GetCookieFunction::GetCookieOnIOThread, this));
+      base::Bind(&CookiesGetFunction::GetCookieOnIOThread, this));
   DCHECK(rv);
 
   // Will finish asynchronously.
   return true;
 }
 
-void GetCookieFunction::GetCookieOnIOThread() {
+void CookiesGetFunction::GetCookieOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::CookieStore* cookie_store =
       store_context_->GetURLRequestContext()->cookie_store();
   cookies_helpers::GetCookieListFromStore(
       cookie_store, url_,
-      base::Bind(&GetCookieFunction::GetCookieCallback, this));
+      base::Bind(&CookiesGetFunction::GetCookieCallback, this));
 }
 
-void GetCookieFunction::GetCookieCallback(const net::CookieList& cookie_list) {
+void CookiesGetFunction::GetCookieCallback(const net::CookieList& cookie_list) {
   net::CookieList::const_iterator it;
   for (it = cookie_list.begin(); it != cookie_list.end(); ++it) {
     // Return the first matching cookie. Relies on the fact that the
@@ -252,22 +252,22 @@ void GetCookieFunction::GetCookieCallback(const net::CookieList& cookie_list) {
 
   bool rv = BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&GetCookieFunction::RespondOnUIThread, this));
+      base::Bind(&CookiesGetFunction::RespondOnUIThread, this));
   DCHECK(rv);
 }
 
-void GetCookieFunction::RespondOnUIThread() {
+void CookiesGetFunction::RespondOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SendResponse(true);
 }
 
-GetAllCookiesFunction::GetAllCookiesFunction() {
+CookiesGetAllFunction::CookiesGetAllFunction() {
 }
 
-GetAllCookiesFunction::~GetAllCookiesFunction() {
+CookiesGetAllFunction::~CookiesGetAllFunction() {
 }
 
-bool GetAllCookiesFunction::RunImpl() {
+bool CookiesGetAllFunction::RunImpl() {
   parsed_args_ = GetAll::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parsed_args_.get());
 
@@ -287,23 +287,23 @@ bool GetAllCookiesFunction::RunImpl() {
 
   bool rv = BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&GetAllCookiesFunction::GetAllCookiesOnIOThread, this));
+      base::Bind(&CookiesGetAllFunction::GetAllCookiesOnIOThread, this));
   DCHECK(rv);
 
   // Will finish asynchronously.
   return true;
 }
 
-void GetAllCookiesFunction::GetAllCookiesOnIOThread() {
+void CookiesGetAllFunction::GetAllCookiesOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::CookieStore* cookie_store =
       store_context_->GetURLRequestContext()->cookie_store();
   cookies_helpers::GetCookieListFromStore(
       cookie_store, url_,
-      base::Bind(&GetAllCookiesFunction::GetAllCookiesCallback, this));
+      base::Bind(&CookiesGetAllFunction::GetAllCookiesCallback, this));
 }
 
-void GetAllCookiesFunction::GetAllCookiesCallback(
+void CookiesGetAllFunction::GetAllCookiesCallback(
     const net::CookieList& cookie_list) {
   const extensions::Extension* extension = GetExtension();
   if (extension) {
@@ -316,22 +316,22 @@ void GetAllCookiesFunction::GetAllCookiesCallback(
   }
   bool rv = BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&GetAllCookiesFunction::RespondOnUIThread, this));
+      base::Bind(&CookiesGetAllFunction::RespondOnUIThread, this));
   DCHECK(rv);
 }
 
-void GetAllCookiesFunction::RespondOnUIThread() {
+void CookiesGetAllFunction::RespondOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SendResponse(true);
 }
 
-SetCookieFunction::SetCookieFunction() : success_(false) {
+CookiesSetFunction::CookiesSetFunction() : success_(false) {
 }
 
-SetCookieFunction::~SetCookieFunction() {
+CookiesSetFunction::~CookiesSetFunction() {
 }
 
-bool SetCookieFunction::RunImpl() {
+bool CookiesSetFunction::RunImpl() {
   parsed_args_ = Set::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parsed_args_.get());
 
@@ -350,14 +350,14 @@ bool SetCookieFunction::RunImpl() {
 
   bool rv = BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SetCookieFunction::SetCookieOnIOThread, this));
+      base::Bind(&CookiesSetFunction::SetCookieOnIOThread, this));
   DCHECK(rv);
 
   // Will finish asynchronously.
   return true;
 }
 
-void SetCookieFunction::SetCookieOnIOThread() {
+void CookiesSetFunction::SetCookieOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::CookieMonster* cookie_monster =
       store_context_->GetURLRequestContext()->cookie_store()->
@@ -385,10 +385,10 @@ void SetCookieFunction::SetCookieOnIOThread() {
       parsed_args_->details.http_only.get() ?
           *parsed_args_->details.http_only :
           false,
-      base::Bind(&SetCookieFunction::PullCookie, this));
+      base::Bind(&CookiesSetFunction::PullCookie, this));
 }
 
-void SetCookieFunction::PullCookie(bool set_cookie_result) {
+void CookiesSetFunction::PullCookie(bool set_cookie_result) {
   // Pull the newly set cookie.
   net::CookieMonster* cookie_monster =
       store_context_->GetURLRequestContext()->cookie_store()->
@@ -396,10 +396,11 @@ void SetCookieFunction::PullCookie(bool set_cookie_result) {
   success_ = set_cookie_result;
   cookies_helpers::GetCookieListFromStore(
       cookie_monster, url_,
-      base::Bind(&SetCookieFunction::PullCookieCallback, this));
+      base::Bind(&CookiesSetFunction::PullCookieCallback, this));
 }
 
-void SetCookieFunction::PullCookieCallback(const net::CookieList& cookie_list) {
+void CookiesSetFunction::PullCookieCallback(
+    const net::CookieList& cookie_list) {
   net::CookieList::const_iterator it;
   for (it = cookie_list.begin(); it != cookie_list.end(); ++it) {
     // Return the first matching cookie. Relies on the fact that the
@@ -417,11 +418,11 @@ void SetCookieFunction::PullCookieCallback(const net::CookieList& cookie_list) {
 
   bool rv = BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&SetCookieFunction::RespondOnUIThread, this));
+      base::Bind(&CookiesSetFunction::RespondOnUIThread, this));
   DCHECK(rv);
 }
 
-void SetCookieFunction::RespondOnUIThread() {
+void CookiesSetFunction::RespondOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!success_) {
     std::string name = parsed_args_->details.name.get() ?
@@ -432,13 +433,13 @@ void SetCookieFunction::RespondOnUIThread() {
   SendResponse(success_);
 }
 
-RemoveCookieFunction::RemoveCookieFunction() {
+CookiesRemoveFunction::CookiesRemoveFunction() {
 }
 
-RemoveCookieFunction::~RemoveCookieFunction() {
+CookiesRemoveFunction::~CookiesRemoveFunction() {
 }
 
-bool RemoveCookieFunction::RunImpl() {
+bool CookiesRemoveFunction::RunImpl() {
   parsed_args_ = Remove::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parsed_args_.get());
 
@@ -458,14 +459,14 @@ bool RemoveCookieFunction::RunImpl() {
   // Pass the work off to the IO thread.
   bool rv = BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&RemoveCookieFunction::RemoveCookieOnIOThread, this));
+      base::Bind(&CookiesRemoveFunction::RemoveCookieOnIOThread, this));
   DCHECK(rv);
 
   // Will return asynchronously.
   return true;
 }
 
-void RemoveCookieFunction::RemoveCookieOnIOThread() {
+void CookiesRemoveFunction::RemoveCookieOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Remove the cookie
@@ -473,10 +474,10 @@ void RemoveCookieFunction::RemoveCookieOnIOThread() {
       store_context_->GetURLRequestContext()->cookie_store();
   cookie_store->DeleteCookieAsync(
       url_, parsed_args_->details.name,
-      base::Bind(&RemoveCookieFunction::RemoveCookieCallback, this));
+      base::Bind(&CookiesRemoveFunction::RemoveCookieCallback, this));
 }
 
-void RemoveCookieFunction::RemoveCookieCallback() {
+void CookiesRemoveFunction::RemoveCookieCallback() {
   // Build the callback result
   Remove::Results::Details details;
   details.name = parsed_args_->details.name;
@@ -487,16 +488,16 @@ void RemoveCookieFunction::RemoveCookieCallback() {
   // Return to UI thread
   bool rv = BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&RemoveCookieFunction::RespondOnUIThread, this));
+      base::Bind(&CookiesRemoveFunction::RespondOnUIThread, this));
   DCHECK(rv);
 }
 
-void RemoveCookieFunction::RespondOnUIThread() {
+void CookiesRemoveFunction::RespondOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SendResponse(true);
 }
 
-bool GetAllCookieStoresFunction::RunImpl() {
+bool CookiesGetAllCookieStoresFunction::RunImpl() {
   Profile* original_profile = profile();
   DCHECK(original_profile);
   scoped_ptr<ListValue> original_tab_ids(new ListValue());
@@ -539,7 +540,7 @@ bool GetAllCookieStoresFunction::RunImpl() {
   return true;
 }
 
-void GetAllCookieStoresFunction::Run() {
+void CookiesGetAllCookieStoresFunction::Run() {
   SendResponse(RunImpl());
 }
 

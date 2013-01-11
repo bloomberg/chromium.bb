@@ -10,8 +10,8 @@
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
-#include "chrome/browser/extensions/app_restore_service_factory.h"
 #include "chrome/browser/extensions/app_restore_service.h"
+#include "chrome/browser/extensions/app_restore_service_factory.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -761,7 +761,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppDevToolsBrowserTest, ReOpenedWithURL) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ConstrainedWindowRequest) {
-  RequestPermissionsFunction::SetIgnoreUserGestureForTests(true);
+  PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
   const Extension* extension =
       LoadAndLaunchPlatformApp("optional_permission_request");
   ASSERT_TRUE(extension) << "Failed to load extension.";

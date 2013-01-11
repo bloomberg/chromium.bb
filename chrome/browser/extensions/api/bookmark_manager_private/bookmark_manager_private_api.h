@@ -7,7 +7,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/browser/extensions/api/bookmarks/bookmark_api.h"
+#include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 

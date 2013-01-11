@@ -34,40 +34,41 @@ class AsyncManagementFunction : public AsyncExtensionFunction {
   ExtensionService* service();
 };
 
-class GetAllExtensionsFunction : public ManagementFunction {
+class ManagementGetAllFunction : public ManagementFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("management.getAll");
 
  protected:
-  virtual ~GetAllExtensionsFunction() {}
+  virtual ~ManagementGetAllFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class GetExtensionByIdFunction : public ManagementFunction {
+class ManagementGetFunction : public ManagementFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("management.get");
 
  protected:
-  virtual ~GetExtensionByIdFunction() {}
+  virtual ~ManagementGetFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class GetPermissionWarningsByIdFunction : public ManagementFunction {
+class ManagementGetPermissionWarningsByIdFunction : public ManagementFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("management.getPermissionWarningsById");
 
  protected:
-  virtual ~GetPermissionWarningsByIdFunction() {}
+  virtual ~ManagementGetPermissionWarningsByIdFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class GetPermissionWarningsByManifestFunction : public AsyncExtensionFunction {
+class ManagementGetPermissionWarningsByManifestFunction
+    : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME(
       "management.getPermissionWarningsByManifest");
@@ -77,32 +78,32 @@ class GetPermissionWarningsByManifestFunction : public AsyncExtensionFunction {
   void OnParseFailure(const std::string& error);
 
  protected:
-  virtual ~GetPermissionWarningsByManifestFunction() {}
+  virtual ~ManagementGetPermissionWarningsByManifestFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class LaunchAppFunction : public ManagementFunction {
+class ManagementLaunchAppFunction : public ManagementFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("management.launchApp");
 
  protected:
-  virtual ~LaunchAppFunction() {}
+  virtual ~ManagementLaunchAppFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class SetEnabledFunction : public AsyncManagementFunction,
+class ManagementSetEnabledFunction : public AsyncManagementFunction,
                            public ExtensionInstallPrompt::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("management.setEnabled");
 
-  SetEnabledFunction();
+  ManagementSetEnabledFunction();
 
  protected:
-  virtual ~SetEnabledFunction();
+  virtual ~ManagementSetEnabledFunction();
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -118,12 +119,12 @@ class SetEnabledFunction : public AsyncManagementFunction,
   scoped_ptr<ExtensionInstallPrompt> install_prompt_;
 };
 
-class UninstallFunction : public AsyncManagementFunction,
+class ManagementUninstallFunction : public AsyncManagementFunction,
                           public ExtensionUninstallDialog::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("management.uninstall");
 
-  UninstallFunction();
+  ManagementUninstallFunction();
   static void SetAutoConfirmForTest(bool should_proceed);
 
   // ExtensionUninstallDialog::Delegate implementation.
@@ -131,7 +132,7 @@ class UninstallFunction : public AsyncManagementFunction,
   virtual void ExtensionUninstallCanceled() OVERRIDE;
 
  private:
-  virtual ~UninstallFunction();
+  virtual ~ManagementUninstallFunction();
 
   virtual bool RunImpl() OVERRIDE;
 

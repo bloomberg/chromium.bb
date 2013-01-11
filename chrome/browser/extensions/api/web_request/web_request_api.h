@@ -433,12 +433,13 @@ class WebRequestEventHandled : public SyncIOThreadExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class WebRequestHandlerBehaviorChanged : public SyncIOThreadExtensionFunction {
+class WebRequestHandlerBehaviorChangedFunction
+    : public SyncIOThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("webRequest.handlerBehaviorChanged");
 
  protected:
-  virtual ~WebRequestHandlerBehaviorChanged() {}
+  virtual ~WebRequestHandlerBehaviorChangedFunction() {}
 
   // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(

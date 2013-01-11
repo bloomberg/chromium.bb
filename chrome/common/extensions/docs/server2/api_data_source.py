@@ -14,9 +14,10 @@ import third_party.json_schema_compiler.idl_schema as idl_schema
 import third_party.json_schema_compiler.idl_parser as idl_parser
 
 # Increment this version when there are changes to the data stored in any of
-# the caches used by APIDataSource. This allows the cache to be invalidated
-# without having to flush memcache on the production server.
-_VERSION = 9
+# the caches used by APIDataSource. This would include changes to model.py in
+# JSON schema compiler! This allows the cache to be invalidated without having
+# to flush memcache on the production server.
+_VERSION = 10
 
 def _RemoveNoDocs(item):
   if json_parse.IsDict(item):

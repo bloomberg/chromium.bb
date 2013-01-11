@@ -26,10 +26,12 @@ class Model(object):
   def __init__(self):
     self.namespaces = {}
 
-  def AddNamespace(self, json, source_file):
+  def AddNamespace(self, json, source_file, include_compiler_options=False):
     """Add a namespace's json to the model and returns the namespace.
     """
-    namespace = Namespace(json, source_file)
+    namespace = Namespace(json,
+                          source_file,
+                          include_compiler_options=include_compiler_options)
     self.namespaces[namespace.name] = namespace
     return namespace
 
@@ -42,21 +44,28 @@ class Namespace(object):
   - |source_file| the file that contained the namespace definition
   - |source_file_dir| the directory component of |source_file|
   - |source_file_filename| the filename component of |source_file|
+  - |platforms| if not None, the list of platforms that the namespace is
+                available to
   - |types| a map of type names to their model.Type
   - |functions| a map of function names to their model.Function
   - |events| a map of event names to their model.Function
   - |properties| a map of property names to their model.Property
+  - |compiler_options| the compiler_options dict, only present if
+                       |include_compiler_options| is True
   """
-  def __init__(self, json, source_file):
+  def __init__(self, json, source_file, include_compiler_options=False):
     self.name = json['namespace']
     self.unix_name = UnixName(self.name)
     self.source_file = source_file
     self.source_file_dir, self.source_file_filename = os.path.split(source_file)
     self.parent = None
+    self.platforms = _GetPlatforms(json)
     _AddTypes(self, json, self)
     _AddFunctions(self, json, self)
     _AddEvents(self, json, self)
     _AddProperties(self, json, self)
+    if include_compiler_options:
+      self.compiler_options = json.get('compiler_options', {})
 
 class Type(object):
   """A Type defined in the json.
@@ -127,13 +136,15 @@ class Function(object):
 
   Properties:
   - |name| the function name
+  - |platforms| if not None, the list of platforms that the function is
+                available to
   - |params| a list of parameters to the function (order matters). A separate
-    parameter is used for each choice of a 'choices' parameter.
+             parameter is used for each choice of a 'choices' parameter
   - |description| a description of the function (if provided)
   - |callback| the callback parameter to the function. There should be exactly
-    one
+               one
   - |optional| whether the Function is "optional"; this only makes sense to be
-    present when the Function is representing a callback property.
+               present when the Function is representing a callback property
   - |simple_name| the name of this Function without a namespace
   """
   def __init__(self,
@@ -144,6 +155,7 @@ class Function(object):
                from_client=False):
     self.name = json['name']
     self.simple_name = _StripNamespace(self.name, namespace)
+    self.platforms = _GetPlatforms(json)
     self.params = []
     self.description = json.get('description')
     self.callback = None
@@ -357,22 +369,36 @@ class Property(object):
 
   unix_name = property(GetUnixName, SetUnixName)
 
-class _PropertyTypeInfo(object):
-  """This class is not an inner class of |PropertyType| so it can be pickled.
+class _Enum(object):
+  """Superclass for enum types with a "name" field, setting up repr/eq/ne.
+  Enums need to do this so that equality/non-equality work over pickling.
   """
-  def __init__(self, is_fundamental, name):
-    self.is_fundamental = is_fundamental
+
+  @staticmethod
+  def GetAll(cls):
+    """Yields all _Enum objects declared in |cls|.
+    """
+    for prop_key in dir(cls):
+      prop_value = getattr(cls, prop_key)
+      if isinstance(prop_value, _Enum):
+        yield prop_value
+
+  def __init__(self, name):
     self.name = name
 
-  def __repr__(self):
+  def __repr(self):
     return self.name
 
   def __eq__(self, other):
-    return isinstance(other, _PropertyTypeInfo) and self.name == other.name
+    return type(other) == type(self) and other.name == self.name
 
   def __ne__(self, other):
-    # Yes. You seriously do need this.
     return not (self == other)
+
+class _PropertyTypeInfo(_Enum):
+  def __init__(self, is_fundamental, name):
+    _Enum.__init__(self, name)
+    self.is_fundamental = is_fundamental
 
 class PropertyType(object):
   """Enum of different types of properties/parameters.
@@ -461,3 +487,27 @@ def _AddProperties(model,
         namespace,
         from_json=from_json,
         from_client=from_client)
+
+class _PlatformInfo(_Enum):
+  def __init__(self, name):
+    _Enum.__init__(self, name)
+
+class Platforms(object):
+  """Enum of the possible platforms.
+  """
+  CHROMEOS = _PlatformInfo("chromeos")
+  CHROMEOS_TOUCH = _PlatformInfo("chromeos_touch")
+  LINUX = _PlatformInfo("linux")
+  MAC = _PlatformInfo("mac")
+  WIN = _PlatformInfo("win")
+
+def _GetPlatforms(json):
+  if 'platforms' not in json:
+    return None
+  platforms = []
+  for platform_name in json['platforms']:
+    for platform_enum in _Enum.GetAll(Platforms):
+      if platform_name == platform_enum.name:
+        platforms.append(platform_enum)
+        break
+  return platforms

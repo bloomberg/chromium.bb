@@ -61,7 +61,7 @@ bool RulesFunction::RunImpl() {
   return true;
 }
 
-bool AddRulesFunction::RunImplOnCorrectThread() {
+bool EventsAddRulesFunction::RunImplOnCorrectThread() {
   scoped_ptr<AddRules::Params> params(AddRules::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -73,7 +73,7 @@ bool AddRulesFunction::RunImplOnCorrectThread() {
   return error_.empty();
 }
 
-bool RemoveRulesFunction::RunImplOnCorrectThread() {
+bool EventsRemoveRulesFunction::RunImplOnCorrectThread() {
   scoped_ptr<RemoveRules::Params> params(RemoveRules::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -87,7 +87,7 @@ bool RemoveRulesFunction::RunImplOnCorrectThread() {
   return error_.empty();
 }
 
-bool GetRulesFunction::RunImplOnCorrectThread() {
+bool EventsGetRulesFunction::RunImplOnCorrectThread() {
   scoped_ptr<GetRules::Params> params(GetRules::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

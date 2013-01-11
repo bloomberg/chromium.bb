@@ -449,8 +449,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesError) {
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Permissions) {
-  RequestPermissionsFunction::SetAutoConfirmForTests(true);
-  RequestPermissionsFunction::SetIgnoreUserGestureForTests(true);
+  PermissionsRequestFunction::SetAutoConfirmForTests(true);
+  PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
 
   EXPECT_CALL(*mock_adapter_, GetDevice(device1_->address()))
       .WillOnce(testing::Return(device1_.get()));

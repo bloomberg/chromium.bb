@@ -19,22 +19,14 @@ Create "chrome/common/extensions/api/experimental_foo.json". For inspiration
 look at the "app" API. Include descriptions fields to generate the
 documentation.
 
-2) Add your API specification to extensions_api_resources.grd.
-Add an "<include ...>" line with your JSON specification file to
-"chrome/common/extensions_api_resources.grd".
-
-3) Add your API specification to api.gyp.
-Add "experimental_foo.json" to the "json_schema_files" section in
+2) Add your API specification to api.gyp.
+Add "experimental_foo.json" to the "schema_files" section in
 "chrome/common/extensions/api/api.gyp".
 
-4) Write the API function handlers.
+3) Write the API function handlers.
 Create foo_api.cc and foo_api.h under "chrome/browser/extensions/api/foo". You
 should use the JSON Schema Compiler. Look at the "permissions_api.cc" for
 details on how to do that.
-
-5) Register function handlers.
-In "chrome/browser/extensions/extension_function_registry.cc" include foo_api.h 
-and instantiate a RegisterFunction for each function you created in (3).
 
 --------------------------------------------------------------------------------
 APPROACH 2: IDL FILES
@@ -45,15 +37,13 @@ at "alarms.idl". Include comments, they will be used to automatically generate
 the documentation.
 
 2) Add your API specification to api.gyp.
-Add "experimental_foo.idl" to the "idl_schema_files" section in
+Add "experimental_foo.idl" to the "schema_files" section in
 "chrome/common/extensions/api/api.gyp".
 
 3) Write the API function handlers.
 Create foo_api.cc and foo_api.h under "chrome/browser/extensions/api/foo". You
 should use the JSON Schema Compiler. Look at the "alarms_api.cc" for details on
 how to do that.
-
-4-5) Nothing to do! Function handlers are automatically registered for you.
 
 --------------------------------------------------------------------------------
 STEPS COMMON TO BOTH APPROACHES
@@ -70,32 +60,10 @@ The files you created in (3) and (5) should be added to
 --------------------------------------------------------------------------------
 GENERATING DOCUMENTATION
 
-8) Build the project. (Only required if you used IDL files.)
-If you used IDL files, you need to build the project once in order for the
-documentation to be properly generated. Do this now. (This is required in order
-to generate the JSON file used to generate documentation.)
+8) Add a stub template in ../docs/templates/public corresponding to your API.
+See other templates for inspiration.
 
-9) Add your JSON file to the documentation controller
-Open "chrome/common/extensions/docs/js/api_page_generator.js" and add a line
-referring to "../api/experimental_foo.json". Do this even if you used the IDL
-approach as this JSON file has been generated in (7).
-
-10) Write the static HTML page.
-Write a small snippet of static HTML describing your API in
-"chrome/common/extensions/docs/static/experimental.foo.html". For the moment,
-just include the following in this file, adjusting it to describe your API:
-
-  <div id="pageData-name" class="pageData">Experimental Foo APIs</div>
-
-  <!-- BEGIN AUTHORED CONTENT -->
-  <p>The current methods allow applications to...</p>
-  <!-- END AUTHORED CONTENT -->
-
-11) Build the documentation.
-You will need to build DumpRenderTree once before you can build the
-documentation. Once this is done, from "chrome/common/extensions/docs" run
-"build/build.py". For more information on building documentation see README.txt
-in "chrome/common/extensions/docs".
+9) Run ../docs/templates/server2/preview.py to view the generated documentation.
 
 --------------------------------------------------------------------------------
 WRITING TESTS

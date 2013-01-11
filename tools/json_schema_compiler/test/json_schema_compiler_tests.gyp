@@ -9,9 +9,9 @@
       'type': 'static_library',
       'variables': {
         'chromium_code': 1,
-        'json_schema_files': [
-          'any.json',
+        'schema_files': [
           'additional_properties.json',
+          'any.json',
           'arrays.json',
           'callbacks.json',
           'choices.json',
@@ -19,22 +19,19 @@
           'enums.json',
           'functions_as_parameters.json',
           'functions_on_types.json',
+          'idl_basics.idl',
+          'idl_object_types.idl',
           'objects.json',
           'simple_api.json',
-        ],
-        'idl_schema_files': [
-          'idl_basics.idl',
-          'idl_object_types.idl'
         ],
         'cc_dir': 'tools/json_schema_compiler/test',
         'root_namespace': 'test::api',
       },
       'inputs': [
-        '<@(idl_schema_files)',
+        '<@(schema_files)',
       ],
       'sources': [
-        '<@(json_schema_files)',
-        '<@(idl_schema_files)',
+        '<@(schema_files)',
       ],
       'includes': ['../../../build/json_schema_compile.gypi'],
     },

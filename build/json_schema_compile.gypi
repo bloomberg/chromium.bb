@@ -5,8 +5,7 @@
 {
   'variables': {
     # When including this gypi, the following variables must be set:
-    #   json_schema_files: a list of json files that comprise the api model.
-    #   idl_schema_files: a list of IDL files that comprise the api model.
+    #   schema_files: a list of json or IDL files that comprise the api model.
     #   cc_dir: path to generated files
     #   root_namespace: the C++ namespace that all generated files go under
     # Functions and namespaces can be excluded by setting "nocompile" to true.
@@ -16,6 +15,7 @@
   'rules': [
     {
       'rule_name': 'genapi',
+      'msvs_external_rule': 1,
       'extension': 'json',
       'inputs': [
         '<(api_gen_dir)/any.cc',
@@ -35,7 +35,7 @@
         # TODO(calamity): uncomment this when gyp on windows behaves like other
         # platforms. List expansions of filepaths in inputs expand to different
         # things.
-        # '<@(json_schema_files)',
+        # '<@(schema_files)',
       ],
       'outputs': [
         '<(SHARED_INTERMEDIATE_DIR)/<(cc_dir)/<(RULE_INPUT_ROOT).cc',
@@ -74,7 +74,7 @@
         # TODO(calamity): uncomment this when gyp on windows behaves like other
         # platforms. List expansions of filepaths in inputs expand to different
         # things.
-        # '<@(idl_schema_files)',
+        # '<@(schema_files)',
       ],
       'outputs': [
         '<(SHARED_INTERMEDIATE_DIR)/<(cc_dir)/<(RULE_INPUT_ROOT).cc',

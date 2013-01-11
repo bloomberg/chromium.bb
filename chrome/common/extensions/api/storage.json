@@ -6,6 +6,9 @@
   {
     "namespace": "storage",
     "unprivileged": true,
+    "compiler_options": {
+      "generate_type_functions": true
+    },
     "types": [
       {
         "id": "StorageChange",

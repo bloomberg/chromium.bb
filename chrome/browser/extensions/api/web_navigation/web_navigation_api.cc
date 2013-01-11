@@ -19,12 +19,12 @@
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/api/web_navigation.h"
-#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_errors.h"
@@ -664,7 +664,7 @@ bool WebNavigationTabObserver::IsReferenceFragmentNavigation(
       url.ReplaceComponents(replacements);
 }
 
-bool GetFrameFunction::RunImpl() {
+bool WebNavigationGetFrameFunction::RunImpl() {
   scoped_ptr<GetFrame::Params> params(GetFrame::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   int tab_id = params->details.tab_id;
@@ -720,7 +720,7 @@ bool GetFrameFunction::RunImpl() {
   return true;
 }
 
-bool GetAllFramesFunction::RunImpl() {
+bool WebNavigationGetAllFramesFunction::RunImpl() {
   scoped_ptr<GetAllFrames::Params> params(GetAllFrames::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   int tab_id = params->details.tab_id;

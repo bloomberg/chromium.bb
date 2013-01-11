@@ -201,15 +201,15 @@ class WebNavigationEventRouter : public TabStripModelObserver,
 };
 
 // API function that returns the state of a given frame.
-class GetFrameFunction : public SyncExtensionFunction {
-  virtual ~GetFrameFunction() {}
+class WebNavigationGetFrameFunction : public SyncExtensionFunction {
+  virtual ~WebNavigationGetFrameFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("webNavigation.getFrame")
 };
 
 // API function that returns the states of all frames in a given tab.
-class GetAllFramesFunction : public SyncExtensionFunction {
-  virtual ~GetAllFramesFunction() {}
+class WebNavigationGetAllFramesFunction : public SyncExtensionFunction {
+  virtual ~WebNavigationGetAllFramesFunction() {}
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("webNavigation.getAllFrames")
 };

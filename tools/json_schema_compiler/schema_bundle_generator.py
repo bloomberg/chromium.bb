@@ -4,6 +4,7 @@
 
 import code
 import cpp_util
+from model import Platforms
 from schema_util import CapitalizeFirstLetter
 from schema_util import JsFunctionNameToClassName
 
@@ -44,6 +45,20 @@ class SchemaBundleGenerator(object):
     c.Append()
     return c
 
+  def _GetPlatformIfdefs(self, model_object):
+    """Generates the "defined" conditional for an #if check if |model_object|
+    has platform restrictions. Returns None if there are no restrictions.
+    """
+    if model_object.platforms is None:
+      return None
+    ifdefs = []
+    for platform in model_object.platforms:
+      if platform == Platforms.CHROMEOS:
+        ifdefs.append('defined(OS_CHROMEOS)')
+      else:
+        raise ValueError("Unsupported platform ifdef: %s" % platform.name)
+    return ' and '.join(ifdefs)
+
   def GenerateAPIHeader(self):
     """Generates the header for API registration / declaration"""
     c = code.Code()
@@ -53,9 +68,19 @@ class SchemaBundleGenerator(object):
     c.Append('#include "base/basictypes.h"')
 
     for namespace in self._model.namespaces.values():
+      ifdefs = self._GetPlatformIfdefs(namespace)
+      if ifdefs is not None:
+        c.Append("#if %s" % ifdefs, indent_level=0)
+
       namespace_name = namespace.unix_name.replace("experimental_", "")
-      c.Append('#include "chrome/browser/extensions/api/%s/%s_api.h"' % (
-          namespace_name, namespace_name))
+      implementation_header = namespace.compiler_options.get(
+          "implemented_in",
+          "chrome/browser/extensions/api/%s/%s_api.h" % (namespace_name,
+                                                         namespace_name))
+      c.Append('#include "%s"' % implementation_header)
+
+      if ifdefs is not None:
+        c.Append("#endif  // %s" % ifdefs, indent_level=0)
 
     c.Append()
     c.Append("class ExtensionFunctionRegistry;")
@@ -70,20 +95,41 @@ class SchemaBundleGenerator(object):
     c.Append()
     return self.GenerateHeader('generated_api', c)
 
+  def _GetNamespaceFunctions(self, namespace):
+    functions = list(namespace.functions.values())
+    if namespace.compiler_options.get("generate_type_functions", False):
+      for type_ in namespace.types.values():
+        functions += list(type_.functions.values())
+    return functions
+
   def GenerateFunctionRegistry(self):
     c = code.Code()
     c.Sblock("class GeneratedFunctionRegistry {")
-    c.Append("public:")
+    c.Append(" public:")
     c.Sblock("static void RegisterAll(ExtensionFunctionRegistry* registry) {")
     for namespace in self._model.namespaces.values():
+      namespace_ifdefs = self._GetPlatformIfdefs(namespace)
+      if namespace_ifdefs is not None:
+        c.Append("#if %s" % namespace_ifdefs, indent_level=0)
+
       namespace_name = CapitalizeFirstLetter(namespace.name.replace(
           "experimental.", ""))
-      for function in namespace.functions.values():
+      for function in self._GetNamespaceFunctions(namespace):
         if function.nocompile:
           continue
+        function_ifdefs = self._GetPlatformIfdefs(function)
+        if function_ifdefs is not None:
+          c.Append("#if %s" % function_ifdefs, indent_level=0)
+
         function_name = JsFunctionNameToClassName(namespace.name, function.name)
         c.Append("registry->RegisterFunction<%sFunction>();" % (
             function_name))
+
+        if function_ifdefs is not None:
+          c.Append("#endif  // %s" % function_ifdefs, indent_level=0)
+
+      if namespace_ifdefs is not None:
+        c.Append("#endif  // %s" % namespace_ifdefs, indent_level=0)
     c.Eblock("}")
     c.Eblock("};")
     c.Append()
@@ -100,7 +146,7 @@ class SchemaBundleGenerator(object):
     c.Concat(self._cpp_type_generator.GetRootNamespaceStart())
     c.Append()
     c.Sblock('class GeneratedSchemas {')
-    c.Append('public:')
+    c.Append(' public:')
     c.Append('// Puts all API schemas in |schemas|.')
     c.Append('static void Get('
                  'std::map<std::string, base::StringPiece>* schemas);')
