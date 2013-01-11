@@ -8,7 +8,7 @@ IPCChannelPosixTest.MultiConnection
 IPCFuzzingTest.SanityTest
 IPCFuzzingTest.MsgBadPayloadArgs
 IPCFuzzingTest.MsgBadPayloadShort
-IPCChannelTest.DescriptorTest
+IPCSendFdsTest.DescriptorTest
 IPCChannelTest.ChannelTest
 IPCChannelTest.ChannelProxyTest
 IPCChannelTest.SendMessageInChannelConnected

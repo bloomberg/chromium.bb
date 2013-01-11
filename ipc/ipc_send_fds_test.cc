@@ -4,8 +4,6 @@
 
 #include "build/build_config.h"
 
-#include "ipc/ipc_tests.h"
-
 #if defined(OS_MACOSX)
 extern "C" {
 #include <sandbox.h>
@@ -20,6 +18,7 @@ extern "C" {
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_multiprocess_test.h"
+#include "ipc/ipc_test_base.h"
 #include "testing/multiprocess_func_list.h"
 
 #if defined(OS_POSIX)
@@ -132,7 +131,9 @@ int TestDescriptorClient(ino_t expected_inode_num) {
 
 }  // namespace
 
-// ---------------------------------------------------------------------------
+class IPCSendFdsTest : public IPCTestBase {
+};
+
 #if defined(OS_MACOSX)
 // TODO(port): Make this test cross-platform.
 MULTIPROCESS_IPC_TEST_MAIN(RunTestDescriptorClientSandboxed) {
@@ -165,7 +166,7 @@ MULTIPROCESS_IPC_TEST_MAIN(RunTestDescriptorClientSandboxed) {
 }
 
 // Test that FDs are correctly sent to a sandboxed process.
-TEST_F(IPCChannelTest, DescriptorTestSandboxed) {
+TEST_F(IPCSendFdsTest, DescriptorTestSandboxed) {
     // Setup IPC channel.
   MyChannelDescriptorListener listener(-1);
 
@@ -189,7 +190,7 @@ MULTIPROCESS_IPC_TEST_MAIN(RunTestDescriptorClient) {
   return TestDescriptorClient(st.st_ino);
 }
 
-TEST_F(IPCChannelTest, DescriptorTest) {
+TEST_F(IPCSendFdsTest, DescriptorTest) {
     // Setup IPC channel.
   MyChannelDescriptorListener listener(-1);
 

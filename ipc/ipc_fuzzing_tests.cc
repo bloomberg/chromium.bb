@@ -12,7 +12,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_multiprocess_test.h"
-#include "ipc/ipc_tests.h"
+#include "ipc/ipc_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -257,7 +257,7 @@ MULTIPROCESS_IPC_TEST_MAIN(RunFuzzServer) {
   return 0;
 }
 
-class IPCFuzzingTest : public IPCChannelTest {
+class IPCFuzzingTest : public IPCTestBase {
 };
 
 // This test makes sure that the FuzzerClientListener and FuzzerServerListener

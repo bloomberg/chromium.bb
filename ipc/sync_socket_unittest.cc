@@ -14,7 +14,7 @@
 #include "base/threading/thread.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_multiprocess_test.h"
-#include "ipc/ipc_tests.h"
+#include "ipc/ipc_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -164,7 +164,7 @@ class SyncSocketClientListener : public IPC::Listener {
   DISALLOW_COPY_AND_ASSIGN(SyncSocketClientListener);
 };
 
-class SyncSocketTest : public IPCChannelTest {
+class SyncSocketTest : public IPCTestBase {
 };
 
 TEST_F(SyncSocketTest, SanityTest) {

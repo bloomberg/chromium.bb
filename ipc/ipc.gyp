@@ -37,6 +37,7 @@
         'test_support_ipc',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
+        '../base/base.gyp:run_all_unittests',
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
       ],
@@ -46,6 +47,7 @@
       'sources': [
         'file_descriptor_set_posix_unittest.cc',
         'ipc_channel_posix_unittest.cc',
+        'ipc_channel_unittest.cc',
         'ipc_fuzzing_tests.cc',
         'ipc_message_unittest.cc',
         'ipc_message_utils_unittest.cc',
@@ -53,9 +55,52 @@
         'ipc_sync_channel_unittest.cc',
         'ipc_sync_message_unittest.cc',
         'ipc_sync_message_unittest.h',
-        'ipc_tests.cc',
-        'ipc_tests.h',
+        'ipc_test_base.cc',
+        'ipc_test_base.h',
         'sync_socket_unittest.cc',
+      ],
+      'conditions': [
+        ['toolkit_uses_gtk == 1', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+          ],
+        }],
+        ['OS == "android" and gtest_target_type == "shared_library"', {
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
+        ['os_posix == 1 and OS != "mac" and OS != "android"', {
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
+        }]
+      ],
+    },
+    {
+      'target_name': 'ipc_perftests',
+      'type': '<(gtest_target_type)',
+      # TODO(viettrungluu): Figure out which dependencies are really needed.
+      'dependencies': [
+        'ipc',
+        'test_support_ipc',
+        '../base/base.gyp:base',
+        '../base/base.gyp:base_i18n',
+        '../base/base.gyp:test_support_base',
+        '../base/base.gyp:test_support_perf',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'include_dirs': [
+        '..'
+      ],
+      'sources': [
+        'ipc_perftests.cc',
+        'ipc_test_base.cc',
+        'ipc_test_base.h',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
