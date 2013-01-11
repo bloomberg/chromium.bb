@@ -211,8 +211,6 @@ TEST_F(CandidateWindowViewTest, ShouldUpdateCandidateViewsTest) {
 
 TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
   const char* kEmptyLabel = "";
-  const char* kDefaultVerticalLabel[] = { "1", "2", "3" };
-  const char* kDefaultHorizontalLabel[] = { "1.", "2.", "3." };
   const char* kCustomizedLabel[] = { "a", "s", "d" };
   const char* kExpectedHorizontalCustomizedLabel[] = { "a.", "s.", "d." };
 
@@ -232,34 +230,6 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
       ClearInputMethodLookupTable(i, &table);
       candidate_window_view.UpdateCandidates(table);
       EXPECT_EQ(i, candidate_window_view.candidate_views_.size());
-    }
-  }
-  {
-    SCOPED_TRACE("Empty labels expects default label(vertical)");
-    const size_t kPageSize = 3;
-    InputMethodLookupTable table;
-    ClearInputMethodLookupTable(kPageSize, &table);
-
-    table.orientation = InputMethodLookupTable::kVertical;
-    for (size_t i = 0; i < kPageSize; ++i) {
-      table.candidates.push_back(kSampleCandidate[i]);
-      table.annotations.push_back(kSampleAnnotation[i]);
-      InputMethodLookupTable::Description description;
-      description.title = kSampleDescriptionTitle[i];
-      description.body = kSampleDescriptionBody[i];
-      table.descriptions.push_back(description);
-    }
-
-    table.labels.clear();
-
-    candidate_window_view.UpdateCandidates(table);
-
-    ASSERT_EQ(kPageSize, candidate_window_view.candidate_views_.size());
-    for (size_t i = 0; i < kPageSize; ++i) {
-      ExpectLabels(kDefaultVerticalLabel[i],
-                   kSampleCandidate[i],
-                   kSampleAnnotation[i],
-                   candidate_window_view.candidate_views_[i]);
     }
   }
   {
@@ -284,34 +254,6 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
     ASSERT_EQ(kPageSize, candidate_window_view.candidate_views_.size());
     for (size_t i = 0; i < kPageSize; ++i) {
       ExpectLabels(kEmptyLabel, kSampleCandidate[i], kSampleAnnotation[i],
-                   candidate_window_view.candidate_views_[i]);
-    }
-  }
-  {
-    SCOPED_TRACE("Empty labels expects default label(horizontal)");
-    const size_t kPageSize = 3;
-    InputMethodLookupTable table;
-    ClearInputMethodLookupTable(kPageSize, &table);
-
-    table.orientation = InputMethodLookupTable::kHorizontal;
-    for (size_t i = 0; i < kPageSize; ++i) {
-      table.candidates.push_back(kSampleCandidate[i]);
-      table.annotations.push_back(kSampleAnnotation[i]);
-      InputMethodLookupTable::Description description;
-      description.title = kSampleDescriptionTitle[i];
-      description.body = kSampleDescriptionBody[i];
-      table.descriptions.push_back(description);
-    }
-
-    table.labels.clear();
-
-    candidate_window_view.UpdateCandidates(table);
-
-    ASSERT_EQ(kPageSize, candidate_window_view.candidate_views_.size());
-    for (size_t i = 0; i < kPageSize; ++i) {
-      ExpectLabels(kDefaultHorizontalLabel[i],
-                   kSampleCandidate[i],
-                   kSampleAnnotation[i],
                    candidate_window_view.candidate_views_[i]);
     }
   }

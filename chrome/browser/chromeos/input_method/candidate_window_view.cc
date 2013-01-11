@@ -70,19 +70,11 @@ views::View* WrapWithPadding(views::View* view, const gfx::Insets& insets) {
 // Creates shortcut text from the given index and the orientation.
 string16 CreateShortcutText(int index,
                             const InputMethodLookupTable& table) {
-  // Choose the character used for the shortcut label.
-  const char kShortcutCharacters[] = "1234567890ABCDEF";
-  // The default character should not be used but just in case.
-  std::string shortcut_text = " ";
-  if (table.labels.empty()) {
-    // -1 to exclude the null character at the end.
-    if (index < static_cast<int>(arraysize(kShortcutCharacters) - 1))
-      shortcut_text = std::string(1, kShortcutCharacters[index]);
-  } else {
-    if (index < static_cast<int>(table.labels.size()))
-      shortcut_text = table.labels[index];
-  }
+  if (table.labels.empty() ||
+      index >= static_cast<int>(table.labels.size()))
+    return UTF8ToUTF16("");
 
+  std::string shortcut_text = table.labels[index];
   if (table.orientation != InputMethodLookupTable::kVertical)
     shortcut_text += '.';
   return UTF8ToUTF16(shortcut_text);
