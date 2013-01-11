@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop_proxy.h"
 #include "media/audio/audio_manager_base.h"
+#include "media/audio/mac/audio_device_listener_mac.h"
 
 namespace media {
 
@@ -37,16 +38,15 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   virtual AudioParameters GetPreferredLowLatencyOutputStreamParameters(
       const AudioParameters& input_params) OVERRIDE;
 
-  // Called by an internal device change listener.  Must be called on
-  // |creating_message_loop_|.
-  void OnDeviceChange();
-
  protected:
   virtual ~AudioManagerMac();
 
  private:
-  bool listener_registered_;
-  scoped_refptr<base::MessageLoopProxy> creating_message_loop_;
+  // Helper methods for constructing AudioDeviceListenerMac on the audio thread.
+  void CreateDeviceListener();
+  void DestroyDeviceListener();
+
+  scoped_ptr<AudioDeviceListenerMac> output_device_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerMac);
 };
