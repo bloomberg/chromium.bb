@@ -132,7 +132,8 @@ class TransferStateInternal
         thread_texture_id_(0),
         needs_late_bind_(false),
         transfer_in_progress_(false),
-        egl_image_(EGL_NO_IMAGE_KHR) {
+        egl_image_(EGL_NO_IMAGE_KHR),
+        egl_image_created_sync_(EGL_NO_SYNC_KHR) {
     static const AsyncTexImage2DParams zero_params = {0, 0, 0, 0, 0, 0, 0, 0};
     late_bind_define_params_ = zero_params;
   }
@@ -159,6 +160,61 @@ class TransferStateInternal
     needs_late_bind_ = false;
   }
 
+  void CreateEglImage(GLuint texture_id) {
+    TRACE_EVENT0("gpu", "eglCreateImageKHR");
+    DCHECK(texture_id);
+    DCHECK_EQ(egl_image_, EGL_NO_IMAGE_KHR);
+    DCHECK_EQ(egl_image_created_sync_, EGL_NO_SYNC_KHR);
+
+    EGLDisplay egl_display = eglGetCurrentDisplay();
+    EGLContext egl_context = eglGetCurrentContext();
+    EGLenum egl_target = EGL_GL_TEXTURE_2D_KHR;
+    EGLClientBuffer egl_buffer =
+        reinterpret_cast<EGLClientBuffer>(texture_id);
+    EGLint egl_attrib_list[] = {
+        EGL_GL_TEXTURE_LEVEL_KHR, 0,         // mip-level to reference.
+        EGL_IMAGE_PRESERVED_KHR, EGL_FALSE,  // throw away texture data.
+        EGL_NONE
+    };
+    egl_image_ = eglCreateImageKHR(
+        egl_display,
+        egl_context,
+        egl_target,
+        egl_buffer,
+        egl_attrib_list);
+
+    // TODO(epenner): Remove for other GPUs if it's just a Qualcomm bug.
+    // BUG=crbug.com/168356
+    egl_image_created_sync_ =
+        eglCreateSyncKHR(egl_display, EGL_SYNC_FENCE_KHR, NULL);
+  }
+
+  void CreateEglImageOnUploadThread() {
+    CreateEglImage(thread_texture_id_);
+  }
+
+  void CreateEglImageOnMainThreadIfNeeded() {
+    if (egl_image_ == EGL_NO_IMAGE_KHR)
+      CreateEglImage(texture_id_);
+  }
+
+  void WaitOnEglImageCreation() {
+    // The first time we use the EGL image for upload, first
+    // wait on it's creation to be completed. This seems to only be
+    // needed for Qualcomm (even when uploading on the same thread).
+    // TODO(epenner): Remove for other GPUs if it's just a Qualcomm bug.
+    // BUG=crbug.com/168356
+    if (egl_image_created_sync_ != EGL_NO_SYNC_KHR) {
+      TRACE_EVENT0("gpu", "eglWaitSync");
+      EGLint flags = EGL_SYNC_FLUSH_COMMANDS_BIT_KHR;
+      EGLTimeKHR time = EGL_FOREVER_KHR;
+      EGLDisplay display = eglGetCurrentDisplay();
+      eglClientWaitSyncKHR(display, egl_image_created_sync_, flags, time);
+      eglDestroySyncKHR(display, egl_image_created_sync_);
+      egl_image_created_sync_ = EGL_NO_SYNC_KHR;
+    }
+  }
+
  protected:
   friend class base::RefCountedThreadSafe<TransferStateInternal>;
   friend class AsyncPixelTransferDelegateAndroid;
@@ -168,13 +224,17 @@ class TransferStateInternal
   }
 
   virtual ~TransferStateInternal() {
-    if (egl_image_) {
+    if (egl_image_ != EGL_NO_IMAGE_KHR) {
       EGLDisplay display = eglGetCurrentDisplay();
       eglDestroyImageKHR(display, egl_image_);
       if (thread_texture_id_) {
         transfer_message_loop_proxy()->PostTask(FROM_HERE,
             base::Bind(&DeleteTexture, thread_texture_id_));
       }
+    }
+    if (egl_image_created_sync_ != EGL_NO_SYNC_KHR) {
+      EGLDisplay display = eglGetCurrentDisplay();
+      eglDestroySyncKHR(display, egl_image_created_sync_);
     }
   }
 
@@ -198,6 +258,7 @@ class TransferStateInternal
   // every upload, but I found that didn't work, so this stores
   // one for the lifetime of the texture.
   EGLImageKHR egl_image_;
+  EGLSyncKHR egl_image_created_sync_;
 
   // Time spent performing last transfer.
   base::TimeDelta last_transfer_time_;
@@ -389,26 +450,9 @@ void AsyncPixelTransferDelegateAndroid::AsyncTexSubImage2D(
   // Mark the transfer in progress.
   state->transfer_in_progress_ = true;
 
+  // If this wasn't async allocated, we don't have an EGLImage yet.
   // Create the EGLImage if it hasn't already been created.
-  if (!state->egl_image_) {
-    TRACE_EVENT0("gpu", "eglCreateImageKHR");
-    EGLDisplay egl_display = eglGetCurrentDisplay();
-    EGLContext egl_context = eglGetCurrentContext();
-    EGLenum egl_target = EGL_GL_TEXTURE_2D_KHR;
-    EGLClientBuffer egl_buffer =
-        reinterpret_cast<EGLClientBuffer>(state->texture_id_);
-    EGLint egl_attrib_list[] = {
-        EGL_GL_TEXTURE_LEVEL_KHR, tex_params.level, // mip-level to reference.
-        EGL_IMAGE_PRESERVED_KHR, EGL_FALSE,         // throw away texture data.
-        EGL_NONE
-    };
-    state->egl_image_ = eglCreateImageKHR(
-        egl_display,
-        egl_context,
-        egl_target,
-        egl_buffer,
-        egl_attrib_list);
-  }
+  state->CreateEglImageOnMainThreadIfNeeded();
 
   // Duplicate the shared memory so there are no way we can get
   // a use-after-free of the raw pixels.
@@ -509,25 +553,10 @@ void AsyncPixelTransferDelegateAndroid::PerformAsyncTexImage2D(
         tex_params.type,
         NULL);
   }
-  {
-    TRACE_EVENT0("gpu", "eglCreateImageKHR");
-    EGLDisplay egl_display = eglGetCurrentDisplay();
-    EGLContext egl_context = eglGetCurrentContext();
-    EGLenum egl_target = EGL_GL_TEXTURE_2D_KHR;
-    EGLClientBuffer egl_buffer =
-        reinterpret_cast<EGLClientBuffer>(state->thread_texture_id_);
-    EGLint egl_attrib_list[] = {
-        EGL_GL_TEXTURE_LEVEL_KHR, tex_params.level, // mip-map level.
-        EGL_IMAGE_PRESERVED_KHR, EGL_FALSE,         // throw away texture data.
-        EGL_NONE
-    };
-    state->egl_image_ = eglCreateImageKHR(
-        egl_display,
-        egl_context,
-        egl_target,
-        egl_buffer,
-        egl_attrib_list);
-  }
+
+  state->CreateEglImageOnUploadThread();
+  state->WaitOnEglImageCreation();
+
   {
     TRACE_EVENT0("gpu", "glTexSubImage2D with data");
     glTexSubImage2D(
@@ -558,6 +587,8 @@ void AsyncPixelTransferDelegateAndroid::PerformAsyncTexSubImage2D(
   DCHECK(state);
   DCHECK_NE(EGL_NO_IMAGE_KHR, state->egl_image_);
   DCHECK_EQ(0, tex_params.level);
+
+  state->WaitOnEglImageCreation();
 
   void* data = GetAddress(shared_memory, shared_memory_data_offset);
 
