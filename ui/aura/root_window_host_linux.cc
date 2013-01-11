@@ -868,6 +868,7 @@ void RootWindowHostLinux::DispatchXI2Event(const base::NativeEvent& event) {
         xev = &last_event;
       // fallthrough
     case ui::ET_TOUCH_PRESSED:
+    case ui::ET_TOUCH_CANCELLED:
     case ui::ET_TOUCH_RELEASED: {
       ui::TouchEvent touchev(xev);
 #if defined(OS_CHROMEOS)

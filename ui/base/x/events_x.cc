@@ -479,6 +479,37 @@ class XModifierStateWatcher{
   DISALLOW_COPY_AND_ASSIGN(XModifierStateWatcher);
 };
 
+#if defined(USE_XI2_MT)
+// Detects if a touch event is a driver-generated 'special event'.
+// A 'special event' is a touch release or move event with maximum radius and
+// pressure at location (0, 0).
+// This needs to be done in a cleaner way: http://crbug.com/169256
+bool TouchEventIsGeneratedHack(const base::NativeEvent& native_event) {
+  XIDeviceEvent* event =
+      static_cast<XIDeviceEvent*>(native_event->xcookie.data);
+  CHECK(event->evtype == XI_TouchUpdate ||
+        event->evtype == XI_TouchEnd);
+
+  // Force is normalized to [0, 1].
+  if (ui::GetTouchForce(native_event) < 1.0f)
+    return false;
+
+  if (ui::EventLocationFromNative(native_event) != gfx::Point())
+    return false;
+
+  // Radius is in pixels, and the valuator is the diameter in pixels.
+  float radius = ui::GetTouchRadiusX(native_event), min, max;
+  unsigned int deviceid =
+      static_cast<XIDeviceEvent*>(native_event->xcookie.data)->sourceid;
+  if (!ui::ValuatorTracker::GetInstance()->GetValuatorRange(
+      deviceid, ui::ValuatorTracker::VAL_TOUCH_MAJOR, &min, &max)) {
+    return false;
+  }
+
+  return radius * 2 == max;
+}
+#endif
+
 int GetEventFlagsFromXState(unsigned int state) {
   int flags = 0;
   if (state & ControlMask)
@@ -539,9 +570,11 @@ ui::EventType GetTouchEventType(const base::NativeEvent& native_event) {
     case XI_TouchBegin:
       return ui::ET_TOUCH_PRESSED;
     case XI_TouchUpdate:
-      return ui::ET_TOUCH_MOVED;
+      return TouchEventIsGeneratedHack(native_event) ? ui::ET_UNKNOWN :
+                                                       ui::ET_TOUCH_MOVED;
     case XI_TouchEnd:
-      return ui::ET_TOUCH_RELEASED;
+      return TouchEventIsGeneratedHack(native_event) ? ui::ET_TOUCH_CANCELLED :
+                                                       ui::ET_TOUCH_RELEASED;
   }
 
   return ui::ET_UNKNOWN;

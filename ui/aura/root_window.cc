@@ -803,7 +803,11 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
       Env::GetInstance()->set_touch_down(touch_ids_down_ != 0);
       break;
 
-    // Don't handle ET_TOUCH_CANCELLED since we always get a ET_TOUCH_RELEASED.
+    // Handle ET_TOUCH_CANCELLED only if it has a native event.
+    case ui::ET_TOUCH_CANCELLED:
+      if (!event->HasNativeEvent())
+        break;
+      // fallthrough
     case ui::ET_TOUCH_RELEASED:
       touch_ids_down_ = (touch_ids_down_ | (1 << event->touch_id())) ^
                         (1 << event->touch_id());
