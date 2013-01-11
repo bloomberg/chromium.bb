@@ -212,7 +212,10 @@ void GestureEventFilter::Reset() {
 }
 
 void GestureEventFilter::ProcessGestureAck(bool processed, int type) {
-  CHECK(!coalesced_gesture_events_.empty());
+  if (coalesced_gesture_events_.empty()) {
+    DLOG(ERROR) << "Received unexpected ACK for event type " << type;
+    return;
+  }
   DCHECK_EQ(coalesced_gesture_events_.front().type, type);
   coalesced_gesture_events_.pop_front();
   if (type == WebInputEvent::GestureFlingCancel)
