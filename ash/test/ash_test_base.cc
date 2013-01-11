@@ -9,6 +9,7 @@
 
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_shell_delegate.h"
@@ -18,8 +19,10 @@
 #include "content/public/test/web_contents_tester.h"
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/ime/text_input_test_support.h"
@@ -33,6 +36,32 @@
 
 namespace ash {
 namespace test {
+namespace {
+
+class AshEventGeneratorDelegate : public aura::test::EventGeneratorDelegate {
+ public:
+  AshEventGeneratorDelegate() {}
+  virtual ~AshEventGeneratorDelegate() {}
+
+  // aura::test::EventGeneratorDelegate overrides:
+  aura::RootWindow* GetRootWindowAt(
+      const gfx::Point& point_in_screen) const OVERRIDE {
+    gfx::Screen* screen = Shell::GetInstance()->screen();
+    gfx::Display display = screen->GetDisplayNearestPoint(point_in_screen);
+    return Shell::GetInstance()->display_controller()->
+        GetRootWindowForDisplayId(display.id());
+  }
+
+  aura::client::ScreenPositionClient* GetScreenPositionClient(
+      const aura::Window* window) const OVERRIDE {
+    return aura::client::GetScreenPositionClient(window->GetRootWindow());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AshEventGeneratorDelegate);
+};
+
+}  // namespace
 
 content::WebContents* AshTestViewsDelegate::CreateWebContents(
     content::BrowserContext* browser_context,
@@ -41,7 +70,8 @@ content::WebContents* AshTestViewsDelegate::CreateWebContents(
                                                            site_instance);
 }
 
-AshTestBase::AshTestBase() : test_shell_delegate_(NULL) {
+AshTestBase::AshTestBase()
+    : test_shell_delegate_(NULL) {
 }
 
 AshTestBase::~AshTestBase() {
@@ -80,6 +110,15 @@ void AshTestBase::TearDown() {
 #if defined(OS_WIN)
   aura::test::SetUsePopupAsRootWindowForTest(false);
 #endif
+  event_generator_.reset();
+}
+
+aura::test::EventGenerator& AshTestBase::GetEventGenerator() {
+  if (!event_generator_.get()) {
+    event_generator_.reset(
+        new aura::test::EventGenerator(new AshEventGeneratorDelegate()));
+  }
+  return *event_generator_.get();
 }
 
 void AshTestBase::ChangeDisplayConfig(float scale,

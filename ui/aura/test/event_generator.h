@@ -6,6 +6,7 @@
 #define UI_AURA_TEST_EVENT_GENERATOR_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 
@@ -21,20 +22,47 @@ namespace aura {
 class RootWindow;
 class Window;
 
+namespace client {
+class ScreenPositionClient;
+}
+
 namespace test {
 
-// EventGenerator is a tool that generates and dispatch events.
+// A delegate interface for EventGenerator that provides a way to
+// locate aura root window for given point.
+class EventGeneratorDelegate {
+ public:
+  virtual ~EventGeneratorDelegate() {}
+
+  // Returns a root window for given point.
+  virtual RootWindow* GetRootWindowAt(const gfx::Point& point) const = 0;
+
+  // Returns the screen position client that determines the
+  // coordinates used in EventGenerator. EventGenerator uses
+  // RootWindow's coordinate if this retruns NULL.
+  virtual client::ScreenPositionClient* GetScreenPositionClient(
+      const aura::Window* window) const = 0;
+};
+
+// EventGenerator is a tool that generates and dispatch events. The
+// coordinates of the points in API is determined by the
+// EventGeneratorDelegate.
 class EventGenerator {
  public:
-  // Creates an EventGenerator with the mouse/touch location (0,0).
+  // Creates an EventGenerator with the mouse/touch location (0,0),
+  // which uses the |root_window|'s coordinates.
   explicit EventGenerator(RootWindow* root_window);
 
+  // Create an EventGenerator with EventGeneratorDelegate,
+  // which uses the coordinates used by |delegate|.
+  explicit EventGenerator(EventGeneratorDelegate* delegate);
+
   // Creates an EventGenerator with the mouse/touch location
-  // at |initial_location|.
+  // at |initial_location|, which uses the |root_window|'s coordinates.
   EventGenerator(RootWindow* root_window, const gfx::Point& initial_location);
 
   // Creates an EventGenerator with the mouse/touch location
-  // centered over |window|.
+  // centered over |window|, which uses the |root_window|'s coordinates.
   EventGenerator(RootWindow* root_window, Window* window);
 
   virtual ~EventGenerator();
@@ -176,13 +204,33 @@ class EventGenerator {
   // Dispatch the |event| to the RootWindow.
   void Dispatch(ui::Event& event);
 
+  void set_current_root_window(RootWindow* root_window) {
+    current_root_window_ = root_window;
+  }
+
  private:
   // Dispatch a key event to the RootWindow.
   void DispatchKeyEvent(bool is_press, ui::KeyboardCode key_code, int flags);
 
-  RootWindow* root_window_;
-  int flags_;
+  void UpdateCurrentRootWindow(const gfx::Point& point);
+  void PressButton(int flag);
+  void ReleaseButton(int flag);
+
+  // Convert a point between API's coordinates and
+  // |target|'s coordinates.
+  void ConvertPointFromTarget(const aura::Window* target,
+                              gfx::Point* point) const;
+  void ConvertPointToTarget(const aura::Window* target,
+                            gfx::Point* point) const;
+
+  gfx::Point GetLocationInCurrentRoot() const;
+  gfx::Point CenterOfWindow(const Window* window) const;
+
+  scoped_ptr<EventGeneratorDelegate> delegate_;
   gfx::Point current_location_;
+  RootWindow* current_root_window_;
+  int flags_;
+  bool grab_;
 
   DISALLOW_COPY_AND_ASSIGN(EventGenerator);
 };
