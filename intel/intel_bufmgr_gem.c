@@ -1733,9 +1733,10 @@ drm_intel_gem_bo_clear_relocs(drm_intel_bo *bo, int start)
 	assert(bo_gem->reloc_count >= start);
 	/* Unreference the cleared target buffers */
 	for (i = start; i < bo_gem->reloc_count; i++) {
-		if (bo_gem->reloc_target_info[i].bo != bo) {
-			drm_intel_gem_bo_unreference_locked_timed(bo_gem->
-								  reloc_target_info[i].bo,
+		drm_intel_bo_gem *target_bo_gem = (drm_intel_bo_gem *) bo_gem->reloc_target_info[i].bo;
+		if (&target_bo_gem->bo != bo) {
+			bo_gem->reloc_tree_fences -= target_bo_gem->reloc_tree_fences;
+			drm_intel_gem_bo_unreference_locked_timed(&target_bo_gem->bo,
 								  time.tv_sec);
 		}
 	}
