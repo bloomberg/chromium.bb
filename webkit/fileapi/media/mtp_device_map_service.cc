@@ -59,8 +59,7 @@ MTPDeviceDelegate* MTPDeviceMapService::GetMTPDeviceDelegate(
 
   base::AutoLock lock(lock_);
   DelegateMap::const_iterator it = delegate_map_.find(device_location);
-  DCHECK(it != delegate_map_.end());
-  return it->second;
+  return (it != delegate_map_.end()) ? it->second : NULL;
 }
 
 MTPDeviceMapService::MTPDeviceMapService() {
