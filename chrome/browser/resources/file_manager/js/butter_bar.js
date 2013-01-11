@@ -209,22 +209,22 @@ ButterBar.prototype.clearHideTimeout_ = function() {
  */
 ButterBar.prototype.transferType_ = function() {
   var progress = this.progress_;
-  if (!progress ||
-      progress.pendingMoves === 0 && progress.pendingCopies === 0 &&
-      progress.pendingZips === 0)
+  if (!progress)
     return 'TRANSFER';
 
-  if (progress.pendingZips > 0) {
-    return 'ZIP';
-  }
+  var pendingTransferTypesCount =
+      (progress.pendingMoves === 0 ? 0 : 1) +
+      (progress.pendingCopies === 0 ? 0 : 1) +
+      (progress.pendingZips === 0 ? 0 : 1);
 
-  if (progress.pendingMoves > 0) {
-    if (progress.pendingCopies > 0)
-      return 'TRANSFER';
+  if (pendingTransferTypesCount != 1)
+    return 'TRANSFER';
+  else if (progress.pendingMoves > 0)
     return 'MOVE';
-  }
-
-  return 'COPY';
+  else if (progress.pendingCopies > 0)
+    return 'COPY';
+  else
+    return 'ZIP';
 };
 
 /**
@@ -282,6 +282,7 @@ ButterBar.prototype.onCopyProgress_ = function(event) {
       break;
 
     case 'ERROR':
+      this.progress_ = this.copyManager_.getStatus();
       if (event.error.reason === 'TARGET_EXISTS') {
         var name = event.error.data.name;
         if (event.error.data.isDirectory)
