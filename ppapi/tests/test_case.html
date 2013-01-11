@@ -209,7 +209,6 @@ function handleTestingMessage(message_event) {
 }
 
 function sendProgress() {
-  LogHTML("...");
   // We send "..." to signal that we're still working. See
   // ppapi/tests/testing_instance.h for how this works.
   sendAutomationMessage("...");
@@ -280,8 +279,11 @@ onload = function() {
     // below.
     var original = obj.dispatchEvent;
     obj.dispatchEvent = function() {
-      LogHTML("<p>Bad dispatchEvent called! " +
-              "see <a href='http://crbug.com/109775'>crbug.com/109775</a>)");
+      // TODO(dmichael): NaCl triggers this; take out the special case for NaCl
+      //                 when crbug.com/109775 is fixed.
+      if (mode.indexOf("nacl") !== 0)
+        InternalError("Bad dispatchEvent called!");
+
       // Pass it on anyways, we need the event to detect load progress and
       // errors.
       return original.apply(obj, arguments);
@@ -296,21 +298,16 @@ onload = function() {
 // particular, we replace document.createEvent, MessageEvent.initMessageEvent,
 // and the MessageEvent constructor. Previous versions of the PostMessage
 // implementation made use of these and would fail (http://crbug.com/82604).
-// The NaCl plugin uses some of these still for progress events, hence you will
-// see:
-//   Bad dispatchEvent called!
-// in the output. See crbug.com/109775 for more information.
-// TODO(dmichael): Once the NaCl plugin progress events are fixed, we should
-//                 clear the PASS cookie so that browser_tests sees these as a
-//                 failure (see ConditionFailed for how to do this).
+// The NaCl plugin uses dispatchEvent for progress events, hence we are careful
+// to make that still pass for NaCl (see above, and see crbug.com/109775).
 document.createEvent = function() {
-  LogHTML("<p>Bad document.createEvent called!");
+  InternalError("Bad document.createEvent called!");
 }
 function MessageEvent() {
-  LogHTML("<p>Bad MessageEvent constructor called!");
+  InternalError("Bad MessageEvent constructor called!");
 }
 MessageEvent.prototype.initMessageEvent = function() {
-  LogHTML("<p>Bad MessageEvent.initMessageEvent called!");
+  InternalError("Bad MessageEvent.initMessageEvent called!");
 }
 
 </script>
