@@ -71,7 +71,7 @@
 }
 
 .overlay .page > .close-button {
-  background-image: url('chrome://theme/IDR_WEB_UI_CLOSE');
+  background-image: url('chrome://theme/IDR_CLOSE_DIALOG');
   background-position: center;
   background-repeat: no-repeat;
   height: 14px;
@@ -88,11 +88,11 @@ html[dir='rtl'] .overlay .page > .close-button {
 }
 
 .overlay .page > .close-button:hover {
-  background-image: url('chrome://theme/IDR_WEB_UI_CLOSE_HOVER');
+  background-image: url('chrome://theme/IDR_CLOSE_DIALOG_H');
 }
 
 .overlay .page > .close-button:active {
-  background-image: url('chrome://theme/IDR_WEB_UI_CLOSE_PRESSED');
+  background-image: url('chrome://theme/IDR_CLOSE_DIALOG_P');
 }
 
 .overlay .page h1 {

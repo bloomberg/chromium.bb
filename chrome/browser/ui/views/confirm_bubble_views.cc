@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/browser/ui/confirm_bubble_model.h"
-#include "grit/theme_resources.h"
+#include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/image_button.h"
@@ -55,7 +55,6 @@ gfx::Rect ConfirmBubbleViews::GetAnchorRect() {
 }
 
 void ConfirmBubbleViews::Init() {
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
 
@@ -80,13 +79,17 @@ void ConfirmBubbleViews::Init() {
   const string16 title_text = model_->GetTitle();
   DCHECK(!title_text.empty());
   views::Label* title_label = new views::Label(title_text);
-  title_label->SetFont(bundle.GetFont(ui::ResourceBundle::MediumFont));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  title_label->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
   layout->AddView(title_label);
 
   views::ImageButton* close_button = new views::ImageButton(this);
-  const gfx::ImageSkia* close_image =
-      bundle.GetImageNamed(IDR_WEB_UI_CLOSE).ToImageSkia();
-  close_button->SetImage(views::CustomButton::STATE_NORMAL, close_image);
+  close_button->SetImage(views::CustomButton::STATE_NORMAL,
+                         rb.GetImageSkiaNamed(IDR_CLOSE_DIALOG));
+  close_button->SetImage(views::CustomButton::STATE_HOVERED,
+                         rb.GetImageSkiaNamed(IDR_CLOSE_DIALOG_H));
+  close_button->SetImage(views::CustomButton::STATE_PRESSED,
+                         rb.GetImageSkiaNamed(IDR_CLOSE_DIALOG_P));
   close_button->set_tag(ConfirmBubbleModel::BUTTON_NONE);
   layout->AddView(close_button);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);

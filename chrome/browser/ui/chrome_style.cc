@@ -5,18 +5,17 @@
 #include "chrome/browser/ui/chrome_style.h"
 
 #include "chrome/browser/themes/theme_service.h"
-#include "grit/theme_resources.h"
+#include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 
 namespace chrome_style {
 
 int GetCloseButtonSize() {
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  const SkBitmap* bitmap =
-      bundle.GetNativeImageNamed(IDR_WEB_UI_CLOSE).ToSkBitmap();
-  DCHECK_EQ(bitmap->width(), bitmap->height());
-  return bitmap->width();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const SkBitmap* image = rb.GetNativeImageNamed(IDR_CLOSE_DIALOG).ToSkBitmap();
+  DCHECK_EQ(image->width(), image->height());
+  return image->width();
 }
 
 SkColor GetBackgroundColor() {

@@ -861,9 +861,6 @@
       <structure type="chrome_scaled_image" name="IDR_WARNING" file="alert_small.png" />
       <structure type="chrome_scaled_image" name="IDR_WEB_INTENT_PROGRESS_BACKGROUND" file="common/web_intent_progress_background.png" />
       <structure type="chrome_scaled_image" name="IDR_WEB_INTENT_PROGRESS_FOREGROUND" file="common/web_intent_progress_foreground.png" />
-      <structure type="chrome_scaled_image" name="IDR_WEB_UI_CLOSE" file="web_ui_close.png" />
-      <structure type="chrome_scaled_image" name="IDR_WEB_UI_CLOSE_HOVER" file="web_ui_close_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_WEB_UI_CLOSE_PRESSED" file="web_ui_close_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TABSTRIP_CENTER" file="website_settings_tabstrip_center.png" />
       <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TABSTRIP_LEFT" file="website_settings_tabstrip_left.png" />
       <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TABSTRIP_RIGHT" file="website_settings_tabstrip_right.png" />

@@ -37,7 +37,7 @@
 }
 
 #no-destinations-promo .close-button {
-  background-image: url('chrome://theme/IDR_WEB_UI_CLOSE');
+  background-image: url('chrome://theme/IDR_CLOSE_DIALOG');
   background-position: center;
   background-repeat: no-repeat;
   height: 16px;
@@ -47,11 +47,11 @@
 }
 
 #no-destinations-promo .close-button:hover {
-  background-image: url('chrome://theme/IDR_WEB_UI_CLOSE_HOVER');
+  background-image: url('chrome://theme/IDR_CLOSE_DIALOG_H');
 }
 
 #no-destinations-promo .close-button:active {
-  background-image: url('chrome://theme/IDR_WEB_UI_CLOSE_PRESSED');
+  background-image: url('chrome://theme/IDR_CLOSE_DIALOG_P');
 }
 
 #no-destinations-promo .action-button-container {

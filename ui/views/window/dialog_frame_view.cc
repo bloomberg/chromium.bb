@@ -51,12 +51,13 @@ DialogFrameView::DialogFrameView(const string16& title)
 
   close_ = new LabelButton(this, string16());
   close_->SetImage(CustomButton::STATE_NORMAL,
-                   *rb.GetImageNamed(IDR_CLOSE_BAR).ToImageSkia());
+                   *rb.GetImageNamed(IDR_CLOSE_DIALOG).ToImageSkia());
   close_->SetImage(CustomButton::STATE_HOVERED,
-                   *rb.GetImageNamed(IDR_CLOSE_BAR_H).ToImageSkia());
+                   *rb.GetImageNamed(IDR_CLOSE_DIALOG_H).ToImageSkia());
   close_->SetImage(CustomButton::STATE_PRESSED,
-                   *rb.GetImageNamed(IDR_CLOSE_BAR_P).ToImageSkia());
+                   *rb.GetImageNamed(IDR_CLOSE_DIALOG_P).ToImageSkia());
   close_->SetSize(close_->GetPreferredSize());
+  close_->set_border(NULL);
   AddChildView(close_);
 
   // Set the margins for the content view.
@@ -112,8 +113,11 @@ std::string DialogFrameView::GetClassName() const {
 void DialogFrameView::Layout() {
   gfx::Rect bounds = GetLocalBounds();
   bounds.Inset(border()->GetInsets());
+  // Small additional insets yield the desired 10px visual close button insets.
+  bounds.Inset(0, 2, 1, 0);
   close_->SetPosition(gfx::Point(bounds.right() - close_->width(), bounds.y()));
-  bounds.Inset(gfx::Insets(kSpacing, 2 * kSpacing, 0, close_->width()));
+  // Small additional insets yield the desired 20px visual title label insets.
+  bounds.Inset(2 * kSpacing - 1, kSpacing, close_->width(), 0);
   bounds.set_height(title_->font().GetHeight());
   title_->SetBoundsRect(bounds);
 }

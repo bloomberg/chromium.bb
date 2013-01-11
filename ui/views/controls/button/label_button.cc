@@ -119,7 +119,9 @@ void LabelButton::SetDefaultButton(bool default_button) {
 
 void LabelButton::SetNativeTheme(bool native_theme) {
   native_theme_ = native_theme;
-  static_cast<LabelButtonBorder*>(border())->set_native_theme(native_theme);
+  LabelButtonBorder* border = new LabelButtonBorder();
+  border->set_native_theme(native_theme);
+  set_border(border);
   // Invalidate the layout to pickup the new insets from the border.
   InvalidateLayout();
   ResetColorsFromNativeTheme();
@@ -198,7 +200,8 @@ void LabelButton::Layout() {
   // avoids wasted space within the label that would look like awkward padding.
   gfx::Size label_size(child_area.size());
   if (!image_size.IsEmpty() && !label_size.IsEmpty()) {
-    label_size.set_width(child_area.width() - image_size.width() - kSpacing);
+    label_size.set_width(
+        std::max(child_area.width() - image_size.width() - kSpacing, 0));
     if (GetHorizontalAlignment() == gfx::ALIGN_CENTER) {
       // Ensure multi-line labels paired with images use their available width.
       if (GetTextMultiLine())

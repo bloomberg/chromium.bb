@@ -127,7 +127,7 @@
 }
 
 .cr-dialog-close {
-  background: url('chrome://theme/IDR_WEB_UI_CLOSE') center no-repeat;
+  background: url('chrome://theme/IDR_CLOSE_DIALOG') center no-repeat;
   display: inline-block;
   height: 44px;
   opacity: 0.7;
@@ -138,9 +138,9 @@
 }
 
 .cr-dialog-close:hover {
-  background-image: url('chrome://theme/IDR_WEB_UI_CLOSE_HOVER');
+  background-image: url('chrome://theme/IDR_CLOSE_DIALOG_H');
 }
 
 .cr-dialog-close:active {
-  background-image: url('chrome://theme/IDR_WEB_UI_CLOSE_PRESSED');
+  background-image: url('chrome://theme/IDR_CLOSE_DIALOG_P');
 }

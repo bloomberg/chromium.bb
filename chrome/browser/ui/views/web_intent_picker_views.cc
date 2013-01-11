@@ -103,11 +103,11 @@ views::ImageButton* CreateCloseButton(views::ButtonListener* listener) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   views::ImageButton* close_button = new views::ImageButton(listener);
   close_button->SetImage(views::CustomButton::STATE_NORMAL,
-                         rb.GetImageSkiaNamed(IDR_WEB_UI_CLOSE));
+                         rb.GetImageSkiaNamed(IDR_CLOSE_DIALOG));
   close_button->SetImage(views::CustomButton::STATE_HOVERED,
-                         rb.GetImageSkiaNamed(IDR_WEB_UI_CLOSE_HOVER));
+                         rb.GetImageSkiaNamed(IDR_CLOSE_DIALOG_H));
   close_button->SetImage(views::CustomButton::STATE_PRESSED,
-                         rb.GetImageSkiaNamed(IDR_WEB_UI_CLOSE_PRESSED));
+                         rb.GetImageSkiaNamed(IDR_CLOSE_DIALOG_P));
   return close_button;
 }
 
