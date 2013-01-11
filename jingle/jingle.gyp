@@ -104,7 +104,6 @@
           ],
           'defines' : [
             '_CRT_SECURE_NO_WARNINGS',
-            '_USE_32BIT_TIME_T',
           ],
           'dependencies': [
             '../base/base.gyp:base',

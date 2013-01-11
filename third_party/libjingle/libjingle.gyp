@@ -24,7 +24,6 @@
       'NO_MAIN_THREAD_WRAPPING',
       'NO_SOUND_SYSTEM',
       'SRTP_RELATIVE_PATH',
-      '_USE_32BIT_TIME_T',
       # TODO(ronghuawu): Remove this once libjingle is updated to use the new
       # webrtc.
       'USE_WEBRTC_DEV_BRANCH',
@@ -88,6 +87,8 @@
           'defines': [
               '_CRT_SECURE_NO_WARNINGS',  # Suppres warnings about _vsnprinf
           ],
+          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+          'msvs_disabled_warnings': [ 4267 ],
         }],
         ['OS=="linux"', {
           'defines': [
@@ -168,6 +169,13 @@
       ['OS=="win"', {
         'include_dirs': [
           '../third_party/platformsdk_win7/files/Include',
+        ],
+        'conditions' : [
+          ['target_arch == "ia32"', {
+            'defines': [
+              '_USE_32BIT_TIME_T',
+            ],
+          }],
         ],
       }],
       ['OS=="linux"', {
@@ -419,7 +427,7 @@
             '<(libjingle_source)/talk/base/winping.h',
           ],
           # Suppress warnings about WIN32_LEAN_AND_MEAN.
-          'msvs_disabled_warnings': [ 4005 ],
+          'msvs_disabled_warnings': [ 4005, 4267 ],
         }],
         ['os_posix == 1', {
           'sources': [
@@ -569,6 +577,8 @@
       'dependencies': [
         'libjingle',
       ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4309, ],
     }, # target peerconnection_server
   ],
   'conditions': [
