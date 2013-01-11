@@ -21,10 +21,10 @@ import java.io.File;
 // Our tests need to go up to our own java classes, which is not possible using
 // the native activity class loader.
 public class ChromeNativeTestActivity extends ChromiumActivity {
-    private final String TAG = "ChromeNativeTestActivity";
-    private final String EXTRA_RUN_IN_SUB_THREAD = "RunInSubThread";
+    private static final String TAG = "ChromeNativeTestActivity";
+    private static final String EXTRA_RUN_IN_SUB_THREAD = "RunInSubThread";
     // We post a delayed task to run tests so that we do not block onCreate().
-    private static long RUN_TESTS_DELAY_IN_MS = 300;
+    private static final long RUN_TESTS_DELAY_IN_MS = 300;
 
     // Name of our shlib as obtained from a string resource.
     private String mLibrary;

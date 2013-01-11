@@ -109,8 +109,6 @@ M P SIC: Should org.chromium.content.browser.JavaBridgeReturnValuesTest$CustomTy
 M P SIC: Should org.chromium.content.browser.PopupZoomerTest$CustomCanvasPopupZoomer be a _static_ inner class?  At PopupZoomerTest.java
 M P SS: Unread field: org.chromium.android_webview.test.util.ImagePageGenerator.IMAGE_PREFIX; should this field be static?  At ImagePageGenerator.java
 M P SS: Unread field: org.chromium.android_webview.test.util.ImagePageGenerator.IMAGE_SUFFIX; should this field be static?  At ImagePageGenerator.java
-M P SS: Unread field: org.chromium.native_test.ChromeNativeTestActivity.EXTRA_RUN_IN_SUB_THREAD; should this field be static?  At ChromeNativeTestActivity.java
-M P SS: Unread field: org.chromium.native_test.ChromeNativeTestActivity.TAG; should this field be static?  At ChromeNativeTestActivity.java
 M P UrF: Unread field: org.chromium.content.browser.ContentViewGestureHandlerTest$MockListener.mLastFling2  At ContentViewGestureHandlerTest.java
 M P UrF: Unread field: org.chromium.content.browser.ContentViewGestureHandlerTest$MockListener.mLastScroll1  At ContentViewGestureHandlerTest.java
 M P UrF: Unread field: org.chromium.content.browser.ContentViewGestureHandlerTest$MockListener.mLastScroll2  At ContentViewGestureHandlerTest.java
