@@ -147,8 +147,12 @@ const CGFloat kRapidCloseDist = 2.5;
 // view or our child close button.
 - (NSView*)hitTest:(NSPoint)aPoint {
   NSPoint viewPoint = [self convertPoint:aPoint fromView:[self superview]];
-  if (![closeButton_ isHidden])
-    if (NSPointInRect(viewPoint, [closeButton_ frame])) return closeButton_;
+  if (![closeButton_ isHidden]) {
+    if (NSPointInRect(viewPoint,[closeButton_ frame]) &&
+        [closeButton_ hitTest:viewPoint]) {
+      return closeButton_;
+    }
+  }
 
   NSRect pointRect = NSMakeRect(viewPoint.x, viewPoint.y, 1, 1);
 
