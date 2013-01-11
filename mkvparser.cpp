@@ -21,7 +21,7 @@ void mkvparser::GetVersion(int& major, int& minor, int& build, int& revision)
     major = 1;
     minor = 0;
     build = 0;
-    revision = 26;
+    revision = 27;
 }
 
 long long mkvparser::ReadUInt(IMkvReader* pReader, long long pos, long& len)
@@ -7228,7 +7228,13 @@ long Cluster::Parse(long long& pos, long& len) const
         if (cluster_stop >= 0)
         {
             if (block_stop > cluster_stop)
-                return E_FILE_FORMAT_INVALID;
+            {
+                if ((id == 0x20) || (id == 0x23))
+                    return E_FILE_FORMAT_INVALID;
+
+                pos = cluster_stop;
+                break;
+            }
         }
         else if ((total >= 0) && (block_stop > total))
         {
