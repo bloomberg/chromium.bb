@@ -1102,8 +1102,6 @@
         'browser/first_run/try_chrome_dialog_view_browsertest.cc',
         'browser/geolocation/access_token_store_browsertest.cc',
         'browser/geolocation/geolocation_browsertest.cc',
-        'browser/google_apis/mock_drive_service.cc',
-        'browser/google_apis/mock_drive_service.h',
         'browser/history/history_browsertest.cc',
         'browser/history/multipart_browsertest.cc',
         'browser/history/redirect_browsertest.cc',

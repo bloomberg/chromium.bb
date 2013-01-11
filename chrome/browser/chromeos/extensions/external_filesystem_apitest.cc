@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/google_apis/dummy_drive_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -44,14 +45,14 @@ namespace {
 const char kTestFileContent[] = "hello, world!";
 
 // Contains a folder entry for the folder 'Folder' that will be 'created'.
-const char kTestDirectory[] = "new_folder_entry.json";
+const char kTestDirectory[] = "gdata/new_folder_entry.json";
 
 // Contains a folder named Folder that has a file File.aBc inside of it.
-const char kTestRootFeed[] = "remote_file_system_apitest_root_feed.json";
+const char kTestRootFeed[] = "gdata/remote_file_system_apitest_root_feed.json";
 
 // Contains metadata of the  document that will be "downloaded" in test.
 const char kTestDocumentToDownloadEntry[] =
-    "remote_file_system_apitest_document_to_download.json";
+    "gdata/remote_file_system_apitest_document_to_download.json";
 
 // The ID of the file browser extension.
 const char kFileBrowserExtensionId[] = "ddammdhioacbehjngdmkjcjbnfginlla";
@@ -86,33 +87,6 @@ class BackgroundObserver {
   content::WindowedNotificationObserver page_created_;
   content::WindowedNotificationObserver page_closed_;
 };
-
-// TODO(tbarzic): We should probably share GetTestFilePath and LoadJSONFile
-// with drive_file_system_unittest.
-// Generates file path in gdata test directory for a file with name |filename|.
-FilePath GetTestFilePath(const FilePath::StringType& filename) {
-  FilePath path;
-  std::string error;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
-   path = path.AppendASCII("chromeos")
-       .AppendASCII("gdata")
-       .AppendASCII(filename);
-  EXPECT_TRUE(file_util::PathExists(path)) <<
-      "Couldn't find " << path.value();
-  return path;
-}
-
-// Loads and deserializes a json file in gdata test directory whose name is
-// |filename|. Returns new Value object the file is deserialized to.
-base::Value* LoadJSONFile(const std::string& filename) {
-  FilePath path = GetTestFilePath(filename);
-  std::string error;
-  JSONFileValueSerializer serializer(path);
-  Value* value = serializer.Deserialize(NULL, &error);
-  EXPECT_TRUE(value) <<
-      "Parse error " << path.value() << ": " << error;
-  return value;
-}
 
 // Adds a next feed URL property to the given feed value.
 bool AddNextFeedURLToFeedValue(const std::string& url, base::Value* feed) {
@@ -153,7 +127,8 @@ class FakeDriveService : public google_apis::DummyDriveService {
       bool shared_with_me,
       const std::string& directory_resource_id,
       const google_apis::GetResourceListCallback& callback) OVERRIDE {
-    scoped_ptr<base::Value> value(LoadJSONFile(kTestRootFeed));
+    scoped_ptr<base::Value> value(
+        google_apis::test_util::LoadJSONFile(kTestRootFeed));
     if (!search_string.empty()) {
       // Search results will be returned in two parts:
       // 1. Search will be given empty initial feed url. The returned feed will
@@ -183,7 +158,7 @@ class FakeDriveService : public google_apis::DummyDriveService {
     EXPECT_EQ("file:1_file_resource_id", resource_id);
 
     scoped_ptr<base::Value> file_to_download_value(
-        LoadJSONFile(kTestDocumentToDownloadEntry));
+        google_apis::test_util::LoadJSONFile(kTestDocumentToDownloadEntry));
     scoped_ptr<google_apis::ResourceEntry> file_to_download(
         google_apis::ResourceEntry::ExtractAndParse(*file_to_download_value));
 
@@ -207,7 +182,8 @@ class FakeDriveService : public google_apis::DummyDriveService {
       const GURL& parent_content_url,
       const FilePath::StringType& directory_name,
       const google_apis::GetResourceEntryCallback& callback) OVERRIDE {
-    scoped_ptr<base::Value> dir_value(LoadJSONFile(kTestDirectory));
+    scoped_ptr<base::Value> dir_value(
+        google_apis::test_util::LoadJSONFile(kTestDirectory));
     scoped_ptr<google_apis::ResourceEntry> dir_resource_entry(
         google_apis::ResourceEntry::ExtractAndParse(*dir_value));
     base::MessageLoopProxy::current()->PostTask(
