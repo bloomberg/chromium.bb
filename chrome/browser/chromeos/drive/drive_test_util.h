@@ -66,11 +66,21 @@ void CopyResultsFromGetEntryInfoCallback(
 
 // Copies |error| and |entries| to |out_error| and |out_entries|
 // respectively. Used to run asynchronous functions that take
-// GetEntryInfoCallback from tests.
+// ReadDirectoryCallback from tests.
 void CopyResultsFromReadDirectoryCallback(
     DriveFileError* out_error,
     scoped_ptr<DriveEntryProtoVector>* out_entries,
     DriveFileError error,
+    scoped_ptr<DriveEntryProtoVector> entries);
+
+// Copies |error| and |entries| to |out_error| and |out_entries|
+// respectively. Used to run asynchronous functions that take
+// ReadDirectoryCallback from tests.
+void CopyResultsFromReadDirectoryByPathCallback(
+    DriveFileError* out_error,
+    scoped_ptr<DriveEntryProtoVector>* out_entries,
+    DriveFileError error,
+    bool /* hide_hosted_documents */,
     scoped_ptr<DriveEntryProtoVector> entries);
 
 // Copies |error|, |drive_file_path|, and |entry_proto| to |out_error|,
@@ -109,6 +119,25 @@ void CopyResultsFromGetCacheEntryCallback(bool* out_success,
                                           DriveCacheEntry* out_cache_entry,
                                           bool success,
                                           const DriveCacheEntry& cache_entry);
+
+// Copies results from DriveFileSystem methods. Used to run asynchronous
+// functions that take GetFileCallback from tests.
+void CopyResultsFromGetFileCallback(DriveFileError* out_error,
+                                    FilePath* out_file_path,
+                                    DriveFileType* out_file_type,
+                                    DriveFileError error,
+                                    const FilePath& file_path,
+                                    const std::string& mime_type,
+                                    DriveFileType file_type);
+
+// Copies results from DriveFileSystem methods. Used to run asynchronous
+// functions that take GetAvailableSpaceCallback from tests.
+void CopyResultsFromGetAvailableSpaceCallback(DriveFileError* out_error,
+                                              int64* out_bytes_total,
+                                              int64* out_bytes_used,
+                                              DriveFileError error,
+                                              int64 bytes_total,
+                                              int64 bytes_used);
 
 // Loads a test json file as root ("/drive") element from a test file stored
 // under chrome/test/data/chromeos. Returns true on success.

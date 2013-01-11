@@ -352,13 +352,15 @@ class DriveFileSystemTest : public testing::Test {
   // Gets directory info by path synchronously.
   scoped_ptr<DriveEntryProtoVector> ReadDirectoryByPathSync(
       const FilePath& file_path) {
+    DriveFileError error;
+    scoped_ptr<DriveEntryProtoVector> entries;
     file_system_->ReadDirectoryByPath(
         file_path,
-        base::Bind(&CallbackHelper::ReadDirectoryCallback,
-                   callback_helper_.get()));
+        base::Bind(&test_util::CopyResultsFromReadDirectoryByPathCallback,
+                   &error, &entries));
     google_apis::test_util::RunBlockingPoolTask();
 
-    return callback_helper_->directory_entries_.Pass();
+    return entries.Pass();
   }
 
   // Returns true if an entry exists at |file_path|.
@@ -716,28 +718,7 @@ class DriveFileSystemTest : public testing::Test {
     : public base::RefCountedThreadSafe<CallbackHelper> {
    public:
     CallbackHelper()
-        : last_error_(DRIVE_FILE_OK),
-          quota_bytes_total_(0),
-          quota_bytes_used_(0),
-          entry_proto_(NULL) {}
-
-    virtual void GetFileCallback(DriveFileError error,
-                                 const FilePath& file_path,
-                                 const std::string& mime_type,
-                                 DriveFileType file_type) {
-      last_error_ = error;
-      download_path_ = file_path;
-      mime_type_ = mime_type;
-      file_type_ = file_type;
-    }
-
-    virtual void GetAvailableSpaceCallback(DriveFileError error,
-                                           int64 bytes_total,
-                                           int64 bytes_used) {
-      last_error_ = error;
-      quota_bytes_total_ = bytes_total;
-      quota_bytes_used_ = bytes_used;
-    }
+        : last_error_(DRIVE_FILE_OK) {}
 
     virtual void OpenFileCallback(DriveFileError error,
                                   const FilePath& file_path) {
@@ -751,23 +732,8 @@ class DriveFileSystemTest : public testing::Test {
       MessageLoop::current()->Quit();
     }
 
-    virtual void ReadDirectoryCallback(
-        DriveFileError error,
-        bool /* hide_hosted_documents */,
-        scoped_ptr<DriveEntryProtoVector> entries) {
-      last_error_ = error;
-      directory_entries_ = entries.Pass();
-    }
-
     DriveFileError last_error_;
-    FilePath download_path_;
     FilePath opened_file_path_;
-    std::string mime_type_;
-    DriveFileType file_type_;
-    int64 quota_bytes_total_;
-    int64 quota_bytes_used_;
-    scoped_ptr<DriveEntryProto> entry_proto_;
-    scoped_ptr<DriveEntryProtoVector> directory_entries_;
 
    protected:
     virtual ~CallbackHelper() {}
@@ -1874,10 +1840,6 @@ TEST_F(DriveFileSystemTest, CreateDirectoryWithService) {
 TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
-  GetFileCallback callback =
-      base::Bind(&CallbackHelper::GetFileCallback,
-                 callback_helper_.get());
-
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
   FilePath downloaded_file = GetCachePathForFile(
@@ -1889,22 +1851,23 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(
       file_size + kMinFreeSpace);
 
-  file_system_->GetFileByPath(file_in_root, callback,
-                              google_apis::GetContentCallback());
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FilePath file_path;
+  DriveFileType file_type;
+  file_system_->GetFileByPath(
+      file_in_root,
+      base::Bind(&test_util::CopyResultsFromGetFileCallback,
+                 &error, &file_path, &file_type),
+      google_apis::GetContentCallback());
   google_apis::test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
-  EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
-  EXPECT_EQ(downloaded_file.value(),
-            callback_helper_->download_path_.value());
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(REGULAR_FILE, file_type);
+  EXPECT_EQ(downloaded_file.value(), file_path.value());
 }
 
 TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
-
-  GetFileCallback callback =
-      base::Bind(&CallbackHelper::GetFileCallback,
-                 callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
@@ -1915,20 +1878,21 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
   // Pretend we have no space at all.
   fake_free_disk_space_getter_->set_fake_free_disk_space(0);
 
-  file_system_->GetFileByPath(file_in_root, callback,
-                              google_apis::GetContentCallback());
+  DriveFileError error = DRIVE_FILE_OK;
+  FilePath file_path;
+  DriveFileType file_type;
+  file_system_->GetFileByPath(
+      file_in_root,
+      base::Bind(&test_util::CopyResultsFromGetFileCallback,
+                 &error, &file_path, &file_type),
+      google_apis::GetContentCallback());
   google_apis::test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(DRIVE_FILE_ERROR_NO_SPACE,
-            callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NO_SPACE, error);
 }
 
 TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
-
-  GetFileCallback callback =
-      base::Bind(&CallbackHelper::GetFileCallback,
-                 callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
@@ -1959,14 +1923,19 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   ASSERT_TRUE(CacheEntryExists("<resource_id>", "<md5>"));
   ASSERT_TRUE(CacheFileExists("<resource_id>", "<md5>"));
 
-  file_system_->GetFileByPath(file_in_root, callback,
-                              google_apis::GetContentCallback());
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FilePath file_path;
+  DriveFileType file_type;
+  file_system_->GetFileByPath(
+      file_in_root,
+      base::Bind(&test_util::CopyResultsFromGetFileCallback,
+                 &error, &file_path, &file_type),
+      google_apis::GetContentCallback());
   google_apis::test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
-  EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
-  EXPECT_EQ(downloaded_file.value(),
-            callback_helper_->download_path_.value());
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(REGULAR_FILE, file_type);
+  EXPECT_EQ(downloaded_file.value(), file_path.value());
 
   // The file should be removed in order to free up space, and the cache
   // entry should also be removed.
@@ -1976,10 +1945,6 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
 
 TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
-
-  GetFileCallback callback =
-      base::Bind(&CallbackHelper::GetFileCallback,
-                 callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
@@ -1997,22 +1962,23 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kMinFreeSpace - 1);
   fake_free_disk_space_getter_->set_fake_free_disk_space(kMinFreeSpace - 1);
 
-  file_system_->GetFileByPath(file_in_root, callback,
-                              google_apis::GetContentCallback());
+  DriveFileError error = DRIVE_FILE_OK;
+  FilePath file_path;
+  DriveFileType file_type;
+  file_system_->GetFileByPath(
+      file_in_root,
+      base::Bind(&test_util::CopyResultsFromGetFileCallback,
+                 &error, &file_path, &file_type),
+      google_apis::GetContentCallback());
   google_apis::test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(DRIVE_FILE_ERROR_NO_SPACE,
-            callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NO_SPACE, error);
 }
 
 TEST_F(DriveFileSystemTest, GetFileByPath_FromCache) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
-
-  GetFileCallback callback =
-      base::Bind(&CallbackHelper::GetFileCallback,
-                 callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
@@ -2029,37 +1995,43 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromCache) {
                    test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
 
-  file_system_->GetFileByPath(file_in_root, callback,
-                              google_apis::GetContentCallback());
+  DriveFileError error = DRIVE_FILE_OK;
+  FilePath file_path;
+  DriveFileType file_type;
+  file_system_->GetFileByPath(
+      file_in_root,
+      base::Bind(&test_util::CopyResultsFromGetFileCallback,
+                 &error, &file_path, &file_type),
+      google_apis::GetContentCallback());
   google_apis::test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
-  EXPECT_EQ(downloaded_file.value(),
-            callback_helper_->download_path_.value());
+  EXPECT_EQ(REGULAR_FILE, file_type);
+  EXPECT_EQ(downloaded_file.value(), file_path.value());
 }
 
 TEST_F(DriveFileSystemTest, GetFileByPath_HostedDocument) {
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
-
-  GetFileCallback callback =
-      base::Bind(&CallbackHelper::GetFileCallback,
-                 callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/Document 1.gdoc"));
   scoped_ptr<DriveEntryProto> src_entry_proto =
       GetEntryInfoByPathSync(file_in_root);
   ASSERT_TRUE(src_entry_proto.get());
 
-  file_system_->GetFileByPath(file_in_root, callback,
-                              google_apis::GetContentCallback());
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FilePath file_path;
+  DriveFileType file_type;
+  file_system_->GetFileByPath(
+      file_in_root,
+      base::Bind(&test_util::CopyResultsFromGetFileCallback,
+                 &error, &file_path, &file_type),
+      google_apis::GetContentCallback());
   google_apis::test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(HOSTED_DOCUMENT, callback_helper_->file_type_);
-  EXPECT_FALSE(callback_helper_->download_path_.empty());
+  EXPECT_EQ(HOSTED_DOCUMENT, file_type);
+  EXPECT_FALSE(file_path.empty());
 
   ASSERT_TRUE(src_entry_proto.get());
-  VerifyHostedDocumentJSONFile(*src_entry_proto,
-                               callback_helper_->download_path_);
+  VerifyHostedDocumentJSONFile(*src_entry_proto, file_path);
 }
 
 TEST_F(DriveFileSystemTest, GetFileByResourceId) {
@@ -2067,34 +2039,30 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId) {
 
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
-  GetFileCallback callback =
-      base::Bind(&CallbackHelper::GetFileCallback,
-                 callback_helper_.get());
-
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
   FilePath downloaded_file = GetCachePathForFile(
       entry_proto->resource_id(),
       entry_proto->file_specific_info().file_md5());
 
-  file_system_->GetFileByResourceId(entry_proto->resource_id(),
-                                    callback,
-                                    google_apis::GetContentCallback());
+  DriveFileError error = DRIVE_FILE_OK;
+  FilePath file_path;
+  DriveFileType file_type;
+  file_system_->GetFileByResourceId(
+      entry_proto->resource_id(),
+      base::Bind(&test_util::CopyResultsFromGetFileCallback,
+                 &error, &file_path, &file_type),
+      google_apis::GetContentCallback());
   google_apis::test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
-  EXPECT_EQ(downloaded_file.value(),
-            callback_helper_->download_path_.value());
+  EXPECT_EQ(REGULAR_FILE, file_type);
+  EXPECT_EQ(downloaded_file.value(), file_path.value());
 }
 
 TEST_F(DriveFileSystemTest, GetFileByResourceId_FromCache) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
-
-  GetFileCallback callback =
-      base::Bind(&CallbackHelper::GetFileCallback,
-                 callback_helper_.get());
 
   FilePath file_in_root(FILE_PATH_LITERAL("drive/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(file_in_root));
@@ -2115,14 +2083,18 @@ TEST_F(DriveFileSystemTest, GetFileByResourceId_FromCache) {
   // Hence the downloading should work even if the drive service is offline.
   fake_drive_service_->set_offline(true);
 
-  file_system_->GetFileByResourceId(entry_proto->resource_id(),
-                                    callback,
-                                    google_apis::GetContentCallback());
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FilePath file_path;
+  DriveFileType file_type;
+  file_system_->GetFileByResourceId(
+      entry_proto->resource_id(),
+      base::Bind(&test_util::CopyResultsFromGetFileCallback,
+                 &error, &file_path, &file_type),
+      google_apis::GetContentCallback());
   google_apis::test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
-  EXPECT_EQ(downloaded_file.value(),
-            callback_helper_->download_path_.value());
+  EXPECT_EQ(REGULAR_FILE, file_type);
+  EXPECT_EQ(downloaded_file.value(), file_path.value());
 }
 
 TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
@@ -2324,14 +2296,15 @@ TEST_F(DriveFileSystemTest, ContentSearchEmptyResult) {
 }
 
 TEST_F(DriveFileSystemTest, GetAvailableSpace) {
-  GetAvailableSpaceCallback callback =
-      base::Bind(&CallbackHelper::GetAvailableSpaceCallback,
-                 callback_helper_.get());
-
-  file_system_->GetAvailableSpace(callback);
+  DriveFileError error = DRIVE_FILE_OK;
+  int64 bytes_total;
+  int64 bytes_used;
+  file_system_->GetAvailableSpace(
+      base::Bind(&test_util::CopyResultsFromGetAvailableSpaceCallback,
+                 &error, &bytes_total, &bytes_used));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(GG_LONGLONG(6789012345), callback_helper_->quota_bytes_used_);
-  EXPECT_EQ(GG_LONGLONG(9876543210), callback_helper_->quota_bytes_total_);
+  EXPECT_EQ(GG_LONGLONG(6789012345), bytes_used);
+  EXPECT_EQ(GG_LONGLONG(9876543210), bytes_total);
 }
 
 TEST_F(DriveFileSystemTest, RequestDirectoryRefresh) {
