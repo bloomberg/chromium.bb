@@ -27,7 +27,7 @@ class BrowserGpuChannelHostFactory : public GpuChannelHostFactory {
   virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() OVERRIDE;
   virtual base::WaitableEvent* GetShutDownEvent() OVERRIDE;
   virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(
-      uint32 size) OVERRIDE;
+      size_t size) OVERRIDE;
   virtual int32 CreateViewCommandBuffer(
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params) OVERRIDE;

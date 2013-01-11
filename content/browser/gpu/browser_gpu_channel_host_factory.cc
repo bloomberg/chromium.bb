@@ -80,7 +80,7 @@ base::WaitableEvent* BrowserGpuChannelHostFactory::GetShutDownEvent() {
 }
 
 scoped_ptr<base::SharedMemory>
-BrowserGpuChannelHostFactory::AllocateSharedMemory(uint32 size) {
+BrowserGpuChannelHostFactory::AllocateSharedMemory(size_t size) {
   scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
   if (!shm->CreateAnonymous(size))
     return scoped_ptr<base::SharedMemory>();

@@ -1380,7 +1380,7 @@ void PepperPluginDelegateImpl::SaveURLAs(const GURL& url) {
 }
 
 base::SharedMemory* PepperPluginDelegateImpl::CreateAnonymousSharedMemory(
-    uint32_t size) {
+    size_t size) {
   return RenderThread::Get()->HostAllocateSharedMemoryBuffer(size).release();
 }
 

@@ -170,7 +170,7 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void DidStopLoading();
   virtual void SetContentRestriction(int restrictions);
   virtual void SaveURLAs(const GURL& url);
-  virtual base::SharedMemory* CreateAnonymousSharedMemory(uint32_t size);
+  virtual base::SharedMemory* CreateAnonymousSharedMemory(size_t size);
   virtual ::ppapi::Preferences GetPreferences();
   virtual bool LockMouse(PluginInstance* instance);
   virtual void UnlockMouse(PluginInstance* instance);

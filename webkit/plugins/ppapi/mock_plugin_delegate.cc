@@ -372,7 +372,7 @@ void MockPluginDelegate::SaveURLAs(const GURL& url) {
 }
 
 base::SharedMemory* MockPluginDelegate::CreateAnonymousSharedMemory(
-    uint32_t size) {
+    size_t size) {
   return NULL;
 }
 

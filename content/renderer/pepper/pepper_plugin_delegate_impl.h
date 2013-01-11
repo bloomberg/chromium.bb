@@ -320,7 +320,7 @@ class PepperPluginDelegateImpl
   virtual void DidStopLoading() OVERRIDE;
   virtual void SetContentRestriction(int restrictions) OVERRIDE;
   virtual void SaveURLAs(const GURL& url) OVERRIDE;
-  virtual base::SharedMemory* CreateAnonymousSharedMemory(uint32_t size)
+  virtual base::SharedMemory* CreateAnonymousSharedMemory(size_t size)
       OVERRIDE;
   virtual ::ppapi::Preferences GetPreferences() OVERRIDE;
   virtual bool LockMouse(webkit::ppapi::PluginInstance* instance) OVERRIDE;

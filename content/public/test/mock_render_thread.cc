@@ -143,7 +143,7 @@ void MockRenderThread::RecordUserMetrics(const std::string& action) {
 
 scoped_ptr<base::SharedMemory>
     MockRenderThread::HostAllocateSharedMemoryBuffer(
-        uint32 buffer_size) {
+        size_t buffer_size) {
   scoped_ptr<base::SharedMemory> shared_buf(new base::SharedMemory);
   if (!shared_buf->CreateAndMapAnonymous(buffer_size)) {
     NOTREACHED() << "Cannot map shared memory buffer";

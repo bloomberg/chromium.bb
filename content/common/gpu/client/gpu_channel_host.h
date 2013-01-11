@@ -64,7 +64,7 @@ class CONTENT_EXPORT GpuChannelHostFactory {
   virtual MessageLoop* GetMainLoop() = 0;
   virtual scoped_refptr<base::MessageLoopProxy> GetIOLoopProxy() = 0;
   virtual base::WaitableEvent* GetShutDownEvent() = 0;
-  virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(uint32 size) = 0;
+  virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) = 0;
   virtual int32 CreateViewCommandBuffer(
       int32 surface_id, const GPUCreateCommandBufferConfig& init_params) = 0;
   virtual GpuChannelHost* EstablishGpuChannelSync(CauseForGpuLaunch) = 0;

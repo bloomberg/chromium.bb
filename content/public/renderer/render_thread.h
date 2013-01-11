@@ -85,7 +85,7 @@ class CONTENT_EXPORT RenderThread : public IPC::Sender {
   // Asks the host to create a block of shared memory for the renderer.
   // The shared memory allocated by the host is returned back.
   virtual scoped_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
-      uint32 buffer_size) = 0;
+      size_t buffer_size) = 0;
 
   // Registers the given V8 extension with WebKit.
   virtual void RegisterExtension(v8::Extension* extension) = 0;

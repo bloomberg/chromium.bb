@@ -197,7 +197,7 @@ bool ChildProcessHostImpl::Send(IPC::Message* message) {
 }
 
 void ChildProcessHostImpl::AllocateSharedMemory(
-      uint32 buffer_size, base::ProcessHandle child_process_handle,
+      size_t buffer_size, base::ProcessHandle child_process_handle,
       base::SharedMemoryHandle* shared_memory_handle) {
   base::SharedMemory shared_buf;
   if (!shared_buf.CreateAndMapAnonymous(buffer_size)) {

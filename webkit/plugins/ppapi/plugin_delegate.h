@@ -621,7 +621,7 @@ class PluginDelegate {
 
   // Create an anonymous shared memory segment of size |size| bytes, and return
   // a pointer to it, or NULL on error.  Caller owns the returned pointer.
-  virtual base::SharedMemory* CreateAnonymousSharedMemory(uint32_t size) = 0;
+  virtual base::SharedMemory* CreateAnonymousSharedMemory(size_t size) = 0;
 
   // Returns the current preferences.
   virtual ::ppapi::Preferences GetPreferences() = 0;
