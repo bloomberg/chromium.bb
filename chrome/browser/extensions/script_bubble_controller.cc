@@ -13,7 +13,10 @@
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/permissions/api_permission.h"
 #include "content/public/browser/navigation_details.h"
+
+using extensions::APIPermission;
 
 namespace extensions {
 
@@ -41,7 +44,8 @@ void ScriptBubbleController::OnScriptsExecuted(
     // those are effectively not installed from the user's point of view.
     const Extension* extension =
         extension_service->extensions()->GetByID(i->first);
-    if (extension && extension->ShouldDisplayInExtensionSettings())
+    if (extension && extension->ShouldDisplayInExtensionSettings() &&
+        extension->HasAPIPermission(APIPermission::kActiveTab))
       changed |= extensions_running_scripts_.insert(i->first).second;
   }
 

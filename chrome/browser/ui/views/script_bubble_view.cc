@@ -150,7 +150,6 @@ void ScriptBubbleView::Init() {
   layout->StartRow(0, 0);
   views::Label* heading = new views::Label(
       l10n_util::GetStringUTF16(IDS_SCRIPT_BUBBLE_HEADLINE));
-  heading->SetFont(heading->font().DeriveFont(2));
   layout->AddView(heading);
   height_ += heading->GetPreferredSize().height();
 
@@ -167,7 +166,6 @@ void ScriptBubbleView::Init() {
     layout->AddView(image_view);
 
     views::Link* link = new views::Link(entries_[i].extension_name);
-    link->SetFont(link->font().DeriveFont(2));
     link->set_id(i);
     link->set_listener(this);
     layout->AddView(link);

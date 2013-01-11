@@ -29,7 +29,8 @@ class ImageView;
 }
 
 // The view in the bubble that pops up from the ScriptBubbleIconView that lists
-// the extensions running content scripts on the current page.
+// the extensions with the activeTab permission running content scripts on the
+// current page.
 class ScriptBubbleView : public views::BubbleDelegateView,
                          public views::LinkListener,
                          public base::SupportsWeakPtr<ScriptBubbleView> {

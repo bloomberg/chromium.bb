@@ -80,7 +80,9 @@ TEST_F(ScriptBubbleControllerTest, Basics) {
       .SetManifest(DictionaryBuilder()
                    .Set("name", "ex1")
                    .Set("version", "1")
-                   .Set("manifest_version", 2))
+                   .Set("manifest_version", 2)
+                   .Set("permissions", ListBuilder()
+                        .Append("activeTab")))
       .Build();
 
   scoped_refptr<const Extension> extension2 =
@@ -89,7 +91,9 @@ TEST_F(ScriptBubbleControllerTest, Basics) {
       .SetManifest(DictionaryBuilder()
                    .Set("name", "ex2")
                    .Set("version", "1")
-                   .Set("manifest_version", 2))
+                   .Set("manifest_version", 2)
+                   .Set("permissions", ListBuilder()
+                        .Append("activeTab")))
       .Build();
 
   scoped_refptr<const Extension> extension3 =
@@ -98,7 +102,9 @@ TEST_F(ScriptBubbleControllerTest, Basics) {
       .SetManifest(DictionaryBuilder()
                    .Set("name", "ex3")
                    .Set("version", "1")
-                   .Set("manifest_version", 2))
+                   .Set("manifest_version", 2)
+                   .Set("permissions", ListBuilder()
+                        .Append("activeTab")))
       .Build();
 
   extension_service_->AddExtension(extension1);
