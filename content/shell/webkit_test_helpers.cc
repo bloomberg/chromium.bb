@@ -4,6 +4,7 @@
 
 #include "content/shell/webkit_test_helpers.h"
 
+#include "base/utf_string_conversions.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebPreferences.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -61,6 +62,29 @@ void ApplyLayoutTestDefaultPreferences(webkit_glue::WebPreferences* prefs) {
   prefs->allow_displaying_insecure_content = true;
   prefs->allow_running_insecure_content = true;
   prefs->webgl_errors_to_console_enabled = false;
+  string16 serif;
+#if defined(OS_MACOSX)
+  prefs->cursive_font_family_map[webkit_glue::WebPreferences::kCommonScript] =
+      ASCIIToUTF16("Apple Chancery");
+  prefs->fantasy_font_family_map[webkit_glue::WebPreferences::kCommonScript] =
+      ASCIIToUTF16("Papyrus");
+  serif = ASCIIToUTF16("Times");
+#else
+  prefs->cursive_font_family_map[webkit_glue::WebPreferences::kCommonScript] =
+      ASCIIToUTF16("Comic Sans MS");
+  prefs->fantasy_font_family_map[webkit_glue::WebPreferences::kCommonScript] =
+      ASCIIToUTF16("Impact");
+  serif = ASCIIToUTF16("times new roman");
+#endif
+  prefs->serif_font_family_map[webkit_glue::WebPreferences::kCommonScript] =
+      serif;
+  prefs->standard_font_family_map[webkit_glue::WebPreferences::kCommonScript] =
+      serif;
+  prefs->fixed_font_family_map[webkit_glue::WebPreferences::kCommonScript] =
+      ASCIIToUTF16("Courier");
+  prefs->sans_serif_font_family_map[
+      webkit_glue::WebPreferences::kCommonScript] = ASCIIToUTF16("Helvetica");
+  prefs->minimum_logical_font_size = 9;
 }
 
 }  // namespace content
