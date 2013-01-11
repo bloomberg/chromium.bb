@@ -35,6 +35,7 @@
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/app_restore_service_factory.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/extensions/web_intents_parser.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
@@ -274,6 +275,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::TabCaptureRegistryFactory::GetInstance();
   extensions::TabsWindowsAPI::GetFactoryInstance();
   extensions::TtsAPI::GetFactoryInstance();
+  extensions::WebIntentsParser::GetFactoryInstance();
   extensions::WebNavigationAPI::GetFactoryInstance();
 #endif
   FaviconServiceFactory::GetInstance();

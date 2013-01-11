@@ -10,6 +10,8 @@
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/web_intents_handler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,6 +25,8 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
  public:
   virtual void SetUp() {
     policy_ = new ExtensionSpecialStoragePolicy(NULL);
+    extensions::ManifestHandler::Register(keys::kIntents,
+                                          new extensions::WebIntentsHandler);
   }
 
  protected:

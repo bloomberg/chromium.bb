@@ -60,6 +60,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/web_intents_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -268,8 +269,9 @@ bool FindTitleForActionWithTypes(
   std::string found_title;
 
   for (std::vector<webkit_glue::WebIntentServiceData>::const_iterator data =
-          extension->intents_services().begin();
-       data != extension->intents_services().end(); ++data) {
+          extensions::WebIntentsInfo::GetIntentsServices(extension).begin();
+       data != extensions::WebIntentsInfo::GetIntentsServices(extension).end();
+       ++data) {
     if (pending.empty())
       break;
 

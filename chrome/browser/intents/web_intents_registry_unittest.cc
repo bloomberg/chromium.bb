@@ -15,7 +15,10 @@
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/web_intents_handler.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -97,6 +100,8 @@ class WebIntentsRegistryTest : public testing::Test {
     EXPECT_CALL(extension_service_, GetExtensionById(testing::_, testing::_)).
         WillRepeatedly(
             testing::Invoke(this, &WebIntentsRegistryTest::GetExtensionById));
+    extensions::ManifestHandler::Register(extension_manifest_keys::kIntents,
+                                          new extensions::WebIntentsHandler);
   }
 
   virtual void TearDown() {

@@ -47,10 +47,6 @@ namespace gfx {
 class ImageSkia;
 }
 
-namespace webkit_glue {
-struct WebIntentServiceData;
-}
-
 FORWARD_DECLARE_TEST(TabStripModelTest, Apps);
 
 namespace extensions {
@@ -732,11 +728,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool incognito_split_mode() const { return incognito_split_mode_; }
   bool offline_enabled() const { return offline_enabled_; }
   const OAuth2Info& oauth2_info() const { return oauth2_info_; }
-  const std::vector<webkit_glue::WebIntentServiceData>&
-      intents_services() const {
-    return intents_services_;
-  }
-
   bool wants_file_access() const { return wants_file_access_; }
   int creation_flags() const { return creation_flags_; }
   bool from_webstore() const { return (creation_flags_ & FROM_WEBSTORE) != 0; }
@@ -897,11 +888,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadBackgroundAllowJSAccess(
       const APIPermissionSet& api_permissions,
       string16* error);
-  // Parses a single action in the manifest.
-  bool LoadWebIntentAction(const std::string& action_name,
-                           const base::DictionaryValue& intent_service,
-                           string16* error);
-  bool LoadWebIntentServices(string16* error);
   bool LoadFileHandler(const std::string& handler_id,
                        const base::DictionaryValue& handler_info,
                        string16* error);
@@ -1199,9 +1185,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The OAuth2 client id and scopes, if specified by the extension.
   OAuth2Info oauth2_info_;
-
-  // List of intent services that this extension provides, if any.
-  std::vector<webkit_glue::WebIntentServiceData> intents_services_;
 
   // List of file handlers associated with this extension, if any.
   std::vector<FileHandlerInfo> file_handlers_;

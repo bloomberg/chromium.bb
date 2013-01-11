@@ -236,6 +236,8 @@
         'common/extensions/user_script.h',
         'common/extensions/value_counter.cc',
         'common/extensions/value_counter.h',
+        'common/extensions/web_intents_handler.cc',
+        'common/extensions/web_intents_handler.h',
         'common/external_ipc_fuzzer.h',
         'common/external_ipc_fuzzer.cc',
         'common/form_data.cc',

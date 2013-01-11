@@ -49,7 +49,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/image_decoder.h"
-#include "webkit/glue/web_intent_service_data.h"
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
@@ -1989,7 +1988,6 @@ bool Extension::LoadSharedFeatures(
       !LoadBackgroundPage(api_permissions, error) ||
       !LoadBackgroundPersistent(api_permissions, error) ||
       !LoadBackgroundAllowJSAccess(api_permissions, error) ||
-      !LoadWebIntentServices(error) ||
       !LoadOAuth2Info(error))
     return false;
 
@@ -2590,168 +2588,6 @@ bool Extension::LoadBackgroundAllowJSAccess(
     return false;
   }
 
-  return true;
-}
-
-bool Extension::LoadWebIntentAction(const std::string& action_name,
-                                    const DictionaryValue& intent_service,
-                                    string16* error) {
-  DCHECK(error);
-  webkit_glue::WebIntentServiceData service;
-  std::string value;
-
-  service.action = UTF8ToUTF16(action_name);
-
-  const ListValue* mime_types = NULL;
-  if (!intent_service.HasKey(keys::kIntentType) ||
-      !intent_service.GetList(keys::kIntentType, &mime_types) ||
-      mime_types->GetSize() == 0) {
-    *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kInvalidIntentType, action_name);
-    return false;
-  }
-
-  std::string href;
-  if (intent_service.HasKey(keys::kIntentPath)) {
-    if (!intent_service.GetString(keys::kIntentPath, &href)) {
-      *error = ASCIIToUTF16(errors::kInvalidIntentHref);
-      return false;
-    }
-  }
-
-  if (intent_service.HasKey(keys::kIntentHref)) {
-    if (!href.empty()) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidIntentHrefOldAndNewKey, action_name,
-          keys::kIntentPath, keys::kIntentHref);
-       return false;
-    }
-    if (!intent_service.GetString(keys::kIntentHref, &href)) {
-      *error = ASCIIToUTF16(errors::kInvalidIntentHref);
-      return false;
-    }
-  }
-
-  // For packaged/hosted apps, empty href implies the respective launch URLs.
-  if (href.empty()) {
-    if (is_hosted_app()) {
-      href = launch_web_url();
-    } else if (is_legacy_packaged_app()) {
-      href = launch_local_path();
-    }
-  }
-
-  // If there still is not an  href, the manifest is malformed, unless this is a
-  // platform app in which case the href should not be present.
-  if (href.empty() && !is_platform_app()) {
-    *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kInvalidIntentHrefEmpty, action_name);
-    return false;
-  } else if (!href.empty() && is_platform_app()) {
-    *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kInvalidIntentHrefInPlatformApp, action_name);
-    return false;
-  }
-
-  GURL service_url(href);
-  if (is_hosted_app()) {
-    // Hosted apps require an absolute URL for intents.
-    if (!service_url.is_valid() ||
-        !(web_extent().MatchesURL(service_url))) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidIntentPageInHostedApp, action_name);
-      return false;
-    }
-    service.service_url = service_url;
-  } else if (is_platform_app()) {
-    service.service_url = GetBackgroundURL();
-  } else {
-    // We do not allow absolute intent URLs in non-hosted apps.
-    if (service_url.is_valid()) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kCannotAccessPage, href);
-      return false;
-    }
-    service.service_url = GetResourceURL(href);
-  }
-
-  if (intent_service.HasKey(keys::kIntentTitle) &&
-      !intent_service.GetString(keys::kIntentTitle, &service.title)) {
-    *error = ASCIIToUTF16(errors::kInvalidIntentTitle);
-    return false;
-  }
-
-  if (intent_service.HasKey(keys::kIntentDisposition)) {
-    if (is_platform_app()) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidIntentDispositionInPlatformApp, action_name);
-      return false;
-    }
-    if (!intent_service.GetString(keys::kIntentDisposition, &value) ||
-        (value != values::kIntentDispositionWindow &&
-         value != values::kIntentDispositionInline)) {
-      *error = ASCIIToUTF16(errors::kInvalidIntentDisposition);
-      return false;
-    }
-    if (value == values::kIntentDispositionInline) {
-      service.disposition =
-          webkit_glue::WebIntentServiceData::DISPOSITION_INLINE;
-    } else {
-      service.disposition =
-          webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW;
-    }
-  }
-
-  for (size_t i = 0; i < mime_types->GetSize(); ++i) {
-    if (!mime_types->GetString(i, &service.type)) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidIntentTypeElement, action_name,
-          std::string(base::IntToString(i)));
-      return false;
-    }
-    intents_services_.push_back(service);
-  }
-  return true;
-}
-
-bool Extension::LoadWebIntentServices(string16* error) {
-  DCHECK(error);
-
-  if (!manifest_->HasKey(keys::kIntents))
-    return true;
-
-  DictionaryValue* all_services = NULL;
-  if (!manifest_->GetDictionary(keys::kIntents, &all_services)) {
-    *error = ASCIIToUTF16(errors::kInvalidIntents);
-    return false;
-  }
-
-  for (DictionaryValue::key_iterator iter(all_services->begin_keys());
-       iter != all_services->end_keys(); ++iter) {
-    // Any entry in the intents dictionary can either have a list of
-    // dictionaries, or just a single dictionary attached to that. Try
-    // lists first, fall back to single dictionary.
-    ListValue* service_list = NULL;
-    DictionaryValue* one_service = NULL;
-    if (all_services->GetListWithoutPathExpansion(*iter, &service_list)) {
-      for (size_t i = 0; i < service_list->GetSize(); ++i) {
-        if (!service_list->GetDictionary(i, &one_service)) {
-            *error = ASCIIToUTF16(errors::kInvalidIntent);
-            return false;
-        }
-        if (!LoadWebIntentAction(*iter, *one_service, error))
-          return false;
-      }
-    } else {
-      if (!all_services->GetDictionaryWithoutPathExpansion(*iter,
-                                                           &one_service)) {
-        *error = ASCIIToUTF16(errors::kInvalidIntent);
-        return false;
-      }
-      if (!LoadWebIntentAction(*iter, *one_service, error))
-        return false;
-    }
-  }
   return true;
 }
 

@@ -13,6 +13,7 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/web_intents_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
@@ -28,8 +29,9 @@ bool ExtensionSupportsIntentAction(
     const extensions::Extension* extension,
     const std::string& action) {
   for (std::vector<webkit_glue::WebIntentServiceData>::const_iterator i =
-          extension->intents_services().begin();
-       i != extension->intents_services().end(); ++i) {
+          extensions::WebIntentsInfo::GetIntentsServices(extension).begin();
+       i != extensions::WebIntentsInfo::GetIntentsServices(extension).end();
+       ++i) {
     if (UTF16ToUTF8(i->action) == action)
       return true;
   }

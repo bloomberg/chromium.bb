@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/web_intents_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
@@ -174,7 +175,7 @@ class PlatformAppPathLauncher
     // syntax in platform app manifests.
     if (!found_service) {
       std::vector<webkit_glue::WebIntentServiceData> services =
-          extension_->intents_services();
+          extensions::WebIntentsInfo::GetIntentsServices(extension_);
       for (size_t i = 0; i < services.size(); i++) {
         std::string service_type_ascii = UTF16ToASCII(services[i].type);
         if (services[i].action == ASCIIToUTF16(web_intents::kActionView) &&

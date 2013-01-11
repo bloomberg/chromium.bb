@@ -18,6 +18,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/web_intents_handler.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
 
@@ -55,7 +56,8 @@ bool WebIntentsTypesMatch(const string16& type1, const string16& type2) {
 void AddMatchingServicesForExtension(const Extension& extension,
                                      const string16& action,
                                      IntentServiceList* matching_services) {
-  const IntentServiceList& services = extension.intents_services();
+  const IntentServiceList& services =
+      extensions::WebIntentsInfo::GetIntentsServices(&extension);
   for (IntentServiceList::const_iterator i = services.begin();
        i != services.end(); ++i) {
     if (action.empty() || action == i->action)

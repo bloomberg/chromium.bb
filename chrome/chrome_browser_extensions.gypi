@@ -707,6 +707,8 @@
         'browser/extensions/user_script_master.h',
         'browser/extensions/web_intent_callbacks.cc',
         'browser/extensions/web_intent_callbacks.h',
+        'browser/extensions/web_intents_parser.cc',
+        'browser/extensions/web_intents_parser.h',
         'browser/extensions/webstore_install_helper.cc',
         'browser/extensions/webstore_install_helper.h',
         'browser/extensions/webstore_installer.cc',
