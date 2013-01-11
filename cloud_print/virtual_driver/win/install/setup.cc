@@ -40,7 +40,7 @@ const wchar_t kUninstallRegistry[] =
 const wchar_t kInstallerName[] = L"virtual_driver_setup.exe";
 const wchar_t kGcpUrl[] = L"http://www.google.com/cloudprint";
 
-void SetOmahaKeys() {
+void SetGoogleUpdateKeys() {
   base::win::RegKey key;
   if (key.Create(HKEY_LOCAL_MACHINE, cloud_print::kKeyLocation,
                  KEY_SET_VALUE) != ERROR_SUCCESS) {
@@ -58,7 +58,7 @@ void SetOmahaKeys() {
     version_string = version_info_win->product_version();
   } else {
     LOG(ERROR) << "Unable to get version string";
-    // Use a random version string so that Omaha has something to go by.
+    // Use a random version string so that Google Update has something to go by.
     version_string = L"0.0.0.99";
   }
 
@@ -68,7 +68,7 @@ void SetOmahaKeys() {
   }
 }
 
-void DeleteOmahaKeys() {
+void DeleteGoogleUpdateKeys() {
   base::win::RegKey key;
   if (key.Open(HKEY_LOCAL_MACHINE, cloud_print::kKeyLocation,
                DELETE) != ERROR_SUCCESS) {
@@ -453,7 +453,6 @@ HRESULT InstallVirtualDriver(const FilePath& install_path) {
     LOG(ERROR) << "Unable to install printer.";
     return result;
   }
-  SetOmahaKeys();
   return S_OK;
 }
 
@@ -497,7 +496,7 @@ HRESULT UninstallVirtualDriver() {
     LOG(ERROR) << "Unable to remove port monitor.";
     return result;
   }
-  DeleteOmahaKeys();
+  DeleteGoogleUpdateKeys();
   file_util::Delete(install_path, true);
   CleanupUninstall();
   return S_OK;
@@ -580,7 +579,7 @@ int WINAPI WinMain(__in  HINSTANCE hInstance,
       }
     }
   }
-  // Installer is silent by default as required by Omaha.
+  // Installer is silent by default as required by Google Update.
   if (CommandLine::ForCurrentProcess()->HasSwitch("verbose")) {
     cloud_print::DisplayWindowsMessage(NULL, retval,
         cloud_print::LoadLocalString(IDS_DRIVER_NAME));
