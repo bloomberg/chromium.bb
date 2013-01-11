@@ -6,10 +6,8 @@
 
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/common/indexed_db/indexed_db_dispatcher.h"
-#include "content/common/indexed_db/proxy_webidbobjectstore_impl.h"
 #include "content/common/child_thread.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBObjectStore.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
 
 using WebKit::WebIDBObjectStore;
@@ -30,18 +28,6 @@ RendererWebIDBTransactionImpl::~RendererWebIDBTransactionImpl() {
   // any such pointers.
   IndexedDBDispatcher::Send(new IndexedDBHostMsg_TransactionDestroyed(
       ipc_transaction_id_));
-}
-
-WebIDBObjectStore* RendererWebIDBTransactionImpl::objectStore(
-    long long object_store_id,
-    WebKit::WebExceptionCode& ec) {
-  int ipc_object_store_id;
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_TransactionObjectStore(
-          ipc_transaction_id_, object_store_id, &ipc_object_store_id, &ec));
-  if (!object_store_id)
-    return NULL;
-  return new RendererWebIDBObjectStoreImpl(ipc_object_store_id);
 }
 
 void RendererWebIDBTransactionImpl::commit() {

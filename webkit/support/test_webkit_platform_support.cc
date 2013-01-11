@@ -374,8 +374,8 @@ class TestWebIDBFactory : public WebKit::WebIDBFactory {
                     const WebKit::WebSecurityOrigin& origin,
                     WebKit::WebFrame* frame,
                     const WebString& dataDir) {
-    factory_->open(name, version, callbacks, databaseCallbacks, origin, frame,
-                   dataDir.isEmpty() ? data_dir_ : dataDir);
+    factory_->open(name, version, 1, callbacks, databaseCallbacks, origin,
+                   frame, dataDir.isEmpty() ? data_dir_ : dataDir);
   }
 
   virtual void open(const WebString& name,

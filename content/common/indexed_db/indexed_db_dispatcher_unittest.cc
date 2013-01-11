@@ -27,22 +27,23 @@ class FakeWebIDBTransaction : public WebKit::WebIDBTransaction {
 TEST(IndexedDBDispatcherTest, DISABLED_ValueSizeTest) {
   string16 data;
   data.resize(kMaxIDBValueSizeInBytes / sizeof(char16) + 1, 'x');
-  const bool kIsNull = false;
-  const bool kIsInvalid = false;
-  const SerializedScriptValue value(kIsNull, kIsInvalid, data);
+  WebKit::WebVector<unsigned char> value;
   const int32 ipc_dummy_id = -1;
+  const int64 transaction_id = 1;
+  const int64 object_store_id = 2;
 
   {
     IndexedDBDispatcher dispatcher;
     IndexedDBKey key;
     key.SetNumber(0);
-    dispatcher.RequestIDBObjectStorePut(
-        value,
-        key,
-        WebKit::WebIDBObjectStore::AddOrUpdate,
-        static_cast<WebKit::WebIDBCallbacks*>(NULL),
+    dispatcher.RequestIDBDatabasePut(
         ipc_dummy_id,
-        FakeWebIDBTransaction(),
+        transaction_id,
+        object_store_id,
+        &value,
+        key,
+        WebKit::WebIDBDatabase::AddOrUpdate,
+        static_cast<WebKit::WebIDBCallbacks*>(NULL),
         WebVector<long long>(),
         WebVector<WebVector<WebKit::WebIDBKey> >());
   }

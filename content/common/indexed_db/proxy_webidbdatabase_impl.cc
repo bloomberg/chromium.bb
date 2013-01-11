@@ -9,7 +9,6 @@
 #include "content/common/child_thread.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/common/indexed_db/indexed_db_dispatcher.h"
-#include "content/common/indexed_db/proxy_webidbobjectstore_impl.h"
 #include "content/common/indexed_db/proxy_webidbtransaction_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
@@ -92,30 +91,6 @@ WebIDBMetadata RendererWebIDBDatabaseImpl::metadata() const {
   return web_metadata;
 }
 
-WebKit::WebIDBObjectStore* RendererWebIDBDatabaseImpl::createObjectStore(
-    long long id,
-    const WebKit::WebString& name,
-    const WebKit::WebIDBKeyPath& key_path,
-    bool auto_increment,
-    const WebKit::WebIDBTransaction& transaction,
-    WebExceptionCode& ec) {
-  IndexedDBHostMsg_DatabaseCreateObjectStoreOld_Params params;
-  params.id = id;
-  params.name = name;
-  params.key_path = IndexedDBKeyPath(key_path);
-  params.auto_increment = auto_increment;
-  params.ipc_transaction_id = IndexedDBDispatcher::TransactionId(transaction);
-  params.ipc_database_id = ipc_database_id_;
-
-  int object_store;
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_DatabaseCreateObjectStoreOld(
-          params, &object_store, &ec));
-  if (!object_store)
-    return NULL;
-  return new RendererWebIDBObjectStoreImpl(object_store);
-}
-
 void RendererWebIDBDatabaseImpl::createObjectStore(
     long long transaction_id,
     long long object_store_id,
@@ -132,16 +107,6 @@ void RendererWebIDBDatabaseImpl::createObjectStore(
 
   IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_DatabaseCreateObjectStore(params));
-}
-
-void RendererWebIDBDatabaseImpl::deleteObjectStore(
-    long long object_store_id,
-    const WebIDBTransaction& transaction,
-    WebExceptionCode& ec) {
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_DatabaseDeleteObjectStoreOld(
-          ipc_database_id_, object_store_id,
-          IndexedDBDispatcher::TransactionId(transaction), &ec));
 }
 
 void RendererWebIDBDatabaseImpl::deleteObjectStore(
