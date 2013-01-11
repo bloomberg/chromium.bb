@@ -7,17 +7,21 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/escape.h"
 
 using content::BrowserThread;
 
 namespace google_apis {
 
 FakeDriveService::FakeDriveService()
-    : resource_id_count_(0),
+    : largest_changestamp_(0),
+      resource_id_count_(0),
       offline_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -49,6 +53,29 @@ bool FakeDriveService::LoadAccountMetadataForWapi(
     const std::string& relative_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   account_metadata_value_ = test_util::LoadJSONFile(relative_path);
+
+  // Update the largest_changestamp_.
+  scoped_ptr<AccountMetadataFeed> account_metadata =
+      AccountMetadataFeed::CreateFrom(*account_metadata_value_);
+  largest_changestamp_ = account_metadata->largest_changestamp();
+
+  // Add the largest changestamp to the existing entries.
+  // This will be used to generate change lists in GetResourceList().
+  if (resource_list_value_) {
+    base::DictionaryValue* resource_list_dict = NULL;
+    base::ListValue* entries = NULL;
+    if (resource_list_value_->GetAsDictionary(&resource_list_dict) &&
+        resource_list_dict->GetList("entry", &entries)) {
+      for (size_t i = 0; i < entries->GetSize(); ++i) {
+        base::DictionaryValue* entry = NULL;
+        if (entries->GetDictionary(i, &entry)) {
+          entry->SetString("docs$changestamp.value",
+                           base::Int64ToString(largest_changestamp_));
+        }
+      }
+    }
+  }
+
   return account_metadata_value_;
 }
 
@@ -121,6 +148,54 @@ void FakeDriveService::GetResourceList(
 
   scoped_ptr<ResourceList> resource_list =
       ResourceList::CreateFrom(*resource_list_value_);
+
+  // Filter out entries per parameters like |directory_resource_id| and
+  // |search_query|.
+  ScopedVector<ResourceEntry>* entries = resource_list->mutable_entries();
+  for (size_t i = 0; i < entries->size();) {
+    ResourceEntry* entry = (*entries)[i];
+    bool should_exclude = false;
+
+    // If |directory_resource_id| is set, exclude the entry if it's not in
+    // the target directory.
+    if (!directory_resource_id.empty()) {
+      // Get the parent resource ID of the entry. If the parent link does
+      // not exist, the entry must be in the root directory.
+      std::string parent_resource_id = "folder:root";
+      const google_apis::Link* parent_link =
+          entry->GetLinkByType(Link::LINK_PARENT);
+      if (parent_link) {
+        parent_resource_id =
+            net::UnescapeURLComponent(parent_link->href().ExtractFileName(),
+                                      net::UnescapeRule::URL_SPECIAL_CHARS);
+      }
+      if (directory_resource_id != parent_resource_id)
+        should_exclude = true;
+    }
+
+    // If |search_query| is set, exclude the entry if it does not contain the
+    // search query in the title.
+    if (!search_query.empty()) {
+      if (UTF16ToUTF8(entry->title()).find(search_query) == std::string::npos)
+        should_exclude = true;
+    }
+
+    // If |start_changestamp| is non-zero, exclude the entry if the
+    // changestamp is older than |largest_changestamp|.
+    // See https://developers.google.com/google-apps/documents-list/
+    // #retrieving_all_changes_since_a_given_changestamp
+    if (start_changestamp > 0) {
+      if (entry->changestamp() < start_changestamp) {
+        should_exclude = true;
+      }
+    }
+
+    if (should_exclude)
+      entries->erase(entries->begin() + i);
+    else
+      ++i;
+  }
+
   MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback,
@@ -249,6 +324,8 @@ void FakeDriveService::DeleteResource(
     }
   }
 
+  // TODO(satorux): Add support for returning "deleted" entries in
+  // changelists from GetResourceList().
   MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
 }
@@ -354,6 +431,9 @@ void FakeDriveService::CopyHostedDocument(
                                     resource_id + "_copied");
             copied_entry->SetString("title.$t",
                                     FilePath(new_name).AsUTF8Unsafe());
+
+            AddNewChangestamp(copied_entry.get());
+
             // Parse the new entry.
             scoped_ptr<ResourceEntry> resource_entry =
                 ResourceEntry::CreateFrom(*copied_entry);
@@ -395,6 +475,7 @@ void FakeDriveService::RenameResource(
   if (entry) {
     entry->SetString("title.$t",
                      FilePath(new_name).AsUTF8Unsafe());
+    AddNewChangestamp(entry);
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
     return;
@@ -441,6 +522,7 @@ void FakeDriveService::AddResourceToDirectory(
         links->Append(link);
       }
 
+      AddNewChangestamp(entry);
       MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
       return;
@@ -478,6 +560,7 @@ void FakeDriveService::RemoveResourceFromDirectory(
             rel == "http://schemas.google.com/docs/2007#parent" &&
             GURL(href) == parent_content_url) {
           links->Remove(i, NULL);
+          AddNewChangestamp(entry);
           MessageLoop::current()->PostTask(
               FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
           return;
@@ -555,6 +638,8 @@ void FakeDriveService::AddNewDirectory(
   edit_link->SetString("rel", "edit");
   links->Append(edit_link);
   new_entry->Set("link", links);
+
+  AddNewChangestamp(new_entry.get());
 
   // Add the new entry to the resource list.
   base::DictionaryValue* resource_list_dict = NULL;
@@ -687,6 +772,12 @@ std::string FakeDriveService::GetNewResourceId() {
 
   ++resource_id_count_;
   return base::StringPrintf("resource_id_%d", resource_id_count_);
+}
+
+void FakeDriveService::AddNewChangestamp(base::DictionaryValue* entry) {
+  ++largest_changestamp_;
+  entry->SetString("docs$changestamp.value",
+                   base::Int64ToString(largest_changestamp_));
 }
 
 }  // namespace google_apis

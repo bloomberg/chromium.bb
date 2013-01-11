@@ -16,8 +16,6 @@ namespace google_apis {
 // 1) Load JSON files and construct the in-memory resource list.
 // 2) Return valid responses based on the the in-memory resource list.
 // 3) Update the in-memory resource list by operations like DeleteResource().
-//
-// TODO(satorux): Implement the advertised behaviors. crbug.com/162350
 class FakeDriveService : public DriveServiceInterface {
  public:
   FakeDriveService();
@@ -26,7 +24,11 @@ class FakeDriveService : public DriveServiceInterface {
   // Loads the resource list for WAPI. Returns true on success.
   bool LoadResourceListForWapi(const std::string& relative_path);
 
-  // Loads the account metadata for WAPI. Returns true on success.
+  // Loads the account metadata for WAPI. Returns true on success.  Also adds
+  // the largest changestamp in the account metadata to the existing
+  // entries. The changestamp information will be used to generate change
+  // lists in GetResourceList() when non-zero |start_changestamp| is
+  // specified.
   bool LoadAccountMetadataForWapi(const std::string& relative_path);
 
   // Loads the application info for Drive API. Returns true on success.
@@ -35,6 +37,10 @@ class FakeDriveService : public DriveServiceInterface {
   // Changes the offline state. All functions fail with GDATA_NO_CONNECTION
   // when offline. By default the offline state is false.
   void set_offline(bool offline) { offline_ = offline; }
+
+  // Returns the largest changestamp, which starts from 0 by default. See
+  // also comments at LoadAccountMetadataForWapi().
+  int64 largest_changestamp() const { return largest_changestamp_; }
 
   // DriveServiceInterface Overrides
   virtual void Initialize(Profile* profile) OVERRIDE;
@@ -119,9 +125,14 @@ class FakeDriveService : public DriveServiceInterface {
   // <num> is a monotonically increasing number starting from 1.
   std::string GetNewResourceId();
 
+  // Increments |largest_changestamp_| and adds the new changestamp to
+  // |entry|.
+  void AddNewChangestamp(base::DictionaryValue* entry);
+
   scoped_ptr<base::Value> resource_list_value_;
   scoped_ptr<base::Value> account_metadata_value_;
   scoped_ptr<base::Value> app_info_value_;
+  int64 largest_changestamp_;
   int resource_id_count_;
   bool offline_;
 

@@ -627,6 +627,7 @@ class ResourceList : public FeedEntry {
 
   // List of resource entries.
   const ScopedVector<ResourceEntry>& entries() const { return entries_; }
+  ScopedVector<ResourceEntry>* mutable_entries() { return &entries_; }
 
   // Releases entries_ into |entries|. This is a transfer of ownership, so the
   // caller is responsible for deleting the elements of |entries|.

@@ -41,12 +41,28 @@ class FakeDriveServiceTest : public testing::Test {
     return resource_entry;
   }
 
+  // Adds a new directory at |parent_content_url| (root if empty) with the
+  // given name. Returns true on success.
+  bool AddNewDirectory(const GURL& parent_content_url,
+                       const FilePath::StringType& directory_name) {
+    GDataErrorCode error = GDATA_OTHER_ERROR;
+    scoped_ptr<ResourceEntry> resource_entry;
+    fake_service_.AddNewDirectory(
+        parent_content_url,
+        directory_name,
+        base::Bind(&test_util::CopyResultsFromGetResourceEntryCallback,
+                   &error,
+                   &resource_entry));
+    message_loop_.RunUntilIdle();
+    return error == HTTP_SUCCESS;
+  }
+
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   FakeDriveService fake_service_;
 };
 
-TEST_F(FakeDriveServiceTest, GetResourceList) {
+TEST_F(FakeDriveServiceTest, GetResourceList_All) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
@@ -66,6 +82,110 @@ TEST_F(FakeDriveServiceTest, GetResourceList) {
   ASSERT_TRUE(resource_list);
   // Do some sanity check.
   EXPECT_EQ(12U, resource_list->entries().size());
+}
+
+TEST_F(FakeDriveServiceTest, GetResourceList_InRootDirectory) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.GetResourceList(
+      GURL(),
+      0,  // start_changestamp
+      "",  // search_query
+      false, // shared_with_me
+      "folder:root",  // directory_resource_id
+      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
+                 &error,
+                 &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // Do some sanity check. There are 7 entries in the root directory.
+  EXPECT_EQ(7U, resource_list->entries().size());
+}
+
+TEST_F(FakeDriveServiceTest, GetResourceList_Search) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.GetResourceList(
+      GURL(),
+      0,  // start_changestamp
+      "File",  // search_query
+      false, // shared_with_me
+      "",  // directory_resource_id
+      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
+                 &error,
+                 &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // Do some sanity check. There are 3 entries that contain "File" in their
+  // titles.
+  EXPECT_EQ(3U, resource_list->entries().size());
+}
+
+TEST_F(FakeDriveServiceTest, GetResourceList_NoNewEntries) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+  // Load the account_metadata.json as well to add the largest changestamp
+  // (654321) to the existing entries.
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "gdata/account_metadata.json"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.GetResourceList(
+      GURL(),
+      654321 + 1,  // start_changestamp
+      "",  // search_query
+      false, // shared_with_me
+      "",  // directory_resource_id
+      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
+                 &error,
+                 &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // This should be empty as the latest changestamp was passed to
+  // GetResourceList(), hence there should be no new entries.
+  EXPECT_EQ(0U, resource_list->entries().size());
+}
+
+TEST_F(FakeDriveServiceTest, GetResourceList_WithNewEntry) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi("gdata/root_feed.json"));
+  // Load the account_metadata.json as well to add the largest changestamp
+  // (654321) to the existing entries.
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "gdata/account_metadata.json"));
+  // Add a new directory in the root directory. The new directory will have
+  // the changestamp of 654322.
+  ASSERT_TRUE(AddNewDirectory(GURL(), FILE_PATH_LITERAL("new directory")));
+
+  // Get the resource list newer than 654321.
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> resource_list;
+  fake_service_.GetResourceList(
+      GURL(),
+      654321 + 1,  // start_changestamp
+      "",  // search_query
+      false, // shared_with_me
+      "",  // directory_resource_id
+      base::Bind(&test_util::CopyResultsFromGetResourceListCallback,
+                 &error,
+                 &resource_list));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_list);
+  // The result should only contain the newly created directory.
+  ASSERT_EQ(1U, resource_list->entries().size());
+  EXPECT_EQ("new directory",
+            UTF16ToUTF8(resource_list->entries()[0]->title()));
 }
 
 TEST_F(FakeDriveServiceTest, GetResourceList_Offline) {
@@ -351,6 +471,8 @@ TEST_F(FakeDriveServiceTest, CopyHostedDocument_ExistingHostedDocument) {
   // The copied entry should have the new resource ID and the title.
   EXPECT_EQ(kResourceId + "_copied", resource_entry->resource_id());
   EXPECT_EQ("new name", UTF16ToUTF8(resource_entry->title()));
+  // Should be incremented as a new hosted document was created.
+  EXPECT_EQ(1, fake_service_.largest_changestamp());
 }
 
 TEST_F(FakeDriveServiceTest, CopyHostedDocument_NonexistingHostedDocument) {
@@ -368,7 +490,6 @@ TEST_F(FakeDriveServiceTest, CopyHostedDocument_NonexistingHostedDocument) {
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_NOT_FOUND, error);
-  EXPECT_FALSE(resource_entry);
 }
 
 TEST_F(FakeDriveServiceTest, CopyHostedDocument_ExistingRegularFile) {
@@ -428,6 +549,8 @@ TEST_F(FakeDriveServiceTest, RenameResource_ExistingFile) {
   scoped_ptr<ResourceEntry> resource_entry = FindEntry(kResourceId);
   ASSERT_TRUE(resource_entry);
   EXPECT_EQ("new name", UTF16ToUTF8(resource_entry->title()));
+  // Should be incremented as a file was renamed.
+  EXPECT_EQ(1, fake_service_.largest_changestamp());
 }
 
 TEST_F(FakeDriveServiceTest, RenameResource_NonexistingFile) {
@@ -494,6 +617,8 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInRootDirectory) {
   parent_link = resource_entry->GetLinkByType(Link::LINK_PARENT);
   ASSERT_TRUE(parent_link);
   EXPECT_EQ(kNewParentContentUrl, parent_link->href());
+  // Should be incremented as a file was moved.
+  EXPECT_EQ(1, fake_service_.largest_changestamp());
 }
 
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInNonRootDirectory) {
@@ -529,6 +654,8 @@ TEST_F(FakeDriveServiceTest, AddResourceToDirectory_FileInNonRootDirectory) {
   parent_link = resource_entry->GetLinkByType(Link::LINK_PARENT);
   ASSERT_TRUE(parent_link);
   EXPECT_EQ(kNewParentContentUrl, parent_link->href());
+  // Should be incremented as a file was moved.
+  EXPECT_EQ(1, fake_service_.largest_changestamp());
 }
 
 TEST_F(FakeDriveServiceTest, AddResourceToDirectory_NonexistingFile) {
@@ -596,6 +723,8 @@ TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_ExistingFile) {
   // The parent link should be gone now.
   parent_link = resource_entry->GetLinkByType(Link::LINK_PARENT);
   ASSERT_FALSE(parent_link);
+  // Should be incremented as a file was moved to the root directory.
+  EXPECT_EQ(1, fake_service_.largest_changestamp());
 }
 
 TEST_F(FakeDriveServiceTest, RemoveResourceFromDirectory_NonexistingFile) {
@@ -657,6 +786,8 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToRootDirectory) {
   const google_apis::Link* parent_link =
       resource_entry->GetLinkByType(Link::LINK_PARENT);
   ASSERT_FALSE(parent_link);
+  // Should be incremented as a new directory was created.
+  EXPECT_EQ(1, fake_service_.largest_changestamp());
 }
 
 TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonRootDirectory) {
@@ -683,6 +814,8 @@ TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonRootDirectory) {
       resource_entry->GetLinkByType(Link::LINK_PARENT);
   ASSERT_TRUE(parent_link);
   EXPECT_EQ(kParentContentUrl, parent_link->href());
+  // Should be incremented as a new directory was created.
+  EXPECT_EQ(1, fake_service_.largest_changestamp());
 }
 
 TEST_F(FakeDriveServiceTest, AddNewDirectory_ToNonexistingDirectory) {
