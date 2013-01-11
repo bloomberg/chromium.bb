@@ -124,18 +124,18 @@ class MP4StreamParserTest : public testing::Test {
 TEST_F(MP4StreamParserTest, TestUnalignedAppend) {
   // Test small, non-segment-aligned appends (small enough to exercise
   // incremental append system)
-  ParseMP4File("bear.1280x720_dash.mp4", 512);
+  ParseMP4File("bear-1280x720-av_frag.mp4", 512);
 }
 
 TEST_F(MP4StreamParserTest, TestBytewiseAppend) {
   // Ensure no incremental errors occur when parsing
-  ParseMP4File("bear.1280x720_dash.mp4", 1);
+  ParseMP4File("bear-1280x720-av_frag.mp4", 1);
 }
 
 TEST_F(MP4StreamParserTest, TestMultiFragmentAppend) {
   // Large size ensures multiple fragments are appended in one call (size is
   // larger than this particular test file)
-  ParseMP4File("bear.1280x720_dash.mp4", 768432);
+  ParseMP4File("bear-1280x720-av_frag.mp4", 768432);
 }
 
 TEST_F(MP4StreamParserTest, TestFlush) {
@@ -143,7 +143,7 @@ TEST_F(MP4StreamParserTest, TestFlush) {
   InitializeParser();
 
   scoped_refptr<DecoderBuffer> buffer =
-      ReadTestDataFile("bear.1280x720_dash.mp4");
+      ReadTestDataFile("bear-1280x720-av_frag.mp4");
   EXPECT_TRUE(AppendDataInPieces(buffer->GetData(), 65536, 512));
   parser_->Flush();
   EXPECT_TRUE(AppendDataInPieces(buffer->GetData(),
@@ -155,7 +155,7 @@ TEST_F(MP4StreamParserTest, TestReinitialization) {
   InitializeParser();
 
   scoped_refptr<DecoderBuffer> buffer =
-      ReadTestDataFile("bear.1280x720_dash.mp4");
+      ReadTestDataFile("bear-1280x720-av_frag.mp4");
   EXPECT_TRUE(AppendDataInPieces(buffer->GetData(),
                                  buffer->GetDataSize(),
                                  512));

@@ -24,10 +24,16 @@ static const char kAudioOnlyWebM[] = "video/webm; codecs=\"vorbis\"";
 static const char kVideoOnlyWebM[] = "video/webm; codecs=\"vp8\"";
 static const char kMP4[] = "video/mp4; codecs=\"avc1.4D4041,mp4a.40.2\"";
 
-// Key used to encrypt video track in test file "bear-320x240-encrypted.webm".
+// Key used to encrypt test files.
 static const uint8 kSecretKey[] = {
   0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
   0x68, 0xef, 0x12, 0x2a, 0xfc, 0xe4, 0xae, 0x3c
+};
+
+// The key ID for all encrypted files.
+static const uint8 kKeyId[] = {
+  0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
+  0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35
 };
 
 static const int kAppendWholeFile = -1;
@@ -357,13 +363,13 @@ TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_WebM) {
 }
 
 TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_Encrypted_WebM) {
-  MockMediaSource source("bear-320x240-16x9-aspect-av-enc_av.webm", kWebM,
+  MockMediaSource source("bear-320x240-16x9-aspect-av_enc-av.webm", kWebM,
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media;
   StartPipelineWithEncryptedMedia(&source, &encrypted_media);
 
   scoped_refptr<DecoderBuffer> second_file =
-      ReadTestDataFile("bear-640x360-av-enc_av.webm");
+      ReadTestDataFile("bear-640x360-av_enc-av.webm");
 
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->GetData(), second_file->GetDataSize());
@@ -391,7 +397,7 @@ TEST_F(PipelineIntegrationTest,
   StartPipelineWithEncryptedMedia(&source, &encrypted_media);
 
   scoped_refptr<DecoderBuffer> second_file =
-      ReadTestDataFile("bear-640x360-av-enc_av.webm");
+      ReadTestDataFile("bear-640x360-av_enc-av.webm");
 
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->GetData(), second_file->GetDataSize());
@@ -416,7 +422,7 @@ TEST_F(PipelineIntegrationTest,
 // Config changes from clear to encrypted are not currently supported.
 TEST_F(PipelineIntegrationTest,
        MediaSource_ConfigChange_EncryptedThenClear_WebM) {
-  MockMediaSource source("bear-320x240-16x9-aspect-av-enc_av.webm", kWebM,
+  MockMediaSource source("bear-320x240-16x9-aspect-av_enc-av.webm", kWebM,
                          kAppendWholeFile);
   FakeEncryptedMedia encrypted_media;
   StartPipelineWithEncryptedMedia(&source, &encrypted_media);
@@ -443,11 +449,11 @@ TEST_F(PipelineIntegrationTest,
 
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
 TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_MP4) {
-  MockMediaSource source("bear.640x360_dash.mp4", kMP4, kAppendWholeFile);
+  MockMediaSource source("bear-640x360-av_frag.mp4", kMP4, kAppendWholeFile);
   StartPipelineWithMediaSource(&source);
 
   scoped_refptr<DecoderBuffer> second_file =
-      ReadTestDataFile("bear.1280x720_dash.mp4");
+      ReadTestDataFile("bear-1280x720-av_frag.mp4");
 
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->GetData(), second_file->GetDataSize());
@@ -475,7 +481,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_16x9AspectRatio) {
 }
 
 TEST_F(PipelineIntegrationTest, EncryptedPlayback) {
-  MockMediaSource source("bear-320x240-encrypted.webm", kWebM, 219816);
+  MockMediaSource source("bear-320x240-av_enc-av.webm", kWebM, 219816);
   FakeEncryptedMedia encrypted_media;
   StartPipelineWithEncryptedMedia(&source, &encrypted_media);
 
