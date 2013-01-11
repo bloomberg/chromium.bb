@@ -58,7 +58,7 @@ chrome.commands.onCommand.addListener(function(command) {
 
 chrome.runtime.onMessage.addListener(function(msg, _, sendResponse) {
   if (msg.setAlarm) {
-    // For testing only.  delayInMinutes will be rounded up to at least 5 in a
+    // For testing only.  delayInMinutes will be rounded up to at least 1 in a
     // packed or released extension.
     chrome.alarms.create({delayInMinutes: 0.1});
   } else if (msg.delayedResponse) {
