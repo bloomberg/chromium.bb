@@ -192,6 +192,8 @@
               'GOOGLE_PROTOBUF_NO_RTTI',
               'GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER',
             ],
+            # TODO(jschuh): http://crbug.com/167187 size_t -> int.
+            'msvs_disabled_warnings': [ 4267 ],
           },
         },
         # This is the full, heavy protobuf lib that's needed for c++ .proto's
