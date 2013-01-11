@@ -512,7 +512,7 @@ class ShardingSupervisor(object):
       stripped_gtests_args = RemoveGTestOutput(self.gtest_args)
       args.extend(stripped_gtests_args)
       sys.stdout.write("\nRETRY COMMAND: %r\n" % args)
-      rerun = subprocess.Popen(args)
+      rerun = subprocess.Popen(args, stdout=sys.stdout, stderr=sys.stderr)
       rerun.wait()
       if rerun.returncode != 0:
         failed_retries.append(test_filter)
