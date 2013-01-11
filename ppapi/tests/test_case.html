@@ -130,7 +130,7 @@ function sendAutomationMessage(msg) {
 // automation controller to terminate the test.
 function InternalError(msg) {
   LogHTML("<p>" + msg);
-  SendAutomationMessage(msg);
+  sendAutomationMessage(msg);
 }
 
 function SetCookie(key_value_string) {
