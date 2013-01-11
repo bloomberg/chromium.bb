@@ -37,8 +37,12 @@ def DeviceInfo(serial):
   setup_wizard_disabled = AdbShellCmd(
       'getprop ro.setupwizard.mode') == 'DISABLED'
   battery = AdbShellCmd('dumpsys battery')
-  battery_level = int(re.findall('level: (\d+)', battery)[0])
-  battery_temp = float(re.findall('temperature: (\d+)', battery)[0])/10
+  if 'Error' in battery:
+    battery_level = 'Unknown'
+    battery_temp = 'Unknown'
+  else:
+    battery_level = int(re.findall('level: (\d+)', battery)[0])
+    battery_temp = float(re.findall('temperature: (\d+)', battery)[0]) / 10
   report = ['Device %s (%s)' % (serial, device_type),
             '  Build: %s (%s)' % (device_build,
                                   AdbShellCmd('getprop ro.build.fingerprint')),
