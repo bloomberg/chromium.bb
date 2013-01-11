@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import itertools
 import re
 
 
@@ -191,6 +192,48 @@ def ParseDefFile(filename):
 
     for attribute in attributes:
       assert attribute in SUPPORTED_ATTRIBUTES, attribute
+
+
+def GenerateLegacyPrefixes(required_prefixes, optional_prefixes):
+  """Produce list of all possible combinations of legacy prefixes.
+
+  Legacy prefixes are defined in processor manual:
+    operand-size override (data16),
+    address-size override,
+    segment override,
+    LOCK,
+    REP/REPE/REPZ,
+    REPNE/REPNZ.
+
+  All permutations are enumerated, but repeated prefixes are not allowed
+  (they make state count too large), even though processor decoder allows
+  repetitions.
+
+  In the future we might want to decide on a single preferred order of prefixes
+  that validator allows.
+
+  Args:
+    required_prefixes: List of prefixes that have to be included in each
+        combination produced
+    optional_prefixes: List of prefixes that may or may not be present in
+        resulting combinations.
+  Returns:
+    List of tuples of prefixes.
+  """
+  all_prefixes = required_prefixes + optional_prefixes
+  assert len(set(all_prefixes)) == len(all_prefixes), 'duplicate prefixes'
+
+  required_prefixes = tuple(required_prefixes)
+
+  result = []
+  for k in range(len(optional_prefixes) + 1):
+    for optional in itertools.combinations(optional_prefixes, k):
+      for prefixes in itertools.permutations(required_prefixes + optional):
+        result.append(prefixes)
+
+  assert len(set(result)) == len(result), 'duplicate resulting combinations'
+
+  return result
 
 
 def main():
