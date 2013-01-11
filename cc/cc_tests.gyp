@@ -63,6 +63,7 @@
       'tree_synchronizer_unittest.cc',
       'timing_function_unittest.cc',
       'test/fake_web_graphics_context_3d_unittest.cc',
+      'vsync_time_source_unittest.cc',
     ],
     'cc_tests_support_files': [
       'test/animation_test_common.cc',
