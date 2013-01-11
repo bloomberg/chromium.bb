@@ -94,8 +94,10 @@ class AutofillDialogViews : public AutofillDialogView,
 
     // Sets whether to indicate the textfield has invalid content.
     void SetInvalid(bool invalid);
+    bool invalid() const { return invalid_; }
 
     // views::View implementation.
+    virtual std::string GetClassName() const OVERRIDE;
     virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
     virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
@@ -163,6 +165,8 @@ class AutofillDialogViews : public AutofillDialogView,
     views::ImageButton* suggested_button;
   };
 
+  typedef std::map<DialogSection, DetailsGroup> DetailGroupMap;
+
   void InitChildViews();
 
   // Creates and returns a view that holds all detail sections.
@@ -212,12 +216,8 @@ class AutofillDialogViews : public AutofillDialogView,
   // The top-level View for the dialog. Owned by the constrained window.
   views::View* contents_;
 
-  DetailsGroup email_;
-  // The credit card and billing sections are combined, so cc_.container is
-  // not used.
-  DetailsGroup cc_;
-  DetailsGroup billing_;
-  DetailsGroup shipping_;
+  // An array of the DetailGroup structs.
+  DetailGroupMap detail_groups_;
 
   // The checkbox that controls whether to use the billing details for shipping
   // as well.

@@ -34,6 +34,8 @@ namespace {
 // Size of the triangular mark that indicates an invalid textfield.
 const int kDogEarSize = 10;
 
+const char kDecoratedTextfieldClassName[] = "autofill/DecoratedTextfield";
+
 // Returns a label that describes a details section.
 views::Label* CreateDetailsSectionLabel(const string16& text) {
   views::Label* label = new views::Label(text);
@@ -71,6 +73,10 @@ void AutofillDialogViews::DecoratedTextfield::SetInvalid(bool invalid) {
   else
     textfield_->UseDefaultBorderColor();
   SchedulePaint();
+}
+
+std::string AutofillDialogViews::DecoratedTextfield::GetClassName() const {
+  return kDecoratedTextfieldClassName;
 }
 
 void AutofillDialogViews::DecoratedTextfield::PaintChildren(
@@ -202,12 +208,16 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
     : controller_(controller),
       did_submit_(false),
       window_(NULL),
-      contents_(NULL),
-      email_(SECTION_EMAIL),
-      cc_(SECTION_CC),
-      billing_(SECTION_BILLING),
-      shipping_(SECTION_SHIPPING) {
+      contents_(NULL) {
   DCHECK(controller);
+  detail_groups_.insert(std::make_pair(SECTION_EMAIL,
+                                       DetailsGroup(SECTION_EMAIL)));
+  detail_groups_.insert(std::make_pair(SECTION_CC,
+                                       DetailsGroup(SECTION_CC)));
+  detail_groups_.insert(std::make_pair(SECTION_BILLING,
+                                       DetailsGroup(SECTION_BILLING)));
+  detail_groups_.insert(std::make_pair(SECTION_SHIPPING,
+                                       DetailsGroup(SECTION_SHIPPING)));
 }
 
 AutofillDialogViews::~AutofillDialogViews() {
@@ -306,14 +316,17 @@ bool AutofillDialogViews::Accept() {
 void AutofillDialogViews::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
   if (sender == use_billing_for_shipping_) {
-    UpdateDetailsGroupState(shipping_);
+    UpdateDetailsGroupState(*GroupForSection(SECTION_SHIPPING));
   } else {
     // TODO(estade): Should the menu be shown on mouse down?
-    DetailsGroup* group =
-        sender == email_.suggested_button ? &email_ :
-        sender == cc_.suggested_button ? &cc_ :
-        sender == billing_.suggested_button ? &billing_ :
-        sender == shipping_.suggested_button ? &shipping_ : NULL;
+    DetailsGroup* group = NULL;
+    for (DetailGroupMap::iterator iter = detail_groups_.begin();
+         iter != detail_groups_.end(); ++iter) {
+      if (sender == iter->second.suggested_button) {
+        group = &iter->second;
+        break;
+      }
+    }
     DCHECK(group);
 
     views::MenuModelAdapter adapter(
@@ -332,21 +345,36 @@ void AutofillDialogViews::ButtonPressed(views::Button* sender,
 
 void AutofillDialogViews::ContentsChanged(views::Textfield* sender,
                                           const string16& new_contents) {
-  const DetailsGroup& group =
-      sender->parent()->parent() == email_.manual_input ? email_ :
-      sender->parent()->parent() == cc_.manual_input ? cc_ :
-      sender->parent()->parent() == billing_.manual_input ? billing_ :
-                                                            shipping_;
+  views::View* ancestor =
+      sender->GetAncestorWithClassName(kDecoratedTextfieldClassName);
+  DetailsGroup* group = NULL;
+  for (DetailGroupMap::iterator iter = detail_groups_.begin();
+       iter != detail_groups_.end(); ++iter) {
+    if (ancestor->parent() == iter->second.manual_input) {
+      group = &iter->second;
+      break;
+    }
+  }
+  DCHECK(group);
 
-  for (TextfieldMap::const_iterator iter = group.textfields.begin();
-       iter != group.textfields.end();
+  for (TextfieldMap::const_iterator iter = group->textfields.begin();
+       iter != group->textfields.end();
        ++iter) {
-    if (iter->second->textfield() == sender) {
+    DecoratedTextfield* decorated = iter->second;
+    if (decorated == ancestor) {
       controller_->UserEditedInput(iter->first,
-                                   group.section,
+                                   group->section,
                                    GetWidget()->GetNativeView(),
                                    sender->GetBoundsInScreen(),
                                    new_contents);
+
+      // If the field is marked as invalid, check if the text is now valid.
+      if (decorated->invalid()) {
+        decorated->SetInvalid(
+            !controller_->InputIsValid(iter->first,
+                                       decorated->textfield()->text()));
+      }
+
       break;
     }
   }
@@ -433,19 +461,11 @@ views::View* AutofillDialogViews::CreateDetailsContainer() {
   view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
                            views::kRelatedControlVerticalSpacing));
-
-  // Email.
-  CreateDetailsSection(SECTION_EMAIL);
-  view->AddChildView(email_.container);
-  // Credit card.
-  CreateDetailsSection(SECTION_CC);
-  view->AddChildView(cc_.container);
-  // Billing.
-  CreateDetailsSection(SECTION_BILLING);
-  view->AddChildView(billing_.container);
-  // Shipping.
-  CreateDetailsSection(SECTION_SHIPPING);
-  view->AddChildView(shipping_.container);
+  for (DetailGroupMap::iterator iter = detail_groups_.begin();
+       iter != detail_groups_.end(); ++iter) {
+    CreateDetailsSection(iter->second.section);
+    view->AddChildView(iter->second.container);
+  }
 
   return view;
 }
@@ -616,36 +636,27 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
 }
 
 bool AutofillDialogViews::ValidateForm() {
-  // TODO(estade): work for all sections, not just billing.
   bool all_valid = true;
-  if (billing_.manual_input->visible()) {
-    for (TextfieldMap::iterator iter = billing_.textfields.begin();
-         iter != billing_.textfields.end(); ++iter) {
-      if (!controller_->InputIsValid(iter->first,
-                                     iter->second->textfield()->text())) {
-        iter->second->SetInvalid(true);
-        all_valid = false;
+  for (DetailGroupMap::iterator iter = detail_groups_.begin();
+       iter != detail_groups_.end(); ++iter) {
+    DetailsGroup* group = &iter->second;
+    if (group->manual_input->visible()) {
+      for (TextfieldMap::iterator iter = group->textfields.begin();
+           iter != group->textfields.end(); ++iter) {
+        if (!controller_->InputIsValid(iter->first,
+                                       iter->second->textfield()->text())) {
+          iter->second->SetInvalid(true);
+          all_valid = false;
+        }
       }
     }
   }
   return all_valid;
 }
 
-AutofillDialogViews::DetailsGroup* AutofillDialogViews::
-    GroupForSection(DialogSection section) {
-  switch (section) {
-    case SECTION_EMAIL:
-      return &email_;
-    case SECTION_CC:
-      return &cc_;
-    case SECTION_BILLING:
-      return &billing_;
-    case SECTION_SHIPPING:
-      return &shipping_;
-  }
-
-  NOTREACHED();
-  return NULL;
+AutofillDialogViews::DetailsGroup* AutofillDialogViews::GroupForSection(
+    DialogSection section) {
+  return &detail_groups_.find(section)->second;
 }
 
 AutofillDialogViews::DetailsGroup::DetailsGroup(DialogSection section)
