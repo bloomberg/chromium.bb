@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 class GURL;
 

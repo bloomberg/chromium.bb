@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "webkit/dom_storage/dom_storage_types.h"
 
 using WebKit::WebStorageArea;
