@@ -9,6 +9,7 @@
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/renderer_host/media/audio_mirroring_manager.h"
 #include "content/browser/renderer_host/media/audio_sync_reader.h"
 #include "content/common/media/audio_messages.h"
 #include "content/public/browser/media_observer.h"
@@ -30,6 +31,9 @@ struct AudioRendererHost::AudioEntry {
   // The audio stream ID.
   int stream_id;
 
+  // The routing ID of the source render view.
+  int render_view_id;
+
   // Shared memory for transmission of the audio data.
   base::SharedMemory shared_memory;
 
@@ -43,6 +47,7 @@ struct AudioRendererHost::AudioEntry {
 
 AudioRendererHost::AudioEntry::AudioEntry()
     : stream_id(0),
+      render_view_id(MSG_ROUTING_NONE),
       pending_close(false) {
 }
 
@@ -51,9 +56,15 @@ AudioRendererHost::AudioEntry::~AudioEntry() {}
 ///////////////////////////////////////////////////////////////////////////////
 // AudioRendererHost implementations.
 AudioRendererHost::AudioRendererHost(
-    media::AudioManager* audio_manager, MediaObserver* media_observer)
-    : audio_manager_(audio_manager),
+    int render_process_id,
+    media::AudioManager* audio_manager,
+    AudioMirroringManager* mirroring_manager,
+    MediaObserver* media_observer)
+    : render_process_id_(render_process_id),
+      audio_manager_(audio_manager),
+      mirroring_manager_(mirroring_manager),
       media_observer_(media_observer) {
+  DCHECK(audio_manager_);
 }
 
 AudioRendererHost::~AudioRendererHost() {
@@ -281,10 +292,30 @@ void AudioRendererHost::OnCreateStream(
 
 void AudioRendererHost::OnAssociateStreamWithProducer(int stream_id,
                                                       int render_view_id) {
-  // TODO(miu): Will use render_view_id in upcoming change.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   DVLOG(1) << "AudioRendererHost@" << this
            << "::OnAssociateStreamWithProducer(stream_id=" << stream_id
            << ", render_view_id=" << render_view_id << ")";
+
+  AudioEntry* const entry = LookupById(stream_id);
+  if (!entry) {
+    SendErrorMessage(stream_id);
+    return;
+  }
+
+  if (entry->render_view_id == render_view_id)
+    return;
+
+  if (mirroring_manager_) {
+    mirroring_manager_->RemoveDiverter(
+        render_process_id_, entry->render_view_id, entry->controller);
+  }
+  entry->render_view_id = render_view_id;
+  if (mirroring_manager_) {
+    mirroring_manager_->AddDiverter(
+        render_process_id_, entry->render_view_id, entry->controller);
+  }
 }
 
 void AudioRendererHost::OnPlayStream(int stream_id) {
@@ -376,6 +407,10 @@ void AudioRendererHost::CloseAndDeleteStream(AudioEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!entry->pending_close) {
+    if (mirroring_manager_) {
+      mirroring_manager_->RemoveDiverter(
+          render_process_id_, entry->render_view_id, entry->controller);
+    }
     entry->controller->Close(
         base::Bind(&AudioRendererHost::DeleteEntry, this, entry));
     entry->pending_close = true;

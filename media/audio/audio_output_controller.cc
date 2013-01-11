@@ -29,14 +29,15 @@ AudioOutputController::AudioOutputController(AudioManager* audio_manager,
                                              const AudioParameters& params,
                                              SyncReader* sync_reader)
     : audio_manager_(audio_manager),
+      params_(params),
       handler_(handler),
       stream_(NULL),
+      diverting_to_stream_(NULL),
       volume_(1.0),
       state_(kEmpty),
       sync_reader_(sync_reader),
       message_loop_(audio_manager->GetMessageLoop()),
       number_polling_attempts_left_(0),
-      params_(params),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_this_(this)) {
 }
 
@@ -70,13 +71,10 @@ scoped_refptr<AudioOutputController> AudioOutputController::Create(
   if (!params.IsValid() || !audio_manager)
     return NULL;
 
-  // Starts the audio controller thread.
   scoped_refptr<AudioOutputController> controller(new AudioOutputController(
       audio_manager, event_handler, params, sync_reader));
-
   controller->message_loop_->PostTask(FROM_HERE, base::Bind(
       &AudioOutputController::DoCreate, controller));
-
   return controller;
 }
 
@@ -121,7 +119,8 @@ void AudioOutputController::DoCreate() {
 
   DoStopCloseAndClearStream(NULL);  // Calls RemoveOutputDeviceChangeListener().
 
-  stream_ = audio_manager_->MakeAudioOutputStreamProxy(params_);
+  stream_ = diverting_to_stream_ ? diverting_to_stream_ :
+      audio_manager_->MakeAudioOutputStreamProxy(params_);
   if (!stream_) {
     state_ = kError;
 
@@ -139,9 +138,10 @@ void AudioOutputController::DoCreate() {
     return;
   }
 
-  // Everything started okay, so register for state change callbacks if we have
-  // not already done so.
-  audio_manager_->AddOutputDeviceChangeListener(this);
+  // Everything started okay, so re-register for state change callbacks if
+  // stream_ was created via AudioManager.
+  if (stream_ != diverting_to_stream_)
+    audio_manager_->AddOutputDeviceChangeListener(this);
 
   // We have successfully opened the stream. Set the initial volume.
   stream_->SetVolume(volume_);
@@ -349,10 +349,15 @@ void AudioOutputController::DoStopCloseAndClearStream(WaitableEvent* done) {
 
   // Allow calling unconditionally and bail if we don't have a stream_ to close.
   if (stream_) {
-    audio_manager_->RemoveOutputDeviceChangeListener(this);
+    // De-register from state change callbacks if stream_ was created via
+    // AudioManager.
+    if (stream_ != diverting_to_stream_)
+      audio_manager_->RemoveOutputDeviceChangeListener(this);
 
     stream_->Stop();
     stream_->Close();
+    if (stream_ == diverting_to_stream_)
+      diverting_to_stream_ = NULL;
     stream_ = NULL;
 
     weak_this_.InvalidateWeakPtrs();
@@ -365,9 +370,6 @@ void AudioOutputController::DoStopCloseAndClearStream(WaitableEvent* done) {
 
 void AudioOutputController::OnDeviceChange() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-
-  // We should always have a stream by this point.
-  CHECK(stream_);
 
   // Recreate the stream (DoCreate() will first shut down an existing stream).
   // Exit if we ran into an error.
@@ -391,6 +393,48 @@ void AudioOutputController::OnDeviceChange() {
     default:
       NOTREACHED() << "Invalid original state.";
   }
+}
+
+const AudioParameters& AudioOutputController::GetAudioParameters() {
+  return params_;
+}
+
+void AudioOutputController::StartDiverting(AudioOutputStream* to_stream) {
+  message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&AudioOutputController::DoStartDiverting, this, to_stream));
+}
+
+void AudioOutputController::StopDiverting() {
+  message_loop_->PostTask(
+      FROM_HERE, base::Bind(&AudioOutputController::DoStopDiverting, this));
+}
+
+void AudioOutputController::DoStartDiverting(AudioOutputStream* to_stream) {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+
+  if (state_ == kClosed)
+    return;
+
+  DCHECK(!diverting_to_stream_);
+  diverting_to_stream_ = to_stream;
+  // Note: OnDeviceChange() will engage the "re-create" process, which will
+  // detect and use the alternate AudioOutputStream rather than create a new one
+  // via AudioManager.
+  OnDeviceChange();
+}
+
+void AudioOutputController::DoStopDiverting() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+
+  if (state_ == kClosed)
+    return;
+
+  // Note: OnDeviceChange() will cause the existing stream (the consumer of the
+  // diverted audio data) to be closed, and diverting_to_stream_ will be set
+  // back to NULL.
+  OnDeviceChange();
+  DCHECK(!diverting_to_stream_);
 }
 
 }  // namespace media

@@ -83,6 +83,7 @@
         'audio/audio_output_proxy.h',
         'audio/audio_output_resampler.cc',
         'audio/audio_output_resampler.h',
+        'audio/audio_source_diverter.h',
         'audio/audio_util.cc',
         'audio/audio_util.h',
         'audio/cross_process_notification.cc',

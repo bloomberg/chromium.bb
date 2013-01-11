@@ -27,6 +27,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/plugin_service_impl.h"
+#include "content/browser/renderer_host/media/audio_mirroring_manager.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/trace_controller_impl.h"
@@ -227,6 +228,11 @@ media::AudioManager* BrowserMainLoop::GetAudioManager() {
 }
 
 // static
+AudioMirroringManager* BrowserMainLoop::GetAudioMirroringManager() {
+  return g_current_browser_main_loop->audio_mirroring_manager_.get();
+}
+
+// static
 MediaStreamManager* BrowserMainLoop::GetMediaStreamManager() {
   return g_current_browser_main_loop->media_stream_manager_.get();
 }
@@ -343,6 +349,9 @@ void BrowserMainLoop::MainMessageLoopStart() {
   hi_res_timer_manager_.reset(new HighResolutionTimerManager);
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   audio_manager_.reset(media::AudioManager::Create());
+#if !defined(OS_IOS)
+  audio_mirroring_manager_.reset(new AudioMirroringManager());
+#endif
 
 #if !defined(OS_IOS)
   // Start tracing to a file if needed.

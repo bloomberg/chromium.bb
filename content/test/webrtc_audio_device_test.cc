@@ -12,6 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
+#include "content/browser/renderer_host/media/audio_mirroring_manager.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/mock_media_observer.h"
@@ -172,6 +173,7 @@ void WebRTCAudioDeviceTest::TearDown() {
   WaitForIOThreadCompletion();
   mock_process_.reset();
   media_stream_manager_.reset();
+  mirroring_manager_.reset();
   audio_manager_.reset();
   RendererWebKitPlatformSupportImpl::SetSandboxEnabledForTesting(
       sandbox_was_enabled_);
@@ -206,8 +208,9 @@ void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
   resource_context->set_request_context(test_request_context_.get());
   media_observer_.reset(new MockMediaObserver());
 
-  // Create our own AudioManager and MediaStreamManager.
+  // Create our own AudioManager, AudioMirroringManager and MediaStreamManager.
   audio_manager_.reset(media::AudioManager::Create());
+  mirroring_manager_.reset(new AudioMirroringManager());
   media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
 
   has_input_devices_ = audio_manager_->HasAudioInputDevices();
@@ -229,8 +232,11 @@ void WebRTCAudioDeviceTest::UninitializeIOThread() {
 
 void WebRTCAudioDeviceTest::CreateChannel(const char* name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  static const int kRenderProcessId = 1;
   audio_render_host_ = new AudioRendererHost(
-      audio_manager_.get(), media_observer_.get());
+      kRenderProcessId, audio_manager_.get(), mirroring_manager_.get(),
+      media_observer_.get());
   audio_render_host_->OnChannelConnected(base::GetCurrentProcId());
 
   audio_input_renderer_host_ = new AudioInputRendererHost(

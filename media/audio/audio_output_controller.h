@@ -12,6 +12,7 @@
 #include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
+#include "media/audio/audio_source_diverter.h"
 #include "media/audio/simple_sources.h"
 #include "media/base/media_export.h"
 
@@ -66,6 +67,7 @@ namespace media {
 class MEDIA_EXPORT AudioOutputController
     : public base::RefCountedThreadSafe<AudioOutputController>,
       public AudioOutputStream::AudioSourceCallback,
+      public AudioSourceDiverter,
       NON_EXPORTED_BASE(public AudioManager::AudioDeviceListener)  {
  public:
   // An event handler that receives events from the AudioOutputController. The
@@ -154,8 +156,13 @@ class MEDIA_EXPORT AudioOutputController
   // to being called.
   virtual void OnDeviceChange() OVERRIDE;
 
+  // AudioSourceDiverter implementation.
+  virtual const AudioParameters& GetAudioParameters() OVERRIDE;
+  virtual void StartDiverting(AudioOutputStream* to_stream) OVERRIDE;
+  virtual void StopDiverting() OVERRIDE;
+
  protected:
-    // Internal state of the source.
+  // Internal state of the source.
   enum State {
     kEmpty,
     kCreated,
@@ -188,6 +195,8 @@ class MEDIA_EXPORT AudioOutputController
   void DoClose();
   void DoSetVolume(double volume);
   void DoReportError(int code);
+  void DoStartDiverting(AudioOutputStream* to_stream);
+  void DoStopDiverting();
 
   // Helper method that starts physical stream.
   void StartStream();
@@ -197,6 +206,7 @@ class MEDIA_EXPORT AudioOutputController
   void DoStopCloseAndClearStream(base::WaitableEvent *done);
 
   AudioManager* const audio_manager_;
+  const AudioParameters params_;
 
   // |handler_| may be called only if |state_| is not kClosed.
   EventHandler* handler_;
@@ -204,6 +214,9 @@ class MEDIA_EXPORT AudioOutputController
   // Note: It's important to invalidate the weak pointers whenever stream_ is
   // changed.  See comment for weak_this_.
   AudioOutputStream* stream_;
+
+  // When non-NULL, audio is being diverted to this stream.
+  AudioOutputStream* diverting_to_stream_;
 
   // The current volume of the audio stream.
   double volume_;
@@ -226,8 +239,6 @@ class MEDIA_EXPORT AudioOutputController
   // When starting stream we wait for data to become available.
   // Number of times left.
   int number_polling_attempts_left_;
-
-  AudioParameters params_;
 
   // Used to auto-cancel the delayed tasks that are created to poll for data
   // (when starting-up a stream).

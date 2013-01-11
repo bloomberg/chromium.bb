@@ -59,6 +59,7 @@ class AudioParameters;
 
 namespace content {
 
+class AudioMirroringManager;
 class MediaObserver;
 class ResourceContext;
 
@@ -67,7 +68,9 @@ class CONTENT_EXPORT AudioRendererHost
       public media::AudioOutputController::EventHandler {
  public:
   // Called from UI thread from the owner of this object.
-  AudioRendererHost(media::AudioManager* audio_manager,
+  AudioRendererHost(int render_process_id,
+                    media::AudioManager* audio_manager,
+                    AudioMirroringManager* mirroring_manager,
                     MediaObserver* media_observer);
 
   // BrowserMessageFilter implementation.
@@ -164,11 +167,15 @@ class CONTENT_EXPORT AudioRendererHost
 
   media::AudioOutputController* LookupControllerByIdForTesting(int stream_id);
 
+  // ID of the RenderProcessHost that owns this instance.
+  const int render_process_id_;
+
+  media::AudioManager* const audio_manager_;
+  AudioMirroringManager* const mirroring_manager_;
+  MediaObserver* const media_observer_;
+
   // A map of stream IDs to audio sources.
   AudioEntryMap audio_entries_;
-
-  media::AudioManager* audio_manager_;
-  MediaObserver* media_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHost);
 };

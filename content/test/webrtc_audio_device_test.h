@@ -45,6 +45,7 @@ class ScopedCOMInitializer;
 namespace content {
 
 class AudioInputRendererHost;
+class AudioMirroringManager;
 class AudioRendererHost;
 class ContentRendererClient;
 class MediaStreamManager;
@@ -169,6 +170,7 @@ class WebRTCAudioDeviceTest : public ::testing::Test, public IPC::Listener {
   scoped_ptr<MockMediaObserver> media_observer_;
   scoped_ptr<MediaStreamManager> media_stream_manager_;
   scoped_ptr<media::AudioManager> audio_manager_;
+  scoped_ptr<AudioMirroringManager> mirroring_manager_;
   scoped_ptr<net::URLRequestContext> test_request_context_;
   scoped_ptr<ResourceContext> resource_context_;
   scoped_ptr<IPC::Channel> channel_;

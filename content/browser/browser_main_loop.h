@@ -26,6 +26,7 @@ class NetworkChangeNotifier;
 }
 
 namespace content {
+class AudioMirroringManager;
 class BrowserMainParts;
 class BrowserOnlineStateObserver;
 class BrowserShutdownImpl;
@@ -71,6 +72,7 @@ class BrowserMainLoop {
 
   // Can be called on any thread.
   static media::AudioManager* GetAudioManager();
+  static AudioMirroringManager* GetAudioMirroringManager();
   static MediaStreamManager* GetMediaStreamManager();
 
  private:
@@ -95,6 +97,7 @@ class BrowserMainLoop {
   scoped_ptr<HighResolutionTimerManager> hi_res_timer_manager_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<media::AudioManager> audio_manager_;
+  scoped_ptr<AudioMirroringManager> audio_mirroring_manager_;
   scoped_ptr<MediaStreamManager> media_stream_manager_;
   // Per-process listener for online state changes.
   scoped_ptr<BrowserOnlineStateObserver> online_state_observer_;

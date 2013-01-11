@@ -66,6 +66,7 @@
 #include "content/browser/renderer_host/gamepad_browser_message_filter.h"
 #include "content/browser/renderer_host/gpu_message_filter.h"
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
+#include "content/browser/renderer_host/media/audio_mirroring_manager.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
@@ -521,7 +522,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       BrowserMainLoop::GetMediaStreamManager();
   channel_->AddFilter(new AudioInputRendererHost(audio_manager,
                                                  media_stream_manager));
-  channel_->AddFilter(new AudioRendererHost(audio_manager, media_observer));
+  channel_->AddFilter(new AudioRendererHost(
+      GetID(), audio_manager, BrowserMainLoop::GetAudioMirroringManager(),
+      media_observer));
   channel_->AddFilter(new VideoCaptureHost());
   channel_->AddFilter(new AppCacheDispatcherHost(
       storage_partition_impl_->GetAppCacheService(),
