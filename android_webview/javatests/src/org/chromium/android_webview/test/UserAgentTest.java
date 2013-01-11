@@ -43,5 +43,9 @@ public class UserAgentTest extends AndroidWebViewTestBase {
         final String ua = getTitleOnUiThread(mAwContents);
         Matcher matcher = Pattern.compile("Android_[^;]+;_[^_]").matcher(ua);
         assertTrue(matcher.find());
+
+        // TODO(boliu): This is to work around disk cache corruption bug on
+        // unclean shutdown (crbug.com/154805).
+        clearCacheOnUiThread(mAwContents, true);
     }
 }

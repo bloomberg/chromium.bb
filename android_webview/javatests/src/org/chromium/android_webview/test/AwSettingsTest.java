@@ -2019,10 +2019,6 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         // will take about 20 seconds.
         ViewPair views = createViews();
 
-        // TODO(boliu): This is to work around disk cache corruption bug on
-        // unclean shutdown (crbug.com/154805).
-        clearCacheOnUiThread(views.getContents0(), true);
-
         ContentSettings settings0 = getContentSettingsOnUiThread(views.getContents0());
         settings0.setJavaScriptEnabled(true);
         settings0.setAppCachePath("whatever");
