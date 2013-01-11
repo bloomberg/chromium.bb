@@ -183,6 +183,7 @@ IPC_STRUCT_TRAITS_BEGIN(nacl::NaClLaunchParams)
   IPC_STRUCT_TRAITS_MEMBER(manifest_url)
   IPC_STRUCT_TRAITS_MEMBER(render_view_id)
   IPC_STRUCT_TRAITS_MEMBER(permission_bits)
+  IPC_STRUCT_TRAITS_MEMBER(uses_irt)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(RendererContentSettingRules)

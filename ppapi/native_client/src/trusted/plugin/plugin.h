@@ -350,6 +350,7 @@ class Plugin : public pp::InstancePrivate {
                             NaClSubprocess* subprocess,
                             const Manifest* manifest,
                             bool should_report_uma,
+                            bool uses_irt,
                             bool uses_ppapi,
                             ErrorInfo* error_info,
                             pp::CompletionCallback init_done_cb,

@@ -234,20 +234,25 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 # endif
 #endif
 
-  CHECK(handles.size() >= 1);
-  NaClHandle irt_handle = nacl::ToNativeHandle(handles[handles.size() - 1]);
-  handles.pop_back();
+  if (params.uses_irt) {
+    CHECK(handles.size() >= 1);
+    NaClHandle irt_handle = nacl::ToNativeHandle(handles[handles.size() - 1]);
+    handles.pop_back();
 
 #if defined(OS_WIN)
-  args->irt_fd = _open_osfhandle(reinterpret_cast<intptr_t>(irt_handle),
-                                 _O_RDONLY | _O_BINARY);
-  if (args->irt_fd < 0) {
-    LOG(ERROR) << "_open_osfhandle() failed";
-    return;
-  }
+    args->irt_fd = _open_osfhandle(reinterpret_cast<intptr_t>(irt_handle),
+                                   _O_RDONLY | _O_BINARY);
+    if (args->irt_fd < 0) {
+      LOG(ERROR) << "_open_osfhandle() failed";
+      return;
+    }
 #else
-  args->irt_fd = irt_handle;
+    args->irt_fd = irt_handle;
 #endif
+  } else {
+    // Otherwise, the IRT handle is not even sent.
+    args->irt_fd = -1;
+  }
 
   if (params.validation_cache_enabled) {
     // SHA256 block size.

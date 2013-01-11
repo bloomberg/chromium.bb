@@ -68,6 +68,7 @@ static int GetRoutingID(PP_Instance instance) {
 // Launch NaCl's sel_ldr process.
 PP_NaClResult LaunchSelLdr(PP_Instance instance,
                            const char* alleged_url,
+                           PP_Bool uses_irt,
                            PP_Bool uses_ppapi,
                            PP_Bool enable_ppapi_dev,
                            void* imc_handle) {
@@ -102,7 +103,8 @@ PP_NaClResult LaunchSelLdr(PP_Instance instance,
   if (!sender->Send(new ChromeViewHostMsg_LaunchNaCl(
           nacl::NaClLaunchParams(instance_info.url.spec(),
                                  routing_id,
-                                 perm_bits),
+                                 perm_bits,
+                                 PP_ToBool(uses_irt)),
           &result_socket,
           &instance_info.channel_handle,
           &instance_info.plugin_pid,

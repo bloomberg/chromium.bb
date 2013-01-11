@@ -44,9 +44,12 @@ interface PPB_NaCl_Private {
    * indicates that the nexe run by sel_ldr will use the PPAPI APIs.
    * This implies that LaunchSelLdr is run from the main thread.  If a nexe
    * does not need PPAPI, then it can run off the main thread.
+   * The |uses_irt| flag indicates whether the IRT should be loaded in this
+   * NaCl process.  This is true for ABI stable nexes.
    */
   PP_NaClResult LaunchSelLdr([in] PP_Instance instance,
                              [in] str_t alleged_url,
+                             [in] PP_Bool uses_irt,
                              [in] PP_Bool uses_ppapi,
                              [in] PP_Bool enable_ppapi_dev,
                              [out] mem_t imc_handle);

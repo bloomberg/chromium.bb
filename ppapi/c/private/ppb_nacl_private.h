@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Mon Jan  7 12:49:31 2013. */
+/* From private/ppb_nacl_private.idl modified Thu Jan 10 16:07:40 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -69,9 +69,12 @@ struct PPB_NaCl_Private_1_0 {
    * indicates that the nexe run by sel_ldr will use the PPAPI APIs.
    * This implies that LaunchSelLdr is run from the main thread.  If a nexe
    * does not need PPAPI, then it can run off the main thread.
+   * The |uses_irt| flag indicates whether the IRT should be loaded in this
+   * NaCl process.  This is true for ABI stable nexes.
    */
   PP_NaClResult (*LaunchSelLdr)(PP_Instance instance,
                                 const char* alleged_url,
+                                PP_Bool uses_irt,
                                 PP_Bool uses_ppapi,
                                 PP_Bool enable_ppapi_dev,
                                 void* imc_handle);

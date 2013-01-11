@@ -544,6 +544,7 @@ bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
                                   NaClSubprocess* subprocess,
                                   const Manifest* manifest,
                                   bool should_report_uma,
+                                  bool uses_irt,
                                   bool uses_ppapi,
                                   ErrorInfo* error_info,
                                   pp::CompletionCallback init_done_cb,
@@ -564,6 +565,7 @@ bool Plugin::LoadNaClModuleCommon(nacl::DescWrapper* wrapper,
       new_service_runtime->Start(wrapper,
                                  error_info,
                                  manifest_base_url(),
+                                 uses_irt,
                                  uses_ppapi,
                                  enable_dev_interfaces_,
                                  crash_cb);
@@ -586,6 +588,7 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
   ShutDownSubprocesses();
   if (!LoadNaClModuleCommon(wrapper, &main_subprocess_, manifest_.get(),
                             true /* should_report_uma */,
+                            true /* uses_irt */,
                             true /* uses_ppapi */,
                             error_info, init_done_cb, crash_cb)) {
     return false;
@@ -647,8 +650,13 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
 
   // Do not report UMA stats for translator-related nexes.
   // TODO(sehr): define new UMA stats for translator related nexe events.
+  // NOTE: The PNaCl translator nexes are not built to use the IRT.  This is
+  // done to save on address space and swap space.  The PNaCl translator
+  // nexes also do not use PPAPI.  That allows the nexes to be launched
+  // off of the main thread and not block the UI.
   if (!LoadNaClModuleCommon(wrapper, nacl_subprocess.get(), manifest,
                             false /* should_report_uma */,
+                            false /* uses_irt */,
                             false /* uses_ppapi */,
                             error_info,
                             pp::BlockUntilComplete(),

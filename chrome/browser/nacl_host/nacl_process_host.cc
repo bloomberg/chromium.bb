@@ -149,6 +149,7 @@ bool NaClProcessHost::PluginListener::OnMessageReceived(
 NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
                                  int render_view_id,
                                  uint32 permission_bits,
+                                 bool uses_irt,
                                  bool off_the_record)
     : manifest_url_(manifest_url),
       permissions_(GetNaClPermissions(permission_bits)),
@@ -165,6 +166,7 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       enable_exception_handling_(false),
       enable_debug_stub_(false),
+      uses_irt_(uses_irt),
       off_the_record_(off_the_record),
       enable_ipc_proxy_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(ipc_plugin_listener_(this)),
@@ -706,9 +708,7 @@ bool NaClProcessHost::StartNaClExecution() {
   params.enable_debug_stub = enable_debug_stub_ &&
       NaClBrowser::GetInstance()->URLMatchesDebugPatterns(manifest_url_);
   params.enable_ipc_proxy = enable_ipc_proxy_;
-
-  base::PlatformFile irt_file = nacl_browser->IrtFile();
-  CHECK_NE(irt_file, base::kInvalidPlatformFileValue);
+  params.uses_irt = uses_irt_;
 
   const ChildProcessData& data = process_->GetData();
   if (!ShareHandleToSelLdr(data.handle,
@@ -717,9 +717,14 @@ bool NaClProcessHost::StartNaClExecution() {
     return false;
   }
 
-  // Send over the IRT file handle.  We don't close our own copy!
-  if (!ShareHandleToSelLdr(data.handle, irt_file, false, &params.handles))
-    return false;
+  if (params.uses_irt) {
+    base::PlatformFile irt_file = nacl_browser->IrtFile();
+    CHECK_NE(irt_file, base::kInvalidPlatformFileValue);
+
+    // Send over the IRT file handle.  We don't close our own copy!
+    if (!ShareHandleToSelLdr(data.handle, irt_file, false, &params.handles))
+      return false;
+  }
 
 #if defined(OS_MACOSX)
   // For dynamic loading support, NaCl requires a file descriptor that

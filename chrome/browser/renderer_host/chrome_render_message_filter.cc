@@ -180,6 +180,7 @@ void ChromeRenderMessageFilter::OnLaunchNaCl(
       GURL(launch_params.manifest_url),
       launch_params.render_view_id,
       launch_params.permission_bits,
+      launch_params.uses_irt,
       off_the_record_);
   host->Launch(this, reply_msg, extension_info_map_);
 }

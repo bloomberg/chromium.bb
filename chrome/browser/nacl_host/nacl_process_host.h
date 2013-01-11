@@ -50,6 +50,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   NaClProcessHost(const GURL& manifest_url,
                   int render_view_id,
                   uint32 permission_bits,
+                  bool uses_irt,
                   bool off_the_record);
   virtual ~NaClProcessHost();
 
@@ -193,6 +194,8 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   bool enable_exception_handling_;
   bool enable_debug_stub_;
+
+  bool uses_irt_;
 
   bool off_the_record_;
 

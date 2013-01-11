@@ -21,6 +21,7 @@ IPC_STRUCT_TRAITS_BEGIN(nacl::NaClStartParams)
   IPC_STRUCT_TRAITS_MEMBER(enable_exception_handling)
   IPC_STRUCT_TRAITS_MEMBER(enable_debug_stub)
   IPC_STRUCT_TRAITS_MEMBER(enable_ipc_proxy)
+  IPC_STRUCT_TRAITS_MEMBER(uses_irt)
 IPC_STRUCT_TRAITS_END()
 
 //-----------------------------------------------------------------------------
@@ -80,4 +81,3 @@ IPC_MESSAGE_CONTROL1(NaClProcessMsg_SetKnownToValidate,
 // created successfully.
 IPC_MESSAGE_CONTROL1(NaClProcessHostMsg_PpapiChannelCreated,
                      IPC::ChannelHandle /* channel_handle */)
-
