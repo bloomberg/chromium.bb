@@ -51,10 +51,6 @@ bool TestViewsDelegate::UseTransparentWindows() const {
   return use_transparent_windows_;
 }
 
-int TestViewsDelegate::GetDispositionForEvent(int event_flags) {
-  return 0;
-}
-
 content::WebContents* TestViewsDelegate::CreateWebContents(
     content::BrowserContext* browser_context,
     content::SiteInstance* site_instance) {

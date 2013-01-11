@@ -165,10 +165,6 @@ void ChromeViewsDelegate::ReleaseRef() {
   g_browser_process->ReleaseModule();
 }
 
-int ChromeViewsDelegate::GetDispositionForEvent(int event_flags) {
-  return chrome::DispositionFromEventFlags(event_flags);
-}
-
 content::WebContents* ChromeViewsDelegate::CreateWebContents(
     content::BrowserContext* browser_context,
     content::SiteInstance* site_instance) {

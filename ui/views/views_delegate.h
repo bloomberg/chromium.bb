@@ -98,9 +98,6 @@ class VIEWS_EXPORT ViewsDelegate {
   virtual void AddRef() = 0;
   virtual void ReleaseRef() = 0;
 
-  // Converts ui::Event::flags to a WindowOpenDisposition.
-  virtual int GetDispositionForEvent(int event_flags) = 0;
-
   // Creates a web contents. This will return NULL unless overriden.
   virtual content::WebContents* CreateWebContents(
       content::BrowserContext* browser_context,
