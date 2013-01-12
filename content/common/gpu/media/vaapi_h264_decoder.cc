@@ -999,10 +999,10 @@ bool VaapiH264Decoder::SendVASliceParam(H264SliceHeader* slice_hdr) {
 
   int i;
   H264Picture::PtrVector::iterator it;
-  for (it = ref_pic_list0_.begin(), i = 0; it != ref_pic_list0_.end();
+  for (it = ref_pic_list0_.begin(), i = 0; it != ref_pic_list0_.end() && *it;
        ++it, ++i)
     FillVAPicture(&slice_param.RefPicList0[i], *it);
-  for (it = ref_pic_list1_.begin(), i = 0; it != ref_pic_list1_.end();
+  for (it = ref_pic_list1_.begin(), i = 0; it != ref_pic_list1_.end() && *it;
        ++it, ++i)
     FillVAPicture(&slice_param.RefPicList1[i], *it);
 
