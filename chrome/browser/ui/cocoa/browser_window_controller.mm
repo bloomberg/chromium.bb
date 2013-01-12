@@ -903,6 +903,12 @@ enum {
   if (NSHeight(frame) == height)
     return;
 
+  // Disable screen updates to prevent flickering.
+  if (view == [bookmarkBarController_ view] ||
+      view == [downloadShelfController_ view]) {
+    [[self window] disableScreenUpdatesUntilFlush];
+  }
+
   // Grow or shrink the window by the amount of the height change.  We adjust
   // the window height only in two cases:
   // 1) We are adjusting the height of the bookmark bar and it is currently
@@ -917,7 +923,6 @@ enum {
   BOOL resizeRectDirty = NO;
   if ((shouldAdjustBookmarkHeight && view == [bookmarkBarController_ view]) ||
       view == [downloadShelfController_ view]) {
-    [[self window] disableScreenUpdatesUntilFlush];
     CGFloat deltaH = height - NSHeight(frame);
     if ([self adjustWindowHeightBy:deltaH] &&
         view == [downloadShelfController_ view]) {
