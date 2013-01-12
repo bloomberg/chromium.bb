@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_BLUETOOTH_EXTENSION_FUNCTION_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_function.h"
 
 namespace device {
@@ -32,9 +33,15 @@ class BluetoothExtensionFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
+  void RunOnAdapterReady(scoped_refptr<device::BluetoothAdapter> adapter);
+
   // Implemented by individual bluetooth extension functions, called
   // automatically once |adapter| has been initialized.
   virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) = 0;
+
+  base::WeakPtrFactory<BluetoothExtensionFunction> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothExtensionFunction);
 };
 
 }  // namespace api

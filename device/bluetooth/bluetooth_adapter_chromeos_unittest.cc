@@ -41,6 +41,7 @@ class BluetoothAdapterChromeOsTest : public testing::Test {
   }
 
   virtual void TearDown() {
+    adapter_ = NULL;
     DBusThreadManager::Shutdown();
   }
 
@@ -52,12 +53,18 @@ class BluetoothAdapterChromeOsTest : public testing::Test {
     error_callback_called_ = true;
   }
 
+  void SetAdapter(scoped_refptr<device::BluetoothAdapter> adapter) {
+    adapter_ = adapter;
+  }
+
  protected:
   MockBluetoothManagerClient* mock_manager_client_;
   MockBluetoothAdapterClient* mock_adapter_client_;
 
   bool set_callback_called_;
   bool error_callback_called_;
+
+  scoped_refptr<BluetoothAdapter> adapter_;
 };
 
 TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterNotPresent) {
@@ -68,22 +75,23 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterNotPresent) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
-  ASSERT_TRUE(adapter.get() != NULL);
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
+  ASSERT_TRUE(adapter_ != NULL);
 
   // Call the adapter callback; make out it failed.
   // BluetoothAdapter::Observer::AdapterPresentChanged must not be called.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), _))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), _))
       .Times(0);
 
   adapter_callback.Run(dbus::ObjectPath(""), false);
 
   // Adapter should not be present.
-  EXPECT_FALSE(adapter->IsPresent());
+  EXPECT_FALSE(adapter_->IsPresent());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithAddress) {
@@ -97,8 +105,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithAddress) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -112,16 +121,16 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithAddress) {
   // BluetoothAdapter::Observer::AdapterPresentChanged will be called to
   // indicate the adapter is now present.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), true))
       .Times(1);
 
   adapter_callback.Run(adapter_path, true);
 
   // Adapter should be present with the given address.
-  EXPECT_TRUE(adapter->IsPresent());
-  EXPECT_EQ(adapter_address, adapter->address());
+  EXPECT_TRUE(adapter_->IsPresent());
+  EXPECT_EQ(adapter_address, adapter_->address());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithoutAddress) {
@@ -135,8 +144,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithoutAddress) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -149,33 +159,33 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithoutAddress) {
   // BluetoothAdapter::Observer::AdapterPresentChanged must not be called
   // yet.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), _))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), _))
       .Times(0);
 
   adapter_callback.Run(adapter_path, true);
 
   // Adapter should not be present yet.
-  EXPECT_FALSE(adapter->IsPresent());
+  EXPECT_FALSE(adapter_->IsPresent());
 
   // Tell the adapter the address now;
   // BluetoothAdapter::Observer::AdapterPresentChanged now must be called.
   adapter_properties.address.ReplaceValue(adapter_address);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), true))
       .Times(1);
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->AdapterPropertyChanged(adapter_path,
                                adapter_properties.address.name());
 
   // Adapter should be present with the given address.
-  EXPECT_TRUE(adapter->IsPresent());
-  EXPECT_EQ(adapter_address, adapter->address());
+  EXPECT_TRUE(adapter_->IsPresent());
+  EXPECT_EQ(adapter_address, adapter_->address());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterBecomesPresentWithAddress) {
@@ -189,8 +199,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterBecomesPresentWithAddress) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback; make out it failed.
   adapter_callback.Run(dbus::ObjectPath(""), false);
@@ -206,20 +217,20 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterBecomesPresentWithAddress) {
 
   // BluetoothAdapter::Observer::AdapterPresentChanged must be called.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), true))
       .Times(1);
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->DefaultAdapterChanged(adapter_path);
 
   // Adapter should be present with the new address.
-  EXPECT_TRUE(adapter->IsPresent());
-  EXPECT_EQ(adapter_address, adapter->address());
+  EXPECT_TRUE(adapter_->IsPresent());
+  EXPECT_EQ(adapter_address, adapter_->address());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterReplacedWithAddress) {
@@ -235,8 +246,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterReplacedWithAddress) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -262,22 +274,22 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterReplacedWithAddress) {
   // with false to indicate the old adapter being removed and once with true
   // to announce the new adapter.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), false))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), false))
       .Times(1);
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), true))
       .Times(1);
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->DefaultAdapterChanged(new_adapter_path);
 
   // Adapter should be present with the new address.
-  EXPECT_TRUE(adapter->IsPresent());
-  EXPECT_EQ(new_adapter_address, adapter->address());
+  EXPECT_TRUE(adapter_->IsPresent());
+  EXPECT_EQ(new_adapter_address, adapter_->address());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest,
@@ -292,8 +304,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback; make out it failed.
   adapter_callback.Run(dbus::ObjectPath(""), false);
@@ -308,25 +321,25 @@ TEST_F(BluetoothAdapterChromeOsTest,
 
   // BluetoothAdapter::Observer::AdapterPresentChanged must not be called.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), _))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), _))
       .Times(0);
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->DefaultAdapterChanged(adapter_path);
 
   // Adapter should not be present yet.
-  EXPECT_FALSE(adapter->IsPresent());
+  EXPECT_FALSE(adapter_->IsPresent());
 
   // Tell the adapter the address now;
   // BluetoothAdapter::Observer::AdapterPresentChanged now must be called.
   adapter_properties.address.ReplaceValue(adapter_address);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), true))
       .Times(1);
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
@@ -334,8 +347,8 @@ TEST_F(BluetoothAdapterChromeOsTest,
                                adapter_properties.address.name());
 
   // Adapter should be present with the new address.
-  EXPECT_TRUE(adapter->IsPresent());
-  EXPECT_EQ(adapter_address, adapter->address());
+  EXPECT_TRUE(adapter_->IsPresent());
+  EXPECT_EQ(adapter_address, adapter_->address());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterReplacedWithoutAddress) {
@@ -351,8 +364,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterReplacedWithoutAddress) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -376,25 +390,25 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterReplacedWithoutAddress) {
   // BluetoothAdapter::Observer::AdapterPresentChanged must be called to
   // indicate the adapter has gone away.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), false))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), false))
       .Times(1);
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->DefaultAdapterChanged(new_adapter_path);
 
   // Adapter should be now marked not present.
-  EXPECT_FALSE(adapter->IsPresent());
+  EXPECT_FALSE(adapter_->IsPresent());
 
   // Tell the adapter the address now;
   // BluetoothAdapter::Observer::AdapterPresentChanged now must be called.
   new_adapter_properties.address.ReplaceValue(new_adapter_address);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), true))
       .Times(1);
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
@@ -402,8 +416,8 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterReplacedWithoutAddress) {
                                new_adapter_properties.address.name());
 
   // Adapter should be present with the new address.
-  EXPECT_TRUE(adapter->IsPresent());
-  EXPECT_EQ(new_adapter_address, adapter->address());
+  EXPECT_TRUE(adapter_->IsPresent());
+  EXPECT_EQ(new_adapter_address, adapter_->address());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterRemoved) {
@@ -417,8 +431,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterRemoved) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -435,19 +450,19 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterRemoved) {
   // BluetoothAdapter::Observer::AdapterPresentChanged will be called to
   // indicate the adapter is no longer present.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), false))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), false))
       .Times(1);
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->AdapterRemoved(adapter_path);
 
   // Adapter should be no longer present.
-  EXPECT_FALSE(adapter->IsPresent());
+  EXPECT_FALSE(adapter_->IsPresent());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithoutAddressRemoved) {
@@ -460,8 +475,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithoutAddressRemoved) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -477,19 +493,19 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterWithoutAddressRemoved) {
   // BluetoothAdapter::Observer::AdapterPresentChanged must not be called
   // since we never should have announced it in the first place.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), _))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), _))
       .Times(0);
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->AdapterRemoved(adapter_path);
 
   // Adapter should be still no longer present.
-  EXPECT_FALSE(adapter->IsPresent());
+  EXPECT_FALSE(adapter_->IsPresent());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest,
@@ -504,8 +520,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -520,7 +537,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   adapter_callback.Run(adapter_path, true);
 
   // Adapter should have the correct property value.
-  EXPECT_FALSE(adapter->IsPowered());
+  EXPECT_FALSE(adapter_->IsPowered());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest,
@@ -535,8 +552,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -550,18 +568,18 @@ TEST_F(BluetoothAdapterChromeOsTest,
 
   // BluetoothAdapter::Observer::AdapterPoweredChanged will be called.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), true))
       .Times(1);
 
-  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter_.get(), true))
       .Times(1);
 
   adapter_callback.Run(adapter_path, true);
 
   // Adapter should have the correct property value.
-  EXPECT_TRUE(adapter->IsPowered());
+  EXPECT_TRUE(adapter_->IsPowered());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest,
@@ -576,8 +594,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -587,39 +606,39 @@ TEST_F(BluetoothAdapterChromeOsTest,
   adapter_properties.powered.ReplaceValue(true);
 
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
   EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
       .WillRepeatedly(Return(&adapter_properties));
 
-  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), _))
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter_.get(), _))
       .Times(0);
 
   adapter_callback.Run(adapter_path, true);
 
   // Adapter should not yet have the property value.
-  EXPECT_FALSE(adapter->IsPowered());
+  EXPECT_FALSE(adapter_->IsPowered());
 
   // Tell the adapter the address now,
   // BluetoothAdapter::Observer::AdapterPresentChanged and
   // BluetoothAdapter::Observer::AdapterPoweredChanged now must be called.
   adapter_properties.address.ReplaceValue(adapter_address);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), true))
       .Times(1);
 
-  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter_.get(), true))
       .Times(1);
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->AdapterPropertyChanged(adapter_path,
                                adapter_properties.address.name());
 
   // Adapter should have the correct property value.
-  EXPECT_TRUE(adapter->IsPowered());
+  EXPECT_TRUE(adapter_->IsPowered());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterPoweredPropertyChanged) {
@@ -633,8 +652,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterPoweredPropertyChanged) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -649,27 +669,27 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterPoweredPropertyChanged) {
   adapter_callback.Run(adapter_path, true);
 
   // Adapter should have the correct property value.
-  EXPECT_FALSE(adapter->IsPowered());
+  EXPECT_FALSE(adapter_->IsPowered());
 
   // Report that the property has been changed;
   // BluetoothAdapter::Observer::AdapterPoweredChanged will be called.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
-  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter_.get(), true))
       .Times(1);
 
   adapter_properties.powered.ReplaceValue(true);
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->AdapterPropertyChanged(adapter_path,
                                adapter_properties.powered.name());
 
   // Adapter should have the new property values.
-  EXPECT_TRUE(adapter->IsPowered());
+  EXPECT_TRUE(adapter_->IsPowered());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterPoweredPropertyUnchanged) {
@@ -683,8 +703,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterPoweredPropertyUnchanged) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -699,25 +720,25 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterPoweredPropertyUnchanged) {
   adapter_callback.Run(adapter_path, true);
 
   // Adapter should have the correct property value.
-  EXPECT_TRUE(adapter->IsPowered());
+  EXPECT_TRUE(adapter_->IsPowered());
 
   // Report that the property has been changed, but don't change the value;
   // BluetoothAdapter::Observer::AdapterPoweredChanged should not be called.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
-  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), _))
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter_.get(), _))
       .Times(0);
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->AdapterPropertyChanged(adapter_path,
                                adapter_properties.powered.name());
 
   // Adapter should still have the same property values.
-  EXPECT_TRUE(adapter->IsPowered());
+  EXPECT_TRUE(adapter_->IsPowered());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest,
@@ -732,8 +753,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -742,12 +764,12 @@ TEST_F(BluetoothAdapterChromeOsTest,
   MockBluetoothAdapterClient::Properties adapter_properties;
 
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
   EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
       .WillRepeatedly(Return(&adapter_properties));
 
-  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), _))
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter_.get(), _))
       .Times(0);
 
   adapter_callback.Run(adapter_path, true);
@@ -757,28 +779,28 @@ TEST_F(BluetoothAdapterChromeOsTest,
   // the adapter so it is not present.
   adapter_properties.powered.ReplaceValue(true);
 
-  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), _))
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter_.get(), _))
       .Times(0);
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->AdapterPropertyChanged(adapter_path,
                                adapter_properties.powered.name());
 
   // Adapter should not yet have the property value.
-  EXPECT_FALSE(adapter->IsPowered());
+  EXPECT_FALSE(adapter_->IsPowered());
 
   // Tell the adapter the address now,
   // BluetoothAdapter::Observer::AdapterPresentChanged and
   // BluetoothAdapter::Observer::AdapterPoweredChanged now must be called.
   adapter_properties.address.ReplaceValue(adapter_address);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), true))
       .Times(1);
 
-  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter_.get(), true))
       .Times(1);
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
@@ -786,7 +808,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
                                adapter_properties.address.name());
 
   // Adapter should now have the correct property value.
-  EXPECT_TRUE(adapter->IsPowered());
+  EXPECT_TRUE(adapter_->IsPowered());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest,
@@ -803,8 +825,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -829,28 +852,28 @@ TEST_F(BluetoothAdapterChromeOsTest,
 
   // BluetoothAdapter::Observer::AdapterPoweredChanged will be called.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
   {
     InSequence s;
 
-    EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), false))
+    EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), false))
         .Times(1);
-    EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+    EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), true))
         .Times(1);
   }
 
-  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), false))
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter_.get(), false))
       .Times(1);
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->DefaultAdapterChanged(new_adapter_path);
 
   // Adapter should have the new property value.
-  EXPECT_FALSE(adapter->IsPowered());
+  EXPECT_FALSE(adapter_->IsPowered());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest,
@@ -867,8 +890,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -896,34 +920,34 @@ TEST_F(BluetoothAdapterChromeOsTest,
   // to set the value to false for the previous adapter and once to set the
   // value to true for the new adapter.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
   {
     InSequence s;
 
-    EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), false))
+    EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), false))
         .Times(1);
-    EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+    EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), true))
         .Times(1);
   }
 
   {
     InSequence s;
 
-    EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), false))
+    EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter_.get(), false))
         .Times(1);
-    EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), true))
+    EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter_.get(), true))
         .Times(1);
   }
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->DefaultAdapterChanged(new_adapter_path);
 
   // Adapter should have the new property value.
-  EXPECT_TRUE(adapter->IsPowered());
+  EXPECT_TRUE(adapter_->IsPowered());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest,
@@ -938,8 +962,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -956,21 +981,21 @@ TEST_F(BluetoothAdapterChromeOsTest,
   // Report that the adapter has been removed;
   // BluetoothAdapter::Observer::AdapterPoweredChanged will be called.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), false))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), false))
       .Times(1);
-  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter.get(), false))
+  EXPECT_CALL(adapter_observer, AdapterPoweredChanged(adapter_.get(), false))
       .Times(1);
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->AdapterRemoved(adapter_path);
 
   // Adapter should have the new property value.
-  EXPECT_FALSE(adapter->IsPowered());
+  EXPECT_FALSE(adapter_->IsPowered());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSetPowered) {
@@ -984,8 +1009,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSetPowered) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -1004,7 +1030,7 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSetPowered) {
   EXPECT_CALL(adapter_properties, Set(&adapter_properties.powered, _))
       .WillOnce(SaveArg<1>(&set_callback));
 
-  adapter->SetPowered(true,
+  adapter_->SetPowered(true,
                       base::Bind(&BluetoothAdapterChromeOsTest::SetCallback,
                                  base::Unretained(this)),
                       base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
@@ -1032,8 +1058,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSetPoweredError) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -1052,11 +1079,11 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterSetPoweredError) {
   EXPECT_CALL(adapter_properties, Set(&adapter_properties.powered, _))
       .WillOnce(SaveArg<1>(&set_callback));
 
-  adapter->SetPowered(true,
-                      base::Bind(&BluetoothAdapterChromeOsTest::SetCallback,
-                                 base::Unretained(this)),
-                      base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
-                                 base::Unretained(this)));
+  adapter_->SetPowered(true,
+                       base::Bind(&BluetoothAdapterChromeOsTest::SetCallback,
+                                  base::Unretained(this)),
+                       base::Bind(&BluetoothAdapterChromeOsTest::ErrorCallback,
+                                  base::Unretained(this)));
 
   // Reply to the callback to indicate failure, the error callback we provided
   // should be called but the properties should not be refetched.
@@ -1081,8 +1108,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -1097,7 +1125,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
   adapter_callback.Run(adapter_path, true);
 
   // Adapter should have the correct property value.
-  EXPECT_FALSE(adapter->IsDiscovering());
+  EXPECT_FALSE(adapter_->IsDiscovering());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest,
@@ -1112,8 +1140,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -1127,18 +1156,18 @@ TEST_F(BluetoothAdapterChromeOsTest,
 
   // BluetoothAdapter::Observer::AdapterDiscoveringChanged will be called.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), true))
       .Times(1);
 
-  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter_.get(), true))
       .Times(1);
 
   adapter_callback.Run(adapter_path, true);
 
   // Adapter should have the correct property value.
-  EXPECT_TRUE(adapter->IsDiscovering());
+  EXPECT_TRUE(adapter_->IsDiscovering());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest,
@@ -1153,8 +1182,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -1164,39 +1194,39 @@ TEST_F(BluetoothAdapterChromeOsTest,
   adapter_properties.discovering.ReplaceValue(true);
 
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
   EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
       .WillRepeatedly(Return(&adapter_properties));
 
-  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), _))
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter_.get(), _))
       .Times(0);
 
   adapter_callback.Run(adapter_path, true);
 
   // Adapter should not yet have the property value.
-  EXPECT_FALSE(adapter->IsDiscovering());
+  EXPECT_FALSE(adapter_->IsDiscovering());
 
   // Tell the adapter the address now,
   // BluetoothAdapter::Observer::AdapterPresentChanged and
   // BluetoothAdapter::Observer::AdapterDiscoveringChanged now must be called.
   adapter_properties.address.ReplaceValue(adapter_address);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), true))
       .Times(1);
 
-  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter_.get(), true))
       .Times(1);
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->AdapterPropertyChanged(adapter_path,
                                adapter_properties.address.name());
 
   // Adapter should have the correct property value.
-  EXPECT_TRUE(adapter->IsDiscovering());
+  EXPECT_TRUE(adapter_->IsDiscovering());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterDiscoveringPropertyChanged) {
@@ -1210,8 +1240,9 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterDiscoveringPropertyChanged) {
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -1226,27 +1257,27 @@ TEST_F(BluetoothAdapterChromeOsTest, DefaultAdapterDiscoveringPropertyChanged) {
   adapter_callback.Run(adapter_path, true);
 
   // Adapter should have the correct property value.
-  EXPECT_FALSE(adapter->IsDiscovering());
+  EXPECT_FALSE(adapter_->IsDiscovering());
 
   // Report that the property has been changed;
   // BluetoothAdapter::Observer::AdapterDiscoveringChanged will be called.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
-  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter_.get(), true))
       .Times(1);
 
   adapter_properties.discovering.ReplaceValue(true);
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->AdapterPropertyChanged(adapter_path,
                                adapter_properties.discovering.name());
 
   // Adapter should have the new property values.
-  EXPECT_TRUE(adapter->IsDiscovering());
+  EXPECT_TRUE(adapter_->IsDiscovering());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest,
@@ -1261,8 +1292,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -1277,26 +1309,26 @@ TEST_F(BluetoothAdapterChromeOsTest,
   adapter_callback.Run(adapter_path, true);
 
   // Adapter should have the correct property value.
-  EXPECT_TRUE(adapter->IsDiscovering());
+  EXPECT_TRUE(adapter_->IsDiscovering());
 
   // Report that the property has been changed, but don't change the value;
   // BluetoothAdapter::Observer::AdapterDiscoveringChanged should not be
   // called.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
-  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), _))
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter_.get(), _))
       .Times(0);
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->AdapterPropertyChanged(adapter_path,
                                adapter_properties.discovering.name());
 
   // Adapter should still have the same property values.
-  EXPECT_TRUE(adapter->IsDiscovering());
+  EXPECT_TRUE(adapter_->IsDiscovering());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest,
@@ -1311,8 +1343,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -1321,12 +1354,12 @@ TEST_F(BluetoothAdapterChromeOsTest,
   MockBluetoothAdapterClient::Properties adapter_properties;
 
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
   EXPECT_CALL(*mock_adapter_client_, GetProperties(adapter_path))
       .WillRepeatedly(Return(&adapter_properties));
 
-  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), _))
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter_.get(), _))
       .Times(0);
 
   adapter_callback.Run(adapter_path, true);
@@ -1336,28 +1369,28 @@ TEST_F(BluetoothAdapterChromeOsTest,
   // the adapter so it is not present.
   adapter_properties.discovering.ReplaceValue(true);
 
-  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), _))
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter_.get(), _))
       .Times(0);
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
       ->AdapterPropertyChanged(adapter_path,
                                adapter_properties.discovering.name());
 
   // Adapter should not yet have the property value.
-  EXPECT_FALSE(adapter->IsDiscovering());
+  EXPECT_FALSE(adapter_->IsDiscovering());
 
   // Tell the adapter the address now,
   // BluetoothAdapter::Observer::AdapterPresentChanged and
   // BluetoothAdapter::Observer::AdapterDiscoveringChanged now must be called.
   adapter_properties.address.ReplaceValue(adapter_address);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), true))
       .Times(1);
 
-  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), true))
+  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter_.get(), true))
       .Times(1);
 
   static_cast<BluetoothAdapterClient::Observer*>(adapter_chromeos)
@@ -1365,7 +1398,7 @@ TEST_F(BluetoothAdapterChromeOsTest,
                                adapter_properties.address.name());
 
   // Adapter should now have the correct property value.
-  EXPECT_TRUE(adapter->IsDiscovering());
+  EXPECT_TRUE(adapter_->IsDiscovering());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest,
@@ -1382,8 +1415,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -1408,28 +1442,29 @@ TEST_F(BluetoothAdapterChromeOsTest,
 
   // BluetoothAdapter::Observer::AdapterDiscoveringChanged will be called.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
   {
     InSequence s;
 
-    EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), false))
+    EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), false))
         .Times(1);
-    EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+    EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), true))
         .Times(1);
   }
 
-  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), false))
+  EXPECT_CALL(adapter_observer,
+              AdapterDiscoveringChanged(adapter_.get(), false))
       .Times(1);
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->DefaultAdapterChanged(new_adapter_path);
 
   // Adapter should have the new property value.
-  EXPECT_FALSE(adapter->IsDiscovering());
+  EXPECT_FALSE(adapter_->IsDiscovering());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest,
@@ -1446,8 +1481,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -1475,36 +1511,36 @@ TEST_F(BluetoothAdapterChromeOsTest,
   // to set the value to false for the previous adapter and once to set the
   // value to true for the new adapter.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
   {
     InSequence s;
 
-    EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), false))
+    EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), false))
         .Times(1);
-    EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), true))
+    EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), true))
         .Times(1);
   }
 
   {
     InSequence s;
 
-    EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(),
+    EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter_.get(),
                                                             false))
         .Times(1);
-    EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(),
+    EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter_.get(),
                                                             true))
         .Times(1);
   }
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->DefaultAdapterChanged(new_adapter_path);
 
   // Adapter should have the new property value.
-  EXPECT_TRUE(adapter->IsDiscovering());
+  EXPECT_TRUE(adapter_->IsDiscovering());
 }
 
 TEST_F(BluetoothAdapterChromeOsTest,
@@ -1519,8 +1555,9 @@ TEST_F(BluetoothAdapterChromeOsTest,
   EXPECT_CALL(*mock_manager_client_, DefaultAdapter(_))
       .WillOnce(SaveArg<0>(&adapter_callback));
 
-  scoped_refptr<BluetoothAdapter> adapter =
-      BluetoothAdapterFactory::DefaultAdapter();
+  BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothAdapterChromeOsTest::SetAdapter,
+                 base::Unretained(this)));
 
   // Call the adapter callback;
   // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -1537,21 +1574,22 @@ TEST_F(BluetoothAdapterChromeOsTest,
   // Report that the adapter has been removed;
   // BluetoothAdapter::Observer::AdapterDiscoveringChanged will be called.
   MockBluetoothAdapter::Observer adapter_observer;
-  adapter->AddObserver(&adapter_observer);
+  adapter_->AddObserver(&adapter_observer);
 
-  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter.get(), false))
+  EXPECT_CALL(adapter_observer, AdapterPresentChanged(adapter_.get(), false))
       .Times(1);
-  EXPECT_CALL(adapter_observer, AdapterDiscoveringChanged(adapter.get(), false))
+  EXPECT_CALL(adapter_observer,
+              AdapterDiscoveringChanged(adapter_.get(), false))
       .Times(1);
 
   BluetoothAdapterChromeOs* adapter_chromeos =
-      static_cast<BluetoothAdapterChromeOs*>(adapter.get());
+      static_cast<BluetoothAdapterChromeOs*>(adapter_.get());
 
   static_cast<BluetoothManagerClient::Observer*>(adapter_chromeos)
       ->AdapterRemoved(adapter_path);
 
   // Adapter should have the new property value.
-  EXPECT_FALSE(adapter->IsDiscovering());
+  EXPECT_FALSE(adapter_->IsDiscovering());
 }
 
 }  // namespace chromeos

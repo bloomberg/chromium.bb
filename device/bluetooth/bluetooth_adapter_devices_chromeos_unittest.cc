@@ -52,8 +52,10 @@ class BluetoothAdapterDevicesChromeOsTest : public testing::Test {
     EXPECT_CALL(*mock_adapter_client_, AddObserver(_))
         .Times(1);
 
-    adapter_ = BluetoothAdapterFactory::DefaultAdapter();
-    ASSERT_TRUE(adapter_.get() != NULL);
+    BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+        base::Bind(&BluetoothAdapterDevicesChromeOsTest::SetAdapter,
+                   base::Unretained(this)));
+    ASSERT_TRUE(adapter_ != NULL);
 
     // Call the adapter callback;
     // BluetoothAdapterClient::GetProperties will be called once to obtain
@@ -94,6 +96,10 @@ class BluetoothAdapterDevicesChromeOsTest : public testing::Test {
 
     adapter_ = NULL;
     DBusThreadManager::Shutdown();
+  }
+
+  void SetAdapter(scoped_refptr<device::BluetoothAdapter> adapter) {
+    adapter_ = adapter;
   }
 
  protected:

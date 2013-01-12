@@ -38,6 +38,8 @@ class BluetoothOptionsHandler
   virtual void InitializeHandler() OVERRIDE;
   virtual void InitializePage() OVERRIDE;
 
+  void InitializeAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
+
   // Sends a notification to the Web UI of the status of a Bluetooth device.
   // |device| is the Bluetooth device.
   // |params| is an optional set of parameters.

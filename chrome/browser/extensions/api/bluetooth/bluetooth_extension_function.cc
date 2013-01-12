@@ -16,10 +16,18 @@ namespace {
 const char kPlatformNotSupported[] =
     "This operation is not supported on your platform";
 
-scoped_refptr<device::BluetoothAdapter> GetAdapter(Profile* profile) {
-  extensions::ExtensionBluetoothEventRouter* event_router =
-      extensions::BluetoothAPI::Get(profile)->bluetooth_event_router();
-  return event_router->GetAdapter();
+extensions::ExtensionBluetoothEventRouter* GetEventRouter(Profile* profile) {
+  return extensions::BluetoothAPI::Get(profile)->bluetooth_event_router();
+}
+
+bool IsBluetoothSupported(Profile* profile) {
+  return GetEventRouter(profile)->IsBluetoothSupported();
+}
+
+void RunCallbackOnAdapterReady(
+    const device::BluetoothAdapterFactory::AdapterCallback callback,
+    Profile* profile) {
+  GetEventRouter(profile)->RunCallbackOnAdapterReady(callback);
 }
 
 }  // namespace
@@ -28,20 +36,28 @@ namespace extensions {
 
 namespace api {
 
-BluetoothExtensionFunction::BluetoothExtensionFunction() {
+BluetoothExtensionFunction::BluetoothExtensionFunction()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 BluetoothExtensionFunction::~BluetoothExtensionFunction() {
 }
 
 bool BluetoothExtensionFunction::RunImpl() {
-  scoped_refptr<device::BluetoothAdapter> adapter = GetAdapter(profile());
-  if (!adapter) {
+  if (!IsBluetoothSupported(profile())) {
     SetError(kPlatformNotSupported);
     return false;
   }
-  DoWork(adapter);
+  RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothExtensionFunction::RunOnAdapterReady,
+                 weak_ptr_factory_.GetWeakPtr()),
+      profile());
   return true;
+}
+
+void BluetoothExtensionFunction::RunOnAdapterReady(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  DoWork(adapter);
 }
 
 }  // namespace api

@@ -183,9 +183,9 @@ void BluetoothOptionsHandler::RegisterMessages() {
 }
 
 void BluetoothOptionsHandler::InitializeHandler() {
-  adapter_ = device::BluetoothAdapterFactory::DefaultAdapter();
-  DCHECK(adapter_.get());
-  adapter_->AddObserver(this);
+  device::BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+      base::Bind(&BluetoothOptionsHandler::InitializeAdapter,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BluetoothOptionsHandler::InitializePage() {
@@ -196,6 +196,13 @@ void BluetoothOptionsHandler::InitializePage() {
   // overlay is visible.
   web_ui()->CallJavascriptFunction(
       "options.BluetoothOptions.updateDiscovery");
+}
+
+void BluetoothOptionsHandler::InitializeAdapter(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  adapter_ = adapter;
+  CHECK(adapter_);
+  adapter_->AddObserver(this);
 }
 
 void BluetoothOptionsHandler::EnableChangeCallback(

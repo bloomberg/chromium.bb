@@ -39,7 +39,7 @@ PermissionMessages BluetoothDevicePermission::GetMessages() const {
   PermissionMessages result;
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter =
-      device::BluetoothAdapterFactory::DefaultAdapter();
+      device::BluetoothAdapterFactory::GetAdapter();
 
   for (std::set<BluetoothDevicePermissionData>::const_iterator i =
       data_set_.begin(); i != data_set_.end(); ++i) {

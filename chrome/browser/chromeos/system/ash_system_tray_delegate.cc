@@ -270,7 +270,15 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     network_icon_->SetResourceColorTheme(NetworkMenuIcon::COLOR_LIGHT);
     network_icon_dark_->SetResourceColorTheme(NetworkMenuIcon::COLOR_DARK);
 
-    bluetooth_adapter_ = device::BluetoothAdapterFactory::DefaultAdapter();
+    device::BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+        base::Bind(&SystemTrayDelegate::InitializeOnAdapterReady,
+                   ui_weak_ptr_factory_->GetWeakPtr()));
+  }
+
+  void InitializeOnAdapterReady(
+      scoped_refptr<device::BluetoothAdapter> adapter) {
+    bluetooth_adapter_ = adapter;
+    CHECK(bluetooth_adapter_);
     bluetooth_adapter_->AddObserver(this);
 
     local_state_registrar_.Init(g_browser_process->local_state());

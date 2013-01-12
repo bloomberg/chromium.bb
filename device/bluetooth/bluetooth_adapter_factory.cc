@@ -27,7 +27,16 @@ base::LazyInstance<base::WeakPtr<device::BluetoothAdapter> >::Leaky
 namespace device {
 
 // static
-scoped_refptr<BluetoothAdapter> BluetoothAdapterFactory::DefaultAdapter() {
+bool BluetoothAdapterFactory::IsBluetoothAdapterAvailable() {
+#if defined(OS_CHROMEOS)
+  return true;
+#endif
+  return false;
+}
+
+// static
+void BluetoothAdapterFactory::RunCallbackOnAdapterReady(
+    const AdapterCallback& callback) {
   if (!default_adapter.Get().get()) {
 #if defined(OS_CHROMEOS)
     chromeos::BluetoothAdapterChromeOs* new_adapter =
@@ -37,6 +46,11 @@ scoped_refptr<BluetoothAdapter> BluetoothAdapterFactory::DefaultAdapter() {
 #endif
   }
 
+  callback.Run(scoped_refptr<BluetoothAdapter>(default_adapter.Get()));
+}
+
+// static
+scoped_refptr<BluetoothAdapter> BluetoothAdapterFactory::GetAdapter() {
   return scoped_refptr<BluetoothAdapter>(default_adapter.Get());
 }
 

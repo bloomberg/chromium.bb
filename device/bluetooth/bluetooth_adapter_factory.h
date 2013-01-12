@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 
 namespace device {
@@ -14,15 +15,24 @@ namespace device {
 class BluetoothAdapter;
 
 // BluetoothAdapterFactory is a class that contains static methods, which
-// instantiate either a specific bluetooth adapter, or the generic "default
+// instantiate either a specific Bluetooth adapter, or the generic "default
 // adapter" which may change depending on availability.
 class BluetoothAdapterFactory {
  public:
-  // Returns the shared instance for the default adapter, whichever that may
-  // be at the time. Check the returned scoped_refptr does not point to NULL and
-  // use IsPresent() and the AdapterPresentChanged() observer method to
-  // determine whether an adapter is actually available or not.
-  static scoped_refptr<BluetoothAdapter> DefaultAdapter();
+  typedef base::Callback<void(scoped_refptr<device::BluetoothAdapter> adapter)>
+      AdapterCallback;
+
+  // Returns true if the Bluetooth adapter is available for the current
+  // platform.
+  static bool IsBluetoothAdapterAvailable();
+
+  // Runs the callback with the shared instance for the default adapter when the
+  // adapter is available to be used.
+  static void RunCallbackOnAdapterReady(const AdapterCallback& callback);
+
+  // Returns the shared instance of the adapter that has already been created.
+  // It returns NULL if no adapter has been created at the time.
+  static scoped_refptr<BluetoothAdapter> GetAdapter();
 
   // Creates an instance for a specific adapter at address |address|.
   static BluetoothAdapter* Create(const std::string& address);
