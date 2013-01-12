@@ -243,8 +243,8 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   void SetLeastUnacked(QuicPacketSequenceNumber least_unacked);
 
   // Helper to update least unacked.  If acked_sequence_number was not the least
-  // unacked packet, this is a no-op.  If it was the least least unacked packet,
-  // This finds the new least unacked packet and updates the outgoing ack frame.
+  // unacked packet, this is a no-op.  If it was the least unacked packet,
+  // this finds the new least unacked packet and updates the outgoing ack frame.
   void UpdateLeastUnacked(QuicPacketSequenceNumber acked_sequence_number);
 
   QuicConnectionHelperInterface* helper() { return helper_; }
@@ -271,7 +271,8 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
 
   struct UnackedPacket {
     explicit UnackedPacket(QuicPacket* packet)
-        : packet(packet), number_nacks(0) {
+        : packet(packet),
+          number_nacks(0) {
     }
     QuicPacket* packet;
     uint8 number_nacks;

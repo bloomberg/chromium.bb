@@ -50,6 +50,8 @@ const int kMaxResendPerAck = 10;
 
 // TCP resends after 2 nacks.  We allow for a third in case of out-of-order
 // delivery.
+// TODO(ianswett): Change to match TCP's rule of resending once an ack at least
+// 3 sequence numbers larger arrives.
 const int kNumberOfNacksBeforeResend = 3;
 
 // The maxiumum number of packets we'd like to queue.  We may end up queueing
