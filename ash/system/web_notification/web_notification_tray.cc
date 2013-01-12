@@ -119,6 +119,20 @@ void WebNotificationTray::ShowMessageCenterBubble() {
   HidePopupBubble();
   message_center::MessageCenterBubble* bubble =
       new message_center::MessageCenterBubble(message_center_);
+  // Sets the maximum height of the bubble based on the screen.
+  // TODO(mukai): move this to WebNotificationBubbleWrapper if it's safe
+  // to set the height of the popup.
+  int max_height = 0;
+  if (GetShelfLayoutManager()->GetAlignment() == SHELF_ALIGNMENT_BOTTOM) {
+    gfx::Rect shelf_bounds = GetShelfLayoutManager()->GetIdealBounds();
+    max_height = shelf_bounds.y();
+  } else {
+    // Assume that the bottom line of the status area widget and the bubble are
+    // aligned.
+    aura::Window* status_area_window = status_area_widget()->GetNativeWindow();
+    max_height = status_area_window->GetBoundsInRootWindow().bottom();
+  }
+  bubble->SetMaxHeight(max_height);
   message_center_bubble_.reset(
       new internal::WebNotificationBubbleWrapper(this, bubble));
 

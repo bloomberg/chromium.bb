@@ -18,9 +18,15 @@ class MESSAGE_CENTER_EXPORT MessageBubbleBase {
 
   virtual ~MessageBubbleBase();
 
-  // Gets called when when the bubble view associated with this bubble is
+  // Gets called when the bubble view associated with this bubble is
   // destroyed. Clears |bubble_view_| and calls OnBubbleViewDestroyed.
   void BubbleViewDestroyed();
+
+  // Sets/Gets the maximum height of the bubble view. Setting 0 changes the
+  // bubble to the default size. max_height() will return the default size
+  // if SetMaxHeight() has not been called yet.
+  void SetMaxHeight(int height);
+  int max_height() const { return max_height_; }
 
   // Gets the init params for the implementation.
   virtual views::TrayBubbleView::InitParams GetInitParams(
@@ -64,6 +70,7 @@ class MESSAGE_CENTER_EXPORT MessageBubbleBase {
   NotificationList::Delegate* list_delegate_;
   views::TrayBubbleView* bubble_view_;
   base::WeakPtrFactory<MessageBubbleBase> weak_ptr_factory_;
+  int max_height_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageBubbleBase);
 };

@@ -28,7 +28,6 @@ namespace message_center {
 namespace {
 
 const int kMessageBubbleBaseMinHeight = 80;
-const int kMessageBubbleBaseMaxHeight = 400;
 const int kMarginBetweenItems = 10;
 const int kItemShadowHeight = 4;
 const SkColor kMessageCenterBackgroundColor = SkColorSetRGB(0xe5, 0xe5, 0xe5);
@@ -226,8 +225,10 @@ class MessageViewShadow : public views::View {
 // Message Center contents.
 class MessageCenterContentsView : public views::View {
  public:
-  explicit MessageCenterContentsView(NotificationList::Delegate* list_delegate)
-      : list_delegate_(list_delegate) {
+  explicit MessageCenterContentsView(MessageCenterBubble* bubble,
+                                     NotificationList::Delegate* list_delegate)
+      : list_delegate_(list_delegate),
+        bubble_(bubble) {
     int between_child = UseNewDesign() ? 0 : 1;
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, between_child));
@@ -304,7 +305,7 @@ class MessageCenterContentsView : public views::View {
     gfx::Size scroll_size = scroll_content_->GetPreferredSize();
     const int button_height = button_view_->GetPreferredSize().height();
     const int min_height = kMessageBubbleBaseMinHeight - button_height;
-    const int max_height = kMessageBubbleBaseMaxHeight - button_height;
+    const int max_height = bubble_->max_height() - button_height;
     int scroll_height = std::min(std::max(
         scroll_size.height(), min_height), max_height);
     scroll_size.set_height(scroll_height);
@@ -321,6 +322,7 @@ class MessageCenterContentsView : public views::View {
   FixedSizedScrollView* scroller_;
   ScrollContentView* scroll_content_;
   WebNotificationButtonView* button_view_;
+  MessageCenterBubble* bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterContentsView);
 };
@@ -341,8 +343,7 @@ views::TrayBubbleView::InitParams MessageCenterBubble::GetInitParams(
     init_params.min_width += kMarginBetweenItems * 2;
     init_params.max_width += kMarginBetweenItems * 2;
   }
-  // TODO(mukai): The new design bubble should have screen-height at most.
-  init_params.max_height = kMessageBubbleBaseMaxHeight;
+  init_params.max_height = max_height();
   init_params.can_activate = true;
   return init_params;
 }
@@ -350,7 +351,7 @@ views::TrayBubbleView::InitParams MessageCenterBubble::GetInitParams(
 void MessageCenterBubble::InitializeContents(
     views::TrayBubbleView* new_bubble_view) {
   set_bubble_view(new_bubble_view);
-  contents_view_ = new MessageCenterContentsView(list_delegate());
+  contents_view_ = new MessageCenterContentsView(this, list_delegate());
   bubble_view()->AddChildView(contents_view_);
   UpdateBubbleView();
   contents_view_->FocusContents();

@@ -34,6 +34,9 @@ class MESSAGE_CENTER_EXPORT MessageCenterBubble : public MessageBubbleBase {
  private:
   MessageCenterContentsView* contents_view_;
 
+  // The maximum height
+  int max_height_;
+
   DISALLOW_COPY_AND_ASSIGN(MessageCenterBubble);
 };
 
