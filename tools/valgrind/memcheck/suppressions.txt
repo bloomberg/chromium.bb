@@ -6464,3 +6464,9 @@
    fun:_ZN7WebCore8Document13styleResolverEv
    fun:_ZN7WebCore7Element16styleForRendererEv
 }
+{
+  bug_169434
+  Memcheck:Leak
+  fun:_Znw*
+  fun:_ZN12_GLOBAL__N_140BookmarkUIUtilsTest_HasBookmarkURLs_Test8TestBodyEv
+}

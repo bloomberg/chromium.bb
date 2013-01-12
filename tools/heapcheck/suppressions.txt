@@ -1681,3 +1681,9 @@
    fun:v8::internal::Invoke
    fun:v8::internal::Execution::New
 }
+{
+  bug_169434
+  Heapcheck:Leak
+  ...
+  fun:::BookmarkUIUtilsTest_HasBookmarkURLs_Test::TestBody
+}
