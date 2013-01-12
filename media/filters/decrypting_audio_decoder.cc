@@ -194,13 +194,7 @@ void DecryptingAudioDecoder::FinishInitialization(bool success) {
   }
 
   // Success!
-  const AudioDecoderConfig& config = demuxer_stream_->audio_decoder_config();
-  bits_per_channel_ = config.bits_per_channel();
-  channel_layout_ = config.channel_layout();
-  samples_per_second_ = config.samples_per_second();
-  const int kBitsPerByte = 8;
-  bytes_per_sample_ = ChannelLayoutToChannelCount(channel_layout_) *
-      bits_per_channel_ / kBitsPerByte;
+  UpdateDecoderConfig();
 
   decryptor_->RegisterNewKeyCB(
       Decryptor::kAudio, BIND_TO_LOOP(&DecryptingAudioDecoder::OnKeyAdded));
@@ -224,6 +218,8 @@ void DecryptingAudioDecoder::FinishConfigChange(bool success) {
   }
 
   // Config change succeeded.
+  UpdateDecoderConfig();
+
   if (!reset_cb_.is_null()) {
     base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
     DoReset();
@@ -445,6 +441,18 @@ void DecryptingAudioDecoder::DoReset() {
   total_samples_decoded_ = 0;
   state_ = kIdle;
   base::ResetAndReturn(&reset_cb_).Run();
+}
+
+void DecryptingAudioDecoder::UpdateDecoderConfig() {
+  const AudioDecoderConfig& config = demuxer_stream_->audio_decoder_config();
+  bits_per_channel_ = config.bits_per_channel();
+  channel_layout_ = config.channel_layout();
+  samples_per_second_ = config.samples_per_second();
+  const int kBitsPerByte = 8;
+  bytes_per_sample_ = ChannelLayoutToChannelCount(channel_layout_) *
+      bits_per_channel_ / kBitsPerByte;
+  output_timestamp_base_ = kNoTimestamp();
+  total_samples_decoded_ = 0;
 }
 
 void DecryptingAudioDecoder::EnqueueFrames(

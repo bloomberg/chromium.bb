@@ -102,6 +102,10 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   // Resets decoder and calls |reset_cb_|.
   void DoReset();
 
+  // Updates audio configs from |demuxer_stream_| and resets
+  // |output_timestamp_base_| and |total_samples_decoded_|.
+  void UpdateDecoderConfig();
+
   // Sets timestamp and duration for |queued_audio_frames_| to make sure the
   // renderer always receives continuous frames without gaps and overlaps.
   void EnqueueFrames(const Decryptor::AudioBuffers& frames);
