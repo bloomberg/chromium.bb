@@ -76,7 +76,7 @@ TileManager::TileManager(
     size_t num_raster_threads)
     : client_(client),
       resource_pool_(ResourcePool::Create(resource_provider)),
-      raster_worker_(RasterWorkerPool::Create(num_raster_threads)),
+      raster_worker_pool_(RasterWorkerPool::Create(num_raster_threads)),
       manage_tiles_pending_(false),
       manage_tiles_call_count_(0),
       check_for_completed_set_pixels_pending_(false) {
@@ -89,7 +89,7 @@ TileManager::~TileManager() {
   AssignGpuMemoryToTiles();
   // This should finish all pending tasks and release any uninitialized
   // resources.
-  raster_worker_.reset();
+  raster_worker_pool_.reset();
   ManageTiles();
   DCHECK(tiles_.size() == 0);
 }
@@ -257,7 +257,7 @@ void TileManager::CheckForCompletedSetPixels() {
 }
 
 void TileManager::GetRenderingStats(RenderingStats* stats) {
-  raster_worker_->GetRenderingStats(stats);
+  raster_worker_pool_->GetRenderingStats(stats);
   stats->totalDeferredImageCacheHitCount =
       rendering_stats_.totalDeferredImageCacheHitCount;
   stats->totalImageGatheringCount = rendering_stats_.totalImageGatheringCount;
@@ -353,7 +353,7 @@ void TileManager::DispatchMoreTasks() {
     DispatchImageDecodeTasksForTile(*it);
     ManagedTileState& managed_state = (*it)->managed_state();
     if (managed_state.pending_pixel_refs.empty()) {
-      if (raster_worker_->IsBusy())
+      if (raster_worker_pool_->IsBusy())
         return;
       DispatchOneRasterTask(*it);
       tiles_with_image_decoding_tasks_.erase(it++);
@@ -371,7 +371,7 @@ void TileManager::DispatchMoreTasks() {
     if (!managed_state.pending_pixel_refs.empty()) {
       tiles_with_image_decoding_tasks_.push_back(tile);
     } else {
-      if (raster_worker_->IsBusy())
+      if (raster_worker_pool_->IsBusy())
         return;
       DispatchOneRasterTask(tile);
     }
@@ -409,7 +409,7 @@ void TileManager::DispatchImageDecodeTasksForTile(Tile* tile) {
       rendering_stats_.totalDeferredImageCacheHitCount++;
       pending_pixel_refs.erase(it++);
     } else {
-      if (raster_worker_->IsBusy())
+      if (raster_worker_pool_->IsBusy())
         return;
       DispatchOneImageDecodeTask(tile, *it);
       ++it;
@@ -425,7 +425,7 @@ void TileManager::DispatchOneImageDecodeTask(
       pending_decode_tasks_.find(pixel_ref_id));
   pending_decode_tasks_[pixel_ref_id] = pixel_ref;
 
-  raster_worker_->PostImageDecodeTaskAndReply(
+  raster_worker_pool_->PostImageDecodeTaskAndReply(
       pixel_ref,
       base::Bind(&TileManager::OnImageDecodeTaskCompleted,
                  base::Unretained(this),
@@ -467,7 +467,7 @@ void TileManager::DispatchOneRasterTask(scoped_refptr<Tile> tile) {
 
   ResourceProvider::ResourceId resource_id = resource->id();
 
-  raster_worker_->PostRasterTaskAndReply(
+  raster_worker_pool_->PostRasterTaskAndReply(
       tile->picture_pile(),
       resource_pool_->resource_provider()->mapPixelBuffer(resource_id),
       tile->content_rect_,

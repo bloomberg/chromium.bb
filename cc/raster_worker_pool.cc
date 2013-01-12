@@ -136,16 +136,20 @@ void RasterWorkerPool::PostImageDecodeTaskAndReply(
 }
 
 void RasterWorkerPool::GetRenderingStats(RenderingStats* stats) {
+  stats->totalRasterizeTimeInSeconds = 0;
+  stats->totalPixelsRasterized = 0;
+  stats->totalDeferredImageDecodeCount = 0;
+  stats->totalDeferredImageDecodeTimeInSeconds = 0;
   for (ThreadVector::iterator it = raster_threads_.begin();
        it != raster_threads_.end(); ++it) {
     Thread* thread = *it;
-    stats->totalRasterizeTimeInSeconds =
+    stats->totalRasterizeTimeInSeconds +=
         thread->rendering_stats().totalRasterizeTimeInSeconds;
-    stats->totalPixelsRasterized =
+    stats->totalPixelsRasterized +=
         thread->rendering_stats().totalPixelsRasterized;
-    stats->totalDeferredImageDecodeCount =
+    stats->totalDeferredImageDecodeCount +=
         thread->rendering_stats().totalDeferredImageDecodeCount;
-    stats->totalDeferredImageDecodeTimeInSeconds =
+    stats->totalDeferredImageDecodeTimeInSeconds +=
         thread->rendering_stats().totalDeferredImageDecodeTimeInSeconds;
   }
 }

@@ -119,7 +119,7 @@ class CC_EXPORT TileManager {
 
   TileManagerClient* client_;
   scoped_ptr<ResourcePool> resource_pool_;
-  scoped_ptr<RasterWorkerPool> raster_worker_;
+  scoped_ptr<RasterWorkerPool> raster_worker_pool_;
   bool manage_tiles_pending_;
   int manage_tiles_call_count_;
   bool check_for_completed_set_pixels_pending_;
