@@ -490,9 +490,19 @@
           'enable_language_detection%': 0,
           'enable_printing%': 0,
           'enable_themes%': 0,
-          'enable_webrtc%': 1,
           'proprietary_codecs%': 1,
           'remoting%': 0,
+        }],
+
+        ['OS=="android" and android_build_type==0', {
+          'enable_webrtc%': 1,
+        }],
+
+        # Disable WebRTC for building WebView as part of Android system.
+        # TODO(boliu): Decide if we want WebRTC, and if so, also merge
+        # the necessary third_party repositories.
+        ['OS=="android" and android_build_type==1', {
+          'enable_webrtc%': 0,
         }],
 
         ['OS=="ios"', {
