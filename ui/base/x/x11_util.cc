@@ -1428,7 +1428,7 @@ bool ParseOutputOverscanFlag(const unsigned char* prop,
 
   for (size_t i = 0; i < num_extensions; ++i) {
     // Skip parsing the whole extension if size is not enough.
-    if (nitems <= kExtensionBase + (i + 1) * kExtensionSize)
+    if (nitems < kExtensionBase + (i + 1) * kExtensionSize)
       break;
 
     const unsigned char* extension = prop + kExtensionBase + i * kExtensionSize;

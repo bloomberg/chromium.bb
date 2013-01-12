@@ -11,6 +11,10 @@ namespace ui {
 
 namespace {
 
+// Returns the number of characters in the string literal but doesn't count its
+// terminator NULL byte.
+#define charsize(str) (arraysize(str) - 1)
+
 // Sample EDID data extracted from real devices.
 const unsigned char kNormalDisplay[] =
     "\x00\xff\xff\xff\xff\xff\xff\x00\x22\xf0\x6c\x28\x01\x01\x01\x01"
@@ -57,7 +61,7 @@ TEST(X11UtilTest, ParseEDID) {
   uint32 serial_number = 0;
   std::string human_readable_name;
   EXPECT_TRUE(ParseOutputDeviceData(
-      kNormalDisplay, arraysize(kNormalDisplay),
+      kNormalDisplay, charsize(kNormalDisplay),
       &manufacturer_id, &serial_number, &human_readable_name));
   EXPECT_EQ(0x22f0u, manufacturer_id);
   EXPECT_EQ(0x01010101u, serial_number);
@@ -67,7 +71,7 @@ TEST(X11UtilTest, ParseEDID) {
   serial_number = 0;
   human_readable_name.clear();
   EXPECT_TRUE(ParseOutputDeviceData(
-      kInternalDisplay, arraysize(kInternalDisplay),
+      kInternalDisplay, charsize(kInternalDisplay),
       &manufacturer_id, &serial_number, NULL));
   EXPECT_EQ(0x4ca3u, manufacturer_id);
   EXPECT_EQ(0x00000000u, serial_number);
@@ -75,14 +79,14 @@ TEST(X11UtilTest, ParseEDID) {
 
   // Internal display doesn't have name.
   EXPECT_FALSE(ParseOutputDeviceData(
-      kInternalDisplay, arraysize(kInternalDisplay),
+      kInternalDisplay, charsize(kInternalDisplay),
       NULL, NULL, &human_readable_name));
 
   manufacturer_id = 0;
   serial_number = 0;
   human_readable_name.clear();
   EXPECT_TRUE(ParseOutputDeviceData(
-      kOverscanDisplay, arraysize(kOverscanDisplay),
+      kOverscanDisplay, charsize(kOverscanDisplay),
       &manufacturer_id, &serial_number, &human_readable_name));
   EXPECT_EQ(0x4c2du, manufacturer_id);
   EXPECT_EQ(0x00000000u, serial_number);
@@ -102,7 +106,7 @@ TEST(X11UtilTest, ParseBrokenEDID) {
   // name is broken. Copying kNormalDisplay and substitute its name data by
   // some control code.
   std::string display_data(
-      reinterpret_cast<const char*>(kNormalDisplay), arraysize(kNormalDisplay));
+      reinterpret_cast<const char*>(kNormalDisplay), charsize(kNormalDisplay));
 
   // display's name data is embedded in byte 95-107 in this specific example.
   // Fix here too when the contents of kNormalDisplay is altered.
@@ -126,15 +130,15 @@ TEST(X11UtilTest, ParseBrokenEDID) {
 TEST(X11UtilTest, ParseOverscanFlag) {
   bool flag = false;
   EXPECT_FALSE(ParseOutputOverscanFlag(
-      kNormalDisplay, arraysize(kNormalDisplay), &flag));
+      kNormalDisplay, charsize(kNormalDisplay), &flag));
 
   flag = false;
   EXPECT_FALSE(ParseOutputOverscanFlag(
-      kInternalDisplay, arraysize(kInternalDisplay), &flag));
+      kInternalDisplay, charsize(kInternalDisplay), &flag));
 
   flag = false;
   EXPECT_TRUE(ParseOutputOverscanFlag(
-      kOverscanDisplay, arraysize(kOverscanDisplay), &flag));
+      kOverscanDisplay, charsize(kOverscanDisplay), &flag));
   EXPECT_TRUE(flag);
 
   flag = false;
@@ -142,7 +146,7 @@ TEST(X11UtilTest, ParseOverscanFlag) {
   // are embedded at byte 150 in this specific example. Fix here too when the
   // contents of kOverscanDisplay is altered.
   std::string display_data(reinterpret_cast<const char*>(kOverscanDisplay),
-                           arraysize(kOverscanDisplay));
+                           charsize(kOverscanDisplay));
   display_data[150] = '\0';
   EXPECT_TRUE(ParseOutputOverscanFlag(
       reinterpret_cast<const unsigned char*>(display_data.data()),
