@@ -51,6 +51,8 @@ public:
   void SetIsMask(bool is_mask);
   virtual ResourceProvider::ResourceId contentsResourceId() const OVERRIDE;
 
+  virtual bool areVisibleResourcesReady() const OVERRIDE;
+
 protected:
   PictureLayerImpl(LayerTreeImpl* treeImpl, int id);
   PictureLayerTiling* AddTiling(float contents_scale);

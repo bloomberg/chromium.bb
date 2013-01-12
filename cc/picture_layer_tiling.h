@@ -52,7 +52,10 @@ class CC_EXPORT PictureLayerTiling {
   class CC_EXPORT Iterator {
    public:
     Iterator();
-    Iterator(PictureLayerTiling* tiling, float dest_scale, gfx::Rect rect);
+    Iterator(
+        const PictureLayerTiling* tiling,
+        float dest_scale,
+        gfx::Rect rect);
     ~Iterator();
 
     // Visible rect (no borders), always in the space of content_rect,
@@ -69,7 +72,7 @@ class CC_EXPORT PictureLayerTiling {
     operator bool() const { return tile_j_ <= bottom_; }
 
    private:
-    PictureLayerTiling* tiling_;
+    const PictureLayerTiling* tiling_;
     gfx::Rect dest_rect_;
     float dest_to_content_scale_;
 

@@ -119,6 +119,8 @@ class CC_EXPORT LayerTreeImpl {
 
   void ClearRenderSurfaces();
 
+  bool AreVisibleResourcesReady() const;
+
   const LayerList& RenderSurfaceLayerList() const;
 
   gfx::Size ContentSize() const;

@@ -80,7 +80,6 @@ TileManager::TileManager(
       manage_tiles_pending_(false),
       manage_tiles_call_count_(0),
       check_for_completed_set_pixels_pending_(false) {
-  ResetBinCounts();
 }
 
 TileManager::~TileManager() {
@@ -158,8 +157,8 @@ public:
   bool operator() (const Tile* a, const Tile* b) const {
     const ManagedTileState& ams = a->managed_state();
     const ManagedTileState& bms = b->managed_state();
-    if (ams.raster_bin != bms.raster_bin)
-      return ams.raster_bin < bms.raster_bin;
+    if (ams.bin != bms.bin)
+      return ams.bin < bms.bin;
 
     if (ams.resolution != bms.resolution)
       return ams.resolution < bms.resolution;
@@ -182,8 +181,6 @@ void TileManager::ManageTiles() {
   for (TileVector::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     Tile* tile = *it;
     ManagedTileState& mts = tile->managed_state();
-    mts.bin[ACTIVE_TREE] = BinFromTilePriority(tile->priority(ACTIVE_TREE));
-    mts.bin[PENDING_TREE] = BinFromTilePriority(tile->priority(PENDING_TREE));
 
     TilePriority prio;
     if (smoothness_takes_priority)
@@ -193,7 +190,7 @@ void TileManager::ManageTiles() {
 
     mts.resolution = prio.resolution;
     mts.time_to_needed_in_seconds = prio.time_to_needed_in_seconds();
-    mts.raster_bin = BinFromTilePriority(prio);
+    mts.bin = BinFromTilePriority(prio);
     mts.gpu_memmgr_stats_bin = BinFromTilePriority(tile->combined_priority());
   }
 
@@ -223,24 +220,7 @@ void TileManager::ManageTiles() {
   for (TileVector::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
     Tile* tile = *it;
     ManagedTileState& mts = tile->managed_state();
-    mts.bin[ACTIVE_TREE] = bin_map[mts.bin[ACTIVE_TREE]];
-    mts.bin[PENDING_TREE] = bin_map[mts.bin[PENDING_TREE]];
-    mts.raster_bin = bin_map[mts.raster_bin];
-  }
-
-  // Update bin counts.
-  ResetBinCounts();
-  for (TileVector::iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
-    Tile* tile = *it;
-    ManagedTileState& mts = tile->managed_state();
-    for (int i = 0; i < NUM_TREES; ++i)
-      tiles_in_bin_count_[mts.bin[i]][i]++;
-
-    // Increment drawable count if GetResourceId() doesn't return 0.
-    if (tile->GetResourceId()) {
-      for (int i = 0; i < NUM_TREES; ++i)
-        drawable_tiles_in_bin_count_[mts.bin[i]][i]++;
-    }
+    mts.bin = bin_map[mts.bin];
   }
 
   // Sort by bin.
@@ -285,23 +265,6 @@ void TileManager::GetRenderingStats(RenderingStats* stats) {
       rendering_stats_.totalImageGatheringTimeInSeconds;
 }
 
-int TileManager::GetTilesInBinCount(TileManagerBin bin, WhichTree tree) {
-  DCHECK(bin >= 0);
-  DCHECK(bin < NUM_BINS);
-  DCHECK(tree >= 0);
-  DCHECK(tree < NUM_TREES);
-  return tiles_in_bin_count_[bin][tree];
-}
-
-int TileManager::GetDrawableTilesInBinCount(
-    TileManagerBin bin, WhichTree tree) {
-  DCHECK(bin >= 0);
-  DCHECK(bin < NUM_BINS);
-  DCHECK(tree >= 0);
-  DCHECK(tree < NUM_TREES);
-  return drawable_tiles_in_bin_count_[bin][tree];
-}
-
 void TileManager::GetMemoryStats(
     size_t* memoryRequiredBytes,
     size_t* memoryNiceToHaveBytes,
@@ -320,12 +283,6 @@ void TileManager::GetMemoryStats(
     if (mts.can_use_gpu_memory)
       *memoryUsedBytes += tile_bytes;
   }
-}
-
-void TileManager::ResetBinCounts() {
-  for (int i = 0; i < NUM_BINS; ++i)
-    for (int j = 0; j < NUM_TREES; ++j)
-      tiles_in_bin_count_[i][j] = drawable_tiles_in_bin_count_[i][j] = 0;
 }
 
 void TileManager::AssignGpuMemoryToTiles() {
@@ -356,7 +313,7 @@ void TileManager::AssignGpuMemoryToTiles() {
     ManagedTileState& managed_tile_state = tile->managed_state();
     if (!managed_tile_state.can_be_freed)
       continue;
-    if (managed_tile_state.raster_bin == NEVER_BIN) {
+    if (managed_tile_state.bin == NEVER_BIN) {
       managed_tile_state.can_use_gpu_memory = false;
       FreeResourcesForTile(tile);
       continue;
@@ -574,8 +531,6 @@ void TileManager::DidFinishTileInitialization(Tile* tile) {
   DCHECK(managed_tile_state.resource);
   managed_tile_state.resource_is_being_initialized = false;
   managed_tile_state.can_be_freed = true;
-  for (int i = 0; i < NUM_TREES; ++i)
-    drawable_tiles_in_bin_count_[managed_tile_state.bin[i]][i]++;
 }
 
 }  // namespace cc

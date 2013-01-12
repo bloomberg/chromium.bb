@@ -293,6 +293,8 @@ public:
 
     virtual bool canClipSelf() const;
 
+    virtual bool areVisibleResourcesReady() const;
+
 protected:
     LayerImpl(LayerTreeImpl* layerImpl, int);
 

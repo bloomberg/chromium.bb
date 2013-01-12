@@ -297,6 +297,11 @@ bool LayerImpl::canClipSelf() const
     return false;
 }
 
+bool LayerImpl::areVisibleResourcesReady() const
+{
+    return true;
+}
+
 std::string LayerImpl::indentString(int indent)
 {
     std::string str;

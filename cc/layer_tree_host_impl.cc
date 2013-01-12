@@ -929,14 +929,11 @@ void LayerTreeHostImpl::activatePendingTreeIfNeeded()
     if (!pendingTree())
         return;
 
-    int total_pending = m_tileManager->GetTilesInBinCount(NOW_BIN, PENDING_TREE);
-    int drawable_pending = m_tileManager->GetDrawableTilesInBinCount(NOW_BIN, PENDING_TREE);
-    int total_active = m_tileManager->GetTilesInBinCount(NOW_BIN, ACTIVE_TREE);
-
-    // It's always fine to activate to or from an empty tree.  Otherwise, only
-    // activate once all high res visible tiles are ready on the pending tree.
-    if (total_pending && total_active && total_pending != drawable_pending)
-        return;
+    // It's always fine to activate to an empty tree.  Otherwise, only
+    // activate once all visible resources in pending tree are ready.
+    if (activeTree()->RootLayer() &&
+        !pendingTree()->AreVisibleResourcesReady())
+      return;
 
     activatePendingTree();
 }

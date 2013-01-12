@@ -144,7 +144,7 @@ PictureLayerTiling::Iterator::Iterator()
       bottom_(0) {
 }
 
-PictureLayerTiling::Iterator::Iterator(PictureLayerTiling* tiling,
+PictureLayerTiling::Iterator::Iterator(const PictureLayerTiling* tiling,
                                        float dest_scale,
                                        gfx::Rect dest_rect)
     : tiling_(tiling),

@@ -58,9 +58,7 @@ class CC_EXPORT ManagedTileState {
   std::list<skia::LazyPixelRef*> pending_pixel_refs;
 
   // Ephemeral state, valid only during Manage.
-  TileManagerBin bin[NUM_TREES];
-  // Bin used to determine raster priority.
-  TileManagerBin raster_bin;
+  TileManagerBin bin;
   // The bin that the tile would have if the GPU memory manager had a maximally permissive policy,
   // send to the GPU memory manager to determine policy.
   TileManagerBin gpu_memmgr_stats_bin;
@@ -92,9 +90,6 @@ class CC_EXPORT TileManager {
 
   void GetRenderingStats(RenderingStats* stats);
 
-  int GetTilesInBinCount(TileManagerBin bin, WhichTree tree);
-  int GetDrawableTilesInBinCount(TileManagerBin bin, WhichTree tree);
-
  protected:
   // Methods called by Tile
   friend class Tile;
@@ -104,7 +99,6 @@ class CC_EXPORT TileManager {
       Tile* tile, WhichTree tree, const TilePriority& new_priority);
 
  private:
-  void ResetBinCounts();
   void AssignGpuMemoryToTiles();
   void FreeResourcesForTile(Tile* tile);
   void ScheduleManageTiles();
@@ -131,9 +125,6 @@ class CC_EXPORT TileManager {
   bool check_for_completed_set_pixels_pending_;
 
   GlobalStateThatImpactsTilePriority global_state_;
-
-  int tiles_in_bin_count_[NUM_BINS][NUM_TREES];
-  int drawable_tiles_in_bin_count_[NUM_BINS][NUM_TREES];
 
   typedef std::vector<Tile*> TileVector;
   TileVector tiles_;

@@ -280,6 +280,30 @@ ResourceProvider::ResourceId PictureLayerImpl::contentsResourceId() const {
   return 0;
 }
 
+bool PictureLayerImpl::areVisibleResourcesReady() const {
+  const gfx::Rect& rect = visibleContentRect();
+
+  for (size_t i = 0; i < tilings_.num_tilings(); ++i) {
+    const PictureLayerTiling* tiling = tilings_.tiling_at(i);
+
+    // Ignore non-high resolution tilings.
+    if (tiling->resolution() != HIGH_RESOLUTION)
+      continue;
+
+    for (PictureLayerTiling::Iterator iter(tiling,
+                                           tiling->contents_scale(),
+                                           rect);
+         iter;
+         ++iter) {
+      // Resource not ready yet.
+      if (!*iter || !iter->GetResourceId())
+        return false;
+    }
+    return true;
+  }
+  return false;
+}
+
 PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
   if (contents_scale < layerTreeImpl()->settings().minimumContentsScale)
     return NULL;

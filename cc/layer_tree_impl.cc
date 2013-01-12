@@ -152,6 +152,23 @@ void LayerTreeImpl::ClearRenderSurfaces() {
   SetNeedsUpdateDrawProperties();
 }
 
+bool LayerTreeImpl::AreVisibleResourcesReady() const {
+  TRACE_EVENT0("cc", "LayerTreeImpl::AreVisibleResourcesReady");
+
+  typedef LayerIterator<LayerImpl,
+                        std::vector<LayerImpl*>,
+                        RenderSurfaceImpl,
+                        LayerIteratorActions::BackToFront> LayerIteratorType;
+  LayerIteratorType end = LayerIteratorType::end(&render_surface_layer_list_);
+  for (LayerIteratorType it = LayerIteratorType::begin(
+           &render_surface_layer_list_); it != end; ++it) {
+    if (it.representsItself() && !(*it)->areVisibleResourcesReady())
+      return false;
+  }
+
+  return true;
+}
+
 const LayerTreeImpl::LayerList& LayerTreeImpl::RenderSurfaceLayerList() const {
   // If this assert triggers, then the list is dirty.
   DCHECK(!layer_tree_host_impl_->needsUpdateDrawProperties());
