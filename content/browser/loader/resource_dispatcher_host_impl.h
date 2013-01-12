@@ -28,6 +28,7 @@
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/browser/download_id.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "ipc/ipc_message.h"
@@ -80,6 +81,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       int route_id,
       bool prefer_cache,
       scoped_ptr<DownloadSaveInfo> save_info,
+      content::DownloadId download_id,
       const DownloadStartedCallback& started_callback) OVERRIDE;
   virtual void ClearLoginDelegateForRequest(net::URLRequest* request) OVERRIDE;
   virtual void BlockRequestsForRoute(int child_id, int route_id) OVERRIDE;
@@ -201,10 +203,13 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Must be called after the ResourceRequestInfo has been created
   // and associated with the request.
+  // |id| should be |DownloadId()| (null) to request automatic
+  // assignment.
   scoped_ptr<ResourceHandler> CreateResourceHandlerForDownload(
       net::URLRequest* request,
       bool is_content_initiated,
       bool must_download,
+      DownloadId id,
       scoped_ptr<DownloadSaveInfo> save_info,
       const DownloadResourceHandler::OnStartedCallback& started_cb);
 

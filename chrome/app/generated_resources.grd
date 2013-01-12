@@ -2714,6 +2714,14 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                desc="Download page message: The security check performed on this download failed unexpectedly">
         Anti-virus software failed unexpectedly while scanning this file.
       </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_FILE_TOO_SHORT"
+	       desc="A download resumption was attempted, but the file didn't exist or wasn't as large as expected">
+	File truncated
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_FILE_TOO_SHORT"
+	       desc="Download page message: A download resumption was attempted, but the file didn't exist or wasn't as large as expected">
+	Destination file was truncated or removed since last download.	
+      </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_NETWORK_TIMEOUT"
                desc="Network Timeout.">
         Network timeout
@@ -6734,6 +6742,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_ENABLE_TAB_BROWSER_DRAGGING_DESCRIPTION" desc="Description for the flag to enable detached tabs to create a real browser.">
         Enable creating a browser window when dragging tabs.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_DOWNLOAD_RESUMPTION_NAME" desc="Title for the flag to enable the download resume feature.">
+        Enable Download Resumption
+      </message>
+      <message name="IDS_FLAGS_ENABLE_DOWNLOAD_RESUMPTION_DESCRIPTION" desc="Description for the flag to enable the download resume feature.">
+        Allow downloads that have been interrupted to be continued or restarted, using the Resume context menu item.
       </message>
       <message name="IDS_FLAGS_DISABLE_RESTORE_SESSION_STATE_NAME" desc="Title for the flag to disable restoring (more) session state after restarts and crashes.">
         Disable Better session restore

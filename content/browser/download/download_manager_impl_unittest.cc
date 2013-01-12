@@ -98,11 +98,12 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_METHOD1(OnAllDataSaved, void(const std::string&));
   MOCK_METHOD0(OnDownloadedFileRemoved, void());
   virtual void Start(
-      scoped_ptr<DownloadFile> download_file) OVERRIDE {
-    MockStart(download_file.get());
+      scoped_ptr<DownloadFile> download_file,
+      scoped_ptr<DownloadRequestHandleInterface> req_handle) OVERRIDE {
+    MockStart(download_file.get(), req_handle.get());
   }
 
-  MOCK_METHOD1(MockStart, void(DownloadFile*));
+  MOCK_METHOD2(MockStart, void(DownloadFile*, DownloadRequestHandleInterface*));
 
   MOCK_METHOD1(Delete, void(DeleteReason));
   MOCK_METHOD0(Remove, void());
@@ -236,7 +237,6 @@ class MockDownloadItemFactory
   virtual DownloadItemImpl* CreateActiveItem(
       DownloadItemImplDelegate* delegate,
       const DownloadCreateInfo& info,
-      scoped_ptr<DownloadRequestHandleInterface> request_handle,
       const net::BoundNetLog& bound_net_log) OVERRIDE;
   virtual DownloadItemImpl* CreateSavePageItem(
       DownloadItemImplDelegate* delegate,
@@ -307,7 +307,6 @@ DownloadItemImpl* MockDownloadItemFactory::CreatePersistedItem(
 DownloadItemImpl* MockDownloadItemFactory::CreateActiveItem(
     DownloadItemImplDelegate* delegate,
     const DownloadCreateInfo& info,
-    scoped_ptr<DownloadRequestHandleInterface> request_handle,
     const net::BoundNetLog& bound_net_log) {
   int local_id = info.download_id.local();
   DCHECK(items_.find(local_id) == items_.end());
@@ -322,7 +321,7 @@ DownloadItemImpl* MockDownloadItemFactory::CreateActiveItem(
 
   // Active items are created and then immediately are called to start
   // the download.
-  EXPECT_CALL(*result, MockStart(_));
+  EXPECT_CALL(*result, MockStart(_, _));
 
   return result;
 }
@@ -495,14 +494,15 @@ class DownloadManagerTest : public testing::Test {
     ++next_download_id_;
     info.download_id = DownloadId(kDownloadIdDomain, id);
     info.request_handle = DownloadRequestHandle();
-    download_manager_->CreateDownloadItem(&info, net::BoundNetLog());
+    download_manager_->GetOrCreateDownloadItem(&info);
 
     DCHECK(mock_download_item_factory_->GetItem(id));
     MockDownloadItemImpl& item(*mock_download_item_factory_->GetItem(id));
     // Satisfy expectation.  If the item is created in StartDownload(),
     // we call Start on it immediately, so we need to set that expectation
     // in the factory.
-    item.Start(scoped_ptr<DownloadFile>());
+    scoped_ptr<DownloadRequestHandleInterface> req_handle;
+    item.Start(scoped_ptr<DownloadFile>(), req_handle.Pass());
 
     return item;
   }

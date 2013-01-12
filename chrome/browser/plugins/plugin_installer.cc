@@ -55,6 +55,7 @@ void BeginDownload(
       render_view_host_routing_id,
       true,  // prefer_cache
       scoped_ptr<content::DownloadSaveInfo>(new content::DownloadSaveInfo()),
+      content::DownloadId::Invalid(),
       callback);
 
   if (error != net::OK) {

@@ -296,6 +296,24 @@ DownloadInterruptReason BaseFile::Open() {
     file_stream_->SetBoundNetLogSource(bound_net_log_);
   }
 
+  int64 file_size = file_stream_->SeekSync(net::FROM_END, 0);
+  if (file_size > bytes_so_far_) {
+    // The file is larger than we expected.
+    // This is OK, as long as we don't use the extra.
+    // Truncate the file.
+    int64 truncate_result = file_stream_->Truncate(bytes_so_far_);
+    if (truncate_result < 0)
+      return LogNetError("Truncate", static_cast<net::Error>(truncate_result));
+
+    // If if wasn't an error, it should have truncated to the size
+    // specified.
+    DCHECK_EQ(bytes_so_far_, truncate_result);
+  } else if (file_size < bytes_so_far_) {
+    // The file is shorter than we expected.  Our hashes won't be valid.
+    return LogInterruptReason("Unable to seek to last written point", 0,
+                              DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT);
+  }
+
   return DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 

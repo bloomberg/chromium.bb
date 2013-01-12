@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/download_url_parameters.h"
 
 namespace content {
 class DownloadItemImpl;
@@ -64,6 +65,11 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
   // The check may or may not result in a later asynchronous call
   // to OnDownloadedFileRemoved().
   virtual void CheckForFileRemoval(DownloadItemImpl* download_item);
+
+  // Called when an interrupted download is resumed.
+  virtual void ResumeInterruptedDownload(
+      scoped_ptr<content::DownloadUrlParameters> params,
+      content::DownloadId id);
 
   // For contextual issues like language and prefs.
   virtual BrowserContext* GetBrowserContext() const;

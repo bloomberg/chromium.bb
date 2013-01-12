@@ -38,9 +38,9 @@ class CONTENT_EXPORT DownloadFile {
 
   virtual ~DownloadFile() {}
 
-  // Returns DOWNLOAD_INTERRUPT_REASON_NONE on success, or a network
-  // error code on failure.  Upon completion, |callback| will be
-  // called on the UI thread as per the comment above.
+  // Upon completion, |callback| will be called on the UI
+  // thread as per the comment above, passing DOWNLOAD_INTERRUPT_REASON_NONE
+  // on success, or a network download interrupt reason on failure.
   virtual void Initialize(const InitializeCallback& callback) = 0;
 
   // Rename the download file to |full_path|.  If that file exists

@@ -272,6 +272,9 @@ const char kEnableDataChannels[]            = "enable-data-channels";
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
 
+// Enables restarting interrupted downloads.
+const char kEnableDownloadResumption[]      = "enable-download-resumption";
+
 // Enables WebKit features that are in development.
 const char kEnableExperimentalWebKitFeatures[] =
     "enable-experimental-webkit-features";

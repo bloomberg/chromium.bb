@@ -41,10 +41,12 @@ std::string DownloadCreateInfo::DebugString() const {
   return base::StringPrintf("{"
                             " download_id = %s"
                             " url = \"%s\""
+                            " request_handle = %s"
                             " total_bytes = %" PRId64
                             " }",
                             download_id.DebugString().c_str(),
                             url().spec().c_str(),
+                            request_handle.DebugString().c_str(),
                             total_bytes);
 }
 

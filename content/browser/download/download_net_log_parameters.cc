@@ -106,6 +106,22 @@ base::Value* ItemInterruptedNetLogCallback(DownloadInterruptReason reason,
   return dict;
 }
 
+base::Value* ItemResumingNetLogCallback(bool user_initiated,
+                                        DownloadInterruptReason reason,
+                                        int64 bytes_so_far,
+                                        const std::string* hash_state,
+                                        net::NetLog::LogLevel log_level) {
+  DictionaryValue* dict = new DictionaryValue();
+
+  dict->SetString("user_initiated", user_initiated ? "true" : "false");
+  dict->SetString("interrupt_reason", InterruptReasonDebugString(reason));
+  dict->SetString("bytes_so_far", base::Int64ToString(bytes_so_far));
+  dict->SetString("hash_state",
+                  base::HexEncode(hash_state->data(), hash_state->size()));
+
+  return dict;
+}
+
 base::Value* ItemCompletingNetLogCallback(int64 bytes_so_far,
                                           const std::string* final_hash,
                                           net::NetLog::LogLevel log_level) {

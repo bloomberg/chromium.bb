@@ -5,6 +5,7 @@
 // This file contains download browser tests that are known to be runnable
 // in a pure content context.  Over time tests should be migrated here.
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -14,6 +15,7 @@
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/power_save_blocker.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/shell.h"
@@ -24,6 +26,7 @@
 #include "content/test/net/url_request_mock_http_job.h"
 #include "content/test/net/url_request_slow_download_job.h"
 #include "googleurl/src/gurl.h"
+#include "net/test/test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -343,6 +346,29 @@ class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
   std::vector<DownloadOpenDelayedCallback> delayed_callbacks_;
 };
 
+// Filter for handling resumption; don't return true until
+// we see first a transition to IN_PROGRESS then a transition to
+// some final state.  Since this is a stateful filter, we
+// must provide a flag in which to store the state; that flag
+// must be false on initialization.  The flag must be the first argument
+// so that Bind() can be used to produce the callback expected by
+// DownloadUpdatedObserver.
+bool DownloadResumptionFilter(bool* state_flag, DownloadItem* download) {
+  if (*state_flag && DownloadItem::IN_PROGRESS != download->GetState()) {
+    return true;
+  }
+
+  if (DownloadItem::IN_PROGRESS == download->GetState())
+    *state_flag = true;
+
+  return false;
+}
+
+// Filter for waiting for intermediate file rename.
+bool IntermediateFileRenameFilter(DownloadItem* download) {
+  return !download->GetFullPath().empty();
+}
+
 }  // namespace
 
 class DownloadContentTest : public ContentBrowserTest {
@@ -406,11 +432,12 @@ class DownloadContentTest : public ContentBrowserTest {
         (CountingDownloadFile::GetNumberActiveFilesFromFileThread() == 0);
   }
 
-  void DownloadAndWait(Shell* shell, const GURL& url) {
+  void DownloadAndWait(Shell* shell, const GURL& url,
+                       DownloadItem::DownloadState expected_terminal_state) {
     scoped_ptr<DownloadTestObserver> observer(CreateWaiter(shell, 1));
     NavigateToURL(shell, url);
     observer->WaitForFinished();
-    EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+    EXPECT_EQ(1u, observer->NumDownloadsSeenInState(expected_terminal_state));
   }
 
   // Checks that |path| is has |file_size| bytes, and matches the |value|
@@ -500,7 +527,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
   FilePath file(FILE_PATH_LITERAL("download-test.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
   // Download the file and wait.
-  DownloadAndWait(shell(), url);
+  DownloadAndWait(shell(), url, DownloadItem::COMPLETE);
 
   // Should now have 2 items on the manager.
   downloads.clear();
@@ -731,6 +758,81 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
   // Shutdown the download manager.  Mostly this is confirming a lack of
   // crashes.
   DownloadManagerForShell(shell())->Shutdown();
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeInterruptedDownload) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableDownloadResumption);
+  ASSERT_TRUE(test_server()->Start());
+  // Default behavior is a 15K file with a RST at 10K.  We request
+  // a hold on the response so that we can get the target name determined
+  // before handling the RST.
+  // TODO(rdsmith): Figure out how to handle the races needed
+  // so that we don't have to wait for the target name determination.
+  GURL url = test_server()->GetURL("rangereset?hold");
+
+  // Download and wait for file determination.
+  scoped_ptr<DownloadTestObserver> observer(CreateInProgressWaiter(shell(), 1));
+  NavigateToURL(shell(), url);
+  observer->WaitForFinished();
+
+  std::vector<DownloadItem*> downloads;
+  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+  DownloadItem* download(downloads[0]);
+  if (download->GetFullPath().empty()) {
+    DownloadUpdatedObserver intermediate_observer(
+        download, base::Bind(&IntermediateFileRenameFilter));
+    intermediate_observer.WaitForEvent();
+  }
+
+  // Unleash the RST!
+  scoped_ptr<DownloadTestObserver> rst_observer(CreateWaiter(shell(), 1));
+  GURL release_url = test_server()->GetURL("download-finish");
+  NavigateToURL(shell(), release_url);
+  rst_observer->WaitForFinished();
+  EXPECT_EQ(DownloadItem::INTERRUPTED, download->GetState());
+  EXPECT_EQ(4000u, download->GetReceivedBytes());
+  EXPECT_EQ(8000u, download->GetTotalBytes());
+  EXPECT_EQ(FILE_PATH_LITERAL("rangereset.crdownload"),
+            download->GetFullPath().BaseName().value());
+
+  {
+    std::string file_contents;
+    std::string expected_contents(4000, 'X');
+    ASSERT_TRUE(file_util::ReadFileToString(
+        download->GetFullPath(), &file_contents));
+    EXPECT_EQ(4000u, file_contents.size());
+    // In conditional to avoid spamming the console with two 4000 char strings.
+    if (expected_contents != file_contents)
+      EXPECT_TRUE(false) << "File contents do not have expected value.";
+  }
+
+  // Resume; should get entire file (note that a restart will fail
+  // here because it'll produce another RST).
+  bool flag(false);
+  DownloadUpdatedObserver complete_observer(
+      download, base::Bind(&DownloadResumptionFilter, &flag));
+  download->ResumeInterruptedDownload();
+  NavigateToURL(shell(), release_url);  // Needed to get past hold.
+  complete_observer.WaitForEvent();
+  EXPECT_EQ(DownloadItem::COMPLETE, download->GetState());
+  EXPECT_EQ(8000u, download->GetReceivedBytes());
+  EXPECT_EQ(8000u, download->GetTotalBytes());
+  EXPECT_EQ(FILE_PATH_LITERAL("rangereset"),
+            download->GetFullPath().BaseName().value())
+      << "Target path name: " << download->GetTargetFilePath().value();
+
+  {
+    std::string file_contents;
+    std::string expected_contents(8000, 'X');
+    ASSERT_TRUE(file_util::ReadFileToString(
+        download->GetFullPath(), &file_contents));
+    EXPECT_EQ(8000u, file_contents.size());
+    // In conditional to avoid spamming the console with two 800 char strings.
+    if (expected_contents != file_contents)
+      EXPECT_TRUE(false) << "File contents do not have expected value.";
+  }
 }
 
 }  // namespace content

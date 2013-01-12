@@ -389,8 +389,13 @@ TEST_F(BaseFileTest, MultipleWritesInterruptedWithHash) {
   // Finish the file.
   base_file_->Finish();
 
+  FilePath new_file_path(temp_dir_.path().Append(
+      FilePath(FILE_PATH_LITERAL("second_file"))));
+
+  ASSERT_TRUE(file_util::CopyFile(base_file_->full_path(), new_file_path));
+
   // Create another file
-  BaseFile second_file(FilePath(),
+  BaseFile second_file(new_file_path,
                        GURL(),
                        GURL(),
                        base_file_->bytes_so_far(),
@@ -399,7 +404,7 @@ TEST_F(BaseFileTest, MultipleWritesInterruptedWithHash) {
                        scoped_ptr<net::FileStream>(),
                        net::BoundNetLog());
   ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-            second_file.Initialize(temp_dir_.path()));
+            second_file.Initialize(FilePath()));
   std::string data(kTestData3);
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
             second_file.AppendDataToFile(data.data(), data.size()));

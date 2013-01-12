@@ -44,6 +44,10 @@ INTERRUPT_REASON(FILE_BLOCKED, 11)
 // reasons. See http://crbug.com/153212.
 INTERRUPT_REASON(FILE_SECURITY_CHECK_FAILED, 12)
 
+// An attempt was made to seek past the end of a file in opening
+// a file (as part of resuming a previously interrupted download).
+INTERRUPT_REASON(FILE_TOO_SHORT, 13)
+
 // Network errors.
 
 // Generic network failure.

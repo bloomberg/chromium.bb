@@ -28,6 +28,7 @@ import re
 import select
 import socket
 import SocketServer
+import struct
 import sys
 import threading
 import time
@@ -473,6 +474,7 @@ class TestPageHandler(BasePageHandler):
       self.MultipartSlowHandler,
       self.GetSSLSessionCacheHandler,
       self.CloseSocketHandler,
+      self.RangeResetHandler,
       self.DefaultResponseHandler]
     post_handlers = [
       self.EchoTitleHandler,
@@ -1620,6 +1622,110 @@ class TestPageHandler(BasePageHandler):
       return False
 
     self.wfile.close()
+    return True
+
+  def RangeResetHandler(self):
+    """Send data broken up by connection resets every N (default 4K) bytes.
+    Support range requests.  If the data requested doesn't straddle a reset
+    boundary, it will all be sent.  Used for testing resuming downloads."""
+
+    if not self._ShouldHandleRequest('/rangereset'):
+      return False
+
+    _, _, url_path, _, query, _ = urlparse.urlparse(self.path)
+
+    # Defaults
+    size = 8000
+    # Note that the rst is sent just before sending the rst_boundary byte.
+    rst_boundary = 4000
+    respond_to_range = True
+    hold_for_signal = False
+
+    # Parse the query
+    qdict = urlparse.parse_qs(query, True)
+    if 'size' in qdict:
+      size = int(qdict['size'])
+    if 'rst_boundary' in qdict:
+      rst_boundary = int(qdict['rst_boundary'])
+    if 'bounce_range' in qdict:
+      respond_to_range = False
+    if 'hold' in qdict:
+      hold_for_signal = True
+
+    first_byte = 0
+    last_byte = size - 1
+
+    # Does that define what we want to return, or do we need to apply
+    # a range?
+    range_response = False
+    range_header = self.headers.getheader('range')
+    if range_header and respond_to_range:
+      mo = re.match("bytes=(\d*)-(\d*)", range_header)
+      if mo.group(1):
+        first_byte = int(mo.group(1))
+      if mo.group(2):
+        last_byte = int(mo.group(2))
+      if last_byte > size - 1:
+        last_byte = size - 1
+      range_response = True
+      if last_byte < first_byte:
+        return False
+
+    # Set socket send buf high enough that we don't need to worry
+    # about asynchronous closes when sending RSTs.
+    self.connection.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF,
+                               16284)
+
+    if range_response:
+      self.send_response(206)
+      self.send_header('Content-Range',
+                       'bytes %d-%d/%d' % (first_byte, last_byte, size))
+    else:
+      self.send_response(200)
+    self.send_header('Content-Type', 'application/octet-stream')
+    self.send_header('Content-Length', last_byte - first_byte + 1)
+    self.end_headers()
+
+    if hold_for_signal:
+      # TODO(rdsmith/phajdan.jr): http://crbug.com/169519: Without writing
+      # a single byte, the self.server.handle_request() below hangs
+      # without processing new incoming requests.
+      self.wfile.write('X')
+      first_byte = first_byte + 1
+      # handle requests until one of them clears this flag.
+      self.server.waitForDownload = True
+      while self.server.waitForDownload:
+        self.server.handle_request()
+
+    possible_rst = ((first_byte / rst_boundary) + 1) * rst_boundary
+    if possible_rst >= last_byte:
+      # No RST has been requested in this range, so we don't need to
+      # do anything fancy; just write the data and let the python
+      # infrastructure close the connection.
+      self.wfile.write('X' * (last_byte - first_byte + 1))
+      self.wfile.flush()
+      return True
+
+    # We're resetting the connection part way in; go to the RST
+    # boundary and then send an RST.
+    # WINDOWS WARNING: On windows, if the amount of data sent before the
+    # reset is > 4096, only 4096 bytes will make it across before the RST
+    # despite the flush.  This is hypothesized to be due to an underlying
+    # asynchronous sending implementation, which the 0 second linger
+    # forcibly terminates.  The amount of data pre-RST should be kept below
+    # 4096 for this reason.
+    self.wfile.write('X' * (possible_rst - first_byte))
+    self.wfile.flush()
+    l_onoff = 1  # Linger is active.
+    l_linger = 0  # Seconds to linger for.
+    self.connection.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER,
+                 struct.pack('ii', l_onoff, l_linger))
+
+    # Close all duplicates of the underlying socket to force the RST.
+    self.wfile.close()
+    self.rfile.close()
+    self.connection.close()
+
     return True
 
   def DefaultResponseHandler(self):

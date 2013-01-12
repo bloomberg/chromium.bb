@@ -34,6 +34,17 @@ class CONTENT_EXPORT DownloadItemImpl
     : public DownloadItem,
       public DownloadDestinationObserver {
  public:
+  enum ResumeMode {
+    RESUME_MODE_INVALID = 0,
+    RESUME_MODE_IMMEDIATE_CONTINUE,
+    RESUME_MODE_IMMEDIATE_RESTART,
+    RESUME_MODE_USER_CONTINUE,
+    RESUME_MODE_USER_RESTART
+  };
+
+  // The maximum number of attempts we will make to resume automatically.
+  static const int kMaxAutoResumeAttempts;
+
   // Note that it is the responsibility of the caller to ensure that a
   // DownloadItemImplDelegate passed to a DownloadItemImpl constructor
   // outlives the DownloadItemImpl.
@@ -57,7 +68,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // |bound_net_log| is constructed externally for our use.
   DownloadItemImpl(DownloadItemImplDelegate* delegate,
                    const DownloadCreateInfo& info,
-                   scoped_ptr<DownloadRequestHandleInterface> request_handle,
                    const net::BoundNetLog& bound_net_log);
 
   // Constructing for the "Save Page As..." feature:
@@ -78,6 +88,7 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual void DangerousDownloadValidated() OVERRIDE;
   virtual void Pause() OVERRIDE;
   virtual void Resume() OVERRIDE;
+  virtual void ResumeInterruptedDownload() OVERRIDE;
   virtual void Cancel(bool user_cancel) OVERRIDE;
   virtual void Delete(DeleteReason reason) OVERRIDE;
   virtual void Remove() OVERRIDE;
@@ -147,16 +158,17 @@ class CONTENT_EXPORT DownloadItemImpl
   // All remaining public interfaces virtual to allow for DownloadItemImpl
   // mocks.
 
-  // Main entry points for regular downloads, in order -------------------------
+  virtual ResumeMode GetResumeMode() const;
 
-  // TODO(rdsmith): Fold the process that uses these fully into
-  // DownloadItemImpl and pass callbacks to the delegate so that all of
-  // these other than Start() can be made private.
+  // State transition operations on regular downloads --------------------------
 
-  // Start the download
-  virtual void Start(scoped_ptr<DownloadFile> download_file);
+  // Start the download.
+  // |download_file| is the associated file on the storage medium.
+  // |req_handle| is the new request handle associated with the download.
+  virtual void Start(scoped_ptr<DownloadFile> download_file,
+                     scoped_ptr<DownloadRequestHandleInterface> req_handle);
 
-  // Needed because of interwining with DownloadManagerImpl --------------------
+  // Needed because of intertwining with DownloadManagerImpl -------------------
 
   // TODO(rdsmith): Unwind DownloadManagerImpl and DownloadItemImpl,
   // removing these from the public interface.
@@ -168,9 +180,11 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Provide a weak pointer reference to a DownloadDestinationObserver
   // for use by download destinations.
-  base::WeakPtr<DownloadDestinationObserver> DestinationObserverAsWeakPtr();
+  virtual base::WeakPtr<DownloadDestinationObserver>
+      DestinationObserverAsWeakPtr();
 
-  // For dispatching on whether we're dealing with a SavePackage download.
+  // Get the download's BoundNetLog.
+  virtual const net::BoundNetLog& GetBoundNetLog() const;
 
   // DownloadItemImpl routines only needed by SavePackage ----------------------
 
@@ -299,7 +313,8 @@ class CONTENT_EXPORT DownloadItemImpl
 
   void SetFullPath(const FilePath& new_path);
 
-  // Mapping between internal and external states.
+  void AutoResumeIfValid();
+
   static DownloadState InternalToExternalState(
       DownloadInternalState internal_state);
   static DownloadInternalState ExternalToInternalState(
@@ -307,6 +322,7 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Debugging routines --------------------------------------------------------
   static const char* DebugDownloadStateString(DownloadInternalState state);
+  static const char* DebugResumeModeString(ResumeMode mode);
 
   // Will be false for save package downloads retrieved from the history.
   // TODO(rdsmith): Replace with a generalized enum for "download source".
@@ -424,6 +440,9 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // In progress downloads may be paused by the user, we note it here.
   bool is_paused_;
+
+  // The number of times this download has been resumed automatically.
+  int auto_resume_count_;
 
   // A flag for indicating if the download should be opened at completion.
   bool open_when_complete_;

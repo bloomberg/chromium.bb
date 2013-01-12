@@ -37,7 +37,7 @@ class CONTENT_EXPORT DownloadRequestHandleInterface {
   // Cancels the request.
   virtual void CancelRequest() const = 0;
 
-  // Describe the object.
+  // Describes the object.
   virtual std::string DebugString() const = 0;
 };
 

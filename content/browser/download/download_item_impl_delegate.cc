@@ -56,6 +56,9 @@ bool DownloadItemImplDelegate::ShouldOpenFileBasedOnExtension(
 void DownloadItemImplDelegate::CheckForFileRemoval(
     DownloadItemImpl* download_item) {}
 
+void DownloadItemImplDelegate::ResumeInterruptedDownload(
+    scoped_ptr<DownloadUrlParameters> params, content::DownloadId id) {}
+
 BrowserContext* DownloadItemImplDelegate::GetBrowserContext() const {
   return NULL;
 }

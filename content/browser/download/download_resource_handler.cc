@@ -28,6 +28,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_request_context.h"
 
 namespace content {
@@ -73,10 +74,12 @@ static void StartOnUIThread(
 }  // namespace
 
 DownloadResourceHandler::DownloadResourceHandler(
+    DownloadId id,
     net::URLRequest* request,
     const DownloadResourceHandler::OnStartedCallback& started_cb,
     scoped_ptr<DownloadSaveInfo> save_info)
-    : render_view_id_(0),               // Actually initialized below.
+    : download_id_(id),
+      render_view_id_(0),               // Actually initialized below.
       content_length_(0),
       request_(request),
       started_cb_(started_cb),
@@ -149,6 +152,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   stream_writer_->RegisterCallback(
       base::Bind(&DownloadResourceHandler::ResumeRequest, AsWeakPtr()));
 
+  info->download_id = download_id_;
   info->url_chain = request_->url_chain();
   info->referrer_url = GURL(request_->referrer());
   info->start_time = base::Time::Now();
@@ -173,6 +177,14 @@ bool DownloadResourceHandler::OnResponseStarted(
       info->last_modified = last_modified_hdr;
     if (headers->EnumerateHeader(NULL, "ETag", &etag))
       info->etag = etag;
+
+    int status = headers->response_code();
+    if (2 == status / 100  && status != net::HTTP_PARTIAL_CONTENT) {
+      // Success & not range response; if we asked for a range, we didn't
+      // get it--reset the file pointers to reflect that.
+      save_info_->offset = 0;
+      save_info_->hash_state = "";
+    }
   }
 
   std::string content_type_header;
@@ -282,11 +294,12 @@ bool DownloadResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
     const std::string& security_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  int response_code = status.is_success() ? request_->GetResponseCode() : 0;
   VLOG(20) << __FUNCTION__ << "()" << DebugString()
            << " request_id = " << request_id
            << " status.status() = " << status.status()
-           << " status.error() = " << status.error();
-  int response_code = status.is_success() ? request_->GetResponseCode() : 0;
+           << " status.error() = " << status.error()
+           << " response_code = " << response_code;
 
   net::Error error_code = net::OK;
   if (status.status() == net::URLRequestStatus::FAILED ||
@@ -323,22 +336,39 @@ bool DownloadResourceHandler::OnResponseCompleted(
     reason = DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
   }
 
-  if (status.is_success()) {
-    if (response_code >= 400) {
-      switch(response_code) {
-        case 404:  // File Not Found.
-          reason = DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
-          break;
-        case 416:  // Range Not Satisfiable.
-          reason = DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
-          break;
-        case 412:  // Precondition Failed.
-          reason = DOWNLOAD_INTERRUPT_REASON_SERVER_PRECONDITION;
-          break;
-        default:
-          reason = DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED;
-          break;
-      }
+  if (status.is_success() &&
+      reason == DOWNLOAD_INTERRUPT_REASON_NONE &&
+      request_->response_headers()) {
+    // Handle server's response codes.
+    switch(response_code) {
+      case -1:                          // Non-HTTP request.
+      case net::HTTP_OK:
+      case net::HTTP_PARTIAL_CONTENT:
+        // Expected successful codes.
+        break;
+      case net::HTTP_NO_CONTENT:
+      case net::HTTP_NOT_FOUND:
+        reason = DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
+        break;
+      case net::HTTP_PRECONDITION_FAILED:
+        // Failed our 'If-Unmodified-Since' or 'If-Match'; see
+        // download_manager_impl.cc BeginDownload()
+        reason = DOWNLOAD_INTERRUPT_REASON_SERVER_PRECONDITION;
+        break;
+      case net::HTTP_REQUESTED_RANGE_NOT_SATISFIABLE:
+        // Retry by downloading from the start automatically:
+        // If we haven't received data when we get this error, we won't.
+        reason = DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
+        break;
+      default:    // All other errors.
+        // Redirection should have been handled earlier in the stack.
+        DCHECK(3 != response_code / 100);
+
+        // Informational codes should have been handled earlier in the
+        // stack.
+        DCHECK(1 != response_code / 100);
+        reason = DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED;
+        break;
     }
   }
 

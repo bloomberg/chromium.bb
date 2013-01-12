@@ -18,6 +18,7 @@
 #include "content/browser/download/download_item_impl_delegate.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/download_url_parameters.h"
 
 namespace net {
 class BoundNetLog;
@@ -98,9 +99,11 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
 
   virtual ~DownloadManagerImpl();
 
-  // Creates the download item.  Must be called on the UI thread.
-  virtual DownloadItemImpl* CreateDownloadItem(
-      DownloadCreateInfo* info, const net::BoundNetLog& bound_net_log);
+  // Retrieves the download item corresponding to the passed
+  // DownloadCreateInfo.  This will create the download item
+  // if this is a new download (common case) or retrieve an
+  // existing download item if this is a resuming download.
+  virtual DownloadItemImpl* GetOrCreateDownloadItem(DownloadCreateInfo* info);
 
   // Get next download id.
   DownloadId GetNextId();
@@ -127,6 +130,9 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       DownloadItemImpl* item,
       const ShouldOpenDownloadCallback& callback) OVERRIDE;
   virtual void CheckForFileRemoval(DownloadItemImpl* download_item) OVERRIDE;
+  virtual void ResumeInterruptedDownload(
+      scoped_ptr<content::DownloadUrlParameters> params,
+      content::DownloadId id) OVERRIDE;
   virtual void DownloadOpened(DownloadItemImpl* download) OVERRIDE;
   virtual void DownloadRemoved(DownloadItemImpl* download) OVERRIDE;
   virtual void ShowDownloadInBrowser(DownloadItemImpl* download) OVERRIDE;

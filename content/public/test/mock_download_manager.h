@@ -12,6 +12,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+class DownloadRequestHandle;
+
 namespace content {
 
 // To avoid leaking download_request_handle.h to embedders.

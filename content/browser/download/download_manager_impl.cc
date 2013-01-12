@@ -39,6 +39,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/referrer.h"
 #include "net/base/load_flags.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
@@ -48,7 +49,8 @@
 namespace content {
 namespace {
 
-void BeginDownload(scoped_ptr<DownloadUrlParameters> params) {
+void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
+                   DownloadId download_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // ResourceDispatcherHost{Base} is-not-a URLRequest::Delegate, and
   // DownloadUrlParameters can-not include resource_dispatcher_host_impl.h, so
@@ -79,6 +81,27 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params) {
     request->set_upload(make_scoped_ptr(
         new net::UploadDataStream(&element_readers, params->post_id())));
   }
+
+  // If we're not at the beginning of the file, retrieve only the remaining
+  // portion.
+  if (params->offset() > 0) {
+    request->SetExtraRequestHeaderByName(
+        "Range",
+        StringPrintf("bytes=%" PRId64 "-", params->offset()),
+        true);
+
+    // If we've asked for a range, we want to make sure that we only
+    // get that range if our current copy of the information is good.
+    if (!params->last_modified().empty()) {
+      request->SetExtraRequestHeaderByName("If-Unmodified-Since",
+                                           params->last_modified(),
+                                           true);
+    }
+    if (!params->etag().empty()) {
+      request->SetExtraRequestHeaderByName("If-Match", params->etag(), true);
+    }
+  }
+
   for (DownloadUrlParameters::RequestHeadersType::const_iterator iter
            = params->request_headers_begin();
        iter != params->request_headers_end();
@@ -103,6 +126,7 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params) {
       params->render_view_host_routing_id(),
       params->prefer_cache(),
       save_info.Pass(),
+      download_id,
       params->callback());
 }
 
@@ -173,10 +197,8 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
     virtual DownloadItemImpl* CreateActiveItem(
         DownloadItemImplDelegate* delegate,
         const DownloadCreateInfo& info,
-        scoped_ptr<DownloadRequestHandleInterface> request_handle,
         const net::BoundNetLog& bound_net_log) OVERRIDE {
-      return new DownloadItemImpl(delegate, info, request_handle.Pass(),
-                                  bound_net_log);
+      return new DownloadItemImpl(delegate, info, bound_net_log);
     }
 
     virtual DownloadItemImpl* CreateSavePageItem(
@@ -340,9 +362,6 @@ DownloadItem* DownloadManagerImpl::StartDownload(
     scoped_ptr<ByteStreamReader> stream) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  net::BoundNetLog bound_net_log =
-      net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
-
   FilePath default_download_directory;
   if (delegate_) {
     FilePath website_save_directory;      // Unused
@@ -354,16 +373,17 @@ DownloadItem* DownloadManagerImpl::StartDownload(
   // We create the DownloadItem before the DownloadFile because the
   // DownloadItem already needs to handle a state in which there is
   // no associated DownloadFile (history downloads, !IN_PROGRESS downloads)
-  DownloadItemImpl* download =
-      CreateDownloadItem(info.get(), bound_net_log);
+  DownloadItemImpl* download = GetOrCreateDownloadItem(info.get());
   scoped_ptr<DownloadFile> download_file(
       file_factory_->CreateFile(
           info->save_info.Pass(), default_download_directory,
           info->url(), info->referrer_url,
           delegate_->GenerateFileHash(),
-          stream.Pass(), bound_net_log,
+          stream.Pass(), download->GetBoundNetLog(),
           download->DestinationObserverAsWeakPtr()));
-  download->Start(download_file.Pass());
+  scoped_ptr<DownloadRequestHandleInterface> req_handle(
+      new DownloadRequestHandle(info->request_handle));
+  download->Start(download_file.Pass(), req_handle.Pass());
 
   // Delay notification until after Start() so that download_file is bound
   // to download and all the usual setters (e.g. Cancel) work.
@@ -415,20 +435,26 @@ BrowserContext* DownloadManagerImpl::GetBrowserContext() const {
   return browser_context_;
 }
 
-DownloadItemImpl* DownloadManagerImpl::CreateDownloadItem(
-    DownloadCreateInfo* info, const net::BoundNetLog& bound_net_log) {
+DownloadItemImpl* DownloadManagerImpl::GetOrCreateDownloadItem(
+    DownloadCreateInfo* info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!info->download_id.IsValid())
     info->download_id = GetNextId();
-  DownloadItemImpl* download = item_factory_->CreateActiveItem(
-      this, *info,
-      scoped_ptr<DownloadRequestHandleInterface>(
-          new DownloadRequestHandle(info->request_handle)).Pass(),
-      bound_net_log);
 
-  DCHECK(!ContainsKey(downloads_, download->GetId()));
-  downloads_[download->GetId()] = download;
+  DownloadItemImpl* download = NULL;
+  if (ContainsKey(downloads_, info->download_id.local())) {
+    // Resuming an existing download.
+    download = downloads_[info->download_id.local()];
+    DCHECK(download->IsInterrupted());
+  } else {
+    // New download
+    net::BoundNetLog bound_net_log =
+        net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
+    download = item_factory_->CreateActiveItem(this, *info, bound_net_log);
+    downloads_[download->GetId()] = download;
+  }
+
   return download;
 }
 
@@ -464,6 +490,18 @@ void DownloadManagerImpl::CancelDownload(int32 download_id) {
   if (!download || !download->IsInProgress())
     return;
   download->Cancel(true);
+}
+
+// Resume a download of a specific URL. We send the request to the
+// ResourceDispatcherHost, and let it send us responses like a regular
+// download.
+void DownloadManagerImpl::ResumeInterruptedDownload(
+    scoped_ptr<content::DownloadUrlParameters> params,
+    content::DownloadId id) {
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&BeginDownload, base::Passed(params.Pass()), id));
 }
 
 void DownloadManagerImpl::SetDownloadItemFactoryForTesting(
@@ -545,7 +583,7 @@ void DownloadManagerImpl::DownloadUrl(
     DCHECK(params->method() == "POST");
   }
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &BeginDownload, base::Passed(&params)));
+      &BeginDownload, base::Passed(&params), DownloadId()));
 }
 
 void DownloadManagerImpl::AddObserver(Observer* observer) {

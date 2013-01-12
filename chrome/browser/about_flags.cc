@@ -824,6 +824,13 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
+    "enable-download-resumption",
+    IDS_FLAGS_ENABLE_DOWNLOAD_RESUMPTION_NAME,
+    IDS_FLAGS_ENABLE_DOWNLOAD_RESUMPTION_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableDownloadResumption)
+  },
+  {
     "allow-nacl-socket-api",
     IDS_FLAGS_ALLOW_NACL_SOCKET_API_NAME,
     IDS_FLAGS_ALLOW_NACL_SOCKET_API_DESCRIPTION,

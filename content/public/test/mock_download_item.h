@@ -25,6 +25,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_METHOD0(DangerousDownloadValidated, void());
   MOCK_METHOD0(Pause, void());
   MOCK_METHOD0(Resume, void());
+  MOCK_METHOD0(ResumeInterruptedDownload, void());
   MOCK_METHOD1(Cancel, void(bool));
   MOCK_METHOD1(Delete, void(DeleteReason));
   MOCK_METHOD0(Remove, void());

@@ -828,6 +828,7 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
       message.routing_id(),
       false,
       save_info.Pass(),
+      content::DownloadId::Invalid(),
       ResourceDispatcherHostImpl::DownloadStartedCallback());
 }
 

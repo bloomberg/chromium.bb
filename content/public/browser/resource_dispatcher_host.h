@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_RESOURCE_DISPATCHER_HOST_H_
 
 #include "base/callback_forward.h"
+#include "content/public/browser/download_id.h"
 #include "net/base/net_errors.h"
 
 namespace net {
@@ -35,12 +36,16 @@ class CONTENT_EXPORT ResourceDispatcherHost {
   // dialog boxes.
   virtual void SetAllowCrossOriginAuthPrompt(bool value) = 0;
 
-  // Initiates a download by explicit request of the renderer, e.g. due to
-  // alt-clicking a link.  If the download is started, |started_callback| will
-  // be called on the UI thread with the DownloadItem; otherwise an error code
-  // will be returned.  |is_content_initiated| is used to indicate that the
-  // request was generated from a web page, and hence may not be as trustworthy
-  // as a browser generated request.
+  // Initiates a download by explicit request of the renderer (e.g. due to
+  // alt-clicking a link) or some other chrome subsystem.
+  // |is_content_initiated| is used to indicate that the request was generated
+  // from a web page, and hence may not be as trustworthy as a browser
+  // generated request.  If |download_id| is invalid, a download id will be
+  // automatically assigned to the request, otherwise the specified download id
+  // will be used.  (Note that this will result in re-use of an existing
+  // download item if the download id was already assigned.)  If the download
+  // is started, |started_callback| will be called on the UI thread with the
+  // DownloadItem; otherwise an error code will be returned.
   virtual net::Error BeginDownload(
       scoped_ptr<net::URLRequest> request,
       bool is_content_initiated,
@@ -49,6 +54,7 @@ class CONTENT_EXPORT ResourceDispatcherHost {
       int route_id,
       bool prefer_cache,
       scoped_ptr<DownloadSaveInfo> save_info,
+      content::DownloadId download_id,
       const DownloadStartedCallback& started_callback) = 0;
 
   // Clears the ResourceDispatcherHostLoginDelegate associated with the request.
