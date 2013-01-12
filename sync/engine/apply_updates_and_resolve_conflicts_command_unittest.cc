@@ -71,12 +71,10 @@ class ApplyUpdatesAndResolveConflictsCommandTest : public SyncerCommandTest {
 
 TEST_F(ApplyUpdatesAndResolveConflictsCommandTest, Simple) {
   string root_server_id = syncable::GetNullId().GetServerId();
-  entry_factory_->CreateUnappliedNewItemWithParent("parent",
-                                                   DefaultBookmarkSpecifics(),
-                                                   root_server_id);
-  entry_factory_->CreateUnappliedNewItemWithParent("child",
-                                                   DefaultBookmarkSpecifics(),
-                                                   "parent");
+  entry_factory_->CreateUnappliedNewBookmarkItemWithParent(
+      "parent", DefaultBookmarkSpecifics(), root_server_id);
+  entry_factory_->CreateUnappliedNewBookmarkItemWithParent(
+      "child", DefaultBookmarkSpecifics(), "parent");
 
   ExpectGroupToChange(apply_updates_command_, GROUP_UI);
   apply_updates_command_.ExecuteImpl(session());
@@ -95,15 +93,15 @@ TEST_F(ApplyUpdatesAndResolveConflictsCommandTest,
   // Set a bunch of updates which are difficult to apply in the order
   // they're received due to dependencies on other unseen items.
   string root_server_id = syncable::GetNullId().GetServerId();
-  entry_factory_->CreateUnappliedNewItemWithParent(
+  entry_factory_->CreateUnappliedNewBookmarkItemWithParent(
       "a_child_created_first", DefaultBookmarkSpecifics(), "parent");
-  entry_factory_->CreateUnappliedNewItemWithParent(
+  entry_factory_->CreateUnappliedNewBookmarkItemWithParent(
       "x_child_created_first", DefaultBookmarkSpecifics(), "parent");
-  entry_factory_->CreateUnappliedNewItemWithParent(
+  entry_factory_->CreateUnappliedNewBookmarkItemWithParent(
       "parent", DefaultBookmarkSpecifics(), root_server_id);
-  entry_factory_->CreateUnappliedNewItemWithParent(
+  entry_factory_->CreateUnappliedNewBookmarkItemWithParent(
       "a_child_created_second", DefaultBookmarkSpecifics(), "parent");
-  entry_factory_->CreateUnappliedNewItemWithParent(
+  entry_factory_->CreateUnappliedNewBookmarkItemWithParent(
       "x_child_created_second", DefaultBookmarkSpecifics(), "parent");
 
   ExpectGroupToChange(apply_updates_command_, GROUP_UI);
@@ -119,7 +117,7 @@ TEST_F(ApplyUpdatesAndResolveConflictsCommandTest,
 // expect the command to detect that this update can't be applied because it is
 // in a CONFLICT state.
 TEST_F(ApplyUpdatesAndResolveConflictsCommandTest, SimpleConflict) {
-  entry_factory_->CreateUnappliedAndUnsyncedItem("item", BOOKMARKS);
+  entry_factory_->CreateUnappliedAndUnsyncedBookmarkItem("item");
 
   ExpectGroupToChange(apply_updates_command_, GROUP_UI);
   apply_updates_command_.ExecuteImpl(session());
@@ -139,8 +137,8 @@ TEST_F(ApplyUpdatesAndResolveConflictsCommandTest, SimpleConflict) {
 // CONFLICT_HIERARCHY state.
 TEST_F(ApplyUpdatesAndResolveConflictsCommandTest, HierarchyAndSimpleConflict) {
   // Create a simply-conflicting item.  It will start with valid parent ids.
-  int64 handle = entry_factory_->CreateUnappliedAndUnsyncedItem(
-      "orphaned_by_server", BOOKMARKS);
+  int64 handle = entry_factory_->CreateUnappliedAndUnsyncedBookmarkItem(
+      "orphaned_by_server");
   {
     // Manually set the SERVER_PARENT_ID to bad value.
     // A bad parent indicates a hierarchy conflict.
@@ -242,8 +240,7 @@ TEST_F(ApplyUpdatesAndResolveConflictsCommandTest,
   // Create a server-deleted directory.
   {
     // Create it as a child of root node.
-    int64 handle =
-        entry_factory_->CreateSyncedItem("parent", BOOKMARKS, true);
+    int64 handle = entry_factory_->CreateSyncedItem("parent", BOOKMARKS, true);
 
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry entry(&trans, syncable::GET_BY_HANDLE, handle);

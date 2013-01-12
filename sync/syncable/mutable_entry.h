@@ -6,6 +6,7 @@
 #define SYNC_SYNCABLE_MUTABLE_ENTRY_H_
 
 #include "sync/base/sync_export.h"
+#include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/node_ordinal.h"
 #include "sync/syncable/entry.h"
 #include "sync/syncable/metahandle_set.h"
@@ -28,12 +29,12 @@ enum CreateNewUpdateItem {
 // A mutable meta entry.  Changes get committed to the database when the
 // WriteTransaction is destroyed.
 class SYNC_EXPORT_PRIVATE MutableEntry : public Entry {
-  void Init(WriteTransaction* trans, const Id& parent_id,
-      const std::string& name);
+  void Init(WriteTransaction* trans, ModelType model_type,
+            const Id& parent_id, const std::string& name);
 
  public:
-  MutableEntry(WriteTransaction* trans, Create, const Id& parent_id,
-               const std::string& name);
+  MutableEntry(WriteTransaction* trans, Create, ModelType model_type,
+               const Id& parent_id, const std::string& name);
   MutableEntry(WriteTransaction* trans, CreateNewUpdateItem, const Id& id);
   MutableEntry(WriteTransaction* trans, GetByHandle, int64);
   MutableEntry(WriteTransaction* trans, GetById, const Id&);

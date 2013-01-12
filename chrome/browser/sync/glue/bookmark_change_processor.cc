@@ -404,7 +404,7 @@ bool BookmarkChangeProcessor::PlaceSyncNode(MoveOrCreate operation,
   if (index == 0) {
     // Insert into first position.
     success = (operation == CREATE) ?
-        dst->InitByCreation(syncer::BOOKMARKS, sync_parent, NULL) :
+        dst->InitBookmarkByCreation(sync_parent, NULL) :
         dst->SetPosition(sync_parent, NULL);
     if (success) {
       DCHECK_EQ(dst->GetParentId(), sync_parent.GetId());
@@ -420,7 +420,7 @@ bool BookmarkChangeProcessor::PlaceSyncNode(MoveOrCreate operation,
       return false;
     }
     success = (operation == CREATE) ?
-        dst->InitByCreation(syncer::BOOKMARKS, sync_parent, &sync_prev) :
+        dst->InitBookmarkByCreation(sync_parent, &sync_prev) :
         dst->SetPosition(sync_parent, &sync_prev);
     if (success) {
       DCHECK_EQ(dst->GetParentId(), sync_parent.GetId());
