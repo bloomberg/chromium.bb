@@ -37,6 +37,11 @@ const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 const char kAshDisableAutoWindowPlacement[] =
     "ash-enable-auto-window-placement";
 
+// Disables the limitter to throttle how quickly a user
+// can change display settings.
+const char kAshDisableDisplayChangeLimiter[] =
+    "ash-disable-display-change-limiter";
+
 // Disables boot animation v2, go back to v1.
 const char kAshDisableBootAnimation2[] = "ash-disable-boot-animation2";
 

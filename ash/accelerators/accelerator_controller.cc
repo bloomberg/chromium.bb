@@ -24,7 +24,6 @@
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation.h"
-#include "ash/screen_ash.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -60,11 +59,8 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/display/output_configurator_animation.h"
 #include "ash/system/chromeos/keyboard_brightness_controller.h"
 #include "base/chromeos/chromeos_version.h"
-#include "base/time.h"
-#include "chromeos/display/output_configurator.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
@@ -116,26 +112,6 @@ bool HandleToggleSpokenFeedback() {
   Shell::GetInstance()->delegate()->
       ToggleSpokenFeedback(A11Y_NOTIFICATION_SHOW);
   return true;
-}
-
-void HandleCycleDisplayMode() {
-  Shell* shell = Shell::GetInstance();
-  if (!base::chromeos::IsRunningOnChromeOS()) {
-    internal::DisplayManager::CycleDisplay();
-  } else if (shell->output_configurator()->connected_output_count() > 1) {
-    internal::OutputConfiguratorAnimation* animation =
-        shell->output_configurator_animation();
-    animation->StartFadeOutAnimation(base::Bind(
-        base::IgnoreResult(&chromeos::OutputConfigurator::CycleDisplayMode),
-        base::Unretained(shell->output_configurator())));
-  }
-}
-
-void HandleSwapPrimaryDisplay() {
-  if (Shell::GetScreen()->GetNumDisplays() > 1) {
-    Shell::GetInstance()->display_controller()->SetPrimaryDisplay(
-        ScreenAsh::GetSecondaryDisplay());
-  }
 }
 
 #endif  // defined(OS_CHROMEOS)
@@ -486,7 +462,7 @@ bool AcceleratorController::PerformAction(int action,
       return true;
 #if defined(OS_CHROMEOS)
     case CYCLE_DISPLAY_MODE:
-      HandleCycleDisplayMode();
+      Shell::GetInstance()->display_controller()->CycleDisplayMode();
       return true;
     case LOCK_SCREEN:
       return HandleLock();
@@ -495,7 +471,7 @@ bool AcceleratorController::PerformAction(int action,
     case OPEN_CROSH:
       return HandleCrosh();
     case SWAP_PRIMARY_DISPLAY:
-      HandleSwapPrimaryDisplay();
+      Shell::GetInstance()->display_controller()->SwapPrimaryDisplay();
       return true;
     case TOGGLE_SPOKEN_FEEDBACK:
       return HandleToggleSpokenFeedback();

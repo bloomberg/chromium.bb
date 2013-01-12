@@ -9,6 +9,7 @@
 #include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/property_util.h"
@@ -27,8 +28,12 @@
 #include "ui/gfx/screen.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/display/output_configurator_animation.h"
 #include "base/chromeos/chromeos_version.h"
-#endif
+#include "base/time.h"
+#include "chromeos/display/output_configurator.h"
+#endif  // defined(OS_CHROMEOS)
+
 
 namespace ash {
 namespace {
@@ -50,6 +55,16 @@ const int kMaxValidOffset = 10000;
 // The number of pixels to overlap between the primary and secondary displays,
 // in case that the offset value is too large.
 const int kMinimumOverlapForInvalidOffset = 100;
+
+// Specifies how long the display change should have been disabled
+// after each display change operations.
+// |kCycleDisplayThrottleTimeoutMs| is set to be longer to avoid
+// changing the settings while the system is still configurating
+// displays. It will be overriden by |kAfterDisplayChangeThrottleTimeoutMs|
+// when the display change happens, so the actual timeout is much shorter.
+const int64 kAfterDisplayChangeThrottleTimeoutMs = 500;
+const int64 kCycleDisplayThrottleTimeoutMs = 4000;
+const int64 kSwapDisplayThrottleTimeoutMs = 500;
 
 bool GetPositionFromString(const base::StringPiece& position,
                            DisplayLayout::Position* field) {
@@ -89,6 +104,9 @@ internal::DisplayManager* GetDisplayManager() {
 }
 
 }  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+// DisplayLayout
 
 DisplayLayout::DisplayLayout()
     : position(RIGHT),
@@ -160,9 +178,35 @@ void DisplayLayout::RegisterJSONConverter(
   converter->RegisterIntField("offset", &DisplayLayout::offset);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// DisplayChangeLimiter
+
+DisplayController::DisplayChangeLimiter::DisplayChangeLimiter()
+    : throttle_timeout_(base::Time::Now()) {
+}
+
+void DisplayController::DisplayChangeLimiter::SetThrottleTimeout(
+    int64 throttle_ms) {
+  throttle_timeout_ =
+      base::Time::Now() + base::TimeDelta::FromMilliseconds(throttle_ms);
+}
+
+bool DisplayController::DisplayChangeLimiter::IsThrottled() const {
+  return base::Time::Now() < throttle_timeout_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DisplayController
+
 DisplayController::DisplayController()
     : desired_primary_display_id_(gfx::Display::kInvalidDisplayID),
       primary_root_window_for_replace_(NULL) {
+#if defined(OS_CHROMEOS)
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kAshDisableDisplayChangeLimiter) &&
+      base::chromeos::IsRunningOnChromeOS())
+    limiter_.reset(new DisplayChangeLimiter);
+#endif
   // Reset primary display to make sure that tests don't use
   // stale display info from previous tests.
   primary_display_id = gfx::Display::kInvalidDisplayID;
@@ -376,6 +420,37 @@ const DisplayLayout& DisplayController::GetCurrentDisplayLayout() const {
   return default_display_layout_;
 }
 
+void DisplayController::CycleDisplayMode() {
+  if (limiter_.get()) {
+    if  (limiter_->IsThrottled())
+      return;
+    limiter_->SetThrottleTimeout(kCycleDisplayThrottleTimeoutMs);
+  }
+#if defined(OS_CHROMEOS)
+  Shell* shell = Shell::GetInstance();
+  if (!base::chromeos::IsRunningOnChromeOS()) {
+    internal::DisplayManager::CycleDisplay();
+  } else if (shell->output_configurator()->connected_output_count() > 1) {
+    internal::OutputConfiguratorAnimation* animation =
+        shell->output_configurator_animation();
+    animation->StartFadeOutAnimation(base::Bind(
+        base::IgnoreResult(&chromeos::OutputConfigurator::CycleDisplayMode),
+        base::Unretained(shell->output_configurator())));
+  }
+#endif
+}
+
+void DisplayController::SwapPrimaryDisplay() {
+  if (limiter_.get()) {
+    if  (limiter_->IsThrottled())
+      return;
+    limiter_->SetThrottleTimeout(kSwapDisplayThrottleTimeoutMs);
+  }
+
+  if (Shell::GetScreen()->GetNumDisplays() > 1)
+    SetPrimaryDisplay(ScreenAsh::GetSecondaryDisplay());
+}
+
 void DisplayController::SetPrimaryDisplayId(int64 id) {
   desired_primary_display_id_ = id;
 
@@ -460,12 +535,18 @@ gfx::Display* DisplayController::GetSecondaryDisplay() {
 }
 
 void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
+  if (limiter_.get())
+    limiter_->SetThrottleTimeout(kAfterDisplayChangeThrottleTimeoutMs);
+
   NotifyDisplayConfigurationChanging();
   UpdateDisplayBoundsForLayout();
   root_windows_[display.id()]->SetHostBounds(display.bounds_in_pixel());
 }
 
 void DisplayController::OnDisplayAdded(const gfx::Display& display) {
+  if (limiter_.get())
+    limiter_->SetThrottleTimeout(kAfterDisplayChangeThrottleTimeoutMs);
+
   NotifyDisplayConfigurationChanging();
   if (primary_root_window_for_replace_) {
     DCHECK(root_windows_.empty());
@@ -487,6 +568,9 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
 }
 
 void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
+  if (limiter_.get())
+    limiter_->SetThrottleTimeout(kAfterDisplayChangeThrottleTimeoutMs);
+
   aura::RootWindow* root_to_delete = root_windows_[display.id()];
   DCHECK(root_to_delete) << display.ToString();
   NotifyDisplayConfigurationChanging();

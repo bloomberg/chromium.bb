@@ -24,6 +24,7 @@ ASH_EXPORT extern const char kAshConstrainPointerToRoot[];
 ASH_EXPORT extern const char kAshCopyHostBackgroundAtBoot[];
 ASH_EXPORT extern const char kAshDebugShortcuts[];
 ASH_EXPORT extern const char kAshDisableAutoWindowPlacement[];
+ASH_EXPORT extern const char kAshDisableDisplayChangeLimiter[];
 ASH_EXPORT extern const char kAshDisablePanelFitting[];
 ASH_EXPORT extern const char kAshDisableBootAnimation2[];
 ASH_EXPORT extern const char kAshDisableNewLockAnimations[];

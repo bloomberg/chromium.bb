@@ -12,7 +12,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/time.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/display.h"
 
@@ -109,6 +111,12 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   // Returns the root window for |display_id|.
   aura::RootWindow* GetRootWindowForDisplayId(int64 id);
 
+  // Cycles display mode.
+  void CycleDisplayMode();
+
+  // Swap primary and secondary display.
+  void SwapPrimaryDisplay();
+
   // Sets the ID of the primary display.  If the display is not connected, it
   // will switch the primary display when connected.
   void SetPrimaryDisplayId(int64 id);
@@ -163,6 +171,26 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver {
   void UpdateDisplayBoundsForLayout();
 
   void NotifyDisplayConfigurationChanging();
+
+  class DisplayChangeLimiter {
+   public:
+    DisplayChangeLimiter();
+
+    // Sets how long the throttling should last.
+    void SetThrottleTimeout(int64 throttle_ms);
+
+    bool IsThrottled() const;
+
+   private:
+    // The time when the throttling ends.
+    base::Time throttle_timeout_;
+
+    DISALLOW_COPY_AND_ASSIGN(DisplayChangeLimiter);
+  };
+
+  // The limiter to throttle how fast a user can
+  // change the display configuration.
+  scoped_ptr<DisplayChangeLimiter> limiter_;
 
   // The mapping from display ID to its root window.
   std::map<int64, aura::RootWindow*> root_windows_;
