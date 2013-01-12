@@ -59,10 +59,13 @@ class StateStore
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  void Init(const FilePath& db_path);
+  void Init();
 
   // Removes all keys registered for the given extension.
   void RemoveKeysForExtension(const std::string& extension_id);
+
+  // Path to our database, on disk. Empty during testing.
+  FilePath db_path_;
 
   // The store that holds our key/values.
   ValueStoreFrontend store_;
