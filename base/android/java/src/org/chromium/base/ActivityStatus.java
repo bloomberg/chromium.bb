@@ -7,7 +7,7 @@ package org.chromium.base;
 import android.app.Activity;
 import android.os.Looper;
 
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Provides information about the parent activity's status.
@@ -29,9 +29,14 @@ public class ActivityStatus {
     // testing.
     private static int sActivityState;
 
-    private static final ArrayList<StateListener> sStateListeners = new ArrayList<StateListener>();
+    // Use CopyOnWriteArrayList to avoid ConcurrentModificationException when a listener tries to
+    // remove itself while being notified of a state change.
+    private static final CopyOnWriteArrayList<StateListener> sStateListeners =
+            new CopyOnWriteArrayList<StateListener>();
 
-    // Use this interface to listen to all state changes.
+    /**
+     * Interface to be implemented by listeners.
+     */
     public interface StateListener {
         /**
          * Called when the activity's state changes.
