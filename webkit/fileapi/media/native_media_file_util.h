@@ -63,6 +63,26 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE NativeMediaFileUtil
       FilePath* platform_path) OVERRIDE;
 
  private:
+  // Like GetLocalFilePath(), but always take media_path_filter() into
+  // consideration. If the media_path_filter() check fails, return
+  // PLATFORM_FILE_ERROR_SECURITY. |local_file_path| does not have to exist.
+  base::PlatformFileError GetFilteredLocalFilePath(
+      FileSystemOperationContext* context,
+      const FileSystemURL& file_system_url,
+      FilePath* local_file_path);
+
+  // Like GetLocalFilePath(), but if the file does not exist, then return
+  // |failure_error|.
+  // If |local_file_path| is a file, then take media_path_filter() into
+  // consideration.
+  // If the media_path_filter() check fails, return |failure_error|.
+  // If |local_file_path| is a directory, return PLATFORM_FILE_OK.
+  base::PlatformFileError GetFilteredLocalFilePathForExistingFileOrDirectory(
+      FileSystemOperationContext* context,
+      const FileSystemURL& file_system_url,
+      base::PlatformFileError failure_error,
+      FilePath* local_file_path);
+
   DISALLOW_COPY_AND_ASSIGN(NativeMediaFileUtil);
 };
 

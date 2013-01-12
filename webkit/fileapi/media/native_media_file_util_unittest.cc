@@ -7,7 +7,10 @@
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/format_macros.h"
 #include "base/message_loop.h"
+#include "base/stringprintf.h"
+#include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
@@ -46,9 +49,21 @@ const FilteringTestCase kFilteringTestCases[] = {
   { FPL("foobar.cod"), false, false },  // Unsupported media file.
 };
 
-void ExpectEqHelper(base::PlatformFileError expected,
+void ExpectEqHelper(const std::string& test_name,
+                    base::PlatformFileError expected,
                     base::PlatformFileError actual) {
-  EXPECT_EQ(expected, actual);
+  EXPECT_EQ(expected, actual) << test_name;
+}
+
+void ExpectMetadataEqHelper(const std::string& test_name,
+                            base::PlatformFileError expected,
+                            bool expected_is_directory,
+                            base::PlatformFileError actual,
+                            const base::PlatformFileInfo& file_info,
+                            const FilePath& /*platform_path*/) {
+  EXPECT_EQ(expected, actual) << test_name;
+  if (actual == base::PLATFORM_FILE_OK)
+    EXPECT_EQ(expected_is_directory, file_info.is_directory) << test_name;
 }
 
 void DidReadDirectory(std::set<FilePath::StringType>* content,
@@ -89,6 +104,7 @@ class NativeMediaFileUtilTest : public testing::Test {
 
   void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(file_util::CreateDirectory(root_path()));
 
     scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
         new quota::MockSpecialStoragePolicy();
@@ -170,10 +186,15 @@ TEST_F(NativeMediaFileUtilTest, DirectoryExistsAndFileExistsFiltering) {
         base::PLATFORM_FILE_OK :
         base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
-    if (kFilteringTestCases[i].is_directory)
-      operation->DirectoryExists(url, base::Bind(&ExpectEqHelper, expectation));
-    else
-      operation->FileExists(url, base::Bind(&ExpectEqHelper, expectation));
+    std::string test_name =
+        base::StringPrintf("DirectoryExistsAndFileExistsFiltering %" PRIuS, i);
+    if (kFilteringTestCases[i].is_directory) {
+      operation->DirectoryExists(
+          url, base::Bind(&ExpectEqHelper, test_name, expectation));
+    } else {
+      operation->FileExists(
+          url, base::Bind(&ExpectEqHelper, test_name, expectation));
+    }
     MessageLoop::current()->RunUntilIdle();
   }
 }
@@ -197,5 +218,365 @@ TEST_F(NativeMediaFileUtilTest, ReadDirectoryFiltering) {
         FilePath(kFilteringTestCases[i].path).BaseName().value();
     std::set<FilePath::StringType>::const_iterator found = content.find(name);
     EXPECT_EQ(kFilteringTestCases[i].visible, found != content.end());
+  }
+}
+
+TEST_F(NativeMediaFileUtilTest, CreateFileAndCreateDirectoryFiltering) {
+  // Run the loop twice. The second loop attempts to create files that are
+  // pre-existing. Though the result should be the same.
+  for (int loop_count = 0; loop_count < 2; ++loop_count) {
+    for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+      FileSystemURL root_url(origin(), type(), root_path());
+      FileSystemOperation* operation = NewOperation(root_url);
+
+      FilePath path = root_path().Append(kFilteringTestCases[i].path);
+      FileSystemURL url(origin(), type(), path);
+
+      std::string test_name = base::StringPrintf(
+          "CreateFileAndCreateDirectoryFiltering run %d, test %" PRIuS,
+          loop_count, i);
+      base::PlatformFileError expectation =
+          kFilteringTestCases[i].visible ?
+          base::PLATFORM_FILE_OK :
+          base::PLATFORM_FILE_ERROR_SECURITY;
+      if (kFilteringTestCases[i].is_directory) {
+        operation->CreateDirectory(
+            url, false, false,
+            base::Bind(&ExpectEqHelper, test_name, expectation));
+      } else {
+        operation->CreateFile(
+            url, false, base::Bind(&ExpectEqHelper, test_name, expectation));
+      }
+      MessageLoop::current()->RunUntilIdle();
+    }
+  }
+}
+
+TEST_F(NativeMediaFileUtilTest, CopySourceFiltering) {
+  FilePath dest_path = root_path().AppendASCII("dest");
+  FileSystemURL dest_url(origin(), type(), dest_path);
+
+  // Run the loop twice. The first run has no source files. The second run does.
+  for (int loop_count = 0; loop_count < 2; ++loop_count) {
+    if (loop_count == 1) {
+      PopulateDirectoryWithTestCases(root_path(),
+                                     kFilteringTestCases,
+                                     arraysize(kFilteringTestCases));
+    }
+    for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+      // Always start with an empty destination directory.
+      // Copying to a non-empty destination directory is an invalid operation.
+      ASSERT_TRUE(file_util::Delete(dest_path, true));
+      ASSERT_TRUE(file_util::CreateDirectory(dest_path));
+
+      FileSystemURL root_url(origin(), type(), root_path());
+      FileSystemOperation* operation = NewOperation(root_url);
+
+      FilePath path = root_path().Append(kFilteringTestCases[i].path);
+      FileSystemURL url(origin(), type(), path);
+
+      std::string test_name = base::StringPrintf(
+          "CopySourceFiltering run %d test %" PRIuS, loop_count, i);
+      base::PlatformFileError expectation = base::PLATFORM_FILE_OK;
+      if (loop_count == 0 || !kFilteringTestCases[i].visible) {
+        // If the source does not exist or is not visible.
+        expectation = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+      } else if (!kFilteringTestCases[i].is_directory) {
+        // Cannot copy a visible file to a directory.
+        expectation = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+      }
+      operation->Copy(
+          url, dest_url, base::Bind(&ExpectEqHelper, test_name, expectation));
+      MessageLoop::current()->RunUntilIdle();
+    }
+  }
+}
+
+TEST_F(NativeMediaFileUtilTest, CopyDestFiltering) {
+  // Run the loop twice. The first run has no destination files.
+  // The second run does.
+  for (int loop_count = 0; loop_count < 2; ++loop_count) {
+    if (loop_count == 1) {
+      // Reset the test directory between the two loops to remove old
+      // directories and create new ones that should pre-exist.
+      ASSERT_TRUE(file_util::Delete(root_path(), true));
+      ASSERT_TRUE(file_util::CreateDirectory(root_path()));
+      PopulateDirectoryWithTestCases(root_path(),
+                                     kFilteringTestCases,
+                                     arraysize(kFilteringTestCases));
+    }
+
+    // Always create a dummy source data file.
+    FilePath src_path = root_path().AppendASCII("foo.jpg");
+    FileSystemURL src_url(origin(), type(), src_path);
+    static const char kDummyData[] = "dummy";
+    ASSERT_TRUE(file_util::WriteFile(src_path, kDummyData, strlen(kDummyData)));
+
+    for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+      FileSystemURL root_url(origin(), type(), root_path());
+      FileSystemOperation* operation = NewOperation(root_url);
+
+      FilePath path = root_path().Append(kFilteringTestCases[i].path);
+      FileSystemURL url(origin(), type(), path);
+
+      std::string test_name = base::StringPrintf(
+          "CopyDestFiltering run %d test %" PRIuS, loop_count, i);
+      base::PlatformFileError expectation;
+      if (loop_count == 0) {
+        // These directories do not exist in this case, so Copy() will not
+        // treat them as directories. Thus invalidating these test cases.
+        if (kFilteringTestCases[i].is_directory)
+          continue;
+        // If the destination path does not exist and is not visible, then
+        // creating it would be a security violation.
+        expectation =
+            kFilteringTestCases[i].visible ?
+            base::PLATFORM_FILE_OK :
+            base::PLATFORM_FILE_ERROR_SECURITY;
+      } else {
+        if (!kFilteringTestCases[i].visible) {
+          // If the destination path exist and is not visible, then to the copy
+          // operation, it looks like the file needs to be created, which is a
+          // security violation.
+          expectation = base::PLATFORM_FILE_ERROR_SECURITY;
+        } else if (kFilteringTestCases[i].is_directory) {
+          // Cannot copy a file to a directory.
+          expectation = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+        } else {
+          // Copying from a file to a visible file that exists is ok.
+          expectation = base::PLATFORM_FILE_OK;
+        }
+      }
+      operation->Copy(
+          src_url, url, base::Bind(&ExpectEqHelper, test_name, expectation));
+      MessageLoop::current()->RunUntilIdle();
+    }
+  }
+}
+
+TEST_F(NativeMediaFileUtilTest, MoveSourceFiltering) {
+  FilePath dest_path = root_path().AppendASCII("dest");
+  FileSystemURL dest_url(origin(), type(), dest_path);
+
+  // Run the loop twice. The first run has no source files. The second run does.
+  for (int loop_count = 0; loop_count < 2; ++loop_count) {
+    if (loop_count == 1) {
+      PopulateDirectoryWithTestCases(root_path(),
+                                     kFilteringTestCases,
+                                     arraysize(kFilteringTestCases));
+    }
+    for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+      // Always start with an empty destination directory.
+      // Moving to a non-empty destination directory is an invalid operation.
+      ASSERT_TRUE(file_util::Delete(dest_path, true));
+      ASSERT_TRUE(file_util::CreateDirectory(dest_path));
+
+      FileSystemURL root_url(origin(), type(), root_path());
+      FileSystemOperation* operation = NewOperation(root_url);
+
+      FilePath path = root_path().Append(kFilteringTestCases[i].path);
+      FileSystemURL url(origin(), type(), path);
+
+      std::string test_name = base::StringPrintf(
+          "MoveSourceFiltering run %d test %" PRIuS, loop_count, i);
+      base::PlatformFileError expectation = base::PLATFORM_FILE_OK;
+      if (loop_count == 0 || !kFilteringTestCases[i].visible) {
+        // If the source does not exist or is not visible.
+        expectation = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+      } else if (!kFilteringTestCases[i].is_directory) {
+        // Cannot move a visible file to a directory.
+        expectation = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+      }
+      operation->Move(
+          url, dest_url, base::Bind(&ExpectEqHelper, test_name, expectation));
+      MessageLoop::current()->RunUntilIdle();
+    }
+  }
+}
+
+TEST_F(NativeMediaFileUtilTest, MoveDestFiltering) {
+  // Run the loop twice. The first run has no destination files.
+  // The second run does.
+  for (int loop_count = 0; loop_count < 2; ++loop_count) {
+    if (loop_count == 1) {
+      // Reset the test directory between the two loops to remove old
+      // directories and create new ones that should pre-exist.
+      ASSERT_TRUE(file_util::Delete(root_path(), true));
+      ASSERT_TRUE(file_util::CreateDirectory(root_path()));
+      PopulateDirectoryWithTestCases(root_path(),
+                                     kFilteringTestCases,
+                                     arraysize(kFilteringTestCases));
+    }
+
+    for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+      // Create the source file for every test case because it might get moved.
+      FilePath src_path = root_path().AppendASCII("foo.jpg");
+      FileSystemURL src_url(origin(), type(), src_path);
+      static const char kDummyData[] = "dummy";
+      ASSERT_TRUE(
+          file_util::WriteFile(src_path, kDummyData, strlen(kDummyData)));
+
+      FileSystemURL root_url(origin(), type(), root_path());
+      FileSystemOperation* operation = NewOperation(root_url);
+
+      FilePath path = root_path().Append(kFilteringTestCases[i].path);
+      FileSystemURL url(origin(), type(), path);
+
+      std::string test_name = base::StringPrintf(
+          "MoveDestFiltering run %d test %" PRIuS, loop_count, i);
+      base::PlatformFileError expectation;
+      if (loop_count == 0) {
+        // These directories do not exist in this case, so Move() will not
+        // treat them as directories. Thus invalidating these test cases.
+        if (kFilteringTestCases[i].is_directory)
+          continue;
+        // If the destination path does not exist and is not visible, then
+        // creating it would be a security violation.
+        expectation =
+            kFilteringTestCases[i].visible ?
+            base::PLATFORM_FILE_OK :
+            base::PLATFORM_FILE_ERROR_SECURITY;
+      } else {
+        if (!kFilteringTestCases[i].visible) {
+          // If the destination path exist and is not visible, then to the move
+          // operation, it looks like the file needs to be created, which is a
+          // security violation.
+          expectation = base::PLATFORM_FILE_ERROR_SECURITY;
+        } else if (kFilteringTestCases[i].is_directory) {
+          // Cannot move a file to a directory.
+          expectation = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+        } else {
+          // Moving from a file to a visible file that exists is ok.
+          expectation = base::PLATFORM_FILE_OK;
+        }
+      }
+      operation->Move(
+          src_url, url, base::Bind(&ExpectEqHelper, test_name, expectation));
+      MessageLoop::current()->RunUntilIdle();
+    }
+  }
+}
+
+TEST_F(NativeMediaFileUtilTest, GetMetadataFiltering) {
+  // Run the loop twice. The first run has no files. The second run does.
+  for (int loop_count = 0; loop_count < 2; ++loop_count) {
+    if (loop_count == 1) {
+      PopulateDirectoryWithTestCases(root_path(),
+                                     kFilteringTestCases,
+                                     arraysize(kFilteringTestCases));
+    }
+    for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+      FileSystemURL root_url(origin(), type(), root_path());
+      FileSystemOperation* operation = NewOperation(root_url);
+
+      FilePath path = root_path().Append(kFilteringTestCases[i].path);
+      FileSystemURL url(origin(), type(), path);
+
+      std::string test_name = base::StringPrintf(
+          "GetMetadataFiltering run %d test %" PRIuS, loop_count, i);
+      base::PlatformFileError expectation = base::PLATFORM_FILE_OK;
+      if (loop_count == 0 || !kFilteringTestCases[i].visible) {
+        // Cannot get metadata from files that do not exist or are not visible.
+        expectation = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+      }
+      operation->GetMetadata(url,
+                             base::Bind(&ExpectMetadataEqHelper,
+                                        test_name,
+                                        expectation,
+                                        kFilteringTestCases[i].is_directory));
+      MessageLoop::current()->RunUntilIdle();
+    }
+  }
+}
+
+TEST_F(NativeMediaFileUtilTest, RemoveFiltering) {
+  // Run the loop twice. The first run has no files. The second run does.
+  for (int loop_count = 0; loop_count < 2; ++loop_count) {
+    if (loop_count == 1) {
+      PopulateDirectoryWithTestCases(root_path(),
+                                     kFilteringTestCases,
+                                     arraysize(kFilteringTestCases));
+    }
+    for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+      FileSystemURL root_url(origin(), type(), root_path());
+      FileSystemOperation* operation = NewOperation(root_url);
+
+      FilePath path = root_path().Append(kFilteringTestCases[i].path);
+      FileSystemURL url(origin(), type(), path);
+
+      std::string test_name = base::StringPrintf(
+          "RemoveFiltering run %d test %" PRIuS, loop_count, i);
+      base::PlatformFileError expectation = base::PLATFORM_FILE_OK;
+      if (loop_count == 0 || !kFilteringTestCases[i].visible) {
+        // Cannot remove files that do not exist or are not visible.
+        expectation = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+      }
+      operation->Remove(
+          url, false, base::Bind(&ExpectEqHelper, test_name, expectation));
+      MessageLoop::current()->RunUntilIdle();
+    }
+  }
+}
+
+TEST_F(NativeMediaFileUtilTest, TruncateFiltering) {
+  // Run the loop twice. The first run has no files. The second run does.
+  for (int loop_count = 0; loop_count < 2; ++loop_count) {
+    if (loop_count == 1) {
+      PopulateDirectoryWithTestCases(root_path(),
+                                     kFilteringTestCases,
+                                     arraysize(kFilteringTestCases));
+    }
+    for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+      FileSystemURL root_url(origin(), type(), root_path());
+      FileSystemOperation* operation = NewOperation(root_url);
+
+      FilePath path = root_path().Append(kFilteringTestCases[i].path);
+      FileSystemURL url(origin(), type(), path);
+
+      std::string test_name = base::StringPrintf(
+          "TruncateFiltering run %d test %" PRIuS, loop_count, i);
+      base::PlatformFileError expectation = base::PLATFORM_FILE_OK;
+      if (loop_count == 0 || !kFilteringTestCases[i].visible) {
+        // Cannot truncate files that do not exist or are not visible.
+        expectation = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+      } else if (kFilteringTestCases[i].is_directory) {
+        // Cannot truncate directories.
+        expectation = base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
+      }
+      operation->Truncate(
+          url, 0, base::Bind(&ExpectEqHelper, test_name, expectation));
+      MessageLoop::current()->RunUntilIdle();
+    }
+  }
+}
+
+TEST_F(NativeMediaFileUtilTest, TouchFileFiltering) {
+  base::Time time = base::Time::Now();
+
+  // Run the loop twice. The first run has no files. The second run does.
+  for (int loop_count = 0; loop_count < 2; ++loop_count) {
+    if (loop_count == 1) {
+      PopulateDirectoryWithTestCases(root_path(),
+                                     kFilteringTestCases,
+                                     arraysize(kFilteringTestCases));
+    }
+    for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+      FileSystemURL root_url(origin(), type(), root_path());
+      FileSystemOperation* operation = NewOperation(root_url);
+
+      FilePath path = root_path().Append(kFilteringTestCases[i].path);
+      FileSystemURL url(origin(), type(), path);
+
+      std::string test_name = base::StringPrintf(
+          "TouchFileFiltering run %d test %" PRIuS, loop_count, i);
+      base::PlatformFileError expectation = base::PLATFORM_FILE_OK;
+      if (loop_count == 0 || !kFilteringTestCases[i].visible) {
+        // Files do not exists. Touch fails.
+        expectation = base::PLATFORM_FILE_ERROR_FAILED;
+      }
+      operation->TouchFile(
+          url, time, time, base::Bind(&ExpectEqHelper, test_name, expectation));
+      MessageLoop::current()->RunUntilIdle();
+    }
   }
 }
