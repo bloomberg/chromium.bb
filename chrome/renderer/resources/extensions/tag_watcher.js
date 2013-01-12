@@ -4,6 +4,9 @@
 
 // Expose a function to watch the HTML tag creation via Mutation Observers.
 function watchForTag(tagName, cb) {
+  if (!document.body)
+    return;
+
   // Query tags already in the document.
   var nodes = document.body.querySelectorAll(tagName);
   for (var i = 0, node; node = nodes[i]; i++) {
