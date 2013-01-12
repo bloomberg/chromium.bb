@@ -30,10 +30,10 @@ public:
     void didPinchGestureEnd();
     void updateScrollOffset(LayerImpl* scrollLayer);
 
-    void setHorizontalScrollbarLayer(ScrollbarLayerImpl* layer) { m_horizontalScrollbarLayer = layer; }
+    void setHorizontalScrollbarLayer(ScrollbarLayerImpl* layer);
     ScrollbarLayerImpl* horizontalScrollbarLayer() const { return m_horizontalScrollbarLayer; }
 
-    void setVerticalScrollbarLayer(ScrollbarLayerImpl* layer) { m_verticalScrollbarLayer = layer; }
+    void setVerticalScrollbarLayer(ScrollbarLayerImpl* layer);
     ScrollbarLayerImpl* verticalScrollbarLayer() const { return m_verticalScrollbarLayer; }
 
     gfx::Vector2dF currentOffset() const { return m_currentOffset; }
@@ -49,8 +49,6 @@ protected:
     explicit ScrollbarAnimationController(LayerImpl* scrollLayer);
 
 private:
-    static gfx::Size getScrollLayerBounds(const LayerImpl*);
-
     // Beware of dangling pointer. Always update these during tree synchronization.
     ScrollbarLayerImpl* m_horizontalScrollbarLayer;
     ScrollbarLayerImpl* m_verticalScrollbarLayer;

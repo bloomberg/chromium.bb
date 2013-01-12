@@ -535,6 +535,7 @@ TEST_F(LayerTest, checkPropertyChangeCausesCorrectBehavior)
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setPosition(gfx::PointF(4, 9)));
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setSublayerTransform(MathUtil::createGfxTransform(0, 0, 0, 0, 0, 0)));
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setScrollable(true));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setScrollOffset(gfx::Vector2d(10, 10)));
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setShouldScrollOnMainThread(true));
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setNonFastScrollableRegion(gfx::Rect(1, 1, 2, 2)));
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setHaveWheelEventHandlers(true));
@@ -546,7 +547,6 @@ TEST_F(LayerTest, checkPropertyChangeCausesCorrectBehavior)
 
     EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, testLayer->setMaskLayer(dummyLayer.get()));
     EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, testLayer->setReplicaLayer(dummyLayer.get()));
-    EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, testLayer->setScrollOffset(gfx::Vector2d(10, 10)));
 
     // The above tests should not have caused a change to the needsDisplay flag.
     EXPECT_FALSE(testLayer->needsDisplay());

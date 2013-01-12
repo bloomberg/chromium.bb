@@ -28,14 +28,12 @@ public:
     void setForeTrackResourceId(ResourceProvider::ResourceId id) { m_foreTrackResourceId = id; }
     void setThumbResourceId(ResourceProvider::ResourceId id) { m_thumbResourceId = id; }
 
+    void setAnimationController(ScrollbarAnimationController* controller);
+
+    // ScrollbarLayerImplBase implementation.
     virtual float currentPos() const OVERRIDE;
-    void setCurrentPos(float currentPos) { m_currentPos = currentPos; }
-
     virtual int totalSize() const OVERRIDE;
-    void setTotalSize(int totalSize) { m_totalSize = totalSize; }
-
     virtual int maximum() const OVERRIDE;
-    void setMaximum(int maximum) { m_maximum = maximum; }
 
     virtual WebKit::WebScrollbar::Orientation orientation() const OVERRIDE;
 
@@ -95,9 +93,9 @@ private:
     WebKit::WebScrollbar::ScrollbarPart m_pressedPart;
     WebKit::WebScrollbar::ScrollbarPart m_hoveredPart;
 
-    float m_currentPos;
-    int m_totalSize;
-    int m_maximum;
+    // This animation controller is owned by the scrollable LayerImpl, which
+    // is tied to the lifetime of the ScrollbarLayerImpls.
+    ScrollbarAnimationController* m_animationController;
 
     bool m_isScrollableAreaActive;
     bool m_isScrollViewScrollbar;

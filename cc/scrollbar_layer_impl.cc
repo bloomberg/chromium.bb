@@ -30,6 +30,7 @@ ScrollbarLayerImpl::ScrollbarLayerImpl(LayerTreeImpl* treeImpl, int id)
     , m_controlSize(WebScrollbar::RegularScrollbar)
     , m_pressedPart(WebScrollbar::NoPart)
     , m_hoveredPart(WebScrollbar::NoPart)
+    , m_animationController(0)
     , m_isScrollableAreaActive(false)
     , m_isScrollViewScrollbar(false)
     , m_enabled(false)
@@ -65,19 +66,33 @@ void ScrollbarLayerImpl::setScrollbarData(WebScrollbar* scrollbar)
     m_geometry->update(scrollbar);
 }
 
+void ScrollbarLayerImpl::setAnimationController(ScrollbarAnimationController* controller)
+{
+    m_animationController = controller;
+}
+
 float ScrollbarLayerImpl::currentPos() const
 {
-    return m_currentPos;
+    if (m_orientation == WebKit::WebScrollbar::Horizontal)
+        return m_animationController->currentOffset().x();
+    else
+        return m_animationController->currentOffset().y();
 }
 
 int ScrollbarLayerImpl::totalSize() const
 {
-    return m_totalSize;
+    if (m_orientation == WebKit::WebScrollbar::Horizontal)
+        return m_animationController->totalSize().width();
+    else
+        return m_animationController->totalSize().height();
 }
 
 int ScrollbarLayerImpl::maximum() const
 {
-    return m_maximum;
+    if (m_orientation == WebKit::WebScrollbar::Horizontal)
+        return m_animationController->maximum().x();
+    else
+        return m_animationController->maximum().y();
 }
 
 WebKit::WebScrollbar::Orientation ScrollbarLayerImpl::orientation() const
@@ -162,7 +177,7 @@ bool ScrollbarLayerImpl::Scrollbar::isOverlay() const
 
 int ScrollbarLayerImpl::Scrollbar::value() const
 {
-    return m_owner->m_currentPos;
+    return m_owner->currentPos();
 }
 
 WebKit::WebPoint ScrollbarLayerImpl::Scrollbar::location() const
@@ -182,12 +197,12 @@ bool ScrollbarLayerImpl::Scrollbar::enabled() const
 
 int ScrollbarLayerImpl::Scrollbar::maximum() const
 {
-    return m_owner->m_maximum;
+    return m_owner->maximum();
 }
 
 int ScrollbarLayerImpl::Scrollbar::totalSize() const
 {
-    return m_owner->m_totalSize;
+    return m_owner->totalSize();
 }
 
 bool ScrollbarLayerImpl::Scrollbar::isScrollViewScrollbar() const

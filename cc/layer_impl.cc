@@ -743,6 +743,9 @@ void LayerImpl::setScrollOffset(gfx::Vector2d scrollOffset)
 
     m_scrollOffset = scrollOffset;
     noteLayerPropertyChangedForSubtree();
+
+    if (m_scrollbarAnimationController)
+        m_scrollbarAnimationController->updateScrollOffset(this);
 }
 
 void LayerImpl::setScrollDelta(const gfx::Vector2dF& scrollDelta)
@@ -765,9 +768,10 @@ void LayerImpl::setScrollDelta(const gfx::Vector2dF& scrollDelta)
     }
 
     m_scrollDelta = scrollDelta;
+    noteLayerPropertyChangedForSubtree();
+
     if (m_scrollbarAnimationController)
         m_scrollbarAnimationController->updateScrollOffset(this);
-    noteLayerPropertyChangedForSubtree();
 }
 
 void LayerImpl::setImplTransform(const gfx::Transform& transform)
@@ -807,9 +811,8 @@ void LayerImpl::setMaxScrollOffset(gfx::Vector2d maxScrollOffset)
 
     layerTreeImpl()->SetNeedsUpdateDrawProperties();
 
-    if (!m_scrollbarAnimationController)
-        return;
-    m_scrollbarAnimationController->updateScrollOffset(this);
+    if (m_scrollbarAnimationController)
+        m_scrollbarAnimationController->updateScrollOffset(this);
 }
 
 ScrollbarLayerImpl* LayerImpl::horizontalScrollbarLayer()
@@ -838,7 +841,6 @@ void LayerImpl::setHorizontalScrollbarLayer(ScrollbarLayerImpl* scrollbarLayer)
             m_scrollbarAnimationController = ScrollbarAnimationController::create(this);
     }
     m_scrollbarAnimationController->setHorizontalScrollbarLayer(scrollbarLayer);
-    m_scrollbarAnimationController->updateScrollOffset(this);
 }
 
 ScrollbarLayerImpl* LayerImpl::verticalScrollbarLayer()
@@ -860,7 +862,6 @@ void LayerImpl::setVerticalScrollbarLayer(ScrollbarLayerImpl* scrollbarLayer)
             m_scrollbarAnimationController = ScrollbarAnimationController::create(this);
     }
     m_scrollbarAnimationController->setVerticalScrollbarLayer(scrollbarLayer);
-    m_scrollbarAnimationController->updateScrollOffset(this);
 }
 
 }  // namespace cc

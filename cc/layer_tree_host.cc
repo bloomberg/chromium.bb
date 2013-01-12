@@ -261,28 +261,6 @@ void LayerTreeHost::beginCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     TRACE_EVENT0("cc", "LayerTreeHost::commitTo");
 }
 
-static void pushPropertiesRecursive(Layer* layer, LayerImpl* layerImpl)
-{
-    if (!layer) {
-        DCHECK(!layerImpl);
-        return;
-    }
-
-    DCHECK_EQ(layer->id(), layerImpl->id());
-    layer->pushPropertiesTo(layerImpl);
-
-    pushPropertiesRecursive(layer->maskLayer(), layerImpl->maskLayer());
-    pushPropertiesRecursive(layer->replicaLayer(), layerImpl->replicaLayer());
-
-    const std::vector<scoped_refptr<Layer> >& children = layer->children();
-    const ScopedPtrVector<LayerImpl>& implChildren = layerImpl->children();
-    DCHECK_EQ(children.size(), implChildren.size());
-
-    for (size_t i = 0; i < children.size(); ++i) {
-        pushPropertiesRecursive(children[i].get(), implChildren[i]);
-    }
-}
-
 // This function commits the LayerTreeHost to an impl tree. When modifying
 // this function, keep in mind that the function *runs* on the impl thread! Any
 // code that is logically a main thread operation, e.g. deletion of a Layer,
@@ -313,12 +291,14 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
         needsFullTreeSync = m_needsFullTreeSync;
     }
 
-    if (needsFullTreeSync) {
+    if (needsFullTreeSync)
         syncTree->SetRootLayer(TreeSynchronizer::synchronizeTrees(rootLayer(), syncTree->DetachLayerTree(), syncTree));
-    } else {
-        TRACE_EVENT0("cc", "LayerTreeHost::pushPropertiesRecursive");
-        pushPropertiesRecursive(rootLayer(), syncTree->RootLayer());
+    {
+        TRACE_EVENT0("cc", "LayerTreeHost::pushProperties");
+        TreeSynchronizer::pushProperties(rootLayer(), syncTree->RootLayer());
     }
+    syncTree->FindRootScrollLayer();
+
     m_needsFullTreeSync = false;
 
     if (m_rootLayer && m_hudLayer)

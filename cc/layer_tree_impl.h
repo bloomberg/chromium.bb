@@ -99,6 +99,7 @@ class CC_EXPORT LayerTreeImpl {
     currently_scrolling_layer_ = layer_impl;
   }
 
+  void FindRootScrollLayer();
   void ClearCurrentlyScrollingLayer();
 
   void UpdateMaxScrollOffset();

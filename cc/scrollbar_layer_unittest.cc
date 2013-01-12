@@ -32,7 +32,9 @@ scoped_ptr<LayerImpl> layerImplForScrollAreaAndScrollbar(
     scoped_refptr<Layer> child2 = ScrollbarLayer::create(scrollbar.Pass(), FakeScrollbarThemePainter::Create(false).PassAs<ScrollbarThemePainter>(), FakeWebScrollbarThemeGeometry::create(true), child1->id());
     layerTreeRoot->addChild(child1);
     layerTreeRoot->insertChild(child2, reverse_order ? 0 : 1);
-    return TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), host_impl->activeTree()).Pass();
+    scoped_ptr<LayerImpl> layerImpl = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), host_impl->activeTree());
+    TreeSynchronizer::pushProperties(layerTreeRoot.get(), layerImpl.get());
+    return layerImpl.Pass();
 }
 
 TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
@@ -105,9 +107,11 @@ TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
 
     layerTreeRoot->setScrollOffset(gfx::Vector2d(10, 20));
     layerTreeRoot->setMaxScrollOffset(gfx::Vector2d(30, 50));
+    layerTreeRoot->setBounds(gfx::Size(100, 200));
     contentLayer->setBounds(gfx::Size(100, 200));
 
     scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), hostImpl.activeTree());
+    TreeSynchronizer::pushProperties(layerTreeRoot.get(), layerImplTreeRoot.get());
 
     ScrollbarLayerImpl* ccScrollbarLayer = static_cast<ScrollbarLayerImpl*>(layerImplTreeRoot->children()[1]);
 
@@ -117,10 +121,12 @@ TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
 
     layerTreeRoot->setScrollOffset(gfx::Vector2d(100, 200));
     layerTreeRoot->setMaxScrollOffset(gfx::Vector2d(300, 500));
+    layerTreeRoot->setBounds(gfx::Size(1000, 2000));
     contentLayer->setBounds(gfx::Size(1000, 2000));
 
     ScrollbarAnimationController* scrollbarController = layerImplTreeRoot->scrollbarAnimationController();
     layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), layerImplTreeRoot.Pass(), hostImpl.activeTree());
+    TreeSynchronizer::pushProperties(layerTreeRoot.get(), layerImplTreeRoot.get());
     EXPECT_EQ(scrollbarController, layerImplTreeRoot->scrollbarAnimationController());
 
     EXPECT_EQ(100, ccScrollbarLayer->currentPos());

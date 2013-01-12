@@ -22,6 +22,10 @@ public:
     // of the Layer tree, reusing the LayerImpls in the tree provided by oldLayerImplRoot if possible.
     static scoped_ptr<LayerImpl> synchronizeTrees(Layer* layerRoot, scoped_ptr<LayerImpl> oldLayerImplRoot, LayerTreeImpl*);
 
+    // Pushes properties from a Layer tree to a structurally equivalent
+    // LayerImpl tree.
+    static void pushProperties(Layer* layerRoot, LayerImpl* layerImplRoot);
+
 private:
     TreeSynchronizer(); // Not instantiable.
 

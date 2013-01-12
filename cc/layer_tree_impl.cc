@@ -47,8 +47,14 @@ static LayerImpl* findRootScrollLayer(LayerImpl* layer)
 
 void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
   root_layer_ = layer.Pass();
+  root_scroll_layer_ = NULL;
+  currently_scrolling_layer_ = NULL;
+
+  layer_tree_host_impl_->OnCanDrawStateChangedForTree(this);
+}
+
+void LayerTreeImpl::FindRootScrollLayer() {
   root_scroll_layer_ = findRootScrollLayer(root_layer_.get());
-  currently_scrolling_layer_ = 0;
 
   if (root_layer_ && scrolling_layer_id_from_previous_tree_) {
     currently_scrolling_layer_ = LayerTreeHostCommon::findLayerInSubtree(
@@ -57,8 +63,6 @@ void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
   }
 
   scrolling_layer_id_from_previous_tree_ = 0;
-
-  layer_tree_host_impl_->OnCanDrawStateChangedForTree(this);
 }
 
 scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {

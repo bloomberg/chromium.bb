@@ -52,39 +52,30 @@ void ScrollbarAnimationController::updateScrollOffset(LayerImpl* scrollLayer)
     updateScrollOffsetAtTime(scrollLayer, (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF());
 }
 
-gfx::Size ScrollbarAnimationController::getScrollLayerBounds(const LayerImpl* scrollLayer)
+void ScrollbarAnimationController::setHorizontalScrollbarLayer(ScrollbarLayerImpl* layer)
 {
-    if (!scrollLayer->children().size())
-        return gfx::Size();
-    // Copy & paste from LayerTreeHostImpl...
-    // FIXME: Hardcoding the first child here is weird. Think of
-    // a cleaner way to get the contentBounds on the Impl side.
-    return scrollLayer->children()[0]->bounds();
+    m_horizontalScrollbarLayer = layer;
+    if (layer)
+        layer->setAnimationController(this);
+}
+
+void ScrollbarAnimationController::setVerticalScrollbarLayer(ScrollbarLayerImpl* layer)
+{
+    m_verticalScrollbarLayer = layer;
+    if (layer)
+        layer->setAnimationController(this);
 }
 
 void ScrollbarAnimationController::updateScrollOffsetAtTime(LayerImpl* scrollLayer, double)
 {
     m_currentOffset = scrollLayer->scrollOffset() + scrollLayer->scrollDelta();
-    m_totalSize = getScrollLayerBounds(scrollLayer);
+    m_totalSize = scrollLayer->bounds();
     m_maximum = scrollLayer->maxScrollOffset();
 
     // Get the m_currentOffset.y() value for a sanity-check on scrolling
     // benchmark metrics. Specifically, we want to make sure
     // BasicMouseWheelSmoothScrollGesture has proper scroll curves.
     TRACE_COUNTER_ID1("gpu", "scroll_offset_y", this, m_currentOffset.y());
-
-
-    if (m_horizontalScrollbarLayer) {
-        m_horizontalScrollbarLayer->setCurrentPos(m_currentOffset.x());
-        m_horizontalScrollbarLayer->setTotalSize(m_totalSize.width());
-        m_horizontalScrollbarLayer->setMaximum(m_maximum.x());
-    }
-
-    if (m_verticalScrollbarLayer) {
-        m_verticalScrollbarLayer->setCurrentPos(m_currentOffset.y());
-        m_verticalScrollbarLayer->setTotalSize(m_totalSize.height());
-        m_verticalScrollbarLayer->setMaximum(m_maximum.y());
-    }
 }
 
 }  // namespace cc

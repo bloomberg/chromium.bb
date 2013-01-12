@@ -441,7 +441,7 @@ void Layer::setScrollOffset(gfx::Vector2d scrollOffset)
     m_scrollOffset = scrollOffset;
     if (m_layerScrollClient)
         m_layerScrollClient->didScroll();
-    setNeedsFullTreeSync();
+    setNeedsCommit();
 }
 
 void Layer::setMaxScrollOffset(gfx::Vector2d maxScrollOffset)
@@ -594,7 +594,6 @@ void Layer::pushPropertiesTo(LayerImpl* layer)
     layer->setFilter(filter());
     layer->setBackgroundFilters(backgroundFilters());
     layer->setMasksToBounds(m_masksToBounds);
-    layer->setScrollable(m_scrollable);
     layer->setShouldScrollOnMainThread(m_shouldScrollOnMainThread);
     layer->setHaveWheelEventHandlers(m_haveWheelEventHandlers);
     layer->setNonFastScrollableRegion(m_nonFastScrollableRegion);
@@ -607,11 +606,13 @@ void Layer::pushPropertiesTo(LayerImpl* layer)
     layer->setFixedToContainerLayer(m_fixedToContainerLayer);
     layer->setPreserves3D(preserves3D());
     layer->setUseParentBackfaceVisibility(m_useParentBackfaceVisibility);
-    layer->setScrollOffset(m_scrollOffset);
-    layer->setMaxScrollOffset(m_maxScrollOffset);
     layer->setSublayerTransform(m_sublayerTransform);
     if (!transformIsAnimating())
         layer->setTransform(m_transform);
+
+    layer->setScrollable(m_scrollable);
+    layer->setScrollOffset(m_scrollOffset);
+    layer->setMaxScrollOffset(m_maxScrollOffset);
 
     // If the main thread commits multiple times before the impl thread actually draws, then damage tracking
     // will become incorrect if we simply clobber the updateRect here. The LayerImpl's updateRect needs to
