@@ -522,7 +522,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 #if defined(USE_AURA)
   ImageTransportFactory::Terminate();
 #endif
-  BrowserGpuChannelHostFactory::Terminate();
 
   // The device monitors are using |system_monitor_| as dependency, so delete
   // them before |system_monitor_| goes away.
@@ -627,6 +626,10 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   BrowserThreadImpl::ShutdownThreadPool();
 
 #if !defined(OS_IOS)
+  // Must happen after the IO thread is shutdown since this may be accessed from
+  // it.
+  BrowserGpuChannelHostFactory::Terminate();
+
   // Must happen after the I/O thread is shutdown since this class lives on the
   // I/O thread and isn't threadsafe.
   GamepadService::GetInstance()->Terminate();

@@ -214,9 +214,8 @@ class AcceleratedCompositingBlockedTest : public GpuFeatureTest {
   }
 };
 
-#if (defined(OS_WIN) && defined(USE_AURA)) || defined(OS_CHROMEOS)
+#if (defined(OS_WIN) && defined(USE_AURA))
 // Compositing is always on for Windows Aura.
-// Disabled on chrome os due to http://crbug.com/167806
 #define MAYBE_AcceleratedCompositingBlocked DISABLED_AcceleratedCompositingBlocked
 #else
 #define MAYBE_AcceleratedCompositingBlocked AcceleratedCompositingBlocked
@@ -385,12 +384,7 @@ IN_PROC_BROWSER_TEST_F(WebGLMultisamplingTest, MultisamplingDisabled) {
   RunTest(url, "\"FALSE\"", true);
 }
 
-#if defined(OS_LINUX)
-#define MAYBE_Canvas2DAllowed DISABLED_Canvas2DAllowed
-#else
-#define MAYBE_Canvas2DAllowed Canvas2DAllowed
-#endif
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_Canvas2DAllowed) {
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
   // Accelerated canvas 2D is not supported on XP.
   if (GPUTestBotConfig::CurrentConfigMatches("XP"))
     return;

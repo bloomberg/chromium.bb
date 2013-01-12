@@ -78,7 +78,8 @@ class CONTENT_EXPORT GpuChannelHostFactory {
 // Encapsulates an IPC channel between the client and one GPU process.
 // On the GPU process side there's a corresponding GpuChannel.
 class GpuChannelHost : public IPC::Sender,
-                       public base::RefCountedThreadSafe<GpuChannelHost> {
+                       public base::RefCountedThreadSafe<GpuChannelHost>,
+                       public base::SupportsWeakPtr<GpuChannelHost> {
  public:
   enum State {
     // Not yet connected.
@@ -185,7 +186,8 @@ class GpuChannelHost : public IPC::Sender,
   // to the correct message loop.
   class MessageFilter : public IPC::ChannelProxy::MessageFilter {
    public:
-    explicit MessageFilter(GpuChannelHost* parent);
+    MessageFilter(base::WeakPtr<GpuChannelHost> parent,
+                  GpuChannelHostFactory* factory);
 
     void AddRoute(int route_id,
                   base::WeakPtr<IPC::Listener> listener,
@@ -199,7 +201,12 @@ class GpuChannelHost : public IPC::Sender,
    private:
     virtual ~MessageFilter();
 
-    GpuChannelHost* parent_;
+    // Note: this reference can only be used to post tasks back to the
+    // GpuChannelHost, it is illegal to dereference on the IO thread where the
+    // MessageFilter lives.
+    base::WeakPtr<GpuChannelHost> parent_;
+
+    GpuChannelHostFactory* factory_;
 
     typedef base::hash_map<int, GpuListenerInfo> ListenerMap;
     ListenerMap listeners_;
