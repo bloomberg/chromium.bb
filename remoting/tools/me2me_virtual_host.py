@@ -203,6 +203,7 @@ class Desktop:
     # Create clean environment for new session, so it is cleanly separated from
     # the user's console X session.
     self.child_env = {}
+
     for key in [
         "HOME",
         "LANG",
@@ -214,6 +215,26 @@ class Desktop:
         LOG_FILE_ENV_VAR]:
       if os.environ.has_key(key):
         self.child_env[key] = os.environ[key]
+
+    # Read from /etc/environment if it exists, as it is a standard place to
+    # store system-wide environment settings. During a normal login, this would
+    # typically be done by the pam_env PAM module, depending on the local PAM
+    # configuration.
+    env_filename = "/etc/environment"
+    try:
+      with open(env_filename, "r") as env_file:
+        for line in env_file:
+          line = line.rstrip("\n")
+          # Split at the first "=", leaving any further instances in the value.
+          key_value_pair = line.split("=", 1)
+          if len(key_value_pair) == 2:
+            key, value = tuple(key_value_pair)
+            # The file stores key=value assignments, but the value may be
+            # quoted, so strip leading & trailing quotes from it.
+            value = value.strip("'\"")
+            self.child_env[key] = value
+    except IOError:
+      logging.info("Failed to read %s, skipping." % env_filename)
 
   def _setup_pulseaudio(self):
     self.pulseaudio_pipe = None
