@@ -112,15 +112,19 @@ class Launcher::DimmerView : public views::WidgetDelegateView,
  private:
   // views::View overrides:
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE {
+    ash::internal::ShelfLayoutManager* shelf = ash::GetRootWindowController(
+            GetWidget()->GetNativeView()->GetRootWindow())->shelf();
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     gfx::ImageSkia background_image =
         *rb.GetImageSkiaNamed(IDR_AURA_LAUNCHER_DIMMING);
     if (SHELF_ALIGNMENT_BOTTOM != launcher_->alignment_)
       background_image = gfx::ImageSkiaOperations::CreateRotatedImage(
           background_image,
-          (SHELF_ALIGNMENT_LEFT == launcher_->alignment_ ?
-              SkBitmapOperations::ROTATION_90_CW :
-              SkBitmapOperations::ROTATION_270_CW));
+          shelf->SelectValueForShelfAlignment(
+              SkBitmapOperations::ROTATION_90_CW,
+              SkBitmapOperations::ROTATION_90_CW,
+              SkBitmapOperations::ROTATION_270_CW,
+              SkBitmapOperations::ROTATION_180_CW));
 
     SkPaint paint;
     paint.setAlpha(kDimAlpha);
@@ -168,7 +172,8 @@ void Launcher::DelegateView::Layout() {
     return;
   View* launcher_view = child_at(0);
 
-  if (launcher_->alignment_ == SHELF_ALIGNMENT_BOTTOM) {
+  if (launcher_->alignment_ == SHELF_ALIGNMENT_BOTTOM ||
+      launcher_->alignment_ == SHELF_ALIGNMENT_TOP) {
     int w = std::max(0, width() - launcher_->status_size_.width());
     launcher_view->SetBounds(0, 0, w, height());
   } else {
@@ -189,12 +194,14 @@ void Launcher::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
         shelf->SelectValueForShelfAlignment(
             SkBitmapOperations::ROTATION_90_CW,
             SkBitmapOperations::ROTATION_90_CW,
-            SkBitmapOperations::ROTATION_270_CW));
+            SkBitmapOperations::ROTATION_270_CW,
+            SkBitmapOperations::ROTATION_180_CW));
 
   gfx::Rect black_rect = shelf->SelectValueForShelfAlignment(
     gfx::Rect(0, height() - kNumBlackPixels, width(), kNumBlackPixels),
     gfx::Rect(0, 0, kNumBlackPixels, height()),
-    gfx::Rect(width() - kNumBlackPixels, 0, kNumBlackPixels, height()));
+    gfx::Rect(width() - kNumBlackPixels, 0, kNumBlackPixels, height()),
+    gfx::Rect(0, 0, width(), kNumBlackPixels));
 
   SkPaint paint;
   paint.setAlpha(alpha_);

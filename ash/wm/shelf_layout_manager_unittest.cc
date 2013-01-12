@@ -602,7 +602,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
 }
 
-// Tests SHELF_ALIGNMENT_LEFT and SHELF_ALIGNMENT_RIGHT.
+// Tests SHELF_ALIGNMENT_(LEFT, RIGHT, TOP).
 TEST_F(ShelfLayoutManagerTest, SetAlignment) {
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   // Force an initial layout.
@@ -670,6 +670,35 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
       display.GetWorkAreaInsets().right());
   EXPECT_EQ(ShelfLayoutManager::kAutoHideSize,
       display.bounds().right() - display.work_area().right());
+
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  shelf->SetAlignment(SHELF_ALIGNMENT_TOP);
+  display = manager->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
+  launcher_bounds = shelf->launcher_widget()->GetWindowBoundsInScreen();
+  display = manager->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
+  ASSERT_NE(-1, display.id());
+  EXPECT_EQ(shelf->GetIdealBounds().height(),
+            display.GetWorkAreaInsets().top());
+  EXPECT_GE(launcher_bounds.height(),
+      shelf->launcher_widget()->GetContentsView()->GetPreferredSize().height());
+  EXPECT_EQ(SHELF_ALIGNMENT_TOP, GetSystemTray()->shelf_alignment());
+  status_bounds = gfx::Rect(status_area_widget->GetWindowBoundsInScreen());
+  EXPECT_GE(status_bounds.height(),
+            status_area_widget->GetContentsView()->GetPreferredSize().height());
+  EXPECT_EQ(shelf->GetIdealBounds().height(),
+            display.GetWorkAreaInsets().top());
+  EXPECT_EQ(0, display.GetWorkAreaInsets().right());
+  EXPECT_EQ(0, display.GetWorkAreaInsets().bottom());
+  EXPECT_EQ(0, display.GetWorkAreaInsets().left());
+  EXPECT_EQ(display.work_area().y(), launcher_bounds.bottom());
+  EXPECT_EQ(display.bounds().x(), launcher_bounds.x());
+  EXPECT_EQ(display.bounds().width(), launcher_bounds.width());
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  display = manager->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
+  EXPECT_EQ(ShelfLayoutManager::kAutoHideSize,
+      display.GetWorkAreaInsets().top());
+  EXPECT_EQ(ShelfLayoutManager::kAutoHideSize,
+            display.work_area().y() - display.bounds().y());
 }
 
 TEST_F(ShelfLayoutManagerTest, GestureDrag) {

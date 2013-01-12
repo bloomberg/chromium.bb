@@ -704,7 +704,8 @@ void SetupLabelForTray(views::Label* label) {
 
 void SetTrayImageItemBorder(views::View* tray_view,
                             ShelfAlignment alignment) {
-  if (alignment == SHELF_ALIGNMENT_BOTTOM) {
+  if (alignment == SHELF_ALIGNMENT_BOTTOM ||
+      alignment == SHELF_ALIGNMENT_TOP) {
     tray_view->set_border(views::Border::CreateEmptyBorder(
         0, kTrayImageItemHorizontalPaddingBottomAlignment,
         0, kTrayImageItemHorizontalPaddingBottomAlignment));
@@ -719,7 +720,8 @@ void SetTrayImageItemBorder(views::View* tray_view,
 
 void SetTrayLabelItemBorder(TrayItemView* tray_view,
                             ShelfAlignment alignment) {
-  if (alignment == SHELF_ALIGNMENT_BOTTOM) {
+  if (alignment == SHELF_ALIGNMENT_BOTTOM ||
+      alignment == SHELF_ALIGNMENT_TOP) {
     tray_view->set_border(views::Border::CreateEmptyBorder(
         0, kTrayLabelItemHorizontalPaddingBottomAlignment,
         0, kTrayLabelItemHorizontalPaddingBottomAlignment));

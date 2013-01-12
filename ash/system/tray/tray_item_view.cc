@@ -78,7 +78,8 @@ int TrayItemView::GetAnimationDurationMS() {
 
 gfx::Size TrayItemView::GetPreferredSize() {
   gfx::Size size = DesiredSize();
-  if (owner()->system_tray()->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM)
+  if (owner()->system_tray()->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM ||
+      owner()->system_tray()->shelf_alignment() == SHELF_ALIGNMENT_TOP)
     size.set_height(kTrayIconHeight);
   else
     size.set_width(kTrayIconWidth);

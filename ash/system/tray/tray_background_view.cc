@@ -131,7 +131,8 @@ void TrayBackgroundView::TrayContainer::ViewHierarchyChanged(bool is_add,
 void TrayBackgroundView::TrayContainer::UpdateLayout() {
   // Adjust the size of status tray dark background by adding additional
   // empty border.
-  if (alignment_ == SHELF_ALIGNMENT_BOTTOM) {
+  if (alignment_ == SHELF_ALIGNMENT_BOTTOM ||
+      alignment_ == SHELF_ALIGNMENT_TOP) {
     set_border(views::Border::CreateEmptyBorder(
         kTrayContainerVerticalPaddingBottomAlignment,
         kTrayContainerHorizontalPaddingBottomAlignment,
@@ -275,6 +276,12 @@ void TrayBackgroundView::SetBorder() {
         on_edge ? kPaddingFromBottomOfScreenBottomAlignment :
                   kPaddingFromBottomOfScreenBottomAlignment - 1,
         on_edge ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0));
+  } else if (shelf_alignment() == SHELF_ALIGNMENT_TOP) {
+    set_border(views::Border::CreateEmptyBorder(
+        on_edge ? kPaddingFromBottomOfScreenBottomAlignment :
+                  kPaddingFromBottomOfScreenBottomAlignment - 1,
+        0, 0,
+        on_edge ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0));
   } else if (shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
     set_border(views::Border::CreateEmptyBorder(
         0, kPaddingFromOuterEdgeOfLauncherVerticalAlignment,
@@ -361,6 +368,8 @@ TrayBubbleView::AnchorAlignment TrayBackgroundView::GetAnchorAlignment() const {
       return TrayBubbleView::ANCHOR_ALIGNMENT_LEFT;
     case SHELF_ALIGNMENT_RIGHT:
       return TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT;
+    case SHELF_ALIGNMENT_TOP:
+      return TrayBubbleView::ANCHOR_ALIGNMENT_TOP;
   }
   NOTREACHED();
   return TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM;

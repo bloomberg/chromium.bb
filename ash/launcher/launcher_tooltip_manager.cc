@@ -352,7 +352,8 @@ void LauncherTooltipManager::CreateBubble(views::View* anchor,
       shelf_layout_manager_->SelectValueForShelfAlignment(
           views::BubbleBorder::BOTTOM_CENTER,
           views::BubbleBorder::LEFT_CENTER,
-          views::BubbleBorder::RIGHT_CENTER);
+          views::BubbleBorder::RIGHT_CENTER,
+          views::BubbleBorder::TOP_CENTER);
 
   view_ = new LauncherTooltipBubble(anchor, arrow_location, this);
   widget_ = view_->GetWidget();

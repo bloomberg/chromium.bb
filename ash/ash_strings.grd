@@ -191,6 +191,9 @@ This file contains the strings for ash.
       <message name="IDS_AURA_LAUNCHER_CONTEXT_MENU_ALIGN_RIGHT" desc="Title of the menu item in the context menu for aligning the launcher to the right of the screen">
         Right
       </message>
+      <message name="IDS_AURA_LAUNCHER_CONTEXT_MENU_ALIGN_TOP" desc="Title of the menu item in the context menu for aligning the launcher to the top of the screen">
+        Top
+      </message>
 
       <message name="IDS_AURA_SET_DESKTOP_WALLPAPER" desc="The label used for change wallpaper in context menu">
         Set wallpaper...

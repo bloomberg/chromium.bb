@@ -247,6 +247,8 @@ TrayBubbleView* TrayBubbleView::Create(gfx::NativeView parent_window,
     if (init_params->anchor_alignment == ANCHOR_ALIGNMENT_BOTTOM) {
       init_params->arrow_location = base::i18n::IsRTL() ?
           views::BubbleBorder::BOTTOM_LEFT : views::BubbleBorder::BOTTOM_RIGHT;
+    } else if (init_params->anchor_alignment == ANCHOR_ALIGNMENT_TOP) {
+      init_params->arrow_location = views::BubbleBorder::TOP_LEFT;
     } else if (init_params->anchor_alignment == ANCHOR_ALIGNMENT_LEFT) {
       init_params->arrow_location = views::BubbleBorder::LEFT_BOTTOM;
     } else {

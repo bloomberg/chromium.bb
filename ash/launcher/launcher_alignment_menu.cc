@@ -29,6 +29,9 @@ LauncherAlignmentMenu::LauncherAlignmentMenu(
   AddRadioItemWithStringId(MENU_ALIGN_RIGHT,
                            IDS_AURA_LAUNCHER_CONTEXT_MENU_ALIGN_RIGHT,
                            align_group_id);
+  AddRadioItemWithStringId(MENU_ALIGN_TOP,
+                           IDS_AURA_LAUNCHER_CONTEXT_MENU_ALIGN_TOP,
+                           align_group_id);
 }
 
 LauncherAlignmentMenu::~LauncherAlignmentMenu() {
@@ -39,7 +42,8 @@ bool LauncherAlignmentMenu::IsCommandIdChecked(int command_id) const {
       SelectValueForShelfAlignment(
           MENU_ALIGN_BOTTOM == command_id,
           MENU_ALIGN_LEFT == command_id,
-          MENU_ALIGN_RIGHT == command_id);
+          MENU_ALIGN_RIGHT == command_id,
+          MENU_ALIGN_TOP == command_id);
 }
 
 bool LauncherAlignmentMenu::IsCommandIdEnabled(int command_id) const {
@@ -64,6 +68,10 @@ void LauncherAlignmentMenu::ExecuteCommand(int command_id) {
       break;
     case MENU_ALIGN_RIGHT:
       Shell::GetInstance()->SetShelfAlignment(SHELF_ALIGNMENT_RIGHT,
+                                              root_window_);
+      break;
+    case MENU_ALIGN_TOP:
+      Shell::GetInstance()->SetShelfAlignment(SHELF_ALIGNMENT_TOP,
                                               root_window_);
       break;
   }

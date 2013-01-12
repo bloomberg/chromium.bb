@@ -40,6 +40,7 @@ const char kShelfAutoHideBehaviorNever[] = "Never";
 extern const char kShelfAlignmentBottom[] = "Bottom";
 extern const char kShelfAlignmentLeft[] = "Left";
 extern const char kShelfAlignmentRight[] = "Right";
+extern const char kShelfAlignmentTop[] = "Top";
 
 void RegisterChromeLauncherUserPrefs(PrefServiceSyncable* user_prefs) {
   // TODO: If we want to support multiple profiles this will likely need to be

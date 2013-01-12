@@ -74,7 +74,7 @@ void OverflowButton::PaintBackground(gfx::Canvas* canvas, int alpha) {
       ShelfLayoutManager::ForLauncher(GetWidget()->GetNativeView());
 
   // Nudge the background a little to line up right.
-  if (shelf->GetAlignment() == SHELF_ALIGNMENT_BOTTOM) {
+  if (shelf->IsHorizontalAlignment()) {
     rect.set_origin(gfx::Point(
         bounds.x() + ((bounds.width() - kButtonHoverSize) / 2) - 1,
         bounds.y() + kBackgroundOffset - 1));
@@ -128,13 +128,17 @@ void OverflowButton::OnPaint(gfx::Canvas* canvas) {
       transform.Translate(kBackgroundOffset, height());
       RotateCounterclockwise(&transform);
       break;
+    case SHELF_ALIGNMENT_TOP:
+      transform.Translate(1, kBackgroundOffset);
+      break;
   }
 
   canvas->Save();
   canvas->Transform(transform);
 
   gfx::Rect rect(GetContentsBounds());
-  if (alignment == SHELF_ALIGNMENT_BOTTOM) {
+  if (alignment == SHELF_ALIGNMENT_BOTTOM ||
+      alignment == SHELF_ALIGNMENT_TOP) {
     canvas->DrawImageInt(*image_,
                          rect.x() + (rect.width() - image_->width()) / 2,
                          kButtonHoverSize - image_->height());

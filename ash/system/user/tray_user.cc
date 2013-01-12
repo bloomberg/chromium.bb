@@ -611,7 +611,8 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 
 void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   if (avatar_) {
-    if (alignment == SHELF_ALIGNMENT_BOTTOM) {
+    if (alignment == SHELF_ALIGNMENT_BOTTOM ||
+        alignment == SHELF_ALIGNMENT_TOP) {
       avatar_->set_border(views::Border::CreateEmptyBorder(
           0, kTrayImageItemHorizontalPaddingBottomAlignment + 2,
           0, kTrayImageItemHorizontalPaddingBottomAlignment));
@@ -619,7 +620,8 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
         SetTrayImageItemBorder(avatar_, alignment);
     }
   } else {
-    if (alignment == SHELF_ALIGNMENT_BOTTOM) {
+    if (alignment == SHELF_ALIGNMENT_BOTTOM ||
+        alignment == SHELF_ALIGNMENT_TOP) {
       label_->set_border(views::Border::CreateEmptyBorder(
           0, kTrayLabelItemHorizontalPaddingBottomAlignment,
           0, kTrayLabelItemHorizontalPaddingBottomAlignment));

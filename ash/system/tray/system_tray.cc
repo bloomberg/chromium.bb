@@ -315,7 +315,8 @@ void SystemTray::DestroyNotificationBubble() {
 
 int SystemTray::GetTrayXOffset(SystemTrayItem* item) const {
   // Don't attempt to align the arrow if the shelf is on the left or right.
-  if (shelf_alignment() != SHELF_ALIGNMENT_BOTTOM)
+  if (shelf_alignment() != SHELF_ALIGNMENT_BOTTOM &&
+      shelf_alignment() != SHELF_ALIGNMENT_TOP)
     return TrayBubbleView::InitParams::kArrowDefaultOffset;
 
   std::map<SystemTrayItem*, views::View*>::const_iterator it =
@@ -541,7 +542,8 @@ bool SystemTray::PerformAction(const ui::Event& event) {
     if (event.IsMouseEvent() || event.type() == ui::ET_GESTURE_TAP) {
       const ui::LocatedEvent& located_event =
           static_cast<const ui::LocatedEvent&>(event);
-      if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
+      if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM ||
+          shelf_alignment() == SHELF_ALIGNMENT_TOP) {
         gfx::Point point(located_event.x(), 0);
         ConvertPointToWidget(this, &point);
         arrow_offset = point.x();

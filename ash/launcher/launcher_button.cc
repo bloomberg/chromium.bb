@@ -276,22 +276,23 @@ void LauncherButton::Layout() {
   int x_offset = 0, y_offset = 0;
   gfx::Rect icon_bounds;
 
-  if (shelf_layout_manager_->GetAlignment() == SHELF_ALIGNMENT_BOTTOM) {
+  if (shelf_layout_manager_->IsHorizontalAlignment()) {
     icon_bounds.SetRect(
         button_bounds.x(), button_bounds.y() + kIconPad,
         button_bounds.width(), kIconSize);
-    if (ShouldHop(state_))
-      y_offset -= kHopSpacing;
   } else {
     icon_bounds.SetRect(
         button_bounds.x() + kIconPad, button_bounds.y(),
         kIconSize, button_bounds.height());
-    if (!ShouldHop(state_))
-      x_offset += kHopSpacing;
   }
 
-  if (shelf_layout_manager_->GetAlignment() == SHELF_ALIGNMENT_LEFT)
-    x_offset = -x_offset;
+  if (ShouldHop(state_)) {
+    x_offset += shelf_layout_manager_->SelectValueForShelfAlignment(
+        0, kHopSpacing, -kHopSpacing, 0);
+    y_offset += shelf_layout_manager_->SelectValueForShelfAlignment(
+        -kHopSpacing, 0, 0, kHopSpacing);
+  }
+
   icon_bounds.Offset(x_offset, y_offset);
   icon_view_->SetBoundsRect(icon_bounds);
   bar_->SetBoundsRect(GetContentsBounds());
@@ -378,7 +379,8 @@ void LauncherButton::UpdateState() {
           shelf_layout_manager_->SelectValueForShelfAlignment(
               SkBitmapOperations::ROTATION_270_CW,
               SkBitmapOperations::ROTATION_270_CW,
-              SkBitmapOperations::ROTATION_90_CW)));
+              SkBitmapOperations::ROTATION_90_CW,
+              SkBitmapOperations::ROTATION_180_CW)));
     bar_->SetVisible(true);
   }
   bool rtl = base::i18n::IsRTL();
@@ -386,31 +388,14 @@ void LauncherButton::UpdateState() {
       shelf_layout_manager_->SelectValueForShelfAlignment(
           views::ImageView::CENTER,
           rtl ? views::ImageView::TRAILING : views::ImageView::LEADING,
-          rtl ? views::ImageView::LEADING : views::ImageView::TRAILING));
+          rtl ? views::ImageView::LEADING : views::ImageView::TRAILING,
+          views::ImageView::CENTER));
   bar_->SetVerticalAlignment(
       shelf_layout_manager_->SelectValueForShelfAlignment(
           views::ImageView::TRAILING,
           views::ImageView::CENTER,
-          views::ImageView::CENTER));
-
-  switch (shelf_layout_manager_->GetAlignment()) {
-    case SHELF_ALIGNMENT_BOTTOM:
-      bar_->SetHorizontalAlignment(views::ImageView::CENTER);
-      bar_->SetVerticalAlignment(views::ImageView::TRAILING);
-      break;
-    case SHELF_ALIGNMENT_LEFT:
-      bar_->SetHorizontalAlignment(
-          base::i18n::IsRTL() ? views::ImageView::TRAILING :
-                                views::ImageView::LEADING);
-      bar_->SetVerticalAlignment(views::ImageView::CENTER);
-      break;
-    case SHELF_ALIGNMENT_RIGHT:
-      bar_->SetHorizontalAlignment(
-          base::i18n::IsRTL() ? views::ImageView::LEADING :
-                                views::ImageView::TRAILING);
-      bar_->SetVerticalAlignment(views::ImageView::CENTER);
-      break;
-  }
+          views::ImageView::CENTER,
+          views::ImageView::LEADING));
 
   // Force bar to layout as alignment may have changed but not bounds.
   bar_->Layout();

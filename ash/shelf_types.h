@@ -11,6 +11,7 @@ enum ShelfAlignment {
   SHELF_ALIGNMENT_BOTTOM,
   SHELF_ALIGNMENT_LEFT,
   SHELF_ALIGNMENT_RIGHT,
+  SHELF_ALIGNMENT_TOP,
 };
 
 enum ShelfAutoHideBehavior {

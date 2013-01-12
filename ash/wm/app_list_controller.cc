@@ -49,7 +49,8 @@ views::BubbleBorder::ArrowLocation GetBubbleArrowLocation(
       SelectValueForShelfAlignment(
           views::BubbleBorder::BOTTOM_CENTER,
           views::BubbleBorder::LEFT_CENTER,
-          views::BubbleBorder::RIGHT_CENTER);
+          views::BubbleBorder::RIGHT_CENTER,
+          views::BubbleBorder::TOP_CENTER);
 }
 
 // Offset given |rect| towards shelf.
@@ -68,8 +69,8 @@ gfx::Rect OffsetTowardsShelf(const gfx::Rect& rect, views::Widget* widget) {
     case SHELF_ALIGNMENT_RIGHT:
       offseted.Offset(kAnimationOffset, 0);
       break;
-    default:
-      NOTREACHED() << "Unknown shelf alignment " << shelf_alignment;
+    case SHELF_ALIGNMENT_TOP:
+      offseted.Offset(0, -kAnimationOffset);
       break;
   }
 

@@ -27,6 +27,7 @@ extern const char kShelfAutoHideBehaviorNever[];
 extern const char kShelfAlignmentBottom[];
 extern const char kShelfAlignmentLeft[];
 extern const char kShelfAlignmentRight[];
+extern const char kShelfAlignmentTop[];
 
 void RegisterChromeLauncherUserPrefs(PrefServiceSyncable* user_prefs);
 

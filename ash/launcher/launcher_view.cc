@@ -417,8 +417,13 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
       leading_inset(),
       width() - kLauncherPreferredSize,
       std::max(width() - kLauncherPreferredSize,
-               ShelfLayoutManager::kAutoHideSize + 1));
-  int y = shelf->PrimaryAxisValue(0, leading_inset());
+               ShelfLayoutManager::kAutoHideSize + 1),
+      leading_inset());
+  int y = shelf->SelectValueForShelfAlignment(
+      0,
+      leading_inset(),
+      leading_inset(),
+      height() - kLauncherPreferredSize);
   int w = shelf->PrimaryAxisValue(kLauncherPreferredSize, width());
   int h = shelf->PrimaryAxisValue(height(), kLauncherPreferredSize);
   for (int i = 0; i < view_model_->view_size(); ++i) {
@@ -492,8 +497,13 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
           leading_inset(),
           width() - kLauncherPreferredSize,
           std::max(width() - kLauncherPreferredSize,
-                   ShelfLayoutManager::kAutoHideSize + 1));
-      y = shelf->PrimaryAxisValue(0, leading_inset());
+                   ShelfLayoutManager::kAutoHideSize + 1),
+          leading_inset());
+      y = shelf->SelectValueForShelfAlignment(
+          0,
+          leading_inset(),
+          leading_inset(),
+          height() - kLauncherPreferredSize);
     } else if (last_visible_index_ == app_list_index) {
       x = view_model_->ideal_bounds(last_visible_index_).x();
       y = view_model_->ideal_bounds(last_visible_index_).y();

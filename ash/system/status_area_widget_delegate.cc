@@ -93,7 +93,8 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
   SetLayoutManager(layout);
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
-  if (alignment_ == SHELF_ALIGNMENT_BOTTOM) {
+  if (alignment_ == SHELF_ALIGNMENT_BOTTOM ||
+      alignment_ == SHELF_ALIGNMENT_TOP) {
     for (int c = 0; c < child_count(); ++c) {
       if (c != 0)
         columns->AddPaddingColumn(0, kTraySpacing);

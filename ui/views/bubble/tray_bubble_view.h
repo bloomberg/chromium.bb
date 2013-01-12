@@ -40,7 +40,8 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView {
   enum AnchorAlignment {
     ANCHOR_ALIGNMENT_BOTTOM,
     ANCHOR_ALIGNMENT_LEFT,
-    ANCHOR_ALIGNMENT_RIGHT
+    ANCHOR_ALIGNMENT_RIGHT,
+    ANCHOR_ALIGNMENT_TOP
   };
 
   class VIEWS_EXPORT Delegate {

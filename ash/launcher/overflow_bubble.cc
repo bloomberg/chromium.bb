@@ -62,7 +62,8 @@ class OverflowBubbleView : public views::BubbleDelegateView {
     return GetShelfLayoutManagerForLauncher()->SelectValueForShelfAlignment(
         views::BubbleBorder::BOTTOM_LEFT,
         views::BubbleBorder::LEFT_TOP,
-        views::BubbleBorder::RIGHT_TOP);
+        views::BubbleBorder::RIGHT_TOP,
+        views::BubbleBorder::TOP_LEFT);
   }
 
   void ScrollByXOffset(int x_offset);
