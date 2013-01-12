@@ -136,22 +136,38 @@ static inline void simple_abort(void) {
   *(volatile int *) 0 = 0;  /* Crash. */
 }
 
+/*
+ * We support x86 and ARM TLS layouts.
+ *
+ * x86 layout:
+ *  * TLS data + BSS
+ *  * padding to round TLS data+BSS size upto tls_alignment
+ *  --- thread pointer ($tp) points here
+ *  * TDB (thread library's data block)
+ *
+ * ARM layout:
+ *  * TDB (thread library's data block)
+ *     * note that no padding follows the TDB
+ *  --- thread pointer ($tp) points here
+ *  * 8-byte header for use by the thread library
+ *  * padding to round 8-byte header upto tls_alignment
+ *  * TLS data + BSS
+ *
+ * The offset from the thread pointer to the TLS data is fixed by the
+ * linker.
+ *
+ * The addresses of the thread pointer and TLS data must both be
+ * aligned to tls_alignment.  Since combined_area is not necessarily
+ * aligned to tls_alignment, padding may be required at the start of
+ * both x86 and ARM TLS layouts (not shown above).
+ */
+
 static char *tp_from_combined_area(const struct tls_info *info,
                                    void *combined_area, size_t tdb_size) {
   size_t tls_size = info->tdata_size + info->tbss_size;
   ptrdiff_t tdboff = __nacl_tp_tdb_offset(tdb_size);
   if (tdboff < 0) {
     /*
-     * ARM case:
-     *  +-----------+--------+----------------+
-     *  |   TDB     | header | TLS data, bss  |
-     *  +-----------+--------+----------------+
-     *              ^        ^
-     *              |        |
-     *              |        +--- $tp+8 points here
-     *              |
-     *              +--- $tp points here
-     *
      * The combined area is big enough to hold the TDB and then be aligned
      * up to the $tp alignment requirement.  If the whole area is aligned
      * to the $tp requirement, then aligning the beginning of the area
@@ -162,16 +178,6 @@ static char *tp_from_combined_area(const struct tls_info *info,
     return aligned_addr((char *) combined_area + tdb_size, info->tls_alignment);
   } else {
     /*
-     * x86 case:
-     *  +-----------------+------+
-     *  |  TLS data, bss  | TDB  |
-     *  +-----------------+------+
-     *                    ^
-     *                    |
-     *                    +--- $tp points here
-     *                    |
-     *                    +--- first word's value is $tp address
-     *
      * The linker increases the size of the TLS block up to its alignment
      * requirement, and that total is subtracted from the $tp address to
      * access the TLS area.  To keep that final address properly aligned,
@@ -193,16 +199,6 @@ void *__nacl_tls_initialize_memory(void *combined_area, size_t tdb_size) {
 
   if (__nacl_tp_tls_offset(0) > 0) {
     /*
-     * ARM case:
-     *  +-----------+--------+----------------+
-     *  |   TDB     | header | TLS data, bss  |
-     *  +-----------+--------+----------------+
-     *              ^        ^
-     *              |        |
-     *              |        +--- $tp+8 points here
-     *              |
-     *              +--- $tp points here
-     *
      * From $tp, we skip the header size and then must round up from
      * there to the required alignment (which is what the linker will
      * will do when calculating TPOFF relocations at link time).  The
@@ -214,16 +210,6 @@ void *__nacl_tls_initialize_memory(void *combined_area, size_t tdb_size) {
     start += aligned_size(__nacl_tp_tls_offset(tls_size), info->tls_alignment);
   } else {
     /*
-     * x86 case:
-     *  +-----------------+------+
-     *  |  TLS data, bss  | TDB  |
-     *  +-----------------+------+
-     *                    ^
-     *                    |
-     *                    +--- $tp points here
-     *                    |
-     *                    +--- first word's value is $tp address
-     *
      * We'll subtract the aligned size of the TLS block from $tp, which
      * must itself already be adequately aligned.
      */
