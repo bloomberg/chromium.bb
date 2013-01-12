@@ -314,7 +314,7 @@
     },
   ],
   'conditions': [
-    ['OS=="win"', {
+    ['OS=="win" and target_arch=="ia32"', {
       'targets': [
         {
           'target_name': 'sel64',

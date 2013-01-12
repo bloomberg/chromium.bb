@@ -49,7 +49,7 @@
           'msvs_2010_disable_uldi_when_referenced': 1,
         }],
     }],
-    ['OS=="win"', {
+    ['OS=="win" and target_arch=="ia32"', {
       'targets': [
         {
           'target_name': 'nccopy_x86_64',
@@ -61,7 +61,7 @@
           },
         }],
     }],
-    ['OS!="win" and target_arch=="x64"', {
+    ['target_arch=="x64"', {
       'targets': [
         {
           'target_name': 'nccopy_x86_64',

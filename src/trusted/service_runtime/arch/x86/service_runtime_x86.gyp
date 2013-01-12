@@ -43,12 +43,12 @@
             '<(DEPTH)/native_client/src/trusted/validator_ragel/dfa_validator_x86_32.gyp:dfa_validate_x86_32',
           ],
         }],
-        ['nacl_validator_ragel==0 and OS!="win" and target_arch=="x64"', {
+        ['nacl_validator_ragel==0 and target_arch=="x64"', {
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/validator/x86/64/validator_x86_64.gyp:ncvalidate_x86_64',
           ],
         }],
-        ['nacl_validator_ragel!=0 and OS!="win" and target_arch=="x64"', {
+        ['nacl_validator_ragel!=0 and target_arch=="x64"', {
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/validator_ragel/dfa_validator_x86_64.gyp:dfa_validate_x86_64',
           ],
@@ -57,7 +57,7 @@
     },
   ],
   'conditions': [
-    ['OS=="win"', {
+    ['OS=="win" and target_arch=="ia32"', {
       'targets': [
         {
           'target_name': 'service_runtime_x86_common64',

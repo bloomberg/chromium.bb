@@ -47,37 +47,27 @@
       }],
     ],
   },
+  'targets': [
+    {
+      'target_name': 'utils',
+      'type': 'static_library',
+      'variables': {
+        'target_base': 'utils',
+      },
+    }
+  ],
   'conditions': [
-    ['target_arch=="ia32"', {
-      'targets': [
-        {
-          'target_name': 'utils',
-          'type': 'static_library',
-          'variables': {
-            'target_base': 'utils',
-          },
-        }],
-    }],
-    ['OS=="win"', {
+    ['OS=="win" and target_arch=="ia32"', {
       'targets': [
         {
           'target_name': 'utils64',
           'type': 'static_library',
           'variables': {
             'target_base': 'utils',
-            'win_target': 'x64',
+            'win_target': 'x64'
           },
-        }],
-    }],
-    ['OS!="win" and target_arch!="ia32"', {
-      'targets': [
-        {
-          'target_name': 'utils',
-          'type': 'static_library',
-          'variables': {
-            'target_base': 'utils',
-          },
-        }],
+        }
+      ]
     }],
   ],
 }

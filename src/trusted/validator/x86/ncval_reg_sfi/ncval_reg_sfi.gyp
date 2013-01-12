@@ -83,7 +83,7 @@
           },
         }],
     }],
-    ['OS=="win"', {
+    ['OS=="win" and target_arch=="ia32"', {
       'targets': [
         {
           'target_name': 'ncval_reg_sfi_x86_64',
@@ -109,7 +109,7 @@
           },
         }],
     }],
-    ['OS!="win" and target_arch=="x64"', {
+    ['target_arch=="x64"', {
       'targets': [
         {
           'target_name': 'ncval_reg_sfi_x86_64',

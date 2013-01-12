@@ -50,7 +50,7 @@
       }],
     ],
     'conditions': [
-      ['OS=="win"', {
+      ['OS=="win" and target_arch=="ia32"', {
         'variables': {
           'win_target': 'x64',
          },

@@ -23,7 +23,7 @@
     },
   ],
   'conditions': [
-    ['OS=="win"', {
+    ['OS=="win" and target_arch=="ia32"', {
       'targets': [
         {
           # This tests linking of sel_main_chrome.c in the Gyp build.  We

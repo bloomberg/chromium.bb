@@ -135,7 +135,9 @@ def GetNexe(path, name, arch, tool):
 
 def GetLdrIrtNexe(path, nexe, arch, tool):
   sel_ldr = os.path.join(path, 'sel_ldr')
-  if UseWin64():
+  # If incorrectly reported use sel_ldr64 otherwise assume sel_ldr is already
+  # the correct architecture.
+  if UseWin64() and arch == 'ia32':
     sel_ldr = os.path.join(path, 'sel_ldr64')
 
   # Get IRT_CORE which is built with newlib

@@ -51,7 +51,7 @@
             'disable_glibc%': 0,
           },
           'conditions': [
-            ['OS=="win"', {
+            ['OS=="win" and target_arch=="ia32"', {
               'dependencies': [
                 'src/trusted/service_runtime/service_runtime.gyp:sel_ldr64',
               ],
@@ -109,7 +109,7 @@
             'script': '<(DEPTH)/native_client/build/test_build.py',
           },
           'conditions': [
-            ['OS=="win"', {
+            ['OS=="win" and target_arch=="ia32"', {
               'dependencies': [
                 'src/trusted/service_runtime/service_runtime.gyp:sel_ldr64',
               ],
