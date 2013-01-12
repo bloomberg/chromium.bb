@@ -1,7 +1,7 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
+from perf_tools import smoothness_measurement
 from telemetry import multi_page_benchmark
 from telemetry import util
 
@@ -147,6 +147,7 @@ class SmoothnessBenchmark(multi_page_benchmark.MultiPageBenchmark):
     super(SmoothnessBenchmark, self).__init__('smoothness')
     self.force_enable_threaded_compositing = False
     self.use_gpu_benchmarking_extension = True
+    self._measurement = None
 
   def AddCommandLineOptions(self, parser):
     parser.add_option('--report-all-results', dest='report_all_results',
@@ -162,9 +163,12 @@ class SmoothnessBenchmark(multi_page_benchmark.MultiPageBenchmark):
   def CanRunForPage(self, page):
     return hasattr(page, 'smoothness')
 
+  def WillRunInteraction(self, page, tab):
+    self._measurement = smoothness_measurement.SmoothnessMeasurement(tab)
+    self._measurement.bindToScrollInteraction()
+
   def MeasurePage(self, page, tab, results):
-    rendering_stats_deltas = tab.runtime.Evaluate(
-      'window.__renderingStatsDeltas')
+    rendering_stats_deltas = self._measurement.deltas
 
     if not (rendering_stats_deltas['numFramesSentToScreen'] > 0):
       raise DidNotScrollException()
