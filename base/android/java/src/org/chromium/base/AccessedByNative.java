@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  *  only accessed by native.
  */
 @Target(ElementType.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 public @interface AccessedByNative {
     public String value() default "";
 }

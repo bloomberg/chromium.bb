@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  * bindings and expose this method to native code.
  */
 @Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 public @interface CalledByNative {
     /*
      *  If present, tells which inner class the method belongs to.

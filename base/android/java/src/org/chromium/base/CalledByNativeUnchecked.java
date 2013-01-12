@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
  *  return value to indicate success / failure.
  */
 @Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 public @interface CalledByNativeUnchecked {
     /*
      *  If present, tells which inner class the method belongs to.
