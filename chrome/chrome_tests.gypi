@@ -2810,11 +2810,12 @@
           'target_name': 'chromium_testshell_test_apk',
           'type': 'none',
           'dependencies': [
-            '../base/base.gyp:base',
-            '../base/base.gyp:base_java_test_support',
             'chrome_java',
             'chromium_testshell_java',
+            '../base/base.gyp:base',
+            '../base/base.gyp:base_java_test_support',
             '../content/content.gyp:content_java_test_support',
+            '../sync/sync.gyp:sync_javatests',
             '../tools/android/forwarder/forwarder.gyp:forwarder',
           ],
           'variables': {
