@@ -70,6 +70,8 @@ class CursorState {
 
   bool mouse_events_enabled() const { return mouse_events_enabled_; }
   void SetMouseEventsEnabled(bool enabled) {
+    if (mouse_events_enabled_ == enabled)
+      return;
     mouse_events_enabled_ = enabled;
 
     // Restores the visibility when mouse events are enabled.
@@ -80,7 +82,6 @@ class CursorState {
       visible_ = false;
     }
   }
-
 
  private:
   gfx::NativeCursor cursor_;

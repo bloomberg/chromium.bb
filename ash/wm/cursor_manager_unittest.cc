@@ -266,6 +266,31 @@ TEST_F(CursorManagerTest, ShowAndEnable) {
   EXPECT_FALSE(cursor_manager->IsMouseEventsEnabled());
 }
 
+// Verifies that calling DisableMouseEvents multiple times in a row makes no
+// difference compared with calling it once.
+// This is a regression test for http://crbug.com/169404.
+TEST_F(CursorManagerTest, MultipleDisableMouseEvents) {
+  CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+  cursor_manager->DisableMouseEvents();
+  cursor_manager->DisableMouseEvents();
+  cursor_manager->EnableMouseEvents();
+  cursor_manager->LockCursor();
+  cursor_manager->UnlockCursor();
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
+}
+
+// Verifies that calling EnableMouseEvents multiple times in a row makes no
+// difference compared with calling it once.
+TEST_F(CursorManagerTest, MultipleEnableMouseEvents) {
+  CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
+  cursor_manager->DisableMouseEvents();
+  cursor_manager->EnableMouseEvents();
+  cursor_manager->EnableMouseEvents();
+  cursor_manager->LockCursor();
+  cursor_manager->UnlockCursor();
+  EXPECT_TRUE(cursor_manager->IsCursorVisible());
+}
+
 #if defined(OS_WIN)
 // Temporarily disabled for windows. See crbug.com/112222.
 #define MAYBE_DisabledMouseEventsLocation DISABLED_DisabledMouseEventsLocation
