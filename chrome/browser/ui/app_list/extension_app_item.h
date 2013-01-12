@@ -36,6 +36,9 @@ class ExtensionAppItem : public ChromeAppListItem,
                    AppListControllerDelegate* controller);
   virtual ~ExtensionAppItem();
 
+  // Reload the title and icon from the underlying extension.
+  void Reload();
+
   syncer::StringOrdinal GetPageOrdinal() const;
   syncer::StringOrdinal GetAppLaunchOrdinal() const;
 
@@ -57,9 +60,6 @@ class ExtensionAppItem : public ChromeAppListItem,
 
   // Loads extension icon.
   void LoadImage(const extensions::Extension* extension);
-
-  // Whether or not the app item has an overlay.
-  bool HasOverlay();
 
   void ShowExtensionOptions();
   void ShowExtensionDetails();
@@ -108,6 +108,9 @@ class ExtensionAppItem : public ChromeAppListItem,
   scoped_ptr<ui::SimpleMenuModel> context_menu_model_;
   scoped_ptr<extensions::ContextMenuMatcher> extension_menu_items_;
   scoped_ptr<ExtensionEnableFlow> extension_enable_flow_;
+
+  // Whether or not the app item has an overlay.
+  const bool has_overlay_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppItem);
 };

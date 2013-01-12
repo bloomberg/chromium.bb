@@ -192,7 +192,7 @@ void AppsModelBuilder::Observe(int type,
 
       const int existing_index = FindApp(extension->id());
       if (existing_index != -1) {
-        GetAppAt(existing_index)->UpdateIcon();
+        GetAppAt(existing_index)->Reload();
         return;
       }
 

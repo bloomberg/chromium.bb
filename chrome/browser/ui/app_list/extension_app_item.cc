@@ -182,6 +182,14 @@ bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
   return item->contexts().Contains(extensions::MenuItem::LAUNCHER);
 }
 
+bool HasOverlay(const Extension* extension) {
+#if defined(OS_CHROMEOS)
+  return false;
+#else
+  return !extension->is_platform_app();
+#endif
+}
+
 }  // namespace
 
 ExtensionAppItem::ExtensionAppItem(Profile* profile,
@@ -190,12 +198,18 @@ ExtensionAppItem::ExtensionAppItem(Profile* profile,
     : ChromeAppListItem(TYPE_APP),
       profile_(profile),
       extension_id_(extension->id()),
-      controller_(controller) {
-  SetTitle(extension->name());
-  LoadImage(extension);
+      controller_(controller),
+      has_overlay_(HasOverlay(extension)) {
+  Reload();
 }
 
 ExtensionAppItem::~ExtensionAppItem() {
+}
+
+void ExtensionAppItem::Reload() {
+  const Extension* extension = GetExtension();
+  SetTitle(extension->name());
+  LoadImage(extension);
 }
 
 syncer::StringOrdinal ExtensionAppItem::GetPageOrdinal() const {
@@ -256,7 +270,7 @@ void ExtensionAppItem::UpdateIcon() {
     icon = gfx::ImageSkiaOperations::CreateHSLShiftedImage(icon, shift);
   }
 
-  if (HasOverlay()) {
+  if (has_overlay_) {
     const gfx::Size size(extension_misc::EXTENSION_ICON_MEDIUM,
                          extension_misc::EXTENSION_ICON_MEDIUM);
     icon = gfx::ImageSkia(new TabOverlayImageSource(icon, size), size);
@@ -273,7 +287,7 @@ const Extension* ExtensionAppItem::GetExtension() const {
 
 void ExtensionAppItem::LoadImage(const Extension* extension) {
   int icon_size = extension_misc::EXTENSION_ICON_MEDIUM;
-  if (HasOverlay())
+  if (has_overlay_)
     icon_size = extension_misc::EXTENSION_ICON_SMALL;
 
   icon_.reset(new extensions::IconImage(
@@ -283,14 +297,6 @@ void ExtensionAppItem::LoadImage(const Extension* extension) {
       Extension::GetDefaultIcon(true),
       this));
   UpdateIcon();
-}
-
-bool ExtensionAppItem::HasOverlay() {
-#if defined(OS_CHROMEOS)
-  return false;
-#else
-  return !GetExtension()->is_platform_app();
-#endif
 }
 
 void ExtensionAppItem::ShowExtensionOptions() {
