@@ -392,7 +392,6 @@ void AutofillDialogController::UserEditedInput(
     const gfx::Rect& content_bounds,
     const string16& field_contents) {
   std::vector<string16> popup_values, popup_labels, popup_icons;
-  std::vector<AutofillFieldType> field_types;
 
   // TODO(estade): add field types from email section?
   const DetailInputs& inputs = RequestedFieldsForSection(section);
@@ -405,6 +404,7 @@ void AutofillDialogController::UserEditedInput(
                                            &popup_icons,
                                            &popup_guids_);
   } else {
+    std::vector<AutofillFieldType> field_types;
     field_types.reserve(inputs.size());
     for (DetailInputs::const_iterator iter = inputs.begin();
          iter != inputs.end(); ++iter) {

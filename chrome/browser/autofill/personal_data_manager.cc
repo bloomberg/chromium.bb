@@ -546,12 +546,12 @@ void PersonalDataManager::GetProfileSuggestions(
     const string16& field_contents,
     bool field_is_autofilled,
     std::vector<AutofillFieldType> other_field_types,
+    std::vector<string16>* values,
     std::vector<string16>* labels,
-    std::vector<string16>* sub_labels,
     std::vector<string16>* icons,
     std::vector<GUIDPair>* guid_pairs) {
+  values->clear();
   labels->clear();
-  sub_labels->clear();
   icons->clear();
   guid_pairs->clear();
 
@@ -572,7 +572,7 @@ void PersonalDataManager::GetProfileSuggestions(
         if (!multi_values[i].empty() &&
             StartsWith(multi_values[i], field_contents, false)) {
           matched_profiles.push_back(profile);
-          labels->push_back(multi_values[i]);
+          values->push_back(multi_values[i]);
           guid_pairs->push_back(GUIDPair(profile->guid(), i));
         }
       } else {
@@ -596,7 +596,7 @@ void PersonalDataManager::GetProfileSuggestions(
             profile_value_lower_case == field_value_lower_case) {
           for (size_t j = 0; j < multi_values.size(); ++j) {
             if (!multi_values[j].empty()) {
-              labels->push_back(multi_values[j]);
+              values->push_back(multi_values[j]);
               guid_pairs->push_back(GUIDPair(profile->guid(), j));
             }
           }
@@ -612,21 +612,21 @@ void PersonalDataManager::GetProfileSuggestions(
   if (!field_is_autofilled) {
     AutofillProfile::CreateInferredLabels(
         &matched_profiles, &other_field_types,
-        type, 1, sub_labels);
+        type, 1, labels);
   } else {
     // No sub-labels for previously filled fields.
-    sub_labels->resize(labels->size());
+    labels->resize(values->size());
   }
 
   // No icons for profile suggestions.
-  icons->resize(labels->size());
+  icons->resize(values->size());
 }
 
 void PersonalDataManager::GetCreditCardSuggestions(
     AutofillFieldType type,
     const string16& field_contents,
+    std::vector<string16>* values,
     std::vector<string16>* labels,
-    std::vector<string16>* sub_labels,
     std::vector<string16>* icons,
     std::vector<GUIDPair>* guid_pairs) {
   const std::string app_locale = AutofillCountry::ApplicationLocale();
@@ -641,17 +641,17 @@ void PersonalDataManager::GetCreditCardSuggestions(
       if (type == CREDIT_CARD_NUMBER)
         creditcard_field_value = credit_card->ObfuscatedNumber();
 
-      string16 sub_label;
+      string16 label;
       if (credit_card->number().empty()) {
         // If there is no CC number, return name to show something.
-        sub_label = credit_card->GetInfo(CREDIT_CARD_NAME, app_locale);
+        label = credit_card->GetInfo(CREDIT_CARD_NAME, app_locale);
       } else {
-        sub_label = kCreditCardPrefix;
-        sub_label.append(credit_card->LastFourDigits());
+        label = kCreditCardPrefix;
+        label.append(credit_card->LastFourDigits());
       }
 
-      labels->push_back(creditcard_field_value);
-      sub_labels->push_back(sub_label);
+      values->push_back(creditcard_field_value);
+      labels->push_back(label);
       icons->push_back(UTF8ToUTF16(credit_card->type()));
       guid_pairs->push_back(GUIDPair(credit_card->guid(), 0));
     }

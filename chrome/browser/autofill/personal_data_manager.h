@@ -138,8 +138,8 @@ class PersonalDataManager
       const string16& field_contents,
       bool field_is_autofilled,
       std::vector<AutofillFieldType> other_field_types,
+      std::vector<string16>* values,
       std::vector<string16>* labels,
-      std::vector<string16>* sub_labels,
       std::vector<string16>* icons,
       std::vector<GUIDPair>* guid_pairs);
 
@@ -149,8 +149,8 @@ class PersonalDataManager
   void GetCreditCardSuggestions(
       AutofillFieldType type,
       const string16& field_contents,
+      std::vector<string16>* values,
       std::vector<string16>* labels,
-      std::vector<string16>* sub_labels,
       std::vector<string16>* icons,
       std::vector<GUIDPair>* guid_pairs);
 

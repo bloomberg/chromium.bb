@@ -520,7 +520,7 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
         (AutofillType(type).group() == AutofillType::CREDIT_CARD);
     if (is_filling_credit_card) {
       GetCreditCardSuggestions(
-          form_structure, field, type, &values, &labels, &icons, &unique_ids);
+          field, type, &values, &labels, &icons, &unique_ids);
     } else {
       GetProfileSuggestions(
           form_structure, field, type, &values, &labels, &icons, &unique_ids);
@@ -1162,7 +1162,6 @@ void AutofillManager::GetProfileSuggestions(
 }
 
 void AutofillManager::GetCreditCardSuggestions(
-    FormStructure* form,
     const FormFieldData& field,
     AutofillFieldType type,
     std::vector<string16>* values,

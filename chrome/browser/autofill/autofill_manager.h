@@ -285,8 +285,7 @@ class AutofillManager : public content::WebContentsObserver,
 
   // Returns a list of values from the stored credit cards that match |type| and
   // the value of |field| and returns the labels of the matching credit cards.
-  void GetCreditCardSuggestions(FormStructure* form,
-                                const FormFieldData& field,
+  void GetCreditCardSuggestions(const FormFieldData& field,
                                 AutofillFieldType type,
                                 std::vector<string16>* values,
                                 std::vector<string16>* labels,
