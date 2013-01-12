@@ -1398,7 +1398,7 @@ bool SourceBufferRange::FirstGOPContainsNextBufferPosition() const {
   KeyframeMap::const_iterator second_gop = keyframe_map_.begin();
   ++second_gop;
   return !waiting_for_keyframe_ &&
-         next_buffer_index_ < second_gop->second - keyframe_map_index_base_;
+      next_buffer_index_ < second_gop->second - keyframe_map_index_base_;
 }
 
 bool SourceBufferRange::LastGOPContainsNextBufferPosition() const {
@@ -1412,7 +1412,7 @@ bool SourceBufferRange::LastGOPContainsNextBufferPosition() const {
   KeyframeMap::const_iterator last_gop = keyframe_map_.end();
   --last_gop;
   return waiting_for_keyframe_ ||
-         last_gop->second - keyframe_map_index_base_ <= next_buffer_index_;
+      last_gop->second - keyframe_map_index_base_ <= next_buffer_index_;
 }
 
 void SourceBufferRange::FreeBufferRange(
