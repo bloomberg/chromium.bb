@@ -43,6 +43,8 @@ struct wl_event_loop {
 	struct wl_list check_list;
 	struct wl_list idle_list;
 	struct wl_list destroy_list;
+
+	struct wl_signal destroy_signal;
 };
 
 struct wl_event_source_interface {
@@ -357,12 +359,16 @@ wl_event_loop_create(void)
 	wl_list_init(&loop->idle_list);
 	wl_list_init(&loop->destroy_list);
 
+	wl_signal_init(&loop->destroy_signal);
+
 	return loop;
 }
 
 WL_EXPORT void
 wl_event_loop_destroy(struct wl_event_loop *loop)
 {
+	wl_signal_emit(&loop->destroy_signal, loop);
+
 	wl_event_loop_process_destroy_list(loop);
 	close(loop->epoll_fd);
 	free(loop);
@@ -429,3 +435,18 @@ wl_event_loop_get_fd(struct wl_event_loop *loop)
 {
 	return loop->epoll_fd;
 }
+
+WL_EXPORT void
+wl_event_loop_add_destroy_listener(struct wl_event_loop *loop,
+				   struct wl_listener *listener)
+{
+	wl_signal_add(&loop->destroy_signal, listener);
+}
+
+WL_EXPORT struct wl_listener *
+wl_event_loop_get_destroy_listener(struct wl_event_loop *loop,
+				   wl_notify_func_t notify)
+{
+	wl_signal_get(&loop->destroy_signal, notify);
+}
+

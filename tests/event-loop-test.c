@@ -1,5 +1,6 @@
 /*
  * Copyright © 2012 Intel Corporation
+ * Copyright © 2012 Jason Ekstrand
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -25,6 +26,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include "wayland-server.h"
+#include "wayland-private.h"
 #include "test-runner.h"
 
 static int
@@ -190,3 +192,58 @@ TEST(event_loop_timer)
 	wl_event_source_remove(source);
 	wl_event_loop_destroy(loop);
 }
+
+struct event_loop_destroy_listener {
+	struct wl_listener listener;
+	int done;
+};
+
+static void
+event_loop_destroy_notify(struct wl_listener *l, void *data)
+{
+	struct event_loop_destroy_listener *listener =
+		container_of(l, struct event_loop_destroy_listener, listener);
+
+	listener->done = 1;
+}
+
+TEST(event_loop_destroy)
+{
+	struct wl_event_loop *loop;
+	struct wl_display * display;
+	struct event_loop_destroy_listener a, b;
+
+	loop = wl_event_loop_create();
+	assert(loop);
+
+	a.listener.notify = &event_loop_destroy_notify;
+	a.done = 0;
+	wl_event_loop_add_destroy_listener(loop, &a.listener);
+
+	assert(wl_event_loop_get_destroy_listener(loop,
+	       event_loop_destroy_notify) == &a.listener);
+
+	b.listener.notify = &event_loop_destroy_notify;
+	b.done = 0;
+	wl_event_loop_add_destroy_listener(loop, &b.listener);
+
+	wl_list_remove(&a.listener.link);
+	wl_event_loop_destroy(loop);
+
+	assert(!a.done);
+	assert(b.done);
+
+	/* Test to make sure it gets fired on display destruction */
+	display = wl_display_create();
+	assert(display);
+	loop = wl_display_get_event_loop(display);
+	assert(loop);
+
+	a.done = 0;
+	wl_event_loop_add_destroy_listener(loop, &a.listener);
+
+	wl_display_destroy(display);
+
+	assert(a.done);
+}
+
