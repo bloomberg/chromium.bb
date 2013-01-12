@@ -19,8 +19,9 @@ function sanitize_file {
   echo -ne "$1\r"
   local file=$1
   local name=$(basename $file)
-  pngcrush -d $TMP_DIR -brute -reduce -rem text -rem mkBT \
-      -rem mkTS $file > /dev/null
+  # -rem alla removes all ancillary chunks except for tRNS
+  pngcrush -d $TMP_DIR -brute -reduce -rem alla $file > /dev/null
+
   mv "$TMP_DIR/$name" "$file"
 }
 
