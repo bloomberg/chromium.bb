@@ -30,8 +30,8 @@ int PreviewHeightInPixels(int parent_height, int preview_height,
   return 0;
 }
 
-// This class draws the border and drop shadow below the preview when the
-// non-NTP preview doesn't fill up the entire content page.
+// This class draws the drop shadow below the preview when the non-NTP preview
+// doesn't fill up the entire content page.
 // This class is owned by ContentsContainer, which:
 // - adds it as child when shadow is needed
 // - removes it as child when shadow is not needed or when preview is nuked or
@@ -41,8 +41,6 @@ int PreviewHeightInPixels(int parent_height, int preview_height,
 class ShadowView : public views::View {
  public:
   ShadowView() {
-    border_ = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IDR_PREVIEW_BORDER);
     drop_shadow_ = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_PREVIEW_DROP_SHADOW);
 
@@ -61,14 +59,7 @@ class ShadowView : public views::View {
 
  protected:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    // Stretch 1-px thick border horizontally across.
-    canvas->DrawImageInt(
-        border_,
-        0, 0, border_.width(), border_.height(),
-        0, 0, width(), border_.height(),
-        true);
-    // Stretch drop shadow horizontally across, where top pixel of drop shadow
-    // overlaps with 1-px thick border.
+    // Stretch drop shadow horizontally across.
     canvas->DrawImageInt(
         drop_shadow_,
         0, 0, drop_shadow_.width(), drop_shadow_.height(),
@@ -77,7 +68,6 @@ class ShadowView : public views::View {
   }
 
  private:
-  gfx::ImageSkia border_;
   gfx::ImageSkia drop_shadow_;
 
   DISALLOW_COPY_AND_ASSIGN(ShadowView);
