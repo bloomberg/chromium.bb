@@ -173,9 +173,9 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
 
 void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
   WebContents* contents = WebContents::FromRenderViewHost(render_view_host());
-  WebContentsModalDialogManager* web_contents_dialog_manager =
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(contents);
-  if (!web_contents_dialog_manager) {
+  if (!web_contents_modal_dialog_manager) {
     // If there is no WebContentsModalDialogManager, then this contents is
     // probably the background page for an app. Try to find a shell window to
     // host the dialog.

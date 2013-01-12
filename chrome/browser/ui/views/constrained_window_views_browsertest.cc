@@ -158,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   // test_dialog1's text field should still be the view that has focus.
   EXPECT_EQ(test_dialog1->GetInitiallyFocusedView(),
             focus_manager->GetFocusedView());
-  ASSERT_EQ(2u, web_contents_modal_dialog_manager->dialog_count());
+  ASSERT_TRUE(web_contents_modal_dialog_manager->IsShowingDialog());
 
   // Now send a VKEY_RETURN to the browser.  This should result in closing
   // test_dialog1.
@@ -168,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
 
   EXPECT_TRUE(test_dialog1->done());
   EXPECT_FALSE(test_dialog2->done());
-  EXPECT_EQ(1u, web_contents_modal_dialog_manager->dialog_count());
+  EXPECT_TRUE(web_contents_modal_dialog_manager->IsShowingDialog());
 
   // test_dialog2 will be shown.  Focus should be on test_dialog2's text field.
   EXPECT_EQ(test_dialog2->GetInitiallyFocusedView(),
@@ -195,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
       ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE)));
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(test_dialog2->done());
-  EXPECT_EQ(0u, web_contents_modal_dialog_manager->dialog_count());
+  EXPECT_FALSE(web_contents_modal_dialog_manager->IsShowingDialog());
 }
 
 // Tests that the constrained window is closed properly when its tab is

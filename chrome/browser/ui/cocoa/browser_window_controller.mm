@@ -1509,8 +1509,8 @@ enum {
   WebContents* contents = chrome::GetWebContentsAt(browser_.get(), index);
   if (!contents)
     return NO;
-  return WebContentsModalDialogManager::FromWebContents(contents)->
-      dialog_count() == 0;
+  return !WebContentsModalDialogManager::FromWebContents(contents)->
+      IsShowingDialog();
 }
 
 // TabStripControllerDelegate protocol.

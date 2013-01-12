@@ -174,15 +174,15 @@ void ReloadInternal(Browser* browser,
     web_contents->GetController().Reload(true);
 }
 
-bool HasConstrainedWindow(const Browser* browser) {
+bool IsShowingWebContentsModalDialog(const Browser* browser) {
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   if (!web_contents)
     return false;
 
-  WebContentsModalDialogManager* web_contents_dialog_manager =
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
-  return web_contents_dialog_manager->dialog_count() > 0;
+  return web_contents_modal_dialog_manager->IsShowingDialog();
 }
 
 bool PrintPreviewShowing(const Browser* browser) {
@@ -731,7 +731,7 @@ bool CanPrint(const Browser* browser) {
   // Do not print when a constrained window is showing. It's confusing.
   // Do not print if instant extended API is enabled and mode is NTP.
   return browser->profile()->GetPrefs()->GetBoolean(prefs::kPrintingEnabled) &&
-      !(HasConstrainedWindow(browser) ||
+      !(IsShowingWebContentsModalDialog(browser) ||
       GetContentRestrictions(browser) & content::CONTENT_RESTRICTION_PRINT ||
       IsNTPModeForInstantExtendedAPI(browser));
 }

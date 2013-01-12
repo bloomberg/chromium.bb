@@ -42,7 +42,9 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesDialogBrowserTest, Close) {
 
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
-  web_contents_modal_dialog_manager->CloseAllDialogs();
+  WebContentsModalDialogManager::TestApi test_api(
+      web_contents_modal_dialog_manager);
+  test_api.CloseAllDialogs();
   EXPECT_FALSE([window isVisible]);
 }
 

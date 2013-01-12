@@ -15,16 +15,16 @@ IN_PROC_BROWSER_TEST_F(CollectedCookiesMacTest, Close) {
   content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
-  EXPECT_EQ(0u, web_contents_modal_dialog_manager->dialog_count());
+  EXPECT_FALSE(web_contents_modal_dialog_manager->IsShowingDialog());
 
   // Deletes itself.
   CollectedCookiesMac* dialog =
       new CollectedCookiesMac(chrome::GetActiveWebContents(browser()));
-  EXPECT_EQ(1u, web_contents_modal_dialog_manager->dialog_count());
+  EXPECT_TRUE(web_contents_modal_dialog_manager->IsShowingDialog());
 
   dialog->PerformClose();
   content::RunAllPendingInMessageLoop();
-  EXPECT_EQ(0u, web_contents_modal_dialog_manager->dialog_count());
+  EXPECT_FALSE(web_contents_modal_dialog_manager->IsShowingDialog());
 }
 
 IN_PROC_BROWSER_TEST_F(CollectedCookiesMacTest, Outlets) {

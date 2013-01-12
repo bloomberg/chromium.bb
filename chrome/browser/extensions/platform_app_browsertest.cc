@@ -771,14 +771,16 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_ConstrainedWindowRequest) {
   ASSERT_TRUE(web_contents);
 
   // Verify that the shell window has a dialog attached.
-  WebContentsModalDialogManager* web_contents_dialog_manager =
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
-  EXPECT_EQ(1u, web_contents_dialog_manager->dialog_count());
+  EXPECT_TRUE(web_contents_modal_dialog_manager->IsShowingDialog());
 
   // Close the constrained window and wait for the reply to the permission
   // request.
   ExtensionTestMessageListener listener("PermissionRequestDone", false);
-  web_contents_dialog_manager->CloseAllDialogs();
+  WebContentsModalDialogManager::TestApi test_api(
+      web_contents_modal_dialog_manager);
+  test_api.CloseAllDialogs();
   ASSERT_TRUE(listener.WaitUntilSatisfied());
 }
 

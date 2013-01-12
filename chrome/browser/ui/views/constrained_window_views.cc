@@ -609,7 +609,9 @@ void ConstrainedWindowViews::CloseWebContentsModalDialog() {
   if (view && view->parent())
     view->parent()->ClearProperty(aura::client::kAnimationsDisabledKey);
 #endif
-  NotifyTabHelperWillClose();
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents_);
+  web_contents_modal_dialog_manager->WillClose(this);
   Close();
 }
 
@@ -640,15 +642,6 @@ gfx::NativeWindow ConstrainedWindowViews::GetNativeWindow() {
   return Widget::GetNativeWindow();
 }
 
-void ConstrainedWindowViews::NotifyTabHelperWillClose() {
-  if (!web_contents_)
-    return;
-
-  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents_);
-  web_contents_modal_dialog_manager->WillClose(this);
-}
-
 views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
 #if defined(USE_ASH)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -662,7 +655,9 @@ views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
 }
 
 void ConstrainedWindowViews::OnNativeConstrainedWindowDestroyed() {
-  NotifyTabHelperWillClose();
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents_);
+  web_contents_modal_dialog_manager->WillClose(this);
 }
 
 void ConstrainedWindowViews::OnNativeConstrainedWindowMouseActivate() {

@@ -7,8 +7,8 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
-#include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
+#include "chrome/browser/ui/web_contents_modal_dialog.h"
 #include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/render_process_host.h"
@@ -74,11 +74,8 @@ bool ChromeWebContentsViewDelegateViews::Focus() {
     // TODO(erg): WebContents used to own web contents modal dialogs, which is
     // why this is here. Eventually this should be ported to a containing view
     // specializing in web contents modal dialog management.
-    if (web_contents_modal_dialog_manager->dialog_count() > 0) {
-      WebContentsModalDialog* window =
-          *web_contents_modal_dialog_manager->dialog_begin();
-      DCHECK(window);
-      window->FocusWebContentsModalDialog();
+    if (web_contents_modal_dialog_manager->IsShowingDialog()) {
+      web_contents_modal_dialog_manager->FocusTopmostDialog();
       return true;
     }
   }

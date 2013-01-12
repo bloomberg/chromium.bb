@@ -35,10 +35,10 @@ base::RefCountedBytes* CreateTestData() {
   return new base::RefCountedBytes(preview_data);
 }
 
-size_t GetConstrainedWindowCount(WebContents* tab) {
+bool IsShowingWebContentsModalDialog(WebContents* tab) {
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(tab);
-  return web_contents_modal_dialog_manager->dialog_count();
+  return web_contents_modal_dialog_manager->IsShowingDialog();
 }
 
 }  // namespace
@@ -68,7 +68,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
   WebContents* initiator_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(initiator_tab);
-  EXPECT_EQ(0U, GetConstrainedWindowCount(initiator_tab));
+  EXPECT_FALSE(IsShowingWebContentsModalDialog(initiator_tab));
 
   printing::PrintPreviewDialogController* controller =
       printing::PrintPreviewDialogController::GetInstance();
@@ -82,7 +82,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
 
   EXPECT_NE(initiator_tab, preview_dialog);
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_EQ(1U, GetConstrainedWindowCount(initiator_tab));
+  EXPECT_TRUE(IsShowingWebContentsModalDialog(initiator_tab));
 
   PrintPreviewUI* preview_ui = static_cast<PrintPreviewUI*>(
       preview_dialog->GetWebUI()->GetController());
@@ -137,7 +137,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
 
   EXPECT_NE(initiator_tab, preview_dialog);
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_EQ(1U, GetConstrainedWindowCount(initiator_tab));
+  EXPECT_TRUE(IsShowingWebContentsModalDialog(initiator_tab));
 
   PrintPreviewUI* preview_ui = static_cast<PrintPreviewUI*>(
       preview_dialog->GetWebUI()->GetController());
@@ -199,7 +199,7 @@ TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
 
   EXPECT_NE(initiator_tab, preview_dialog);
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_EQ(1U, GetConstrainedWindowCount(initiator_tab));
+  EXPECT_TRUE(IsShowingWebContentsModalDialog(initiator_tab));
 
   PrintPreviewUI* preview_ui = static_cast<PrintPreviewUI*>(
       preview_dialog->GetWebUI()->GetController());
@@ -262,7 +262,7 @@ TEST_F(PrintPreviewUIUnitTest, InitiatorTabGetsFocusOnPrintPreviewDialogClose) {
 
   EXPECT_NE(initiator_tab, preview_dialog);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
-  EXPECT_EQ(1U, GetConstrainedWindowCount(initiator_tab));
+  EXPECT_TRUE(IsShowingWebContentsModalDialog(initiator_tab));
   EXPECT_EQ(0, initiator_tester->GetNumberOfFocusCalls());
 
   PrintPreviewUI* preview_ui = static_cast<PrintPreviewUI*>(
@@ -272,6 +272,6 @@ TEST_F(PrintPreviewUIUnitTest, InitiatorTabGetsFocusOnPrintPreviewDialogClose) {
   preview_ui->OnPrintPreviewDialogClosed();
 
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
-  EXPECT_EQ(0U, GetConstrainedWindowCount(initiator_tab));
+  EXPECT_FALSE(IsShowingWebContentsModalDialog(initiator_tab));
   EXPECT_EQ(1, initiator_tester->GetNumberOfFocusCalls());
 }

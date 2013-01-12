@@ -35,7 +35,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Basic) {
   content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
-  EXPECT_EQ(0u, web_contents_modal_dialog_manager->dialog_count());
+  EXPECT_FALSE(web_contents_modal_dialog_manager->IsShowingDialog());
 
   net::X509Certificate* cert = NULL;
   int count = 0;
@@ -49,11 +49,13 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Basic) {
   [selector displayForWebContents:web_contents];
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE([selector panel]);
-  EXPECT_EQ(1u, web_contents_modal_dialog_manager->dialog_count());
+  EXPECT_TRUE(web_contents_modal_dialog_manager->IsShowingDialog());
 
-  web_contents_modal_dialog_manager->CloseAllDialogs();
+  WebContentsModalDialogManager::TestApi test_api(
+      web_contents_modal_dialog_manager);
+  test_api.CloseAllDialogs();
   content::RunAllPendingInMessageLoop();
-  EXPECT_EQ(0u, web_contents_modal_dialog_manager->dialog_count());
+  EXPECT_FALSE(web_contents_modal_dialog_manager->IsShowingDialog());
 
   EXPECT_EQ(NULL, cert);
   EXPECT_EQ(1, count);

@@ -78,8 +78,6 @@ class ConstrainedWindowViews : public views::Widget,
   static gfx::Insets GetDefaultInsets();
 
  private:
-  void NotifyTabHelperWillClose();
-
   // Overridden from views::Widget:
   virtual views::NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
 

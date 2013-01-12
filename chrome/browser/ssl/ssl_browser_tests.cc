@@ -214,9 +214,9 @@ class SSLUITest : public InProcessBrowserTest {
     observer.Wait();
   }
 
-  size_t GetConstrainedWindowCount() const {
+  bool IsShowingWebContentsModalDialog() const {
     return WebContentsModalDialogManager::FromWebContents(
-        chrome::GetActiveWebContents(browser()))->dialog_count();
+        chrome::GetActiveWebContents(browser()))->IsShowingDialog();
   }
 
   static bool GetFilePathWithHostAndPortReplacement(
@@ -855,9 +855,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContents) {
   // Because of cross-frame scripting restrictions, we cannot access the iframe
   // content.  So to know if the frame was loaded, we just check if a popup was
   // opened (the iframe content opens one).
-  // Note: because of bug 1115868, no constrained window is opened right now.
-  //       Once the bug is fixed, this will do the real check.
-  EXPECT_EQ(0U, GetConstrainedWindowCount());
+  // Note: because of bug 1115868, no web contents modal dialog is opened right
+  //       now.  Once the bug is fixed, this will do the real check.
+  EXPECT_FALSE(IsShowingWebContentsModalDialog());
 
   int img_width;
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
@@ -1143,13 +1143,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
   // It is probably overkill to add a notification for a popup-opening, let's
   // just poll.
   for (int i = 0; i < 10; i++) {
-    if (GetConstrainedWindowCount() > 0)
+    if (IsShowingWebContentsModalDialog())
       break;
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE, MessageLoop::QuitClosure(), base::TimeDelta::FromSeconds(1));
     content::RunMessageLoop();
   }
-  ASSERT_EQ(1U, GetConstrainedWindowCount());
+  ASSERT_TRUE(IsShowingWebContentsModalDialog());
 
   // Let's add another tab to make sure the browser does not exit when we close
   // the first tab.

@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 
-class ConstrainedWindowViews;
 class RenderViewContextMenuViews;
 
 namespace content {
@@ -24,7 +23,7 @@ class Widget;
 }
 
 // A chrome specific class that extends WebContentsViewWin with features like
-// constrained windows, which live in chrome.
+// focus management, which live in chrome.
 class ChromeWebContentsViewDelegateViews
     : public content::WebContentsViewDelegate {
  public:

@@ -66,6 +66,8 @@ TEST_F(WebContentsModalDialogManagerTest, ConstrainedWindows) {
     web_contents_modal_dialog_manager->AddDialog(&window);
   EXPECT_EQ(window.close_count, 0);
 
-  web_contents_modal_dialog_manager->CloseAllDialogs();
+  WebContentsModalDialogManager::TestApi test_api(
+      web_contents_modal_dialog_manager);
+  test_api.CloseAllDialogs();
   EXPECT_EQ(window.close_count, kWindowCount);
 }

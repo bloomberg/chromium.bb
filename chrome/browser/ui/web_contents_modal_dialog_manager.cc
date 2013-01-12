@@ -10,19 +10,12 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(WebContentsModalDialogManager);
-
-WebContentsModalDialogManager::WebContentsModalDialogManager(
-    content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      delegate_(NULL) {
-}
 
 WebContentsModalDialogManager::~WebContentsModalDialogManager() {
   DCHECK(child_dialogs_.empty());
@@ -35,22 +28,6 @@ void WebContentsModalDialogManager::AddDialog(
   if (child_dialogs_.size() == 1 && dialog->CanShowWebContentsModalDialog()) {
     dialog->ShowWebContentsModalDialog();
     BlockWebContentsInteraction(true);
-  }
-}
-
-void WebContentsModalDialogManager::CloseAllDialogs() {
-  // Clear out any dialogs since we are leaving this page entirely.  To ensure
-  // that we iterate over every element in child_dialogs_ we need to use a copy
-  // of child_dialogs_. Otherwise if dialog->CloseWebContentsModalDialog()
-  // modifies child_dialogs_ we could end up skipping some elements.
-  WebContentsModalDialogList child_dialogs_copy(child_dialogs_);
-  for (WebContentsModalDialogList::iterator it = child_dialogs_copy.begin();
-       it != child_dialogs_copy.end(); ++it) {
-    WebContentsModalDialog* dialog = *it;
-    if (dialog) {
-      dialog->CloseWebContentsModalDialog();
-      BlockWebContentsInteraction(false);
-    }
   }
 }
 
@@ -85,6 +62,39 @@ void WebContentsModalDialogManager::BlockWebContentsInteraction(bool blocked) {
   }
   if (delegate_)
     delegate_->SetWebContentsBlocked(contents, blocked);
+}
+
+bool WebContentsModalDialogManager::IsShowingDialog() const {
+  return dialog_count() > 0;
+}
+
+void WebContentsModalDialogManager::FocusTopmostDialog() {
+  DCHECK(dialog_count());
+  WebContentsModalDialog* window = *dialog_begin();
+  DCHECK(window);
+  window->FocusWebContentsModalDialog();
+}
+
+WebContentsModalDialogManager::WebContentsModalDialogManager(
+    content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
+      delegate_(NULL) {
+}
+
+void WebContentsModalDialogManager::CloseAllDialogs() {
+  // Clear out any dialogs since we are leaving this page entirely.  To ensure
+  // that we iterate over every element in child_dialogs_ we need to use a copy
+  // of child_dialogs_. Otherwise if dialog->CloseWebContentsModalDialog()
+  // modifies child_dialogs_ we could end up skipping some elements.
+  WebContentsModalDialogList child_dialogs_copy(child_dialogs_);
+  for (WebContentsModalDialogList::iterator it = child_dialogs_copy.begin();
+       it != child_dialogs_copy.end(); ++it) {
+    WebContentsModalDialog* dialog = *it;
+    if (dialog) {
+      dialog->CloseWebContentsModalDialog();
+      BlockWebContentsInteraction(false);
+    }
+  }
 }
 
 void WebContentsModalDialogManager::DidNavigateMainFrame(

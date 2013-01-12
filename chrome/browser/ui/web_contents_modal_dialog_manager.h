@@ -27,19 +27,41 @@ class WebContentsModalDialogManager
   // via WillClose() when it is being destroyed.
   void AddDialog(WebContentsModalDialog* dialog);
 
-  // Closes all WebContentsModalDialogs.
-  void CloseAllDialogs();
-
   // Called when a WebContentsModalDialogs we own is about to be closed.
   void WillClose(WebContentsModalDialog* dialog);
 
   // Blocks/unblocks interaction with renderer process.
   void BlockWebContentsInteraction(bool blocked);
 
-  // Returns the number of dialogs in this tab.
-  size_t dialog_count() { return child_dialogs_.size(); }
+  // Returns true if a dialog is currently being shown.
+  bool IsShowingDialog() const;
+
+  // Focus the topmost modal dialog.  IsShowingDialog() must be true when
+  // calling this function.
+  void FocusTopmostDialog();
+
+  // For testing.
+  class TestApi {
+   public:
+    explicit TestApi(WebContentsModalDialogManager* manager)
+        : manager_(manager) {}
+
+    void CloseAllDialogs() { manager_->CloseAllDialogs(); }
+
+   private:
+    WebContentsModalDialogManager* manager_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestApi);
+  };
+
+ private:
+  explicit WebContentsModalDialogManager(content::WebContents* web_contents);
+  friend class content::WebContentsUserData<WebContentsModalDialogManager>;
 
   typedef std::deque<WebContentsModalDialog*> WebContentsModalDialogList;
+
+  // Returns the number of dialogs in this tab.
+  size_t dialog_count() const { return child_dialogs_.size(); }
 
   // Return an iterator for the first dialog in this web contents.
   WebContentsModalDialogList::iterator dialog_begin() {
@@ -51,9 +73,8 @@ class WebContentsModalDialogManager
     return child_dialogs_.end();
   }
 
- private:
-  explicit WebContentsModalDialogManager(content::WebContents* web_contents);
-  friend class content::WebContentsUserData<WebContentsModalDialogManager>;
+  // Closes all WebContentsModalDialogs.
+  void CloseAllDialogs();
 
   // Overridden from content::WebContentsObserver:
   virtual void DidNavigateMainFrame(
