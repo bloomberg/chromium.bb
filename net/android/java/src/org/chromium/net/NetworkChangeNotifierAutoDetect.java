@@ -163,12 +163,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
     // BroadcastReceiver
     @Override
     public void onReceive(Context context, Intent intent) {
-        int newConnectionType = getCurrentConnectionType();
-        if (newConnectionType != mConnectionType) {
-            mConnectionType = newConnectionType;
-            Log.d(TAG, "Network connectivity changed, type is: " + mConnectionType);
-            mObserver.onConnectionTypeChanged(newConnectionType);
-        }
+        connectionTypeChanged();
     }
 
     // ActivityStatus.StateListener
@@ -177,8 +172,18 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
         if (state == ActivityStatus.PAUSED) {
             unregisterReceiver();
         } else if (state == ActivityStatus.RESUMED) {
+            connectionTypeChanged();
             registerReceiver();
         }
+    }
+
+    private void connectionTypeChanged() {
+        int newConnectionType = getCurrentConnectionType();
+        if (newConnectionType == mConnectionType) return;
+
+        mConnectionType = newConnectionType;
+        Log.d(TAG, "Network connectivity changed, type is: " + mConnectionType);
+        mObserver.onConnectionTypeChanged(newConnectionType);
     }
 
     private static class NetworkConnectivityIntentFilter extends IntentFilter {
