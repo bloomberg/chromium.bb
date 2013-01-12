@@ -1148,7 +1148,6 @@
         'browser/sync_file_system/sync_file_system_service_unittest.cc',
         'browser/sync_file_system/sync_file_system_test_util.cc',
         'browser/sync_file_system/sync_file_system_test_util.h',
-        'browser/system_monitor/image_capture_device_manager_unittest.mm',
         'browser/system_monitor/media_device_notifications_utils_unittest.cc',
         'browser/system_monitor/media_storage_util_unittest.cc',
         'browser/system_monitor/media_transfer_protocol_device_observer_linux_unittest.cc',

@@ -114,4 +114,17 @@ DiskInfoMac DiskInfoMac::BuildDiskInfoOnFileThread(CFDictionaryRef dict) {
   return info;
 }
 
+// TODO(gbillock): Make sure this gets test coverage.
+// static
+DiskInfoMac DiskInfoMac::BuildDiskInfoFromICDevice(std::string device_id,
+                                                   string16 device_name,
+                                                   FilePath mount_point) {
+  DiskInfoMac info;
+  info.device_id_ = device_id;
+  info.device_name_ = device_name;
+  info.mount_point_ = mount_point;
+  info.type_ = MediaStorageUtil::MAC_IMAGE_CAPTURE;
+  return info;
+}
+
 }  // namesapce chrome
