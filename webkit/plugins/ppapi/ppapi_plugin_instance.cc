@@ -2436,6 +2436,12 @@ PP_NaClResult PluginInstance::ResetAsProxied(
   return PP_NACL_OK;
 }
 
+bool PluginInstance::IsValidInstanceOf(PluginModule* module) {
+  DCHECK(module);
+  return module == module_.get() ||
+         module == original_module_.get();
+}
+
 void PluginInstance::DoSetCursor(WebCursorInfo* cursor) {
   cursor_.reset(cursor);
   if (fullscreen_container_) {

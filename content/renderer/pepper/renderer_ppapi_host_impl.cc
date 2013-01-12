@@ -137,7 +137,7 @@ RendererPpapiHostImpl* RendererPpapiHostImpl::GetForPPInstance(
   if (!instance)
     return NULL;
 
-  // All modules created by content will have their embedders state be the
+  // All modules created by content will have their embedder state be the
   // host impl.
   return static_cast<RendererPpapiHostImpl*>(
       instance->module()->GetEmbedderState());
@@ -261,7 +261,7 @@ PluginInstance* RendererPpapiHostImpl::GetAndValidateInstance(
   PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance);
   if (!instance)
     return NULL;
-  if (instance->module() != module_)
+  if (!instance->IsValidInstanceOf(module_))
     return NULL;
   return instance;
 }
