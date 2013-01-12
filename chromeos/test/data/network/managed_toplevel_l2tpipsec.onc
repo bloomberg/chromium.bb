@@ -10,10 +10,10 @@
         "IPsec": {
           "AuthenticationType": "PSK",
           "IKEVersion": 1,
+          "SaveCredentials": false,
           "PSK": "passphrase"
         },
         "L2TP": {
-          "SaveCredentials": false,
           "Recommended": [
             "Username",
             "Password"

@@ -1,0 +1,14 @@
+{
+  "{64c4f86b-cf6a-4e4a-8eff-456def}": {
+    "AutoConnect": true,
+    "GUID": "{64c4f86b-cf6a-4e4a-8eff-456def}",
+    "Passphrase": "some passphrase",
+    "Profile": "user",
+    "ProxyConfig": "{\"mode\":\"fixed_servers\",\"server\":\"ftp=192.168.2.1:8889;http=192.168.2.1:8889;socks=socks4://192.168.2.1:8889;https=192.168.2.1:8889\"}",
+    "SSID": "OpenWrt",
+    "Security": "psk",
+    "Type": "wifi",
+    "UIData": "{\"onc_source\":\"user_policy\"}",
+    "WiFi.HiddenSSID": false
+  }
+}

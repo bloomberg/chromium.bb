@@ -18,6 +18,9 @@ namespace chromeos {
 namespace onc {
 namespace test_utils {
 
+// Read the file at |filename| as a string. CHECKs if any error occurs.
+std::string ReadTestData(const std::string& filename);
+
 // Read a JSON dictionary from |filename| and return it as a
 // DictionaryValue. CHECKs if any error occurs.
 scoped_ptr<base::DictionaryValue> ReadTestDictionary(

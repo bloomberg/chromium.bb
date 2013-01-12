@@ -1,0 +1,13 @@
+{
+  "{485d6076-dd44-6b6d-69787465725f5045}": {
+    "AutoConnect": true,
+    "EAP.EAP": "PEAP",
+    "EAP.UseSystemCAs": false,
+    "GUID": "{485d6076-dd44-6b6d-69787465725f5045}",
+    "Profile": "default",
+    "SSID": "ssid",
+    "Security": "802_1x",
+    "Type": "wifi",
+    "UIData": "{\"onc_source\":\"device_policy\"}"
+  }
+}

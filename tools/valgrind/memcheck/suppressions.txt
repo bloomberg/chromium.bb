@@ -3659,13 +3659,6 @@
    fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
-   bug_99436
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN8chromeos*OncNetworkParserTest_TestCreateNetworkWifi*_Test8TestBodyEv
-}
-{
    bug_100043
    Memcheck:Leak
    fun:_Znw*

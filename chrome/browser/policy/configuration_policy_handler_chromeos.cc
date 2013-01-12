@@ -62,6 +62,7 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
                              false,  // Ignore invalid recommended field names.
                              true,  // Fail on missing fields.
                              true);  // Validate for managed ONC
+    validator.SetOncSource(onc_source_);
 
     // ONC policies are always unencrypted.
     onc::Validator::Result validation_result;

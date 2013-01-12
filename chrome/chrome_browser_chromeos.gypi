@@ -171,8 +171,6 @@
         'browser/chromeos/cros/network_parser.h',
         'browser/chromeos/cros/network_ui_data.cc',
         'browser/chromeos/cros/network_ui_data.h',
-        'browser/chromeos/cros/onc_network_parser.cc',
-        'browser/chromeos/cros/onc_network_parser.h',
         'browser/chromeos/customization_document.cc',
         'browser/chromeos/customization_document.h',
         'browser/chromeos/display/display_preferences.cc',

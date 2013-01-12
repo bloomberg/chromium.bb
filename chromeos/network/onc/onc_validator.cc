@@ -146,6 +146,7 @@ scoped_ptr<base::DictionaryValue> Validator::MapObject(
   if (valid) {
     return repaired.Pass();
   } else {
+    DCHECK(error_or_warning_found_);
     error_or_warning_found_ = *error = true;
     return scoped_ptr<base::DictionaryValue>();
   }
@@ -363,6 +364,19 @@ bool Validator::RequireField(const base::DictionaryValue& dict,
   return false;
 }
 
+// Prohibit certificate patterns for device policy ONC so that an unmanaged user
+// won't have a certificate presented for them involuntarily.
+bool Validator::CertPatternInDevicePolicy(const std::string& cert_type) {
+  if (cert_type == certificate::kPattern &&
+      onc_source_ == ONC_SOURCE_DEVICE_POLICY) {
+    error_or_warning_found_ = true;
+    LOG(ERROR) << ErrorHeader() << "Client certificate patterns are "
+               << "prohibited in ONC device policies.";
+    return true;
+  }
+  return false;
+}
+
 bool Validator::ValidateToplevelConfiguration(
     const base::DictionaryValue& onc_object,
     base::DictionaryValue* result) {
@@ -421,6 +435,17 @@ bool Validator::ValidateNetworkConfiguration(
 
     std::string type;
     result->GetStringWithoutPathExpansion(kType, &type);
+
+    // Prohibit anything but WiFi and Ethernet for device-level policy (which
+    // corresponds to shared networks). See also http://crosbug.com/28741.
+    if (onc_source_ == ONC_SOURCE_DEVICE_POLICY &&
+        type != kWiFi &&
+        type != kEthernet) {
+      error_or_warning_found_ = true;
+      LOG(ERROR) << ErrorHeader() << "Networks of type '"
+                 << type << "' are prohibited in ONC device policies.";
+      return false;
+    }
     allRequiredExist &= type.empty() || RequireField(*result, type);
   }
 
@@ -557,6 +582,10 @@ bool Validator::ValidateIPsec(
   }
   std::string cert_type;
   result->GetStringWithoutPathExpansion(kClientCertType, &cert_type);
+
+  if (CertPatternInDevicePolicy(cert_type))
+    return false;
+
   if (cert_type == kPattern)
     allRequiredExist &= RequireField(*result, kClientCertPattern);
   else if (cert_type == kRef)
@@ -593,6 +622,10 @@ bool Validator::ValidateOpenVPN(
   bool allRequiredExist = RequireField(*result, kClientCertType);
   std::string cert_type;
   result->GetStringWithoutPathExpansion(kClientCertType, &cert_type);
+
+  if (CertPatternInDevicePolicy(cert_type))
+    return false;
+
   if (cert_type == kPattern)
     allRequiredExist &= RequireField(*result, kClientCertPattern);
   else if (cert_type == kRef)
@@ -683,6 +716,10 @@ bool Validator::ValidateEAP(const base::DictionaryValue& onc_object,
   bool allRequiredExist = RequireField(*result, kOuter);
   std::string cert_type;
   result->GetStringWithoutPathExpansion(kClientCertType, &cert_type);
+
+  if (CertPatternInDevicePolicy(cert_type))
+    return false;
+
   if (cert_type == kPattern)
     allRequiredExist &= RequireField(*result, kClientCertPattern);
   else if (cert_type == kRef)

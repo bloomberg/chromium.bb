@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_mapper.h"
 
 namespace base {
@@ -66,6 +67,15 @@ class CHROMEOS_EXPORT Validator : public Mapper {
             bool managed_onc);
 
   virtual ~Validator();
+
+  // Sets the ONC source to |source|. If not set, defaults to ONC_SOURCE_NONE.
+  // If the source is set to ONC_SOURCE_DEVICE_POLICY, validation additionally
+  // checks:
+  // - only the network types Wifi and Ethernet are allowed
+  // - client certificate patterns are disallowed
+  void SetOncSource(ONCSource source) {
+    onc_source_ = source;
+  }
 
   // Validate the given |onc_object| according to |object_signature|. The
   // |object_signature| has to be a pointer to one of the signatures in
@@ -202,6 +212,8 @@ class CHROMEOS_EXPORT Validator : public Mapper {
 
   bool RequireField(const base::DictionaryValue& dict, const std::string& key);
 
+  bool CertPatternInDevicePolicy(const std::string& cert_type);
+
   std::string WarningHeader();
   std::string ErrorHeader();
   std::string MessageHeader(bool is_error);
@@ -210,6 +222,8 @@ class CHROMEOS_EXPORT Validator : public Mapper {
   const bool error_on_wrong_recommended_;
   const bool error_on_missing_field_;
   const bool managed_onc_;
+
+  ONCSource onc_source_;
 
   // The path of field names and indices to the current value. Indices
   // are stored as strings in decimal notation.

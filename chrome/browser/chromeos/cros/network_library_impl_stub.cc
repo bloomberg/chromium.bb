@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -43,6 +44,7 @@ NetworkLibraryImplStub::~NetworkLibraryImplStub() {
   disabled_wifi_networks_.clear();
   disabled_cellular_networks_.clear();
   disabled_wimax_networks_.clear();
+  STLDeleteValues(&service_configurations_);
 }
 
 void NetworkLibraryImplStub::Init() {
@@ -127,6 +129,15 @@ void NetworkLibraryImplStub::Init() {
   wifi3->set_passphrase_required(true);
   AddStubNetwork(wifi3, PROFILE_USER);
 
+  CertificatePattern pattern;
+  IssuerSubjectPattern issuer;
+  issuer.set_organization("Google, Inc.");
+  pattern.set_issuer(issuer);
+  std::vector<std::string> enrollment_uris;
+  enrollment_uris.push_back("http://youtu.be/dQw4w9WgXcQ");
+  enrollment_uris.push_back("chrome-extension://abc/keygen-cert.html");
+  pattern.set_enrollment_uri_list(enrollment_uris);
+
   WifiNetwork* wifi_cert_pattern = new WifiNetwork("wifi_cert_pattern");
   wifi_cert_pattern->set_name("Fake WiFi CertPattern 802.1x");
   wifi_cert_pattern->set_strength(50);
@@ -137,13 +148,6 @@ void NetworkLibraryImplStub::Init() {
   wifi_cert_pattern->SetEAPIdentity("user@example.com");
   wifi_cert_pattern->SetEAPPhase2Auth(EAP_PHASE_2_AUTH_AUTO);
   wifi_cert_pattern->set_client_cert_type(CLIENT_CERT_TYPE_PATTERN);
-  CertificatePattern pattern;
-  IssuerSubjectPattern subject;
-  subject.set_organization("Google Inc");
-  pattern.set_subject(subject);
-  std::vector<std::string> enrollment_uris;
-  enrollment_uris.push_back("http://www.google.com/chromebook");
-  pattern.set_enrollment_uri_list(enrollment_uris);
   wifi_cert_pattern->set_client_cert_pattern(pattern);
   wifi_cert_pattern->set_eap_save_credentials(true);
 
@@ -271,6 +275,15 @@ void NetworkLibraryImplStub::Init() {
   vpn4->set_ui_data(vpn4_ui_data);
   AddStubNetwork(vpn4, PROFILE_USER);
 
+  VirtualNetwork* vpn_cert_pattern = new VirtualNetwork("vpn_cert_pattern");
+  vpn_cert_pattern->set_name("Fake VPN CertPattern");
+  vpn_cert_pattern->set_server_hostname("vpn4server.fake.com");
+  vpn_cert_pattern->set_provider_type(PROVIDER_TYPE_OPEN_VPN);
+  vpn_cert_pattern->set_client_cert_type(CLIENT_CERT_TYPE_PATTERN);
+  vpn_cert_pattern->set_client_cert_pattern(pattern);
+
+  AddStubNetwork(vpn_cert_pattern, PROFILE_USER);
+
   wifi_scanning_ = false;
   offline_mode_ = false;
 
@@ -374,6 +387,8 @@ void NetworkLibraryImplStub::AddStubRememberedNetwork(Network* network) {
     // remembered_*_networks_ list and the remembered_network_map_.
     if (!ValidateAndAddRememberedNetwork(remembered))
       NOTREACHED();
+    remembered->set_profile_path(profile->path);
+    remembered->set_profile_type(profile->type);
   }
 }
 
@@ -463,7 +478,11 @@ void NetworkLibraryImplStub::MonitorNetworkDeviceStop(
 
 void NetworkLibraryImplStub::CallConfigureService(
     const std::string& identifier,
-    const DictionaryValue* info) {}
+    const DictionaryValue* info) {
+  DictionaryValue*& config_entry = service_configurations_[identifier];
+  delete config_entry;
+  config_entry = info->DeepCopy();
+}
 
 void NetworkLibraryImplStub::CallConnectToNetwork(Network* network) {
   // Immediately set the network to active to mimic shill's behavior.
@@ -744,6 +763,11 @@ void NetworkLibraryImplStub::SendNetworkServiceProperties(
                           ConnectionStateToString(network->state()));
   }
   callback.Run(service_path, dictionary.get());
+}
+
+const std::map<std::string, base::DictionaryValue*>&
+NetworkLibraryImplStub::GetConfigurations() {
+  return service_configurations_;
 }
 
 }  // namespace chromeos

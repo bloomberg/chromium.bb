@@ -1,0 +1,15 @@
+{
+  "{485d6076-dd44-6b6d-69787465725f5045}": {
+    "AutoConnect": false,
+    "EAP.AnonymousIdentity": "anon",
+    "EAP.EAP": "LEAP",
+    "EAP.Identity": "abc madmax@my.domain.com def",
+    "EAP.Password": "pass",
+    "GUID": "{485d6076-dd44-6b6d-69787465725f5045}",
+    "Profile": "user",
+    "SSID": "ssid",
+    "Security": "802_1x",
+    "Type": "wifi",
+    "UIData": "{\"onc_source\":\"user_policy\"}"
+  }
+}

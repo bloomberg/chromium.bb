@@ -6,16 +6,18 @@
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
-#include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/cros/network_constants.h"
-#include "chrome/browser/chromeos/cros/onc_network_parser.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/net/onc_utils.h"
 #include "chrome/browser/chromeos/network_login_observer.h"
 #include "chromeos/network/onc/onc_certificate_importer.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_signature.h"
+#include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/onc/onc_validator.h"
 #include "content/public/browser/browser_thread.h"
@@ -1030,6 +1032,28 @@ void NetworkLibraryImplBase::SwitchToPreferredNetwork() {
   }
 }
 
+namespace {
+
+class UserStringSubstitution : public onc::StringSubstitution {
+ public:
+  UserStringSubstitution() {}
+  virtual bool GetSubstitute(std::string placeholder,
+                             std::string* substitute) const {
+    if (!UserManager::Get()->IsUserLoggedIn())
+      return false;
+    const User* logged_in_user = UserManager::Get()->GetLoggedInUser();
+    if (placeholder == onc::substitutes::kLoginIDField)
+      *substitute = logged_in_user->GetAccountName(false);
+    else if (placeholder == onc::substitutes::kEmailField)
+      *substitute = logged_in_user->email();
+    else
+      return false;
+    return true;
+  }
+};
+
+}  // namespace
+
 bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
                                              const std::string& passphrase,
                                              onc::ONCSource source,
@@ -1078,11 +1102,13 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
                            false,  // Ignore invalid recommended field names.
                            true,  // Fail on missing fields.
                            from_policy);
+  validator.SetOncSource(source);
 
   onc::Validator::Result validation_result;
-  validator.ValidateAndRepairObject(&onc::kToplevelConfigurationSignature,
-                                    *root_dict,
-                                    &validation_result);
+  root_dict = validator.ValidateAndRepairObject(
+      &onc::kToplevelConfigurationSignature,
+      *root_dict,
+      &validation_result);
 
   if (from_policy) {
     UMA_HISTOGRAM_BOOLEAN("Enterprise.ONC.PolicyValidation",
@@ -1093,10 +1119,12 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
   if (validation_result == onc::Validator::VALID_WITH_WARNINGS) {
     LOG(WARNING) << "ONC from " << onc::GetSourceAsString(source)
                  << " produced warnings.";
-  } else if (validation_result == onc::Validator::INVALID) {
+    success = false;
+  } else if (validation_result == onc::Validator::INVALID ||
+             root_dict == NULL) {
     LOG(ERROR) << "ONC from " << onc::GetSourceAsString(source)
                << " is invalid and couldn't be repaired.";
-    success = false;
+    return false;
   }
 
   const base::ListValue* certificates;
@@ -1125,32 +1153,24 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
   network_ids.clear();
   if (has_network_configurations) {
     VLOG(2) << "ONC file has " << network_configs->GetSize() << " networks";
-    OncNetworkParser parser(*network_configs, source);
+    for (base::ListValue::const_iterator it(network_configs->begin());
+         it != network_configs->end(); ++it) {
+      const base::DictionaryValue* network;
+      (*it)->GetAsDictionary(&network);
 
-    for (int i = 0; i < parser.GetNetworkConfigsSize(); i++) {
-      // Parse Open Network Configuration blob into a temporary Network object.
       bool marked_for_removal = false;
-      scoped_ptr<Network> network(parser.ParseNetwork(i, &marked_for_removal));
-      if (!network) {
-        LOG(ERROR) << "Error during ONC parsing network at index " << i
-                   << " from " << onc::GetSourceAsString(source);
-        success = false;
-        continue;
-      }
+      network->GetBooleanWithoutPathExpansion(onc::kRemove,
+                                              &marked_for_removal);
 
-      // Disallow anything but WiFi and Ethernet for device-level policy (which
-      // corresponds to shared networks). See also http://crosbug.com/28741.
-      if (source == onc::ONC_SOURCE_DEVICE_POLICY &&
-          network->type() != TYPE_WIFI &&
-          network->type() != TYPE_ETHERNET) {
-        LOG(WARNING) << "Ignoring device-level policy-pushed network of type "
-                     << network->type();
-        continue;
-      }
+      std::string type;
+      network->GetStringWithoutPathExpansion(onc::kType, &type);
+
+      std::string guid;
+      network->GetStringWithoutPathExpansion(onc::kGUID, &guid);
 
       if (source == onc::ONC_SOURCE_USER_IMPORT && marked_for_removal) {
         // User import supports the removal of networks by ID.
-        removal_ids.insert(network->unique_id());
+        removal_ids.insert(guid);
         continue;
       }
 
@@ -1161,47 +1181,70 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
       if (marked_for_removal)
         continue;
 
+      // Expand strings like LoginID
+      base::DictionaryValue* expanded_network = network->DeepCopy();
+      UserStringSubstitution substitution;
+      onc::ExpandStringsInOncObject(onc::kNetworkConfigurationSignature,
+                                    substitution,
+                                    expanded_network);
+
       // Update the ONC map.
-      const base::DictionaryValue*& entry =
-          network_onc_map_[network->unique_id()];
+      const base::DictionaryValue*& entry = network_onc_map_[guid];
       delete entry;
-      entry = parser.GetNetworkConfig(i)->DeepCopy();
+      entry = expanded_network;
 
       // Configure the network.
-      base::DictionaryValue dict;
-      for (Network::PropertyMap::const_iterator props =
-               network->property_map_.begin();
-           props != network->property_map_.end(); ++props) {
-        std::string key =
-            NativeNetworkParser::property_mapper()->GetKey(props->first);
-        if (!key.empty())
-          dict.SetWithoutPathExpansion(key, props->second->DeepCopy());
-        else
-          VLOG(2) << "Property " << props->first << " will not be sent";
+      scoped_ptr<base::DictionaryValue> shill_dict =
+          onc::TranslateONCObjectToShill(&onc::kNetworkConfigurationSignature,
+                                         *expanded_network);
+
+      // Set the ProxyConfig.
+      const base::DictionaryValue* proxy_settings;
+      if (expanded_network->GetDictionaryWithoutPathExpansion(
+              onc::kProxySettings,
+              &proxy_settings)) {
+        scoped_ptr<base::DictionaryValue> proxy_config =
+            onc::ConvertOncProxySettingsToProxyConfig(*proxy_settings);
+        std::string proxy_json;
+        base::JSONWriter::Write(proxy_config.get(), &proxy_json);
+        shill_dict->SetStringWithoutPathExpansion(
+            flimflam::kProxyConfigProperty,
+            proxy_json);
       }
 
+      // Set the UIData.
+      scoped_ptr<NetworkUIData> ui_data =
+          onc::CreateUIData(source, *expanded_network);
+      base::DictionaryValue ui_data_dict;
+      ui_data->FillDictionary(&ui_data_dict);
+      std::string ui_data_json;
+      base::JSONWriter::Write(&ui_data_dict, &ui_data_json);
+      shill_dict->SetStringWithoutPathExpansion(flimflam::kUIDataProperty,
+                                                ui_data_json);
+
       // Set the appropriate profile for |source|.
-      if (profile != NULL)
-        dict.SetString(flimflam::kProfileProperty, profile->path);
+      if (profile != NULL) {
+        shill_dict->SetStringWithoutPathExpansion(flimflam::kProfileProperty,
+                                                  profile->path);
+      }
 
       // For Ethernet networks, apply them to the current Ethernet service.
-      if (network->type() == TYPE_ETHERNET) {
+      if (type == onc::kEthernet) {
         const EthernetNetwork* ethernet = ethernet_network();
         if (ethernet) {
-          CallConfigureService(ethernet->unique_id(), &dict);
+          CallConfigureService(ethernet->unique_id(), shill_dict.get());
         } else {
           LOG(WARNING) << "Tried to import ONC with an Ethernet network when "
                        << "there is no active Ethernet connection.";
         }
       } else {
-        CallConfigureService(network->unique_id(), &dict);
+        CallConfigureService(guid, shill_dict.get());
       }
 
-      // Store the unique identifier of the network that is defined in the ONC
-      // blob in |network_ids|. The identifiers are later used to clean out any
-      // previously-existing networks that had been configured through policy
-      // but are no longer specified in the updated ONC blob.
-      network_ids.insert(network->unique_id());
+      // Store the network's identifier. The identifiers are later used to clean
+      // out any previously-existing networks that had been configured through
+      // policy but are no longer specified in the updated ONC blob.
+      network_ids.insert(guid);
     }
   }
 

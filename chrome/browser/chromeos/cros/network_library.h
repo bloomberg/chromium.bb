@@ -529,7 +529,6 @@ class Network {
   friend class NetworkParser;
   friend class NativeNetworkParser;
   friend class NativeVirtualNetworkParser;
-  friend class OncNetworkParser;
   friend class OncWifiNetworkParser;
   friend class OncVirtualNetworkParser;
 
@@ -537,12 +536,6 @@ class Network {
   NETWORK_LIBRARY_IMPL_FRIENDS;
 
   FRIEND_TEST_ALL_PREFIXES(NetworkLibraryTest, GetUserExpandedValue);
-  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest,
-                           TestLoadWifiCertificatePattern);
-  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest,
-                           TestLoadVPNCertificatePattern);
-  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest,
-                           TestNoCertificatePatternForDevicePolicy);
   FRIEND_TEST_ALL_PREFIXES(NetworkLibraryStubTest, NetworkConnectOncWifi);
   FRIEND_TEST_ALL_PREFIXES(NetworkLibraryStubTest, NetworkConnectOncVPN);
 
@@ -722,13 +715,10 @@ class VirtualNetwork : public Network {
   // parsers.
   friend class NativeNetworkParser;
   friend class NativeVirtualNetworkParser;
-  friend class OncNetworkParser;
   friend class OncVirtualNetworkParser;
 
   // This allows the implementation classes access to privates.
   NETWORK_LIBRARY_IMPL_FRIENDS;
-
-  FRIEND_TEST_ALL_PREFIXES(OncNetworkParserTest, TestLoadVPNCertificatePattern);
 
   // Use these functions at your peril.  They are used by the various
   // parsers to set state, and really shouldn't be used by anything else

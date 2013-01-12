@@ -5,12 +5,15 @@
       "Type": "WiFi",
       "Name": "My WiFi Network",
       "WiFi": {
-        "Passphrase": "z123456789012",
+        "AutoConnect": false,
+        "EAP": {
+          "AnonymousIdentity": "anon",
+          "Identity": "abc ${LOGIN_EMAIL} def",
+          "Outer": "LEAP",
+          "Password": "pass"
+        },
         "SSID": "ssid",
-        "Security": "WEP-PSK"
-      },
-      "ProxySettings": {
-        "Type": "Direct"
+        "Security": "WPA-EAP"
       }
     }
   ],
