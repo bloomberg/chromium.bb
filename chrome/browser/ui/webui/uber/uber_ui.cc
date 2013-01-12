@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -73,9 +73,9 @@ bool HasExtensionType(Profile* profile, const char* extensionType) {
 
   for (ExtensionSet::const_iterator iter = extensionSet->begin();
        iter != extensionSet->end(); ++iter) {
-    extensions::Extension::URLOverrideMap map =
-        (*iter)->GetChromeURLOverrides();
-    extensions::Extension::URLOverrideMap::const_iterator result =
+    extensions::URLOverrides::URLOverrideMap map =
+        extensions::URLOverrides::GetChromeURLOverrides(*iter);
+    extensions::URLOverrides::URLOverrideMap::const_iterator result =
         map.find(std::string(extensionType));
 
     if (result != map.end())

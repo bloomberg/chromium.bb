@@ -62,7 +62,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   struct InstallWarning;
   struct ManifestData;
 
-  typedef std::map<const std::string, GURL> URLOverrideMap;
   typedef std::vector<std::string> ScriptingWhitelist;
   typedef std::vector<InstallWarning> InstallWarningVector;
   typedef std::map<const std::string, linked_ptr<ManifestData> >
@@ -703,9 +702,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     return manifest_.get();
   }
   const std::string default_locale() const { return default_locale_; }
-  const URLOverrideMap& GetChromeURLOverrides() const {
-    return chrome_url_overrides_;
-  }
   bool incognito_split_mode() const { return incognito_split_mode_; }
   bool offline_enabled() const { return offline_enabled_; }
   const OAuth2Info& oauth2_info() const { return oauth2_info_; }
@@ -727,6 +723,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool is_extension() const;
   bool is_storage_isolated() const { return is_storage_isolated_; }
   bool can_be_incognito_enabled() const;
+  void AddWebExtentPattern(const URLPattern& pattern);
   const URLPatternSet& web_extent() const { return extent_; }
   const std::string& launch_local_path() const { return launch_local_path_; }
   const std::string& launch_web_url() const { return launch_web_url_; }
@@ -872,7 +869,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadBrowserAction(string16* error);
   bool LoadScriptBadge(string16* error);
   bool LoadSystemIndicator(APIPermissionSet* api_permissions, string16* error);
-  bool LoadChromeURLOverrides(string16* error);
   bool LoadTextToSpeechVoices(string16* error);
   bool LoadIncognitoMode(string16* error);
   bool LoadContentSecurityPolicy(string16* error);
@@ -1114,10 +1110,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Set to true at the end of InitValue when initialization is finished.
   bool finished_parsing_manifest_;
-
-  // A map of chrome:// hostnames (newtab, downloads, etc.) to Extension URLs
-  // which override the handling of those URLs. (see ExtensionOverrideUI).
-  URLOverrideMap chrome_url_overrides_;
 
   // Whether this extension requests isolated storage.
   bool is_storage_isolated_;

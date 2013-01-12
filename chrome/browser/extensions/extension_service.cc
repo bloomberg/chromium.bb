@@ -53,7 +53,6 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/external_install_ui.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/external_provider_interface.h"
@@ -1064,9 +1063,6 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
 
   UpdateActiveExtensionsInCrashReporter();
 
-  ExtensionWebUI::RegisterChromeURLOverrides(
-      profile_, extension->GetChromeURLOverrides());
-
   // If the extension has permission to load chrome://favicon/ resources we need
   // to make sure that the FaviconSource is registered with the
   // ChromeURLDataManager.
@@ -1157,9 +1153,6 @@ void ExtensionService::NotifyExtensionUnloaded(
   system_->UnregisterExtensionWithRequestContexts(extension->id(), reason);
   profile_->GetExtensionSpecialStoragePolicy()->
       RevokeRightsForExtension(extension);
-
-  ExtensionWebUI::UnregisterChromeURLOverrides(
-      profile_, extension->GetChromeURLOverrides());
 
 #if defined(OS_CHROMEOS)
   // Revoke external file access for the extension from its file system context.

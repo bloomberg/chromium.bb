@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_entry.h"
@@ -113,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, ShouldNotCreateDuplicateEntries) {
   for (size_t i = 0; i < 3; ++i) {
     ExtensionWebUI::RegisterChromeURLOverrides(
         browser()->profile(),
-        extension->GetChromeURLOverrides());
+        extensions::URLOverrides::GetChromeURLOverrides(extension));
   }
 
   ASSERT_TRUE(CheckHistoryOverridesContainsNoDupes());

@@ -72,8 +72,6 @@ namespace {
 const int kModernManifestVersion = 2;
 const int kPEMOutputColumns = 65;
 
-const char kOverrideExtentUrlPatternFormat[] = "chrome://%s/*";
-
 // The maximum number of commands (including page action/browser actions) an
 // extension can have.
 const size_t kMaxCommandsPerExtension = 4;
@@ -1321,6 +1319,10 @@ bool Extension::is_extension() const {
 
 bool Extension::can_be_incognito_enabled() const {
   return !is_platform_app();
+}
+
+void Extension::AddWebExtentPattern(const URLPattern& pattern) {
+  extent_.AddPattern(pattern);
 }
 
 bool Extension::is_theme() const {
@@ -2572,7 +2574,6 @@ bool Extension::LoadExtensionFeatures(APIPermissionSet* api_permissions,
       !LoadBrowserAction(error) ||
       !LoadSystemIndicator(api_permissions, error) ||
       !LoadScriptBadge(error) ||
-      !LoadChromeURLOverrides(error) ||
       !LoadIncognitoMode(error) ||
       !LoadContentSecurityPolicy(error))
     return false;
@@ -2762,65 +2763,6 @@ bool Extension::LoadSystemIndicator(APIPermissionSet* api_permissions,
   // Because the manifest was successfully parsed, auto-grant the permission.
   // TODO(dewittj) Add this for all extension action APIs.
   api_permissions->insert(APIPermission::kSystemIndicator);
-
-  return true;
-}
-
-
-bool Extension::LoadChromeURLOverrides(string16* error) {
-  if (!manifest_->HasKey(keys::kChromeURLOverrides))
-    return true;
-  DictionaryValue* overrides = NULL;
-  if (!manifest_->GetDictionary(keys::kChromeURLOverrides, &overrides)) {
-    *error = ASCIIToUTF16(errors::kInvalidChromeURLOverrides);
-    return false;
-  }
-
-  // Validate that the overrides are all strings
-  for (DictionaryValue::key_iterator iter = overrides->begin_keys();
-       iter != overrides->end_keys(); ++iter) {
-    std::string page = *iter;
-    std::string val;
-    // Restrict override pages to a list of supported URLs.
-    bool is_override = (page != chrome::kChromeUINewTabHost &&
-                        page != chrome::kChromeUIBookmarksHost &&
-                        page != chrome::kChromeUIHistoryHost);
-#if defined(OS_CHROMEOS)
-    is_override = (is_override &&
-                   page != chrome::kChromeUIActivationMessageHost);
-#endif
-#if defined(FILE_MANAGER_EXTENSION)
-    is_override = (is_override &&
-                   !(location() == COMPONENT &&
-                     page == chrome::kChromeUIFileManagerHost));
-#endif
-
-    if (is_override || !overrides->GetStringWithoutPathExpansion(*iter, &val)) {
-      *error = ASCIIToUTF16(errors::kInvalidChromeURLOverrides);
-      return false;
-    }
-    // Replace the entry with a fully qualified chrome-extension:// URL.
-    chrome_url_overrides_[page] = GetResourceURL(val);
-
-    // For component extensions, add override URL to extent patterns.
-    if (is_legacy_packaged_app() && location() == COMPONENT) {
-      URLPattern pattern(URLPattern::SCHEME_CHROMEUI);
-      std::string url = base::StringPrintf(kOverrideExtentUrlPatternFormat,
-                                           page.c_str());
-      if (pattern.Parse(url) != URLPattern::PARSE_SUCCESS) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidURLPatternError, url);
-        return false;
-      }
-      extent_.AddPattern(pattern);
-    }
-  }
-
-  // An extension may override at most one page.
-  if (overrides->size() > 1) {
-    *error = ASCIIToUTF16(errors::kMultipleOverrides);
-    return false;
-  }
 
   return true;
 }

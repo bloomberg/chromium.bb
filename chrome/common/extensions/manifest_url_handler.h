@@ -27,6 +27,23 @@ struct ManifestURL : public Extension::ManifestData {
   static const GURL GetHomepageURL(const Extension* extension);
 };
 
+// A structure to hold the chrome URL overrides that may be specified
+// in the manifest of an extension.
+struct URLOverrides : public Extension::ManifestData {
+  typedef std::map<const std::string, GURL> URLOverrideMap;
+
+  // Define out of line constructor/destructor to please Clang.
+  URLOverrides();
+  virtual ~URLOverrides();
+
+  static const URLOverrideMap&
+      GetChromeURLOverrides(const Extension* extension);
+
+  // A map of chrome:// hostnames (newtab, downloads, etc.) to Extension URLs
+  // which override the handling of those URLs. (see ExtensionOverrideUI).
+  URLOverrideMap chrome_url_overrides_;
+};
+
 // Parses the "devtools_page" manifest key.
 class DevToolsPageHandler : public ManifestHandler {
  public:
@@ -43,6 +60,17 @@ class HomepageURLHandler : public ManifestHandler {
  public:
   HomepageURLHandler();
   virtual ~HomepageURLHandler();
+
+  virtual bool Parse(const base::Value* value,
+                     Extension* extension,
+                     string16* error) OVERRIDE;
+};
+
+// Parses the "chrome_url_overrides" manifest key.
+class URLOverridesHandler : public ManifestHandler {
+ public:
+  URLOverridesHandler();
+  virtual ~URLOverridesHandler();
 
   virtual bool Parse(const base::Value* value,
                      Extension* extension,

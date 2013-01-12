@@ -7,18 +7,26 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 
 namespace extensions {
 
-class ManifestURLParser : public ProfileKeyedAPI {
+class ManifestURLParser : public ProfileKeyedAPI,
+                          public content::NotificationObserver {
  public:
   explicit ManifestURLParser(Profile* profile);
   virtual ~ManifestURLParser();
 
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<ManifestURLParser>* GetFactoryInstance();
+
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   friend class ProfileKeyedAPIFactory<ManifestURLParser>;
@@ -28,6 +36,9 @@ class ManifestURLParser : public ProfileKeyedAPI {
     return "ManifestURLParser";
   }
   static const bool kServiceIsNULLWhileTesting = true;
+
+  Profile* const profile_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestURLParser);
 };
