@@ -564,7 +564,9 @@ TEST_F(GDataWapiOperationsTest, DownloadFileOperation_ValidFile) {
   EXPECT_EQ(expected_contents, contents);
 }
 
-TEST_F(GDataWapiOperationsTest, DownloadFileOperation_NonExistentFile) {
+// http://crbug.com/169588
+TEST_F(GDataWapiOperationsTest,
+       DISABLED_DownloadFileOperation_NonExistentFile) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   std::string contents;
   DownloadFileOperation* operation = new DownloadFileOperation(
