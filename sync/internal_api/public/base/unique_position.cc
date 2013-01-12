@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
+#include "sync/protocol/unique_position.pb.h"
 
 namespace syncer {
 
@@ -38,8 +39,8 @@ UniquePosition UniquePosition::CreateInvalid() {
 }
 
 // static.
-UniquePosition UniquePosition::FromBytes(const std::string& bytes) {
-  UniquePosition result(bytes);
+UniquePosition UniquePosition::FromProto(const sync_pb::UniquePosition& proto) {
+  UniquePosition result(proto.value());
   return result;
 }
 
@@ -112,13 +113,13 @@ bool UniquePosition::Equals(const UniquePosition& other) const {
   return bytes_ == other.bytes_;
 }
 
-const std::string& UniquePosition::ToInternalValue() const {
-  return bytes_;
+void UniquePosition::ToProto(sync_pb::UniquePosition* proto) const {
+  proto->set_value(bytes_);
 }
 
 int64 UniquePosition::ToInt64() const {
   uint64 y = 0;
-  const std::string& s = ToInternalValue();
+  const std::string& s = bytes_;
   size_t l = sizeof(int64);
   if (s.length() < l) {
     NOTREACHED();
@@ -144,6 +145,11 @@ std::string UniquePosition::ToDebugString() const {
     debug_string = "INVALID[" + debug_string + "]";
   }
   return debug_string;;
+}
+
+std::string UniquePosition::GetSuffixForTest() const {
+  const size_t prefix_len = bytes_.length() - kSuffixLength;
+  return bytes_.substr(prefix_len, std::string::npos);
 }
 
 std::string UniquePosition::FindSmallerWithSuffix(

@@ -37,6 +37,7 @@
         'test.proto',
         'theme_specifics.proto',
         'typed_url_specifics.proto',
+        'unique_position.proto',
       ],
       'variables': {
         'proto_out_dir': 'sync/protocol',

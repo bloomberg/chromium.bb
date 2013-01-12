@@ -1,0 +1,28 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Protobuf representation of the UniquePosition class.
+
+// Update proto_value_conversions{.h,.cc,_unittest.cc} if you change
+// any fields in this file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+option retain_unknown_fields = true;
+
+package sync_pb;
+
+// A UniquePosition is a string of bytes.
+//
+// Unique positions are unique per-item, since they are guaranteed to end with a
+// fixed-length suffix that is unique per-item.  The position string may not end
+// with a '\0' byte.
+//
+// Prior to the suffix is a series of arbitrary bytes of arbitrary length.
+// Items under the same parent are positioned relative to each other by a
+// lexicographic comparison of their UniquePosition values.
+message UniquePosition {
+  optional bytes value = 1;
+}

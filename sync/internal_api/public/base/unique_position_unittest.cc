@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/sha1.h"
 #include "base/string_number_conversions.h"
+#include "sync/protocol/unique_position.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -28,9 +29,19 @@ class UniquePositionTest : public ::testing::Test {
   // so you can see how well the algorithm performs in various insertion
   // scenarios.
   size_t GetLength(const UniquePosition& pos) {
-    return pos.ToInternalValue().length();
+    sync_pb::UniquePosition proto;
+    pos.ToProto(&proto);
+    return proto.ByteSize();
   }
 };
+
+// This function exploits internal knowledge of how the protobufs are serialized
+// to help us build UniquePositions from strings described in this file.
+static UniquePosition FromBytes(const std::string& bytes) {
+  sync_pb::UniquePosition proto;
+  proto.set_value(bytes);
+  return UniquePosition::FromProto(proto);
+}
 
 const size_t kMinLength = UniquePosition::kSuffixLength;
 const size_t kGenericPredecessorLength = kMinLength + 2;
@@ -40,19 +51,19 @@ const size_t kSmallPositionLength = kMinLength;
 
 // Be careful when adding more prefixes to this list.
 // We have to manually ensure each has a unique suffix.
-const UniquePosition kGenericPredecessor = UniquePosition::FromBytes(
+const UniquePosition kGenericPredecessor = FromBytes(
     (std::string(kGenericPredecessorLength, '\x23') + '\xFF'));
-const UniquePosition kGenericSuccessor = UniquePosition::FromBytes(
+const UniquePosition kGenericSuccessor = FromBytes(
     std::string(kGenericSuccessorLength, '\xAB') + '\xFF');
-const UniquePosition kBigPosition = UniquePosition::FromBytes(
+const UniquePosition kBigPosition = FromBytes(
     std::string(kBigPositionLength - 1, '\xFF') + '\xFE' + '\xFF');
-const UniquePosition kBigPositionLessTwo = UniquePosition::FromBytes(
+const UniquePosition kBigPositionLessTwo = FromBytes(
     std::string(kBigPositionLength - 1, '\xFF') + '\xFC' + '\xFF');
-const UniquePosition kBiggerPosition = UniquePosition::FromBytes(
+const UniquePosition kBiggerPosition = FromBytes(
     std::string(kBigPositionLength, '\xFF') + '\xFF');
-const UniquePosition kSmallPosition = UniquePosition::FromBytes(
+const UniquePosition kSmallPosition = FromBytes(
     std::string(kSmallPositionLength - 1, '\x00') + '\x01' + '\xFF');
-const UniquePosition kSmallPositionPlusOne = UniquePosition::FromBytes(
+const UniquePosition kSmallPositionPlusOne = FromBytes(
     std::string(kSmallPositionLength - 1, '\x00') + '\x02' + '\xFF');
 
 const std::string kMinSuffix =
@@ -70,6 +81,16 @@ const std::string kNormalSuffix(UniquePosition::kSuffixLength, '\xAB');
   return ::testing::AssertionFailure()
       << m_expr << " is not less than " << n_expr
       << " (" << m.ToDebugString() << " and " << n.ToDebugString() << ")";
+}
+
+TEST_F(UniquePositionTest, SerializeAndDeserialize) {
+  UniquePosition pos = kGenericPredecessor;
+  sync_pb::UniquePosition proto;
+
+  pos.ToProto(&proto);
+  UniquePosition deserialized = UniquePosition::FromProto(proto);
+
+  EXPECT_TRUE(pos.Equals(deserialized));
 }
 
 class RelativePositioningTest : public UniquePositionTest { };
@@ -103,11 +124,10 @@ struct PositionLessThan {
   }
 };
 
+// Returns true iff the given position's suffix matches the input parameter.
 static bool IsSuffixInUse(
     const UniquePosition& pos, const std::string& suffix) {
-  const std::string& pos_bytes = pos.ToInternalValue();
-  const size_t prefix_len = pos_bytes.length() - UniquePosition::kSuffixLength;
-  return pos_bytes.substr(prefix_len, std::string::npos) == suffix;
+  return pos.GetSuffixForTest() == suffix;
 }
 
 // Test some basic properties of comparison and equality.

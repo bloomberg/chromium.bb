@@ -38,6 +38,7 @@ import "sync_enums.proto";
 import "synced_notification_specifics.proto";
 import "theme_specifics.proto";
 import "typed_url_specifics.proto";
+import "unique_position.proto";
 
 // Used for inspecting how long we spent performing operations in different
 // backends. All times must be in millis.
@@ -332,14 +333,6 @@ message SyncEntity {
 
   // This is the fourth attempt at positioning.
   //
-  // Unique positions are unique per-item, since they are guaranteed to end with
-  // a fixed-length suffix that is unique per-item.  The position string may not
-  // end with a '\0' byte.
-  //
-  // Prior to the suffix is a series of arbitrary bytes of arbitrary length.
-  // Items under the same parent are positioned relative to each other by a
-  // lexicographic comparison of their UniquePosition values.
-  //
   // This field is present in both GetUpdatesResponse and CommitMessage, if the
   // item's type requires it and the client that wrote the item supports it (M26
   // or higher).  Clients must also be prepared to handle updates from clients
@@ -349,7 +342,10 @@ message SyncEntity {
   // This field will not be set for items whose type ignores positioning.
   // Clients should not attempt to read this field on the receipt of an item of
   // a type that ignores positioning.
-  optional bytes unique_position = 25;
+  //
+  // Refer to its definition in unique_position.proto for more information about
+  // its internal representation.
+  optional UniquePosition unique_position = 25;
 };
 
 // This message contains diagnostic information used to correlate
