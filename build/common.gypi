@@ -1109,9 +1109,6 @@
         # to specify the output directory for Ant in the Android build.
         'ant_build_out': '`cd <(PRODUCT_DIR) && pwd -P`',
 
-        # Uses Android's crash report system
-        'linux_breakpad%': 0,
-
         # Always uses openssl.
         'use_openssl%': 1,
 
