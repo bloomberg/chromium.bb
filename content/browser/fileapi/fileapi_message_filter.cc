@@ -769,13 +769,22 @@ void FileAPIMessageFilter::RegisterFileAsBlob(const GURL& blob_url,
       webkit_blob::ShareableFileReference::Get(platform_path);
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
           process_id_, platform_path)) {
-    // If the underlying file system implementation is returning a new
-    // (likely temporary) snapshot file or the file is for sandboxed
-    // filesystems it's ok to grant permission here.
-    // (Note that we have also already checked if the renderer has the
-    // read permission for this file in OnCreateSnapshotFile.)
+    // In order for the renderer to be able to read the file, it must be granted
+    // read permission for the file's platform path. By now, it has already been
+    // verified that the renderer has sufficient permissions to read the file.
+    // It is still possible that ChildProcessSecurityPolicyImpl doesn't reflect
+    // that the renderer can read the file's platform path. If this is the case
+    // the renderer should be granted read permission for the file's platform
+    // path. This can happen in the following situations:
+    // - the file comes from sandboxed filesystem. Reading sandboxed files is
+    //   always permitted, but only implicitly.
+    // - the underlying filesystem returned newly created snapshot file.
+    // - the file comes from an external drive filesystem. The renderer has
+    //   already been granted read permission for the file's nominal path, but
+    //   for drive files, platform paths differ from the nominal paths.
     DCHECK(shareable_file ||
-           fileapi::SandboxMountPointProvider::CanHandleType(url.type()));
+           fileapi::SandboxMountPointProvider::CanHandleType(url.type()) ||
+           url.type() == fileapi::kFileSystemTypeDrive);
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
         process_id_, platform_path);
     if (shareable_file) {

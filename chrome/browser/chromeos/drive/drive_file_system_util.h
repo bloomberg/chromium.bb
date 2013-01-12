@@ -65,15 +65,6 @@ bool IsUnderDriveMountPoint(const FilePath& path);
 // Examples: ExtractGDatPath("/special/drive/foo.txt") => "drive/foo.txt"
 FilePath ExtractDrivePath(const FilePath& path);
 
-// Inserts all possible cache paths for a given vector of paths on drive mount
-// point into the output vector |cache_paths|, and then invokes callback.
-// Caller must ensure that |cache_paths| lives until the callback is invoked.
-void InsertDriveCachePathsPermissions(
-    Profile* profile_,
-    scoped_ptr<std::vector<FilePath> > drive_paths,
-    std::vector<std::pair<FilePath, int> >* cache_paths,
-    const base::Closure& callback);
-
 // Escapes a file name in Drive cache.
 // Replaces percent ('%'), period ('.') and slash ('/') with %XX (hex)
 std::string EscapeCacheFileName(const std::string& filename);

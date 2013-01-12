@@ -533,31 +533,16 @@ class ExtensionTaskExecutor : public FileTaskExecutor {
                                         int handler_pid_in,
                                         extensions::ExtensionHost* host);
 
-  // Populates |handler_host_permissions| with file path-permissions pairs that
-  // will be given to the handler extension host process.
-  void InitHandlerHostFileAccessPermissions(
-      const FileDefinitionList& file_list,
-      const extensions::Extension* handler_extension,
-      const base::Closure& callback);
-
-  // Invoked upon completion of InitHandlerHostFileAccessPermissions initiated
-  // by ExecuteFileActionsOnUIThread.
-  void OnInitAccessForExecuteFileActionsOnUIThread(
-      const std::string& file_system_name,
-      const GURL& file_system_root,
-      const FileDefinitionList& file_list,
-      int handler_pid);
-
   // Registers file permissions from |handler_host_permissions_| with
   // ChildProcessSecurityPolicy for process with id |handler_pid|.
-  void SetupHandlerHostFileAccessPermissions(int handler_pid);
+  void SetupHandlerHostFileAccessPermissions(
+      const FileDefinitionList& file_list,
+      const Extension* extension,
+      int handler_pid);
 
   int32 tab_id_;
   const std::string action_id_;
   FileTaskFinishedCallback done_;
-
-  // (File path, permission for file path) pairs for the handler.
-  std::vector<std::pair<FilePath, int> > handler_host_permissions_;
 };
 
 class WebIntentTaskExecutor : public FileTaskExecutor {
@@ -944,31 +929,6 @@ void ExtensionTaskExecutor::ExecuteFileActionsOnUIThread(
     return;
   }
 
-  InitHandlerHostFileAccessPermissions(
-      file_list,
-      extension,
-      base::Bind(
-          &ExtensionTaskExecutor::OnInitAccessForExecuteFileActionsOnUIThread,
-          this,
-          file_system_name,
-          file_system_root,
-          file_list,
-          handler_pid));
-}
-
-void ExtensionTaskExecutor::OnInitAccessForExecuteFileActionsOnUIThread(
-    const std::string& file_system_name,
-    const GURL& file_system_root,
-    const FileDefinitionList& file_list,
-    int handler_pid) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  const Extension* extension = GetExtension();
-  if (!extension) {
-    ExecuteDoneOnUIThread(false);
-    return;
-  }
-
   if (handler_pid > 0) {
     SetupPermissionsAndDispatchEvent(file_system_name, file_system_root,
         file_list, handler_pid, NULL);
@@ -1010,7 +970,13 @@ void ExtensionTaskExecutor::SetupPermissionsAndDispatchEvent(
     return;
   }
 
-  SetupHandlerHostFileAccessPermissions(handler_pid);
+  const Extension* extension = GetExtension();
+  if (!extension) {
+    ExecuteDoneOnUIThread(false);
+    return;
+  }
+
+  SetupHandlerHostFileAccessPermissions(file_list, extension, handler_pid);
 
   scoped_ptr<ListValue> event_args(new ListValue());
   event_args->Append(new base::StringValue(action_id_));
@@ -1043,50 +1009,18 @@ void ExtensionTaskExecutor::SetupPermissionsAndDispatchEvent(
   ExecuteDoneOnUIThread(true);
 }
 
-void ExtensionTaskExecutor::InitHandlerHostFileAccessPermissions(
+void ExtensionTaskExecutor::SetupHandlerHostFileAccessPermissions(
     const FileDefinitionList& file_list,
-    const Extension* handler_extension,
-    const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  scoped_ptr<std::vector<FilePath> > gdata_paths(new std::vector<FilePath>);
+    const Extension* extension,
+    int handler_pid) {
   for (FileDefinitionList::const_iterator iter = file_list.begin();
        iter != file_list.end();
        ++iter) {
-    // Setup permission for file's absolute file.
-    handler_host_permissions_.push_back(std::make_pair(iter->absolute_path,
-        GetAccessPermissionsForFileBrowserHandler(handler_extension,
-                                                  action_id_)));
-
-    if (drive::util::IsUnderDriveMountPoint(iter->absolute_path))
-      gdata_paths->push_back(iter->virtual_path);
-  }
-
-  if (gdata_paths->empty()) {
-    // Invoke callback if none of the files are on gdata mount point.
-    callback.Run();
-    return;
-  }
-
-  // For files on gdata mount point, we'll have to give handler host permissions
-  // for their cache paths. This has to be called on UI thread.
-  drive::util::InsertDriveCachePathsPermissions(profile(),
-                                                gdata_paths.Pass(),
-                                                &handler_host_permissions_,
-                                                callback);
-}
-
-void ExtensionTaskExecutor::SetupHandlerHostFileAccessPermissions(
-    int handler_pid) {
-  for (size_t i = 0; i < handler_host_permissions_.size(); i++) {
     content::ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
         handler_pid,
-        handler_host_permissions_[i].first,
-        handler_host_permissions_[i].second);
+        iter->absolute_path,
+        GetAccessPermissionsForFileBrowserHandler(extension, action_id_));
   }
-
-  // We don't need this anymore.
-  handler_host_permissions_.clear();
 }
 
 WebIntentTaskExecutor::WebIntentTaskExecutor(

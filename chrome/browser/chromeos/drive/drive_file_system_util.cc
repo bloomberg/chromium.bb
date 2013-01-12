@@ -126,61 +126,6 @@ void OnGetEntryInfoByResourceId(Profile* profile,
   DVLOG(1) << "OnFindEntryByResourceId " << edit_url;
 }
 
-// Invoked upon completion of GetEntryInfoByPath initiated by
-// InsertDriveCachePathPermissions.
-void OnGetEntryInfoForInsertDriveCachePathsPermissions(
-    Profile* profile,
-    std::vector<std::pair<FilePath, int> >* cache_paths,
-    const base::Closure& callback,
-    DriveFileError error,
-    scoped_ptr<DriveEntryProto> entry_proto) {
-  DCHECK(profile);
-  DCHECK(cache_paths);
-  DCHECK(!callback.is_null());
-
-  if (entry_proto.get() && !entry_proto->has_file_specific_info())
-    error = DRIVE_FILE_ERROR_NOT_FOUND;
-
-  DriveCache* cache = GetDriveCache(profile);
-  if (!cache || error != DRIVE_FILE_OK) {
-    callback.Run();
-    return;
-  }
-
-  DCHECK(entry_proto.get());
-  const std::string& resource_id = entry_proto->resource_id();
-  const std::string& file_md5 = entry_proto->file_specific_info().file_md5();
-
-  // We check permissions for raw cache file paths only for read-only
-  // operations (when fileEntry.file() is called), so read only permissions
-  // should be sufficient for all cache paths. For the rest of supported
-  // operations the file access check is done for drive/ paths.
-  cache_paths->push_back(std::make_pair(
-      cache->GetCacheFilePath(resource_id, file_md5,
-          DriveCache::CACHE_TYPE_PERSISTENT,
-          DriveCache::CACHED_FILE_FROM_SERVER),
-      kReadOnlyFilePermissions));
-  // TODO(tbarzic): When we start supporting openFile operation, we may have to
-  // change permission for localy modified files to match handler's permissions.
-  cache_paths->push_back(std::make_pair(
-      cache->GetCacheFilePath(resource_id, file_md5,
-          DriveCache::CACHE_TYPE_PERSISTENT,
-          DriveCache::CACHED_FILE_LOCALLY_MODIFIED),
-     kReadOnlyFilePermissions));
-  cache_paths->push_back(std::make_pair(
-      cache->GetCacheFilePath(resource_id, file_md5,
-          DriveCache::CACHE_TYPE_PERSISTENT,
-          DriveCache::CACHED_FILE_MOUNTED),
-     kReadOnlyFilePermissions));
-  cache_paths->push_back(std::make_pair(
-      cache->GetCacheFilePath(resource_id, file_md5,
-          DriveCache::CACHE_TYPE_TMP,
-          DriveCache::CACHED_FILE_FROM_SERVER),
-      kReadOnlyFilePermissions));
-
-  callback.Run();
-}
-
 }  // namespace
 
 const FilePath& GetDriveMountPointPath() {
@@ -267,44 +212,6 @@ FilePath ExtractDrivePath(const FilePath& path) {
     extracted = extracted.Append(components[i]);
   }
   return extracted;
-}
-
-void InsertDriveCachePathsPermissions(
-    Profile* profile,
-    scoped_ptr<std::vector<FilePath> > drive_paths,
-    std::vector<std::pair<FilePath, int> >* cache_paths,
-    const base::Closure& callback) {
-  DCHECK(profile);
-  DCHECK(drive_paths.get());
-  DCHECK(cache_paths);
-  DCHECK(!callback.is_null());
-
-  DriveFileSystemInterface* file_system = GetDriveFileSystem(profile);
-  if (!file_system || drive_paths->empty()) {
-    callback.Run();
-    return;
-  }
-
-  // Remove one file path entry from the back of the input vector |drive_paths|.
-  FilePath drive_path = drive_paths->back();
-  drive_paths->pop_back();
-
-  // Call GetEntryInfoByPath() to get file info for |drive_path| then insert
-  // all possible cache paths to the output vector |cache_paths|.
-  // Note that we can only process one file path at a time. Upon completion
-  // of OnGetEntryInfoForInsertDriveCachePathsPermissions(), we recursively call
-  // InsertDriveCachePathsPermissions() to process the next file path from the
-  // back of the input vector |drive_paths| until it is empty.
-  file_system->GetEntryInfoByPath(
-      drive_path,
-      base::Bind(&OnGetEntryInfoForInsertDriveCachePathsPermissions,
-                 profile,
-                 cache_paths,
-                 base::Bind(&InsertDriveCachePathsPermissions,
-                             profile,
-                             base::Passed(&drive_paths),
-                             cache_paths,
-                             callback)));
 }
 
 std::string EscapeCacheFileName(const std::string& filename) {

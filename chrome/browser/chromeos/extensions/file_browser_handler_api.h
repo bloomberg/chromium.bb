@@ -118,11 +118,6 @@ class FileBrowserHandlerInternalSelectFileFunction
   // Inside this method, |virtual_path_| value is set.
   void GrantPermissions();
 
-  // Callback called when we collect all paths and permissions that should be
-  // given to the caller render process in order for it to normally access file.
-  // It grants selected permissions with child process security policy.
-  void OnGotPermissionsToGrant();
-
   // Creates dictionary value that will be used to as the extension function's
   // callback argument and ends extension function execution by calling
   // |SendResponse(true)|.

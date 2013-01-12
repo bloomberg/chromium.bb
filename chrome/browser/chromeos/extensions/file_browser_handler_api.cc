@@ -25,9 +25,6 @@
 //    process ID has to be granted read, write and create permissions for the
 //    selected file's full filesystem path (e.g.
 //    /home/chronos/user/Downloads/foo) in ChildProcessSecurityPolicy.
-//  - If the selected file path is on drive mount point, read access permissions
-//    for file's possible local drive cache paths have to be granted to caller's
-//    render process ID in ChildProcessSecurityPolicy.
 //  - After the required file access permissions are granted, result object is
 //    created and returned back.
 
@@ -40,7 +37,6 @@
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -368,6 +364,8 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFileSystemOpened(
   file_system_root_ = file_system_root;
 
   GrantPermissions();
+
+  Respond(true);
 }
 
 void FileBrowserHandlerInternalSelectFileFunction::GrantPermissions() {
@@ -385,44 +383,11 @@ void FileBrowserHandlerInternalSelectFileFunction::GrantPermissions() {
   // prevent from traversing FS hierarchy upward.
   external_provider->GrantFileAccessToExtension(extension_id(), virtual_path_);
 
-  // Add read write permissions for the selected file's virtual path to the list
-  // of permissions that have to be granted.
-  permissions_to_grant_.push_back(std::make_pair(
+  // Grant access to the selected file to target extensions render view process.
+  content::ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
+      render_view_host()->GetProcess()->GetID(),
       full_path_,
-      file_handler_util::GetReadWritePermissions()));
-
-  if (!drive::util::IsUnderDriveMountPoint(full_path_)) {
-    // If the file is not on drive, we have to only grant permission for the
-    // file's virtual path.
-    OnGotPermissionsToGrant();
-    return;
-  }
-
-  // For drive files, we also have to grant permissions for drive cache paths
-  // under which the selected path could be kept.
-  scoped_ptr<std::vector<FilePath> > gdata_paths(new std::vector<FilePath>());
-  gdata_paths->push_back(virtual_path_);
-
-  drive::util::InsertDriveCachePathsPermissions(
-      profile(),
-      gdata_paths.Pass(),
-      &permissions_to_grant_,
-      base::Bind(&FileBrowserHandlerInternalSelectFileFunction::
-                     OnGotPermissionsToGrant,
-                 this));
-}
-
-void FileBrowserHandlerInternalSelectFileFunction::OnGotPermissionsToGrant() {
-  // At this point all needed permissions should be collected, so let's grant
-  // them.
-  for (size_t i = 0; i < permissions_to_grant_.size(); i++) {
-    content::ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-        render_view_host()->GetProcess()->GetID(),
-        permissions_to_grant_[i].first,
-        permissions_to_grant_[i].second);
-  }
-
-  Respond(true);
+      file_handler_util::GetReadWritePermissions());
 }
 
 void FileBrowserHandlerInternalSelectFileFunction::Respond(bool success) {
