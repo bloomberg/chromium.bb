@@ -78,8 +78,7 @@ TileManager::TileManager(
       resource_pool_(ResourcePool::Create(resource_provider)),
       raster_worker_pool_(RasterWorkerPool::Create(num_raster_threads)),
       manage_tiles_pending_(false),
-      manage_tiles_call_count_(0),
-      check_for_completed_set_pixels_pending_(false) {
+      manage_tiles_call_count_(0) {
 }
 
 TileManager::~TileManager() {
@@ -143,13 +142,6 @@ void TileManager::ScheduleManageTiles() {
     return;
   client_->ScheduleManageTiles();
   manage_tiles_pending_ = true;
-}
-
-void TileManager::ScheduleCheckForCompletedSetPixels() {
-  if (check_for_completed_set_pixels_pending_)
-    return;
-  client_->ScheduleCheckForCompletedSetPixels();
-  check_for_completed_set_pixels_pending_ = true;
 }
 
 class BinComparator {
@@ -234,8 +226,6 @@ void TileManager::ManageTiles() {
 }
 
 void TileManager::CheckForCompletedSetPixels() {
-  check_for_completed_set_pixels_pending_ = false;
-
   while (!tiles_with_pending_set_pixels_.empty()) {
     Tile* tile = tiles_with_pending_set_pixels_.front();
     DCHECK(tile->managed_state().resource);
@@ -243,7 +233,6 @@ void TileManager::CheckForCompletedSetPixels() {
     // Set pixel tasks complete in the order they are posted.
     if (!resource_pool_->resource_provider()->didSetPixelsComplete(
           tile->managed_state().resource->id())) {
-      ScheduleCheckForCompletedSetPixels();
       break;
     }
 
@@ -515,8 +504,6 @@ void TileManager::OnRasterTaskCompleted(
     resource_pool_->resource_provider()->shallowFlushIfSupported();
     managed_tile_state.resource = resource.Pass();
     tiles_with_pending_set_pixels_.push(tile);
-
-    ScheduleCheckForCompletedSetPixels();
   } else {
     resource_pool_->resource_provider()->releasePixelBuffer(resource->id());
     resource_pool_->ReleaseResource(resource.Pass());

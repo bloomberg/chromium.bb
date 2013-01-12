@@ -168,6 +168,9 @@ void Scheduler::processScheduledActions()
         case SchedulerStateMachine::ACTION_COMMIT:
             m_client->scheduledActionCommit();
             break;
+        case SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED:
+            m_client->scheduledActionActivatePendingTreeIfNeeded();
+            break;
         case SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE: {
             ScheduledActionDrawAndSwapResult result = m_client->scheduledActionDrawAndSwapIfPossible();
             m_stateMachine.didDrawIfPossibleCompleted(result.didDraw);

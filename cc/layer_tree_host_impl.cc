@@ -89,6 +89,7 @@ public:
         if (!m_layerTreeHostImpl->proxy()->hasImplThread())
             setImplThread.reset(new DebugScopedSetImplThread(m_layerTreeHostImpl->proxy()));
 
+        m_layerTreeHostImpl->activatePendingTreeIfNeeded();
         m_layerTreeHostImpl->animate(base::TimeTicks::Now(), base::Time::Now());
     }
 
@@ -199,14 +200,6 @@ bool LayerTreeHostImpl::canDraw()
     // Note: If you are changing this function or any other function that might
     // affect the result of canDraw, make sure to call m_client->onCanDrawStateChanged
     // in the proper places and update the notifyIfCanDrawChanged test.
-
-    // TODO(enne): Since prepareToDraw is the only place that currently does
-    // tree activiation, this allows prepareToDraw to be entered even if the
-    // active tree can't draw.  This could cause flashing, though.  This should
-    // probably be refactored such that the scheduler handles the tree
-    // activation rather than prepareToDrwa.
-    if (pendingTree())
-        return true;
 
     if (!rootLayer()) {
         TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::canDraw no root layer");
@@ -471,6 +464,9 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
     // in the future.
     bool drawFrame = true;
 
+    // Make sure we have the most recent info regarding which textures have been uploaded.
+    checkForCompletedSetPixels();
+
     LayerIteratorType end = LayerIteratorType::end(frame.renderSurfaceLayerList);
     for (LayerIteratorType it = LayerIteratorType::begin(frame.renderSurfaceLayerList); it != end; ++it) {
         RenderPass::Id targetRenderPassId = it.targetRenderSurfaceLayer()->renderSurface()->renderPassId();
@@ -671,10 +667,6 @@ bool LayerTreeHostImpl::prepareToDraw(FrameData& frame)
 {
     TRACE_EVENT0("cc", "LayerTreeHostImpl::prepareToDraw");
 
-    if (m_tileManager)
-        m_tileManager->CheckForCompletedSetPixels();
-
-    activatePendingTreeIfNeeded();
     updateDrawProperties();
 
     frame.renderSurfaceLayerList = &activeTree()->RenderSurfaceLayerList();
@@ -720,16 +712,6 @@ void LayerTreeHostImpl::ScheduleManageTiles()
 {
     if (m_client)
       m_client->setNeedsManageTilesOnImplThread();
-}
-
-void LayerTreeHostImpl::ScheduleCheckForCompletedSetPixels()
-{
-    // CheckForCompletedSetPixels() should be called before we draw and
-    // preferably only once per vsync interval. For now just make sure
-    // a redraw is scheduled and call CheckForCompletedSetPixels() in
-    // prepareToDraw().
-    if (m_client)
-      m_client->setNeedsRedrawOnImplThread();
 }
 
 bool LayerTreeHostImpl::shouldClearRootRenderPass() const
@@ -924,10 +906,18 @@ void LayerTreeHostImpl::createPendingTree()
     m_client->onHasPendingTreeStateChanged(pendingTree());
 }
 
+void LayerTreeHostImpl::checkForCompletedSetPixels()
+{
+    if (m_tileManager)
+        m_tileManager->CheckForCompletedSetPixels();
+}
+
 void LayerTreeHostImpl::activatePendingTreeIfNeeded()
 {
     if (!pendingTree())
         return;
+
+    checkForCompletedSetPixels();
 
     // It's always fine to activate to an empty tree.  Otherwise, only
     // activate once all visible resources in pending tree are ready.
@@ -948,6 +938,7 @@ void LayerTreeHostImpl::activatePendingTree()
     m_pendingTree.reset();
     m_client->onCanDrawStateChanged(canDraw());
     m_client->onHasPendingTreeStateChanged(pendingTree());
+    m_client->setNeedsRedrawOnImplThread();
 }
 
 void LayerTreeHostImpl::setVisible(bool visible)

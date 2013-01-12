@@ -122,7 +122,6 @@ public:
 
     // TileManagerClient implementation.
     virtual void ScheduleManageTiles() OVERRIDE;
-    virtual void ScheduleCheckForCompletedSetPixels() OVERRIDE;
 
     // OutputSurfaceClient implementation.
     virtual void OnVSyncParametersChanged(base::TimeTicks timebase, base::TimeDelta interval) OVERRIDE;
@@ -156,6 +155,7 @@ public:
     LayerTreeImpl* pendingTree() { return m_pendingTree.get(); }
     const LayerTreeImpl* pendingTree() const { return m_pendingTree.get(); }
     void createPendingTree();
+    void checkForCompletedSetPixels();
     virtual void activatePendingTreeIfNeeded();
 
     // Shortcuts to layers on the active tree.

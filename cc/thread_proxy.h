@@ -74,6 +74,7 @@ public:
     virtual ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() OVERRIDE;
     virtual ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced() OVERRIDE;
     virtual void scheduledActionCommit() OVERRIDE;
+    virtual void scheduledActionActivatePendingTreeIfNeeded() OVERRIDE;
     virtual void scheduledActionBeginContextRecreation() OVERRIDE;
     virtual void scheduledActionAcquireLayerTexturesForMainThread() OVERRIDE;
     virtual void didAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE;

@@ -727,6 +727,11 @@ void ThreadProxy::scheduledActionCommit()
     m_schedulerOnImplThread->setVisible(m_layerTreeHostImpl->visible());
 }
 
+void ThreadProxy::scheduledActionActivatePendingTreeIfNeeded()
+{
+    m_layerTreeHostImpl->activatePendingTreeIfNeeded();
+}
+
 void ThreadProxy::scheduledActionBeginContextRecreation()
 {
     DCHECK(isImplThread());
@@ -755,7 +760,7 @@ ScheduledActionDrawAndSwapResult ThreadProxy::scheduledActionDrawAndSwapInternal
     if (m_inputHandlerOnImplThread.get())
         m_inputHandlerOnImplThread->animate(monotonicTime);
 
-    // TODO(nduca): make animation happen after tree activation.
+    m_layerTreeHostImpl->activatePendingTreeIfNeeded();
     m_layerTreeHostImpl->animate(monotonicTime, wallClockTime);
 
     // This method is called on a forced draw, regardless of whether we are able to produce a frame,

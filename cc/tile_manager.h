@@ -25,7 +25,6 @@ class TileVersion;
 class CC_EXPORT TileManagerClient {
  public:
   virtual void ScheduleManageTiles() = 0;
-  virtual void ScheduleCheckForCompletedSetPixels() = 0;
 
  protected:
   virtual ~TileManagerClient() {}
@@ -102,7 +101,6 @@ class CC_EXPORT TileManager {
   void AssignGpuMemoryToTiles();
   void FreeResourcesForTile(Tile* tile);
   void ScheduleManageTiles();
-  void ScheduleCheckForCompletedSetPixels();
   void DispatchMoreTasks();
   void GatherPixelRefsForTile(Tile* tile);
   void DispatchImageDecodeTasksForTile(Tile* tile);
@@ -122,7 +120,6 @@ class CC_EXPORT TileManager {
   scoped_ptr<RasterWorkerPool> raster_worker_pool_;
   bool manage_tiles_pending_;
   int manage_tiles_call_count_;
-  bool check_for_completed_set_pixels_pending_;
 
   GlobalStateThatImpactsTilePriority global_state_;
 

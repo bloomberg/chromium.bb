@@ -13,6 +13,7 @@ SchedulerStateMachine::SchedulerStateMachine()
     : m_commitState(COMMIT_STATE_IDLE)
     , m_currentFrameNumber(0)
     , m_lastFrameNumberWhereDrawWasCalled(-1)
+    , m_lastFrameNumberWhereTreeActivationAttempted(-1)
     , m_consecutiveFailedDraws(0)
     , m_maximumNumberOfFailedDrawsBeforeDrawIsForced(3)
     , m_needsRedraw(false)
@@ -64,6 +65,11 @@ bool SchedulerStateMachine::hasDrawnThisFrame() const
     return m_currentFrameNumber == m_lastFrameNumberWhereDrawWasCalled;
 }
 
+bool SchedulerStateMachine::hasAttemptedTreeActivationThisFrame() const
+{
+    return m_currentFrameNumber == m_lastFrameNumberWhereTreeActivationAttempted;
+}
+
 bool SchedulerStateMachine::drawSuspendedUntilCommit() const
 {
     if (!m_canDraw)
@@ -100,6 +106,11 @@ bool SchedulerStateMachine::shouldDraw() const
     return true;
 }
 
+bool SchedulerStateMachine::shouldAttemptTreeActivation() const
+{
+  return m_hasPendingTree && m_insideVSync && !hasAttemptedTreeActivationThisFrame();
+}
+
 bool SchedulerStateMachine::shouldAcquireLayerTexturesForMainThread() const
 {
     if (!m_mainThreadNeedsLayerTextures)
@@ -120,6 +131,7 @@ SchedulerStateMachine::Action SchedulerStateMachine::nextAction() const
 {
     if (shouldAcquireLayerTexturesForMainThread())
         return ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD;
+
     switch (m_commitState) {
     case COMMIT_STATE_IDLE:
         if (m_outputSurfaceState != OUTPUT_SURFACE_ACTIVE && m_needsForcedRedraw)
@@ -131,6 +143,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::nextAction() const
             return ACTION_BEGIN_OUTPUT_SURFACE_RECREATION;
         if (m_outputSurfaceState == OUTPUT_SURFACE_RECREATING)
             return ACTION_NONE;
+        if (shouldAttemptTreeActivation())
+            return ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED;
         if (shouldDraw())
             return m_needsForcedRedraw ? ACTION_DRAW_FORCED : ACTION_DRAW_IF_POSSIBLE;
         if (m_needsCommit && ((m_visible && m_canBeginFrame) || m_needsForcedCommit))
@@ -139,6 +153,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::nextAction() const
         return ACTION_NONE;
 
     case COMMIT_STATE_FRAME_IN_PROGRESS:
+        if (shouldAttemptTreeActivation())
+            return ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED;
         if (shouldDraw())
             return m_needsForcedRedraw ? ACTION_DRAW_FORCED : ACTION_DRAW_IF_POSSIBLE;
         return ACTION_NONE;
@@ -147,6 +163,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::nextAction() const
         return ACTION_COMMIT;
 
     case COMMIT_STATE_WAITING_FOR_FIRST_DRAW: {
+        if (shouldAttemptTreeActivation())
+            return ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED;
         if (shouldDraw() || m_outputSurfaceState == OUTPUT_SURFACE_LOST)
             return m_needsForcedRedraw ? ACTION_DRAW_FORCED : ACTION_DRAW_IF_POSSIBLE;
         // COMMIT_STATE_WAITING_FOR_FIRST_DRAW wants to enforce a draw. If m_canDraw is false
@@ -158,6 +176,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::nextAction() const
     }
 
     case COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW:
+        if (shouldAttemptTreeActivation())
+            return ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED;
         if (m_needsForcedRedraw)
             return ACTION_DRAW_FORCED;
         return ACTION_NONE;
@@ -170,6 +190,10 @@ void SchedulerStateMachine::updateState(Action action)
 {
     switch (action) {
     case ACTION_NONE:
+        return;
+
+    case ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED:
+        m_lastFrameNumberWhereTreeActivationAttempted = m_currentFrameNumber;
         return;
 
     case ACTION_BEGIN_FRAME:

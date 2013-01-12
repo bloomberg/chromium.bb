@@ -15,7 +15,6 @@ class FakeTileManagerClient : public TileManagerClient {
 
   // TileManagerClient implementation.
   virtual void ScheduleManageTiles() OVERRIDE {}
-  virtual void ScheduleCheckForCompletedSetPixels() OVERRIDE {}
 };
 
 }  // namespace cc

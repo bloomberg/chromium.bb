@@ -58,6 +58,7 @@ public:
         ACTION_NONE,
         ACTION_BEGIN_FRAME,
         ACTION_COMMIT,
+        ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED,
         ACTION_DRAW_IF_POSSIBLE,
         ACTION_DRAW_FORCED,
         ACTION_BEGIN_OUTPUT_SURFACE_RECREATION,
@@ -143,13 +144,16 @@ protected:
     bool drawSuspendedUntilCommit() const;
     bool scheduledToDraw() const;
     bool shouldDraw() const;
+    bool shouldAttemptTreeActivation() const;
     bool shouldAcquireLayerTexturesForMainThread() const;
     bool hasDrawnThisFrame() const;
+    bool hasAttemptedTreeActivationThisFrame() const;
 
     CommitState m_commitState;
 
     int m_currentFrameNumber;
     int m_lastFrameNumberWhereDrawWasCalled;
+    int m_lastFrameNumberWhereTreeActivationAttempted;
     int m_consecutiveFailedDraws;
     int m_maximumNumberOfFailedDrawsBeforeDrawIsForced;
     bool m_needsRedraw;
