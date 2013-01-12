@@ -418,9 +418,6 @@ void ProfileImplIOData::LazyInitializeInternal(
   main_context->set_ftp_transaction_factory(ftp_factory_.get());
 #endif  // !defined(DISABLE_FTP_SUPPORT)
 
-  main_context->set_chrome_url_data_manager_backend(
-      chrome_url_data_manager_backend());
-
   scoped_ptr<net::URLRequestJobFactoryImpl> main_job_factory(
       new net::URLRequestJobFactoryImpl());
   main_job_factory_ = SetUpJobFactoryDefaults(

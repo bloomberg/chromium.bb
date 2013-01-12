@@ -277,7 +277,6 @@ ChromeURLRequestContext::ChromeURLRequestContext(
     ContextType type,
     chrome_browser_net::LoadTimeStats* load_time_stats)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      chrome_url_data_manager_backend_(NULL),
       is_incognito_(false),
       load_time_stats_(load_time_stats) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -295,17 +294,5 @@ void ChromeURLRequestContext::CopyFrom(ChromeURLRequestContext* other) {
   URLRequestContext::CopyFrom(other);
 
   // Copy ChromeURLRequestContext parameters.
-  // ChromeURLDataManagerBackend is unique per context.
   set_is_incognito(other->is_incognito());
-}
-
-ChromeURLDataManagerBackend*
-ChromeURLRequestContext::chrome_url_data_manager_backend() const {
-    return chrome_url_data_manager_backend_;
-}
-
-void ChromeURLRequestContext::set_chrome_url_data_manager_backend(
-        ChromeURLDataManagerBackend* backend) {
-  DCHECK(backend);
-  chrome_url_data_manager_backend_ = backend;
 }
