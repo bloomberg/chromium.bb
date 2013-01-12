@@ -305,6 +305,10 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // no resouce has the |unique_id|.
   int GetResourceIndexByUniqueId(const int unique_id) const;
 
+  // Catchall method that calls off to the appropriate GetResourceXXX method
+  // based on |col_id|. |col_id| is an IDS_ value used to identify the column.
+  string16 GetResourceById(int index, int col_id) const;
+
   // Methods to return formatted resource information.
   string16 GetResourceTitle(int index) const;
   string16 GetResourceProfileName(int index) const;

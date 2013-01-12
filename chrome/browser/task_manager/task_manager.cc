@@ -80,6 +80,25 @@ string16 FormatStatsSize(const WebKit::WebCache::ResourceTypeStat& stat) {
       ui::FormatBytesWithUnits(stat.liveSize, ui::DATA_UNITS_KIBIBYTE, false));
 }
 
+// Returns true if the specified id should use the first value in the group.
+bool IsSharedByGroup(int col_id) {
+  switch (col_id) {
+    case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:
+    case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:
+    case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN:
+    case IDS_TASK_MANAGER_CPU_COLUMN:
+    case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
+    case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN:
+    case IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN:
+    case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
+    case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
+    case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
+      return true;
+    default:
+      return false;
+  }
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -147,6 +166,65 @@ int TaskManagerModel::GetResourceIndexByUniqueId(const int unique_id) const {
       return resource_index;
   }
   return -1;
+}
+
+string16 TaskManagerModel::GetResourceById(int index, int col_id) const {
+  if (IsSharedByGroup(col_id) && !IsResourceFirstInGroup(index))
+    return string16();
+
+  switch (col_id) {
+    case IDS_TASK_MANAGER_TASK_COLUMN:
+      return GetResourceTitle(index);
+
+    case IDS_TASK_MANAGER_PROFILE_NAME_COLUMN:
+      return GetResourceProfileName(index);
+
+    case IDS_TASK_MANAGER_NET_COLUMN:
+      return GetResourceNetworkUsage(index);
+
+    case IDS_TASK_MANAGER_CPU_COLUMN:
+      return GetResourceCPUUsage(index);
+
+    case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:
+      return GetResourcePrivateMemory(index);
+
+    case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:
+      return GetResourceSharedMemory(index);
+
+    case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN:
+      return GetResourcePhysicalMemory(index);
+
+    case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
+      return GetResourceProcessId(index);
+
+    case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN:
+      return GetResourceGoatsTeleported(index);
+
+    case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
+      return GetResourceWebCoreImageCacheSize(index);
+
+    case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
+      return GetResourceWebCoreScriptsCacheSize(index);
+
+    case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
+      return GetResourceWebCoreCSSCacheSize(index);
+
+    case IDS_TASK_MANAGER_FPS_COLUMN:
+      return GetResourceFPS(index);
+
+    case IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN:
+      return GetResourceVideoMemory(index);
+
+    case IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN:
+      return GetResourceSqliteMemoryUsed(index);
+
+    case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN:
+      return GetResourceV8MemoryAllocatedSize(index);
+
+    default:
+      NOTREACHED();
+      return string16();
+  }
 }
 
 string16 TaskManagerModel::GetResourceTitle(int index) const {

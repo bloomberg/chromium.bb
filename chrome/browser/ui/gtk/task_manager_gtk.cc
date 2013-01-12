@@ -670,76 +670,8 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
   g_object_unref(process_list_sort_);
 }
 
-bool IsSharedByGroup(int col_id) {
-  switch (col_id) {
-    case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:
-    case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:
-    case IDS_TASK_MANAGER_CPU_COLUMN:
-    case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
-    case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN:
-    case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
-    case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
-    case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
-      return true;
-    default:
-      return false;
-  }
-}
-
 std::string TaskManagerGtk::GetModelText(int row, int col_id) {
-  if (IsSharedByGroup(col_id) && !model_->IsResourceFirstInGroup(row))
-    return std::string();
-
-  switch (col_id) {
-    case IDS_TASK_MANAGER_TASK_COLUMN:  // Process
-      return UTF16ToUTF8(model_->GetResourceTitle(row));
-
-    case IDS_TASK_MANAGER_PROFILE_NAME_COLUMN:  // Profile name
-      return UTF16ToUTF8(model_->GetResourceProfileName(row));
-
-    case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:  // Memory
-      return UTF16ToUTF8(model_->GetResourcePrivateMemory(row));
-
-    case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:  // Memory
-      return UTF16ToUTF8(model_->GetResourceSharedMemory(row));
-
-    case IDS_TASK_MANAGER_CPU_COLUMN:  // CPU
-      return UTF16ToUTF8(model_->GetResourceCPUUsage(row));
-
-    case IDS_TASK_MANAGER_NET_COLUMN:  // Net
-      return UTF16ToUTF8(model_->GetResourceNetworkUsage(row));
-
-    case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:  // Process ID
-      return UTF16ToUTF8(model_->GetResourceProcessId(row));
-
-    case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN:
-      return UTF16ToUTF8(model_->GetResourceV8MemoryAllocatedSize(row));
-
-    case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
-      return UTF16ToUTF8(model_->GetResourceWebCoreImageCacheSize(row));
-
-    case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
-      return UTF16ToUTF8(model_->GetResourceWebCoreScriptsCacheSize(row));
-
-    case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
-      return UTF16ToUTF8(model_->GetResourceWebCoreCSSCacheSize(row));
-
-    case IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN:
-      return UTF16ToUTF8(model_->GetResourceVideoMemory(row));
-
-    case IDS_TASK_MANAGER_FPS_COLUMN:
-      return UTF16ToUTF8(model_->GetResourceFPS(row));
-
-    case IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN:
-      return UTF16ToUTF8(model_->GetResourceSqliteMemoryUsed(row));
-
-    case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN:  // Goats Teleported!
-      return UTF16ToUTF8(model_->GetResourceGoatsTeleported(row));
-
-    default:
-      NOTREACHED();
-      return std::string();
-  }
+  return UTF16ToUTF8(model_->GetResourceById(row, col_id));
 }
 
 GdkPixbuf* TaskManagerGtk::GetModelIcon(int row) {
@@ -864,11 +796,6 @@ gint TaskManagerGtk::CompareImpl(GtkTreeModel* model, GtkTreeIter* a,
                                  GtkTreeIter* b, int id) {
   int row1 = gtk_tree::GetRowNumForIter(model, b);
   int row2 = gtk_tree::GetRowNumForIter(model, a);
-
-  // When sorting by non-grouped attributes (e.g., Network), just do a normal
-  // sort.
-  if (!IsSharedByGroup(id))
-    return model_->CompareValues(row1, row2, id);
 
   // Otherwise, make sure grouped resources are shown together.
   TaskManagerModel::GroupRange group_range1 =
