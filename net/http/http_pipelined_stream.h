@@ -70,6 +70,9 @@ class HttpPipelinedStream : public HttpStream {
 
   virtual bool IsConnectionReusable() const OVERRIDE;
 
+  virtual bool GetLoadTimingInfo(
+      LoadTimingInfo* load_timing_info) const OVERRIDE;
+
   virtual void GetSSLInfo(SSLInfo* ssl_info) OVERRIDE;
 
   virtual void GetSSLCertRequestInfo(

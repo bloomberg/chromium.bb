@@ -44,6 +44,7 @@ const int kMaxSpdyFrameChunkSize = (2 * kMss) - SpdyFrame::kHeaderSize;
 const int kMaxConcurrentPushedStreams = 1000;
 
 class BoundNetLog;
+struct LoadTimingInfo;
 class SpdyStream;
 class SSLInfo;
 
@@ -290,6 +291,17 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   bool WasEverUsed() const {
     return connection_->socket()->WasEverUsed();
   }
+
+  // Returns the load timing information from the perspective of the given
+  // stream.  If it's not the first stream, the connection is considered reused
+  // for that stream.
+  //
+  // This uses a different notion of reuse than IsReused().  This function
+  // sets |socket_reused| to false only if |stream_id| is the ID of the first
+  // stream using the session.  IsReused(), on the other hand, indicates if the
+  // session has been used to send/receive data at all.
+  bool GetLoadTimingInfo(SpdyStreamId stream_id,
+                         LoadTimingInfo* load_timing_info) const;
 
   void set_spdy_session_pool(SpdySessionPool* pool) {
     spdy_session_pool_ = NULL;

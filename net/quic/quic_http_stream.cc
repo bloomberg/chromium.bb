@@ -201,6 +201,11 @@ bool QuicHttpStream::IsConnectionReusable() const {
   return false;
 }
 
+bool QuicHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
+  // TODO(mmenke):  Figure out what to do here.
+  return true;
+}
+
 void QuicHttpStream::GetSSLInfo(SSLInfo* ssl_info) {
   DCHECK(stream_);
   NOTIMPLEMENTED();

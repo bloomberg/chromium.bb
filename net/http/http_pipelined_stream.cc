@@ -102,6 +102,11 @@ bool HttpPipelinedStream::IsConnectionReusable() const {
   return pipeline_->usable();
 }
 
+bool HttpPipelinedStream::GetLoadTimingInfo(
+    LoadTimingInfo* load_timing_info) const {
+  return pipeline_->GetLoadTimingInfo(pipeline_id_, load_timing_info);
+}
+
 void HttpPipelinedStream::GetSSLInfo(SSLInfo* ssl_info) {
   pipeline_->GetSSLInfo(pipeline_id_, ssl_info);
 }

@@ -124,6 +124,9 @@ class MockHttpStream : public HttpStream {
 
   virtual void LogNumRttVsBytesMetrics() const OVERRIDE {}
 
+  virtual bool GetLoadTimingInfo(
+      LoadTimingInfo* load_timing_info) const OVERRIDE { return false; }
+
   virtual void Drain(HttpNetworkSession*) OVERRIDE {}
 
   // Methods to tweak/observer mock behavior:

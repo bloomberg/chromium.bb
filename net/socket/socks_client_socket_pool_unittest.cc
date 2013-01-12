@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/time.h"
 #include "net/base/load_timing_info.h"
+#include "net/base/load_timing_info_test_util.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -35,20 +36,9 @@ void TestLoadTimingInfo(const ClientSocketHandle& handle) {
 
   EXPECT_FALSE(load_timing_info.socket_reused);
 
-  EXPECT_FALSE(load_timing_info.connect_timing.connect_start.is_null());
-  EXPECT_LE(load_timing_info.connect_timing.connect_start,
-            load_timing_info.connect_timing.connect_end);
-
-  // None of these should be set by the socket handle.
-  EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
-  EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.dns_start.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.dns_end.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.ssl_start.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.ssl_end.is_null());
-  EXPECT_TRUE(load_timing_info.send_start.is_null());
-  EXPECT_TRUE(load_timing_info.send_end.is_null());
-  EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
+  ExpectConnectTimingHasTimes(load_timing_info.connect_timing,
+                              CONNECT_TIMING_HAS_CONNECT_TIMES_ONLY);
+  ExpectLoadTimingHasOnlyConnectionTimes(load_timing_info);
 }
 
 class SOCKSClientSocketPoolTest : public testing::Test {

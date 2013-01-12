@@ -26,6 +26,7 @@ class HttpRequestHeaders;
 struct HttpRequestInfo;
 class HttpResponseInfo;
 class IOBuffer;
+struct LoadTimingInfo;
 class SSLCertRequestInfo;
 class SSLInfo;
 
@@ -106,6 +107,17 @@ class NET_EXPORT_PRIVATE HttpStreamBase {
   // Checks whether the current state of the underlying connection
   // allows it to be reused.
   virtual bool IsConnectionReusable() const = 0;
+
+  // Populates the connection establishment part of |load_timing_info|, and
+  // socket ID.  |load_timing_info| must have all null times when called.
+  // Returns false and does nothing if there is no underlying connection, either
+  // because one has yet to be assigned to the stream, or because the underlying
+  // socket has been closed.
+  //
+  // In practice, this means that this function will always succeed any time
+  // between when the full headers have been received and the stream has been
+  // closed.
+  virtual bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const = 0;
 
   // Get the SSLInfo associated with this stream's connection.  This should
   // only be called for streams over SSL sockets, otherwise the behavior is

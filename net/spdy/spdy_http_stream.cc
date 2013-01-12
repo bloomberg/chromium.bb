@@ -185,6 +185,17 @@ bool SpdyHttpStream::IsConnectionReusable() const {
   return false;
 }
 
+bool SpdyHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
+  // If |stream_| has yet to be created, or does not yet have an ID, fail.
+  // The reused flag can only be correctly set once a stream has an ID.  Streams
+  // get their IDs once the request has been successfully sent, so this does not
+  // behave that differently from other stream types.
+  if (!stream_ || stream_->stream_id() == 0)
+    return false;
+  return spdy_session_->GetLoadTimingInfo(stream_->stream_id(),
+                                          load_timing_info);
+}
+
 int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
                                 HttpResponseInfo* response,
                                 const CompletionCallback& callback) {

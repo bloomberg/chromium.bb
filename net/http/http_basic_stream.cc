@@ -112,6 +112,11 @@ bool HttpBasicStream::IsConnectionReusable() const {
   return parser_->IsConnectionReusable();
 }
 
+bool HttpBasicStream::GetLoadTimingInfo(
+    LoadTimingInfo* load_timing_info) const {
+  return connection_->GetLoadTimingInfo(IsConnectionReused(), load_timing_info);
+}
+
 void HttpBasicStream::GetSSLInfo(SSLInfo* ssl_info) {
   parser_->GetSSLInfo(ssl_info);
 }

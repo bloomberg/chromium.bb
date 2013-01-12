@@ -20,6 +20,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "net/base/load_timing_info.h"
+#include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/base/net_log_unittest.h"
@@ -56,17 +57,8 @@ void TestLoadTimingInfoConnectedReused(const ClientSocketHandle& handle) {
   EXPECT_EQ(true, load_timing_info.socket_reused);
   EXPECT_NE(NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
 
-  EXPECT_TRUE(load_timing_info.connect_timing.connect_start.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.connect_end.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.dns_start.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.dns_end.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.ssl_start.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.ssl_end.is_null());
-  EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
-  EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
-  EXPECT_TRUE(load_timing_info.send_start.is_null());
-  EXPECT_TRUE(load_timing_info.send_end.is_null());
-  EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
+  ExpectConnectTimingHasNoTimes(load_timing_info.connect_timing);
+  ExpectLoadTimingHasOnlyConnectionTimes(load_timing_info);
 }
 
 // Make sure |handle| sets load times correctly when it has been assigned a
@@ -82,18 +74,9 @@ void TestLoadTimingInfoConnectedNotReused(const ClientSocketHandle& handle) {
   EXPECT_FALSE(load_timing_info.socket_reused);
   EXPECT_NE(NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
 
-  EXPECT_FALSE(load_timing_info.connect_timing.connect_start.is_null());
-  EXPECT_LE(load_timing_info.connect_timing.connect_start,
-            load_timing_info.connect_timing.connect_end);
-  EXPECT_TRUE(load_timing_info.connect_timing.dns_start.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.dns_end.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.ssl_start.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.ssl_end.is_null());
-  EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
-  EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
-  EXPECT_TRUE(load_timing_info.send_start.is_null());
-  EXPECT_TRUE(load_timing_info.send_end.is_null());
-  EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
+  ExpectConnectTimingHasTimes(load_timing_info.connect_timing,
+                              CONNECT_TIMING_HAS_CONNECT_TIMES_ONLY);
+  ExpectLoadTimingHasOnlyConnectionTimes(load_timing_info);
 
   TestLoadTimingInfoConnectedReused(handle);
 }
@@ -110,17 +93,8 @@ void TestLoadTimingInfoNotConnected(const ClientSocketHandle& handle) {
   EXPECT_FALSE(load_timing_info.socket_reused);
   EXPECT_EQ(NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
 
-  EXPECT_TRUE(load_timing_info.connect_timing.connect_start.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.connect_end.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.dns_start.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.dns_end.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.ssl_start.is_null());
-  EXPECT_TRUE(load_timing_info.connect_timing.ssl_end.is_null());
-  EXPECT_TRUE(load_timing_info.proxy_resolve_start.is_null());
-  EXPECT_TRUE(load_timing_info.proxy_resolve_end.is_null());
-  EXPECT_TRUE(load_timing_info.send_start.is_null());
-  EXPECT_TRUE(load_timing_info.send_end.is_null());
-  EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
+  ExpectConnectTimingHasNoTimes(load_timing_info.connect_timing);
+  ExpectLoadTimingHasOnlyConnectionTimes(load_timing_info);
 }
 
 class TestSocketParams : public base::RefCounted<TestSocketParams> {

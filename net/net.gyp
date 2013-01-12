@@ -1855,6 +1855,8 @@
         'base/capturing_net_log.h',
         'base/cert_test_util.cc',
         'base/cert_test_util.h',
+        'base/load_timing_info_test_util.cc',
+        'base/load_timing_info_test_util.h',
         'base/mock_cert_verifier.cc',
         'base/mock_cert_verifier.h',
         'base/mock_file_stream.cc',

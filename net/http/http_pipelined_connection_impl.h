@@ -31,6 +31,7 @@ class HttpNetworkSession;
 class HttpRequestHeaders;
 class HttpResponseInfo;
 class IOBuffer;
+struct LoadTimingInfo;
 class SSLCertRequestInfo;
 class SSLInfo;
 
@@ -126,8 +127,10 @@ class NET_EXPORT_PRIVATE HttpPipelinedConnectionImpl
 
   void SetConnectionReused(int pipeline_id);
 
-  void GetSSLInfo(int pipeline_id,
-                  SSLInfo* ssl_info);
+  bool GetLoadTimingInfo(int pipeline_id,
+                         LoadTimingInfo* load_timing_info) const;
+
+  void GetSSLInfo(int pipeline_id, SSLInfo* ssl_info);
 
   void GetSSLCertRequestInfo(int pipeline_id,
                              SSLCertRequestInfo* cert_request_info);

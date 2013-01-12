@@ -9,7 +9,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "net/base/capturing_net_log.h"
 #include "net/base/io_buffer.h"
+#include "net/base/load_timing_info.h"
+#include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_pipelined_stream.h"
@@ -35,6 +38,33 @@ REGISTER_SOCKET_PARAMS_FOR_POOL(MockTransportClientSocketPool,
                                 DummySocketParams);
 
 namespace {
+
+// Tests the load timing of a stream that's connected and is not the first
+// request sent on a connection.
+void TestLoadTimingReused(const HttpStream& stream) {
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(stream.GetLoadTimingInfo(&load_timing_info));
+
+  EXPECT_TRUE(load_timing_info.socket_reused);
+  EXPECT_NE(NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
+
+  ExpectConnectTimingHasNoTimes(load_timing_info.connect_timing);
+  ExpectLoadTimingHasOnlyConnectionTimes(load_timing_info);
+}
+
+// Tests the load timing of a stream that's connected and using a fresh
+// connection.
+void TestLoadTimingNotReused(const HttpStream& stream) {
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(stream.GetLoadTimingInfo(&load_timing_info));
+
+  EXPECT_FALSE(load_timing_info.socket_reused);
+  EXPECT_NE(NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
+
+  ExpectConnectTimingHasTimes(load_timing_info.connect_timing,
+                              CONNECT_TIMING_HAS_DNS_TIMES);
+  ExpectLoadTimingHasOnlyConnectionTimes(load_timing_info);
+}
 
 class MockPipelineDelegate : public HttpPipelinedConnection::Delegate {
  public:
@@ -90,8 +120,12 @@ class HttpPipelinedConnectionImplTest : public testing::Test {
     factory_.AddSocketDataProvider(data_.get());
     scoped_refptr<DummySocketParams> params;
     ClientSocketHandle* connection = new ClientSocketHandle;
+    // Only give the connection a real NetLog to make sure that LoadTiming uses
+    // the connection's ID, rather than the pipeline's.  Since pipelines are
+    // destroyed when they've responded to all requests, but the connection
+    // lives on, this is an important behavior.
     connection->Init("a", params, MEDIUM, CompletionCallback(), &pool_,
-                     BoundNetLog());
+                     net_log_.bound());
     pipeline_.reset(new HttpPipelinedConnectionImpl(
         connection, &delegate_, origin_, ssl_config_, proxy_info_,
         BoundNetLog(), false, kProtoUnknown));
@@ -145,6 +179,7 @@ class HttpPipelinedConnectionImplTest : public testing::Test {
     stream->Close(false);
   }
 
+  CapturingBoundNetLog net_log_;
   DeterministicMockClientSocketFactory factory_;
   ClientSocketPoolHistograms histograms_;
   MockTransportClientSocketPool pool_;
@@ -176,7 +211,9 @@ TEST_F(HttpPipelinedConnectionImplTest, StreamBoundButNotUsed) {
 
   scoped_ptr<HttpStream> stream(NewTestStream("ok.html"));
 
+  TestLoadTimingNotReused(*stream);
   stream->Close(false);
+  TestLoadTimingNotReused(*stream);
 }
 
 TEST_F(HttpPipelinedConnectionImplTest, SyncSingleRequest) {
@@ -191,7 +228,9 @@ TEST_F(HttpPipelinedConnectionImplTest, SyncSingleRequest) {
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
 
   scoped_ptr<HttpStream> stream(NewTestStream("ok.html"));
+  TestLoadTimingNotReused(*stream);
   TestSyncRequest(stream, "ok.html");
+  TestLoadTimingNotReused(*stream);
 }
 
 TEST_F(HttpPipelinedConnectionImplTest, AsyncSingleRequest) {
@@ -213,12 +252,15 @@ TEST_F(HttpPipelinedConnectionImplTest, AsyncSingleRequest) {
                                                 callback_.callback()));
   data_->RunFor(1);
   EXPECT_LE(OK, callback_.WaitForResult());
+  TestLoadTimingNotReused(*stream);
 
   EXPECT_EQ(ERR_IO_PENDING, stream->ReadResponseHeaders(callback_.callback()));
   data_->RunFor(2);
   EXPECT_LE(OK, callback_.WaitForResult());
+  TestLoadTimingNotReused(*stream);
 
   ExpectResponse("ok.html", stream, true);
+  TestLoadTimingNotReused(*stream);
 
   stream->Close(false);
 }
@@ -245,11 +287,13 @@ TEST_F(HttpPipelinedConnectionImplTest, LockStepAsyncRequests) {
   HttpResponseInfo response1;
   EXPECT_EQ(ERR_IO_PENDING, stream1->SendRequest(headers1, &response1,
                                                  callback_.callback()));
+  TestLoadTimingNotReused(*stream1);
 
   HttpRequestHeaders headers2;
   HttpResponseInfo response2;
   EXPECT_EQ(ERR_IO_PENDING, stream2->SendRequest(headers2, &response2,
                                                  callback_.callback()));
+  TestLoadTimingReused(*stream2);
 
   data_->RunFor(1);
   EXPECT_LE(OK, callback_.WaitForResult());
@@ -264,6 +308,9 @@ TEST_F(HttpPipelinedConnectionImplTest, LockStepAsyncRequests) {
 
   ExpectResponse("ok.html", stream1, true);
 
+  TestLoadTimingNotReused(*stream1);
+  LoadTimingInfo load_timing_info1;
+  EXPECT_TRUE(stream1->GetLoadTimingInfo(&load_timing_info1));
   stream1->Close(false);
 
   data_->RunFor(2);
@@ -271,6 +318,11 @@ TEST_F(HttpPipelinedConnectionImplTest, LockStepAsyncRequests) {
 
   ExpectResponse("ko.html", stream2, true);
 
+  TestLoadTimingReused(*stream2);
+  LoadTimingInfo load_timing_info2;
+  EXPECT_TRUE(stream2->GetLoadTimingInfo(&load_timing_info2));
+  EXPECT_EQ(load_timing_info1.socket_log_id,
+            load_timing_info2.socket_log_id);
   stream2->Close(false);
 }
 
@@ -331,6 +383,8 @@ TEST_F(HttpPipelinedConnectionImplTest, SendOrderSwapped) {
 
   TestSyncRequest(stream2, "ko.html");
   TestSyncRequest(stream1, "ok.html");
+  TestLoadTimingNotReused(*stream1);
+  TestLoadTimingReused(*stream2);
 }
 
 TEST_F(HttpPipelinedConnectionImplTest, ReadOrderSwapped) {

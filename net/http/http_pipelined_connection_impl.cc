@@ -661,6 +661,12 @@ void HttpPipelinedConnectionImpl::SetConnectionReused(int pipeline_id) {
   connection_->set_is_reused(true);
 }
 
+bool HttpPipelinedConnectionImpl::GetLoadTimingInfo(
+    int pipeline_id, LoadTimingInfo* load_timing_info) const {
+  return connection_->GetLoadTimingInfo(IsConnectionReused(pipeline_id),
+                                        load_timing_info);
+}
+
 void HttpPipelinedConnectionImpl::GetSSLInfo(int pipeline_id,
                                              SSLInfo* ssl_info) {
   CHECK(ContainsKey(stream_info_map_, pipeline_id));
