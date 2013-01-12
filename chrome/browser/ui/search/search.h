@@ -28,7 +28,9 @@ uint64 EmbeddedSearchPageVersion(Profile* profile);
 // Force the instant extended API to be enabled for tests.
 void EnableInstantExtendedAPIForTesting();
 
-// Returns whether query extraction is enabled.
+// Returns whether query extraction is enabled.  If
+// |IsInstantExtendedAPIEnabled()| returns true, then this method will also
+// return true.
 bool IsQueryExtractionEnabled(Profile* profile);
 
 // Force query extraction to be enabled for tests.

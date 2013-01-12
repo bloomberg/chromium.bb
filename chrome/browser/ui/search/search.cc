@@ -160,14 +160,33 @@ void EnableInstantExtendedAPIForTesting() {
 }
 
 bool IsQueryExtractionEnabled(Profile* profile) {
-  return IsInstantExtendedAPIEnabled(profile) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableInstantExtendedAPI);
+#if defined(OS_IOS)
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableQueryExtraction);
+#else
+  // On desktop, query extraction is controlled by the instant-extended-api
+  // flag.
+  bool enabled = IsInstantExtendedAPIEnabled(profile);
+
+  // Running with --enable-query-extraction but not
+  // --enable-instant-extended-api is an error.
+  DCHECK(!(CommandLine::ForCurrentProcess()->HasSwitch(
+               switches::kEnableQueryExtraction) &&
+           !enabled));
+  return enabled;
+#endif
 }
 
 void EnableQueryExtractionForTesting() {
+#if defined(OS_IOS)
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableQueryExtraction);
+#else
+  // On desktop, query extraction is controlled by the instant-extended-api
+  // flag.
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableInstantExtendedAPI);
+#endif
 }
 
 }  // namespace search

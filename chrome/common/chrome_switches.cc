@@ -607,14 +607,6 @@ const char kEnablePanelStacking[]           = "enable-panel-stacking";
 // account creation.
 const char kEnablePasswordGeneration[]      = "enable-password-generation";
 
-// Enables content settings based on host *and* plug-in in the user
-// preferences.
-const char kEnableResourceContentSettings[] =
-    "enable-resource-content-settings";
-
-// Enables rich templated notifications and NotificationCenter.
-const char kEnableRichNotifications[]       = "enable-rich-notifications";
-
 // Enables the installation and usage of Portable Native Client.
 const char kEnablePnacl[]                   = "enable-pnacl";
 
@@ -625,6 +617,16 @@ const char kEnablePnacl[]                   = "enable-pnacl";
 // during chrome_browser_main.
 const char kEnableProfiling[]               = "enable-profiling";
 
+// Enables query extraction in the omnibox.
+const char kEnableQueryExtraction[]         = "enable-query-extraction";
+
+// Enables content settings based on host *and* plug-in in the user
+// preferences.
+const char kEnableResourceContentSettings[] =
+    "enable-resource-content-settings";
+
+// Enables rich templated notifications and NotificationCenter.
+const char kEnableRichNotifications[]       = "enable-rich-notifications";
 
 // Controls the support for SDCH filtering (dictionary based expansion of
 // content). By default SDCH filtering is enabled. To disable SDCH filtering,

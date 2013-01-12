@@ -172,6 +172,7 @@ extern const char kEnablePanelStacking[];
 extern const char kEnablePasswordGeneration[];
 extern const char kEnablePnacl[];
 extern const char kEnableProfiling[];
+extern const char kEnableQueryExtraction[];
 extern const char kEnableResourceContentSettings[];
 extern const char kEnableRichNotifications[];
 extern const char kEnableSdch[];
