@@ -490,7 +490,7 @@
           'enable_language_detection%': 0,
           'enable_printing%': 0,
           'enable_themes%': 0,
-          'enable_webrtc%': 0,
+          'enable_webrtc%': 1,
           'proprietary_codecs%': 1,
           'remoting%': 0,
         }],
