@@ -22,8 +22,10 @@ namespace content {
 
 RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
     const media::AudioParameters& params,
+    int input_channels,
     WebAudioDevice::RenderCallback* callback)
     : params_(params),
+      input_channels_(input_channels),
       client_callback_(callback) {
   DCHECK(client_callback_);
 }
@@ -48,7 +50,7 @@ void RendererWebAudioDeviceImpl::start() {
     // https://code.google.com/p/chromium/issues/detail?id=147326
     output_device_->InitializeIO(params_, 2, this);
   } else {
-    output_device_->Initialize(params_, this);
+    output_device_->InitializeIO(params_, input_channels_, this);
   }
 
   // Assumption: This method is being invoked within a V8 call stack.  CHECKs

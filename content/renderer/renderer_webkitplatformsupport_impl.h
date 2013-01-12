@@ -73,9 +73,15 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual bool canAccelerate2dCanvas();
   virtual double audioHardwareSampleRate();
   virtual size_t audioHardwareBufferSize();
+
+  // TODO(crogers): remove deprecated API as soon as WebKit calls new API.
   virtual WebKit::WebAudioDevice* createAudioDevice(
       size_t buffer_size, unsigned channels, double sample_rate,
       WebKit::WebAudioDevice::RenderCallback* callback);
+  virtual WebKit::WebAudioDevice* createAudioDevice(
+      size_t buffer_size, unsigned input_channels, unsigned channels,
+      double sample_rate, WebKit::WebAudioDevice::RenderCallback* callback);
+
   virtual WebKit::WebBlobRegistry* blobRegistry();
   virtual void sampleGamepads(WebKit::WebGamepads&);
   virtual WebKit::WebString userAgent(const WebKit::WebURL& url);

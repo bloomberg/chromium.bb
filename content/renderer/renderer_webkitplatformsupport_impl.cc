@@ -562,20 +562,31 @@ size_t RendererWebKitPlatformSupportImpl::audioHardwareBufferSize() {
   return GetAudioOutputBufferSize();
 }
 
+// TODO(crogers): remove deprecated API as soon as WebKit calls new API.
 WebAudioDevice*
 RendererWebKitPlatformSupportImpl::createAudioDevice(
-    size_t bufferSize,
-    unsigned numberOfChannels,
-    double sampleRate,
+    size_t buffer_size,
+    unsigned channels,
+    double sample_rate,
+    WebAudioDevice::RenderCallback* callback) {
+  return createAudioDevice(buffer_size, 0, channels, sample_rate, callback);
+}
+
+WebAudioDevice*
+RendererWebKitPlatformSupportImpl::createAudioDevice(
+    size_t buffer_size,
+    unsigned input_channels,
+    unsigned channels,
+    double sample_rate,
     WebAudioDevice::RenderCallback* callback) {
   media::ChannelLayout layout = media::CHANNEL_LAYOUT_UNSUPPORTED;
 
-  // The |numberOfChannels| does not exactly identify the channel layout of the
+  // The |channels| does not exactly identify the channel layout of the
   // device. The switch statement below assigns a best guess to the channel
   // layout based on number of channels.
   // TODO(crogers): WebKit should give the channel layout instead of the hard
   // channel count.
-  switch (numberOfChannels) {
+  switch (channels) {
     case 1:
       layout = media::CHANNEL_LAYOUT_MONO;
       break;
@@ -606,9 +617,9 @@ RendererWebKitPlatformSupportImpl::createAudioDevice(
 
   media::AudioParameters params(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY, layout,
-      static_cast<int>(sampleRate), 16, bufferSize);
+      static_cast<int>(sample_rate), 16, buffer_size);
 
-  return new RendererWebAudioDeviceImpl(params, callback);
+  return new RendererWebAudioDeviceImpl(params, input_channels, callback);
 }
 
 //------------------------------------------------------------------------------

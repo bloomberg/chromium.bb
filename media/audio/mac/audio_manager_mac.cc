@@ -284,6 +284,7 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
 
   // TODO(crogers): remove once we properly handle input device selection.
+  // https://code.google.com/p/chromium/issues/detail?id=147327
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableWebAudioInput)) {
     if (HasUnifiedDefaultIO())
