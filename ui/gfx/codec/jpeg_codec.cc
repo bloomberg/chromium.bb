@@ -589,7 +589,7 @@ bool JPEGCodec::Decode(const unsigned char* input, size_t input_size,
 
     output->resize(row_write_stride * cinfo.output_height);
 
-    scoped_array<unsigned char> row_data(new unsigned char[row_read_stride]);
+    scoped_ptr<unsigned char[]> row_data(new unsigned char[row_read_stride]);
     unsigned char* rowptr = row_data.get();
     for (int row = 0; row < static_cast<int>(cinfo.output_height); row++) {
       if (!jpeg_read_scanlines(&cinfo, &rowptr, 1))

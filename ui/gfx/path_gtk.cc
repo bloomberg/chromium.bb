@@ -19,10 +19,10 @@ GdkRegion* Path::CreateNativeRegion() const {
     return NULL;
   }
 
-  scoped_array<SkPoint> points(new SkPoint[point_count]);
+  scoped_ptr<SkPoint[]> points(new SkPoint[point_count]);
   getPoints(points.get(), point_count);
 
-  scoped_array<GdkPoint> gdk_points(new GdkPoint[point_count]);
+  scoped_ptr<GdkPoint[]> gdk_points(new GdkPoint[point_count]);
   for (int i = 0; i < point_count; ++i) {
     gdk_points[i].x = SkScalarRound(points[i].fX);
     gdk_points[i].y = SkScalarRound(points[i].fY);

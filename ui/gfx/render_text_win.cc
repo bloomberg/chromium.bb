@@ -600,7 +600,7 @@ void RenderTextWin::LayoutVisualText() {
   }
 
   // Build the array of bidirectional embedding levels.
-  scoped_array<BYTE> levels(new BYTE[runs_.size()]);
+  scoped_ptr<BYTE[]> levels(new BYTE[runs_.size()]);
   for (size_t i = 0; i < runs_.size(); ++i)
     levels[i] = runs_[i]->script_analysis.s.uBidiLevel;
 

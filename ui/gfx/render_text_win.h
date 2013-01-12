@@ -43,13 +43,13 @@ struct TextRun {
 
   SCRIPT_ANALYSIS script_analysis;
 
-  scoped_array<WORD> glyphs;
-  scoped_array<WORD> logical_clusters;
-  scoped_array<SCRIPT_VISATTR> visible_attributes;
+  scoped_ptr<WORD[]> glyphs;
+  scoped_ptr<WORD[]> logical_clusters;
+  scoped_ptr<SCRIPT_VISATTR[]> visible_attributes;
   int glyph_count;
 
-  scoped_array<int> advance_widths;
-  scoped_array<GOFFSET> offsets;
+  scoped_ptr<int[]> advance_widths;
+  scoped_ptr<GOFFSET[]> offsets;
   ABC abc_widths;
   SCRIPT_CACHE script_cache;
 
@@ -131,8 +131,8 @@ class RenderTextWin : public RenderText {
   // largest baseline over all the runs' fonts.
   int common_baseline_;
 
-  scoped_array<int> visual_to_logical_;
-  scoped_array<int> logical_to_visual_;
+  scoped_ptr<int[]> visual_to_logical_;
+  scoped_ptr<int[]> logical_to_visual_;
 
   bool needs_layout_;
 

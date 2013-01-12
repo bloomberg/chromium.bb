@@ -385,7 +385,7 @@ SkColor CalculateKMeanColorOfBitmap(const SkBitmap& bitmap) {
   // above uses non-pre-multiplied alpha. Transform the bitmap before we
   // analyze it because the function reads each pixel multiple times.
   int pixel_count = bitmap.width() * bitmap.height();
-  scoped_array<uint32_t> image(new uint32_t[pixel_count]);
+  scoped_ptr<uint32_t[]> image(new uint32_t[pixel_count]);
   UnPreMultiply(bitmap, image.get(), pixel_count);
 
   GridSampler sampler;

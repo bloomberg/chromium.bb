@@ -91,7 +91,7 @@ HICON IconUtil::CreateHICONFromSkBitmap(const SkBitmap& bitmap) {
       static_cast<const uint32*>(bitmap.getPixels()),
       bitmap.width() * bitmap.height());
 
-  scoped_array<uint8> mask_bits;
+  scoped_ptr<uint8[]> mask_bits;
   if (!bitmap_has_alpha_channel) {
     // Bytes per line with paddings to make it word alignment.
     size_t bytes_per_line = (bitmap.width() + 0xF) / 16 * 2;
@@ -249,7 +249,7 @@ SkBitmap IconUtil::CreateSkBitmapFromHICONHelper(HICON icon,
 
   // Capture boolean opacity. We may not use it if we find out the bitmap has
   // an alpha channel.
-  scoped_array<bool> opaque(new bool[num_pixels]);
+  scoped_ptr<bool[]> opaque(new bool[num_pixels]);
   for (size_t i = 0; i < num_pixels; ++i)
     opaque[i] = !bits[i];
 
