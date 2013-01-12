@@ -337,7 +337,8 @@ void ResourceDispatcher::OnReceivedCachedMetadata(
 void ResourceDispatcher::OnSetDataBuffer(const IPC::Message& message,
                                          int request_id,
                                          base::SharedMemoryHandle shm_handle,
-                                         int shm_size) {
+                                         int shm_size,
+                                         base::ProcessId renderer_pid) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
@@ -350,6 +351,13 @@ void ResourceDispatcher::OnSetDataBuffer(const IPC::Message& message,
 
   bool ok = request_info->buffer->Map(shm_size);
   if (!ok) {
+    // Added to help debug crbug/160401.
+    base::ProcessId renderer_pid_copy = renderer_pid;
+    base::debug::Alias(&renderer_pid_copy);
+
+    base::SharedMemoryHandle shm_handle_copy = shm_handle;
+    base::debug::Alias(&shm_handle_copy);
+
     CrashOnMapFailure();
     return;
   }

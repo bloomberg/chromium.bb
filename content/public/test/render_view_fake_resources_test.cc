@@ -172,7 +172,8 @@ void RenderViewFakeResourcesTest::OnRequestResource(
       message.routing_id(),
       request_id,
       handle,
-      body.size())));
+      body.size(),
+      0)));
 
   ASSERT_TRUE(channel_->Send(new ResourceMsg_DataReceived(
       message.routing_id(),

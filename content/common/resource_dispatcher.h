@@ -118,7 +118,8 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
       const IPC::Message& message,
       int request_id,
       base::SharedMemoryHandle shm_handle,
-      int shm_size);
+      int shm_size,
+      base::ProcessId renderer_pid);
   void OnReceivedData(
       const IPC::Message& message,
       int request_id,
