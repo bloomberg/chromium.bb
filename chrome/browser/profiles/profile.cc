@@ -104,7 +104,7 @@ void Profile::RegisterUserPrefs(PrefServiceSyncable* prefs) {
                              false,
                              PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kSpdyProxyEnabled,
-                             false,
+                             true,
                              PrefServiceSyncable::UNSYNCABLE_PREF);
 #endif
 
