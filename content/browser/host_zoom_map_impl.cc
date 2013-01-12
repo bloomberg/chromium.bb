@@ -58,6 +58,7 @@ void HostZoomMapImpl::CopyFrom(HostZoomMap* copy_interface) {
        i != copy->host_zoom_levels_.end(); ++i) {
     host_zoom_levels_[i->first] = i->second;
   }
+  default_zoom_level_ = copy->default_zoom_level_;
 }
 
 double HostZoomMapImpl::GetZoomLevel(const std::string& host) const {
