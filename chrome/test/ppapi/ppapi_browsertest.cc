@@ -117,6 +117,34 @@ using content::RenderViewHost;
     IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, DISABLED_##test_name) { \
       RunTestViaHTTPIfAudioOutputAvailable(STRIP_PREFIXES(test_name)); \
     }
+#elif defined(ARCH_CPU_ARM_FAMILY)
+// NaCl glibc tests are not included in ARM as there is no glibc support
+// on ARM today.
+#define TEST_PPAPI_NACL_VIA_HTTP(test_name) \
+    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
+      RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
+    }
+
+#define TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(test_name) \
+    IN_PROC_BROWSER_TEST_F(PPAPINaClTestDisallowedSockets, test_name) { \
+      RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
+    }
+
+#define TEST_PPAPI_NACL_WITH_SSL_SERVER(test_name) \
+    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
+      RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
+    }
+
+#define TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(test_name) \
+    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
+      RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
+    }
+
+#define TEST_PPAPI_NACL_VIA_HTTP_WITH_AUDIO_OUTPUT(test_name) \
+    IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, test_name) { \
+      RunTestViaHTTPIfAudioOutputAvailable(STRIP_PREFIXES(test_name)); \
+    }
+
 #else
 
 // NaCl based PPAPI tests

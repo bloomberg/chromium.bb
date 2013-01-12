@@ -109,10 +109,22 @@ class NaClBrowserTestGLibc : public NaClBrowserTestBase {
   virtual FilePath::StringType Variant() OVERRIDE;
 };
 
+#if defined(ARCH_CPU_ARM_FAMILY)
+
+// There is no support for Glibc on ARM NaCl.
+#define NACL_BROWSER_TEST_F(suite, name, body) \
+IN_PROC_BROWSER_TEST_F(suite##Newlib, name) \
+body
+
+#else
+
+// Non-ARM platforms have both Glibc and Newlib tests
 #define NACL_BROWSER_TEST_F(suite, name, body) \
 IN_PROC_BROWSER_TEST_F(suite##Newlib, name) \
 body \
 IN_PROC_BROWSER_TEST_F(suite##GLibc, name) \
 body
+
+#endif
 
 #endif  // CHROME_TEST_NACL_NACL_BROWSERTEST_UTIL_H_
