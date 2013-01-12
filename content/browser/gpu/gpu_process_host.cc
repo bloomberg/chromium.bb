@@ -514,8 +514,12 @@ bool GpuProcessHost::Send(IPC::Message* msg) {
   }
 
   bool result = process_->Send(msg);
-  if (!result)
-    valid_ = false;
+  if (!result) {
+    // Channel is hosed, but we may not get destroyed for a while. Send
+    // outstanding channel creation failures now so that the caller can restart
+    // with a new process/channel without waiting.
+    SendOutstandingReplies();
+  }
   return result;
 }
 
@@ -1035,6 +1039,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
 }
 
 void GpuProcessHost::SendOutstandingReplies() {
+  valid_ = false;
   // First send empty channel handles for all EstablishChannel requests.
   while (!channel_requests_.empty()) {
     EstablishChannelCallback callback = channel_requests_.front();
