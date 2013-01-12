@@ -84,6 +84,15 @@ class CONTENT_EXPORT GpuMemoryManagerClientState {
   // Statistics about memory usage.
   GpuManagedMemoryStats managed_memory_stats_;
 
+  // When managed_memory_stats_.bytes_nice_to_have leaves the range
+  // [low_, high_], then re-adjust memory limits.
+  size_t bytes_nice_to_have_limit_low_;
+  size_t bytes_nice_to_have_limit_high_;
+
+  // The budget for this client.
+  size_t bytes_budget_when_visible_;
+  size_t bytes_budget_when_backgrounded_;
+
   // Set to disable allocating a frontbuffer or to disable allocations
   // for clients that don't have surfaces.
   bool hibernated_;

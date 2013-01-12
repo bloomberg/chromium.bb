@@ -49,6 +49,7 @@ GpuMemoryManager::GpuMemoryManager(
     GpuChannelManager* channel_manager,
     size_t max_surfaces_with_frontbuffer_soft_limit)
     : channel_manager_(channel_manager),
+      use_nonuniform_memory_policy_(false),
       manage_immediate_scheduled_(false),
       max_surfaces_with_frontbuffer_soft_limit_(
           max_surfaces_with_frontbuffer_soft_limit),
@@ -256,12 +257,13 @@ void GpuMemoryManager::UpdateBackgroundedAvailableGpuMemory() {
 #endif
 }
 
-void GpuMemoryManager::ScheduleManage(bool immediate) {
+void GpuMemoryManager::ScheduleManage(
+    ScheduleManageTime schedule_manage_time) {
   if (disable_schedule_manage_)
     return;
   if (manage_immediate_scheduled_)
     return;
-  if (immediate) {
+  if (schedule_manage_time == kScheduleManageNow) {
     MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&GpuMemoryManager::Manage, AsWeakPtr()));
@@ -308,9 +310,9 @@ void GpuMemoryManager::TrackMemoryAllocatedChange(
   // If we've gone past our current limit on unmanaged memory, schedule a
   // re-manage to take int account the unmanaged memory.
   if (bytes_allocated_unmanaged_current_ >= bytes_allocated_unmanaged_high_)
-    ScheduleManage(true);
+    ScheduleManage(kScheduleManageNow);
   if (bytes_allocated_unmanaged_current_ < bytes_allocated_unmanaged_low_)
-    ScheduleManage(false);
+    ScheduleManage(kScheduleManageLater);
 
   if (GetCurrentUsage() > bytes_allocated_historical_max_) {
       bytes_allocated_historical_max_ = GetCurrentUsage();
@@ -336,7 +338,7 @@ GpuMemoryManagerClientState* GpuMemoryManager::CreateClientState(
                         &bytes_allocated_managed_visible_ :
                         &bytes_allocated_managed_backgrounded_);
   AddClientToList(client_state);
-  ScheduleManage(true);
+  ScheduleManage(kScheduleManageNow);
   return client_state;
 }
 
@@ -347,7 +349,7 @@ void GpuMemoryManager::OnDestroyClientState(
                     client_state->visible_ ?
                         &bytes_allocated_managed_visible_ :
                         &bytes_allocated_managed_backgrounded_);
-  ScheduleManage(false);
+  ScheduleManage(kScheduleManageLater);
 }
 
 void GpuMemoryManager::SetClientStateVisible(
@@ -368,7 +370,7 @@ void GpuMemoryManager::SetClientStateVisible(
                     client_state->visible_ ?
                         &bytes_allocated_managed_visible_ :
                         &bytes_allocated_managed_backgrounded_);
-  ScheduleManage(visible);
+  ScheduleManage(visible ? kScheduleManageNow : kScheduleManageLater);
 }
 
 void GpuMemoryManager::SetClientStateManagedMemoryStats(
@@ -382,11 +384,23 @@ void GpuMemoryManager::SetClientStateManagedMemoryStats(
                         &bytes_allocated_managed_backgrounded_);
   client_state->managed_memory_stats_ = stats;
 
-  // If this allocation pushed our usage of backgrounded tabs memory over the
-  // limit, then schedule a drop of backgrounded memory.
-  if (bytes_allocated_managed_backgrounded_ >
-      GetCurrentBackgroundedAvailableGpuMemory())
-    ScheduleManage(false);
+  if (use_nonuniform_memory_policy_) {
+    // If these statistics sit outside of the range that we used in our
+    // computation of memory budgets then recompute the budgets.
+    if (client_state->managed_memory_stats_.bytes_nice_to_have >
+        client_state->bytes_nice_to_have_limit_high_) {
+      ScheduleManage(kScheduleManageNow);
+    } else if (client_state->managed_memory_stats_.bytes_nice_to_have <
+               client_state->bytes_nice_to_have_limit_low_) {
+      ScheduleManage(kScheduleManageLater);
+    }
+  } else {
+    // If this allocation pushed our usage of backgrounded tabs memory over the
+    // limit, then schedule a drop of backgrounded memory.
+    if (bytes_allocated_managed_backgrounded_ >
+        GetCurrentBackgroundedAvailableGpuMemory())
+      ScheduleManage(kScheduleManageLater);
+  }
 }
 
 GpuMemoryTrackingGroup* GpuMemoryManager::CreateTrackingGroup(
@@ -433,7 +447,7 @@ void GpuMemoryManager::SetWindowCount(uint32 window_count) {
   window_count_has_been_received_ = true;
   window_count_ = window_count;
   if (should_schedule_manage)
-    ScheduleManage(true);
+    ScheduleManage(kScheduleManageNow);
 }
 
 // The current Manage algorithm simply classifies contexts (clients) into
@@ -484,6 +498,134 @@ void GpuMemoryManager::Manage() {
   // surfaces).
   SetClientsHibernatedState();
 
+  // Assign memory allocations to clients that have surfaces.
+  if (use_nonuniform_memory_policy_)
+    AssignSurfacesAllocationsNonuniform();
+  else
+    AssignSurfacesAllocationsUniform();
+
+  // Assign memory allocations to clients that don't have surfaces.
+  AssignNonSurfacesAllocations();
+
+  SendUmaStatsToBrowser();
+}
+
+void GpuMemoryManager::AssignSurfacesAllocationsNonuniform() {
+  size_t bytes_available_total = GetAvailableGpuMemory();
+  size_t bytes_allocated_visible = 0;
+  ClientStateList clients = clients_visible_mru_;
+  clients.insert(clients.end(),
+                 clients_nonvisible_mru_.begin(),
+                 clients_nonvisible_mru_.end());
+
+  // Compute budget when visible for all clients
+  for (ClientStateList::const_iterator it = clients.begin();
+       it != clients.end();
+       ++it) {
+    GpuMemoryManagerClientState* client_state = *it;
+    GpuManagedMemoryStats* stats = &client_state->managed_memory_stats_;
+
+    // Give the client 4/3 of what it needs to draw everything that is in
+    // the "nice to have" bucket, so that it has some room to grow.
+    client_state->bytes_budget_when_visible_ =
+        4 * stats->bytes_nice_to_have / 3;
+
+    // Re-assign memory limits to this client when its "nice to have" bucket
+    // grows or shrinks by 1/4.
+    client_state->bytes_nice_to_have_limit_high_ =
+        5 * stats->bytes_nice_to_have / 4;
+    client_state->bytes_nice_to_have_limit_low_ =
+        3 * stats->bytes_nice_to_have / 4;
+
+    // Clamp to the acceptable range.
+    client_state->bytes_budget_when_visible_ = std::min(
+        client_state->bytes_budget_when_visible_,
+        GetMaximumTabAllocation());
+    client_state->bytes_budget_when_visible_ = std::max(
+        client_state->bytes_budget_when_visible_,
+        GetMinimumTabAllocation());
+
+    // Compute how much space is used by visible clients.
+    if (client_state->visible_)
+      bytes_allocated_visible += client_state->bytes_budget_when_visible_;
+  }
+
+  // TODO(ccameron): If bytes_allocated_visible exceeds bytes_available_total,
+  // then cut down the amount of memory given out. This has to be done
+  // carefully -- we don't want a single heavy tab to cause other light tabs
+  // to not display correctly.
+
+  // Allow up to 1/4 of the memory that was available for visible tabs to
+  // go to backgrounded tabs.
+  size_t bytes_available_backgrounded = 0;
+  size_t bytes_allocated_backgrounded = 0;
+  if (bytes_available_total > bytes_allocated_visible) {
+    bytes_available_backgrounded = std::min(
+        bytes_available_total / 4,
+        bytes_available_total - bytes_allocated_visible);
+  }
+  for (ClientStateList::const_iterator it = clients.begin();
+       it != clients.end();
+       ++it) {
+    GpuMemoryManagerClientState* client_state = *it;
+    GpuManagedMemoryStats* stats = &client_state->managed_memory_stats_;
+
+    // Compute the amount of space we have for this renderer when it is
+    // backgrounded.
+    size_t bytes_available_backgrounded_adjusted = 0;
+    if (client_state->visible_) {
+      // If this is a visible tab, don't count this tab's budget while visible
+      // against the backgrounded tabs' budget total.
+      bytes_available_backgrounded_adjusted = std::min(
+          bytes_available_backgrounded +
+              client_state->bytes_budget_when_visible_ / 4,
+          bytes_available_total / 4);
+    } else if (bytes_available_backgrounded > bytes_allocated_backgrounded) {
+      // If this is a backgrounded tab, take into account all more recently
+      // used backgrounded tabs.
+      bytes_available_backgrounded_adjusted =
+          bytes_available_backgrounded - bytes_allocated_backgrounded;
+    }
+
+    // Give a budget of 9/8ths of the required memory when backgrounded, if it
+    // fits within the limit we just calculated.
+    client_state->bytes_budget_when_backgrounded_ =
+        9 * stats->bytes_required / 8;
+    if (client_state->bytes_budget_when_backgrounded_ >
+        bytes_available_backgrounded_adjusted)
+      client_state->bytes_budget_when_backgrounded_ = 0;
+
+    // Update the amount of memory given out to backgrounded tabs.
+    if (!client_state->visible_)
+      bytes_allocated_backgrounded +=
+          client_state->bytes_budget_when_backgrounded_;
+  }
+
+  // Assign budgets to clients.
+  for (ClientStateList::const_iterator it = clients.begin();
+       it != clients.end();
+       ++it) {
+    GpuMemoryManagerClientState* client_state = *it;
+    GpuMemoryAllocation allocation;
+
+    allocation.browser_allocation.suggest_have_frontbuffer =
+        !client_state->hibernated_;
+
+    allocation.renderer_allocation.bytes_limit_when_visible =
+        client_state->bytes_budget_when_visible_;
+    allocation.renderer_allocation.priority_cutoff_when_visible =
+        GpuMemoryAllocationForRenderer::kPriorityCutoffAllowEverything;
+
+    allocation.renderer_allocation.bytes_limit_when_not_visible =
+        client_state->bytes_budget_when_backgrounded_;
+    allocation.renderer_allocation.priority_cutoff_when_not_visible =
+        GpuMemoryAllocationForRenderer::kPriorityCutoffAllowOnlyRequired;
+
+    client_state->client_->SetMemoryAllocation(allocation);
+  }
+}
+
+void GpuMemoryManager::AssignSurfacesAllocationsUniform() {
   // Determine how much memory to assign to give to visible and backgrounded
   // clients.
   size_t bytes_limit_when_visible = GetVisibleClientAllocation();
@@ -560,8 +702,9 @@ void GpuMemoryManager::Manage() {
 
     client_state->client_->SetMemoryAllocation(allocation);
   }
+}
 
-  // Assign memory allocations to clients that don't have surfaces.
+void GpuMemoryManager::AssignNonSurfacesAllocations() {
   for (ClientStateList::const_iterator it = clients_nonsurface_.begin();
        it != clients_nonsurface_.end();
        ++it) {
@@ -577,8 +720,6 @@ void GpuMemoryManager::Manage() {
 
     client_state->client_->SetMemoryAllocation(allocation);
   }
-
-  SendUmaStatsToBrowser();
 }
 
 void GpuMemoryManager::SetClientsHibernatedState() const {

@@ -29,6 +29,13 @@ class CONTENT_EXPORT GpuMemoryManager :
     public base::SupportsWeakPtr<GpuMemoryManager> {
  public:
   enum { kDefaultMaxSurfacesWithFrontbufferSoftLimit = 8 };
+  enum ScheduleManageTime {
+    // Add a call to Manage to the thread's message loop immediately.
+    kScheduleManageNow,
+    // Add a Manage call to the thread's message loop for execution 1/60th of
+    // of a second from now.
+    kScheduleManageLater,
+  };
 
   GpuMemoryManager(GpuChannelManager* channel_manager,
                    size_t max_surfaces_with_frontbuffer_soft_limit);
@@ -39,7 +46,7 @@ class CONTENT_EXPORT GpuMemoryManager :
   // delayed calls to "queue" up. This way, we do not spam clients in certain
   // lower priority situations. An immediate schedule manage will cancel any
   // queued delayed manage.
-  void ScheduleManage(bool immediate);
+  void ScheduleManage(ScheduleManageTime schedule_manage_time);
 
   // Retrieve GPU Resource consumption statistics for the task manager
   void GetVideoMemoryUsageStats(
@@ -97,6 +104,9 @@ class CONTENT_EXPORT GpuMemoryManager :
   void SetClientsHibernatedState() const;
   size_t GetVisibleClientAllocation() const;
   size_t GetCurrentBackgroundedAvailableGpuMemory() const;
+  void AssignSurfacesAllocationsNonuniform();
+  void AssignSurfacesAllocationsUniform();
+  void AssignNonSurfacesAllocations();
 
   // Update the amount of GPU memory we think we have in the system, based
   // on what the stubs' contexts report.
@@ -174,6 +184,10 @@ class CONTENT_EXPORT GpuMemoryManager :
   }
 
   GpuChannelManager* channel_manager_;
+
+  // The new memory policy does not uniformly assign memory to tabs, but
+  // scales the assignments to the tabs' needs.
+  bool use_nonuniform_memory_policy_;
 
   // A list of all visible and nonvisible clients, in most-recently-used
   // order (most recently used is first).
