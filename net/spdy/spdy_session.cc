@@ -1485,7 +1485,6 @@ void SpdySession::OnSynReply(SpdyStreamId stream_id,
 
   if (!IsStreamActive(stream_id)) {
     // NOTE:  it may just be that the stream was cancelled.
-    LOG(WARNING) << "Received SYN_REPLY for invalid stream " << stream_id;
     return;
   }
 
