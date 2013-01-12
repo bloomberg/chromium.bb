@@ -111,9 +111,10 @@ class AutofillAgent : public content::RenderViewObserver,
   void OnAcceptDataListSuggestion(const string16& value);
   void OnAcceptPasswordAutofillSuggestion(const string16& value);
 
-  // For interactive autocomplete.
-  void OnRequestAutocompleteSuccess(const FormData& form_data);
-  void OnRequestAutocompleteError();
+  // Called when interactive autocomplete finishes.
+  void OnRequestAutocompleteResult(
+      WebKit::WebFormElement::AutocompleteResult result,
+      const FormData& form_data);
 
   // Called when an autocomplete request succeeds or fails with the |result|.
   void FinishAutocompleteRequest(

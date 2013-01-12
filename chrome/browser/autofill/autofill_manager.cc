@@ -60,7 +60,6 @@
 #include "grit/generated_resources.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 
@@ -68,6 +67,7 @@ typedef PersonalDataManager::GUIDPair GUIDPair;
 using base::TimeTicks;
 using content::BrowserThread;
 using content::RenderViewHost;
+using WebKit::WebFormElement;
 
 namespace {
 
@@ -799,7 +799,8 @@ void AutofillManager::OnRequestAutocomplete(
     const GURL& frame_url,
     const content::SSLStatus& ssl_status) {
   if (!IsAutofillEnabled()) {
-    ReturnAutocompleteError();
+    ReturnAutocompleteResult(WebFormElement::AutocompleteResultErrorDisabled,
+                             FormData());
     return;
   }
 
@@ -814,12 +815,15 @@ void AutofillManager::OnRequestAutocomplete(
   controller->Show();
 }
 
-void AutofillManager::ReturnAutocompleteError() {
+void AutofillManager::ReturnAutocompleteResult(
+    WebFormElement::AutocompleteResult result, const FormData& form_data) {
   RenderViewHost* host = web_contents()->GetRenderViewHost();
   if (!host)
     return;
 
-  host->Send(new AutofillMsg_RequestAutocompleteError(host->GetRoutingID()));
+  host->Send(new AutofillMsg_RequestAutocompleteResult(host->GetRoutingID(),
+                                                       result,
+                                                       form_data));
 }
 
 void AutofillManager::ReturnAutocompleteData(const FormStructure* result) {
@@ -828,17 +832,13 @@ void AutofillManager::ReturnAutocompleteData(const FormStructure* result) {
   if (!web_contents())
     return;
 
-  RenderViewHost* host = web_contents()->GetRenderViewHost();
-  if (!host)
-    return;
-
   if (!result) {
-    ReturnAutocompleteError();
-    return;
+    ReturnAutocompleteResult(WebFormElement::AutocompleteResultErrorCancel,
+                             FormData());
+  } else {
+    ReturnAutocompleteResult(WebFormElement::AutocompleteResultSuccess,
+                             result->ToFormData());
   }
-
-  host->Send(new AutofillMsg_RequestAutocompleteSuccess(host->GetRoutingID(),
-                                                        result->ToFormData()));
 }
 
 void AutofillManager::OnLoadedServerPredictions(

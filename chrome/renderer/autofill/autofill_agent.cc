@@ -160,10 +160,8 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
                         OnAcceptDataListSuggestion)
     IPC_MESSAGE_HANDLER(AutofillMsg_AcceptPasswordAutofillSuggestion,
                         OnAcceptPasswordAutofillSuggestion)
-    IPC_MESSAGE_HANDLER(AutofillMsg_RequestAutocompleteSuccess,
-                        OnRequestAutocompleteSuccess)
-    IPC_MESSAGE_HANDLER(AutofillMsg_RequestAutocompleteError,
-                        OnRequestAutocompleteError)
+    IPC_MESSAGE_HANDLER(AutofillMsg_RequestAutocompleteResult,
+                        OnRequestAutocompleteResult)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -226,7 +224,7 @@ void AutofillAgent::didRequestAutocomplete(WebKit::WebFrame* frame,
                                 &form_data,
                                 NULL)) {
     WebFormElement(form).finishRequestAutocomplete(
-        WebFormElement::AutocompleteResultError);
+        WebFormElement::AutocompleteResultErrorDisabled);
     return;
   }
 
@@ -602,20 +600,13 @@ void AutofillAgent::OnAcceptPasswordAutofillSuggestion(const string16& value) {
   DCHECK(handled);
 }
 
-void AutofillAgent::FinishAutocompleteRequest(
-    WebFormElement::AutocompleteResult result) {
+void AutofillAgent::OnRequestAutocompleteResult(
+    WebFormElement::AutocompleteResult result, const FormData& form_data) {
   DCHECK(!in_flight_request_form_.isNull());
+  if (result == WebFormElement::AutocompleteResultSuccess)
+    FillFormIncludingNonFocusableElements(form_data, in_flight_request_form_);
   in_flight_request_form_.finishRequestAutocomplete(result);
   in_flight_request_form_.reset();
-}
-
-void AutofillAgent::OnRequestAutocompleteSuccess(const FormData& form_data) {
-  FillFormIncludingNonFocusableElements(form_data, in_flight_request_form_);
-  FinishAutocompleteRequest(WebFormElement::AutocompleteResultSuccess);
-}
-
-void AutofillAgent::OnRequestAutocompleteError() {
-  FinishAutocompleteRequest(WebFormElement::AutocompleteResultError);
 }
 
 void AutofillAgent::ShowSuggestions(const WebInputElement& element,

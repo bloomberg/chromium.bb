@@ -48,6 +48,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 
@@ -55,6 +56,7 @@ typedef PersonalDataManager::GUIDPair GUIDPair;
 using content::BrowserThread;
 using content::WebContents;
 using testing::_;
+using WebKit::WebFormElement;
 
 namespace {
 
@@ -461,7 +463,6 @@ class TestAutofillManager : public AutofillManager {
       : AutofillManager(web_contents, delegate, personal_data),
         personal_data_(personal_data),
         autofill_enabled_(true),
-        request_autocomplete_error_count_(0),
         did_finish_async_form_submit_(false),
         message_loop_is_running_(false) {
   }
@@ -472,9 +473,11 @@ class TestAutofillManager : public AutofillManager {
     autofill_enabled_ = autofill_enabled;
   }
 
-  int request_autocomplete_error_count() const {
-    return request_autocomplete_error_count_;
+  const std::vector<std::pair<WebFormElement::AutocompleteResult, FormData> >&
+      request_autocomplete_results() const {
+    return request_autocomplete_results_;
   }
+
 
   void set_expected_submitted_field_types(
       const std::vector<FieldTypeSet>& expected_types) {
@@ -580,8 +583,10 @@ class TestAutofillManager : public AutofillManager {
     form_structures()->push_back(form);
   }
 
-  virtual void ReturnAutocompleteError() OVERRIDE {
-    ++request_autocomplete_error_count_;
+  virtual void ReturnAutocompleteResult(
+      WebFormElement::AutocompleteResult result,
+      const FormData& form_data) OVERRIDE {
+    request_autocomplete_results_.push_back(std::make_pair(result, form_data));
   }
 
  private:
@@ -592,7 +597,8 @@ class TestAutofillManager : public AutofillManager {
   TestPersonalDataManager* personal_data_;
 
   bool autofill_enabled_;
-  int request_autocomplete_error_count_;
+  std::vector<std::pair<WebFormElement::AutocompleteResult, FormData> >
+      request_autocomplete_results_;
 
   bool did_finish_async_form_submit_;
   bool message_loop_is_running_;
@@ -3188,14 +3194,16 @@ TEST_F(AutofillManagerTest, RemoveProfileVariant) {
 }
 
 TEST_F(AutofillManagerTest, DisabledAutofillDispatchesError) {
-  ASSERT_EQ(0, autofill_manager_->request_autocomplete_error_count());
+  EXPECT_TRUE(autofill_manager_->request_autocomplete_results().empty());
 
   autofill_manager_->set_autofill_enabled(false);
   autofill_manager_->OnRequestAutocomplete(FormData(),
                                            GURL(),
                                            content::SSLStatus());
 
-  EXPECT_EQ(1, autofill_manager_->request_autocomplete_error_count());
+  EXPECT_EQ(1U, autofill_manager_->request_autocomplete_results().size());
+  EXPECT_EQ(WebFormElement::AutocompleteResultErrorDisabled,
+            autofill_manager_->request_autocomplete_results()[0].first);
 }
 
 namespace {

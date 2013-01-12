@@ -28,6 +28,7 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/ssl_status.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
 
 class AutofillExternalDelegate;
 class AutofillField;
@@ -170,9 +171,10 @@ class AutofillManager : public content::WebContentsObserver,
   bool OnFormSubmitted(const FormData& form,
                        const base::TimeTicks& timestamp);
 
-  // Tell the renderer the current interactive autocomplete failed somehow.
-  // Exposed for testing.
-  virtual void ReturnAutocompleteError();
+  // Tell the renderer the current interactive autocomplete finished.
+  virtual void ReturnAutocompleteResult(
+      WebKit::WebFormElement::AutocompleteResult result,
+      const FormData& form_data);
 
  private:
   // content::WebContentsObserver:

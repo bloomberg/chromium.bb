@@ -139,16 +139,12 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_AcceptPasswordAutofillSuggestion,
 IPC_MESSAGE_ROUTED1(AutofillMsg_FormNotBlacklisted,
                     content::PasswordForm /* form checked */)
 
-// Sent when requestAutocomplete() succeeds. Tells the renderer to Autofill the
-// form that requested autocomplete with the |form_data| values input by the
-// user.
-IPC_MESSAGE_ROUTED1(AutofillMsg_RequestAutocompleteSuccess,
+// Sent when requestAutocomplete() finishes (either succesfully or with an
+// error). If it was a success, the renderer fills the form that requested
+// autocomplete with the |form_data| values input by the user.
+IPC_MESSAGE_ROUTED2(AutofillMsg_RequestAutocompleteResult,
+                    WebKit::WebFormElement::AutocompleteResult /* result */,
                     FormData /* form_data */)
-
-// Sent when requestAutocomplete() fails. Currently, this happens when a form is
-// requested to be autocompleted with no input or select tags with autocomplete
-// attributes.
-IPC_MESSAGE_ROUTED0(AutofillMsg_RequestAutocompleteError)
 
 // Autofill messages sent from the renderer to the browser.
 
