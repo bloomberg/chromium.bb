@@ -6471,6 +6471,20 @@
   fun:_ZN12_GLOBAL__N_140BookmarkUIUtilsTest_HasBookmarkURLs_Test8TestBodyEv
 }
 {
+  bug_169668
+  Memcheck:Uninitialized
+  fun:_ZN5views20NativeTextfieldViews17UpdateBorderColorEv
+  fun:_ZN5views9Textfield19UpdateAllPropertiesEv
+  fun:_ZN5views9Textfield20ViewHierarchyChangedEbPNS_4ViewES2_
+  fun:_ZN5views4View24ViewHierarchyChangedImplEbbPS0_S1_
+  fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+  fun:_ZN5views4View14AddChildViewAtEPS0_i
+  fun:_ZN5views4View12AddChildViewEPS0_
+  fun:_ZN5views24NativeTextfieldViewsTest14InitTextfieldsENS_9Textfield10StyleFlagsEi
+  fun:_ZN5views24NativeTextfieldViewsTest13InitTextfieldENS_9Textfield10StyleFlagsE
+  fun:_ZN5views46NativeTextfieldViewsTest_ModelChangesTest_Test8TestBodyEv
+}
+{
    bug_169675a
    Memcheck:Leak
    fun:_Znw*
