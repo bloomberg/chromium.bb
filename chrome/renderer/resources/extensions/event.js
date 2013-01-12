@@ -365,7 +365,10 @@
       return {validationErrors: validationErrors};
     }
 
-    var listeners = this.attachmentStrategy_.getListenersByIDs(listenerIDs);
+    // Make a copy of the listeners in case the listener list is modified
+    // while dispatching the event.
+    var listeners =
+        this.attachmentStrategy_.getListenersByIDs(listenerIDs).slice();
 
     var results = [];
     for (var i = 0; i < listeners.length; i++) {
