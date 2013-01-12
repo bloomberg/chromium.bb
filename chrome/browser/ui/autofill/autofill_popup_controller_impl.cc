@@ -191,6 +191,8 @@ int AutofillPopupControllerImpl::GetIconResourceID(
 }
 
 bool AutofillPopupControllerImpl::CanDelete(size_t index) {
+  // TODO(isherman): AddressBook suggestions on Mac should not be drawn as
+  // deleteable.
   int id = identifiers_[index];
   return id > 0 ||
       id == WebAutofillClient::MenuItemIDAutocompleteEntry ||

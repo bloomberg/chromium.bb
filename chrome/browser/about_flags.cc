@@ -1132,7 +1132,7 @@ const Experiment kExperiments[] = {
     "enable-new-autofill-ui",
     IDS_FLAGS_ENABLE_NEW_AUTOFILL_UI_NAME,
     IDS_FLAGS_ENABLE_NEW_AUTOFILL_UI_DESCRIPTION,
-    kOsWin | kOsLinux,
+    kOsMac | kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableNewAutofillUi)
   },
   {
