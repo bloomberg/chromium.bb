@@ -89,7 +89,8 @@ sql::Connection* WebDatabase::GetSQLConnection() {
   return &db_;
 }
 
-sql::InitStatus WebDatabase::Init(const FilePath& db_name) {
+sql::InitStatus WebDatabase::Init(const FilePath& db_name,
+                                  const std::string& app_locale) {
   // When running in unit tests, there is already a NotificationService object.
   // Since only one can exist at a time per thread, check first.
   if (!content::NotificationService::current())
@@ -148,14 +149,15 @@ sql::InitStatus WebDatabase::Init(const FilePath& db_name) {
   // If the file on disk is an older database version, bring it up to date.
   // If the migration fails we return an error to caller and do not commit
   // the migration.
-  sql::InitStatus migration_status = MigrateOldVersionsAsNeeded();
+  sql::InitStatus migration_status = MigrateOldVersionsAsNeeded(app_locale);
   if (migration_status != sql::INIT_OK)
     return migration_status;
 
   return transaction.Commit() ? sql::INIT_OK : sql::INIT_FAILURE;
 }
 
-sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
+sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded(
+    const std::string& app_locale) {
   // Some malware used to lower the version number, causing migration to
   // fail. Ensure the version number is at least as high as the compatible
   // version number.
@@ -272,7 +274,8 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded() {
       // FALL THROUGH
 
     case 33:
-      if (!autofill_table_->MigrateToVersion34ProfilesBasedOnCountryCode())
+      if (!autofill_table_->MigrateToVersion34ProfilesBasedOnCountryCode(
+              app_locale))
         return FailedMigrationTo(34);
 
       ChangeVersion(&meta_table_, 34, true);

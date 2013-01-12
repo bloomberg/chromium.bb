@@ -65,7 +65,8 @@ class WebIntentsTableTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_EQ(sql::INIT_OK,
-              db_.Init(temp_dir_.path().AppendASCII("TestWebDatabase.db")));
+              db_.Init(temp_dir_.path().AppendASCII("TestWebDatabase.db"),
+                       std::string()));
   }
 
   WebIntentsTable* IntentsTable() {

@@ -103,7 +103,7 @@ ACTION_P2(ExpectFormValuesForElementNameMatch, element_name, matcher) {
       root_path.Append(L"Default").Append(chrome::kWebDataFilename));
 
   WebDatabase web_database;
-  sql::InitStatus init_status = web_database.Init(profile_path);
+  sql::InitStatus init_status = web_database.Init(profile_path, std::string());
   EXPECT_EQ(sql::INIT_OK, init_status);
 
   if (init_status == sql::INIT_OK) {

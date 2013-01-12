@@ -124,7 +124,7 @@ class AutofillTableTest : public testing::Test {
 TEST_F(AutofillTableTest, Autofill) {
   WebDatabase db;
 
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   Time t1 = Time::Now();
 
@@ -282,7 +282,7 @@ TEST_F(AutofillTableTest, Autofill) {
 
 TEST_F(AutofillTableTest, Autofill_RemoveBetweenChanges) {
   WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   TimeDelta one_day(TimeDelta::FromDays(1));
   Time t1 = Time::Now();
@@ -318,7 +318,7 @@ TEST_F(AutofillTableTest, Autofill_RemoveBetweenChanges) {
 
 TEST_F(AutofillTableTest, Autofill_AddChanges) {
   WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   TimeDelta one_day(TimeDelta::FromDays(1));
   Time t1 = Time::Now();
@@ -348,7 +348,7 @@ TEST_F(AutofillTableTest, Autofill_AddChanges) {
 
 TEST_F(AutofillTableTest, Autofill_UpdateOneWithOneTimestamp) {
   WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   AutofillEntry entry(MakeAutofillEntry("foo", "bar", 1, -1));
   std::vector<AutofillEntry> entries;
@@ -373,7 +373,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateOneWithOneTimestamp) {
 
 TEST_F(AutofillTableTest, Autofill_UpdateOneWithTwoTimestamps) {
   WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   AutofillEntry entry(MakeAutofillEntry("foo", "bar", 1, 2));
   std::vector<AutofillEntry> entries;
@@ -398,7 +398,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateOneWithTwoTimestamps) {
 
 TEST_F(AutofillTableTest, Autofill_GetAutofillTimestamps) {
   WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   AutofillEntry entry(MakeAutofillEntry("foo", "bar", 1, 2));
   std::vector<AutofillEntry> entries;
@@ -416,7 +416,7 @@ TEST_F(AutofillTableTest, Autofill_GetAutofillTimestamps) {
 
 TEST_F(AutofillTableTest, Autofill_UpdateTwo) {
   WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   AutofillEntry entry0(MakeAutofillEntry("foo", "bar0", 1, -1));
   AutofillEntry entry1(MakeAutofillEntry("foo", "bar1", 2, 3));
@@ -446,7 +446,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateTwo) {
 
 TEST_F(AutofillTableTest, Autofill_UpdateReplace) {
   WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   AutofillChangeList changes;
   // Add a form field.  This will be replaced.
@@ -468,7 +468,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateReplace) {
 
 TEST_F(AutofillTableTest, Autofill_UpdateDontReplace) {
   WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   Time t = Time::Now();
   AutofillEntry existing(
@@ -497,7 +497,7 @@ TEST_F(AutofillTableTest, Autofill_UpdateDontReplace) {
 
 TEST_F(AutofillTableTest, Autofill_AddFormFieldValues) {
   WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   Time t = Time::Now();
 
@@ -541,7 +541,7 @@ TEST_F(AutofillTableTest, Autofill_AddFormFieldValues) {
 TEST_F(AutofillTableTest, AutofillProfile) {
   WebDatabase db;
 
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   // Add a 'Home' profile.
   AutofillProfile home_profile;
@@ -635,8 +635,7 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   billing_profile.SetRawInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("NFA"));
   billing_profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("NY"));
   billing_profile.SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("10011"));
-  billing_profile.SetRawInfo(ADDRESS_HOME_COUNTRY,
-                             ASCIIToUTF16("United States"));
+  billing_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   billing_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
                              ASCIIToUTF16("18181230000"));
   Time pre_modification_time_2 = Time::Now();
@@ -667,7 +666,7 @@ TEST_F(AutofillTableTest, AutofillProfile) {
 
 TEST_F(AutofillTableTest, AutofillProfileMultiValueNames) {
   WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   AutofillProfile p;
   const string16 kJohnDoe(ASCIIToUTF16("John Doe"));
@@ -708,7 +707,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueNames) {
 
 TEST_F(AutofillTableTest, AutofillProfileSingleValue) {
   WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   AutofillProfile p;
   const string16 kJohnDoe(ASCIIToUTF16("John Doe"));
@@ -744,7 +743,7 @@ TEST_F(AutofillTableTest, AutofillProfileSingleValue) {
 
 TEST_F(AutofillTableTest, AutofillProfileMultiValueEmails) {
   WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   AutofillProfile p;
   const string16 kJohnDoe(ASCIIToUTF16("john@doe.com"));
@@ -785,7 +784,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValueEmails) {
 
 TEST_F(AutofillTableTest, AutofillProfileMultiValuePhone) {
   WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   AutofillProfile p;
   const string16 kJohnDoe(ASCIIToUTF16("4151112222"));
@@ -827,7 +826,7 @@ TEST_F(AutofillTableTest, AutofillProfileMultiValuePhone) {
 TEST_F(AutofillTableTest, AutofillProfileTrash) {
   WebDatabase db;
 
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   std::vector<std::string> guids;
   db.GetAutofillTable()->GetAutofillProfilesInTrash(&guids);
@@ -850,7 +849,7 @@ TEST_F(AutofillTableTest, AutofillProfileTrash) {
 TEST_F(AutofillTableTest, AutofillProfileTrashInteraction) {
   WebDatabase db;
 
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   std::vector<std::string> guids;
   db.GetAutofillTable()->GetAutofillProfilesInTrash(&guids);
@@ -925,7 +924,7 @@ TEST_F(AutofillTableTest, AutofillProfileTrashInteraction) {
 TEST_F(AutofillTableTest, CreditCard) {
   WebDatabase db;
 
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   // Add a 'Work' credit card.
   CreditCard work_creditcard;
@@ -1013,7 +1012,7 @@ TEST_F(AutofillTableTest, CreditCard) {
 
 TEST_F(AutofillTableTest, UpdateAutofillProfile) {
   WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   // Add a profile to the db.
   AutofillProfile profile;
@@ -1097,7 +1096,7 @@ TEST_F(AutofillTableTest, UpdateAutofillProfile) {
 
 TEST_F(AutofillTableTest, UpdateCreditCard) {
   WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   // Add a credit card to the db.
   CreditCard credit_card;
@@ -1173,7 +1172,7 @@ TEST_F(AutofillTableTest, UpdateCreditCard) {
 
 TEST_F(AutofillTableTest, RemoveAutofillProfilesAndCreditCardsModifiedBetween) {
   WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   // Populate the autofill_profiles and credit_cards tables.
   ASSERT_TRUE(db.GetSQLConnection()->Execute(
@@ -1291,7 +1290,7 @@ TEST_F(AutofillTableTest, RemoveAutofillProfilesAndCreditCardsModifiedBetween) {
 TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_NoResults) {
   WebDatabase db;
 
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   std::vector<AutofillEntry> entries;
   ASSERT_TRUE(db.GetAutofillTable()->GetAllAutofillEntries(&entries));
@@ -1302,7 +1301,7 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_NoResults) {
 TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_OneResult) {
   WebDatabase db;
 
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   AutofillChangeList changes;
   std::map<std::string, std::vector<Time> > name_value_times_map;
@@ -1344,7 +1343,7 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_OneResult) {
 TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_TwoDistinct) {
   WebDatabase db;
 
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   AutofillChangeList changes;
   std::map<std::string, std::vector<Time> > name_value_times_map;
@@ -1401,7 +1400,7 @@ TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_TwoDistinct) {
 TEST_F(AutofillTableTest, Autofill_GetAllAutofillEntries_TwoSame) {
   WebDatabase db;
 
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   AutofillChangeList changes;
   std::map<std::string, std::vector<Time> > name_value_times_map;

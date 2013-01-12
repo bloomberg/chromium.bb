@@ -80,6 +80,7 @@ WDKeywordsResult::~WDKeywordsResult() {}
 WebDataService::WebDataService()
     : is_running_(false),
       db_(NULL),
+      app_locale_(AutofillCountry::ApplicationLocale()),
       autocomplete_syncable_service_(NULL),
       autofill_profile_syncable_service_(NULL),
       failed_init_(false),
@@ -527,14 +528,6 @@ bool WebDataService::InitWithPath(const FilePath& path) {
   path_ = path;
   is_running_ = true;
 
-  // TODO(isherman): For now, to avoid a data race on shutdown
-  // [ http://crbug.com/100745 ], call |AutofillCountry::ApplicationLocale()| to
-  // cache the application locale before we try to access it on the DB thread.
-  // This should be safe to remove once [ http://crbug.com/100845 ] is fixed.
-  // Do not do it if the thread is not UI (can happen only in some tests).
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI))
-    AutofillCountry::ApplicationLocale();
-
   ScheduleTask(FROM_HERE,
                Bind(&WebDataService::InitializeDatabaseIfNecessary, this));
   ScheduleTask(FROM_HERE,
@@ -567,7 +560,7 @@ void WebDataService::InitializeDatabaseIfNecessary() {
   // we only set db_ to the created database if creation is successful. That
   // way other methods won't do anything as db_ is still NULL.
   WebDatabase* db = new WebDatabase();
-  sql::InitStatus init_status = db->Init(path_);
+  sql::InitStatus init_status = db->Init(path_, app_locale_);
   if (init_status != sql::INIT_OK) {
     LOG(ERROR) << "Cannot initialize the web database: " << init_status;
     failed_init_ = true;

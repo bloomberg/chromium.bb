@@ -33,7 +33,9 @@ class WebDatabase {
 
   // Initialize the database given a name. The name defines where the SQLite
   // file is. If this returns an error code, no other method should be called.
-  sql::InitStatus Init(const FilePath& db_name);
+  // Requires the |app_locale| to be passed as a parameter as the locale can
+  // only safely be queried on the UI thread.
+  sql::InitStatus Init(const FilePath& db_name, const std::string& app_locale);
 
   // Transactions management
   void BeginTransaction();
@@ -51,8 +53,9 @@ class WebDatabase {
 
  private:
   // Used by |Init()| to migration database schema from older versions to
-  // current version.
-  sql::InitStatus MigrateOldVersionsAsNeeded();
+  // current version.  Requires the |app_locale| to be passed as a parameter as
+  // the locale can only safely be queried on the UI thread.
+  sql::InitStatus MigrateOldVersionsAsNeeded(const std::string& app_locale);
 
   sql::Connection db_;
   sql::MetaTable meta_table_;

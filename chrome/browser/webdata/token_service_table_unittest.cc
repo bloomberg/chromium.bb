@@ -34,7 +34,7 @@ class TokenServiceTableTest : public testing::Test {
 
 TEST_F(TokenServiceTableTest, TokenServiceGetAllRemoveAll) {
   WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   std::map<std::string, std::string> out_map;
   std::string service;
@@ -67,7 +67,7 @@ TEST_F(TokenServiceTableTest, TokenServiceGetAllRemoveAll) {
 
 TEST_F(TokenServiceTableTest, TokenServiceGetSet) {
   WebDatabase db;
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
 
   std::map<std::string, std::string> out_map;
   std::string service;

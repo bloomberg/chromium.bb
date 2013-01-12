@@ -230,7 +230,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateEmptyToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -282,7 +282,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion22ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -330,7 +330,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion22CorruptedToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -370,7 +370,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion25ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -433,7 +433,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion26ToCurrentStringLabels) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -503,7 +503,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion26ToCurrentStringIDs) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -552,7 +552,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion27ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -626,7 +626,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion29ToCurrent) {
   Time pre_creation_time = Time::Now();
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
   Time post_creation_time = Time::Now();
 
@@ -688,7 +688,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion30ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -790,7 +790,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion31ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -913,7 +913,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion32ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -1198,7 +1198,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion33ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -1254,7 +1254,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion34ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -1311,7 +1311,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion35ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -1395,7 +1395,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion37ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -1435,7 +1435,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion38ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -1480,7 +1480,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion39ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -1531,7 +1531,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion40ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -1582,7 +1582,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion41ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -1635,7 +1635,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion42ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -1691,7 +1691,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion43ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -1743,7 +1743,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion44ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -1799,7 +1799,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion45ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -1880,7 +1880,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion45InvalidToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -1945,7 +1945,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion45CompatibleToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -1986,7 +1986,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion46ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -2031,7 +2031,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion47ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the
@@ -2081,7 +2081,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion48ToCurrent) {
   // the current version.
   {
     WebDatabase db;
-    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath(), std::string()));
   }
 
   // Verify post-conditions.  These are expectations for current version of the

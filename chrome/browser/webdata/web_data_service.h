@@ -478,6 +478,11 @@ class WebDataService
   // Keeps track of all pending requests made to the db.
   WebDataRequestManager request_manager_;
 
+  // The application locale.  The locale is needed for some database migrations,
+  // and must be read on the UI thread.  It's cached here so that we can pass it
+  // to the migration code on the DB thread.
+  const std::string app_locale_;
+
   // Syncable services for the database data.  We own the services, but don't
   // use |scoped_ptr|s because the lifetimes must be managed on the database
   // thread.

@@ -289,7 +289,8 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion31AddGUIDToCreditCardsAndProfiles();
   bool MigrateToVersion32UpdateProfilesAndCreditCards();
   bool MigrateToVersion33ProfilesBasedOnFirstName();
-  bool MigrateToVersion34ProfilesBasedOnCountryCode();
+  bool MigrateToVersion34ProfilesBasedOnCountryCode(
+      const std::string& app_locale);
   bool MigrateToVersion35GreatBritainCountryCodes();
   bool MigrateToVersion37MergeAndCullOlderProfiles();
 

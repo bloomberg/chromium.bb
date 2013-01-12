@@ -38,7 +38,7 @@ class WebAppsTableTest : public testing::Test {
 TEST_F(WebAppsTableTest, WebAppHasAllImages) {
   WebDatabase db;
 
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
   GURL url("http://google.com/");
 
   // Initial value for unknown web app should be false.
@@ -56,7 +56,7 @@ TEST_F(WebAppsTableTest, WebAppHasAllImages) {
 TEST_F(WebAppsTableTest, WebAppImages) {
   WebDatabase db;
 
-  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_, std::string()));
   GURL url("http://google.com/");
 
   // Web app should initially have no images.
