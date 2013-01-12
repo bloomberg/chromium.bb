@@ -793,7 +793,7 @@ void OmniboxEditModel::OnKillFocus() {
 }
 
 bool OmniboxEditModel::OnEscapeKeyPressed() {
-  if (has_temporary_text_) {
+  if (has_temporary_text_ && !is_temporary_text_set_by_instant_) {
     AutocompleteMatch match;
     InfoForCurrentSelection(&match, NULL);
     if (match.destination_url != original_url_) {
