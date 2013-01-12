@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/auto_reset.h"
 #include "base/i18n/rtl.h"
 #include "ui/base/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -22,17 +23,17 @@
 
 // Padding around the text (on each side).
 static const int kTextVerticalPadding = 3;
-static const int kTextHorizontalPadding = 2;
+static const int kTextHorizontalPadding = 6;
 
 // TODO: these should come from native theme or something.
 static const SkColor kSelectedBackgroundColor = SkColorSetRGB(0xEE, 0xEE, 0xEE);
 static const SkColor kTextColor = SK_ColorBLACK;
+static const SkColor kGroupingIndicatorColor = SkColorSetRGB(0xCC, 0xCC, 0xCC);
 
 // Size of images.
 static const int kImageSize = 16;
 
-// Padding between the image and text.
-static const int kImageToTextPadding = 4;
+static const int kGroupingIndicatorSize = 6;
 
 namespace views {
 
@@ -118,7 +119,9 @@ TableView::TableView(ui::TableModel* model,
       table_view_observer_(NULL),
       row_height_(font_.GetHeight() + kTextVerticalPadding * 2),
       last_parent_width_(0),
-      grouper_(NULL) {
+      layout_width_(0),
+      grouper_(NULL),
+      in_set_visible_column_width_(false) {
   for (size_t i = 0; i < columns.size(); ++i) {
     VisibleColumn visible_column;
     visible_column.column = columns[i];
@@ -203,12 +206,10 @@ void TableView::SetColumnVisibility(int id, bool is_visible) {
     }
   }
   UpdateVisibleColumnSizes();
-  Layout();
+  PreferredSizeChanged();
   SchedulePaint();
-  if (header_) {
-    header_->Layout();
+  if (header_)
     header_->SchedulePaint();
-  }
 }
 
 void TableView::ToggleSortOrder(int visible_column_index) {
@@ -255,6 +256,7 @@ void TableView::SetVisibleColumnWidth(int index, int width) {
   DCHECK(index >= 0 && index < static_cast<int>(visible_columns_.size()));
   if (visible_columns_[index].width == width)
     return;
+  base::AutoReset<bool> reseter(&in_set_visible_column_width_, true);
   visible_columns_[index].width = width;
   for (size_t i = index + 1; i < visible_columns_.size(); ++i) {
     visible_columns_[i].x =
@@ -290,7 +292,12 @@ void TableView::Layout() {
     const int scroll_view_width = scroll_view->GetContentsBounds().width();
     if (scroll_view_width != last_parent_width_) {
       last_parent_width_ = scroll_view_width;
-      UpdateVisibleColumnSizes();
+      if (!in_set_visible_column_width_) {
+        // Layout to the parent (the Viewport), which differs from
+        // |scroll_view_width| when scrollbars are present.
+        layout_width_ = parent()->width();
+        UpdateVisibleColumnSizes();
+      }
     }
   }
   // We have to override Layout like this since we're contained in a ScrollView.
@@ -427,7 +434,6 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
   if (region.min_column == -1)
     return;  // No need to paint anything.
 
-  const int icon_index = GetIconIndex();
   for (int i = region.min_row; i < region.max_row; ++i) {
     const int model_index = ViewToModel(i);
     if (selection_model_.IsSelected(model_index)) {
@@ -443,29 +449,74 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
     for (int j = region.min_column; j < region.max_column; ++j) {
       const gfx::Rect cell_bounds(GetCellBounds(i, j));
       int text_x = kTextHorizontalPadding + cell_bounds.x();
-      if (j == icon_index) {
+
+      // Provide space for the grouping indicator, but draw it separately.
+      if (j == 0 && grouper_)
+        text_x += kGroupingIndicatorSize + kTextHorizontalPadding;
+
+      // Always paint the icon in the first visible column.
+      if (j == 0 && table_type_ == ICON_AND_TEXT && header_) {
         gfx::ImageSkia image = model_->GetIcon(model_index);
         if (!image.isNull()) {
-          int image_x = GetMirroredXWithWidthInView(text_x, image.width());
+          int image_x = GetMirroredXWithWidthInView(text_x, kImageSize);
           canvas->DrawImageInt(
               image, 0, 0, image.width(), image.height(),
               image_x,
               cell_bounds.y() + (cell_bounds.height() - kImageSize) / 2,
               kImageSize, kImageSize, true);
         }
-        text_x += kImageSize + kImageToTextPadding;
+        text_x += kImageSize + kTextHorizontalPadding;
       }
-      canvas->DrawStringInt(
-          model_->GetText(model_index, visible_columns_[j].column.id), font_,
-          kTextColor,
-          GetMirroredXWithWidthInView(text_x, cell_bounds.right() - text_x -
-                                      kTextHorizontalPadding),
-          cell_bounds.y() + kTextVerticalPadding,
-          cell_bounds.right() - text_x,
-          cell_bounds.height() - kTextVerticalPadding * 2,
-          TableColumnAlignmentToCanvasAlignment(
-              visible_columns_[j].column.alignment));
+      if (text_x < cell_bounds.right() - kTextHorizontalPadding) {
+        canvas->DrawStringInt(
+            model_->GetText(model_index, visible_columns_[j].column.id), font_,
+            kTextColor,
+            GetMirroredXWithWidthInView(text_x, cell_bounds.right() - text_x -
+                                        kTextHorizontalPadding),
+            cell_bounds.y() + kTextVerticalPadding,
+            cell_bounds.right() - text_x,
+            cell_bounds.height() - kTextVerticalPadding * 2,
+            TableColumnAlignmentToCanvasAlignment(
+                visible_columns_[j].column.alignment));
+      }
     }
+  }
+
+  if (!grouper_ || region.min_column > 0)
+    return;
+
+  SkPaint grouping_paint;
+  grouping_paint.setColor(kGroupingIndicatorColor);
+  grouping_paint.setStyle(SkPaint::kFill_Style);
+  grouping_paint.setAntiAlias(true);
+  const int group_indicator_x = GetMirroredXInView(GetCellBounds(0, 0).x() +
+      kTextHorizontalPadding + kGroupingIndicatorSize / 2);
+  for (int i = region.min_row; i < region.max_row; ) {
+    const int model_index = ViewToModel(i);
+    GroupRange range;
+    grouper_->GetGroupRange(model_index, &range);
+    DCHECK_GT(range.length, 0);
+    // The order of rows in a group is consistent regardless of sort, so it's ok
+    // to do this calculation.
+    const int start = i - (model_index - range.start);
+    const int last = start + range.length - 1;
+    const gfx::Rect start_cell_bounds(GetCellBounds(start, 0));
+    if (start != last) {
+      const gfx::Rect last_cell_bounds(GetCellBounds(last, 0));
+      canvas->FillRect(gfx::Rect(
+                           group_indicator_x - kGroupingIndicatorSize / 2,
+                           start_cell_bounds.CenterPoint().y(),
+                           kGroupingIndicatorSize,
+                           last_cell_bounds.y() - start_cell_bounds.y()),
+                       kGroupingIndicatorColor);
+      canvas->DrawCircle(gfx::Point(group_indicator_x,
+                                    last_cell_bounds.CenterPoint().y()),
+                         kGroupingIndicatorSize / 2, grouping_paint);
+    }
+    canvas->DrawCircle(gfx::Point(group_indicator_x,
+                                  start_cell_bounds.CenterPoint().y()),
+                       kGroupingIndicatorSize / 2, grouping_paint);
+    i = last + 1;
   }
 }
 
@@ -486,6 +537,8 @@ void TableView::NumRowsChanged() {
 void TableView::SetSortDescriptors(const SortDescriptors& sort_descriptors) {
   sort_descriptors_ = sort_descriptors;
   SortItemsAndUpdateMapping();
+  if (header_)
+    header_->SchedulePaint();
 }
 
 void TableView::SortItemsAndUpdateMapping() {
@@ -553,10 +606,17 @@ void TableView::UpdateVisibleColumnSizes() {
   std::vector<ui::TableColumn> columns;
   for (size_t i = 0; i < visible_columns_.size(); ++i)
     columns.push_back(visible_columns_[i].column);
+
+  int first_column_padding = 0;
+  if (table_type_ == ICON_AND_TEXT && header_)
+    first_column_padding += kImageSize + kTextHorizontalPadding;
+  if (grouper_)
+    first_column_padding += kGroupingIndicatorSize + kTextHorizontalPadding;
+
   std::vector<int> sizes = views::CalculateTableColumnSizes(
-      last_parent_width_, header_->font(), font_,
+      layout_width_, first_column_padding, header_->font(), font_,
       std::max(kTextHorizontalPadding, TableHeader::kHorizontalPadding) * 2,
-      columns, model_);
+      TableHeader::kSortIndicatorWidth, columns, model_);
   DCHECK_EQ(visible_columns_.size(), sizes.size());
   int x = 0;
   for (size_t i = 0; i < visible_columns_.size(); ++i) {
@@ -584,14 +644,15 @@ TableView::PaintRegion TableView::GetPaintRegion(
     return region;
   }
 
+  const int paint_x = GetMirroredXForRect(bounds);
+  const int paint_max_x = paint_x + bounds.width();
   region.min_column = -1;
   region.max_column = visible_columns_.size();
   for (size_t i = 0; i < visible_columns_.size(); ++i) {
     int max_x = visible_columns_[i].x + visible_columns_[i].width;
-    if (region.min_column == -1 && max_x >= bounds.x())
+    if (region.min_column == -1 && max_x >= paint_x)
       region.min_column = static_cast<int>(i);
-    if (region.min_column != -1 &&
-        visible_columns_[i].x >= bounds.right()) {
+    if (region.min_column != -1 && visible_columns_[i].x >= paint_max_x) {
       region.max_column = i;
       break;
     }
@@ -611,19 +672,6 @@ void TableView::SchedulePaintForSelection() {
     SchedulePaintInRect(GetRowBounds(ModelToView(FirstSelectedRow())));
   else if (selection_model_.size() > 1)
     SchedulePaint();
-}
-
-int TableView::GetIconIndex() {
-  if (table_type_ != ICON_AND_TEXT || columns_.empty())
-    return -1;
-  if (!header_)
-    return 0;
-
-  for (size_t i = 0; i < visible_columns_.size(); ++i) {
-    if (visible_columns_[i].column.id == columns_[0].id)
-      return static_cast<int>(i);
-  }
-  return -1;
 }
 
 ui::TableColumn TableView::FindColumnByID(int id) const {

@@ -42,15 +42,15 @@ TEST(TableUtilsTest, SetWidthHonored) {
   columns.push_back(CreateTableColumnWithWidth(30));
   gfx::Font font;
   std::vector<int> result(
-      CalculateTableColumnSizes(100, font, font, 0, columns, &model));
+      CalculateTableColumnSizes(100, 0, font, font, 0, 0, columns, &model));
   EXPECT_EQ("20,30", IntVectorToString(result));
 
   // Same with some padding, it should be ignored.
-  result = CalculateTableColumnSizes(100, font, font, 2, columns, &model);
+  result = CalculateTableColumnSizes(100, 0, font, font, 2, 0, columns, &model);
   EXPECT_EQ("20,30", IntVectorToString(result));
 
   // Same with not enough space, it shouldn't matter.
-  result = CalculateTableColumnSizes(10, font, font, 2, columns, &model);
+  result = CalculateTableColumnSizes(10, 0, font, font, 2, 0, columns, &model);
   EXPECT_EQ("20,30", IntVectorToString(result));
 }
 
@@ -63,9 +63,9 @@ TEST(TableUtilsTest, LastColumnGetsAllSpace) {
   columns.push_back(ui::TableColumn());
   gfx::Font font;
   std::vector<int> result(
-      CalculateTableColumnSizes(500, font, font, 0, columns, &model));
+      CalculateTableColumnSizes(500, 0, font, font, 0, 0, columns, &model));
   EXPECT_NE(0, result[0]);
-  EXPECT_GE(result[1], WidthForContent(font, font, 0, columns[1], &model));
+  EXPECT_GE(result[1], WidthForContent(font, font, 0, 0, columns[1], &model));
   EXPECT_EQ(500, result[0] + result[1]);
 }
 
@@ -79,23 +79,34 @@ TEST(TableUtilsTest, SingleResizableColumn) {
   columns[2].percent = 1.0f;
   gfx::Font font;
   std::vector<int> result(
-      CalculateTableColumnSizes(500, font, font, 0, columns, &model));
-  EXPECT_EQ(result[0], WidthForContent(font, font, 0, columns[0], &model));
-  EXPECT_EQ(result[1], WidthForContent(font, font, 0, columns[1], &model));
+      CalculateTableColumnSizes(500, 0, font, font, 0, 0, columns, &model));
+  EXPECT_EQ(result[0], WidthForContent(font, font, 0, 0, columns[0], &model));
+  EXPECT_EQ(result[1], WidthForContent(font, font, 0, 0, columns[1], &model));
   EXPECT_EQ(500 - result[0] - result[1], result[2]);
 
   // The same with a slightly larger width passed in.
-  result = CalculateTableColumnSizes(1000, font, font, 0, columns, &model);
-  EXPECT_EQ(result[0], WidthForContent(font, font, 0, columns[0], &model));
-  EXPECT_EQ(result[1], WidthForContent(font, font, 0, columns[1], &model));
+  result =
+      CalculateTableColumnSizes(1000, 0, font, font, 0, 0, columns, &model);
+  EXPECT_EQ(result[0], WidthForContent(font, font, 0, 0, columns[0], &model));
+  EXPECT_EQ(result[1], WidthForContent(font, font, 0, 0, columns[1], &model));
+  EXPECT_EQ(1000 - result[0] - result[1], result[2]);
+
+  // Verify padding for the first column is honored.
+  result =
+      CalculateTableColumnSizes(1000, 10, font, font, 0, 0, columns, &model);
+  EXPECT_EQ(result[0],
+            WidthForContent(font, font, 0, 0, columns[0], &model) + 10);
+  EXPECT_EQ(result[1], WidthForContent(font, font, 0, 0, columns[1], &model));
   EXPECT_EQ(1000 - result[0] - result[1], result[2]);
 
   // Just enough space to show the first two columns. Should force last column
   // to min size.
-  result = CalculateTableColumnSizes(result[0] + result[1], font, font, 0,
+  result =
+      CalculateTableColumnSizes(1000, 0, font, font, 0, 0, columns, &model);
+  result = CalculateTableColumnSizes(result[0] + result[1], 0, font, font, 0, 0,
                                      columns, &model);
-  EXPECT_EQ(result[0], WidthForContent(font, font, 0, columns[0], &model));
-  EXPECT_EQ(result[1], WidthForContent(font, font, 0, columns[1], &model));
+  EXPECT_EQ(result[0], WidthForContent(font, font, 0, 0, columns[0], &model));
+  EXPECT_EQ(result[1], WidthForContent(font, font, 0, 0, columns[1], &model));
   EXPECT_EQ(kUnspecifiedColumnWidth, result[2]);
 }
 

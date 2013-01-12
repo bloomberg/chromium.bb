@@ -19,6 +19,9 @@ class VIEWS_EXPORT TableHeader : public views::View {
   // Amount the text is padded on the left/right side.
   static const int kHorizontalPadding;
 
+  // Amount of space reserved for the indicator and padding.
+  static const int kSortIndicatorWidth;
+
   explicit TableHeader(TableView* table);
   virtual ~TableHeader();
 

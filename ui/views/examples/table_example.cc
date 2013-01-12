@@ -24,7 +24,6 @@ ui::TableColumn TestTableColumn(int id, const std::string& title) {
   ui::TableColumn column;
   column.id = id;
   column.title = ASCIIToUTF16(title.c_str());
-  column.width = 100;
   column.sortable = true;
   return column;
 }
@@ -63,6 +62,7 @@ void TableExample::CreateExampleView(View* container) {
 
   std::vector<ui::TableColumn> columns;
   columns.push_back(TestTableColumn(0, "Fruit"));
+  columns[0].percent = 1;
   columns.push_back(TestTableColumn(1, "Color"));
   columns.push_back(TestTableColumn(2, "Origin"));
   columns.push_back(TestTableColumn(3, "Price"));

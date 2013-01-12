@@ -260,10 +260,6 @@ class VIEWS_EXPORT TableView
   // Invokes SchedulePaint() for the selected rows.
   void SchedulePaintForSelection();
 
-  // Returns the index into |visible_columns_| to draw the icon at, or -1 if no
-  // icon is to be drawn.
-  int GetIconIndex();
-
   // Returns the TableColumn matching the specified id.
   ui::TableColumn FindColumnByID(int id) const;
 
@@ -309,6 +305,9 @@ class VIEWS_EXPORT TableView
   // when we should invoke UpdateVisibleColumnSizes().
   int last_parent_width_;
 
+  // The width we layout to. This may differ from |last_parent_width_|.
+  int layout_width_;
+
   // Current sort.
   SortDescriptors sort_descriptors_;
 
@@ -319,6 +318,9 @@ class VIEWS_EXPORT TableView
   scoped_ptr<TableViewRowBackgroundPainter> row_background_painter_;
 
   TableGrouper* grouper_;
+
+  // True if in SetVisibleColumnWidth().
+  bool in_set_visible_column_width_;
 
   DISALLOW_COPY_AND_ASSIGN(TableView);
 };
