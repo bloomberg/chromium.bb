@@ -1,0 +1,8 @@
+{
+  "name": "Activity Log Test Extension",
+  "version": "0.1",
+  "description": "Testing the Activity Log",
+  "permissions": [ "cookies", "tabs", "http://*/*", "https://*/*" ],
+  "options_page": "options.html",
+  "manifest_version": 2
+}
