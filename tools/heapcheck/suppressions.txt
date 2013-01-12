@@ -1687,3 +1687,40 @@
   ...
   fun:::BookmarkUIUtilsTest_HasBookmarkURLs_Test::TestBody
 }
+{
+   bug_169675a
+   Heapcheck:Leak
+   fun:fileapi::IsolatedMountPointProvider::CreateFileSystemOperation
+   fun:fileapi::FileSystemContext::CreateFileSystemOperation
+   fun:NativeMediaFileUtilTest::NewOperation
+}
+{
+   bug_169675b
+   Heapcheck:Leak
+   ...
+   fun:fileapi::MediaPathFilter::EnsureInitialized
+   fun:fileapi::MediaPathFilter::Match
+   fun:fileapi::NativeMediaFileUtil::GetFileInfo
+   fun:fileapi::FileUtilHelper::PathExists
+   fun:fileapi::::CrossFileUtilHelper::PerformErrorCheckAndPreparation
+   fun:fileapi::::CrossFileUtilHelper::DoWork
+   fun:fileapi::FileUtilHelper::*
+}
+{
+   bug_169675c
+   Heapcheck:Leak
+   ...
+   fun:fileapi::MediaPathFilter::EnsureInitialized
+   fun:fileapi::MediaPathFilter::Match
+   fun:fileapi::NativeMediaFileUtil::GetFileInfo
+   fun:fileapi::FileUtilHelper::PathExists
+   fun:fileapi::::CrossFileUtilHelper::PerformErrorCheckAndPreparation
+   fun:fileapi::::CrossFileUtilHelper::DoWork
+   fun:fileapi::FileUtilHelper::*
+}
+{
+   bug_169675d
+   Heapcheck:Leak
+   ...
+   fun:NativeMediaFileUtilTest::SetUp
+}

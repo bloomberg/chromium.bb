@@ -6470,3 +6470,21 @@
   fun:_Znw*
   fun:_ZN12_GLOBAL__N_140BookmarkUIUtilsTest_HasBookmarkURLs_Test8TestBodyEv
 }
+{
+   bug_169675a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNK7fileapi26IsolatedMountPointProvider25CreateFileSystemOperationERKNS_13FileSystemURLEPNS_17FileSystemContextEPN4base17PlatformFileErrorE
+   fun:_ZN7fileapi17FileSystemContext25CreateFileSystemOperationERKNS_13FileSystemURLEPN4base17PlatformFileErrorE
+   fun:_ZN23NativeMediaFileUtilTest12NewOperationERKN7fileapi13FileSystemURLE
+}
+{
+   bug_169675b
+   Memcheck:Leak
+   ...
+   fun:_ZN7fileapi27TaskRunnerBoundObserverListINS_18FileUpdateObserverEPS1_E6SourceaSERKS4_
+   fun:_ZN7fileapi27TaskRunnerBoundObserverListINS_18FileUpdateObserverEPS1_EaSERKS3_
+   fun:_ZN7fileapi25SandboxMountPointProviderC1EPN5quota17QuotaManagerProxyEPN4base19SequencedTaskRunnerERK8FilePathRKNS_17FileSystemOptionsE
+   fun:_ZN7fileapi17FileSystemContextC1E10scoped_ptrINS_21FileSystemTaskRunnersEN4base14DefaultDeleterIS2_EEEPN5quota20SpecialStoragePolicyEPNS7_17QuotaManagerProxyERK8FilePathRKNS_17FileSystemOptionsE
+   fun:_ZN23NativeMediaFileUtilTest5SetUpEv
+}
