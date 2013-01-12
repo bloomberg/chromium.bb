@@ -7,7 +7,7 @@ package org.chromium.content.browser;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.test.suitebuilder.annotation.MediumTest;
+import android.test.FlakyTest;
 import android.text.Editable;
 import android.text.Selection;
 
@@ -69,7 +69,9 @@ public class InsertionHandleTest extends ContentShellTestBase {
         }));
     }
 
-    @MediumTest
+    // @MediumTest
+    // http://crbug.com/169648
+    @FlakyTest
     @Feature({"TextSelection", "TextInput", "Main"})
     public void testDragInsertionHandle() throws Throwable {
         startActivityWithTestUrl(FILENAME);
@@ -113,7 +115,9 @@ public class InsertionHandleTest extends ContentShellTestBase {
         });
     }
 
-    @MediumTest
+    // @MediumTest
+    // http://crbug.com/169648
+    @FlakyTest
     @Feature({"TextSelection", "TextInput"})
     public void testPasteAtInsertionHandle() throws Throwable {
         startActivityWithTestUrl(FILENAME);
@@ -170,7 +174,9 @@ public class InsertionHandleTest extends ContentShellTestBase {
         });
     }
 
-    @MediumTest
+    // @MediumTest
+    // http://crbug.com/169648
+    @FlakyTest
     @Feature({"TextSelection", "TextInput", "Main"})
     public void testDragInsertionHandleInputText() throws Throwable {
         startActivityWithTestUrl(INPUT_TEXT_FILENAME);
@@ -210,7 +216,9 @@ public class InsertionHandleTest extends ContentShellTestBase {
         assertWaitForHandleNear(dragToX, initialY);
     }
 
-    @MediumTest
+    // @MediumTest
+    // http://crbug.com/169648
+    @FlakyTest
     @Feature({"TextSelection", "TextInput", "Main"})
     public void testDragInsertionHandleInputTextOutsideBounds() throws Throwable {
         startActivityWithTestUrl(INPUT_TEXT_FILENAME);
