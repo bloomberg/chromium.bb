@@ -28,6 +28,7 @@ public class ProviderBookmarkNodeTest extends ChromiumTestShellTestBase {
 
     @Override
     protected void setUp() throws Exception {
+        super.setUp();
         launchChromiumTestShellWithUrl(null);
 
         mImageBlobs = new byte[][] {

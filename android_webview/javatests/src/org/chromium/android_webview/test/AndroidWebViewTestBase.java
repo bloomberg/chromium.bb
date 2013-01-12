@@ -45,6 +45,7 @@ public class AndroidWebViewTestBase
 
     @Override
     protected void setUp() throws Exception {
+        super.setUp();
         final Context context = getActivity();
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override

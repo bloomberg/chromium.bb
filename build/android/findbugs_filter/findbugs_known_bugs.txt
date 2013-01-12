@@ -31,10 +31,6 @@ M C CSM: Shouldn't use synchronized method, please narrow down the synchronizati
 M C CSM: Shouldn't use synchronized method, please narrow down the synchronization scope.  At TraceEvent.java
 M C CST: Shouldn't use synchronized(this), please narrow down the synchronization scope.  At HttpAuthDatabase.java
 M C CST: Shouldn't use synchronized(this), please narrow down the synchronization scope.  At SimpleSynchronizedThis.java
-M C IJU: TestCase org.chromium.android_webview.test.AndroidWebViewTestBase defines setUp that doesn't call super.setUp()  At AndroidWebViewTestBase.java
-M C IJU: TestCase org.chromium.android_webview.test.HttpAuthDatabaseTest defines setUp that doesn't call super.setUp()  At HttpAuthDatabaseTest.java
-M C IJU: TestCase org.chromium.android_webview.test.HttpAuthDatabaseTest defines tearDown that doesn't call super.tearDown()  At HttpAuthDatabaseTest.java
-M C IJU: TestCase org.chromium.chrome.testshell.ProviderBookmarkNodeTest defines setUp that doesn't call super.setUp()  At ProviderBookmarkNodeTest.java
 M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$10.method() defined in anonymous class  At JavaBridgeBasicsTest.java
 M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$11.method() defined in anonymous class  At JavaBridgeBasicsTest.java
 M C UMAC: Uncallable method org.chromium.content.browser.JavaBridgeBasicsTest$11.method(int) defined in anonymous class  At JavaBridgeBasicsTest.java

@@ -18,13 +18,15 @@ public class HttpAuthDatabaseTest extends AndroidTestCase {
     private static final String TEST_DATABASE = "http_auth_for_HttpAuthDatabaseTest.db";
 
     @Override
-    protected void setUp() {
+    protected void setUp() throws Exception {
+        super.setUp();
         getContext().deleteDatabase(TEST_DATABASE);
     }
 
     @Override
-    protected void tearDown() {
+    protected void tearDown() throws Exception {
         getContext().deleteDatabase(TEST_DATABASE);
+        super.tearDown();
     }
 
     @SmallTest
