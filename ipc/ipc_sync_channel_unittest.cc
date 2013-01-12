@@ -977,8 +977,7 @@ TEST_F(IPCSyncChannelTest, SendWithTimeoutTimeout) {
 }
 
 // Sends some message that time-out and some that succeed.
-// Crashes flakily, http://crbug.com/70075.
-TEST_F(IPCSyncChannelTest, DISABLED_SendWithTimeoutMixedOKAndTimeout) {
+TEST_F(IPCSyncChannelTest, SendWithTimeoutMixedOKAndTimeout) {
   SendWithTimeoutMixedOKAndTimeout(false);
   SendWithTimeoutMixedOKAndTimeout(true);
 }
@@ -1879,9 +1878,6 @@ void Verified() {
   workers.push_back(worker);
 
   RunTest(workers);
-
-#if defined(OS_WIN)
-#endif
 }
 
 // Windows needs to send an out-of-band secret to verify the client end of the
