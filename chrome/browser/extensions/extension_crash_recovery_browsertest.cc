@@ -457,11 +457,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, MAYBE_CrashAndUnloadAll) {
             GetExtensionService()->terminated_extensions()->size());
 }
 
+// Disabled on aura as flakey: http://crbug.com/169622
+#if defined(USE_AURA)
+#define MAYBE_ReloadTabsWithBackgroundPage DISABLED_ReloadTabsWithBackgroundPage
+#else
+#define MAYBE_ReloadTabsWithBackgroundPage ReloadTabsWithBackgroundPage
+#endif  // defined(OS_LINUX)
+
 // Test that when an extension with a background page that has a tab open
 // crashes, the tab stays open, and reloading it reloads the extension.
 // Regression test for issue 71629.
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
-                       ReloadTabsWithBackgroundPage) {
+                       MAYBE_ReloadTabsWithBackgroundPage) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   const size_t size_before = GetExtensionService()->extensions()->size();
   const size_t crash_size_before =
