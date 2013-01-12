@@ -2195,6 +2195,7 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
+        '../ipc/ipc.gyp:ipc',
         '../media/media.gyp:media',
         '../net/net.gyp:net_test_support',
         '../ppapi/ppapi.gyp:ppapi_cpp',

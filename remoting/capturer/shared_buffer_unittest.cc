@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/process_util.h"
+#include "ipc/ipc_platform_file.h"
 #include "remoting/capturer/shared_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,8 +28,18 @@ TEST(SharedBufferTest, Basic) {
   source->set_id(kIdOne);
   EXPECT_EQ(source->id(), kIdOne);
 
+#if defined(OS_POSIX)
+  base::PlatformFile source_handle = source->handle().fd;
+#else  // !defined(OS_POSIX)
+  base::PlatformFile source_handle = source->handle();
+#endif  // !defined(OS_POSIX)
+
+  // Duplicate the source handle.
+  IPC::PlatformFileForTransit copied_handle = IPC::GetFileHandleForProcess(
+      source_handle, base::GetCurrentProcessHandle(), false);
+
   scoped_refptr<SharedBuffer> dest(
-      new SharedBuffer(kIdZero, source->handle(), kBufferSize));
+      new SharedBuffer(kIdZero, copied_handle, kBufferSize));
 
   // Make sure that the buffer is allocated, the size is recorded correctly and
   // its ID is reset.
