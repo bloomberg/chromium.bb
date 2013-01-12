@@ -477,14 +477,6 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
             "Unable to read accumulated number of lost packets.");
         return false;
       }
-      if (!reader_->ReadBytes(&inter_arrival->offset_time, 2)) {
-        set_detailed_error("Unable to read offset time.");
-        return false;
-      }
-      if (!reader_->ReadUInt16(&inter_arrival->delta_time)) {
-        set_detailed_error("Unable to read delta time.");
-        return false;
-      }
       uint8 num_received_packets;
       if (!reader_->ReadBytes(&num_received_packets, 1)) {
         set_detailed_error("Unable to read num received packets.");
@@ -694,7 +686,7 @@ size_t QuicFramer::ComputeFramePayloadLength(const QuicFrame& frame) {
         case kInterArrival: {
           const CongestionFeedbackMessageInterArrival& inter_arrival =
               congestion_feedback.inter_arrival;
-          len += 6;
+          len += 2;
           len += 1;  // num received packets
           if (inter_arrival.received_packet_times.size() > 0) {
             len += 6;  // smallest received
@@ -847,19 +839,12 @@ bool QuicFramer::AppendQuicCongestionFeedbackFramePayload(
               inter_arrival.accumulated_number_of_lost_packets)) {
         return false;
       }
-      if (!writer->WriteBytes(&inter_arrival.offset_time, 2)) {
-        return false;
-      }
-      if (!writer->WriteUInt16(inter_arrival.delta_time)) {
-        return false;
-      }
       DCHECK_GE(numeric_limits<uint8>::max(),
                 inter_arrival.received_packet_times.size());
       if (inter_arrival.received_packet_times.size() >
           numeric_limits<uint8>::max()) {
         return false;
       }
-
       // TODO(ianswett): Make num_received_packets a varint.
       uint8 num_received_packets =
           inter_arrival.received_packet_times.size();

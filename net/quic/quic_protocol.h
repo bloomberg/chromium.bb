@@ -186,6 +186,7 @@ struct NET_EXPORT_PRIVATE QuicStreamFrame {
 // TODO(ianswett): Re-evaluate the trade-offs of hash_set vs set when framing
 // is finalized.
 typedef std::set<QuicPacketSequenceNumber> SequenceSet;
+// TODO(pwestin): Add a way to enforce the max size of this map.
 typedef std::map<QuicPacketSequenceNumber, QuicTime> TimeMap;
 
 struct NET_EXPORT_PRIVATE ReceivedPacketInfo {
@@ -254,33 +255,10 @@ struct NET_EXPORT_PRIVATE CongestionFeedbackMessageInterArrival {
   CongestionFeedbackMessageInterArrival();
   ~CongestionFeedbackMessageInterArrival();
   uint16 accumulated_number_of_lost_packets;
-  // TODO(rch): These times should be QuicTime instances.  We can write
-  // them to the wire in the format specified below, but we should avoid
-  // storing them in memory that way.  As such, we should move this comment
-  // to QuicFramer.
-  int16 offset_time;
-  uint16 delta_time;  // delta time is described below.
   // The set of received packets since the last feedback was sent, along with
   // their arrival times.
   TimeMap received_packet_times;
 };
-
-/*
- * Description of delta time.
- *
- * 0                   1
- * 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
- * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * |D|S|       offset_time         |
- * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *
- * Where:
- *   D is the time domain. If set time domain is in milliseconds, else in
- *    microseconds.
- *   S is the sign bit.
- *   offset_time is the time offset where the relative packet size is equal to
- *    0.
- */
 
 struct NET_EXPORT_PRIVATE CongestionFeedbackMessageFixRate {
   uint32 bitrate_in_bytes_per_second;

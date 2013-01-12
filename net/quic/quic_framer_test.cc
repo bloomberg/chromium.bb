@@ -687,10 +687,6 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
     0x01,
     // accumulated_number_of_lost_packets
     0x02, 0x03,
-    // offset_time
-    0x04, 0x05,
-    // delta_time
-    0x06, 0x07,
     // num received packets
     0x03,
     // smallest ack sequence number
@@ -723,8 +719,6 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
   ASSERT_EQ(kInterArrival, frame.type);
   EXPECT_EQ(0x0302, frame.inter_arrival.
             accumulated_number_of_lost_packets);
-  EXPECT_EQ(0x0504, frame.inter_arrival.offset_time);
-  EXPECT_EQ(0x0706, frame.inter_arrival.delta_time);
   ASSERT_EQ(3u, frame.inter_arrival.received_packet_times.size());
   TimeMap::const_iterator iter =
       frame.inter_arrival.received_packet_times.begin();
@@ -741,7 +735,7 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
             iter->second);
 
   // Now test framing boundaries
-  for (size_t i = 0; i < 36; ++i) {
+  for (size_t i = 0; i < 32; ++i) {
     string expected_error;
     if (i < 1) {
       expected_error = "Unable to read frame count.";
@@ -751,23 +745,19 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
       expected_error = "Unable to read congestion feedback type.";
     } else if (i < 5) {
       expected_error = "Unable to read accumulated number of lost packets.";
-    } else if (i < 7) {
-      expected_error = "Unable to read offset time.";
-    } else if (i < 9) {
-      expected_error = "Unable to read delta time.";
-    } else if (i < 10) {
+    } else if (i < 6) {
       expected_error = "Unable to read num received packets.";
-    } else if (i < 16) {
+    } else if (i < 12) {
       expected_error = "Unable to read smallest received.";
-    } else if (i < 24) {
+    } else if (i < 20) {
       expected_error = "Unable to read time received.";
+    } else if (i < 22) {
+      expected_error = "Unable to read sequence delta in received packets.";
     } else if (i < 26) {
-      expected_error = "Unable to read sequence delta in received packets.";
-    } else if (i < 30) {
       expected_error = "Unable to read time delta in received packets.";
-    } else if (i < 32) {
+    } else if (i < 28) {
       expected_error = "Unable to read sequence delta in received packets.";
-    } else if (i < 36) {
+    } else if (i < 32) {
       expected_error = "Unable to read time delta in received packets.";
     }
     CheckProcessingFails(packet, i + kPacketHeaderSize, expected_error,
@@ -1212,8 +1202,6 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketInterArrival) {
   frame.type = kInterArrival;
   frame.inter_arrival.accumulated_number_of_lost_packets
       = 0x0302;
-  frame.inter_arrival.offset_time = 0x0504;
-  frame.inter_arrival.delta_time = 0x0706;
   frame.inter_arrival.received_packet_times[GG_UINT64_C(0x0123456789ABA)] =
       QuicTime::FromMicroseconds(GG_UINT64_C(0x07E1D2C3B4A59687));
   frame.inter_arrival.received_packet_times[GG_UINT64_C(0x0123456789ABB)] =
@@ -1244,10 +1232,6 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketInterArrival) {
     0x01,
     // accumulated_number_of_lost_packets
     0x02, 0x03,
-    // offset_time
-    0x04, 0x05,
-    // delta_time
-    0x06, 0x07,
     // num received packets
     0x03,
     // smallest ack sequence number

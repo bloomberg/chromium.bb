@@ -110,8 +110,6 @@ ostream& operator<<(ostream& os,
           congestion_frame.inter_arrival;
       os << " accumulated_number_of_lost_packets: "
          << inter_arrival.accumulated_number_of_lost_packets;
-      os << " offset_time: " << inter_arrival.offset_time;
-      os << " delta_time: " << inter_arrival.delta_time;
       os << " received packets: [ ";
       for (TimeMap::const_iterator it =
                inter_arrival.received_packet_times.begin();
