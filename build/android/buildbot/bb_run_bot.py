@@ -51,7 +51,7 @@ def GetCommands(options, bot_config):
         "bb_baseline_setup %s '%s'" %
         (CHROME_SRC, "' '".join(property_args))]
     commands.append(Command(
-        None, ['bash', '-exc', ' && '.join(bash_base + bot_config.bash_funs)]))
+        None, ['bash', '-exc', '; '.join(bash_base + bot_config.bash_funs)]))
 
   test_obj = bot_config.test_obj
   if test_obj:
