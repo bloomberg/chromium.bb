@@ -3309,7 +3309,8 @@ void RenderViewImpl::ProcessAcceleratedPinchZoomFlags(
     return;
 
   bool enable_viewport = command_line.HasSwitch(switches::kEnableViewport);
-  bool enable_pinch = command_line.HasSwitch(switches::kEnablePinch);
+  bool enable_pinch = command_line.HasSwitch(switches::kEnablePinch)
+      || command_line.HasSwitch(switches::kEnableCssTransformPinch);
 
   if (enable_viewport)
     return;

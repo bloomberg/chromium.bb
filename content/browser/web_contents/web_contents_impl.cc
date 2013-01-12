@@ -639,6 +639,12 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
 
   prefs.apply_page_scale_factor_in_compositor =
       command_line.HasSwitch(switches::kEnablePinch);
+
+  if (command_line.HasSwitch(switches::kEnableCssTransformPinch)) {
+    prefs.apply_default_device_scale_factor_in_compositor = false;
+    prefs.apply_page_scale_factor_in_compositor = false;
+  }
+
   prefs.per_tile_painting_enabled =
       command_line.HasSwitch(cc::switches::kEnablePerTilePainting);
   prefs.accelerated_animation_enabled =
