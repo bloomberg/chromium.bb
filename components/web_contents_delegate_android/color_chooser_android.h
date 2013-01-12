@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMPONENTS_WEB_CONTENTS_DELEGATE_ANDROID_COLOR_CHOOSER_ANDROID_H_
-#define CONTENT_COMPONENTS_WEB_CONTENTS_DELEGATE_ANDROID_COLOR_CHOOSER_ANDROID_H_
+#ifndef COMPONENTS_WEB_CONTENTS_DELEGATE_ANDROID_COLOR_CHOOSER_ANDROID_H_
+#define COMPONENTS_WEB_CONTENTS_DELEGATE_ANDROID_COLOR_CHOOSER_ANDROID_H_
 
 #include "base/android/jni_android.h"
 #include "base/basictypes.h"
@@ -14,7 +14,7 @@
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
 
-namespace content {
+namespace components {
 
 // Glues the Java (ColorPickerChooser.java) picker with the native part.
 class ColorChooserAndroid : public content::ColorChooser,
@@ -39,6 +39,6 @@ class ColorChooserAndroid : public content::ColorChooser,
 // Native JNI methods
 bool RegisterColorChooserAndroid(JNIEnv* env);
 
-}  // namespace content
+}  // namespace components
 
-#endif  // CONTENT_COMPONENTS_WEB_CONTENTS_DELEGATE_ANDROID_COLOR_CHOOSER_ANDROID_H_
+#endif  // COMPONENTS_WEB_CONTENTS_DELEGATE_ANDROID_COLOR_CHOOSER_ANDROID_H_

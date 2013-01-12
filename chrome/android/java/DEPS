@@ -1,4 +1,4 @@
 include_rules = [
-  "+content/components/web_contents_delegate_android",
+  "+components/web_contents_delegate_android",
   "+content/public/android/java",
 ]

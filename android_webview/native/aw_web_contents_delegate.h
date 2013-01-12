@@ -7,7 +7,7 @@
 
 #include <jni.h>
 
-#include "content/components/web_contents_delegate_android/web_contents_delegate_android.h"
+#include "components/web_contents_delegate_android/web_contents_delegate_android.h"
 
 namespace android_webview {
 
@@ -15,7 +15,7 @@ namespace android_webview {
 // Should contain WebContentsDelegate code required by WebView that should not
 // be part of the Chromium Android port.
 class AwWebContentsDelegate
-    : public content::WebContentsDelegateAndroid {
+    : public components::WebContentsDelegateAndroid {
  public:
   AwWebContentsDelegate(JNIEnv* env, jobject obj);
   virtual ~AwWebContentsDelegate();

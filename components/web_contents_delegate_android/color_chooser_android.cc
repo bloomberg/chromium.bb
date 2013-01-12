@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/components/web_contents_delegate_android/color_chooser_android.h"
+#include "components/web_contents_delegate_android/color_chooser_android.h"
 
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
@@ -10,13 +10,22 @@
 
 namespace content {
 
+ColorChooser* ColorChooser::Create(
+    int identifier, WebContents* tab, SkColor initial_color) {
+  return new components::ColorChooserAndroid(identifier, tab, initial_color);
+}
+
+}  // namespace content
+
+namespace components {
+
 ColorChooserAndroid::ColorChooserAndroid(int identifier,
                                          content::WebContents* tab,
                                          SkColor initial_color)
     : ColorChooser::ColorChooser(identifier),
       content::WebContentsObserver(tab) {
   JNIEnv* env = AttachCurrentThread();
-  ContentViewCore* content_view_core = tab->GetContentNativeView();
+  content::ContentViewCore* content_view_core = tab->GetContentNativeView();
   DCHECK(content_view_core);
 
   j_color_chooser_.Reset(Java_ColorChooserAndroid_createColorChooserAndroid(
@@ -47,11 +56,6 @@ void ColorChooserAndroid::OnColorChosen(JNIEnv* env, jobject obj, jint color) {
   web_contents()->DidEndColorChooser(identifier());
 }
 
-content::ColorChooser* content::ColorChooser::Create(
-    int identifier, content::WebContents* tab, SkColor initial_color) {
-  return new ColorChooserAndroid(identifier, tab, initial_color);
-}
-
 // ----------------------------------------------------------------------------
 // Native JNI methods
 // ----------------------------------------------------------------------------
@@ -59,4 +63,4 @@ bool RegisterColorChooserAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // namespace content
+}  // namespace components

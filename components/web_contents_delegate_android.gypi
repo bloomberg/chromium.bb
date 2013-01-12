@@ -12,12 +12,12 @@
           'type': 'static_library',
           'dependencies': [
             '../base/base.gyp:base',
+            '../content/content.gyp:content_browser',
+            '../content/content.gyp:content_common',
             '../net/net.gyp:net',
             '../skia/skia.gyp:skia',
             '../ui/ui.gyp:ui',
             '../webkit/support/webkit_support.gyp:glue',
-            'content_browser',
-            'content_common',
             'web_contents_delegate_android_jni_headers',
           ],
           'include_dirs': [
@@ -26,12 +26,12 @@
             '<(SHARED_INTERMEDIATE_DIR)/web_contents_delegate_android',
           ],
           'sources': [
-            'components/web_contents_delegate_android/color_chooser_android.cc',
-            'components/web_contents_delegate_android/color_chooser_android.h',
-            'components/web_contents_delegate_android/component_jni_registrar.cc',
-            'components/web_contents_delegate_android/component_jni_registrar.h',
-            'components/web_contents_delegate_android/web_contents_delegate_android.cc',
-            'components/web_contents_delegate_android/web_contents_delegate_android.h',
+            'web_contents_delegate_android/color_chooser_android.cc',
+            'web_contents_delegate_android/color_chooser_android.h',
+            'web_contents_delegate_android/component_jni_registrar.cc',
+            'web_contents_delegate_android/component_jni_registrar.h',
+            'web_contents_delegate_android/web_contents_delegate_android.cc',
+            'web_contents_delegate_android/web_contents_delegate_android.h',
           ],
         },
         {
@@ -39,11 +39,11 @@
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base',
-            'content_java',
+            '../content/content.gyp:content_java',
           ],
           'variables': {
             'package_name': 'web_contents_delegate_android',
-            'java_in_dir': 'components/web_contents_delegate_android/java',
+            'java_in_dir': 'web_contents_delegate_android/android/java',
           },
           'includes': [ '../build/java.gypi' ],
         },
@@ -51,8 +51,8 @@
           'target_name': 'web_contents_delegate_android_jni_headers',
           'type': 'none',
           'sources': [
-            'components/web_contents_delegate_android/java/src/org/chromium/content/components/web_contents_delegate_android/ColorChooserAndroid.java',
-            'components/web_contents_delegate_android/java/src/org/chromium/content/components/web_contents_delegate_android/WebContentsDelegateAndroid.java',
+            'web_contents_delegate_android/android/java/src/org/chromium/components/web_contents_delegate_android/ColorChooserAndroid.java',
+            'web_contents_delegate_android/android/java/src/org/chromium/components/web_contents_delegate_android/WebContentsDelegateAndroid.java',
           ],
           'variables': {
             'jni_gen_dir': 'web_contents_delegate_android',

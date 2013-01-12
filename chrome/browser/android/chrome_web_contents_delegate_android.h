@@ -7,7 +7,7 @@
 
 #include <jni.h>
 
-#include "content/components/web_contents_delegate_android/web_contents_delegate_android.h"
+#include "components/web_contents_delegate_android/web_contents_delegate_android.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -30,7 +30,7 @@ namespace android {
 // Should contain any WebContentsDelegate implementations required by
 // the Chromium Android port but not to be shared with WebView.
 class ChromeWebContentsDelegateAndroid
-    : public content::WebContentsDelegateAndroid,
+    : public components::WebContentsDelegateAndroid,
       public content::NotificationObserver {
  public:
   ChromeWebContentsDelegateAndroid(JNIEnv* env, jobject obj);

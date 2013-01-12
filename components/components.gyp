@@ -5,5 +5,6 @@
 {
   'includes': [
     'components_tests.gypi',
+    'web_contents_delegate_android.gypi',
   ],
 }

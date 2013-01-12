@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/components/web_contents_delegate_android/web_contents_delegate_android.h"
+#include "components/web_contents_delegate_android/web_contents_delegate_android.h"
 
 #include <android/keycodes.h>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "content/components/web_contents_delegate_android/color_chooser_android.h"
 #include "content/public/browser/android/content_view_core.h"
-#include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/color_chooser.h"
 #include "content/public/browser/invalidate_type.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/page_navigator.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
+#include "googleurl/src/gurl.h"
 #include "jni/WebContentsDelegateAndroid_jni.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -27,8 +27,11 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::HasClass;
 using base::android::ScopedJavaLocalRef;
+using content::ColorChooser;
+using content::WebContents;
+using content::WebContentsDelegate;
 
-namespace content {
+namespace components {
 
 WebContentsDelegateAndroid::WebContentsDelegateAndroid(JNIEnv* env, jobject obj)
     : weak_java_delegate_(env, obj) {
@@ -58,10 +61,10 @@ ColorChooser* WebContentsDelegateAndroid::OpenColorChooser(
 // RenderViewImpl::decidePolicyForNavigation for more details).
 WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
     WebContents* source,
-    const OpenURLParams& params) {
+    const content::OpenURLParams& params) {
   const GURL& url = params.url;
   WindowOpenDisposition disposition = params.disposition;
-  PageTransition transition(
+  content::PageTransition transition(
       PageTransitionFromInt(params.transition));
 
   if (!source || (disposition != CURRENT_TAB &&
@@ -97,7 +100,7 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
 
 void WebContentsDelegateAndroid::NavigationStateChanged(
     const WebContents* source, unsigned changed_flags) {
-  if (changed_flags & INVALIDATE_TYPE_TITLE) {
+  if (changed_flags & content::INVALIDATE_TYPE_TITLE) {
     JNIEnv* env = AttachCurrentThread();
     ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
     if (obj.is_null())
@@ -241,7 +244,7 @@ void WebContentsDelegateAndroid::UpdateTargetURL(WebContents* source,
 
 void WebContentsDelegateAndroid::HandleKeyboardEvent(
     WebContents* source,
-    const NativeWebKeyboardEvent& event) {
+    const content::NativeWebKeyboardEvent& event) {
   jobject key_event = event.os_event;
   if (key_event) {
     JNIEnv* env = AttachCurrentThread();
@@ -269,7 +272,7 @@ void WebContentsDelegateAndroid::ShowRepostFormWarningDialog(
   if (obj.is_null())
     return;
   ScopedJavaLocalRef<jobject> content_view_core =
-      ContentViewCore::FromWebContents(source)->GetJavaObject();
+      content::ContentViewCore::FromWebContents(source)->GetJavaObject();
   if (content_view_core.is_null())
     return;
   Java_WebContentsDelegateAndroid_showRepostFormWarningDialog(env, obj.obj(),
@@ -311,4 +314,4 @@ bool RegisterWebContentsDelegateAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // namespace content
+}  // namespace components

@@ -3,6 +3,9 @@ include_rules = [
   "+ui/gfx",
   "+ui/gl",
 
+  # Components that Android WebView depends on.
+  "+components/web_contents_delegate_android",
+
   # TODO(joth): Remove if we can move the compositor driver into ../browser/
   "+third_party/skia/include",
 ]

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.components.web_contents_delegate_android;
+package org.chromium.components.web_contents_delegate_android;
 
 import android.content.Context;
 
@@ -15,7 +15,7 @@ import org.chromium.ui.ColorPickerDialog;
  * ColorChooserAndroid communicates with the java ColorPickerDialog and the
  * native color_chooser_android.cc
  */
-@JNINamespace("content")
+@JNINamespace("components")
 public class ColorChooserAndroid {
     private final ColorPickerDialog mDialog;
     private final int mNativeColorChooserAndroid;

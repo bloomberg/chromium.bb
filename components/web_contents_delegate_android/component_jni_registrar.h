@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COMPONENT_WEB_CONTENTS_DELEGATE_ANDROID_COMPONENT_JNI_REGISTRAR_H_
-#define CHROME_BROWSER_COMPONENT_WEB_CONTENTS_DELEGATE_ANDROID_COMPONENT_JNI_REGISTRAR_H_
+#ifndef COMPONENTS_WEB_CONTENTS_DELEGATE_ANDROID_COMPONENT_JNI_REGISTRAR_H_
+#define COMPONENTS_WEB_CONTENTS_DELEGATE_ANDROID_COMPONENT_JNI_REGISTRAR_H_
 
 #include <jni.h>
 
-namespace content {
+namespace components {
 
 // Register all JNI bindings necessary for the web_contents_delegate_android
 // component.
 bool RegisterWebContentsDelegateAndroidJni(JNIEnv* env);
 
-}  // namespace content
+}  // namespace components
 
-#endif  // CHROME_BROWSER_COMPONENT_WEB_CONTENTS_DELEGATE_ANDROID_COMPONENT_JNI_REGISTRAR_H_
+#endif  // COMPONENTS_WEB_CONTENTS_DELEGATE_ANDROID_COMPONENT_JNI_REGISTRAR_H_
 

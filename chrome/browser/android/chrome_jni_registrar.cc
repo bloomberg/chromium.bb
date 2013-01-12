@@ -17,14 +17,18 @@
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
 #include "chrome/browser/ui/android/navigation_popup.h"
+#include "components/web_contents_delegate_android/component_jni_registrar.h"
 #include "content/components/navigation_interception/component_jni_registrar.h"
-#include "content/components/web_contents_delegate_android/color_chooser_android.h"
-#include "content/components/web_contents_delegate_android/component_jni_registrar.h"
 
 namespace chrome {
 namespace android {
 
 static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
+  // Register JNI for components we depend on.
+  { "NavigationInterception", content::RegisterNavigationInterceptionJni },
+  { "WebContentsDelegateAndroid",
+      components::RegisterWebContentsDelegateAndroidJni },
+  // Register JNI for chrome classes.
   { "AutofillPopup",
       AutofillPopupViewAndroid::RegisterAutofillPopupViewAndroid},
   { "ChromeBrowserProvider",
@@ -33,7 +37,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
       ChromeHttpAuthHandler::RegisterChromeHttpAuthHandler },
   { "ChromeWebContentsDelegateAndroid",
       RegisterChromeWebContentsDelegateAndroid },
-  { "ColorChooserAndroid", content::RegisterColorChooserAndroid },
   { "ContentViewUtil", RegisterContentViewUtil },
   { "DevToolsServer", RegisterDevToolsServer },
   { "IntentHelper", RegisterIntentHelper },
@@ -42,11 +45,9 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "NavigationPopup", NavigationPopup::RegisterNavigationPopup },
   { "ProcessUtils", RegisterProcessUtils },
   { "SqliteCursor", SQLiteCursor::RegisterSqliteCursor },
-  { "navigation_interception", content::RegisterNavigationInterceptionJni },
 };
 
 bool RegisterJni(JNIEnv* env) {
-  content::RegisterWebContentsDelegateAndroidJni(env);
   return RegisterNativeMethods(env, kChromeRegisteredMethods,
                                arraysize(kChromeRegisteredMethods));
 }
