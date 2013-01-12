@@ -314,22 +314,10 @@ def CopyToFinalLocation(extracted, target_dir):
       ]
   PullFrom(from_headers, extracted.headers, target_dir)
 
-  # The compiler update to get the SP1 x86 compiler is a bit of a mess. See
-  # http://goo.gl/n1DeO. The summary is that update for the standalone
-  # compiler binary installs a broken set of headers. So, we need to pull the
-  # new binaries from the update, but keep the older set of headers.
-
-  from_vcupdate_x86 = [
-      (r'Program Files\Microsoft Visual Studio 10.0', '.'),
-      (r'Win\System', r'VC\bin'),
-      ]
-  PullFrom(from_vcupdate_x86, extracted.update_x86, target_dir)
-
-  from_vcupdate_x64 = [
-      (r'Program Files(64)\Microsoft Visual Studio 10.0', '.'),
-      (r'Win\System64', r'VC\bin\amd64'),
-      ]
-  PullFrom(from_vcupdate_x64, extracted.update_x64, target_dir)
+  # The compiler update to get the SP1 compiler is a bit of a mess. See
+  # http://goo.gl/n1DeO. The summary is that update for the standalone compiler
+  # binary installs a broken set of headers. So, add an empty ammintrin.h since
+  # we don't actually need the contents of it (for Chromium).
 
   from_sdk7_x86 = [
       (r'Program Files\Microsoft Visual Studio 10.0', '.'),
@@ -343,16 +331,20 @@ def CopyToFinalLocation(extracted, target_dir):
       ]
   PullFrom(from_sdk7_x64, extracted.vc_x64, target_dir)
 
-  # Now, re-get just the binaries from the update.
   from_vcupdate_x86 = [
-      (r'Program Files\Microsoft Visual Studio 10.0\VC\bin', r'VC\bin'),
+      (r'Program Files\Microsoft Visual Studio 10.0', '.'),
+      (r'Win\System', r'VC\bin'),
       ]
   PullFrom(from_vcupdate_x86, extracted.update_x86, target_dir)
 
   from_vcupdate_x64 = [
-      (r'Program Files(64)\Microsoft Visual Studio 10.0\VC\bin', r'VC\bin'),
+      (r'Program Files(64)\Microsoft Visual Studio 10.0', '.'),
+      (r'Win\System64', r'VC\bin\amd64'),
       ]
   PullFrom(from_vcupdate_x64, extracted.update_x64, target_dir)
+
+  sys.stdout.write('Stubbing ammintrin.h...\n')
+  open(os.path.join(target_dir, r'VC\include\ammintrin.h'), 'w').close()
 
   from_dxsdk = [
       (r'DXSDK\Include', r'DXSDK\Include'),
