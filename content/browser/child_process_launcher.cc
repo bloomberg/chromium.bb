@@ -167,6 +167,10 @@ class ChildProcessLauncher::Context
 #if defined(OS_WIN)
     base::ProcessHandle handle = StartProcessWithAccess(cmd_line, exposed_dir);
 #elif defined(OS_ANDROID)
+    // Android WebView runs in single process, ensure that we never get here
+    // when running in single process mode.
+    CHECK(!cmd_line->HasSwitch(switches::kSingleProcess));
+
     std::string process_type =
         cmd_line->GetSwitchValueASCII(switches::kProcessType);
     std::vector<FileDescriptorInfo> files_to_register;
