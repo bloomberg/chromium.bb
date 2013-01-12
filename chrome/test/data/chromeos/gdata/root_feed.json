@@ -211,7 +211,7 @@
             "$t": "3b4382ebefec6e743578c76bbd0575ce"
          },
          "docs$size": {
-            "$t": "892721"
+            "$t": "10"
          },
          "docs$suggestedFilename": {
             "$t": "SubDirectory File 1.txt"
@@ -233,7 +233,7 @@
             }
          },
          "gd$quotaBytesUsed": {
-            "$t": "892721"
+            "$t": "10"
          },
          "gd$resourceId": {
             "$t": "file:subdirectory_file_1_id"
@@ -464,7 +464,7 @@
             "$t": "3b4382ebefec6e743578c76bbd0575ce"
          },
          "docs$size": {
-            "$t": "892721"
+            "$t": "10"
          },
          "docs$suggestedFilename": {
             "$t": "File 1.txt"
@@ -486,7 +486,7 @@
             }
          },
          "gd$quotaBytesUsed": {
-            "$t": "892721"
+            "$t": "10"
          },
          "gd$resourceId": {
             "$t": "file:2_file_resource_id"
@@ -553,7 +553,7 @@
             "$t": "3b4382ebefec6e743578c76bbd0575ce"
          },
          "docs$size": {
-            "$t": "892721"
+            "$t": "10"
          },
          "docs$suggestedFilename": {
             "$t": "Slash / in file 1.txt"
@@ -575,7 +575,7 @@
             }
          },
          "gd$quotaBytesUsed": {
-            "$t": "892721"
+            "$t": "10"
          },
          "gd$resourceId": {
             "$t": "file:slash_file_resource_id"
@@ -642,7 +642,7 @@
             "$t": "3b4382ebefec6e743578c76bbd0575ce"
          },
          "docs$size": {
-            "$t": "892721"
+            "$t": "10"
          },
          "docs$suggestedFilename": {
             "$t": "Duplicate Name.txt"
@@ -664,7 +664,7 @@
             }
          },
          "gd$quotaBytesUsed": {
-            "$t": "892721"
+            "$t": "10"
          },
          "gd$resourceId": {
             "$t": "file:3_file_resource_id"
@@ -731,7 +731,7 @@
             "$t": "3b4382ebefec6e743578c76bbd0575ce"
          },
          "docs$size": {
-            "$t": "892721"
+            "$t": "10"
          },
          "docs$suggestedFilename": {
             "$t": "Duplicate Name.txt"
@@ -753,7 +753,7 @@
             }
          },
          "gd$quotaBytesUsed": {
-            "$t": "892721"
+            "$t": "10"
          },
          "gd$resourceId": {
             "$t": "file:4_file_resource_id"
@@ -984,7 +984,7 @@
             "$t": "3b4382ebefec6e743578c76bbd0575ce"
          },
          "docs$size": {
-            "$t": "892721"
+            "$t": "10"
          },
          "docs$suggestedFilename": {
             "$t": "Slash SubDir File.txt"
@@ -1006,7 +1006,7 @@
             }
          },
          "gd$quotaBytesUsed": {
-            "$t": "892721"
+            "$t": "10"
          },
          "gd$resourceId": {
             "$t": "file:slash_subdir_file"

@@ -409,7 +409,8 @@ TEST_F(FakeDriveServiceTest, DownloadFile_ExistingFile) {
   EXPECT_EQ(output_file_path, kOutputFilePath);
   std::string content;
   ASSERT_TRUE(file_util::ReadFileToString(output_file_path, &content));
-  EXPECT_EQ(kContentUrl.spec(), content);
+  // The content is "x"s of the file size specified in root_feed.json.
+  EXPECT_EQ("xxxxxxxxxx", content);
 }
 
 TEST_F(FakeDriveServiceTest, DownloadFile_NonexistingFile) {

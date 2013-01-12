@@ -371,20 +371,31 @@ void FakeDriveService::DownloadFile(
     return;
   }
 
-  // Write the content URL as the content of the file.
-  if (static_cast<int>(content_url.spec().size()) !=
-      file_util::WriteFile(local_cache_path,
-                           content_url.spec().data(),
-                           content_url.spec().size())) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(download_action_callback, GDATA_FILE_ERROR, FilePath()));
-    return;
+  // Write "x"s of the file size specified in the entry.
+  std::string file_size_string;
+  entry->GetString("docs$size.$t", &file_size_string);
+  int64 file_size = 0;
+  if (base::StringToInt64(file_size_string, &file_size)) {
+    std::string content(file_size, 'x');
+    DCHECK_EQ(static_cast<size_t>(file_size), content.size());
+
+    if (static_cast<int>(content.size()) ==
+        file_util::WriteFile(local_cache_path,
+                             content.data(),
+                             content.size())) {
+      base::MessageLoopProxy::current()->PostTask(
+          FROM_HERE,
+          base::Bind(download_action_callback,
+                     HTTP_SUCCESS,
+                     local_cache_path));
+      return;
+    }
   }
 
+  // Failed to write the content.
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(download_action_callback, HTTP_SUCCESS, local_cache_path));
+      base::Bind(download_action_callback, GDATA_FILE_ERROR, FilePath()));
 }
 
 void FakeDriveService::CopyHostedDocument(

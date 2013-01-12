@@ -1297,14 +1297,16 @@ TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_RegularFile) {
 
   EXPECT_EQ(DRIVE_FILE_OK, error);
 
+  // The content is "x"s of the file size.
+  const std::string kExpectedContent = "xxxxxxxxxx";
   std::string cache_file_data;
   EXPECT_TRUE(file_util::ReadFileToString(cache_file, &cache_file_data));
-  EXPECT_EQ("https://file_content_url/", cache_file_data);
+  EXPECT_EQ(kExpectedContent, cache_file_data);
 
   std::string local_dest_file_data;
   EXPECT_TRUE(file_util::ReadFileToString(local_dest_file_path,
                                           &local_dest_file_data));
-  EXPECT_EQ("https://file_content_url/", local_dest_file_data);
+  EXPECT_EQ(kExpectedContent, local_dest_file_data);
 }
 
 TEST_F(DriveFileSystemTest, TransferFileFromRemoteToLocal_HostedDocument) {
@@ -1909,11 +1911,18 @@ TEST_F(DriveFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(
       file_size + kMinFreeSpace);
 
-  // Store something in the temporary cache directory.
+  // Store something of the file size in the temporary cache directory.
+  const std::string content(file_size, 'x');
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  const FilePath tmp_file =
+      temp_dir.path().AppendASCII("something.txt");
+  ASSERT_EQ(file_size,
+            file_util::WriteFile(tmp_file, content.data(), content.size()));
+
   TestStoreToCache("<resource_id>",
                    "<md5>",
-                   google_apis::test_util::GetTestFilePath(
-                       "gdata/root_feed.json"),
+                   tmp_file,
                    DRIVE_FILE_OK,
                    test_util::TEST_CACHE_STATE_PRESENT,
                    DriveCache::CACHE_TYPE_TMP);
@@ -2359,10 +2368,11 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
   EXPECT_EQ(DRIVE_FILE_ERROR_IN_USE, callback_helper_->last_error_);
 
   // Verify that the file contents match the expected contents.
-  // The file should contain the content URL of the entry.
+  // The content is "x"s of the file size.
+  const std::string kExpectedContent = "xxxxxxxxxx";
   std::string cache_file_data;
   EXPECT_TRUE(file_util::ReadFileToString(opened_file_path, &cache_file_data));
-  EXPECT_EQ("https://file_content_url/", cache_file_data);
+  EXPECT_EQ(kExpectedContent, cache_file_data);
 
   // Verify that the cache state was changed as expected.
   VerifyCacheStateAfterOpenFile(DRIVE_FILE_OK,
