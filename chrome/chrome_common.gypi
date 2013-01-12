@@ -130,6 +130,8 @@
         'common/extensions/api/extension_api_stub.cc',
         'common/extensions/api/input_ime/input_components_handler.cc',
         'common/extensions/api/input_ime/input_components_handler.h',
+        'common/extensions/api/file_handlers/file_handlers_parser.cc',
+        'common/extensions/api/file_handlers/file_handlers_parser.h',
         'common/extensions/api/omnibox/omnibox_handler.cc',
         'common/extensions/api/omnibox/omnibox_handler.h',
         'common/extensions/api/speech/tts_engine_manifest_handler.cc',

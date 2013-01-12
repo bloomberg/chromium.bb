@@ -12,7 +12,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
-#include "chrome/browser/extensions/app_file_handler_util.h"
+#include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -35,9 +35,9 @@
 #include "webkit/glue/web_intent_service_data.h"
 
 using content::BrowserThread;
-using app_file_handler_util::FileHandlerForId;
-using app_file_handler_util::FileHandlerCanHandleFileWithMimeType;
-using app_file_handler_util::FirstFileHandlerForMimeType;
+using extensions::app_file_handler_util::FileHandlerForId;
+using extensions::app_file_handler_util::FileHandlerCanHandleFileWithMimeType;
+using extensions::app_file_handler_util::FirstFileHandlerForMimeType;
 
 namespace extensions {
 
@@ -157,7 +157,7 @@ class PlatformAppPathLauncher
     // file being opened.
     bool found_service = false;
 
-    const Extension::FileHandlerInfo* handler = NULL;
+    const FileHandlerInfo* handler = NULL;
     if (!handler_id_.empty())
       handler = FileHandlerForId(*extension_, handler_id_);
     else
@@ -200,7 +200,7 @@ class PlatformAppPathLauncher
     // available, or it might be in the process of being unloaded, in which case
     // the lazy background task queue is used to load the extension and then
     // call back to us.
-    extensions::LazyBackgroundTaskQueue* queue =
+    LazyBackgroundTaskQueue* queue =
         ExtensionSystem::Get(profile_)->lazy_background_task_queue();
     if (queue->ShouldEnqueueTask(profile_, extension_)) {
       queue->AddPendingTask(profile_, extension_->id(), base::Bind(
@@ -211,14 +211,14 @@ class PlatformAppPathLauncher
 
     ExtensionProcessManager* process_manager =
         ExtensionSystem::Get(profile_)->process_manager();
-    extensions::ExtensionHost* host =
+    ExtensionHost* host =
         process_manager->GetBackgroundHostForExtension(extension_->id());
     DCHECK(host);
     GrantAccessToFileAndLaunch(mime_type, host);
   }
 
   void GrantAccessToFileAndLaunch(const std::string& mime_type,
-                                  extensions::ExtensionHost* host) {
+                                  ExtensionHost* host) {
     // If there was an error loading the app page, |host| will be NULL.
     if (!host) {
       LOG(ERROR) << "Could not load app page for " << extension_->id();
@@ -246,7 +246,7 @@ class PlatformAppPathLauncher
     // read operations.
     policy->GrantReadFileSystem(renderer_id, filesystem_id);
 
-    extensions::AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
+    AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
         profile_, extension_, ASCIIToUTF16(web_intents::kActionView),
         handler_id_, mime_type, filesystem_id, registered_name);
   }
@@ -295,7 +295,7 @@ class PlatformAppWebIntentLauncher
     // This might not be available, or it might be in the process of being
     // unloaded, in which case the lazy background task queue is used to load
     // he extension and then call back to us.
-    extensions::LazyBackgroundTaskQueue* queue =
+    LazyBackgroundTaskQueue* queue =
         ExtensionSystem::Get(profile_)->lazy_background_task_queue();
     if (queue->ShouldEnqueueTask(profile_, extension_)) {
       queue->AddPendingTask(profile_, extension_->id(), base::Bind(
@@ -305,7 +305,7 @@ class PlatformAppWebIntentLauncher
     }
     ExtensionProcessManager* process_manager =
         ExtensionSystem::Get(profile_)->process_manager();
-    extensions::ExtensionHost* host =
+    ExtensionHost* host =
         process_manager->GetBackgroundHostForExtension(extension_->id());
     DCHECK(host);
     GrantAccessToFileAndLaunch(host);
@@ -316,7 +316,7 @@ class PlatformAppWebIntentLauncher
 
   virtual ~PlatformAppWebIntentLauncher() {}
 
-  void GrantAccessToFileAndLaunch(extensions::ExtensionHost* host) {
+  void GrantAccessToFileAndLaunch(ExtensionHost* host) {
     // If there was an error loading the app page, |host| will be NULL.
     if (!host) {
       LOG(ERROR) << "Could not load app page for " << extension_->id();
@@ -352,7 +352,7 @@ class PlatformAppWebIntentLauncher
   }
 
   void InternalLaunch() {
-    extensions::AppEventRouter::DispatchOnLaunchedEventWithWebIntent(
+    AppEventRouter::DispatchOnLaunchedEventWithWebIntent(
         profile_, extension_, intents_dispatcher_, source_);
   }
 

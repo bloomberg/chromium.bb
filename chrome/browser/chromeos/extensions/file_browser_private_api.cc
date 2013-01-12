@@ -38,7 +38,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/zip_file_creator.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
-#include "chrome/browser/extensions/app_file_handler_util.h"
+#include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -83,7 +83,7 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/glue/web_intent_service_data.h"
 
-using app_file_handler_util::FindFileHandlersForMimeTypes;
+using extensions::app_file_handler_util::FindFileHandlersForMimeTypes;
 using chromeos::disks::DiskMountManager;
 using content::BrowserContext;
 using content::BrowserThread;
@@ -922,7 +922,7 @@ bool GetFileTasksFileBrowserFunction::FindAppTasks(
         !service->IsIncognitoEnabled(extension->id()))
       continue;
 
-    typedef std::vector<const Extension::FileHandlerInfo*> FileHandlerList;
+    typedef std::vector<const extensions::FileHandlerInfo*> FileHandlerList;
     FileHandlerList file_handlers =
         FindFileHandlersForMimeTypes(*extension, mime_types);
     // TODO(benwells): also support matching by file extension.

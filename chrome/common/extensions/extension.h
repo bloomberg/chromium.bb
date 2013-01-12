@@ -202,19 +202,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     std::string id;
   };
 
-  struct FileHandlerInfo {
-    explicit FileHandlerInfo();
-    ~FileHandlerInfo();
-    std::string id;
-    std::string title;
-
-    // File extensions associated with this handler.
-    std::set<std::string> extensions;
-
-    // MIME types associated with this handler.
-    std::set<std::string> types;
-  };
-
   struct InstallWarning {
     enum Format {
       // IMPORTANT: Do not build HTML strings from user or developer-supplied
@@ -749,10 +736,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   int launch_width() const { return launch_width_; }
   int launch_height() const { return launch_height_; }
 
-  const std::vector<FileHandlerInfo>& file_handlers() const {
-    return file_handlers_;
-  }
-
   // Theme-related.
   bool is_theme() const;
   base::DictionaryValue* GetThemeImages() const { return theme_images_.get(); }
@@ -881,10 +864,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadBackgroundAllowJSAccess(
       const APIPermissionSet& api_permissions,
       string16* error);
-  bool LoadFileHandler(const std::string& handler_id,
-                       const base::DictionaryValue& handler_info,
-                       string16* error);
-  bool LoadFileHandlers(string16* error);
   bool LoadExtensionFeatures(APIPermissionSet* api_permissions,
                              string16* error);
   bool LoadManifestHandlerFeatures(string16* error);
@@ -1170,9 +1149,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The OAuth2 client id and scopes, if specified by the extension.
   OAuth2Info oauth2_info_;
-
-  // List of file handlers associated with this extension, if any.
-  std::vector<FileHandlerInfo> file_handlers_;
 
   // Whether the extension has host permissions or user script patterns that
   // imply access to file:/// scheme URLs (the user may not have actually

@@ -349,9 +349,6 @@ Extension::OAuth2Info::~OAuth2Info() {}
 Extension::ActionInfo::ActionInfo() {}
 Extension::ActionInfo::~ActionInfo() {}
 
-Extension::FileHandlerInfo::FileHandlerInfo() {}
-Extension::FileHandlerInfo::~FileHandlerInfo() {}
-
 //
 // Extension
 //
@@ -2563,73 +2560,6 @@ bool Extension::LoadBackgroundAllowJSAccess(
   return true;
 }
 
-bool Extension::LoadFileHandler(const std::string& handler_id,
-                                const DictionaryValue& handler_info,
-                                string16* error) {
-  DCHECK(error);
-  DCHECK(is_platform_app());
-  FileHandlerInfo handler;
-
-  handler.id = handler_id;
-
-  const ListValue* mime_types = NULL;
-  // TODO(benwells): handle file extensions.
-  if (!handler_info.HasKey(keys::kFileHandlerTypes) ||
-      !handler_info.GetList(keys::kFileHandlerTypes, &mime_types) ||
-      mime_types->GetSize() == 0) {
-    *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kInvalidFileHandlerType, handler_id);
-    return false;
-  }
-
-  if (handler_info.HasKey(keys::kFileHandlerTitle) &&
-      !handler_info.GetString(keys::kFileHandlerTitle, &handler.title)) {
-    *error = ASCIIToUTF16(errors::kInvalidFileHandlerTitle);
-    return false;
-  }
-
-  std::string type;
-  for (size_t i = 0; i < mime_types->GetSize(); ++i) {
-    if (!mime_types->GetString(i, &type)) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidFileHandlerTypeElement, handler_id,
-          std::string(base::IntToString(i)));
-      return false;
-    }
-    handler.types.insert(type);
-  }
-
-  file_handlers_.push_back(handler);
-  return true;
-}
-
-bool Extension::LoadFileHandlers(string16* error) {
-  DCHECK(error);
-
-  if (!manifest_->HasKey(keys::kFileHandlers))
-    return true;
-
-  DictionaryValue* all_handlers = NULL;
-  if (!manifest_->GetDictionary(keys::kFileHandlers, &all_handlers)) {
-    *error = ASCIIToUTF16(errors::kInvalidFileHandlers);
-    return false;
-  }
-
-  for (DictionaryValue::key_iterator iter(all_handlers->begin_keys());
-       iter != all_handlers->end_keys(); ++iter) {
-    // A file handler entry is a title and a list of MIME types to handle.
-    DictionaryValue* handler = NULL;
-    if (all_handlers->GetDictionaryWithoutPathExpansion(*iter, &handler)) {
-      if (!LoadFileHandler(*iter, *handler, error))
-        return false;
-    } else {
-      *error = ASCIIToUTF16(errors::kInvalidFileHandlers);
-      return false;
-    }
-  }
-  return true;
-}
-
 bool Extension::LoadExtensionFeatures(APIPermissionSet* api_permissions,
                                       string16* error) {
   if (manifest_->HasKey(keys::kConvertedFromUserScript))
@@ -2644,7 +2574,6 @@ bool Extension::LoadExtensionFeatures(APIPermissionSet* api_permissions,
       !LoadScriptBadge(error) ||
       !LoadChromeURLOverrides(error) ||
       !LoadIncognitoMode(error) ||
-      !LoadFileHandlers(error) ||
       !LoadContentSecurityPolicy(error))
     return false;
 
