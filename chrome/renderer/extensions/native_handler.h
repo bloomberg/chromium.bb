@@ -6,9 +6,11 @@
 #define CHROME_RENDERER_EXTENSIONS_NATIVE_HANDLER_H_
 
 #include "base/bind.h"
+#include "base/memory/linked_ptr.h"
 #include "v8/include/v8.h"
 
 #include <string>
+#include <vector>
 
 namespace extensions {
 
@@ -46,9 +48,8 @@ class NativeHandler {
 
  private:
   static v8::Handle<v8::Value> Router(const v8::Arguments& args);
-  static void DisposeFunction(v8::Persistent<v8::Value> object,
-                              void* parameter);
 
+  std::vector<linked_ptr<HandlerFunction> > handler_functions_;
   v8::Persistent<v8::ObjectTemplate> object_template_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeHandler);

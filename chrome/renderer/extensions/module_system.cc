@@ -14,7 +14,7 @@ const char* kModuleName = "module_name";
 const char* kModuleField = "module_field";
 const char* kModulesField = "modules";
 
-}  // namespace
+} // namespace
 
 namespace extensions {
 

@@ -38,25 +38,15 @@ v8::Handle<v8::Value> NativeHandler::Router(const v8::Arguments& args) {
   return handler_function->Run(args);
 }
 
-// static
-void NativeHandler::DisposeFunction(v8::Persistent<v8::Value> object,
-                                    void* parameter) {
-  HandlerFunction* handler_function =
-      reinterpret_cast<HandlerFunction*>(parameter);
-
-  object.Dispose();
-  delete handler_function;
-}
-
 void NativeHandler::RouteFunction(const std::string& name,
     const HandlerFunction& handler_function) {
-  HandlerFunction* function = new HandlerFunction(handler_function);
-  // Deleted in DisposeFunction once v8 garbage collects function_template.
-  v8::Persistent<v8::External> function_value =
-      v8::Persistent<v8::External>::New(v8::External::New(function));
-  function_value.MakeWeak(function, DisposeFunction);
+  linked_ptr<HandlerFunction> function(new HandlerFunction(handler_function));
+  // TODO(koz): Investigate using v8's MakeWeak() function instead of holding
+  // on to these pointers here.
+  handler_functions_.push_back(function);
   v8::Handle<v8::FunctionTemplate> function_template =
-      v8::FunctionTemplate::New(Router, function_value);
+      v8::FunctionTemplate::New(Router,
+          v8::External::New(function.get()));
   object_template_->Set(name.c_str(), function_template);
 }
 
