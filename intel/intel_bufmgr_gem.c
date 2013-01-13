@@ -2011,6 +2011,8 @@ aub_build_dump_ringbuffer(drm_intel_bufmgr_gem *bufmgr_gem,
 
 	if (ring_flag == I915_EXEC_BSD)
 		ring = AUB_TRACE_TYPE_RING_PRB1;
+	else if (ring_flag == I915_EXEC_BLT)
+		ring = AUB_TRACE_TYPE_RING_PRB2;
 
 	/* Make a ring buffer to execute our batchbuffer. */
 	memset(ringbuffer, 0, sizeof(ringbuffer));
