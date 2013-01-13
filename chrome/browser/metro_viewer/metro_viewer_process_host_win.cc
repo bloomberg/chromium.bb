@@ -31,7 +31,7 @@ void CloseOpenAshBrowsers() {
       browser->window()->Close();
       // If the attempt to Close the browser fails due to unload handlers on
       // the page or in progress downloads, etc, destroy all tabs on the page.
-      while (browser->tab_count())
+      while (browser->tab_strip_model()->count())
         delete browser->tab_strip_model()->GetWebContentsAt(0);
     }
   }

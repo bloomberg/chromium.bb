@@ -330,7 +330,6 @@ class Browser : public TabStripModelObserver,
 
   TabStripModel* tab_strip_model() const { return tab_strip_model_.get(); }
 
-  int tab_count() const;
   int active_index() const;
 
   // Invoked when the fullscreen state of the window changes.

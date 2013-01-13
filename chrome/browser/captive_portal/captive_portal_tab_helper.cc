@@ -251,7 +251,7 @@ void CaptivePortalTabHelper::OpenLoginTab() {
   // If so, do nothing.
   // TODO(mmenke):  Consider focusing that tab, at least if this is the tab
   //                helper for the currently active tab for the profile.
-  for (int i = 0; i < browser->tab_count(); ++i) {
+  for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
     content::WebContents* web_contents =
         browser->tab_strip_model()->GetWebContentsAt(i);
     captive_portal::CaptivePortalTabHelper* captive_portal_tab_helper =

@@ -754,10 +754,6 @@ Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
 ////////////////////////////////////////////////////////////////////////////////
 // Browser, TabStripModel pass-thrus:
 
-int Browser::tab_count() const {
-  return tab_strip_model_->count();
-}
-
 int Browser::active_index() const {
   return tab_strip_model_->active_index();
 }

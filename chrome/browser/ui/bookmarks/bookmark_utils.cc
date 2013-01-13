@@ -14,9 +14,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/simple_message_box.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
@@ -127,9 +127,9 @@ int ChildURLCountTotal(const BookmarkNode* node) {
 // Returns in |urls|, the url and title pairs for each open tab in browser.
 void GetURLsForOpenTabs(Browser* browser,
                         std::vector<std::pair<GURL, string16> >* urls) {
-  for (int i = 0; i < browser->tab_count(); ++i) {
+  for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
     std::pair<GURL, string16> entry;
-    GetURLAndTitleToBookmark(GetWebContentsAt(browser, i),
+    GetURLAndTitleToBookmark(browser->tab_strip_model()->GetWebContentsAt(i),
                              &(entry.first), &(entry.second));
     urls->push_back(entry);
   }

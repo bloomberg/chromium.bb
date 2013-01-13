@@ -1361,11 +1361,12 @@ void SessionService::BuildCommandsForBrowser(
   }
 
   windows_to_track->insert(browser->session_id().id());
-  for (int i = 0; i < browser->tab_count(); ++i) {
-    WebContents* tab = chrome::GetWebContentsAt(browser, i);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+  for (int i = 0; i < tab_strip->count(); ++i) {
+    WebContents* tab = tab_strip->GetWebContentsAt(i);
     DCHECK(tab);
     BuildCommandsForTab(browser->session_id(), tab, i,
-                        browser->tab_strip_model()->IsTabPinned(i),
+                        tab_strip->IsTabPinned(i),
                         commands, tab_to_available_range);
   }
 
@@ -1388,7 +1389,7 @@ void SessionService::BuildCommandsFromBrowsers(
     // for us to get a handle to a browser that is about to be removed. If
     // the tab count is 0 or the window is NULL, the browser is about to be
     // deleted, so we ignore it.
-    if (ShouldTrackBrowser(browser) && browser->tab_count() &&
+    if (ShouldTrackBrowser(browser) && browser->tab_strip_model()->count() &&
         browser->window()) {
       BuildCommandsForBrowser(browser, commands, tab_to_available_range,
                               windows_to_track);
@@ -1513,7 +1514,7 @@ bool SessionService::IsOnlyOneTabLeft() const {
         return false;
       // By the time this is invoked the tab has been removed. As such, we use
       // > 0 here rather than > 1.
-      if ((*i)->tab_count() > 0)
+      if ((*i)->tab_strip_model()->count() > 0)
         return false;
     }
   }

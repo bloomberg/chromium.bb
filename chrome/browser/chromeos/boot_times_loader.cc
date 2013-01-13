@@ -26,7 +26,7 @@
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -60,8 +60,10 @@ const std::string GetTabUrl(RenderWidgetHost* rwh) {
        it != BrowserList::end();
        ++it) {
     Browser* browser = *it;
-    for (int i = 0, tab_count = browser->tab_count(); i < tab_count; ++i) {
-      WebContents* tab = chrome::GetWebContentsAt(browser, i);
+    for (int i = 0, tab_count = browser->tab_strip_model()->count();
+         i < tab_count;
+         ++i) {
+      WebContents* tab = browser->tab_strip_model()->GetWebContentsAt(i);
       if (tab->GetRenderWidgetHostView() == rwhv) {
         return tab->GetURL().spec();
       }

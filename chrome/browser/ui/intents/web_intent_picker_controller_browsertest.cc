@@ -19,11 +19,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -250,7 +250,7 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
     favicon_service_ = FaviconServiceFactory::GetForProfile(
         GetBrowser()->profile(), Profile::EXPLICIT_ACCESS);
     controller_ = WebIntentPickerController::FromWebContents(
-        chrome::GetActiveWebContents(GetBrowser()));
+        GetBrowser()->tab_strip_model()->GetActiveWebContents());
 
     SetupMockPicker();
     controller_->set_model_observer(&picker_);
@@ -383,20 +383,21 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, ChooseService) {
   EXPECT_EQ(2, picker_.num_installed_services_);
   EXPECT_EQ(0, picker_.num_icons_changed_);
 
+  TabStripModel* tab_strip = browser()->tab_strip_model();
   OnServiceChosen(kServiceURL2,
                   webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW);
-  ASSERT_EQ(2, browser()->tab_count());
+  ASSERT_EQ(2, tab_strip->count());
   EXPECT_EQ(GURL(kServiceURL2),
-            chrome::GetActiveWebContents(browser())->GetURL());
+            tab_strip->GetActiveWebContents()->GetURL());
 
   EXPECT_TRUE(GetWindowDispositionTarget(
       WebIntentPickerController::FromWebContents(
-          chrome::GetActiveWebContents(browser()))));
+          tab_strip->GetActiveWebContents())));
 
   EXPECT_TRUE(dispatcher.dispatched_);
 
   OnSendReturnMessage(webkit_glue::WEB_INTENT_REPLY_SUCCESS);
-  ASSERT_EQ(1, browser()->tab_count());
+  ASSERT_EQ(1, tab_strip->count());
 }
 
 IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
@@ -446,14 +447,15 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   AddWebIntentService(kAction1, kServiceURL1);
   AddCWSExtensionServiceEmpty(kAction1);
 
-  GURL original = chrome::GetActiveWebContents(browser())->GetURL();
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  GURL original = tab_strip->GetActiveWebContents()->GetURL();
 
   // Open a new page, but keep focus on original.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL), NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  ASSERT_EQ(2, browser()->tab_count());
-  EXPECT_EQ(original, chrome::GetActiveWebContents(browser())->GetURL());
+  ASSERT_EQ(2, tab_strip->count());
+  EXPECT_EQ(original, tab_strip->GetActiveWebContents()->GetURL());
 
   webkit_glue::WebIntentData intent;
   intent.action = kAction1;
@@ -467,15 +469,15 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
 
   OnServiceChosen(kServiceURL1,
                   webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW);
-  ASSERT_EQ(3, browser()->tab_count());
+  ASSERT_EQ(3, tab_strip->count());
   EXPECT_EQ(GURL(kServiceURL1),
-            chrome::GetActiveWebContents(browser())->GetURL());
+            tab_strip->GetActiveWebContents()->GetURL());
 
   EXPECT_TRUE(dispatcher.dispatched_);
 
   OnSendReturnMessage(webkit_glue::WEB_INTENT_REPLY_SUCCESS);
-  ASSERT_EQ(2, browser()->tab_count());
-  EXPECT_EQ(original, chrome::GetActiveWebContents(browser())->GetURL());
+  ASSERT_EQ(2, tab_strip->count());
+  EXPECT_EQ(original, tab_strip->GetActiveWebContents()->GetURL());
 
   CloseCurrentTab();
 }
@@ -525,7 +527,8 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   controller_->ShowDialog(kAction1, kType2);
   picker_.Wait();
 
-  ASSERT_EQ(1, browser()->tab_count());
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  ASSERT_EQ(1, tab_strip->count());
   OnExtensionInstallRequested(extension_id);
   picker_.Wait();
   EXPECT_EQ(1, picker_.num_extensions_installed_);
@@ -535,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
 
   // Installing an extension should also choose it. Since this extension uses
   // window disposition, it will create a new tab.
-  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(2, tab_strip->count());
   EXPECT_EQ(0, picker_.num_inline_disposition_);
 
   CloseCurrentTab();
@@ -566,7 +569,8 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
 
   // Installing an extension should also choose it. Since this extension uses
   // inline disposition, it will create no tabs and invoke OnInlineDisposition.
-  EXPECT_EQ(1, browser()->tab_count());
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  EXPECT_EQ(1, tab_strip->count());
   EXPECT_EQ(1, picker_.num_inline_disposition_);
 }
 
@@ -615,11 +619,12 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   controller_->ShowDialog(kAction1, kType2);
   picker_.Wait();
 
+  TabStripModel* tab_strip = browser()->tab_strip_model();
   OnExtensionInstallRequested(extension_id);
   picker_.Wait();
   ASSERT_EQ(1, picker_.num_extensions_installed_);
   // The intent launches a new tab.
-  ASSERT_EQ(2, browser()->tab_count());
+  ASSERT_EQ(2, tab_strip->count());
 
   // Make the controller think nothing is being shown.
   picker_.MockClose();
@@ -649,7 +654,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   DCHECK(service_controller);
   EXPECT_FALSE(service_controller->ShowLocationBarPickerButton());
 
-  EXPECT_EQ(3, browser()->tab_count());
+  EXPECT_EQ(3, tab_strip->count());
   EXPECT_EQ(0, picker_.num_inline_disposition_);
   EXPECT_FALSE(dispatcher2.replied_);
 
@@ -682,7 +687,8 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   controller_->ShowDialog(kAction1, kType1);
   picker_.Wait();
 
-  EXPECT_EQ(1, browser()->tab_count());
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  EXPECT_EQ(1, tab_strip->count());
   EXPECT_EQ(0, picker_.num_inline_disposition_);
   EXPECT_TRUE(dispatcher.replied_);
 
@@ -706,7 +712,8 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   controller_->ShowDialog(kAction1, kType1);
   picker_.Wait();
 
-  EXPECT_EQ(1, browser()->tab_count());
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  EXPECT_EQ(1, tab_strip->count());
   EXPECT_EQ(0, picker_.num_inline_disposition_);
 
   // num_installed_services_ would be 2 if the intent wasn't explicit.
@@ -739,9 +746,10 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   EXPECT_EQ(2, picker_.num_installed_services_);
 
   // The tab is shown immediately without needing to call OnServiceChosen.
-  ASSERT_EQ(2, browser()->tab_count());
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  ASSERT_EQ(2, tab_strip->count());
   EXPECT_EQ(GURL(kServiceURL1),
-            chrome::GetActiveWebContents(browser())->GetURL());
+            tab_strip->GetActiveWebContents()->GetURL());
 
   EXPECT_TRUE(dispatcher.dispatched_);
 
@@ -773,9 +781,10 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   EXPECT_EQ(2, picker_.num_installed_services_);
 
   // The tab is shown immediately without needing to call OnServiceChosen.
-  ASSERT_EQ(2, browser()->tab_count());
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  ASSERT_EQ(2, tab_strip->count());
   EXPECT_EQ(GURL(kServiceURL1),
-            chrome::GetActiveWebContents(browser())->GetURL());
+            tab_strip->GetActiveWebContents()->GetURL());
 
   // Simulate click on the location bar use-another-service button.
   content::WindowedNotificationObserver observer(
@@ -791,7 +800,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
 
   // The service tab is closed and the picker is shown again
   // on the original tab.
-  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, tab_strip->count());
   EXPECT_EQ(2, picker_.num_installed_services_);
   EXPECT_EQ(0, picker_.num_inline_disposition_);
 }

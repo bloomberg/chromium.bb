@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   // The new browser should have one tab for each URL.
   TabStripModel* tab_strip = new_browser->tab_strip_model();
-  ASSERT_EQ(static_cast<int>(urls.size()), new_browser->tab_count());
+  ASSERT_EQ(static_cast<int>(urls.size()), tab_strip->count());
   for (size_t i=0; i < urls.size(); i++) {
     EXPECT_EQ(urls[i], tab_strip->GetWebContentsAt(i)->GetURL());
   }
@@ -234,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   ASSERT_NO_FATAL_FAILURE(FindOneOtherBrowser(&new_browser));
 
   // The new browser should have exactly one tab (not the startup URLs).
-  ASSERT_EQ(1, new_browser->tab_count());
+  ASSERT_EQ(1, new_browser->tab_strip_model()->count());
 }
 
 // App shortcuts are not implemented on mac os.
@@ -373,9 +373,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, AddFirstRunTab) {
   Browser* new_browser = NULL;
   ASSERT_NO_FATAL_FAILURE(FindOneOtherBrowser(&new_browser));
 
-  EXPECT_EQ(2, new_browser->tab_count());
-
   TabStripModel* tab_strip = new_browser->tab_strip_model();
+  EXPECT_EQ(2, tab_strip->count());
+
   EXPECT_EQ("title1.html",
             tab_strip->GetWebContentsAt(0)->GetURL().ExtractFileName());
   EXPECT_EQ("title2.html",
@@ -401,9 +401,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, AddCustomFirstRunTab) {
   Browser* new_browser = NULL;
   ASSERT_NO_FATAL_FAILURE(FindOneOtherBrowser(&new_browser));
 
-  EXPECT_EQ(4, new_browser->tab_count());
-
   TabStripModel* tab_strip = new_browser->tab_strip_model();
+  EXPECT_EQ(4, tab_strip->count());
+
   EXPECT_EQ("title1.html",
             tab_strip->GetWebContentsAt(0)->GetURL().ExtractFileName());
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
@@ -430,9 +430,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoNoWelcomePage) {
   Browser* new_browser = NULL;
   ASSERT_NO_FATAL_FAILURE(FindOneOtherBrowser(&new_browser));
 
-  EXPECT_EQ(1, new_browser->tab_count());
-
   TabStripModel* tab_strip = new_browser->tab_strip_model();
+  EXPECT_EQ(1, tab_strip->count());
+
   if (SyncPromoUI::ShouldShowSyncPromoAtStartup(browser()->profile(), true)) {
     EXPECT_EQ("signin", tab_strip->GetWebContentsAt(0)->GetURL().host());
   } else {
@@ -458,9 +458,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithWelcomePage) {
   Browser* new_browser = NULL;
   ASSERT_NO_FATAL_FAILURE(FindOneOtherBrowser(&new_browser));
 
-  EXPECT_EQ(2, new_browser->tab_count());
-
   TabStripModel* tab_strip = new_browser->tab_strip_model();
+  EXPECT_EQ(2, tab_strip->count());
+
   if (SyncPromoUI::ShouldShowSyncPromoAtStartup(browser()->profile(), true)) {
     EXPECT_EQ("signin", tab_strip->GetWebContentsAt(0)->GetURL().host());
   } else {
@@ -498,12 +498,12 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, SyncPromoWithFirstRunTabs) {
 
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   if (SyncPromoUI::ShouldShowSyncPromoAtStartup(browser()->profile(), true)) {
-    EXPECT_EQ(2, new_browser->tab_count());
+    EXPECT_EQ(2, tab_strip->count());
     EXPECT_EQ("signin", tab_strip->GetWebContentsAt(0)->GetURL().host());
     EXPECT_EQ("title1.html",
               tab_strip->GetWebContentsAt(1)->GetURL().ExtractFileName());
   } else {
-    EXPECT_EQ(1, new_browser->tab_count());
+    EXPECT_EQ(1, tab_strip->count());
     EXPECT_EQ("title1.html",
               tab_strip->GetWebContentsAt(0)->GetURL().ExtractFileName());
   }
@@ -534,14 +534,14 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   if (SyncPromoUI::ShouldShowSyncPromoAtStartup(browser()->profile(), true)) {
-    EXPECT_EQ(3, new_browser->tab_count());
+    EXPECT_EQ(3, tab_strip->count());
     EXPECT_EQ("signin", tab_strip->GetWebContentsAt(0)->GetURL().host());
     EXPECT_EQ("title1.html",
               tab_strip->GetWebContentsAt(1)->GetURL().ExtractFileName());
     EXPECT_EQ(internals::GetWelcomePageURL(),
               tab_strip->GetWebContentsAt(2)->GetURL());
   } else {
-    EXPECT_EQ(2, new_browser->tab_count());
+    EXPECT_EQ(2, tab_strip->count());
     EXPECT_EQ("title1.html",
               tab_strip->GetWebContentsAt(0)->GetURL().ExtractFileName());
     EXPECT_EQ(internals::GetWelcomePageURL(),

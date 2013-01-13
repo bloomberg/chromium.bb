@@ -149,10 +149,11 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowMacTest, TabClose) {
   EXPECT_EQ(1.0, [sheet_window_ alphaValue]);
 
   // Close the tab.
-  EXPECT_EQ(2, browser()->tab_count());
-  EXPECT_TRUE(browser()->tab_strip_model()->CloseWebContentsAt(
-      1, TabStripModel::CLOSE_USER_GESTURE));
-  EXPECT_EQ(1, browser()->tab_count());
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  EXPECT_EQ(2, tab_strip->count());
+  EXPECT_TRUE(tab_strip->CloseWebContentsAt(1,
+                                            TabStripModel::CLOSE_USER_GESTURE));
+  EXPECT_EQ(1, tab_strip->count());
 }
 
 // Test that adding a sheet disables fullscreen.

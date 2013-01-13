@@ -146,13 +146,12 @@
 }
 
 - (NSArray*)tabs {
-  NSMutableArray* tabs = [NSMutableArray
-      arrayWithCapacity:browser_->tab_count()];
+  TabStripModel* tabStrip = browser_->tab_strip_model();
+  NSMutableArray* tabs = [NSMutableArray arrayWithCapacity:tabStrip->count()];
 
-  for (int i = 0; i < browser_->tab_count(); ++i) {
+  for (int i = 0; i < tabStrip->count(); ++i) {
     // Check to see if tab is closing.
-    content::WebContents* webContents =
-        browser_->tab_strip_model()->GetWebContentsAt(i);
+    content::WebContents* webContents = tabStrip->GetWebContentsAt(i);
     if (webContents->IsBeingDestroyed()) {
       continue;
     }

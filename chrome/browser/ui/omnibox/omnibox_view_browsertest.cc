@@ -229,7 +229,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
 
   void WaitForTabOpenOrCloseForBrowser(const Browser* browser,
                                        int expected_tab_count) {
-    int tab_count = browser->tab_count();
+    int tab_count = browser->tab_strip_model()->count();
     if (tab_count == expected_tab_count)
       return;
 
@@ -240,10 +240,12 @@ class OmniboxViewTest : public InProcessBrowserTest,
             static_cast<int>(content::NOTIFICATION_WEB_CONTENTS_DESTROYED),
         content::NotificationService::AllSources());
 
-    while (!HasFailure() && browser->tab_count() != expected_tab_count)
+    while (!HasFailure() &&
+           browser->tab_strip_model()->count() != expected_tab_count) {
       content::RunMessageLoop();
+    }
 
-    ASSERT_EQ(expected_tab_count, browser->tab_count());
+    ASSERT_EQ(expected_tab_count, browser->tab_strip_model()->count());
   }
 
   void WaitForTabOpenOrClose(int expected_tab_count) {
@@ -393,7 +395,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     OmniboxView* omnibox_view = NULL;
     ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
 
-    int tab_count = browser()->tab_count();
+    int tab_count = browser()->tab_strip_model()->count();
 
     // Create a new Tab.
     chrome::NewTab(browser());
@@ -599,7 +601,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
 
     omnibox_view->SetUserText(ASCIIToUTF16(chrome::kChromeUIHistoryURL));
-    int tab_count = browser()->tab_count();
+    int tab_count = browser()->tab_strip_model()->count();
     // alt-Enter opens a new tab.
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RETURN, ui::EF_ALT_DOWN));
     ASSERT_NO_FATAL_FAILURE(WaitForTabOpenOrClose(tab_count + 1));
