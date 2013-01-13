@@ -936,6 +936,8 @@ void LayerTreeHostImpl::activatePendingTree()
     m_activeTree.swap(m_pendingTree);
     // TODO(enne): consider recycling this tree to prevent layer churn
     m_pendingTree.reset();
+    m_activeTree->DidBecomeActive();
+
     m_client->onCanDrawStateChanged(canDraw());
     m_client->onHasPendingTreeStateChanged(pendingTree());
     m_client->setNeedsRedrawOnImplThread();

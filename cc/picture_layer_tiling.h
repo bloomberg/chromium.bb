@@ -101,6 +101,8 @@ class CC_EXPORT PictureLayerTiling {
       const gfx::Transform& current_screen_transform,
       double time_delta);
 
+  void MoveTilePriorities(WhichTree src_tree, WhichTree dst_tree);
+
  protected:
   typedef std::pair<int, int> TileMapKey;
   typedef base::hash_map<TileMapKey, scoped_refptr<Tile> > TileMap;

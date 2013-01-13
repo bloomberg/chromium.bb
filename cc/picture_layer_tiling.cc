@@ -315,4 +315,13 @@ void PictureLayerTiling::UpdateTilePriorities(
   }
 }
 
+void PictureLayerTiling::MoveTilePriorities(WhichTree src_tree,
+                                            WhichTree dst_tree) {
+  DCHECK(src_tree != dst_tree);
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
+    it->second->set_priority(dst_tree, it->second->priority(src_tree));
+    it->second->set_priority(src_tree, TilePriority());
+  }
+}
+
 }  // namespace cc

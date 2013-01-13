@@ -32,6 +32,7 @@ public:
   virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
   virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
   virtual void didUpdateTransforms() OVERRIDE;
+  virtual void didBecomeActive() OVERRIDE;
   virtual void calculateContentsScale(
       float ideal_contents_scale,
       float* contents_scale_x,

@@ -135,6 +135,8 @@ class CC_EXPORT LayerTreeImpl {
 
   void PushPersistedState(LayerTreeImpl* pendingTree);
 
+  void DidBecomeActive();
+
 protected:
   LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
 

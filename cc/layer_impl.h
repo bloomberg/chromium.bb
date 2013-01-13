@@ -271,6 +271,7 @@ public:
     virtual Region visibleContentOpaqueRegion() const;
 
     virtual void didUpdateTransforms() { }
+    virtual void didBecomeActive() { }
 
     // Indicates that the surface previously used to render this layer
     // was lost and that a new one has been created. Won't be called

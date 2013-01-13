@@ -179,6 +179,10 @@ void PictureLayerImpl::didUpdateTransforms() {
   last_content_scale_ = contentsScaleX();
 }
 
+void PictureLayerImpl::didBecomeActive() {
+  tilings_.MoveTilePriorities(PENDING_TREE, ACTIVE_TREE);
+}
+
 void PictureLayerImpl::calculateContentsScale(
     float ideal_contents_scale,
     float* contents_scale_x,

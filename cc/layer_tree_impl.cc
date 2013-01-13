@@ -204,6 +204,17 @@ void LayerTreeImpl::PushPersistedState(LayerTreeImpl* pendingTree) {
       LayerTreeHostCommon::findLayerInSubtree(pendingTree->RootLayer(), id));
 }
 
+static void DidBecomeActiveRecursive(LayerImpl* layer) {
+  layer->didBecomeActive();
+  for (size_t i = 0; i < layer->children().size(); ++i)
+    DidBecomeActiveRecursive(layer->children()[i]);
+}
+
+void LayerTreeImpl::DidBecomeActive() {
+  if (RootLayer())
+    DidBecomeActiveRecursive(RootLayer());
+}
+
 const LayerTreeSettings& LayerTreeImpl::settings() const {
   return layer_tree_host_impl_->settings();
 }
