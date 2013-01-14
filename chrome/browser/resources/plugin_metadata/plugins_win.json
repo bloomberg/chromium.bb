@@ -163,9 +163,9 @@
     ],
     "versions": [
       {
-        "version": "11.6.6.636",
+        "version": "11.6.8.638",
         "status": "requires_authorization",
-        "reference": "http://www.adobe.com/support/security/bulletins/apsb12-17.html"
+        "reference": "http://www.adobe.com/support/security/bulletins/apsb12-23.html"
       }
     ],
     "lang": "en-US",
@@ -185,24 +185,33 @@
     ],
     "versions": [
       {
-        "version": "9.5.2",
+        "version": "9.5.3",
         "status": "requires_authorization",
-        "reference": "http://www.adobe.com/support/security/bulletins/apsb12-16.html"
+        "reference": "http://www.adobe.com/support/security/bulletins/apsb13-02.html"
       },
       {
         "version": "10",
         "status": "out_of_date"
       },
       {
-        "version": "10.1.4",
+        "version": "10.1.5",
+        "status": "requires_authorization",
+        "reference": "http://www.adobe.com/support/security/bulletins/apsb13-02.html"
+      },
+      {
+        "version": "11",
+        "status": "out_of_date"
+      },
+      {
+        "version": "11.0.1",
         "status": "up_to_date",
-        "reference": "http://www.adobe.com/support/security/bulletins/apsb12-16.html"
+        "reference": "http://www.adobe.com/support/security/bulletins/apsb13-02.html"
       }
     ],
     "lang": "en-US",
     "name": "Adobe Reader",
     "help_url": "https://support.google.com/chrome/?p=plugin_pdf",
-    "url": "http://ardownload.adobe.com/pub/adobe/reader/win/10.x/10.1.4/en_US/AdbeRdr1014_en_US.exe",
+    "url": "http://ardownload.adobe.com/pub/adobe/reader/win/11.x/11.0.01/en_US/AdbeRdr11001_en_US.exe",
     "group_name_matcher": "*Adobe Acrobat*"
   },
   "apple-quicktime": {
