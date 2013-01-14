@@ -40,6 +40,7 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_SEND_REQUEST_JS" file="extensions\send_request.js" type="BINDATA" />
       <include name="IDR_SET_ICON_JS" file="extensions\set_icon.js" type="BINDATA" />
       <include name="IDR_UTILS_JS" file="extensions\utils.js" type="BINDATA" />
+      <include name="IDR_ENTRY_ID_MANAGER" file="extensions\entry_id_manager.js" type="BINDATA" />
 
       <if expr="pp_ifdef('enable_extensions')">
         <!-- Custom bindings for extension APIs. -->

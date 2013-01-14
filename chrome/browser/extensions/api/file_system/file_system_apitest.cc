@@ -220,3 +220,12 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiIsWritableTest) {
   ASSERT_TRUE(RunPlatformAppTest(
       "api_test/file_system/is_writable_file_entry")) << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetEntryId) {
+  FilePath test_file = TempFilePath("writable.txt", true);
+  ASSERT_FALSE(test_file.empty());
+  FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(
+      &test_file);
+  ASSERT_TRUE(RunPlatformAppTest(
+      "api_test/file_system/get_entry_id")) << message_;
+}

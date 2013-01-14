@@ -1,0 +1,11 @@
+{
+  "name": "chrome.fileSystem.getEntryId test",
+  "version": "0.1",
+  "description": "Test for chrome.fileSystem.getEntryId",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": ["fileSystem"]
+}

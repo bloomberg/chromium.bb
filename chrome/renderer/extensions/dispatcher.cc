@@ -623,6 +623,7 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("sendRequest", IDR_SEND_REQUEST_JS);
   source_map_.RegisterSource("setIcon", IDR_SET_ICON_JS);
   source_map_.RegisterSource("utils", IDR_UTILS_JS);
+  source_map_.RegisterSource("entryIdManager", IDR_ENTRY_ID_MANAGER);
 
   // Custom bindings.
   source_map_.RegisterSource("app", IDR_APP_CUSTOM_BINDINGS_JS);

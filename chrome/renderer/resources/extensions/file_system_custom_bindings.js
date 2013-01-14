@@ -8,6 +8,7 @@ var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var fileSystemNatives = requireNative('file_system_natives');
 var GetIsolatedFileSystem = fileSystemNatives.GetIsolatedFileSystem;
 var lastError = require('lastError');
+var entryIdManager = require('entryIdManager');
 
 chromeHidden.registerCustomHook('fileSystem', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
@@ -31,10 +32,16 @@ chromeHidden.registerCustomHook('fileSystem', function(bindingsAPI) {
 
         var fileSystemId = response.fileSystemId;
         var baseName = response.baseName;
+        // TODO(koz): Generate a persistent id in the browser and use it here.
+        var id = fileSystemId + ":" + baseName;
         var fs = GetIsolatedFileSystem(fileSystemId);
 
         try {
+          // TODO(koz): fs.root.getFile() makes a trip to the browser process,
+          // but it might be possible avoid that by calling
+          // WebFrame::createFileEntry().
           fs.root.getFile(baseName, {}, function(fileEntry) {
+            entryIdManager.registerEntry(id, fileEntry);
             callback(fileEntry);
           }, function(fileError) {
             lastError.set('Error getting fileEntry, code: ' + fileError.code);
@@ -48,6 +55,14 @@ chromeHidden.registerCustomHook('fileSystem', function(bindingsAPI) {
     });
   }
   ['getWritableEntry', 'chooseEntry'].forEach(bindFileEntryCallback);
+
+  apiFunctions.setHandleRequest('getEntryId', function(fileEntry) {
+    return entryIdManager.getEntryId(fileEntry);
+  });
+
+  apiFunctions.setHandleRequest('getEntryById', function(id) {
+    return entryIdManager.getEntryById(id);
+  });
 
   // TODO(benwells): Remove these deprecated versions of the functions.
   chrome.fileSystem.getWritableFileEntry = function() {

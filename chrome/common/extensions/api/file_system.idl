@@ -69,5 +69,12 @@ namespace fileSystem {
     // Ask the user to choose a file.
     static void chooseEntry(optional ChooseEntryOptions options,
                             FileEntryCallback callback);
+
+    // Returns the file entry with the given id.
+    [nocompile] static FileEntry getEntryById(DOMString id);
+
+    // Returns the id of the given file entry.
+    [nocompile] static DOMString getEntryId(
+        [instanceOf=FileEntry] object fileEntry);
   };
 };
