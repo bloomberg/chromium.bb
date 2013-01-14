@@ -120,15 +120,20 @@ const std::string& MediaStreamDevicesController::GetSecurityOriginSpec() const {
 }
 
 void MediaStreamDevicesController::Accept(bool update_content_setting) {
-  // Get the default devices for the request.
   content::MediaStreamDevices devices;
-  media::GetDefaultDevicesForProfile(profile_,
-                                     has_audio_,
-                                     has_video_,
-                                     &devices);
+  // If policy has blocked access to some device we might end up with both
+  // |has_audio_| and |has_video_| being false in which case we should behave as
+  // if Deny(false) was called.
+  if (has_audio_ || has_video_) {
+    // Get the default devices for the request.
+    media::GetDefaultDevicesForProfile(profile_,
+                                       has_audio_,
+                                       has_video_,
+                                       &devices);
 
-  if (update_content_setting && IsSchemeSecure() && !devices.empty())
-    SetPermission(true);
+    if (update_content_setting && IsSchemeSecure() && !devices.empty())
+      SetPermission(true);
+  }
 
   callback_.Run(devices);
 }
