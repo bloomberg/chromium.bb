@@ -168,6 +168,7 @@
       ],
       'defines': [
         'HAS_OUT_OF_PROC_TEST_RUNNER',
+        'INTERACTIVE_TESTS',
       ],
       'sources': [
         'browser/browser_keyevents_browsertest.cc',
@@ -234,6 +235,18 @@
         'test/base/view_event_test_base.cc',
         'test/base/view_event_test_base.h',
         'test/ppapi/ppapi_interactive_browsertest.cc',
+        # TODO(jam): move these files to chrome/test/base
+        '../ash/ui_controls_ash.cc',
+        '../ui/aura/ui_controls_aura.h',
+        '../ui/aura/ui_controls_win.cc',
+        '../ui/aura/ui_controls_x11.cc',
+        '../ui/ui_controls/ui_controls.h',
+        '../ui/ui_controls/ui_controls_aura.cc',
+        '../ui/ui_controls/ui_controls_gtk.cc',
+        '../ui/ui_controls/ui_controls_internal_win.cc',
+        '../ui/ui_controls/ui_controls_internal_win.h',
+        '../ui/ui_controls/ui_controls_mac.mm',
+        '../ui/ui_controls/ui_controls_win.cc',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
@@ -315,6 +328,7 @@
         ['use_aura==1', {
           'sources!': [
             'browser/ui/views/tabs/tab_drag_controller_interactive_uitest_win.cc',
+            '../ui/ui_controls/ui_controls_win.cc',
           ],
         }],
         ['chromeos==1', {

@@ -15,10 +15,6 @@ namespace gfx {
 class ImageSkia;
 }
 
-namespace ui_controls {
-class UIControlsAura;
-}
-
 namespace views {
 class View;
 class Widget;
@@ -33,8 +29,6 @@ views::Widget* CreateDesktopBackground(aura::RootWindow* root_window,
                                        int container_id);
 
 ASH_EXPORT views::Widget* CreateStatusArea(views::View* contents);
-
-ui_controls::UIControlsAura* CreateUIControls();
 }  // namespace internal
 
 }  // namespace ash

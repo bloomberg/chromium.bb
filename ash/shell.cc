@@ -77,7 +77,6 @@
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/ui_controls_aura.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
@@ -86,7 +85,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
-#include "ui/ui_controls/ui_controls.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/corewm_switches.h"
 #include "ui/views/corewm/focus_controller.h"
@@ -209,7 +207,6 @@ Shell::Shell(ShellDelegate* delegate)
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE, screen_);
   if (!gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE))
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_);
-  ui_controls::InstallUIControlsAura(internal::CreateUIControls());
 #if defined(OS_CHROMEOS)
   content::GpuFeatureType blacklisted_features =
       content::GpuDataManager::GetInstance()->GetBlacklistedFeatures();

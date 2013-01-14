@@ -283,7 +283,6 @@
         'touch/touch_observer_hud.h',
         'touch/touch_uma.cc',
         'touch/touch_uma.h',
-        'ui_controls_ash.cc',
         'volume_control_delegate.h',
         'wm/app_list_controller.cc',
         'wm/app_list_controller.h',

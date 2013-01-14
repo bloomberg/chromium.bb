@@ -7,14 +7,13 @@
 
 #include "base/callback_forward.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/base/ui_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ui_controls/ui_controls.h"
 
 namespace ui_controls {
 
 // An interface to provide Aura implementation of UI control.
-class UI_EXPORT UIControlsAura {
+class UIControlsAura {
  public:
   UIControlsAura();
   virtual ~UIControlsAura();

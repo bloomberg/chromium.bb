@@ -532,13 +532,6 @@
         'gfx/video_decode_acceleration_support_mac.mm',
         'notifications/notification_types.h',
         'notifications/notification_types.cc',
-        'ui_controls/ui_controls.h',
-        'ui_controls/ui_controls_aura.cc',
-        'ui_controls/ui_controls_gtk.cc',
-        'ui_controls/ui_controls_internal_win.cc',
-        'ui_controls/ui_controls_internal_win.h',
-        'ui_controls/ui_controls_mac.mm',
-        'ui_controls/ui_controls_win.cc',
       ],
       'target_conditions': [
         ['OS == "ios"', {
@@ -607,7 +600,6 @@
             ['exclude', 'base/x/root_window_property_watcher_x.h'],
             ['exclude', 'base/x/work_area_watcher_x.cc'],
             ['exclude', 'base/x/work_area_watcher_x.h'],
-            ['exclude', 'ui_controls_win.cc'],
            ],
         }, {  # use_aura!=1
           'sources!': [

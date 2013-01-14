@@ -9,7 +9,6 @@
 #include "build/build_config.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/base/ui_export.h"
 
 namespace ui_controls {
 
@@ -32,25 +31,25 @@ namespace ui_controls {
 //
 // If you're writing a test chances are you want the variant in ui_test_utils.
 // See it for details.
-UI_EXPORT bool SendKeyPress(gfx::NativeWindow window,
-                            ui::KeyboardCode key,
-                            bool control,
-                            bool shift,
-                            bool alt,
-                            bool command);
-UI_EXPORT bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
-                                          ui::KeyboardCode key,
-                                          bool control,
-                                          bool shift,
-                                          bool alt,
-                                          bool command,
-                                          const base::Closure& task);
+bool SendKeyPress(gfx::NativeWindow window,
+                  ui::KeyboardCode key,
+                  bool control,
+                  bool shift,
+                  bool alt,
+                  bool command);
+bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
+                                ui::KeyboardCode key,
+                                bool control,
+                                bool shift,
+                                bool alt,
+                                bool command,
+                                const base::Closure& task);
 
 // Simulate a mouse move. (x,y) are absolute screen coordinates.
-UI_EXPORT bool SendMouseMove(long x, long y);
-UI_EXPORT bool SendMouseMoveNotifyWhenDone(long x,
-                                           long y,
-                                           const base::Closure& task);
+bool SendMouseMove(long x, long y);
+bool SendMouseMoveNotifyWhenDone(long x,
+                                 long y,
+                                 const base::Closure& task);
 
 enum MouseButton {
   LEFT = 0,
@@ -67,22 +66,26 @@ enum MouseButtonState {
 // Sends a mouse down and/or up message. The click will be sent to wherever
 // the cursor currently is, so be sure to move the cursor before calling this
 // (and be sure the cursor has arrived!).
-UI_EXPORT bool SendMouseEvents(MouseButton type, int state);
-UI_EXPORT bool SendMouseEventsNotifyWhenDone(MouseButton type,
-                                             int state,
-                                             const base::Closure& task);
+bool SendMouseEvents(MouseButton type, int state);
+bool SendMouseEventsNotifyWhenDone(MouseButton type,
+                                   int state,
+                                   const base::Closure& task);
 
 // Same as SendMouseEvents with UP | DOWN.
-UI_EXPORT bool SendMouseClick(MouseButton type);
+bool SendMouseClick(MouseButton type);
 
 #if defined(TOOLKIT_VIEWS)
 // Runs |closure| after processing all pending ui events.
-UI_EXPORT void RunClosureAfterAllPendingUIEvents(const base::Closure& closure);
+void RunClosureAfterAllPendingUIEvents(const base::Closure& closure);
 #endif
 
 #if defined(USE_AURA)
 class UIControlsAura;
-UI_EXPORT void InstallUIControlsAura(UIControlsAura* instance);
+void InstallUIControlsAura(UIControlsAura* instance);
+#endif
+
+#if defined(USE_ASH)
+ui_controls::UIControlsAura* CreateAshUIControls();
 #endif
 
 }  // namespace ui_controls

@@ -14,10 +14,6 @@ namespace gfx {
 class Rect;
 }
 
-namespace ui_controls {
-class UIControlsAura;
-}
-
 namespace ash {
 class FramePainter;
 namespace internal {
@@ -63,10 +59,6 @@ ASH_EXPORT extern const aura::WindowProperty<ash::FramePainter*>* const
 // This is exported as it's used in the tests.
 ASH_EXPORT extern const aura::WindowProperty<bool>* const
     kStayInSameRootWindowKey;
-
-// Used to store a ui_controls for each root window.
-extern const aura::WindowProperty<ui_controls::UIControlsAura*>* const
-    kUIControlsKey;
 
 // A property key to remember if a windows position or size was changed by a
 // user.

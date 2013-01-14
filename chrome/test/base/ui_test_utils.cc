@@ -73,7 +73,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/size.h"
 #include "ui/snapshot/snapshot.h"
-#include "ui/ui_controls/ui_controls.h"
 
 #if defined(USE_AURA)
 #include "ash/shell.h"
@@ -673,19 +672,6 @@ void OverrideGeolocation(double latitude, double longitude) {
   content::OverrideLocationForTesting(position, runner->QuitClosure());
   runner->Run();
 }
-
-namespace internal {
-
-void ClickTask(ui_controls::MouseButton button,
-               int state,
-               const base::Closure& followup) {
-  if (!followup.is_null())
-    ui_controls::SendMouseEventsNotifyWhenDone(button, state, followup);
-  else
-    ui_controls::SendMouseEvents(button, state);
-}
-
-}  // namespace internal
 
 HistoryEnumerator::HistoryEnumerator(Profile* profile) {
   scoped_refptr<content::MessageLoopRunner> message_loop_runner =

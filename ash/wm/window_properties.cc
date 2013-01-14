@@ -32,9 +32,6 @@ DEFINE_WINDOW_PROPERTY_KEY(RootWindowController*,
 DEFINE_WINDOW_PROPERTY_KEY(
     ash::FramePainter*, kSoloWindowFramePainterKey, NULL);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kStayInSameRootWindowKey, false);
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(ui_controls::UIControlsAura,
-                                 kUIControlsKey,
-                                 NULL);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kUsesScreenCoordinatesKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kUserChangedWindowPositionOrSizeKey, false);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect,

@@ -32,6 +32,11 @@
 #include "ui/views/focus/accelerator_handler.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/ui_controls_aura.h"
+#include "ui/ui_controls/ui_controls.h"
+#endif
+
 const char kEmptyTestName[] = "InProcessBrowserTest.Empty";
 
 class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
@@ -118,6 +123,20 @@ int main(int argc, char** argv) {
 #if defined(OS_MACOSX)
   chrome_browser_application_mac::RegisterBrowserCrApp();
 #endif
+
+// Only allow ui_controls to be used in interactive_ui_tests, since they depend
+// on focus and can't be sharded.
+#if defined(INTERACTIVE_TESTS)
+
+#if defined(OS_CHROMEOS)
+  ui_controls::InstallUIControlsAura(ui_controls::CreateAshUIControls());
+#elif defined(USE_AURA)
+  // TODO(win_ash): when running interactive_ui_tests for Win Ash, use above.
+  ui_controls::InstallUIControlsAura(aura::CreateUIControlsAura(NULL));
+#endif
+
+#endif
+
   ChromeTestLauncherDelegate launcher_delegate;
   return content::LaunchTests(&launcher_delegate, argc, argv);
 }

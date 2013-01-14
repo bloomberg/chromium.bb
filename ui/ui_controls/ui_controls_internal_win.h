@@ -7,7 +7,6 @@
 
 #include "base/callback_forward.h"
 #include "ui/ui_controls/ui_controls.h"
-#include "ui/base/ui_export.h"
 
 namespace ui_controls {
 namespace internal {
@@ -15,17 +14,17 @@ namespace internal {
 // A utility functions for windows to send key or mouse events and
 // run the task. These functions are internal, but exported so that
 // aura implementation can use these utility functions.
-UI_EXPORT bool SendKeyPressImpl(HWND hwnd,
-                                ui::KeyboardCode key,
-                                bool control,
-                                bool shift,
-                                bool alt,
-                                const base::Closure& task);
-UI_EXPORT bool SendMouseMoveImpl(long x, long y, const base::Closure& task);
-UI_EXPORT bool SendMouseEventsImpl(MouseButton type,
-                                   int state,
-                                   const base::Closure& task);
-UI_EXPORT void RunClosureAfterAllPendingUITasksImpl(const base::Closure& task);
+bool SendKeyPressImpl(HWND hwnd,
+                      ui::KeyboardCode key,
+                      bool control,
+                      bool shift,
+                      bool alt,
+                      const base::Closure& task);
+bool SendMouseMoveImpl(long x, long y, const base::Closure& task);
+bool SendMouseEventsImpl(MouseButton type,
+                         int state,
+                         const base::Closure& task);
+void RunClosureAfterAllPendingUITasksImpl(const base::Closure& task);
 
 }  // namespace internal
 }  // namespace ui_controls

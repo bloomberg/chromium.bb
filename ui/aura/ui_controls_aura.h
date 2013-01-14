@@ -5,8 +5,6 @@
 #ifndef UI_AURA_UI_CONTROLS_AURA_H_
 #define UI_AURA_UI_CONTROLS_AURA_H_
 
-#include "ui/aura/aura_export.h"
-
 namespace ui_controls {
 class UIControlsAura;
 }
@@ -14,8 +12,7 @@ class UIControlsAura;
 namespace aura {
 class RootWindow;
 
-AURA_EXPORT ui_controls::UIControlsAura* CreateUIControlsAura(
-    RootWindow* root_window);
+ui_controls::UIControlsAura* CreateUIControlsAura(RootWindow* root_window);
 
 }  // namespace aura
 
