@@ -704,6 +704,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void SetFaviconSizes(FaviconID icon_id,
                        const FaviconSizes& favicon_sizes);
 
+  // Returns true if the bitmap data at |bitmap_id| equals |new_bitmap_data|.
+  bool IsFaviconBitmapDataEqual(
+      FaviconBitmapID bitmap_id,
+      const scoped_refptr<base::RefCountedMemory>& new_bitmap_data);
+
   // Returns true if there are favicons for |page_url| and one of the types in
   // |icon_types|.
   // |favicon_bitmap_results| is set to the favicon bitmaps which most closely

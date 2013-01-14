@@ -142,6 +142,11 @@ class ThumbnailDatabase {
                         scoped_refptr<base::RefCountedMemory> bitmap_data,
                         base::Time time);
 
+  // Sets the last updated time for the favicon bitmap at |bitmap_id|.
+  // Returns true if successful.
+  bool SetFaviconBitmapLastUpdateTime(FaviconBitmapID bitmap_id,
+                                      base::Time time);
+
   // Deletes the favicon bitmaps for the favicon with with |icon_id|.
   // Returns true if successful.
   bool DeleteFaviconBitmapsForFavicon(FaviconID icon_id);

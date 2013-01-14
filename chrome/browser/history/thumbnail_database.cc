@@ -597,6 +597,17 @@ bool ThumbnailDatabase::SetFaviconBitmap(
   return statement.Run();
 }
 
+bool ThumbnailDatabase::SetFaviconBitmapLastUpdateTime(
+    FaviconBitmapID bitmap_id,
+    base::Time time) {
+  DCHECK(bitmap_id);
+  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
+      "UPDATE favicon_bitmaps SET last_updated=? WHERE id=?"));
+  statement.BindInt64(0, time.ToInternalValue());
+  statement.BindInt64(1, bitmap_id);
+  return statement.Run();
+}
+
 bool ThumbnailDatabase::DeleteFaviconBitmapsForFavicon(FaviconID icon_id) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM favicon_bitmaps WHERE icon_id=?"));

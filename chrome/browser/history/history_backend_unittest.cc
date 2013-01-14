@@ -1792,11 +1792,37 @@ TEST_F(HistoryBackendTest, MergeFaviconPageURLInDB) {
   EXPECT_TRUE(BitmapDataEqual('a', favicon_bitmap.bitmap_data));
   EXPECT_EQ(kSmallSize, favicon_bitmap.pixel_size);
 
-  // 1) Merge favicon of the same size.
+  EXPECT_EQ(1, num_broadcasted_notifications());
+
+  // 1) Merge identical favicon bitmap.
   std::vector<unsigned char> data;
-  data.push_back('b');
+  data.push_back('a');
   scoped_refptr<base::RefCountedBytes> bitmap_data(
       new base::RefCountedBytes(data));
+  backend_->MergeFavicon(page_url, icon_url1, FAVICON, bitmap_data, kSmallSize);
+
+  // All the data should stay the same and no notifications should have been
+  // sent.
+  icon_mappings.clear();
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingsForPageURL(page_url,
+      &icon_mappings));
+  EXPECT_EQ(1u, icon_mappings.size());
+  EXPECT_EQ(icon_url1, icon_mappings[0].icon_url);
+
+  favicon_sizes.clear();
+  EXPECT_TRUE(backend_->thumbnail_db_->GetFaviconHeader(
+      icon_mappings[0].icon_id, NULL, NULL, &favicon_sizes));
+  EXPECT_EQ(GetSizesSmallAndLarge(), favicon_sizes);
+
+  EXPECT_TRUE(GetOnlyFaviconBitmap(icon_mappings[0].icon_id, &favicon_bitmap));
+  EXPECT_TRUE(BitmapDataEqual('a', favicon_bitmap.bitmap_data));
+  EXPECT_EQ(kSmallSize, favicon_bitmap.pixel_size);
+
+  EXPECT_EQ(1, num_broadcasted_notifications());
+
+  // 2) Merge favicon bitmap of the same size.
+  data[0] = 'b';
+  bitmap_data = new base::RefCountedBytes(data);
   backend_->MergeFavicon(page_url, icon_url1, FAVICON, bitmap_data, kSmallSize);
 
   // The small favicon bitmap at |icon_url1| should be overwritten and favicon
@@ -1816,7 +1842,7 @@ TEST_F(HistoryBackendTest, MergeFaviconPageURLInDB) {
   EXPECT_TRUE(BitmapDataEqual('b', favicon_bitmap.bitmap_data));
   EXPECT_EQ(kSmallSize, favicon_bitmap.pixel_size);
 
-  // 2) Merge favicon for the same icon URL, but a pixel size for which there is
+  // 3) Merge favicon for the same icon URL, but a pixel size for which there is
   // no favicon bitmap.
   data[0] = 'c';
   bitmap_data = new base::RefCountedBytes(data);
@@ -1843,7 +1869,7 @@ TEST_F(HistoryBackendTest, MergeFaviconPageURLInDB) {
   EXPECT_TRUE(BitmapDataEqual('b', favicon_bitmaps[1].bitmap_data));
   EXPECT_EQ(kSmallSize, favicon_bitmaps[1].pixel_size);
 
-  // 3) Merge favicon for an icon URL different from the icon URLs already
+  // 4) Merge favicon for an icon URL different from the icon URLs already
   // mapped to page URL.
   data[0] = 'd';
   bitmap_data = new base::RefCountedBytes(data);
