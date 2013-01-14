@@ -1233,9 +1233,10 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
   for (BrowserList::const_reverse_iterator it =
            BrowserList::begin_last_active();
        it != BrowserList::end_last_active(); ++it, ++index) {
-    Browser *browser = *it;
-    WebContents* web_contents = browser->tab_strip_model()->GetWebContentsAt(
-        browser->active_index());
+    Browser* browser = *it;
+    TabStripModel* tab_strip = browser->tab_strip_model();
+    WebContents* web_contents =
+        tab_strip->GetWebContentsAt(tab_strip->active_index());
     FaviconTabHelper* favicon_tab_helper =
         FaviconTabHelper::FromWebContents(web_contents);
     gfx::Image app_icon = favicon_tab_helper->GetFavicon();

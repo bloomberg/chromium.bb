@@ -1195,7 +1195,7 @@ void BrowserWindowGtk::TabDetachedAt(WebContents* contents, int index) {
   // the model has already removed |contents| from its list, so
   // chrome::GetActiveWebContents(browser_.get()) will return NULL or something
   // else.
-  if (index == browser_->active_index()) {
+  if (index == browser_->tab_strip_model()->active_index()) {
     infobar_container_->ChangeInfoBarService(NULL);
     UpdateDevToolsForContents(NULL);
   }

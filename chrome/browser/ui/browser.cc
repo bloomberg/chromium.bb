@@ -752,13 +752,6 @@ Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Browser, TabStripModel pass-thrus:
-
-int Browser::active_index() const {
-  return tab_strip_model_->active_index();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // Browser, Tab adding/showing functions:
 
 void Browser::WindowFullscreenStateChanged() {
@@ -1096,7 +1089,8 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
   SessionService* session_service =
       SessionServiceFactory::GetForProfileIfExisting(profile_);
   if (session_service && !tab_strip_model_->closing_all()) {
-    session_service->SetSelectedTabInWindow(session_id(), active_index());
+    session_service->SetSelectedTabInWindow(session_id(),
+                                            tab_strip_model_->active_index());
   }
 
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_SWITCH);
@@ -1123,7 +1117,9 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
       SessionServiceFactory::GetForProfile(profile_);
   if (session_service)
     session_service->TabClosing(old_contents);
-  TabInsertedAt(new_contents, index, (index == active_index()));
+  TabInsertedAt(new_contents,
+                index,
+                (index == tab_strip_model_->active_index()));
 
   int entry_count = new_contents->GetController().GetEntryCount();
   if (entry_count > 0) {
@@ -2177,7 +2173,7 @@ void Browser::TabDetachedAtImpl(content::WebContents* contents,
   SetAsDelegate(contents, NULL);
   RemoveScheduledUpdatesFor(contents);
 
-  if (find_bar_controller_.get() && index == active_index()) {
+  if (find_bar_controller_.get() && index == tab_strip_model_->active_index()) {
     find_bar_controller_->ChangeWebContents(NULL);
   }
 

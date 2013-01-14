@@ -949,14 +949,14 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
                                    content::PAGE_TRANSITION_TYPED, GURL());
 
   // Make sure the second tab is selected.
-  EXPECT_EQ(1, browser()->active_index());
+  EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
 
   // The tab contents should have the focus in the second tab.
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
 
   // Go back to the first tab. The focus should not be in the omnibox.
   chrome::SelectPreviousTab(browser());
-  EXPECT_EQ(0, browser()->active_index());
+  EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(),
                                             VIEW_ID_LOCATION_BAR));
 }

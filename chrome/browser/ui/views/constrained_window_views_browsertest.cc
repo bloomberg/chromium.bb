@@ -174,7 +174,8 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
   EXPECT_EQ(test_dialog2->GetInitiallyFocusedView(),
             focus_manager->GetFocusedView());
 
-  int tab_with_constrained_window = browser()->active_index();
+  int tab_with_constrained_window =
+      browser()->tab_strip_model()->active_index();
 
   // Create a new tab.
   chrome::NewTab(browser());

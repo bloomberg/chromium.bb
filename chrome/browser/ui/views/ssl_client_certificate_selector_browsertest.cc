@@ -171,7 +171,7 @@ class SSLClientCertificateSelectorMultiTabTest
                    auth_requestor_2_));
     selector_2_->Init();
 
-    EXPECT_EQ(2, browser()->active_index());
+    EXPECT_EQ(2, browser()->tab_strip_model()->active_index());
     EXPECT_EQ(mit_davidben_cert_.get(), selector_1_->GetSelectedCert());
     EXPECT_EQ(mit_davidben_cert_.get(), selector_2_->GetSelectedCert());
   }

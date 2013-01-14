@@ -227,7 +227,8 @@ void ShowFeedbackPage(Browser* browser,
 
   std::string feedback_url = std::string(chrome::kChromeUIFeedbackURL) + "?" +
       kSessionIDParameter + base::IntToString(browser->session_id().id()) +
-      "&" + kTabIndexParameter + base::IntToString(browser->active_index()) +
+      "&" + kTabIndexParameter +
+      base::IntToString(browser->tab_strip_model()->active_index()) +
       "&" + kDescriptionParameter +
       net::EscapeUrlEncodedData(description_template, false) + "&" +
       kCategoryTagParameter + net::EscapeUrlEncodedData(category_tag, false);

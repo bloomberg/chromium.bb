@@ -551,7 +551,7 @@ void SelectLastTab(Browser* browser) {
 
 void DuplicateTab(Browser* browser) {
   content::RecordAction(UserMetricsAction("Duplicate"));
-  DuplicateTabAt(browser, browser->active_index());
+  DuplicateTabAt(browser, browser->tab_strip_model()->active_index());
 }
 
 bool CanDuplicateTab(const Browser* browser) {
@@ -622,8 +622,9 @@ bool CanDuplicateTabAt(Browser* browser, int index) {
 
 void ConvertPopupToTabbedBrowser(Browser* browser) {
   content::RecordAction(UserMetricsAction("ShowAsTab"));
+  TabStripModel* tab_strip = browser->tab_strip_model();
   WebContents* contents =
-      browser->tab_strip_model()->DetachWebContentsAt(browser->active_index());
+      tab_strip->DetachWebContentsAt(tab_strip->active_index());
   Browser* b = new Browser(Browser::CreateParams(browser->profile(),
                                                  browser->host_desktop_type()));
   b->tab_strip_model()->AppendWebContents(contents, true);

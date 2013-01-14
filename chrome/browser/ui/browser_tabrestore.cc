@@ -147,13 +147,13 @@ void ReplaceRestoredTab(
 
   // ReplaceWebContentsAt won't animate in the restoration, so manually do the
   // equivalent of ReplaceWebContentsAt.
-  int insertion_index = browser->active_index();
-  browser->tab_strip_model()->InsertWebContentsAt(
-      insertion_index + 1,
-      web_contents,
-      TabStripModel::ADD_ACTIVE | TabStripModel::ADD_INHERIT_GROUP);
-  browser->tab_strip_model()->CloseWebContentsAt(
-      insertion_index, TabStripModel::CLOSE_NONE);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+  int insertion_index = tab_strip->active_index();
+  tab_strip->InsertWebContentsAt(insertion_index + 1,
+                                 web_contents,
+                                 TabStripModel::ADD_ACTIVE |
+                                 TabStripModel::ADD_INHERIT_GROUP);
+  tab_strip->CloseWebContentsAt(insertion_index, TabStripModel::CLOSE_NONE);
 }
 
 }  // namespace chrome

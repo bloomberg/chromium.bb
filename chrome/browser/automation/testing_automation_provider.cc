@@ -498,7 +498,7 @@ void TestingAutomationProvider::GetActiveTabIndex(int handle,
   *active_tab_index = -1;  // -1 is the error code
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
-    *active_tab_index = browser->active_index();
+    *active_tab_index = browser->tab_strip_model()->active_index();
   }
 }
 
@@ -2306,7 +2306,8 @@ void TestingAutomationProvider::GetBrowserInfo(
       }
     }
     browser_item->Set("visible_page_actions", visible_page_actions);
-    browser_item->SetInteger("selected_tab", browser->active_index());
+    browser_item->SetInteger("selected_tab",
+                             browser->tab_strip_model()->active_index());
     browser_item->SetBoolean("incognito",
                              browser->profile()->IsOffTheRecord());
     browser_item->SetString("profile_path",
@@ -5292,7 +5293,7 @@ void TestingAutomationProvider::GetActiveTabIndexJSON(
     reply.SendError(error_msg);
     return;
   }
-  int tab_index = browser->active_index();
+  int tab_index = browser->tab_strip_model()->active_index();
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->SetInteger("tab_index", tab_index);
   reply.SendSuccess(return_value.get());

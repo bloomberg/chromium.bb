@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -141,7 +142,7 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,
   ui_test_utils::NavigateToURL(browser(), GURL("about:"));
 
   // The initial tab index should be 0.
-  ASSERT_EQ(0, browser()->active_index());
+  ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
@@ -194,7 +195,7 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,
   new_tab_observer.Wait();
 
   // Make sure that the new tab index is 1.
-  ASSERT_EQ(1, browser()->active_index());
+  ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
 }
 
 // http://crbug.com/62310.
@@ -250,16 +251,16 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, ReserveKeyboardAccelerators) {
 
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_TAB, true, false, false, false));
-  ASSERT_EQ(0, browser()->active_index());
+  ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url, NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  ASSERT_EQ(2, browser()->active_index());
+  ASSERT_EQ(2, browser()->tab_strip_model()->active_index());
 
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_W, true, false, false, false));
-  ASSERT_EQ(0, browser()->active_index());
+  ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
 }
 
 }  // namespace

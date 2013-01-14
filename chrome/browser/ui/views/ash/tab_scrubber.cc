@@ -77,7 +77,8 @@ void TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
   if (!scrubbing_) {
     scrubbing_ = true;
     browser_ = browser;
-    Tab* initial_tab = tab_strip->tab_at(browser_->active_index());
+    Tab* initial_tab =
+        tab_strip->tab_at(browser_->tab_strip_model()->active_index());
     scroll_x_ = initial_tab->x();
     scroll_x_ += (x_offset < 0) ?
         kInitialTabOffset : initial_tab->width() - kInitialTabOffset;

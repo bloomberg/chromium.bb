@@ -106,7 +106,7 @@
 
 - (NSNumber*)activeTabIndex {
   // Note: applescript is 1-based, that is lists begin with index 1.
-  int activeTabIndex = browser_->active_index() + 1;
+  int activeTabIndex = browser_->tab_strip_model()->active_index() + 1;
   if (!activeTabIndex) {
     return nil;
   }
