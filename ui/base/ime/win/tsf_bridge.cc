@@ -228,7 +228,13 @@ bool TSFBridgeDelegate::CancelComposition() {
     return false;
 
   base::win::ScopedComPtr<ITfContext> context;
-  if (FAILED(document_manager_for_editable_->GetTop(context.Receive()))) {
+  // We should use ITfDocumentMgr::GetBase instead of ITfDocumentMgr::GetTop,
+  // which may return a temporal context created by an IME for its modal UI
+  // handling, to obtain a context against which on-going composition is
+  // canceled. This is because ITfDocumentMgr::GetBase always returns the
+  // context that is created by us and owns the on-going composition.
+  // See http://crbug.com/169664 for details.
+  if (FAILED(document_manager_for_editable_->GetBase(context.Receive()))) {
     DVLOG(1) << "Failed to get top context.";
     return false;
   }
