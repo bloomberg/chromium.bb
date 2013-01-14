@@ -785,6 +785,14 @@ defs(Instruction inst) const {
    Add(Register(16));
 }
 
+SafetyLevel Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
+
 RegisterList Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -812,6 +820,14 @@ defs(Instruction inst) const {
        ? 16
        : 32)));
 }
+
+SafetyLevel Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
 
 RegisterList Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1::
 uses(Instruction inst) const {
@@ -2148,6 +2164,14 @@ is_literal_load(Instruction inst) const {
   // is_literal_load: 'true'
   return true;
 }
+
+SafetyLevel Actual_LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
 
 RegisterList Actual_LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_1::
 uses(Instruction inst) const {
@@ -6919,6 +6943,14 @@ is_literal_load(Instruction inst) const {
   return ((((inst.Bits() & 0x000F0000) >> 16)) == (15));
 }
 
+SafetyLevel Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
+
 RegisterList Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -7425,6 +7457,14 @@ defs(Instruction inst) const {
        ? 16
        : ((inst.Bits() & 0x0000F000) >> 12))));
 }
+
+SafetyLevel Actual_VMRS_cccc111011110001tttt101000010000_case_1::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
 
 // Actual_VMSR_cccc111011100001tttt101000010000_case_1
 //

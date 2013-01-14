@@ -162,6 +162,7 @@ parsed table representations.
 import dgen_core
 import dgen_opt
 import dgen_output
+import dgen_actuals
 
 """The current command line arguments to use"""
 _cl_args = {}
@@ -286,6 +287,7 @@ NAMED_CLASSES_H_HEADER="""%(FILE_HEADER)s
 #include "native_client/src/trusted/validator_arm/actual_classes.h"
 #include "native_client/src/trusted/validator_arm/baseline_classes.h"
 #include "native_client/src/trusted/validator_arm/named_class_decoder.h"
+#include "%(FILENAME_BASE)s_actuals.h"
 """
 
 RULE_CLASSES_HEADER="""
@@ -367,12 +369,21 @@ def generate_named_classes_h(decoder, decoder_name, filename, out, cl_args):
   """
   global _cl_args
   if not decoder.primary: raise Exception('No tables provided.')
+  assert filename.endswith('_named_classes.h')
   _cl_args = cl_args
+
+  # Generate actuals from descriptions in tables, for each of the
+  # tables that should automatically generate the corresponding
+  # needed actual class decoders.
+  actuals = cl_args.get('auto-actual')
+  if actuals:
+    decoder = dgen_actuals.AddAutoActualsToDecoder(decoder, actuals)
 
   values = {
       'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
       'NOT_TCB_MESSAGE' : dgen_output.NOT_TCB_BOILERPLATE,
       'IFDEF_NAME' : dgen_output.ifdef_name(filename),
+      'FILENAME_BASE': filename[:-len('_named_classes.h')],
       'decoder_name': decoder_name,
       }
   out.write(NAMED_CLASSES_H_HEADER % values)
@@ -391,7 +402,7 @@ NAMED_DECODER_H_HEADER="""%(FILE_HEADER)s
 #define %(IFDEF_NAME)s
 
 #include "native_client/src/trusted/validator_arm/decode.h"
-#include "%(FILENAME_BASE)s_classes.h"
+#include "%(FILENAME_BASE)s_named_classes.h"
 #include "native_client/src/trusted/validator_arm/named_class_decoder.h"
 
 namespace nacl_arm_test {
@@ -460,14 +471,21 @@ def generate_named_decoder_h(decoder, decoder_name, filename, out, cl_args):
     """
     global _cl_args
     if not decoder.primary: raise Exception('No tables provided.')
-    assert filename.endswith('_decoder.h')
+    assert filename.endswith('_named_decoder.h')
     _cl_args = cl_args
+
+    # Generate actuals from descriptions in tables, for each of the
+    # tables that should automatically generate the corresponding
+    # needed actual class decoders.
+    actuals = cl_args.get('auto-actual')
+    if actuals:
+      decoder = dgen_actuals.AddAutoActualsToDecoder(decoder, actuals)
 
     values = {
         'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
         'NOT_TCB_MESSAGE' : dgen_output.NOT_TCB_BOILERPLATE,
         'IFDEF_NAME' : dgen_output.ifdef_name(filename),
-        'FILENAME_BASE': filename[:-len('_decoder.h')],
+        'FILENAME_BASE': filename[:-len('_named_decoder.h')],
         'decoder_name': decoder_name,
         }
     out.write(NAMED_DECODER_H_HEADER % values)
@@ -559,6 +577,13 @@ def generate_named_cc(decoder, decoder_name, filename, out, cl_args):
     if not decoder.primary: raise Exception('No tables provided.')
     assert filename.endswith('.cc')
     _cl_args = cl_args
+
+    # Generate actuals from descriptions in tables, for each of the
+    # tables that should automatically generate the corresponding
+    # needed actual class decoders.
+    actuals = cl_args.get('auto-actual')
+    if actuals:
+      decoder = dgen_actuals.AddAutoActualsToDecoder(decoder, actuals)
 
     values = {
         'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
@@ -810,6 +835,13 @@ def generate_tests_cc(decoder, decoder_name, out, cl_args, tables):
   global _cl_args
   if not decoder.primary: raise Exception('No tables provided.')
   _cl_args = cl_args
+
+  # Generate actuals from descriptions in tables, for each of the
+  # tables that should automatically generate the corresponding
+  # needed actual class decoders.
+  actuals = cl_args.get('auto-actual')
+  if actuals:
+    decoder = dgen_actuals.AddAutoActualsToDecoder(decoder, actuals)
 
   decoder = _decoder_restricted_to_tables(decoder, tables)
 

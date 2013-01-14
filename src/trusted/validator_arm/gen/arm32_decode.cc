@@ -13,9 +13,12 @@ namespace nacl_arm_dec {
 
 
 Arm32DecoderState::Arm32DecoderState() : DecoderState()
+  , Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1_instance_()
+  , Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1_instance_()
+  , Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1_instance_()
+  , Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1_instance_()
   , Binary2RegisterBitRangeMsbGeLsb_instance_()
   , Binary2RegisterBitRangeNotRnIsPcBitfieldExtract_instance_()
-  , Binary2RegisterImmedShiftedTest_instance_()
   , Binary2RegisterImmediateOp_instance_()
   , Binary2RegisterImmediateOpAddSub_instance_()
   , Binary2RegisterImmediateOpDynCodeReplace_instance_()
@@ -23,7 +26,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Binary3RegisterOpAltA_instance_()
   , Binary3RegisterOpAltANoCondsUpdate_instance_()
   , Binary3RegisterOpAltBNoCondUpdates_instance_()
-  , Binary3RegisterShiftedOp_instance_()
   , Binary3RegisterShiftedTest_instance_()
   , Binary4RegisterDualOp_instance_()
   , Binary4RegisterDualOpLtV6RdNotRn_instance_()
@@ -84,11 +86,8 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Unary1RegisterSet_instance_()
   , Unary1RegisterUse_instance_()
   , Unary2RegisterImmedShiftedOp_instance_()
-  , Unary2RegisterOp_instance_()
   , Unary2RegisterOpNotRmIsPc_instance_()
   , Unary2RegisterSatImmedShiftedOp_instance_()
-  , Unary2RegisterShiftedOp_instance_()
-  , Unary2RegisterShiftedOpImmNotZero_instance_()
   , Unary3RegisterShiftedOp_instance_()
   , Undefined_instance_()
   , Unpredictable_instance_()
@@ -843,7 +842,7 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_register(
           0x00000000 /* op3(6:5)=00 */ &&
       (inst.Bits() & 0x000F0000)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Unary2RegisterShiftedOpImmNotZero_instance_;
+    return Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000)  ==
@@ -854,7 +853,7 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_register(
           0x00000060 /* op3(6:5)=11 */ &&
       (inst.Bits() & 0x000F0000)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Unary2RegisterShiftedOpImmNotZero_instance_;
+    return Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000)  ==
@@ -865,7 +864,7 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_register(
           0x00000000 /* op3(6:5)=00 */ &&
       (inst.Bits() & 0x000F0000)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Unary2RegisterOp_instance_;
+    return Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000)  ==
@@ -876,7 +875,7 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_register(
           0x00000060 /* op3(6:5)=11 */ &&
       (inst.Bits() & 0x000F0000)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Unary2RegisterOp_instance_;
+    return Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000)  ==
@@ -885,7 +884,7 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_register(
           0x00000020 /* op3(6:5)=01 */ &&
       (inst.Bits() & 0x000F0000)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Unary2RegisterShiftedOp_instance_;
+    return Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000)  ==
@@ -894,31 +893,31 @@ const ClassDecoder& Arm32DecoderState::decode_data_processing_register(
           0x00000040 /* op3(6:5)=10 */ &&
       (inst.Bits() & 0x000F0000)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Unary2RegisterShiftedOp_instance_;
+    return Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000)  ==
           0x01E00000 /* op1(24:20)=1111x */ &&
       (inst.Bits() & 0x000F0000)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx */) {
-    return Unary2RegisterShiftedOp_instance_;
+    return Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01900000)  ==
           0x01100000 /* op1(24:20)=10xx1 */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x00000000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx */) {
-    return Binary2RegisterImmedShiftedTest_instance_;
+    return Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01A00000)  ==
           0x01800000 /* op1(24:20)=11x0x */) {
-    return Binary3RegisterShiftedOp_instance_;
+    return Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1_instance_;
   }
 
   if ((inst.Bits() & 0x01000000)  ==
           0x00000000 /* op1(24:20)=0xxxx */) {
-    return Binary3RegisterShiftedOp_instance_;
+    return Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1_instance_;
   }
 
   // Catch any attempt to fall though ...

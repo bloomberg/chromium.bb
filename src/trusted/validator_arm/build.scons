@@ -80,6 +80,12 @@ GEN_TABLES = ["ARMv7",
               "advanced_simd_element_or_structure_load_store_instructions",
               ]
 
+# The list of tables in armv7.table that should use the automatically generated,
+# actual decoders. This list is used to allow us to incrementally change over
+# tables, as they pass the appropriate tests.
+AUTO_GEN_TABLES = ["ARMv7",
+                   "data_processing_register"]
+
 # Changes table name to test name.
 def _TableTestName(tbl):
   return 'arm32_decode_' + tbl + '_tests'
@@ -119,9 +125,13 @@ if generate:
   gen_env.AlwaysBuild(
     gen_env.Alias('valclean', action=[Delete(x) for x in GEN_LIST]))
 
-def _generate_source(filename, TABLE=None):
+def _generate_source(filename, table=None):
   if not generate: return  # i.e. don't add source dependency.
-  table_arg = '--table=' + TABLE if TABLE else ''
+  cl_args = GEN_CL_ARGS
+  if table:
+    cl_args += ' --table=' + table
+  for tbl in AUTO_GEN_TABLES:
+    cl_args += ' --auto-actual=' + tbl
   env.Command(target=_gen_file(filename),
               source=['armv7.table',
                       'generate_decoder.py',
@@ -138,7 +148,7 @@ def _generate_source(filename, TABLE=None):
                       ],
               action=['${SOURCES[1].abspath} ${SOURCES[0].abspath} '
                       '${TARGET.abspath} Arm32DecoderState ' +
-                       GEN_CL_ARGS + " " + table_arg])
+                      cl_args])
 
 for source in GEN_OTHER_LIST:
   _generate_source(source)

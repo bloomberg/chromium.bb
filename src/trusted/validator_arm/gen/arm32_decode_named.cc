@@ -200,8 +200,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_data_proce
     return decode_simd_dp_2misc(inst);
   }
 
-  if (true &&
-      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+  if (true) {
     return Undefined_None_instance_;
   }
 
@@ -505,8 +504,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or
     return VectorLoadStoreSingle4_VLD4_single_4_element_structure_to_one_lane_instance_;
   }
 
-  if (true &&
-      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+  if (true) {
     return Undefined_None_instance_;
   }
 
@@ -1876,8 +1874,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_media_instructions(
     return decode_signed_multiply_signed_and_unsigned_divide(inst);
   }
 
-  if (true &&
-      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+  if (true) {
     return Undefined_None_instance_;
   }
 
@@ -2091,8 +2088,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_memory_hints_advanced_si
     return decode_advanced_simd_data_processing_instructions(inst);
   }
 
-  if (true &&
-      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+  if (true) {
     return Undefined_None_instance_;
   }
 
@@ -2264,8 +2260,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_miscellaneous_instructio
     return ForbiddenCondDecoder_SMC_instance_;
   }
 
-  if (true &&
-      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+  if (true) {
     return Undefined_None_instance_;
   }
 
@@ -2390,8 +2385,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_msr_immediate_and_hints(
     return ForbiddenCondDecoder_Msr_Rule_B6_1_6_A1_PB6_12_instance_;
   }
 
-  if (true &&
-      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+  if (true) {
     return Forbidden_None_instance_;
   }
 
@@ -2782,8 +2776,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_packing_unpacking_satura
     return Unary2RegisterSatImmedShiftedOp_USAT_instance_;
   }
 
-  if (true &&
-      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+  if (true) {
     return Undefined_None_instance_;
   }
 
@@ -2961,8 +2954,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
     return Binary3RegisterOpAltBNoCondUpdates_SHSUB8_instance_;
   }
 
-  if (true &&
-      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+  if (true) {
     return Undefined_None_instance_;
   }
 
@@ -3140,8 +3132,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_addition_and_su
     return Binary3RegisterOpAltBNoCondUpdates_UHSUB8_instance_;
   }
 
-  if (true &&
-      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+  if (true) {
     return Undefined_None_instance_;
   }
 
@@ -3290,8 +3281,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_signed_multiply_signed_a
     return Binary4RegisterDualOpNoCondsUpdate_SMMLS_instance_;
   }
 
-  if (true &&
-      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+  if (true) {
     return Undefined_None_instance_;
   }
 
@@ -3666,8 +3656,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2misc(
     return Vector2RegisterMiscellaneous_CVT_F2I_VCVT_instance_;
   }
 
-  if (true &&
-      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+  if (true) {
     return Undefined_None_instance_;
   }
 
@@ -3759,8 +3748,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2scalar(
     return VectorBinary2RegisterScalar_I16_32_VQRDMULH_instance_;
   }
 
-  if (true &&
-      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+  if (true) {
     return Undefined_None_instance_;
   }
 
@@ -3900,8 +3888,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2shift(
     return VectorBinary2RegisterShiftAmount_CVT_VCVT_between_floating_point_and_fixed_point_instance_;
   }
 
-  if (true &&
-      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+  if (true) {
     return Undefined_None_instance_;
   }
 
@@ -3994,8 +3981,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_3diff(
     return VectorBinary3RegisterDifferentLength_I8_16_32_VSUBL_VSUBW_instance_;
   }
 
-  if (true &&
-      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+  if (true) {
     return Undefined_None_instance_;
   }
 
@@ -4547,8 +4533,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_3same(
     return VectorBinary3RegisterSameLength32_DQ_VRSQRTS_instance_;
   }
 
-  if (true &&
-      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+  if (true) {
     return Undefined_None_instance_;
   }
 
@@ -4627,8 +4612,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_synchronization_primitiv
     return Deprecated_SWP_SWPB_instance_;
   }
 
-  if (true &&
-      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+  if (true) {
     return Undefined_None_instance_;
   }
 
@@ -4708,8 +4692,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_transfer_between_arm_cor
     return MoveVfpRegisterOpWithTypeSel_MOVE_scalar_to_ARM_core_register_instance_;
   }
 
-  if (true &&
-      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+  if (true) {
     return Undefined_None_instance_;
   }
 
@@ -4739,8 +4722,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_transfer_between_arm_cor
     return MoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_a_doubleword_extension_register_instance_;
   }
 
-  if (true &&
-      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+  if (true) {
     return Undefined_None_instance_;
   }
 
@@ -4836,8 +4818,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_unconditional_instructio
     return decode_memory_hints_advanced_simd_instructions_and_miscellaneous_instructions(inst);
   }
 
-  if (true &&
-      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+  if (true) {
     return Undefined_None_instance_;
   }
 

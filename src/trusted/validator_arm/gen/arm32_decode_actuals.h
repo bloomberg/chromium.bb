@@ -1894,6 +1894,7 @@ class Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1
   Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1()
      : ClassDecoder() {}
   virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
@@ -2013,6 +2014,7 @@ class Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1
   Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1()
      : ClassDecoder() {}
   virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
@@ -3537,6 +3539,7 @@ class Actual_LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_1
   virtual Register base_address_register(Instruction i) const;
   virtual RegisterList defs(Instruction inst) const;
   virtual bool is_literal_load(Instruction i) const;
+  virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
@@ -12651,6 +12654,7 @@ class Actual_VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_1
   virtual Register base_address_register(Instruction i) const;
   virtual RegisterList defs(Instruction inst) const;
   virtual bool is_literal_load(Instruction i) const;
+  virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
@@ -13757,6 +13761,7 @@ class Actual_VMRS_cccc111011110001tttt101000010000_case_1
   Actual_VMRS_cccc111011110001tttt101000010000_case_1()
      : ClassDecoder() {}
   virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Actual_VMRS_cccc111011110001tttt101000010000_case_1);

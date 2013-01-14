@@ -125,6 +125,36 @@ def ActualName(actual):
   """Returns the name to use for the actual."""
   return ACTUAL_TO_NAME_MAP[actual]
 
+def AddAutoActualsToDecoder(decoder, tables):
+  """Adds the automatically generated class decoders (in files
+     "*_actuals.h" and "*_actuals.cc" as the 'actual' class decoder to
+     the listed tables, and returns the generated (new) decoder.
+     """
+  if not tables: return decoder
+  GetActualDecoders(decoder)
+  return decoder.table_filter(
+      lambda tbl: _AddActualToTable(tbl) if tbl.name in tables
+                  else tbl.copy())
+
+def _AddActualToTable(table):
+  """Generates a copy of the given table, where the 'actual' field is
+     defined by the corresponding (actual) class decoder described in
+     the table."""
+  return table.row_filter(_AddActualToRow)
+
+def _AddActualToRow(r):
+  """Generates a copy of the given row, where (if applicable), the
+     'actual' field is defined by the corresponding (actual) class
+     decoder described in the table."""
+  patterns = list(r.patterns)
+  action = r.action.copy()
+  if (isinstance(action, dgen_core.DecoderAction) and
+      dgen_decoder.ActionDefinesDecoder(action)):
+    actual = dgen_decoder.BaselineToActual(action)
+    action.define('actual', ActualName(actual))
+  row = dgen_core.Row(patterns, action)
+  return row
+
 ACTUAL_H_HEADER="""%(FILE_HEADER)s
 #ifndef %(IFDEF_NAME)s
 #define %(IFDEF_NAME)s

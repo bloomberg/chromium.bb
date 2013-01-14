@@ -13,6 +13,7 @@
 #include "native_client/src/trusted/validator_arm/decode.h"
 #include "native_client/src/trusted/validator_arm/actual_classes.h"
 #include "native_client/src/trusted/validator_arm/baseline_classes.h"
+#include "native_client/src/trusted/validator_arm/gen/arm32_decode_actuals.h"
 
 namespace nacl_arm_dec {
 
@@ -145,9 +146,12 @@ class Arm32DecoderState : DecoderState {
   // by the table methods above. This speeds up the code since
   // the class decoders need to only be built once (and reused
   // for each call to "decode").
+  const Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1 Actual_ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_1_instance_;
+  const Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1 Actual_ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_1_instance_;
+  const Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1 Actual_CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_1_instance_;
+  const Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1 Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1_instance_;
   const Binary2RegisterBitRangeMsbGeLsb Binary2RegisterBitRangeMsbGeLsb_instance_;
   const Binary2RegisterBitRangeNotRnIsPcBitfieldExtract Binary2RegisterBitRangeNotRnIsPcBitfieldExtract_instance_;
-  const Binary2RegisterImmedShiftedTest Binary2RegisterImmedShiftedTest_instance_;
   const Binary2RegisterImmediateOp Binary2RegisterImmediateOp_instance_;
   const Binary2RegisterImmediateOpAddSub Binary2RegisterImmediateOpAddSub_instance_;
   const Binary2RegisterImmediateOpDynCodeReplace Binary2RegisterImmediateOpDynCodeReplace_instance_;
@@ -155,7 +159,6 @@ class Arm32DecoderState : DecoderState {
   const Binary3RegisterOpAltA Binary3RegisterOpAltA_instance_;
   const Binary3RegisterOpAltANoCondsUpdate Binary3RegisterOpAltANoCondsUpdate_instance_;
   const Binary3RegisterOpAltBNoCondUpdates Binary3RegisterOpAltBNoCondUpdates_instance_;
-  const Binary3RegisterShiftedOp Binary3RegisterShiftedOp_instance_;
   const Binary3RegisterShiftedTest Binary3RegisterShiftedTest_instance_;
   const Binary4RegisterDualOp Binary4RegisterDualOp_instance_;
   const Binary4RegisterDualOpLtV6RdNotRn Binary4RegisterDualOpLtV6RdNotRn_instance_;
@@ -216,11 +219,8 @@ class Arm32DecoderState : DecoderState {
   const Unary1RegisterSet Unary1RegisterSet_instance_;
   const Unary1RegisterUse Unary1RegisterUse_instance_;
   const Unary2RegisterImmedShiftedOp Unary2RegisterImmedShiftedOp_instance_;
-  const Unary2RegisterOp Unary2RegisterOp_instance_;
   const Unary2RegisterOpNotRmIsPc Unary2RegisterOpNotRmIsPc_instance_;
   const Unary2RegisterSatImmedShiftedOp Unary2RegisterSatImmedShiftedOp_instance_;
-  const Unary2RegisterShiftedOp Unary2RegisterShiftedOp_instance_;
-  const Unary2RegisterShiftedOpImmNotZero Unary2RegisterShiftedOpImmNotZero_instance_;
   const Unary3RegisterShiftedOp Unary3RegisterShiftedOp_instance_;
   const Undefined Undefined_instance_;
   const Unpredictable Unpredictable_instance_;

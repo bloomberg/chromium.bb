@@ -67,6 +67,7 @@ def main(argv):
 
     # Define default command line arguments.
     cl_args = {'add-rule-patterns': 'True',
+               'auto-actual': [],
                'table_remove': [],
                'table': [],
                }
@@ -123,15 +124,15 @@ def main(argv):
                                          decoder_name,
                                          f, cl_args,
                                          cl_args.get('table'))
-    elif output_filename.endswith('named_classes.h'):
+    elif output_filename.endswith('_named_classes.h'):
       dgen_test_output.generate_named_classes_h(
           decoder, decoder_name, _localize_filename(output_filename),
           f, cl_args)
-    elif output_filename.endswith('named_decoder.h'):
+    elif output_filename.endswith('_named_decoder.h'):
       dgen_test_output.generate_named_decoder_h(
           decoder, decoder_name, _localize_filename(output_filename),
           f, cl_args)
-    elif output_filename.endswith('actuals.h'):
+    elif output_filename.endswith('_actuals.h'):
       dgen_actuals.generate_actuals_h(
           decoder, decoder_name, _localize_filename(output_filename),
           f, cl_args)
@@ -151,11 +152,11 @@ def main(argv):
       dgen_decoder_output.generate_h(
           decoder, decoder_name, _localize_filename(output_filename),
           f, cl_args)
-    elif output_filename.endswith('named.cc'):
+    elif output_filename.endswith('_named.cc'):
       dgen_test_output.generate_named_cc(
           decoder, decoder_name, _localize_filename(output_filename),
           f, cl_args)
-    elif output_filename.endswith('actuals.cc'):
+    elif output_filename.endswith('_actuals.cc'):
       dgen_actuals.generate_actuals_cc(
           decoder, decoder_name, _localize_filename(output_filename),
           f, cl_args)

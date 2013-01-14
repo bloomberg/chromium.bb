@@ -61,6 +61,10 @@ def BaselineNameAndBaseline(baseline):
    """
 _METHODS_MAP = {}  # Note: filled as declare/define functions are defined.
 
+"""Defines optional implementations for a method if a field isn't defined."""
+_OPTIONAL_METHODS_MAP = {}  # Note: filled as declare/define
+                            # functions are defined.
+
 """Returns the declare function to use for the given (named) method."""
 def DeclareMethodFcn(method):
   return _METHODS_MAP.get(method)[0]
@@ -92,7 +96,7 @@ def DeclareDecoder(action, decoder_name, out):
   values = {'decoder_name': decoder_name}
   out.write(DECODER_CLASS_HEADER % values)
   for method in _METHODS:
-    if _IsMethodDefined(action, method):
+    if _IsMethodDefined(action, method, allow_optional=True):
       DeclareMethodFcn(method)(out, values)
   out.write(DECODER_CLASS_FOOTER % values)
 
@@ -106,23 +110,30 @@ def DefineDecoder(action, decoder_name, out):
 
   values = {'decoder_name': decoder_name}
   for method in _METHODS:
-    if _IsMethodDefined(action, method):
-      method_body = action.find(method)
+    if _IsMethodDefined(action, method, allow_optional=True):
+      method_body = _FindMethodBody(action, method, allow_optional=True)
       values['neutral_rep'] = (
           '%s: %s' % (method, dgen_output.commented_string(
               repr(dgen_core.neutral_repr(method_body)), '  ')))
       DefineMethodFcn(method)(out, method_body, values)
 
-def _IsMethodDefined(action, field):
+def _IsMethodDefined(action, field, allow_optional=False):
   """Returns true if the field defines the corresponding method."""
-  defn = action.find(field)
+  defn = _FindMethodBody(action, field, allow_optional)
   # Note: Safety may contain a string (in the deprecated form of
   # action declarations).
   # TODO(karl): Remove this problem by removing deprectated instances
   #   in file armv7.table.
-  return (defn and
-          (field != 'safety' or
+  return (defn != None and
+          # Special case safety, which is optional and has a special form.
+          (allow_optional or field != 'safety' or
            any(isinstance(s, dgen_core.SafetyAction) for s in defn)))
+
+def _FindMethodBody(action, method, allow_optional=False):
+  body = action.find(method)
+  if not body and allow_optional:
+    body = _OPTIONAL_METHODS_MAP.get(method)
+  return body
 
 def _DefineMethod(out, format, values, method_exp):
   values['method_exp'] = method_exp
@@ -365,6 +376,8 @@ def _DefineSafety(out, safety, values):
 
 _METHODS_MAP['safety'] = [_DeclareSafety, _DefineSafety]
 
+_OPTIONAL_METHODS_MAP['safety'] = []
+
 DECODER_SETS_Z_IF_CLEAR_HEADER="""
   virtual bool sets_Z_if_bits_clear(Instruction i,
                                     Register r,
@@ -454,4 +467,4 @@ def _DefineUses(out, uses, values):
 _METHODS_MAP['uses'] = [_DeclareUses, _DefineUses]
 
 """Defines the set of method fields."""
-_METHODS = sorted(_METHODS_MAP.keys())
+_METHODS = sorted(set(_METHODS_MAP.keys() + _OPTIONAL_METHODS_MAP.keys()))

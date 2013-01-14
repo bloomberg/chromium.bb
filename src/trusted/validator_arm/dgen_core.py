@@ -1717,17 +1717,39 @@ class Table(object):
         if column >= len(self._columns): return None
         return BitPattern.parse_catch(pattern, self._columns[column])
 
+    def copy(self):
+      """Returns a copy of the table."""
+      table = Table(self.name, self.citation)
+      table._columns = self._columns
+      for r in self._rows:
+        table.add_row(r.patterns, r.action)
+      if self.default_row:
+        table.add_default_row(self.default_row.action)
+      return table
+
+    def row_filter(self, filter):
+      """Returns a copy of the table, filtering each row with the
+         replacement row defined by function argument filter (of
+         form: lambda row:).
+         """
+      table = Table(self.name, self.citation)
+      table._columns = self._columns
+      for r in self._rows:
+        row = filter(r)
+        if row:
+          table.add_row(row.patterns, row.action)
+      if self.default_row:
+        row = filter(self.default_row)
+        if row:
+          table.add_default_row(row.action)
+      return table
+
     def action_filter(self, names):
         """Returns a table with DecoderActions reduced to the given field names.
            Used to optimize out duplicates, depending on context.
         """
-        table = Table(self.name, self.citation)
-        table._columns = self._columns
-        for r in self._rows:
-          table.add_row(r.patterns, r.action.action_filter(names))
-        if self.default_row:
-          table.add_default_row(self.default_row.action.action_filter(names))
-        return table
+        return self.row_filter(
+            lambda r: Row(r.patterns, r.action.action_filter(names)))
 
     def add_column_to_rows(self, rows):
       """Add column information to each row, returning a copy of the rows
@@ -1750,9 +1772,12 @@ class Table(object):
       return sorted(methods)
 
     def __repr__(self):
+      rows = list(self._rows)
+      if self.default_row:
+        rows.append(self.default_row)
       return TABLE_FORMAT % (self.name,
                              ' '.join([repr(c) for c in self._columns]),
-                             NEWLINE_STR.join([repr(r) for r in self._rows]))
+                             NEWLINE_STR.join([repr(r) for r in rows]))
 
 class DecoderAction:
   """An action defining a class decoder to apply.
@@ -1791,7 +1816,25 @@ class DecoderAction:
   def keys(self):
     return self._st.keys()
 
+  def copy(self):
+    """Returns a copy of the decoder action."""
+    action = DecoderAction()
+    action._st = SymbolTable()
+    action._neutral_st = action._st
+    for field in self._st.keys():
+      action.define(field, self.find(field))
+    return action
+
   def action_filter(self, names):
+    """Filters fields in the decoder to only include fields in names.
+       for most operations, we build a symbol table (_st) that contains
+       not only the specified fields, but any implicit dependent fields.
+       For method neutral_repr, we create a special symbol table _neutral_st
+       that only contains the fields specified.
+
+       Note: actual and actual-not-baseline are handled specially. See
+       code of function body for details.
+       """
     action = DecoderAction()
     action._st = SymbolTable()
     action._neutral_st = SymbolTable()
@@ -1925,6 +1968,10 @@ class DecoderMethod(object):
 
   def action_filter(self, unused_names):
     return self
+
+  def copy(self):
+    """Returns a copy of the decoder method."""
+    return DecoderMethod(self.name)
 
   def __eq__(self, other):
     return (self.__class__.__name__ == 'DecoderMethod'
@@ -2110,17 +2157,34 @@ class Decoder(object):
       self._class_defs[cls] = supercls
       return True
 
-  def action_filter(self, names):
-    """Returns a new set of tables with actions reduced to the set of
-    field names.
-    """
+  def table_filter(self, filter):
+    """Returns a copy of the decoder, filtering each table with
+      the replacement row defined by function argument filter (of
+      form: lambda table:).
+
+      Note: The filter can't change the name of the primary table.
+      """
     decoder = Decoder()
-    decoder._tables = sorted([ t.action_filter(names) for t in self._tables ],
-                             key=lambda(tbl): tbl.name)
-    decoder.primary = filter(
-        lambda(t): t.name == self.primary.name, self._tables)[0]
+
+    tables = set()
+    for tbl in self._tables:
+      filtered_table = filter(tbl)
+      if filtered_table != None:
+        tables.add(filtered_table)
+        if tbl.name == self.primary.name:
+          decoder.primary = filtered_table
+      elif tbl.name == self.primary.name:
+        raise Exception("table_filter: can't filter out table %s" %
+                        self.primary.name)
+    decoder._tables = sorted(tables, key=lambda(tbl): tbl.name)
     decoder._class_defs = self._class_defs.copy()
     return decoder
+
+  def action_filter(self, names):
+    """Returns a new set of tables, with actions reduced to the set of
+      specified field names.
+    """
+    return self.table_filter(lambda tbl: tbl.action_filter(names))
 
   def base_class(self, cls):
     """Returns the base-most class of cls (or cls if no base class). """
