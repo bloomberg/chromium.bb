@@ -42,10 +42,11 @@ int main(int argc, char *argv[]) {
 
   printf("Validating %s %d times ...\n", input_file, repetitions);
 
-  Image image;
-  ReadImage(input_file, &image);
+  elf_load::Image image;
+  elf_load::ReadImage(input_file, &image);
 
-  Segment segment = GetElfTextSegment(image);
+  elf_load::Architecture architecture = elf_load::GetElfArch(image);
+  elf_load::Segment segment = elf_load::GetElfTextSegment(image);
 
   if (segment.size % kBundleSize != 0) {
     printf("Text segment size (0x%"NACL_PRIx32") is not "
@@ -58,20 +59,20 @@ int main(int argc, char *argv[]) {
 
   clock_t start = clock();
   for (int i = 0; i < repetitions; i++) {
-    switch (segment.bitness) {
-      case 32:
+    switch (architecture) {
+      case elf_load::X86_32:
         result = ValidateChunkIA32(
             segment.data, segment.size,
             0, &kFullCPUIDFeatures,
             ProcessError, NULL);
         break;
-      case 64:
+      case elf_load::X86_64:
         result = ValidateChunkAMD64(
             segment.data, segment.size,
             0, &kFullCPUIDFeatures,
             ProcessError, NULL);
         break;
-      default:
+      case elf_load::ARM:
         CHECK(false);
     }
   }

@@ -98,6 +98,13 @@ class ProblemReporter : public ProblemSink {
               ValidatorProblemMethod method,
               const ValidatorProblemUserData user_data);
 
+  // Same but without virtual address.
+  void ToText(char* buffer,
+              size_t buffer_size,
+              ValidatorProblem problem,
+              ValidatorProblemMethod method,
+              const ValidatorProblemUserData user_data);
+
  private:
   // Internal method to convert internal error report data
   // to corresponding readable text using the given format

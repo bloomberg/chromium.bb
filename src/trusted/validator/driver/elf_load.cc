@@ -14,10 +14,12 @@
 #include "native_client/src/trusted/validator/driver/elf_load.h"
 
 
+namespace elf_load {
+
 void ReadImage(const char *filename, Image *image) {
   FILE *fp = fopen(filename, "rb");
   if (fp == NULL) {
-    fprintf(stderr, "Failed to open input file: %s\n", filename);
+    printf("Failed to open input file: %s\n", filename);
     exit(1);
   }
 
@@ -29,8 +31,7 @@ void ReadImage(const char *filename, Image *image) {
   fseek(fp, 0, SEEK_SET);
   size_t got = fread(&(*image)[0], 1, file_size, fp);
   if (got != file_size) {
-    fprintf(stderr, "Unable to read image from input file: %s\n",
-            filename);
+    printf("Unable to read image from input file: %s\n", filename);
     exit(1);
   }
   fclose(fp);
@@ -40,7 +41,7 @@ void ReadImage(const char *filename, Image *image) {
 template<typename ElfEhdrType, typename ElfPhdrType>
 Segment FindTextSegment(const Image &image) {
   // Initialization only to suppress 'uninitialized' warning.
-  Segment segment = {NULL, 0, 0, 0};
+  Segment segment = {NULL, 0, 0};
   bool found = false;
 
   const ElfEhdrType &header = *reinterpret_cast<const ElfEhdrType *>(&image[0]);
@@ -76,12 +77,12 @@ Segment FindTextSegment(const Image &image) {
 
       // TODO(shcherbina): find or introduce proper constant.
       if (phdr.p_filesz > 256 << 20) {
-        printf("Test segment is too large.");
+        printf("Test segment is too large.\n");
         exit(1);
       }
 
       if (phdr.p_vaddr > UINT32_MAX - phdr.p_filesz) {
-        printf("Text segment does not fit in 4GB.");
+        printf("Text segment does not fit in 4GB.\n");
         exit(1);
       }
 
@@ -99,15 +100,16 @@ Segment FindTextSegment(const Image &image) {
 }
 
 
-// Given valid elf image, returns subarchitecture (32 or 64).
-static int GetElfSubarch(const std::vector<uint8_t> &image) {
+Architecture GetElfArch(const Image &image) {
   // e_machine field is the same for Elf32_Ehdr and Elf64_Ehdr.
   const Elf32_Ehdr &header = *reinterpret_cast<const Elf32_Ehdr *>(&image[0]);
   switch (header.e_machine) {
     case EM_386:
-      return 32;
+      return X86_32;
     case EM_X86_64:
-      return 64;
+      return X86_64;
+    case EM_ARM:
+      return ARM;
     default:
       printf("Unsupported e_machine %"NACL_PRIu16".\n", header.e_machine);
       exit(1);
@@ -115,7 +117,7 @@ static int GetElfSubarch(const std::vector<uint8_t> &image) {
 }
 
 
-Segment GetElfTextSegment(const std::vector<uint8_t> &image) {
+Segment GetElfTextSegment(const Image &image) {
   // We don't know in advance whether it's elf32 or elf64, but we are only
   // looking at few first fields of the header, and they are the same for
   // Elf32_Ehdr and Elf64_Ehdr.
@@ -139,8 +141,7 @@ Segment GetElfTextSegment(const std::vector<uint8_t> &image) {
       exit(1);
   }
 
-  // NaCl allows to have 64-bit code in elf32 file, so we have to determine
-  // bitness of code independently.
-  segment.bitness = GetElfSubarch(image);
   return segment;
 }
+
+}  // namespace elf_load

@@ -20,11 +20,20 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator/driver/elf_load.h"
+#include "native_client/src/trusted/validator_arm/cpuid_arm.h"
+#include "native_client/src/trusted/validator_arm/problem_reporter.h"
+#include "native_client/src/trusted/validator_arm/validator.h"
 #include "native_client/src/trusted/validator_ragel/unreviewed/validator.h"
 
 using std::set;
 using std::string;
 using std::vector;
+
+using nacl_arm_val::CodeSegment;
+using nacl_arm_val::ProblemReporter;
+using nacl_arm_val::SfiValidator;
+
+using elf_load::Segment;
 
 
 struct Jump {
@@ -197,7 +206,7 @@ typedef Bool ValidateChunkFunc(
     void *callback_data);
 
 
-bool Validate(
+bool ValidateX86(
     const Segment &segment,
     ValidateChunkFunc validate_chunk,
     vector<Error> *errors) {
@@ -255,6 +264,61 @@ bool Validate(
 }
 
 
+class NcvalArmProblemReporter : public ProblemReporter {
+ public:
+  explicit NcvalArmProblemReporter(vector<Error> *errors) : errors(errors) {}
+
+  virtual bool should_continue() {
+    // Collect *all* problems before returning.
+    return true;
+  }
+
+ protected:
+  virtual void ReportProblemInternal(
+      uint32_t vaddr,
+      nacl_arm_val::ValidatorProblem problem,
+      nacl_arm_val::ValidatorProblemMethod method,
+      nacl_arm_val::ValidatorProblemUserData user_data) {
+    const size_t kBufferSize = 256;
+    char buffer[kBufferSize];
+    ToText(buffer, kBufferSize, problem, method, user_data);
+    errors->push_back(Error(vaddr, buffer));
+  }
+
+ private:
+  vector<Error> *errors;
+};
+
+
+bool ValidateArm(const Segment &segment, vector<Error> *errors) {
+  errors->clear();
+
+  vector<CodeSegment> segments;
+  segments.push_back(CodeSegment(segment.data, segment.vaddr, segment.size));
+
+  NaClCPUFeaturesArm cpu_features;
+  NaClClearCPUFeaturesArm(&cpu_features);
+  // TODO(shcherbina): add support for '--allow-conditional-memory-access' flag
+  // with the effect of
+  // NaClSetCPUFeatureArm(&cpu_features, NaClCPUFeatureArm_CanUseTstMem, 1);
+  // Alternatively, use approach described in
+  // http://code.google.com/p/nativeclient/issues/detail?id=3254
+
+  SfiValidator validator(
+      16,  // bytes per bundle
+      // TODO(cbiffle): maybe check region sizes from ELF headers?
+      //                verify that instructions are in right region
+      1U << 30,  // code region size
+      1U << 30,  // data region size
+      nacl_arm_dec::RegisterList(nacl_arm_dec::Register::Tp()),
+      nacl_arm_dec::RegisterList(nacl_arm_dec::Register::Sp()),
+      &cpu_features);
+
+  NcvalArmProblemReporter reporter(errors);
+  return validator.validate(segments, &reporter);
+}
+
+
 void Usage() {
   printf("Usage:\n");
   printf("    ncval <ELF file>\n");
@@ -279,19 +343,23 @@ int main(int argc, char **argv) {
   Options options;
   ParseOptions(argc, argv, &options);
 
-  Image image;
-  ReadImage(options.input_file, &image);
+  elf_load::Image image;
+  elf_load::ReadImage(options.input_file, &image);
 
-  Segment segment = GetElfTextSegment(image);
+  elf_load::Architecture architecture = elf_load::GetElfArch(image);
+  Segment segment = elf_load::GetElfTextSegment(image);
 
   vector<Error> errors;
   bool result = false;
-  switch (segment.bitness) {
-    case 32:
-      result = Validate(segment, ValidateChunkIA32, &errors);
+  switch (architecture) {
+    case elf_load::X86_32:
+      result = ValidateX86(segment, ValidateChunkIA32, &errors);
       break;
-    case 64:
-      result = Validate(segment, ValidateChunkAMD64, &errors);
+    case elf_load::X86_64:
+      result = ValidateX86(segment, ValidateChunkAMD64, &errors);
+      break;
+    case elf_load::ARM:
+      result = ValidateArm(segment, &errors);
       break;
     default:
       CHECK(false);

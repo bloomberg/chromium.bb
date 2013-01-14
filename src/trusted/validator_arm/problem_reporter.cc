@@ -596,4 +596,17 @@ void ProblemReporter::ToText(char* buffer,
          problem, method, user_data);
 }
 
+void ProblemReporter::ToText(char* buffer,
+                             size_t buffer_size,
+                             ValidatorProblem problem,
+                             ValidatorProblemMethod method,
+                             const ValidatorProblemUserData user_data) {
+  assert(buffer_size > 0);
+  buffer[0] = '\0';
+  assert(problem < kValidatorProblemSize);
+  Render(&buffer, &buffer_size,
+         ValidatorProblemFormatDirective[problem],
+         problem, method, user_data);
+}
+
 }  // namespace nacl_arm_val
