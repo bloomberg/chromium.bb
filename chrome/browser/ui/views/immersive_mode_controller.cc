@@ -310,6 +310,10 @@ void ImmersiveModeController::SetEnabled(bool enabled) {
   }
 #endif
 
+  // Ensure window caption buttons are shown/hidden appropriately.
+  browser_view_->frame()->non_client_view()->frame_view()->
+      ResetWindowControls();
+
   // Always ensure tab strip is in correct state.
   browser_view_->tabstrip()->SetImmersiveStyle(enabled_);
   browser_view_->Layout();
@@ -408,6 +412,10 @@ void ImmersiveModeController::StartReveal() {
     return;
   revealed_ = true;
 
+  // Reveal shows the window caption buttons.
+  browser_view_->frame()->non_client_view()->frame_view()->
+      ResetWindowControls();
+
   // Recompute the bounds of the views when painted normally.
   browser_view_->tabstrip()->SetImmersiveStyle(false);
   browser_view_->Layout();
@@ -468,6 +476,10 @@ void ImmersiveModeController::EndReveal(Animate animate, Layout layout) {
   }
 
   if (layout == LAYOUT_YES) {
+    // Ending reveal hides the window caption buttons.
+    browser_view_->frame()->non_client_view()->frame_view()->
+        ResetWindowControls();
+
     browser_view_->tabstrip()->SetImmersiveStyle(enabled_);
     browser_view_->Layout();
   }

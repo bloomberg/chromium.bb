@@ -197,6 +197,16 @@ void BrowserNonClientFrameViewAsh::GetWindowMask(const gfx::Size& size,
 }
 
 void BrowserNonClientFrameViewAsh::ResetWindowControls() {
+  // Hide the caption buttons in immersive mode because it's confusing when
+  // the user hovers or clicks in the top-right of the screen and hits one.
+  // Only show them during a reveal.
+  ImmersiveModeController* controller =
+      browser_view()->immersive_mode_controller();
+  bool show_buttons = !controller->enabled() || controller->IsRevealed();
+  immersive_button_->SetVisible(show_buttons);
+  size_button_->SetVisible(show_buttons);
+  close_button_->SetVisible(show_buttons);
+
   size_button_->SetState(views::CustomButton::STATE_NORMAL);
   // The close button isn't affected by this constraint.
 }

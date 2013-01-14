@@ -322,7 +322,7 @@ gfx::Size FramePainter::GetMinimumSize(views::NonClientFrameView* view) {
   int title_width = GetTitleOffsetX() +
       size_button_->width() + kSizeButtonOffsetX +
       close_button_->width() + kCloseButtonOffsetX;
-  if (immersive_button_)
+  if (immersive_button_ && immersive_button_->visible())
     title_width += immersive_button_->width() + kImmersiveButtonOffsetX;
   if (title_width > min_size.width())
     min_size.set_width(title_width);
@@ -338,7 +338,7 @@ int FramePainter::GetRightInset() const {
   gfx::Size size_button_size = size_button_->GetPreferredSize();
   int inset = close_size.width() + kCloseButtonOffsetX +
       size_button_size.width() + kSizeButtonOffsetX;
-  if (immersive_button_) {
+  if (immersive_button_ && immersive_button_->visible()) {
     gfx::Size immersive_size = immersive_button_->GetPreferredSize();
     inset += immersive_size.width() + kImmersiveButtonOffsetX;
   }

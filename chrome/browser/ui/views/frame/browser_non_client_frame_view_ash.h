@@ -68,6 +68,7 @@ class BrowserNonClientFrameViewAsh
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest, WindowHeader);
+  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest, ImmersiveMode);
 
   // Distance between top of window and client area.
   int NonClientTopBorderHeight(bool force_restored) const;
