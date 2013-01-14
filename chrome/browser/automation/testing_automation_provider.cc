@@ -1092,7 +1092,8 @@ void TestingAutomationProvider::OpenNewBrowserWindowOfType(
   // We may have no current browser windows open so don't rely on
   // asking an existing browser to execute the IDC_NEWWINDOW command.
   Browser* browser = new Browser(
-      Browser::CreateParams(static_cast<Browser::Type>(type), profile_));
+      Browser::CreateParams(static_cast<Browser::Type>(type), profile_,
+                            chrome::HOST_DESKTOP_TYPE_NATIVE));
   chrome::AddBlankTabAt(browser, -1, true);
   if (show)
     browser->window()->Show();
@@ -1109,7 +1110,8 @@ void TestingAutomationProvider::OpenNewBrowserWindow(
   }
   new BrowserOpenedNotificationObserver(this, reply_message, true);
   Browser* browser = new Browser(
-      Browser::CreateParams(Browser::TYPE_TABBED, profile_));
+      Browser::CreateParams(Browser::TYPE_TABBED, profile_,
+                            chrome::HOST_DESKTOP_TYPE_NATIVE));
   chrome::AddBlankTabAt(browser, -1, true);
   if (show)
     browser->window()->Show();
