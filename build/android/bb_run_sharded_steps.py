@@ -45,6 +45,7 @@ import pickle
 import os
 import signal
 import shutil
+import subprocess
 import sys
 
 from pylib import android_commands
@@ -84,6 +85,27 @@ def _RunStepsPerDevice(steps):
   return results
 
 
+class _LogCatMonitor(object):
+  def __init__(self):
+    self._monitor = None
+    self._logcat_dir = os.path.join(constants.CHROME_DIR, 'out',
+                                    'sharded_steps_logcat_monitor')
+
+  def __enter__(self):
+    cmd = [os.path.join(constants.CHROME_DIR, 'build', 'android',
+                        'adb_logcat_monitor.py'), self._logcat_dir]
+    self._monitor = subprocess.Popen(cmd, cwd=constants.CHROME_DIR)
+
+  def __exit__(self, *args):
+    if self._monitor:
+      # adb_logcat_printer will kill the monitor.
+      self._monitor = None
+      cmd = [os.path.join(constants.CHROME_DIR, 'build', 'android',
+                          'adb_logcat_printer.py'), self._logcat_dir]
+      cmd = subprocess.Popen(cmd, cwd=constants.CHROME_DIR)
+      cmd.wait()
+
+
 def _RunShardedSteps(steps, devices):
   assert steps
   assert devices, 'No devices connected?'
@@ -107,9 +129,12 @@ def _RunShardedSteps(steps, devices):
   print 'Start sharding (note: output is not synchronized...)'
   print '*' * 80
   start_time = datetime.datetime.now()
-  pool = multiprocessing.Pool(processes=num_devices)
-  async_results = pool.map_async(_RunStepsPerDevice, all_params)
-  results_per_device = async_results.get(999999)
+
+  with _LogCatMonitor() as logcat_monitor:
+    pool = multiprocessing.Pool(processes=num_devices)
+    async_results = pool.map_async(_RunStepsPerDevice, all_params)
+    results_per_device = async_results.get(999999)
+
   end_time = datetime.datetime.now()
   print '*' * 80
   print 'Finished sharding.'
