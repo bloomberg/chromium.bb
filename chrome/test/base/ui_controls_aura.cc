@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ui_controls/ui_controls_aura.h"
+#include "chrome/test/base/ui_controls_aura.h"
 
 #include "base/logging.h"
 

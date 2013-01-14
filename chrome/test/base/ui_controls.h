@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_UI_CONTROLS_UI_CONTROLS_H_
-#define UI_UI_CONTROLS_UI_CONTROLS_H_
+#ifndef CHROME_TEST_BASE_UI_CONTROLS_H_
+#define CHROME_TEST_BASE_UI_CONTROLS_H_
 
 #include "base/callback_forward.h"
 #include "build/build_config.h"
@@ -82,12 +82,11 @@ void RunClosureAfterAllPendingUIEvents(const base::Closure& closure);
 #if defined(USE_AURA)
 class UIControlsAura;
 void InstallUIControlsAura(UIControlsAura* instance);
-#endif
-
 #if defined(USE_ASH)
-ui_controls::UIControlsAura* CreateAshUIControls();
+UIControlsAura* CreateAshUIControls();
+#endif
 #endif
 
 }  // namespace ui_controls
 
-#endif  // UI_UI_CONTROLS_UI_CONTROLS_H_
+#endif  // CHROME_TEST_BASE_UI_CONTROLS_H_

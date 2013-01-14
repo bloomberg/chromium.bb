@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ui_controls/ui_controls.h"
+#include "chrome/test/base/ui_controls.h"
 
 #import <Cocoa/Cocoa.h>
 #include <mach/mach_time.h>

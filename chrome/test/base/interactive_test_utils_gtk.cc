@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
+#include "chrome/test/base/ui_controls.h"
 #include "ui/base/gtk/gtk_screen_util.h"
-#include "ui/ui_controls/ui_controls.h"
 
 namespace ui_test_utils {
 

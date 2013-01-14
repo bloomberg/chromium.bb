@@ -5,10 +5,10 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "chrome/test/base/ui_controls.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/view_event_test_base.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/ui_controls/ui_controls.h"
 #include "ui/views/controls/button/button_dropdown.h"
 
 class ButtonDropDownDragTest : public ViewEventTestBase,

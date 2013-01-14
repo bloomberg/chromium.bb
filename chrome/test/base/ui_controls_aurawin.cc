@@ -5,14 +5,14 @@
 #include "base/logging.h"
 #include "base/basictypes.h"
 #include "base/message_loop.h"
+#include "chrome/test/base/ui_controls.h"
+#include "chrome/test/base/ui_controls_aura.h"
+#include "chrome/test/base/ui_controls_internal_win.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/ui_controls_aura.h"
-#include "ui/ui_controls/ui_controls_aura.h"
-#include "ui/ui_controls/ui_controls_internal_win.h"
 
-namespace aura {
+namespace ui_controls {
 namespace {
-class UIControlsWin : public ui_controls::UIControlsAura {
+class UIControlsWin : public UIControlsAura {
  public:
   UIControlsWin() {}
 
@@ -25,7 +25,7 @@ class UIControlsWin : public ui_controls::UIControlsAura {
                             bool command) {
     DCHECK(!command);  // No command key on Aura
     HWND window = native_window->GetRootWindow()->GetAcceleratedWidget();
-    return ui_controls::internal::SendKeyPressImpl(
+    return internal::SendKeyPressImpl(
         window, key, control, shift, alt, base::Closure());
   }
   virtual bool SendKeyPressNotifyWhenDone(gfx::NativeWindow native_window,
@@ -37,31 +37,28 @@ class UIControlsWin : public ui_controls::UIControlsAura {
                                           const base::Closure& task) {
     DCHECK(!command);  // No command key on Aura
     HWND window = native_window->GetRootWindow()->GetAcceleratedWidget();
-    return ui_controls::internal::SendKeyPressImpl(
-        window, key, control, shift, alt, task);
+    return internal::SendKeyPressImpl(window, key, control, shift, alt, task);
   }
   virtual bool SendMouseMove(long x, long y) {
     gfx::Point point(x, y);
-    return ui_controls::internal::SendMouseMoveImpl(
-        point.x(), point.y(), base::Closure());
+    return internal::SendMouseMoveImpl(point.x(), point.y(), base::Closure());
   }
   virtual bool SendMouseMoveNotifyWhenDone(long x,
                                            long y,
                                            const base::Closure& task) {
     gfx::Point point(x, y);
-    return ui_controls::internal::SendMouseMoveImpl(point.x(), point.y(), task);
+    return internal::SendMouseMoveImpl(point.x(), point.y(), task);
   }
-  virtual bool SendMouseEvents(ui_controls::MouseButton type, int state) {
-    return ui_controls::internal::SendMouseEventsImpl(
-        type, state, base::Closure());
+  virtual bool SendMouseEvents(MouseButton type, int state) {
+    return internal::SendMouseEventsImpl(type, state, base::Closure());
   }
-  virtual bool SendMouseEventsNotifyWhenDone(ui_controls::MouseButton type,
+  virtual bool SendMouseEventsNotifyWhenDone(MouseButton type,
                                              int state,
                                              const base::Closure& task) {
-    return ui_controls::internal::SendMouseEventsImpl(type, state, task);
+    return internal::SendMouseEventsImpl(type, state, task);
   }
-  virtual bool SendMouseClick(ui_controls::MouseButton type) {
-    return SendMouseEvents(type, ui_controls::UP | ui_controls::DOWN);
+  virtual bool SendMouseClick(MouseButton type) {
+    return SendMouseEvents(type, UP | DOWN);
   }
   virtual void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
     // On windows, posting UI events is synchronous so just post the closure.
@@ -74,8 +71,8 @@ class UIControlsWin : public ui_controls::UIControlsAura {
 
 }  // namespace
 
-ui_controls::UIControlsAura* CreateUIControlsAura(RootWindow* root_window) {
+UIControlsAura* CreateUIControlsAura(aura::RootWindow* root_window) {
   return new UIControlsWin();
 }
 
-}  // namespace aura
+}  // namespace ui_controls

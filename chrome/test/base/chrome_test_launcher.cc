@@ -33,8 +33,8 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/aura/ui_controls_aura.h"
-#include "ui/ui_controls/ui_controls.h"
+#include "chrome/test/base/ui_controls.h"
+#include "chrome/test/base/ui_controls_aura.h"
 #endif
 
 const char kEmptyTestName[] = "InProcessBrowserTest.Empty";
@@ -132,7 +132,7 @@ int main(int argc, char** argv) {
   ui_controls::InstallUIControlsAura(ui_controls::CreateAshUIControls());
 #elif defined(USE_AURA)
   // TODO(win_ash): when running interactive_ui_tests for Win Ash, use above.
-  ui_controls::InstallUIControlsAura(aura::CreateUIControlsAura(NULL));
+  ui_controls::InstallUIControlsAura(ui_controls::CreateUIControlsAura(NULL));
 #endif
 
 #endif

@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_UI_CONTROLS_UI_CONTROLS_AURA_H_
-#define UI_UI_CONTROLS_UI_CONTROLS_AURA_H_
+#ifndef CHROME_TEST_BASE_UI_CONTROLS_AURA_H_
+#define CHROME_TEST_BASE_UI_CONTROLS_AURA_H_
 
 #include "base/callback_forward.h"
+#include "chrome/test/base/ui_controls.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ui_controls/ui_controls.h"
+
+namespace aura {
+class RootWindow;
+}
 
 namespace ui_controls {
 
@@ -52,6 +56,8 @@ class UIControlsAura {
       const base::Closure& closure) = 0;
 };
 
+UIControlsAura* CreateUIControlsAura(aura::RootWindow* root_window);
+
 }  // namespace ui_controls
 
-#endif  // UI_UI_CONTROLS_UI_CONTROLS_AURA_H_
+#endif  // CHROME_TEST_BASE_UI_CONTROLS_AURA_H_

@@ -6,8 +6,8 @@
 #define CHROME_TEST_BASE_INTERACTIVE_TEST_UTILS_H_
 
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/test/base/ui_controls.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "ui/ui_controls/ui_controls.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/view.h"

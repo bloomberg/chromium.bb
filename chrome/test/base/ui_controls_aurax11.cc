@@ -12,13 +12,13 @@
 
 #include "base/logging.h"
 #include "base/message_pump_aurax11.h"
+#include "chrome/test/base/ui_controls.h"
+#include "chrome/test/base/ui_controls_aura.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/ui_controls_aura.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/compositor/dip_util.h"
-#include "ui/ui_controls/ui_controls_aura.h"
 
-namespace aura {
+namespace ui_controls {
 namespace {
 
 // Mask of the buttons currently down.
@@ -77,9 +77,9 @@ bool Matcher(const base::NativeEvent& event) {
       event->xclient.message_type == MarkerEventAtom();
 }
 
-class UIControlsX11 : public ui_controls::UIControlsAura {
+class UIControlsX11 : public UIControlsAura {
  public:
-  UIControlsX11(RootWindow* root_window) : root_window_(root_window) {
+  UIControlsX11(aura::RootWindow* root_window) : root_window_(root_window) {
   }
 
   virtual bool SendKeyPress(gfx::NativeWindow window,
@@ -149,10 +149,10 @@ class UIControlsX11 : public ui_controls::UIControlsAura {
     RunClosureAfterAllPendingUIEvents(closure);
     return true;
   }
-  virtual bool SendMouseEvents(ui_controls::MouseButton type, int state) {
+  virtual bool SendMouseEvents(MouseButton type, int state) {
     return SendMouseEventsNotifyWhenDone(type, state, base::Closure());
   }
-  virtual bool SendMouseEventsNotifyWhenDone(ui_controls::MouseButton type,
+  virtual bool SendMouseEventsNotifyWhenDone(MouseButton type,
                                              int state,
                                              const base::Closure& closure) {
     XEvent xevent = {0};
@@ -163,26 +163,26 @@ class UIControlsX11 : public ui_controls::UIControlsAura {
     xbutton->y = g_current_y;
     xbutton->same_screen = True;
     switch (type) {
-      case ui_controls::LEFT:
+      case LEFT:
         xbutton->button = Button1;
         xbutton->state = Button1Mask;
         break;
-      case ui_controls::MIDDLE:
+      case MIDDLE:
         xbutton->button = Button2;
         xbutton->state = Button2Mask;
         break;
-      case ui_controls::RIGHT:
+      case RIGHT:
         xbutton->button = Button3;
         xbutton->state = Button3Mask;
         break;
     }
     // RootWindow will take care of other necessary fields.
-    if (state & ui_controls::DOWN) {
+    if (state & DOWN) {
       xevent.xbutton.type = ButtonPress;
       root_window_->PostNativeEvent(&xevent);
       button_down_mask |= xbutton->state;
     }
-    if (state & ui_controls::UP) {
+    if (state & UP) {
       xevent.xbutton.type = ButtonRelease;
       root_window_->PostNativeEvent(&xevent);
       button_down_mask = (button_down_mask | xbutton->state) ^ xbutton->state;
@@ -190,8 +190,8 @@ class UIControlsX11 : public ui_controls::UIControlsAura {
     RunClosureAfterAllPendingUIEvents(closure);
     return true;
   }
-  virtual bool SendMouseClick(ui_controls::MouseButton type) {
-    return SendMouseEvents(type, ui_controls::UP | ui_controls::DOWN);
+  virtual bool SendMouseClick(MouseButton type) {
+    return SendMouseEvents(type, UP | DOWN);
   }
   virtual void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
     if (closure.is_null())
@@ -229,15 +229,15 @@ class UIControlsX11 : public ui_controls::UIControlsAura {
     root_window_->PostNativeEvent(xevent);
   }
 
-  RootWindow* root_window_;
+  aura::RootWindow* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(UIControlsX11);
 };
 
 }  // namespace
 
-ui_controls::UIControlsAura* CreateUIControlsAura(RootWindow* root_window) {
+UIControlsAura* CreateUIControlsAura(aura::RootWindow* root_window) {
   return new UIControlsX11(root_window);
 }
 
-}  // namespace aura
+}  // namespace ui_controls
