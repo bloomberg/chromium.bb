@@ -478,7 +478,8 @@ bool NetworkStateHandler::CheckDefaultNetworkChanged() {
 void NetworkStateHandler::OnDefaultNetworkChanged() {
   const NetworkState* default_network = DefaultNetwork();
   network_event_log::AddEntry(
-      kLogModule, "DefaultNetworkChanged", default_network->path());
+      kLogModule, "DefaultNetworkChanged",
+      default_network ? default_network->path() : "Null");
   FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
                     DefaultNetworkChanged(default_network));
 }

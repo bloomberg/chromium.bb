@@ -286,10 +286,10 @@ class DBusServices {
   // longer required. (Switch is set in about_flags.cc and not applied until
   // after DBusServices() is called).
   void InitializeNetworkHandlers() {
+    chromeos::network_event_log::Initialize();
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
             chromeos::switches::kEnableNewNetworkHandlers))
       return;
-    chromeos::network_event_log::Initialize();
     chromeos::NetworkStateHandler::Initialize();
     chromeos::NetworkConfigurationHandler::Initialize();
     network_handlers_initialized_ = true;
@@ -308,10 +308,10 @@ class DBusServices {
     if (cros_initialized_ && CrosLibrary::Get())
       CrosLibrary::Shutdown();
 
+    chromeos::network_event_log::Shutdown();
     if (network_handlers_initialized_) {
       chromeos::NetworkStateHandler::Shutdown();
       chromeos::NetworkConfigurationHandler::Shutdown();
-      chromeos::network_event_log::Shutdown();
     }
 
     cryptohome::AsyncMethodCaller::Shutdown();

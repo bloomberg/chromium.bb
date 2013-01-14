@@ -23,6 +23,8 @@ struct LogEntry {
 
   std::string ToString() const;
 
+  bool ContentEquals(const LogEntry& other) const;
+
   std::string module;
   std::string event;
   std::string description;
@@ -52,6 +54,12 @@ std::string LogEntry::ToString() const {
   return line;
 }
 
+bool LogEntry::ContentEquals(const LogEntry& other) const {
+  return module == other.module &&
+      event == other.event &&
+      description == other.description;
+}
+
 typedef std::deque<LogEntry> LogEntryList;
 
 class NetworkEventLog {
@@ -59,9 +67,7 @@ class NetworkEventLog {
   NetworkEventLog() {}
   ~NetworkEventLog() {}
 
-  void AddEntry(const std::string& module,
-                const std::string& event,
-                const std::string& description);
+  void AddEntry(const LogEntry& entry);
 
   std::string GetAsString(StringOrder order,
                           size_t max_events);
@@ -72,14 +78,10 @@ class NetworkEventLog {
   DISALLOW_COPY_AND_ASSIGN(NetworkEventLog);
 };
 
-void NetworkEventLog::AddEntry(const std::string& module,
-                               const std::string& event,
-                               const std::string& description) {
+void NetworkEventLog::AddEntry(const LogEntry& entry) {
   if (!entries_.empty()) {
     LogEntry& last = entries_.back();
-    if (last.module == module &&
-        last.event == event &&
-        last.description == description) {
+    if (last.ContentEquals(entry)) {
       // Update count and time for identical events to avoid log spam.
       ++last.count;
       last.time = base::Time::Now();
@@ -88,7 +90,6 @@ void NetworkEventLog::AddEntry(const std::string& module,
   }
   if (entries_.size() >= kMaxNetworkEventLogEntries)
     entries_.pop_front();
-  LogEntry entry(module, event, description);
   entries_.push_back(entry);
   VLOG(2) << entry.ToString();
 }
@@ -143,9 +144,12 @@ bool IsInitialized() {
 void AddEntry(const std::string& module,
               const std::string& event,
               const std::string& description) {
-  if (!g_network_event_log)
+  LogEntry entry(module, event, description);
+  if (!g_network_event_log) {
+    VLOG(2) << entry.ToString();
     return;
-  g_network_event_log->AddEntry(module, event, description);
+  }
+  g_network_event_log->AddEntry(entry);
 }
 
 std::string GetAsString(StringOrder order, size_t max_events) {
