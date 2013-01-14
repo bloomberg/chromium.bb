@@ -11,15 +11,15 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/cancelable_task_tracker.h"
+#include "content/public/browser/url_data_source_delegate.h"
 #include "ui/gfx/favicon_size.h"
 
 class Profile;
 
 // FaviconSource is the gateway between network-level chrome:
 // requests for favicons and the history backend that serves these.
-class FaviconSource : public ChromeURLDataManager::DataSource {
+class FaviconSource : public content::URLDataSourceDelegate {
  public:
   // Defines the type of icon the FaviconSource will provide.
   enum IconType {
@@ -32,19 +32,12 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
   // |type| is the type of icon this FaviconSource will provide.
   FaviconSource(Profile* profile, IconType type);
 
-  // Constructor allowing the source name to be specified.
-  FaviconSource(Profile* profile,
-                IconType type,
-                const std::string& source_name);
-
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
+  // content::URLDataSourceDelegate implementation.
+  virtual std::string GetSource() OVERRIDE;
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id) OVERRIDE;
-
   virtual std::string GetMimeType(const std::string&) const OVERRIDE;
-
   virtual bool ShouldReplaceExistingSource() const OVERRIDE;
 
  protected:
@@ -88,8 +81,6 @@ class FaviconSource : public ChromeURLDataManager::DataSource {
     SIZE_64,
     NUM_SIZES
   };
-
-  void Init(Profile* profile, IconType type);
 
   // Called when favicon data is available from the history backend.
   void OnFaviconDataAvailable(

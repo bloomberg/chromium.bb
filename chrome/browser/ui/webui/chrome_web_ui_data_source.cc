@@ -14,19 +14,18 @@
 #include "ui/base/resource/resource_bundle.h"
 
 ChromeWebUIDataSource::ChromeWebUIDataSource(const std::string& source_name)
-    : DataSource(source_name, MessageLoop::current()),
+    : URLDataSource(source_name, this),
+      source_name_(source_name),
       default_resource_(-1),
       json_js_format_v2_(false) {
-}
-
-ChromeWebUIDataSource::ChromeWebUIDataSource(const std::string& source_name,
-                                             MessageLoop* loop)
-    : DataSource(source_name, loop),
-      default_resource_(-1),
-      json_js_format_v2_(false) {
+  url_data_source_ = this;
 }
 
 ChromeWebUIDataSource::~ChromeWebUIDataSource() {
+  // TODO(jam): since temporarily ChromeWebUIDataSource is a URLDataSource and a
+  // content::URLDataSourceDelegate, NULL the delegate pointer out to avoid a
+  // double delete.
+  release_delegate();
 }
 
 void ChromeWebUIDataSource::AddString(const std::string& name,
@@ -54,6 +53,10 @@ void ChromeWebUIDataSource::SetRequestFilter(
   filter_callback_ = callback;
 }
 
+std::string ChromeWebUIDataSource::GetSource() {
+  return source_name_;
+}
+
 std::string ChromeWebUIDataSource::GetMimeType(const std::string& path) const {
   if (EndsWith(path, ".js", false))
     return "application/javascript";
@@ -73,8 +76,7 @@ void ChromeWebUIDataSource::StartDataRequest(const std::string& path,
   if (!filter_callback_.is_null() &&
       filter_callback_.Run(
           path,
-          base::Bind(&ChromeURLDataManager::DataSource::SendResponse,
-              this, request_id))) {
+          base::Bind(&URLDataSource::SendResponse, this, request_id))) {
     return;
   }
 
@@ -94,7 +96,7 @@ void ChromeWebUIDataSource::StartDataRequest(const std::string& path,
 
 void ChromeWebUIDataSource::SendLocalizedStringsAsJSON(int request_id) {
   std::string template_data;
-  SetFontAndTextDirection(&localized_strings_);
+  URLDataSource::SetFontAndTextDirection(&localized_strings_);
 
   scoped_ptr<jstemplate_builder::UseVersion2> version2;
   if (json_js_format_v2_)

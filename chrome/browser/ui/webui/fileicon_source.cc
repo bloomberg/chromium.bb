@@ -13,6 +13,7 @@
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/time_format.h"
 #include "googleurl/src/gurl.h"
@@ -90,8 +91,7 @@ void ParseQueryParams(const std::string& query,
 
 }  // namespace
 
-FileIconSource::FileIconSource()
-    : DataSource(kFileIconPath, MessageLoop::current()) {}
+FileIconSource::FileIconSource() {}
 
 FileIconSource::~FileIconSource() {}
 
@@ -108,7 +108,7 @@ void FileIconSource::FetchFileIcon(const FilePath& path,
         icon->ToImageSkia()->GetRepresentation(scale_factor).sk_bitmap(),
         false, &icon_data->data());
 
-    SendResponse(request_id, icon_data);
+    url_data_source()->SendResponse(request_id, icon_data);
   } else {
     // Attach the ChromeURLDataManager request ID to the history request.
     IconRequestDetails details;
@@ -122,6 +122,10 @@ void FileIconSource::FetchFileIcon(const FilePath& path,
                             base::Unretained(this), details),
                  &cancelable_task_tracker_);
   }
+}
+
+std::string FileIconSource::GetSource() {
+  return kFileIconPath;
 }
 
 void FileIconSource::StartDataRequest(const std::string& url_path,
@@ -151,9 +155,9 @@ void FileIconSource::OnFileIconDataAvailable(const IconRequestDetails& details,
         false,
         &icon_data->data());
 
-    SendResponse(details.request_id, icon_data);
+    url_data_source()->SendResponse(details.request_id, icon_data);
   } else {
     // TODO(glen): send a dummy icon.
-    SendResponse(details.request_id, NULL);
+    url_data_source()->SendResponse(details.request_id, NULL);
   }
 }

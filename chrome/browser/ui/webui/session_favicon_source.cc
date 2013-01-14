@@ -7,17 +7,20 @@
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
 
 using browser_sync::SessionModelAssociator;
 
 SessionFaviconSource::SessionFaviconSource(Profile* profile)
-    : FaviconSource(profile,
-                    FaviconSource::FAVICON,
-                    chrome::kChromeUISessionFaviconHost) {
+    : FaviconSource(profile, FaviconSource::FAVICON) {
 }
 
 SessionFaviconSource::~SessionFaviconSource() {
+}
+
+std::string SessionFaviconSource::GetSource() {
+  return chrome::kChromeUISessionFaviconHost;
 }
 
 std::string SessionFaviconSource::GetMimeType(const std::string&) const {
@@ -49,7 +52,7 @@ bool SessionFaviconSource::HandleMissingResource(const IconRequest& request) {
     scoped_refptr<base::RefCountedString> response =
         new base::RefCountedString();
     response->data() = favicon_data;
-    SendResponse(request.request_id, response);
+    url_data_source()->SendResponse(request.request_id, response);
     return true;
   }
   return false;

@@ -10,18 +10,19 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "content/public/browser/url_data_source_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace chromeos {
 namespace options {
 
 // A DataSource for chrome://wallpaper/ URL, provides current user's wallpaper.
-class WallpaperImageSource : public ChromeURLDataManager::DataSource {
+class WallpaperImageSource : public content::URLDataSourceDelegate {
  public:
   WallpaperImageSource();
 
-  // ChromeURLDataManager::DataSource implementation.
+  // content::URLDataSourceDelegate implementation.
+  virtual std::string GetSource() OVERRIDE;
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id) OVERRIDE;
@@ -34,7 +35,9 @@ class WallpaperImageSource : public ChromeURLDataManager::DataSource {
 
   // Get wallpaper for request identified by |request_id| in UI thread
   // and pass it to encoding phase.
-  void GetCurrentUserWallpaper(int request_id);
+  static void GetCurrentUserWallpaper(
+      const base::WeakPtr<WallpaperImageSource>& this_object,
+      int request_id);
 
   // Callback is called when image is obtained from UI thread to
   // encode and send reply to request identified by |request_id|.

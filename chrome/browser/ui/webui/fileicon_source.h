@@ -9,8 +9,8 @@
 
 #include "base/file_path.h"
 #include "chrome/browser/icon_manager.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/cancelable_task_tracker.h"
+#include "content/public/browser/url_data_source_delegate.h"
 #include "ui/base/layout.h"
 
 namespace gfx {
@@ -19,16 +19,15 @@ class Image;
 
 // FileIconSource is the gateway between network-level chrome:
 // requests for favicons and the history backend that serves these.
-class FileIconSource : public ChromeURLDataManager::DataSource {
+class FileIconSource : public content::URLDataSourceDelegate {
  public:
   explicit FileIconSource();
 
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
+  // content::URLDataSourceDelegate implementation.
+  virtual std::string GetSource() OVERRIDE;
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id) OVERRIDE;
-
   virtual std::string GetMimeType(const std::string&) const OVERRIDE;
 
  protected:

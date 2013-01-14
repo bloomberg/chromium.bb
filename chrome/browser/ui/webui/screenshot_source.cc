@@ -20,6 +20,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -65,8 +66,7 @@ bool ShouldUse24HourClock() {
 ScreenshotSource::ScreenshotSource(
     std::vector<unsigned char>* current_screenshot,
     Profile* profile)
-    : DataSource(chrome::kChromeUIScreenshotPath, MessageLoop::current()),
-      profile_(profile) {
+    : profile_(profile) {
   // Setup the last screenshot taken.
   if (current_screenshot)
     current_screenshot_.reset(new ScreenshotData(*current_screenshot));
@@ -139,6 +139,10 @@ bool ScreenshotSource::GetScreenshotDirectory(FilePath* directory) {
 }
 
 #endif
+
+std::string ScreenshotSource::GetSource() {
+  return chrome::kChromeUIScreenshotPath;
+}
 
 void ScreenshotSource::StartDataRequest(const std::string& path, bool,
                                         int request_id) {
@@ -261,5 +265,6 @@ void ScreenshotSource::CacheAndSendScreenshot(
   std::string path = screenshot_path.substr(
       0, screenshot_path.find_first_of("?"));
   cached_screenshots_[path] = bytes;
-  SendResponse(request_id, new base::RefCountedBytes(*bytes));
+  url_data_source()->SendResponse(
+      request_id, new base::RefCountedBytes(*bytes));
 }

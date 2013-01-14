@@ -2207,7 +2207,7 @@ bool FileDialogStringsFunction::RunImpl() {
   dict->SetBoolean("PDF_VIEW_ENABLED",
       file_manager_util::ShouldBeOpenedWithPdfPlugin(profile(), ".pdf"));
 
-  ChromeURLDataManager::DataSource::SetFontAndTextDirection(dict);
+  URLDataSource::SetFontAndTextDirection(dict);
 
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);

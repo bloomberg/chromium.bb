@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -58,8 +59,7 @@ SkBitmap* ToBitmap(const unsigned char* data, size_t size) {
 }  // namespace
 
 ExtensionIconSource::ExtensionIconSource(Profile* profile)
-    : DataSource(chrome::kChromeUIExtensionIconHost, MessageLoop::current()),
-      profile_(profile) {
+    : profile_(profile) {
 }
 
 struct ExtensionIconSource::ExtensionIconRequest {
@@ -101,6 +101,10 @@ SkBitmap* ExtensionIconSource::LoadImageByResourceId(int resource_id) {
   const unsigned char* data =
       reinterpret_cast<const unsigned char*>(contents.data());
   return ToBitmap(data, contents.length());
+}
+
+std::string ExtensionIconSource::GetSource() {
+  return chrome::kChromeUIExtensionIconHost;
 }
 
 std::string ExtensionIconSource::GetMimeType(const std::string&) const {
@@ -160,7 +164,7 @@ void ExtensionIconSource::FinalizeImage(const SkBitmap* image,
     bitmap = *image;
 
   ClearData(request_id);
-  SendResponse(request_id, BitmapToMemory(&bitmap));
+  url_data_source()->SendResponse(request_id, BitmapToMemory(&bitmap));
 }
 
 void ExtensionIconSource::LoadDefaultImage(int request_id) {
@@ -191,7 +195,7 @@ void ExtensionIconSource::LoadExtensionImage(const ExtensionResource& icon,
   extensions::ImageLoader::Get(profile_)->LoadImageAsync(
       request->extension, icon,
       gfx::Size(request->size, request->size),
-      base::Bind(&ExtensionIconSource::OnImageLoaded, this, request_id));
+      base::Bind(&ExtensionIconSource::OnImageLoaded, AsWeakPtr(), request_id));
 }
 
 void ExtensionIconSource::LoadFaviconImage(int request_id) {
@@ -228,7 +232,7 @@ void ExtensionIconSource::OnFaviconDataAvailable(
     // If we don't need a grayscale image, then we can bypass FinalizeImage
     // to avoid unnecessary conversions.
     ClearData(request_id);
-    SendResponse(request_id, bitmap_result.bitmap_data);
+    url_data_source()->SendResponse(request_id, bitmap_result.bitmap_data);
   } else {
     FinalizeImage(ToBitmap(bitmap_result.bitmap_data->front(),
                            bitmap_result.bitmap_data->size()), request_id);
@@ -302,7 +306,8 @@ void ExtensionIconSource::SendDefaultResponse(int request_id) {
   // We send back the default application icon (not resized or desaturated)
   // as the default response, like when there is no data.
   ClearData(request_id);
-  SendResponse(request_id, BitmapToMemory(GetDefaultAppImage()));
+  url_data_source()->SendResponse(
+      request_id, BitmapToMemory(GetDefaultAppImage()));
 }
 
 void ExtensionIconSource::SetData(int request_id,

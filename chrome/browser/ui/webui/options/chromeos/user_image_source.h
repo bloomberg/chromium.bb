@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "content/public/browser/url_data_source_delegate.h"
 #include "ui/base/layout.h"
 
 namespace base {
@@ -22,16 +22,15 @@ namespace options {
 
 // UserImageSource is the data source that serves user images for users that
 // have it.
-class UserImageSource : public ChromeURLDataManager::DataSource {
+class UserImageSource : public content::URLDataSourceDelegate {
  public:
   UserImageSource();
 
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
+  // content::URLDataSourceDelegate implementation.
+  virtual std::string GetSource() OVERRIDE;
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id) OVERRIDE;
-
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
 
   // Returns PNG or GIF (when possible and if |is_image_animated| flag

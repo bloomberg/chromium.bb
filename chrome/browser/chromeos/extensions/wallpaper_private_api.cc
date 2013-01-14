@@ -207,7 +207,7 @@ bool WallpaperStringsFunction::RunImpl() {
   SET_STRING("learnMore", IDS_LEARN_MORE);
 #undef SET_STRING
 
-  ChromeURLDataManager::DataSource::SetFontAndTextDirection(dict);
+  URLDataSource::SetFontAndTextDirection(dict);
 
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();

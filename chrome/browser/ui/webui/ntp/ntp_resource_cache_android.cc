@@ -102,7 +102,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetString("bookmarkstitle",
       l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS));
 
-  ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
+  URLDataSource::SetFontAndTextDirection(&localized_strings);
 
   base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
                                  GetRawDataResource(IDR_NEW_TAB_ANDROID_HTML));

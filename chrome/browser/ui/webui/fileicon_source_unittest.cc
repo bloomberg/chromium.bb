@@ -25,7 +25,6 @@ class TestFileIconSource : public FileIconSource {
                                    IconLoader::IconSize icon_size,
                                    int request_id));
 
- private:
   virtual ~TestFileIconSource() {}
 };
 
@@ -114,7 +113,7 @@ const struct FetchFileIconExpectation {
 
 TEST_F(FileIconSourceTest, FileIconSource_Parse) {
   for (unsigned i = 0; i < arraysize(kBasicExpectations); i++) {
-    scoped_refptr<TestFileIconSource> source(CreateFileIconSource());
+    scoped_ptr<TestFileIconSource> source(CreateFileIconSource());
     EXPECT_CALL(*source.get(),
                 FetchFileIcon(FilePath(kBasicExpectations[i].unescaped_path),
                               kBasicExpectations[i].scale_factor,

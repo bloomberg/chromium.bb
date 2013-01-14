@@ -7,7 +7,9 @@
 
 #include <string>
 
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
+#include "content/public/browser/url_data_source_delegate.h"
 #include "ui/base/layout.h"
 
 class Profile;
@@ -16,21 +18,18 @@ namespace base {
 class RefCountedMemory;
 }
 
-class ThemeSource : public ChromeURLDataManager::DataSource {
+class ThemeSource : public content::URLDataSourceDelegate {
  public:
   explicit ThemeSource(Profile* profile);
 
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
+  // content::URLDataSourceDelegate implementation.
+  virtual std::string GetSource() OVERRIDE;
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id) OVERRIDE;
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
-
-  // Used to tell ChromeURLDataManager which thread to handle the request on.
   virtual MessageLoop* MessageLoopForRequestPath(
       const std::string& path) const OVERRIDE;
-
   virtual bool ShouldReplaceExistingSource() const OVERRIDE;
 
  protected:

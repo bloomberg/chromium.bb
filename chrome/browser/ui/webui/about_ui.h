@@ -8,24 +8,26 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
+#include "content/public/browser/url_data_source_delegate.h"
 #include "content/public/browser/web_ui_controller.h"
 
 class Profile;
 
 // We expose this class because the OOBE flow may need to explicitly add the
 // chrome://terms source outside of the normal flow.
-class AboutUIHTMLSource : public ChromeURLDataManager::DataSource {
+class AboutUIHTMLSource : public content::URLDataSourceDelegate,
+                          public base::SupportsWeakPtr<AboutUIHTMLSource> {
  public:
   // Construct a data source for the specified |source_name|.
   AboutUIHTMLSource(const std::string& source_name, Profile* profile);
 
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
+  // content::URLDataSourceDelegate implementation.
+  virtual std::string GetSource() OVERRIDE;
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id) OVERRIDE;
-
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
 
   // Send the response data.
@@ -36,6 +38,7 @@ class AboutUIHTMLSource : public ChromeURLDataManager::DataSource {
  private:
   virtual ~AboutUIHTMLSource();
 
+  std::string source_name_;
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(AboutUIHTMLSource);

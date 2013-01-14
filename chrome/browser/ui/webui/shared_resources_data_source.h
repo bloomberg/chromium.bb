@@ -7,15 +7,17 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "content/public/browser/url_data_source_delegate.h"
 
 // A DataSource for chrome://resources/ URLs.
-class SharedResourcesDataSource : public ChromeURLDataManager::DataSource {
+class SharedResourcesDataSource : public content::URLDataSourceDelegate {
  public:
   SharedResourcesDataSource();
 
-  // Overridden from ChromeURLDataManager::DataSource:
+  // content::URLDataSourceDelegate implementation.
+  virtual std::string GetSource() OVERRIDE;
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id) OVERRIDE;

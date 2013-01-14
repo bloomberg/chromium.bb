@@ -10,8 +10,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "content/public/browser/url_data_source_delegate.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
@@ -27,7 +28,7 @@ class Profile;
 
 // ScreenshotSource is the data source that serves screenshots (saved
 // or current) to the bug report html ui.
-class ScreenshotSource : public ChromeURLDataManager::DataSource {
+class ScreenshotSource : public content::URLDataSourceDelegate {
  public:
   explicit ScreenshotSource(
       std::vector<unsigned char>* current_screenshot,
@@ -46,12 +47,11 @@ class ScreenshotSource : public ChromeURLDataManager::DataSource {
   // Get the basefilename for screenshots
   static std::string GetScreenshotBaseFilename();
 
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
+  // content::URLDataSourceDelegate implementation.
+  virtual std::string GetSource() OVERRIDE;
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id) OVERRIDE;
-
   virtual std::string GetMimeType(const std::string&) const OVERRIDE;
 
   // Get the screenshot specified by the given relative path that we've cached

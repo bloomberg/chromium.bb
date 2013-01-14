@@ -11,6 +11,7 @@
 #include "chrome/browser/resources_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
@@ -40,13 +41,16 @@ static const char* kNewIncognitoTabCSSPath = "css/incognito_new_tab_theme.css";
 // ThemeSource, public:
 
 ThemeSource::ThemeSource(Profile* profile)
-    : DataSource(chrome::kChromeUIThemePath, MessageLoop::current()),
-      profile_(profile->GetOriginalProfile()) {
+    : profile_(profile->GetOriginalProfile()) {
   css_bytes_ = NTPResourceCacheFactory::GetForProfile(profile)->GetNewTabCSS(
       profile->IsOffTheRecord());
 }
 
 ThemeSource::~ThemeSource() {
+}
+
+std::string ThemeSource::GetSource() {
+  return chrome::kChromeUIThemePath;
 }
 
 void ThemeSource::StartDataRequest(const std::string& path,
@@ -65,17 +69,19 @@ void ThemeSource::StartDataRequest(const std::string& path,
     DCHECK((uncached_path == kNewTabCSSPath && !is_incognito) ||
            (uncached_path == kNewIncognitoTabCSSPath && is_incognito));
 
-    SendResponse(request_id, css_bytes_);
+    url_data_source()->SendResponse(request_id, css_bytes_);
     return;
-  } else {
-    int resource_id = ResourcesUtil::GetThemeResourceId(uncached_path);
-    if (resource_id != -1) {
-      SendThemeBitmap(request_id, resource_id, scale_factor);
-      return;
-    }
   }
+
+
+  int resource_id = ResourcesUtil::GetThemeResourceId(uncached_path);
+  if (resource_id != -1) {
+    SendThemeBitmap(request_id, resource_id, scale_factor);
+    return;
+  }
+
   // We don't have any data to send back.
-  SendResponse(request_id, NULL);
+  url_data_source()->SendResponse(request_id, NULL);
 }
 
 std::string ThemeSource::GetMimeType(const std::string& path) const {
@@ -109,7 +115,7 @@ MessageLoop* ThemeSource::MessageLoopForRequestPath(
   if (!ThemeService::IsThemeableImage(resource_id))
     return NULL;
 
-  return DataSource::MessageLoopForRequestPath(path);
+  return content::URLDataSourceDelegate::MessageLoopForRequestPath(path);
 }
 
 bool ThemeSource::ShouldReplaceExistingSource() const {
@@ -131,11 +137,11 @@ void ThemeSource::SendThemeBitmap(int request_id,
 
     scoped_refptr<base::RefCountedMemory> image_data(tp->GetRawData(
         resource_id, scale_factor));
-    SendResponse(request_id, image_data);
+    url_data_source()->SendResponse(request_id, image_data);
   } else {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    SendResponse(
+    url_data_source()->SendResponse(
         request_id,
         rb.LoadDataResourceBytesForScale(resource_id, scale_factor));
   }

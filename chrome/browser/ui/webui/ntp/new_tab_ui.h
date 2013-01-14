@@ -13,7 +13,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "content/public/browser/url_data_source_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -21,6 +21,10 @@
 class GURL;
 class PrefServiceSyncable;
 class Profile;
+
+namespace base {
+class DictionaryValue;
+}
 
 // The WebContents used for the New Tab page.
 class NewTabUI : public content::WebUIController,
@@ -63,18 +67,16 @@ class NewTabUI : public content::WebUIController,
   bool showing_sync_bubble() { return showing_sync_bubble_; }
   void set_showing_sync_bubble(bool showing) { showing_sync_bubble_ = showing; }
 
-  class NewTabHTMLSource : public ChromeURLDataManager::DataSource {
+  class NewTabHTMLSource : public content::URLDataSourceDelegate {
    public:
     explicit NewTabHTMLSource(Profile* profile);
 
-    // Called when the network layer has requested a resource underneath
-    // the path we registered.
+    // content::URLDataSourceDelegate implementation.
+    virtual std::string GetSource() OVERRIDE;
     virtual void StartDataRequest(const std::string& path,
                                   bool is_incognito,
                                   int request_id) OVERRIDE;
-
     virtual std::string GetMimeType(const std::string&) const OVERRIDE;
-
     virtual bool ShouldReplaceExistingSource() const OVERRIDE;
 
     // Adds |resource| to the source. |resource_id| is resource id or 0,

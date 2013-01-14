@@ -9,11 +9,12 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/favicon/favicon_service.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "content/public/browser/url_data_source_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class ExtensionIconSet;
@@ -49,7 +50,8 @@ class Extension;
 //  2) If a 16px icon was requested, the favicon for extension's launch URL.
 //  3) The default extension / application icon if there are still no matches.
 //
-class ExtensionIconSource : public ChromeURLDataManager::DataSource {
+class ExtensionIconSource : public content::URLDataSourceDelegate,
+                            public base::SupportsWeakPtr<ExtensionIconSource> {
  public:
   explicit ExtensionIconSource(Profile* profile);
 
@@ -68,10 +70,9 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource {
   // by |resource_id|.
   static SkBitmap* LoadImageByResourceId(int resource_id);
 
-  // ChromeURLDataManager::DataSource
-
+  // content::URLDataSourceDelegate implementation.
+  virtual std::string GetSource() OVERRIDE;
   virtual std::string GetMimeType(const std::string&) const OVERRIDE;
-
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id) OVERRIDE;

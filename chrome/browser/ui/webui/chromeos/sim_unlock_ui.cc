@@ -24,6 +24,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/url_data_source_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -70,12 +71,12 @@ const chromeos::NetworkDevice* GetCellularDevice() {
 
 namespace chromeos {
 
-class SimUnlockUIHTMLSource : public ChromeURLDataManager::DataSource {
+class SimUnlockUIHTMLSource : public content::URLDataSourceDelegate {
  public:
   SimUnlockUIHTMLSource();
 
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
+  // content::URLDataSourceDelegate implementation.
+  virtual std::string GetSource() OVERRIDE;
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id) OVERRIDE;
@@ -245,8 +246,11 @@ class SimUnlockHandler : public WebUIMessageHandler,
 
 // SimUnlockUIHTMLSource -------------------------------------------------------
 
-SimUnlockUIHTMLSource::SimUnlockUIHTMLSource()
-    : DataSource(chrome::kChromeUISimUnlockHost, MessageLoop::current()) {
+SimUnlockUIHTMLSource::SimUnlockUIHTMLSource() {
+}
+
+std::string SimUnlockUIHTMLSource::GetSource() {
+  return chrome::kChromeUISimUnlockHost;
 }
 
 void SimUnlockUIHTMLSource::StartDataRequest(const std::string& path,
@@ -305,7 +309,7 @@ void SimUnlockUIHTMLSource::StartDataRequest(const std::string& path,
   strings.SetString("oldPin", l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_OLD_PIN));
 
-  SetFontAndTextDirection(&strings);
+  URLDataSource::SetFontAndTextDirection(&strings);
 
   static const base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -314,7 +318,8 @@ void SimUnlockUIHTMLSource::StartDataRequest(const std::string& path,
   std::string full_html = jstemplate_builder::GetI18nTemplateHtml(html,
                                                                   &strings);
 
-  SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
+  url_data_source()->SendResponse(
+      request_id, base::RefCountedString::TakeString(&full_html));
 }
 
 // SimUnlockHandler ------------------------------------------------------------

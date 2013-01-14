@@ -298,7 +298,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
       prefs::kShowBookmarkBar);
   localized_strings.SetBoolean("bookmarkbarattached", bookmark_bar_attached);
 
-  ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
+  URLDataSource::SetFontAndTextDirection(&localized_strings);
 
   static const base::StringPiece incognito_tab_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -415,7 +415,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   NewTabPageHandler::GetLocalizedValues(profile_, &load_time_data);
   NTPLoginHandler::GetLocalizedValues(profile_, &load_time_data);
 
-  ChromeURLDataManager::DataSource::SetFontAndTextDirection(&load_time_data);
+  URLDataSource::SetFontAndTextDirection(&load_time_data);
 
   // Control fade and resize animations.
   load_time_data.SetBoolean("anim", ui::Animation::ShouldRenderRichAnimation());

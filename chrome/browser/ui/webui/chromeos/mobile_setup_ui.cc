@@ -32,6 +32,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host_observer.h"
+#include "content/public/browser/url_data_source_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -113,12 +114,12 @@ class PortalFrameLoadObserver : public content::RenderViewHostObserver {
   DISALLOW_COPY_AND_ASSIGN(PortalFrameLoadObserver);
 };
 
-class MobileSetupUIHTMLSource : public ChromeURLDataManager::DataSource {
+class MobileSetupUIHTMLSource : public content::URLDataSourceDelegate {
  public:
   MobileSetupUIHTMLSource();
 
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
+  // content::URLDataSourceDelegate implementation.
+  virtual std::string GetSource() OVERRIDE;
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id);
@@ -171,8 +172,11 @@ class MobileSetupHandler
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-MobileSetupUIHTMLSource::MobileSetupUIHTMLSource()
-    : DataSource(chrome::kChromeUIMobileSetupHost, MessageLoop::current()) {
+MobileSetupUIHTMLSource::MobileSetupUIHTMLSource() {
+}
+
+std::string MobileSetupUIHTMLSource::GetSource() OVERRIDE {
+  return chrome::kChromeUIMobileSetupHost;
 }
 
 void MobileSetupUIHTMLSource::StartDataRequest(const std::string& path,
@@ -184,7 +188,7 @@ void MobileSetupUIHTMLSource::StartDataRequest(const std::string& path,
   if (!network || !network->SupportsActivation()) {
     LOG(WARNING) << "Can't find device to activate for service path " << path;
     scoped_refptr<base::RefCountedBytes> html_bytes(new base::RefCountedBytes);
-    SendResponse(request_id, html_bytes);
+    url_data_source()->SendResponse(request_id, html_bytes);
     return;
   }
 
@@ -210,7 +214,7 @@ void MobileSetupUIHTMLSource::StartDataRequest(const std::string& path,
                     l10n_util::GetStringUTF16(IDS_CANCEL));
   strings.SetString("ok_button",
                     l10n_util::GetStringUTF16(IDS_OK));
-  SetFontAndTextDirection(&strings);
+  URLDataSource::SetFontAndTextDirection(&strings);
 
   static const base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -219,7 +223,8 @@ void MobileSetupUIHTMLSource::StartDataRequest(const std::string& path,
   std::string full_html = jstemplate_builder::GetI18nTemplateHtml(html,
                                                                   &strings);
 
-  SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
+  url_data_source()->SendResponse(
+      request_id, base::RefCountedString::TakeString(&full_html));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

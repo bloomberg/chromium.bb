@@ -945,7 +945,7 @@ void SafeBrowsingBlockingPageV2::PopulateStringDictionary(
   strings->SetString("proceed",
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_V2_PROCEED_LINK));
 
-  ChromeURLDataManager::DataSource::SetFontAndTextDirection(strings);
+  URLDataSource::SetFontAndTextDirection(strings);
 }
 
 void SafeBrowsingBlockingPageV2::PopulateMultipleThreatStringDictionary(

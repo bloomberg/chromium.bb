@@ -5,19 +5,19 @@
 #ifndef CHROME_BROWSER_PRINTING_CLOUD_PRINT_CLOUD_PRINT_SETUP_SOURCE_H_
 #define CHROME_BROWSER_PRINTING_CLOUD_PRINT_CLOUD_PRINT_SETUP_SOURCE_H_
 
-#include <string>
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "content/public/browser/url_data_source_delegate.h"
 
-#include "base/message_loop.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/common/url_constants.h"
-
-class CloudPrintSetupSource : public ChromeURLDataManager::DataSource {
+class CloudPrintSetupSource : public content::URLDataSourceDelegate {
  public:
   CloudPrintSetupSource();
+
+  // content::URLDataSourceDelegate implementation.
+  virtual std::string GetSource() OVERRIDE;
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id) OVERRIDE;
-
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
 
   static const char kInvalidPasswordHelpUrl[];

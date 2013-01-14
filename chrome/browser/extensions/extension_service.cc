@@ -1083,8 +1083,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
   // Same for chrome://thumb/ resources.
   if (extension->HasHostPermission(GURL(chrome::kChromeUIThumbnailURL))) {
     ThumbnailSource* thumbnail_source = new ThumbnailSource(profile_);
-    ChromeURLDataManagerFactory::GetForProfile(profile_)->
-        AddDataSource(thumbnail_source);
+    ChromeURLDataManager::AddDataSource(profile_, thumbnail_source);
   }
 
 #if defined(ENABLE_PLUGINS)

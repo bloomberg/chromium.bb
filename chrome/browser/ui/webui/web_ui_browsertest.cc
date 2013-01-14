@@ -28,6 +28,7 @@
 #include "chrome/test/base/test_tab_strip_model_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/url_data_source_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -267,13 +268,16 @@ namespace {
 // page is shown. While this doesn't matter for most tests, without it,
 // navigation to different anchors cannot be listened to (via the hashchange
 // event).
-class MockWebUIDataSource : public ChromeURLDataManager::DataSource {
+class MockWebUIDataSource : public content::URLDataSourceDelegate {
  public:
-  MockWebUIDataSource()
-      : ChromeURLDataManager::DataSource("dummyurl", MessageLoop::current()) {}
+  MockWebUIDataSource() {}
 
  private:
   virtual ~MockWebUIDataSource() {}
+
+  virtual std::string GetSource() OVERRIDE {
+    return "dummyurl";
+  }
 
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
@@ -281,7 +285,7 @@ class MockWebUIDataSource : public ChromeURLDataManager::DataSource {
     std::string dummy_html = "<html><body>Dummy</body></html>";
     scoped_refptr<base::RefCountedString> response =
         base::RefCountedString::TakeString(&dummy_html);
-    SendResponse(request_id, response);
+    url_data_source()->SendResponse(request_id, response);
   }
 
   std::string GetMimeType(const std::string& path) const OVERRIDE {

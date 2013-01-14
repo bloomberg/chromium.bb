@@ -49,6 +49,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/url_data_source_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_ui.h"
@@ -101,13 +102,13 @@ namespace options {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class OptionsUIHTMLSource : public ChromeURLDataManager::DataSource {
+class OptionsUIHTMLSource : public content::URLDataSourceDelegate {
  public:
   // The constructor takes over ownership of |localized_strings|.
   explicit OptionsUIHTMLSource(DictionaryValue* localized_strings);
 
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
+  // content::URLDataSourceDelegate implementation.
+  virtual std::string GetSource() OVERRIDE;
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id);
@@ -122,17 +123,20 @@ class OptionsUIHTMLSource : public ChromeURLDataManager::DataSource {
   DISALLOW_COPY_AND_ASSIGN(OptionsUIHTMLSource);
 };
 
-OptionsUIHTMLSource::OptionsUIHTMLSource(DictionaryValue* localized_strings)
-    : DataSource(chrome::kChromeUISettingsFrameHost, MessageLoop::current()) {
+OptionsUIHTMLSource::OptionsUIHTMLSource(DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   localized_strings_.reset(localized_strings);
+}
+
+std::string OptionsUIHTMLSource::GetSource() {
+  return chrome::kChromeUISettingsFrameHost;
 }
 
 void OptionsUIHTMLSource::StartDataRequest(const std::string& path,
                                             bool is_incognito,
                                             int request_id) {
   scoped_refptr<base::RefCountedMemory> response_bytes;
-  SetFontAndTextDirection(localized_strings_.get());
+  URLDataSource::SetFontAndTextDirection(localized_strings_.get());
 
   if (path == kLocalizedStringsFile) {
     // Return dynamically-generated strings from memory.
@@ -150,7 +154,7 @@ void OptionsUIHTMLSource::StartDataRequest(const std::string& path,
         LoadDataResourceBytes(IDR_OPTIONS_HTML);
   }
 
-  SendResponse(request_id, response_bytes);
+  url_data_source()->SendResponse(request_id, response_bytes);
 }
 
 std::string OptionsUIHTMLSource::GetMimeType(const std::string& path) const {

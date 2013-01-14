@@ -41,11 +41,14 @@ int PathToIDR(const std::string& path) {
 
 }  // namespace
 
-SharedResourcesDataSource::SharedResourcesDataSource()
-    : DataSource(chrome::kChromeUIResourcesHost, NULL) {
+SharedResourcesDataSource::SharedResourcesDataSource() {
 }
 
 SharedResourcesDataSource::~SharedResourcesDataSource() {
+}
+
+std::string SharedResourcesDataSource::GetSource() {
+  return chrome::kChromeUIResourcesHost;
 }
 
 void SharedResourcesDataSource::StartDataRequest(const std::string& path,
@@ -57,7 +60,7 @@ void SharedResourcesDataSource::StartDataRequest(const std::string& path,
   scoped_refptr<base::RefCountedStaticMemory> bytes(
       rb.LoadDataResourceBytes(idr));
 
-  SendResponse(request_id, bytes);
+  url_data_source()->SendResponse(request_id, bytes);
 }
 
 std::string SharedResourcesDataSource::GetMimeType(

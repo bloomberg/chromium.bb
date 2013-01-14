@@ -378,7 +378,7 @@ bool BookmarkManagerGetStringsFunction::RunImpl() {
   localized_strings->SetString("cancel",
       l10n_util::GetStringUTF16(IDS_CANCEL));
 
-  ChromeURLDataManager::DataSource::SetFontAndTextDirection(localized_strings);
+  URLDataSource::SetFontAndTextDirection(localized_strings);
 
   SetResult(localized_strings);
 

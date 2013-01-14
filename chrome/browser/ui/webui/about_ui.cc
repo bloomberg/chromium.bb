@@ -38,7 +38,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/render_messages.h"
@@ -116,7 +115,8 @@ std::string GetAboutMemoryRedirectResponse(Profile* profile) {
 // its |StartFetch()| method.
 class AboutMemoryHandler : public MemoryDetails {
  public:
-  AboutMemoryHandler(AboutUIHTMLSource* source, int request_id)
+  AboutMemoryHandler(const base::WeakPtr<AboutUIHTMLSource>& source,
+                     int request_id)
       : source_(source),
         request_id_(request_id) {
   }
@@ -130,7 +130,7 @@ class AboutMemoryHandler : public MemoryDetails {
                           ProcessMemoryInformation* info);
   void AppendProcess(ListValue* child_data, ProcessMemoryInformation* info);
 
-  scoped_refptr<AboutUIHTMLSource> source_;
+  base::WeakPtr<AboutUIHTMLSource> source_;
   int request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AboutMemoryHandler);
@@ -140,7 +140,7 @@ class AboutMemoryHandler : public MemoryDetails {
 class ChromeOSTermsHandler
     : public base::RefCountedThreadSafe<ChromeOSTermsHandler> {
  public:
-  static void Start(AboutUIHTMLSource* source,
+  static void Start(const base::WeakPtr<AboutUIHTMLSource>& source,
                     const std::string& path,
                     int request_id) {
     scoped_refptr<ChromeOSTermsHandler> handler(
@@ -151,7 +151,7 @@ class ChromeOSTermsHandler
  private:
   friend class base::RefCountedThreadSafe<ChromeOSTermsHandler>;
 
-  ChromeOSTermsHandler(AboutUIHTMLSource* source,
+  ChromeOSTermsHandler(const base::WeakPtr<AboutUIHTMLSource>& source,
                        const std::string& path,
                        int request_id)
     : source_(source),
@@ -204,6 +204,9 @@ class ChromeOSTermsHandler
 
   void ResponseOnUIThread() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!source_)
+      return;
+
     // If we fail to load Chrome OS EULA from disk, load it from resources.
     // Do nothing if OEM EULA load failed.
     if (contents_.empty() && path_ != chrome::kOemEulaURLPath)
@@ -212,7 +215,7 @@ class ChromeOSTermsHandler
   }
 
   // Where the results are fed to.
-  scoped_refptr<AboutUIHTMLSource> source_;
+  base::WeakPtr<AboutUIHTMLSource> source_;
 
   // Path in the URL.
   std::string path_;
@@ -500,7 +503,8 @@ std::string AboutTransparency(const std::string& path) {
 // the DNS information.
 class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
  public:
-  static void Start(AboutUIHTMLSource* source, int request_id) {
+  static void Start(const base::WeakPtr<AboutUIHTMLSource>& source,
+                    int request_id) {
     scoped_refptr<AboutDnsHandler> handler(
         new AboutDnsHandler(source, request_id));
     handler->StartOnUIThread();
@@ -509,7 +513,8 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
  private:
   friend class base::RefCountedThreadSafe<AboutDnsHandler>;
 
-  AboutDnsHandler(AboutUIHTMLSource* source, int request_id)
+  AboutDnsHandler(const base::WeakPtr<AboutUIHTMLSource>& source,
+                  int request_id)
       : source_(source),
         request_id_(request_id) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -543,11 +548,12 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
 
   void FinishOnUIThread(const std::string& data) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    source_->FinishDataRequest(data, request_id_);
+    if (source_)
+      source_->FinishDataRequest(data, request_id_);
   }
 
   // Where the results are fed to.
-  scoped_refptr<AboutUIHTMLSource> source_;
+  base::WeakPtr<AboutUIHTMLSource> source_;
 
   // ID identifying the request.
   int request_id_;
@@ -562,7 +568,7 @@ void FinishMemoryDataRequest(const std::string& path,
     // The AboutMemoryHandler cleans itself up, but |StartFetch()| will want
     // the refcount to be greater than 0.
     scoped_refptr<AboutMemoryHandler>
-        handler(new AboutMemoryHandler(source, request_id));
+        handler(new AboutMemoryHandler(source->AsWeakPtr(), request_id));
     // TODO(jamescook): Maybe this shouldn't update UMA?
     handler->StartFetch(MemoryDetails::UPDATE_USER_METRICS);
   } else {
@@ -864,6 +870,9 @@ void AboutMemoryHandler::AppendProcess(ListValue* child_data,
 }
 
 void AboutMemoryHandler::OnDetailsAvailable() {
+  if (!source_)
+    return;
+
   // the root of the JSON hierarchy for about:memory jstemplate
   scoped_ptr<DictionaryValue> root(new DictionaryValue);
   ListValue* browsers = new ListValue();
@@ -938,7 +947,7 @@ void AboutMemoryHandler::OnDetailsAvailable() {
   load_time_data.SetString(
       "summary_desc",
       l10n_util::GetStringUTF16(IDS_MEMORY_USAGE_SUMMARY_DESC));
-  ChromeWebUIDataSource::SetFontAndTextDirection(&load_time_data);
+  URLDataSource::SetFontAndTextDirection(&load_time_data);
   load_time_data.Set("jstemplateData", root.release());
 
   jstemplate_builder::UseVersion2 version2;
@@ -953,59 +962,62 @@ void AboutMemoryHandler::OnDetailsAvailable() {
 
 AboutUIHTMLSource::AboutUIHTMLSource(const std::string& source_name,
                                      Profile* profile)
-    : DataSource(source_name, MessageLoop::current()),
+    : source_name_(source_name),
       profile_(profile) {}
 
 AboutUIHTMLSource::~AboutUIHTMLSource() {}
+
+std::string AboutUIHTMLSource::GetSource() {
+  return source_name_;
+}
 
 void AboutUIHTMLSource::StartDataRequest(const std::string& path,
                                          bool is_incognito,
                                          int request_id) {
   std::string response;
-  std::string host = source_name();
   // Add your data source here, in alphabetical order.
-  if (host == chrome::kChromeUIChromeURLsHost) {
+  if (source_name_ == chrome::kChromeUIChromeURLsHost) {
     response = ChromeURLs();
-  } else if (host == chrome::kChromeUICreditsHost) {
+  } else if (source_name_ == chrome::kChromeUICreditsHost) {
     int idr = (path == kCreditsJsPath) ? IDR_CREDITS_JS : IDR_CREDITS_HTML;
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
         idr).as_string();
 #if defined(OS_CHROMEOS)
-  } else if (host == chrome::kChromeUIDiscardsHost) {
+  } else if (source_name_ == chrome::kChromeUIDiscardsHost) {
     response = AboutDiscards(path);
 #endif
 #if defined(USE_ASH)
-  } else if (host == chrome::kChromeUITransparencyHost) {
+  } else if (source_name_ == chrome::kChromeUITransparencyHost) {
     response = AboutTransparency(path);
 #endif
-  } else if (host == chrome::kChromeUIDNSHost) {
-    AboutDnsHandler::Start(this, request_id);
+  } else if (source_name_ == chrome::kChromeUIDNSHost) {
+    AboutDnsHandler::Start(AsWeakPtr(), request_id);
     return;
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
-  } else if (host == chrome::kChromeUILinuxProxyConfigHost) {
+  } else if (source_name_ == chrome::kChromeUILinuxProxyConfigHost) {
     response = AboutLinuxProxyConfig();
 #endif
-  } else if (host == chrome::kChromeUIMemoryHost) {
+  } else if (source_name_ == chrome::kChromeUIMemoryHost) {
     response = GetAboutMemoryRedirectResponse(profile());
-  } else if (host == chrome::kChromeUIMemoryRedirectHost) {
+  } else if (source_name_ == chrome::kChromeUIMemoryRedirectHost) {
     FinishMemoryDataRequest(path, this, request_id);
     return;
 #if defined(OS_CHROMEOS)
-  } else if (host == chrome::kChromeUINetworkHost) {
+  } else if (source_name_ == chrome::kChromeUINetworkHost) {
     response = chromeos::about_ui::AboutNetwork(path);
-  } else if (host == chrome::kChromeUIOSCreditsHost) {
+  } else if (source_name_ == chrome::kChromeUIOSCreditsHost) {
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
         IDR_OS_CREDITS_HTML).as_string();
 #endif
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
-  } else if (host == chrome::kChromeUISandboxHost) {
+  } else if (source_name_ == chrome::kChromeUISandboxHost) {
     response = AboutSandbox();
 #endif
-  } else if (host == chrome::kChromeUIStatsHost) {
+  } else if (source_name_ == chrome::kChromeUIStatsHost) {
     response = AboutStats(path);
-  } else if (host == chrome::kChromeUITermsHost) {
+  } else if (source_name_ == chrome::kChromeUITermsHost) {
 #if defined(OS_CHROMEOS)
-    ChromeOSTermsHandler::Start(this, path, request_id);
+    ChromeOSTermsHandler::Start(AsWeakPtr(), path, request_id);
     return;
 #else
     response = l10n_util::GetStringUTF8(IDS_TERMS_HTML);
@@ -1018,7 +1030,8 @@ void AboutUIHTMLSource::StartDataRequest(const std::string& path,
 void AboutUIHTMLSource::FinishDataRequest(const std::string& html,
                                           int request_id) {
   std::string html_copy(html);
-  SendResponse(request_id, base::RefCountedString::TakeString(&html_copy));
+  url_data_source()->SendResponse(
+      request_id, base::RefCountedString::TakeString(&html_copy));
 }
 
 std::string AboutUIHTMLSource::GetMimeType(const std::string& path) const {
@@ -1041,9 +1054,6 @@ AboutUI::AboutUI(content::WebUI* web_ui, const std::string& name)
   ChromeURLDataManager::AddDataSource(profile, theme);
 #endif
 
-  ChromeURLDataManager::DataSource* source =
-      new AboutUIHTMLSource(name, profile);
-  if (source) {
-    ChromeURLDataManager::AddDataSource(profile, source);
-  }
+  content::URLDataSourceDelegate* source = new AboutUIHTMLSource(name, profile);
+  ChromeURLDataManager::AddDataSource(profile, source);
 }

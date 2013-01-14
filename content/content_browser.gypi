@@ -168,6 +168,8 @@
     'public/browser/web_ui_controller.cc',
     'public/browser/web_ui_controller.h',
     'public/browser/web_ui_controller_factory.h',
+    'public/browser/url_data_source_delegate.cc',
+    'public/browser/url_data_source_delegate.h',
     'public/browser/web_ui_message_handler.h',
     'public/browser/worker_service.h',
     'public/browser/worker_service_observer.h',

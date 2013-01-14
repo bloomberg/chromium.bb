@@ -362,8 +362,11 @@ Profile* NewTabUI::GetProfile() const {
 // NewTabHTMLSource
 
 NewTabUI::NewTabHTMLSource::NewTabHTMLSource(Profile* profile)
-    : DataSource(chrome::kChromeUINewTabHost, MessageLoop::current()),
-      profile_(profile) {
+    : profile_(profile) {
+}
+
+std::string NewTabUI::NewTabHTMLSource::GetSource() {
+  return chrome::kChromeUINewTabHost;
 }
 
 void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
@@ -379,7 +382,7 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
             ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
                 it->second.second) :
             new base::RefCountedStaticMemory);
-    SendResponse(request_id, resource_bytes);
+    url_data_source()->SendResponse(request_id, resource_bytes);
     return;
   }
 
@@ -401,7 +404,7 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
       NTPResourceCacheFactory::GetForProfile(profile_)->
       GetNewTabHTML(is_incognito));
 
-  SendResponse(request_id, html_bytes);
+  url_data_source()->SendResponse(request_id, html_bytes);
 }
 
 std::string NewTabUI::NewTabHTMLSource::GetMimeType(const std::string& resource)

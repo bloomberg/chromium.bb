@@ -9,6 +9,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/url_constants.h"
 #include "grit/locale_settings.h"
@@ -18,27 +19,18 @@
 #include "ui/base/resource/resource_bundle.h"
 
 FaviconSource::FaviconSource(Profile* profile, IconType type)
-    : DataSource(type == FAVICON ? chrome::kChromeUIFaviconHost :
-                     chrome::kChromeUITouchIconHost,
-                 MessageLoop::current()) {
-  Init(profile, type);
-}
-
-FaviconSource::FaviconSource(Profile* profile,
-                             IconType type,
-                             const std::string& source_name)
-    : DataSource(source_name, MessageLoop::current()) {
-  Init(profile, type);
+    : profile_(profile->GetOriginalProfile()),
+      icon_types_(type == FAVICON ? history::FAVICON :
+          history::TOUCH_PRECOMPOSED_ICON | history::TOUCH_ICON |
+          history::FAVICON) {
 }
 
 FaviconSource::~FaviconSource() {
 }
 
-void FaviconSource::Init(Profile* profile, IconType type) {
-  profile_ = profile->GetOriginalProfile();
-  icon_types_ = type == FAVICON ? history::FAVICON :
-      history::TOUCH_PRECOMPOSED_ICON | history::TOUCH_ICON |
-      history::FAVICON;
+std::string FaviconSource::GetSource() {
+  return icon_types_ == history::FAVICON ?
+      chrome::kChromeUIFaviconHost : chrome::kChromeUITouchIconHost;
 }
 
 void FaviconSource::StartDataRequest(const std::string& path,
@@ -123,7 +115,7 @@ void FaviconSource::StartDataRequest(const std::string& path,
     for (size_t i = 0; i < arraysize(history::kPrepopulatedPages); i++) {
       if (url.spec() ==
           l10n_util::GetStringUTF8(history::kPrepopulatedPages[i].url_id)) {
-        SendResponse(request_id,
+        url_data_source()->SendResponse(request_id,
             ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
                 history::kPrepopulatedPages[i].favicon_id,
                 scale_factor));
@@ -168,7 +160,8 @@ void FaviconSource::OnFaviconDataAvailable(
     const history::FaviconBitmapResult& bitmap_result) {
   if (bitmap_result.is_valid()) {
     // Forward the data along to the networking system.
-    SendResponse(request.request_id, bitmap_result.bitmap_data);
+    url_data_source()->SendResponse(
+        request.request_id, bitmap_result.bitmap_data);
   } else if (!HandleMissingResource(request)) {
     SendDefaultResponse(request);
   }
@@ -200,5 +193,5 @@ void FaviconSource::SendDefaultResponse(const IconRequest& icon_request) {
     default_favicons_[favicon_index] = default_favicon;
   }
 
-  SendResponse(icon_request.request_id, default_favicon);
+  url_data_source()->SendResponse(icon_request.request_id, default_favicon);
 }

@@ -19,8 +19,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-BookmarksUIHTMLSource::BookmarksUIHTMLSource()
-    : DataSource(chrome::kChromeUIBookmarksHost, MessageLoop::current()) {
+BookmarksUIHTMLSource::BookmarksUIHTMLSource() {
+}
+
+std::string BookmarksUIHTMLSource::GetSource() {
+  return chrome::kChromeUIBookmarksHost;
 }
 
 void BookmarksUIHTMLSource::StartDataRequest(const std::string& path,
@@ -29,7 +32,7 @@ void BookmarksUIHTMLSource::StartDataRequest(const std::string& path,
   NOTREACHED() << "We should never get here since the extension should have"
                << "been triggered";
 
-  SendResponse(request_id, NULL);
+  url_data_source()->SendResponse(request_id, NULL);
 }
 
 std::string BookmarksUIHTMLSource::GetMimeType(const std::string& path) const {
@@ -48,10 +51,12 @@ BookmarksUIHTMLSource::~BookmarksUIHTMLSource() {}
 
 BookmarksUI::BookmarksUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   BookmarksUIHTMLSource* html_source = new BookmarksUIHTMLSource();
-
   // Set up the chrome://bookmarks/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
   ChromeURLDataManager::AddDataSource(profile, html_source);
+  ChromeURLDataManager::AddDataSource(
+      Profile::FromWebUI(web_ui),
+      new BookmarksUIHTMLSource);
 }
 
 // static

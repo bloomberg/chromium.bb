@@ -11,14 +11,15 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "content/public/browser/url_data_source_delegate.h"
 
 // A data source that can help with implementing the common operations
 // needed by the chrome WEBUI settings/history/downloads pages.
 // DO NOT DERIVE FROM THIS CLASS! http://crbug.com/169170
-class ChromeWebUIDataSource : public ChromeURLDataManager::DataSource {
+class ChromeWebUIDataSource : public URLDataSource,
+                              public content::URLDataSourceDelegate {
  public:
   // Used as a parameter to GotDataCallback. The caller has to run this callback
   // with the result for the path that they filtered, passing ownership of the
@@ -33,7 +34,6 @@ class ChromeWebUIDataSource : public ChromeURLDataManager::DataSource {
       HandleRequestCallback;
 
   explicit ChromeWebUIDataSource(const std::string& source_name);
-  ChromeWebUIDataSource(const std::string& source_name, MessageLoop* loop);
 
   // Adds a string keyed to its name to our dictionary.
   void AddString(const std::string& name, const string16& value);
@@ -82,13 +82,18 @@ class ChromeWebUIDataSource : public ChromeURLDataManager::DataSource {
   // Completes a request by sending the file specified by |idr|.
   void SendFromResourceBundle(int request_id, int idr);
 
-  // ChromeURLDataManager
+  // content::URLDataSourceDelegate implementation.
+  virtual std::string GetSource() OVERRIDE;
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id) OVERRIDE;
 
  private:
+  // The name of this source.
+  // E.g., for favicons, this could be "favicon", which results in paths for
+  // specific resources like "favicon/34" getting sent to this source.
+  std::string source_name_;
   int default_resource_;
   bool json_js_format_v2_;
   std::string json_path_;

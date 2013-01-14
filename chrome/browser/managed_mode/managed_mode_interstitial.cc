@@ -105,7 +105,7 @@ std::string ManagedModeInterstitial::GetHTMLContents() {
   strings.SetString(
       "contentPacksSectionButton",
       l10n_util::GetStringUTF16(IDS_CONTENT_PACKS_SECTION_BUTTON));
-  ChromeURLDataManager::DataSource::SetFontAndTextDirection(&strings);
+  URLDataSource::SetFontAndTextDirection(&strings);
 
   base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(

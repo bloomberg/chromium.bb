@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/url_data_source_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -95,12 +96,12 @@ static std::string GetConnectionType() {
 
 }  // namespace
 
-class RegisterPageUIHTMLSource : public ChromeURLDataManager::DataSource {
+class RegisterPageUIHTMLSource : public content::URLDataSourceDelegate {
  public:
   RegisterPageUIHTMLSource();
 
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
+  // content::URLDataSourceDelegate implementation.
+  virtual std::string GetSource() OVERRIDE;
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id);
@@ -155,8 +156,11 @@ class RegisterPageHandler : public WebUIMessageHandler,
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-RegisterPageUIHTMLSource::RegisterPageUIHTMLSource()
-    : DataSource(chrome::kChromeUIRegisterPageHost, MessageLoop::current()) {
+RegisterPageUIHTMLSource::RegisterPageUIHTMLSource() {
+}
+
+std::string RegisterPageUIHTMLSource::GetSource() {
+  return chrome::kChromeUIRegisterPageHost;
 }
 
 void RegisterPageUIHTMLSource::StartDataRequest(const std::string& path,
@@ -167,7 +171,7 @@ void RegisterPageUIHTMLSource::StartDataRequest(const std::string& path,
   if (!chromeos::WizardController::default_controller() ||
       chromeos::WizardController::IsDeviceRegistered()) {
     scoped_refptr<base::RefCountedBytes> empty_bytes(new base::RefCountedBytes);
-    SendResponse(request_id, empty_bytes);
+    url_data_source()->SendResponse(request_id, empty_bytes);
     return;
   }
 
@@ -175,7 +179,7 @@ void RegisterPageUIHTMLSource::StartDataRequest(const std::string& path,
       ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
           IDR_HOST_REGISTRATION_PAGE_HTML));
 
-  SendResponse(request_id, html_bytes);
+  url_data_source()->SendResponse(request_id, html_bytes);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

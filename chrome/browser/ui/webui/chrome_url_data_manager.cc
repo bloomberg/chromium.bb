@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager_factory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/url_data_source_delegate.h"
 #include "grit/platform_locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -38,12 +39,13 @@ static base::LazyInstance<base::Lock>::Leaky
     g_delete_lock = LAZY_INSTANCE_INITIALIZER;
 
 // static
-ChromeURLDataManager::DataSources* ChromeURLDataManager::data_sources_ = NULL;
+ChromeURLDataManager::URLDataSources* ChromeURLDataManager::data_sources_ =
+    NULL;
 
 // Invoked on the IO thread to do the actual adding of the DataSource.
 static void AddDataSourceOnIOThread(
     const base::Callback<ChromeURLDataManagerBackend*(void)>& backend,
-    scoped_refptr<ChromeURLDataManager::DataSource> data_source) {
+    scoped_refptr<URLDataSource> data_source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   backend.Run()->AddDataSource(data_source.get());
 }
@@ -56,7 +58,7 @@ ChromeURLDataManager::ChromeURLDataManager(
 ChromeURLDataManager::~ChromeURLDataManager() {
 }
 
-void ChromeURLDataManager::AddDataSource(DataSource* source) {
+void ChromeURLDataManager::AddDataSource(URLDataSource* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -67,7 +69,7 @@ void ChromeURLDataManager::AddDataSource(DataSource* source) {
 // static
 void ChromeURLDataManager::DeleteDataSources() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DataSources sources;
+  URLDataSources sources;
   {
     base::AutoLock lock(g_delete_lock.Get());
     if (!data_sources_)
@@ -79,7 +81,7 @@ void ChromeURLDataManager::DeleteDataSources() {
 }
 
 // static
-void ChromeURLDataManager::DeleteDataSource(const DataSource* data_source) {
+void ChromeURLDataManager::DeleteDataSource(const URLDataSource* data_source) {
   // Invoked when a DataSource is no longer referenced and needs to be deleted.
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     // We're on the UI thread, delete right away.
@@ -93,7 +95,7 @@ void ChromeURLDataManager::DeleteDataSource(const DataSource* data_source) {
   {
     base::AutoLock lock(g_delete_lock.Get());
     if (!data_sources_)
-      data_sources_ = new DataSources();
+      data_sources_ = new URLDataSources();
     schedule_delete = data_sources_->empty();
     data_sources_->push_back(data_source);
   }
@@ -106,13 +108,20 @@ void ChromeURLDataManager::DeleteDataSource(const DataSource* data_source) {
 }
 
 // static
-void ChromeURLDataManager::AddDataSource(Profile* profile, DataSource* source) {
-  ChromeURLDataManagerFactory::GetForProfile(profile)->AddDataSource(source);
+void ChromeURLDataManager::AddDataSource(
+    Profile* profile,
+    content::URLDataSourceDelegate* delegate) {
+  if (!delegate->url_data_source_) {
+  delegate->url_data_source_ = new URLDataSource(
+      delegate->GetSource(), delegate);
+  }
+  ChromeURLDataManagerFactory::GetForProfile(profile)->AddDataSource(
+      delegate->url_data_source_);
 }
 
 // static
 bool ChromeURLDataManager::IsScheduledForDeletion(
-    const DataSource* data_source) {
+    const URLDataSource* data_source) {
   base::AutoLock lock(g_delete_lock.Get());
   if (!data_sources_)
     return false;
@@ -120,22 +129,22 @@ bool ChromeURLDataManager::IsScheduledForDeletion(
       data_sources_->end();
 }
 
-ChromeURLDataManager::DataSource::DataSource(const std::string& source_name,
-                                             MessageLoop* message_loop)
+URLDataSource::URLDataSource(const std::string& source_name,
+                             content::URLDataSourceDelegate* delegate)
     : source_name_(source_name),
-      message_loop_(message_loop),
-      backend_(NULL) {
+      backend_(NULL),
+      delegate_(delegate) {
 }
 
-ChromeURLDataManager::DataSource::~DataSource() {
+URLDataSource::~URLDataSource() {
 }
 
-void ChromeURLDataManager::DataSource::SendResponse(
+void URLDataSource::SendResponse(
     int request_id,
     base::RefCountedMemory* bytes) {
   // Take a ref-pointer on entry so byte->Release() will always get called.
   scoped_refptr<base::RefCountedMemory> bytes_ptr(bytes);
-  if (IsScheduledForDeletion(this)) {
+  if (ChromeURLDataManager::IsScheduledForDeletion(this)) {
     // We're scheduled for deletion. Servicing the request would result in
     // this->AddRef being invoked, even though the ref count is 0 and 'this' is
     // about to be deleted. If the AddRef were allowed through, when 'this' is
@@ -151,23 +160,12 @@ void ChromeURLDataManager::DataSource::SendResponse(
   }
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&DataSource::SendResponseOnIOThread, this, request_id,
+      base::Bind(&URLDataSource::SendResponseOnIOThread, this, request_id,
                  bytes_ptr));
 }
 
-MessageLoop* ChromeURLDataManager::DataSource::MessageLoopForRequestPath(
-    const std::string& path) const {
-  return message_loop_;
-}
-
-bool ChromeURLDataManager::DataSource::ShouldReplaceExistingSource() const {
-  return true;
-}
-
-bool ChromeURLDataManager::DataSource::AllowCaching() const { return true; }
-
 // static
-void ChromeURLDataManager::DataSource::SetFontAndTextDirection(
+void URLDataSource::SetFontAndTextDirection(
     DictionaryValue* localized_strings) {
   int web_font_family_id = IDS_WEB_FONT_FAMILY;
   int web_font_size_id = IDS_WEB_FONT_SIZE;
@@ -195,7 +193,7 @@ void ChromeURLDataManager::DataSource::SetFontAndTextDirection(
       base::i18n::IsRTL() ? "rtl" : "ltr");
 }
 
-void ChromeURLDataManager::DataSource::SendResponseOnIOThread(
+void URLDataSource::SendResponseOnIOThread(
     int request_id,
     scoped_refptr<base::RefCountedMemory> bytes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

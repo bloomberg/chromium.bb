@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/url_data_source_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -46,14 +47,17 @@ namespace {
 
 #ifdef USE_SOURCE_FILES_DIRECTLY
 
-class ProfilerWebUIDataSource : public ChromeURLDataManager::DataSource {
+class ProfilerWebUIDataSource : public content::URLDataSourceDelegate {
  public:
-  ProfilerWebUIDataSource()
-      : DataSource(chrome::kChromeUIProfilerHost, MessageLoop::current()) {
+  ProfilerWebUIDataSource() {
   }
 
  protected:
-  // ChromeURLDataManager
+  // content::URLDataSourceDelegate implementation.
+  virtual std::string GetSource() OVERRIDE {
+    return chrome::kChromeUIProfilerHost;
+  }
+
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE {
     if (EndsWith(path, ".js", false))
       return "application/javascript";
@@ -84,7 +88,7 @@ class ProfilerWebUIDataSource : public ChromeURLDataManager::DataSource {
     scoped_refptr<base::RefCountedString> response =
         new base::RefCountedString();
     response->data() = file_contents;
-    SendResponse(request_id, response);
+    url_data_source()->SendResponse(request_id, response);
   }
 
  private:

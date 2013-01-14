@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/url_data_source_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -42,12 +43,12 @@ using content::WebUIMessageHandler;
 
 namespace chromeos {
 
-class SystemInfoUIHTMLSource : public ChromeURLDataManager::DataSource {
+class SystemInfoUIHTMLSource : public content::URLDataSourceDelegate {
  public:
   SystemInfoUIHTMLSource();
 
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
+  // content::URLDataSourceDelegate implementation.
+  virtual std::string GetSource() OVERRIDE;
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id) OVERRIDE;
@@ -92,10 +93,13 @@ class SystemInfoHandler : public WebUIMessageHandler,
 ////////////////////////////////////////////////////////////////////////////////
 
 SystemInfoUIHTMLSource::SystemInfoUIHTMLSource()
-    : DataSource(chrome::kChromeUISystemInfoHost, MessageLoop::current()),
-      request_id_(0),
+    : request_id_(0),
       response_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+}
+
+std::string SystemInfoUIHTMLSource::GetSource() {
+  return chrome::kChromeUISystemInfoHost;
 }
 
 void SystemInfoUIHTMLSource::StartDataRequest(const std::string& path,
@@ -131,7 +135,7 @@ void SystemInfoUIHTMLSource::RequestComplete() {
                     l10n_util::GetStringUTF16(IDS_ABOUT_SYS_EXPAND));
   strings.SetString("collapse_btn",
                     l10n_util::GetStringUTF16(IDS_ABOUT_SYS_COLLAPSE));
-  SetFontAndTextDirection(&strings);
+  URLDataSource::SetFontAndTextDirection(&strings);
   if (response_.get()) {
     ListValue* details = new ListValue();
     strings.Set("details", details);
@@ -150,7 +154,8 @@ void SystemInfoUIHTMLSource::RequestComplete() {
           IDR_ABOUT_SYS_HTML));
   std::string full_html = jstemplate_builder::GetTemplatesHtml(
       systeminfo_html, &strings, "t" /* template root node id */);
-  SendResponse(request_id_, base::RefCountedString::TakeString(&full_html));
+  url_data_source()->SendResponse(
+      request_id_, base::RefCountedString::TakeString(&full_html));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

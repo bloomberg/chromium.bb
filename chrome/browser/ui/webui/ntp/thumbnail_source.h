@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "content/public/browser/url_data_source_delegate.h"
 
 class Profile;
 
@@ -23,18 +23,16 @@ class ThumbnailService;
 
 // ThumbnailSource is the gateway between network-level chrome: requests for
 // thumbnails and the history/top-sites backend that serves these.
-class ThumbnailSource : public ChromeURLDataManager::DataSource {
+class ThumbnailSource : public content::URLDataSourceDelegate {
  public:
   explicit ThumbnailSource(Profile* profile);
 
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
+  // content::URLDataSourceDelegate implementation.
+  virtual std::string GetSource() OVERRIDE;
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id) OVERRIDE;
-
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
-
   virtual MessageLoop* MessageLoopForRequestPath(
       const std::string& path) const OVERRIDE;
 

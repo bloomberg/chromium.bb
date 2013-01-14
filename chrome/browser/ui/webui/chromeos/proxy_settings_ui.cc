@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/webui/options/chromeos/proxy_handler.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/url_data_source_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -27,12 +28,12 @@ using content::WebUIMessageHandler;
 
 namespace {
 
-class ProxySettingsHTMLSource : public ChromeURLDataManager::DataSource {
+class ProxySettingsHTMLSource : public content::URLDataSourceDelegate {
  public:
   explicit ProxySettingsHTMLSource(DictionaryValue* localized_strings);
 
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
+  // content::URLDataSourceDelegate implementation.
+  virtual std::string GetSource() OVERRIDE;
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id) OVERRIDE;
@@ -51,14 +52,17 @@ class ProxySettingsHTMLSource : public ChromeURLDataManager::DataSource {
 
 ProxySettingsHTMLSource::ProxySettingsHTMLSource(
     DictionaryValue* localized_strings)
-    : DataSource(chrome::kChromeUIProxySettingsHost, MessageLoop::current()),
-      localized_strings_(localized_strings) {
+    : localized_strings_(localized_strings) {
+}
+
+std::string ProxySettingsHTMLSource::GetSource() {
+  return chrome::kChromeUIProxySettingsHost;
 }
 
 void ProxySettingsHTMLSource::StartDataRequest(const std::string& path,
                                                bool is_incognito,
                                                int request_id) {
-  SetFontAndTextDirection(localized_strings_.get());
+  URLDataSource::SetFontAndTextDirection(localized_strings_.get());
 
   static const base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -66,7 +70,8 @@ void ProxySettingsHTMLSource::StartDataRequest(const std::string& path,
   std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
       html, localized_strings_.get());
 
-  SendResponse(request_id, base::RefCountedString::TakeString(&full_html));
+  url_data_source()->SendResponse(
+      request_id, base::RefCountedString::TakeString(&full_html));
 }
 
 }  // namespace

@@ -19,6 +19,7 @@ class SessionFaviconSource : public FaviconSource {
   explicit SessionFaviconSource(Profile* profile);
 
   // FaviconSource implementation.
+  virtual std::string GetSource() OVERRIDE;
   virtual std::string GetMimeType(const std::string&) const OVERRIDE;
   virtual bool ShouldReplaceExistingSource() const OVERRIDE;
   virtual bool AllowCaching() const OVERRIDE;

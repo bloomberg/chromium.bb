@@ -10,6 +10,7 @@
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/ui_resources.h"
@@ -94,11 +95,14 @@ class WallpaperImageSource::WallpaperEncodingOperation
 };
 
 WallpaperImageSource::WallpaperImageSource()
-    : DataSource(chrome::kChromeUIWallpaperImageHost, NULL),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 WallpaperImageSource::~WallpaperImageSource() {
+}
+
+std::string WallpaperImageSource::GetSource() {
+  return chrome::kChromeUIWallpaperImageHost;
 }
 
 void WallpaperImageSource::StartDataRequest(const std::string& email,
@@ -111,8 +115,8 @@ void WallpaperImageSource::StartDataRequest(const std::string& email,
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&WallpaperImageSource::GetCurrentUserWallpaper, this,
-                 request_id));
+      base::Bind(&WallpaperImageSource::GetCurrentUserWallpaper,
+                 weak_ptr_factory_.GetWeakPtr(), request_id));
 }
 
 std::string WallpaperImageSource::GetMimeType(const std::string&) const {
@@ -120,7 +124,8 @@ std::string WallpaperImageSource::GetMimeType(const std::string&) const {
 }
 
 // Get current background image and store it to |data|.
-void WallpaperImageSource::GetCurrentUserWallpaper(int request_id) {
+void WallpaperImageSource::GetCurrentUserWallpaper(
+    const base::WeakPtr<WallpaperImageSource>& this_object, int request_id) {
   SkBitmap image;
   TRACE_EVENT0("LOCK_SCREEN", "GetCurrentUserWallpaper");
   if (chromeos::UserManager::Get()->IsUserLoggedIn()) {
@@ -138,12 +143,12 @@ void WallpaperImageSource::GetCurrentUserWallpaper(int request_id) {
   content::BrowserThread::PostTask(
     content::BrowserThread::IO,
     FROM_HERE,
-    base::Bind(&WallpaperImageSource::ImageAcquired, this, image, request_id));
+    base::Bind(&WallpaperImageSource::ImageAcquired, this_object,
+               image, request_id));
 }
 
 
-void WallpaperImageSource::ImageAcquired(SkBitmap image,
-    int request_id) {
+void WallpaperImageSource::ImageAcquired(SkBitmap image, int request_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   CancelPendingEncodingOperation();
   scoped_refptr<base::RefCountedBytes> data = new base::RefCountedBytes();
@@ -163,7 +168,7 @@ void WallpaperImageSource::CancelPendingEncodingOperation() {
   // Set canceled flag of previous request to skip unneeded encoding.
   if (wallpaper_encoding_op_.get()) {
     wallpaper_encoding_op_->Cancel();
-    SendResponse(wallpaper_encoding_op_->request_id(), NULL);
+    url_data_source()->SendResponse(wallpaper_encoding_op_->request_id(), NULL);
     TRACE_EVENT_ASYNC_END0("SCREEN_LOCK", "GetUserWallpaper",
                            wallpaper_encoding_op_->request_id());
   }
@@ -175,7 +180,7 @@ void WallpaperImageSource::CancelPendingEncodingOperation() {
 void WallpaperImageSource::SendCurrentUserWallpaper(int request_id,
     scoped_refptr<base::RefCountedBytes> data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  SendResponse(request_id, data);
+  url_data_source()->SendResponse(request_id, data);
   TRACE_EVENT_ASYNC_END0("SCREEN_LOCK", "GetUserWallpaper", request_id);
 }
 

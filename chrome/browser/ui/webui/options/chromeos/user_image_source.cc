@@ -9,6 +9,7 @@
 #include "base/string_split.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_parse.h"
@@ -76,11 +77,14 @@ base::RefCountedMemory* UserImageSource::GetUserImage(
       LoadDataResourceBytesForScale(IDR_LOGIN_DEFAULT_USER, scale_factor);
 }
 
-UserImageSource::UserImageSource()
-    : DataSource(chrome::kChromeUIUserImageHost, MessageLoop::current()) {
+UserImageSource::UserImageSource() {
 }
 
 UserImageSource::~UserImageSource() {}
+
+std::string UserImageSource::GetSource() {
+  return chrome::kChromeUIUserImageHost;
+}
 
 void UserImageSource::StartDataRequest(const std::string& path,
                                        bool is_incognito,
@@ -90,8 +94,9 @@ void UserImageSource::StartDataRequest(const std::string& path,
   ui::ScaleFactor scale_factor;
   GURL url(chrome::kChromeUIUserImageURL + path);
   ParseRequest(url, &email, &is_image_animated, &scale_factor);
-  SendResponse(request_id,
-               GetUserImage(email, is_image_animated, scale_factor));
+  url_data_source()->SendResponse(
+      request_id,
+      GetUserImage(email, is_image_animated, scale_factor));
 }
 
 std::string UserImageSource::GetMimeType(const std::string& path) const {
