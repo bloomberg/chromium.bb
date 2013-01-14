@@ -132,7 +132,6 @@ struct Instruction {
     Bool rex_r_spurious;
     Bool rex_w_spurious;
     Bool data16;              /* "Normal", non-rex prefixes. */
-    Bool data16_spurious;
     Bool lock;
     Bool repnz;
     Bool repz;

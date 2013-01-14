@@ -1313,9 +1313,6 @@ void PrintOpcodeRecognition(const MarkedInstruction& instruction,
   if (enabled(kInstructionName)) {
     fprintf(out_file, " @instruction_%s",
             ToCIdentifier(instruction.name()).c_str());
-    if (required_prefixes.find("data16") != required_prefixes.end() &&
-        instruction.rex_w_required())
-      fprintf(out_file, " @set_spurious_data16_prefix");
   } else {
     if (instruction.opcode_in_imm())
       fprintf(out_file, " @last_byte_is_not_immediate");
@@ -2474,7 +2471,7 @@ void test_fullstack_mode_xchg(void) {
     "@set_spurious_rex_x @set_spurious_rex_r) - (0x90|0x48 0x90))) |\n"
     "    (((data16 REXW_RXB (0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97) "
     ">begin_opcode @operand0_from_opcode @end_opcode "
-    "@instruction_xchg @set_spurious_data16_prefix @operands_count_is_2 "
+    "@instruction_xchg @operands_count_is_2 "
     "@operand0_64bit @operand1_64bit @operand1_rax @operand0_readwrite "
     "@operand1_readwrite @set_spurious_rex_x @set_spurious_rex_r) - "
     "(0x90|0x48 0x90))",
@@ -2654,7 +2651,7 @@ void test_fullstack_mode_div(void) {
     "(b_00_xxx_100 any)) @set_spurious_rex_x @set_spurious_rex_r any* & "
     "modrm_registers @operand0_from_modrm_rm) imm32) |\n    ("
     "data16 REXW_RXB 0xf7 >begin_opcode (opcode_6 @end_opcode @instruction_div "
-    "@set_spurious_data16_prefix @operands_count_is_2 @operand0_64bit "
+    "@operands_count_is_2 @operand0_64bit "
     "@operand1_32bit @operand1_immediate @operand0_read @operand1_write any* & "
     "((any - b_00_xxx_100) | (b_00_xxx_100 any)) @set_spurious_rex_x "
     "@set_spurious_rex_r any* & modrm_registers @operand0_from_modrm_rm) imm32",

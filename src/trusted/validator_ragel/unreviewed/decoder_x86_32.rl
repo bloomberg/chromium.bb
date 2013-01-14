@@ -117,7 +117,6 @@ int DecodeChunkIA32(const uint8_t *data, size_t size,
   SET_BRANCH_NOT_TAKEN(FALSE);
   SET_BRANCH_TAKEN(FALSE);
   SET_ATT_INSTRUCTION_SUFFIX(NULL);
-  instruction.prefix.data16_spurious = FALSE;
   instruction.prefix.rex_b_spurious = FALSE;
   instruction.prefix.rex_x_spurious = FALSE;
   instruction.prefix.rex_r_spurious = FALSE;

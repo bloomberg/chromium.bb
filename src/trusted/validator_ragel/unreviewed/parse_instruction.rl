@@ -627,7 +627,6 @@
 %%{
   machine set_spurious_prefixes;
 
-  action set_spurious_data16_prefix { SET_SPURIOUS_DATA16();               }
   action set_spurious_rex_b         { SET_SPURIOUS_REX_B();                }
   action set_spurious_rex_x         { SET_SPURIOUS_REX_X();                }
   action set_spurious_rex_r         { SET_SPURIOUS_REX_R();                }
@@ -983,7 +982,6 @@
     SET_VEX_PREFIX2(VEX_R | VEX_X | VEX_B);
     SET_VEX_PREFIX3(0x00);
     SET_ATT_INSTRUCTION_SUFFIX(NULL);
-    CLEAR_SPURIOUS_DATA16();
     CLEAR_SPURIOUS_REX_B();
     CLEAR_SPURIOUS_REX_X();
     CLEAR_SPURIOUS_REX_R();
