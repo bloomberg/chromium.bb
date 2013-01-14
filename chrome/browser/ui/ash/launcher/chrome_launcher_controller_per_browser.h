@@ -19,7 +19,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/prefs/pref_service_observer.h"
+#include "chrome/browser/prefs/pref_service_syncable_observer.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state_observer.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "content/public/browser/notification_observer.h"
@@ -54,13 +54,12 @@ class WebContents;
 // * App shell windows have ShellWindowLauncherItemController, owned by
 //   ShellWindowLauncherController.
 // * Shortcuts have no LauncherItemController.
-class ChromeLauncherControllerPerBrowser
-    : public ash::LauncherModelObserver,
-      public ash::ShellObserver,
-      public ChromeLauncherController,
-      public content::NotificationObserver,
-      public PrefServiceObserver,
-      public AppSyncUIStateObserver {
+class ChromeLauncherControllerPerBrowser : public ash::LauncherModelObserver,
+                                           public ash::ShellObserver,
+                                           public ChromeLauncherController,
+                                           public content::NotificationObserver,
+                                           public PrefServiceSyncableObserver,
+                                           public AppSyncUIStateObserver {
  public:
   ChromeLauncherControllerPerBrowser(Profile* profile,
                                      ash::LauncherModel* model);
@@ -259,7 +258,7 @@ class ChromeLauncherControllerPerBrowser
   // Overridden from ash::ShellObserver:
   virtual void OnShelfAlignmentChanged(aura::RootWindow* root_window) OVERRIDE;
 
-  // Overridden from PrefServiceObserver:
+  // Overridden from PrefServiceSyncableObserver:
   virtual void OnIsSyncingChanged() OVERRIDE;
 
   // Overridden from AppSyncUIStateObserver

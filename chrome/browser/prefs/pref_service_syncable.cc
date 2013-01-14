@@ -12,7 +12,7 @@
 #include "base/value_conversions.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
-#include "chrome/browser/prefs/pref_service_observer.h"
+#include "chrome/browser/prefs/pref_service_syncable_observer.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -114,11 +114,12 @@ bool PrefServiceSyncable::IsSyncing() {
   return pref_sync_associator_.models_associated();
 }
 
-void PrefServiceSyncable::AddObserver(PrefServiceObserver* observer) {
+void PrefServiceSyncable::AddObserver(PrefServiceSyncableObserver* observer) {
   observer_list_.AddObserver(observer);
 }
 
-void PrefServiceSyncable::RemoveObserver(PrefServiceObserver* observer) {
+void PrefServiceSyncable::RemoveObserver(
+    PrefServiceSyncableObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
@@ -264,7 +265,8 @@ void PrefServiceSyncable::UpdateCommandLinePrefStore(
 }
 
 void PrefServiceSyncable::OnIsSyncingChanged() {
-  FOR_EACH_OBSERVER(PrefServiceObserver, observer_list_, OnIsSyncingChanged());
+  FOR_EACH_OBSERVER(PrefServiceSyncableObserver, observer_list_,
+                    OnIsSyncingChanged());
 }
 
 void PrefServiceSyncable::RegisterSyncablePreference(

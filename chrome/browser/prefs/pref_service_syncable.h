@@ -8,8 +8,7 @@
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_service.h"
 
-// TODO(joi) Move to c/b/prefs and rename PrefServiceSyncableObserver.
-class PrefServiceObserver;
+class PrefServiceSyncableObserver;
 
 namespace syncer {
 class SyncableService;
@@ -53,8 +52,8 @@ class PrefServiceSyncable : public PrefService {
   // identical if a change is in flight (from either side).
   bool IsSyncing();
 
-  void AddObserver(PrefServiceObserver* observer);
-  void RemoveObserver(PrefServiceObserver* observer);
+  void AddObserver(PrefServiceSyncableObserver* observer);
+  void RemoveObserver(PrefServiceSyncableObserver* observer);
 
   virtual void UnregisterPreference(const char* path) OVERRIDE;
 
@@ -128,7 +127,7 @@ class PrefServiceSyncable : public PrefService {
 
   PrefModelAssociator pref_sync_associator_;
 
-  ObserverList<PrefServiceObserver> observer_list_;
+  ObserverList<PrefServiceSyncableObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefServiceSyncable);
 };

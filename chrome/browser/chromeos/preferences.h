@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/prefs/public/pref_member.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/browser/prefs/pref_service_observer.h"
+#include "chrome/browser/prefs/pref_service_syncable_observer.h"
 
 class PrefService;
 class PrefServiceSyncable;
@@ -25,7 +25,7 @@ class InputMethodManager;
 // is first initialized, it will initialize the OS settings to what's stored in
 // the preferences. These include touchpad settings, etc.
 // When the preferences change, we change the settings to reflect the new value.
-class Preferences : public PrefServiceObserver {
+class Preferences : public PrefServiceSyncableObserver {
  public:
   Preferences();
   explicit Preferences(
@@ -96,7 +96,7 @@ class Preferences : public PrefServiceObserver {
   // on the cmd line.
   void ForceNaturalScrollDefault();
 
-  // PrefServiceObserver implementation.
+  // PrefServiceSyncableObserver implementation.
   virtual void OnIsSyncingChanged() OVERRIDE;
 
   PrefServiceSyncable* prefs_;
