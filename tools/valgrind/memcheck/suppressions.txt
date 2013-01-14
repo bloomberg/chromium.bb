@@ -5380,15 +5380,6 @@
    fun:_ZNK7SkPaint14descriptorProcEPK8SkMatrixPFvPK12SkDescriptorPvES6_b
 }
 {
-   bug_143431
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11ManagedModeC2Ev
-   fun:_ZN12_GLOBAL__N_115FakeManagedModeC1Ev
-   fun:_ZN15ManagedModeTestC2Ev
-   fun:_ZN*ManagedModeTest_*
-}
-{
    bug_143545
    Memcheck:Uninitialized
    fun:_ZN4aura10RootWindow10ShowCursorEb
@@ -6435,17 +6426,6 @@
    fun:vp8_get_compressed_data
    fun:vp8e_encode
    fun:vpx_codec_encode
-}
-{
-   bug_169042
-   Memcheck:Leak
-   ...
-   fun:_ZN6policy12URLBlacklist10AddFiltersEbPKN4base9ListValueE
-   fun:_ZN6policy12URLBlacklist5BlockEPKN4base9ListValueE
-   fun:_ZN20ManagedModeURLFilter14SetManualListsE10scoped_ptrIN4base9ListValueENS1_14DefaultDeleterIS2_EEES5_
-   fun:_ZN20ManagedModeURLFilterC1Ev
-   fun:_ZN11ManagedMode16URLFilterContextC1E13scoped_refptrIN4base19SequencedTaskRunnerEE
-   fun:_ZN11ManagedModeC2Ev
 }
 {
    bug_169311

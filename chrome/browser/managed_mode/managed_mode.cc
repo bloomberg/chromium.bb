@@ -86,7 +86,10 @@ class ManagedMode::URLFilterContext {
   }
 
   void ShutdownOnUIThread() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (task_runner_->RunsTasksOnCurrentThread()) {
+      delete this;
+      return;
+    }
     bool result = task_runner_->DeleteSoon(FROM_HERE, this);
     DCHECK(result);
   }

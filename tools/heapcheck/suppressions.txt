@@ -1415,14 +1415,6 @@
    fun:base::PlatformThread::SetName
 }
 {
-   bug_143431
-   Heapcheck:Leak
-   ...
-   fun:ManagedMode::ManagedMode
-   fun:*FakeManagedMode
-   fun:ManagedModeTest::ManagedModeTest
-}
-{
    bug_143565
    Heapcheck:Leak
    ...
