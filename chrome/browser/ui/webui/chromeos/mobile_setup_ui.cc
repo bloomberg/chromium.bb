@@ -175,7 +175,7 @@ class MobileSetupHandler
 MobileSetupUIHTMLSource::MobileSetupUIHTMLSource() {
 }
 
-std::string MobileSetupUIHTMLSource::GetSource() OVERRIDE {
+std::string MobileSetupUIHTMLSource::GetSource() {
   return chrome::kChromeUIMobileSetupHost;
 }
 
