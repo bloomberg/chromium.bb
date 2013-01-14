@@ -1337,5 +1337,23 @@ TEST_F(TraceEventTestFixture, TraceResultBuffer) {
   EXPECT_STREQ(json_output_.json_output.c_str(), "[bla1,bla2,bla3,bla4]");
 }
 
+// Test that trace_event parameters are not evaluated if the tracing
+// system is disabled.
+TEST_F(TraceEventTestFixture, TracingIsLazy) {
+  ManualTestSetUp();
+  BeginTrace();
+
+  int a = 0;
+  TRACE_EVENT_INSTANT1("category", "test", "a", a++);
+  EXPECT_EQ(1, a);
+
+  TraceLog::GetInstance()->SetDisabled();
+
+  TRACE_EVENT_INSTANT1("category", "test", "a", a++);
+  EXPECT_EQ(1, a);
+
+  EndTraceAndFlush();
+}
+
 }  // namespace debug
 }  // namespace base
