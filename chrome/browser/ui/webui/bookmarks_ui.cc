@@ -51,12 +51,10 @@ BookmarksUIHTMLSource::~BookmarksUIHTMLSource() {}
 
 BookmarksUI::BookmarksUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   BookmarksUIHTMLSource* html_source = new BookmarksUIHTMLSource();
+
   // Set up the chrome://bookmarks/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
   ChromeURLDataManager::AddDataSource(profile, html_source);
-  ChromeURLDataManager::AddDataSource(
-      Profile::FromWebUI(web_ui),
-      new BookmarksUIHTMLSource);
 }
 
 // static
