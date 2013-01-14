@@ -551,7 +551,7 @@ FcFontRenderPrepare (FcConfig	    *config,
 	{
 	    FcPatternObjectListAdd (new, pe->object,
 				    FcValueListDuplicate (FcPatternEltValues(pe)),
-				    1);
+				    FcFalse);
 	}
     }
 
