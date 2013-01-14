@@ -126,7 +126,7 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   // Bring control back to the plugin by invoking the
   // |translate_notify_callback_|.  This does not set the ErrorInfo report,
   // it is assumed that it was already set.
-  void ExitWithError(int32_t pp_error);
+  void ExitWithError();
 
   // Implement FileDownloader's template of the CallbackSource interface.
   // This method returns a callback which will be called by the FileDownloader

@@ -276,25 +276,22 @@ void PnaclCoordinator::ReportNonPpapiError(enum PluginErrorCode err_code,
                                            const nacl::string& message) {
   error_info_.SetReport(err_code,
                         nacl::string("PnaclCoordinator: ") + message);
-  ExitWithError(PP_ERROR_FAILED);
+  ExitWithError();
 }
 
 void PnaclCoordinator::ReportPpapiError(enum PluginErrorCode err_code,
                                         int32_t pp_error,
                                         const nacl::string& message) {
   nacl::stringstream ss;
-  ss << "PnaclCoordinator: " << message << " pp_error=" << pp_error;
+  ss << "PnaclCoordinator: " << message << " (pp_error=" << pp_error << ").";
   error_info_.SetReport(err_code, ss.str());
-  ExitWithError(pp_error);
+  ExitWithError();
 }
 
-void PnaclCoordinator::ExitWithError(int32_t pp_error) {
-  // TODO(jvoung,dschuff): pp_error isn't very useful at this point.
-  // We just need to call the translate_notify_callback with an error boolean
-  // so that the plugin doesn't try to load a failed-to-translate nexe.
-  PLUGIN_PRINTF(("PnaclCoordinator::ReportPpappiError (pp_error=%"
-                 NACL_PRId32", error_code=%d, message='%s')\n",
-                 pp_error, error_info_.error_code(),
+void PnaclCoordinator::ExitWithError() {
+  PLUGIN_PRINTF(("PnaclCoordinator::ExitWithError (error_code=%d, "
+                 "message='%s')\n",
+                 error_info_.error_code(),
                  error_info_.message().c_str()));
   plugin_->ReportLoadError(error_info_);
   // Free all the intermediate callbacks we ever created.
@@ -306,7 +303,7 @@ void PnaclCoordinator::ExitWithError(int32_t pp_error) {
   callback_factory_.CancelAll();
   if (!error_already_reported_) {
     error_already_reported_ = true;
-    translate_notify_callback_.Run(pp_error);
+    translate_notify_callback_.Run(PP_ERROR_FAILED);
   } else {
     PLUGIN_PRINTF(("PnaclCoordinator::ExitWithError an earlier error was "
                    "already reported -- Skipping.\n"));
@@ -319,12 +316,12 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
                  NACL_PRId32")\n", pp_error));
   // Bail out if there was an earlier error (e.g., pexe load failure).
   if (translate_finish_error_ != PP_OK) {
-    ExitWithError(translate_finish_error_);
+    ExitWithError();
     return;
   }
   // Bail out if there is an error from the translation thread.
   if (pp_error != PP_OK) {
-    ExitWithError(pp_error);
+    ExitWithError();
     return;
   }
 
@@ -726,8 +723,9 @@ void PnaclCoordinator::BitcodeStreamDidFinish(int32_t pp_error) {
     // We also want to track the total number of bytes of the pexe
     // to know the typical application sizes.
     translate_finish_error_ = pp_error;
-    error_info_.SetReport(ERROR_PNACL_PEXE_FETCH,
-                          nacl::string("PnaclCoordinator: pexe load failed."));
+    nacl::stringstream ss;
+    ss << "PnaclCoordinator: pexe load failed (pp_error=" << pp_error << ").";
+    error_info_.SetReport(ERROR_PNACL_PEXE_FETCH, ss.str());
     translate_thread_->AbortSubprocesses();
   }
 }

@@ -20,16 +20,19 @@
 <script type="text/javascript">
 //<![CDATA[
 
-function declareTests(tester) {
-  // PNaCl may have slightly different error messages (pexe instead of nexe).
-  var test_args = getTestArguments({'is_pnacl': '0'});
-  var could_not_load_nexe;
-  if (parseInt(test_args['is_pnacl'])) {
-    could_not_load_nexe = (
-      'NaCl module load failed: PnaclCoordinator: pexe load failed.');
+// PNaCl may have slightly different error messages (pexe instead of nexe).
+function couldNotLoadNexe(is_pnacl, expected_pp_error) {
+  if (!is_pnacl) {
+    return 'NaCl module load failed: could not load nexe url.';
   } else {
-    could_not_load_nexe = 'NaCl module load failed: could not load nexe url.';
+    return 'NaCl module load failed: PnaclCoordinator: pexe load failed ' +
+      '(pp_error=' + expected_pp_error + ').';
   }
+}
+
+function declareTests(tester) {
+  var test_args = getTestArguments({'is_pnacl': '0'});
+  var is_pnacl = parseInt(test_args['is_pnacl']);
 
   // 'bad_magic' loads a manifest, then loads a nexe that tests as invalid.
   badLoadTest(
@@ -43,7 +46,7 @@ function declareTests(tester) {
       tester,
       'cross_origin',
       'ppapi_bad_crossorigin.nmf',
-      could_not_load_nexe);
+      couldNotLoadNexe(is_pnacl, -7 /* PP_ERROR_NOACCESS */));
 
   // 'cross_manifest' tries to load a cross-origin manifest.
   badLoadTest(
@@ -58,7 +61,7 @@ function declareTests(tester) {
       tester,
       'nonexistent_nexe',
       'ppapi_bad_doesnotexist.nmf',
-      could_not_load_nexe);
+      couldNotLoadNexe(is_pnacl, -2 /* PP_ERROR_FAILED */));
 
   // 'nonexistent_nexe_only' loads a manifest, then tries to load a nonexistent
   // nexe, given only a nexe to choose from.

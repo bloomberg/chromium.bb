@@ -49,7 +49,8 @@ function declareTests(tester) {
       tester,
       'nonexistent_pexe',
       'pnacl_bad_doesnotexist.nmf',
-      'NaCl module load failed: PnaclCoordinator: pexe load failed.');
+      'NaCl module load failed: PnaclCoordinator: ' +
+      'pexe load failed (pp_error=-2).');
 
   // 'nonexistent_pexe_only' loads a manifest, then tries to load a nonexistent
   // pexe, given only a pexe to choose from.
@@ -57,7 +58,8 @@ function declareTests(tester) {
       tester,
       'nonexistent_pexe_only',
       'pnacl_bad_doesnotexist_pexe_only.nmf',
-      'NaCl module load failed: PnaclCoordinator: pexe load failed.');
+      'NaCl module load failed: PnaclCoordinator: ' +
+      'pexe load failed (pp_error=-2).');
 
   tester.addAsyncTest('Test clean directory',
     // All that should be left after all tests run is empty directories.
