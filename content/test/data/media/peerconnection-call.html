@@ -8,15 +8,116 @@
   var gFirstConnection = null;
   var gSecondConnection = null;
   var gTestWithoutMsidAndBundle = false;
-
+  
+  // Number of test events to occur before the test pass. When the test pass,
+  // the document title change to OK.
+  var gNumberOfExpectedEvents = 0;
+  
+  // Number of events that currently have occured.  
+  var gNumberOfEvents = 0;  
+        
+  // Test that we can setup call with an audio and video track.
   function call(constraints) {
+    createConnections(null);
     navigator.webkitGetUserMedia(constraints, okCallback, failedCallback);
+    waitForVideo($('remote-view'), 320, 240);
   }
   
+  // Test that we can setup call with an audio and video track and 
+  // simulate that the remote peer don't support MSID.
   function callWithoutMsidAndBundle() {
+    createConnections(null);
     gTestWithoutMsidAndBundle = true;
     navigator.webkitGetUserMedia({audio:true, video:true}, okCallback,
         failedCallback);
+    waitForVideo($('remote-view'), 320, 240);
+  }
+  
+  // Test only a data channel. 
+  function callWithDataOnly() {
+    createConnections({optional:[{RtpDataChannels: true}]});
+    setupDataChannel();
+    gFirstConnection.createOffer(onOfferCreated);
+  }
+  
+  // Test call with audio, video and a data channel.
+  function callWithDataAndMedia() {    
+    createConnections({optional:[{RtpDataChannels: true}]});        
+    setupDataChannel();
+    navigator.webkitGetUserMedia({audio:true, video:true}, okCallback,
+      failedCallback);
+    waitForVideo($('remote-view'), 320, 240);
+  }
+  
+  // Test call with a data channel and later add audio and video.
+  function callWithDataAndLaterAddMedia() {
+    // TODO(perkj): This is needed for now until 
+    // https://code.google.com/p/webrtc/issues/detail?id=1203 is fixed.
+    gTestWithoutMsidAndBundle = true;
+    
+    createConnections({optional:[{RtpDataChannels: true}]});        
+    setupDataChannel();
+    gFirstConnection.createOffer(onOfferCreated);
+    
+    navigator.webkitGetUserMedia({audio:true, video:true}, okCallback,
+      failedCallback);
+    waitForVideo($('remote-view'), 320, 240);
+  }
+
+  // This function is used for setting up a test that: 
+  // 1. Creates a data channel on |gFirstConnection| and sends data to 
+  //    |gSecondConnection|. 
+  // 2. When data is received on |gSecondConnection| a message 
+  //    is sent to |gFirstConnection|.
+  // 3. When data is received on |gFirstConnection|, the data 
+  //    channel is closed. The test passes when the state transition completes.  
+  function setupDataChannel() {
+    var sendDataString = "send some text on a data channel."     
+    firstDataChannel = gFirstConnection.createDataChannel(
+        "sendDataChannel", {reliable : false});
+    expectEquals('connecting', firstDataChannel.readyState);
+
+    // When |firstDataChannel| transition to open state, send a text string.     
+    firstDataChannel.onopen = function() {
+      expectEquals('open', firstDataChannel.readyState);
+      firstDataChannel.send(sendDataString);  
+    }
+
+    // When |firstDataChannel| receive a message, close the channel and
+    // initiate a new offer/answer exchange to complete the closure.
+    firstDataChannel.onmessage = function(event) {
+      expectEquals(event.data, sendDataString);
+      firstDataChannel.close();
+      gFirstConnection.createOffer(onOfferCreated);
+    }
+
+    // When |firstDataChannel| transition to closed state, the test pass.
+    addExpectedEvent();
+    firstDataChannel.onclose = function() {
+      expectEquals('closed', firstDataChannel.readyState);
+      eventOccured();
+    }
+
+    // Event handler for when |gSecondConnection| receive a new dataChannel.
+    gSecondConnection.ondatachannel = function (event) {
+      var secondDataChannel = event.channel;      
+      
+      // When |secondDataChannel| receive a message, send a message back.  
+      secondDataChannel.onmessage = function(event) {
+        expectEquals(event.data, sendDataString);
+        // TODO(perkj): Currently we sometimes can't send a message here since
+        // the the |dataChannel.readyState| has not transitioned to open yet.
+        // http://code.google.com/p/webrtc/issues/detail?id=1262         
+        if (secondDataChannel.readyState == "open") {
+          secondDataChannel.send(sendDataString);
+        } else {
+          secondDataChannel.onopen = function(event) {
+            expectEquals('open', secondDataChannel.readyState);
+            secondDataChannel.send(sendDataString);                   
+          }
+        }
+      }
+    }
   }
 
   function failedCallback(error) {
@@ -30,31 +131,33 @@
     callUsingStream(localStream);
   }
 
-  function callUsingStream(localStream) {
-    gFirstConnection = new webkitRTCPeerConnection(null, null);
+  function createConnections(constraints) {
+    gFirstConnection = new webkitRTCPeerConnection(null, constraints);
     gFirstConnection.onicecandidate = onIceCandidateToFirst;
+  
+    gSecondConnection = new webkitRTCPeerConnection(null, constraints);
+    gSecondConnection.onicecandidate = onIceCandidateToSecond;
+    gSecondConnection.onaddstream = onRemoteStream;       
+  }
+  
+  function callUsingStream(localStream) {    
     gFirstConnection.addStream(localStream);
     gFirstConnection.createOffer(onOfferCreated);
   }
-
+  
   function onOfferCreated(offer) {
     gFirstConnection.setLocalDescription(offer);
-
-    receiveCall(offer.sdp);
+    receiveOffer(offer.sdp);
   }
-
-  function receiveCall(offerSdp) {
+  
+  function receiveOffer(offerSdp) {
     if (gTestWithoutMsidAndBundle) {
       offerSdp = removeMsidAndBundle(offerSdp);
-    }
-    gSecondConnection = new webkitRTCPeerConnection(null, null);
-    gSecondConnection.onicecandidate = onIceCandidateToSecond;
-    gSecondConnection.onaddstream = onRemoteStream;
+    }    
 
     var parsedOffer = new RTCSessionDescription({ type: 'offer',
                                                   sdp: offerSdp });
     gSecondConnection.setRemoteDescription(parsedOffer);
-
     gSecondConnection.createAnswer(onAnswerCreated);
   }
   
@@ -93,22 +196,20 @@
   }
 
   function onRemoteStream(e) {
-    var remoteStreamUrl = webkitURL.createObjectURL(e.stream);
-    var remoteVideo = $('remote-view');
-    remoteVideo.src = remoteStreamUrl;
-    
     if (gTestWithoutMsidAndBundle && e.stream.label != "default") {
       document.title = 'a default remote stream was expected but instead ' + 
           e.stream.label + ' was received.';
       return;
     }
-
-    waitForVideo(remoteVideo, 320, 240);
+    var remoteStreamUrl = webkitURL.createObjectURL(e.stream);
+    var remoteVideo = $('remote-view');
+    remoteVideo.src = remoteStreamUrl;
   }
 
   // TODO(phoglund): perhaps use the video detector in chrome/test/data/webrtc/?
   function waitForVideo(videoElement, width, height) {
     document.title = 'Waiting for video...';
+    addExpectedEvent();
     var canvas = $('canvas');
     setInterval(function() {
       var context = canvas.getContext('2d');
@@ -116,7 +217,7 @@
       var pixels = context.getImageData(0, 0, width, height).data;
 
       if (isVideoPlaying(pixels, width, height))
-        testSuccessful();
+        eventOccured();
     }, 100);
   }
 
@@ -133,9 +234,27 @@
     }
     return false;
   }
+    
+  
+  // This function matches |left| and |right| and throws an exception if the 
+  // values don't match. 
+  function expectEquals(left, right) {
+    if (left != right) {
+      var s = "expectEquals failed left: " + left + " right: " + right;  
+      document.title = s;
+      throw s;
+    }
+  }
 
-  function testSuccessful() {
-    document.title = 'OK';
+  function addExpectedEvent() {
+    ++gNumberOfExpectedEvents;
+  }
+  
+  function eventOccured() {
+    ++gNumberOfEvents;
+    if (gNumberOfEvents == gNumberOfExpectedEvents) {
+      document.title = 'OK';
+    }
   }
   </script>
 </head>
