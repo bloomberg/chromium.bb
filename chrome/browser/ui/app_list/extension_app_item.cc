@@ -351,7 +351,7 @@ void ExtensionAppItem::Launch(int event_flags) {
   if (!extension)
     return;
 
-  controller_->LaunchApp(profile_, extension->id(), event_flags);
+  controller_->LaunchApp(profile_, extension, event_flags);
 }
 
 void ExtensionAppItem::OnExtensionIconImageChanged(
@@ -497,7 +497,7 @@ void ExtensionAppItem::Activate(int event_flags) {
   if (!extension)
     return;
 
-  controller_->ActivateApp(profile_, extension->id(), event_flags);
+  controller_->ActivateApp(profile_, extension, event_flags);
 }
 
 ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {

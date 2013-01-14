@@ -25,10 +25,10 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   virtual bool CanShowCreateShortcutsDialog() OVERRIDE;
   virtual void CreateNewWindow(bool incognito) OVERRIDE;
   virtual void ActivateApp(Profile* profile,
-                           const std::string& extension_id,
+                           const extensions::Extension* extension,
                            int event_flags) OVERRIDE;
   virtual void LaunchApp(Profile* profile,
-                         const std::string& extension_id,
+                         const extensions::Extension* extension,
                          int event_flags) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateAsh);

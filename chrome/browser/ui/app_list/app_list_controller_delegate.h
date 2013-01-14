@@ -11,6 +11,10 @@
 
 class Profile;
 
+namespace extensions {
+class Extension;
+}
+
 // Interface to allow the view delegate to call out to whatever is controlling
 // the app list. This will have different implementations for different
 // platforms.
@@ -51,12 +55,12 @@ class AppListControllerDelegate {
 
   // Show the app's most recent window, or launch it if it is not running.
   virtual void ActivateApp(Profile* profile,
-                           const std::string& extension_id,
+                           const extensions::Extension* extension,
                            int event_flags) = 0;
 
   // Launch the app.
   virtual void LaunchApp(Profile* profile,
-                         const std::string& extension_id,
+                         const extensions::Extension* extension,
                          int event_flags) = 0;
 };
 
