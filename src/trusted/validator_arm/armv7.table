@@ -2710,7 +2710,6 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:                       = Undefined
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- simd_dp_3diff (See Section A7.4.2)
 *V3RDL VectorBinary3RegisterDifferentLength
    { U(24), D(22), size(21:20), Vn(19:16), Vd(15:12), op(8),
@@ -2723,24 +2722,28 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *V3RDL_I8_16_32 *V3RDL
    # Allows 8, 16, and 32-bit integer values (defined by size).
    baseline := VectorBinary3RegisterDifferentLength_I8_16_32;
+   # TODO(karl): Add vector defs/uses etc.
    is_w := op=1;
    safety := size=11 => DECODER_ERROR &
              Vd(0)=1 | (op=1 & Vn(0)=1) => UNDEFINED;
 *V3RDL_I16_32_64 *V3RDL
    # Allows 16, 32, and 64-bit operands (defined by 2*size).
    baseline := VectorBinary3RegisterDifferentLength_I16_32_64;
+   # TODO(karl): Add vector defs/uses etc.
    safety := size=11 => DECODER_ERROR &
              Vn(0)=1 | Vm(0)=1 => UNDEFINED;
 *V3RDL_I8_16_32L *V3RDL
    # Allows 8, 16, and 32-bit operands, and long (i.e. double
    # sized) results.
    baseline := VectorBinary3RegisterDifferentLength_I8_16_32L;
+   # TODO(karl): Add vector defs/uses etc.
    safety := size=11 => DECODER_ERROR &
              Vd(0)=1 => UNDEFINED;
 *V3RDL_I16_32L *V3RDL
    # Allows 16 and 32-bit operands, and long (i.e. double sized)
    # results.
    baseline := VectorBinary3RegisterDifferentLength_I16_32L;
+   # TODO(karl): Add vector defs/uses etc.
    add := op=0;
    m := Vm(2:0) if size=01 else Vm;
    safety := size=11 => DECODER_ERROR &
@@ -2748,6 +2751,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *V3RDL_P8 *V3RDL
    # Defines an 8-bit polynomial vector operation.
    baseline := VectorBinary3RegisterDifferentLength_P8;
+   # TODO(karl): Add vector defs/uses etc.
    safety := size=11 => DECODER_ERROR &
              U=1 | size=~00 => UNDEFINED &
              Vd(0)=1 => UNDEFINED;
