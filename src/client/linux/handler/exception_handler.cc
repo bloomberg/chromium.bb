@@ -415,8 +415,11 @@ bool ExceptionHandler::HandleSignal(int sig, siginfo_t* info, void* uc) {
 // This is a public interface to HandleSignal that allows the client to
 // generate a crash dump. This function may run in a compromised context.
 bool ExceptionHandler::SimulateSignalDelivery(int sig) {
-  siginfo_t siginfo;
-  my_memset(&siginfo, 0, sizeof(siginfo_t));
+  siginfo_t siginfo = {};
+  // Mimic a trusted signal to allow tracing the process (see
+  // ExceptionHandler::HandleSignal().
+  siginfo.si_code = SI_USER;
+  siginfo.si_pid = getpid();
   struct ucontext context;
   getcontext(&context);
   return HandleSignal(sig, &siginfo, &context);
