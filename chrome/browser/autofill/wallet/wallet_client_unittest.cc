@@ -9,6 +9,7 @@
 #include "chrome/browser/autofill/wallet/full_wallet.h"
 #include "chrome/browser/autofill/wallet/wallet_client.h"
 #include "chrome/browser/autofill/wallet/wallet_items.h"
+#include "chrome/common/autofill/autocheckout_status.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -151,7 +152,7 @@ const char kGetWalletItemsValidRequest[] =
         "\"risk_params\":\"\""
     "}";
 
-const char kSendExtendedAutofillStatusOfSuccessValidRequest[] =
+const char kSendAutocheckoutStatusOfSuccessValidRequest[] =
     "{"
         "\"api_key\":\"abcdefg\","
         "\"google_transaction_id\":\"google_transaction_id\","
@@ -159,7 +160,7 @@ const char kSendExtendedAutofillStatusOfSuccessValidRequest[] =
         "\"success\":true"
     "}";
 
-const char kSendExtendedAutofillStatusOfFailureValidRequest[] =
+const char kSendAutocheckoutStatusOfFailureValidRequest[] =
     "{"
         "\"api_key\":\"abcdefg\","
         "\"google_transaction_id\":\"google_transaction_id\","
@@ -210,7 +211,7 @@ class MockWalletClientObserver
                void(const std::string& escrow_handle));
   MOCK_METHOD1(OnGetFullWallet, void(FullWallet* full_wallet));
   MOCK_METHOD1(OnGetWalletItems, void(WalletItems* wallet_items));
-  MOCK_METHOD0(OnSendExtendedAutofillStatus, void());
+  MOCK_METHOD0(OnSendAutocheckoutStatus, void());
   MOCK_METHOD0(OnWalletError, void());
   MOCK_METHOD1(OnNetworkError, void(int response_code));
 };
@@ -227,7 +228,10 @@ TEST_F(WalletClientTest, WalletErrorOnExpectedVoidResponse) {
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext());
-  wallet_client.SendExtendedAutofillStatus(true, "", "", "", &observer);
+  wallet_client.SendAutocheckoutStatus(autofill::SUCCESS,
+                                       "",
+                                       "",
+                                       &observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
@@ -258,7 +262,10 @@ TEST_F(WalletClientTest, NetworkFailureOnExpectedVoidResponse) {
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext());
-  wallet_client.SendExtendedAutofillStatus(true, "", "", "", &observer);
+  wallet_client.SendAutocheckoutStatus(autofill::SUCCESS,
+                                       "",
+                                       "",
+                                       &observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_UNAUTHORIZED);
@@ -287,7 +294,10 @@ TEST_F(WalletClientTest, RequestError) {
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext());
-  wallet_client.SendExtendedAutofillStatus(true, "", "", "", &observer);
+  wallet_client.SendAutocheckoutStatus(autofill::SUCCESS,
+                                       "",
+                                       "",
+                                       &observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   fetcher->set_response_code(net::HTTP_BAD_REQUEST);
@@ -396,41 +406,39 @@ TEST_F(WalletClientTest, GetWalletItems) {
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
-TEST_F(WalletClientTest, SendExtendedAutofillOfStatusSuccess) {
+TEST_F(WalletClientTest, SendAutocheckoutOfStatusSuccess) {
   MockWalletClientObserver observer;
-  EXPECT_CALL(observer, OnSendExtendedAutofillStatus()).Times(1);
+  EXPECT_CALL(observer, OnSendAutocheckoutStatus()).Times(1);
 
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext());
-  wallet_client.SendExtendedAutofillStatus(true,
-                                           "hostname",
-                                           "",
-                                           "google_transaction_id",
-                                           &observer);
+  wallet_client.SendAutocheckoutStatus(autofill::SUCCESS,
+                                       "hostname",
+                                       "google_transaction_id",
+                                       &observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
-  EXPECT_EQ(kSendExtendedAutofillStatusOfSuccessValidRequest,
+  EXPECT_EQ(kSendAutocheckoutStatusOfSuccessValidRequest,
             fetcher->upload_data());
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
-TEST_F(WalletClientTest, SendExtendedAutofillStatusOfFailure) {
+TEST_F(WalletClientTest, SendAutocheckoutStatusOfFailure) {
   MockWalletClientObserver observer;
-  EXPECT_CALL(observer, OnSendExtendedAutofillStatus()).Times(1);
+  EXPECT_CALL(observer, OnSendAutocheckoutStatus()).Times(1);
 
   net::TestURLFetcherFactory factory;
 
   WalletClient wallet_client(profile_.GetRequestContext());
-  wallet_client.SendExtendedAutofillStatus(false,
-                                           "hostname",
-                                           "CANNOT_PROCEED",
-                                           "google_transaction_id",
-                                           &observer);
+  wallet_client.SendAutocheckoutStatus(autofill::CANNOT_PROCEED,
+                                       "hostname",
+                                       "google_transaction_id",
+                                       &observer);
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
-  EXPECT_EQ(kSendExtendedAutofillStatusOfFailureValidRequest,
+  EXPECT_EQ(kSendAutocheckoutStatusOfFailureValidRequest,
             fetcher->upload_data());
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->delegate()->OnURLFetchComplete(fetcher);

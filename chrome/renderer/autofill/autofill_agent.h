@@ -26,6 +26,7 @@ class WebNode;
 
 namespace autofill {
 
+struct WebElementDescriptor;
 class PasswordAutofillManager;
 
 // AutofillAgent deals with Autofill related communications between WebKit and
@@ -119,6 +120,13 @@ class AutofillAgent : public content::RenderViewObserver,
   // Called when an autocomplete request succeeds or fails with the |result|.
   void FinishAutocompleteRequest(
       WebKit::WebFormElement::AutocompleteResult result);
+
+  // Called when the Autofill server hints that this page should be filled using
+  // Autocheckout. All the relevant form fields in |form_data| will be filled
+  // and then element specified by |element_descriptor| will be clicked to
+  // proceed to the next step of the form.
+  void OnFillFormsAndClick(const std::vector<FormData>& form_data,
+                           const WebElementDescriptor& element_descriptor);
 
   // Called in a posted task by textFieldDidChange() to work-around a WebKit bug
   // http://bugs.webkit.org/show_bug.cgi?id=16976

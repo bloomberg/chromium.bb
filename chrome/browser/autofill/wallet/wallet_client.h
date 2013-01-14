@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "chrome/common/autofill/autocheckout_status.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class GURL;
@@ -55,8 +56,8 @@ class WalletClient : public net::URLFetcherDelegate {
     // the input pointer.
     virtual void OnGetWalletItems(WalletItems* wallet_items) = 0;
 
-    // Called when a SendExtendedAutofillStatus request finishes successfully.
-    virtual void OnSendExtendedAutofillStatus() = 0;
+    // Called when a SendAutocheckoutStatus request finishes successfully.
+    virtual void OnSendAutocheckoutStatus() = 0;
 
     // TODO(ahutter): This is going to need more arguments, probably an error
     // code and a message for the user.
@@ -116,16 +117,14 @@ class WalletClient : public net::URLFetcherDelegate {
                      const std::string& session_material,
                      WalletClientObserver* observer);
 
-  // SendExtendedAutofillStatus is used for tracking the success of
-  // WalletClient. |success| is a flag for success, |merchant_domain| is the
-  // domain where the purchase occured, if the purchase was not successful
-  // |reason| is populated, and |google_transaction_id| is the same as the one
-  // provided by GetWalletItems.
-  void SendExtendedAutofillStatus(bool success,
-                                  const std::string& merchant_domain,
-                                  const std::string& reason,
-                                  const std::string& google_transaction_id,
-                                  WalletClientObserver* observer);
+  // SendAutocheckoutStatus is used for tracking the success of Autocheckout
+  // flows. |status| is the result of the flow, |merchant_domain| is the domain
+  // where the purchase occured, and |google_transaction_id| is the same as the
+  // one provided by GetWalletItems.
+  void SendAutocheckoutStatus(autofill::AutocheckoutStatus status,
+                              const std::string& merchant_domain,
+                              const std::string& google_transaction_id,
+                              WalletClientObserver* observer);
 
  private:
   // TODO(ahutter): Implement this.

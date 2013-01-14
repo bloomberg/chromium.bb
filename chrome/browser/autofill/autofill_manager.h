@@ -26,6 +26,7 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/common/autofill/autocheckout_status.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/ssl_status.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
@@ -238,6 +239,10 @@ class AutofillManager : public content::WebContentsObserver,
 
   // Passes return data for an OnRequestAutocomplete call back to the page.
   void ReturnAutocompleteData(const FormStructure* result);
+
+  // Called to signal clicking an element failed in some way during an
+  // Autocheckout flow.
+  void OnClickFailed(autofill::AutocheckoutStatus status);
 
   // Fills |host| with the RenderViewHost for this tab.
   // Returns false if Autofill is disabled or if the host is unavailable.

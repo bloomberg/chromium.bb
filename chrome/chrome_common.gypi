@@ -63,6 +63,7 @@
         'common/attrition_experiments.h',
         'common/auto_start_linux.cc',
         'common/auto_start_linux.h',
+        'common/autofill/autocheckout_status.h',
         'common/autofill/web_element_descriptor.cc',
         'common/autofill/web_element_descriptor.h',
         'common/autofill_messages.h',

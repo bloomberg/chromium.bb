@@ -30,6 +30,23 @@ const char kJsonMimeType[] = "application/json";
 const char kApplicationMimeType[] = "application/x-www-form-urlencoded";
 const size_t kMaxBits = 63;
 
+std::string AutocheckoutStatusToString(autofill::AutocheckoutStatus status) {
+  switch (status) {
+    case autofill::MISSING_FIELDMAPPING:
+      return "MISSING_FIELDMAPPING";
+    case autofill::MISSING_ADVANCE:
+      return "MISSING_ADVANCE";
+    case autofill::CANNOT_PROCEED:
+      return "CANNOT_PROCEED";
+    case autofill::SUCCESS:
+      // SUCCESS cannot be sent to the server as it will result in a failure.
+      NOTREACHED();
+      return "ERROR";
+  }
+  NOTREACHED();
+  return "NOT_POSSIBLE";
+}
+
 }  // anonymous namespace
 
 namespace wallet {
@@ -142,10 +159,9 @@ void WalletClient::GetWalletItems(
   MakeWalletRequest(GetGetWalletItemsUrl(), post_body, observer, kJsonMimeType);
 }
 
-void WalletClient::SendExtendedAutofillStatus(
-    bool success,
+void WalletClient::SendAutocheckoutStatus(
+    autofill::AutocheckoutStatus status,
     const std::string& merchant_domain,
-    const std::string& reason,
     const std::string& google_transaction_id,
     WalletClient::WalletClientObserver* observer) {
   DCHECK_EQ(NO_PENDING_REQUEST, request_type_);
@@ -153,11 +169,11 @@ void WalletClient::SendExtendedAutofillStatus(
 
   DictionaryValue request_dict;
   request_dict.SetString("api_key", wallet::kApiKey);
+  bool success = status == autofill::SUCCESS;
   request_dict.SetBoolean("success", success);
   request_dict.SetString("hostname", merchant_domain);
   if (!success) {
-    // TODO(ahutter): Probably want to do some checks on reason.
-    request_dict.SetString("reason", reason);
+    request_dict.SetString("reason", AutocheckoutStatusToString(status));
   }
   request_dict.SetString("google_transaction_id", google_transaction_id);
 
@@ -240,7 +256,7 @@ void WalletClient::OnURLFetchComplete(
       observer_->OnAcceptLegalDocuments();
       break;
     case SEND_STATUS:
-      observer_->OnSendExtendedAutofillStatus();
+      observer_->OnSendAutocheckoutStatus();
       break;
     case ENCRYPT_OTP: {
       if (!data.empty()) {

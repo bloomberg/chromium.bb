@@ -361,6 +361,8 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
                         OnSetDataList)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_RequestAutocomplete,
                         OnRequestAutocomplete)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_ClickFailed,
+                        OnClickFailed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -835,6 +837,10 @@ void AutofillManager::OnLoadedServerPredictions(
 void AutofillManager::OnDidEndTextFieldEditing() {
   if (external_delegate_)
     external_delegate_->DidEndTextFieldEditing();
+}
+
+void AutofillManager::OnClickFailed(autofill::AutocheckoutStatus status) {
+  // TODO(ahutter): Plug into WalletClient.
 }
 
 bool AutofillManager::IsAutofillEnabled() const {
