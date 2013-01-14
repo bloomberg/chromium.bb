@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "chrome/browser/extensions/image_loader.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -47,6 +49,7 @@ ExtensionUninstallDialog::ExtensionUninstallDialog(
     : browser_(browser),
       delegate_(delegate),
       extension_(NULL),
+      state_(kImageIsLoading),
       ui_loop_(MessageLoop::current()) {
   if (browser) {
     registrar_.Add(this,
@@ -66,14 +69,19 @@ void ExtensionUninstallDialog::ConfirmUninstall(
   ExtensionResource image =
       extension_->GetIconResource(extension_misc::EXTENSION_ICON_LARGE,
                                   ExtensionIconSet::MATCH_BIGGER);
-  // Load the image asynchronously. The response will be sent to OnImageLoaded.
-  tracker_.reset(new ImageLoadingTracker(this));
+
   // Load the icon whose pixel size is large enough to be displayed under
   // maximal supported scale factor. UI code will scale the icon down if needed.
   int pixel_size = GetSizeForMaxScaleFactor(kIconSize);
-  tracker_->LoadImage(extension_, image,
-                      gfx::Size(pixel_size, pixel_size),
-                      ImageLoadingTracker::DONT_CACHE);
+
+  // Load the image asynchronously. The response will be sent to OnImageLoaded.
+  state_ = kImageIsLoading;
+  extensions::ImageLoader* loader =
+      extensions::ImageLoader::Get(browser_->profile());
+  loader->LoadImageAsync(extension_, image,
+                         gfx::Size(pixel_size, pixel_size),
+                         base::Bind(&ExtensionUninstallDialog::OnImageLoaded,
+                                    AsWeakPtr()));
 }
 
 void ExtensionUninstallDialog::SetIcon(const gfx::Image& image) {
@@ -90,16 +98,17 @@ void ExtensionUninstallDialog::SetIcon(const gfx::Image& image) {
   }
 }
 
-void ExtensionUninstallDialog::OnImageLoaded(const gfx::Image& image,
-                                             const std::string& extension_id,
-                                             int index) {
+void ExtensionUninstallDialog::OnImageLoaded(const gfx::Image& image) {
   SetIcon(image);
 
-  // Reset the tracker so that we can use its presence as a signal that we're
-  // still waiting for the icon to load.
-  tracker_.reset();
-
-  Show();
+  // Show the dialog unless the browser has been closed while we were waiting
+  // for the image.
+  DCHECK(state_ == kImageIsLoading || state_ == kBrowserIsClosing);
+  if (state_ == kImageIsLoading) {
+    state_ = kDialogIsShowing;
+    DCHECK(browser_ != NULL);
+    Show();
+  }
 }
 
 void ExtensionUninstallDialog::Observe(
@@ -108,11 +117,13 @@ void ExtensionUninstallDialog::Observe(
     const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_BROWSER_CLOSING);
 
-  browser_ = NULL;
-  if (tracker_.get()) {
-    // If we're waiting for the icon, stop doing so because we're not going to
-    // show the dialog.
-    tracker_.reset();
+  // If the browser is closed while waiting for the image, we need to send a
+  // "cancel" event here, because there will not be another opportunity to
+  // notify the delegate of the cancellation as we won't open the dialog.
+  if (state_ == kImageIsLoading) {
+    state_ = kBrowserIsClosing;
+    DCHECK(browser_ != NULL);
+    browser_ = NULL;
     delegate_->ExtensionUninstallCanceled();
   }
 }

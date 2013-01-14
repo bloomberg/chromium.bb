@@ -9,7 +9,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/image/image_skia.h"
@@ -21,9 +20,12 @@ namespace extensions {
 class Extension;
 }
 
+namespace gfx {
+class Image;
+}
+
 class ExtensionUninstallDialog
-    : public ImageLoadingTracker::Observer,
-      public content::NotificationObserver,
+    : public content::NotificationObserver,
       public base::SupportsWeakPtr<ExtensionUninstallDialog> {
  public:
   class Delegate {
@@ -71,10 +73,7 @@ class ExtensionUninstallDialog
   // image, then we use a default icon instead.
   void SetIcon(const gfx::Image& image);
 
-  // ImageLoadingTracker::Observer:
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE;
+  void OnImageLoaded(const gfx::Image& image);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -85,11 +84,16 @@ class ExtensionUninstallDialog
   // The implementations of this method are platform-specific.
   virtual void Show() = 0;
 
-  MessageLoop* ui_loop_;
+  // Keeps track of whether we're still waiting for an image to load before
+  // we show the dialog.
+  enum State {
+    kImageIsLoading,  // Image is loading asynchronously.
+    kDialogIsShowing, // Dialog is shown after image is loaded.
+    kBrowserIsClosing // Browser is closed while image is still loading.
+  };
+  State state_;
 
-  // Keeps track of extension images being loaded on the File thread for the
-  // purpose of showing the dialog.
-  scoped_ptr<ImageLoadingTracker> tracker_;
+  MessageLoop* ui_loop_;
 
   content::NotificationRegistrar registrar_;
 
