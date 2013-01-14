@@ -491,7 +491,8 @@ void GestureInterpreter::InitializeMultitouchMouse(void) {
 }
 
 void GestureInterpreter::Initialize(GestureInterpreterDeviceClass cls) {
-  if (cls == GESTURES_DEVCLASS_TOUCHPAD)
+  if (cls == GESTURES_DEVCLASS_TOUCHPAD ||
+      cls == GESTURES_DEVCLASS_TOUCHSCREEN)
     InitializeTouchpad();
   else if (cls == GESTURES_DEVCLASS_MOUSE)
     InitializeMouse();

@@ -34,6 +34,7 @@ enum GestureInterpreterDeviceClass {
   GESTURES_DEVCLASS_MOUSE,
   GESTURES_DEVCLASS_MULTITOUCH_MOUSE,
   GESTURES_DEVCLASS_TOUCHPAD,
+  GESTURES_DEVCLASS_TOUCHSCREEN,
 };
 
 stime_t StimeFromTimeval(const struct timeval*);
