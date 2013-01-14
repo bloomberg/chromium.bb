@@ -2802,7 +2802,6 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:         = Undefined
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- simd_dp_2scalar (See Section A7.4.3)
 *V2RS VectorBinary2RegisterScalar
    { Q(24), D(22), size(21:20), Vn(19:16), Vd(15:12), op(10),
@@ -2816,6 +2815,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *V2RS_I16_32 *V2RS
    # Allows 16 and 32-bit integers (i.e. F=0).
    baseline := VectorBinary2RegisterScalar_I16_32;
+   # TODO(karl): Add vector defs/uses etc.
    regs := 1 if Q=0 else 2;
    m  := Vm(2:0) if size=01 else Vm;
    index := M:Vm(3) if size=01 else M;
@@ -2825,6 +2825,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *V2RS_I16_32L *V2RS_I16_32
    # Allows 16 and 32-bit operands, and long (i.e. double sized) results.
    baseline := VectorBinary2RegisterScalar_I16_32L;
+   # TODO(karl): Add vector defs/uses etc.
    unsigned := Q=1;
    regs := 1;
    safety := size=11 => DECODER_ERROR &
@@ -2832,6 +2833,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *V2RS_F32 *V2RS
    # Allows 32-bit floating-point values.
    baseline := VectorBinary2RegisterScalar_F32;
+   # TODO(karl): Add vector defs/uses etc.
    regs := 1 if Q=0 else 2;
    m  := Vm;
    index := M;
@@ -2889,7 +2891,6 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:         = Undefined
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- simd_dp_2shift (See Section A7.4.4)
 *V2RSA 
    { U(24), D(22), imm6(21:16), Vd(15:12), op(8), L(7), Q(6), M(5), Vm(3:0) }
@@ -2917,11 +2918,13 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
              Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED;
 *V2RSA_IR *V2RSA_I
    # Shifts right 8, 16, 32, or 64-bit integers.
+   # TODO(karl): Add vector defs/uses etc.
    shift_amount := 16 - imm6 if L:imm6=0001xxx else
                    32 - imm6 if L:imm6=001xxxx else
                    64 - imm6;
 *V2RSA_IL *V2RSA_I
    # Shifts left 8, 16, 32, or 64-bit integers.
+   # TODO(karl): Add vector defs/uses etc.
    shift_amount := imm6 - 8  if L:imm6=0001xxx else
                    imm6 - 16 if L:imm6=001xxxx else
                    imm6 - 32 if L:imm6=01xxxxx else
@@ -2930,6 +2933,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *V2RSA_ILS *V2RSA_IL
    # Shifts left with signed/unsigned arguments.
    baseline := VectorBinary2RegisterShiftAmount_ILS;
+   # TODO(karl): Add vector defs/uses etc.
    src_unsigned := U=1 & op=1;
    dest_unsigned := U=1;
    safety := L:imm6=0000xxx => DECODER_ERROR &
@@ -2951,6 +2955,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *V2RSA_N16_32_64R *V2RSA_NE16_32_64
    # Shifts right.
    baseline := VectorBinary2RegisterShiftAmount_N16_32_64R;
+   # TODO(karl): Add vector defs/uses etc.
    shift_amount := 16 - imm6 if imm6=001xxx else
                    32 - imm6 if imm6=01xxxx else
                    64 - imm6 if imm6=1xxxxx else
@@ -2960,6 +2965,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *V2RSA_N16_32_64RS *V2RSA_N16_32_64R
    # Shifts right narrows with signed/unsigned arguments.
    baseline := VectorBinary2RegisterShiftAmount_N16_32_64RS;
+   # TODO(karl): Add vector defs/uses etc.
    src_unsigned := U=1 & op=1;
    dest_unsigned := U=1;
    safety := imm6=000xxx => DECODER_ERROR &
@@ -2970,6 +2976,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    # result to twice the length of the arguments.
    # shift_amount == 0 => VMOVL
    baseline := VectorBinary2RegisterShiftAmount_E8_16_32L;
+   # TODO(karl): Add vector defs/uses etc.
    shift_amount := imm6 - 8  if imm6=001xxx else
                    imm6 - 16 if imm6=01xxxx else
                    imm6 - 32 if imm6=1xxxxx else
@@ -2979,6 +2986,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *V2RSA_CVT *V2RSA
    # converts between floating-point and fixed-point.
    baseline := VectorBinary2RegisterShiftAmount_CVT;
+   # TODO(karl): Add vector defs/uses etc.
    to_fixed := op=1;
    unsigned := U=1;
    esize := 32; frac_bits := 64 - imm6; elements := 2;
@@ -3044,7 +3052,6 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:                   = Undefined
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- simd_dp_2misc (See Section A7.4.5)
 *V2RM
    { D(22), size(19:18), Vd(15:12), F(10), op(8:7), Q(6), M(5), Vm(3:0) }
@@ -3057,6 +3064,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *V2RM_RG *V2RM
    # Reverse a group of values.
    baseline := Vector2RegisterMiscellaneous_RG;
+   # TODO(karl): Add vector defs/uses etc.
    # Note: rev_groupsize(op, size) = 1 << (3 - op - size);
    # Uses rev_groupsize since the table generator can't handle non-constant
    # shifts.
@@ -3069,20 +3077,24 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *V2RM_V8_16_32 *V2RM
    # Operates on 8, 16, and 32-bit values.
    baseline := Vector2RegisterMiscellaneous_V8_16_32;
+   # TODO(karl): Add vector defs/uses etc.
    safety := size=11 => UNDEFINED &
              Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED;             
 *V2RM_V8_16_32L *V2RM_V8_16_32
    # Operates on 8, 16, and 32-bit values, and the result is twice the
    # length of the operands.
+   # TODO(karl): Add vector defs/uses etc.
    unsigned := (op(0)=1);
 *V2RM_V8 *V2RM
    # Operates on 8-bit values.
    baseline := Vector2RegisterMiscellaneous_V8;
+   # TODO(karl): Add vector defs/uses etc.
    safety := size=~00 => UNDEFINED &
              Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED;
 *V2RM_F32 *V2RM
    # Operates on 32-bit floating-point values.
    baseline := Vector2RegisterMiscellaneous_F32;
+   # TODO(karl): Add vector defs/uses etc.
    safety := Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED &
              size=~10 => UNDEFINED;
 *V2RM_IF32 *V2RM_F32
@@ -3091,12 +3103,14 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *V2RM_V8S *V2RM
    # Swaps 8-bit values.
    baseline := Vector2RegisterMiscellaneous_V8S;
+   # TODO(karl): Add vector defs/uses etc.
    safety := d == m => UNKNOWN &
              size=~00 => UNDEFINED &
              Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED;
 *V2RM_V8_16_32T *V2RM
    # Transposes vectors of 8, 16, and 32-bit values.
    baseline := Vector2RegisterMiscellaneous_V8_16_32T;
+   # TODO(karl): Add vector defs/uses etc.
    quadword_operation := Q=1;
    safety := d == m => UNKNOWN &
              size=11 => UNDEFINED &
@@ -3104,6 +3118,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *V2RM_V8_16_32I *V2RM
    # Interleaves vectors of 8, 16, and 32-bit values.
    baseline := Vector2RegisterMiscellaneous_V8_16_32I;
+   # TODO(karl): Add vector defs/uses etc.
    quadword_operation := Q=1;
    safety := d == m => UNKNOWN &
              size=11 | (Q=0 & size=10) => UNDEFINED &
@@ -3111,18 +3126,21 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *V2RM_V16_32_64N *V2RM
    # Narrows 16, 32, or 64-bit values.
    baseline := Vector2RegisterMiscellaneous_V16_32_64N;
+   # TODO(karl): Add vector defs/uses etc.
    safety := size=11 => UNDEFINED &
              Vm(0)=1 => UNDEFINED;
 *V2RM_I8_16_32L *V2RM
    # Vector apply an immediate shift value to 8, 16, or 32-bit value,
    # expanding the result to twice the length of the argument.
    baseline := Vector2RegisterMiscellaneous_I8_16_32L;
+   # TODO(karl): Add vector defs/uses etc.
    shift_amount := esize;
    safety := size=11 | Vd(0)=1 => UNDEFINED;
 *V2RM_I16_32_64N
    # Narrow  16, 32, or 64-bit signed/unsigned values.
    { D(22), size(19:18), Vd(15:12), op(7:6), M(5), Vm(3:0) }
    baseline := Vector2RegisterMiscellaneous_I16_32_64N;
+   # TODO(karl): Add vector defs/uses etc.
    src_unsigned := op=11; dest_unsigned := op(0)=1;
    d := D:Vd; m := M:Vm;
    safety := op=00 => DECODER_ERROR &
@@ -3132,6 +3150,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    { D(22), size(19:18), Vd(15:12), op(8), M(5), Vm(3:0) }
    # Convert between half-precision and single-precision.
    baseline := Vector2RegisterMiscellaneous_CVT_H2S;
+   # TODO(karl): Add vector defs/uses etc.
    half_to_single := op=1;
    esize := 16; elements := 4;
    d := D:Vd; m := M:Vm;
@@ -3142,6 +3161,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 *V2RM_CVT_F2I *V2RM
    # Convert between floating-point and integer.
    baseline := Vector2RegisterMiscellaneous_CVT_F2I;
+   # TODO(karl): Add vector defs/uses etc.
    to_integer := op(1)=1; unsigned := op(0)=1;
    safety := Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED &
              size=~10 => UNDEFINED;
