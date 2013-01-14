@@ -152,6 +152,14 @@ cr.define('print_preview', function() {
         this.documentInfo_, this.destinationStore_);
 
     /**
+     * Print CSS backgrounds ticket item.
+     * @type {!print_preview.ticket_items.CssBackground}
+     * @private
+     */
+    this.cssBackground_ =
+        new print_preview.ticket_items.CssBackground(this.documentInfo_);
+
+    /**
      * Keeps track of event listeners for the print ticket store.
      * @type {!EventTracker}
      * @private
@@ -289,6 +297,8 @@ cr.define('print_preview', function() {
       this.headerFooter_.updateValue(this.appState_.isHeaderFooterEnabled);
       this.landscape_.updateValue(this.appState_.isLandscapeEnabled);
       this.collate_.updateValue(this.appState_.isCollateEnabled);
+      this.cssBackground_.updateValue(
+          this.appState_.isCssBackgroundEnabled);
     },
 
     /** @return {boolean} Whether the ticket store has the copies capability. */
@@ -604,6 +614,34 @@ cr.define('print_preview', function() {
     updateFitToPage: function(isFitToPageEnabled) {
       if (this.fitToPage_.getValue() != isFitToPageEnabled) {
         this.fitToPage_.updateValue(isFitToPageEnabled);
+        cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
+      }
+    },
+
+    /**
+     * @return {boolean} Whether the print CSS backgrounds capability is
+     *     available.
+     */
+    hasCssBackgroundCapability: function() {
+      return this.cssBackground_.isCapabilityAvailable();
+    },
+
+    /**
+     * @return {boolean} Whether the print CSS backgrounds capability is
+     *     enabled.
+     */
+    isCssBackgroundEnabled: function() {
+      return this.cssBackground_.getValue();
+    },
+
+    /**
+     * @param {boolean} isCssBackgroundEnabled Whether to enable the
+     *     print CSS backgrounds capability.
+     */
+    updateCssBackground: function(isCssBackgroundEnabled) {
+      if (this.cssBackground_.getValue() != isCssBackgroundEnabled) {
+        this.cssBackground_.updateValue(isCssBackgroundEnabled);
+        this.appState_.persistIsCssBackgroundEnabled(isCssBackgroundEnabled);
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
       }
     },

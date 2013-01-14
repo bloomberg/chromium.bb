@@ -48,6 +48,7 @@ struct PrintMsg_Print_Params {
   string16 date;
   string16 title;
   string16 url;
+  bool should_print_backgrounds;
 };
 
 struct PrintMsg_PrintPages_Params {
@@ -135,6 +136,9 @@ IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)
 
   // URL string to be printed as footer if requested by the user.
   IPC_STRUCT_TRAITS_MEMBER(url)
+
+  // True if print backgrounds is requested by the user.
+  IPC_STRUCT_TRAITS_MEMBER(should_print_backgrounds)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(PrintMsg_PrintPage_Params)

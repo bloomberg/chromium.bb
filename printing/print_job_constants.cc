@@ -116,6 +116,9 @@ const char kSettingPrinterName[] = "printerName";
 // Print to PDF option: true if selected, false if not.
 const char kSettingPrintToPDF[] = "printToPDF";
 
+// Whether to print CSS backgrounds.
+const char kSettingShouldPrintBackgrounds[] = "shouldPrintBackgrounds";
+
 // Indices used to represent first preview page and complete preview document.
 const int FIRST_PAGE_INDEX = 0;
 const int COMPLETE_PREVIEW_DOCUMENT_INDEX = -1;

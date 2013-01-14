@@ -91,6 +91,13 @@ cr.define('print_preview', function() {
     this.marginsType_ = print_preview.ticket_items.MarginsType.Value.DEFAULT;
 
     /**
+     * Whether the document should have element CSS backgrounds printed.
+     * @type {boolean}
+     * @private
+     */
+    this.isCssBackgroundEnabled_ = false;
+
+    /**
      * Destination that was selected for the last preview.
      * @type {print_preview.Destination}
      * @private
@@ -153,6 +160,8 @@ cr.define('print_preview', function() {
       this.isFitToPageEnabled_ = this.printTicketStore_.isFitToPageEnabled();
       this.pageNumberSet_ = this.printTicketStore_.getPageNumberSet();
       this.marginsType_ = this.printTicketStore_.getMarginsType();
+      this.isCssBackgroundEnabled_ =
+          this.printTicketStore_.isCssBackgroundEnabled();
       this.selectedDestination_ = this.destinationStore_.selectedDestination;
 
       this.inFlightRequestId_++;
@@ -256,6 +265,8 @@ cr.define('print_preview', function() {
               print_preview.ticket_items.MarginsType.Value.CUSTOM &&
               !ticketStore.getCustomMargins().equals(
                   ticketStore.getDocumentMargins())) ||
+          (ticketStore.isCssBackgroundEnabled() !=
+              this.isCssBackgroundEnabled_) ||
           (this.selectedDestination_ !=
               this.destinationStore_.selectedDestination);
     },

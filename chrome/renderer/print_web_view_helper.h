@@ -77,6 +77,7 @@ class PrepareFrameAndViewForPrint {
   int expected_pages_count_;
   bool use_browser_overlays_;
   bool finished_;
+  bool should_print_backgrounds_;
 
   DISALLOW_COPY_AND_ASSIGN(PrepareFrameAndViewForPrint);
 };
@@ -234,9 +235,9 @@ class PrintWebViewHelper
       const WebKit::WebNode& node,
       scoped_ptr<PrepareFrameAndViewForPrint>* prepare);
 
-  // Update the current print settings with new |job_settings|. |job_settings|
-  // dictionary contains print job details such as printer name, number of
-  // copies, page range, etc.
+  // Update the current print settings with new |passed_job_settings|.
+  // |passed_job_settings| dictionary contains print job details such as printer
+  // name, number of copies, page range, etc.
   bool UpdatePrintSettings(WebKit::WebFrame* frame,
                            const WebKit::WebNode& node,
                            const base::DictionaryValue& passed_job_settings);

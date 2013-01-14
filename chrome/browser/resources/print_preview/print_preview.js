@@ -895,6 +895,7 @@ cr.define('print_preview', function() {
 <include src="data/ticket_items/margins_type.js"/>
 <include src="data/ticket_items/page_range.js"/>
 <include src="data/ticket_items/fit_to_page.js"/>
+<include src="data/ticket_items/css_background.js"/>
 
 <include src="native_layer.js"/>
 <include src="print_preview_animations.js"/>

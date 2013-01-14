@@ -168,7 +168,8 @@ cr.define('print_preview', function() {
         'duplex': printTicketStore.isDuplexEnabled() ?
             NativeLayer.DuplexMode.LONG_EDGE : NativeLayer.DuplexMode.SIMPLEX,
         'copies': printTicketStore.getCopies(),
-        'collate': printTicketStore.isCollateEnabled()
+        'collate': printTicketStore.isCollateEnabled(),
+        'shouldPrintBackgrounds': printTicketStore.isCssBackgroundEnabled()
       };
 
       // Set 'cloudPrintID' only if the destination is not local.
@@ -225,6 +226,7 @@ cr.define('print_preview', function() {
             NativeLayer.DuplexMode.LONG_EDGE : NativeLayer.DuplexMode.SIMPLEX,
         'copies': printTicketStore.getCopies(),
         'collate': printTicketStore.isCollateEnabled(),
+        'shouldPrintBackgrounds': printTicketStore.isCssBackgroundEnabled(),
         'previewModifiable': printTicketStore.isDocumentModifiable,
         'printToPDF': destination.id ==
             print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,

@@ -116,6 +116,9 @@ class PRINTING_EXPORT PrintSettings {
   // True if the user wants headers and footers to be displayed.
   bool display_header_footer;
 
+  // True if the user wants to print CSS backgrounds.
+  bool should_print_backgrounds;
+
  private:
   //////////////////////////////////////////////////////////////////////////////
   // Settings that can't be changed without side-effects.

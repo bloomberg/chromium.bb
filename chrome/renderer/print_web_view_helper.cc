@@ -109,7 +109,9 @@ bool PrintMsg_Print_Params_IsEqual(
          oldParams.params.title == newParams.params.title &&
          oldParams.params.url == newParams.params.url &&
          std::equal(oldParams.pages.begin(), oldParams.pages.end(),
-             newParams.pages.begin());
+             newParams.pages.begin()) &&
+         oldParams.params.should_print_backgrounds ==
+             newParams.params.should_print_backgrounds;
 }
 
 PrintMsg_Print_Params GetCssPrintParams(
@@ -486,7 +488,8 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
           web_view_(frame->view()),
           expected_pages_count_(0),
           use_browser_overlays_(true),
-          finished_(false) {
+          finished_(false),
+          should_print_backgrounds_(print_params.should_print_backgrounds) {
   WebKit::WebPrintParams webkit_print_params;
   ComputeWebKitPrintParamsInDesiredDpi(print_params, &webkit_print_params);
 
@@ -506,6 +509,8 @@ void PrepareFrameAndViewForPrint::UpdatePrintParams(
   DCHECK(!finished_);
   WebKit::WebPrintParams webkit_print_params;
   ComputeWebKitPrintParamsInDesiredDpi(print_params, &webkit_print_params);
+
+  should_print_backgrounds_ = print_params.should_print_backgrounds;
 
   if (webkit_print_params.printContentArea ==
           web_print_params_.printContentArea &&
@@ -544,6 +549,8 @@ void PrepareFrameAndViewForPrint::StartPrinting(
   expected_pages_count_ = frame_->printBegin(web_print_params_,
                                              node_to_print_,
                                              &use_browser_overlays_);
+
+  web_view_->settings()->setShouldPrintBackgrounds(should_print_backgrounds_);
 }
 
 void PrepareFrameAndViewForPrint::FinishPrinting() {
@@ -553,6 +560,7 @@ void PrepareFrameAndViewForPrint::FinishPrinting() {
     web_view_->resize(prev_view_size_);
     if (WebKit::WebFrame* web_frame = web_view_->mainFrame())
       web_frame->setScrollOffset(prev_scroll_offset_);
+    web_view_->settings()->setShouldPrintBackgrounds(false);
   }
 }
 
@@ -1349,6 +1357,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
   Send(new PrintHostMsg_DidGetDocumentCookie(routing_id(),
                                              settings.params.document_cookie));
+
   return true;
 }
 

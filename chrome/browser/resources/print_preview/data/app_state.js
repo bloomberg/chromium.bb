@@ -79,6 +79,13 @@ cr.define('print_preview', function() {
      * @private
      */
     this.isCollateEnabled_ = null;
+
+    /**
+     * Whether printing CSS backgrounds is enabled.
+     * @type {?boolean}
+     * @private
+     */
+    this.isCssBackgroundEnabled_ = null;
   };
 
   /**
@@ -106,7 +113,8 @@ cr.define('print_preview', function() {
     IS_DUPLEX_ENABLED: 'isDuplexEnabled',
     IS_HEADER_FOOTER_ENABLED: 'isHeaderFooterEnabled',
     IS_LANDSCAPE_ENABLED: 'isLandscapeEnabled',
-    IS_COLLATE_ENABLED: 'isCollateEnabled'
+    IS_COLLATE_ENABLED: 'isCollateEnabled',
+    IS_CSS_BACKGROUND_ENABLED: 'isCssBackgroundEnabled'
   };
 
   /**
@@ -168,6 +176,11 @@ cr.define('print_preview', function() {
       return this.isCollateEnabled_;
     },
 
+    /** @return {?boolean} Whether printing CSS backgrounds is enabled. */
+    get isCssBackgroundEnabled() {
+      return this.isCssBackgroundEnabled_;
+    },
+
     /**
      * Initializes the app state from a serialized string returned by the native
      * layer.
@@ -215,6 +228,10 @@ cr.define('print_preview', function() {
         }
         if (state.hasOwnProperty(AppState.Field_.IS_COLLATE_ENABLED)) {
           this.isCollateEnabled_ = state[AppState.Field_.IS_COLLATE_ENABLED];
+        }
+        if (state.hasOwnProperty(AppState.Field_.IS_CSS_BACKGROUND_ENABLED)) {
+          this.isCssBackgroundEnabled_ =
+              state[AppState.Field_.IS_CSS_BACKGROUND_ENABLED];
         }
       }
     },
@@ -304,6 +321,16 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Persists whether printing CSS backgrounds is enabled.
+     * @param {?boolean} isCssBackgroundEnabled Whether printing CSS
+     *     backgrounds is enabled.
+     */
+    persistIsCssBackgroundEnabled: function(isCssBackgroundEnabled) {
+      this.isCssBackgroundEnabled_ = isCssBackgroundEnabled;
+      this.persist_();
+    },
+
+    /**
      * Calls into the native layer to persist the application state.
      * @private
      */
@@ -325,6 +352,8 @@ cr.define('print_preview', function() {
           this.isHeaderFooterEnabled_;
       obj[AppState.Field_.IS_LANDSCAPE_ENABLED] = this.isLandscapeEnabled_;
       obj[AppState.Field_.IS_COLLATE_ENABLED] = this.isCollateEnabled_;
+      obj[AppState.Field_.IS_CSS_BACKGROUND_ENABLED] =
+          this.isCssBackgroundEnabled_;
       chrome.send(AppState.NATIVE_FUNCTION_NAME_, [JSON.stringify(obj)]);
     }
   };

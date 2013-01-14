@@ -78,6 +78,7 @@ void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
   params->date = settings.date;
   params->title = settings.title;
   params->url = settings.url;
+  params->should_print_backgrounds = settings.should_print_backgrounds;
 }
 
 }  // namespace

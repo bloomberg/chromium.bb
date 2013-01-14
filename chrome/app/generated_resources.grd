@@ -8766,6 +8766,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_PRINT_PREVIEW_OPTION_FIT_TO_PAGE" desc="Checkbox label shown in print preview page to auto fit the PDF page.">
         Fit to page
       </message>
+      <message name="IDS_PRINT_PREVIEW_OPTION_BACKGROUND_COLORS_AND_IMAGES" desc="Checkbox label shown in print preview page to print webpage backgrounds.">
+        Background colors and images
+      </message>
       <message name="IDS_PRINT_PREVIEW_MARGINS_LABEL" desc="Margins option label. Provides user the option to change the margins of the printed page.">
         Margins
       </message>

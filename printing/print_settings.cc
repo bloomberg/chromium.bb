@@ -117,6 +117,7 @@ PrintSettings::PrintSettings()
       selection_only(false),
       margin_type(DEFAULT_MARGINS),
       display_header_footer(false),
+      should_print_backgrounds(false),
       dpi_(0),
       landscape_(false),
       supports_alpha_blend_(true) {
@@ -141,6 +142,7 @@ void PrintSettings::Clear() {
   dpi_ = 0;
   landscape_ = false;
   supports_alpha_blend_ = true;
+  should_print_backgrounds = false;
 }
 
 void PrintSettings::SetPrinterPrintableArea(
@@ -231,7 +233,8 @@ bool PrintSettings::Equals(const PrintSettings& rhs) const {
       device_name_ == rhs.device_name_ &&
       page_setup_device_units_.Equals(rhs.page_setup_device_units_) &&
       dpi_ == rhs.dpi_ &&
-      landscape_ == rhs.landscape_;
+      landscape_ == rhs.landscape_ &&
+      should_print_backgrounds == rhs.should_print_backgrounds;
 }
 
 int PrintSettings::NewCookie() {
