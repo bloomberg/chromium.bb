@@ -39,8 +39,7 @@ va-arg-pack-1.c
 builtin-prefetch-2.c arm
 # This uses __builtin_return_address(1)
 # Segfaults because of an uninit frame pointer (must force fp on?).
-20010122-1.c x86-32
-20010122-1.c arm
+20010122-1.c
 # DCE not performed at -O0 (wontfix?)
 medce-1.c O0
 fp-cmp-7.c O0
