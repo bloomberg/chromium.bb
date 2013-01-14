@@ -542,20 +542,20 @@ body {
   -webkit-box-flex: 0;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
+  background-color: rgba(0, 0, 0, 0);
   background-position: 5px center;
   background-repeat: no-repeat;
+  border: none;
+  box-sizing: content-box;
+  color: white;
   cursor: pointer;
   display: -webkit-box;
   height: 40px;
   margin: 8px 0 7px 3px;
   max-width: 90px;
+  min-width: 0;
   opacity: 0.99;  /* Workaround for http://crosbug.com/21065 */
   padding: 0 10px 0 35px;
-}
-
-.gallery > .toolbar button {
-  background-color: rgba(0, 0, 0, 0);
-  color: white;
 }
 
 .gallery > .toolbar button:hover {
