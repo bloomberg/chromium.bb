@@ -1399,18 +1399,6 @@ span.bold {
   font-weight: bold;
 }
 
-.error-message {
-  -webkit-padding-start: 30px;
-}
-
-.error-message-padding {
-  margin-bottom: 10px;
-}
-
-html[dir=rtl] .error-message {
-  background-position: right top;
-}
-
 #version-labels {
   -webkit-transition: all 500ms linear;
   color: #fff;

@@ -567,7 +567,7 @@ cr.define('cr.ui.login', function() {
     var error = document.createElement('div');
 
     var messageDiv = document.createElement('div');
-    messageDiv.className = 'error-message';
+    messageDiv.className = 'error-message-bubble';
     messageDiv.textContent = message;
     error.appendChild(messageDiv);
 
