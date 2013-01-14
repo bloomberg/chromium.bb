@@ -101,6 +101,8 @@
         'scoped_make_current.h',
         'gl_state_restorer.cc',
         'gl_state_restorer.h',
+        'vsync_provider.cc',
+        'vsync_provider.h',
         '<(gl_binding_output_dir)/gl_bindings_autogen_gl.cc',
         '<(gl_binding_output_dir)/gl_bindings_autogen_gl.h',
         '<(gl_binding_output_dir)/gl_bindings_autogen_mock.cc',

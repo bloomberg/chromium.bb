@@ -915,6 +915,12 @@ EGL_FUNCTIONS = [
   'names': ['eglDestroySyncKHR'],
   'arguments': 'EGLDisplay dpy, EGLSyncKHR sync',
   'other_extensions': ['EGL_KHR_fence_sync'] },
+{ 'return_type': 'EGLBoolean',
+  'names': ['eglGetSyncValuesCHROMIUM'],
+  'arguments':
+      'EGLDisplay dpy, EGLSurface surface, '
+      'EGLuint64CHROMIUM* ust, EGLuint64CHROMIUM* msc, '
+      'EGLuint64CHROMIUM* sbc', },
 ]
 
 WGL_FUNCTIONS = [

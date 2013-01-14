@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/vsync_provider.h"
 
 namespace content {
 
@@ -330,9 +331,12 @@ gfx::Size PassThroughImageTransportSurface::GetSize() {
 PassThroughImageTransportSurface::~PassThroughImageTransportSurface() {}
 
 void PassThroughImageTransportSurface::SendVSyncUpdateIfAvailable() {
-  GetVSyncParameters(
+  gfx::VSyncProvider* vsync_provider = GetVSyncProvider();
+  if (vsync_provider) {
+    vsync_provider->GetVSyncParameters(
       base::Bind(&ImageTransportHelper::SendUpdateVSyncParameters,
                  helper_->AsWeakPtr()));
+  }
 }
 
 }  // namespace content

@@ -13,6 +13,7 @@
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/vsync_provider.h"
 
 namespace gfx {
 
@@ -62,15 +63,7 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
   virtual std::string GetExtensions() OVERRIDE;
   virtual void* GetConfig() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
-  virtual void GetVSyncParameters(const UpdateVSyncCallback& callback) OVERRIDE;
-
-  class VSyncProvider {
-   public:
-    virtual ~VSyncProvider() { }
-
-    virtual void GetVSyncParameters(
-        const GLSurface::UpdateVSyncCallback& callback) = 0;
-  };
+  virtual VSyncProvider* GetVSyncProvider() OVERRIDE;
 
  protected:
   NativeViewGLSurfaceGLX();

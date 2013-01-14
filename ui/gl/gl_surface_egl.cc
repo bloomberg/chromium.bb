@@ -38,8 +38,45 @@ EGLNativeDisplayType g_software_native_display;
 
 const char* g_egl_extensions = NULL;
 bool g_egl_create_context_robustness_supported = false;
+bool g_egl_sync_control_supported = false;
 
-}
+class EGLSyncControlVSyncProvider
+    : public gfx::SyncControlVSyncProvider {
+ public:
+  explicit EGLSyncControlVSyncProvider(EGLSurface surface)
+      : SyncControlVSyncProvider(),
+        surface_(surface) {
+  }
+
+  virtual ~EGLSyncControlVSyncProvider() { }
+
+ protected:
+  virtual bool GetSyncValues(int64* system_time,
+                             int64* media_stream_counter,
+                             int64* swap_buffer_counter) {
+    uint64 u_system_time, u_media_stream_counter, u_swap_buffer_counter;
+    bool result = eglGetSyncValuesCHROMIUM(
+        g_display, surface_, &u_system_time,
+        &u_media_stream_counter, &u_swap_buffer_counter) == EGL_TRUE;
+    if (result) {
+      *system_time = static_cast<int64>(u_system_time);
+      *media_stream_counter = static_cast<int64>(u_media_stream_counter);
+      *swap_buffer_counter = static_cast<int64>(u_swap_buffer_counter);
+    }
+    return result;
+  }
+
+  virtual bool GetMscRate(int32* numerator, int32* denominator) {
+    return false;
+  }
+
+ private:
+  EGLSurface surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(EGLSyncControlVSyncProvider);
+};
+
+}  // namespace
 
 GLSurfaceEGL::GLSurfaceEGL() : software_(false) {}
 
@@ -106,6 +143,8 @@ bool GLSurfaceEGL::InitializeOneOff() {
   g_egl_extensions = eglQueryString(g_display, EGL_EXTENSIONS);
   g_egl_create_context_robustness_supported =
       HasEGLExtension("EGL_EXT_create_context_robustness");
+  g_egl_sync_control_supported =
+      HasEGLExtension("EGL_CHROMIUM_sync_control");
 
   initialized = true;
 
@@ -223,6 +262,9 @@ bool NativeViewGLSurfaceEGL::Initialize() {
                                       EGL_POST_SUB_BUFFER_SUPPORTED_NV,
                                       &surfaceVal);
   supports_post_sub_buffer_ = (surfaceVal && retVal) == EGL_TRUE;
+
+  if (g_egl_sync_control_supported)
+    vsync_provider_.reset(new EGLSyncControlVSyncProvider(surface_));
 
   return true;
 }
@@ -384,6 +426,10 @@ bool NativeViewGLSurfaceEGL::PostSubBuffer(
     return false;
   }
   return true;
+}
+
+VSyncProvider* NativeViewGLSurfaceEGL::GetVSyncProvider() {
+  return vsync_provider_.get();
 }
 
 NativeViewGLSurfaceEGL::~NativeViewGLSurfaceEGL() {

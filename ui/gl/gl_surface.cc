@@ -148,7 +148,8 @@ unsigned GLSurface::GetFormat() {
   return 0;
 }
 
-void GLSurface::GetVSyncParameters(const UpdateVSyncCallback& callback) {
+VSyncProvider* GLSurface::GetVSyncProvider() {
+  return NULL;
 }
 
 GLSurface* GLSurface::GetCurrent() {
@@ -255,8 +256,8 @@ unsigned GLSurfaceAdapter::GetFormat() {
   return surface_->GetFormat();
 }
 
-void GLSurfaceAdapter::GetVSyncParameters(const UpdateVSyncCallback& callback) {
-  surface_->GetVSyncParameters(callback);
+VSyncProvider* GLSurfaceAdapter::GetVSyncProvider() {
+  return surface_->GetVSyncProvider();
 }
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}

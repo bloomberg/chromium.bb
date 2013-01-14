@@ -470,6 +470,17 @@ EGLAPI EGLint EGLAPIENTRY eglWaitSyncKHR(EGLDisplay dpy, EGLSyncKHR sync, EGLint
 typedef EGLint (EGLAPIENTRYP PFNEGLWAITSYNCKHRPROC)(EGLDisplay dpy, EGLSyncKHR sync, EGLint flags);
 #endif
 
+#if KHRONOS_SUPPORT_INT64   /* EGLSyncControlCHROMIUM requires 64-bit uint support */
+#ifndef EGL_CHROMIUM_sync_control
+#define EGL_CHROMIUM_sync_control 1
+typedef khronos_uint64_t EGLuint64CHROMIUM;
+#ifdef EGL_EGLEXT_PROTOTYPES
+EGLAPI EGLBoolean EGLAPIENTRY eglGetSyncValuesCHROMIUM(EGLDisplay dpy, EGLSurface surface, EGLuint64CHROMIUM *ust, EGLuint64CHROMIUM *msc, EGLuint64CHROMIUM *sbc);
+#endif /* EGL_EGLEXT_PROTOTYPES */
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLGETSYNCVALUESCHROMIUMPROC)(EGLDisplay dpy, EGLSurface surface, EGLuint64CHROMIUM *ust, EGLuint64CHROMIUM *msc, EGLuint64CHROMIUM *sbc);
+#endif
+#endif
+
 #ifdef __cplusplus
 }
 #endif

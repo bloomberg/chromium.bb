@@ -42,3 +42,5 @@ EGL/eglplatform.h
  - Added EGLNative*Type for Mac.
 DEPS
  - Added DEPS file to prevent inclusion of external dependencies.
+EGL/eglext.h
+ - Added EGL_CHROMIUM_sync_control

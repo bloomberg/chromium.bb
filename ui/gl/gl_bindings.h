@@ -57,6 +57,7 @@ typedef uint64 EGLTimeKHR;
 typedef unsigned int EGLBoolean;
 typedef unsigned int EGLenum;
 typedef int EGLint;
+typedef uint64 EGLuint64CHROMIUM;
 typedef void *EGLConfig;
 typedef void *EGLContext;
 typedef void *EGLDisplay;

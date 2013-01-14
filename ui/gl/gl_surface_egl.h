@@ -9,10 +9,14 @@
 #include <windows.h>
 #endif
 
+#include <string>
+
 #include "base/compiler_specific.h"
+#include "base/time.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/vsync_provider.h"
 
 typedef void* EGLConfig;
 typedef void* EGLDisplay;
@@ -73,6 +77,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   virtual EGLSurface GetHandle() OVERRIDE;
   virtual std::string GetExtensions() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
+  virtual VSyncProvider* GetVSyncProvider() OVERRIDE;
 
  protected:
   virtual ~NativeViewGLSurfaceEGL();
@@ -83,6 +88,8 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   EGLSurface surface_;
   bool supports_post_sub_buffer_;
   EGLConfig config_;
+
+  scoped_ptr<VSyncProvider> vsync_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceEGL);
 };
