@@ -339,7 +339,7 @@ DownloadControllerAndroidImpl::JavaObject*
 DownloadControllerAndroidImpl::DownloadInfoAndroid::DownloadInfoAndroid(
     net::URLRequest* request) {
   request->GetResponseHeaderByName("content-disposition", &content_disposition);
-  request->GetResponseHeaderByName("mime-type", &original_mime_type);
+  request->GetMimeType(&original_mime_type);
   request->extra_request_headers().GetHeader(
       net::HttpRequestHeaders::kUserAgent, &user_agent);
   GURL referer_url(request->GetSanitizedReferrer());
