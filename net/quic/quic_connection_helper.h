@@ -65,7 +65,7 @@ class NET_EXPORT_PRIVATE QuicConnectionHelper
   // An alarm is scheduled for each data-bearing packet as it is sent out.
   // When the alarm goes off, the connection checks to see if the packet has
   // been acked, and resends if it has not.
-  void OnResendAlarm(QuicPacketSequenceNumber sequence_number);
+  void OnResendAlarm();
   // An alarm that is scheduled when the sent scheduler requires a
   // a delay before sending packets and fires when the packet may be sent.
   void OnSendAlarm();
@@ -73,6 +73,8 @@ class NET_EXPORT_PRIVATE QuicConnectionHelper
   void OnTimeoutAlarm();
   // A completion callback invoked when a write completes.
   void OnWriteComplete(int result);
+  // An alarm which fires if we've hit a timeout on sending an ack.
+  void OnAckAlarm();
 
   base::WeakPtrFactory<QuicConnectionHelper> weak_factory_;
   base::TaskRunner* task_runner_;
@@ -82,6 +84,10 @@ class NET_EXPORT_PRIVATE QuicConnectionHelper
   QuicRandom* random_generator_;
   bool send_alarm_registered_;
   bool timeout_alarm_registered_;
+  bool resend_alarm_registered_;
+  bool resend_alarm_running_;
+  // Times that packets should be resent.
+  std::map<QuicPacketSequenceNumber, QuicTime> resend_times_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionHelper);
 };

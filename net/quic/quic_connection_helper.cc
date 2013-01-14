@@ -15,6 +15,10 @@
 
 namespace net {
 
+// Limit the number of packets we send per resend-alarm so we eventually cede.
+// 10 is arbitrary.
+const size_t kMaxPacketsPerResendAlarm = 10;
+
 QuicConnectionHelper::QuicConnectionHelper(base::TaskRunner* task_runner,
                                            const QuicClock* clock,
                                            QuicRandom* random_generator,
@@ -25,7 +29,9 @@ QuicConnectionHelper::QuicConnectionHelper(base::TaskRunner* task_runner,
       clock_(clock),
       random_generator_(random_generator),
       send_alarm_registered_(false),
-      timeout_alarm_registered_(false) {
+      timeout_alarm_registered_(false),
+      resend_alarm_registered_(false),
+      resend_alarm_running_(false) {
 }
 
 QuicConnectionHelper::~QuicConnectionHelper() {
@@ -70,12 +76,16 @@ int QuicConnectionHelper::WritePacketToWire(
 void QuicConnectionHelper::SetResendAlarm(
     QuicPacketSequenceNumber sequence_number,
     QuicTime::Delta delay) {
-  // TODO(rch): Coalesce these alarms.
-  task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&QuicConnectionHelper::OnResendAlarm,
-                 weak_factory_.GetWeakPtr(), sequence_number),
-      base::TimeDelta::FromMicroseconds(delay.ToMicroseconds()));
+  if (!resend_alarm_registered_ &&
+      !resend_alarm_running_) {
+    resend_alarm_registered_ = true;
+    task_runner_->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&QuicConnectionHelper::OnResendAlarm,
+                   weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMicroseconds(delay.ToMicroseconds()));
+  }
+  resend_times_[sequence_number] = clock_->Now().Add(delay);
 }
 
 void QuicConnectionHelper::SetSendAlarm(QuicTime::Delta delay) {
@@ -118,10 +128,36 @@ void QuicConnectionHelper::GetPeerAddress(IPEndPoint* peer_address) {
   socket_->GetPeerAddress(peer_address);
 }
 
+void QuicConnectionHelper::OnResendAlarm() {
+  // This guards against registering the alarm later than we should.
+  //
+  // If we have packet A and B in the list and we call MaybeResendPacket on
+  // A, that may trigger a call to SetResendAlarm if A is resent as C.  In
+  // that case we don't want to register the alarm under SetResendAlarm; we
+  // want to set it to the RTO of B at the end of this method.
+  resend_alarm_registered_ = false;
+  resend_alarm_running_ = true;
 
-void QuicConnectionHelper::OnResendAlarm(
-    QuicPacketSequenceNumber sequence_number) {
-  connection_->MaybeResendPacket(sequence_number);
+  for (size_t i = 0; i < kMaxPacketsPerResendAlarm; ++i) {
+    if (resend_times_.empty() ||
+        resend_times_.begin()->second > clock_->Now()) {
+      break;
+    }
+    QuicPacketSequenceNumber sequence_number = resend_times_.begin()->first;
+    connection_->MaybeResendPacket(sequence_number);
+    resend_times_.erase(sequence_number);
+  }
+
+  // Nothing from here on does external calls.
+  resend_alarm_running_ = false;
+  if (resend_times_.empty()) {
+    return;
+  }
+
+  // We have packet remaining.  Reschedule for the RTO of the oldest packet
+  // on the list.
+  SetResendAlarm(resend_times_.begin()->first,
+                 resend_times_.begin()->second.Subtract(clock_->Now()));
 }
 
 void QuicConnectionHelper::OnSendAlarm() {
