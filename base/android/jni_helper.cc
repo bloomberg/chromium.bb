@@ -14,7 +14,8 @@ JavaObjectWeakGlobalRef::JavaObjectWeakGlobalRef()
 }
 
 JavaObjectWeakGlobalRef::JavaObjectWeakGlobalRef(
-    const JavaObjectWeakGlobalRef& orig) {
+    const JavaObjectWeakGlobalRef& orig)
+    : obj_(NULL) {
   Assign(orig);
 }
 
@@ -55,6 +56,12 @@ base::android::ScopedJavaLocalRef<jobject> GetRealObject(
 }
 
 void JavaObjectWeakGlobalRef::Assign(const JavaObjectWeakGlobalRef& other) {
+  if (&other == this)
+    return;
+
   JNIEnv* env = AttachCurrentThread();
-  obj_ = env->NewWeakGlobalRef(other.obj_);
+  if (obj_)
+    env->DeleteWeakGlobalRef(obj_);
+
+  obj_ = other.obj_ ? env->NewWeakGlobalRef(other.obj_) : NULL;
 }
