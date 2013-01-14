@@ -495,7 +495,7 @@
     { "name": "www.developer.mydigipass.com", "mode": "force-https" },
     { "name": "sandbox.mydigipass.com", "mode": "force-https" },
     { "name": "www.sandbox.mydigipass.com", "mode": "force-https" },
-    { "name": "crypto.cat", "mode": "force-https", "pins": "cryptoCat" },
+    { "name": "crypto.cat", "include_subdomains": true, "mode": "force-https", "pins": "cryptoCat" },
     { "name": "bigshinylock.minazo.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "crate.io", "include_subdomains": true, "mode": "force-https" },
     { "name": "twitter.com", "mode": "force-https", "pins": "twitterCom" },
