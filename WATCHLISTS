@@ -71,6 +71,10 @@
     'base_memory': {
       'filepath': '^base/memory',
     },
+    'bookmarks': {
+      'filepath': 'chrome/browser/bookmarks/' \
+                  '|chrome/browser/ui/bookmarks/'
+    },
     'browser': {
       'filepath': 'chrome/browser/',
     },
@@ -526,6 +530,7 @@
     'base': ['erikwright+watch@chromium.org'],
     'base_allocator': ['dmikurube+memory@chromium.org'],
     'base_memory': ['gavinp+memory@chromium.org'],
+    'bookmarks': ['tfarina@chromium.org'],
     'browser_chromeos': ['davemoore+watch@chromium.org',
                          'stevenjb+watch@chromium.org',
                          'nkostylev+watch@chromium.org'],
