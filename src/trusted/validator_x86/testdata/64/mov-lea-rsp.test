@@ -2,7 +2,7 @@
   # Sample of using lea solution (instead of add) to update rsp.
   #    mov %esp, %ecx
   #    lea %rsp, [%rsp+%r15*1]
-  89 cc
+  89 cc \\
   4a 8d 24 3c
 @val:
   VALIDATOR: Checking jump targets: 0 to 6

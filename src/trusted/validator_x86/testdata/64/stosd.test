@@ -3,8 +3,8 @@
   #   mov %edi, %edi
   #   lea %rdi, [%r15+%rdi*1]
   #   stosd
-  89 ff
-  49 8d 3c 3f
+  89 ff \\
+  49 8d 3c 3f \\
   ab
 @val:
   VALIDATOR: Checking jump targets: 0 to 7

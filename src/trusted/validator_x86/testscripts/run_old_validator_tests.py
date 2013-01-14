@@ -88,7 +88,10 @@ def Test(options, items_list):
       proc = subprocess.Popen(command,
                               stdin=subprocess.PIPE,
                               stdout=subprocess.PIPE)
-      stdout, stderr = proc.communicate(info['hex'])
+      # r'\\' is used as line continuation marker by
+      # run_rdfa_validator_tests.py. Old validator does not care about line
+      # partitioning, so we just remove the marker.
+      stdout, stderr = proc.communicate(info['hex'].replace(r'\\', ''))
       assert proc.wait() == 0, (command, stdout, stderr)
       # Remove the carriage return characters that we get on Windows.
       stdout = stdout.replace('\r', '')

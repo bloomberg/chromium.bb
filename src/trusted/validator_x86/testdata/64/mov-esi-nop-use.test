@@ -4,7 +4,7 @@
   # That is, the two moves:
   #     mov %esi, %esi
   #     mov [%r15 + %rsi*1 + 0x8], %edx
-  89 f6
+  89 f6 \\
   41 89 54 37 08
 @val:
   VALIDATOR: Checking jump targets: 0 to 7

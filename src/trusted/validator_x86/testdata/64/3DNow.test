@@ -18,7 +18,8 @@
   0f 0e
   
   # bundle alignment
-  90 90
+  90
+  90
   
   # prefetchw (%rsp)
   0f 0d 0c 24

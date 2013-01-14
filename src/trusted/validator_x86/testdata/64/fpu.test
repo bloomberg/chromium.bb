@@ -1,16 +1,18 @@
 @hex:
   # Load floating point value.
   # mov %eax,%eax
+  89 C0 \\
   # fld (%r15,%rax)
-  89 C0
   41 D9 04 07
+  
   # mov %eax,%eax
+  89 C0 \\
   # fldl (%r15,%rax)
-  89 C0
   41 DD 04 07
+  
   # mov %eax,%eax
+  89 C0 \\
   # fldt (%r15,%rax)
-  89 C0
   41 DB 2C 07
 @rval:
   VALIDATOR: Checking jump targets: 0 to 12
@@ -43,12 +45,13 @@
 @hex:
   # Load integer value.
   # mov %eax,%eax
+  89 C0 \\
   # fildl (%r15,%rax)
-  89 C0
   41 DB 04 07
+  
   # mov %eax,%eax
+  89 C0 \\
   # fildq (%r15,%rax)
-  89 C0
   41 DF 2C 07
 @rval:
   VALIDATOR: Checking jump targets: 0 to c
@@ -77,24 +80,28 @@
 @hex:
   # Store floating point value.
   # mov %eax,%eax
+  89 C0 \\
   # fsts (%r15,%rax)
-  89 C0
   41 D9 14 07
+  
   # mov %eax,%eax
+  89 C0 \\
   # fstl (%r15,%rax)
-  89 C0
   41 DD 14 07
+  
   # mov %eax,%eax
+  89 C0 \\
   # fstps (%r15,%rax)
-  89 C0
   41 D9 1C 07
+  
   # mov %eax,%eax
+  89 C0 \\
   # fstpl (%r15,%rax)
-  89 C0
   41 DD 1C 07
+  
   # mov %eax,%eax
+  89 C0 \\
   # fstpt (%r15,%rax)
-  89 C0
   41 DB 3C 07
 @rval:
   VALIDATOR: Checking jump targets: 0 to 1e
@@ -135,24 +142,28 @@
 @hex:
   # Store integer value
   # mov %eax,%eax
+  89 C0 \\
   # fists (%r15,%rax)
-  89 C0
   41 DF 14 07
+  
   # mov %eax,%eax
+  89 C0 \\
   # fistl (%r15,%rax)
-  89 C0
   41 DB 14 07
+  
   # mov %eax,%eax
+  89 C0 \\
   # fistp (%r15,%rax)
-  89 C0
   41 DF 1C 07
+  
   # mov %eax,%eax
+  89 C0 \\
   # fistpl (%r15,%rax)
-  89 C0
   41 DB 1C 07
+  
   # mov %eax,%eax
+  89 C0 \\
   # fistpq (%r15,%rax)
-  89 C0
   41 DF 3C 07
 @rval:
   VALIDATOR: Checking jump targets: 0 to 1e
@@ -196,13 +207,15 @@
   D8 C1
   # faddp %st(0),%st(1)
   DE C1
+  
   # mov %eax,%eax
+  89 C0 \\
   # fadds (%r15,%rax)
-  89 C0
   41 D8 04 07
+  
   # mov %eax,%eax
+  89 C0 \\
   # faddl (%r15,%rax)
-  89 C0
   41 DC 04 07
 @rval:
   VALIDATOR: Checking jump targets: 0 to 10

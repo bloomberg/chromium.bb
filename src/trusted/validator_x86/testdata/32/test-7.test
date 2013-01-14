@@ -1,6 +1,7 @@
 @hex:
   # test 7: group2, three byte move.
-  c1 f9 1f 89 4d e4
+  c1 f9 1f
+  89 4d e4
   f4
 @nval:
   *** <input> is safe ***

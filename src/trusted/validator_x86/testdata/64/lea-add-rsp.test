@@ -1,6 +1,8 @@
 @hex:
   # Sample sequence for enter (nativeclient issue 259), part 2.
-  8d 65 e0
+  # lea %esp, [%rbp-0x20]
+  8d 65 e0 \\
+  # add %rsp, %r15
   4c 01 fc
 @val:
   VALIDATOR: Checking jump targets: 0 to 6

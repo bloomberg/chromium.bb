@@ -296,9 +296,9 @@
 @hex:
   # Masked indirect jumps are allowed.
   # and $~31, %eax
-  83 e0 e0
+  83 e0 e0 \\
   # add %r15, %rax
-  4c 01 f8
+  4c 01 f8 \\
   # jmp *%rax
   ff e0
 @rval:
@@ -314,9 +314,9 @@
 ----------------------------------------------------------------------
 @hex:
   # and $~31, %ebx
-  83 e3 e0
+  83 e3 e0 \\
   # add %r15, %rbx
-  4c 01 fb
+  4c 01 fb \\
   # call *%rbx
   ff d3
 @rval:
@@ -635,7 +635,7 @@
 @hex:
   # Memory accesses.
   # mov %eax, %eax
-  89 c0
+  89 c0 \\
   # mov (%r15, %rax), %ebx
   41 8b 1c 07
 @rval:
@@ -651,7 +651,7 @@
 @hex:
   # Test for a top-bit-set register.
   # mov %r12d, %r12d
-  45 89 e4
+  45 89 e4 \\
   # mov (%r15, %r12), %ebx
   43 8b 1c 27
 @rval:
@@ -667,7 +667,7 @@
 @hex:
   # Check %edi and %esi because the first 'mov' also begins superinstructions.
   # mov %edi, %edi
-  89 ff
+  89 ff \\
   # mov (%r15, %rdi), %ebx
   41 8b 1c 3f
 @rval:
@@ -682,7 +682,7 @@
 ----------------------------------------------------------------------
 @hex:
   # mov %esi, %esi
-  89 f6
+  89 f6 \\
   # mov (%r15, %rsi), %ebx
   41 8b 1c 37
 @rval:
@@ -882,7 +882,7 @@
 ----------------------------------------------------------------------
 @hex:
   # mov %ebx, %ebx
-  89 db
+  89 db \\
   # mov 0x1234(%rsp, %rbx), %eax
   8b 84 1c 34 12 00 00
 @rval:
@@ -897,7 +897,7 @@
 ----------------------------------------------------------------------
 @hex:
   # mov %ebx, %ebx
-  89 db
+  89 db \\
   # mov 0x1234(%rbp, %rbx), %eax
   8b 84 1d 34 12 00 00
 @rval:
@@ -941,7 +941,7 @@
 ----------------------------------------------------------------------
 @hex:
   # add $8, %ebp
-  83 c5 08
+  83 c5 08 \\
   # add %r15, %rbp
   4c 01 fd
 @rval:

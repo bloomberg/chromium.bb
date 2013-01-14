@@ -31,18 +31,33 @@ def ParseHex(hex_content):
     hex_content: Content of @hex section as a string.
 
   Yields:
-    Chunks of binary data corresponding to lines
-    of given @hex section (as strings).
+    Chunks of binary data corresponding to lines of given @hex section (as
+    strings). If line ends with r'\\', chunk is continued on the following line.
   """
 
+  bytes = []
   for line in hex_content.split('\n'):
     line, sep, comment = line.partition('#')
-    bytes = []
+    line = line.strip()
+    if line == '':
+      continue
+
+    if line.endswith(r'\\'):
+      line = line[:-2]
+      continuation = True
+    else:
+      continuation = False
+
     for byte in line.split():
       assert len(byte) == 2
       bytes.append(chr(int(byte, 16)))
-    if len(bytes) > 0:
+
+    if not continuation:
+      assert len(bytes) > 0
       yield ''.join(bytes)
+      bytes = []
+
+  assert bytes == []
 
 
 def CreateElfContent(bits, text_segment):
@@ -241,11 +256,63 @@ def RunRdfaWithNopPatching(options, data_chunks):
   return result
 
 
+def CheckValidJumpTargets(options, data_chunks):
+  """
+  Check that the validator infers valid jump targets correctly.
+
+  This test checks that the validator identifies instruction boundaries and
+  superinstructions correctly. In order to do that, it attempts to append a jump
+  to each byte at the end of the given code. Jump should be valid if and only if
+  it goes to the boundary between data chunks.
+
+  Note that the same chunks as in RunRdfaWithNopPatching are used, but here they
+  play a different role. In RunRdfaWithNopPatching the partitioning into chunks
+  is only relevant when the whole snippet is invalid. Here, on the other hand,
+  we only care about valid snippets, and we use chunks to mark valid jump
+  targets.
+
+  Args:
+    options: Options as produced by optparse.
+    data_chunks: List of strings containing binary data. Each such chunk is
+        expected to correspond to indivisible instruction or superinstruction.
+
+  Returns:
+    None.
+  """
+  data = ''.join(data_chunks)
+  # Add nops to make it bundle-sized.
+  data += (-len(data) % BUNDLE_SIZE) * '\x90'
+  assert len(data) % BUNDLE_SIZE == 0
+
+  # Since we check validity of jump target by adding jump and validating
+  # resulting piece, we rely on validity of original snippet.
+  return_code, _ = RunRdfaValidator(options, data)
+  assert return_code == 0, 'Can only validate jump targets on valid snippet'
+
+  valid_jump_targets = set()
+  pos = 0
+  for data_chunk in data_chunks:
+    valid_jump_targets.add(pos)
+    pos += len(data_chunk)
+  valid_jump_targets.add(pos)
+
+  for i in range(pos + 1):
+    # Encode JMP with 32-bit relative target.
+    jump = '\xe9' + struct.pack('<i', i - (len(data) + 5))
+    return_code, _ = RunRdfaValidator(options, data + jump)
+    if return_code == 0:
+      assert i in valid_jump_targets, (
+          'Offset 0x%x was reported valid jump target' % i)
+    else:
+      assert i not in valid_jump_targets, (
+          'Offset 0x%x was reported invalid jump target' % i)
+
+
 def Test(options, items_list):
   info = dict(items_list)
 
   if 'rdfa_output' in info:
-    data_chunks = ParseHex(info['hex'])
+    data_chunks = list(ParseHex(info['hex']))
     stdout = RunRdfaWithNopPatching(options, data_chunks)
     print '  Checking rdfa_output field...'
     if options.update:
@@ -254,6 +321,15 @@ def Test(options, items_list):
         info['rdfa_output'] = stdout
     else:
       AssertEquals(stdout, info['rdfa_output'])
+
+    last_line = re.search('return code: (-?\d+)\n$', info['rdfa_output'])
+    expected_return_code = int(last_line.group(1))
+
+    # This test only works for valid snippets, see CheckValidJumpTargets
+    # for details.
+    if expected_return_code == 0:
+      print '  Checking jump targets...'
+      CheckValidJumpTargets(options, data_chunks)
 
   # Update field values, but preserve their order.
   items_list = [(field, info[field]) for field, _ in items_list]

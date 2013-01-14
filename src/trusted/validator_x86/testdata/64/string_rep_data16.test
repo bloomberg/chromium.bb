@@ -172,17 +172,17 @@
   
   # DATA16, but no REP/REPNE prefix:
   # mov %edi, %edi
-  89 ff
+  89 ff \\
   # lea (%r15,%rdi,1), %rdi
-  49 8d 3c 3f
+  49 8d 3c 3f \\
   # scasw %es:(%rdi), %ax
   66 af
   
   # REP, but no DATA16 prefix:
   # mov %edi, %edi
-  89 ff
+  89 ff \\
   # lea (%r15,%rdi,1),%rdi
-  49 8d 3c 3f
+  49 8d 3c 3f \\
   # rep stosb %al, %es:(%rdi)
   f3 aa
 @rval:

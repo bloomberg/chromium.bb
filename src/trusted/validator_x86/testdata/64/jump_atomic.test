@@ -1,10 +1,13 @@
 @hex:
   # Models a jump to the begining of an atomic instruction sequence.
+  # jmp 0x2
   EB 00
-  83 e2 e0
-  4c 01 fa
+  # and %edx, 0xe0
+  83 e2 e0 \\
+  # add %rdx, %r15
+  4c 01 fa \\
+  # jmp %rdx
   ff e2
-  
 @val:
   VALIDATOR: Checking jump targets: 0 to a
   VALIDATOR: Checking that basic blocks are aligned

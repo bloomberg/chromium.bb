@@ -41,17 +41,17 @@
 ----------------------------------------------------------------------
 @hex:
   # mov %ebp, %esp
-  89 ec
+  89 ec \\
   # lea (%rsp, %r15), %rsp
   4a 8d 24 3c
   
   # mov %ebp, %esp
-  89 ec
+  89 ec \\
   # lea 0x00(%rsp, %r15), %rsp
   4a 8d 64 3c 00
   
   # mov %ebp, %esp
-  89 ec
+  89 ec \\
   # lea 0x00000000(%rsp, %r15), %rsp
   4a 8d a4 3c 00 00 00 00
   

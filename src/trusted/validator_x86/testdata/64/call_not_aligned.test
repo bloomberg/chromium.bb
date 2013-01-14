@@ -1,7 +1,12 @@
 @hex:
   # Model case where the call is not aligned so that the return address
   # is aligned (32 bytes).
-  90 90 90 90 90 90
+  90
+  90
+  90
+  90
+  90
+  90
   e8 00 00 00 00
   90
 @val:

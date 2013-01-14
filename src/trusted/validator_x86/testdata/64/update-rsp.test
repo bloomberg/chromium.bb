@@ -2,7 +2,7 @@
   # Sample of updating rps
   #   sub %esp, 0x8
   #   add %rsp, %r15
-  83 ec 08
+  83 ec 08 \\
   4c 01 fc
 @val:
   VALIDATOR: Checking jump targets: 0 to 6

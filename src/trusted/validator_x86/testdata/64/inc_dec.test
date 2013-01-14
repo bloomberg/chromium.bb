@@ -1,11 +1,12 @@
 @hex:
   # Check that inc and dec are considered zero-extending instructions.
   # inc %ecx
-  ff c1
+  ff c1 \\
   # and (%rsp, %rcx, 1), %esi
   23 34 0c
+  
   # dec %ecx
-  ff c9
+  ff c9 \\
   # and (%rsp, %rcx, 1), %esi
   23 34 0c
 @rval:

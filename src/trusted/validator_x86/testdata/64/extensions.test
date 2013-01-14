@@ -19,20 +19,24 @@
   # SSE 4.2
   # pcmpgtq %xmm0,%xmm1
   66 0F 38 37 C8
+  # nops for bundle alignment
+  90
+  90
+  90
+  90
+  90
   # SSE 4A
-  # nops
   # movl %eax,%eax
+  89 C0 \\
   # movntsd %xmm0,(%r15,%rax,1)
-  90 90 90 90 90
-  89 C0
   F2 41 0F 2B 04 07
   # popcnt %rax,%rax
   F3 48 0F B8 C0
   # lzcnt  %rax,%rax
   F3 48 0F BD C0
   # movl %eax,%eax
+  89 C0 \\
   # movbe  %rax,(%r15,%rax,1)
-  89 C0
   49 0f 38 f1 04 07
   # SSSE3
   # nop

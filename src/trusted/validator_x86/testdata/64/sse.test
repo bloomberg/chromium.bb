@@ -130,7 +130,9 @@
   66 0f 50 c0
   
   # nops for bundle alignment
-  90 90 90
+  90
+  90
+  90
   
   # shufpd $0x1,%xmm0,%xmm1
   66 0f c6 c8 01
@@ -288,7 +290,11 @@
   66 0f 38 3e c8
   
   # nops for bundle alignment
-  90 90 90 90 90
+  90
+  90
+  90
+  90
+  90
   
   # insertps $0x1,%xmm0,%xmm1
   66 0f 3a 21 c8 01
