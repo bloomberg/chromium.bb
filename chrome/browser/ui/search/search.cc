@@ -164,6 +164,9 @@ bool IsQueryExtractionEnabled(Profile* profile) {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableQueryExtraction);
 #else
+  if (!profile || profile->IsOffTheRecord())
+    return false;
+
   // On desktop, query extraction is controlled by the instant-extended-api
   // flag.
   bool enabled = IsInstantExtendedAPIEnabled(profile);
