@@ -94,11 +94,11 @@ def _UploadChangeToBranch(work_dir, patch, branch, draft, dryrun):
 
   # Get the new sha1 after apply.
   new_sha1 = git.GetGitRepoRevision(work_dir)
+  reviewers = set()
 
   # If the sha1 has changed, then rewrite the commit message.
   if patch.sha1 != new_sha1:
     msg = []
-    reviewers = set()
     for line in patch.commit_message.splitlines():
       if line.startswith('Reviewed-on: '):
         line = 'Previous-' + line
