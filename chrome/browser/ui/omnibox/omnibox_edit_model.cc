@@ -211,13 +211,18 @@ void OmniboxEditModel::SetInstantSuggestion(
       view_->SetInstantSuggestion(suggestion.text);
       break;
 
-    case INSTANT_COMPLETE_REPLACE:
+    case INSTANT_COMPLETE_REPLACE: {
+      const bool save_original_selection = !has_temporary_text_;
       view_->SetInstantSuggestion(string16());
       has_temporary_text_ = true;
       is_temporary_text_set_by_instant_ = true;
-      view_->SetWindowTextAndCaretPos(suggestion.text, suggestion.text.size(),
-                                      false, false);
+      // Instant suggestions are never a keyword.
+      keyword_ = string16();
+      is_keyword_hint_ = false;
+      view_->OnTemporaryTextMaybeChanged(suggestion.text,
+                                         save_original_selection);
       break;
+    }
   }
 }
 
