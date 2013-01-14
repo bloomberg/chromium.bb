@@ -115,21 +115,18 @@ int GetEditFontPixelSize(bool popup_window_mode) {
                              kAutocompleteEditFontPixelSize;
 }
 
-// Copies |selected_text| as text to the primary clipboard. If |write_url| is
-// true, this will also write |url| and |text| to the clipboard as a well-formed
-// URL.
-void DoCopy(const string16& selected_text,
-            bool write_url,
-            const GURL& url,
-            const string16& text) {
-  ui::Clipboard* cb = ui::Clipboard::GetForCurrentThread();
-  ui::ScopedClipboardWriter scw(cb, ui::Clipboard::BUFFER_STANDARD);
+// Copies |selected_text| as text to the primary clipboard.
+void DoCopyText(const string16& selected_text) {
+  ui::ScopedClipboardWriter scw(ui::Clipboard::GetForCurrentThread(),
+                                ui::Clipboard::BUFFER_STANDARD);
   scw.WriteText(selected_text);
-  if (write_url) {
-    BookmarkNodeData data;
-    data.ReadFromTuple(url, text);
-    data.WriteToClipboard(NULL);
-  }
+}
+
+// This will write |url| and |text| to the clipboard as a well-formed URL.
+void DoCopyURL(const GURL& url, const string16& text) {
+  BookmarkNodeData data;
+  data.ReadFromTuple(url, text);
+  data.WriteToClipboard(NULL);
 }
 
 }  // namespace
@@ -770,7 +767,10 @@ void OmniboxViewViews::OnAfterCutOrCopy() {
   bool write_url;
   model()->AdjustTextForCopy(selection_range.GetMin(), selected_text == text,
       &selected_text, &url, &write_url);
-  DoCopy(selected_text, write_url, url, text);
+  if (write_url)
+    DoCopyURL(url, selected_text);
+  else
+    DoCopyText(selected_text);
 }
 
 void OmniboxViewViews::OnWriteDragData(ui::OSExchangeData* data) {
@@ -952,8 +952,7 @@ string16 OmniboxViewViews::GetSelectedText() const {
 }
 
 void OmniboxViewViews::CopyURL() {
-  const string16& text = toolbar_model()->GetText(false);
-  DoCopy(text, true, toolbar_model()->GetURL(), text);
+  DoCopyURL(toolbar_model()->GetURL(), toolbar_model()->GetText(false));
 }
 
 void OmniboxViewViews::OnPaste() {

@@ -28,6 +28,7 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
+#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -127,13 +128,18 @@ bool IsDrag(const POINT& origin, const POINT& current) {
       gfx::Point(current) - gfx::Point(origin));
 }
 
-// Write |text| and an optional |url| to the clipboard.
-void DoCopy(const string16& text, const GURL* url) {
+// Copies |selected_text| as text to the primary clipboard.
+void DoCopyText(const string16& selected_text) {
   ui::ScopedClipboardWriter scw(ui::Clipboard::GetForCurrentThread(),
                                 ui::Clipboard::BUFFER_STANDARD);
-  scw.WriteText(text);
-  if (url != NULL)
-    scw.WriteBookmark(text, url->spec());
+  scw.WriteText(selected_text);
+}
+
+// Writes |url| and |text| to the clipboard as a well-formed URL.
+void DoCopyURL(const GURL& url, const string16& text) {
+  BookmarkNodeData data;
+  data.ReadFromTuple(url, text);
+  data.WriteToClipboard(NULL);
 }
 
 }  // namespace
@@ -1093,7 +1099,7 @@ int OmniboxViewWin::OnPerformDropImpl(const ui::DropTargetEvent& event,
 }
 
 void OmniboxViewWin::CopyURL() {
-  DoCopy(toolbar_model()->GetText(false), &toolbar_model()->GetURL());
+  DoCopyURL(toolbar_model()->GetURL(), toolbar_model()->GetText(false));
 }
 
 bool OmniboxViewWin::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
@@ -1428,7 +1434,10 @@ void OmniboxViewWin::OnCopy() {
   // GetSel() doesn't preserve selection direction, so sel.cpMin will always be
   // the smaller value.
   model()->AdjustTextForCopy(sel.cpMin, IsSelectAll(), &text, &url, &write_url);
-  DoCopy(text, write_url ? &url : NULL);
+  if (write_url)
+    DoCopyURL(url, text);
+  else
+    DoCopyText(text);
 }
 
 LRESULT OmniboxViewWin::OnCreate(const CREATESTRUCTW* /*create_struct*/) {

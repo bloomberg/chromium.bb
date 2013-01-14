@@ -38,6 +38,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/mock_host_resolver.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
@@ -1686,3 +1687,41 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_SelectAllOnClick) {
   EXPECT_FALSE(omnibox_view->IsSelectAll());
 }
 #endif  // defined(USE_AURA)
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CopyURLToClipboard) {
+  OmniboxView* omnibox_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
+  const char* target_url = "http://www.google.com/calendar";
+  omnibox_view->SetUserText(ASCIIToUTF16(target_url));
+
+  // Set permanent text thus making sure that omnibox treats 'google.com'
+  // as URL (not as ordinary user input).
+  OmniboxEditModel* edit_model = omnibox_view->model();
+  ASSERT_NE(edit_model, static_cast<OmniboxEditModel*>(NULL));
+  edit_model->UpdatePermanentText(ASCIIToUTF16("http://www.google.com/"));
+
+  // Select full URL and copy it to clipboard. General text and html should
+  // be available.
+  omnibox_view->SelectAll(true);
+  EXPECT_TRUE(omnibox_view->IsSelectAll());
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  clipboard->Clear(ui::Clipboard::BUFFER_STANDARD);
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_C, kCtrlOrCmdMask));
+  EXPECT_TRUE(clipboard->IsFormatAvailable(
+      ui::Clipboard::GetPlainTextFormatType(), ui::Clipboard::BUFFER_STANDARD));
+
+  // MAC is the only platform which doesn't write html.
+#if !defined(OS_MACOSX)
+  EXPECT_TRUE(clipboard->IsFormatAvailable(
+      ui::Clipboard::GetHtmlFormatType(), ui::Clipboard::BUFFER_STANDARD));
+#endif
+
+  // These platforms should read bookmark format.
+#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
+  string16 title;
+  std::string url;
+  clipboard->ReadBookmark(&title, &url);
+  EXPECT_EQ(target_url, url);
+  EXPECT_EQ(ASCIIToUTF16(target_url), title);
+#endif
+}
