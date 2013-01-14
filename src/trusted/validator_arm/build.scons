@@ -95,6 +95,13 @@ GEN_TEST_LIST = [_TableTestName(x) + '.cc' for x in GEN_TABLES]
 GEN_OTHER_LIST = ['arm32_decode.cc', 'arm32_decode.h',
                   'arm32_decode_actuals.h',
                   'arm32_decode_actuals.cc',
+                  'arm32_decode_baselines.h',
+                  'arm32_decode_baselines_1.h',
+                  'arm32_decode_baselines_2.h',
+                  'arm32_decode_baselines_3.h',
+                  'arm32_decode_baselines_1.cc',
+                  'arm32_decode_baselines_2.cc',
+                  'arm32_decode_baselines_3.cc',
                   'arm32_decode_named.cc' ,
                   'arm32_decode_named_classes.h',
                   'arm32_decode_named_decoder.h']
@@ -127,6 +134,7 @@ def _generate_source(filename, TABLE=None):
                       'dgen_test_output.py',
                       'dgen_decoder.py',
                       'dgen_actuals.py',
+                      'dgen_baselines.py',
                       ],
               action=['${SOURCES[1].abspath} ${SOURCES[0].abspath} '
                       '${TARGET.abspath} Arm32DecoderState ' +
@@ -226,6 +234,9 @@ if env.Bit('target_arm'):
 gtest_env.ComponentLibrary('decoder_test_tools',
                            ['decoder_tester.cc',
                             'inst_classes_testers.cc',
+                            'gen/arm32_decode_baselines_1.cc',
+                            'gen/arm32_decode_baselines_2.cc',
+                            'gen/arm32_decode_baselines_3.cc',
                             'actual_vs_baseline.cc',
                             'named_class_decoder.cc',
                             'gen/arm32_decode_named.cc'])

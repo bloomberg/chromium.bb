@@ -1,0 +1,9111 @@
+/*
+ * Copyright 2013 The Native Client Authors.  All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
+ */
+
+// DO NOT EDIT: GENERATED CODE
+
+#include "native_client/src/trusted/validator_arm/gen/arm32_decode_baselines.h"
+#include "native_client/src/trusted/validator_arm/inst_classes.h"
+
+namespace nacl_arm_dec {
+
+// ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: Binary2RegisterImmediateOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28), S(20), Rn(19:16), Rd(15:12), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ARMExpandImm(imm12),
+//    pattern: cccc0010101snnnnddddiiiiiiiiiiii,
+//    rule: ADC_immediate,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    setflags: S(20)=1,
+//    uses: {Rn}}
+RegisterList ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: Binary3RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if S
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      Rd(15:12),
+//      imm5(11:7),
+//      type(6:5),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc0000101snnnnddddiiiiitt0mmmm,
+//    rule: ADC_register,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    type: type(6:5),
+//    uses: {Rn, Rm}}
+RegisterList ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+SafetyLevel ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList ADC_register_cccc0000101snnnnddddiiiiitt0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Rs: Rs(11:8),
+//    S: S(20),
+//    baseline: Binary4RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      Rd(15:12),
+//      Rs(11:8),
+//      type(6:5),
+//      Rm(3:0)],
+//    pattern: cccc0000101snnnnddddssss0tt1mmmm,
+//    rule: ADC_register_shifted_register,
+//    safety: [Pc in {Rn, Rd, Rm, Rs} => UNPREDICTABLE],
+//    setflags: S(20)=1,
+//    shift_t: DecodeRegShift(type),
+//    type: type(6:5),
+//    uses: {Rn, Rm, Rs}}
+RegisterList ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList ADC_register_shifted_register_cccc0000101snnnnddddssss0tt1mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0), inst(11:8)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: Binary2RegisterImmediateOpAddSub,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28), S(20), Rn(19:16), Rd(15:12), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ARMExpandImm(imm12),
+//    pattern: cccc0010100snnnnddddiiiiiiiiiiii,
+//    rule: ADD_immediate,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      (Rn(19:16)=1111 &&
+//         S(20)=0) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    setflags: S(20)=1,
+//    uses: {Rn}}
+RegisterList ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // (inst(19:16)=1111 &&
+  //       inst(20)=0) => DECODER_ERROR
+  if ((((inst.Bits() & 0x000F0000)  ==
+          0x000F0000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00000000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// ADD_register_cccc0000100snnnnddddiiiiitt0mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: Binary3RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if S
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      Rd(15:12),
+//      imm5(11:7),
+//      type(6:5),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc0000100snnnnddddiiiiitt0mmmm,
+//    rule: ADD_register,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    type: type(6:5),
+//    uses: {Rn, Rm}}
+RegisterList ADD_register_cccc0000100snnnnddddiiiiitt0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+SafetyLevel ADD_register_cccc0000100snnnnddddiiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList ADD_register_cccc0000100snnnnddddiiiiitt0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// ADD_register_shifted_register_cccc0000100snnnnddddssss0tt1mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Rs: Rs(11:8),
+//    S: S(20),
+//    baseline: Binary4RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      Rd(15:12),
+//      Rs(11:8),
+//      type(6:5),
+//      Rm(3:0)],
+//    pattern: cccc0000100snnnnddddssss0tt1mmmm,
+//    rule: ADD_register_shifted_register,
+//    safety: [Pc in {Rn, Rd, Rm, Rs} => UNPREDICTABLE],
+//    setflags: S(20)=1,
+//    shift_t: DecodeRegShift(type),
+//    type: type(6:5),
+//    uses: {Rn, Rm, Rs}}
+RegisterList ADD_register_shifted_register_cccc0000100snnnnddddssss0tt1mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel ADD_register_shifted_register_cccc0000100snnnnddddssss0tt1mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList ADD_register_shifted_register_cccc0000100snnnnddddssss0tt1mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0), inst(11:8)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    baseline: Unary1RegisterImmediateOpPc,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(15:12), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ARMExpandImm(imm12),
+//    pattern: cccc001010001111ddddiiiiiiiiiiii,
+//    rule: ADR_A1,
+//    safety: [Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    uses: {Pc}}
+RegisterList ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{15}'
+  return RegisterList().
+   Add(Register(15));
+}
+
+// ADR_A2_cccc001001001111ddddiiiiiiiiiiii_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    baseline: Unary1RegisterImmediateOpPc,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(15:12), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ARMExpandImm(imm12),
+//    pattern: cccc001001001111ddddiiiiiiiiiiii,
+//    rule: ADR_A2,
+//    safety: [Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    uses: {Pc}}
+RegisterList ADR_A2_cccc001001001111ddddiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel ADR_A2_cccc001001001111ddddiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList ADR_A2_cccc001001001111ddddiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{15}'
+  return RegisterList().
+   Add(Register(15));
+}
+
+// AND_immediate_cccc0010000snnnnddddiiiiiiiiiiii_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: Binary2RegisterImmediateOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28), S(20), Rn(19:16), Rd(15:12), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ARMExpandImm(imm12),
+//    pattern: cccc0010000snnnnddddiiiiiiiiiiii,
+//    rule: AND_immediate,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    setflags: S(20)=1,
+//    uses: {Rn}}
+RegisterList AND_immediate_cccc0010000snnnnddddiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel AND_immediate_cccc0010000snnnnddddiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList AND_immediate_cccc0010000snnnnddddiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// AND_register_cccc0000000snnnnddddiiiiitt0mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: Binary3RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if S
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      Rd(15:12),
+//      imm5(11:7),
+//      type(6:5),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc0000000snnnnddddiiiiitt0mmmm,
+//    rule: AND_register,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    type: type(6:5),
+//    uses: {Rn, Rm}}
+RegisterList AND_register_cccc0000000snnnnddddiiiiitt0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+SafetyLevel AND_register_cccc0000000snnnnddddiiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList AND_register_cccc0000000snnnnddddiiiiitt0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// AND_register_shifted_register_cccc0000000snnnnddddssss0tt1mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Rs: Rs(11:8),
+//    S: S(20),
+//    baseline: Binary4RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      Rd(15:12),
+//      Rs(11:8),
+//      type(6:5),
+//      Rm(3:0)],
+//    pattern: cccc0000000snnnnddddssss0tt1mmmm,
+//    rule: AND_register_shifted_register,
+//    safety: [Pc in {Rn, Rd, Rm, Rs} => UNPREDICTABLE],
+//    setflags: S(20)=1,
+//    shift_t: DecodeRegShift(type),
+//    type: type(6:5),
+//    uses: {Rn, Rm, Rs}}
+RegisterList AND_register_shifted_register_cccc0000000snnnnddddssss0tt1mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel AND_register_shifted_register_cccc0000000snnnnddddssss0tt1mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList AND_register_shifted_register_cccc0000000snnnnddddssss0tt1mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0), inst(11:8)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    S: S(20),
+//    baseline: Unary2RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if S
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rd(15:12),
+//      imm5(11:7),
+//      type(6:5),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc0001101s0000ddddiiiii100mmmm,
+//    rule: ASR_immediate,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    type: type(6:5),
+//    uses: {Rm}}
+RegisterList ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+SafetyLevel ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList ASR_immediate_cccc0001101s0000ddddiiiii100mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    S: S(20),
+//    baseline: Binary3RegisterOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28), S(20), Rd(15:12), Rm(11:8), Rn(3:0)],
+//    pattern: cccc0001101s0000ddddmmmm0101nnnn,
+//    rule: ASR_register,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    setflags: S(20)=1,
+//    uses: {Rn, Rm}}
+RegisterList ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList ASR_register_cccc0001101s0000ddddmmmm0101nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(11:8)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// BFC_cccc0111110mmmmmddddlllll0011111_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    arch: v6T2,
+//    baseline: Unary1RegisterBitRangeMsbGeLsb,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), msb(20:16), Rd(15:12), lsb(11:7)],
+//    lsb: lsb(11:7),
+//    msb: msb(20:16),
+//    pattern: cccc0111110mmmmmddddlllll0011111,
+//    rule: BFC,
+//    safety: [Rd  ==
+//            Pc => UNPREDICTABLE,
+//      msb  <
+//            lsb => UNPREDICTABLE],
+//    uses: {Rd}}
+RegisterList BFC_cccc0111110mmmmmddddlllll0011111_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel BFC_cccc0111110mmmmmddddlllll0011111_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return UNPREDICTABLE;
+
+  // inst(20:16)  <
+  //          inst(11:7) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x001F0000) >> 16)) < (((inst.Bits() & 0x00000F80) >> 7))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList BFC_cccc0111110mmmmmddddlllll0011111_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+// BFI_cccc0111110mmmmmddddlllll001nnnn_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rn: Rn(3:0),
+//    arch: v6T2,
+//    baseline: Binary2RegisterBitRangeMsbGeLsb,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), msb(20:16), Rd(15:12), lsb(11:7), Rn(3:0)],
+//    lsb: lsb(11:7),
+//    msb: msb(20:16),
+//    pattern: cccc0111110mmmmmddddlllll001nnnn,
+//    rule: BFI,
+//    safety: [Rn  ==
+//            Pc => DECODER_ERROR,
+//      Rd  ==
+//            Pc => UNPREDICTABLE,
+//      msb  <
+//            lsb => UNPREDICTABLE],
+//    uses: {Rn, Rd}}
+RegisterList BFI_cccc0111110mmmmmddddlllll001nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel BFI_cccc0111110mmmmmddddlllll001nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(3:0) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000000F)) == (15)))
+    return DECODER_ERROR;
+
+  // 15  ==
+  //          inst(15:12) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return UNPREDICTABLE;
+
+  // inst(20:16)  <
+  //          inst(11:7) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x001F0000) >> 16)) < (((inst.Bits() & 0x00000F80) >> 7))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList BFI_cccc0111110mmmmmddddlllll001nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(15:12)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+// BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: MaskedBinary2RegisterImmediateOp,
+//    clears_bits: true,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28), S(20), Rn(19:16), Rd(15:12), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ARMExpandImm(imm12),
+//    pattern: cccc0011110snnnnddddiiiiiiiiiiii,
+//    rule: BIC_immediate,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    setflags: S(20)=1,
+//    true: true,
+//    uses: {Rn}}
+RegisterList BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// BIC_register_cccc0001110snnnnddddiiiiitt0mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: Binary3RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if S
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      Rd(15:12),
+//      imm5(11:7),
+//      type(6:5),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc0001110snnnnddddiiiiitt0mmmm,
+//    rule: BIC_register,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    type: type(6:5),
+//    uses: {Rn, Rm}}
+RegisterList BIC_register_cccc0001110snnnnddddiiiiitt0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+SafetyLevel BIC_register_cccc0001110snnnnddddiiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList BIC_register_cccc0001110snnnnddddiiiiitt0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// BIC_register_shifted_register_cccc0001110snnnnddddssss0tt1mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Rs: Rs(11:8),
+//    S: S(20),
+//    baseline: Binary4RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      Rd(15:12),
+//      Rs(11:8),
+//      type(6:5),
+//      Rm(3:0)],
+//    pattern: cccc0001110snnnnddddssss0tt1mmmm,
+//    rule: BIC_register_shifted_register,
+//    safety: [Pc in {Rn, Rd, Rm, Rs} => UNPREDICTABLE],
+//    setflags: S(20)=1,
+//    shift_t: DecodeRegShift(type),
+//    type: type(6:5),
+//    uses: {Rn, Rm, Rs}}
+RegisterList BIC_register_shifted_register_cccc0001110snnnnddddssss0tt1mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel BIC_register_shifted_register_cccc0001110snnnnddddssss0tt1mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList BIC_register_shifted_register_cccc0001110snnnnddddssss0tt1mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0), inst(11:8)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0:
+//
+//   {arch: v5T,
+//    baseline: BreakPointAndConstantPoolHead,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28), imm12(19:8), imm4(3:0)],
+//    imm12: imm12(19:8),
+//    imm32: ZeroExtend(imm12:imm4, 32),
+//    imm4: imm4(3:0),
+//    inst: inst,
+//    pattern: cccc00010010iiiiiiiiiiii0111iiii,
+//    pool_head: true,
+//    rule: BKPT,
+//    safety: [cond(31:28)=~1110 => UNPREDICTABLE,
+//      not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS],
+//    true: true,
+//    uses: {}}
+RegisterList BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+bool BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0::
+is_literal_pool_head(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // pool_head: 'true'
+  return true;
+}
+
+SafetyLevel BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(31:28)=~1110 => UNPREDICTABLE
+  if ((inst.Bits() & 0xF0000000)  !=
+          0xE0000000)
+    return UNPREDICTABLE;
+
+  // not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS
+  if (!(nacl_arm_dec::IsBreakPointAndConstantPoolHead(inst.Bits())))
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// BLX_register_cccc000100101111111111110011mmmm_case_0:
+//
+//   {Lr: 14,
+//    Pc: 15,
+//    Rm: Rm(3:0),
+//    arch: v5T,
+//    baseline: BranchToRegister,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Pc, Lr},
+//    fields: [cond(31:28), Rm(3:0)],
+//    pattern: cccc000100101111111111110011mmmm,
+//    rule: BLX_register,
+//    safety: [Rm(3:0)=1111 => FORBIDDEN_OPERANDS],
+//    target: Rm,
+//    uses: {Rm}}
+RegisterList BLX_register_cccc000100101111111111110011mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{15, 14}'
+  return RegisterList().
+   Add(Register(15)).
+   Add(Register(14));
+}
+
+SafetyLevel BLX_register_cccc000100101111111111110011mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(3:0)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000000F)  ==
+          0x0000000F)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+Register BLX_register_cccc000100101111111111110011mmmm_case_0::
+branch_target_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // target: 'inst(3:0)'
+  return Register((inst.Bits() & 0x0000000F));
+}
+
+RegisterList BLX_register_cccc000100101111111111110011mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0:
+//
+//   {Cond: Cond(31:28),
+//    Lr: 14,
+//    Pc: 15,
+//    baseline: BranchImmediate24,
+//    constraints: ,
+//    defs: {Pc, Lr},
+//    fields: [Cond(31:28), imm24(23:0)],
+//    imm24: imm24(23:0),
+//    imm32: SignExtend(imm24:0(1:0), 32),
+//    pattern: cccc1011iiiiiiiiiiiiiiiiiiiiiiii,
+//    relative: true,
+//    relative_offset: imm32,
+//    rule: BL_BLX_immediate,
+//    safety: [true => MAY_BE_SAFE],
+//    true: true,
+//    uses: {Pc}}
+RegisterList BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{15, 14}'
+  return RegisterList().
+   Add(Register(15)).
+   Add(Register(14));
+}
+
+bool BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0::
+is_relative_branch(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // relative: 'true'
+  return true;
+}
+
+int32_t BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0::
+branch_target_offset(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // relative_offset: 'SignExtend(inst(23:0):0(1:0), 32)'
+  return (((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) & 0x02000000)
+       ? ((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) | 0xFC000000)
+       : ((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003)));
+}
+
+SafetyLevel BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => MAY_BE_SAFE
+  if (true)
+    return MAY_BE_SAFE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList BL_BLX_immediate_cccc1011iiiiiiiiiiiiiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{15}'
+  return RegisterList().
+   Add(Register(15));
+}
+
+// B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0:
+//
+//   {Cond: Cond(31:28),
+//    Pc: 15,
+//    baseline: BranchImmediate24,
+//    constraints: ,
+//    defs: {Pc},
+//    fields: [Cond(31:28), imm24(23:0)],
+//    imm24: imm24(23:0),
+//    imm32: SignExtend(imm24:0(1:0), 32),
+//    pattern: cccc1010iiiiiiiiiiiiiiiiiiiiiiii,
+//    relative: true,
+//    relative_offset: imm32,
+//    rule: B,
+//    safety: [true => MAY_BE_SAFE],
+//    true: true,
+//    uses: {Pc}}
+RegisterList B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{15}'
+  return RegisterList().
+   Add(Register(15));
+}
+
+bool B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0::
+is_relative_branch(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // relative: 'true'
+  return true;
+}
+
+int32_t B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0::
+branch_target_offset(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // relative_offset: 'SignExtend(inst(23:0):0(1:0), 32)'
+  return (((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) & 0x02000000)
+       ? ((((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003))) | 0xFC000000)
+       : ((((inst.Bits() & 0x00FFFFFF)) << 2) | (0 & 0x00000003)));
+}
+
+SafetyLevel B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => MAY_BE_SAFE
+  if (true)
+    return MAY_BE_SAFE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList B_cccc1010iiiiiiiiiiiiiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{15}'
+  return RegisterList().
+   Add(Register(15));
+}
+
+// Bx_cccc000100101111111111110001mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rm: Rm(3:0),
+//    arch: v4T,
+//    baseline: BranchToRegister,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Pc},
+//    fields: [cond(31:28), Rm(3:0)],
+//    pattern: cccc000100101111111111110001mmmm,
+//    rule: Bx,
+//    safety: [Rm(3:0)=1111 => FORBIDDEN_OPERANDS],
+//    target: Rm,
+//    uses: {Rm}}
+RegisterList Bx_cccc000100101111111111110001mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{15}'
+  return RegisterList().
+   Add(Register(15));
+}
+
+SafetyLevel Bx_cccc000100101111111111110001mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(3:0)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000000F)  ==
+          0x0000000F)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+Register Bx_cccc000100101111111111110001mmmm_case_0::
+branch_target_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // target: 'inst(3:0)'
+  return Register((inst.Bits() & 0x0000000F));
+}
+
+RegisterList Bx_cccc000100101111111111110001mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// CLZ_cccc000101101111dddd11110001mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    arch: v5T,
+//    baseline: Unary2RegisterOpNotRmIsPc,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
+//    pattern: cccc000101101111dddd11110001mmmm,
+//    rule: CLZ,
+//    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rm}}
+RegisterList CLZ_cccc000101101111dddd11110001mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel CLZ_cccc000101101111dddd11110001mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList CLZ_cccc000101101111dddd11110001mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_0:
+//
+//   {NZCV: 16,
+//    Rn: Rn(19:16),
+//    baseline: BinaryRegisterImmediateTest,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {NZCV},
+//    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: AMRExpandImm_C(imm12),
+//    pattern: cccc00110111nnnn0000iiiiiiiiiiii,
+//    rule: CMN_immediate,
+//    uses: {Rn}}
+RegisterList CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{16}'
+  return RegisterList().
+   Add(Register(16));
+}
+
+RegisterList CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: Binary2RegisterImmedShiftedTest,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {NZCV
+//         if S
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      imm5(11:7),
+//      type(6:5),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc00010111nnnn0000iiiiitt0mmmm,
+//    rule: CMN_register,
+//    shift: DecodeImmShift(type, imm5),
+//    type: type(6:5),
+//    uses: {Rn, Rm}}
+RegisterList CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+RegisterList CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_0:
+//
+//   {NZCV: 16,
+//    Pc: 15,
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Rs: Rs(11:8),
+//    baseline: Binary3RegisterShiftedTest,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {NZCV},
+//    fields: [cond(31:28), Rn(19:16), Rs(11:8), type(6:5), Rm(3:0)],
+//    pattern: cccc00010111nnnn0000ssss0tt1mmmm,
+//    rule: CMN_register_shifted_register,
+//    safety: [Pc in {Rn, Rm, Rs} => UNPREDICTABLE],
+//    shift_t: DecodeRegShift(type),
+//    type: type(6:5),
+//    uses: {Rn, Rm, Rs}}
+RegisterList CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{16}'
+  return RegisterList().
+   Add(Register(16));
+}
+
+SafetyLevel CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0), inst(11:8)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// CMP_immediate_cccc00110101nnnn0000iiiiiiiiiiii_case_0:
+//
+//   {NZCV: 16,
+//    Rn: Rn(19:16),
+//    baseline: BinaryRegisterImmediateTest,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {NZCV},
+//    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: AMRExpandImm_C(imm12),
+//    pattern: cccc00110101nnnn0000iiiiiiiiiiii,
+//    rule: CMP_immediate,
+//    uses: {Rn}}
+RegisterList CMP_immediate_cccc00110101nnnn0000iiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{16}'
+  return RegisterList().
+   Add(Register(16));
+}
+
+RegisterList CMP_immediate_cccc00110101nnnn0000iiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// CMP_register_cccc00010101nnnn0000iiiiitt0mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: Binary2RegisterImmedShiftedTest,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {NZCV
+//         if S
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      imm5(11:7),
+//      type(6:5),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc00010101nnnn0000iiiiitt0mmmm,
+//    rule: CMP_register,
+//    shift: DecodeImmShift(type, imm5),
+//    type: type(6:5),
+//    uses: {Rn, Rm}}
+RegisterList CMP_register_cccc00010101nnnn0000iiiiitt0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+RegisterList CMP_register_cccc00010101nnnn0000iiiiitt0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// CMP_register_shifted_register_cccc00010101nnnn0000ssss0tt1mmmm_case_0:
+//
+//   {NZCV: 16,
+//    Pc: 15,
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Rs: Rs(11:8),
+//    baseline: Binary3RegisterShiftedTest,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {NZCV},
+//    fields: [cond(31:28), Rn(19:16), Rs(11:8), type(6:5), Rm(3:0)],
+//    pattern: cccc00010101nnnn0000ssss0tt1mmmm,
+//    rule: CMP_register_shifted_register,
+//    safety: [Pc in {Rn, Rm, Rs} => UNPREDICTABLE],
+//    shift_t: DecodeRegShift(type),
+//    type: type(6:5),
+//    uses: {Rn, Rm, Rs}}
+RegisterList CMP_register_shifted_register_cccc00010101nnnn0000ssss0tt1mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{16}'
+  return RegisterList().
+   Add(Register(16));
+}
+
+SafetyLevel CMP_register_shifted_register_cccc00010101nnnn0000ssss0tt1mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList CMP_register_shifted_register_cccc00010101nnnn0000ssss0tt1mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0), inst(11:8)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0:
+//
+//   {D: D(22),
+//    M: M(5),
+//    Vd: Vd(15:12),
+//    Vm: Vm(3:0),
+//    arch: ASIMDhp,
+//    baseline: Vector2RegisterMiscellaneous_CVT_H2S,
+//    constraints: ,
+//    d: D:Vd,
+//    elements: 4,
+//    esize: 16,
+//    fields: [D(22), size(19:18), Vd(15:12), op(8), M(5), Vm(3:0)],
+//    half_to_single: op(8)=1,
+//    m: M:Vm,
+//    op: op(8),
+//    pattern: 111100111d11ss10dddd011p00m0mmmm,
+//    rule: CVT_between_half_precision_and_single_precision,
+//    safety: [size(19:18)=~01 => UNDEFINED,
+//      half_to_single &&
+//         Vd(0)=1 => UNDEFINED,
+//      not half_to_single &&
+//         Vm(0)=1 => UNDEFINED],
+//    size: size(19:18)}
+SafetyLevel CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(19:18)=~01 => UNDEFINED
+  if ((inst.Bits() & 0x000C0000)  !=
+          0x00040000)
+    return UNDEFINED;
+
+  // inst(8)=1 &&
+  //       inst(15:12)(0)=1 => UNDEFINED
+  if (((inst.Bits() & 0x00000100)  ==
+          0x00000100) &&
+       ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001))
+    return UNDEFINED;
+
+  // not inst(8)=1 &&
+  //       inst(3:0)(0)=1 => UNDEFINED
+  if ((!((inst.Bits() & 0x00000100)  ==
+          0x00000100)) &&
+       (((inst.Bits() & 0x0000000F) & 0x00000001)  ==
+          0x00000001))
+    return UNDEFINED;
+
+  return MAY_BE_SAFE;
+}
+
+
+// EOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: Binary2RegisterImmediateOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28), S(20), Rn(19:16), Rd(15:12), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ARMExpandImm(imm12),
+//    pattern: cccc0010001snnnnddddiiiiiiiiiiii,
+//    rule: EOR_immediate,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    setflags: S(20)=1,
+//    uses: {Rn}}
+RegisterList EOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel EOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList EOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// EOR_register_cccc0000001snnnnddddiiiiitt0mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: Binary3RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if S
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      Rd(15:12),
+//      imm5(11:7),
+//      type(6:5),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc0000001snnnnddddiiiiitt0mmmm,
+//    rule: EOR_register,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    type: type(6:5),
+//    uses: {Rn, Rm}}
+RegisterList EOR_register_cccc0000001snnnnddddiiiiitt0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+SafetyLevel EOR_register_cccc0000001snnnnddddiiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList EOR_register_cccc0000001snnnnddddiiiiitt0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// EOR_register_shifted_register_cccc0000001snnnnddddssss0tt1mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Rs: Rs(11:8),
+//    S: S(20),
+//    baseline: Binary4RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      Rd(15:12),
+//      Rs(11:8),
+//      type(6:5),
+//      Rm(3:0)],
+//    pattern: cccc0000001snnnnddddssss0tt1mmmm,
+//    rule: EOR_register_shifted_register,
+//    safety: [Pc in {Rn, Rd, Rm, Rs} => UNPREDICTABLE],
+//    setflags: S(20)=1,
+//    shift_t: DecodeRegShift(type),
+//    type: type(6:5),
+//    uses: {Rn, Rm, Rs}}
+RegisterList EOR_register_shifted_register_cccc0000001snnnnddddssss0tt1mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel EOR_register_shifted_register_cccc0000001snnnnddddssss0tt1mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList EOR_register_shifted_register_cccc0000001snnnnddddssss0tt1mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0), inst(11:8)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0:
+//
+//   {None: 32,
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    W: W(21),
+//    base: Rn,
+//    baseline: LoadRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: Union({Rn
+//         if wback
+//         else None}, registers),
+//    fields: [cond(31:28), W(21), Rn(19:16), register_list(15:0)],
+//    pattern: cccc100000w1nnnnrrrrrrrrrrrrrrrr,
+//    register_list: register_list(15:0),
+//    registers: RegisterList(register_list),
+//    rule: LDMDA_LDMFA,
+//    safety: [Rn  ==
+//            Pc ||
+//         NumGPRs(registers)  <
+//            1 => UNPREDICTABLE,
+//      wback &&
+//         Contains(registers, Rn) => UNKNOWN,
+//      Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//    small_imm_base_wb: true,
+//    true: true,
+//    uses: {Rn},
+//    wback: W(21)=1}
+Register LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: 'Union({inst(19:16)
+  //       if inst(21)=1
+  //       else 32}, RegisterList(inst(15:0)))'
+  return nacl_arm_dec::Union(RegisterList().
+   Add(Register(((inst.Bits() & 0x00200000)  ==
+          0x00200000
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32))), nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)));
+}
+
+SafetyLevel LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       NumGPRs(RegisterList(inst(15:0)))  <
+  //          1 => UNPREDICTABLE
+  if ((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
+       (((nacl_arm_dec::NumGPRs(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)))) < (1))))
+    return UNPREDICTABLE;
+
+  // inst(21)=1 &&
+  //       Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN
+  if (((inst.Bits() & 0x00200000)  ==
+          0x00200000) &&
+       (nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(((inst.Bits() & 0x000F0000) >> 16)))))
+    return UNKNOWN;
+
+  // Contains(RegisterList(inst(15:0)), 15) => FORBIDDEN_OPERANDS
+  if (nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(15)))
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+bool LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0::
+base_address_register_writeback_small_immediate(
+      Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // small_imm_base_wb: 'true'
+  return true;
+}
+
+RegisterList LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0:
+//
+//   {None: 32,
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    W: W(21),
+//    base: Rn,
+//    baseline: LoadRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: Union({Rn
+//         if wback
+//         else None}, registers),
+//    fields: [cond(31:28), W(21), Rn(19:16), register_list(15:0)],
+//    pattern: cccc100100w1nnnnrrrrrrrrrrrrrrrr,
+//    register_list: register_list(15:0),
+//    registers: RegisterList(register_list),
+//    rule: LDMDB_LDMEA,
+//    safety: [Rn  ==
+//            Pc ||
+//         NumGPRs(registers)  <
+//            1 => UNPREDICTABLE,
+//      wback &&
+//         Contains(registers, Rn) => UNKNOWN,
+//      Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//    small_imm_base_wb: true,
+//    true: true,
+//    uses: {Rn},
+//    wback: W(21)=1}
+Register LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: 'Union({inst(19:16)
+  //       if inst(21)=1
+  //       else 32}, RegisterList(inst(15:0)))'
+  return nacl_arm_dec::Union(RegisterList().
+   Add(Register(((inst.Bits() & 0x00200000)  ==
+          0x00200000
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32))), nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)));
+}
+
+SafetyLevel LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       NumGPRs(RegisterList(inst(15:0)))  <
+  //          1 => UNPREDICTABLE
+  if ((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
+       (((nacl_arm_dec::NumGPRs(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)))) < (1))))
+    return UNPREDICTABLE;
+
+  // inst(21)=1 &&
+  //       Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN
+  if (((inst.Bits() & 0x00200000)  ==
+          0x00200000) &&
+       (nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(((inst.Bits() & 0x000F0000) >> 16)))))
+    return UNKNOWN;
+
+  // Contains(RegisterList(inst(15:0)), 15) => FORBIDDEN_OPERANDS
+  if (nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(15)))
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+bool LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0::
+base_address_register_writeback_small_immediate(
+      Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // small_imm_base_wb: 'true'
+  return true;
+}
+
+RegisterList LDMDB_LDMEA_cccc100100w1nnnnrrrrrrrrrrrrrrrr_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0:
+//
+//   {None: 32,
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    W: W(21),
+//    base: Rn,
+//    baseline: LoadRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: Union({Rn
+//         if wback
+//         else None}, registers),
+//    fields: [cond(31:28), W(21), Rn(19:16), register_list(15:0)],
+//    pattern: cccc100110w1nnnnrrrrrrrrrrrrrrrr,
+//    register_list: register_list(15:0),
+//    registers: RegisterList(register_list),
+//    rule: LDMIB_LDMED,
+//    safety: [Rn  ==
+//            Pc ||
+//         NumGPRs(registers)  <
+//            1 => UNPREDICTABLE,
+//      wback &&
+//         Contains(registers, Rn) => UNKNOWN,
+//      Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//    small_imm_base_wb: true,
+//    true: true,
+//    uses: {Rn},
+//    wback: W(21)=1}
+Register LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: 'Union({inst(19:16)
+  //       if inst(21)=1
+  //       else 32}, RegisterList(inst(15:0)))'
+  return nacl_arm_dec::Union(RegisterList().
+   Add(Register(((inst.Bits() & 0x00200000)  ==
+          0x00200000
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32))), nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)));
+}
+
+SafetyLevel LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       NumGPRs(RegisterList(inst(15:0)))  <
+  //          1 => UNPREDICTABLE
+  if ((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
+       (((nacl_arm_dec::NumGPRs(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)))) < (1))))
+    return UNPREDICTABLE;
+
+  // inst(21)=1 &&
+  //       Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN
+  if (((inst.Bits() & 0x00200000)  ==
+          0x00200000) &&
+       (nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(((inst.Bits() & 0x000F0000) >> 16)))))
+    return UNKNOWN;
+
+  // Contains(RegisterList(inst(15:0)), 15) => FORBIDDEN_OPERANDS
+  if (nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(15)))
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+bool LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0::
+base_address_register_writeback_small_immediate(
+      Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // small_imm_base_wb: 'true'
+  return true;
+}
+
+RegisterList LDMIB_LDMED_cccc100110w1nnnnrrrrrrrrrrrrrrrr_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0:
+//
+//   {None: 32,
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    W: W(21),
+//    base: Rn,
+//    baseline: LoadRegisterList,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: Union({Rn
+//         if wback
+//         else None}, registers),
+//    fields: [cond(31:28), W(21), Rn(19:16), register_list(15:0)],
+//    pattern: cccc100010w1nnnnrrrrrrrrrrrrrrrr,
+//    register_list: register_list(15:0),
+//    registers: RegisterList(register_list),
+//    rule: LDM_LDMIA_LDMFD,
+//    safety: [Rn  ==
+//            Pc ||
+//         NumGPRs(registers)  <
+//            1 => UNPREDICTABLE,
+//      wback &&
+//         Contains(registers, Rn) => UNKNOWN,
+//      Contains(registers, Pc) => FORBIDDEN_OPERANDS],
+//    small_imm_base_wb: true,
+//    true: true,
+//    uses: {Rn},
+//    wback: W(21)=1}
+Register LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: 'Union({inst(19:16)
+  //       if inst(21)=1
+  //       else 32}, RegisterList(inst(15:0)))'
+  return nacl_arm_dec::Union(RegisterList().
+   Add(Register(((inst.Bits() & 0x00200000)  ==
+          0x00200000
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32))), nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)));
+}
+
+SafetyLevel LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       NumGPRs(RegisterList(inst(15:0)))  <
+  //          1 => UNPREDICTABLE
+  if ((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
+       (((nacl_arm_dec::NumGPRs(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)))) < (1))))
+    return UNPREDICTABLE;
+
+  // inst(21)=1 &&
+  //       Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN
+  if (((inst.Bits() & 0x00200000)  ==
+          0x00200000) &&
+       (nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(((inst.Bits() & 0x000F0000) >> 16)))))
+    return UNKNOWN;
+
+  // Contains(RegisterList(inst(15:0)), 15) => FORBIDDEN_OPERANDS
+  if (nacl_arm_dec::Contains(nacl_arm_dec::RegisterList((inst.Bits() & 0x0000FFFF)), Register(15)))
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+bool LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0::
+base_address_register_writeback_small_immediate(
+      Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // small_imm_base_wb: 'true'
+  return true;
+}
+
+RegisterList LDM_LDMIA_LDMFD_cccc100010w1nnnnrrrrrrrrrrrrrrrr_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_0:
+//
+//   {None: 32,
+//    P: P(24),
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    Rt: Rt(15:12),
+//    U: U(23),
+//    W: W(21),
+//    add: U(23)=1,
+//    base: Rn,
+//    baseline: Load2RegisterImm12Op,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt, base
+//         if wback
+//         else None},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      W(21),
+//      Rn(19:16),
+//      Rt(15:12),
+//      imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ZeroExtend(imm12, 32),
+//    index: P(24)=1,
+//    pattern: cccc010pu1w1nnnnttttiiiiiiiiiiii,
+//    rule: LDRB_immediate,
+//    safety: [Rn  ==
+//            Pc => DECODER_ERROR,
+//      P(24)=0 &&
+//         W(21)=1 => DECODER_ERROR,
+//      Rt  ==
+//            Pc => UNPREDICTABLE,
+//      wback &&
+//         Rn  ==
+//            Rt => UNPREDICTABLE],
+//    small_imm_base_wb: wback,
+//    uses: {Rn},
+//    wback: P(24)=0 ||
+//         W(21)=1}
+Register LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), inst(19:16)
+  //       if inst(24)=0 ||
+  //       inst(21)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register((((inst.Bits() & 0x01000000)  ==
+          0x00000000) ||
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000)
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32)));
+}
+
+SafetyLevel LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) => DECODER_ERROR
+  if (((((inst.Bits() & 0x000F0000) >> 16)) == (15)))
+    return DECODER_ERROR;
+
+  // inst(24)=0 &&
+  //       inst(21)=1 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return DECODER_ERROR;
+
+  // 15  ==
+  //          inst(15:12) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return UNPREDICTABLE;
+
+  // inst(24)=0 ||
+  //       inst(21)=1 &&
+  //       inst(15:12)  ==
+  //          inst(19:16) => UNPREDICTABLE
+  if ((((inst.Bits() & 0x01000000)  ==
+          0x00000000) ||
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000)) &&
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+bool LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_0::
+base_address_register_writeback_small_immediate(
+      Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // small_imm_base_wb: 'inst(24)=0 ||
+  //       inst(21)=1'
+  return ((inst.Bits() & 0x01000000)  ==
+          0x00000000) ||
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000);
+}
+
+RegisterList LDRB_immediate_cccc010pu1w1nnnnttttiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_0:
+//
+//   {Pc: 15,
+//    Rt: Rt(15:12),
+//    U: U(23),
+//    add: U(23)=1,
+//    base: Pc,
+//    baseline: Load2RegisterImm12Op,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt},
+//    fields: [cond(31:28), U(23), Rt(15:12), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ZeroExtend(imm12, 32),
+//    is_literal_load: true,
+//    pattern: cccc0101u1011111ttttiiiiiiiiiiii,
+//    rule: LDRB_literal,
+//    safety: [Rt  ==
+//            Pc => UNPREDICTABLE],
+//    true: true,
+//    uses: {Pc}}
+Register LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: '15'
+  return Register(15);
+}
+
+RegisterList LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+bool LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_0::
+is_literal_load(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // is_literal_load: 'true'
+  return true;
+}
+
+SafetyLevel LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LDRB_literal_cccc0101u1011111ttttiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{15}'
+  return RegisterList().
+   Add(Register(15));
+}
+
+// LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_0:
+//
+//   {None: 32,
+//    P: P(24),
+//    Pc: 15,
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Rt: Rt(15:12),
+//    U: U(23),
+//    W: W(21),
+//    add: U(23)=1,
+//    base: Rn,
+//    baseline: Load3RegisterImm5Op,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt, base
+//         if wback
+//         else None},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      W(21),
+//      Rn(19:16),
+//      Rt(15:12),
+//      imm5(11:7),
+//      type(6:5),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    index: P(24)=1,
+//    pattern: cccc011pu1w1nnnnttttiiiiitt0mmmm,
+//    rule: LDRB_register,
+//    safety: [P(24)=0 &&
+//         W(21)=1 => DECODER_ERROR,
+//      Pc in {Rt, Rm} => UNPREDICTABLE,
+//      wback &&
+//         (Rn  ==
+//            Pc ||
+//         Rn  ==
+//            Rt) => UNPREDICTABLE,
+//      ArchVersion()  <
+//            6 &&
+//         wback &&
+//         Rn  ==
+//            Rm => UNPREDICTABLE,
+//      index => FORBIDDEN],
+//    shift: DecodeImmShift(type, imm5),
+//    type: type(6:5),
+//    uses: {Rm, Rn},
+//    wback: P(24)=0 ||
+//         W(21)=1}
+Register LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), inst(19:16)
+  //       if inst(24)=0 ||
+  //       inst(21)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register((((inst.Bits() & 0x01000000)  ==
+          0x00000000) ||
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000)
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32)));
+}
+
+SafetyLevel LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(24)=0 &&
+  //       inst(21)=1 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return DECODER_ERROR;
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  // inst(24)=0 ||
+  //       inst(21)=1 &&
+  //       (15  ==
+  //          inst(19:16) ||
+  //       inst(15:12)  ==
+  //          inst(19:16)) => UNPREDICTABLE
+  if ((((inst.Bits() & 0x01000000)  ==
+          0x00000000) ||
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000)) &&
+       (((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12)))))))
+    return UNPREDICTABLE;
+
+  // ArchVersion()  <
+  //          6 &&
+  //       inst(24)=0 ||
+  //       inst(21)=1 &&
+  //       inst(19:16)  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((nacl_arm_dec::ArchVersion()) < (6))) &&
+       (((inst.Bits() & 0x01000000)  ==
+          0x00000000) ||
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000)) &&
+       (((((inst.Bits() & 0x000F0000) >> 16)) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  // inst(24)=1 => FORBIDDEN
+  if ((inst.Bits() & 0x01000000)  ==
+          0x01000000)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LDRB_register_cccc011pu1w1nnnnttttiiiiitt0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(19:16)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_0:
+//
+//   {None: 32,
+//    P: P(24),
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    Rt: Rt(15:12),
+//    Rt2: Rt + 1,
+//    U: U(23),
+//    W: W(21),
+//    add: U(23)=1,
+//    address: offset_addr
+//         if index
+//         else Rn,
+//    arch: v5TE,
+//    base: Rn,
+//    baseline: Load2RegisterImm8DoubleOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt, Rt2, base
+//         if wback
+//         else None},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      W(21),
+//      Rn(19:16),
+//      Rt(15:12),
+//      imm4H(11:8),
+//      imm4L(3:0)],
+//    imm32: ZeroExtend(imm4H:imm4L, 32),
+//    imm4H: imm4H(11:8),
+//    imm4L: imm4L(3:0),
+//    index: P(24)=1,
+//    offset_addr: Rn + imm32
+//         if add
+//         else Rn - imm32,
+//    pattern: cccc000pu1w0nnnnttttiiii1101iiii,
+//    rule: LDRD_immediate,
+//    safety: [Rn(19:16)=1111 => DECODER_ERROR,
+//      Rt(0)=1 => UNPREDICTABLE,
+//      P(24)=0 &&
+//         W(21)=1 => UNPREDICTABLE,
+//      wback &&
+//         (Rn  ==
+//            Rt ||
+//         Rn  ==
+//            Rt2) => UNPREDICTABLE,
+//      Rt2  ==
+//            Pc => UNPREDICTABLE],
+//    small_imm_base_wb: wback,
+//    uses: {Rn},
+//    wback: (P(24)=0) ||
+//         (W(21)=1)}
+Register LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), inst(15:12) + 1, inst(19:16)
+  //       if (inst(24)=0) ||
+  //       (inst(21)=1)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12) + 1)).
+   Add(Register(((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32)));
+}
+
+SafetyLevel LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(19:16)=1111 => DECODER_ERROR
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000F0000)
+    return DECODER_ERROR;
+
+  // inst(15:12)(0)=1 => UNPREDICTABLE
+  if ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001)
+    return UNPREDICTABLE;
+
+  // inst(24)=0 &&
+  //       inst(21)=1 => UNPREDICTABLE
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return UNPREDICTABLE;
+
+  // (inst(24)=0) ||
+  //       (inst(21)=1) &&
+  //       (inst(15:12)  ==
+  //          inst(19:16) ||
+  //       inst(15:12) + 1  ==
+  //          inst(19:16)) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))) &&
+       (((((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12) + 1))))))
+    return UNPREDICTABLE;
+
+  // 15  ==
+  //          inst(15:12) + 1 => UNPREDICTABLE
+  if (((((inst.Bits() & 0x0000F000) >> 12) + 1) == (15)))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+bool LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_0::
+base_address_register_writeback_small_immediate(
+      Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // small_imm_base_wb: '(inst(24)=0) ||
+  //       (inst(21)=1)'
+  return (((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000));
+}
+
+RegisterList LDRD_immediate_cccc000pu1w0nnnnttttiiii1101iiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_0:
+//
+//   {P: P(24),
+//    Pc: 15,
+//    Rt: Rt(15:12),
+//    Rt2: Rt + 1,
+//    U: U(23),
+//    W: W(21),
+//    add: U(23)=1,
+//    arch: v5TE,
+//    base: Pc,
+//    baseline: LoadRegisterImm8DoubleOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt, Rt2},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      W(21),
+//      Rt(15:12),
+//      imm4H(11:8),
+//      imm4L(3:0)],
+//    imm32: ZeroExtend(imm4H:imm4L, 32),
+//    imm4H: imm4H(11:8),
+//    imm4L: imm4L(3:0),
+//    is_literal_load: true,
+//    pattern: cccc0001u1001111ttttiiii1101iiii,
+//    rule: LDRD_literal,
+//    safety: [Rt(0)=1 => UNPREDICTABLE,
+//      Rt2  ==
+//            Pc => UNPREDICTABLE],
+//    true: true,
+//    uses: {Pc}}
+Register LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: '15'
+  return Register(15);
+}
+
+RegisterList LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), inst(15:12) + 1}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12) + 1));
+}
+
+bool LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_0::
+is_literal_load(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // is_literal_load: 'true'
+  return true;
+}
+
+SafetyLevel LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(15:12)(0)=1 => UNPREDICTABLE
+  if ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001)
+    return UNPREDICTABLE;
+
+  // 15  ==
+  //          inst(15:12) + 1 => UNPREDICTABLE
+  if (((((inst.Bits() & 0x0000F000) >> 12) + 1) == (15)))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LDRD_literal_cccc0001u1001111ttttiiii1101iiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{15}'
+  return RegisterList().
+   Add(Register(15));
+}
+
+// LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_0:
+//
+//   {None: 32,
+//    P: P(24),
+//    Pc: 15,
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Rt: Rt(15:12),
+//    Rt2: Rt + 1,
+//    U: U(23),
+//    W: W(21),
+//    add: U(23)=1,
+//    arch: v5TE,
+//    base: Rn,
+//    baseline: Load3RegisterDoubleOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt, Rt2, base
+//         if wback
+//         else None},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      W(21),
+//      Rn(19:16),
+//      Rt(15:12),
+//      Rm(3:0)],
+//    index: P(24)=1,
+//    pattern: cccc000pu0w0nnnntttt00001101mmmm,
+//    rule: LDRD_register,
+//    safety: [Rt(0)=1 => UNPREDICTABLE,
+//      P(24)=0 &&
+//         W(21)=1 => UNPREDICTABLE,
+//      Rt2  ==
+//            Pc ||
+//         Rm  ==
+//            Pc ||
+//         Rm  ==
+//            Rt ||
+//         Rm  ==
+//            Rt2 => UNPREDICTABLE,
+//      wback &&
+//         (Rn  ==
+//            Pc ||
+//         Rn  ==
+//            Rt ||
+//         Rn  ==
+//            Rt2) => UNPREDICTABLE,
+//      ArchVersion()  <
+//            6 &&
+//         wback &&
+//         Rm  ==
+//            Rn => UNPREDICTABLE,
+//      index => FORBIDDEN],
+//    uses: {Rn, Rm},
+//    wback: (P(24)=0) ||
+//         (W(21)=1)}
+Register LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), inst(15:12) + 1, inst(19:16)
+  //       if (inst(24)=0) ||
+  //       (inst(21)=1)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12) + 1)).
+   Add(Register(((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32)));
+}
+
+SafetyLevel LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(15:12)(0)=1 => UNPREDICTABLE
+  if ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001)
+    return UNPREDICTABLE;
+
+  // inst(24)=0 &&
+  //       inst(21)=1 => UNPREDICTABLE
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return UNPREDICTABLE;
+
+  // 15  ==
+  //          inst(15:12) + 1 ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       inst(15:12)  ==
+  //          inst(3:0) ||
+  //       inst(15:12) + 1  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((((inst.Bits() & 0x0000F000) >> 12) + 1) == (15))) ||
+       ((((inst.Bits() & 0x0000000F)) == (15))) ||
+       ((((inst.Bits() & 0x0000000F)) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       ((((inst.Bits() & 0x0000000F)) == (((inst.Bits() & 0x0000F000) >> 12) + 1))))
+    return UNPREDICTABLE;
+
+  // (inst(24)=0) ||
+  //       (inst(21)=1) &&
+  //       (15  ==
+  //          inst(19:16) ||
+  //       inst(15:12)  ==
+  //          inst(19:16) ||
+  //       inst(15:12) + 1  ==
+  //          inst(19:16)) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))) &&
+       (((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12) + 1))))))
+    return UNPREDICTABLE;
+
+  // ArchVersion()  <
+  //          6 &&
+  //       (inst(24)=0) ||
+  //       (inst(21)=1) &&
+  //       inst(19:16)  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((nacl_arm_dec::ArchVersion()) < (6))) &&
+       ((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))) &&
+       ((((inst.Bits() & 0x0000000F)) == (((inst.Bits() & 0x000F0000) >> 16)))))
+    return UNPREDICTABLE;
+
+  // inst(24)=1 => FORBIDDEN
+  if ((inst.Bits() & 0x01000000)  ==
+          0x01000000)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LDRD_register_cccc000pu0w0nnnntttt00001101mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// LDREXB_cccc00011101nnnntttt111110011111_case_0:
+//
+//   {Pc: 15,
+//    Rn: Rn(19:16),
+//    Rt: Rt(15:12),
+//    arch: v6K,
+//    base: Rn,
+//    baseline: LoadExclusive2RegisterOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt},
+//    fields: [cond(31:28), Rn(19:16), Rt(15:12)],
+//    imm32: Zeros((32)),
+//    pattern: cccc00011101nnnntttt111110011111,
+//    rule: LDREXB,
+//    safety: [Pc in {Rt, Rn} => UNPREDICTABLE],
+//    uses: {Rn}}
+Register LDREXB_cccc00011101nnnntttt111110011111_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList LDREXB_cccc00011101nnnntttt111110011111_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel LDREXB_cccc00011101nnnntttt111110011111_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LDREXB_cccc00011101nnnntttt111110011111_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// LDREXD_cccc00011011nnnntttt111110011111_case_0:
+//
+//   {Lr: 14,
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    Rt: Rt(15:12),
+//    Rt2: Rt + 1,
+//    arch: v6K,
+//    base: Rn,
+//    baseline: LoadExclusive2RegisterDoubleOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt, Rt2},
+//    fields: [cond(31:28), Rn(19:16), Rt(15:12)],
+//    imm32: Zeros((32)),
+//    pattern: cccc00011011nnnntttt111110011111,
+//    rule: LDREXD,
+//    safety: [Rt(0)=1 ||
+//         Rt  ==
+//            Lr ||
+//         Rn  ==
+//            Pc => UNPREDICTABLE],
+//    uses: {Rn}}
+Register LDREXD_cccc00011011nnnntttt111110011111_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList LDREXD_cccc00011011nnnntttt111110011111_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), inst(15:12) + 1}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12) + 1));
+}
+
+SafetyLevel LDREXD_cccc00011011nnnntttt111110011111_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(15:12)(0)=1 ||
+  //       14  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001)  ==
+          0x00000001) ||
+       (((((inst.Bits() & 0x0000F000) >> 12)) == (14))) ||
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (15))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LDREXD_cccc00011011nnnntttt111110011111_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// LDREX_cccc00011001nnnntttt111110011111_case_0:
+//
+//   {Pc: 15,
+//    Rn: Rn(19:16),
+//    Rt: Rt(15:12),
+//    arch: v6,
+//    base: Rn,
+//    baseline: LoadExclusive2RegisterOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt},
+//    fields: [cond(31:28), Rn(19:16), Rt(15:12)],
+//    imm32: Zeros((32)),
+//    pattern: cccc00011001nnnntttt111110011111,
+//    rule: LDREX,
+//    safety: [Pc in {Rt, Rn} => UNPREDICTABLE],
+//    uses: {Rn}}
+Register LDREX_cccc00011001nnnntttt111110011111_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList LDREX_cccc00011001nnnntttt111110011111_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel LDREX_cccc00011001nnnntttt111110011111_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LDREX_cccc00011001nnnntttt111110011111_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_0:
+//
+//   {None: 32,
+//    P: P(24),
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    Rt: Rt(15:12),
+//    U: U(23),
+//    W: W(21),
+//    add: U(23)=1,
+//    address: offset_addr
+//         if index
+//         else Rn,
+//    base: Rn,
+//    baseline: Load2RegisterImm8Op,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt, base
+//         if wback
+//         else None},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      W(21),
+//      Rn(19:16),
+//      Rt(15:12),
+//      imm4H(11:8),
+//      imm4L(3:0)],
+//    imm32: ZeroExtend(imm4H:imm4L, 32),
+//    imm4H: imm4H(11:8),
+//    imm4L: imm4L(3:0),
+//    index: P(24)=1,
+//    offset_addr: Rn + imm32
+//         if add
+//         else Rn - imm32,
+//    pattern: cccc000pu1w1nnnnttttiiii1011iiii,
+//    rule: LDRH_immediate,
+//    safety: [Rn(19:16)=1111 => DECODER_ERROR,
+//      P(24)=0 &&
+//         W(21)=1 => DECODER_ERROR,
+//      Rt  ==
+//            Pc ||
+//         (wback &&
+//         Rn  ==
+//            Rt) => UNPREDICTABLE,
+//      Rt  ==
+//            Pc => FORBIDDEN_OPERANDS],
+//    small_imm_base_wb: wback,
+//    uses: {Rn},
+//    wback: (P(24)=0) ||
+//         (W(21)=1)}
+Register LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), inst(19:16)
+  //       if (inst(24)=0) ||
+  //       (inst(21)=1)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32)));
+}
+
+SafetyLevel LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(19:16)=1111 => DECODER_ERROR
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000F0000)
+    return DECODER_ERROR;
+
+  // inst(24)=0 &&
+  //       inst(21)=1 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return DECODER_ERROR;
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       ((inst(24)=0) ||
+  //       (inst(21)=1) &&
+  //       inst(15:12)  ==
+  //          inst(19:16)) => UNPREDICTABLE
+  if ((((((inst.Bits() & 0x0000F000) >> 12)) == (15))) ||
+       ((((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))) &&
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12)))))))
+    return UNPREDICTABLE;
+
+  // 15  ==
+  //          inst(15:12) => FORBIDDEN_OPERANDS
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+bool LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_0::
+base_address_register_writeback_small_immediate(
+      Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // small_imm_base_wb: '(inst(24)=0) ||
+  //       (inst(21)=1)'
+  return (((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000));
+}
+
+RegisterList LDRH_immediate_cccc000pu1w1nnnnttttiiii1011iiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_0:
+//
+//   {P: P(24),
+//    Pc: 15,
+//    Rt: Rt(15:12),
+//    U: U(23),
+//    W: W(21),
+//    add: U(23)=1,
+//    base: Pc,
+//    baseline: LoadRegisterImm8Op,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      W(21),
+//      Rt(15:12),
+//      imm4H(11:8),
+//      imm4L(3:0)],
+//    imm32: ZeroExtend(imm4H:imm4L, 32),
+//    imm4H: imm4H(11:8),
+//    imm4L: imm4L(3:0),
+//    is_literal_load: true,
+//    pattern: cccc000pu1w11111ttttiiii1011iiii,
+//    rule: LDRH_literal,
+//    safety: [P(24)=0 &&
+//         W(21)=1 => DECODER_ERROR,
+//      P  ==
+//            W => UNPREDICTABLE,
+//      Rt  ==
+//            Pc => UNPREDICTABLE],
+//    true: true,
+//    uses: {Pc}}
+Register LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: '15'
+  return Register(15);
+}
+
+RegisterList LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+bool LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_0::
+is_literal_load(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // is_literal_load: 'true'
+  return true;
+}
+
+SafetyLevel LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(24)=0 &&
+  //       inst(21)=1 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return DECODER_ERROR;
+
+  // inst(21)  ==
+  //          inst(24) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x01000000) >> 24)) == (((inst.Bits() & 0x00200000) >> 21))))
+    return UNPREDICTABLE;
+
+  // 15  ==
+  //          inst(15:12) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LDRH_literal_cccc000pu1w11111ttttiiii1011iiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{15}'
+  return RegisterList().
+   Add(Register(15));
+}
+
+// LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_0:
+//
+//   {None: 32,
+//    P: P(24),
+//    Pc: 15,
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Rt: Rt(15:12),
+//    U: U(23),
+//    W: W(21),
+//    add: U(23)=1,
+//    base: Rn,
+//    baseline: Load3RegisterOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt, base
+//         if wback
+//         else None},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      W(21),
+//      Rn(19:16),
+//      Rt(15:12),
+//      Rm(3:0)],
+//    index: P(24)=1,
+//    pattern: cccc000pu0w1nnnntttt00001011mmmm,
+//    rule: LDRH_register,
+//    safety: [P(24)=0 &&
+//         W(21)=1 => DECODER_ERROR,
+//      Pc in {Rt, Rm} => UNPREDICTABLE,
+//      wback &&
+//         (Rn  ==
+//            Pc ||
+//         Rn  ==
+//            Rt) => UNPREDICTABLE,
+//      ArchVersion()  <
+//            6 &&
+//         wback &&
+//         Rm  ==
+//            Rn => UNPREDICTABLE,
+//      index => FORBIDDEN],
+//    shift_n: 0,
+//    shift_t: SRType_LSL(),
+//    uses: {Rn, Rm},
+//    wback: (P(24)=0) ||
+//         (W(21)=1)}
+Register LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), inst(19:16)
+  //       if (inst(24)=0) ||
+  //       (inst(21)=1)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32)));
+}
+
+SafetyLevel LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(24)=0 &&
+  //       inst(21)=1 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return DECODER_ERROR;
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  // (inst(24)=0) ||
+  //       (inst(21)=1) &&
+  //       (15  ==
+  //          inst(19:16) ||
+  //       inst(15:12)  ==
+  //          inst(19:16)) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))) &&
+       (((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12)))))))
+    return UNPREDICTABLE;
+
+  // ArchVersion()  <
+  //          6 &&
+  //       (inst(24)=0) ||
+  //       (inst(21)=1) &&
+  //       inst(19:16)  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((nacl_arm_dec::ArchVersion()) < (6))) &&
+       ((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))) &&
+       ((((inst.Bits() & 0x0000000F)) == (((inst.Bits() & 0x000F0000) >> 16)))))
+    return UNPREDICTABLE;
+
+  // inst(24)=1 => FORBIDDEN
+  if ((inst.Bits() & 0x01000000)  ==
+          0x01000000)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LDRH_register_cccc000pu0w1nnnntttt00001011mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// LDRSB_immediate_cccc000pu1w1nnnnttttiiii1101iiii_case_0:
+//
+//   {None: 32,
+//    P: P(24),
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    Rt: Rt(15:12),
+//    U: U(23),
+//    W: W(21),
+//    add: U(23)=1,
+//    address: offset_addr
+//         if index
+//         else Rn,
+//    base: Rn,
+//    baseline: Load2RegisterImm8Op,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt, base
+//         if wback
+//         else None},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      W(21),
+//      Rn(19:16),
+//      Rt(15:12),
+//      imm4H(11:8),
+//      imm4L(3:0)],
+//    imm32: ZeroExtend(imm4H:imm4L, 32),
+//    imm4H: imm4H(11:8),
+//    imm4L: imm4L(3:0),
+//    index: P(24)=1,
+//    offset_addr: Rn + imm32
+//         if add
+//         else Rn - imm32,
+//    pattern: cccc000pu1w1nnnnttttiiii1101iiii,
+//    rule: LDRSB_immediate,
+//    safety: [Rn(19:16)=1111 => DECODER_ERROR,
+//      P(24)=0 &&
+//         W(21)=1 => DECODER_ERROR,
+//      Rt  ==
+//            Pc ||
+//         (wback &&
+//         Rn  ==
+//            Rt) => UNPREDICTABLE,
+//      Rt  ==
+//            Pc => FORBIDDEN_OPERANDS],
+//    small_imm_base_wb: wback,
+//    uses: {Rn},
+//    wback: (P(24)=0) ||
+//         (W(21)=1)}
+Register LDRSB_immediate_cccc000pu1w1nnnnttttiiii1101iiii_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList LDRSB_immediate_cccc000pu1w1nnnnttttiiii1101iiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), inst(19:16)
+  //       if (inst(24)=0) ||
+  //       (inst(21)=1)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32)));
+}
+
+SafetyLevel LDRSB_immediate_cccc000pu1w1nnnnttttiiii1101iiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(19:16)=1111 => DECODER_ERROR
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000F0000)
+    return DECODER_ERROR;
+
+  // inst(24)=0 &&
+  //       inst(21)=1 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return DECODER_ERROR;
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       ((inst(24)=0) ||
+  //       (inst(21)=1) &&
+  //       inst(15:12)  ==
+  //          inst(19:16)) => UNPREDICTABLE
+  if ((((((inst.Bits() & 0x0000F000) >> 12)) == (15))) ||
+       ((((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))) &&
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12)))))))
+    return UNPREDICTABLE;
+
+  // 15  ==
+  //          inst(15:12) => FORBIDDEN_OPERANDS
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+bool LDRSB_immediate_cccc000pu1w1nnnnttttiiii1101iiii_case_0::
+base_address_register_writeback_small_immediate(
+      Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // small_imm_base_wb: '(inst(24)=0) ||
+  //       (inst(21)=1)'
+  return (((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000));
+}
+
+RegisterList LDRSB_immediate_cccc000pu1w1nnnnttttiiii1101iiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0:
+//
+//   {P: P(24),
+//    Pc: 15,
+//    Rt: Rt(15:12),
+//    U: U(23),
+//    W: W(21),
+//    add: U(23)=1,
+//    base: Pc,
+//    baseline: LoadRegisterImm8Op,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      W(21),
+//      Rt(15:12),
+//      imm4H(11:8),
+//      imm4L(3:0)],
+//    imm32: ZeroExtend(imm4H:imm4L, 32),
+//    imm4H: imm4H(11:8),
+//    imm4L: imm4L(3:0),
+//    is_literal_load: true,
+//    pattern: cccc0001u1011111ttttiiii1101iiii,
+//    rule: LDRSB_literal,
+//    safety: [P(24)=0 &&
+//         W(21)=1 => DECODER_ERROR,
+//      P  ==
+//            W => UNPREDICTABLE,
+//      Rt  ==
+//            Pc => UNPREDICTABLE],
+//    true: true,
+//    uses: {Pc}}
+Register LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: '15'
+  return Register(15);
+}
+
+RegisterList LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+bool LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0::
+is_literal_load(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // is_literal_load: 'true'
+  return true;
+}
+
+SafetyLevel LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(24)=0 &&
+  //       inst(21)=1 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return DECODER_ERROR;
+
+  // inst(21)  ==
+  //          inst(24) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x01000000) >> 24)) == (((inst.Bits() & 0x00200000) >> 21))))
+    return UNPREDICTABLE;
+
+  // 15  ==
+  //          inst(15:12) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LDRSB_literal_cccc0001u1011111ttttiiii1101iiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{15}'
+  return RegisterList().
+   Add(Register(15));
+}
+
+// LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0:
+//
+//   {P: P(24),
+//    Pc: 15,
+//    Rt: Rt(15:12),
+//    U: U(23),
+//    W: W(21),
+//    add: U(23)=1,
+//    base: Pc,
+//    baseline: LoadRegisterImm8Op,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      W(21),
+//      Rt(15:12),
+//      imm4H(11:8),
+//      imm4L(3:0)],
+//    imm32: ZeroExtend(imm4H:imm4L, 32),
+//    imm4H: imm4H(11:8),
+//    imm4L: imm4L(3:0),
+//    is_literal_load: true,
+//    pattern: cccc0001u1011111ttttiiii1111iiii,
+//    rule: LDRSB_literal,
+//    safety: [P(24)=0 &&
+//         W(21)=1 => DECODER_ERROR,
+//      P  ==
+//            W => UNPREDICTABLE,
+//      Rt  ==
+//            Pc => UNPREDICTABLE],
+//    true: true,
+//    uses: {Pc}}
+Register LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: '15'
+  return Register(15);
+}
+
+RegisterList LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+bool LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0::
+is_literal_load(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // is_literal_load: 'true'
+  return true;
+}
+
+SafetyLevel LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(24)=0 &&
+  //       inst(21)=1 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return DECODER_ERROR;
+
+  // inst(21)  ==
+  //          inst(24) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x01000000) >> 24)) == (((inst.Bits() & 0x00200000) >> 21))))
+    return UNPREDICTABLE;
+
+  // 15  ==
+  //          inst(15:12) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LDRSB_literal_cccc0001u1011111ttttiiii1111iiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{15}'
+  return RegisterList().
+   Add(Register(15));
+}
+
+// LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0:
+//
+//   {None: 32,
+//    P: P(24),
+//    Pc: 15,
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Rt: Rt(15:12),
+//    U: U(23),
+//    W: W(21),
+//    add: U(23)=1,
+//    base: Rn,
+//    baseline: Load3RegisterOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt, base
+//         if wback
+//         else None},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      W(21),
+//      Rn(19:16),
+//      Rt(15:12),
+//      Rm(3:0)],
+//    index: P(24)=1,
+//    pattern: cccc000pu0w1nnnntttt00001101mmmm,
+//    rule: LDRSB_register,
+//    safety: [P(24)=0 &&
+//         W(21)=1 => DECODER_ERROR,
+//      Pc in {Rt, Rm} => UNPREDICTABLE,
+//      wback &&
+//         (Rn  ==
+//            Pc ||
+//         Rn  ==
+//            Rt) => UNPREDICTABLE,
+//      ArchVersion()  <
+//            6 &&
+//         wback &&
+//         Rm  ==
+//            Rn => UNPREDICTABLE,
+//      index => FORBIDDEN],
+//    shift_n: 0,
+//    shift_t: SRType_LSL(),
+//    uses: {Rn, Rm},
+//    wback: (P(24)=0) ||
+//         (W(21)=1)}
+Register LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), inst(19:16)
+  //       if (inst(24)=0) ||
+  //       (inst(21)=1)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32)));
+}
+
+SafetyLevel LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(24)=0 &&
+  //       inst(21)=1 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return DECODER_ERROR;
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  // (inst(24)=0) ||
+  //       (inst(21)=1) &&
+  //       (15  ==
+  //          inst(19:16) ||
+  //       inst(15:12)  ==
+  //          inst(19:16)) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))) &&
+       (((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12)))))))
+    return UNPREDICTABLE;
+
+  // ArchVersion()  <
+  //          6 &&
+  //       (inst(24)=0) ||
+  //       (inst(21)=1) &&
+  //       inst(19:16)  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((nacl_arm_dec::ArchVersion()) < (6))) &&
+       ((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))) &&
+       ((((inst.Bits() & 0x0000000F)) == (((inst.Bits() & 0x000F0000) >> 16)))))
+    return UNPREDICTABLE;
+
+  // inst(24)=1 => FORBIDDEN
+  if ((inst.Bits() & 0x01000000)  ==
+          0x01000000)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LDRSB_register_cccc000pu0w1nnnntttt00001101mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0:
+//
+//   {None: 32,
+//    P: P(24),
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    Rt: Rt(15:12),
+//    U: U(23),
+//    W: W(21),
+//    add: U(23)=1,
+//    address: offset_addr
+//         if index
+//         else Rn,
+//    base: Rn,
+//    baseline: Load2RegisterImm8Op,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt, base
+//         if wback
+//         else None},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      W(21),
+//      Rn(19:16),
+//      Rt(15:12),
+//      imm4H(11:8),
+//      imm4L(3:0)],
+//    imm32: ZeroExtend(imm4H:imm4L, 32),
+//    imm4H: imm4H(11:8),
+//    imm4L: imm4L(3:0),
+//    index: P(24)=1,
+//    offset_addr: Rn + imm32
+//         if add
+//         else Rn - imm32,
+//    pattern: cccc000pu1w1nnnnttttiiii1111iiii,
+//    rule: LDRSH_immediate,
+//    safety: [Rn(19:16)=1111 => DECODER_ERROR,
+//      P(24)=0 &&
+//         W(21)=1 => DECODER_ERROR,
+//      Rt  ==
+//            Pc ||
+//         (wback &&
+//         Rn  ==
+//            Rt) => UNPREDICTABLE,
+//      Rt  ==
+//            Pc => FORBIDDEN_OPERANDS],
+//    small_imm_base_wb: wback,
+//    uses: {Rn},
+//    wback: (P(24)=0) ||
+//         (W(21)=1)}
+Register LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), inst(19:16)
+  //       if (inst(24)=0) ||
+  //       (inst(21)=1)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32)));
+}
+
+SafetyLevel LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(19:16)=1111 => DECODER_ERROR
+  if ((inst.Bits() & 0x000F0000)  ==
+          0x000F0000)
+    return DECODER_ERROR;
+
+  // inst(24)=0 &&
+  //       inst(21)=1 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return DECODER_ERROR;
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       ((inst(24)=0) ||
+  //       (inst(21)=1) &&
+  //       inst(15:12)  ==
+  //          inst(19:16)) => UNPREDICTABLE
+  if ((((((inst.Bits() & 0x0000F000) >> 12)) == (15))) ||
+       ((((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))) &&
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12)))))))
+    return UNPREDICTABLE;
+
+  // 15  ==
+  //          inst(15:12) => FORBIDDEN_OPERANDS
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+bool LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0::
+base_address_register_writeback_small_immediate(
+      Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // small_imm_base_wb: '(inst(24)=0) ||
+  //       (inst(21)=1)'
+  return (((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000));
+}
+
+RegisterList LDRSH_immediate_cccc000pu1w1nnnnttttiiii1111iiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0:
+//
+//   {None: 32,
+//    P: P(24),
+//    Pc: 15,
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Rt: Rt(15:12),
+//    U: U(23),
+//    W: W(21),
+//    add: U(23)=1,
+//    base: Rn,
+//    baseline: Load3RegisterOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt, base
+//         if wback
+//         else None},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      W(21),
+//      Rn(19:16),
+//      Rt(15:12),
+//      Rm(3:0)],
+//    index: P(24)=1,
+//    pattern: cccc000pu0w1nnnntttt00001111mmmm,
+//    rule: LDRSH_register,
+//    safety: [P(24)=0 &&
+//         W(21)=1 => DECODER_ERROR,
+//      Pc in {Rt, Rm} => UNPREDICTABLE,
+//      wback &&
+//         (Rn  ==
+//            Pc ||
+//         Rn  ==
+//            Rt) => UNPREDICTABLE,
+//      ArchVersion()  <
+//            6 &&
+//         wback &&
+//         Rm  ==
+//            Rn => UNPREDICTABLE,
+//      index => FORBIDDEN],
+//    shift_n: 0,
+//    shift_t: SRType_LSL(),
+//    uses: {Rn, Rm},
+//    wback: (P(24)=0) ||
+//         (W(21)=1)}
+Register LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), inst(19:16)
+  //       if (inst(24)=0) ||
+  //       (inst(21)=1)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32)));
+}
+
+SafetyLevel LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(24)=0 &&
+  //       inst(21)=1 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return DECODER_ERROR;
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  // (inst(24)=0) ||
+  //       (inst(21)=1) &&
+  //       (15  ==
+  //          inst(19:16) ||
+  //       inst(15:12)  ==
+  //          inst(19:16)) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))) &&
+       (((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12)))))))
+    return UNPREDICTABLE;
+
+  // ArchVersion()  <
+  //          6 &&
+  //       (inst(24)=0) ||
+  //       (inst(21)=1) &&
+  //       inst(19:16)  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((nacl_arm_dec::ArchVersion()) < (6))) &&
+       ((((inst.Bits() & 0x01000000)  ==
+          0x00000000)) ||
+       (((inst.Bits() & 0x00200000)  ==
+          0x00200000))) &&
+       ((((inst.Bits() & 0x0000000F)) == (((inst.Bits() & 0x000F0000) >> 16)))))
+    return UNPREDICTABLE;
+
+  // inst(24)=1 => FORBIDDEN
+  if ((inst.Bits() & 0x01000000)  ==
+          0x01000000)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LDRSH_register_cccc000pu0w1nnnntttt00001111mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_0:
+//
+//   {None: 32,
+//    P: P(24),
+//    Pc: 15,
+//    Rn: Rn(19:16),
+//    Rt: Rt(15:12),
+//    Tp: 9,
+//    U: U(23),
+//    W: W(21),
+//    add: U(23)=1,
+//    base: Rn,
+//    baseline: LdrImmediateOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt, base
+//         if wback
+//         else None},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      W(21),
+//      Rn(19:16),
+//      Rt(15:12),
+//      imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ZeroExtend(imm12, 32),
+//    index: P(24)=1,
+//    is_load_tp: Rn  ==
+//            Tp &&
+//         index &&
+//         not wback &&
+//         add &&
+//         imm12 in {0, 4},
+//    pattern: cccc010pu0w1nnnnttttiiiiiiiiiiii,
+//    rule: LDR_immediate,
+//    safety: [Rn  ==
+//            Pc => DECODER_ERROR,
+//      P(24)=0 &&
+//         W(21)=1 => DECODER_ERROR,
+//      wback &&
+//         Rn  ==
+//            Rt => UNPREDICTABLE,
+//      Rt  ==
+//            Pc => FORBIDDEN_OPERANDS],
+//    small_imm_base_wb: wback,
+//    uses: {Rn},
+//    wback: P(24)=0 ||
+//         W(21)=1}
+Register LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), inst(19:16)
+  //       if inst(24)=0 ||
+  //       inst(21)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register((((inst.Bits() & 0x01000000)  ==
+          0x00000000) ||
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000)
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32)));
+}
+
+bool LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_0::
+is_load_thread_address_pointer(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // is_load_tp: '9  ==
+  //          inst(19:16) &&
+  //       inst(24)=1 &&
+  //       not inst(24)=0 ||
+  //       inst(21)=1 &&
+  //       inst(23)=1 &&
+  //       0  ==
+  //          inst(11:0) ||
+  //       4  ==
+  //          inst(11:0)'
+  return (((((inst.Bits() & 0x000F0000) >> 16)) == (9))) &&
+       ((inst.Bits() & 0x01000000)  ==
+          0x01000000) &&
+       (!(((inst.Bits() & 0x01000000)  ==
+          0x00000000) ||
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))) &&
+       ((inst.Bits() & 0x00800000)  ==
+          0x00800000) &&
+       (((((inst.Bits() & 0x00000FFF)) == (0))) ||
+       ((((inst.Bits() & 0x00000FFF)) == (4))));
+}
+
+SafetyLevel LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) => DECODER_ERROR
+  if (((((inst.Bits() & 0x000F0000) >> 16)) == (15)))
+    return DECODER_ERROR;
+
+  // inst(24)=0 &&
+  //       inst(21)=1 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return DECODER_ERROR;
+
+  // inst(24)=0 ||
+  //       inst(21)=1 &&
+  //       inst(15:12)  ==
+  //          inst(19:16) => UNPREDICTABLE
+  if ((((inst.Bits() & 0x01000000)  ==
+          0x00000000) ||
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000)) &&
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12)))))
+    return UNPREDICTABLE;
+
+  // 15  ==
+  //          inst(15:12) => FORBIDDEN_OPERANDS
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+bool LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_0::
+base_address_register_writeback_small_immediate(
+      Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // small_imm_base_wb: 'inst(24)=0 ||
+  //       inst(21)=1'
+  return ((inst.Bits() & 0x01000000)  ==
+          0x00000000) ||
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000);
+}
+
+RegisterList LDR_immediate_cccc010pu0w1nnnnttttiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0:
+//
+//   {Pc: 15,
+//    Rt: Rt(15:12),
+//    U: U(23),
+//    add: U(23)=1,
+//    base: Pc,
+//    baseline: Load2RegisterImm12Op,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt},
+//    fields: [cond(31:28), U(23), Rt(15:12), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ZeroExtend(imm12, 32),
+//    is_literal_load: true,
+//    pattern: cccc0101u0011111ttttiiiiiiiiiiii,
+//    rule: LDR_literal,
+//    true: true,
+//    uses: {Pc}}
+Register LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: '15'
+  return Register(15);
+}
+
+RegisterList LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+bool LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0::
+is_literal_load(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // is_literal_load: 'true'
+  return true;
+}
+
+RegisterList LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{15}'
+  return RegisterList().
+   Add(Register(15));
+}
+
+// LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_0:
+//
+//   {None: 32,
+//    P: P(24),
+//    Pc: 15,
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Rt: Rt(15:12),
+//    U: U(23),
+//    W: W(21),
+//    add: U(23)=1,
+//    base: Rn,
+//    baseline: Load3RegisterImm5Op,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt, base
+//         if wback
+//         else None},
+//    fields: [cond(31:28),
+//      P(24),
+//      U(23),
+//      W(21),
+//      Rn(19:16),
+//      Rt(15:12),
+//      imm5(11:7),
+//      type(6:5),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    index: P(24)=1,
+//    pattern: cccc011pu0w1nnnnttttiiiiitt0mmmm,
+//    rule: LDR_register,
+//    safety: [P(24)=0 &&
+//         W(21)=1 => DECODER_ERROR,
+//      Rm  ==
+//            Pc => UNPREDICTABLE,
+//      wback &&
+//         (Rn  ==
+//            Pc ||
+//         Rn  ==
+//            Rt) => UNPREDICTABLE,
+//      ArchVersion()  <
+//            6 &&
+//         wback &&
+//         Rn  ==
+//            Rm => UNPREDICTABLE,
+//      index => FORBIDDEN,
+//      Rt  ==
+//            Pc => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    type: type(6:5),
+//    uses: {Rm, Rn},
+//    wback: P(24)=0 ||
+//         W(21)=1}
+Register LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_0::
+base_address_register(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // base: 'inst(19:16)'
+  return Register(((inst.Bits() & 0x000F0000) >> 16));
+}
+
+RegisterList LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), inst(19:16)
+  //       if inst(24)=0 ||
+  //       inst(21)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register((((inst.Bits() & 0x01000000)  ==
+          0x00000000) ||
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000)
+       ? ((inst.Bits() & 0x000F0000) >> 16)
+       : 32)));
+}
+
+SafetyLevel LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(24)=0 &&
+  //       inst(21)=1 => DECODER_ERROR
+  if (((inst.Bits() & 0x01000000)  ==
+          0x00000000) &&
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000))
+    return DECODER_ERROR;
+
+  // 15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((inst.Bits() & 0x0000000F)) == (15)))
+    return UNPREDICTABLE;
+
+  // inst(24)=0 ||
+  //       inst(21)=1 &&
+  //       (15  ==
+  //          inst(19:16) ||
+  //       inst(15:12)  ==
+  //          inst(19:16)) => UNPREDICTABLE
+  if ((((inst.Bits() & 0x01000000)  ==
+          0x00000000) ||
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000)) &&
+       (((((((inst.Bits() & 0x000F0000) >> 16)) == (15))) ||
+       (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12)))))))
+    return UNPREDICTABLE;
+
+  // ArchVersion()  <
+  //          6 &&
+  //       inst(24)=0 ||
+  //       inst(21)=1 &&
+  //       inst(19:16)  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((nacl_arm_dec::ArchVersion()) < (6))) &&
+       (((inst.Bits() & 0x01000000)  ==
+          0x00000000) ||
+       ((inst.Bits() & 0x00200000)  ==
+          0x00200000)) &&
+       (((((inst.Bits() & 0x000F0000) >> 16)) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  // inst(24)=1 => FORBIDDEN
+  if ((inst.Bits() & 0x01000000)  ==
+          0x01000000)
+    return FORBIDDEN;
+
+  // 15  ==
+  //          inst(15:12) => FORBIDDEN_OPERANDS
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LDR_register_cccc011pu0w1nnnnttttiiiiitt0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(19:16)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    S: S(20),
+//    baseline: Unary2RegisterShiftedOpImmNotZero,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if S
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rd(15:12),
+//      imm5(11:7),
+//      type(6:5),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc0001101s0000ddddiiiii000mmmm,
+//    rule: LSL_immediate,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      imm5(11:7)=00000 => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    type: type(6:5),
+//    uses: {Rm}}
+RegisterList LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+SafetyLevel LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(11:7)=00000 => DECODER_ERROR
+  if ((inst.Bits() & 0x00000F80)  ==
+          0x00000000)
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// LSL_register_cccc0001101s0000ddddmmmm0001nnnn_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    S: S(20),
+//    baseline: Binary3RegisterOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28), S(20), Rd(15:12), Rm(11:8), Rn(3:0)],
+//    pattern: cccc0001101s0000ddddmmmm0001nnnn,
+//    rule: LSL_register,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    setflags: S(20)=1,
+//    uses: {Rn, Rm}}
+RegisterList LSL_register_cccc0001101s0000ddddmmmm0001nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel LSL_register_cccc0001101s0000ddddmmmm0001nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LSL_register_cccc0001101s0000ddddmmmm0001nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(11:8)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// LSR_immediate_cccc0001101s0000ddddiiiii010mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    S: S(20),
+//    baseline: Unary2RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if S
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rd(15:12),
+//      imm5(11:7),
+//      type(6:5),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc0001101s0000ddddiiiii010mmmm,
+//    rule: LSR_immediate,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    type: type(6:5),
+//    uses: {Rm}}
+RegisterList LSR_immediate_cccc0001101s0000ddddiiiii010mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+SafetyLevel LSR_immediate_cccc0001101s0000ddddiiiii010mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LSR_immediate_cccc0001101s0000ddddiiiii010mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// LSR_register_cccc0001101s0000ddddmmmm0011nnnn_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    S: S(20),
+//    baseline: Binary3RegisterOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28), S(20), Rd(15:12), Rm(11:8), Rn(3:0)],
+//    pattern: cccc0001101s0000ddddmmmm0011nnnn,
+//    rule: LSR_register,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    setflags: S(20)=1,
+//    uses: {Rn, Rm}}
+RegisterList LSR_register_cccc0001101s0000ddddmmmm0011nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel LSR_register_cccc0001101s0000ddddmmmm0011nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList LSR_register_cccc0001101s0000ddddmmmm0011nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(11:8)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Pc: 15,
+//    Ra: Ra(15:12),
+//    Rd: Rd(19:16),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    S: S(20),
+//    baseline: Binary4RegisterDualOpLtV6RdNotRn,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rd(19:16),
+//      Ra(15:12),
+//      Rm(11:8),
+//      Rn(3:0)],
+//    pattern: cccc0000001sddddaaaammmm1001nnnn,
+//    rule: MLA_A1,
+//    safety: [Pc in {Rd, Rn, Rm, Ra} => UNPREDICTABLE,
+//      (ArchVersion()  <
+//            6 &&
+//         Rd  ==
+//            Rn) => UNPREDICTABLE],
+//    setflags: S(20)=1,
+//    uses: {Rn, Rm, Ra}}
+RegisterList MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) ||
+  //       15  ==
+  //          inst(15:12) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) ||
+       (((15) == (((inst.Bits() & 0x0000F000) >> 12)))))
+    return UNPREDICTABLE;
+
+  // (ArchVersion()  <
+  //          6 &&
+  //       inst(19:16)  ==
+  //          inst(3:0)) => UNPREDICTABLE
+  if (((((nacl_arm_dec::ArchVersion()) < (6))) &&
+       (((((inst.Bits() & 0x000F0000) >> 16)) == ((inst.Bits() & 0x0000000F))))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MLA_A1_cccc0000001sddddaaaammmm1001nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(11:8), inst(15:12)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+// MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_0:
+//
+//   {Pc: 15,
+//    Ra: Ra(15:12),
+//    Rd: Rd(19:16),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    arch: v6T2,
+//    baseline: Binary4RegisterDualOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), Rn(3:0)],
+//    pattern: cccc00000110ddddaaaammmm1001nnnn,
+//    rule: MLS_A1,
+//    safety: [Pc in {Rd, Rn, Rm, Ra} => UNPREDICTABLE],
+//    uses: {Rn, Rm, Ra}}
+RegisterList MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+SafetyLevel MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) ||
+  //       15  ==
+  //          inst(15:12) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) ||
+       (((15) == (((inst.Bits() & 0x0000F000) >> 12)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MLS_A1_cccc00000110ddddaaaammmm1001nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(11:8), inst(15:12)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+// MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0:
+//
+//   {N: N(7),
+//    Pc: 15,
+//    Rt: Rt(15:12),
+//    U: U(23),
+//    Vn: Vn(19:16),
+//    advsimd: sel in bitset {'x1xxx', 'x0xx1'},
+//    arch: ['VFPv2', 'AdvSIMD'],
+//    baseline: MoveVfpRegisterOpWithTypeSel,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rt},
+//    esize: 8
+//         if U:opc1:opc2(4:0)=x1xxx
+//         else 16
+//         if U:opc1:opc2(4:0)=x0xx1
+//         else 32
+//         if U:opc1:opc2(4:0)=00x00
+//         else 0,
+//    fields: [cond(31:28),
+//      U(23),
+//      opc1(22:21),
+//      Vn(19:16),
+//      Rt(15:12),
+//      N(7),
+//      opc2(6:5)],
+//    index: opc1(0):opc2
+//         if U:opc1:opc2(4:0)=x1xxx
+//         else opc1(0):opc2(1)
+//         if U:opc1:opc2(4:0)=x0xx1
+//         else opc1(0)
+//         if U:opc1:opc2(4:0)=00x00
+//         else 0,
+//    n: N:Vn,
+//    opc1: opc1(22:21),
+//    opc2: opc2(6:5),
+//    pattern: cccc1110iii1nnnntttt1011nii10000,
+//    rule: MOVE_scalar_to_ARM_core_register,
+//    safety: [sel in bitset {'10x00', 'x0x10'} => UNDEFINED,
+//      t  ==
+//            Pc => UNPREDICTABLE],
+//    sel: U:opc1:opc2,
+//    t: Rt,
+//    unsigned: U(23)=1}
+RegisterList MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel MOVE_scalar_to_ARM_core_register_cccc1110iii1nnnntttt1011nii10000_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(23):inst(22:21):inst(6:5)(4:0)=10x00 ||
+  //       inst(23):inst(22:21):inst(6:5)(4:0)=x0x10 => UNDEFINED
+  if (((((((((((inst.Bits() & 0x00800000) >> 23)) << 2) | ((inst.Bits() & 0x00600000) >> 21))) << 2) | ((inst.Bits() & 0x00000060) >> 5)) & 0x0000001B)  ==
+          0x00000010) ||
+       ((((((((((inst.Bits() & 0x00800000) >> 23)) << 2) | ((inst.Bits() & 0x00600000) >> 21))) << 2) | ((inst.Bits() & 0x00000060) >> 5)) & 0x0000000B)  ==
+          0x00000002))
+    return UNDEFINED;
+
+  // 15  ==
+  //          inst(15:12) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+// MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    S: S(20),
+//    arch: v6T2,
+//    baseline: Unary1RegisterImmediateOpDynCodeReplace,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if S
+//         else None},
+//    dynamic_code_replace_immediates: {imm4, imm12},
+//    fields: [cond(31:28), S(20), imm4(19:16), Rd(15:12), imm12(11:0)],
+//    imm: imm4:imm12,
+//    imm12: imm12(11:0),
+//    imm4: imm4(19:16),
+//    pattern: cccc00110100iiiiddddiiiiiiiiiiii,
+//    rule: MOVT,
+//    safety: [Rd(15:12)=1111 => UNPREDICTABLE],
+//    uses: {}}
+RegisterList MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+Instruction MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0::
+dynamic_code_replacement_sentinel(
+     Instruction inst) const {
+  if (!defs(inst).ContainsAny(RegisterList::DynCodeReplaceFrozenRegs())) {
+    // inst(19:16)
+    inst.SetBits(19, 16, 0);
+    // inst(11:0)
+    inst.SetBits(11, 0, 0);
+  }
+  return inst;
+}
+
+SafetyLevel MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(15:12)=1111 => UNPREDICTABLE
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MOVT_cccc00110100iiiiddddiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    S: S(20),
+//    arch: v6T2,
+//    baseline: Unary1RegisterImmediateOpDynCodeReplace,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if S
+//         else None},
+//    dynamic_code_replace_immediates: {imm4, imm12},
+//    fields: [cond(31:28), S(20), imm4(19:16), Rd(15:12), imm12(11:0)],
+//    imm: imm4:imm12,
+//    imm12: imm12(11:0),
+//    imm4: imm4(19:16),
+//    pattern: cccc00110000iiiiddddiiiiiiiiiiii,
+//    rule: MOVW,
+//    safety: [Rd(15:12)=1111 => UNPREDICTABLE],
+//    uses: {}}
+RegisterList MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+Instruction MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0::
+dynamic_code_replacement_sentinel(
+     Instruction inst) const {
+  if (!defs(inst).ContainsAny(RegisterList::DynCodeReplaceFrozenRegs())) {
+    // inst(19:16)
+    inst.SetBits(19, 16, 0);
+    // inst(11:0)
+    inst.SetBits(11, 0, 0);
+  }
+  return inst;
+}
+
+SafetyLevel MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(15:12)=1111 => UNPREDICTABLE
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MOVW_cccc00110000iiiiddddiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    S: S(20),
+//    baseline: Unary1RegisterImmediateOp12DynCodeReplace,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    dynamic_code_replace_immediates: {imm12},
+//    fields: [cond(31:28), S(20), Rd(15:12), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ARMExpandImm(imm12),
+//    pattern: cccc0011101s0000ddddiiiiiiiiiiii,
+//    rule: MOV_immediate_A1,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    setflags: S(20)=1,
+//    uses: {}}
+RegisterList MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+Instruction MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_0::
+dynamic_code_replacement_sentinel(
+     Instruction inst) const {
+  if (!defs(inst).ContainsAny(RegisterList::DynCodeReplaceFrozenRegs())) {
+    // inst(11:0)
+    inst.SetBits(11, 0, 0);
+  }
+  return inst;
+}
+
+SafetyLevel MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// MOV_register_cccc0001101s0000dddd00000000mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    S: S(20),
+//    baseline: Unary2RegisterOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if S
+//         else None},
+//    fields: [cond(31:28), S(20), Rd(15:12), Rm(3:0)],
+//    pattern: cccc0001101s0000dddd00000000mmmm,
+//    rule: MOV_register,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    uses: {Rm}}
+RegisterList MOV_register_cccc0001101s0000dddd00000000mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+SafetyLevel MOV_register_cccc0001101s0000dddd00000000mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MOV_register_cccc0001101s0000dddd00000000mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// MRS_cccc00010r001111dddd000000000000_case_0:
+//
+//   {R: R(22),
+//    Rd: Rd(15:12),
+//    baseline: Unary1RegisterSet,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), R(22), Rd(15:12)],
+//    pattern: cccc00010r001111dddd000000000000,
+//    read_spsr: R(22)=1,
+//    rule: MRS,
+//    safety: [R(22)=1 => FORBIDDEN_OPERANDS,
+//      Rd(15:12)=1111 => UNPREDICTABLE],
+//    uses: {}}
+RegisterList MRS_cccc00010r001111dddd000000000000_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel MRS_cccc00010r001111dddd000000000000_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(22)=1 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x00400000)  ==
+          0x00400000)
+    return FORBIDDEN_OPERANDS;
+
+  // inst(15:12)=1111 => UNPREDICTABLE
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MRS_cccc00010r001111dddd000000000000_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// MSR_register_cccc00010010mm00111100000000nnnn_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Pc: 15,
+//    Rn: Rn(3:0),
+//    baseline: Unary1RegisterUse,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {NZCV
+//         if write_nzcvq
+//         else None},
+//    fields: [cond(31:28), mask(19:18), Rn(3:0)],
+//    mask: mask(19:18),
+//    pattern: cccc00010010mm00111100000000nnnn,
+//    rule: MSR_register,
+//    safety: [mask(19:18)=00 => UNPREDICTABLE,
+//      Rn  ==
+//            Pc => UNPREDICTABLE],
+//    uses: {Rn},
+//    write_g: mask(0)=1,
+//    write_nzcvq: mask(1)=1}
+RegisterList MSR_register_cccc00010010mm00111100000000nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{16
+  //       if inst(19:18)(1)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((((inst.Bits() & 0x000C0000) >> 18) & 0x00000002)  ==
+          0x00000002
+       ? 16
+       : 32)));
+}
+
+SafetyLevel MSR_register_cccc00010010mm00111100000000nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(19:18)=00 => UNPREDICTABLE
+  if ((inst.Bits() & 0x000C0000)  ==
+          0x00000000)
+    return UNPREDICTABLE;
+
+  // 15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((inst.Bits() & 0x0000000F)) == (15)))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MSR_register_cccc00010010mm00111100000000nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Pc: 15,
+//    Rd: Rd(19:16),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    S: S(20),
+//    baseline: Binary3RegisterOpAltA,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28), S(20), Rd(19:16), Rm(11:8), Rn(3:0)],
+//    pattern: cccc0000000sdddd0000mmmm1001nnnn,
+//    rule: MUL_A1,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE,
+//      (ArchVersion()  <
+//            6 &&
+//         Rd  ==
+//            Rn) => UNPREDICTABLE],
+//    setflags: S(20)=1,
+//    uses: {Rm, Rn}}
+RegisterList MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  // (ArchVersion()  <
+  //          6 &&
+  //       inst(19:16)  ==
+  //          inst(3:0)) => UNPREDICTABLE
+  if (((((nacl_arm_dec::ArchVersion()) < (6))) &&
+       (((((inst.Bits() & 0x000F0000) >> 16)) == ((inst.Bits() & 0x0000000F))))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(11:8), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// MVN_immediate_cccc0011111s0000ddddiiiiiiiiiiii_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    S: S(20),
+//    baseline: Unary1RegisterImmediateOp12DynCodeReplace,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    dynamic_code_replace_immediates: {imm12},
+//    fields: [cond(31:28), S(20), Rd(15:12), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ARMExpandImm(imm12),
+//    pattern: cccc0011111s0000ddddiiiiiiiiiiii,
+//    rule: MVN_immediate,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    setflags: S(20)=1,
+//    uses: {}}
+RegisterList MVN_immediate_cccc0011111s0000ddddiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+Instruction MVN_immediate_cccc0011111s0000ddddiiiiiiiiiiii_case_0::
+dynamic_code_replacement_sentinel(
+     Instruction inst) const {
+  if (!defs(inst).ContainsAny(RegisterList::DynCodeReplaceFrozenRegs())) {
+    // inst(11:0)
+    inst.SetBits(11, 0, 0);
+  }
+  return inst;
+}
+
+SafetyLevel MVN_immediate_cccc0011111s0000ddddiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MVN_immediate_cccc0011111s0000ddddiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// MVN_register_cccc0001111s0000ddddiiiiitt0mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    S: S(20),
+//    baseline: Unary2RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if S
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rd(15:12),
+//      imm5(11:7),
+//      type(6:5),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc0001111s0000ddddiiiiitt0mmmm,
+//    rule: MVN_register,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    type: type(6:5),
+//    uses: {Rm}}
+RegisterList MVN_register_cccc0001111s0000ddddiiiiitt0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+SafetyLevel MVN_register_cccc0001111s0000ddddiiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MVN_register_cccc0001111s0000ddddiiiiitt0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// MVN_register_shifted_register_cccc0001111s0000ddddssss0tt1mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rs: Rs(11:8),
+//    S: S(20),
+//    baseline: Unary3RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rd(15:12),
+//      Rs(11:8),
+//      type(6:5),
+//      Rm(3:0)],
+//    pattern: cccc0001111s0000ddddssss0tt1mmmm,
+//    rule: MVN_register_shifted_register,
+//    safety: [Pc in {Rd, Rm, Rs} => UNPREDICTABLE],
+//    setflags: S(20)=1,
+//    shift_t: DecodeRegShift(type),
+//    type: type(6:5),
+//    uses: {Rm, Rs}}
+RegisterList MVN_register_shifted_register_cccc0001111s0000ddddssss0tt1mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel MVN_register_shifted_register_cccc0001111s0000ddddssss0tt1mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MVN_register_shifted_register_cccc0001111s0000ddddssss0tt1mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(11:8)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: Binary2RegisterImmediateOpDynCodeReplace,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    dynamic_code_replace_immediates: {imm12},
+//    fields: [cond(31:28), S(20), Rn(19:16), Rd(15:12), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ARMExpandImm(imm12),
+//    pattern: cccc0011100snnnnddddiiiiiiiiiiii,
+//    rule: ORR_immediate,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    setflags: S(20)=1,
+//    uses: {Rn}}
+RegisterList ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+Instruction ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_0::
+dynamic_code_replacement_sentinel(
+     Instruction inst) const {
+  if (!defs(inst).ContainsAny(RegisterList::DynCodeReplaceFrozenRegs())) {
+    // inst(11:0)
+    inst.SetBits(11, 0, 0);
+  }
+  return inst;
+}
+
+SafetyLevel ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// ORR_register_cccc0001100snnnnddddiiiiitt0mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: Binary3RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if S
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      Rd(15:12),
+//      imm5(11:7),
+//      type(6:5),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc0001100snnnnddddiiiiitt0mmmm,
+//    rule: ORR_register,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    type: type(6:5),
+//    uses: {Rn, Rm}}
+RegisterList ORR_register_cccc0001100snnnnddddiiiiitt0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+SafetyLevel ORR_register_cccc0001100snnnnddddiiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList ORR_register_cccc0001100snnnnddddiiiiitt0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// ORR_register_shifted_register_cccc0001100snnnnddddssss0tt1mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Rs: Rs(11:8),
+//    S: S(20),
+//    baseline: Binary4RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      Rd(15:12),
+//      Rs(11:8),
+//      type(6:5),
+//      Rm(3:0)],
+//    pattern: cccc0001100snnnnddddssss0tt1mmmm,
+//    rule: ORR_register_shifted_register,
+//    safety: [Pc in {Rn, Rd, Rm, Rs} => UNPREDICTABLE],
+//    setflags: S(20)=1,
+//    shift_t: DecodeRegShift(type),
+//    type: type(6:5),
+//    uses: {Rn, Rm, Rs}}
+RegisterList ORR_register_shifted_register_cccc0001100snnnnddddssss0tt1mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel ORR_register_shifted_register_cccc0001100snnnnddddssss0tt1mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList ORR_register_shifted_register_cccc0001100snnnnddddssss0tt1mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0), inst(11:8)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// PKH_cccc01101000nnnnddddiiiiit01mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28),
+//      Rn(19:16),
+//      Rd(15:12),
+//      imm5(11:7),
+//      tb(6),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc01101000nnnnddddiiiiit01mmmm,
+//    rule: PKH,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    shift: DecodeImmShift(tb:0(0), imm5),
+//    tb: tb(6),
+//    tbform: tb(6)=1,
+//    uses: {Rn, Rm}}
+RegisterList PKH_cccc01101000nnnnddddiiiiit01mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel PKH_cccc01101000nnnnddddiiiiit01mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList PKH_cccc01101000nnnnddddiiiiit01mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// QADD16_cccc01100010nnnndddd11110001mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc01100010nnnndddd11110001mmmm,
+//    rule: QADD16,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList QADD16_cccc01100010nnnndddd11110001mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel QADD16_cccc01100010nnnndddd11110001mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList QADD16_cccc01100010nnnndddd11110001mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// QADD8_cccc01100010nnnndddd11111001mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc01100010nnnndddd11111001mmmm,
+//    rule: QADD8,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList QADD8_cccc01100010nnnndddd11111001mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel QADD8_cccc01100010nnnndddd11111001mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList QADD8_cccc01100010nnnndddd11111001mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// QADD_cccc00010000nnnndddd00000101mmmm_case_0:
+//
+//   {Cond: Cond(31:28),
+//    Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v5TE,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [Cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc00010000nnnndddd00000101mmmm,
+//    rule: QADD,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList QADD_cccc00010000nnnndddd00000101mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel QADD_cccc00010000nnnndddd00000101mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList QADD_cccc00010000nnnndddd00000101mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// QASX_cccc01100010nnnndddd11110011mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc01100010nnnndddd11110011mmmm,
+//    rule: QASX,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList QASX_cccc01100010nnnndddd11110011mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel QASX_cccc01100010nnnndddd11110011mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList QASX_cccc01100010nnnndddd11110011mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// QDADD_cccc00010100nnnndddd00000101mmmm_case_0:
+//
+//   {Cond: Cond(31:28),
+//    Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v5TE,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [Cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc00010100nnnndddd00000101mmmm,
+//    rule: QDADD,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList QDADD_cccc00010100nnnndddd00000101mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel QDADD_cccc00010100nnnndddd00000101mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList QDADD_cccc00010100nnnndddd00000101mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// QDSUB_cccc00010110nnnndddd00000101mmmm_case_0:
+//
+//   {Cond: Cond(31:28),
+//    Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v5TE,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [Cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc00010110nnnndddd00000101mmmm,
+//    rule: QDSUB,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList QDSUB_cccc00010110nnnndddd00000101mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel QDSUB_cccc00010110nnnndddd00000101mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList QDSUB_cccc00010110nnnndddd00000101mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// QSAX_cccc01100010nnnndddd11110101mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc01100010nnnndddd11110101mmmm,
+//    rule: QSAX,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList QSAX_cccc01100010nnnndddd11110101mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel QSAX_cccc01100010nnnndddd11110101mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList QSAX_cccc01100010nnnndddd11110101mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// QSUB16_cccc01100010nnnndddd11110111mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc01100010nnnndddd11110111mmmm,
+//    rule: QSUB16,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList QSUB16_cccc01100010nnnndddd11110111mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel QSUB16_cccc01100010nnnndddd11110111mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList QSUB16_cccc01100010nnnndddd11110111mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// QSUB8_cccc01100010nnnndddd11111111mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc01100010nnnndddd11111111mmmm,
+//    rule: QSUB8,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList QSUB8_cccc01100010nnnndddd11111111mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel QSUB8_cccc01100010nnnndddd11111111mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList QSUB8_cccc01100010nnnndddd11111111mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// QSUB_cccc00010010nnnndddd00000101mmmm_case_0:
+//
+//   {Cond: Cond(31:28),
+//    Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v5TE,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [Cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc00010010nnnndddd00000101mmmm,
+//    rule: QSUB,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList QSUB_cccc00010010nnnndddd00000101mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel QSUB_cccc00010010nnnndddd00000101mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList QSUB_cccc00010010nnnndddd00000101mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// RBIT_cccc011011111111dddd11110011mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    arch: v6T2,
+//    baseline: Unary2RegisterImmedShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
+//    pattern: cccc011011111111dddd11110011mmmm,
+//    rule: RBIT,
+//    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rm}}
+RegisterList RBIT_cccc011011111111dddd11110011mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel RBIT_cccc011011111111dddd11110011mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList RBIT_cccc011011111111dddd11110011mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// REV16_cccc011010111111dddd11111011mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    arch: v6,
+//    baseline: Unary2RegisterImmedShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
+//    pattern: cccc011010111111dddd11111011mmmm,
+//    rule: REV16,
+//    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rm}}
+RegisterList REV16_cccc011010111111dddd11111011mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel REV16_cccc011010111111dddd11111011mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList REV16_cccc011010111111dddd11111011mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// REVSH_cccc011011111111dddd11111011mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    arch: v6,
+//    baseline: Unary2RegisterImmedShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
+//    pattern: cccc011011111111dddd11111011mmmm,
+//    rule: REVSH,
+//    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rm}}
+RegisterList REVSH_cccc011011111111dddd11111011mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel REVSH_cccc011011111111dddd11111011mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList REVSH_cccc011011111111dddd11111011mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// REV_cccc011010111111dddd11110011mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    arch: v6,
+//    baseline: Unary2RegisterImmedShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(15:12), Rm(3:0)],
+//    pattern: cccc011010111111dddd11110011mmmm,
+//    rule: REV,
+//    safety: [Pc in {Rd, Rm} => UNPREDICTABLE],
+//    uses: {Rm}}
+RegisterList REV_cccc011010111111dddd11110011mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel REV_cccc011010111111dddd11110011mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList REV_cccc011010111111dddd11110011mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// ROR_immediate_cccc0001101s0000ddddiiiii110mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    S: S(20),
+//    baseline: Unary2RegisterShiftedOpImmNotZero,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if S
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rd(15:12),
+//      imm5(11:7),
+//      type(6:5),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc0001101s0000ddddiiiii110mmmm,
+//    rule: ROR_immediate,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      imm5(11:7)=00000 => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    type: type(6:5),
+//    uses: {Rm}}
+RegisterList ROR_immediate_cccc0001101s0000ddddiiiii110mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+SafetyLevel ROR_immediate_cccc0001101s0000ddddiiiii110mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(11:7)=00000 => DECODER_ERROR
+  if ((inst.Bits() & 0x00000F80)  ==
+          0x00000000)
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList ROR_immediate_cccc0001101s0000ddddiiiii110mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// ROR_register_cccc0001101s0000ddddmmmm0111nnnn_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    S: S(20),
+//    baseline: Binary3RegisterOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28), S(20), Rd(15:12), Rm(11:8), Rn(3:0)],
+//    pattern: cccc0001101s0000ddddmmmm0111nnnn,
+//    rule: ROR_register,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    setflags: S(20)=1,
+//    uses: {Rn, Rm}}
+RegisterList ROR_register_cccc0001101s0000ddddmmmm0111nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel ROR_register_cccc0001101s0000ddddmmmm0111nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList ROR_register_cccc0001101s0000ddddmmmm0111nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(11:8)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// RRX_cccc0001101s0000dddd00000110mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    S: S(20),
+//    baseline: Unary2RegisterOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if S
+//         else None},
+//    fields: [cond(31:28), S(20), Rd(15:12), Rm(3:0)],
+//    pattern: cccc0001101s0000dddd00000110mmmm,
+//    rule: RRX,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    uses: {Rm}}
+RegisterList RRX_cccc0001101s0000dddd00000110mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+SafetyLevel RRX_cccc0001101s0000dddd00000110mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList RRX_cccc0001101s0000dddd00000110mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// RSB_immediate_cccc0010011snnnnddddiiiiiiiiiiii_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: Binary2RegisterImmediateOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28), S(20), Rn(19:16), Rd(15:12), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ARMExpandImm(imm12),
+//    pattern: cccc0010011snnnnddddiiiiiiiiiiii,
+//    rule: RSB_immediate,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    setflags: S(20)=1,
+//    uses: {Rn}}
+RegisterList RSB_immediate_cccc0010011snnnnddddiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel RSB_immediate_cccc0010011snnnnddddiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList RSB_immediate_cccc0010011snnnnddddiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// RSB_register_cccc0000011snnnnddddiiiiitt0mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: Binary3RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if S
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      Rd(15:12),
+//      imm5(11:7),
+//      type(6:5),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc0000011snnnnddddiiiiitt0mmmm,
+//    rule: RSB_register,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    type: type(6:5),
+//    uses: {Rn, Rm}}
+RegisterList RSB_register_cccc0000011snnnnddddiiiiitt0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+SafetyLevel RSB_register_cccc0000011snnnnddddiiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList RSB_register_cccc0000011snnnnddddiiiiitt0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// RSB_register_shfited_register_cccc0000011snnnnddddssss0tt1mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Rs: Rs(11:8),
+//    S: S(20),
+//    baseline: Binary4RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      Rd(15:12),
+//      Rs(11:8),
+//      type(6:5),
+//      Rm(3:0)],
+//    pattern: cccc0000011snnnnddddssss0tt1mmmm,
+//    rule: RSB_register_shfited_register,
+//    safety: [Pc in {Rn, Rd, Rm, Rs} => UNPREDICTABLE],
+//    setflags: S(20)=1,
+//    shift_t: DecodeRegShift(type),
+//    type: type(6:5),
+//    uses: {Rn, Rm, Rs}}
+RegisterList RSB_register_shfited_register_cccc0000011snnnnddddssss0tt1mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel RSB_register_shfited_register_cccc0000011snnnnddddssss0tt1mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList RSB_register_shfited_register_cccc0000011snnnnddddssss0tt1mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0), inst(11:8)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// RSC_immediate_cccc0010111snnnnddddiiiiiiiiiiii_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: Binary2RegisterImmediateOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28), S(20), Rn(19:16), Rd(15:12), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ARMExpandImm(imm12),
+//    pattern: cccc0010111snnnnddddiiiiiiiiiiii,
+//    rule: RSC_immediate,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    setflags: S(20)=1,
+//    uses: {Rn}}
+RegisterList RSC_immediate_cccc0010111snnnnddddiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel RSC_immediate_cccc0010111snnnnddddiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList RSC_immediate_cccc0010111snnnnddddiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// RSC_register_cccc0000111snnnnddddiiiiitt0mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: Binary3RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if S
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      Rd(15:12),
+//      imm5(11:7),
+//      type(6:5),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc0000111snnnnddddiiiiitt0mmmm,
+//    rule: RSC_register,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    type: type(6:5),
+//    uses: {Rn, Rm}}
+RegisterList RSC_register_cccc0000111snnnnddddiiiiitt0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+SafetyLevel RSC_register_cccc0000111snnnnddddiiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList RSC_register_cccc0000111snnnnddddiiiiitt0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// RSC_register_shifted_register_cccc0000111snnnnddddssss0tt1mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Rs: Rs(11:8),
+//    S: S(20),
+//    baseline: Binary4RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      Rd(15:12),
+//      Rs(11:8),
+//      type(6:5),
+//      Rm(3:0)],
+//    pattern: cccc0000111snnnnddddssss0tt1mmmm,
+//    rule: RSC_register_shifted_register,
+//    safety: [Pc in {Rn, Rd, Rm, Rs} => UNPREDICTABLE],
+//    setflags: S(20)=1,
+//    shift_t: DecodeRegShift(type),
+//    type: type(6:5),
+//    uses: {Rn, Rm, Rs}}
+RegisterList RSC_register_shifted_register_cccc0000111snnnnddddssss0tt1mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel RSC_register_shifted_register_cccc0000111snnnnddddssss0tt1mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList RSC_register_shifted_register_cccc0000111snnnnddddssss0tt1mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0), inst(11:8)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// SADD16_cccc01100001nnnndddd11110001mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc01100001nnnndddd11110001mmmm,
+//    rule: SADD16,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList SADD16_cccc01100001nnnndddd11110001mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel SADD16_cccc01100001nnnndddd11110001mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SADD16_cccc01100001nnnndddd11110001mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// SADD8_cccc01100001nnnndddd11111001mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc01100001nnnndddd11111001mmmm,
+//    rule: SADD8,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList SADD8_cccc01100001nnnndddd11111001mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel SADD8_cccc01100001nnnndddd11111001mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SADD8_cccc01100001nnnndddd11111001mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// SASX_cccc01100001nnnndddd11110011mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc01100001nnnndddd11110011mmmm,
+//    rule: SASX,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList SASX_cccc01100001nnnndddd11110011mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel SASX_cccc01100001nnnndddd11110011mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SASX_cccc01100001nnnndddd11110011mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// SBC_immediate_cccc0010110snnnnddddiiiiiiiiiiii_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: Binary2RegisterImmediateOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28), S(20), Rn(19:16), Rd(15:12), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ARMExpandImm(imm12),
+//    pattern: cccc0010110snnnnddddiiiiiiiiiiii,
+//    rule: SBC_immediate,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    setflags: S(20)=1,
+//    uses: {Rn}}
+RegisterList SBC_immediate_cccc0010110snnnnddddiiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel SBC_immediate_cccc0010110snnnnddddiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SBC_immediate_cccc0010110snnnnddddiiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+// SBC_register_cccc0000110snnnnddddiiiiitt0mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    S: S(20),
+//    baseline: Binary3RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if S
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      Rd(15:12),
+//      imm5(11:7),
+//      type(6:5),
+//      Rm(3:0)],
+//    imm5: imm5(11:7),
+//    pattern: cccc0000110snnnnddddiiiiitt0mmmm,
+//    rule: SBC_register,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    shift: DecodeImmShift(type, imm5),
+//    type: type(6:5),
+//    uses: {Rn, Rm}}
+RegisterList SBC_register_cccc0000110snnnnddddiiiiitt0mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((((inst.Bits() & 0x00100000) >> 20) != 0)
+       ? 16
+       : 32)));
+}
+
+SafetyLevel SBC_register_cccc0000110snnnnddddiiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // (inst(15:12)=1111 &&
+  //       inst(20)=1) => DECODER_ERROR
+  if ((((inst.Bits() & 0x0000F000)  ==
+          0x0000F000) &&
+       ((inst.Bits() & 0x00100000)  ==
+          0x00100000)))
+    return DECODER_ERROR;
+
+  // inst(15:12)=1111 => FORBIDDEN_OPERANDS
+  if ((inst.Bits() & 0x0000F000)  ==
+          0x0000F000)
+    return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SBC_register_cccc0000110snnnnddddiiiiitt0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// SBC_register_shifted_register_cccc0000110snnnnddddssss0tt1mmmm_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Rs: Rs(11:8),
+//    S: S(20),
+//    baseline: Binary4RegisterShiftedOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      Rn(19:16),
+//      Rd(15:12),
+//      Rs(11:8),
+//      type(6:5),
+//      Rm(3:0)],
+//    pattern: cccc0000110snnnnddddssss0tt1mmmm,
+//    rule: SBC_register_shifted_register,
+//    safety: [Pc in {Rn, Rd, Rm, Rs} => UNPREDICTABLE],
+//    setflags: S(20)=1,
+//    shift_t: DecodeRegShift(type),
+//    type: type(6:5),
+//    uses: {Rn, Rm, Rs}}
+RegisterList SBC_register_shifted_register_cccc0000110snnnnddddssss0tt1mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel SBC_register_shifted_register_cccc0000110snnnnddddssss0tt1mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SBC_register_shifted_register_cccc0000110snnnnddddssss0tt1mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0), inst(11:8)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// SBFX_cccc0111101wwwwwddddlllll101nnnn_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rn: Rn(3:0),
+//    arch: v6T2,
+//    baseline: Binary2RegisterBitRangeNotRnIsPcBitfieldExtract,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), widthm1(20:16), Rd(15:12), lsb(11:7), Rn(3:0)],
+//    lsb: lsb(11:7),
+//    pattern: cccc0111101wwwwwddddlllll101nnnn,
+//    rule: SBFX,
+//    safety: [Pc in {Rd, Rn} => UNPREDICTABLE,
+//      lsb + widthm1  >
+//            31 => UNPREDICTABLE],
+//    uses: {Rn},
+//    widthm1: widthm1(20:16)}
+RegisterList SBFX_cccc0111101wwwwwddddlllll101nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel SBFX_cccc0111101wwwwwddddlllll101nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  // 31  <=
+  //          inst(11:7) + inst(20:16) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x00000F80) >> 7) + ((inst.Bits() & 0x001F0000) >> 16)) > (31)))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SBFX_cccc0111101wwwwwddddlllll101nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// SDIV_cccc01110001dddd1111mmmm0001nnnn_case_0:
+//
+//   {M: M(5),
+//    Pc: 15,
+//    Rd: Rd(19:16),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    arch: v7VEoptv7A_v7R,
+//    baseline: Binary3RegisterOpAltANoCondsUpdate,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(19:16), Rm(11:8), M(5), Rn(3:0)],
+//    pattern: cccc01110001dddd1111mmmm0001nnnn,
+//    rule: SDIV,
+//    safety: [Pc in {Rd, Rm, Rn} => UNPREDICTABLE],
+//    uses: {Rm, Rn}}
+RegisterList SDIV_cccc01110001dddd1111mmmm0001nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+SafetyLevel SDIV_cccc01110001dddd1111mmmm0001nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(11:8) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SDIV_cccc01110001dddd1111mmmm0001nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(11:8), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// SEL_cccc01101000nnnndddd11111011mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc01101000nnnndddd11111011mmmm,
+//    rule: SEL,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList SEL_cccc01101000nnnndddd11111011mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel SEL_cccc01101000nnnndddd11111011mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SEL_cccc01101000nnnndddd11111011mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// SHADD16_cccc01100011nnnndddd11110001mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc01100011nnnndddd11110001mmmm,
+//    rule: SHADD16,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList SHADD16_cccc01100011nnnndddd11110001mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel SHADD16_cccc01100011nnnndddd11110001mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SHADD16_cccc01100011nnnndddd11110001mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// SHADD8_cccc01100011nnnndddd11111001mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc01100011nnnndddd11111001mmmm,
+//    rule: SHADD8,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList SHADD8_cccc01100011nnnndddd11111001mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel SHADD8_cccc01100011nnnndddd11111001mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SHADD8_cccc01100011nnnndddd11111001mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// SHASX_cccc01100011nnnndddd11110011mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc01100011nnnndddd11110011mmmm,
+//    rule: SHASX,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList SHASX_cccc01100011nnnndddd11110011mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel SHASX_cccc01100011nnnndddd11110011mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SHASX_cccc01100011nnnndddd11110011mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// SHSAX_cccc01100011nnnndddd11110101mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc01100011nnnndddd11110101mmmm,
+//    rule: SHSAX,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList SHSAX_cccc01100011nnnndddd11110101mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel SHSAX_cccc01100011nnnndddd11110101mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SHSAX_cccc01100011nnnndddd11110101mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// SHSUB16_cccc01100011nnnndddd11110111mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc01100011nnnndddd11110111mmmm,
+//    rule: SHSUB16,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList SHSUB16_cccc01100011nnnndddd11110111mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel SHSUB16_cccc01100011nnnndddd11110111mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SHSUB16_cccc01100011nnnndddd11110111mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// SHSUB8_cccc01100011nnnndddd11111111mmmm_case_0:
+//
+//   {Pc: 15,
+//    Rd: Rd(15:12),
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    arch: v6,
+//    baseline: Binary3RegisterOpAltBNoCondUpdates,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rn(19:16), Rd(15:12), Rm(3:0)],
+//    pattern: cccc01100011nnnndddd11111111mmmm,
+//    rule: SHSUB8,
+//    safety: [Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm}}
+RegisterList SHSUB8_cccc01100011nnnndddd11111111mmmm_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel SHSUB8_cccc01100011nnnndddd11111111mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SHSUB8_cccc01100011nnnndddd11111111mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// SMLABB_SMLABT_SMLATB_SMLATT_cccc00010000ddddaaaammmm1xx0nnnn_case_0:
+//
+//   {M: M(6),
+//    N: N(5),
+//    Pc: 15,
+//    Ra: Ra(15:12),
+//    Rd: Rd(19:16),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    arch: v5TE,
+//    baseline: Binary4RegisterDualOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28),
+//      Rd(19:16),
+//      Ra(15:12),
+//      Rm(11:8),
+//      M(6),
+//      N(5),
+//      Rn(3:0)],
+//    m_high: M(6)=1,
+//    n_high: N(5)=1,
+//    pattern: cccc00010000ddddaaaammmm1xx0nnnn,
+//    rule: SMLABB_SMLABT_SMLATB_SMLATT,
+//    safety: [Pc in {Rd, Rn, Rm, Ra} => UNPREDICTABLE],
+//    uses: {Rn, Rm, Ra}}
+RegisterList SMLABB_SMLABT_SMLATB_SMLATT_cccc00010000ddddaaaammmm1xx0nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+SafetyLevel SMLABB_SMLABT_SMLATB_SMLATT_cccc00010000ddddaaaammmm1xx0nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) ||
+  //       15  ==
+  //          inst(15:12) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) ||
+       (((15) == (((inst.Bits() & 0x0000F000) >> 12)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SMLABB_SMLABT_SMLATB_SMLATT_cccc00010000ddddaaaammmm1xx0nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(11:8), inst(15:12)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+// SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_0:
+//
+//   {M: M(5),
+//    Pc: 15,
+//    Ra: Ra(15:12),
+//    Rd: Rd(19:16),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    arch: v6,
+//    baseline: Binary4RegisterDualOpNoCondsUpdate,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), M(5), Rn(3:0)],
+//    pattern: cccc01110000ddddaaaammmm00m1nnnn,
+//    rule: SMLAD,
+//    safety: [Ra  ==
+//            Pc => DECODER_ERROR,
+//      Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm, Ra}}
+RegisterList SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+SafetyLevel SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) => DECODER_ERROR
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return DECODER_ERROR;
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SMLAD_cccc01110000ddddaaaammmm00m1nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(11:8), inst(15:12)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+// SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_0:
+//
+//   {M: M(6),
+//    N: N(5),
+//    Pc: 15,
+//    Rd: Rd(19:16),
+//    RdHi: RdHi(19:16),
+//    RdLo: RdLo(15:12),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    arch: v5TE,
+//    baseline: Binary4RegisterDualResult,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {RdLo, RdHi},
+//    fields: [cond(31:28),
+//      RdHi(19:16),
+//      RdLo(15:12),
+//      Rm(11:8),
+//      M(6),
+//      N(5),
+//      Rn(3:0)],
+//    m_high: M(6)=1,
+//    n_high: N(5)=1,
+//    pattern: cccc00010100hhhhllllmmmm1xx0nnnn,
+//    rule: SMLALBB_SMLALBT_SMLALTB_SMLALTT,
+//    safety: [Pc in {RdLo, RdHi, Rn, Rm} => UNPREDICTABLE,
+//      RdHi  ==
+//            RdLo => UNPREDICTABLE],
+//    uses: {RdLo, RdHi, Rn, Rm}}
+RegisterList SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+SafetyLevel SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  // inst(15:12)  ==
+  //          inst(19:16) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SMLALBB_SMLALBT_SMLALTB_SMLALTT_cccc00010100hhhhllllmmmm1xx0nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(15:12), inst(19:16), inst(3:0), inst(11:8)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_0:
+//
+//   {M: M(5),
+//    Pc: 15,
+//    RdHi: RdHi(19:16),
+//    RdLo: RdLo(15:12),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    arch: v6,
+//    baseline: Binary4RegisterDualResultNoCondsUpdate,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {RdHi, RdLo},
+//    fields: [cond(31:28),
+//      RdHi(19:16),
+//      RdLo(15:12),
+//      Rm(11:8),
+//      M(5),
+//      Rn(3:0)],
+//    pattern: cccc01110100hhhhllllmmmm00m1nnnn,
+//    rule: SMLALD,
+//    safety: [Pc in {RdHi, RdLo, Rn, Rm} => UNPREDICTABLE,
+//      RdHi  ==
+//            RdLo => UNPREDICTABLE],
+//    uses: {RdHi, RdLo, Rm, Rn}}
+RegisterList SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16), inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  // inst(15:12)  ==
+  //          inst(19:16) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SMLALD_cccc01110100hhhhllllmmmm00m1nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(15:12), inst(11:8), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    Pc: 15,
+//    RdHi: RdHi(19:16),
+//    RdLo: RdLo(15:12),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    S: S(20),
+//    baseline: Binary4RegisterDualResultLtV6RdHiLoNotRn,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {RdLo, RdHi, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28),
+//      S(20),
+//      RdHi(19:16),
+//      RdLo(15:12),
+//      Rm(11:8),
+//      Rn(3:0)],
+//    pattern: cccc0000111shhhhllllmmmm1001nnnn,
+//    rule: SMLAL_A1,
+//    safety: [Pc in {RdLo, RdHi, Rn, Rm} => UNPREDICTABLE,
+//      RdHi  ==
+//            RdLo => UNPREDICTABLE,
+//      (ArchVersion()  <
+//            6 &&
+//         (RdHi  ==
+//            Rn ||
+//         RdLo  ==
+//            Rn)) => UNPREDICTABLE],
+//    setflags: S(20)=1,
+//    uses: {RdLo, RdHi, Rn, Rm}}
+RegisterList SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(15:12), inst(19:16), 16
+  //       if inst(20)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register(((inst.Bits() & 0x00100000)  ==
+          0x00100000
+       ? 16
+       : 32)));
+}
+
+SafetyLevel SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  // inst(15:12)  ==
+  //          inst(19:16) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12))))
+    return UNPREDICTABLE;
+
+  // (ArchVersion()  <
+  //          6 &&
+  //       (inst(19:16)  ==
+  //          inst(3:0) ||
+  //       inst(15:12)  ==
+  //          inst(3:0))) => UNPREDICTABLE
+  if (((((nacl_arm_dec::ArchVersion()) < (6))) &&
+       (((((((inst.Bits() & 0x000F0000) >> 16)) == ((inst.Bits() & 0x0000000F)))) ||
+       (((((inst.Bits() & 0x0000F000) >> 12)) == ((inst.Bits() & 0x0000000F))))))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SMLAL_A1_cccc0000111shhhhllllmmmm1001nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(15:12), inst(19:16), inst(3:0), inst(11:8)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// SMLAWB_SMLAWT_cccc00010010ddddaaaammmm1x00nnnn_case_0:
+//
+//   {M: M(6),
+//    N: N(5),
+//    Pc: 15,
+//    Ra: Ra(15:12),
+//    Rd: Rd(19:16),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    arch: v5TE,
+//    baseline: Binary4RegisterDualOp,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28),
+//      Rd(19:16),
+//      Ra(15:12),
+//      Rm(11:8),
+//      M(6),
+//      N(5),
+//      Rn(3:0)],
+//    m_high: M(6)=1,
+//    n_high: N(5)=1,
+//    pattern: cccc00010010ddddaaaammmm1x00nnnn,
+//    rule: SMLAWB_SMLAWT,
+//    safety: [Pc in {Rd, Rn, Rm, Ra} => UNPREDICTABLE],
+//    uses: {Rn, Rm, Ra}}
+RegisterList SMLAWB_SMLAWT_cccc00010010ddddaaaammmm1x00nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+SafetyLevel SMLAWB_SMLAWT_cccc00010010ddddaaaammmm1x00nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) ||
+  //       15  ==
+  //          inst(15:12) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) ||
+       (((15) == (((inst.Bits() & 0x0000F000) >> 12)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SMLAWB_SMLAWT_cccc00010010ddddaaaammmm1x00nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(11:8), inst(15:12)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+// SMLSD_cccc01110000ddddaaaammmm01m1nnnn_case_0:
+//
+//   {M: M(5),
+//    Pc: 15,
+//    Ra: Ra(15:12),
+//    Rd: Rd(19:16),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    arch: v6,
+//    baseline: Binary4RegisterDualOpNoCondsUpdate,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), M(5), Rn(3:0)],
+//    pattern: cccc01110000ddddaaaammmm01m1nnnn,
+//    rule: SMLSD,
+//    safety: [Ra  ==
+//            Pc => DECODER_ERROR,
+//      Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm, Ra}}
+RegisterList SMLSD_cccc01110000ddddaaaammmm01m1nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+SafetyLevel SMLSD_cccc01110000ddddaaaammmm01m1nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) => DECODER_ERROR
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return DECODER_ERROR;
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SMLSD_cccc01110000ddddaaaammmm01m1nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(11:8), inst(15:12)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+// SMLSLD_cccc01110100hhhhllllmmmm01m1nnnn_case_0:
+//
+//   {M: M(5),
+//    Pc: 15,
+//    RdHi: RdHi(19:16),
+//    RdLo: RdLo(15:12),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    arch: v6,
+//    baseline: Binary4RegisterDualResultNoCondsUpdate,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {RdHi, RdLo},
+//    fields: [cond(31:28),
+//      RdHi(19:16),
+//      RdLo(15:12),
+//      Rm(11:8),
+//      M(5),
+//      Rn(3:0)],
+//    pattern: cccc01110100hhhhllllmmmm01m1nnnn,
+//    rule: SMLSLD,
+//    safety: [Pc in {RdHi, RdLo, Rn, Rm} => UNPREDICTABLE,
+//      RdHi  ==
+//            RdLo => UNPREDICTABLE],
+//    uses: {RdHi, RdLo, Rm, Rn}}
+RegisterList SMLSLD_cccc01110100hhhhllllmmmm01m1nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16), inst(15:12)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+SafetyLevel SMLSLD_cccc01110100hhhhllllmmmm01m1nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(15:12) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  // inst(15:12)  ==
+  //          inst(19:16) => UNPREDICTABLE
+  if (((((inst.Bits() & 0x000F0000) >> 16)) == (((inst.Bits() & 0x0000F000) >> 12))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SMLSLD_cccc01110100hhhhllllmmmm01m1nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(19:16), inst(15:12), inst(11:8), inst(3:0)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8))).
+   Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0:
+//
+//   {M: M(5),
+//    Pc: 15,
+//    Ra: Ra(15:12),
+//    Rd: Rd(19:16),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    arch: v6,
+//    baseline: Binary4RegisterDualOpNoCondsUpdate,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), M(5), Rn(3:0)],
+//    pattern: cccc01110101ddddaaaammmm00r1nnnn,
+//    rule: SMMLA,
+//    safety: [Ra  ==
+//            Pc => DECODER_ERROR,
+//      Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm, Ra}}
+RegisterList SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+SafetyLevel SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) => DECODER_ERROR
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return DECODER_ERROR;
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(11:8), inst(15:12)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+// SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0:
+//
+//   {M: M(5),
+//    Pc: 15,
+//    Ra: Ra(15:12),
+//    Rd: Rd(19:16),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    arch: v6,
+//    baseline: Binary4RegisterDualOpNoCondsUpdate,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), M(5), Rn(3:0)],
+//    pattern: cccc01110101ddddaaaammmm11r1nnnn,
+//    rule: SMMLS,
+//    safety: [Ra  ==
+//            Pc => DECODER_ERROR,
+//      Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm, Ra}}
+RegisterList SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+SafetyLevel SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) => DECODER_ERROR
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return DECODER_ERROR;
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(11:8), inst(15:12)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+}  // namespace nacl_arm_dec

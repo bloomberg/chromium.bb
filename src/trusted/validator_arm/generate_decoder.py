@@ -33,6 +33,20 @@ import dgen_add_patterns
 import dgen_decoder_output
 import dgen_test_output
 import dgen_actuals
+import dgen_baselines
+
+# Defines the number of files to use when generating baseline classes.
+# The main reason for splitting into multiple files is to deal with
+# size limitations of the Rietveld server.
+_NUM_BASELINE_FILES = 3
+
+# Holds the suffixes used to hold baseline .h header files.
+_BASELINE_SUFFIXES_H = [('baselines_%s.h' % c)
+                        for c in range(1, _NUM_BASELINE_FILES+1)]
+
+# Holds the suffixes used to hold baseline .cc files.
+_BASELINE_SUFFIXES_CC = [('baselines_%s.cc' % c)
+                         for c in range(1, _NUM_BASELINE_FILES+1)]
 
 def _localize_filename(filename):
   """ Strips off directories above 'native_client', returning
@@ -121,6 +135,18 @@ def main(argv):
       dgen_actuals.generate_actuals_h(
           decoder, decoder_name, _localize_filename(output_filename),
           f, cl_args)
+    elif output_filename.endswith('baselines.h'):
+      dgen_baselines.generate_baselines_base_h(
+          decoder, decoder_name, _localize_filename(output_filename),
+          f, cl_args, _NUM_BASELINE_FILES)
+    elif name_suffix_in(output_filename, _BASELINE_SUFFIXES_H):
+      dgen_baselines.generate_baselines_h(
+          decoder, decoder_name, _localize_filename(output_filename),
+          f, cl_args, _NUM_BASELINE_FILES)
+    elif output_filename.endswith('baselines.h'):
+      dgen_baselines.generate_baselines_h(
+          decoder, decoder_name, _localize_filename(output_filename),
+          f, cl_args)
     elif output_filename.endswith('.h'):
       dgen_decoder_output.generate_h(
           decoder, decoder_name, _localize_filename(output_filename),
@@ -133,6 +159,10 @@ def main(argv):
       dgen_actuals.generate_actuals_cc(
           decoder, decoder_name, _localize_filename(output_filename),
           f, cl_args)
+    elif name_suffix_in(output_filename, _BASELINE_SUFFIXES_CC):
+      dgen_baselines.generate_baselines_cc(
+          decoder, decoder_name, _localize_filename(output_filename),
+          f, cl_args, _NUM_BASELINE_FILES)
     elif output_filename.endswith('.cc'):
       dgen_decoder_output.generate_cc(
           decoder, decoder_name, _localize_filename(output_filename),
@@ -143,6 +173,12 @@ def main(argv):
     print "Completed."
 
     return 0
+
+def name_suffix_in(name, suffixes):
+  for suffix in suffixes:
+    if name.endswith(suffix):
+      return True
+  return False
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
