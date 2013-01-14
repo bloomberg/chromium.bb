@@ -2478,7 +2478,6 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:                         = Undefined  # Note on page A7-10
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- simd_dp_3same (See Section A7.4.1)
 *V3RSL VectorBinary3RegisterSameLength
    { U(24), D(22), size(21:20), Vn(19:16), Vd(15:12), op(9),
@@ -2486,27 +2485,33 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    d := D:Vd; n := N:Vn; m := M:Vm;
    defs := {};  # Doesn't affect general purpose registers.
    uses := {};
+   # TODO(karl): Add vector defs/uses etc.
    arch := ASIMD;
 *V3RSL_DQ *V3RSL  # Uses Q registers if Q=1, D registers otherwise.
    baseline := VectorBinary3RegisterSameLengthDQ;
+   # TODO(karl): Add vector defs/uses etc.
    regs := 1 if Q=0 else 2;
    safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED;
 *V3RSL_DQI *V3RSL_DQ
    # Works on 8, 16, 32, and 64-bit integers;
+   # TODO(karl): Add vector defs/uses etc.
    unsigned := U=1;
    esize := 8  << size; elements := 64 / esize;
 *V3RSL_DQI16_32 *V3RSL_DQI
    # Works on 16 and 32-bit integers.
+   # TODO(karl): Add vector defs/uses etc.
    baseline := VectorBinary3RegisterSameLengthDQI16_32;
    safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED &
              (size=11 | size=00) => UNDEFINED;
 *V3RSL_DQI8_16_32 *V3RSL_DQI
    # Only works on 8, 16, and 32-bit integers.
+   # TODO(karl): Add vector defs/uses etc.
    baseline := VectorBinary3RegisterSameLengthDQI8_16_32;
    safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED &
              size=11 => UNDEFINED;
 *V3RSL_DQI8P *V3RSL_DQI
    baseline := VectorBinary3RegisterSameLengthDQI8P;
+   # TODO(karl): Add vector defs/uses etc.
    # Operates on 8-bit and polynomials.
    unsigned := false;
    safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED &
@@ -2519,10 +2524,12 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    safety := sz=1 | Q=1 => UNDEFINED;
 *V3RSL32_DQ *V3RSL32  # Uses Q registers if Q=1, D registers otherwise.
    baseline := VectorBinary3RegisterSameLength32_DQ;
+   # TODO(karl): Add vector defs/uses etc.
    safety := Q=1 & (Vd(0)=1 | Vn(0)=1 | Vd(0)=1) => UNDEFINED &
              sz=1 =>UNDEFINED;
 *V3RSL_DI *V3RSL  # double word (D registers) 8, 16, and 32 integers
    baseline := VectorBinary3RegisterSameLengthDI;
+   # TODO(karl): Add vector defs/uses etc.
    unsigned := U=1;
    esize := 8  << size; elements := 64 / esize;
    safety := size=11 => UNDEFINED & Q=1 => UNDEFINED;
