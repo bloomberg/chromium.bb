@@ -2139,7 +2139,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadDangerousBlobData) {
   // considered dangerous and isn't handled by the DPS.
   const char kFilename[] = "foo.exe";
 #else
-  const char kFilename[] = "foo.jar";
+  const char kFilename[] = "foo.swf";
 #endif
 
   std::string path("files/downloads/download-dangerous-blob.html?filename=");
