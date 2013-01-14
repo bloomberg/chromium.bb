@@ -6,32 +6,35 @@
 
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/common/chrome_constants.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/icon_util.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/installer/util/install_util.h"
 #endif
 
-HICON GetAppIcon() {
+namespace {
+
+// Returns the resource id of the application icon.
+int GetAppIconResourceId() {
   int icon_id = IDR_MAINFRAME;
 #if defined(GOOGLE_CHROME_BUILD)
   if (InstallUtil::IsChromeSxSProcess())
     icon_id = IDR_SXS;
 #endif
+  return icon_id;
+}
+
+}  // namespace
+
+HICON GetAppIcon() {
+  const int icon_id = GetAppIconResourceId();
   return LoadIcon(GetModuleHandle(chrome::kBrowserResourcesDll),
                   MAKEINTRESOURCE(icon_id));
 }
 
-HICON GetAppIconForSize(int size) {
-  int icon_id = IDR_MAINFRAME;
-#if defined(GOOGLE_CHROME_BUILD)
-  if (InstallUtil::IsChromeSxSProcess())
-    icon_id = IDR_SXS;
-#endif
-  return static_cast<HICON>(
-      LoadImage(GetModuleHandle(chrome::kBrowserResourcesDll),
-                MAKEINTRESOURCE(icon_id),
-                IMAGE_ICON,
-                size,
-                size,
-                LR_DEFAULTCOLOR | LR_DEFAULTSIZE));
+scoped_ptr<SkBitmap> GetAppIconForSize(int size) {
+  const int icon_id = GetAppIconResourceId();
+  return IconUtil::CreateSkBitmapFromIconResource(
+      GetModuleHandle(chrome::kBrowserResourcesDll), icon_id, size);
 }

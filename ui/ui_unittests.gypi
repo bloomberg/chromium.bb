@@ -157,6 +157,7 @@
         }],
         ['OS == "win"', {
           'sources': [
+            'test/ui_unittests.rc',
             'base/dragdrop/os_exchange_data_win_unittest.cc',
             'base/win/hwnd_subclass_unittest.cc',
             'gfx/font_fallback_win_unittest.cc',

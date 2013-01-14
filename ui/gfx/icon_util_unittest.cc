@@ -12,6 +12,7 @@
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
+#include "ui/test/ui_unittests_resource.h"
 
 namespace {
 
@@ -292,4 +293,22 @@ TEST_F(IconUtilTest, TestCreateIconFileWithLargeBitmap) {
   SkBitmap bitmap = image.AsBitmap();
   EXPECT_EQ(256, bitmap.width());
   EXPECT_EQ(256, bitmap.height());
+}
+
+TEST_F(IconUtilTest, TestCreateSkBitmapFromIconResource48x48) {
+  HMODULE module = GetModuleHandle(NULL);
+  scoped_ptr<SkBitmap> bitmap(
+      IconUtil::CreateSkBitmapFromIconResource(module, IDR_MAINFRAME, 48));
+  ASSERT_TRUE(bitmap.get());
+  EXPECT_EQ(48, bitmap->width());
+  EXPECT_EQ(48, bitmap->height());
+}
+
+TEST_F(IconUtilTest, TestCreateSkBitmapFromIconResource256x256) {
+  HMODULE module = GetModuleHandle(NULL);
+  scoped_ptr<SkBitmap> bitmap(
+      IconUtil::CreateSkBitmapFromIconResource(module, IDR_MAINFRAME, 256));
+  ASSERT_TRUE(bitmap.get());
+  EXPECT_EQ(256, bitmap->width());
+  EXPECT_EQ(256, bitmap->height());
 }

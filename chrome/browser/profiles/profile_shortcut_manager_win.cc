@@ -59,10 +59,7 @@ FilePath CreateChromeDesktopShortcutIconForProfile(
     const FilePath& profile_path,
     const SkBitmap& avatar_bitmap) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  HICON app_icon_handle = GetAppIconForSize(kShortcutIconSize);
-  scoped_ptr<SkBitmap> app_icon_bitmap(
-      IconUtil::CreateSkBitmapFromHICON(app_icon_handle));
-  DestroyIcon(app_icon_handle);
+  scoped_ptr<SkBitmap> app_icon_bitmap(GetAppIconForSize(kShortcutIconSize));
   if (!app_icon_bitmap.get())
     return FilePath();
 

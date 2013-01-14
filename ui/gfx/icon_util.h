@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
@@ -73,6 +74,14 @@ class UI_EXPORT IconUtil {
   // it when it is no longer needed.
   static SkBitmap* CreateSkBitmapFromHICON(HICON icon, const gfx::Size& s);
 
+  // Loads an icon resource  as a SkBitmap for the specified |size| from a
+  // loaded .dll or .exe |module|. Supports loading smaller icon sizes as well
+  // as the Vista+ 256x256 PNG icon size. If the icon could not be loaded or
+  // found, returns a NULL scoped_ptr.
+  static scoped_ptr<SkBitmap> CreateSkBitmapFromIconResource(HMODULE module,
+                                                             int resource_id,
+                                                             int size);
+
   // Given a valid HICON handle representing an icon, this function converts
   // the icon into an SkBitmap object containing an ARGB bitmap using the
   // dimensions of HICON. If the function cannot convert the icon to a bitmap
@@ -109,6 +118,7 @@ class UI_EXPORT IconUtil {
   // the icon file structures in any of the Windows header files so we need to
   // define these structure within the class. We must make sure we use 2 byte
   // packing so that the structures are layed out properly within the file.
+  // See: http://msdn.microsoft.com/en-us/library/ms997538.aspx
 #pragma pack(push)
 #pragma pack(2)
 
@@ -132,6 +142,28 @@ class UI_EXPORT IconUtil {
     WORD idType;
     WORD idCount;
     ICONDIRENTRY idEntries[1];
+  };
+
+  // GRPICONDIRENTRY contains meta data for an individual icon image within a
+  // RT_GROUP_ICON resource in an .exe or .dll.
+  struct GRPICONDIRENTRY {
+    BYTE bWidth;
+    BYTE bHeight;
+    BYTE bColorCount;
+    BYTE bReserved;
+    WORD wPlanes;
+    WORD wBitCount;
+    DWORD dwBytesInRes;
+    WORD nID;
+  };
+
+  // GRPICONDIR Contains information about all the icon images contained within
+  // a RT_GROUP_ICON resource in an .exe or .dll.
+  struct GRPICONDIR {
+    WORD idReserved;
+    WORD idType;
+    WORD idCount;
+    GRPICONDIRENTRY idEntries[1];
   };
 
   // Contains the actual icon image.
