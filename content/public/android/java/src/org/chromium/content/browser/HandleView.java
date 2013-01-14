@@ -39,14 +39,12 @@ class HandleView extends View {
     private float mHotspotX;
     private float mHotspotY;
     private int mLineOffsetY;
-    private int mHeight;
     private int mLastParentX;
     private int mLastParentY;
     private float mDownPositionX, mDownPositionY;
     private int mContainerPositionX, mContainerPositionY;
     private long mTouchTimer;
     private boolean mIsInsertionHandle = false;
-    private Runnable mLongPressCallback;
 
     private View mParent;
     private InsertionHandleController.PastePopupMenu mPastePopupWindow;
@@ -138,9 +136,7 @@ class HandleView extends View {
         }
         }
 
-        final int handleHeight = mDrawable.getIntrinsicHeight();
         mHotspotY = 0;
-        mHeight = handleHeight;
         invalidate();
     }
 

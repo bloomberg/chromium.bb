@@ -39,12 +39,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         MotionEvent mLastLongPress;
         MotionEvent mLastSingleTap;
         MotionEvent mLastFling1;
-        MotionEvent mLastFling2;
         CountDownLatch mLongPressCalled;
-        MotionEvent mLastScroll1;
-        MotionEvent mLastScroll2;
-        float mLastScrollDistanceX;
-        float mLastScrollDistanceY;
 
         public MockListener() {
             mLongPressCalled = new CountDownLatch(1);
@@ -70,17 +65,12 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            mLastScroll1 = e1;
-            mLastScroll2 = e2;
-            mLastScrollDistanceX = distanceX;
-            mLastScrollDistanceY = distanceY;
             return true;
         }
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             mLastFling1 = e1;
-            mLastFling2 = e2;
             return true;
         }
     }
