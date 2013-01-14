@@ -393,8 +393,12 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
 
     service->UnsuppressAndStart();
     DisplaySpinner();
+
     // To listen to the token available notifications, start SigninTracker.
-    signin_tracker_.reset(new SigninTracker(GetProfile(), this));
+    signin_tracker_.reset(
+        new SigninTracker(GetProfile(),
+                          this,
+                          SigninTracker::SERVICES_INITIALIZING));
     return;
   }
 

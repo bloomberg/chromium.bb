@@ -538,10 +538,18 @@ TEST_P(SyncSetupHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {
   // that won't finish for this test as we're simulating cancelling while the
   // spinner is showing.
   handler_->OpenSyncSetup(false);
-  EXPECT_EQ(handler_.get(),
+
+  // When the SigninTracker is initialized here, a signin failure is triggered
+  // due to sync_initialized() returning false, causing the current login UI to
+  // be dismissed.
+  EXPECT_EQ(NULL,
             LoginUIServiceFactory::GetForProfile(
                 profile_.get())->current_login_ui());
-  ASSERT_EQ(1U, web_ui_.call_data().size());
+
+  // We expect a call to SyncSetupOverlay.showSyncSetupPage. Some variations of
+  // this test also include a call to OptionsPage.closeOverlay, that we ignore.
+  EXPECT_LE(1U, web_ui_.call_data().size());
+
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
   EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data.function_name);
   std::string page;
@@ -573,20 +581,29 @@ TEST_P(SyncSetupHandlerTest,
   SetDefaultExpectationsForConfigPage();
 
   handler_->OpenSyncSetup(false);
-  ASSERT_EQ(1U, web_ui_.call_data().size());
+
+  // We expect a call to SyncSetupOverlay.showSyncSetupPage. Some variations of
+  // this test also include a call to OptionsPage.closeOverlay, that we ignore.
+  EXPECT_LE(1U, web_ui_.call_data().size());
+
   const TestWebUI::CallData& data0 = web_ui_.call_data()[0];
   EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data0.function_name);
   std::string page;
   ASSERT_TRUE(data0.arg1->GetAsString(&page));
   EXPECT_EQ(page, "spinner");
   handler_->SigninSuccess();
+
   // On signin success, the dialog will proceed from spinner to configure sync
-  // everything.
-  EXPECT_EQ(handler_.get(),
+  // everything. There is no login UI once signin is successful.
+  EXPECT_EQ(NULL,
             LoginUIServiceFactory::GetForProfile(
                 profile_.get())->current_login_ui());
-  ASSERT_EQ(2U, web_ui_.call_data().size());
-  const TestWebUI::CallData& data1 = web_ui_.call_data()[1];
+
+  // We expect a second call to SyncSetupOverlay.showSyncSetupPage. Some
+  // variations of this test also include a call to OptionsPage.closeOverlay,
+  // that we ignore.
+  EXPECT_LE(2U, web_ui_.call_data().size());
+  const TestWebUI::CallData& data1 = web_ui_.call_data().back();
   EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data1.function_name);
   ASSERT_TRUE(data1.arg1->GetAsString(&page));
   EXPECT_EQ(page, "configure");
