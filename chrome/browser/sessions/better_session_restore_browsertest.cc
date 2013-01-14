@@ -23,9 +23,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
@@ -146,7 +146,7 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
 
   void StoreDataWithPage(Browser* browser, const std::string& filename) {
     content::WebContents* web_contents =
-        chrome::GetActiveWebContents(browser);
+        browser->tab_strip_model()->GetActiveWebContents();
     content::TitleWatcher title_watcher(web_contents, title_storing_);
     title_watcher.AlsoWaitForTitle(title_pass_);
     title_watcher.AlsoWaitForTitle(title_error_write_failed_);
@@ -166,7 +166,7 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     // Navigate to a page which has previously stored data; check that the
     // stored data can be accessed.
     content::WebContents* web_contents =
-        chrome::GetActiveWebContents(browser);
+        browser->tab_strip_model()->GetActiveWebContents();
     content::TitleWatcher title_watcher(web_contents, title_pass_);
     title_watcher.AlsoWaitForTitle(title_storing_);
     title_watcher.AlsoWaitForTitle(title_error_write_failed_);
@@ -190,7 +190,8 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
   }
 
   void CheckTitle(Browser* browser, const string16& expected_title) {
-    content::WebContents* web_contents = chrome::GetWebContentsAt(browser, 0);
+    content::WebContents* web_contents =
+        browser->tab_strip_model()->GetWebContentsAt(0);
     content::TitleWatcher title_watcher(web_contents, expected_title);
     title_watcher.AlsoWaitForTitle(title_pass_);
     title_watcher.AlsoWaitForTitle(title_storing_);
@@ -212,7 +213,7 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
 
   void PostFormWithPage(const std::string& filename, bool password_present) {
     content::WebContents* web_contents =
-        chrome::GetActiveWebContents(browser());
+        browser()->tab_strip_model()->GetActiveWebContents();
     content::TitleWatcher title_watcher(web_contents, title_pass_);
     ui_test_utils::NavigateToURL(
         browser(), GURL(fake_server_address_ + test_path_ + filename));
@@ -463,7 +464,8 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, PRE_SessionCookies) {
 }
 
 IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, SessionCookies) {
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(std::string(chrome::kAboutBlankURL), web_contents->GetURL().spec());
   // When we navigate to the page again, it doens't see the data previously
   // stored.
@@ -475,7 +477,8 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, PRE_SessionStorage) {
 }
 
 IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, SessionStorage) {
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(std::string(chrome::kAboutBlankURL), web_contents->GetURL().spec());
   StoreDataWithPage("session_storage.html");
 }
@@ -487,7 +490,8 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest,
 
 IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, PRE_LocalStorageClearedOnExit) {
   // Normally localStorage is persisted.
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(std::string(chrome::kAboutBlankURL), web_contents->GetURL().spec());
   NavigateAndCheckStoredData("local_storage.html");
   // ... but not if it's set to clear on exit.
@@ -496,7 +500,8 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, PRE_LocalStorageClearedOnExit) {
 }
 
 IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, LocalStorageClearedOnExit) {
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(std::string(chrome::kAboutBlankURL), web_contents->GetURL().spec());
   StoreDataWithPage("local_storage.html");
 }
@@ -507,7 +512,8 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, PRE_PRE_CookiesClearedOnExit) {
 
 IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, PRE_CookiesClearedOnExit) {
   // Normally cookies are restored.
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(std::string(chrome::kAboutBlankURL), web_contents->GetURL().spec());
   NavigateAndCheckStoredData("cookies.html");
   // ... but not if the content setting is set to clear on exit.
@@ -516,7 +522,8 @@ IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, PRE_CookiesClearedOnExit) {
 }
 
 IN_PROC_BROWSER_TEST_F(NoSessionRestoreTest, CookiesClearedOnExit) {
-  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(std::string(chrome::kAboutBlankURL), web_contents->GetURL().spec());
   StoreDataWithPage("local_storage.html");
 }
@@ -566,7 +573,7 @@ class BetterSessionRestoreCrashTest : public BetterSessionRestoreTest {
         FindOneOtherBrowserForProfile(profile, browser_before_restore);
     ASSERT_TRUE(browser_after_restore);
     content::WebContents* web_contents =
-        chrome::GetActiveWebContents(browser_after_restore);
+        browser_after_restore->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(web_contents);
     EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
     InfoBarService* infobar_service =
@@ -580,7 +587,8 @@ class BetterSessionRestoreCrashTest : public BetterSessionRestoreTest {
     loop.RunUntilIdle();
 
     // Check the restored page.
-    web_contents = chrome::GetWebContentsAt(browser_after_restore, 0);
+    web_contents =
+        browser_after_restore->tab_strip_model()->GetWebContentsAt(0);
     ASSERT_TRUE(web_contents);
     EXPECT_EQ(GURL(fake_server_address() + test_path() + filename),
               web_contents->GetURL());

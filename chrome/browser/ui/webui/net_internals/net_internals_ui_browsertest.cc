@@ -14,7 +14,6 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"
 #include "chrome/common/chrome_switches.h"
@@ -267,7 +266,7 @@ void NetInternalsTest::MessageHandler::PrerenderPage(
 void NetInternalsTest::MessageHandler::NavigateToPrerender(
     const ListValue* list_value) {
   content::RenderViewHost* host =
-      chrome::GetWebContentsAt(browser(), 1)->GetRenderViewHost();
+      browser()->tab_strip_model()->GetWebContentsAt(1)->GetRenderViewHost();
   host->ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16("Click()"));
 }
 

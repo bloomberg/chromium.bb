@@ -10,7 +10,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -38,8 +38,8 @@ class InfoBarsTest : public InProcessBrowserTest {
         chrome::NOTIFICATION_EXTENSION_LOADED,
         content::NotificationService::AllSources());
 
-    ExtensionInstallPrompt* client =
-        new ExtensionInstallPrompt(chrome::GetActiveWebContents(browser()));
+    ExtensionInstallPrompt* client = new ExtensionInstallPrompt(
+        browser()->tab_strip_model()->GetActiveWebContents());
     scoped_refptr<extensions::CrxInstaller> installer(
         extensions::CrxInstaller::Create(service, client));
     installer->set_install_cause(extension_misc::INSTALL_CAUSE_AUTOMATION);
@@ -74,8 +74,8 @@ IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
   infobar_added_2.Wait();
   infobar_removed_1.Wait();
   EXPECT_EQ(0u,
-            InfoBarService::FromWebContents(
-                chrome::GetWebContentsAt(browser(), 0))->GetInfoBarCount());
+            InfoBarService::FromWebContents(browser()->tab_strip_model()->
+                GetWebContentsAt(0))->GetInfoBarCount());
 
   content::WindowedNotificationObserver infobar_removed_2(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
@@ -83,6 +83,6 @@ IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
   ThemeServiceFactory::GetForProfile(browser()->profile())->UseDefaultTheme();
   infobar_removed_2.Wait();
   EXPECT_EQ(0u,
-            InfoBarService::FromWebContents(
-                chrome::GetActiveWebContents(browser()))->GetInfoBarCount());
+            InfoBarService::FromWebContents(browser()->tab_strip_model()->
+                GetActiveWebContents())->GetInfoBarCount());
 }

@@ -19,7 +19,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -90,7 +89,7 @@ BrowserEventRouter::BrowserEventRouter(Profile* profile)
     Browser* browser = *iter;
     if (browser->tab_strip_model()) {
       for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
-        WebContents* contents = chrome::GetWebContentsAt(browser, i);
+        WebContents* contents = browser->tab_strip_model()->GetWebContentsAt(i);
         int tab_id = ExtensionTabUtil::GetTabId(contents);
         tab_entries_[tab_id] = TabEntry();
       }
@@ -110,10 +109,11 @@ void BrowserEventRouter::RegisterForBrowserNotifications(Browser* browser) {
   if (!profile_->IsSameProfile(browser->profile()))
     return;
   // Start listening to TabStripModel events for this browser.
-  browser->tab_strip_model()->AddObserver(this);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+  tab_strip->AddObserver(this);
 
-  for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
-    RegisterForTabNotifications(chrome::GetWebContentsAt(browser, i));
+  for (int i = 0; i < tab_strip->count(); ++i) {
+    RegisterForTabNotifications(tab_strip->GetWebContentsAt(i));
   }
 }
 

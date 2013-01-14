@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -1135,7 +1134,7 @@ void CaptivePortalBrowserTest::FastTimeoutNoCaptivePortal(
   // Check that the right tab was navigated, and there were no extra
   // navigations.
   EXPECT_EQ(1, navigation_observer.NumNavigationsForTab(
-                   chrome::GetWebContentsAt(browser, active_index)));
+                   browser->tab_strip_model()->GetWebContentsAt(active_index)));
   EXPECT_EQ(0, NumLoadingTabs());
 
   // Check the tab's state, and verify no captive portal check is pending.
@@ -1990,7 +1989,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, GoBackToTimeout) {
             GetStateOfTabReloaderAt(browser(), 0));
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
             GetStateOfTabReloaderAt(browser(), 1));
-  ASSERT_TRUE(IsLoginTab(chrome::GetWebContentsAt(browser(), 1)));
+  ASSERT_TRUE(IsLoginTab(browser()->tab_strip_model()->GetWebContentsAt(1)));
 
   ASSERT_EQ(2, tab_strip_model->count());
   EXPECT_EQ(1, tab_strip_model->active_index());

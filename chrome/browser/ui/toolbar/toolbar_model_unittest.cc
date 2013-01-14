@@ -10,8 +10,8 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/search/search.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -153,7 +153,7 @@ class ToolbarModelTest : public BrowserWithTestWindowTest {
                                 const string16 expected_text,
                                 bool would_replace,
                                 bool should_display) {
-    WebContents* contents = chrome::GetWebContentsAt(browser(), 0);
+    WebContents* contents = browser()->tab_strip_model()->GetWebContentsAt(0);
     browser()->OpenURL(OpenURLParams(
         url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED,
         false));

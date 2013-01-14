@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/ash/launcher/browser_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_favicon_loader.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -79,7 +79,8 @@ class LauncherFaviconLoaderBrowsertest : public InProcessBrowserTest {
       ui_test_utils::NavigateToURL(panel_browser_, GURL());
       EXPECT_FALSE(contents_observer_.get());
       contents_observer_.reset(
-          new ContentsObserver(chrome::GetWebContentsAt(panel_browser_, 0)));
+          new ContentsObserver(
+              panel_browser_->tab_strip_model()->GetWebContentsAt(0)));
     }
     return panel_browser_;
   }

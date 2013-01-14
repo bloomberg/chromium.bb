@@ -5,7 +5,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "content/public/browser/notification_service.h"
@@ -129,10 +130,10 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
 
     // The two sets of tags should also be isolated from the main browser.
     EXPECT_NE(source1->GetWebContents()->GetRenderProcessHost()->GetID(),
-              chrome::GetWebContentsAt(browser(), 0)->
+              browser()->tab_strip_model()->GetWebContentsAt(0)->
                   GetRenderProcessHost()->GetID());
     EXPECT_NE(source3->GetWebContents()->GetRenderProcessHost()->GetID(),
-              chrome::GetWebContentsAt(browser(), 0)->
+              browser()->tab_strip_model()->GetWebContentsAt(0)->
                   GetRenderProcessHost()->GetID());
 
     // Check that the storage partitions of the first two tags match and are
@@ -255,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, CookieIsolation) {
 
   // Test the regular browser context to ensure we have only one cookie.
   automation_util::GetCookies(GURL("http://localhost"),
-                              chrome::GetWebContentsAt(browser(), 0),
+                              browser()->tab_strip_model()->GetWebContentsAt(0),
                               &cookie_size, &cookie_value);
   EXPECT_EQ("testCookie=1", cookie_value);
 
@@ -495,12 +496,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DOMStorageIsolation) {
   // Also, let's check that the main browser and another tag that doesn't share
   // the same partition don't have those values stored.
   EXPECT_TRUE(ExecuteScriptAndExtractString(
-      chrome::GetWebContentsAt(browser(), 0),
+      browser()->tab_strip_model()->GetWebContentsAt(0),
       get_local_storage.c_str(),
       &output));
   EXPECT_STREQ("badval", output.c_str());
   EXPECT_TRUE(ExecuteScriptAndExtractString(
-      chrome::GetWebContentsAt(browser(), 0),
+      browser()->tab_strip_model()->GetWebContentsAt(0),
       get_session_storage.c_str(),
       &output));
   EXPECT_STREQ("badval", output.c_str());
@@ -590,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
       "  else "
       "    document.title = 'error';"
       "}";
-  ExecuteScriptWaitForTitle(chrome::GetWebContentsAt(browser(), 0),
+  ExecuteScriptWaitForTitle(browser()->tab_strip_model()->GetWebContentsAt(0),
                             script, "db not found");
   ExecuteScriptWaitForTitle(default_tag_contents1, script, "db not found");
 }

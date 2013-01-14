@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -189,7 +188,8 @@ void CustomHomePagesTableModel::SetToCurrentlyOpenPages() {
     for (int tab_index = 0;
          tab_index < browser->tab_strip_model()->count();
          ++tab_index) {
-      const GURL url = chrome::GetWebContentsAt(browser, tab_index)->GetURL();
+      const GURL url =
+          browser->tab_strip_model()->GetWebContentsAt(tab_index)->GetURL();
       if (ShouldAddPage(url))
         Add(add_index++, url);
     }
