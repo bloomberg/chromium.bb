@@ -1304,6 +1304,9 @@ void RenderWidget::willBeginCompositorFrame() {
   // The following two can result in further layout and possibly
   // enable GPU acceleration so they need to be called before any painting
   // is done.
+#if !defined(OS_ANDROID)
+  UpdateTextInputState(DO_NOT_SHOW_IME);
+#endif  // OS_ANDROID
   UpdateSelectionBounds();
 
   WillInitiatePaint();
