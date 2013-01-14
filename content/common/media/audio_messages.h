@@ -11,7 +11,7 @@
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "content/common/content_export.h"
-#include "content/common/media/media_param_traits.h"
+#include "content/common/media/audio_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_input_ipc.h"
