@@ -98,9 +98,13 @@ def RebootDeviceSafe(device):
 def RebootDevices():
   """Reboot all attached and online devices."""
   buildbot_report.PrintNamedStep('Reboot devices')
+  # Early return here to avoid presubmit dependence on adb,
+  # which might not exist in this checkout.
+  if TESTING:
+    return
   devices = android_commands.GetAttachedDevices()
   print 'Rebooting: %s' % devices
-  if devices and not TESTING:
+  if devices:
     pool = multiprocessing.Pool(len(devices))
     results = pool.map_async(RebootDeviceSafe, devices).get(99999)
 
