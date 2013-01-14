@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/time_formatting.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/host_desktop.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/search/other_device_menu_controller.h"
@@ -34,6 +36,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -109,8 +113,11 @@ void ForeignSessionHandler::OpenForeignSessionWindows(
       window_num == kInvalidId ?
       std::vector<const SessionWindow*>::const_iterator(windows.end()) :
       iter_begin + 1;
+  chrome::HostDesktopType host_desktop_type =
+      chrome::GetHostDesktopTypeForNativeView(
+          web_ui->GetWebContents()->GetNativeView());
   SessionRestore::RestoreForeignSessionWindows(
-      Profile::FromWebUI(web_ui), iter_begin, iter_end);
+      Profile::FromWebUI(web_ui), host_desktop_type, iter_begin, iter_end);
 }
 
 // static

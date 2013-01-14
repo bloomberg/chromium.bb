@@ -41,6 +41,7 @@ void SessionRestore::RestoreForeignSessionTab(
 // static
 void SessionRestore::RestoreForeignSessionWindows(
     Profile* profile,
+    chrome::HostDesktopType host_desktop_type,
     std::vector<const SessionWindow*>::const_iterator begin,
     std::vector<const SessionWindow*>::const_iterator end) {
   NOTREACHED();

@@ -94,7 +94,8 @@ bool SessionCrashedInfoBarDelegate::Accept() {
     behavior = SessionRestore::CLOBBER_CURRENT_TAB;
   }
   SessionRestore::RestoreSession(
-      browser_->profile(), browser_, behavior, std::vector<GURL>());
+      browser_->profile(), browser_, browser_->host_desktop_type(), behavior,
+      std::vector<GURL>());
   accepted_ = true;
   return true;
 }

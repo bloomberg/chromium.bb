@@ -232,7 +232,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
   // Create a new popup.
   Profile* profile = browser()->profile();
   Browser* popup =
-      new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile));
+      new Browser(Browser::CreateParams(Browser::TYPE_POPUP, profile,
+                                        browser()->host_desktop_type()));
   popup->window()->Show();
 
   // Close the browser.
@@ -524,7 +525,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
   session.push_back(static_cast<const SessionWindow*>(&window));
   ui_test_utils::BrowserAddedObserver window_observer;
   SessionRestore::RestoreForeignSessionWindows(
-      profile, session.begin(), session.end());
+      profile, browser()->host_desktop_type(), session.begin(), session.end());
   Browser* new_browser = window_observer.WaitForSingleNewBrowser();
   ASSERT_TRUE(new_browser);
   ASSERT_EQ(2u, BrowserList::size());
@@ -677,7 +678,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NormalAndPopup) {
 
   // Open a popup.
   Browser* popup = new Browser(
-      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(),
+                            browser()->host_desktop_type()));
   popup->window()->Show();
   ASSERT_EQ(2u, BrowserList::size());
 
@@ -865,6 +867,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestorePinnedSelectedTab) {
   // Restore the session again, globbering the existing tab.
   SessionRestore::RestoreSession(
       profile, new_browser,
+      new_browser->host_desktop_type(),
       SessionRestore::CLOBBER_CURRENT_TAB | SessionRestore::SYNCHRONOUS,
       std::vector<GURL>());
 

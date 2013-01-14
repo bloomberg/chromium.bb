@@ -7,9 +7,10 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "base/basictypes.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class Browser;
@@ -40,17 +41,23 @@ class SessionRestore {
   // Restores the last session. |behavior| is a bitmask of Behaviors, see it
   // for details. If |browser| is non-null the tabs for the first window are
   // added to it. Returns the last active browser.
+  // Every additional browser created will be created on the desktop specified
+  // by |host_desktop_type|, if |browser| is non-null it should have the same
+  // desktop type.
   //
   // If |urls_to_open| is non-empty, a tab is added for each of the URLs.
   static Browser* RestoreSession(Profile* profile,
                                  Browser* browser,
+                                 chrome::HostDesktopType host_desktop_type,
                                  uint32 behavior,
                                  const std::vector<GURL>& urls_to_open);
 
   // Specifically used in the restoration of a foreign session.  This method
-  // restores the given session windows to a browser.
+  // restores the given session windows to multiple browsers all of which
+  // will be created on the desktop specified by |host_desktop_type|.
   static void RestoreForeignSessionWindows(
       Profile* profile,
+      chrome::HostDesktopType host_desktop_type,
       std::vector<const SessionWindow*>::const_iterator begin,
       std::vector<const SessionWindow*>::const_iterator end);
 

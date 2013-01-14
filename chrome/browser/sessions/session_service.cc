@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -558,6 +559,7 @@ bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
     if (pref.type == SessionStartupPref::LAST) {
       SessionRestore::RestoreSession(
           profile(), browser,
+          browser ? browser->host_desktop_type() : chrome::GetActiveDesktop(),
           browser ? 0 : SessionRestore::ALWAYS_CREATE_TABBED_BROWSER,
           urls_to_open);
       return true;

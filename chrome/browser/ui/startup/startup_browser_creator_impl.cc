@@ -664,10 +664,11 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
     // separate.
     performance_monitor::StartupTimer::PauseTimer();
 
-    Browser* browser = SessionRestore::RestoreSession(profile_,
-                                                      NULL,
-                                                      restore_behavior,
-                                                      urls_to_open);
+    // The startup code only executes for browsers launched in desktop mode.
+    // i.e. HOST_DESKTOP_TYPE_NATIVE. Ash should never get here.
+    Browser* browser = SessionRestore::RestoreSession(
+        profile_, NULL, chrome::HOST_DESKTOP_TYPE_NATIVE, restore_behavior,
+        urls_to_open);
 
     performance_monitor::StartupTimer::UnpauseTimer();
 
