@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -210,7 +211,9 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
       did_submit_(false),
       window_(NULL),
       contents_(NULL),
-      notification_label_(NULL) {
+      notification_label_(NULL),
+      use_billing_for_shipping_(NULL),
+      focus_manager_(NULL) {
   DCHECK(controller);
   detail_groups_.insert(std::make_pair(SECTION_EMAIL,
                                        DetailsGroup(SECTION_EMAIL)));
@@ -234,7 +237,8 @@ void AutofillDialogViews::Show() {
   // WebContentsModalDialog will take care of deleting itself after calling
   // DeleteDelegate().
   window_ = new ConstrainedWindowViews(controller_->web_contents(), this);
-  window_->GetFocusManager()->AddFocusChangeListener(this);
+  focus_manager_ = window_->GetFocusManager();
+  focus_manager_->AddFocusChangeListener(this);
 }
 
 void AutofillDialogViews::UpdateSection(DialogSection section) {
@@ -272,7 +276,7 @@ string16 AutofillDialogViews::GetWindowTitle() const {
 }
 
 void AutofillDialogViews::WindowClosing() {
-  window_->GetFocusManager()->RemoveFocusChangeListener(this);
+  focus_manager_->RemoveFocusChangeListener(this);
 }
 
 void AutofillDialogViews::DeleteDelegate() {
@@ -385,14 +389,18 @@ void AutofillDialogViews::ContentsChanged(views::Textfield* sender,
 
 bool AutofillDialogViews::HandleKeyEvent(views::Textfield* sender,
                                          const ui::KeyEvent& key_event) {
-  // TODO(estade): implement.
-  return false;
+  scoped_ptr<ui::KeyEvent> copy(key_event.Copy());
+#if defined(OS_WIN)
+  content::NativeWebKeyboardEvent event(copy->native_event());
+#else
+  content::NativeWebKeyboardEvent event(copy.get());
+#endif
+  return controller_->HandleKeyPressEvent(event);
 }
 
 void AutofillDialogViews::OnWillChangeFocus(
     views::View* focused_before,
     views::View* focused_now) {
-  // TODO(estade): Check + update validity of text field.
   controller_->FocusMoved();
 }
 
