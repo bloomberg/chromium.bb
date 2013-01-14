@@ -11,10 +11,15 @@ import subprocess
 import sys
 import tempfile
 
-sys.path.append(os.path.join(sys.path[0], '..', '..', 'third_party',
-                             'WebKit', 'Tools', 'Scripts'))
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__ ),
+                                 os.pardir, os.pardir, os.pardir, os.pardir,
+                                 'third_party', 'WebKit', 'Tools', 'Scripts')))
 from webkitpy.common.system import executive, filesystem
 from webkitpy.layout_tests.layout_package import json_results_generator
+
+#TODO(craigdh): pylib/utils/ should not depend on pylib/.
+from pylib import constants
 
 
 # The JSONResultsGenerator gets the filesystem.join operation from the Port
@@ -56,21 +61,53 @@ class JSONResultsGenerator(json_results_generator.JSONResultsGeneratorBase):
 
   #override
   def _get_svn_revision(self, in_directory):
-    """Returns the git revision for the given directory.
+    """Returns the git/svn revision for the given directory.
 
     Args:
-      in_directory: The directory where git is to be run.
+      in_directory: The directory relative to src.
     """
-    git_dir =  self._filesystem.join(os.environ.get('CHROME_SRC'),
-                                     in_directory,
-                                     '.git')
-    if self._filesystem.exists(git_dir):
-      # Note: Not thread safe: http://bugs.python.org/issue2320
-      output = subprocess.Popen(
-          ['git', '--git-dir=%s' % git_dir, 'show-ref', '--head',
-           '--hash=10', 'HEAD'],
-          stdout=subprocess.PIPE).communicate()[0].strip()
-      return output
+    def _is_git_directory(in_directory):
+      """Returns true if the given directory is in a git repository.
+
+      Args:
+        in_directory: The directory path to be tested.
+      """
+      if os.path.exists(os.path.join(in_directory, '.git')):
+        return True
+      parent = os.path.dirname(in_directory)
+      if parent == constants.CHROME_DIR or parent == in_directory:
+        return False
+      return _is_git_directory(parent)
+
+    def _get_git_revision(in_directory):
+      """Returns the git hash tag for the given directory.
+
+      Args:
+        in_directory: The directory where git is to be run.
+      """
+      command_line = ['git', 'log', '-1', '--pretty=format:%H']
+      output = subprocess.Popen(command_line,
+                                cwd=in_directory,
+                                stdout=subprocess.PIPE).communicate()[0]
+      return output[0:40]
+
+    in_directory = os.path.join(constants.CHROME_DIR, in_directory)
+
+    if not os.path.exists(os.path.join(in_directory, '.svn')):
+      if _is_git_directory(in_directory):
+        return _get_git_revision(in_directory)
+      else:
+        return ''
+
+    # Note: Not thread safe: http://bugs.python.org/issue2320
+    output = subprocess.Popen(['svn', 'info', '--xml'],
+                              cwd=in_directory,
+                              stdout=subprocess.PIPE).communicate()[0]
+    try:
+      dom = xml.dom.minidom.parseString(output)
+      return dom.getElementsByTagName('entry')[0].getAttribute('revision')
+    except xml.parsers.expat.ExpatError:
+      return ''
     return ''
 
 
@@ -80,16 +117,26 @@ class ResultsUploader(object):
     self._build_number = os.environ.get('BUILDBOT_BUILDNUMBER')
     self._builder_name = os.environ.get('BUILDBOT_BUILDERNAME')
     self._tests_type = tests_type
-    self._build_name = 'chromium-android'
 
-    if not self._builder_name:
+    if not self._build_number or not self._builder_name:
       raise Exception('You should not be uploading tests results to the server'
                       'from your local machine.')
 
-    buildbot_branch = os.environ.get('BUILDBOT_BRANCH')
-    if not buildbot_branch:
-      buildbot_branch = 'master'
-    self._master_name = '%s-%s' % (self._build_name, buildbot_branch)
+    upstream = (tests_type != 'Chromium_Android_Instrumentation')
+    if upstream:
+      # TODO(frankf): Use factory properties (see buildbot/bb_device_steps.py)
+      # This requires passing the actual master name (e.g. 'ChromiumFYI' not
+      # 'chromium.fyi').
+      from slave import slave_utils
+      self._build_name = slave_utils.SlaveBuildName(constants.CHROME_DIR)
+      self._master_name = slave_utils.GetActiveMaster()
+    else:
+      self._build_name = 'chromium-android'
+      buildbot_branch = os.environ.get('BUILDBOT_BRANCH')
+      if not buildbot_branch:
+        buildbot_branch = 'master'
+      self._master_name = '%s-%s' % (self._build_name, buildbot_branch)
+
     self._test_results_map = {}
 
   def AddResults(self, test_results):

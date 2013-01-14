@@ -12,7 +12,10 @@ import traceback
 
 import buildbot_report
 import constants
-import flakiness_dashboard_results_uploader
+from pylib.utils import flakiness_dashboard_results_uploader
+
+
+_STAGING_SERVER = 'chrome-android-staging'
 
 
 class BaseTestResult(object):
@@ -167,11 +170,31 @@ class TestResults(object):
 
   def _LogToFlakinessDashboard(self, test_type, test_package, flakiness_server):
     """Upload results to the flakiness dashboard"""
-    # TODO(frankf): Fix upstream/downstream reporting for both test types.
-    logging.info('Upload %s %s to %s' % (test_type, test_package,
-                                         flakiness_server))
-    flakiness_dashboard_results_uploader.Upload(
-        flakiness_server, 'Chromium_Android_Instrumentation', self)
+    logging.info('Upload results for test type "%s", test package "%s" to %s' %
+                 (test_type, test_package, flakiness_server))
+
+    # TODO(frankf): Enable uploading for gtests.
+    if test_type != 'Instrumentation':
+      logging.warning('Invalid test type.')
+      return
+
+    try:
+      # TODO(frankf): Temp server for initial testing upstream.
+      # Use http://test-results.appspot.com once we're confident this works.
+      if _STAGING_SERVER in flakiness_server:
+          assert test_package in ['ContentShellTest',
+                                  'ChromiumTestShellTest',
+                                  'AndroidWebViewTest']
+          dashboard_test_type = ('%s_instrumentation_tests' %
+                                 test_package.lower().rstrip('test'))
+      # Downstream prod server.
+      else:
+        dashboard_test_type = 'Chromium_Android_Instrumentation'
+
+      flakiness_dashboard_results_uploader.Upload(
+          flakiness_server, dashboard_test_type, self)
+    except Exception as e:
+      logging.error(e)
 
   def LogFull(self, test_type, test_package, annotation=None,
               build_type='Debug', all_tests=None, flakiness_server=None):
