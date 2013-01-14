@@ -55,13 +55,6 @@ bool IsTextInput(const WebKit::WebInputElement* element);
 // Returns true if |element| is a select element.
 bool IsSelectElement(const WebKit::WebFormControlElement& element);
 
-// Returns true if |element| is a checkbox or a radio button element.
-bool IsCheckableElement(const WebKit::WebInputElement* element);
-
-// Returns true if |element| is one of the input element that can be autofilled.
-// {Text, Radiobutton, Checkbox}
-bool IsAutofillableInputElement(const WebKit::WebInputElement* element);
-
 // Returns the form's |name| attribute if non-empty; otherwise the form's |id|
 // attribute.
 const string16 GetFormIdentifier(const WebKit::WebFormElement& form);

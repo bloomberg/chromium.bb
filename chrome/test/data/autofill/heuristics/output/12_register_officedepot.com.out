@@ -20,7 +20,6 @@ CREDIT_CARD_NUMBER | paymentFormInfo.creditCardNumber | Credit Card Number: |
 CREDIT_CARD_EXP_MONTH | paymentFormInfo.creditCardExpMonth | Expiration Date: |  
 CREDIT_CARD_EXP_4_DIGIT_YEAR | paymentFormInfo.creditCardExpYear | / | -1
 CREDIT_CARD_VERIFICATION_CODE | paymentFormInfo.creditCardCvv | CID | 
-UNKNOWN_TYPE | sameAsBilling | Currently Office Depot is unable to process orders online for delivery to APO/FPO, PO Box, and export addresses. Please click here for additional ordering options * Indicates required field | on
 NAME_FIRST | addrsForm[2].firstName | *First Name: | 
 NAME_MIDDLE_INITIAL | addrsForm[2].middleInitial | Middle Initial: | 
 NAME_LAST | addrsForm[2].lastName | *Last Name: | 
@@ -36,4 +35,3 @@ PHONE_HOME_NUMBER | addrsForm[2].phoneNumber3 | - |
 UNKNOWN_TYPE | addrsForm[2].phoneNumber4 | ext. | 
 EMAIL_ADDRESS | addrsForm[2].email | *Email Address: | 
 UNKNOWN_TYPE | loginForm.loginName | *Login Name: | 
-UNKNOWN_TYPE | loginForm.autoLogin | *Password Confirm: retype your password | on

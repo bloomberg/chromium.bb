@@ -654,26 +654,6 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
       // Mark the cached field as autofilled, so that we can detect when a user
       // edits an autofilled field (for metrics).
       form_structure->field(i)->is_autofilled = true;
-    } else if (cached_field->type() == FIELD_WITH_DEFAULT_VALUE &&
-               cached_field->is_checkable) {
-      // For a form with radio buttons, like:
-      // <form>
-      //   <input type="radio" name="sex" value="male">Male<br>
-      //   <input type="radio" name="sex" value="female">Female
-      // </form>
-      // If the default value specified at the server is "female", then
-      // Autofill server responds back with following field mappings
-      //   (fieldtype: FIELD_WITH_DEFAULT_VALUE, value: "female")
-      //   (fieldtype: FIELD_WITH_DEFAULT_VALUE, value: "female")
-      // Note that, the field mapping is repeated twice to respond to both the
-      // input elements with the same name/signature in the form.
-      string16 default_value = UTF8ToUTF16(cached_field->default_value());
-      // Mark the field checked if server says the default value of the field
-      // to be this field's value.
-      result.fields[i].is_checked = (default_value == result.fields[i].value);
-      // Mark the cached field as autofilled, so that we can detect when a user
-      // edits an autofilled field (for metrics).
-      form_structure->field(i)->is_autofilled = true;
     }
   }
 

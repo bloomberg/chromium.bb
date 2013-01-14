@@ -43,32 +43,6 @@ const size_t kRequiredAutofillFields = 3;
 
 namespace autofill {
 
-// Helper function to discard state of various WebFormElements when they go out
-// of web frame's scope. This is done to release memory that we no longer need
-// to hold.
-// K should inherit from WebFormControlElement as the function looks to extract
-// WebFormElement for K.form().
-template <class K, class V>
-void RemoveOldElements(const WebFrame& frame, std::map<const K, V>* states) {
-  std::vector<K> to_remove;
-  for (typename std::map<const K, V>::const_iterator it = states->begin();
-       it != states->end(); ++it) {
-    WebFormElement form_element = it->first.form();
-    if (form_element.isNull()) {
-      to_remove.push_back(it->first);
-    } else {
-      const WebFrame* element_frame = form_element.document().frame();
-      if (!element_frame || element_frame == &frame)
-        to_remove.push_back(it->first);
-    }
-  }
-
-  for (typename std::vector<K>::const_iterator it = to_remove.begin();
-       it != to_remove.end(); ++it) {
-    states->erase(*it);
-  }
-}
-
 FormCache::FormCache() {
 }
 
@@ -106,12 +80,6 @@ void FormCache::ExtractForms(const WebFrame& frame,
             element.toConst<WebSelectElement>();
         initial_select_values_.insert(std::make_pair(select_element,
                                                      select_element.value()));
-      } else {
-        const WebInputElement input_element =
-            element.toConst<WebInputElement>();
-        if (IsCheckableElement(&input_element))
-          initial_checked_state_.insert(
-              std::make_pair(input_element, input_element.isChecked()));
       }
     }
 
@@ -151,8 +119,25 @@ void FormCache::ResetFrame(const WebFrame& frame) {
     web_documents_.erase(*it);
   }
 
-  RemoveOldElements(frame, &initial_select_values_);
-  RemoveOldElements(frame, &initial_checked_state_);
+  std::vector<WebSelectElement> select_values_to_delete;
+  for (std::map<const WebSelectElement, string16>::const_iterator it =
+           initial_select_values_.begin();
+       it != initial_select_values_.end(); ++it) {
+    WebFormElement form_element = it->first.form();
+    if (form_element.isNull()) {
+      select_values_to_delete.push_back(it->first);
+    } else {
+      const WebFrame* element_frame = form_element.document().frame();
+      if (!element_frame || element_frame == &frame)
+        select_values_to_delete.push_back(it->first);
+    }
+  }
+
+  for (std::vector<WebSelectElement>::const_iterator it =
+           select_values_to_delete.begin();
+       it != select_values_to_delete.end(); ++it) {
+    initial_select_values_.erase(*it);
+  }
 }
 
 bool FormCache::ClearFormWithElement(const WebInputElement& element) {
@@ -180,7 +165,8 @@ bool FormCache::ClearFormWithElement(const WebInputElement& element) {
         int length = input_element->value().length();
         input_element->setSelectionRange(length, length);
       }
-    } else if (IsSelectElement(control_element)) {
+    } else {
+      DCHECK(IsSelectElement(control_element));
       WebSelectElement select_element = control_element.to<WebSelectElement>();
 
       std::map<const WebSelectElement, string16>::const_iterator
@@ -189,15 +175,6 @@ bool FormCache::ClearFormWithElement(const WebInputElement& element) {
           select_element.value() != initial_value_iter->second) {
         select_element.setValue(initial_value_iter->second);
         select_element.dispatchFormControlChangeEvent();
-      }
-    } else {
-      WebInputElement input_element = control_element.to<WebInputElement>();
-      DCHECK(IsCheckableElement(&input_element));
-      std::map<const WebInputElement, bool>::const_iterator it =
-          initial_checked_state_.find(input_element);
-      if (it != initial_checked_state_.end() &&
-          input_element.isChecked() != it->second) {
-        input_element.setChecked(it->second, true);
       }
     }
   }

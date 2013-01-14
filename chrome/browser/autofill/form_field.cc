@@ -45,10 +45,6 @@ bool IsSelectField(const std::string& type) {
   return type == "select-one";
 }
 
-bool IsCheckable(const AutofillField* field) {
-  return field->is_checkable;
-}
-
 }  // namespace
 
 // static
@@ -57,14 +53,6 @@ void FormField::ParseFormFields(const std::vector<AutofillField*>& fields,
   // Set up a working copy of the fields to be processed.
   std::vector<const AutofillField*> remaining_fields(fields.size());
   std::copy(fields.begin(), fields.end(), remaining_fields.begin());
-
-  // Ignore checkable fields as they interfere with parsers assuming context.
-  // Eg., while parsing address, "Is PO box" checkbox after ADDRESS_LINE1
-  // interferes with correctly understanding ADDRESS_LINE2.
-  remaining_fields.erase(
-      std::remove_if(remaining_fields.begin(), remaining_fields.end(),
-                     IsCheckable),
-      remaining_fields.end());
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   bool parse_new_field_types =

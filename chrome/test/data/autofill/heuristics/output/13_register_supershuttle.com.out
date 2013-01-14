@@ -5,4 +5,3 @@ NAME_LAST | ctl00$cphRight$Registration1$txtLastName | Last Name |
 PHONE_HOME_WHOLE_NUMBER | ctl00$cphRight$Registration1$txtCellPhone | Contact or Cell Phone Number | 
 PHONE_HOME_COUNTRY_CODE | ctl00$cphRight$Registration1$txtCountryCode | If outside the US (Country Code/Phone Number) | 
 PHONE_HOME_CITY_AND_NUMBER | ctl00$cphRight$Registration1$txtIntPhoneNumber | Contact or Cell Phone Number | 
-UNKNOWN_TYPE | ctl00$cphRight$Registration1$chkAcceptSpecialOffers | Email me regarding SuperShuttle special offers and promotions | on

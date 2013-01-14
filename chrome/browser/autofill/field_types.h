@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_AUTOFILL_FIELD_TYPES_H_
 
 #include <set>
-#include <string>
 
 // NOTE: This list MUST not be modified.  The server aggregates and stores these
 // types over several versions, so we must remain fully compatible with the
@@ -78,12 +77,9 @@ enum AutofillFieldType {
 
   COMPANY_NAME = 60,
 
-  // Generic type whose default value is known.
-  FIELD_WITH_DEFAULT_VALUE = 61,
-
   // No new types can be added.
 
-  MAX_VALID_FIELD_TYPE = 62,
+  MAX_VALID_FIELD_TYPE = 61,
 };
 
 typedef std::set<AutofillFieldType> FieldTypeSet;

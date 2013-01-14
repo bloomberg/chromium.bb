@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/autofill/autofill_server_field_info.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlparser.h"
@@ -67,7 +66,7 @@ class AutofillXmlParser : public buzz::XmlParseHandler {
 // unknown, other types are documented in chrome/browser/autofill/field_types.h.
 class AutofillQueryXmlParser : public AutofillXmlParser {
  public:
-  AutofillQueryXmlParser(std::vector<AutofillServerFieldInfo>* field_infos,
+  AutofillQueryXmlParser(std::vector<AutofillFieldType>* field_types,
                          UploadRequired* upload_required,
                          std::string* experiment_id);
 
@@ -86,8 +85,8 @@ class AutofillQueryXmlParser : public AutofillXmlParser {
   // |value| is the string to convert.
   int GetIntValue(buzz::XmlParseContext* context, const char* attribute);
 
-  // The parsed <field type, default value> pairs.
-  std::vector<AutofillServerFieldInfo>* field_infos_;
+  // The parsed field types.
+  std::vector<AutofillFieldType>* field_types_;
 
   // A flag indicating whether the client should upload Autofill data when this
   // form is submitted.

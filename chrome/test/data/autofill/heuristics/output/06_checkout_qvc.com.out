@@ -15,7 +15,6 @@ UNKNOWN_TYPE | BilltoHpExt | * Home Phone: |
 PHONE_HOME_CITY_CODE | BilltoWpArea | Work Phone: | 
 PHONE_HOME_NUMBER | BilltoWpExchange | Work Phone: | 
 UNKNOWN_TYPE | BilltoWpExt | Work Phone: | 
-UNKNOWN_TYPE | SameAsBilltoCheckbox | Same as Bill-To: | 1
 UNKNOWN_TYPE | ShiptoFirstName | * Name: | 
 ADDRESS_HOME_LINE1 | ShiptoAddress1 | * Address Line 1: | 
 ADDRESS_HOME_LINE2 | ShiptoAddress2 | Address Line 2: | 
@@ -23,5 +22,3 @@ ADDRESS_HOME_CITY | ShiptoCity | City: |
 ADDRESS_HOME_STATE | ShiptoState | State/Province: | AL
 ADDRESS_HOME_ZIP | ShiptoZipCode | * Postal Code: | 
 ADDRESS_HOME_COUNTRY | ShiptoCountry | * Country: | US
-UNKNOWN_TYPE | ShiptoRadiobutton | Use this address for: | ThisOrderOnly
-UNKNOWN_TYPE | ShiptoRadiobutton | This order only | PermanentShipto
