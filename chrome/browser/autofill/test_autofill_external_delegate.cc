@@ -30,6 +30,9 @@ TestAutofillExternalDelegate::TestAutofillExternalDelegate(
     content::WebContents* web_contents,
     AutofillManager* autofill_manager)
     : AutofillExternalDelegate(web_contents, autofill_manager) {
+  // Initialize Controller.
+  const gfx::Rect element_bounds;
+  AutofillExternalDelegate::EnsurePopupForElement(element_bounds);
 }
 
 TestAutofillExternalDelegate::~TestAutofillExternalDelegate() {}
