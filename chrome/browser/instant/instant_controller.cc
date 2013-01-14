@@ -387,7 +387,8 @@ bool InstantController::Update(const AutocompleteMatch& match,
   // Though we may have handled a URL match above, we return false here, so that
   // omnibox prerendering can kick in. TODO(sreeram): Remove this (and always
   // return true) once we are able to commit URLs as well.
-  return last_match_was_search_;
+  return last_match_was_search_ ||
+         last_suggestion_.behavior == INSTANT_COMPLETE_NEVER;
 }
 
 // TODO(tonyg): This method only fires when the omnibox bounds change. It also
@@ -476,8 +477,9 @@ content::WebContents* InstantController::GetPreviewContents() const {
 }
 
 bool InstantController::IsPreviewingSearchResults() const {
-  return model_.mode().is_search_suggestions() && last_match_was_search_ &&
-         IsFullHeight(model_);
+  return model_.mode().is_search_suggestions() && IsFullHeight(model_) &&
+         (last_match_was_search_ ||
+          last_suggestion_.behavior == INSTANT_COMPLETE_NEVER);
 }
 
 bool InstantController::CommitIfPossible(InstantCommitType type) {
@@ -491,7 +493,9 @@ bool InstantController::CommitIfPossible(InstantCommitType type) {
   // If we are on an already committed search results page, send a submit event
   // to the page, but otherwise, nothing else to do.
   if (instant_tab_) {
-    if (last_match_was_search_ && type == INSTANT_COMMIT_PRESSED_ENTER) {
+    if (type == INSTANT_COMMIT_PRESSED_ENTER &&
+        (last_match_was_search_ ||
+         last_suggestion_.behavior == INSTANT_COMPLETE_NEVER)) {
       instant_tab_->Submit(last_omnibox_text_);
       instant_tab_->contents()->Focus();
       return true;
