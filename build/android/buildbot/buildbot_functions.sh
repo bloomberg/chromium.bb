@@ -259,26 +259,6 @@ function bb_extract_build {
   )
 }
 
-# Reboot all phones and wait for them to start back up
-# Does not break build if a phone fails to restart
-function bb_reboot_phones {
-  echo "@@@BUILD_STEP Rebooting phones@@@"
-  # Restart adb to work around bugs, sleep to wait for usb discovery.
-  adb kill-server
-  adb start-server
-  sleep .5
-
-  (
-  set +e
-  cd $CHROME_SRC/build/android/pylib;
-  for DEVICE in $(adb_get_devices); do
-    python -c "import android_commands;\
-        android_commands.AndroidCommands(device='$DEVICE').Reboot(True)" &
-  done
-  wait
-  )
-}
-
 # Runs the license checker for the WebView build.
 function bb_check_webview_licenses {
   echo "@@@BUILD_STEP Check licenses for WebView@@@"

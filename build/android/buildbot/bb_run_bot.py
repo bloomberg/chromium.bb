@@ -55,7 +55,8 @@ def GetCommands(options, bot_config):
 
   test_obj = bot_config.test_obj
   if test_obj:
-    run_test_cmd = ['build/android/buildbot/bb_tests.py'] + property_args
+    run_test_cmd = [
+        'build/android/buildbot/bb_device_steps.py', '--reboot'] + property_args
     for test in test_obj.tests:
       run_test_cmd.extend(['-f', test])
     if test_obj.extra_args:
@@ -68,7 +69,7 @@ def GetCommands(options, bot_config):
 def GetBotStepMap():
   compile_step = ['bb_compile']
   std_build_steps = ['bb_compile', 'bb_zip_build']
-  std_test_steps = ['bb_extract_build', 'bb_reboot_phones']
+  std_test_steps = ['bb_extract_build']
   std_tests = ['ui', 'unit']
 
   B = BotConfig

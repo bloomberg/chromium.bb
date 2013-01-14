@@ -6,6 +6,7 @@
 import collections
 import glob
 import json
+import multiprocessing
 import optparse
 import os
 import pipes
@@ -14,9 +15,14 @@ import subprocess
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from pylib import android_commands
 from pylib import buildbot_report
 from pylib import constants
 from pylib.gtest import gtest_config
+
+sys.path.append(os.path.join(
+    constants.CHROME_DIR, 'third_party', 'android_testrunner'))
+import errors
 
 
 TESTING = 'BUILDBOT_TESTING' in os.environ
@@ -53,12 +59,9 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
 VALID_TESTS = set(['ui', 'unit', 'webkit', 'webkit_layout'])
 
 
+
 def SpawnCmd(command):
   """Spawn a process without waiting for termination."""
-  # Add adb binary to path. In the future, might use build_internal copy.
-  env = dict(os.environ)
-  env['PATH'] = os.pathsep.join([
-      env['PATH'], os.path.join(constants.ANDROID_SDK_ROOT, 'platform-tools')])
   print '>', ' '.join(map(pipes.quote, command))
   sys.stdout.flush()
   if TESTING:
@@ -68,19 +71,47 @@ def SpawnCmd(command):
         return 0
     return MockPopen()
 
-  return subprocess.Popen(command, cwd=CHROME_SRC, env=env)
+  return subprocess.Popen(command, cwd=CHROME_SRC)
 
 def RunCmd(command, flunk_on_failure=True):
   """Run a command relative to the chrome source root."""
   code = SpawnCmd(command).wait()
   print '<', ' '.join(map(pipes.quote, command))
   if code != 0:
-    print 'ERROR: non-zero status %d from %s' % (code, command)
+    print 'ERROR: process exited with code %d' % code
     if flunk_on_failure:
       buildbot_report.PrintError()
     else:
       buildbot_report.PrintWarning()
   return code
+
+
+# multiprocessing map_async requires a top-level function for pickle library.
+def RebootDeviceSafe(device):
+  """Reboot a device, wait for it to start, and squelch timeout exceptions."""
+  try:
+    android_commands.AndroidCommands(device).Reboot(True)
+  except errors.DeviceUnresponsiveError as e:
+    return e
+
+
+def RebootDevices():
+  """Reboot all attached and online devices."""
+  buildbot_report.PrintNamedStep('Reboot devices')
+  devices = android_commands.GetAttachedDevices()
+  print 'Rebooting: %s' % devices
+  if devices and not TESTING:
+    pool = multiprocessing.Pool(len(devices))
+    results = pool.map_async(RebootDeviceSafe, devices).get(99999)
+
+    for device, result in zip(devices, results):
+      if result:
+        print '%s failed to startup.' % device
+
+    if any(results):
+      buildbot_report.PrintWarning()
+    else:
+      print 'Reboots complete.'
 
 
 def RunTestSuites(options, suites):
@@ -169,6 +200,22 @@ def RunWebkitLayoutTests(options):
 
 
 def MainTestWrapper(options):
+  # Restart adb to work around bugs, sleep to wait for usb discovery.
+  RunCmd(['adb', 'kill-server'])
+  RunCmd(['adb', 'start-server'])
+  RunCmd(['sleep', '1'])
+
+  # Spawn logcat monitor
+  logcat_dir = os.path.join(CHROME_SRC, 'out/logcat')
+  shutil.rmtree(logcat_dir, ignore_errors=True)
+  SpawnCmd(['build/android/adb_logcat_monitor.py', logcat_dir])
+
+  # Wait for logcat_monitor to pull existing logcat
+  RunCmd(['sleep', '5'])
+
+  if options.reboot:
+    RebootDevices()
+
   # Device check and alert emails
   buildbot_report.PrintNamedStep('device_status_check')
   RunCmd(['build/android/device_status_check.py'], flunk_on_failure=False)
@@ -176,14 +223,6 @@ def MainTestWrapper(options):
   if options.install:
     test_obj = INSTRUMENTATION_TESTS[options.install]
     InstallApk(options, test_obj, print_step=True)
-
-  if not options.test_filter:
-    return
-
-  # Spawn logcat monitor
-  logcat_dir = os.path.join(CHROME_SRC, 'out/logcat')
-  shutil.rmtree(logcat_dir, ignore_errors=True)
-  SpawnCmd(['build/android/adb_logcat_monitor.py', logcat_dir])
 
   if 'unit' in options.test_filter:
     RunTestSuites(options, gtest_config.STABLE_TEST_SUITES)
@@ -206,7 +245,7 @@ def MainTestWrapper(options):
   buildbot_report.PrintNamedStep('test_report')
   for report in glob.glob(
       os.path.join(CHROME_SRC, 'out', options.target, 'test_logs', '*.log')):
-    subprocess.Popen(['cat', report]).wait()
+    RunCmd(['cat', report])
     os.remove(report)
 
 
@@ -234,6 +273,8 @@ def main(argv):
   parser.add_option('--asan', action='store_true', help='Run tests with asan.')
   parser.add_option('--install', metavar='<apk name>',
                     help='Install an apk by name')
+  parser.add_option('--reboot', action='store_true',
+                    help='Reboot devices before running tests')
   options, args = parser.parse_args(argv[1:])
 
   def ParserError(msg):
@@ -250,6 +291,17 @@ def main(argv):
     return ParserError('Unknown tests %s' % list(unknown_tests))
 
   setattr(options, 'target', options.factory_properties.get('target', 'Debug'))
+
+  # Add adb binary and chromium-source platform-tools to tip of PATH variable.
+  android_paths = [os.path.join(constants.ANDROID_SDK_ROOT, 'platform-tools')]
+
+  # Bots checkout chrome in /b/build/slave/<name>/build/src
+  build_internal_android = os.path.abspath(os.path.join(
+      CHROME_SRC, '..', '..', '..', '..', '..', 'build_internal', 'scripts',
+      'slave', 'android'))
+  if os.path.exists(build_internal_android):
+    android_paths.insert(0, build_internal_android)
+  os.environ['PATH'] = os.pathsep.join(android_paths + [os.environ['PATH']])
 
   MainTestWrapper(options)
 
