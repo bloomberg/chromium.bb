@@ -1561,7 +1561,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose) {
 
 // GTK doesn't use the Browser's fullscreen state.
 // TODO(linux_aura) http://crbug.com/163931
-#if !defined(TOOLKIT_GTK) && !(defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
+// Mac disabled: http://crbug.com/169820
+#if !defined(TOOLKIT_GTK) && !defined(OS_MACOSX) && \
+    !(defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
 IN_PROC_BROWSER_TEST_F(BrowserTest, FullscreenBookmarkBar) {
   chrome::ToggleBookmarkBar(browser());
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
