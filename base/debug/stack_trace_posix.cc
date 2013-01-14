@@ -171,7 +171,7 @@ void ProcessBacktrace(void *const *trace,
 #endif  // defined(USE_SYMBOLIZE)
 }
 
-void StackDumpSignalHandler(int signal, siginfo_t* info, ucontext_t* context) {
+void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
   // NOTE: This code MUST be async-signal safe.
   // NO malloc or stdio is allowed here.
 
@@ -190,12 +190,33 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, ucontext_t* context) {
   debug::StackTrace().PrintBacktrace();
 
 #if defined(OS_LINUX)
-  // TODO(phajdan.jr): Port to 32-bit.
-#if ARCH_CPU_X86_FAMILY && ARCH_CPU_64_BITS
+  ucontext_t* context = reinterpret_cast<ucontext_t*>(void_context);
+#if ARCH_CPU_X86_FAMILY
   const struct {
     const char* label;
     greg_t value;
   } registers[] = {
+#if ARCH_CPU_32_BITS
+    { "  gs: ", context->uc_mcontext.gregs[REG_GS] },
+    { "  fs: ", context->uc_mcontext.gregs[REG_FS] },
+    { "  es: ", context->uc_mcontext.gregs[REG_ES] },
+    { "  ds: ", context->uc_mcontext.gregs[REG_DS] },
+    { " edi: ", context->uc_mcontext.gregs[REG_EDI] },
+    { " esi: ", context->uc_mcontext.gregs[REG_ESI] },
+    { " ebp: ", context->uc_mcontext.gregs[REG_EBP] },
+    { " esp: ", context->uc_mcontext.gregs[REG_ESP] },
+    { " ebx: ", context->uc_mcontext.gregs[REG_EBX] },
+    { " edx: ", context->uc_mcontext.gregs[REG_EDX] },
+    { " ecx: ", context->uc_mcontext.gregs[REG_ECX] },
+    { " eax: ", context->uc_mcontext.gregs[REG_EAX] },
+    { " trp: ", context->uc_mcontext.gregs[REG_TRAPNO] },
+    { " err: ", context->uc_mcontext.gregs[REG_ERR] },
+    { "  ip: ", context->uc_mcontext.gregs[REG_EIP] },
+    { "  cs: ", context->uc_mcontext.gregs[REG_CS] },
+    { " efl: ", context->uc_mcontext.gregs[REG_EFL] },
+    { " usp: ", context->uc_mcontext.gregs[REG_UESP] },
+    { "  ss: ", context->uc_mcontext.gregs[REG_SS] },
+#elif ARCH_CPU_64_BITS
     { "  r8: ", context->uc_mcontext.gregs[REG_R8] },
     { "  r9: ", context->uc_mcontext.gregs[REG_R9] },
     { " r10: ", context->uc_mcontext.gregs[REG_R10] },
@@ -219,13 +240,21 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, ucontext_t* context) {
     { " trp: ", context->uc_mcontext.gregs[REG_TRAPNO] },
     { " msk: ", context->uc_mcontext.gregs[REG_OLDMASK] },
     { " cr2: ", context->uc_mcontext.gregs[REG_CR2] },
+#endif
   };
+
+#if ARCH_CPU_32_BITS
+  const int kRegisterPadding = 8;
+#elif ARCH_CPU_64_BITS
+  const int kRegisterPadding = 16;
+#endif
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(registers); i++) {
     HANDLE_EINTR(write(STDERR_FILENO,
                        registers[i].label,
                        strlen(registers[i].label)));
-    internal::itoa_r(registers[i].value, buf, sizeof(buf), 16, 16);
+    internal::itoa_r(registers[i].value, buf, sizeof(buf),
+                     16, kRegisterPadding);
     HANDLE_EINTR(write(STDERR_FILENO, buf, strlen(buf)));
 
     if ((i + 1) % 4 == 0) {
@@ -237,6 +266,7 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, ucontext_t* context) {
 #elif defined(OS_MACOSX)
   // TODO(shess): Port to 64-bit.
 #if ARCH_CPU_X86_FAMILY && ARCH_CPU_32_BITS
+  ucontext_t* context = reinterpret_cast<ucontext_t*>(void_context);
   size_t len;
 
   // NOTE: Even |snprintf()| is not on the approved list for signal
@@ -346,22 +376,27 @@ bool EnableInProcessStackDumping() {
   // When running in an application, our code typically expects SIGPIPE
   // to be ignored.  Therefore, when testing that same code, it should run
   // with SIGPIPE ignored as well.
-  struct sigaction action;
-  memset(&action, 0, sizeof(action));
-  action.sa_handler = SIG_IGN;
-  sigemptyset(&action.sa_mask);
-  bool success = (sigaction(SIGPIPE, &action, NULL) == 0);
+  struct sigaction sigpipe_action;
+  memset(&sigpipe_action, 0, sizeof(sigpipe_action));
+  sigpipe_action.sa_handler = SIG_IGN;
+  sigemptyset(&sigpipe_action.sa_mask);
+  bool success = (sigaction(SIGPIPE, &sigpipe_action, NULL) == 0);
 
   // Avoid hangs during backtrace initialization, see above.
   WarmUpBacktrace();
 
-  sig_t handler = reinterpret_cast<sig_t>(&StackDumpSignalHandler);
-  success &= (signal(SIGILL, handler) != SIG_ERR);
-  success &= (signal(SIGABRT, handler) != SIG_ERR);
-  success &= (signal(SIGFPE, handler) != SIG_ERR);
-  success &= (signal(SIGBUS, handler) != SIG_ERR);
-  success &= (signal(SIGSEGV, handler) != SIG_ERR);
-  success &= (signal(SIGSYS, handler) != SIG_ERR);
+  struct sigaction action;
+  memset(&action, 0, sizeof(action));
+  action.sa_flags = SA_RESETHAND | SA_SIGINFO;
+  action.sa_sigaction = &StackDumpSignalHandler;
+  sigemptyset(&action.sa_mask);
+
+  success &= (sigaction(SIGILL, &action, NULL) == 0);
+  success &= (sigaction(SIGABRT, &action, NULL) == 0);
+  success &= (sigaction(SIGFPE, &action, NULL) == 0);
+  success &= (sigaction(SIGBUS, &action, NULL) == 0);
+  success &= (sigaction(SIGSEGV, &action, NULL) == 0);
+  success &= (sigaction(SIGSYS, &action, NULL) == 0);
 
   return success;
 }
