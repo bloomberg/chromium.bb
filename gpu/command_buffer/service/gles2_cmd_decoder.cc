@@ -8612,28 +8612,32 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
 
       offscreen_saved_frame_buffer_->AttachRenderTexture(
           offscreen_saved_color_texture_.get());
-      if (offscreen_saved_frame_buffer_->CheckStatus() !=
-          GL_FRAMEBUFFER_COMPLETE) {
-        LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFrameBuffer failed "
-                   << "because offscreen saved FBO was incomplete.";
-        return error::kLostContext;
-      }
+      if (offscreen_size_.width() != 0 && offscreen_size_.height() != 0) {
+        if (offscreen_saved_frame_buffer_->CheckStatus() !=
+            GL_FRAMEBUFFER_COMPLETE) {
+          LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFrameBuffer failed "
+                     << "because offscreen saved FBO was incomplete.";
+          return error::kLostContext;
+        }
 
-      // Clear the offscreen color texture.
-      // TODO(piman): Is this still necessary?
-      {
-        ScopedFrameBufferBinder binder(this,
-                                       offscreen_saved_frame_buffer_->id());
-        glClearColor(0, 0, 0, 0);
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-        glDisable(GL_SCISSOR_TEST);
-        glClear(GL_COLOR_BUFFER_BIT);
-        RestoreClearState();
+        // Clear the offscreen color texture.
+        // TODO(piman): Is this still necessary?
+        {
+          ScopedFrameBufferBinder binder(this,
+                                         offscreen_saved_frame_buffer_->id());
+          glClearColor(0, 0, 0, 0);
+          glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+          glDisable(GL_SCISSOR_TEST);
+          glClear(GL_COLOR_BUFFER_BIT);
+          RestoreClearState();
+        }
       }
 
       UpdateParentTextureInfo();
     }
 
+    if (offscreen_size_.width() == 0 || offscreen_size_.height() == 0)
+      return error::kNoError;
     ScopedGLErrorSuppressor suppressor(this);
 
     if (IsOffscreenBufferMultisampled()) {
