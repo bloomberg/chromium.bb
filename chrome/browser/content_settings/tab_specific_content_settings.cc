@@ -255,6 +255,8 @@ void TabSpecificContentSettings::OnContentBlocked(
     const std::string& resource_identifier) {
   DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
       << "Geolocation settings handled by OnGeolocationPermissionSet";
+  if (type < 0 || type >= CONTENT_SETTINGS_NUM_TYPES)
+    return;
   content_accessed_[type] = true;
   // Unless UI for resource content settings is enabled, ignore the resource
   // identifier.
