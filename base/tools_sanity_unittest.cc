@@ -84,9 +84,10 @@ TEST(ToolsSanityTest, MemoryLeak) {
   leak[4] = 1;  // Make sure the allocated memory is used.
 }
 
-#if defined(ADDRESS_SANITIZER) && defined(OS_IOS)
+#if defined(ADDRESS_SANITIZER) && (defined(OS_IOS) || defined(OS_WIN))
 // Because iOS doesn't support death tests, each of the following tests will
-// crash the whole program under ASan.
+// crash the whole program under Asan. On Windows Asan is based on SyzyAsan, the
+// error report mecanism is different than with Asan so those test will fail.
 #define MAYBE_AccessesToNewMemory DISABLED_AccessesToNewMemory
 #define MAYBE_AccessesToMallocMemory DISABLED_AccessesToMallocMemory
 #define MAYBE_ArrayDeletedWithoutBraces DISABLED_ArrayDeletedWithoutBraces
