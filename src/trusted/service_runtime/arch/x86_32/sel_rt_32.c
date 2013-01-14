@@ -19,7 +19,7 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
-#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
+#include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
 
 
 uintptr_t NaClGetThreadCtxSp(struct NaClThreadContext  *th_ctx) {

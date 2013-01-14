@@ -20,7 +20,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
 #include "native_client/src/trusted/validator_arm/address_set.h"
-#include "native_client/src/trusted/validator_arm/cpuid_arm.h"
+#include "native_client/src/trusted/cpu_features/arch/arm/cpu_arm.h"
 #include "native_client/src/trusted/validator_arm/gen/arm32_decode.h"
 #include "native_client/src/trusted/validator_arm/inst_classes.h"
 #include "native_client/src/trusted/validator_arm/model.h"

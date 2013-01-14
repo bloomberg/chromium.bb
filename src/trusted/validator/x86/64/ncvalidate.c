@@ -11,7 +11,7 @@
 #include "native_client/src/trusted/validator/validation_cache.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_iter.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state_internal.h"
-#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
+#include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
 #include "native_client/src/trusted/validator/x86/nc_segment.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncval_decode_tables.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/ncvalidate_iter.h"

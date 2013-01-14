@@ -8,7 +8,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCVALIDATE_H__
 
 #include <stdio.h>
-#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
+#include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
 #include "native_client/src/trusted/validator/types_memory_model.h"
 
 /*

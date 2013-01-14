@@ -1,5 +1,4 @@
-# Copyright 2010, Google Inc.
-# Copyright 2009 The Native Client Authors.  All rights reserved.
+# Copyright 2013 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
@@ -37,36 +36,51 @@
   'targets': [
     # ----------------------------------------------------------------------
     {
-      'target_name': 'arm_validator_core',
+      'target_name': 'cpu_features',
       'type': 'static_library',
-      'sources': [
-        'address_set.cc',
-        'actual_classes.cc',
-        'baseline_classes.cc',
-        'inst_classes.cc',
-        'model.cc',
-        'validator.cc',
-        'gen/arm32_decode.cc',
-        'gen/arm32_decode_actuals.cc'
+      # TODO(jfb) See TODO in build.scons on why x86 is built this way.
+      'conditions': [
+        ['target_arch=="ia32" or target_arch=="x64"', {
+          'sources': [
+            'arch/arm/cpu_arm.c',
+            'arch/mips/cpu_mips.c',
+            'arch/x86/cpu_x86.c',
+            'arch/x86/cpu_xgetbv.S',
+          ],
+        }],
+        ['target_arch=="arm" or target_arch=="mips"', {
+          'sources': [
+            'arch/arm/cpu_arm.c',
+            'arch/mips/cpu_mips.c',
+          ],
+        }],
       ],
       'dependencies': [
-        '<(DEPTH)/native_client/src/trusted/cpu_features/cpu_features.gyp:cpu_features'
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
       ],
     },
-    # ----------------------------------------------------------------------
-    {
-      'target_name': 'ncvalidate_arm_v2',
-      'type': 'static_library',
-      'sources': [ 'ncvalidate.cc' ],
-      'dependencies': [
-        'arm_validator_core'
+  ],
+  'conditions': [
+    ['OS=="win" and target_arch=="ia32"', {
+      'targets': [
+        {
+          'target_name': 'cpu_features64',
+          'type': 'static_library',
+          'variables': {
+            'win_target': 'x64',
+          },
+          'sources': [
+            'arch/arm/cpu_arm.c',
+            'arch/mips/cpu_mips.c',
+            'arch/x86/cpu_x86.c',
+            'arch/x86/cpu_xgetbv.S',
+          ],
+          'dependencies': [
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
+          ],
+        },
       ],
     },
-    # ----------------------------------------------------------------------
-    {
-      'target_name': 'arm_validator_reporters',
-      'type': 'static_library',
-      'sources': [ 'problem_reporter.cc' ],
-    },
+   ],
   ],
 }

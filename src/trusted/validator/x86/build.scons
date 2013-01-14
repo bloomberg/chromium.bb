@@ -20,8 +20,6 @@ lib_env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
 lib_env.ComponentLibrary(lib_env.NaClTargetArchSuffix('ncval_base'), [
     'error_reporter.c',
     'halt_trim.c',
-    'nacl_cpuid.c',
-    'nacl_xgetbv.S',
     'ncinstbuffer.c',
     'x86_insts.c',
     'nc_segment.c',
@@ -31,22 +29,6 @@ lib_env.ComponentLibrary(lib_env.NaClTargetArchSuffix('ncval_base_verbose'), [
     'error_reporter_verbose.c',
     'x86_insts_verbose.c',
     ])
-
-# Create environment for command-line tools and testing, rather than
-# part of the TCB. Then define compile-time flag that communicates
-# that we are compiling in the test environment (rather than for the TCB).
-test_env = lib_env.Clone()
-test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
-
-nacl_cpuid = test_env.ComponentProgram(
-    'nacl_cpuid',
-    ['nacl_cpuid_test.c'],
-    EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncval_base')])
-
-node = test_env.CommandTest(
-    'nacl_cpuid_test.out',
-    [nacl_cpuid])
-test_env.AddNodeToTestSuite(node, ['large_tests'], 'run_nacl_cpuid_test')
 
 #---------- UNIT TESTS ---------------------------------
 

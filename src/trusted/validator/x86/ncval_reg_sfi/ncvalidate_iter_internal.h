@@ -10,7 +10,7 @@
 /* Defines the internal data structure for the validator state. */
 
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
+#include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_cpu_checks.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_jumps.h"
 #include "native_client/src/trusted/validator/x86/ncval_reg_sfi/nc_opcode_histogram.h"

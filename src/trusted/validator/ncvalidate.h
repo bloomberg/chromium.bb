@@ -11,18 +11,12 @@
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/cpu_features/cpu_features.h"
 
 
 EXTERN_C_BEGIN
 
 struct NaClValidationCache;
-
-/*
- * Forward-declared (but never defined) generic CPU features.
- * Each architecture needs to cast from this generic type.
- */
-struct NaClCPUFeaturesAbstract;
-typedef struct NaClCPUFeaturesAbstract NaClCPUFeatures;
 
 /* Defines possible validation status values. */
 typedef enum NaClValidationStatus {

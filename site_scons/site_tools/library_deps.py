@@ -45,6 +45,9 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
     'testrunner_browser': [
         'ppapi',
         ],
+    'arm_validator_core': [
+        'cpu_features',
+        ],
     }
 
 # Untrusted only library dependencies.
@@ -79,12 +82,14 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
             ],
         'ncvalidate_x86_32': [
             'ncval_seg_sfi_x86_32',
+            'cpu_features',
             ],
         'ncval_base_verbose_x86_32': [
             'ncval_base_x86_32',
             ],
         'ncval_base_x86_32': [
             'platform',
+            'cpu_features',
             ],
         'nc_opcode_modeling_verbose_x86_32': [
             'nc_opcode_modeling_x86_32',
@@ -137,12 +142,14 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
             ],
         'ncvalidate_x86_64': [
             'ncval_reg_sfi_x86_64',
+            'cpu_features',
             ],
         'ncval_base_verbose_x86_64': [
             'ncval_base_x86_64',
             ],
         'ncval_base_x86_64': [
             'platform',
+            'cpu_features',
             ],
         'nc_opcode_modeling_verbose_x86_64': [
             'nc_opcode_modeling_x86_64',
@@ -159,6 +166,7 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
             'nccopy_x86_64',
             'ncval_base_x86_64',
             'nc_decoder_x86_64',
+            'cpu_features',
             ],
         'ncval_seg_sfi_x86_64': [
             'nccopy_x86_64',
@@ -178,14 +186,10 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
             'ncvalidate_arm_v2',
             ],
         },
-    'arm-thumb2': {
-        'ncvalidate_arm_v2': [
-            'arm_validator_core',
-            ],
-        },
     'mips32': {
         'ncvalidate_mips': [
             'mips_validator_core',
+            'cpu_features',
             ],
         'validators': [
             'ncvalidate_mips',

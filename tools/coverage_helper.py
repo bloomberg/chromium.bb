@@ -44,12 +44,12 @@ class CoverageHelper(object):
   #
   def Ignore(self):
     return set([
+      'cpu_x86_test.c',
       'defsize64.c',
       'lock_insts.c',
       'lock_insts.h',
       'long_mode.c',
       'long_mode.h',
-      'nacl_cpuid_test.c',
       'nacl_illegal.c',
       'nacl_illegal.h',
       'nc_read_segment.c',

@@ -9,8 +9,8 @@
  * instruction to determine instruction set extensions supported by
  * the current processor.
  */
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NACL_CPUID_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NACL_CPUID_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_CPU_FEATURES_ARCH_X86_CPU_X86_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_CPU_FEATURES_ARCH_X86_CPU_X86_H_
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
@@ -20,7 +20,7 @@ EXTERN_C_BEGIN
 
 /* The list of features we can get from the CPUID instruction.
  * Do not modify this enum without making similar modifications to
- * CPUFeatureDescriptions in nacl_cpuid.c.
+ * CPUFeatureDescriptions in cpu_x86.c.
  */
 typedef enum {
   NaClCPUFeatureX86_CPUIDSupported,
@@ -72,13 +72,13 @@ typedef struct cpu_feature_struct_X86 {
 /* Define the maximum length of a CPUID string.
  *
  * Note: If you change this length, fix the static initialization of wlid
- * in nacl_cpuid.c to be initialized with an appropriate string.
+ * in cpu_x86.c to be initialized with an appropriate string.
  */
 #define /* static const int */ kCPUIDStringLength 21
 
 /* Defines the maximum number of feature registers used to hold CPUID.
  * Note: This value corresponds to the number of enumerated elements in
- * enum CPUFeatureReg defined in nacl_cpuid.c.
+ * enum CPUFeatureReg defined in cpu_x86.c.
  */
 #define kMaxCPUFeatureReg 12
 
@@ -151,4 +151,4 @@ int NaClArchSupportedX86(const NaClCPUFeaturesX86 *features);
 
 EXTERN_C_END
 
-#endif /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NACL_CPUID_H_ */
+#endif /* NATIVE_CLIENT_SRC_TRUSTED_CPU_FEATURES_ARCH_X86_CPU_X86_H_ */

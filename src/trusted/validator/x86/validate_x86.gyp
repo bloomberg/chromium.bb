@@ -19,8 +19,6 @@
         'sources': [
             'error_reporter.c',
             'halt_trim.c',
-            'nacl_cpuid.c',
-            'nacl_xgetbv.S',
             'ncinstbuffer.c',
             'x86_insts.c',
             'nc_segment.c',
@@ -72,6 +70,7 @@
           },
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+            '<(DEPTH)/native_client/src/trusted/cpu_features/cpu_features.gyp:cpu_features',
           ],
         },
         { 'target_name': 'ncval_base_verbose_x86_32',
@@ -95,6 +94,7 @@
           },
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
+            '<(DEPTH)/native_client/src/trusted/cpu_features/cpu_features.gyp:cpu_features64',
           ],
         },
         { 'target_name': 'ncval_base_verbose_x86_64',
@@ -118,6 +118,7 @@
           },
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+            '<(DEPTH)/native_client/src/trusted/cpu_features/cpu_features.gyp:cpu_features',
           ],
         },
         { 'target_name': 'ncval_base_verbose_x86_64',

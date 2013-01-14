@@ -13,7 +13,7 @@
  * that define the validator.
  *
  */
-#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
+#include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode.h"
 
 /* statistics */
@@ -61,7 +61,7 @@ typedef struct NCValidatorState {
    */
   NCDecoderState dstate;
   NCDecoderInst inst_buffer[kNCValidatorInstBufferSize];
-  NaClCPUFeaturesX86 cpufeatures;  /* from CPUID bit masks; see nacl_cpuid.c */
+  NaClCPUFeaturesX86 cpufeatures;  /* from CPUID bit masks; see cpu_x86.c */
   NaClPcAddress iadrbase;
   NaClMemorySize codesize;
   uint8_t bundle_size;

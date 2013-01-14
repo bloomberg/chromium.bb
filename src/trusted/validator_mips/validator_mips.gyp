@@ -45,12 +45,14 @@
       'type': 'static_library',
       'sources': [
         'address_set.cc',
-        'cpuid_mips.c',
         'inst_classes.cc',
         'validator.cc',
         '<(validate_gen_out)/decode.cc'
       ],
-      'dependencies': ['decode_gen'],
+      'dependencies': [
+        '<(DEPTH)/native_client/src/trusted/cpu_features/cpu_features.gyp:cpu_features',
+        'decode_gen'
+      ],
     },
     # ----------------------------------------------------------------------
     {

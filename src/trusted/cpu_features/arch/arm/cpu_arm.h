@@ -4,8 +4,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_CPUID_ARM_H
-#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_CPUID_ARM_H
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_CPU_FEATURES_ARCH_ARM_CPU_ARM_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_CPU_FEATURES_ARCH_ARM_CPU_ARM_H_
 
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/nacl_macros.h"
@@ -18,7 +18,7 @@ EXTERN_C_BEGIN
 /* List of features supported by ARM CPUs. */
 typedef enum {
 #define NACL_ARM_CPU_FEATURE(name) NACL_CONCAT(NaClCPUFeatureArm_, name),
-#include "native_client/src/trusted/validator_arm/cpuid_arm_features.h"
+#include "native_client/src/trusted/cpu_features/arch/arm/cpu_arm_features.h"
 #undef NACL_ARM_CPU_FEATURE
   /* Leave the following as the last entry. */
   NaClCPUFeatureArm_Max
@@ -61,4 +61,4 @@ void NaClCopyCPUFeaturesArm(NaClCPUFeaturesArm *target,
 
 EXTERN_C_END
 
-#endif /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_CPUID_ARM_H */
+#endif /* NATIVE_CLIENT_SRC_TRUSTED_CPU_FEATURES_ARCH_ARM_CPU_ARM_H_ */

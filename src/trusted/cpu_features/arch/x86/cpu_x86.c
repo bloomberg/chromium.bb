@@ -4,10 +4,10 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
+#include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
 
 /*
- * nacl_cpuid.c
+ * cpu_x86.c
  * Retrieve and decode CPU model specific feature mask.
  */
 #if NACL_WINDOWS

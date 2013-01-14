@@ -12,6 +12,7 @@
         '../src/shared/platform/platform.gyp:*',
         '../src/shared/srpc/srpc.gyp:*',
         '../src/shared/utils/utils.gyp:*',
+        '../src/trusted/cpu_features/cpu_features.gyp:*',
         '../src/trusted/debug_stub/debug_stub.gyp:*',
         '../src/trusted/desc/desc.gyp:*',
         '../src/trusted/nacl_base/nacl_base.gyp:*',

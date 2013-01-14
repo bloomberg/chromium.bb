@@ -11,6 +11,7 @@ Import('env')
 
 
 pql_inputs = []
+extra_libs = []
 
 #
 # OS-specific qualification routines
@@ -44,11 +45,12 @@ if env.Bit('build_x86') and env.Bit('target_x86'):
     vcpuid_env.FilterOut(CCFLAGS = ['-fPIC'])
   if env.Bit('linux'):
     vcpuid_env.Append(CCFLAGS = ['-msse3'])
-  env.Prepend(LIBS = ['platform_qual_lib',
-                     TargetLib(env, 'ncval_base'),
-                     'platform', 'gio'])
   nacl_vcpuid = vcpuid_env.ComponentLibrary('vcpuid', 'arch/x86/vcpuid.c')
-  env.Append(LIBS = ['vcpuid'])
+  extra_libs += ['platform_qual_lib',
+                 TargetLib(env, 'ncval_base'),
+                 'platform',
+                 'gio',
+                 'vcpuid']
 
   if env.Bit('target_x86_64'):
     # Compile x86-64 primitives for verifying NX functionality
@@ -59,14 +61,15 @@ if env.Bit('build_x86') and env.Bit('target_x86'):
   platform_qual_test = env.ComponentProgram(
       'platform_qual_test', 'arch/x86/platform_qual_test.c',
       # 'sel' is required for sel_memory.c and friends
-      EXTRA_LIBS=['platform_qual_lib', 'sel'])
+      EXTRA_LIBS=extra_libs + ['sel'])
   node = env.CommandTest('platform_qual_test.out', [platform_qual_test])
   env.AddNodeToTestSuite(
       node, ['small_tests'], 'run_platform_qual_test',
       is_broken=env.IsRunningUnderValgrind())
 
   cpuwhitelist_test = env.ComponentProgram(
-      'cpuwhitelist_test', 'arch/x86/nacl_cpuwhitelist_test.c')
+      'cpuwhitelist_test', 'arch/x86/nacl_cpuwhitelist_test.c',
+      EXTRA_LIBS=extra_libs)
   node = env.CommandTest('cpuwhitelist_test.out', [cpuwhitelist_test])
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_cpuwhitelist_test')
 

@@ -1934,6 +1934,7 @@ def MakeBaseTrustedEnv():
       'src/shared/utils/build.scons',
       'src/third_party_mod/gtest/build.scons',
       'src/tools/validator_tools/build.scons',
+      'src/trusted/cpu_features/build.scons',
       'src/trusted/debug_stub/build.scons',
       'src/trusted/desc/build.scons',
       'src/trusted/fault_injection/build.scons',

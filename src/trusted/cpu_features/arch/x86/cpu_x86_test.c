@@ -9,14 +9,14 @@
 #endif
 
 /*
- * nacl_cpuid_test.c
- * test main and subroutines for nacl_cpuid
+ * cpu_x86_test.c
+ * test main and subroutines for cpu_x86
  */
 #include "native_client/src/include/portability.h"
 #include <stdio.h>
-#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
+#include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
 
-int main(int argc, char *argv[]) {
+int main(void) {
   NaClCPUFeaturesX86 fv;
   NaClCPUData cpu_data;
   int feature_id;

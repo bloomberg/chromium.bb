@@ -38,7 +38,7 @@
 #include "native_client/src/trusted/validator/types_memory_model.h"
 #include "native_client/src/trusted/validator/x86/decoder/gen/ncopcode_operand_kind.h"
 #include "native_client/src/trusted/validator/x86/error_reporter.h"
-#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
+#include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
 
 EXTERN_C_BEGIN
 

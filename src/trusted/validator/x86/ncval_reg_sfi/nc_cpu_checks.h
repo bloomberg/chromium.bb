@@ -17,7 +17,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_REG_SFI_NC_CPU_CHECKS_H__
 
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
+#include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
 
 /* Defines a validator state. */
 struct NaClValidatorState;

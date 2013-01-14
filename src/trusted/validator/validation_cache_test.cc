@@ -11,7 +11,7 @@
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
 #include "native_client/src/trusted/validator/validation_cache.h"
-#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
+#include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
 
 #define CONTEXT_MARKER 31
 #define QUERY_MARKER 37

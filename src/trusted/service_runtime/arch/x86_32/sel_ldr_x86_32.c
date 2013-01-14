@@ -15,7 +15,7 @@
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
 #include "native_client/src/trusted/service_runtime/arch/x86_32/sel_rt_32.h"
 #include "native_client/src/trusted/service_runtime/arch/x86_32/tramp_32.h"
-#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
+#include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
 
 struct NaClPcrelThunkGlobals {
   struct NaClThreadContext **user;

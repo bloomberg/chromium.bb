@@ -13,7 +13,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
-#include "native_client/src/trusted/validator_arm/cpuid_arm.h"
+#include "native_client/src/trusted/cpu_features/arch/arm/cpu_arm.h"
 #include "native_client/src/trusted/validator_arm/model.h"
 #include "native_client/src/trusted/validator_arm/validator.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"

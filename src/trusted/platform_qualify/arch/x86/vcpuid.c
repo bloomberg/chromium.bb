@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <setjmp.h>
 #include <signal.h>
-#include "native_client/src/trusted/validator/x86/nacl_cpuid.h"
+#include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86.h"
 #include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"
 
 /* MAGIC_CONST is a 32 bit constant, somewhat arbitrarily choosen. */

@@ -4,8 +4,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_MIPS_CPUID_MIPS_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_MIPS_CPUID_MIPS_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_CPU_FEATURES_ARCH_MIPS_CPU_MIPS_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_CPU_FEATURES_ARCH_MIPS_CPU_MIPS_H_
 
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/nacl_macros.h"
@@ -18,7 +18,7 @@ EXTERN_C_BEGIN
 /* List of features supported by MIPS CPUs. */
 typedef enum {
 #define NACL_MIPS_CPU_FEATURE(name) NACL_CONCAT(NaClCPUFeatureMips_, name),
-#include "native_client/src/trusted/validator_mips/cpuid_mips_features.h"
+#include "native_client/src/trusted/cpu_features/arch/mips/cpu_mips_features.h"
 #undef NACL_MIPS_CPU_FEATURE
   /* Leave the following as the last entry. */
   NaClCPUFeatureMips_Max
@@ -59,4 +59,4 @@ void NaClClearCPUFeaturesMips(NaClCPUFeaturesMips *features);
 
 EXTERN_C_END
 
-#endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_MIPS_CPUID_MIPS_H_
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_CPU_FEATURES_ARCH_MIPS_CPU_MIPS_H_

@@ -1,4 +1,3 @@
-# -*- python -*-
 # Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -78,18 +77,8 @@
       'variables': {
         'target_base': 'pqlib',
       },
-      # For nacl_cpuid used by nacl_cpuwhitelist.
-      'conditions': [
-        ['target_arch=="ia32"', {
-          'dependencies': [
-          '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_32',
-          ],
-        }],
-        ['target_arch=="x64"', {
-          'dependencies': [
-          '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_64',
-          ],
-        }],
+      'dependencies': [
+        '<(DEPTH)/native_client/src/trusted/cpu_features/cpu_features.gyp:cpu_features',
       ],
     },
   ],
@@ -104,8 +93,7 @@
             'win_target': 'x64',
           },
           'dependencies': [
-            # For nacl_cpuid used by nacl_cpuwhitelist.
-            '<(DEPTH)/native_client/src/trusted/validator/x86/validate_x86.gyp:ncval_base_x86_64',
+            '<(DEPTH)/native_client/src/trusted/cpu_features/cpu_features.gyp:cpu_features64',
           ],
         },
       ],

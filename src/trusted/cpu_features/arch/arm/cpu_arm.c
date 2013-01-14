@@ -7,13 +7,13 @@
 #include <string.h>
 
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/validator_arm/cpuid_arm.h"
+#include "native_client/src/trusted/cpu_features/arch/arm/cpu_arm.h"
 
 
 void NaClSetAllCPUFeaturesArm(NaClCPUFeatures *f) {
   /* TODO(jfb) Use a safe cast in this interface. */
   NaClCPUFeaturesArm *features = (NaClCPUFeaturesArm *) f;
-  /* Pedantic: avoid using memset, as in x86's nacl_cpuid.c. */
+  /* Pedantic: avoid using memset, as in x86's cpu_x86.c. */
   int id;
   /* Ensure any padding is zeroed. */
   NaClClearCPUFeaturesArm(features);
@@ -70,7 +70,7 @@ void NaClSetCPUFeatureArm(NaClCPUFeaturesArm *f, NaClCPUFeatureArmID id,
 const char *NaClGetCPUFeatureArmName(NaClCPUFeatureArmID id) {
   static const char *kFeatureArmNames[NaClCPUFeatureArm_Max] = {
 # define NACL_ARM_CPU_FEATURE(name) NACL_TO_STRING(name),
-# include "native_client/src/trusted/validator_arm/cpuid_arm_features.h"
+# include "native_client/src/trusted/cpu_features/arch/arm/cpu_arm_features.h"
 # undef NACL_ARM_CPU_FEATURE
   };
   return ((unsigned)id < NaClCPUFeatureArm_Max) ?
