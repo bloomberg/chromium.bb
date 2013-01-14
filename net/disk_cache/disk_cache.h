@@ -127,7 +127,12 @@ class NET_EXPORT Backend {
   // remain valid until the operation completes.
   //
   // NOTE: This method does not modify the last_used field of the entry, and
-  // therefore it does not impact the eviction ranking of the entry.
+  // therefore it does not impact the eviction ranking of the entry. However,
+  // an enumeration will go through all entries on the cache only if the cache
+  // is not modified while the enumeration is taking place. Significantly
+  // altering the entry pointed by |iter| (for example, deleting the entry) will
+  // invalidate |iter|. Performing operations on an entry that modify the entry
+  // may result in loops in the iteration, skipped entries or similar.
   virtual int OpenNextEntry(void** iter, Entry** next_entry,
                             const CompletionCallback& callback) = 0;
 
