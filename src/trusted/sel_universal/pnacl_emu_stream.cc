@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
@@ -51,12 +52,12 @@ SendDataChunk(NaClCommandLoop* ncl, nacl_abi_size_t size, const char *data) {
 // Rate-limit the sending to bits_per_sec to emulate a download
 bool PnaclStreamFile(NaClCommandLoop* ncl, FILE* input_file,
                             int chunk_size, int bits_per_sec) {
-  char* data = new char[chunk_size];
+  nacl::scoped_array<char> data(new char[chunk_size]);
   NaClLog(LOG_INFO, "Streaming file at %d bps\n", bits_per_sec);
   uint64_t start_time = NaClGetTimeOfDayMicroseconds();
   size_t data_sent = 0;
   while (!feof(input_file) && !ferror(input_file)) {
-    size_t data_read = fread(data, 1, chunk_size, input_file);
+    size_t data_read = fread(data.get(), 1, chunk_size, input_file);
     uint64_t cur_elapsed_us = NaClGetTimeOfDayMicroseconds() - start_time;
     uint64_t target_elapsed_us = static_cast<uint64_t>(data_sent + data_read)
         * 8 * 1000000 / bits_per_sec;
@@ -72,12 +73,12 @@ bool PnaclStreamFile(NaClCommandLoop* ncl, FILE* input_file,
         return false;
       }
     }
-    if (SendDataChunk(ncl, static_cast<nacl_abi_size_t>(data_read), data)) {
+    if (SendDataChunk(ncl, static_cast<nacl_abi_size_t>(data_read),
+                      data.get())) {
       return false;
     }
     data_sent += data_read;
   }
-  delete data;
   return true;
 }
 
