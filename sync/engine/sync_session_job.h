@@ -6,6 +6,7 @@
 #define SYNC_ENGINE_SYNC_SESSION_JOB_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/tracked_objects.h"
 #include "sync/base/sync_export.h"
@@ -29,6 +30,13 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
     // Typically used for fetching updates for a subset of the enabled types
     // during initial sync or reconfiguration.
     CONFIGURATION,
+  };
+
+  // This class exists to inform an interested party about the destruction of
+  // a SyncSessionJob.
+  class SYNC_EXPORT_PRIVATE DestructionObserver {
+   public:
+    virtual void OnJobDestroyed(SyncSessionJob* job) = 0;
   };
 
   SyncSessionJob(Purpose purpose,
@@ -86,6 +94,8 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
   SyncerStep end_step() const;
   ConfigurationParams config_params() const;
 
+  void set_destruction_observer(
+      const base::WeakPtr<DestructionObserver>& observer);
  private:
   // A SyncSessionJob can be in one of these three states, controlled by the
   // Finish() function, see method comments.
@@ -116,6 +126,8 @@ class SYNC_EXPORT_PRIVATE SyncSessionJob {
   // In case of multiple nudges getting coalesced this stores the
   // first location that came in.
   tracked_objects::Location from_location_;
+
+  base::WeakPtr<DestructionObserver> destruction_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionJob);
 };

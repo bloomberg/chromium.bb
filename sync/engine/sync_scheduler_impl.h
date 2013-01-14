@@ -33,7 +33,9 @@ namespace syncer {
 
 class BackoffDelayProvider;
 
-class SYNC_EXPORT_PRIVATE SyncSchedulerImpl : public SyncScheduler {
+class SYNC_EXPORT_PRIVATE SyncSchedulerImpl :
+    public SyncScheduler,
+    public SyncSessionJob::DestructionObserver {
  public:
   // |name| is a display string to identify the syncer thread.  Takes
   // |ownership of |syncer| and |delay_provider|.
@@ -78,6 +80,9 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl : public SyncScheduler {
   virtual void OnShouldStopSyncingPermanently() OVERRIDE;
   virtual void OnSyncProtocolError(
       const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
+
+  // SyncSessionJob::DestructionObserver implementation.
+  virtual void OnJobDestroyed(SyncSessionJob* job) OVERRIDE;
 
  private:
   enum JobProcessDecision {

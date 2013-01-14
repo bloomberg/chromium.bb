@@ -7,7 +7,10 @@
 
 namespace syncer {
 
-SyncSessionJob::~SyncSessionJob() {}
+SyncSessionJob::~SyncSessionJob() {
+  if (destruction_observer_)
+    destruction_observer_->OnJobDestroyed(this);
+}
 
 SyncSessionJob::SyncSessionJob(
     Purpose purpose,
@@ -22,6 +25,11 @@ SyncSessionJob::SyncSessionJob(
       config_params_(config_params),
       finished_(NOT_FINISHED),
       from_location_(from_location) {
+}
+
+void SyncSessionJob::set_destruction_observer(
+    const base::WeakPtr<DestructionObserver>& destruction_observer) {
+  destruction_observer_ = destruction_observer;
 }
 
 #define ENUM_CASE(x) case x: return #x; break;

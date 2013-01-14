@@ -185,6 +185,11 @@ SyncSchedulerImpl::~SyncSchedulerImpl() {
   StopImpl(base::Closure());
 }
 
+void SyncSchedulerImpl::OnJobDestroyed(SyncSessionJob* job) {
+  // TODO(tim): Bug 165561 investigation.
+  CHECK(!pending_nudge_ || pending_nudge_ != job);
+}
+
 void SyncSchedulerImpl::OnCredentialsUpdated() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
 
@@ -347,6 +352,7 @@ bool SyncSchedulerImpl::ScheduleConfiguration(
         session.Pass(),
         params,
         FROM_HERE));
+    job->set_destruction_observer(weak_ptr_factory_.GetWeakPtr());
     bool succeeded = DoSyncSessionJob(job.Pass());
 
     // If we failed, the job would have been saved as the pending configure
@@ -617,7 +623,7 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
       CreateSyncSession(info).Pass(),
       ConfigurationParams(),
       nudge_location));
-
+  job->set_destruction_observer(weak_ptr_factory_.GetWeakPtr());
   JobProcessDecision decision = DecideOnJob(*job);
   SDVLOG(2) << "Should run "
             << SyncSessionJob::GetPurposeString(job->purpose())
@@ -1084,6 +1090,7 @@ void SyncSchedulerImpl::PollTimerCallback() {
                                                     s.Pass(),
                                                     ConfigurationParams(),
                                                     FROM_HERE));
+  job->set_destruction_observer(weak_ptr_factory_.GetWeakPtr());
   ScheduleSyncSessionJob(job.Pass());
 }
 
