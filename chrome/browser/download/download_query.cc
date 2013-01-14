@@ -109,6 +109,10 @@ static bool GetDangerAccepted(const DownloadItem& item) {
   return (item.GetSafetyState() == DownloadItem::DANGEROUS_BUT_VALIDATED);
 }
 
+static bool GetExists(const DownloadItem& item) {
+  return !item.GetFileExternallyRemoved();
+}
+
 static string16 GetFilename(const DownloadItem& item) {
   // This filename will be compared with strings that could be passed in by the
   // user, who only sees LossyDisplayNames.
@@ -255,6 +259,8 @@ bool DownloadQuery::AddFilter(DownloadQuery::FilterType type,
       return AddFilter(BuildFilter<int>(value, EQ, &GetReceivedBytes));
     case FILTER_DANGER_ACCEPTED:
       return AddFilter(BuildFilter<bool>(value, EQ, &GetDangerAccepted));
+    case FILTER_EXISTS:
+      return AddFilter(BuildFilter<bool>(value, EQ, &GetExists));
     case FILTER_FILENAME:
       return AddFilter(BuildFilter<string16>(value, EQ, &GetFilename));
     case FILTER_FILENAME_REGEX:
@@ -387,6 +393,9 @@ void DownloadQuery::AddSorter(DownloadQuery::SortType type,
       break;
     case SORT_DANGER_ACCEPTED:
       sorters_.push_back(Sorter::Build<bool>(direction, &GetDangerAccepted));
+      break;
+    case SORT_EXISTS:
+      sorters_.push_back(Sorter::Build<bool>(direction, &GetExists));
       break;
     case SORT_STATE:
       sorters_.push_back(Sorter::Build<DownloadItem::DownloadState>(

@@ -336,6 +336,27 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_SortDangerAccepted) {
   ExpectSortInverted();
 }
 
+TEST_F(DownloadQueryTest, DownloadQueryTest_FilterExists) {
+  CreateMocks(2);
+  EXPECT_CALL(mock(0), GetFileExternallyRemoved()).WillRepeatedly(Return(
+      false));
+  EXPECT_CALL(mock(1), GetFileExternallyRemoved()).WillRepeatedly(Return(
+      true));
+  AddFilter(DownloadQuery::FILTER_EXISTS, true);
+  ExpectStandardFilterResults();
+}
+
+TEST_F(DownloadQueryTest, DownloadQueryTest_SortExists) {
+  CreateMocks(2);
+  EXPECT_CALL(mock(0), GetFileExternallyRemoved()).WillRepeatedly(Return(
+      false));
+  EXPECT_CALL(mock(1), GetFileExternallyRemoved()).WillRepeatedly(Return(
+      true));
+  query()->AddSorter(DownloadQuery::SORT_EXISTS,
+                     DownloadQuery::ASCENDING);
+  ExpectSortInverted();
+}
+
 TEST_F(DownloadQueryTest, DownloadQueryTest_FilterMime) {
   CreateMocks(2);
   EXPECT_CALL(mock(0), GetMimeType()).WillRepeatedly(Return("text"));

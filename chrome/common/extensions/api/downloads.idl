@@ -122,6 +122,17 @@ namespace downloads {
 
     // Number of bytes in the whole file post-decompression, or -1 if unknown.
     long fileSize;
+
+    // Whether the downloaded file still exists. This information may be out of
+    // date because Chrome does not automatically watch for file removal. Call
+    // $ref:search() in order to trigger the check for file existence. When the
+    // existence check completes, if the file has been deleted, then an
+    // $ref:onChanged event will fire. Note that $ref:search() does not wait
+    // for the existence check to finish before returning, so results from
+    // $ref:search() may not accurately reflect the file system. Also,
+    // $ref:search() may be called as often as necessary, but will not check for
+    // file existence any more frequently than once every 10 seconds.
+    boolean exists;
   };
 
   [inline_doc] dictionary DownloadQuery {
@@ -223,6 +234,9 @@ namespace downloads {
 
     // Number of bytes in the whole file post-decompression, or -1 if unknown.
     long? fileSize;
+
+    // Whether the downloaded file exists;
+    boolean? exists;
   };
 
   [inline_doc] dictionary DownloadStringDiff {
@@ -280,6 +294,9 @@ namespace downloads {
 
     // The change in <code>fileSize</code>, if any.
     DownloadLongDiff? fileSize;
+
+    // The change in <code>exists</code>, if any.
+    DownloadBooleanDiff? exists;
   };
 
   [inline_doc] dictionary GetFileIconOptions {
@@ -371,8 +388,8 @@ namespace downloads {
     // |downloadId|: The identifier for the downloaded file.
     static void show(long downloadId);
 
-    // Erase matching $ref:DownloadItem from history. An $ref.onErased event
-    // will fire for each $ref.DownloadItem that matches <code>query</code>,
+    // Erase matching $ref:DownloadItem from history. An $ref:onErased event
+    // will fire for each $ref:DownloadItem that matches <code>query</code>,
     // then <code>callback</code> will be called.
     static void erase(DownloadQuery query, optional EraseCallback callback);
 

@@ -53,6 +53,7 @@ class DownloadQuery {
     FILTER_ENDED_AFTER,          // string
     FILTER_ENDED_BEFORE,         // string
     FILTER_END_TIME,             // string
+    FILTER_EXISTS,               // bool
     FILTER_FILENAME,             // string
     FILTER_FILENAME_REGEX,       // string
     FILTER_MIME,                 // string
@@ -73,6 +74,7 @@ class DownloadQuery {
     SORT_DANGER,
     SORT_DANGER_ACCEPTED,
     SORT_END_TIME,
+    SORT_EXISTS,
     SORT_FILENAME,
     SORT_MIME,
     SORT_PAUSED,
