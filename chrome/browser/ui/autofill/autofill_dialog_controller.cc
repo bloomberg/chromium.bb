@@ -491,14 +491,6 @@ void AutofillDialogController::SuggestionItemSelected(
   view_->UpdateSection(SectionForSuggestionsMenuModel(model));
 }
 
-bool AutofillDialogController::HandleKeyPressEvent(
-    const content::NativeWebKeyboardEvent& event) {
-  if (popup_controller_)
-    return popup_controller_->HandleKeyPressEvent(event);
-
-  return false;
-}
-
 void AutofillDialogController::GenerateSuggestionsModels() {
   PersonalDataManager* manager = GetManager();
   const std::vector<CreditCard*>& cards = manager->credit_cards();

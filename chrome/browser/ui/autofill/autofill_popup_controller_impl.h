@@ -44,10 +44,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   // |delegate_|. Virtual for testing.
   virtual void Hide();
 
-  // KeyboardListener implementation.
-  virtual bool HandleKeyPressEvent(
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
-
  protected:
   FRIEND_TEST_ALL_PREFIXES(AutofillExternalDelegateBrowserTest,
                            CloseWidgetAndNoLeaking);
@@ -85,6 +81,10 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
 #endif
   virtual int selected_line() const OVERRIDE;
   virtual bool delete_icon_hovered() const OVERRIDE;
+
+  // KeyboardListener implementation.
+  virtual bool HandleKeyPressEvent(
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
 
   // Like Hide(), but doesn't invalidate |delegate_| (the delegate will still
   // be informed of destruction).

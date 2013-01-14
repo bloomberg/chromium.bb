@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_popup_delegate.h"
-#include "content/public/browser/keyboard_listener.h"
 #include "content/public/common/ssl_status.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -43,8 +42,7 @@ class AutofillDialogView;
 // This class drives the dialog that appears when a site uses the imperative
 // autocomplete API to fill out a form.
 class AutofillDialogController : public AutofillPopupDelegate,
-                                 public SuggestionsMenuModelDelegate,
-                                 public content::KeyboardListener {
+                                 public SuggestionsMenuModelDelegate {
  public:
   AutofillDialogController(
       content::WebContents* contents,
@@ -110,11 +108,6 @@ class AutofillDialogController : public AutofillPopupDelegate,
   // SuggestionsMenuModelDelegate implementation.
   virtual void SuggestionItemSelected(const SuggestionsMenuModel& model)
       OVERRIDE;
-
-  // KeyboardListener implementation.
-  // The view should forward keypresses in text inputs to the controller.
-  virtual bool HandleKeyPressEvent(
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
 
   content::WebContents* web_contents() { return contents_; }
 
