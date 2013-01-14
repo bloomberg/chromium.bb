@@ -52,6 +52,8 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   virtual ~SyncPrefs();
 
+  static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+
   void AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer);
   void RemoveSyncPrefObserver(SyncPrefObserver* sync_pref_observer);
 
@@ -121,10 +123,9 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
  private:
   void RegisterPrefGroups();
-  void RegisterPreferences();
 
-  void RegisterDataTypePreferredPref(
-      syncer::ModelType type, bool is_preferred);
+  static void RegisterDataTypePreferredPref(
+      PrefServiceSyncable* prefs, syncer::ModelType type, bool is_preferred);
   bool GetDataTypePreferred(syncer::ModelType type) const;
   void SetDataTypePreferred(syncer::ModelType type, bool is_preferred);
 

@@ -25,7 +25,6 @@ SyncPrefs::SyncPrefs(PrefServiceSyncable* pref_service)
   // throughout this file.  This is a problem now due to lack of injection at
   // ProfileSyncService. Bug 130176.
   if (pref_service_) {
-    RegisterPreferences();
     // Watch the preference that indicates sync is managed so we can take
     // appropriate action.
     pref_sync_managed_.Init(prefs::kSyncManaged, pref_service_,
@@ -36,6 +35,79 @@ SyncPrefs::SyncPrefs(PrefServiceSyncable* pref_service)
 
 SyncPrefs::~SyncPrefs() {
   DCHECK(CalledOnValidThread());
+}
+
+// static
+void SyncPrefs::RegisterUserPrefs(PrefServiceSyncable* prefs) {
+  prefs->RegisterBooleanPref(prefs::kSyncHasSetupCompleted,
+                             false,
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kSyncSuppressStart,
+                             false,
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  prefs->RegisterInt64Pref(prefs::kSyncLastSyncedTime,
+                           0,
+                           PrefServiceSyncable::UNSYNCABLE_PREF);
+
+  // If you've never synced before, or if you're using Chrome OS or Android,
+  // all datatypes are on by default.
+  // TODO(nick): Perhaps a better model would be to always default to false,
+  // and explicitly call SetDataTypes() when the user shows the wizard.
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+  bool enable_by_default = true;
+#else
+  bool enable_by_default = !prefs->HasPrefPath(prefs::kSyncHasSetupCompleted);
+#endif
+
+  prefs->RegisterBooleanPref(prefs::kSyncKeepEverythingSynced,
+                             enable_by_default,
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
+
+  syncer::ModelTypeSet user_types = syncer::UserTypes();
+
+  // Treat bookmarks specially.
+  RegisterDataTypePreferredPref(prefs, syncer::BOOKMARKS, true);
+  user_types.Remove(syncer::BOOKMARKS);
+
+  for (syncer::ModelTypeSet::Iterator it = user_types.First();
+       it.Good(); it.Inc()) {
+    RegisterDataTypePreferredPref(prefs, it.Get(), enable_by_default);
+  }
+
+  prefs->RegisterBooleanPref(prefs::kSyncManaged,
+                             false,
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kSyncEncryptionBootstrapToken,
+                            "",
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(prefs::kSyncKeystoreEncryptionBootstrapToken,
+                            "",
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
+#if defined(OS_CHROMEOS)
+  prefs->RegisterStringPref(prefs::kSyncSpareBootstrapToken,
+                            "",
+                            PrefServiceSyncable::UNSYNCABLE_PREF);
+#endif
+
+  // We will start prompting people about new data types after the launch of
+  // SESSIONS - all previously launched data types are treated as if they are
+  // already acknowledged.
+  syncer::ModelTypeSet model_set;
+  model_set.Put(syncer::BOOKMARKS);
+  model_set.Put(syncer::PREFERENCES);
+  model_set.Put(syncer::PASSWORDS);
+  model_set.Put(syncer::AUTOFILL_PROFILE);
+  model_set.Put(syncer::AUTOFILL);
+  model_set.Put(syncer::THEMES);
+  model_set.Put(syncer::EXTENSIONS);
+  model_set.Put(syncer::NIGORI);
+  model_set.Put(syncer::SEARCH_ENGINES);
+  model_set.Put(syncer::APPS);
+  model_set.Put(syncer::TYPED_URLS);
+  model_set.Put(syncer::SESSIONS);
+  prefs->RegisterListPref(prefs::kSyncAcknowledgedSyncTypes,
+                          syncer::ModelTypeSetToValue(model_set),
+                          PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
@@ -302,100 +374,17 @@ void SyncPrefs::RegisterPrefGroups() {
   pref_groups_[syncer::SESSIONS].Put(syncer::HISTORY_DELETE_DIRECTIVES);
 }
 
-void SyncPrefs::RegisterPreferences() {
-  DCHECK(CalledOnValidThread());
-  CHECK(pref_service_);
-  if (pref_service_->FindPreference(prefs::kSyncLastSyncedTime)) {
-    return;
-  }
-
-  // TODO(joi): Switch to official way of registering user prefs for
-  // this class, i.e. in a function called from
-  // browser_prefs::RegisterUserPrefs.
-  pref_service_->RegisterBooleanPref(prefs::kSyncHasSetupCompleted,
-                                     false,
-                                     PrefServiceSyncable::UNSYNCABLE_PREF);
-  pref_service_->RegisterBooleanPref(prefs::kSyncSuppressStart,
-                                     false,
-                                     PrefServiceSyncable::UNSYNCABLE_PREF);
-  pref_service_->RegisterInt64Pref(prefs::kSyncLastSyncedTime,
-                                   0,
-                                   PrefServiceSyncable::UNSYNCABLE_PREF);
-
-  // If you've never synced before, or if you're using Chrome OS or Android,
-  // all datatypes are on by default.
-  // TODO(nick): Perhaps a better model would be to always default to false,
-  // and explicitly call SetDataTypes() when the user shows the wizard.
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-  bool enable_by_default = true;
-#else
-  bool enable_by_default =
-      !pref_service_->HasPrefPath(prefs::kSyncHasSetupCompleted);
-#endif
-
-  pref_service_->RegisterBooleanPref(prefs::kSyncKeepEverythingSynced,
-                                     enable_by_default,
-                                     PrefServiceSyncable::UNSYNCABLE_PREF);
-
-  syncer::ModelTypeSet user_types = syncer::UserTypes();
-
-  // Treat bookmarks specially.
-  RegisterDataTypePreferredPref(syncer::BOOKMARKS, true);
-  user_types.Remove(syncer::BOOKMARKS);
-
-  for (syncer::ModelTypeSet::Iterator it = user_types.First();
-       it.Good(); it.Inc()) {
-    RegisterDataTypePreferredPref(it.Get(), enable_by_default);
-  }
-
-  pref_service_->RegisterBooleanPref(prefs::kSyncManaged,
-                                     false,
-                                     PrefServiceSyncable::UNSYNCABLE_PREF);
-  pref_service_->RegisterStringPref(prefs::kSyncEncryptionBootstrapToken,
-                                    "",
-                                    PrefServiceSyncable::UNSYNCABLE_PREF);
-  pref_service_->RegisterStringPref(
-      prefs::kSyncKeystoreEncryptionBootstrapToken,
-      "",
-      PrefServiceSyncable::UNSYNCABLE_PREF);
-#if defined(OS_CHROMEOS)
-  pref_service_->RegisterStringPref(prefs::kSyncSpareBootstrapToken,
-                                    "",
-                                    PrefServiceSyncable::UNSYNCABLE_PREF);
-#endif
-
-  // We will start prompting people about new data types after the launch of
-  // SESSIONS - all previously launched data types are treated as if they are
-  // already acknowledged.
-  syncer::ModelTypeSet model_set;
-  model_set.Put(syncer::BOOKMARKS);
-  model_set.Put(syncer::PREFERENCES);
-  model_set.Put(syncer::PASSWORDS);
-  model_set.Put(syncer::AUTOFILL_PROFILE);
-  model_set.Put(syncer::AUTOFILL);
-  model_set.Put(syncer::THEMES);
-  model_set.Put(syncer::EXTENSIONS);
-  model_set.Put(syncer::NIGORI);
-  model_set.Put(syncer::SEARCH_ENGINES);
-  model_set.Put(syncer::APPS);
-  model_set.Put(syncer::TYPED_URLS);
-  model_set.Put(syncer::SESSIONS);
-  pref_service_->RegisterListPref(prefs::kSyncAcknowledgedSyncTypes,
-                                  syncer::ModelTypeSetToValue(model_set),
-                                  PrefServiceSyncable::UNSYNCABLE_PREF);
-}
-
-void SyncPrefs::RegisterDataTypePreferredPref(syncer::ModelType type,
+// static
+void SyncPrefs::RegisterDataTypePreferredPref(PrefServiceSyncable* prefs,
+                                              syncer::ModelType type,
                                               bool is_preferred) {
-  DCHECK(CalledOnValidThread());
-  CHECK(pref_service_);
   const char* pref_name = GetPrefNameForDataType(type);
   if (!pref_name) {
     NOTREACHED();
     return;
   }
-  pref_service_->RegisterBooleanPref(pref_name, is_preferred,
-                                     PrefServiceSyncable::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(pref_name, is_preferred,
+                             PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
 bool SyncPrefs::GetDataTypePreferred(syncer::ModelType type) const {

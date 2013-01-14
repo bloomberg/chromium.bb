@@ -54,6 +54,7 @@
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
@@ -227,6 +228,7 @@ void RegisterUserPrefs(PrefServiceSyncable* user_prefs) {
   BookmarkPromptPrefs::RegisterUserPrefs(user_prefs);
   bookmark_utils::RegisterUserPrefs(user_prefs);
   BrowserInstantController::RegisterUserPrefs(user_prefs);
+  browser_sync::SyncPrefs::RegisterUserPrefs(user_prefs);
   ChromeContentBrowserClient::RegisterUserPrefs(user_prefs);
   ChromeVersionService::RegisterUserPrefs(user_prefs);
   chrome_browser_net::HttpServerPropertiesManager::RegisterUserPrefs(
