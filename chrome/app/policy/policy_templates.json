@@ -262,7 +262,7 @@
       'example_value': True,
       'id': 6,
       'caption': '''Enable search suggestions''',
-      'desc': '''Enables search suggestions in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Omnibox and prevents users from changing this setting.
+      'desc': '''Enables search suggestions in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s omnibox and prevents users from changing this setting.
 
       If you enable this setting, search suggestions are used.
 
@@ -389,17 +389,17 @@
         {
           'name': 'Enabled',
           'value': 0,
-          'caption': '''Incognito mode available.''',
+          'caption': '''Incognito mode available''',
         },
         {
           'name': 'Disabled',
           'value': 1,
-          'caption': '''Incognito mode disabled.''',
+          'caption': '''Incognito mode disabled''',
         },
         {
           'name': 'Forced',
           'value': 2,
-          'caption': '''Incognito mode forced.''',
+          'caption': '''Incognito mode forced''',
         },
       ],
       'supported_on': ['chrome.*:14-', 'chrome_os:0.14-'],
@@ -553,7 +553,7 @@
           },
           'example_value': False,
           'id': 157,
-          'caption': '''Enable curtaining of remote access hosts.''',
+          'caption': '''Enable curtaining of remote access hosts''',
           'desc': '''Enables curtaining of remote access hosts while a connection is in progress.
 
           If this setting is enabled, then hosts' physical input and output devices are disabled while a remote connection is in progress.
@@ -1785,7 +1785,7 @@
           },
           'example_value': ['http://search.my.company/suggest#q={searchTerms}', 'http://search.my.company/suggest/search#q={searchTerms}'],
           'id': 161,
-          'caption': '''List of alternate URLs for the default search provider.''',
+          'caption': '''List of alternate URLs for the default search provider''',
           'desc': '''Specifies a list of alternate URLs that can be used to extract search terms from the search engine. The URLs should contain the string <ph name="SEARCH_TERM_MARKER">'{searchTerms}'</ph>, which will be used to extract the search terms.
 
           This policy is optional. If not set, no alternate urls will be used to extract search terms.
@@ -1803,8 +1803,8 @@
           },
           'example_value': 'espv',
           'id': 171,
-          'caption': '''Parameter controlling search term placement for the default search provider.''',
-          'desc': '''A parameter that, if present in the query or ref parameter of a search URL, indicates that Chrome should perform search terms replacement in the omnibox.
+          'caption': '''Parameter controlling search term placement for the default search provider''',
+          'desc': '''If this policy is set and a search URL suggested from the omnibox contains this parameter in the query string or in the fragment identifier, then the suggestion will show the search terms and search provider instead of the raw search URL.
 
           This policy is optional. If not set, no search term replacement will be performed.
 
@@ -1831,7 +1831,7 @@
             {
               'name': 'AllowCookies',
               'value': 1,
-              'caption': '''Allow all sites to set local data.''',
+              'caption': '''Allow all sites to set local data''',
             },
             {
               'name': 'BlockCookies',
@@ -1841,7 +1841,7 @@
             {
               'name': 'SessionOnly',
               'value': 4,
-              'caption': '''Keep cookies for the duration of the session.''',
+              'caption': '''Keep cookies for the duration of the session''',
             },
           ],
           'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
