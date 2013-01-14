@@ -1,10 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SIGNIN_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_SIGNIN_SCREEN_HANDLER_H_
 
+#include <set>
 #include <string>
 
 #include "base/callback.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui.h"
 
 class BrowsingDataRemover;
@@ -395,6 +397,13 @@ class SigninScreenHandler
 
   base::CancelableClosure update_state_closure_;
   base::CancelableClosure connecting_closure_;
+
+  content::NotificationRegistrar registrar_;
+
+  // Whether there is an auth UI pending. This flag is set on receiving
+  // NOTIFICATION_AUTH_NEEDED and reset on either NOTIFICATION_AUTH_SUPPLIED or
+  // NOTIFICATION_AUTH_CANCELLED.
+  bool has_pending_auth_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninScreenHandler);
 };

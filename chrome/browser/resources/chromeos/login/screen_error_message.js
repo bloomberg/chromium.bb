@@ -70,9 +70,9 @@ cr.define('login', function() {
           '<a id="' + RELOAD_PAGE_ID + '" class="signin-link" href="#">',
           '</a>');
       $(RELOAD_PAGE_ID).onclick = function() {
-        var currentScreen = Oobe.getInstance().currentScreen;
+        var gaiaScreen = $(SCREEN_GAIA_SIGNIN);
         // Schedules a immediate retry.
-        currentScreen.doReload();
+        gaiaScreen.doReload();
       };
 
       $('error-guest-signin').innerHTML = localStrings.getStringF(

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,12 +157,23 @@ SigninScreenHandler::SigninScreenHandler(
       error_screen_actor_(error_screen_actor),
       is_first_update_state_call_(true),
       offline_login_active_(false),
-      last_network_state_(NetworkStateInformer::UNKNOWN) {
+      last_network_state_(NetworkStateInformer::UNKNOWN),
+      has_pending_auth_ui_(false) {
   DCHECK(network_state_informer_);
   DCHECK(error_screen_actor_);
   network_state_informer_->AddObserver(this);
   CrosSettings::Get()->AddSettingsObserver(kAccountsPrefAllowNewUser, this);
   CrosSettings::Get()->AddSettingsObserver(kAccountsPrefAllowGuest, this);
+
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_AUTH_NEEDED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_AUTH_SUPPLIED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_AUTH_CANCELLED,
+                 content::NotificationService::AllSources());
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
@@ -758,11 +769,27 @@ void SigninScreenHandler::OnCapsLockChange(bool enabled) {
 void SigninScreenHandler::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED) {
-    UpdateAuthExtension();
-    UpdateAddButtonStatus();
-  } else {
-    NOTREACHED() << "Unexpected notification " << type;
+  switch (type) {
+    case chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED: {
+      UpdateAuthExtension();
+      UpdateAddButtonStatus();
+      break;
+    }
+    case chrome::NOTIFICATION_AUTH_NEEDED: {
+      has_pending_auth_ui_ = true;
+      break;
+    }
+    case chrome::NOTIFICATION_AUTH_SUPPLIED:
+    case chrome::NOTIFICATION_AUTH_CANCELLED: {
+      has_pending_auth_ui_ = false;
+
+      // Schedules reload after auth ui is dismissed when gaia is shown.
+      if (ui_state_ == UI_STATE_GAIA_SIGNIN)
+        ScheduleGaiaFrameReload();
+      break;
+    }
+    default:
+      NOTREACHED() << "Unexpected notification " << type;
   }
 }
 
@@ -1318,8 +1345,10 @@ void SigninScreenHandler::HandleShowGaiaFrameError(
                         reason,
                         network_state_informer_->last_network_type(),
                         false);
-    // Schedules a reload of the Gaia frame.
-    ScheduleGaiaFrameReload();
+
+    // Schedules a reload of the Gaia frame if there is no pending auth ui.
+    if (!has_pending_auth_ui_)
+      ScheduleGaiaFrameReload();
   }
 }
 
