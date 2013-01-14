@@ -6,6 +6,7 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../skia/skia.gyp:skia',
+    '../third_party/re2/re2.gyp:re2',
     '../ui/gl/gl.gyp:gl',
   ],
   'sources': [

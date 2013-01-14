@@ -4,6 +4,9 @@
 
 #include "content/gpu/gpu_info_collector.h"
 
+// This has to be included before windows.h.
+#include "third_party/re2/re2/re2.h"
+
 #include <windows.h>
 #include <d3d9.h>
 #include <setupapi.h>
@@ -13,6 +16,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/stringprintf.h"
 #include "base/metrics/histogram.h"
 #include "base/scoped_native_library.h"
 #include "base/string_number_conversions.h"
@@ -23,20 +27,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
 
-// ANGLE seems to require that main.h be included before any other ANGLE header.
-#include "libEGL/Display.h"
-#include "libEGL/main.h"
-
 namespace {
-
-// The version number stores the major and minor version in the least 16 bits;
-// for example, 2.5 is 0x00000205.
-// Returned string is in the format of "major.minor".
-std::string VersionNumberToString(uint32 version_number) {
-  int hi = (version_number >> 8) & 0xff;
-  int low = version_number & 0xff;
-  return base::IntToString(hi) + "." + base::IntToString(low);
-}
 
 float ReadXMLFloatValue(XmlReader* reader) {
   std::string score_string;
@@ -265,56 +256,46 @@ bool CollectContextGraphicsInfo(content::GPUInfo* gpu_info) {
     }
   }
 
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
-    gpu_info->finalized = true;
-    return CollectGraphicsInfoGL(gpu_info);
-  }
-
-  // TODO(zmo): the following code only works if running on top of ANGLE.
-  // Need to handle the case when running on top of real EGL/GLES2 drivers.
-
-  egl::Display* display = static_cast<egl::Display*>(
-      gfx::GLSurfaceEGL::GetHardwareDisplay());
-  if (!display) {
-    LOG(ERROR) << "gfx::BaseEGLContext::GetDisplay() failed";
+  if (!CollectGraphicsInfoGL(gpu_info))
     return false;
-  }
 
-  IDirect3DDevice9* device = display->getDevice();
-  if (!device) {
-    LOG(ERROR) << "display->getDevice() failed";
-    return false;
-  }
-
-  base::win::ScopedComPtr<IDirect3D9> d3d;
-  if (FAILED(device->GetDirect3D(d3d.Receive()))) {
-    LOG(ERROR) << "device->GetDirect3D(&d3d) failed";
-    return false;
-  }
-
-  // Get can_lose_context
-  base::win::ScopedComPtr<IDirect3D9Ex> d3dex;
-  if (SUCCEEDED(d3dex.QueryFrom(d3d)))
-    gpu_info->can_lose_context = false;
-  else
-    gpu_info->can_lose_context = true;
-
-  // Get version information
-  D3DCAPS9 d3d_caps;
-  if (d3d->GetDeviceCaps(D3DADAPTER_DEFAULT,
-                         D3DDEVTYPE_HAL,
-                         &d3d_caps) == D3D_OK) {
-    gpu_info->pixel_shader_version =
-        VersionNumberToString(d3d_caps.PixelShaderVersion);
+  // ANGLE's renderer strings are of the form:
+  // ANGLE (<adapter_identifier> Direct3D<version> vs_x_x ps_x_x)
+  std::string direct3d_version;
+  int vertex_shader_major_version = 0;
+  int vertex_shader_minor_version = 0;
+  int pixel_shader_major_version = 0;
+  int pixel_shader_minor_version = 0;
+  if (RE2::FullMatch(gpu_info->gl_renderer,
+                     "ANGLE \\(.*\\)") &&
+      RE2::PartialMatch(gpu_info->gl_renderer,
+                        " Direct3D(\\w+)",
+                        &direct3d_version) &&
+      RE2::PartialMatch(gpu_info->gl_renderer,
+                        " vs_(\\d+)_(\\d+)",
+                        &vertex_shader_major_version,
+                        &vertex_shader_minor_version) &&
+      RE2::PartialMatch(gpu_info->gl_renderer,
+                        " ps_(\\d+)_(\\d+)",
+                        &pixel_shader_major_version,
+                        &pixel_shader_minor_version)) {
+    gpu_info->can_lose_context = direct3d_version == "9";
     gpu_info->vertex_shader_version =
-        VersionNumberToString(d3d_caps.VertexShaderVersion);
+        StringPrintf("%d.%d",
+                     vertex_shader_major_version,
+                     vertex_shader_minor_version);
+    gpu_info->pixel_shader_version =
+        StringPrintf("%d.%d",
+                     pixel_shader_major_version,
+                     pixel_shader_minor_version);
+
+    // DirectX diagnostics are collected asynchronously because it takes a
+    // couple of seconds. Do not mark gpu_info as complete until that is done.
+    gpu_info->finalized = false;
   } else {
-    LOG(ERROR) << "d3d->GetDeviceCaps() failed";
-    return false;
+    gpu_info->finalized = true;
   }
 
-  // DirectX diagnostics are collected asynchronously because it takes a
-  // couple of seconds. Do not mark gpu_info as complete until that is done.
   return true;
 }
 
@@ -358,19 +339,14 @@ bool CollectBasicGraphicsInfo(content::GPUInfo* gpu_info) {
 bool CollectDriverInfoGL(content::GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectDriverInfoGL");
 
-  DCHECK(gpu_info);
+  if (!gpu_info->driver_version.empty())
+    return true;
 
   std::string gl_version_string = gpu_info->gl_version_string;
 
-  // TODO(zmo): We assume the driver version is in the end of GL_VERSION
-  // string.  Need to verify if it is true for majority drivers.
-
-  size_t pos = gl_version_string.find_last_not_of("0123456789.");
-  if (pos != std::string::npos && pos < gl_version_string.length() - 1) {
-    gpu_info->driver_version = gl_version_string.substr(pos + 1);
-    return true;
-  }
-  return false;
+  return RE2::PartialMatch(gl_version_string,
+                           "([\\d\\.]+)$",
+                           &gpu_info->driver_version);
 }
 
 void MergeGPUInfo(content::GPUInfo* basic_gpu_info,
@@ -382,23 +358,9 @@ void MergeGPUInfo(content::GPUInfo* basic_gpu_info,
     return;
   }
 
-  if (!context_gpu_info.gl_vendor.empty()) {
-    MergeGPUInfoGL(basic_gpu_info, context_gpu_info);
-    return;
-  }
-
-  basic_gpu_info->pixel_shader_version =
-      context_gpu_info.pixel_shader_version;
-  basic_gpu_info->vertex_shader_version =
-      context_gpu_info.vertex_shader_version;
+  MergeGPUInfoGL(basic_gpu_info, context_gpu_info);
 
   basic_gpu_info->dx_diagnostics = context_gpu_info.dx_diagnostics;
-
-  basic_gpu_info->can_lose_context = context_gpu_info.can_lose_context;
-  basic_gpu_info->sandboxed = context_gpu_info.sandboxed;
-  basic_gpu_info->gpu_accessible = context_gpu_info.gpu_accessible;
-  basic_gpu_info->finalized = context_gpu_info.finalized;
-  basic_gpu_info->initialization_time = context_gpu_info.initialization_time;
 }
 
 }  // namespace gpu_info_collector
