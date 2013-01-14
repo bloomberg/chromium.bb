@@ -129,6 +129,9 @@ namespace app.window {
     // Hide the window. Does nothing if the window is already hidden.
     static void hide();
 
+    // Get the window's bounds as a $ref:Bounds object.
+    [nocompile] static Bounds getBounds();
+
     // Set the window's bounds.
     static void setBounds(Bounds bounds);
 
@@ -178,5 +181,22 @@ namespace app.window {
     // otherWindow.chrome.app.window.current().
     [nocompile] static AppWindow current();
     [nocompile, nodoc] static void initializeAppWindow(object state);
+  };
+
+  interface Events {
+    // Fired when the window is resized.
+    [nocompile] static void onBoundsChanged();
+
+    // Fired when the window is closed.
+    [nocompile] static void onClosed();
+
+    // Fired when the window is maximized.
+    [nocompile] static void onMaximized();
+
+    // Fired when the window is minimized.
+    [nocompile] static void onMinimized();
+
+    // Fired when the window is restored from being minimized or maximized.
+    [nocompile] static void onRestored();
   };
 };
