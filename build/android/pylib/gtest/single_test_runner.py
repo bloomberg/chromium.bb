@@ -20,6 +20,9 @@ from test_package_apk import TestPackageApk
 from test_package_executable import TestPackageExecutable
 
 
+CURFILE_PATH = os.path.abspath(os.path.dirname(__file__))
+
+
 class SingleTestRunner(BaseTestRunner):
   """Single test suite attached to a single device.
 
@@ -84,30 +87,20 @@ class SingleTestRunner(BaseTestRunner):
     return (self.test_package.test_suite_basename in
             tests_require_net_test_server)
 
-  def _GetFilterFileName(self):
-    """Returns the filename of gtest filter."""
-    return os.path.join(
-        sys.path[0], 'gtest_filter',
-        self.test_package.test_suite_basename + '_disabled')
-
-  def _GetAdditionalEmulatorFilterName(self):
-    """Returns the filename of additional gtest filter for emulator."""
-    return os.path.join(
-        sys.path[0], 'gtest_filter',
-        self.test_package.test_suite_basename +
-        '_emulator_additional_disabled')
-
   def GetDisabledTests(self):
     """Returns a list of disabled tests.
 
     Returns:
-      A list of disabled tests obtained from gtest_filter/test_suite_disabled.
+      A list of disabled tests obtained from 'filter' subdirectory.
     """
-    disabled_tests = run_tests_helper.GetExpectations(self._GetFilterFileName())
+    gtest_filter_base_path = os.path.join(
+        CURFILE_PATH, 'filter', self.test_package.test_suite_basename)
+    disabled_tests = run_tests_helper.GetExpectations(
+       gtest_filter_base_path + '_disabled')
     if self._running_on_emulator:
       # Append emulator's filter file.
       disabled_tests.extend(run_tests_helper.GetExpectations(
-          self._GetAdditionalEmulatorFilterName()))
+          gtest_filter_base_path + '_emulator_additional_disabled'))
     return disabled_tests
 
   def GetDataFilesForTestSuite(self):
