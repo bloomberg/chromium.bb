@@ -779,7 +779,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   }
   const size_t what_you_typed_size = map.size();
   if (!default_provider_suggestion_.text.empty() &&
-      default_provider_suggestion_.type == INSTANT_SUGGESTION_SEARCH)
+      default_provider_suggestion_.type == INSTANT_SUGGESTION_SEARCH &&
+      !input_.prevent_inline_autocomplete())
     AddMatchToMap(input_.text() + default_provider_suggestion_.text,
                   input_.text(), verbatim_relevance + 1,
                   AutocompleteMatch::SEARCH_SUGGEST,
@@ -799,7 +800,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     matches_.push_back(i->second);
 
   if (!default_provider_suggestion_.text.empty() &&
-      default_provider_suggestion_.type == INSTANT_SUGGESTION_URL)
+      default_provider_suggestion_.type == INSTANT_SUGGESTION_URL &&
+      !input_.prevent_inline_autocomplete())
     matches_.push_back(NavigationToMatch(
         NavigationResult(GURL(UTF16ToUTF8(default_provider_suggestion_.text)),
                          string16(),
