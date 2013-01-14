@@ -4,6 +4,7 @@ Current Status as of Dec 11, 2012
 Upstream cherry-picks:
 <upstream in progress> - aligned stack fixes for MSVC++.
 <upstream in progress> - vp3 double-free fixes.
+2c16bf2de07c68513072bf3cc96401d2c6291a3e - vorbisdec: Check bark_map_size.
 
 
 Current patches:
