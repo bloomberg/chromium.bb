@@ -57,7 +57,7 @@ def ParseHex(hex_content):
       yield ''.join(bytes)
       bytes = []
 
-  assert bytes == []
+  assert bytes == [], r'r"\\" should not appear on the last line'
 
 
 def CreateElfContent(bits, text_segment):
