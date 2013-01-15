@@ -5,7 +5,7 @@
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_TYPES_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_TYPES_H_
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystem.h"
 
 namespace fileapi {
 

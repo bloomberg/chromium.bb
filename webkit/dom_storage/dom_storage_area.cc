@@ -8,7 +8,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/time.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/database/database_util.h"
 #include "webkit/dom_storage/dom_storage_map.h"

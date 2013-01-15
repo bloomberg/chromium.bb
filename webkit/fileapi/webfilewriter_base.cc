@@ -5,9 +5,9 @@
 #include "webkit/fileapi/webfilewriter_base.h"
 
 #include "base/logging.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileWriterClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "webkit/fileapi/file_system_util.h"
 
 namespace fileapi {

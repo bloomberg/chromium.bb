@@ -12,9 +12,9 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "webkit/fileapi/file_system_types.h"
 
 namespace fileapi {

@@ -11,9 +11,9 @@
 #include "base/compiler_specific.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/angle/include/GLSLANG/ShaderLang.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/gpu/webkit_gpu_export.h"
 

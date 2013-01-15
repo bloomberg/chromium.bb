@@ -5,8 +5,8 @@
 #include "webkit/database/database_util.h"
 
 #include "base/utf_string_conversions.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/vfs_backend.h"
 
