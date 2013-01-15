@@ -137,6 +137,7 @@ bool ImportSingleFormGroup(const RegKey& key,
 
   bool has_non_empty_fields = false;
 
+  const std::string app_locale = AutofillCountry::ApplicationLocale();
   for (uint32 i = 0; i < key.GetValueCount(); ++i) {
     std::wstring value_name;
     if (key.GetValueNameAt(i, &value_name) != ERROR_SUCCESS)
@@ -153,10 +154,9 @@ bool ImportSingleFormGroup(const RegKey& key,
 
       // Phone numbers are stored piece-by-piece, and then reconstructed from
       // the pieces.  The rest of the fields are set "as is".
-      // TODO(isherman): Call SetInfo(), rather than SetRawInfo().
       if (!phone || !phone->SetInfo(it->second, field_value)) {
         has_non_empty_fields = true;
-        form_group->SetRawInfo(it->second, field_value);
+        form_group->SetInfo(it->second, field_value, app_locale);
       }
     }
   }
@@ -276,7 +276,6 @@ bool ImportCurrentUserProfiles(std::vector<AutofillProfile>* profiles,
       RegKey key(HKEY_CURRENT_USER, key_name.c_str(), KEY_READ);
       CreditCard credit_card;
       if (ImportSingleFormGroup(key, reg_to_field, &credit_card, NULL)) {
-        // TODO(isherman): Call into GetInfo() below, rather than GetRawInfo().
         string16 cc_number = credit_card.GetRawInfo(CREDIT_CARD_NUMBER);
         if (!cc_number.empty())
           credit_cards->push_back(credit_card);
