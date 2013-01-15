@@ -46,7 +46,7 @@ TEST_F(QuicSendSchedulerTest, FixedRateSenderAPI) {
 TEST_F(QuicSendSchedulerTest, FixedRatePacing) {
   SetUpCongestionType(kFixRate);
   QuicAckFrame ack;
-  ack.received_info.largest_received = 0;
+  ack.received_info.largest_observed = 0;
   sender_->OnIncomingAckFrame(ack);
 
   QuicCongestionFeedbackFrame feedback;
@@ -165,7 +165,7 @@ TEST_F(QuicSendSchedulerTest, BandwidthWith3SecondGap) {
 TEST_F(QuicSendSchedulerTest, Pacing) {
   SetUpCongestionType(kFixRate);
   QuicAckFrame ack;
-  ack.received_info.largest_received = 0;
+  ack.received_info.largest_observed = 0;
   sender_->OnIncomingAckFrame(ack);
 
   QuicCongestionFeedbackFrame feedback;

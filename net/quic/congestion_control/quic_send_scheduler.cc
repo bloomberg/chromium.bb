@@ -86,7 +86,7 @@ void QuicSendScheduler::OnIncomingQuicCongestionFeedbackFrame(
 
 void QuicSendScheduler::OnIncomingAckFrame(const QuicAckFrame& ack_frame) {
   // We want to.
-  // * Get all packets lower(including) than largest_received
+  // * Get all packets lower(including) than largest_observed
   //   from pending_packets_.
   // * Remove all missing packets.
   // * Send each ACK in the list to send_algorithm_.
@@ -96,7 +96,7 @@ void QuicSendScheduler::OnIncomingAckFrame(const QuicAckFrame& ack_frame) {
   PendingPacketsMap::iterator it, it_upper;
   it = pending_packets_.begin();
   it_upper = pending_packets_.upper_bound(
-      ack_frame.received_info.largest_received);
+      ack_frame.received_info.largest_observed);
 
   while (it != it_upper) {
     QuicPacketSequenceNumber sequence_number = it->first;

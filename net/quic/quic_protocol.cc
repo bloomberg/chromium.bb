@@ -24,25 +24,25 @@ QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
       data(data) {
 }
 
-// TODO(ianswett): Initializing largest_received to 0 should not be necessary.
-ReceivedPacketInfo::ReceivedPacketInfo() : largest_received(0) {}
+// TODO(ianswett): Initializing largest_observed to 0 should not be necessary.
+ReceivedPacketInfo::ReceivedPacketInfo() : largest_observed(0) {}
 
 ReceivedPacketInfo::~ReceivedPacketInfo() {}
 
 void ReceivedPacketInfo::RecordReceived(
     QuicPacketSequenceNumber sequence_number) {
   DCHECK(IsAwaitingPacket(sequence_number));
-  if (largest_received < sequence_number) {
-    DCHECK_LT(sequence_number - largest_received,
+  if (largest_observed < sequence_number) {
+    DCHECK_LT(sequence_number - largest_observed,
               numeric_limits<uint16>::max());
     // We've got a new high sequence number.  Note any new intermediate missing
     // packets, and update the last_ack data.
-    for (QuicPacketSequenceNumber i = largest_received + 1;
+    for (QuicPacketSequenceNumber i = largest_observed + 1;
          i < sequence_number; ++i) {
       DVLOG(1) << "missing " << i;
       missing_packets.insert(i);
     }
-    largest_received = sequence_number;
+    largest_observed = sequence_number;
   } else {
     // We've gotten one of the out of order packets - remove it from our
     // "missing packets" list.
@@ -53,7 +53,7 @@ void ReceivedPacketInfo::RecordReceived(
 
 bool ReceivedPacketInfo::IsAwaitingPacket(
     QuicPacketSequenceNumber sequence_number) const {
-  return sequence_number > largest_received ||
+  return sequence_number > largest_observed ||
       ContainsKey(missing_packets, sequence_number);
 }
 
@@ -68,13 +68,13 @@ SentPacketInfo::SentPacketInfo() {}
 SentPacketInfo::~SentPacketInfo() {}
 
 // Testing convenience method.
-QuicAckFrame::QuicAckFrame(QuicPacketSequenceNumber largest_received,
+QuicAckFrame::QuicAckFrame(QuicPacketSequenceNumber largest_observed,
                            QuicPacketSequenceNumber least_unacked) {
   for (QuicPacketSequenceNumber seq_num = 1;
-       seq_num <= largest_received; ++seq_num) {
+       seq_num <= largest_observed; ++seq_num) {
     received_info.RecordReceived(seq_num);
   }
-  received_info.largest_received = largest_received;
+  received_info.largest_observed = largest_observed;
   sent_info.least_unacked = least_unacked;
 }
 
@@ -84,8 +84,8 @@ ostream& operator<<(ostream& os, const SentPacketInfo& sent_info) {
 }
 
 ostream& operator<<(ostream& os, const ReceivedPacketInfo& received_info) {
-  os << "largest_received: "
-     << received_info.largest_received
+  os << "largest_observed: "
+     << received_info.largest_observed
      << " missing_packets: [ ";
   for (SequenceSet::const_iterator it = received_info.missing_packets.begin();
        it != received_info.missing_packets.end(); ++it) {

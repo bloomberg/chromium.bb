@@ -425,8 +425,8 @@ bool QuicFramer::ProcessAckFrame(QuicAckFrame* frame) {
 }
 
 bool QuicFramer::ProcessReceivedInfo(ReceivedPacketInfo* received_info) {
-  if (!reader_->ReadUInt48(&received_info->largest_received)) {
-     set_detailed_error("Unable to read largest received.");
+  if (!reader_->ReadUInt48(&received_info->largest_observed)) {
+     set_detailed_error("Unable to read largest observed.");
      return false;
   }
 
@@ -671,7 +671,7 @@ size_t QuicFramer::ComputeFramePayloadLength(const QuicFrame& frame) {
       break;  // Need to support this eventually :>
     case ACK_FRAME: {
       const QuicAckFrame& ack = *frame.ack_frame;
-      len += 6;  // largest received packet sequence number
+      len += 6;  // largest observed packet sequence number
       len += 1;  // num missing packets
       len += 6 * ack.received_info.missing_packets.size();
       len += 6;  // least packet sequence number awaiting an ack
@@ -753,8 +753,7 @@ bool QuicFramer::AppendStreamFramePayload(
   return true;
 }
 
-// TODO(alyssar): revisit the complexity here to rch's satisfaction
-QuicPacketSequenceNumber QuicFramer::CalculateLargestReceived(
+QuicPacketSequenceNumber QuicFramer::CalculateLargestObserved(
     const SequenceSet& missing_packets,
     SequenceSet::const_iterator largest_written) {
   SequenceSet::const_iterator it = largest_written;
@@ -767,21 +766,8 @@ QuicPacketSequenceNumber QuicFramer::CalculateLargestReceived(
       return *it - 1;
     }
 
-  // If we've hit the end of the list, and we're not missing any packets, try
-  // finding a gap between the largest written and the beginning of the set.
-  it = largest_written++;
-  previous_missing = *it;
-  do {
-    --it;
-    if (previous_missing - 1 != *it) {
-      return previous_missing - 1;
-    }
-    previous_missing = *it;
-  } while (it != missing_packets.begin());
-
-  // The missing packets are entirely contiguous.  Return the value of the first
-  // missing packet - 1, as that must have been seen.
-  return  *missing_packets.begin() - 1;
+  // Otherwise return the largest missing packet, as indirectly observed.
+  return *largest_written;
 }
 
 // TODO(ianswett): Use varints or another more compact approach for all deltas.
@@ -792,8 +778,8 @@ bool QuicFramer::AppendAckFramePayload(
     return false;
   }
 
-  size_t largest_received_offset = writer->length();
-  if (!writer->WriteUInt48(frame.received_info.largest_received)) {
+  size_t largest_observed_offset = writer->length();
+  if (!writer->WriteUInt48(frame.received_info.largest_observed)) {
     return false;
   }
 
@@ -809,10 +795,10 @@ bool QuicFramer::AppendAckFramePayload(
   int num_missing_packets_written = 0;
   for (; it != frame.received_info.missing_packets.end(); ++it) {
     if (!writer->WriteUInt48(*it)) {
-      // We are truncating.  Overwrite largest_received.
-      QuicPacketSequenceNumber largest_received =
-          CalculateLargestReceived(frame.received_info.missing_packets, --it);
-      writer->WriteUInt48ToOffset(largest_received, largest_received_offset);
+      // We are truncating.  Overwrite largest_observed.
+      QuicPacketSequenceNumber largest_observed =
+          CalculateLargestObserved(frame.received_info.missing_packets, --it);
+      writer->WriteUInt48ToOffset(largest_observed, largest_observed_offset);
       writer->WriteUInt8ToOffset(num_missing_packets_written,
                                  num_missing_packets_offset);
       return true;

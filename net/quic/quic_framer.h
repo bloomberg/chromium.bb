@@ -95,10 +95,10 @@ class NET_EXPORT_PRIVATE QuicFramer {
 
   virtual ~QuicFramer();
 
-  // Calculates the largest received packet to advertise in the case an Ack
+  // Calculates the largest observed packet to advertise in the case an Ack
   // Frame was truncated.  last_written in this case is the iterator for the
   // last missing packet which fit in the outgoing ack.
-  static QuicPacketSequenceNumber CalculateLargestReceived(
+  static QuicPacketSequenceNumber CalculateLargestObserved(
       const SequenceSet& missing_packets,
       SequenceSet::const_iterator last_written);
 

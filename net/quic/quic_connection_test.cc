@@ -352,73 +352,73 @@ class QuicConnectionTest : public ::testing::Test {
 
 TEST_F(QuicConnectionTest, PacketsInOrder) {
   ProcessPacket(1);
-  EXPECT_EQ(1u, last_ack()->received_info.largest_received);
+  EXPECT_EQ(1u, last_ack()->received_info.largest_observed);
   EXPECT_EQ(0u, last_ack()->received_info.missing_packets.size());
 
   ProcessPacket(2);
-  EXPECT_EQ(2u, last_ack()->received_info.largest_received);
+  EXPECT_EQ(2u, last_ack()->received_info.largest_observed);
   EXPECT_EQ(0u, last_ack()->received_info.missing_packets.size());
 
   ProcessPacket(3);
-  EXPECT_EQ(3u, last_ack()->received_info.largest_received);
+  EXPECT_EQ(3u, last_ack()->received_info.largest_observed);
   EXPECT_EQ(0u, last_ack()->received_info.missing_packets.size());
 }
 
 TEST_F(QuicConnectionTest, PacketsRejected) {
   ProcessPacket(1);
-  EXPECT_EQ(1u, last_ack()->received_info.largest_received);
+  EXPECT_EQ(1u, last_ack()->received_info.largest_observed);
   EXPECT_EQ(0u, last_ack()->received_info.missing_packets.size());
 
   accept_packet_ = false;
   ProcessPacket(2);
   // We should not have an ack for two.
-  EXPECT_EQ(1u, last_ack()->received_info.largest_received);
+  EXPECT_EQ(1u, last_ack()->received_info.largest_observed);
   EXPECT_EQ(0u, last_ack()->received_info.missing_packets.size());
 }
 
 TEST_F(QuicConnectionTest, PacketsOutOfOrder) {
   ProcessPacket(3);
-  EXPECT_EQ(3u, last_ack()->received_info.largest_received);
+  EXPECT_EQ(3u, last_ack()->received_info.largest_observed);
   EXPECT_TRUE(IsMissing(2));
   EXPECT_TRUE(IsMissing(1));
 
   ProcessPacket(2);
-  EXPECT_EQ(3u, last_ack()->received_info.largest_received);
+  EXPECT_EQ(3u, last_ack()->received_info.largest_observed);
   EXPECT_FALSE(IsMissing(2));
   EXPECT_TRUE(IsMissing(1));
 
   ProcessPacket(1);
-  EXPECT_EQ(3u, last_ack()->received_info.largest_received);
+  EXPECT_EQ(3u, last_ack()->received_info.largest_observed);
   EXPECT_FALSE(IsMissing(2));
   EXPECT_FALSE(IsMissing(1));
 }
 
 TEST_F(QuicConnectionTest, DuplicatePacket) {
   ProcessPacket(3);
-  EXPECT_EQ(3u, last_ack()->received_info.largest_received);
+  EXPECT_EQ(3u, last_ack()->received_info.largest_observed);
   EXPECT_TRUE(IsMissing(2));
   EXPECT_TRUE(IsMissing(1));
 
   // Send packet 3 again, but do not set the expectation that
   // the visitor OnPacket() will be called.
   ProcessDataPacket(3, 0);
-  EXPECT_EQ(3u, last_ack()->received_info.largest_received);
+  EXPECT_EQ(3u, last_ack()->received_info.largest_observed);
   EXPECT_TRUE(IsMissing(2));
   EXPECT_TRUE(IsMissing(1));
 }
 
 TEST_F(QuicConnectionTest, PacketsOutOfOrderWithAdditionsAndLeastAwaiting) {
   ProcessPacket(3);
-  EXPECT_EQ(3u, last_ack()->received_info.largest_received);
+  EXPECT_EQ(3u, last_ack()->received_info.largest_observed);
   EXPECT_TRUE(IsMissing(2));
   EXPECT_TRUE(IsMissing(1));
 
   ProcessPacket(2);
-  EXPECT_EQ(3u, last_ack()->received_info.largest_received);
+  EXPECT_EQ(3u, last_ack()->received_info.largest_observed);
   EXPECT_TRUE(IsMissing(1));
 
   ProcessPacket(5);
-  EXPECT_EQ(5u, last_ack()->received_info.largest_received);
+  EXPECT_EQ(5u, last_ack()->received_info.largest_observed);
   EXPECT_TRUE(IsMissing(1));
   EXPECT_TRUE(IsMissing(4));
 
@@ -441,7 +441,7 @@ TEST_F(QuicConnectionTest, RejectPacketTooFarOut) {
   ProcessDataPacket(6000, 0);
 
   SendAckPacketToPeer();  // Packet 2
-  EXPECT_EQ(0u, last_ack()->received_info.largest_received);
+  EXPECT_EQ(0u, last_ack()->received_info.largest_observed);
 }
 
 TEST_F(QuicConnectionTest, TruncatedAck) {

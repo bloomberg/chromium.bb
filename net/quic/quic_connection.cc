@@ -92,7 +92,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
   framer_.set_visitor(this);
   memset(&last_header_, 0, sizeof(last_header_));
   outgoing_ack_.sent_info.least_unacked = 0;
-  outgoing_ack_.received_info.largest_received = 0;
+  outgoing_ack_.received_info.largest_observed = 0;
 
   /*
   if (FLAGS_fake_packet_loss_percentage > 0) {
@@ -207,10 +207,10 @@ void QuicConnection::OnCongestionFeedbackFrame(
 }
 
 bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
-  if (incoming_ack.received_info.largest_received >
+  if (incoming_ack.received_info.largest_observed >
       packet_creator_.sequence_number()) {
-    DLOG(ERROR) << "Client acked unsent packet:"
-                << incoming_ack.received_info.largest_received << " vs "
+    DLOG(ERROR) << "Client observed unsent packet:"
+                << incoming_ack.received_info.largest_observed << " vs "
                 << packet_creator_.sequence_number();
     // We got an error for data we have not sent.  Error out.
     return false;
@@ -246,10 +246,10 @@ void QuicConnection::UpdatePacketInformationReceivedByPeer(
   QuicConnectionVisitorInterface::AckedPackets acked_packets;
 
   // Initialize the lowest unacked packet to the lower of the next outgoing
-  // sequence number and the largest received packed in the incoming ack.
+  // sequence number and the largest observed packet in the incoming ack.
   QuicPacketSequenceNumber lowest_unacked = min(
       packet_creator_.sequence_number() + 1,
-      incoming_ack.received_info.largest_received + 1);
+      incoming_ack.received_info.largest_observed + 1);
 
   int resent_packets = 0;
 
@@ -286,7 +286,7 @@ void QuicConnection::UpdatePacketInformationReceivedByPeer(
       // Determine if this packet is being explicitly nacked and, if so, if it
       // is worth resending.
       QuicPacketSequenceNumber resend_number = 0;
-      if (it->first < incoming_ack.received_info.largest_received) {
+      if (it->first < incoming_ack.received_info.largest_observed) {
         // The peer got packets after this sequence number.  This is an explicit
         // nack.
         ++(it->second.number_nacks);

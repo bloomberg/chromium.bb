@@ -198,7 +198,7 @@ struct NET_EXPORT_PRIVATE ReceivedPacketInfo {
   // Records a packet receipt.
   void RecordReceived(QuicPacketSequenceNumber sequence_number);
 
-  // True if the sequence number is greater than largest_received or is listed
+  // True if the sequence number is greater than largest_observed or is listed
   // as missing.
   // Always returns false for sequence numbers less than least_unacked.
   bool IsAwaitingPacket(QuicPacketSequenceNumber sequence_number) const;
@@ -206,8 +206,15 @@ struct NET_EXPORT_PRIVATE ReceivedPacketInfo {
   // Clears all missing packets less than |least_unacked|.
   void ClearMissingBefore(QuicPacketSequenceNumber least_unacked);
 
-  // The highest packet sequence number we've received from the peer.
-  QuicPacketSequenceNumber largest_received;
+  // The highest packet sequence number we've observed from the peer.
+  //
+  // In general, this should be the largest packet number we've received.  In
+  // the case of truncated acks, we may have to advertise a lower "upper bound"
+  // than largest received, to avoid implicitly acking missing packets that
+  // don't fit in the missing packet list due to size limitations.  In this
+  // case, largest_observed may be a packet which is also in the missing packets
+  // list.
+  QuicPacketSequenceNumber largest_observed;
 
   // The set of packets which we're expecting and have not received.
   SequenceSet missing_packets;
@@ -226,8 +233,8 @@ struct NET_EXPORT_PRIVATE SentPacketInfo {
 struct NET_EXPORT_PRIVATE QuicAckFrame {
   QuicAckFrame() {}
   // Testing convenience method to construct a QuicAckFrame with all packets
-  // from least_unacked to largest_received acked.
-  QuicAckFrame(QuicPacketSequenceNumber largest_received,
+  // from least_unacked to largest_observed acked.
+  QuicAckFrame(QuicPacketSequenceNumber largest_observed,
                QuicPacketSequenceNumber least_unacked);
 
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(
