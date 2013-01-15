@@ -1285,6 +1285,9 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_BetweenMediaSegments) {
   CheckExpectedBuffers("0K 30 60 90 120K 150 180 210");
 }
 
+// old  :   10K  40  *70*  100K  125  130K
+// new  : 0K   30   60   90   120K
+// after: 0K   30   60   90  *120K*   130K
 TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer) {
   NewSegmentAppendOneByOne("10K 40 70 100K 125 130K");
   CheckExpectedRangesByTimestamp("{ [10,160) }");
@@ -1429,6 +1432,45 @@ TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer5) {
   NewSegmentAppendOneByOne("80K 110 140");
 
   CheckExpectedBuffers("70 80K 110 140");
+  CheckNoNextBuffer();
+}
+
+// Test that appending to a different range while there is data in
+// the track buffer doesn't affect the selected range or track buffer state.
+// old  :   10K  40  *70*  100K  125  130K ... 200K 230
+// new  : 0K   30   60   90   120K
+// after: 0K   30   60   90  *120K*   130K ... 200K 230
+// track:             70   100K
+// old  : 0K   30   60   90  *120K*   130K ... 200K 230
+// new  :                                               260K 290
+// after: 0K   30   60   90  *120K*   130K ... 200K 230 260K 290
+// track:             70   100K
+TEST_F(SourceBufferStreamTest, Overlap_OneByOne_TrackBuffer6) {
+  NewSegmentAppendOneByOne("10K 40 70 100K 125 130K");
+  NewSegmentAppendOneByOne("200K 230");
+  CheckExpectedRangesByTimestamp("{ [10,160) [200,260) }");
+
+  // Seek to 70ms.
+  SeekToTimestamp(base::TimeDelta::FromMilliseconds(10));
+  CheckExpectedBuffers("10K 40");
+
+  // Overlap with a new segment from 0 to 120ms.
+  NewSegmentAppendOneByOne("0K 30 60 90 120K");
+  CheckExpectedRangesByTimestamp("{ [0,160) [200,260) }");
+
+  // Verify that 70 gets read out of the track buffer.
+  CheckExpectedBuffers("70");
+
+  // Append more data to the unselected range.
+  NewSegmentAppendOneByOne("260K 290");
+  CheckExpectedRangesByTimestamp("{ [0,160) [200,320) }");
+
+  CheckExpectedBuffers("100K 120K 130K");
+  CheckNoNextBuffer();
+
+  // Check the final result: should not include data from the track buffer.
+  SeekToTimestamp(base::TimeDelta::FromMilliseconds(0));
+  CheckExpectedBuffers("0K 30 60 90 120K 130K");
   CheckNoNextBuffer();
 }
 
@@ -1775,6 +1817,32 @@ TEST_F(SourceBufferStreamTest, GetNextBuffer_ExhaustThenStartOverlap) {
   // Replace the next buffer at position 15 with another start overlap.
   AppendBuffers(15, 2, &kDataA);
   CheckExpectedBuffers(15, 16, &kDataA);
+}
+
+// Tests a start overlap that occurs right at the timestamp of the last output
+// buffer that was returned by GetNextBuffer(). This test verifies that
+// GetNextBuffer() skips to second GOP in the newly appended data instead
+// of returning two buffers with the same timestamp.
+TEST_F(SourceBufferStreamTest, GetNextBuffer_ExhaustThenStartOverlap2) {
+  NewSegmentAppend("0K 30 60 90 120");
+
+  Seek(0);
+  CheckExpectedBuffers("0K 30 60 90 120");
+  CheckNoNextBuffer();
+
+  // Append a keyframe with the same timestamp as the last buffer output.
+  NewSegmentAppend("120K");
+  CheckNoNextBuffer();
+
+  // Append the rest of the segment and make sure that buffers are returned
+  // from the first GOP after 120.
+  AppendBuffers("150 180 210K 240");
+  CheckExpectedBuffers("210K 240");
+
+  // Seek to the beginning and verify the contents of the source buffer.
+  Seek(0);
+  CheckExpectedBuffers("0K 30 60 90 120K 150 180 210K 240");
+  CheckNoNextBuffer();
 }
 
 // This test covers the case where new buffers completely overlap a range

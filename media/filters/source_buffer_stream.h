@@ -148,20 +148,8 @@ class MEDIA_EXPORT SourceBufferStream {
       const RangeList::iterator& range_with_new_buffers_itr,
       bool* deleted_next_buffer, BufferQueue* deleted_buffers);
 
-  // This method is a bit tricky to describe. When what would have been the
-  // next buffer returned from |selected_range_| is overlapped by new data,
-  // the |selected_range_| seeks forward to the next keyframe after (or at) the
-  // next buffer timestamp and the overlapped buffers are deleted. But for
-  // smooth playback between the old data to the new data's keyframe, some of
-  // these |deleted_buffers| may be temporarily saved into |track_buffer_|.
-  // UpdateTrackBuffer() takes these |deleted_buffers| and decides whether it
-  // wants to save any buffers into |track_buffer_|.
-  // TODO(vrk): This is a little crazy! Ideas for cleanup in crbug.com/129623.
-  void UpdateTrackBuffer(const BufferQueue& deleted_buffers);
-
-  // Removes buffers that come before |selected_range_|'s next buffer from the
-  // |track_buffer_|.
-  void PruneTrackBuffer();
+  // Removes buffers, from the |track_buffer_|, that come after |timestamp|.
+  void PruneTrackBuffer(const base::TimeDelta timestamp);
 
   // Checks to see if |range_with_new_buffers_itr| can be merged with the range
   // next to it, and merges them if so.
@@ -240,6 +228,24 @@ class MEDIA_EXPORT SourceBufferStream {
   // kSuccess.
   void CompleteConfigChange();
 
+  // Sets |selected_range_| and seeks to the nearest keyframe after
+  // |timestamp| if necessary and possible. This method only attempts to
+  // set |selected_range_| if |seleted_range_| is null and |track_buffer_|
+  // is empty.
+  void SetSelectedRangeIfNeeded(const base::TimeDelta timestamp);
+
+  // Find a keyframe timestamp that is >= |start_timestamp| and can be used to
+  // find a new selected range.
+  // Returns kNoTimestamp() if an appropriate keyframe timestamp could not be
+  // found.
+  base::TimeDelta FindNewSelectedRangeSeekTimestamp(
+      const base::TimeDelta start_timestamp);
+
+  // Searches |ranges_| for the first keyframe timestamp that is >= |timestamp|.
+  // If |ranges_| doesn't contain a GOP that covers |timestamp| or doesn't
+  // have a keyframe after |timestamp| then kNoTimestamp() is returned.
+  base::TimeDelta FindKeyframeAfterTimestamp(const base::TimeDelta timestamp);
+
   // Callback used to report error strings that can help the web developer
   // figure out what is wrong with the content.
   LogCB log_cb_;
@@ -290,7 +296,12 @@ class MEDIA_EXPORT SourceBufferStream {
 
   // The timestamp of the last buffer appended to the media segment, set to
   // kNoTimestamp() if the beginning of the segment.
-  base::TimeDelta last_buffer_timestamp_;
+  base::TimeDelta last_appended_buffer_timestamp_;
+
+  // The decode timestamp on the last buffer returned by the most recent
+  // GetNextBuffer() call. Set to kNoTimestamp() if GetNextBuffer() hasn't been
+  // called yet or a seek has happened since the last GetNextBuffer() call.
+  base::TimeDelta last_output_buffer_timestamp_;
 
   // Stores the largest distance between two adjacent buffers in this stream.
   base::TimeDelta max_interbuffer_distance_;
