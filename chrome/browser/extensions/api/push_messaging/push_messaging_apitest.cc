@@ -41,6 +41,10 @@ class PushMessagingApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpCommandLine(command_line);
   }
 
+  PushMessagingAPI* GetAPI() {
+    return PushMessagingAPI::Get(browser()->profile());
+  }
+
   PushMessagingEventRouter* GetEventRouter() {
     return PushMessagingAPI::Get(browser()->profile())->GetEventRouterForTest();
   }
@@ -100,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, AutoRegistration) {
       new StrictMock<MockInvalidationMapper>);
   StrictMock<MockInvalidationMapper>* unsafe_mapper = mapper.get();
   // PushMessagingEventRouter owns the mapper now.
-  GetEventRouter()->SetMapperForTest(
+  GetAPI()->SetMapperForTest(
       mapper.PassAs<PushMessagingInvalidationMapper>());
 
   std::string extension_id;
@@ -119,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, AutoRegistration) {
 IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, PRE_Restart) {
   PushMessagingInvalidationHandler* handler =
       static_cast<PushMessagingInvalidationHandler*>(
-          GetEventRouter()->GetMapperForTest());
+          GetAPI()->GetMapperForTest());
   EXPECT_TRUE(handler->GetRegisteredExtensionsForTest().empty());
   ASSERT_TRUE(InstallExtension(test_data_dir_.AppendASCII("push_messaging"),
                                1 /* new install */));
@@ -128,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, PRE_Restart) {
 IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, Restart) {
   PushMessagingInvalidationHandler* handler =
       static_cast<PushMessagingInvalidationHandler*>(
-          GetEventRouter()->GetMapperForTest());
+          GetAPI()->GetMapperForTest());
   EXPECT_EQ(1U, handler->GetRegisteredExtensionsForTest().size());
 }
 

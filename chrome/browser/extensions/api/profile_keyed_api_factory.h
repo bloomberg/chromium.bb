@@ -24,7 +24,6 @@ class ProfileKeyedAPI : public ProfileKeyedService {
   // Defaults for flags that control ProfileKeyedAPIFactory behavior.
   // See ProfileKeyedBaseFactory for usage.
   static const bool kServiceRedirectedInIncognito = false;
-  static const bool kServiceIsCreatedWithProfile = true;
   static const bool kServiceIsNULLWhileTesting = false;
 
   // Users of this factory template must define a GetFactoryInstance()
@@ -98,7 +97,7 @@ class ProfileKeyedAPIFactory : public ProfileKeyedServiceFactory {
   }
 
   virtual bool ServiceIsCreatedWithProfile() const OVERRIDE {
-    return T::kServiceIsCreatedWithProfile;
+    return true;
   }
 
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE {

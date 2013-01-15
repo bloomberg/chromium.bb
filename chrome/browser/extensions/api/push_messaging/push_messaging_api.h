@@ -29,16 +29,12 @@ class ObfuscatedGaiaIdFetcher;
 
 // Observes a single InvalidationHandler and generates onMessage events.
 class PushMessagingEventRouter
-    : public PushMessagingInvalidationHandlerDelegate,
-      public content::NotificationObserver {
+    : public PushMessagingInvalidationHandlerDelegate {
  public:
   explicit PushMessagingEventRouter(Profile* profile);
   virtual ~PushMessagingEventRouter();
 
-  PushMessagingInvalidationMapper* GetMapperForTest() const {
-    return handler_.get();
-  }
-  void SetMapperForTest(scoped_ptr<PushMessagingInvalidationMapper> mapper);
+  // For testing purposes.
   void TriggerMessageForTest(const std::string& extension_id,
                              int subchannel,
                              const std::string& payload);
@@ -49,14 +45,7 @@ class PushMessagingEventRouter
                          int subchannel,
                          const std::string& payload) OVERRIDE;
 
-  // content::NotificationDelegate implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  content::NotificationRegistrar registrar_;
   Profile* const profile_;
-  scoped_ptr<PushMessagingInvalidationMapper> handler_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingEventRouter);
 };
@@ -103,7 +92,8 @@ class PushMessagingGetChannelIdFunction
   DISALLOW_COPY_AND_ASSIGN(PushMessagingGetChannelIdFunction);
 };
 
-class PushMessagingAPI : public ProfileKeyedAPI {
+class PushMessagingAPI : public ProfileKeyedAPI,
+                         public content::NotificationObserver {
  public:
   explicit PushMessagingAPI(Profile* profile);
   virtual ~PushMessagingAPI();
@@ -118,7 +108,13 @@ class PushMessagingAPI : public ProfileKeyedAPI {
   static ProfileKeyedAPIFactory<PushMessagingAPI>* GetFactoryInstance();
 
   // For testing purposes.
-  PushMessagingEventRouter* GetEventRouterForTest();
+  PushMessagingEventRouter* GetEventRouterForTest() const {
+  return event_router_.get();
+  }
+  PushMessagingInvalidationMapper* GetMapperForTest() const {
+    return handler_.get();
+  }
+  void SetMapperForTest(scoped_ptr<PushMessagingInvalidationMapper> mapper);
 
  private:
   friend class ProfileKeyedAPIFactory<PushMessagingAPI>;
@@ -127,11 +123,21 @@ class PushMessagingAPI : public ProfileKeyedAPI {
   static const char* service_name() {
     return "PushMessagingAPI";
   }
-  static const bool kServiceIsCreatedWithProfile = false;
   static const bool kServiceIsNULLWhileTesting = true;
 
-  // Created at ExtensionService startup.
-  scoped_ptr<PushMessagingEventRouter> push_messaging_event_router_;
+  // content::NotificationDelegate implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // Created lazily when an app or extension with the push messaging permission
+  // is loaded.
+  scoped_ptr<PushMessagingEventRouter> event_router_;
+  scoped_ptr<PushMessagingInvalidationMapper> handler_;
+
+  content::NotificationRegistrar registrar_;
+
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingAPI);
 };

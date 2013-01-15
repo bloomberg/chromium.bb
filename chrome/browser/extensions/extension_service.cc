@@ -34,7 +34,6 @@
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/extension_action/extension_actions_api.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
-#include "chrome/browser/extensions/api/push_messaging/push_messaging_api.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
@@ -519,9 +518,6 @@ void ExtensionService::InitEventRouters() {
 
 #if defined(ENABLE_EXTENSIONS)
   browser_event_router_.reset(new extensions::BrowserEventRouter(profile_));
-
-  extensions::ProfileKeyedAPIFactory<extensions::PushMessagingAPI>::
-      GetForProfile(profile_);
 #endif  // defined(ENABLE_EXTENSIONS)
   event_routers_initialized_ = true;
 }

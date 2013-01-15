@@ -13,7 +13,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
-using ::testing::InSequence;
 using ::testing::NotNull;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
@@ -61,23 +60,12 @@ MockInvalidationHandlerDelegate::~MockInvalidationHandlerDelegate() {}
 class PushMessagingInvalidationHandlerTest : public ::testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
-    SetUpWithArgs(std::set<std::string>(), syncer::ObjectIdSet());
-  }
-
-  virtual void SetUpWithArgs(const std::set<std::string>& extension_ids,
-                             const syncer::ObjectIdSet& expected_ids) {
-    InSequence seq;
-    syncer::InvalidationHandler* handler[2] = {};
+    syncer::InvalidationHandler* handler = NULL;
     EXPECT_CALL(service_, RegisterInvalidationHandler(NotNull()))
-        .WillOnce(SaveArg<0>(&handler[0]));
-    EXPECT_CALL(service_,
-                UpdateRegisteredInvalidationIds(NotNull(), expected_ids))
-        .WillOnce(SaveArg<0>(&handler[1]));
+        .WillOnce(SaveArg<0>(&handler));
     handler_.reset(new PushMessagingInvalidationHandler(
-        &service_, &delegate_, extension_ids));
-    EXPECT_EQ(handler[0], handler[1]);
-    EXPECT_EQ(handler_.get(), handler[0]);
-
+        &service_, &delegate_));
+    EXPECT_EQ(handler_.get(), handler);
   }
   virtual void TearDown() OVERRIDE {
     EXPECT_CALL(service_, UnregisterInvalidationHandler(handler_.get()));
@@ -87,43 +75,6 @@ class PushMessagingInvalidationHandlerTest : public ::testing::Test {
   StrictMock<MockInvalidationHandlerDelegate> delegate_;
   scoped_ptr<PushMessagingInvalidationHandler> handler_;
 };
-
-// Tests that we correctly register any extensions passed in when constructed.
-TEST_F(PushMessagingInvalidationHandlerTest, Construction) {
-  TearDown();
-
-  InSequence seq;
-  std::set<std::string> extension_ids;
-  extension_ids.insert("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-  extension_ids.insert("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
-  syncer::ObjectIdSet expected_ids;
-  expected_ids.insert(invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
-      "U/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/0"));
-  expected_ids.insert(invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
-      "U/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/1"));
-  expected_ids.insert(invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
-      "U/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/2"));
-  expected_ids.insert(invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
-      "U/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/3"));
-  expected_ids.insert(invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
-      "U/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/0"));
-  expected_ids.insert(invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
-      "U/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/1"));
-  expected_ids.insert(invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
-      "U/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/2"));
-  expected_ids.insert(invalidation::ObjectId(
-      ipc::invalidation::ObjectSource::CHROME_PUSH_MESSAGING,
-      "U/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/3"));
-
-  SetUpWithArgs(extension_ids, expected_ids);
-}
 
 TEST_F(PushMessagingInvalidationHandlerTest, RegisterUnregisterExtension) {
   syncer::ObjectIdSet expected_ids;

@@ -31,8 +31,7 @@ class PushMessagingInvalidationHandler : public PushMessagingInvalidationMapper,
   // enabled.
   PushMessagingInvalidationHandler(
       InvalidationFrontend* service,
-      PushMessagingInvalidationHandlerDelegate* delegate,
-      const std::set<std::string>& extension_ids);
+      PushMessagingInvalidationHandlerDelegate* delegate);
   virtual ~PushMessagingInvalidationHandler();
 
   // PushMessagingInvalidationMapper implementation.

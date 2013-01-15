@@ -79,14 +79,11 @@ bool ObjectIdToExtensionAndSubchannel(const invalidation::ObjectId& object_id,
 
 PushMessagingInvalidationHandler::PushMessagingInvalidationHandler(
     InvalidationFrontend* service,
-    PushMessagingInvalidationHandlerDelegate* delegate,
-    const std::set<std::string>& extension_ids)
+    PushMessagingInvalidationHandlerDelegate* delegate)
     : service_(service),
-      registered_extensions_(extension_ids),
       delegate_(delegate) {
   DCHECK(service_);
   service_->RegisterInvalidationHandler(this);
-  UpdateRegistrations();
 }
 
 PushMessagingInvalidationHandler::~PushMessagingInvalidationHandler() {
