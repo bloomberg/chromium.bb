@@ -141,6 +141,8 @@ class OneClickSigninHelper
                            CanOfferOnIOThreadWithRejectedEmail);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
                            CanOfferOnIOThreadNoSigninCookies);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
+                           CanOfferOnIOThreadDisabledByPolicy);
 
   // Returns true if the one-click signin feature can be offered at this time.
   // It can be offered if the io_data is not in an incognito window and if the

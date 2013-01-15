@@ -191,10 +191,11 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       &force_safesearch_,
       pref_service);
 
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
 #if defined(ENABLE_PRINTING)
   printing_enabled_.Init(prefs::kPrintingEnabled, pref_service);
-  printing_enabled_.MoveToThread(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+  printing_enabled_.MoveToThread(io_message_loop_proxy);
 #endif
   chrome_http_user_agent_settings_.reset(
       new ChromeHttpUserAgentSettings(pref_service));
@@ -204,25 +205,24 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   if (!is_incognito()) {
     signin_names_.reset(new SigninNamesOnIOThread());
 
-    google_services_username_.Init(prefs::kGoogleServicesUsername,
-                                   pref_service);
-    google_services_username_.MoveToThread(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+    google_services_username_.Init(
+        prefs::kGoogleServicesUsername, pref_service);
+    google_services_username_.MoveToThread(io_message_loop_proxy);
 
     google_services_username_pattern_.Init(
         prefs::kGoogleServicesUsernamePattern, local_state_pref_service);
-    google_services_username_pattern_.MoveToThread(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+    google_services_username_pattern_.MoveToThread(io_message_loop_proxy);
 
     reverse_autologin_enabled_.Init(
         prefs::kReverseAutologinEnabled, pref_service);
-    reverse_autologin_enabled_.MoveToThread(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+    reverse_autologin_enabled_.MoveToThread(io_message_loop_proxy);
 
     one_click_signin_rejected_email_list_.Init(
         prefs::kReverseAutologinRejectedEmailList, pref_service);
-    one_click_signin_rejected_email_list_.MoveToThread(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+    one_click_signin_rejected_email_list_.MoveToThread(io_message_loop_proxy);
+
+    sync_disabled_.Init(prefs::kSyncManaged, pref_service);
+    sync_disabled_.MoveToThread(io_message_loop_proxy);
   }
 
   // The URLBlacklistManager has to be created on the UI thread to register
@@ -685,6 +685,7 @@ void ProfileIOData::ShutdownOnUIThread() {
 #endif
   safe_browsing_enabled_.Destroy();
   printing_enabled_.Destroy();
+  sync_disabled_.Destroy();
   session_startup_pref_.Destroy();
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (url_blacklist_manager_.get())

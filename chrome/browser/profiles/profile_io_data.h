@@ -141,6 +141,10 @@ class ProfileIOData {
     return &printing_enabled_;
   }
 
+  BooleanPrefMember* sync_disabled() const {
+    return &sync_disabled_;
+  }
+
   net::TransportSecurityState* transport_security_state() const {
     return transport_security_state_.get();
   }
@@ -415,6 +419,7 @@ class ProfileIOData {
   mutable BooleanPrefMember force_safesearch_;
   mutable BooleanPrefMember safe_browsing_enabled_;
   mutable BooleanPrefMember printing_enabled_;
+  mutable BooleanPrefMember sync_disabled_;
   // TODO(marja): Remove session_startup_pref_ if no longer needed.
   mutable IntegerPrefMember session_startup_pref_;
 

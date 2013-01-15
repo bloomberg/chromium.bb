@@ -16,6 +16,7 @@
 #include "sync/notifier/invalidation_state_tracker.h"
 
 class PrefServiceSyncable;
+class ProfileIOData;
 
 namespace browser_sync {
 
@@ -53,6 +54,11 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   virtual ~SyncPrefs();
 
   static void RegisterUserPrefs(PrefServiceSyncable* prefs);
+
+  // Checks if sync is enabled for the profile that owns |io_data|. This must
+  // be invoked on the IO thread, and can be used to check if sync is enabled
+  // on that thread.
+  static bool IsSyncAccessibleOnIOThread(ProfileIOData* io_data);
 
   void AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer);
   void RemoveSyncPrefObserver(SyncPrefObserver* sync_pref_observer);

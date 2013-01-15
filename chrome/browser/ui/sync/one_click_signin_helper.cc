@@ -4,15 +4,20 @@
 
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 
+#include <algorithm>
+#include <functional>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/metrics/histogram.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/supports_user_data.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
@@ -28,6 +33,7 @@
 #include "chrome/browser/signin/signin_names_io_thread.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -57,8 +63,6 @@
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-
-#include <functional>
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(OneClickSigninHelper);
 
@@ -428,12 +432,12 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
   if (web_contents->GetBrowserContext()->IsOffTheRecord())
     return false;
 
-  if (!ProfileSyncService::IsSyncEnabled())
-    return false;
-
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   if (!profile)
+    return false;
+
+  if (!profile->IsSyncAccessible())
     return false;
 
   if (can_offer_for == CAN_OFFER_FOR_INTERSTITAL_ONLY &&
@@ -537,12 +541,12 @@ OneClickSigninHelper::Offer OneClickSigninHelper::CanOfferOnIOThreadImpl(
   if (!SyncPromoUI::UseWebBasedSigninFlow())
     return DONT_OFFER;
 
-  if (!ProfileSyncService::IsSyncEnabled())
-    return DONT_OFFER;
-
   // Check for incognito before other parts of the io_data, since those
   // members may not be initalized.
   if (io_data->is_incognito())
+    return DONT_OFFER;
+
+  if (!browser_sync::SyncPrefs::IsSyncAccessibleOnIOThread(io_data))
     return DONT_OFFER;
 
   if (!io_data->reverse_autologin_enabled()->GetValue())
@@ -552,9 +556,6 @@ OneClickSigninHelper::Offer OneClickSigninHelper::CanOfferOnIOThreadImpl(
     return DONT_OFFER;
 
   if (!SigninManager::AreSigninCookiesAllowed(io_data->GetCookieSettings()))
-    return DONT_OFFER;
-
-  if (!io_data->reverse_autologin_enabled()->GetValue())
     return DONT_OFFER;
 
   // The checks below depend on chrome already knowing what account the user

@@ -5,12 +5,16 @@
 #include "chrome/browser/sync/sync_prefs.h"
 
 #include "base/logging.h"
+#include "base/prefs/public/pref_member.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
@@ -108,6 +112,13 @@ void SyncPrefs::RegisterUserPrefs(PrefServiceSyncable* prefs) {
   prefs->RegisterListPref(prefs::kSyncAcknowledgedSyncTypes,
                           syncer::ModelTypeSetToValue(model_set),
                           PrefServiceSyncable::UNSYNCABLE_PREF);
+}
+
+// static
+bool SyncPrefs::IsSyncAccessibleOnIOThread(ProfileIOData* io_data) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  return ProfileSyncService::IsSyncEnabled() &&
+         !io_data->sync_disabled()->GetValue();
 }
 
 void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
