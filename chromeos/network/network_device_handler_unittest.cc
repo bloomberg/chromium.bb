@@ -68,7 +68,7 @@ class NetworkDeviceHandlerTest : public testing::Test {
 
   void AddDevice(const std::string& type, const std::string& id) {
     manager_test_->AddDevice(id);
-    device_test_->AddDevice(id, type, std::string("/device/" + id), "/stub");
+    device_test_->AddDevice(id, type, std::string("/device/" + id));
   }
 
   void RemoveDevice(const std::string& id) {

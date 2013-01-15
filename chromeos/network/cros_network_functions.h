@@ -253,14 +253,6 @@ CHROMEOS_EXPORT bool CrosListIPConfigsAndBlock(
 CHROMEOS_EXPORT void CrosRequestIPConfigRefresh(
     const std::string& ipconfig_path);
 
-// Reads out the results of the last wifi scan. These results are not
-// pre-cached in the library, so the call may block whilst the results are
-// read over IPC.
-// Returns false if an error occurred in reading the results. Note that
-// a true return code only indicates the result set was successfully read,
-// it does not imply a scan has successfully completed yet.
-CHROMEOS_EXPORT bool CrosGetWifiAccessPoints(WifiAccessPointVector* result);
-
 // Configures the network service specified by |properties|.
 CHROMEOS_EXPORT void CrosConfigureService(
     const base::DictionaryValue& properties);

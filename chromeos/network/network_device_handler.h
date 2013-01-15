@@ -14,7 +14,6 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
-#include "chromeos/network/network_util.h"  // WifiAccessPoint
 
 namespace base {
 class DictionaryValue;
@@ -34,7 +33,6 @@ class CHROMEOS_EXPORT NetworkDeviceHandler
     bool powered;
     bool scanning;
     int scan_interval;
-    std::map<std::string, WifiAccessPoint> wifi_access_points;
   };
   typedef std::map<std::string, Device> DeviceMap;
 
@@ -49,9 +47,12 @@ class CHROMEOS_EXPORT NetworkDeviceHandler
     virtual ~Observer() {}
   };
 
-  NetworkDeviceHandler();
   virtual ~NetworkDeviceHandler();
-  void Init();
+
+  // Manage the global instance. Must be initialized before any calls to Get().
+  static void Initialize();
+  static void Shutdown();
+  static NetworkDeviceHandler* Get();
 
   // Add/remove observers.
   void AddObserver(Observer* observer);
@@ -65,6 +66,10 @@ class CHROMEOS_EXPORT NetworkDeviceHandler
                                  const base::Value& value) OVERRIDE;
 
  private:
+  friend class NetworkDeviceHandlerTest;
+  NetworkDeviceHandler();
+  void Init();
+
   void ManagerPropertiesCallback(DBusMethodCallStatus call_status,
                                  const base::DictionaryValue& properties);
   void DevicePropertyChanged(const base::ListValue* devices);
@@ -75,9 +80,8 @@ class CHROMEOS_EXPORT NetworkDeviceHandler
                                  const std::string& network_path,
                                  DBusMethodCallStatus call_status,
                                  const base::DictionaryValue& properties);
-  void DeviceNetworkReady(const std::string& device_path,
-                          const std::string& network_path);
-  void DeviceReady(const std::string& device_path);
+  void GetDeviceProperties(const std::string& device_path,
+                           const base::DictionaryValue& properties);
 
   // True when the device list is up to date.
   bool devices_ready_;
@@ -88,14 +92,13 @@ class CHROMEOS_EXPORT NetworkDeviceHandler
   // Map of pending devices.
   std::set<std::string> pending_device_paths_;
 
-  // Map of pending networks per device path.
-  std::map<std::string, std::set<std::string> > pending_network_paths_;
-
   // Observer list
   ObserverList<Observer> observers_;
 
   // For Shill client callbacks
   base::WeakPtrFactory<NetworkDeviceHandler> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkDeviceHandler);
 };
 
 }  // namespace chromeos
