@@ -30,7 +30,6 @@ WebDataRequest::WebDataRequest(WebDataService* service,
 }
 
 WebDataRequest::~WebDataRequest() {
-  delete result_;
 }
 
 WebDataService::Handle WebDataRequest::GetHandle() const {
@@ -52,12 +51,12 @@ void WebDataRequest::Cancel() {
   consumer_ = NULL;
 }
 
-void WebDataRequest::SetResult(WDTypedResult* r) {
-  result_ = r;
+void WebDataRequest::SetResult(scoped_ptr<WDTypedResult> r) {
+  result_ = r.Pass();
 }
 
 const WDTypedResult* WebDataRequest::GetResult() const {
-  return result_;
+  return result_.get();
 }
 
 void WebDataRequest::RequestComplete() {

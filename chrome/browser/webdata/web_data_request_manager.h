@@ -55,7 +55,7 @@ class WebDataRequest {
   void RequestComplete();
 
   // The result is owned by the request.
-  void SetResult(WDTypedResult* r);
+  void SetResult(scoped_ptr<WDTypedResult> r);
   const WDTypedResult* GetResult() const;
 
  private:
@@ -76,61 +76,9 @@ class WebDataRequest {
   // The originator of the service request.
   WebDataServiceConsumer* consumer_;
 
-  WDTypedResult* result_;
+  scoped_ptr<WDTypedResult> result_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDataRequest);
-};
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// Webdata request templates
-//
-// Internally we use instances of the following template to represent
-// requests.
-//////////////////////////////////////////////////////////////////////////////
-
-template <class T>
-class GenericRequest : public WebDataRequest {
- public:
-  GenericRequest(WebDataService* service,
-                 WebDataServiceConsumer* consumer,
-                 WebDataRequestManager* manager,
-                 const T& arg)
-      : WebDataRequest(service, consumer, manager),
-        arg_(arg) {
-  }
-
-  virtual ~GenericRequest() {
-  }
-
-  const T& arg() const { return arg_; }
-
- private:
-  T arg_;
-};
-
-template <class T, class U>
-class GenericRequest2 : public WebDataRequest {
- public:
-  GenericRequest2(WebDataService* service,
-                  WebDataServiceConsumer* consumer,
-                  WebDataRequestManager* manager,
-                  const T& arg1,
-                  const U& arg2)
-      : WebDataRequest(service, consumer, manager),
-        arg1_(arg1),
-        arg2_(arg2) {
-  }
-
-  virtual ~GenericRequest2() { }
-
-  const T& arg1() const { return arg1_; }
-
-  const U& arg2() const { return arg2_; }
-
- private:
-  T arg1_;
-  U arg2_;
 };
 
 //////////////////////////////////////////////////////////////////////////////

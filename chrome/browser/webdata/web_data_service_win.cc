@@ -12,54 +12,36 @@
 using base::Bind;
 
 void WebDataService::AddIE7Login(const IE7PasswordInfo& info) {
-  GenericRequest<IE7PasswordInfo>* request =
-      new GenericRequest<IE7PasswordInfo>(this, NULL, &request_manager_, info);
-  ScheduleTask(FROM_HERE,
-               Bind(&WebDataService::AddIE7LoginImpl, this, request));
+  ScheduleDBTask(FROM_HERE,
+                 Bind(&WebDataService::AddIE7LoginImpl, this, info));
 }
 
 void WebDataService::RemoveIE7Login(const IE7PasswordInfo& info) {
-  GenericRequest<IE7PasswordInfo>* request =
-      new GenericRequest<IE7PasswordInfo>(this, NULL, &request_manager_, info);
-  ScheduleTask(FROM_HERE,
-               Bind(&WebDataService::RemoveIE7LoginImpl, this, request));
+  ScheduleDBTask(FROM_HERE,
+                 Bind(&WebDataService::RemoveIE7LoginImpl, this, info));
 }
 
 WebDataService::Handle WebDataService::GetIE7Login(
     const IE7PasswordInfo& info,
     WebDataServiceConsumer* consumer) {
-  GenericRequest<IE7PasswordInfo>* request =
-      new GenericRequest<IE7PasswordInfo>(this, consumer, &request_manager_,
-                                          info);
-  ScheduleTask(FROM_HERE,
-               Bind(&WebDataService::GetIE7LoginImpl, this, request));
-  return request->GetHandle();
+  return ScheduleDBTaskWithResult(FROM_HERE,
+      Bind(&WebDataService::GetIE7LoginImpl, this, info), consumer);
 }
 
-void WebDataService::AddIE7LoginImpl(GenericRequest<IE7PasswordInfo>* request) {
-  if (db_ && !request->IsCancelled()) {
-    if (db_->GetLoginsTable()->AddIE7Login(request->arg()))
+void WebDataService::AddIE7LoginImpl(const IE7PasswordInfo& info) {
+  if (db_->GetLoginsTable()->AddIE7Login(info))
       ScheduleCommit();
-  }
-  request->RequestComplete();
 }
 
-void WebDataService::RemoveIE7LoginImpl(
-    GenericRequest<IE7PasswordInfo>* request) {
-  if (db_ && !request->IsCancelled()) {
-    if (db_->GetLoginsTable()->RemoveIE7Login(request->arg()))
-      ScheduleCommit();
-  }
-  request->RequestComplete();
+void WebDataService::RemoveIE7LoginImpl(const IE7PasswordInfo& info) {
+  if (db_->GetLoginsTable()->RemoveIE7Login(info))
+    ScheduleCommit();
 }
 
-void WebDataService::GetIE7LoginImpl(
-    GenericRequest<IE7PasswordInfo>* request) {
-  if (db_ && !request->IsCancelled()) {
+scoped_ptr<WDTypedResult> WebDataService::GetIE7LoginImpl(
+    const IE7PasswordInfo& info) {
     IE7PasswordInfo result;
-    db_->GetLoginsTable()->GetIE7Login(request->arg(), &result);
-    request->SetResult(
+    db_->GetLoginsTable()->GetIE7Login(info, &result);
+    return scoped_ptr<WDTypedResult>(
         new WDResult<IE7PasswordInfo>(PASSWORD_IE7_RESULT, result));
-  }
-  request->RequestComplete();
 }
