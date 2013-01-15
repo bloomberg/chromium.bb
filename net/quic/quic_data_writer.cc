@@ -129,6 +129,7 @@ void QuicDataWriter::WriteUint128ToBuffer(uint128 value, char* buffer) {
 }
 
 bool QuicDataWriter::WriteUInt8ToOffset(uint8 value, size_t offset) {
+  DCHECK_LT(offset, capacity_);
   int latched_length = length_;
   length_ = offset;
   bool success = WriteUInt8(value);
@@ -137,6 +138,7 @@ bool QuicDataWriter::WriteUInt8ToOffset(uint8 value, size_t offset) {
 }
 
 bool QuicDataWriter::WriteUInt48ToOffset(uint64 value, size_t offset) {
+  DCHECK_LT(offset, capacity_);
   int latched_length = length_;
   length_ = offset;
   bool success = WriteUInt48(value);

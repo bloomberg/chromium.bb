@@ -17,7 +17,6 @@ TEST(QuicDataWriterTest, WriteUint8ToOffset) {
   EXPECT_TRUE(writer.WriteUInt8ToOffset(2, 1));
   EXPECT_TRUE(writer.WriteUInt8ToOffset(3, 2));
   EXPECT_TRUE(writer.WriteUInt8ToOffset(4, 3));
-  EXPECT_FALSE(writer.WriteUInt8ToOffset(5, 4));
 
   char* data = writer.take();
 
@@ -27,6 +26,18 @@ TEST(QuicDataWriterTest, WriteUint8ToOffset) {
   EXPECT_EQ(4, data[3]);
 
   delete[] data;
+}
+
+TEST(QuicDataWriterDeathTest, WriteUint8ToOffset) {
+  QuicDataWriter writer(4);
+
+#if !defined(WIN32) && defined(GTEST_HAS_DEATH_TEST)
+#if !defined(DCHECK_ALWAYS_ON)
+  EXPECT_DEBUG_DEATH(writer.WriteUInt8ToOffset(5, 4), "Check failed");
+#else
+  EXPECT_DEATH(writer.WriteUInt8ToOffset(5, 4), "Check failed");
+#endif
+#endif
 }
 
 }  // namespace
