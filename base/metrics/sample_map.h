@@ -46,7 +46,7 @@ class BASE_EXPORT_PRIVATE SampleMapIterator : public SampleCountIterator {
   typedef std::map<HistogramBase::Sample, HistogramBase::Count>
       SampleToCountMap;
 
-  SampleMapIterator(const SampleToCountMap& sample_counts);
+  explicit SampleMapIterator(const SampleToCountMap& sample_counts);
   virtual ~SampleMapIterator();
 
   // SampleCountIterator implementation:

@@ -30,7 +30,7 @@ class BASE_EXPORT BucketRanges {
  public:
   typedef std::vector<HistogramBase::Sample> Ranges;
 
-  BucketRanges(size_t num_ranges);
+  explicit BucketRanges(size_t num_ranges);
   ~BucketRanges();
 
   size_t size() const { return ranges_.size(); }

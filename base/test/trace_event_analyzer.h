@@ -352,7 +352,7 @@ class Query {
 
   // Find BEGIN events of given |name| which also have associated END events.
   static Query MatchBeginName(const std::string& name) {
-    return (Query(EVENT_NAME) == name) && MatchBeginWithEnd();
+    return (Query(EVENT_NAME) == Query(name)) && MatchBeginWithEnd();
   }
 
   // Match given Process ID and Thread ID.
@@ -452,16 +452,16 @@ class Query {
   };
 
   // Compare with the given member.
-  Query(TraceEventMember member);
+  explicit Query(TraceEventMember member);
 
   // Compare with the given member argument value.
   Query(TraceEventMember member, const std::string& arg_name);
 
   // Compare with the given string.
-  Query(const std::string& str);
+  explicit Query(const std::string& str);
 
   // Compare with the given number.
-  Query(double num);
+  explicit Query(double num);
 
   // Construct a boolean Query that returns (left <binary_op> right).
   Query(const Query& left, const Query& right, Operator binary_op);

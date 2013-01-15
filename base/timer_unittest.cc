@@ -24,7 +24,7 @@ const int kNumTestingMessageLoops = arraysize(testing_message_loops);
 
 class OneShotTimerTester {
  public:
-  OneShotTimerTester(bool* did_run, unsigned milliseconds = 10)
+  explicit OneShotTimerTester(bool* did_run, unsigned milliseconds = 10)
       : did_run_(did_run),
         delay_ms_(milliseconds) {
   }

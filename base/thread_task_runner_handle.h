@@ -22,7 +22,7 @@ class BASE_EXPORT ThreadTaskRunnerHandle {
   // Gets the SingleThreadTaskRunner for the current thread.
   static scoped_refptr<SingleThreadTaskRunner> Get();
 
-  ThreadTaskRunnerHandle(
+  explicit ThreadTaskRunnerHandle(
       const scoped_refptr<SingleThreadTaskRunner>& task_runner);
   ~ThreadTaskRunnerHandle();
 

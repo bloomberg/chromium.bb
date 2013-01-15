@@ -35,7 +35,7 @@ class ConditionVariableTest : public PlatformTest {
   const TimeDelta kSixtyMs;
   const TimeDelta kOneHundredMs;
 
-  explicit ConditionVariableTest()
+  ConditionVariableTest()
       : kZeroMs(TimeDelta::FromMilliseconds(0)),
         kTenMs(TimeDelta::FromMilliseconds(10)),
         kThirtyMs(TimeDelta::FromMilliseconds(30)),

@@ -65,7 +65,7 @@ class BASE_EXPORT RefCountedBytes : public RefCountedMemory {
   RefCountedBytes();
 
   // Constructs a RefCountedBytes object by _copying_ from |initializer|.
-  RefCountedBytes(const std::vector<unsigned char>& initializer);
+  explicit RefCountedBytes(const std::vector<unsigned char>& initializer);
 
   // Constructs a RefCountedBytes object by performing a swap. (To non
   // destructively build a RefCountedBytes, use the constructor that takes a

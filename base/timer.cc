@@ -18,7 +18,7 @@ namespace base {
 // - abandoned (orphaned) by Timer.
 class BaseTimerTaskInternal {
  public:
-  BaseTimerTaskInternal(Timer* timer)
+  explicit BaseTimerTaskInternal(Timer* timer)
       : timer_(timer) {
   }
 

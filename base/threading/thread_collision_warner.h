@@ -144,7 +144,7 @@ struct BASE_EXPORT DCheckAsserter : public AsserterBase {
 class BASE_EXPORT ThreadCollisionWarner {
  public:
   // The parameter asserter is there only for test purpose
-  ThreadCollisionWarner(AsserterBase* asserter = new DCheckAsserter())
+  explicit ThreadCollisionWarner(AsserterBase* asserter = new DCheckAsserter())
       : valid_thread_id_(0),
         counter_(0),
         asserter_(asserter) {}

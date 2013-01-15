@@ -17,7 +17,7 @@ namespace {
 // possible to merge the two.
 class PostTaskAndReplyTaskRunner : public internal::PostTaskAndReplyImpl {
  public:
-  PostTaskAndReplyTaskRunner(TaskRunner* destination);
+  explicit PostTaskAndReplyTaskRunner(TaskRunner* destination);
 
  private:
   virtual bool PostTask(const tracked_objects::Location& from_here,

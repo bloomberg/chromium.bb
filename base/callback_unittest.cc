@@ -148,7 +148,7 @@ TEST_F(CallbackTest, ResetAndReturn) {
 
 class CallbackOwner : public base::RefCounted<CallbackOwner> {
  public:
-  CallbackOwner(bool* deleted) {
+  explicit CallbackOwner(bool* deleted) {
     callback_ = Bind(&CallbackOwner::Unused, this);
     deleted_ = deleted;
   }

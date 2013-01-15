@@ -85,7 +85,7 @@ TEST_F(MessagePumpLibeventTest, TestWatchingFromBadThread) {
 
 class BaseWatcher : public MessagePumpLibevent::Watcher {
  public:
-  BaseWatcher(MessagePumpLibevent::FileDescriptorWatcher* controller)
+  explicit BaseWatcher(MessagePumpLibevent::FileDescriptorWatcher* controller)
       : controller_(controller) {
     DCHECK(controller_);
   }

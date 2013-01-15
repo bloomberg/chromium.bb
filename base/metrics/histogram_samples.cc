@@ -13,7 +13,7 @@ namespace {
 
 class SampleCountPickleIterator : public SampleCountIterator {
  public:
-  SampleCountPickleIterator(PickleIterator* iter);
+  explicit SampleCountPickleIterator(PickleIterator* iter);
 
   virtual bool Done() const OVERRIDE;
   virtual void Next() OVERRIDE;

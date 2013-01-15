@@ -47,7 +47,7 @@ class NonThreadSafeClass : public NonThreadSafe {
 // Calls NonThreadSafeClass::DoStuff on another thread.
 class CallDoStuffOnThread : public SimpleThread {
  public:
-  CallDoStuffOnThread(NonThreadSafeClass* non_thread_safe_class)
+  explicit CallDoStuffOnThread(NonThreadSafeClass* non_thread_safe_class)
       : SimpleThread("call_do_stuff_on_thread"),
         non_thread_safe_class_(non_thread_safe_class) {
   }
@@ -65,7 +65,8 @@ class CallDoStuffOnThread : public SimpleThread {
 // Deletes NonThreadSafeClass on a different thread.
 class DeleteNonThreadSafeClassOnThread : public SimpleThread {
  public:
-  DeleteNonThreadSafeClassOnThread(NonThreadSafeClass* non_thread_safe_class)
+  explicit DeleteNonThreadSafeClassOnThread(
+      NonThreadSafeClass* non_thread_safe_class)
       : SimpleThread("delete_non_thread_safe_class_on_thread"),
         non_thread_safe_class_(non_thread_safe_class) {
   }

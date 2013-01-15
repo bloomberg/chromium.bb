@@ -47,7 +47,7 @@ class ThreadCheckerClass : public ThreadChecker {
 // Calls ThreadCheckerClass::DoStuff on another thread.
 class CallDoStuffOnThread : public base::SimpleThread {
  public:
-  CallDoStuffOnThread(ThreadCheckerClass* thread_checker_class)
+  explicit CallDoStuffOnThread(ThreadCheckerClass* thread_checker_class)
       : SimpleThread("call_do_stuff_on_thread"),
         thread_checker_class_(thread_checker_class) {
   }
@@ -65,7 +65,8 @@ class CallDoStuffOnThread : public base::SimpleThread {
 // Deletes ThreadCheckerClass on a different thread.
 class DeleteThreadCheckerClassOnThread : public base::SimpleThread {
  public:
-  DeleteThreadCheckerClassOnThread(ThreadCheckerClass* thread_checker_class)
+  explicit DeleteThreadCheckerClassOnThread(
+      ThreadCheckerClass* thread_checker_class)
       : SimpleThread("delete_thread_checker_class_on_thread"),
         thread_checker_class_(thread_checker_class) {
   }

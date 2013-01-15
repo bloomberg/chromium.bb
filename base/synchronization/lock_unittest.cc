@@ -16,7 +16,7 @@ namespace base {
 
 class BasicLockTestThread : public PlatformThread::Delegate {
  public:
-  BasicLockTestThread(Lock* lock) : lock_(lock), acquired_(0) {}
+  explicit BasicLockTestThread(Lock* lock) : lock_(lock), acquired_(0) {}
 
   virtual void ThreadMain() OVERRIDE {
     for (int i = 0; i < 10; i++) {
@@ -91,7 +91,7 @@ TEST(LockTest, Basic) {
 
 class TryLockTestThread : public PlatformThread::Delegate {
  public:
-  TryLockTestThread(Lock* lock) : lock_(lock), got_lock_(false) {}
+  explicit TryLockTestThread(Lock* lock) : lock_(lock), got_lock_(false) {}
 
   virtual void ThreadMain() OVERRIDE {
     got_lock_ = lock_->Try();

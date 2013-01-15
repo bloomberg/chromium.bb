@@ -106,7 +106,7 @@ class CopyCounter {
   }
 
   // Probing for copies from coercion.
-  CopyCounter(const DerivedCopyCounter& other)
+  explicit CopyCounter(const DerivedCopyCounter& other)
       : copies_(other.copies_),
         assigns_(other.assigns_) {
     (*copies_)++;
@@ -766,7 +766,7 @@ TEST_F(BindTest, ArgumentCopies) {
   DerivedCopyCounter dervied(&copies, &assigns);
   Callback<void(CopyCounter)> coerce_cb =
       Bind(&VoidPolymorphic1<CopyCounter>);
-  coerce_cb.Run(dervied);
+  coerce_cb.Run(CopyCounter(dervied));
   EXPECT_GE(2, copies);
   EXPECT_EQ(0, assigns);
 }

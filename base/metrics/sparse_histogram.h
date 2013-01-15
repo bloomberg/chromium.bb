@@ -46,7 +46,7 @@ class BASE_EXPORT_PRIVATE SparseHistogram : public HistogramBase {
 
  private:
   // Clients should always use FactoryGet to create SparseHistogram.
-  SparseHistogram(const std::string& name);
+  explicit SparseHistogram(const std::string& name);
 
   friend BASE_EXPORT_PRIVATE HistogramBase* DeserializeHistogramInfo(
       PickleIterator* iter);

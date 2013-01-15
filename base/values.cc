@@ -68,7 +68,7 @@ class ValueEquals {
   // Pass the value against which all consecutive calls of the () operator will
   // compare their argument to. This Value object must not be destroyed while
   // the ValueEquals is  in use.
-  ValueEquals(const Value* first) : first_(first) { }
+  explicit ValueEquals(const Value* first) : first_(first) { }
 
   bool operator ()(const Value* second) const {
     return first_->Equals(second);

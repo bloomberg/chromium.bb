@@ -30,7 +30,7 @@ namespace i18n {
 class BASE_I18N_EXPORT UTF8CharIterator {
  public:
   // Requires |str| to live as long as the UTF8CharIterator does.
-  UTF8CharIterator(const std::string* str);
+  explicit UTF8CharIterator(const std::string* str);
   ~UTF8CharIterator();
 
   // Return the starting array index of the current character within the
@@ -76,7 +76,7 @@ class BASE_I18N_EXPORT UTF8CharIterator {
 class BASE_I18N_EXPORT UTF16CharIterator {
  public:
   // Requires |str| to live as long as the UTF16CharIterator does.
-  UTF16CharIterator(const string16* str);
+  explicit UTF16CharIterator(const string16* str);
   UTF16CharIterator(const char16* str, size_t str_len);
   ~UTF16CharIterator();
 

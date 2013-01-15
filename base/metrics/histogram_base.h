@@ -69,7 +69,7 @@ class BASE_EXPORT HistogramBase {
     kHexRangePrintingFlag = 0x8000,
   };
 
-  HistogramBase(const std::string& name);
+  explicit HistogramBase(const std::string& name);
   virtual ~HistogramBase();
 
   std::string histogram_name() const { return histogram_name_; }

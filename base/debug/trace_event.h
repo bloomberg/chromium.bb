@@ -719,33 +719,33 @@ class TraceID {
      unsigned long long data_;
   };
 
-  explicit TraceID(const void* id, unsigned char* flags)
+  TraceID(const void* id, unsigned char* flags)
       : data_(static_cast<unsigned long long>(
               reinterpret_cast<unsigned long>(id))) {
     *flags |= TRACE_EVENT_FLAG_MANGLE_ID;
   }
-  explicit TraceID(ForceMangle id, unsigned char* flags) : data_(id.data()) {
+  TraceID(ForceMangle id, unsigned char* flags) : data_(id.data()) {
     *flags |= TRACE_EVENT_FLAG_MANGLE_ID;
   }
-  explicit TraceID(unsigned long long id, unsigned char* flags)
+  TraceID(unsigned long long id, unsigned char* flags)
       : data_(id) { (void)flags; }
-  explicit TraceID(unsigned long id, unsigned char* flags)
+  TraceID(unsigned long id, unsigned char* flags)
       : data_(id) { (void)flags; }
-  explicit TraceID(unsigned int id, unsigned char* flags)
+  TraceID(unsigned int id, unsigned char* flags)
       : data_(id) { (void)flags; }
-  explicit TraceID(unsigned short id, unsigned char* flags)
+  TraceID(unsigned short id, unsigned char* flags)
       : data_(id) { (void)flags; }
-  explicit TraceID(unsigned char id, unsigned char* flags)
+  TraceID(unsigned char id, unsigned char* flags)
       : data_(id) { (void)flags; }
-  explicit TraceID(long long id, unsigned char* flags)
+  TraceID(long long id, unsigned char* flags)
       : data_(static_cast<unsigned long long>(id)) { (void)flags; }
-  explicit TraceID(long id, unsigned char* flags)
+  TraceID(long id, unsigned char* flags)
       : data_(static_cast<unsigned long long>(id)) { (void)flags; }
-  explicit TraceID(int id, unsigned char* flags)
+  TraceID(int id, unsigned char* flags)
       : data_(static_cast<unsigned long long>(id)) { (void)flags; }
-  explicit TraceID(short id, unsigned char* flags)
+  TraceID(short id, unsigned char* flags)
       : data_(static_cast<unsigned long long>(id)) { (void)flags; }
-  explicit TraceID(signed char id, unsigned char* flags)
+  TraceID(signed char id, unsigned char* flags)
       : data_(static_cast<unsigned long long>(id)) { (void)flags; }
 
   unsigned long long data() const { return data_; }

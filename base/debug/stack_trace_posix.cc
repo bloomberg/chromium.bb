@@ -323,7 +323,7 @@ class PrintBacktraceOutputHandler : public BacktraceOutputHandler {
 
 class StreamBacktraceOutputHandler : public BacktraceOutputHandler {
  public:
-  StreamBacktraceOutputHandler(std::ostream* os) : os_(os) {
+  explicit StreamBacktraceOutputHandler(std::ostream* os) : os_(os) {
   }
 
   virtual void HandleOutput(const char* output) {
