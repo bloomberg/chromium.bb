@@ -299,10 +299,13 @@ void Network::SetState(ConnectionState new_state) {
   state_ = new_state;
   if (new_state == STATE_FAILURE) {
     VLOG(1) << service_path() << ": Detected Failure state.";
-    if (old_state != STATE_UNKNOWN && old_state != STATE_IDLE) {
+    if (old_state != STATE_UNKNOWN && old_state != STATE_IDLE &&
+        (type() != TYPE_CELLULAR ||
+         user_connect_state() == USER_CONNECT_STARTED)) {
       // New failure, the user needs to be notified.
       // Transition STATE_IDLE -> STATE_FAILURE sometimes happens on resume
       // but is not an actual failure as network device is not ready yet.
+      // For Cellular we only show failure notifications if user initiated.
       notify_failure_ = true;
       // Normally error_ should be set, but if it is not we need to set it to
       // something here so that the retry logic will be triggered.
