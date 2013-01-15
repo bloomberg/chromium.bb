@@ -220,9 +220,9 @@ void AdjustFrameWindowStyleForMetro(HWND hwnd) {
 
   // Subclass the wndproc of the frame window, if it's not already there.
   if (::GetProp(hwnd, kChromeSubclassWindowProp) == NULL) {
-    WNDPROC old_chrome_proc = reinterpret_cast<WNDPROC>(
-        ::SetWindowLong(hwnd, GWL_WNDPROC,
-                        reinterpret_cast<long>(ChromeWindowProc)));
+    WNDPROC old_chrome_proc =
+        reinterpret_cast<WNDPROC>(::SetWindowLongPtr(
+            hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(ChromeWindowProc)));
     ::SetProp(hwnd, kChromeSubclassWindowProp, old_chrome_proc);
   }
   AdjustToFitWindow(hwnd, SWP_FRAMECHANGED | SWP_NOACTIVATE);
@@ -637,9 +637,10 @@ DWORD WINAPI HostMainThreadProc(void*) {
   globals.metro_command_line_switches =
       winrt_utils::ReadArgumentsFromPinnedTaskbarShortcut();
 
-  globals.g_core_proc = reinterpret_cast<WNDPROC>(
-      ::SetWindowLong(globals.core_window, GWL_WNDPROC,
-                      reinterpret_cast<long>(ChromeAppView::CoreWindowProc)));
+  globals.g_core_proc =
+      reinterpret_cast<WNDPROC>(::SetWindowLongPtr(
+          globals.core_window, GWLP_WNDPROC,
+          reinterpret_cast<LONG_PTR>(ChromeAppView::CoreWindowProc)));
   DWORD exit_code = globals.host_main(globals.host_context);
 
   DVLOG(1) << "host thread done, exit_code=" << exit_code;
