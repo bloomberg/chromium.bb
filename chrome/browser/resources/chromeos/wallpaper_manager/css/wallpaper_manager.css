@@ -1,4 +1,4 @@
-/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
@@ -83,15 +83,19 @@ body {
 }
 
 .image-picker {
-  -webkit-box-flex: 1;
-  display: -webkit-box;
+  display: block;
   /* Set font size to 0 to remove the extra vertical margin between two rows of
    * thumbnails.
    * TODO(bshe): Find the root cause of the margin.
    */
   font-size: 0;
+  height: 320px;
   outline: none;
   overflow-y: auto;
+}
+
+.image-picker .spacer {
+  display: block;
 }
 
 .image-picker > * {
