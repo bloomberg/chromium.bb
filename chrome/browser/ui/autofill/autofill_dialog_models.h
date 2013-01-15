@@ -35,7 +35,7 @@ class SuggestionsMenuModel : public ui::SimpleMenuModel,
   explicit SuggestionsMenuModel(SuggestionsMenuModelDelegate* delegate);
   virtual ~SuggestionsMenuModel();
 
-  // Adds an item and its identifying key to the model.
+  // Adds an item and its identifying key to the model. Keys needn't be unique.
   void AddKeyedItem(const std::string& key, const string16& display_label);
 
   // Returns the ID key for the item at |index|.

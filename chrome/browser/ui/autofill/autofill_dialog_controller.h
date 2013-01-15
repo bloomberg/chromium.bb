@@ -149,6 +149,7 @@ class AutofillDialogController : public AutofillPopupDelegate,
   // Fills in |form_structure_| using |form_group|. Utility method for
   // FillOutputForSection.
   void FillFormStructureForSection(const FormGroup& form_group,
+                                   size_t variant,
                                    DialogSection section,
                                    const InputFieldComparator& compare);
 

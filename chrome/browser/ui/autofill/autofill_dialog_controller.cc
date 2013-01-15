@@ -336,19 +336,19 @@ string16 AutofillDialogController::SuggestionTextForSection(
   if (item_key.empty())
     return string16();
 
-  // TODO(estade): This doesn't display as much info as it should (for example,
-  // it should show full addresses rather than just a summary).
+  if (section == SECTION_EMAIL)
+    return model->GetLabelAt(model->checked_item());
+
   if (section == SECTION_CC) {
     CreditCard* card = GetManager()->GetCreditCardByGUID(item_key);
     if (card)
       return card->Label();
   } else {
+    // TODO(estade): This doesn't display as much info as it should (for
+    // example, it should show full addresses rather than just a summary).
     AutofillProfile* profile = GetManager()->GetProfileByGUID(item_key);
-    if (profile) {
-      const std::string app_locale = AutofillCountry::ApplicationLocale();
-      return section == SECTION_EMAIL ?
-          profile->GetInfo(EMAIL_ADDRESS, app_locale) : profile->Label();
-    }
+    if (profile)
+      return profile->Label();
   }
 
   // TODO(estade): The FormGroup was likely deleted while menu was showing. We
@@ -505,21 +505,30 @@ void AutofillDialogController::GenerateSuggestionsModels() {
   for (size_t i = 0; i < cards.size(); ++i) {
     suggested_cc_.AddKeyedItem(cards[i]->guid(), cards[i]->Label());
   }
+  // TODO(estade): real strings and i18n.
   suggested_cc_.AddKeyedItem("", ASCIIToUTF16("Enter new card"));
 
   const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
   const std::string app_locale = AutofillCountry::ApplicationLocale();
   for (size_t i = 0; i < profiles.size(); ++i) {
-    // TODO(estade): deal with variants.
     if (!IsCompleteProfile(*profiles[i]))
       continue;
 
-    string16 email = profiles[i]->GetInfo(EMAIL_ADDRESS, app_locale);
-    if (!email.empty())
-      suggested_email_.AddKeyedItem(profiles[i]->guid(), email);
+    // Add all email addresses.
+    std::vector<string16> values;
+    profiles[i]->GetMultiInfo(EMAIL_ADDRESS, app_locale, &values);
+    for (size_t j = 0; j < values.size(); ++j) {
+      if (!values[j].empty())
+        suggested_email_.AddKeyedItem(profiles[i]->guid(), values[j]);
+    }
+
+    // Don't add variants for addresses: the email variants are handled above,
+    // name is part of credit card and we'll just ignore phone number variants.
     suggested_billing_.AddKeyedItem(profiles[i]->guid(), profiles[i]->Label());
     suggested_shipping_.AddKeyedItem(profiles[i]->guid(), profiles[i]->Label());
   }
+
+  // TODO(estade): real strings and i18n.
   suggested_billing_.AddKeyedItem("", ASCIIToUTF16("Enter new billing"));
   suggested_email_.AddKeyedItem("", ASCIIToUTF16("Enter new email"));
   suggested_shipping_.AddKeyedItem("", ASCIIToUTF16("Enter new shipping"));
@@ -551,7 +560,17 @@ void AutofillDialogController::FillOutputForSectionWithComparator(
     if (!form_group)
       return;
 
-    FillFormStructureForSection(*form_group, section, compare);
+    // Calculate the variant by looking at how many items come from the same
+    // FormGroup. TODO(estade): add a test for this.
+    size_t variant = 0;
+    for (int i = model->checked_item() - 1; i >= 0; --i) {
+      if (model->GetItemKeyAt(i) == guid)
+        variant++;
+      else
+        break;
+    }
+
+    FillFormStructureForSection(*form_group, variant, section, compare);
   } else {
     // The user manually input data.
     DetailOutputMap output;
@@ -562,7 +581,7 @@ void AutofillDialogController::FillOutputForSectionWithComparator(
       CreditCard card;
       FillFormGroupFromOutputs(output, &card);
       manager->SaveImportedCreditCard(card);
-      FillFormStructureForSection(card, section, compare);
+      FillFormStructureForSection(card, 0, section, compare);
 
       // CVC needs special-casing because the CreditCard class doesn't store
       // or handle them. Fill it in directly from |output|.
@@ -583,7 +602,7 @@ void AutofillDialogController::FillOutputForSectionWithComparator(
       AutofillProfile profile;
       FillFormGroupFromOutputs(output, &profile);
       manager->SaveImportedProfile(profile);
-      FillFormStructureForSection(profile, section, compare);
+      FillFormStructureForSection(profile, 0, section, compare);
     }
   }
 }
@@ -595,6 +614,7 @@ void AutofillDialogController::FillOutputForSection(DialogSection section) {
 
 void AutofillDialogController::FillFormStructureForSection(
     const FormGroup& form_group,
+    size_t variant,
     DialogSection section,
     const InputFieldComparator& compare) {
   for (size_t i = 0; i < form_structure_.field_count(); ++i) {
@@ -603,7 +623,7 @@ void AutofillDialogController::FillFormStructureForSection(
     const DetailInputs& inputs = RequestedFieldsForSection(section);
     for (size_t j = 0; j < inputs.size(); ++j) {
       if (compare.Run(inputs[j], *field)) {
-        form_group.FillFormField(*field, 0, field);
+        form_group.FillFormField(*field, variant, field);
         break;
       }
     }
