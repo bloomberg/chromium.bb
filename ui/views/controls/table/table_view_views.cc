@@ -65,7 +65,7 @@ struct TableView::SortHelper {
   explicit SortHelper(TableView* table) : table(table) {}
 
   bool operator()(int model_index1, int model_index2) {
-    return table->CompareRows( model_index1, model_index2) < 0;
+    return table->CompareRows(model_index1, model_index2) < 0;
   }
 
   TableView* table;
@@ -439,7 +439,7 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
     if (selection_model_.IsSelected(model_index)) {
       const gfx::Rect row_bounds(GetRowBounds(i));
       canvas->FillRect(row_bounds, kSelectedBackgroundColor);
-      if (HasFocus() && !header_)
+      if (HasFocus() && !header_ && !grouper_)
         canvas->DrawFocusRect(row_bounds);
     } else if (row_background_painter_) {
       row_background_painter_->PaintRowBackground(model_index,
@@ -455,7 +455,7 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
         text_x += kGroupingIndicatorSize + kTextHorizontalPadding;
 
       // Always paint the icon in the first visible column.
-      if (j == 0 && table_type_ == ICON_AND_TEXT && header_) {
+      if (j == 0 && table_type_ == ICON_AND_TEXT) {
         gfx::ImageSkia image = model_->GetIcon(model_index);
         if (!image.isNull()) {
           int image_x = GetMirroredXWithWidthInView(text_x, kImageSize);
