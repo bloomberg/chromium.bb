@@ -230,7 +230,7 @@ public class AwContentsTest extends AndroidWebViewTestBase {
 
         List<Pair<String, String>> downloadHeaders = new ArrayList<Pair<String, String>>();
         downloadHeaders.add(Pair.create("Content-Disposition", contentDisposition));
-        downloadHeaders.add(Pair.create("Mime-Type", mimeType));
+        downloadHeaders.add(Pair.create("Content-Type", mimeType));
         downloadHeaders.add(Pair.create("Content-Length", Integer.toString(data.length())));
 
         TestWebServer webServer = null;

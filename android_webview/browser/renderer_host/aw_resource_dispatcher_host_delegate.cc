@@ -248,7 +248,7 @@ void AwResourceDispatcherHostDelegate::DownloadStarting(
   request->GetResponseHeaderByName("content-disposition", &content_disposition);
   request->extra_request_headers().GetHeader(
       net::HttpRequestHeaders::kUserAgent, &user_agent);
-  request->GetResponseHeaderByName("mime-type", &mime_type);
+  request->GetMimeType(&mime_type);
 
   request->Cancel();
 
