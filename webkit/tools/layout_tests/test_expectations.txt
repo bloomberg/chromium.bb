@@ -32,7 +32,8 @@
 #
 # EVERYTHING BELOW THIS LINE WILL BE DELETED AT EVERY WEBKIT DEPS ROLL
 
-webkit.org/b/103140 inspector/console/command-line-api-inspect.html [ Skip ]
-webkit.org/b/103140 inspector/runtime/runtime-localStorage-getProperties.html [ Skip ]
+# These were rebaselined in r139708, skipping until we roll past that
+BUG(dominicc) scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ Skip ]
+BUG(dominicc) scrollingcoordinator/non-fast-scrollable-region-transformed-iframe.html [ Skip ]
 
-crbug.com/164689 http/tests/media/video-buffered-range-contains-currentTime.html [ ImageOnlyFailure ]
+webkit.org/b/106869 [ Lion Debug ] fast/mediastream/RTCPeerConnection-events.html [ Crash ]
