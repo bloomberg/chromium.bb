@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chrome {
@@ -232,6 +233,22 @@ void ToggleBookmarkBarWhenVisible(content::BrowserContext* browser_context) {
 
   // The user changed when the bookmark bar is shown, update the preferences.
   prefs->SetBoolean(prefs::kShowBookmarkBar, always_show);
+}
+
+string16 FormatBookmarkURLForDisplay(const GURL& url,
+                                     const PrefServiceBase* prefs) {
+  std::string languages;
+  if (prefs)
+    languages = prefs->GetString(prefs::kAcceptLanguages);
+
+  // Because this gets re-parsed by FixupURL(), it's safe to omit the scheme
+  // and trailing slash, and unescape most characters.  However, it's
+  // important not to drop any username/password, or unescape anything that
+  // changes the URL's meaning.
+  return net::FormatUrl(
+      url, languages,
+      net::kFormatUrlOmitAll & ~net::kFormatUrlOmitUsernamePassword,
+      net::UnescapeRule::SPACES, NULL, NULL, NULL);
 }
 
 }  // namespace chrome

@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/prefs/public/pref_service_base.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -15,15 +16,12 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
-#include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "net/base/net_util.h"
 #include "ui/base/events/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/background.h"
@@ -363,18 +361,11 @@ void BookmarkEditorView::Init() {
     url_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_URL_LABEL));
 
-    std::string languages =
-        profile_ ? profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)
-                 : std::string();
-    // Because this gets parsed by FixupURL(), it's safe to omit the scheme or
-    // trailing slash, and unescape most characters, but we need to not drop any
-    // username/password, or unescape anything that changes the meaning.
-    string16 url_text = net::FormatUrl(url, languages,
-        net::kFormatUrlOmitAll & ~net::kFormatUrlOmitUsernamePassword,
-        net::UnescapeRule::SPACES, NULL, NULL, NULL);
-
     url_tf_ = new views::Textfield;
-    url_tf_->SetText(url_text);
+    PrefServiceBase* prefs = profile_ ?
+        PrefServiceBase::FromBrowserContext(profile_) :
+        NULL;
+    url_tf_->SetText(chrome::FormatBookmarkURLForDisplay(url, prefs));
     url_tf_->SetController(this);
     url_tf_->SetAccessibleName(url_label_->text());
 

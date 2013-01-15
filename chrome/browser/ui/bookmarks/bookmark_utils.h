@@ -14,6 +14,7 @@
 class BookmarkNode;
 class Browser;
 class GURL;
+class PrefServiceBase;
 
 namespace content {
 class BrowserContext;
@@ -66,6 +67,12 @@ void GetURLAndTitleToBookmark(content::WebContents* web_contents,
 // Toggles whether the bookmark bar is shown only on the new tab page or on
 // all tabs. This is a preference modifier, not a visual modifier.
 void ToggleBookmarkBarWhenVisible(content::BrowserContext* browser_context);
+
+// Returns a formatted version of |url| appropriate to display to a user with
+// the given |prefs|, which may be NULL.  When re-parsing this URL, clients
+// should call URLFixerUpper::FixupURL().
+string16 FormatBookmarkURLForDisplay(const GURL& url,
+                                     const PrefServiceBase* prefs);
 
 }  // namespace chrome
 

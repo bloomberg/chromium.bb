@@ -23,7 +23,7 @@ class BookmarkEditorControllerTest : public CocoaProfileTest {
   string16 default_title_;
   BookmarkEditorController* controller_;
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 
@@ -45,7 +45,7 @@ class BookmarkEditorControllerTest : public CocoaProfileTest {
     [controller_ runAsModalSheet];
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     controller_ = NULL;
     CocoaProfileTest::TearDown();
   }
@@ -137,7 +137,7 @@ class BookmarkEditorControllerNoNodeTest : public CocoaProfileTest {
  public:
   BookmarkEditorController* controller_;
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 
@@ -155,7 +155,7 @@ class BookmarkEditorControllerNoNodeTest : public CocoaProfileTest {
     [controller_ runAsModalSheet];
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     controller_ = NULL;
     CocoaProfileTest::TearDown();
   }
@@ -171,19 +171,18 @@ TEST_F(BookmarkEditorControllerNoNodeTest, NoNodeNoTree) {
 class BookmarkEditorControllerYesNodeTest : public CocoaProfileTest {
  public:
   string16 default_title_;
-  const char* url_name_;
   BookmarkEditorController* controller_;
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 
     BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
     const BookmarkNode* parent = model->bookmark_bar_node();
     default_title_ = ASCIIToUTF16("wooh title");
-    url_name_ = "http://www.zoom-baby-doo-da.com/";
-    const BookmarkNode* node = model->AddURL(parent, 0, default_title_,
-                                             GURL(url_name_));
+    const BookmarkNode* node =
+        model->AddURL(parent, 0, default_title_,
+                      GURL("http://www.zoom-baby-doo-da.com/"));
     controller_ = [[BookmarkEditorController alloc]
                    initWithParentWindow:test_window()
                                 profile:profile()
@@ -196,7 +195,7 @@ class BookmarkEditorControllerYesNodeTest : public CocoaProfileTest {
     [controller_ runAsModalSheet];
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     controller_ = NULL;
     CocoaProfileTest::TearDown();
   }
@@ -205,7 +204,47 @@ class BookmarkEditorControllerYesNodeTest : public CocoaProfileTest {
 TEST_F(BookmarkEditorControllerYesNodeTest, YesNodeShowTree) {
   EXPECT_NSEQ(base::SysUTF16ToNSString(default_title_),
               [controller_ displayName]);
-  EXPECT_NSEQ([NSString stringWithCString:url_name_
+  EXPECT_NSEQ([NSString stringWithCString:"www.zoom-baby-doo-da.com"
+                                 encoding:NSUTF8StringEncoding],
+              [controller_ displayURL]);
+  [controller_ cancel:nil];
+}
+
+
+class BookmarkEditorControllerUtf8NodeTest : public CocoaProfileTest {
+ public:
+  BookmarkEditorController* controller_;
+
+  virtual void SetUp() OVERRIDE {
+    CocoaProfileTest::SetUp();
+    ASSERT_TRUE(profile());
+
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+    const BookmarkNode* parent = model->bookmark_bar_node();
+    string16 title = ASCIIToUTF16("wooh title");
+    const char* url_name = "http://www.foobar.com/心得寫作";
+    const BookmarkNode* node = model->AddURL(parent, 0, title, GURL(url_name));
+    controller_ = [[BookmarkEditorController alloc]
+                   initWithParentWindow:test_window()
+                                profile:profile()
+                                 parent:parent
+                                   node:node
+                                    url:GURL()
+                                  title:string16()
+                          configuration:BookmarkEditor::NO_TREE];
+
+    [controller_ runAsModalSheet];
+  }
+
+  virtual void TearDown() OVERRIDE {
+    controller_ = NULL;
+    CocoaProfileTest::TearDown();
+  }
+};
+
+TEST_F(BookmarkEditorControllerUtf8NodeTest, DisplayUtf8Name) {
+  // The "http://" prefix is trimmed, but the UTF-8 formatted characters remain.
+  EXPECT_NSEQ([NSString stringWithCString:"www.foobar.com/心得寫作"
                                  encoding:NSUTF8StringEncoding],
               [controller_ displayURL]);
   [controller_ cancel:nil];
@@ -279,7 +318,7 @@ class BookmarkEditorControllerTreeTest : public CocoaProfileTest {
                       configuration:BookmarkEditor::SHOW_TREE];
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 
@@ -288,7 +327,7 @@ class BookmarkEditorControllerTreeTest : public CocoaProfileTest {
     [controller_ runAsModalSheet];
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     controller_ = NULL;
     CocoaProfileTest::TearDown();
   }
