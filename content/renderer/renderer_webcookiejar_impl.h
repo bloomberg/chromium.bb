@@ -6,8 +6,8 @@
 #define CONTENT_RENDERER_RENDERER_WEBCOOKIEJAR_IMPL_H_
 
 // TODO(darin): WebCookieJar.h is missing a WebString.h include!
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCookieJar.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCookieJar.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 
 namespace content {
 class RenderViewImpl;

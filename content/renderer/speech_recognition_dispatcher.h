@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechRecognitionHandle.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechRecognizer.h"
 

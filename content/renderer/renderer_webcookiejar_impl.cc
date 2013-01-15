@@ -8,7 +8,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/render_view_impl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCookie.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCookie.h"
 #include "webkit/glue/webcookie.h"
 
 using WebKit::WebCookie;
