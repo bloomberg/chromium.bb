@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "grit/ash_resources.h"
+#include "grit/ash_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -679,10 +680,29 @@ void NetworkMenuIcon::SetConnectingIconAndText() {
   ImageType image_type;
   gfx::ImageSkia** images;
 
-  icon_->set_type(connecting_network_->type());
-  icon_->set_state(connecting_network_->state());
+  ConnectionType type;
+  ConnectionState state;
+  if (connecting_network_) {
+    type = connecting_network_->type();
+    state = connecting_network_->state();
+    if (mode_ == MENU_MODE) {
+      text_ = l10n_util::GetStringFUTF16(
+          IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP,
+          UTF8ToUTF16(connecting_network_->name()));
+    } else {
+      text_ = UTF8ToUTF16(connecting_network_->name());
+    }
+  } else {
+    // When called with no connecting network, cellular is initializing.
+    type = TYPE_CELLULAR;
+    state = STATE_ASSOCIATION;
+    text_ = l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR);
+  }
+  icon_->set_type(type);
+  icon_->set_state(state);
 
-  if (connecting_network_->type() == TYPE_WIFI) {
+  if (type == TYPE_WIFI) {
     image_count = kNumArcsImages - 1;
     image_type = ARCS;
     images = resource_color_theme_ == COLOR_DARK ? kArcsImagesAnimatingDark :
@@ -704,14 +724,8 @@ void NetworkMenuIcon::SetConnectingIconAndText() {
         new gfx::ImageSkia(NetworkMenuIcon::GenerateConnectingImage(source));
   }
   icon_->set_icon(*images[index]);
-  icon_->SetBadges(connecting_network_);
-  if (mode_ == MENU_MODE) {
-    text_ = l10n_util::GetStringFUTF16(
-        IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP,
-        UTF8ToUTF16(connecting_network_->name()));
-  } else {
-    text_ = UTF8ToUTF16(connecting_network_->name());
-  }
+  if (connecting_network_)
+    icon_->SetBadges(connecting_network_);
 }
 
 // Sets up the icon and badges for GenerateBitmap().
@@ -739,6 +753,12 @@ void NetworkMenuIcon::SetIconAndText() {
     network = cros->active_nonvirtual_network();
   if (network) {
     SetActiveNetworkIconAndText(network);
+    return;
+  }
+
+  // If no connected network, check if we are initializing Cellular.
+  if (cros->cellular_initializing()) {
+    SetConnectingIconAndText();
     return;
   }
 

@@ -462,9 +462,13 @@ bool NativeNetworkDeviceParser::ParseValue(
       device->set_sim_present(sim_present);
       return true;
     }
-    case PROPERTY_INDEX_POWERED:
-      // we don't care about the value, just the fact that it changed
+    case PROPERTY_INDEX_POWERED: {
+      bool powered;
+      if (!value.GetAsBoolean(&powered))
+        return false;
+      device->set_powered(powered);
       return true;
+    }
     case PROPERTY_INDEX_PRL_VERSION: {
       int prl_version;
       if (!value.GetAsInteger(&prl_version))

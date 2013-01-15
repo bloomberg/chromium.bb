@@ -64,8 +64,8 @@ NetworkLibraryImplBase::NetworkLibraryImplBase()
       available_devices_(0),
       enabled_devices_(0),
       busy_devices_(0),
-      connected_devices_(0),
       wifi_scanning_(false),
+      cellular_initialized_(false),
       offline_mode_(false),
       is_locked_(false),
       sim_operation_(SIM_OPERATION_NONE),
@@ -451,6 +451,10 @@ bool NetworkLibraryImplBase::mobile_busy() const {
 
 bool NetworkLibraryImplBase::wifi_scanning() const {
   return wifi_scanning_;
+}
+
+bool NetworkLibraryImplBase::cellular_initializing() const {
+  return cellular_enabled() && !cellular_initialized_;
 }
 
 bool NetworkLibraryImplBase::offline_mode() const { return offline_mode_; }

@@ -114,8 +114,9 @@ class NetworkDevice {
     return technology_family() == TECHNOLOGY_FAMILY_GSM &&
            !is_sim_locked() && !sim_present_;
   }
-  const int sim_retries_left() const { return sim_retries_left_; }
+  int sim_retries_left() const { return sim_retries_left_; }
   SimPinRequire sim_pin_required() const { return sim_pin_required_; }
+  bool powered() const { return powered_; }
   const std::string& firmware_revision() const { return firmware_revision_; }
   const std::string& hardware_revision() const { return hardware_revision_; }
   const unsigned int prl_version() const { return prl_version_; }
@@ -224,6 +225,9 @@ class NetworkDevice {
   void set_sim_present(bool sim_present) {
     sim_present_ = sim_present;
   }
+  void set_powered(bool powered) {
+    powered_ = powered;
+  }
   void set_firmware_revision(const std::string& firmware_revision) {
     firmware_revision_ = firmware_revision;
   }
@@ -278,6 +282,7 @@ class NetworkDevice {
   int sim_retries_left_;
   SimPinRequire sim_pin_required_;
   bool sim_present_;
+  bool powered_;
   std::string firmware_revision_;
   std::string hardware_revision_;
   int prl_version_;
@@ -1453,7 +1458,7 @@ class NetworkLibrary {
   virtual bool mobile_busy() const = 0;
 
   virtual bool wifi_scanning() const = 0;
-
+  virtual bool cellular_initializing() const = 0;
   virtual bool offline_mode() const = 0;
 
   // Returns list of technologies for which captive portal checking is enabled.

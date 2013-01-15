@@ -91,7 +91,8 @@ NetworkListDetailedViewBase::NetworkListDetailedViewBase(
       info_icon_(NULL),
       settings_(NULL),
       proxy_settings_(NULL),
-      scanning_view_(NULL),
+      status_view_(NULL),
+      no_networks_view_(NULL),
       info_bubble_(NULL) {
 }
 
@@ -200,7 +201,7 @@ void NetworkListDetailedViewBase::UpdateAvailableNetworkList() {
   GetAvailableNetworkList(&network_list_);
 }
 
-void NetworkListDetailedViewBase::RefreshNetworkScrollWithUpdatedNetworkList() {
+void NetworkListDetailedViewBase::RefreshNetworkList() {
   network_map_.clear();
   std::set<std::string> new_service_paths;
 
@@ -209,29 +210,37 @@ void NetworkListDetailedViewBase::RefreshNetworkScrollWithUpdatedNetworkList() {
 
   if (service_path_map_.empty()) {
     scroll_content()->RemoveAllChildViews(true);
-    scanning_view_ = NULL;
+    status_view_ = NULL;
+    no_networks_view_ = NULL;
   }
+
+  SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
 
   // Insert child views. Order is:
   // * Highlit networks (connected and connecting)
-  // * "Scanning..."
+  // * "Initializing cellular modem..." or "Searching for Wi-Fi networks..."
   // * Un-highlit networks (not connected). Usually empty while scanning.
+  // * "Wi-Fi is turned off" if wifi disabled and no networks
 
-  bool wifi_scanning =
-      Shell::GetInstance()->system_tray_delegate()->GetWifiScanning();
-  if (wifi_scanning && scanning_view_ == NULL) {
-    scanning_view_ = new views::Label(
-        ui::ResourceBundle::GetSharedInstance().
-        GetLocalizedString(IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE));
-    scanning_view_->set_border(views::Border::CreateEmptyBorder(20, 0, 10, 0));
-    scanning_view_->SetFont(
-        scanning_view_->font().DeriveFont(0, gfx::Font::ITALIC));
+  int status_message_id = 0;
+  if (delegate->GetCellularInitializing())
+    status_message_id = IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR;
+  else if (delegate->GetWifiScanning())
+    status_message_id = IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE;
+  if (status_message_id && status_view_ == NULL) {
+    status_view_ = new views::Label(
+        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+            status_message_id));
+    status_view_->set_border(views::Border::CreateEmptyBorder(20, 20, 10, 0));
+    status_view_->SetFont(
+        status_view_->font().DeriveFont(0, gfx::Font::ITALIC));
+    status_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     // Initially insert "scanning" first.
-    scroll_content()->AddChildViewAt(scanning_view_, 0);
+    scroll_content()->AddChildViewAt(status_view_, 0);
     needs_relayout = true;
-  } else if (!wifi_scanning && scanning_view_ != NULL) {
-    scroll_content()->RemoveChildView(scanning_view_);
-    scanning_view_ = NULL;
+  } else if (!status_message_id && status_view_ != NULL) {
+    scroll_content()->RemoveChildView(status_view_);
+    status_view_ = NULL;
     needs_relayout = true;
   }
 
@@ -239,7 +248,7 @@ void NetworkListDetailedViewBase::RefreshNetworkScrollWithUpdatedNetworkList() {
   for (size_t i = 0; i < network_list_.size(); ++i) {
     const bool highlight =
         network_list_[i].connected || network_list_[i].connecting;
-    if (scanning_view_ && child_index_offset == 0 && !highlight)
+    if (status_view_ && child_index_offset == 0 && !highlight)
       child_index_offset = 1;
     // |child_index| determines the position of the view, which is the same
     // as the list index for highlit views, and offset by one for any
@@ -300,6 +309,24 @@ void NetworkListDetailedViewBase::RefreshNetworkScrollWithUpdatedNetworkList() {
     service_path_map_.erase(*remove_it);
   }
 
+  if (network_list_.empty() && no_networks_view_ == NULL) {
+    int message_id = delegate->GetWifiEnabled() ?
+        IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED :
+        IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED;
+    no_networks_view_ = new views::Label(
+        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+            message_id));
+    no_networks_view_->set_border(
+        views::Border::CreateEmptyBorder(20, 20, 10, 0));
+    no_networks_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    scroll_content()->AddChildViewAt(no_networks_view_, 0);
+    needs_relayout = true;
+  } else if (no_networks_view_) {
+    scroll_content()->RemoveChildView(no_networks_view_);
+    no_networks_view_ = NULL;
+    needs_relayout = true;
+  }
+
   if (needs_relayout) {
     scroll_content()->SizeToPreferredSize();
     static_cast<views::View*>(scroller())->Layout();
@@ -315,10 +342,7 @@ void NetworkListDetailedViewBase::ClearNetworkScrollWithEmptyNetworkList() {
 }
 
 void NetworkListDetailedViewBase::RefreshNetworkScrollWithUpdatedNetworkData() {
-  if (network_list_.size() > 0 )
-    RefreshNetworkScrollWithUpdatedNetworkList();
-  else
-    RefreshNetworkScrollWithEmptyNetworkList();
+  RefreshNetworkList();
 }
 
 bool NetworkListDetailedViewBase::IsNetworkListEmpty() const {

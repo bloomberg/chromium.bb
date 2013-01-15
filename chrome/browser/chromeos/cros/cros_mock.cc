@@ -167,6 +167,9 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_network_library_, wifi_scanning())
       .Times(AnyNumber())
       .WillRepeatedly((Return(false)));
+  EXPECT_CALL(*mock_network_library_, cellular_initializing())
+      .Times(AnyNumber())
+      .WillRepeatedly((Return(false)));
 
   // Set specific expectations for interesting functions:
 

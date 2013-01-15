@@ -93,6 +93,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
                                       std::string* topup_url,
                                       std::string* setup_url) OVERRIDE;
   virtual bool GetWifiScanning() OVERRIDE;
+  virtual bool GetCellularInitializing() OVERRIDE;
   virtual void ShowCellularURL(const std::string& url) OVERRIDE;
   virtual void ChangeProxySettings() OVERRIDE;
   virtual VolumeControlDelegate* GetVolumeControlDelegate() const OVERRIDE;

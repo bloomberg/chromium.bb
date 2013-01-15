@@ -169,6 +169,9 @@ void NetworkLibraryImplCros::UpdateNetworkDeviceStatus(
 
 bool NetworkLibraryImplCros::UpdateCellularDeviceStatus(NetworkDevice* device,
                                                         PropertyIndex index) {
+  if (!cellular_initialized_ && device->powered())
+    cellular_initialized_ = true;
+
   if (index == PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING) {
     if (IsCellularAlwaysInRoaming()) {
       if (!device->data_roaming_allowed())
@@ -661,13 +664,6 @@ bool NetworkLibraryImplCros::NetworkManagerStatusChanged(
       UpdateEnabledTechnologies(vlist);
       break;
     }
-    case PROPERTY_INDEX_CONNECTED_TECHNOLOGIES: {
-      const ListValue* vlist = NULL;
-      if (!value->GetAsList(&vlist))
-        return false;
-      UpdateConnectedTechnologies(vlist);
-      break;
-    }
     case PROPERTY_INDEX_DEFAULT_TECHNOLOGY:
       // Currently we ignore DefaultTechnology.
       break;
@@ -803,11 +799,6 @@ void NetworkLibraryImplCros::UpdateEnabledTechnologies(
     active_cellular_ = NULL;
     cellular_networks_.clear();
   }
-}
-
-void NetworkLibraryImplCros::UpdateConnectedTechnologies(
-    const ListValue* technologies) {
-  UpdateTechnologies(technologies, &connected_devices_);
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -161,7 +161,6 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   void UpdateTechnologies(const base::ListValue* technologies, int* bitfieldp);
   void UpdateAvailableTechnologies(const base::ListValue* technologies);
   void UpdateEnabledTechnologies(const base::ListValue* technologies);
-  void UpdateConnectedTechnologies(const base::ListValue* technologies);
 
   // Update network lists.
   void UpdateNetworkServiceList(const base::ListValue* services);

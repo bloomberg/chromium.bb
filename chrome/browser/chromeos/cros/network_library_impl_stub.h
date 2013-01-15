@@ -97,6 +97,8 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
   const std::map<std::string, base::DictionaryValue*>& GetConfigurations();
 
  private:
+  void CompleteWifiInit();
+  void CompleteCellularInit();
   void AddStubNetwork(Network* network, NetworkProfileType profile_type);
   void AddStubRememberedNetwork(Network* network);
   void ConnectToNetwork(Network* network);
@@ -111,12 +113,12 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
   std::string pin_;
   bool pin_required_;
   bool pin_entered_;
-  int64 connect_delay_ms_;
   int network_priority_order_;
   WifiNetworkVector disabled_wifi_networks_;
   CellularNetworkVector disabled_cellular_networks_;
   WimaxNetworkVector disabled_wimax_networks_;
   std::map<std::string, base::DictionaryValue*> service_configurations_;
+  base::WeakPtrFactory<NetworkLibraryImplStub> weak_pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLibraryImplStub);
 };

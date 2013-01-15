@@ -1756,6 +1756,7 @@
           'dependencies': [
             '../ash/ash.gyp:ash_resources',
             '../ash/ash.gyp:ash_test_support',
+            '../ash/ash_strings.gyp:ash_strings',
           ],
           # We eventually want to compile both in Win Aura builds, see
           # http://crbug.com/155545.

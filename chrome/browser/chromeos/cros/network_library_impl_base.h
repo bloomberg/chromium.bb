@@ -146,6 +146,7 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   virtual bool cellular_busy() const OVERRIDE;
   virtual bool mobile_busy() const OVERRIDE;
   virtual bool wifi_scanning() const OVERRIDE;
+  virtual bool cellular_initializing() const OVERRIDE;
   virtual bool offline_mode() const OVERRIDE;
   virtual std::string GetCheckPortalList() const OVERRIDE;
   // virtual SetCheckPortalList implemented in derived classes.
@@ -444,11 +445,11 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   // Busy means device is switching from enable/disable state.
   int busy_devices_;
 
-  // The current connected network devices. Bitwise flag of ConnectionTypes.
-  int connected_devices_;
-
   // True if we are currently scanning for wifi networks.
   bool wifi_scanning_;
+
+  // True if a cellular device has been powered.
+  bool cellular_initialized_;
 
   // Currently not implemented. TODO(stevenjb): implement or eliminate.
   bool offline_mode_;
