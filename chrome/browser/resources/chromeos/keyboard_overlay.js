@@ -111,11 +111,19 @@ var keyboardOverlayId = 'en_US';
 var identifierMap = {};
 
 /**
- * Returns layouts data.
- * @return {Object} Keyboard layout data.
+ * Returns the layout name.
+ * @return {string} layout name.
  */
-function getLayouts() {
-  return keyboardOverlayData['layouts'];
+function getLayoutName() {
+  return getKeyboardGlyphData().layoutName;
+}
+
+/**
+ * Returns layout data.
+ * @return {Array} Keyboard layout data.
+ */
+function getLayout() {
+  return keyboardOverlayData['layouts'][getLayoutName()];
 }
 
 // Cache the shortcut data after it is constructed.
@@ -432,7 +440,7 @@ function update(modifiers) {
 
   var keyboardGlyphData = getKeyboardGlyphData();
   var shortcutData = getShortcutData();
-  var layout = getLayouts()[keyboardGlyphData.layoutName];
+  var layout = getLayout();
   for (var i = 0; i < layout.length; ++i) {
     var identifier = remapIdentifier(layout[i][0]);
     var keyData = keyboardGlyphData.keys[identifier];
@@ -513,7 +521,7 @@ function initLayout() {
   // Add data for the special key representing a disabled key
   keys['DISABLED'] = {label: 'disabled', format: 'left'};
 
-  var layout = getLayouts()[getKeyboardGlyphData().layoutName];
+  var layout = getLayout();
   var keyboard = document.body;
   var minX = window.innerWidth;
   var maxX = 0;
@@ -602,6 +610,58 @@ function initLayout() {
 }
 
 /**
+ * Returns true if the device has a diamond key.
+ * @return {boolean} Returns true if the device has a diamond key.
+ */
+function hasDiamondKey() {
+  return (loadTimeData.getString('keyboardOverlayHasChromeOSDiamondKey') ==
+          'true');
+}
+
+/**
+ * Initializes the layout and the key labels for the keyboard that has a diamond
+ * key.
+ */
+function initDiamondKey() {
+  var newLayoutData = {
+    '1D': [65.0, 287.0, 60.0, 60.0],  // left Ctrl
+    '38': [185.0, 287.0, 60.0, 60.0],  // left Alt
+    'E0 5B': [125.0, 287.0, 60.0, 60.0],  // search
+    '3A': [5.0, 167.0, 105.0, 60.0],  // caps lock
+    '5B': [803.0, 6.0, 72.0, 35.0],  // lock key
+    '5D': [5.0, 287.0, 60.0, 60.0]  // diamond key
+  };
+
+  var layout = getLayout();
+  var powerKeyIndex = -1;
+  var powerKeyId = '00';
+  for (var i = 0; i < layout.length; i++) {
+    var keyId = layout[i][0];
+    if (keyId in newLayoutData) {
+      layout[i] = [keyId].concat(newLayoutData[keyId]);
+      delete newLayoutData[keyId];
+    }
+    if (keyId == powerKeyId)
+      powerKeyIndex = i;
+  }
+  for (var keyId in newLayoutData)
+    layout.push([keyId].concat(newLayoutData[keyId]));
+
+  // Remove the power key.
+  if (powerKeyIndex != -1)
+    layout.splice(powerKeyIndex, 1);
+
+  var keyData = getKeyboardGlyphData()['keys'];
+  var newKeyData = {
+    '3A': {'label': 'caps lock', 'format': 'left'},
+    '5B': {'label': 'lock'},
+    '5D': {'label': 'diamond', 'format': 'left'}
+  };
+  for (var keyId in newKeyData)
+    keyData[keyId] = newKeyData[keyId];
+}
+
+/**
  * A callback function for the onload event of the body element.
  */
 function init() {
@@ -651,6 +711,10 @@ function initKeyboardOverlayId(inputMethodId) {
   while (document.body.firstChild) {
     document.body.removeChild(document.body.firstChild);
   }
+  // We show Japanese layout as-is because the user has chosen the layout
+  // that is quite diffrent from the physical layout that has a diamond key.
+  if (hasDiamondKey() && getLayoutName() != 'J')
+    initDiamondKey();
   initLayout();
   update([]);
   window.webkitRequestAnimationFrame(function() {

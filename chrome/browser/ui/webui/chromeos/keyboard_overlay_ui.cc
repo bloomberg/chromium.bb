@@ -246,6 +246,11 @@ ChromeWebUIDataSource* CreateKeyboardOverlayUIHTMLSource() {
   }
 
   source->AddString("keyboardOverlayLearnMoreURL", UTF8ToUTF16(kLearnMoreURL));
+  const char* has_diamond_key_value =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kHasChromeOSDiamondKey) ? "true" : "false";
+  source->AddString("keyboardOverlayHasChromeOSDiamondKey",
+                    has_diamond_key_value);
   source->set_json_path("strings.js");
   source->set_use_json_js_format_v2();
   source->add_resource_path("keyboard_overlay.js", IDR_KEYBOARD_OVERLAY_JS);

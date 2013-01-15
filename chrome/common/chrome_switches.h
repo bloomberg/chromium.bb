@@ -406,6 +406,7 @@ extern const char kEnableStaticIPConfig[];
 extern const char kFirstBoot[];
 extern const char kForceOAuth1[];
 extern const char kHasChromeOSKeyboard[];
+extern const char kHasChromeOSDiamondKey[];
 extern const char kKioskModeScreensaverPath[];
 extern const char kLoginManager[];
 // TODO(avayvod): Remove this flag when it's unnecessary for testing

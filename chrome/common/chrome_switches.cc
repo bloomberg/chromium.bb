@@ -1475,6 +1475,9 @@ const char kForceOAuth1[]                  = "force-oauth1";
 // Chromeboxes.
 const char kHasChromeOSKeyboard[]           = "has-chromeos-keyboard";
 
+// If true, the Chromebook has a keyboard with a diamond key.
+const char kHasChromeOSDiamondKey[]         = "has-chromeos-diamond-key";
+
 // Path for the screensaver used in Kiosk mode
 const char kKioskModeScreensaverPath[]      = "kiosk-mode-screensaver-path";
 
