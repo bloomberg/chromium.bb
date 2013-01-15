@@ -253,21 +253,21 @@ void WalletClient::OnURLFetchComplete(
 
   switch (type) {
     case ACCEPT_LEGAL_DOCUMENTS:
-      observer_->OnAcceptLegalDocuments();
+      observer_->OnDidAcceptLegalDocuments();
       break;
     case SEND_STATUS:
-      observer_->OnSendAutocheckoutStatus();
+      observer_->OnDidSendAutocheckoutStatus();
       break;
     case ENCRYPT_OTP: {
       if (!data.empty()) {
         std::vector<std::string> splits;
         base::SplitString(data, '|', &splits);
         if (splits.size() == 2)
-          observer_->OnEncryptOtp(splits[1], splits[0]);
+          observer_->OnDidEncryptOtp(splits[1], splits[0]);
         else
-          observer_->OnNetworkError(response_code);
+          HandleMalformedResponse(old_request.get());
       } else {
-        observer_->OnWalletError();
+        HandleMalformedResponse(old_request.get());
       }
       break;
     }
@@ -275,18 +275,18 @@ void WalletClient::OnURLFetchComplete(
       if (!data.empty())
         observer_->OnDidEscrowSensitiveInformation(data);
       else
-        observer_->OnWalletError();
+        HandleMalformedResponse(old_request.get());
       break;
     case GET_FULL_WALLET: {
       if (response_dict.get()) {
         scoped_ptr<FullWallet> full_wallet(
             FullWallet::CreateFullWallet(*response_dict));
         if (full_wallet.get())
-          observer_->OnGetFullWallet(full_wallet.get());
+          observer_->OnDidGetFullWallet(full_wallet.get());
         else
-          observer_->OnNetworkError(response_code);
+          HandleMalformedResponse(old_request.get());
       } else {
-        observer_->OnWalletError();
+        HandleMalformedResponse(old_request.get());
       }
       break;
     }
@@ -295,11 +295,11 @@ void WalletClient::OnURLFetchComplete(
         scoped_ptr<WalletItems> wallet_items(
             WalletItems::CreateWalletItems(*response_dict));
         if (wallet_items.get())
-          observer_->OnGetWalletItems(wallet_items.get());
+          observer_->OnDidGetWalletItems(wallet_items.get());
         else
-          observer_->OnNetworkError(response_code);
+          HandleMalformedResponse(old_request.get());
       } else {
-        observer_->OnWalletError();
+        HandleMalformedResponse(old_request.get());
       }
       break;
     }
@@ -307,6 +307,12 @@ void WalletClient::OnURLFetchComplete(
       NOTREACHED();
     }
   }
+}
+
+void WalletClient::HandleMalformedResponse(net::URLFetcher* request) {
+  // Called to inform exponential backoff logic of the error.
+  request->ReceivedContentWasMalformed();
+  observer_->OnMalformedResponse();
 }
 
 WalletClient::WalletClient(net::URLRequestContextGetter* context_getter)

@@ -36,11 +36,12 @@ class WalletClient : public net::URLFetcherDelegate {
   class WalletClientObserver {
    public:
     // Called when an AcceptLegalDocuments request finishes successfully.
-    virtual void OnAcceptLegalDocuments() = 0;
+    virtual void OnDidAcceptLegalDocuments() = 0;
 
-    // Called when an EncryptOtp request finishes successfully.
-    virtual void OnEncryptOtp(const std::string& encrypted_otp,
-                              const std::string& session_material) = 0;
+    // Called when an EncryptOtp request finishes successfully. |encrypted_otp|
+    // and |session_material| must be used when calling GetFullWallet.
+    virtual void OnDidEncryptOtp(const std::string& encrypted_otp,
+                                 const std::string& session_material) = 0;
 
     // Called when an EscrowSensitiveInformation request finishes successfully.
     // |escrow_handle| must be used when saving a new instrument using
@@ -50,22 +51,24 @@ class WalletClient : public net::URLFetcherDelegate {
 
     // Called when a GetFullWallet request finishes successfully. Caller owns
     // the input pointer.
-    virtual void OnGetFullWallet(FullWallet* full_wallet) = 0;
+    virtual void OnDidGetFullWallet(FullWallet* full_wallet) = 0;
 
     // Called when a GetWalletItems request finishes successfully. Caller owns
     // the input pointer.
-    virtual void OnGetWalletItems(WalletItems* wallet_items) = 0;
+    virtual void OnDidGetWalletItems(WalletItems* wallet_items) = 0;
 
     // Called when a SendAutocheckoutStatus request finishes successfully.
-    virtual void OnSendAutocheckoutStatus() = 0;
+    virtual void OnDidSendAutocheckoutStatus() = 0;
 
     // TODO(ahutter): This is going to need more arguments, probably an error
     // code and a message for the user.
     // Called when a request fails due to an Online Wallet error.
     virtual void OnWalletError() = 0;
 
-    // Called when a request fails due to a network error or if the response was
-    // invalid.
+    // Called when a request fails due to a malformed response.
+    virtual void OnMalformedResponse() = 0;
+
+    // Called when a request fails due to a network error.
     virtual void OnNetworkError(int response_code) = 0;
 
    protected:
@@ -145,6 +148,7 @@ class WalletClient : public net::URLFetcherDelegate {
                          WalletClient::WalletClientObserver* observer,
                          const std::string& content_type);
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  void HandleMalformedResponse(net::URLFetcher* request);
 
   // The context for the request. Ensures the gdToken cookie is set as a header
   // in the requests to Online Wallet if it is present.

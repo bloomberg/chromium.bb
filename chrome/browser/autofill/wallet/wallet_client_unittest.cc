@@ -204,15 +204,16 @@ class MockWalletClientObserver
   MockWalletClientObserver() {}
   ~MockWalletClientObserver() {}
 
-  MOCK_METHOD0(OnAcceptLegalDocuments, void());
-  MOCK_METHOD2(OnEncryptOtp, void(const std::string& encrypted_otp,
+  MOCK_METHOD0(OnDidAcceptLegalDocuments, void());
+  MOCK_METHOD2(OnDidEncryptOtp, void(const std::string& encrypted_otp,
                                   const std::string& session_material));
   MOCK_METHOD1(OnDidEscrowSensitiveInformation,
                void(const std::string& escrow_handle));
-  MOCK_METHOD1(OnGetFullWallet, void(FullWallet* full_wallet));
-  MOCK_METHOD1(OnGetWalletItems, void(WalletItems* wallet_items));
-  MOCK_METHOD0(OnSendAutocheckoutStatus, void());
+  MOCK_METHOD1(OnDidGetFullWallet, void(FullWallet* full_wallet));
+  MOCK_METHOD1(OnDidGetWalletItems, void(WalletItems* wallet_items));
+  MOCK_METHOD0(OnDidSendAutocheckoutStatus, void());
   MOCK_METHOD0(OnWalletError, void());
+  MOCK_METHOD0(OnMalformedResponse, void());
   MOCK_METHOD1(OnNetworkError, void(int response_code));
 };
 
@@ -329,7 +330,7 @@ TEST_F(WalletClientTest, EscrowSensitiveInformationSuccess) {
 
 TEST_F(WalletClientTest, EscrowSensitiveInformationFailure) {
   MockWalletClientObserver observer;
-  EXPECT_CALL(observer, OnWalletError()).Times(1);
+  EXPECT_CALL(observer, OnMalformedResponse()).Times(1);
 
   net::TestURLFetcherFactory factory;
 
@@ -348,7 +349,7 @@ TEST_F(WalletClientTest, EscrowSensitiveInformationFailure) {
 
 TEST_F(WalletClientTest, GetFullWallet) {
   MockWalletClientObserver observer;
-  EXPECT_CALL(observer, OnGetFullWallet(testing::NotNull())).Times(1);
+  EXPECT_CALL(observer, OnDidGetFullWallet(testing::NotNull())).Times(1);
 
   net::TestURLFetcherFactory factory;
 
@@ -372,7 +373,7 @@ TEST_F(WalletClientTest, GetFullWallet) {
 
 TEST_F(WalletClientTest, AcceptLegalDocuments) {
   MockWalletClientObserver observer;
-  EXPECT_CALL(observer, OnAcceptLegalDocuments()).Times(1);
+  EXPECT_CALL(observer, OnDidAcceptLegalDocuments()).Times(1);
 
   net::TestURLFetcherFactory factory;
 
@@ -392,7 +393,7 @@ TEST_F(WalletClientTest, AcceptLegalDocuments) {
 
 TEST_F(WalletClientTest, GetWalletItems) {
   MockWalletClientObserver observer;
-  EXPECT_CALL(observer, OnGetWalletItems(testing::NotNull())).Times(1);
+  EXPECT_CALL(observer, OnDidGetWalletItems(testing::NotNull())).Times(1);
 
   net::TestURLFetcherFactory factory;
 
@@ -408,7 +409,7 @@ TEST_F(WalletClientTest, GetWalletItems) {
 
 TEST_F(WalletClientTest, SendAutocheckoutOfStatusSuccess) {
   MockWalletClientObserver observer;
-  EXPECT_CALL(observer, OnSendAutocheckoutStatus()).Times(1);
+  EXPECT_CALL(observer, OnDidSendAutocheckoutStatus()).Times(1);
 
   net::TestURLFetcherFactory factory;
 
@@ -427,7 +428,7 @@ TEST_F(WalletClientTest, SendAutocheckoutOfStatusSuccess) {
 
 TEST_F(WalletClientTest, SendAutocheckoutStatusOfFailure) {
   MockWalletClientObserver observer;
-  EXPECT_CALL(observer, OnSendAutocheckoutStatus()).Times(1);
+  EXPECT_CALL(observer, OnDidSendAutocheckoutStatus()).Times(1);
 
   net::TestURLFetcherFactory factory;
 
