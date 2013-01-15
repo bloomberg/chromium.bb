@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_AUTOFILL_DIALOG_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_AUTOFILL_DIALOG_VIEWS_H_
 
+#include <map>
+
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
+#include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -26,7 +29,9 @@ class FocusManager;
 class ImageButton;
 class Label;
 class MenuRunner;
+class TextButton;
 class Textfield;
+class WebView;
 }
 
 namespace ui {
@@ -44,7 +49,8 @@ class AutofillDialogViews : public AutofillDialogView,
                             public views::DialogDelegate,
                             public views::ButtonListener,
                             public views::TextfieldController,
-                            public views::FocusChangeListener {
+                            public views::FocusChangeListener,
+                            public views::LinkListener {
  public:
   explicit AutofillDialogViews(AutofillDialogController* controller);
   virtual ~AutofillDialogViews();
@@ -56,6 +62,8 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void GetUserInput(DialogSection section,
                             DetailOutputMap* output) OVERRIDE;
   virtual bool UseBillingForShipping() OVERRIDE;
+  virtual const content::NavigationController& ShowSignIn() OVERRIDE;
+  virtual void HideSignIn() OVERRIDE;
 
   // views::DialogDelegate implementation:
   virtual string16 GetWindowTitle() const OVERRIDE;
@@ -84,6 +92,9 @@ class AutofillDialogViews : public AutofillDialogView,
                                  views::View* focused_now) OVERRIDE;
   virtual void OnDidChangeFocus(views::View* focused_before,
                                 views::View* focused_now) OVERRIDE;
+
+  // views::LinkListener implementation:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
  private:
   // A class which holds a textfield and draws extra stuff on top, like credit
@@ -181,6 +192,12 @@ class AutofillDialogViews : public AutofillDialogView,
   // Creates and returns a view that holds the requesting host and intro text.
   views::View* CreateNotificationArea();
 
+  // Creates and returns a view that holds a sign in page and related controls.
+  views::View* CreateSignInContainer();
+
+  // Creates and returns a view that holds the main controls of this dialog.
+  views::View* CreateMainContainer();
+
   // Creates a detail section (Shipping, Email, etc.) with the given label,
   // inputs View, and suggestion model. Relevant pointers are stored in |group|.
   void CreateDetailsSection(DialogSection section);
@@ -234,6 +251,20 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // Runs the suggestion menu (triggered by each section's |suggested_button|.
   scoped_ptr<views::MenuRunner> menu_runner_;
+
+  // View to host the signin dialog and related controls.
+  views::View* sign_in_container_;
+
+  // TextButton displayed during sign-in. Clicking cancels sign-in and returns
+  // to the main flow.
+  views::TextButton* cancel_sign_in_;
+
+  // A WebView to that navigates to a Google sign-in page to allow the user to
+  // sign-in.
+  views::WebView* sign_in_webview_;
+
+  // View to host everything that isn't related to sign-in.
+  views::View* main_container_;
 
   // The focus manager for |window_|.
   views::FocusManager* focus_manager_;

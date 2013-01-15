@@ -7,6 +7,10 @@
 
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 
+namespace content {
+class NavigationController;
+}
+
 namespace autofill {
 
 // An interface for the dialog that appears when a site initiates an Autofill
@@ -29,6 +33,13 @@ class AutofillDialogView {
 
   // Returns the state of the "use billing address for shipping" checkbox.
   virtual bool UseBillingForShipping() = 0;
+
+  // Triggers dialog to sign in to Google.
+  // Returns a NotificationSource to be used to monitor for sign-in completion.
+  virtual const content::NavigationController& ShowSignIn() = 0;
+
+  // Closes out any signin UI and returns to normal operation.
+  virtual void HideSignIn() = 0;
 
   // Factory function to create the dialog (implemented once per view
   // implementation). |controller| will own the created dialog.

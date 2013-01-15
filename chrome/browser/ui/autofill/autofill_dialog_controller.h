@@ -18,6 +18,8 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_popup_delegate.h"
 #include "content/public/browser/keyboard_listener.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/common/ssl_status.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -43,6 +45,7 @@ class AutofillDialogView;
 // This class drives the dialog that appears when a site uses the imperative
 // autocomplete API to fill out a form.
 class AutofillDialogController : public AutofillPopupDelegate,
+                                 public content::NotificationObserver,
                                  public SuggestionsMenuModelDelegate,
                                  public content::KeyboardListener {
  public:
@@ -65,6 +68,8 @@ class AutofillDialogController : public AutofillPopupDelegate,
 
   string16 LabelForSection(DialogSection section) const;
   string16 UseBillingForShippingText() const;
+  string16 SignInText() const;
+  string16 CancelSignInText() const;
   // Returns the set of inputs the page has requested which fall under
   // |section|.
   const DetailInputs& RequestedFieldsForSection(DialogSection section) const;
@@ -75,6 +80,12 @@ class AutofillDialogController : public AutofillPopupDelegate,
   ui::MenuModel* MenuModelForSection(DialogSection section);
   string16 SuggestionTextForSection(DialogSection section);
   bool InputIsValid(const DetailInput* input, const string16& value);
+
+  // Begins the flow to sign into Wallet.
+  void StartSignInFlow();
+
+  // Marks the signin flow into Wallet complete.
+  void EndSignInFlow();
 
   // Called by the view when the user changes the contents of a text field.
   void UserEditedInput(const DetailInput* input,
@@ -107,6 +118,11 @@ class AutofillDialogController : public AutofillPopupDelegate,
   virtual void ClearPreviewedForm() OVERRIDE;
   virtual void ControllerDestroyed() OVERRIDE;
 
+  // content::NotificationObserver implementation:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   // SuggestionsMenuModelDelegate implementation.
   virtual void SuggestionItemSelected(const SuggestionsMenuModel& model)
       OVERRIDE;
@@ -117,6 +133,8 @@ class AutofillDialogController : public AutofillPopupDelegate,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
 
   content::WebContents* web_contents() { return contents_; }
+
+  Profile* profile() { return profile_; }
 
  private:
   // Determines whether |input| and |field| match.
@@ -223,6 +241,9 @@ class AutofillDialogController : public AutofillPopupDelegate,
   DialogSection section_showing_popup_;
 
   scoped_ptr<AutofillDialogView> view_;
+
+  // A NotificationRegistrar for tracking the completion of sign-in.
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogController);
 };

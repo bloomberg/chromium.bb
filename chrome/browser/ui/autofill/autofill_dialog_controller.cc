@@ -15,11 +15,15 @@
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/autofill/wallet/wallet_service_url.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/common/form_data.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -269,6 +273,16 @@ string16 AutofillDialogController::ConfirmButtonText() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SUBMIT_BUTTON);
 }
 
+string16 AutofillDialogController::SignInText() const {
+  // TODO(abodenha): real strings and l10n.
+  return string16(ASCIIToUTF16("Sign in to use Google Wallet"));
+}
+
+string16 AutofillDialogController::CancelSignInText() const {
+  // TODO(abodenha): real strings and l10n.
+  return string16(ASCIIToUTF16("Don't sign in."));
+}
+
 bool AutofillDialogController::ConfirmButtonEnabled() const {
   // TODO(estade): implement.
   return true;
@@ -383,6 +397,31 @@ void AutofillDialogController::ViewClosed(DialogAction action) {
   }
 
   delete this;
+}
+
+void AutofillDialogController::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(type, content::NOTIFICATION_NAV_ENTRY_COMMITTED);
+  content::LoadCommittedDetails* load_details =
+      content::Details<content::LoadCommittedDetails>(details).ptr();
+  if (wallet::IsSignInContinueUrl(load_details->entry->GetVirtualURL()))
+    EndSignInFlow();
+}
+
+void AutofillDialogController::StartSignInFlow() {
+  DCHECK(registrar_.IsEmpty());
+
+  content::Source<content::NavigationController> source(
+      &view_->ShowSignIn());
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
+}
+
+void AutofillDialogController::EndSignInFlow() {
+  DCHECK(!registrar_.IsEmpty());
+  registrar_.RemoveAll();
+  view_->HideSignIn();
 }
 
 void AutofillDialogController::UserEditedInput(

@@ -8,6 +8,8 @@
 
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/url_util.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -76,6 +78,29 @@ GURL GetEncryptionUrl() {
 
 GURL GetEscrowUrl() {
   return GetBaseSecureUrl().Resolve("dehEfe?s7e=cardNumber%3Bcvv");
+}
+
+GURL GetSignInUrl() {
+  GURL url(GaiaUrls::GetInstance()->service_login_url());
+  url = chrome_common_net::AppendQueryParameter(url, "service", "sierra");
+  url = chrome_common_net::AppendQueryParameter(url, "btmpl", "popup");
+  url = chrome_common_net::AppendQueryParameter(
+      url,
+      "continue",
+      GetSignInContinueUrl().spec());
+  return url;
+}
+
+// The continue url portion of the sign-in URL.
+GURL GetSignInContinueUrl() {
+  return GetPassiveAuthUrl();
+}
+
+bool IsSignInContinueUrl(const GURL& url) {
+  GURL final_url = wallet::GetSignInContinueUrl();
+  return url.SchemeIsSecure() &&
+         url.host() == final_url.host() &&
+         url.path() == final_url.path();
 }
 
 }  // namespace wallet

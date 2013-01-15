@@ -7,9 +7,13 @@
 #include <utility>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autofill/wallet/wallet_service_url.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -20,10 +24,12 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -213,6 +219,10 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
       contents_(NULL),
       notification_label_(NULL),
       use_billing_for_shipping_(NULL),
+      sign_in_container_(NULL),
+      cancel_sign_in_(NULL),
+      sign_in_webview_(NULL),
+      main_container_(NULL),
       focus_manager_(NULL) {
   DCHECK(controller);
   detail_groups_.insert(std::make_pair(SECTION_EMAIL,
@@ -271,6 +281,27 @@ bool AutofillDialogViews::UseBillingForShipping() {
   return use_billing_for_shipping_->checked();
 }
 
+const content::NavigationController& AutofillDialogViews::ShowSignIn() {
+  // TODO(abodenha) Also hide Submit and Cancel buttons.
+  // See http://crbug.com/165193
+  // TODO(abodenha) We should be able to use the WebContents of the WebView
+  // to navigate instead of LoadInitialURL.  Figure out why it doesn't work.
+
+  sign_in_webview_->LoadInitialURL(wallet::GetSignInUrl());
+  // TODO(abodenha) Resize the dialog to avoid the need for a scroll bar on
+  // sign in. See http://crbug.com/169286
+  sign_in_webview_->SetPreferredSize(contents_->GetPreferredSize());
+  main_container_->SetVisible(false);
+  sign_in_container_->SetVisible(true);
+  contents_->Layout();
+  return sign_in_webview_->web_contents()->GetController();
+}
+
+void AutofillDialogViews::HideSignIn() {
+  sign_in_container_->SetVisible(false);
+  main_container_->SetVisible(true);
+}
+
 string16 AutofillDialogViews::GetWindowTitle() const {
   return controller_->DialogTitle();
 }
@@ -324,6 +355,8 @@ void AutofillDialogViews::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
   if (sender == use_billing_for_shipping_) {
     UpdateDetailsGroupState(*GroupForSection(SECTION_SHIPPING));
+  } else  if (sender == cancel_sign_in_) {
+    controller_->EndSignInFlow();
   } else {
     // TODO(estade): Should the menu be shown on mouse down?
     DetailsGroup* group = NULL;
@@ -408,10 +441,35 @@ void AutofillDialogViews::OnDidChangeFocus(
     views::View* focused_before,
     views::View* focused_now) {}
 
+void AutofillDialogViews::LinkClicked(views::Link* source, int event_flags) {
+  controller_->StartSignInFlow();
+}
+
 void AutofillDialogViews::InitChildViews() {
   contents_ = new views::View();
-  views::GridLayout* layout = new views::GridLayout(contents_);
-  contents_->SetLayoutManager(layout);
+  contents_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+  contents_->AddChildView(CreateMainContainer());
+  contents_->AddChildView(CreateSignInContainer());
+}
+
+views::View* AutofillDialogViews::CreateSignInContainer() {
+  sign_in_container_ = new views::View();
+  sign_in_container_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  sign_in_container_->SetVisible(false);
+  sign_in_webview_ = new views::WebView(controller_->profile());
+  cancel_sign_in_ = new views::TextButton(this,
+                                          controller_->CancelSignInText());
+  sign_in_container_->AddChildView(cancel_sign_in_);
+  sign_in_container_->AddChildView(sign_in_webview_);
+  return sign_in_container_;
+}
+
+views::View* AutofillDialogViews::CreateMainContainer() {
+  main_container_ = new views::View();
+  views::GridLayout* layout = new views::GridLayout(main_container_);
+  main_container_->SetLayoutManager(layout);
 
   const int single_column_set = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_set);
@@ -423,11 +481,20 @@ void AutofillDialogViews::InitChildViews() {
                         0);
 
   layout->StartRow(0, single_column_set);
+  // TODO(abodenha) Create a chooser control to allow account selection.
+  // See http://crbug.com/169858
+  views::Link* signin = new views::Link(controller_->SignInText());
+  signin->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+  signin->set_listener(this);
+  layout->AddView(signin);
+
+  layout->StartRow(0, single_column_set);
   layout->AddView(CreateNotificationArea());
 
   layout->StartRowWithPadding(0, single_column_set,
                               0, views::kUnrelatedControlVerticalSpacing);
   layout->AddView(CreateDetailsContainer());
+  return main_container_;
 }
 
 views::View* AutofillDialogViews::CreateNotificationArea() {
