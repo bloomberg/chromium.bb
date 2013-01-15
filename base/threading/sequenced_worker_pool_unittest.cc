@@ -382,7 +382,8 @@ TEST_F(SequencedWorkerPoolTest, Sequence) {
 }
 
 // Tests that any tasks posted after Shutdown are ignored.
-TEST_F(SequencedWorkerPoolTest, IgnoresAfterShutdown) {
+// Disabled for flakiness.  See http://crbug.com/166451.
+TEST_F(SequencedWorkerPoolTest, DISABLED_IgnoresAfterShutdown) {
   // Start tasks to take all the threads and block them.
   EnsureAllWorkersCreated();
   ThreadBlocker blocker;
