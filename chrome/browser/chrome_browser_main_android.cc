@@ -6,6 +6,7 @@
 
 #include "base/path_service.h"
 #include "chrome/app/breakpad_linux.h"
+#include "chrome/common/env_vars.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/common/main_function_params.h"
 #include "net/android/network_change_notifier_factory_android.h"
