@@ -69,7 +69,7 @@ class ConfigWatcher {
     callback_.Run(!error);
   }
 
-  base::files::FilePathWatcher watcher_;
+  base::FilePathWatcher watcher_;
   CallbackType callback_;
 };
 #endif
@@ -136,7 +136,7 @@ class DnsConfigServicePosix::Watcher {
 
   DnsConfigServicePosix* service_;
   ConfigWatcher config_watcher_;
-  base::files::FilePathWatcher hosts_watcher_;
+  base::FilePathWatcher hosts_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(Watcher);
 };

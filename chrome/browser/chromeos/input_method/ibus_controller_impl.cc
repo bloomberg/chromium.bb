@@ -243,7 +243,7 @@ class IBusAddressWatcher {
 
     if (instance->IsWatching())
       instance->StopNow();
-    instance->watcher_ = new base::files::FilePathWatcher;
+    instance->watcher_ = new base::FilePathWatcher;
 
     // The |callback| is owned by watcher.
     scoped_refptr<FileWatcherCallback> callback(
@@ -281,7 +281,7 @@ class IBusAddressWatcher {
   // Singleton
   IBusAddressWatcher()
       :  watcher_(NULL) {}
-  base::files::FilePathWatcher* watcher_;
+  base::FilePathWatcher* watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(IBusAddressWatcher);
 };

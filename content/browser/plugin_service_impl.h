@@ -201,7 +201,7 @@ class CONTENT_EXPORT PluginServiceImpl
 
 #if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)
   // Registers a new FilePathWatcher for a given path.
-  static void RegisterFilePathWatcher(base::files::FilePathWatcher* watcher,
+  static void RegisterFilePathWatcher(base::FilePathWatcher* watcher,
                                       const FilePath& path);
 #endif
 
@@ -219,7 +219,7 @@ class CONTENT_EXPORT PluginServiceImpl
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)
-  ScopedVector<base::files::FilePathWatcher> file_watchers_;
+  ScopedVector<base::FilePathWatcher> file_watchers_;
 #endif
 
   std::vector<PepperPluginInfo> ppapi_plugins_;

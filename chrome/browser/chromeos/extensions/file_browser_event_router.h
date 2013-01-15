@@ -113,10 +113,10 @@ class FileBrowserEventRouter
     const FilePath& GetVirtualPath() const;
 
     bool Watch(const FilePath& path,
-               const base::files::FilePathWatcher::Callback& callback);
+               const base::FilePathWatcher::Callback& callback);
 
    private:
-    linked_ptr<base::files::FilePathWatcher> file_watcher_;
+    linked_ptr<base::FilePathWatcher> file_watcher_;
     FilePath local_path_;
     FilePath virtual_path_;
     ExtensionUsageRegistry extensions_;
@@ -182,7 +182,7 @@ class FileBrowserEventRouter
   void HandleRemoteUpdateRequestOnUIThread(bool start);
 
   base::WeakPtrFactory<FileBrowserEventRouter> weak_factory_;
-  base::files::FilePathWatcher::Callback file_watcher_callback_;
+  base::FilePathWatcher::Callback file_watcher_callback_;
   WatcherMap file_watchers_;
   scoped_ptr<FileBrowserNotifications> notifications_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;

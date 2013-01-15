@@ -31,7 +31,6 @@
 #include "base/threading/thread.h"
 
 namespace base {
-namespace files {
 
 namespace {
 
@@ -485,5 +484,4 @@ FilePathWatcher::FilePathWatcher() {
   impl_ = new FilePathWatcherImpl();
 }
 
-}  // namespace files
 }  // namespace base

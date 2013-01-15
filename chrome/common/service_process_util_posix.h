@@ -70,7 +70,7 @@ struct ServiceProcessState::StateData
   bool WatchExecutable();
 
   base::mac::ScopedCFTypeRef<CFDictionaryRef> launchd_conf_;
-  base::files::FilePathWatcher executable_watcher_;
+  base::FilePathWatcher executable_watcher_;
 #endif  // OS_MACOSX
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   scoped_ptr<MultiProcessLock> initializing_lock_;

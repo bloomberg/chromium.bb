@@ -13,7 +13,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 
-using ::base::files::FilePathWatcher;
+using ::base::FilePathWatcher;
 using content::BrowserThread;
 using content::WebContents;
 

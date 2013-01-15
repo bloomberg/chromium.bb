@@ -58,7 +58,7 @@ class ConfigFileWatcherImpl
   scoped_ptr<base::DelayTimer<ConfigFileWatcherImpl> > config_updated_timer_;
 
   // Monitors the host configuration file.
-  scoped_ptr<base::files::FilePathWatcher> config_watcher_;
+  scoped_ptr<base::FilePathWatcher> config_watcher_;
 
   base::WeakPtrFactory<ConfigFileWatcher::Delegate> delegate_weak_factory_;
   base::WeakPtr<ConfigFileWatcher::Delegate> delegate_;
@@ -119,7 +119,7 @@ void ConfigFileWatcherImpl::Watch(const FilePath& config_path) {
       &ConfigFileWatcherImpl::ReloadConfig));
 
   // Start watching the configuration file.
-  config_watcher_.reset(new base::files::FilePathWatcher());
+  config_watcher_.reset(new base::FilePathWatcher());
   config_path_ = config_path;
   if (!config_watcher_->Watch(
           config_path_, false,

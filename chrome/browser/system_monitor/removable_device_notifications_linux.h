@@ -119,7 +119,7 @@ class RemovableDeviceNotificationsLinux
   const FilePath mtab_path_;
 
   // Watcher for |mtab_path_|.
-  base::files::FilePathWatcher file_watcher_;
+  base::FilePathWatcher file_watcher_;
 
   // Set of known file systems that we care about.
   std::set<std::string> known_file_systems_;

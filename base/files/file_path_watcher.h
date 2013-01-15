@@ -15,7 +15,6 @@
 #include "base/message_loop_proxy.h"
 
 namespace base {
-namespace files {
 
 // This class lets you register interest in changes on a FilePath.
 // The delegate will get called whenever the file or directory referenced by the
@@ -106,7 +105,6 @@ class BASE_EXPORT FilePathWatcher {
   DISALLOW_COPY_AND_ASSIGN(FilePathWatcher);
 };
 
-}  // namespace files
 }  // namespace base
 
 #endif  // BASE_FILES_FILE_PATH_WATCHER_H_

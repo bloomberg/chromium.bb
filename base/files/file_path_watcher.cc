@@ -11,7 +11,6 @@
 #include "base/message_loop.h"
 
 namespace base {
-namespace files {
 
 FilePathWatcher::~FilePathWatcher() {
   impl_->Cancel();
@@ -37,5 +36,4 @@ bool FilePathWatcher::Watch(const FilePath& path,
   return impl_->Watch(path, recursive, callback);
 }
 
-}  // namespace files
 }  // namespace base

@@ -53,7 +53,7 @@ class UserStyleSheetWatcher
   scoped_refptr<UserStyleSheetLoader> loader_;
 
   // Watches for changes to the css file so we can reload the style sheet.
-  scoped_ptr<base::files::FilePathWatcher> file_watcher_;
+  scoped_ptr<base::FilePathWatcher> file_watcher_;
 
   content::NotificationRegistrar registrar_;
 

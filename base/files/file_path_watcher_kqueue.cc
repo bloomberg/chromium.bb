@@ -26,7 +26,6 @@
 #endif
 
 namespace base {
-namespace files {
 
 namespace {
 
@@ -509,5 +508,4 @@ FilePathWatcher::FilePathWatcher() {
   impl_ = new FilePathWatcherImpl();
 }
 
-}  // namespace files
 }  // namespace base

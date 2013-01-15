@@ -36,7 +36,7 @@ ConfigDirPolicyLoader::ConfigDirPolicyLoader(const FilePath& config_dir,
 ConfigDirPolicyLoader::~ConfigDirPolicyLoader() {}
 
 void ConfigDirPolicyLoader::InitOnFile() {
-  base::files::FilePathWatcher::Callback callback =
+  base::FilePathWatcher::Callback callback =
       base::Bind(&ConfigDirPolicyLoader::OnFileUpdated, base::Unretained(this));
   mandatory_watcher_.Watch(config_dir_.Append(kMandatoryConfigDir), false,
                            callback);

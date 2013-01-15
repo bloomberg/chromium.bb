@@ -14,7 +14,6 @@
 #include "base/win/object_watcher.h"
 
 namespace base {
-namespace files {
 
 namespace {
 
@@ -290,5 +289,4 @@ FilePathWatcher::FilePathWatcher() {
   impl_ = new FilePathWatcherImpl();
 }
 
-}  // namespace files
 }  // namespace base

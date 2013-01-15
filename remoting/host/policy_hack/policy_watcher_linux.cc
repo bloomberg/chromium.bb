@@ -64,7 +64,7 @@ class PolicyWatcherLinux : public PolicyWatcher {
  protected:
   virtual void StartWatchingInternal() OVERRIDE {
     DCHECK(OnPolicyWatcherThread());
-    watcher_.reset(new base::files::FilePathWatcher());
+    watcher_.reset(new base::FilePathWatcher());
 
     if (!config_dir_.empty() &&
         !watcher_->Watch(
@@ -228,7 +228,7 @@ class PolicyWatcherLinux : public PolicyWatcher {
   // decoupling makes it possible to destroy the watcher before the loader's
   // destructor is called (e.g. during Stop), since |watcher_| internally holds
   // a reference to the loader and keeps it alive.
-  scoped_ptr<base::files::FilePathWatcher> watcher_;
+  scoped_ptr<base::FilePathWatcher> watcher_;
 
   // Records last known modification timestamp of |config_dir_|.
   base::Time last_modification_file_;

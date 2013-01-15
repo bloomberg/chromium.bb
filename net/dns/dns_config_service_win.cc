@@ -560,7 +560,7 @@ class DnsConfigServiceWin::Watcher
   RegistryWatcher tcpip6_watcher_;
   RegistryWatcher dnscache_watcher_;
   RegistryWatcher policy_watcher_;
-  base::files::FilePathWatcher hosts_watcher_;
+  base::FilePathWatcher hosts_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(Watcher);
 };

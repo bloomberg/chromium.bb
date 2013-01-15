@@ -53,8 +53,8 @@ class ConfigDirPolicyLoader : public AsyncPolicyLoader {
 
   // Watchers for events on the mandatory and recommended subdirectories of
   // |config_dir_|.
-  base::files::FilePathWatcher mandatory_watcher_;
-  base::files::FilePathWatcher recommended_watcher_;
+  base::FilePathWatcher mandatory_watcher_;
+  base::FilePathWatcher recommended_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfigDirPolicyLoader);
 };

@@ -42,7 +42,7 @@
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_OPENBSD) && !defined(OS_ANDROID)
-using ::base::files::FilePathWatcher;
+using ::base::FilePathWatcher;
 #endif
 
 namespace content {

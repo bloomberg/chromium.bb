@@ -31,7 +31,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
-namespace files {
 
 namespace {
 
@@ -912,5 +911,4 @@ TEST_F(FilePathWatcherTest, DirAttributesChanged) {
 #endif  // OS_MACOSX
 }  // namespace
 
-}  // namespace files
 }  // namespace base

@@ -92,7 +92,7 @@ const char* MountErrorToString(chromeos::MountError error) {
 }
 
 void RelayFileWatcherCallbackToUIThread(
-    const base::files::FilePathWatcher::Callback& callback,
+    const base::FilePathWatcher::Callback& callback,
     const FilePath& local_path,
     bool got_error) {
   BrowserThread::PostTask(
@@ -778,7 +778,7 @@ FileBrowserEventRouter::FileWatcherExtensions::FileWatcherExtensions(
     : ref_count_(0),
       is_remote_file_system_(is_remote_file_system) {
   if (!is_remote_file_system_)
-    file_watcher_.reset(new base::files::FilePathWatcher());
+    file_watcher_.reset(new base::FilePathWatcher());
 
   virtual_path_ = path;
   AddExtension(extension_id);
@@ -844,7 +844,7 @@ FileBrowserEventRouter::GetRemoteFileSystem() const {
 
 bool FileBrowserEventRouter::FileWatcherExtensions::Watch(
     const FilePath& path,
-    const base::files::FilePathWatcher::Callback& callback) {
+    const base::FilePathWatcher::Callback& callback) {
   if (is_remote_file_system_)
     return true;
 

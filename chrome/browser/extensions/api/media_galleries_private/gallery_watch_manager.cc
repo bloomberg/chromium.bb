@@ -114,7 +114,7 @@ class GalleryWatchManager::GalleryFilePathWatcher
   chrome::MediaGalleryPrefId gallery_id_;
 
   // The gallery file path watcher.
-  base::files::FilePathWatcher file_watcher_;
+  base::FilePathWatcher file_watcher_;
 
   // The gallery file path, e.g "C:\My Pictures".
   FilePath gallery_path_;

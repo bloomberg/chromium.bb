@@ -30,7 +30,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/mac/launchd.h"
 
-using ::base::files::FilePathWatcher;
+using ::base::FilePathWatcher;
 
 namespace {
 
