@@ -66,7 +66,9 @@ scoped_ptr<Permissions> PackPermissionSet(const PermissionSet* set) {
 }
 
 scoped_refptr<PermissionSet> UnpackPermissionSet(
-    const Permissions& permissions, std::string* error) {
+    const Permissions& permissions,
+    bool allow_file_access,
+    std::string* error) {
   APIPermissionSet apis;
   std::vector<std::string>* permissions_list = permissions.permissions.get();
   if (permissions_list) {
@@ -129,7 +131,10 @@ scoped_refptr<PermissionSet> UnpackPermissionSet(
   if (permissions.origins.get()) {
     for (std::vector<std::string>::iterator it = permissions.origins->begin();
         it != permissions.origins->end(); ++it) {
-      URLPattern origin(Extension::kValidHostPermissionSchemes);
+      int allowed_schemes = Extension::kValidHostPermissionSchemes;
+      if (!allow_file_access)
+        allowed_schemes &= ~URLPattern::SCHEME_FILE;
+      URLPattern origin(allowed_schemes);
       URLPattern::ParseResult parse_result = origin.Parse(*it);
       if (URLPattern::PARSE_SUCCESS != parse_result) {
         *error = ErrorUtils::FormatErrorMessage(

@@ -89,6 +89,9 @@ class ExtensionSystem : public ProfileKeyedService {
   // The rules store is created at startup.
   virtual StateStore* rules_store() = 0;
 
+  // The extension prefs.
+  virtual ExtensionPrefs* extension_prefs() = 0;
+
   // The ShellWindowGeometryCache is created at startup.
   virtual ShellWindowGeometryCache* shell_window_geometry_cache() = 0;
 
@@ -164,6 +167,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual AlarmManager* alarm_manager() OVERRIDE;
   virtual StateStore* state_store() OVERRIDE;  // shared
   virtual StateStore* rules_store() OVERRIDE;  // shared
+  virtual ExtensionPrefs* extension_prefs() OVERRIDE;  // shared
   virtual ShellWindowGeometryCache* shell_window_geometry_cache()
       OVERRIDE;  // shared
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue()
@@ -209,6 +213,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
     StateStore* state_store();
     StateStore* rules_store();
+    ExtensionPrefs* extension_prefs();
     ShellWindowGeometryCache* shell_window_geometry_cache();
     ExtensionService* extension_service();
     ManagementPolicy* management_policy();

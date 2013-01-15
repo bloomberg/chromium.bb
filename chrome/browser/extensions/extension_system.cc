@@ -244,6 +244,10 @@ StateStore* ExtensionSystemImpl::Shared::rules_store() {
   return rules_store_.get();
 }
 
+ExtensionPrefs* ExtensionSystemImpl::Shared::extension_prefs() {
+  return extension_prefs_.get();
+}
+
 ShellWindowGeometryCache* ExtensionSystemImpl::Shared::
     shell_window_geometry_cache() {
   return shell_window_geometry_cache_.get();
@@ -373,6 +377,10 @@ StateStore* ExtensionSystemImpl::state_store() {
 
 StateStore* ExtensionSystemImpl::rules_store() {
   return shared_->rules_store();
+}
+
+ExtensionPrefs* ExtensionSystemImpl::extension_prefs() {
+  return shared_->extension_prefs();
 }
 
 ShellWindowGeometryCache* ExtensionSystemImpl::shell_window_geometry_cache() {

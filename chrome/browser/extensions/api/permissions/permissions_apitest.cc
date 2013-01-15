@@ -129,3 +129,29 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsGesture) {
   ASSERT_TRUE(StartTestServer());
   EXPECT_TRUE(RunExtensionTest("permissions/optional_gesture")) << message_;
 }
+
+// Tests that an extension can't gain access to file: URLs without the checkbox
+// entry in prefs. There shouldn't be a warning either.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsFileAccess) {
+  // There shouldn't be a warning, so we shouldn't need to autoconfirm.
+  PermissionsRequestFunction::SetAutoConfirmForTests(false);
+  PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
+
+  extensions::ExtensionPrefs* prefs =
+      browser()->profile()->GetExtensionService()->extension_prefs();
+
+  EXPECT_TRUE(
+      RunExtensionTestNoFileAccess("permissions/file_access_no")) << message_;
+  EXPECT_FALSE(prefs->AllowFileAccess("dgloelfbnddbdacakahpogklfdcccbib"));
+
+  EXPECT_TRUE(RunExtensionTest("permissions/file_access_yes")) << message_;
+  // TODO(kalman): ugh, it would be nice to test this condition, but it seems
+  // like there's somehow a race here where the prefs aren't updated in time
+  // with the "allow file access" bit, so we'll just have to trust that
+  // RunExtensionTest (unlike RunExtensionTestNoFileAccess) does indeed
+  // not set the allow file access bit. Otherwise this test doesn't mean
+  // a whole lot (i.e. file access works - but it'd better not be the case
+  // that the extension actually has file access, since that'd be the bug
+  // that this is supposed to be testing).
+  //EXPECT_TRUE(prefs->AllowFileAccess("hlonmbgfjccgolnaboonlakjckinmhmd"));
+}
