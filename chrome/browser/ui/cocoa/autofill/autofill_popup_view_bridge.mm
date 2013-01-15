@@ -33,6 +33,10 @@ AutofillPopupViewBridge::~AutofillPopupViewBridge() {
   [view_ controllerDestroyed];
   controller_->ViewDestroyed();
 
+  // Remove the child window before closing, otherwise it can mess up
+  // display ordering.
+  [[window_ parentWindow] removeChildWindow:window_];
+
   [window_ close];
 }
 
