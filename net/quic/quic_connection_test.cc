@@ -444,6 +444,24 @@ TEST_F(QuicConnectionTest, RejectPacketTooFarOut) {
   EXPECT_EQ(0u, last_ack()->received_info.largest_received);
 }
 
+TEST_F(QuicConnectionTest, TruncatedAck) {
+  EXPECT_CALL(visitor_, OnAck(_)).Times(testing::AnyNumber());
+  for (int i = 0; i < 200; ++i) {
+    SendStreamDataToPeer(1, "foo", i * 3, false, NULL);
+  }
+
+  QuicAckFrame frame(0, 1);
+  frame.received_info.RecordReceived(193);
+  ProcessAckPacket(&frame, true);
+
+  EXPECT_TRUE(QuicConnectionPeer::GetReceivedTruncatedAck(&connection_));
+
+  frame.received_info.missing_packets.erase(192);
+
+  ProcessAckPacket(&frame, true);
+  EXPECT_FALSE(QuicConnectionPeer::GetReceivedTruncatedAck(&connection_));
+}
+
 TEST_F(QuicConnectionTest, LeastUnackedLower) {
   SendStreamDataToPeer(1, "foo", 0, false, NULL);
   SendStreamDataToPeer(1, "bar", 3, false, NULL);

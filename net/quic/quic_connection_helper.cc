@@ -19,6 +19,9 @@ namespace net {
 // 10 is arbitrary.
 const size_t kMaxPacketsPerResendAlarm = 10;
 
+// The time to wait if an RTO alarm fires but is ignored due to truncated acks.
+const int kExtraRTODelayUs = 500 * 1000;
+
 QuicConnectionHelper::QuicConnectionHelper(base::TaskRunner* task_runner,
                                            const QuicClock* clock,
                                            QuicRandom* random_generator,
@@ -131,8 +134,8 @@ void QuicConnectionHelper::GetPeerAddress(IPEndPoint* peer_address) {
 void QuicConnectionHelper::OnResendAlarm() {
   // This guards against registering the alarm later than we should.
   //
-  // If we have packet A and B in the list and we call MaybeResendPacket on
-  // A, that may trigger a call to SetResendAlarm if A is resent as C.  In
+  // If we have packet A and B in the list and we call MaybeResendPacketForRTO
+  // on A, that may trigger a call to SetResendAlarm if A is resent as C.  In
   // that case we don't want to register the alarm under SetResendAlarm; we
   // want to set it to the RTO of B at the end of this method.
   resend_alarm_registered_ = false;
@@ -144,7 +147,12 @@ void QuicConnectionHelper::OnResendAlarm() {
       break;
     }
     QuicPacketSequenceNumber sequence_number = resend_times_.begin()->first;
-    connection_->MaybeResendPacket(sequence_number);
+    if (!connection_->MaybeResendPacketForRTO(sequence_number)) {
+      DLOG(INFO) << "MaybeResendPacketForRTO failed: adding an extra delay.";
+      SetResendAlarm(sequence_number,
+                     QuicTime::Delta::FromMicroseconds(kExtraRTODelayUs));
+      break;
+    }
     resend_times_.erase(sequence_number);
   }
 

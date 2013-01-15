@@ -84,7 +84,8 @@ QuicConnection::QuicConnection(QuicGuid guid,
       collector_(new QuicReceiptMetricsCollector(clock_, kTCP)),
       scheduler_(new QuicSendScheduler(clock_, kTCP)),
       packets_resent_since_last_ack_(0),
-      connected_(true) {
+      connected_(true),
+      received_truncated_ack_(false) {
   options()->max_num_packets = kMaxPacketsToSerializeAtOnce;
   helper_->SetConnection(this);
   helper_->SetTimeoutAlarm(timeout_);
@@ -176,6 +177,9 @@ void QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
     SendConnectionClose(QUIC_INVALID_ACK_DATA);
     return;
   }
+
+  received_truncated_ack_ =
+      incoming_ack.received_info.missing_packets.size() >= kMaxUnackedPackets;
 
   UpdatePacketInformationReceivedByPeer(incoming_ack);
   UpdatePacketInformationSentByPeer(incoming_ack);
@@ -368,7 +372,7 @@ void QuicConnection::OnPacketComplete() {
   if (!last_packet_revived_) {
     DLOG(INFO) << "Got packet " << last_header_.packet_sequence_number
                << " with " << last_stream_frames_.size()
-               << " frames for " << last_header_.guid;
+               << " stream frames for " << last_header_.guid;
     collector_->RecordIncomingPacket(last_size_,
                                      last_header_.packet_sequence_number,
                                      clock_->Now(),
@@ -530,6 +534,20 @@ void QuicConnection::AckPacket(const QuicPacketHeader& header) {
   // TODO(alyssar) delay sending until we have data, or enough time has elapsed.
   if (last_stream_frames_.size() > 0) {
     SendAck();
+  }
+}
+
+bool QuicConnection::MaybeResendPacketForRTO(
+    QuicPacketSequenceNumber sequence_number) {
+  // If the packet hasn't been acked and we're getting truncated acks, ignore
+  // the RTO; it may have been received by the peer and just wasn't acked
+  // due to the ack frame running out of space.
+  if (received_truncated_ack_ &&
+      ContainsKey(unacked_packets_, sequence_number)) {
+    return false;
+  } else {
+    MaybeResendPacket(sequence_number);
+    return true;
   }
 }
 

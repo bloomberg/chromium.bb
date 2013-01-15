@@ -39,5 +39,9 @@ QuicConnectionVisitorInterface* QuicConnectionPeer::GetVisitor(
   return connection->visitor_;
 }
 
+bool QuicConnectionPeer::GetReceivedTruncatedAck(QuicConnection* connection) {
+    return connection->received_truncated_ack_;
+}
+
 }  // namespace test
 }  // namespace net

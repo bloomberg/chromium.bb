@@ -95,8 +95,8 @@ class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
 
   // Sets up an alarm to resend the packet with the given sequence number if we
   // haven't gotten an ack in the expected time frame.  Implementations must
-  // invoke MaybeResendPacket when the alarm fires.  Implementations must also
-  // handle the case where |this| is deleted before the alarm fires.
+  // invoke MaybeResendPacketForRTO when the alarm fires.  Implementations must
+  // also handle the case where |this| is deleted before the alarm fires.
   virtual void SetResendAlarm(QuicPacketSequenceNumber sequence_number,
                               QuicTime::Delta delay) = 0;
 
@@ -188,9 +188,13 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   // sends an ack if new data frames have been received.
   void AckPacket(const QuicPacketHeader& header);
 
-  // Called by a ResendAlarm when the timer goes off.  If the packet has been
-  // acked it's a no op, otherwise the packet is resent and another alarm is
-  // scheduled.
+  // Called by a ResendAlarm when the timer goes off.  If the peer appears to be
+  // sending truncated acks, this returns false to indicate failure, otherwise
+  // it calls MaybeResendPacket and returns true.
+  bool MaybeResendPacketForRTO(QuicPacketSequenceNumber sequence_number);
+
+  // Called to resend a packet, in the case a packet was sufficiently nacked by
+  // the peer, or not acked within the time out window.
   void MaybeResendPacket(QuicPacketSequenceNumber sequence_number);
 
   QuicPacketCreator::Options* options() { return packet_creator_.options(); }
@@ -371,6 +375,10 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   // True by default.  False if we've received or sent an explicit connection
   // close.
   bool connected_;
+
+  // True if the last ack received from the peer may have been truncated.  False
+  // otherwise.
+  bool received_truncated_ack_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };

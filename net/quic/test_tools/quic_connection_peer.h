@@ -33,6 +33,8 @@ class QuicConnectionPeer {
   static QuicConnectionVisitorInterface* GetVisitor(
       QuicConnection* connection);
 
+  static bool GetReceivedTruncatedAck(QuicConnection* connection);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionPeer);
 };
