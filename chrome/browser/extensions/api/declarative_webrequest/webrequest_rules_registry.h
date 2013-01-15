@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/time.h"
@@ -68,7 +69,7 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
 
   // TODO(battre): This will become an implementation detail, because we need
   // a way to also execute the actions of the rules.
-  std::set<WebRequestRule::GlobalRuleId> GetMatches(
+  std::set<const WebRequestRule*> GetMatches(
       const WebRequestRule::RequestData& request_data);
 
   // Returns which modifications should be executed on the network request
@@ -100,6 +101,11 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
       const std::string& extension_id) const;
   virtual void ClearCacheOnNavigation();
 
+  const std::set<const WebRequestRule*>&
+  rules_with_untriggered_conditions_for_test() const {
+    return rules_with_untriggered_conditions_;
+  }
+
  private:
   typedef std::map<URLMatcherConditionSet::ID, WebRequestRule*> RuleTriggers;
   typedef std::map<WebRequestRule::GlobalRuleId, linked_ptr<WebRequestRule> >
@@ -108,6 +114,11 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
   // Map that tells us which WebRequestRule may match under the condition that
   // the URLMatcherConditionSet::ID was returned by the |url_matcher_|.
   RuleTriggers rule_triggers_;
+
+  // These rules contain condition sets with conditions without URL attributes.
+  // Such conditions are not triggered by URL matcher, so we need to test them
+  // separately.
+  std::set<const WebRequestRule*> rules_with_untriggered_conditions_;
 
   RulesMap webrequest_rules_;
 

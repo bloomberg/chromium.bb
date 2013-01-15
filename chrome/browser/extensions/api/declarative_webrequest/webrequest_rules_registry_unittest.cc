@@ -8,6 +8,8 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop.h"
+#include "base/stl_util.h"
+#include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "chrome/common/extensions/matcher/url_matcher_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
@@ -41,6 +43,12 @@ class TestWebRequestRulesRegistry : public WebRequestRulesRegistry {
   // Returns how often the in-memory caches of the renderers were instructed
   // to be cleared.
   int num_clear_cache_calls() const { return num_clear_cache_calls_; }
+
+  // How many rules are there which have some conditions not triggered by URL
+  // matches.
+  size_t RulesWithoutTriggers() const {
+    return rules_with_untriggered_conditions_for_test().size();
+  }
 
  protected:
   virtual ~TestWebRequestRulesRegistry() {}
@@ -101,23 +109,22 @@ class WebRequestRulesRegistryTest : public testing::Test {
     https_condition_url_filter.SetString(keys::kInstanceTypeKey,
                                          keys::kRequestMatcherType);
 
-    linked_ptr<json_schema_compiler::any::Any> condition1 = make_linked_ptr(
+    linked_ptr<json_schema_compiler::any::Any> condition1(
         new json_schema_compiler::any::Any);
     condition1->Init(http_condition_url_filter);
 
-    linked_ptr<json_schema_compiler::any::Any> condition2 = make_linked_ptr(
+    linked_ptr<json_schema_compiler::any::Any> condition2(
         new json_schema_compiler::any::Any);
     condition2->Init(https_condition_url_filter);
 
     DictionaryValue action_dict;
     action_dict.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
 
-    linked_ptr<json_schema_compiler::any::Any> action1 = make_linked_ptr(
+    linked_ptr<json_schema_compiler::any::Any> action1(
         new json_schema_compiler::any::Any);
     action1->Init(action_dict);
 
-    linked_ptr<RulesRegistry::Rule> rule =
-        make_linked_ptr(new RulesRegistry::Rule);
+    linked_ptr<RulesRegistry::Rule> rule(new RulesRegistry::Rule);
     rule->id.reset(new std::string(kRuleId1));
     rule->priority.reset(new int(100));
     rule->actions.push_back(action1);
@@ -131,19 +138,18 @@ class WebRequestRulesRegistryTest : public testing::Test {
     DictionaryValue condition_dict;
     condition_dict.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
 
-    linked_ptr<json_schema_compiler::any::Any> condition = make_linked_ptr(
+    linked_ptr<json_schema_compiler::any::Any> condition(
         new json_schema_compiler::any::Any);
     condition->Init(condition_dict);
 
     DictionaryValue action_dict;
     action_dict.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
 
-    linked_ptr<json_schema_compiler::any::Any> action = make_linked_ptr(
+    linked_ptr<json_schema_compiler::any::Any> action(
         new json_schema_compiler::any::Any);
     action->Init(action_dict);
 
-    linked_ptr<RulesRegistry::Rule> rule =
-        make_linked_ptr(new RulesRegistry::Rule);
+    linked_ptr<RulesRegistry::Rule> rule(new RulesRegistry::Rule);
     rule->id.reset(new std::string(kRuleId2));
     rule->priority.reset(new int(100));
     rule->actions.push_back(action);
@@ -156,7 +162,7 @@ class WebRequestRulesRegistryTest : public testing::Test {
     DictionaryValue condition_dict;
     condition_dict.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
 
-    linked_ptr<json_schema_compiler::any::Any> condition = make_linked_ptr(
+    linked_ptr<json_schema_compiler::any::Any> condition(
         new json_schema_compiler::any::Any);
     condition->Init(condition_dict);
 
@@ -164,12 +170,11 @@ class WebRequestRulesRegistryTest : public testing::Test {
     action_dict.SetString(keys::kInstanceTypeKey, keys::kRedirectRequestType);
     action_dict.SetString(keys::kRedirectUrlKey, destination);
 
-    linked_ptr<json_schema_compiler::any::Any> action = make_linked_ptr(
+    linked_ptr<json_schema_compiler::any::Any> action(
         new json_schema_compiler::any::Any);
     action->Init(action_dict);
 
-    linked_ptr<RulesRegistry::Rule> rule =
-        make_linked_ptr(new RulesRegistry::Rule);
+    linked_ptr<RulesRegistry::Rule> rule(new RulesRegistry::Rule);
     rule->id.reset(new std::string(kRuleId3));
     rule->priority.reset(new int(100));
     rule->actions.push_back(action);
@@ -180,7 +185,7 @@ class WebRequestRulesRegistryTest : public testing::Test {
   // Create a rule to ignore all other rules for a destination that
   // contains index.html.
   linked_ptr<RulesRegistry::Rule> CreateIgnoreRule() {
-    linked_ptr<json_schema_compiler::any::Any> condition = make_linked_ptr(
+    linked_ptr<json_schema_compiler::any::Any> condition(
         new json_schema_compiler::any::Any);
     DictionaryValue condition_dict;
     DictionaryValue* http_condition_dict = new DictionaryValue();
@@ -192,16 +197,98 @@ class WebRequestRulesRegistryTest : public testing::Test {
     DictionaryValue action_dict;
     action_dict.SetString(keys::kInstanceTypeKey, keys::kIgnoreRulesType);
     action_dict.SetInteger(keys::kLowerPriorityThanKey, 150);
-    linked_ptr<json_schema_compiler::any::Any> action = make_linked_ptr(
+    linked_ptr<json_schema_compiler::any::Any> action(
         new json_schema_compiler::any::Any);
     action->Init(action_dict);
 
-    linked_ptr<RulesRegistry::Rule> rule =
-        make_linked_ptr(new RulesRegistry::Rule);
+    linked_ptr<RulesRegistry::Rule> rule(new RulesRegistry::Rule);
     rule->id.reset(new std::string(kRuleId4));
     rule->priority.reset(new int(200));
     rule->actions.push_back(action);
     rule->conditions.push_back(condition);
+    return rule;
+  }
+
+  // Create a condition with the attributes specified. An example value of a
+  // string from |attributes| is: "\"resourceType\": [\"stylesheet\"], \n".
+  linked_ptr<json_schema_compiler::any::Any> CreateCondition(
+      const std::vector<const char *>& attributes) {
+    linked_ptr<json_schema_compiler::any::Any> condition(
+        new json_schema_compiler::any::Any);
+
+    // Starting boilerplate.
+    std::string json_description =
+        "{ \n"
+        "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n";
+    for (size_t i = 0; i < attributes.size(); ++i) {
+      json_description += attributes[i];
+    }
+    // Ending boilerplate.
+    json_description += "}";
+    condition->Init(*base::test::ParseJson(json_description));
+
+    return condition;
+  }
+
+  // Create a rule with the ID |rule_id| and with a single condition and a
+  // cancelling action. The condition contains a non-matching non-URL attribute,
+  // and optionally, according to |with_url_attribute| also a URL attribute
+  // matching any (!) URL.
+  linked_ptr<RulesRegistry::Rule> CreateNonMatchingRule(
+      bool with_url_attribute,
+      const char* rule_id) {
+    std::vector<const char*> attributes;
+    if (with_url_attribute)
+      attributes.push_back("\"url\": { \"pathContains\": \"\" }, \n");
+
+    // The following attribute never matches in this unit test.
+    attributes.push_back("\"resourceType\": [\"stylesheet\"], \n");
+
+    linked_ptr<json_schema_compiler::any::Any> condition =
+        CreateCondition(attributes);
+
+    DictionaryValue action_dict;
+    action_dict.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
+    linked_ptr<json_schema_compiler::any::Any> action(
+        new json_schema_compiler::any::Any);
+    action->Init(action_dict);
+
+    linked_ptr<RulesRegistry::Rule> rule(new RulesRegistry::Rule);
+    rule->id.reset(new std::string(rule_id));
+    rule->priority.reset(new int(1));
+    rule->actions.push_back(action);
+    rule->conditions.push_back(condition);
+    return rule;
+  }
+
+  // Create a rule with the ID |rule_id| and with two conditions and a
+  // cancelling action. One condition contains a non-matching non-URL attribute,
+  // and the other one a URL attribute matching any URL.
+  linked_ptr<RulesRegistry::Rule> CreateRuleWithTwoConditions(
+      const char* rule_id) {
+    std::vector<const char*> attributes;
+    attributes.push_back("\"url\": { \"pathContains\": \"\" }, \n");
+    linked_ptr<json_schema_compiler::any::Any> url_condition =
+        CreateCondition(attributes);
+
+    attributes.clear();
+    // The following attribute never matches in this unit test.
+    attributes.push_back("\"resourceType\": [\"stylesheet\"], \n");
+    linked_ptr<json_schema_compiler::any::Any> non_matching_condition =
+        CreateCondition(attributes);
+
+    DictionaryValue action_dict;
+    action_dict.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
+    linked_ptr<json_schema_compiler::any::Any> action(
+        new json_schema_compiler::any::Any);
+    action->Init(action_dict);
+
+    linked_ptr<RulesRegistry::Rule> rule(new RulesRegistry::Rule);
+    rule->id.reset(new std::string(rule_id));
+    rule->priority.reset(new int(1));
+    rule->actions.push_back(action);
+    rule->conditions.push_back(url_condition);
+    rule->conditions.push_back(non_matching_condition);
     return rule;
   }
 
@@ -224,7 +311,7 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
   EXPECT_EQ("", error);
   EXPECT_EQ(1, registry->num_clear_cache_calls());
 
-  std::set<WebRequestRule::GlobalRuleId> matches;
+  std::set<const WebRequestRule*> matches;
 
   GURL http_url("http://www.example.com");
   net::TestURLRequestContext context;
@@ -232,18 +319,22 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
   matches = registry->GetMatches(
       WebRequestRule::RequestData(&http_request, ON_BEFORE_REQUEST));
   EXPECT_EQ(2u, matches.size());
-  EXPECT_TRUE(matches.find(std::make_pair(kExtensionId, kRuleId1)) !=
-      matches.end());
-  EXPECT_TRUE(matches.find(std::make_pair(kExtensionId, kRuleId2)) !=
-      matches.end());
+
+  std::set<WebRequestRule::GlobalRuleId> matches_ids;
+  for (std::set<const WebRequestRule*>::const_iterator it = matches.begin();
+       it != matches.end(); ++it)
+    matches_ids.insert((*it)->id());
+  EXPECT_TRUE(ContainsKey(matches_ids, std::make_pair(kExtensionId, kRuleId1)));
+  EXPECT_TRUE(ContainsKey(matches_ids, std::make_pair(kExtensionId, kRuleId2)));
 
   GURL foobar_url("http://www.foobar.com");
   net::TestURLRequest foobar_request(foobar_url, NULL, &context);
   matches = registry->GetMatches(
       WebRequestRule::RequestData(&foobar_request, ON_BEFORE_REQUEST));
   EXPECT_EQ(1u, matches.size());
-  EXPECT_TRUE(matches.find(std::make_pair(kExtensionId, kRuleId2)) !=
-      matches.end());
+  WebRequestRule::GlobalRuleId expected_pair =
+      std::make_pair(kExtensionId, kRuleId2);
+  EXPECT_EQ(expected_pair, (*matches.begin())->id());
 }
 
 TEST_F(WebRequestRulesRegistryTest, RemoveRulesImpl) {
@@ -263,6 +354,7 @@ TEST_F(WebRequestRulesRegistryTest, RemoveRulesImpl) {
   std::vector<linked_ptr<RulesRegistry::Rule> > registered_rules;
   registry->GetAllRules(kExtensionId, &registered_rules);
   EXPECT_EQ(2u, registered_rules.size());
+  EXPECT_EQ(1u, registry->RulesWithoutTriggers());
 
   // Remove first rule.
   std::vector<std::string> rules_to_remove;
@@ -275,6 +367,7 @@ TEST_F(WebRequestRulesRegistryTest, RemoveRulesImpl) {
   registered_rules.clear();
   registry->GetAllRules(kExtensionId, &registered_rules);
   EXPECT_EQ(1u, registered_rules.size());
+  EXPECT_EQ(1u, registry->RulesWithoutTriggers());
 
   // Now rules_to_remove contains both rules, i.e. one that does not exist in
   // the rules registry anymore. Effectively we only remove the second rule.
@@ -287,6 +380,7 @@ TEST_F(WebRequestRulesRegistryTest, RemoveRulesImpl) {
   registered_rules.clear();
   registry->GetAllRules(kExtensionId, &registered_rules);
   EXPECT_EQ(0u, registered_rules.size());
+  EXPECT_EQ(0u, registry->RulesWithoutTriggers());
 
   EXPECT_TRUE(registry->IsEmpty());
 }
@@ -426,4 +520,41 @@ TEST_F(WebRequestRulesRegistryTest, Priorities) {
             effective_rule->extension_install_time);
   EXPECT_EQ(GURL("http://www.bar.com"), effective_rule->new_url);
 }
+
+// Test that rules failing IsFulfilled on their conditions are never returned by
+// GetMatches.
+TEST_F(WebRequestRulesRegistryTest, GetMatchesCheckFulfilled) {
+  scoped_refptr<TestWebRequestRulesRegistry> registry(
+      new TestWebRequestRulesRegistry());
+  std::string error;
+
+  std::vector<linked_ptr<RulesRegistry::Rule> > rules;
+  // Both rules have one condition, neither of them should fire.
+  // This rule's condition has only one, non-matching and non-URL attribute.
+  rules.push_back(CreateNonMatchingRule(false, kRuleId1));
+  // This rule's condition has two attributes: a matching URL, and a
+  // non-matching non-URL attribute.
+  rules.push_back(CreateNonMatchingRule(true, kRuleId2));
+
+  // The 3rd rule has two conditions, one with a matching URL attribute, and one
+  // with a non-matching non-URL attribute.
+  rules.push_back(CreateRuleWithTwoConditions(kRuleId3));
+
+  error = registry->AddRules(kExtensionId, rules);
+  EXPECT_EQ("", error);
+  EXPECT_EQ(1, registry->num_clear_cache_calls());
+
+  std::set<const WebRequestRule*> matches;
+
+  GURL http_url("http://www.example.com");
+  net::TestURLRequestContext context;
+  net::TestURLRequest http_request(http_url, NULL, &context);
+  matches = registry->GetMatches(
+      WebRequestRule::RequestData(&http_request, ON_BEFORE_REQUEST));
+  EXPECT_EQ(1u, matches.size());
+  WebRequestRule::GlobalRuleId expected_pair = std::make_pair(kExtensionId,
+                                                              kRuleId3);
+  EXPECT_EQ(expected_pair, (*matches.begin())->id());
+}
+
 }  // namespace extensions
