@@ -783,8 +783,6 @@ bool IndexedDBDispatcherHost::TransactionDispatcherHost::OnMessageReceived(
                            message, *msg_is_ok)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_TransactionCommit, OnCommit)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_TransactionAbort, OnAbort)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_TransactionDidCompleteTaskEvents,
-                        OnDidCompleteTaskEvents)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_TransactionDestroyed, OnDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -823,16 +821,6 @@ void IndexedDBDispatcherHost::TransactionDispatcherHost::OnAbort(
     return;
 
   idb_transaction->abort();
-}
-
-void IndexedDBDispatcherHost::
-    TransactionDispatcherHost::OnDidCompleteTaskEvents(int ipc_transaction_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
-      &map_, ipc_transaction_id);
-  if (!idb_transaction)
-    return;
-  idb_transaction->didCompleteTaskEvents();
 }
 
 void IndexedDBDispatcherHost::TransactionDispatcherHost::OnDestroyed(

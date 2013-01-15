@@ -23,7 +23,6 @@ class RendererWebIDBTransactionImpl : public WebKit::WebIDBTransaction {
 
   virtual void commit();
   virtual void abort();
-  virtual void didCompleteTaskEvents();
   virtual void setCallbacks(WebKit::WebIDBTransactionCallbacks*);
 
   int ipc_id() const { return ipc_transaction_id_; }

@@ -614,10 +614,6 @@ IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_TransactionCommit,
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_TransactionAbort,
                      int32 /* ipc_transaction_id */)
 
-// IDBTransaction::DidCompleteTaskEvents() message.
-IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_TransactionDidCompleteTaskEvents,
-                     int32 /* ipc_transaction_id */)
-
 // WebIDBTransaction::~WebIDBTransaction() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_TransactionDestroyed,
                      int32 /* ipc_transaction_id */)

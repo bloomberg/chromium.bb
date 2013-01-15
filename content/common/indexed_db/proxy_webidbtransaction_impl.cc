@@ -40,12 +40,6 @@ void RendererWebIDBTransactionImpl::abort() {
       ipc_transaction_id_));
 }
 
-void RendererWebIDBTransactionImpl::didCompleteTaskEvents() {
-  IndexedDBDispatcher::Send(
-      new IndexedDBHostMsg_TransactionDidCompleteTaskEvents(
-          ipc_transaction_id_));
-}
-
 void RendererWebIDBTransactionImpl::setCallbacks(
     WebIDBTransactionCallbacks* callbacks) {
   IndexedDBDispatcher* dispatcher =

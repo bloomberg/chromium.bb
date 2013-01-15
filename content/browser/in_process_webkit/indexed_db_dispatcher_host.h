@@ -216,7 +216,6 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
     void OnCommit(int32 ipc_transaction_id);
     void OnAbort(int32 ipc_transaction_id);
-    void OnDidCompleteTaskEvents(int ipc_transaction_id);
     void OnDestroyed(int32 ipc_transaction_id);
 
     IndexedDBDispatcherHost* parent_;
