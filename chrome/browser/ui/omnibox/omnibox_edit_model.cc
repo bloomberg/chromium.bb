@@ -277,25 +277,22 @@ void OmniboxEditModel::OnChanged() {
                             AutocompleteActionPredictor::LAST_PREDICT_ACTION);
 
   if (!DoInstant(current_match)) {
-    switch (recommended_action) {
-      case AutocompleteActionPredictor::ACTION_PRERENDER:
-        DoPrerender(current_match);
-        break;
-      case AutocompleteActionPredictor::ACTION_PRECONNECT:
-        DoPreconnect(current_match);
-        break;
-      case AutocompleteActionPredictor::ACTION_NONE:
-        break;
-      default:
-        NOTREACHED() << "Unexpected recommended action: " << recommended_action;
-        break;
-    }
-
     // Hide any suggestions we might be showing.
     view_->SetInstantSuggestion(string16());
 
     // No need to wait any longer for Instant.
     FinalizeInstantQuery(string16(), InstantSuggestion(), false);
+  }
+
+  switch (recommended_action) {
+    case AutocompleteActionPredictor::ACTION_PRERENDER:
+      DoPrerender(current_match);
+      break;
+    case AutocompleteActionPredictor::ACTION_PRECONNECT:
+      DoPreconnect(current_match);
+      break;
+    case AutocompleteActionPredictor::ACTION_NONE:
+      break;
   }
 
   controller_->OnChanged();

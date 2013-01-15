@@ -71,6 +71,9 @@ enum SuggestRequestsHistogramValue {
   MAX_SUGGEST_REQUEST_HISTOGRAM_VALUE
 };
 
+// The verbatim score for an input which is not an URL.
+const int kNonURLVerbatimRelevance = 1300;
+
 // Increments the appropriate value in the histogram by one.
 void LogOmniboxSuggestRequest(
     SuggestRequestsHistogramValue request_value) {
@@ -171,11 +174,11 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
     }
   }
 
-  // Add the new instant suggest result. We give it a rank higher than
-  // SEARCH_WHAT_YOU_TYPED so that it gets autocompleted.
-  const int verbatim_relevance = GetVerbatimRelevance();
+  // Add the new instant suggest result.
   if (suggestion.type == INSTANT_SUGGESTION_SEARCH) {
-    // Instant has a query suggestion.
+    // Instant has a query suggestion. Rank it higher than SEARCH_WHAT_YOU_TYPED
+    // so that it gets autocompleted.
+    const int verbatim_relevance = GetVerbatimRelevance();
     int did_not_accept_default_suggestion = default_suggest_results_.empty() ?
         TemplateURLRef::NO_SUGGESTIONS_AVAILABLE :
         TemplateURLRef::NO_SUGGESTION_CHOSEN;
@@ -188,11 +191,14 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
       results_updated = true;
     }
   } else {
-    // Instant has an URL suggestion.
+    // Instant has an URL suggestion. Rank it higher than URL_WHAT_YOU_TYPED so
+    // it gets autocompleted; use kNonURLVerbatimRelevance rather than
+    // verbatim_relevance so that the score does not change if the user keeps
+    // typing and the input changes from type UNKNOWN to URL.
     matches_.push_back(NavigationToMatch(
         NavigationResult(GURL(UTF16ToUTF8(suggestion.text)),
                          string16(),
-                         verbatim_relevance + 1),
+                         kNonURLVerbatimRelevance + 1),
         false));
     results_updated = true;
   }
@@ -801,12 +807,15 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
 
   if (!default_provider_suggestion_.text.empty() &&
       default_provider_suggestion_.type == INSTANT_SUGGESTION_URL &&
-      !input_.prevent_inline_autocomplete())
+      !input_.prevent_inline_autocomplete()) {
+    // See comment in FinalizeInstantQuery() for why we don't use
+    // |verbatim_relevance| here.
     matches_.push_back(NavigationToMatch(
         NavigationResult(GURL(UTF16ToUTF8(default_provider_suggestion_.text)),
                          string16(),
-                         verbatim_relevance + 1),
+                         kNonURLVerbatimRelevance + 1),
         false));
+  }
   AddNavigationResultsToMatches(keyword_navigation_results_, true);
   AddNavigationResultsToMatches(default_navigation_results_, false);
 
@@ -1048,7 +1057,7 @@ int SearchProvider::CalculateRelevanceForVerbatim() const {
     case AutocompleteInput::UNKNOWN:
     case AutocompleteInput::QUERY:
     case AutocompleteInput::FORCED_QUERY:
-      return 1300;
+      return kNonURLVerbatimRelevance;
 
     case AutocompleteInput::REQUESTED_URL:
       return 1150;

@@ -17,6 +17,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
+#include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -485,6 +486,82 @@ TEST_F(SearchProviderTest, FinalizeInstantQuery) {
 
   // The instant search should be more relevant.
   EXPECT_GT(instant_match.relevance, wyt_match.relevance);
+}
+
+// Make sure FinalizeInstantQuery works with URL suggestions.
+TEST_F(SearchProviderTest, FinalizeInstantURL) {
+  PrefService* service = profile_.GetPrefs();
+  service->SetBoolean(prefs::kInstantEnabled, true);
+
+  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(ASCIIToUTF16("ex"),
+                                                      NULL));
+
+  // Tell the provider instant is done.
+  provider_->FinalizeInstantQuery(ASCIIToUTF16("ex"),
+                                  InstantSuggestion(
+                                      ASCIIToUTF16("http://example.com/"),
+                                      INSTANT_COMPLETE_NOW,
+                                      INSTANT_SUGGESTION_URL));
+
+  // The provider should now be done.
+  EXPECT_TRUE(provider_->done());
+
+  // There should be two matches, one for what you typed, the other for
+  // "http://example.com/".
+  EXPECT_EQ(2u, provider_->matches().size());
+  GURL instant_url("http://example.com");
+  AutocompleteMatch instant_match;
+  EXPECT_TRUE(FindMatchWithDestination(instant_url, &instant_match));
+
+  // The instant match should not have a description, it'll be set later.
+  EXPECT_TRUE(instant_match.description.empty());
+
+  // Make sure the what you typed match has no description.
+  AutocompleteMatch wyt_match;
+  EXPECT_TRUE(FindMatchWithDestination(
+      GURL(default_t_url_->url_ref().ReplaceSearchTerms(
+          TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("ex")))),
+          &wyt_match));
+  EXPECT_TRUE(wyt_match.description.empty());
+
+  // The instant URL should be more relevant.
+  EXPECT_GT(instant_match.relevance, wyt_match.relevance);
+}
+
+// An Instant URL suggestion should behave the same way whether the input text
+// is classified as UNKNOWN or as an URL. Otherwise if the user types
+// "example.co" url-what-you-typed will displace the Instant suggestion for
+// "example.com".
+TEST_F(SearchProviderTest, FinalizeInstantURLWithURLText) {
+  PrefService* service = profile_.GetPrefs();
+  service->SetBoolean(prefs::kInstantEnabled, true);
+
+  ASSERT_NO_FATAL_FAILURE(QueryForInputAndSetWYTMatch(
+      ASCIIToUTF16("example.co"), NULL));
+
+  // Tell the provider instant is done.
+  provider_->FinalizeInstantQuery(ASCIIToUTF16("example.co"),
+                                  InstantSuggestion(
+                                      ASCIIToUTF16("http://example.com/"),
+                                      INSTANT_COMPLETE_NOW,
+                                      INSTANT_SUGGESTION_URL));
+
+  // The provider should now be done.
+  EXPECT_TRUE(provider_->done());
+
+  // There should be two matches, one for what you typed, the other for
+  // "http://example.com/".
+  EXPECT_EQ(2u, provider_->matches().size());
+  GURL instant_url("http://example.com");
+  AutocompleteMatch instant_match;
+  EXPECT_TRUE(FindMatchWithDestination(instant_url, &instant_match));
+
+  // The instant match should not have a description, it'll be set later.
+  EXPECT_TRUE(instant_match.description.empty());
+
+  // The instant URL should be more relevant than a URL_WHAT_YOU_TYPED match.
+  EXPECT_GT(instant_match.relevance,
+            HistoryURLProvider::kScoreForWhatYouTypedResult);
 }
 
 // Make sure that if FinalizeInstantQuery is invoked before suggest results

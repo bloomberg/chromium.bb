@@ -384,11 +384,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
   // suggestion or reset the existing "gray text".
   browser_->SetInstantSuggestion(last_suggestion_);
 
-  // Though we may have handled a URL match above, we return false here, so that
-  // omnibox prerendering can kick in. TODO(sreeram): Remove this (and always
-  // return true) once we are able to commit URLs as well.
-  return last_match_was_search_ ||
-         last_suggestion_.behavior == INSTANT_COMPLETE_NEVER;
+  return true;
 }
 
 // TODO(tonyg): This method only fires when the omnibox bounds change. It also
