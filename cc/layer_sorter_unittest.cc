@@ -170,7 +170,7 @@ TEST(LayerSorterTest, LayersUnderPathologicalPerspectiveTransform)
     // correct sorting dependency will not be found.
     gfx::Transform transformB;
     transformB.Translate3d(0, 0, 0.7);
-    MathUtil::rotateEulerAngles(&transformB, 0, 45, 0);
+    transformB.RotateAboutYAxis(45);
     transformB.Translate(-5, -5);
     LayerShape layerB(10, 10, perspectiveMatrix * transformB);
 

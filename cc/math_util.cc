@@ -357,27 +357,6 @@ gfx::PointF MathUtil::projectPoint(const gfx::Transform& transform, const gfx::P
     return h.cartesianPoint2d();
 }
 
-void MathUtil::flattenTransformTo2d(gfx::Transform& transform)
-{
-    // Set both the 3rd row and 3rd column to (0, 0, 1, 0).
-    //
-    // One useful interpretation of doing this operation:
-    //  - For x and y values, the new transform behaves effectively like an orthographic
-    //    projection was added to the matrix sequence.
-    //  - For z values, the new transform overrides any effect that the transform had on
-    //    z, and instead it preserves the z value for any points that are transformed.
-    //  - Because of linearity of transforms, this flattened transform also preserves the
-    //    effect that any subsequent (post-multiplied) transforms would have on z values.
-    //
-    transform.matrix().setDouble(2, 0, 0);
-    transform.matrix().setDouble(2, 1, 0);
-    transform.matrix().setDouble(0, 2, 0);
-    transform.matrix().setDouble(1, 2, 0);
-    transform.matrix().setDouble(2, 2, 1);
-    transform.matrix().setDouble(3, 2, 0);
-    transform.matrix().setDouble(2, 3, 0);
-}
-
 static inline float scaleOnAxis(double a, double b, double c)
 {
     return std::sqrt(a * a + b * b + c * c);
@@ -404,88 +383,6 @@ gfx::Vector2dF MathUtil::projectVector(gfx::Vector2dF source, gfx::Vector2dF des
 {
     float projectedLength = gfx::DotProduct(source, destination) / destination.LengthSquared();
     return gfx::Vector2dF(projectedLength * destination.x(), projectedLength * destination.y());
-}
-
-void MathUtil::rotateEulerAngles(gfx::Transform* transform, double eulerX, double eulerY, double eulerZ)
-{
-    // TODO (shawnsingh): make this implementation faster and more accurate by
-    // hard-coding each matrix instead of calling RotateAbout().
-    gfx::Transform rotationAboutX;
-    gfx::Transform rotationAboutY;
-    gfx::Transform rotationAboutZ;
-
-    rotationAboutX.RotateAboutXAxis(eulerX);
-    rotationAboutY.RotateAboutYAxis(eulerY);
-    rotationAboutZ.RotateAboutZAxis(eulerZ);
-
-    gfx::Transform composite = rotationAboutZ * rotationAboutY * rotationAboutX;
-    transform->PreconcatTransform(composite);
-}
-
-gfx::Transform MathUtil::to2dTransform(const gfx::Transform& transform)
-{
-    gfx::Transform result = transform;
-    SkMatrix44& matrix = result.matrix();
-    matrix.setDouble(0, 2, 0);
-    matrix.setDouble(1, 2, 0);
-    matrix.setDouble(2, 2, 1);
-    matrix.setDouble(3, 2, 0);
-
-    matrix.setDouble(2, 0, 0);
-    matrix.setDouble(2, 1, 0);
-    matrix.setDouble(2, 3, 0);
-
-    return result;
-}
-
-gfx::Transform MathUtil::createGfxTransform(double m11, double m12, double m13, double m14,
-                                            double m21, double m22, double m23, double m24,
-                                            double m31, double m32, double m33, double m34,
-                                            double m41, double m42, double m43, double m44)
-{
-    gfx::Transform result;
-    SkMatrix44& matrix = result.matrix();
-
-    // Initialize column 1
-    matrix.setDouble(0, 0, m11);
-    matrix.setDouble(1, 0, m12);
-    matrix.setDouble(2, 0, m13);
-    matrix.setDouble(3, 0, m14);
-
-    // Initialize column 2
-    matrix.setDouble(0, 1, m21);
-    matrix.setDouble(1, 1, m22);
-    matrix.setDouble(2, 1, m23);
-    matrix.setDouble(3, 1, m24);
-
-    // Initialize column 3
-    matrix.setDouble(0, 2, m31);
-    matrix.setDouble(1, 2, m32);
-    matrix.setDouble(2, 2, m33);
-    matrix.setDouble(3, 2, m34);
-
-    // Initialize column 4
-    matrix.setDouble(0, 3, m41);
-    matrix.setDouble(1, 3, m42);
-    matrix.setDouble(2, 3, m43);
-    matrix.setDouble(3, 3, m44);
-
-    return result;
-}
-
-gfx::Transform MathUtil::createGfxTransform(double a, double b, double c,
-                                            double d, double e, double f)
-{
-    gfx::Transform result;
-    SkMatrix44& matrix = result.matrix();
-    matrix.setDouble(0, 0, a);
-    matrix.setDouble(1, 0, b);
-    matrix.setDouble(0, 1, c);
-    matrix.setDouble(1, 1, d);
-    matrix.setDouble(0, 3, e);
-    matrix.setDouble(1, 3, f);
-
-    return result;
 }
 
 }  // namespace cc

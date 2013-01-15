@@ -691,7 +691,7 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
     // layerScreenSpaceTransform represents the transform between root layer's "screen space" and local content space.
     layerDrawProperties.screen_space_transform = fullHierarchyMatrix;
     if (!layer->preserves3D())
-        MathUtil::flattenTransformTo2d(layerDrawProperties.screen_space_transform);
+        layerDrawProperties.screen_space_transform.FlattenTo2d();
     layerDrawProperties.screen_space_transform.PreconcatTransform(layerDrawProperties.target_space_transform);
 
     // Adjusting text AA method during animation may cause repaints, which in-turn causes jank.
@@ -845,7 +845,7 @@ static void calculateDrawPropertiesInternal(LayerType* layer, const gfx::Transfo
 
     // Flatten to 2D if the layer doesn't preserve 3D.
     if (!layer->preserves3D())
-        MathUtil::flattenTransformTo2d(sublayerMatrix);
+        sublayerMatrix.FlattenTo2d();
 
     // Apply the sublayer transform at the center of the layer.
     if (!layer->sublayerTransform().IsIdentity()) {

@@ -30,11 +30,11 @@ VideoLayerImpl::VideoLayerImpl(LayerTreeImpl* treeImpl, int id, VideoFrameProvid
     , m_externalTextureResource(0)
 {
     // This matrix is the default transformation for stream textures, and flips on the Y axis.
-    m_streamTextureMatrix = MathUtil::createGfxTransform(
-        1, 0, 0, 0,
-        0, -1, 0, 0,
-        0, 0, 1, 0,
-        0, 1, 0, 1);
+    m_streamTextureMatrix = gfx::Transform(
+        1.0, 0.0, 0.0, 0.0,
+        0.0, -1.0, 0.0, 1.0,
+        0.0, 0.0, 1.0, 0.0,
+        0.0, 0.0, 0.0, 1.0);
 
     // This only happens during a commit on the compositor thread while the main
     // thread is blocked. That makes this a thread-safe call to set the video
@@ -402,11 +402,11 @@ void VideoLayerImpl::DidReceiveFrame()
 
 void VideoLayerImpl::DidUpdateMatrix(const float matrix[16])
 {
-    m_streamTextureMatrix = MathUtil::createGfxTransform(
-        matrix[0], matrix[1], matrix[2], matrix[3],
-        matrix[4], matrix[5], matrix[6], matrix[7],
-        matrix[8], matrix[9], matrix[10], matrix[11],
-        matrix[12], matrix[13], matrix[14], matrix[15]);
+    m_streamTextureMatrix = gfx::Transform(
+        matrix[0], matrix[4], matrix[8], matrix[12],
+        matrix[1], matrix[5], matrix[9], matrix[13],
+        matrix[2], matrix[6], matrix[10], matrix[14],
+        matrix[3], matrix[7], matrix[11], matrix[15]);
     setNeedsRedraw();
 }
 

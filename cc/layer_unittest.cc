@@ -533,13 +533,13 @@ TEST_F(LayerTest, checkPropertyChangeCausesCorrectBehavior)
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setOpacity(0.5));
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setContentsOpaque(true));
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setPosition(gfx::PointF(4, 9)));
-    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setSublayerTransform(MathUtil::createGfxTransform(0, 0, 0, 0, 0, 0)));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setSublayerTransform(gfx::Transform(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)));
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setScrollable(true));
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setScrollOffset(gfx::Vector2d(10, 10)));
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setShouldScrollOnMainThread(true));
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setNonFastScrollableRegion(gfx::Rect(1, 1, 2, 2)));
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setHaveWheelEventHandlers(true));
-    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setTransform(MathUtil::createGfxTransform(0, 0, 0, 0, 0, 0)));
+    EXPECT_SET_NEEDS_COMMIT(1, testLayer->setTransform(gfx::Transform(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)));
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setDoubleSided(false));
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setDebugName("Test Layer"));
     EXPECT_SET_NEEDS_COMMIT(1, testLayer->setDrawCheckerboardForMissingTiles(!testLayer->drawCheckerboardForMissingTiles()));

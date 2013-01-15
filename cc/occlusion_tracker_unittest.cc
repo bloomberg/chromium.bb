@@ -1887,7 +1887,7 @@ protected:
     void runMyTest()
     {
         gfx::Transform transform;
-        MathUtil::rotateEulerAngles(&transform, 0, 30, 0);
+        transform.RotateAboutYAxis(30);
 
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300));
         typename Types::LayerType* container = this->createLayer(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(300, 300));

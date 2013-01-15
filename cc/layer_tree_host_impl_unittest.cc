@@ -1268,7 +1268,7 @@ TEST_P(LayerTreeHostImplTest, scrollMissesBackfacingChild)
     m_hostImpl->setViewportSize(surfaceSize, surfaceSize);
 
     gfx::Transform matrix;
-    MathUtil::rotateEulerAngles(&matrix, 180, 0, 0);
+    matrix.RotateAboutXAxis(180);
     child->setTransform(matrix);
     child->setDoubleSided(false);
 

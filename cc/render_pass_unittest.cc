@@ -34,7 +34,7 @@ TEST(RenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
 {
     RenderPass::Id id(3, 2);
     gfx::Rect outputRect(45, 22, 120, 13);
-    gfx::Transform transformToRoot = MathUtil::createGfxTransform(1, 0.5, 0.5, -0.5, -1, 0);
+    gfx::Transform transformToRoot = gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
     gfx::Rect damageRect(56, 123, 19, 43);
     bool hasTransparentBackground = true;
     bool hasOcclusionFromOutsideTargetSurface = true;

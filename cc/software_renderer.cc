@@ -183,7 +183,8 @@ void SoftwareRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
     TRACE_EVENT0("cc", "SoftwareRenderer::drawQuad");
     gfx::Transform quadRectMatrix;
     quadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->rect);
-    gfx::Transform contentsDeviceTransform = MathUtil::to2dTransform(frame.windowMatrix * frame.projectionMatrix * quadRectMatrix);
+    gfx::Transform contentsDeviceTransform = frame.windowMatrix * frame.projectionMatrix * quadRectMatrix;
+    contentsDeviceTransform.FlattenTo2d();
     SkMatrix skDeviceMatrix;
     toSkMatrix(&skDeviceMatrix, contentsDeviceTransform);
     m_skCurrentCanvas->setMatrix(skDeviceMatrix);

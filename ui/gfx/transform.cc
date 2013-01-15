@@ -32,6 +32,48 @@ double TanDegrees(double degrees) {
 
 }  // namespace
 
+Transform::Transform(
+    double col1row1, double col2row1, double col3row1, double col4row1,
+    double col1row2, double col2row2, double col3row2, double col4row2,
+    double col1row3, double col2row3, double col3row3, double col4row3,
+    double col1row4, double col2row4, double col3row4, double col4row4)
+    : matrix_(SkMatrix44::kUninitialized_Constructor)
+{
+  matrix_.setDouble(0, 0, col1row1);
+  matrix_.setDouble(1, 0, col1row2);
+  matrix_.setDouble(2, 0, col1row3);
+  matrix_.setDouble(3, 0, col1row4);
+
+  matrix_.setDouble(0, 1, col2row1);
+  matrix_.setDouble(1, 1, col2row2);
+  matrix_.setDouble(2, 1, col2row3);
+  matrix_.setDouble(3, 1, col2row4);
+
+  matrix_.setDouble(0, 2, col3row1);
+  matrix_.setDouble(1, 2, col3row2);
+  matrix_.setDouble(2, 2, col3row3);
+  matrix_.setDouble(3, 2, col3row4);
+
+  matrix_.setDouble(0, 3, col4row1);
+  matrix_.setDouble(1, 3, col4row2);
+  matrix_.setDouble(2, 3, col4row3);
+  matrix_.setDouble(3, 3, col4row4);
+}
+
+Transform::Transform(
+    double col1row1, double col2row1,
+    double col1row2, double col2row2,
+    double x_translation, double y_translation)
+    : matrix_(SkMatrix44::kIdentity_Constructor)
+{
+  matrix_.setDouble(0, 0, col1row1);
+  matrix_.setDouble(1, 0, col1row2);
+  matrix_.setDouble(0, 1, col2row1);
+  matrix_.setDouble(1, 1, col2row2);
+  matrix_.setDouble(0, 3, x_translation);
+  matrix_.setDouble(1, 3, y_translation);
+}
+
 void Transform::RotateAboutXAxis(double degrees) {
   double radians = degrees * M_PI / 180;
   double cosTheta = std::cos(radians);
@@ -257,6 +299,16 @@ bool Transform::GetInverse(Transform* transform) const {
 
 void Transform::Transpose() {
   matrix_.transpose();
+}
+
+void Transform::FlattenTo2d() {
+  matrix_.setDouble(2, 0, 0.0);
+  matrix_.setDouble(2, 1, 0.0);
+  matrix_.setDouble(0, 2, 0.0);
+  matrix_.setDouble(1, 2, 0.0);
+  matrix_.setDouble(2, 2, 1.0);
+  matrix_.setDouble(3, 2, 0.0);
+  matrix_.setDouble(2, 3, 0.0);
 }
 
 void Transform::TransformPoint(Point& point) const {

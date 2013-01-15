@@ -318,7 +318,8 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSimpleHierarchy)
     // Sublayer matrix is applied to the center of the parent layer.
     parentCompositeTransform = parentTranslationToAnchor * parentLayerTransform * inverse(parentTranslationToAnchor)
             * parentTranslationToCenter * parentSublayerMatrix * inverse(parentTranslationToCenter);
-    gfx::Transform flattenedCompositeTransform = MathUtil::to2dTransform(parentCompositeTransform);
+    gfx::Transform flattenedCompositeTransform = parentCompositeTransform;
+    flattenedCompositeTransform.FlattenTo2d();
     setLayerPropertiesForTesting(parent.get(), parentLayerTransform, parentSublayerMatrix, gfx::PointF(0.25, 0.25), gfx::PointF(0, 0), gfx::Size(10, 12), false);
     setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(16, 18), false);
     setLayerPropertiesForTesting(grandChild.get(), identityMatrix, identityMatrix, gfx::PointF(0, 0), gfx::PointF(0, 0), gfx::Size(76, 78), false);
@@ -733,7 +734,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForFlatteningLayer)
     scoped_refptr<LayerWithForcedDrawsContent> grandChild = make_scoped_refptr(new LayerWithForcedDrawsContent());
 
     gfx::Transform rotationAboutYAxis;
-    MathUtil::rotateEulerAngles(&rotationAboutYAxis, 0, 30, 0);
+    rotationAboutYAxis.RotateAboutYAxis(30);
 
     const gfx::Transform identityMatrix;
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, gfx::PointF(), gfx::PointF(), gfx::Size(100, 100), false);
@@ -752,7 +753,9 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForFlatteningLayer)
     gfx::Transform expectedChildDrawTransform = rotationAboutYAxis;
     gfx::Transform expectedChildScreenSpaceTransform = rotationAboutYAxis;
     gfx::Transform expectedGrandChildDrawTransform = rotationAboutYAxis; // draws onto child's renderSurface
-    gfx::Transform expectedGrandChildScreenSpaceTransform = MathUtil::to2dTransform(rotationAboutYAxis) * rotationAboutYAxis;
+    gfx::Transform flattenedRotationAboutY = rotationAboutYAxis;
+    flattenedRotationAboutY.FlattenTo2d();
+    gfx::Transform expectedGrandChildScreenSpaceTransform = flattenedRotationAboutY * rotationAboutYAxis;
 
     executeCalculateDrawProperties(root.get());
 
@@ -1028,7 +1031,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
     LayerImpl* greatGrandChild = grandChild->children()[0];
 
     gfx::Transform rotationAboutZ;
-    MathUtil::rotateEulerAngles(&rotationAboutZ, 0, 0, 90);
+    rotationAboutZ.RotateAboutZAxis(90);
 
     child->setIsContainerForFixedPositionLayers(true);
     child->setTransform(rotationAboutZ);
@@ -1090,7 +1093,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     LayerImpl* greatGrandChild = grandChild->children()[0];
 
     gfx::Transform rotationAboutZ;
-    MathUtil::rotateEulerAngles(&rotationAboutZ, 0, 0, 90);
+    rotationAboutZ.RotateAboutZAxis(90);
 
     child->setIsContainerForFixedPositionLayers(true);
     child->setTransform(rotationAboutZ);
@@ -1158,7 +1161,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithI
     greatGrandChild->setDrawsContent(true);
 
     gfx::Transform rotationAboutZ;
-    MathUtil::rotateEulerAngles(&rotationAboutZ, 0, 0, 90);
+    rotationAboutZ.RotateAboutZAxis(90);
     grandChild->setTransform(rotationAboutZ);
 
     // Case 1: scrollDelta of 0, 0
@@ -1248,7 +1251,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     // clip away layers that we want to test.
     gfx::Transform rotationAboutZ;
     rotationAboutZ.Translate(50, 50);
-    MathUtil::rotateEulerAngles(&rotationAboutZ, 0, 0, 90);
+    rotationAboutZ.RotateAboutZAxis(90);
     rotationAboutZ.Translate(-50, -50);
     grandChild->setTransform(rotationAboutZ);
     greatGrandChild->setTransform(rotationAboutZ);
@@ -1419,7 +1422,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerThatH
     LayerImpl* grandChild = child->children()[0];
 
     gfx::Transform rotationByZ;
-    MathUtil::rotateEulerAngles(&rotationByZ, 0, 0, 90);
+    rotationByZ.RotateAboutZAxis(90);
 
     root->setTransform(rotationByZ);
     grandChild->setFixedToContainerLayer(true);
@@ -2046,7 +2049,7 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dOrthographicTransform)
 
     // Case 1: Orthographic projection of a layer rotated about y-axis by 45 degrees, should be fully contained in the renderSurface.
     layerToSurfaceTransform.MakeIdentity();
-    MathUtil::rotateEulerAngles(&layerToSurfaceTransform, 0, 45, 0);
+    layerToSurfaceTransform.RotateAboutYAxis(45);
     gfx::Rect expected = gfx::Rect(gfx::Point(0, 0), gfx::Size(100, 100));
     gfx::Rect actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
@@ -2057,7 +2060,7 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dOrthographicTransform)
     double halfWidthOfRotatedLayer = (100 / sqrt(2.0)) * 0.5; // 100 is the un-rotated layer width; divided by sqrt(2) is the rotated width.
     layerToSurfaceTransform.MakeIdentity();
     layerToSurfaceTransform.Translate(-halfWidthOfRotatedLayer, 0);
-    MathUtil::rotateEulerAngles(&layerToSurfaceTransform, 0, 45, 0); // rotates about the left edge of the layer
+    layerToSurfaceTransform.RotateAboutYAxis(45); // rotates about the left edge of the layer
     expected = gfx::Rect(gfx::Point(50, 0), gfx::Size(50, 100)); // right half of the layer.
     actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
@@ -2118,7 +2121,7 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dOrthographicIsNotClippedBehi
     // center of the layer.
     layerToSurfaceTransform.MakeIdentity();
     layerToSurfaceTransform.Translate(50, 0);
-    MathUtil::rotateEulerAngles(&layerToSurfaceTransform, 0, 45, 0);
+    layerToSurfaceTransform.RotateAboutYAxis(45);
     layerToSurfaceTransform.Translate(-50, 0);
 
     gfx::Rect expected = gfx::Rect(gfx::Point(0, 0), gfx::Size(100, 100));
@@ -2145,7 +2148,7 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dPerspectiveWhenClippedByW)
     layerToSurfaceTransform.MakeIdentity();
     layerToSurfaceTransform.ApplyPerspectiveDepth(1);
     layerToSurfaceTransform.Translate3d(-2, 0, 1);
-    MathUtil::rotateEulerAngles(&layerToSurfaceTransform, 0, 45, 0);
+    layerToSurfaceTransform.RotateAboutYAxis(45);
 
     // Sanity check that this transform does indeed cause w < 0 when applying the
     // transform, otherwise this code is not testing the intended scenario.
@@ -2174,8 +2177,8 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectForPerspectiveUnprojection)
     layerToSurfaceTransform.MakeIdentity();
     layerToSurfaceTransform.ApplyPerspectiveDepth(1);
     layerToSurfaceTransform.Translate3d(0, 0, -5);
-    MathUtil::rotateEulerAngles(&layerToSurfaceTransform, 0, 45, 0);
-    MathUtil::rotateEulerAngles(&layerToSurfaceTransform, 80, 0, 0);
+    layerToSurfaceTransform.RotateAboutYAxis(45);
+    layerToSurfaceTransform.RotateAboutXAxis(80);
 
     // Sanity check that un-projection does indeed cause w < 0, otherwise this code is not
     // testing the intended scenario.
@@ -3053,7 +3056,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleRotatedLayer)
     gfx::Transform identityMatrix;
     gfx::Transform rotation45DegreesAboutCenter;
     rotation45DegreesAboutCenter.Translate(50, 50);
-    MathUtil::rotateEulerAngles(&rotation45DegreesAboutCenter, 0, 0, 45);
+    rotation45DegreesAboutCenter.RotateAboutZAxis(45);
     rotation45DegreesAboutCenter.Translate(-50, -50);
     gfx::PointF anchor(0, 0);
     gfx::PointF position(0, 0);
@@ -3312,7 +3315,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
         child->setMasksToBounds(true);
 
         gfx::Transform rotation45DegreesAboutCorner;
-        MathUtil::rotateEulerAngles(&rotation45DegreesAboutCorner, 0, 0, 45);
+        rotation45DegreesAboutCorner.RotateAboutZAxis(45);
 
         position = gfx::PointF(0, 0); // remember, positioned with respect to its parent which is already at 10, 10
         bounds = gfx::Size(200, 200); // to ensure it covers at least sqrt(2) * 100.
@@ -3322,9 +3325,9 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
         // Rotates about the center of the layer
         gfx::Transform rotatedLeafTransform;
         rotatedLeafTransform.Translate(-10, -10); // cancel out the grandParent's position
-        MathUtil::rotateEulerAngles(&rotatedLeafTransform, 0, 0, -45); // cancel out the corner 45-degree rotation of the parent.
+        rotatedLeafTransform.RotateAboutZAxis(-45); // cancel out the corner 45-degree rotation of the parent.
         rotatedLeafTransform.Translate(50, 50);
-        MathUtil::rotateEulerAngles(&rotatedLeafTransform, 0, 0, 45);
+        rotatedLeafTransform.RotateAboutZAxis(45);
         rotatedLeafTransform.Translate(-50, -50);
         position = gfx::PointF(0, 0);
         bounds = gfx::Size(100, 100);

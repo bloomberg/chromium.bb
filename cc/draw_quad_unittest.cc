@@ -25,7 +25,7 @@ namespace {
 
 TEST(DrawQuadTest, copySharedQuadState)
 {
-    gfx::Transform quadTransform = MathUtil::createGfxTransform(1, 0.5, 0, 1, 0.5, 0);
+    gfx::Transform quadTransform = gfx::Transform(1.0, 0.0, 0.5, 1.0, 0.5, 0.0);
     gfx::Rect visibleContentRect(10, 12, 14, 16);
     gfx::Rect clippedRectInTarget(19, 21, 23, 25);
     gfx::Rect clipRect = clippedRectInTarget;
@@ -46,7 +46,7 @@ TEST(DrawQuadTest, copySharedQuadState)
 
 scoped_ptr<SharedQuadState> createSharedQuadState()
 {
-    gfx::Transform quadTransform = MathUtil::createGfxTransform(1, 0.5, 0, 1, 0.5, 0);
+    gfx::Transform quadTransform = gfx::Transform(1.0, 0.0, 0.5, 1.0, 0.5, 0.0);
     gfx::Rect visibleContentRect(10, 12, 14, 16);
     gfx::Rect clippedRectInTarget(19, 21, 23, 25);
     gfx::Rect clipRect = clippedRectInTarget;
@@ -342,7 +342,7 @@ TEST(DrawQuadTest, copyStreamVideoDrawQuad)
 {
     gfx::Rect opaqueRect(3, 7, 10, 12);
     unsigned textureId = 64;
-    gfx::Transform matrix = MathUtil::createGfxTransform(0.5, 1, 0.25, 0.75, 0, 1);
+    gfx::Transform matrix = gfx::Transform(0.5, 0.25, 1, 0.75, 0, 1);
     CREATE_SHARED_STATE();
 
     CREATE_QUAD_3_NEW(StreamVideoDrawQuad, opaqueRect, textureId, matrix);

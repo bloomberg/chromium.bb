@@ -4,8 +4,8 @@
 
 #include "ui/gfx/transform_util.h"
 
-#include "ui/gfx/point.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/point.h"
 
 namespace gfx {
 namespace {

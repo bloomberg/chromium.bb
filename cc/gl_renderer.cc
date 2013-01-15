@@ -519,7 +519,8 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
 
     gfx::Transform quadRectMatrix;
     quadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->rect);
-    gfx::Transform contentsDeviceTransform = MathUtil::to2dTransform(frame.windowMatrix * frame.projectionMatrix * quadRectMatrix);
+    gfx::Transform contentsDeviceTransform = frame.windowMatrix * frame.projectionMatrix * quadRectMatrix;
+    contentsDeviceTransform.FlattenTo2d();
 
     // Can only draw surface if device matrix is invertible.
     gfx::Transform contentsDeviceTransformInverse(gfx::Transform::kSkipInitialization);
@@ -665,7 +666,7 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
         GLC(context(), context()->uniform3fv(shaderEdgeLocation, 8, edge));
     }
 
-    // Map device space quad to surface space. contentsDeviceTransform has no 3d component since it was generated with to2dTransform() so we don't need to project.
+    // Map device space quad to surface space. contentsDeviceTransform has no 3d component since it was flattened, so we don't need to project.
     gfx::QuadF surfaceQuad = MathUtil::mapQuad(contentsDeviceTransformInverse, deviceLayerEdges.ToQuadF(), clipped);
     DCHECK(!clipped);
 
@@ -770,7 +771,8 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
 
 
     gfx::QuadF localQuad;
-    gfx::Transform deviceTransform = MathUtil::to2dTransform(frame.windowMatrix * frame.projectionMatrix * quad->quadTransform());
+    gfx::Transform deviceTransform = frame.windowMatrix * frame.projectionMatrix * quad->quadTransform();
+    deviceTransform.FlattenTo2d();
     if (!deviceTransform.IsInvertible())
         return;
 
@@ -861,7 +863,7 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
         // Create device space quad.
         LayerQuad deviceQuad(leftEdge, topEdge, rightEdge, bottomEdge);
 
-        // Map device space quad to local space. deviceTransform has no 3d component since it was generated with to2dTransform() so we don't need to project.
+        // Map device space quad to local space. deviceTransform has no 3d component since it was flattened, so we don't need to project.
         // We should have already checked that the transform was uninvertible above.
         gfx::Transform inverseDeviceTransform(gfx::Transform::kSkipInitialization);
         bool didInvert = deviceTransform.GetInverse(&inverseDeviceTransform);
