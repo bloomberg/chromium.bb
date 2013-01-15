@@ -86,9 +86,14 @@ const BookmarkNode* CreateNewNode(BookmarkModel* model,
                                   const GURL& new_url) {
   const BookmarkNode* node;
   // When create the new one to right-clicked folder, add it to the next to the
-  // folder's position.
-  int insert_index =
-      parent == details.parent_node ? details.index : parent->child_count();
+  // folder's position. Because |details.index| has a index of the folder when
+  // it was right-clicked, it might cause out of range exception when another
+  // bookmark manager edits contents of the folder.
+  // So we must check the range.
+  int child_count = parent->child_count();
+  int insert_index = (parent == details.parent_node && details.index >= 0 &&
+                      details.index <= child_count) ?
+                      details.index : child_count;
   if (details.type == BookmarkEditor::EditDetails::NEW_URL) {
     node = model->AddURL(parent, insert_index, new_title, new_url);
   } else if (details.type == BookmarkEditor::EditDetails::NEW_FOLDER) {
