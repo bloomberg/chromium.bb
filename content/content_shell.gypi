@@ -167,9 +167,6 @@
           'dependencies': [
             'content_shell_jni_headers',
           ],
-          'include_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)/content/shell',
-          ],
         }, {  # else: OS!="android"
           'dependencies': [
             # This dependency is for running DRT against the content shell, and
@@ -560,6 +557,11 @@
             'shell/android/java/src/org/chromium/content_shell/ShellManager.java',
             'shell/android/java/src/org/chromium/content_shell/Shell.java',
           ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '<(SHARED_INTERMEDIATE_DIR)/content/shell',
+            ],
+          },
           'variables': {
             'jni_gen_dir': 'content/shell',
           },
@@ -576,9 +578,6 @@
             # WebContents are included.
             '../skia/skia.gyp:skia',
             '<(DEPTH)/media/media.gyp:player_android',
-          ],
-          'include_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)/content/shell',
           ],
           'sources': [
             'shell/android/shell_library_loader.cc',

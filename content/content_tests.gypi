@@ -625,7 +625,7 @@
       'targets': [
         {
           'target_name': 'content_browsertests',
-          'type': 'executable',
+          'type': '<(gtest_target_type)',
           'defines!': ['CONTENT_IMPLEMENTATION'],
           'dependencies': [
             'content_common',
@@ -791,6 +791,26 @@
                 'browser/accessibility/dump_accessibility_tree_helper.cc',
               ],
             }],
+            ['OS=="android"', {
+              'sources!': [
+                'browser/accessibility/dump_accessibility_tree_browsertest.cc',
+                'browser/accessibility/dump_accessibility_tree_helper.cc',
+                # These are included via dependency on content_common and hence
+                # we get multiple definition errors in a shared library build.
+                # Other builds need it as the symbols are not exported.
+                'common/content_constants_internal.cc',
+                'common/content_constants_internal.h',
+              ],
+              'sources': [
+                'shell/android/shell_library_loader.cc',
+                'shell/android/shell_library_loader.cc',
+                'shell/android/shell_manager.cc',
+                'shell/android/shell_manager.h',
+              ],
+              'dependencies': [
+                'content_shell_jni_headers',
+              ],
+            }],
             ['OS=="mac"', {
               'dependencies': [
                 'content_shell',  # Needed for Content Shell.app's Helper.
@@ -818,6 +838,19 @@
               'sources': [
                 'browser/media/webrtc_browsertest.cc',
               ],
+            }],
+            ['enable_plugins==0', {
+              'sources!': [
+                'browser/plugin_service_impl_browsertest.cc',
+                'browser/plugin_data_remover_impl_browsertest.cc',
+                'renderer/pepper/pepper_device_enumeration_host_helper_unittest.cc',
+                'renderer/pepper/pepper_file_chooser_host_unittest.cc',
+              ],
+            }],
+            ['input_speech==0', {
+              'sources/': [
+                ['exclude', '^browser/speech/'],
+              ]
             }],
           ],
         },

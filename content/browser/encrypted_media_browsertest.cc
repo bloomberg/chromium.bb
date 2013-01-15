@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_util.h"

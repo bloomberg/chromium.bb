@@ -34,6 +34,8 @@ static const char kPlatformName[] = "chromium-mac";
 static const char kPlatformName[] = "chromium-linux";
 #elif defined(OS_OPENBSD)
 static const char kPlatformName[] = "chromium-openbsd";
+#elif defined(OS_ANDROID)
+static const char kPlatformName[] = "chromium-android";
 #else
 #error No known OS defined
 #endif

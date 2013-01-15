@@ -1043,9 +1043,6 @@
           '-ljnigraphics',
         ],
       },
-      'include_dirs': [
-        '<(SHARED_INTERMEDIATE_DIR)/content',
-      ],
       'sources!': [
         'browser/geolocation/network_location_provider.cc',
         'browser/geolocation/network_location_provider.h',

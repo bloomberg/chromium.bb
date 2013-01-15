@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/time.h"
 #include "media/base/decoder_buffer.h"
+#include "webkit/media/crypto/ppapi/cdm_video_decoder.h"
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
 #include "base/basictypes.h"
@@ -386,9 +387,9 @@ void ClearKeyCdm::DeinitializeDecoder(cdm::StreamType decoder_type) {
       video_decoder_->Deinitialize();
       break;
     case cdm::kStreamTypeAudio:
-#if !defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
+#if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
       audio_decoder_->Deinitialize();
-#else
+#elif defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
       output_timestamp_base_in_microseconds_ = kNoTimestamp;
       total_samples_generated_ = 0;
 #endif
@@ -443,6 +444,8 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
     DCHECK(timestamp_in_microseconds != kNoTimestamp);
   }
   return GenerateFakeAudioFrames(timestamp_in_microseconds, audio_frames);
+#else
+  return cdm::kSuccess;
 #endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 }
 
