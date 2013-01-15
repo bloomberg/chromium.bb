@@ -162,15 +162,6 @@ _BANNED_CPP_FUNCTIONS = (
         r"^content[\\\/]shell[\\\/]shell_browser_main\.cc$",
       ),
     ),
-    (
-      'FilePathWatcher::Delegate',
-      (
-       'New code should not use FilePathWatcher::Delegate. Use the callback',
-       'interface instead.',
-      ),
-      False,
-      (),
-    ),
 )
 
 
