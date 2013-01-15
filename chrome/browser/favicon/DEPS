@@ -9,14 +9,12 @@
 
   # Permanently-allowed DEPS beyond the standard Browser
   # Components-like DEPS above go here.
-  "+third_party/skia/include/core/SkBitmap.h",  # For phone number i18n.
+  "+third_party/skia/include/core/SkBitmap.h",
 
   # TODO(caitkp): Bring this list to zero.
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
-  "!chrome/browser/bookmarks/bookmark_model.h",
-  "!chrome/browser/bookmarks/bookmark_model_factory.h",
   "!chrome/browser/history/history.h",
   "!chrome/browser/history/history_backend.h",
   "!chrome/browser/history/history_service_factory.h",

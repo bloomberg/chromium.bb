@@ -10,6 +10,10 @@
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 
+namespace content {
+class BrowserContext;
+}
+
 // BookmarkService provides a thread safe view of bookmarks. It is used by
 // HistoryBackend when it needs to determine the set of bookmarked URLs
 // or if a URL is bookmarked.
@@ -21,6 +25,9 @@ class BookmarkService {
     GURL url;
     string16 title;
   };
+
+  static BookmarkService* FromBrowserContext(
+      content::BrowserContext* browser_context);
 
   // Returns true if the specified URL is bookmarked.
   //

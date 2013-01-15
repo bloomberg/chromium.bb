@@ -7,6 +7,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/pref_names.h"
 
@@ -55,4 +56,11 @@ bool BookmarkModelFactory::ServiceRedirectedInIncognito() const {
 
 bool BookmarkModelFactory::ServiceIsNULLWhileTesting() const {
   return true;
+}
+
+// static
+BookmarkService* BookmarkService::FromBrowserContext(
+    content::BrowserContext* browser_context) {
+  return BookmarkModelFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context));
 }
