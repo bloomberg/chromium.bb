@@ -266,11 +266,13 @@ class ChromeLauncher(BrowserLauncher):
 
   def MakeCmd(self, url, port):
     cmd = [self.binary,
+            # Note that we do not use "--enable-logging" here because
+            # it actually turns off logging to the Buildbot logs on
+            # Windows (see http://crbug.com/169941).
             '--disable-web-resources',
             '--disable-preconnect',
             '--no-first-run',
             '--no-default-browser-check',
-            '--enable-logging',
             '--log-level=1',
             '--safebrowsing-disable-auto-update',
             # Suppress metrics reporting.  This prevents misconfigured bots,
