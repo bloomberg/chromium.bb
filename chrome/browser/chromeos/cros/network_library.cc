@@ -228,7 +228,8 @@ Network::Network(const std::string& service_path,
       notify_failure_(false),
       profile_type_(PROFILE_NONE),
       service_path_(service_path),
-      type_(type) {
+      type_(type),
+      is_behind_portal_for_testing_(false) {
 }
 
 Network::~Network() {

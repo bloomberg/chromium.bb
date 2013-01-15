@@ -30,7 +30,8 @@ namespace chromeos {
 // network to CaptivePortalService.
 class NetworkPortalDetector
     : public base::NonThreadSafe,
-      public chromeos::NetworkLibrary::NetworkManagerObserver {
+      public chromeos::NetworkLibrary::NetworkManagerObserver,
+      public chromeos::NetworkLibrary::NetworkObserver {
  public:
   enum CaptivePortalState {
     CAPTIVE_PORTAL_STATE_UNKNOWN  = 0,
@@ -61,6 +62,10 @@ class NetworkPortalDetector
 
   // NetworkLibrary::NetworkManagerObserver implementation:
   virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* cros) OVERRIDE;
+
+  // NetworkLibrary::NetworkObserver implementation:
+  virtual void OnNetworkChanged(chromeos::NetworkLibrary* cros,
+                                const chromeos::Network* network) OVERRIDE;
 
   // Creates an instance of the NetworkPortalDetector.
   static NetworkPortalDetector* CreateInstance();
@@ -154,7 +159,15 @@ class NetworkPortalDetector
     time_ticks_for_testing_ += delta;
   }
 
+  // Unique identifier of the active network.
   std::string active_network_id_;
+
+  // Service path of the active network.
+  std::string active_service_path_;
+
+  // Connection state of the active network.
+  ConnectionState active_connection_state_;
+
   State state_;
   CaptivePortalStateMap captive_portal_state_map_;
   ObserverList<Observer> observers_;

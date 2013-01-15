@@ -420,7 +420,10 @@ void NetworkLibraryImplStub::ConnectToNetwork(Network* network) {
   }
 
   // Set connected state.
-  network->set_connected();
+  if (network->is_behind_portal_for_testing())
+    network->set_behind_portal();
+  else
+    network->set_connected();
   network->set_user_connect_state(USER_CONNECT_CONNECTED);
 
   // Make the connected network the highest priority network.

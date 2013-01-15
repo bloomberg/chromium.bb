@@ -322,7 +322,12 @@ class Network {
   class TestApi {
    public:
     explicit TestApi(Network* network) : network_(network) {}
+    void SetBehindPortal() {
+      network_->set_is_behind_portal_for_testing(true);
+      network_->set_behind_portal();
+    }
     void SetConnected() {
+      network_->set_is_behind_portal_for_testing(false);
       network_->set_connected();
     }
     void SetConnecting() {
@@ -552,6 +557,15 @@ class Network {
   void set_connecting() {
     state_ = STATE_CONNECT_REQUESTED;
   }
+  void set_is_behind_portal_for_testing(bool value) {
+    is_behind_portal_for_testing_ = value;
+  }
+  bool is_behind_portal_for_testing() const {
+    return is_behind_portal_for_testing_;
+  }
+  void set_behind_portal() {
+    state_ = STATE_PORTAL;
+  }
   void set_connected() {
     state_ = STATE_ONLINE;
   }
@@ -643,6 +657,8 @@ class Network {
   // This map stores the set of properties for the network.
   // Not all properties in this map are exposed via get methods.
   PropertyMap property_map_;
+
+  bool is_behind_portal_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(Network);
 };

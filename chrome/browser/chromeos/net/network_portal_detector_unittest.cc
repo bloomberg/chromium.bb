@@ -103,6 +103,14 @@ class NetworkPortalDetectorTest
     network_portal_detector()->set_time_ticks_for_testing(time_ticks);
   }
 
+  void SetBehindPortal(Network* network) {
+    Network::TestApi test_api(network);
+        test_api.SetBehindPortal();
+    static_cast<NetworkLibraryImplBase*>(
+        network_library())->CallConnectToNetwork(network);
+    MessageLoop::current()->RunUntilIdle();
+  }
+
   void SetConnected(Network* network) {
     Network::TestApi test_api(network);
     test_api.SetConnected();
@@ -252,10 +260,35 @@ TEST_F(NetworkPortalDetectorTest, NetworkStateNotChanged) {
 }
 
 TEST_F(NetworkPortalDetectorTest, NetworkStateChanged) {
-  // TODO (ygorshenin): currently portal detection isn't invoked if
-  // previous detection results are PORTAL or ONLINE. We're planning
-  // to change this behaviour in future, so, there should be
-  // corresponding test.
+  // Test for Portal -> Online -> Portal network state transitions.
+  ASSERT_TRUE(is_state_idle());
+
+  SetBehindPortal(wifi1_network());
+  ASSERT_TRUE(is_state_checking_for_portal());
+
+  CompleteURLFetch(net::OK, 200, NULL);
+
+  ASSERT_TRUE(is_state_idle());
+  ASSERT_EQ(NetworkPortalDetector::CAPTIVE_PORTAL_STATE_PORTAL,
+            network_portal_detector()->GetCaptivePortalState(wifi1_network()));
+
+  SetConnected(wifi1_network());
+  ASSERT_TRUE(is_state_checking_for_portal());
+
+  CompleteURLFetch(net::OK, 204, NULL);
+
+  ASSERT_TRUE(is_state_idle());
+  ASSERT_EQ(NetworkPortalDetector::CAPTIVE_PORTAL_STATE_ONLINE,
+            network_portal_detector()->GetCaptivePortalState(wifi1_network()));
+
+  SetBehindPortal(wifi1_network());
+  ASSERT_TRUE(is_state_checking_for_portal());
+
+  CompleteURLFetch(net::OK, 200, NULL);
+
+  ASSERT_TRUE(is_state_idle());
+  ASSERT_EQ(NetworkPortalDetector::CAPTIVE_PORTAL_STATE_PORTAL,
+            network_portal_detector()->GetCaptivePortalState(wifi1_network()));
 }
 
 TEST_F(NetworkPortalDetectorTest, PortalDetectionTimeout) {
