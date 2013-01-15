@@ -32,6 +32,7 @@ typedef double stime_t;  // seconds
 enum GestureInterpreterDeviceClass {
   GESTURES_DEVCLASS_UNKNOWN,
   GESTURES_DEVCLASS_MOUSE,
+  GESTURES_DEVCLASS_MULTITOUCH_MOUSE,
   GESTURES_DEVCLASS_TOUCHPAD,
 };
 
@@ -416,6 +417,7 @@ struct GestureInterpreter {
  private:
   void InitializeTouchpad(void);
   void InitializeMouse(void);
+  void InitializeMultitouchMouse(void);
 
   GestureReadyFunction callback_;
   void* callback_data_;

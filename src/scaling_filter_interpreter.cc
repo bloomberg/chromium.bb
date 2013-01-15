@@ -78,12 +78,16 @@ void ScalingFilterInterpreter::FilterLowPressure(HardwareState* hwstate) {
 }
 
 void ScalingFilterInterpreter::ScaleHardwareState(HardwareState* hwstate) {
-  if (devclass_ == GESTURES_DEVCLASS_TOUCHPAD)
+  if (devclass_ == GESTURES_DEVCLASS_TOUCHPAD) {
     ScaleTouchpadHardwareState(hwstate);
-  else if (devclass_ == GESTURES_DEVCLASS_MOUSE)
+  } else if (devclass_ == GESTURES_DEVCLASS_MOUSE) {
     ScaleMouseHardwareState(hwstate);
-  else
+  } else if (devclass_ == GESTURES_DEVCLASS_MULTITOUCH_MOUSE) {
+    ScaleTouchpadHardwareState(hwstate);
+    ScaleMouseHardwareState(hwstate);
+  } else {
     Err("Couldn't recognize devclass: %d", devclass_);
+  }
 }
 
 void ScalingFilterInterpreter::ScaleMouseHardwareState(

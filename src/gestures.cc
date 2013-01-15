@@ -468,11 +468,35 @@ void GestureInterpreter::InitializeMouse(void) {
   temp = NULL;
 }
 
+void GestureInterpreter::InitializeMultitouchMouse(void) {
+  // TODO(clchiou;chromium-os:36322): Update ImmediateInterpreter so that it
+  // interprets multi-touch mouse gestures
+  Interpreter* temp = new ImmediateInterpreter(prop_reg_.get(),
+                                               finger_metrics_.get(),
+                                               tracer_.get());
+  temp = new FlingStopFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  temp = new LookaheadFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  // TODO(clchiou;chromium-os:36321): Use mouse acceleration algorithm for mice
+  temp = new AccelFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  temp = new ScalingFilterInterpreter(prop_reg_.get(), temp, tracer_.get(),
+                                      GESTURES_DEVCLASS_MULTITOUCH_MOUSE);
+  temp = new IntegralGestureFilterInterpreter(temp, tracer_.get());
+  temp = new StuckButtonInhibitorFilterInterpreter(temp, tracer_.get());
+  temp = new NonLinearityFilterInterpreter(prop_reg_.get(), temp,
+                                           tracer_.get());
+  temp = loggingFilter_ = new LoggingFilterInterpreter(prop_reg_.get(), temp,
+                                                       tracer_.get());
+  interpreter_.reset(temp);
+  temp = NULL;
+}
+
 void GestureInterpreter::Initialize(GestureInterpreterDeviceClass cls) {
   if (cls == GESTURES_DEVCLASS_TOUCHPAD)
     InitializeTouchpad();
   else if (cls == GESTURES_DEVCLASS_MOUSE)
     InitializeMouse();
+  else if (cls == GESTURES_DEVCLASS_MULTITOUCH_MOUSE)
+    InitializeMultitouchMouse();
   else
     Err("Couldn't recognize device class: %d", cls);
 }
