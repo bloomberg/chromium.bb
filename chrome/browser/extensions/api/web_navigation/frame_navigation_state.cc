@@ -14,6 +14,7 @@ namespace {
 
 // URL schemes for which we'll send events.
 const char* kValidSchemes[] = {
+  chrome::kChromeUIScheme,
   chrome::kHttpScheme,
   chrome::kHttpsScheme,
   chrome::kFileScheme,
