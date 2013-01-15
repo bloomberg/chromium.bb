@@ -527,6 +527,7 @@
         'rand_util_unittest.cc',
         'scoped_native_library_unittest.cc',
         'scoped_observer.h',
+        'security_unittest.cc',
         'sequence_checker_unittest.cc',
         'sequence_checker_impl_unittest.cc',
         'sha1_unittest.cc',

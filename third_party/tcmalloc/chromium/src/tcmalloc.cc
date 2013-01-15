@@ -296,6 +296,16 @@ size_t InvalidGetAllocatedSize(const void* ptr) {
       "Attempt to get the size of an invalid pointer", ptr);
   return 0;
 }
+
+// For security reasons, we want to limit the size of allocations.
+// See crbug.com/169327.
+inline bool IsAllocSizePermitted(size_t alloc_size) {
+  // Never allow an allocation larger than what can be indexed via an int.
+  // Remove kPageSize to account for various rounding, padding and to have a
+  // small margin.
+  return alloc_size <= ((std::numeric_limits<int>::max)() - kPageSize);
+}
+
 }  // unnamed namespace
 
 // Extract interesting stats
@@ -1078,27 +1088,31 @@ inline void* do_malloc(size_t size) {
 
   // The following call forces module initialization
   ThreadCache* heap = ThreadCache::GetCache();
-  if (size <= kMaxSize) {
-    size_t cl = Static::sizemap()->SizeClass(size);
-    size = Static::sizemap()->class_to_size(cl);
+  // First, check if our security policy allows this size.
+  if (IsAllocSizePermitted(size)) {
+    if (size <= kMaxSize) {
+      size_t cl = Static::sizemap()->SizeClass(size);
+      size = Static::sizemap()->class_to_size(cl);
 
-    // TODO(jar): If this has any detectable performance impact, it can be
-    // optimized by only tallying sizes if the profiler was activated to recall
-    // these tallies.  I don't think this is performance critical, but we really
-    // should measure it.
-    heap->AddToByteAllocatedTotal(size);  // Chromium profiling.
+      // TODO(jar): If this has any detectable performance impact, it can be
+      // optimized by only tallying sizes if the profiler was activated to
+      // recall these tallies.  I don't think this is performance critical, but
+      // we really should measure it.
+      heap->AddToByteAllocatedTotal(size);  // Chromium profiling.
 
-    if ((FLAGS_tcmalloc_sample_parameter > 0) && heap->SampleAllocation(size)) {
-      ret = DoSampledAllocation(size);
-      MarkAllocatedRegion(ret);
+      if ((FLAGS_tcmalloc_sample_parameter > 0) &&
+          heap->SampleAllocation(size)) {
+        ret = DoSampledAllocation(size);
+        MarkAllocatedRegion(ret);
+      } else {
+        // The common case, and also the simplest.  This just pops the
+        // size-appropriate freelist, after replenishing it if it's empty.
+        ret = CheckMallocResult(heap->Allocate(size, cl));
+      }
     } else {
-      // The common case, and also the simplest.  This just pops the
-      // size-appropriate freelist, after replenishing it if it's empty.
-      ret = CheckMallocResult(heap->Allocate(size, cl));
+      ret = do_malloc_pages(heap, size);
+      MarkAllocatedRegion(ret);
     }
-  } else {
-    ret = do_malloc_pages(heap, size);
-    MarkAllocatedRegion(ret);
   }
   if (ret == NULL) errno = ENOMEM;
   return ret;
@@ -1233,8 +1247,8 @@ inline void* do_realloc_with_callback(
   //    . If we need to grow, grow to max(new_size, old_size * 1.X)
   //    . Don't shrink unless new_size < old_size * 0.Y
   // X and Y trade-off time for wasted space.  For now we do 1.25 and 0.5.
-  const int lower_bound_to_grow = old_size + old_size / 4;
-  const int upper_bound_to_shrink = old_size / 2;
+  const size_t lower_bound_to_grow = old_size + old_size / 4;
+  const size_t upper_bound_to_shrink = old_size / 2;
   if ((new_size > old_size) || (new_size < upper_bound_to_shrink)) {
     // Need to reallocate.
     void* new_ptr = NULL;
