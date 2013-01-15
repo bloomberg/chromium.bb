@@ -211,6 +211,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   virtual void OnHandleInputEvent(int instance_id,
                                   const gfx::Rect& guest_window_rect,
                                   const WebKit::WebInputEvent* event);
+  void OnNavigateGuest(int instance_id, const std::string& src);
   // Reload the guest. Overriden in tests.
   virtual void OnReload(int instance_id);
   // Grab the new damage buffer from the embedder, and resize the guest's

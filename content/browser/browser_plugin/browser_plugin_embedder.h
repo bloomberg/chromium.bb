@@ -120,7 +120,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver,
 
   void OnCreateGuest(int instance_id,
                      const BrowserPluginHostMsg_CreateGuest_Params& params);
-  void OnNavigateGuest(int instance_id, const std::string& src);
   void OnPluginAtPositionResponse(int instance_id,
                                   int request_id,
                                   const gfx::Point& position);

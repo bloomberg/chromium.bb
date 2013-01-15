@@ -72,6 +72,7 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Go, OnGo)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_HandleInputEvent,
                         OnHandleInputEvent)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_NavigateGuest, OnNavigateGuest)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Reload, OnReload)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ResizeGuest, OnResizeGuest)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetAutoSize, OnSetSize)
@@ -432,6 +433,30 @@ void BrowserPluginGuest::OnHandleInputEvent(
 
   guest_rvh->Send(message);
   guest_rvh->StartHangMonitorTimeout(guest_hang_timeout_);
+}
+
+void BrowserPluginGuest::OnNavigateGuest(
+    int instance_id,
+    const std::string& src) {
+  GURL url(src);
+  WebContentsImpl* guest_web_contents =
+      static_cast<WebContentsImpl*>(web_contents());
+
+  // We do not load empty urls in web_contents.
+  // If a guest sets empty src attribute after it has navigated to some
+  // non-empty page, the action is considered no-op. This empty src navigation
+  // should never be sent to BrowserPluginEmbedder (browser process).
+  DCHECK(!src.empty());
+  if (!src.empty()) {
+    // Because guests do not swap processes on navigation, only navigations to
+    // normal web URLs are supported.  No protocol handlers are installed for
+    // other schemes (e.g., WebUI or extensions), and no permissions or bindings
+    // can be granted to the guest process.
+    guest_web_contents->GetController().LoadURL(url,
+                                                Referrer(),
+                                                PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                                std::string());
+  }
 }
 
 void BrowserPluginGuest::OnReload(int instance_id) {

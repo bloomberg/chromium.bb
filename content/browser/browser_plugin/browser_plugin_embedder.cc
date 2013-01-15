@@ -213,8 +213,6 @@ bool BrowserPluginEmbedder::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginEmbedder, message)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CreateGuest,
                         OnCreateGuest)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_NavigateGuest,
-                        OnNavigateGuest)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginAtPositionResponse,
                         OnPluginAtPositionResponse)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_PluginDestroyed,
@@ -279,6 +277,7 @@ bool BrowserPluginEmbedder::ShouldForwardToBrowserPluginGuest(
     case BrowserPluginHostMsg_DragStatusUpdate::ID:
     case BrowserPluginHostMsg_Go::ID:
     case BrowserPluginHostMsg_HandleInputEvent::ID:
+    case BrowserPluginHostMsg_NavigateGuest::ID:
     case BrowserPluginHostMsg_Reload::ID:
     case BrowserPluginHostMsg_ResizeGuest::ID:
     case BrowserPluginHostMsg_SetAutoSize::ID:
@@ -299,32 +298,6 @@ void BrowserPluginEmbedder::OnCreateGuest(
     int instance_id,
     const BrowserPluginHostMsg_CreateGuest_Params& params) {
   CreateGuest(instance_id, MSG_ROUTING_NONE, NULL, params);
-}
-
-void BrowserPluginEmbedder::OnNavigateGuest(
-    int instance_id,
-    const std::string& src) {
-  BrowserPluginGuest* guest = GetGuestByInstanceID(instance_id);
-  CHECK(guest);
-  GURL url(src);
-  WebContentsImpl* guest_web_contents =
-      static_cast<WebContentsImpl*>(guest->GetWebContents());
-
-  // We do not load empty urls in web_contents.
-  // If a guest sets empty src attribute after it has navigated to some
-  // non-empty page, the action is considered no-op. This empty src navigation
-  // should never be sent to BrowserPluginEmbedder (browser process).
-  DCHECK(!src.empty());
-  if (!src.empty()) {
-    // Because guests do not swap processes on navigation, only navigations to
-    // normal web URLs are supported.  No protocol handlers are installed for
-    // other schemes (e.g., WebUI or extensions), and no permissions or bindings
-    // can be granted to the guest process.
-    guest_web_contents->GetController().LoadURL(url,
-                                                Referrer(),
-                                                PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                                std::string());
-  }
 }
 
 void BrowserPluginEmbedder::OnPluginAtPositionResponse(
