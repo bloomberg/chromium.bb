@@ -40,12 +40,7 @@ int ChromeMainDelegateAndroid::RunProcess(
     RegisterApplicationNativeMethods(env);
 
     browser_runner_.reset(content::BrowserMainRunner::Create());
-    int exit_code = browser_runner_->Initialize(main_function_params);
-    DCHECK(exit_code < 0);
-
-    // Return 0 so that we do NOT trigger the default behavior. On Android, the
-    // UI message loop is managed by the Java application.
-    return 0;
+    return browser_runner_->Initialize(main_function_params);
   }
 
   return ChromeMainDelegate::RunProcess(process_type, main_function_params);

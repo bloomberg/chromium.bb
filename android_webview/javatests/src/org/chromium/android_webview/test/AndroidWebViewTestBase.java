@@ -22,6 +22,7 @@ import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content.common.ProcessInitException;
 import org.chromium.ui.gfx.ActivityNativeWindow;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -51,8 +52,12 @@ public class AndroidWebViewTestBase
             @Override
             public void run() {
                 AwTestResourceProvider.registerResources(context);
-                ContentViewCore.initChromiumBrowserProcess(
-                        context, ContentView.MAX_RENDERERS_SINGLE_PROCESS);
+                try {
+                    ContentViewCore.initChromiumBrowserProcess(
+                            context, ContentView.MAX_RENDERERS_SINGLE_PROCESS);
+                } catch (ProcessInitException e) {
+                    throw new Error("Failed to initialize browser process", e);
+                }
             }
         });
     }

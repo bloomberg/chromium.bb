@@ -28,7 +28,12 @@ enum ResultCode {
   RESULT_CODE_HUNG = 2,
 
   // A bad message caused the process termination.
-  RESULT_CODE_KILLED_BAD_MESSAGE,
+  RESULT_CODE_KILLED_BAD_MESSAGE = 3,
+
+#if defined(OS_ANDROID)
+  // Failed to register JNI methods.
+  RESULT_CODE_FAILED_TO_REGISTER_JNI = 4,
+#endif
 
   // Last return code (keep this last).
   RESULT_CODE_LAST_CODE

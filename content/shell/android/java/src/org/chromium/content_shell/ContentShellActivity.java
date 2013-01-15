@@ -22,6 +22,7 @@ import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.browser.TracingIntentHandler;
 import org.chromium.content.common.CommandLine;
+import org.chromium.content.common.ProcessInitException;
 import org.chromium.ui.gfx.ActivityNativeWindow;
 
 /**
@@ -59,29 +60,32 @@ public class ContentShellActivity extends ChromiumActivity {
         waitForDebuggerIfNeeded();
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch(this);
+        try {
+            LibraryLoader.ensureInitialized();
 
-        LibraryLoader.ensureInitialized();
+            setContentView(R.layout.content_shell_activity);
+            mShellManager = (ShellManager) findViewById(R.id.shell_container);
+            mActivityNativeWindow = new ActivityNativeWindow(this);
+            mActivityNativeWindow.restoreInstanceState(savedInstanceState);
+            mShellManager.setWindow(mActivityNativeWindow);
+            ContentVideoView.registerContentVideoViewContextDelegate(
+                    new ActivityContentVideoViewDelegate(this));
 
-        setContentView(R.layout.content_shell_activity);
-        mShellManager = (ShellManager) findViewById(R.id.shell_container);
-        mActivityNativeWindow = new ActivityNativeWindow(this);
-        mActivityNativeWindow.restoreInstanceState(savedInstanceState);
-        mShellManager.setWindow(mActivityNativeWindow);
-        ContentVideoView.registerContentVideoViewContextDelegate(
-            new ActivityContentVideoViewDelegate(this));
-
-        String startupUrl = getUrlFromIntent(getIntent());
-        if (!TextUtils.isEmpty(startupUrl)) {
-            mShellManager.setStartupUrl(Shell.sanitizeUrl(startupUrl));
-        }
-
-        if (!ContentView.enableMultiProcess(this, ContentView.MAX_RENDERERS_AUTOMATIC)) {
-            String shellUrl = DEFAULT_SHELL_URL;
-            if (savedInstanceState != null
-                    && savedInstanceState.containsKey(ACTIVE_SHELL_URL_KEY)) {
-                shellUrl = savedInstanceState.getString(ACTIVE_SHELL_URL_KEY);
+            String startupUrl = getUrlFromIntent(getIntent());
+            if (!TextUtils.isEmpty(startupUrl)) {
+                mShellManager.setStartupUrl(Shell.sanitizeUrl(startupUrl));
             }
-            mShellManager.launchShell(shellUrl);
+            if (!ContentView.enableMultiProcess(this, ContentView.MAX_RENDERERS_AUTOMATIC)) {
+                String shellUrl = DEFAULT_SHELL_URL;
+                if (savedInstanceState != null
+                    && savedInstanceState.containsKey(ACTIVE_SHELL_URL_KEY)) {
+                    shellUrl = savedInstanceState.getString(ACTIVE_SHELL_URL_KEY);
+                }
+                mShellManager.launchShell(shellUrl);
+            }
+        } catch (ProcessInitException e) {
+            Log.e(TAG, "ContentView initialization failed.", e);
+            finish();
         }
     }
 

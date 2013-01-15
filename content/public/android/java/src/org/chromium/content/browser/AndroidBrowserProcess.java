@@ -16,6 +16,7 @@ import org.chromium.base.JNINamespace;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.common.CommandLine;
+import org.chromium.content.common.ProcessInitException;
 import org.chromium.content.R;
 
 // NOTE: This file hasn't been fully upstreamed, please don't merge to downstream.
@@ -69,7 +70,8 @@ public class AndroidBrowserProcess {
      * @param maxRendererProcesses See ContentView.enableMultiProcess().
      * @return Whether the process actually needed to be initialized (false if already running).
      */
-    public static boolean initContentViewProcess(Context context, int maxRendererProcesses) {
+    public static boolean initContentViewProcess(Context context, int maxRendererProcesses)
+            throws ProcessInitException {
         return genericChromiumProcessInit(context, maxRendererProcesses, false);
     }
 
@@ -81,7 +83,8 @@ public class AndroidBrowserProcess {
      * @param maxRendererProcesses See ContentView.enableMultiProcess().
      * @return Whether the process actually needed to be initialized (false if already running).
      */
-    public static boolean initChromiumBrowserProcess(Context context, int maxRendererProcesses) {
+    public static boolean initChromiumBrowserProcess(Context context, int maxRendererProcesses)
+            throws ProcessInitException {
         return genericChromiumProcessInit(context, maxRendererProcesses, true);
     }
 
@@ -93,7 +96,7 @@ public class AndroidBrowserProcess {
      * @return Whether the process actually needed to be initialized (false if already running).
      */
     private static boolean genericChromiumProcessInit(Context context, int maxRendererProcesses,
-            boolean hostIsChrome) {
+            boolean hostIsChrome) throws ProcessInitException {
         if (sInitialized) return false;
         sInitialized = true;
 
@@ -156,7 +159,8 @@ public class AndroidBrowserProcess {
 
         nativeSetCommandLineFlags(maxRenderers);
         ContentMain.initApplicationContext(appContext);
-        ContentMain.start();
+        int result = ContentMain.start();
+        if (result > 0) throw new ProcessInitException(result);
         return true;
     }
 

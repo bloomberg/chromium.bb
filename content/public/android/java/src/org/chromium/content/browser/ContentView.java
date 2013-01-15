@@ -23,6 +23,7 @@ import android.widget.FrameLayout;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import org.chromium.content.common.ProcessInitException;
 import org.chromium.content.common.TraceEvent;
 import org.chromium.ui.gfx.NativeWindow;
 
@@ -71,7 +72,8 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      * maximum number of allowed renderers is capped by MAX_RENDERERS_LIMIT.
      * @return Whether the process actually needed to be initialized (false if already running).
      */
-    public static boolean enableMultiProcess(Context context, int maxRendererProcesses) {
+    public static boolean enableMultiProcess(Context context, int maxRendererProcesses)
+            throws ProcessInitException {
         return ContentViewCore.enableMultiProcess(context, maxRendererProcesses);
     }
 
@@ -83,7 +85,8 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      * @param maxRendererProcesses Same as ContentView.enableMultiProcess()
      * @return Whether the process actually needed to be initialized (false if already running).
      */
-    public static boolean initChromiumBrowserProcess(Context context, int maxRendererProcesses) {
+    public static boolean initChromiumBrowserProcess(Context context, int maxRendererProcesses)
+            throws ProcessInitException {
         return ContentViewCore.initChromiumBrowserProcess(context, maxRendererProcesses);
     }
 

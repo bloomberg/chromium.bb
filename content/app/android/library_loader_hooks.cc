@@ -23,6 +23,7 @@
 #include "content/common/android/common_jni_registrar.h"
 #include "content/common/android/command_line.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/result_codes.h"
 #include "media/base/android/media_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
 #include "ui/android/ui_jni_registrar.h"
@@ -35,7 +36,7 @@ base::AtExitManager* g_at_exit_manager = NULL;
 
 namespace content {
 
-static jboolean LibraryLoadedOnMainThread(JNIEnv* env, jclass clazz,
+static jint LibraryLoadedOnMainThread(JNIEnv* env, jclass clazz,
                                           jobjectArray init_command_line) {
   InitNativeCommandLineFromJavaArray(env, init_command_line);
 
@@ -70,30 +71,30 @@ static jboolean LibraryLoadedOnMainThread(JNIEnv* env, jclass clazz,
           << ", default verbosity = " << logging::GetVlogVerbosity();
 
   if (!base::android::RegisterJni(env))
-    return JNI_FALSE;
+    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
   if (!net::android::RegisterJni(env))
-    return JNI_FALSE;
+    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
   if (!ui::RegisterJni(env))
-    return JNI_FALSE;
+    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
   if (!content::android::RegisterCommonJni(env))
-    return JNI_FALSE;
+    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
   if (!content::android::RegisterBrowserJni(env))
-    return JNI_FALSE;
+    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
   if (!content::android::RegisterAppJni(env))
-    return JNI_FALSE;
+    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
   if (!media::RegisterJni(env))
-    return JNI_FALSE;
+    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
   if (!gfx::RegisterJni(env))
-    return JNI_FALSE;
+    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
-  return JNI_TRUE;
+  return 0;
 }
 
 void LibraryLoaderExitHook() {

@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.common.CommandLine;
+import org.chromium.content.common.ProcessInitException;
 import org.chromium.content_shell.ContentShellActivity;
 import org.chromium.content_shell.ContentShellApplication;
 
@@ -43,7 +44,11 @@ public class CommandLineTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 ContentShellApplication.initializeApplicationParameters();
-                LibraryLoader.ensureInitialized();
+                try {
+                    LibraryLoader.ensureInitialized();
+                } catch (ProcessInitException e) {
+                    throw new Error(e);
+                }
             }
         });
         assertTrue(CommandLine.getInstance().isNativeImplementation());

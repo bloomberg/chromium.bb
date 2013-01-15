@@ -45,6 +45,7 @@ import org.chromium.base.WeakContext;
 import org.chromium.content.R;
 import org.chromium.content.browser.ContentViewGestureHandler.MotionEventDelegate;
 import org.chromium.content.browser.accessibility.AccessibilityInjector;
+import org.chromium.content.common.ProcessInitException;
 import org.chromium.content.common.TraceEvent;
 import org.chromium.ui.gfx.NativeWindow;
 
@@ -266,7 +267,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      * maximum number of allowed renderers is capped by MAX_RENDERERS_LIMIT.
      * @return Whether the process actually needed to be initialized (false if already running).
      */
-    public static boolean enableMultiProcess(Context context, int maxRendererProcesses) {
+    public static boolean enableMultiProcess(Context context, int maxRendererProcesses)
+            throws ProcessInitException {
         return AndroidBrowserProcess.initContentViewProcess(context, maxRendererProcesses);
     }
 
@@ -278,7 +280,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      * @param maxRendererProcesses Same as ContentView.enableMultiProcess()
      * @return Whether the process actually needed to be initialized (false if already running).
      */
-    public static boolean initChromiumBrowserProcess(Context context, int maxRendererProcesses) {
+    public static boolean initChromiumBrowserProcess(Context context, int maxRendererProcesses)
+            throws ProcessInitException {
         return AndroidBrowserProcess.initChromiumBrowserProcess(context, maxRendererProcesses);
     }
 
@@ -293,12 +296,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         mContext = context;
 
         WeakContext.initializeWeakContext(context);
-        // By default, ContentView will initialize single process mode. The call to
-        // initContentViewProcess below is ignored if either the ContentView host called
-        // enableMultiProcess() or the platform browser called initChromiumBrowserProcess().
-        AndroidBrowserProcess.initContentViewProcess(
-                context, AndroidBrowserProcess.MAX_RENDERERS_SINGLE_PROCESS);
-
         mPersonality = personality;
         HeapStatsLogger.init(mContext.getApplicationContext());
 

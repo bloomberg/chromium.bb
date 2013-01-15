@@ -24,6 +24,7 @@ import org.chromium.content.app.ContentMain;
 import org.chromium.content.browser.SandboxedProcessConnection;
 import org.chromium.content.common.ISandboxedProcessCallback;
 import org.chromium.content.common.ISandboxedProcessService;
+import org.chromium.content.common.ProcessInitException;
 import org.chromium.content.common.SurfaceCallback;
 
 /**
@@ -152,6 +153,8 @@ public class SandboxedProcessService extends Service {
                     ContentMain.start();
                     nativeExitSandboxedProcess();
                 } catch (InterruptedException e) {
+                    Log.w(TAG, MAIN_THREAD_NAME + " startup failed: " + e);
+                } catch (ProcessInitException e) {
                     Log.w(TAG, MAIN_THREAD_NAME + " startup failed: " + e);
                 }
             }
