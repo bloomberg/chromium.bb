@@ -1,7 +1,6 @@
 {
   "123": {
     "GUID": "123",
-    "L2TPIPsec.PSK": "sharedkey",
     "Name": "testopenvpn",
     "OpenVPN.Port": "1194",
     "OpenVPN.User": "abc madmax def",

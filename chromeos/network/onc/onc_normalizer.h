@@ -36,9 +36,15 @@ class CHROMEOS_EXPORT Normalizer : public Mapper {
       const base::DictionaryValue& onc_object,
       bool* error) OVERRIDE;
 
+  void NormalizeCertificate(base::DictionaryValue* cert);
+  void NormalizeEAP(base::DictionaryValue* eap);
+  void NormalizeEthernet(base::DictionaryValue* ethernet);
   void NormalizeIPsec(base::DictionaryValue* ipsec);
-  void NormalizeVPN(base::DictionaryValue* vpn);
   void NormalizeNetworkConfiguration(base::DictionaryValue* network);
+  void NormalizeOpenVPN(base::DictionaryValue* openvpn);
+  void NormalizeProxySettings(base::DictionaryValue* proxy);
+  void NormalizeVPN(base::DictionaryValue* vpn);
+  void NormalizeWiFi(base::DictionaryValue* wifi);
 
   const bool remove_recommended_fields_;
 

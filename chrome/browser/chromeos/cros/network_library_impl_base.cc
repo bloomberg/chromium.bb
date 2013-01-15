@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/network_login_observer.h"
 #include "chromeos/network/onc/onc_certificate_importer.h"
 #include "chromeos/network/onc/onc_constants.h"
+#include "chromeos/network/onc/onc_normalizer.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/onc/onc_utils.h"
@@ -1193,14 +1194,20 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
       delete entry;
       entry = expanded_network;
 
+      // Normalize the ONC: Remove irrelevant fields.
+      onc::Normalizer normalizer(true /* remove recommended fields */);
+      scoped_ptr<base::DictionaryValue> normalized_network =
+          normalizer.NormalizeObject(&onc::kNetworkConfigurationSignature,
+                                     *expanded_network);
+
       // Configure the network.
       scoped_ptr<base::DictionaryValue> shill_dict =
           onc::TranslateONCObjectToShill(&onc::kNetworkConfigurationSignature,
-                                         *expanded_network);
+                                         *normalized_network);
 
       // Set the ProxyConfig.
       const base::DictionaryValue* proxy_settings;
-      if (expanded_network->GetDictionaryWithoutPathExpansion(
+      if (normalized_network->GetDictionaryWithoutPathExpansion(
               onc::kProxySettings,
               &proxy_settings)) {
         scoped_ptr<base::DictionaryValue> proxy_config =
@@ -1214,7 +1221,7 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob,
 
       // Set the UIData.
       scoped_ptr<NetworkUIData> ui_data =
-          onc::CreateUIData(source, *expanded_network);
+          onc::CreateUIData(source, *normalized_network);
       base::DictionaryValue ui_data_dict;
       ui_data->FillDictionary(&ui_data_dict);
       std::string ui_data_json;
