@@ -58,6 +58,9 @@ const char kContinueUrl[] =
 // The maximum number of times we want to show the sync promo at startup.
 const int kSyncPromoShowAtStartupMaximum = 10;
 
+// Forces the web based signin flow when set.
+bool g_force_web_based_signin_flow = false;
+
 // Checks we want to show the sync promo for the given brand.
 bool AllowPromoAtStartupForCurrentBrand() {
   std::string brand;
@@ -300,8 +303,14 @@ bool SyncPromoUI::GetAutoCloseForSyncPromoURL(const GURL& url) {
 bool SyncPromoUI::UseWebBasedSigninFlow() {
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseWebBasedSigninFlow);
+      switches::kUseWebBasedSigninFlow) ||
+      g_force_web_based_signin_flow;
 #else
   return false;
 #endif
+}
+
+// static
+void SyncPromoUI::ForceWebBasedSigninFlowForTesting(bool force) {
+  g_force_web_based_signin_flow = force;
 }

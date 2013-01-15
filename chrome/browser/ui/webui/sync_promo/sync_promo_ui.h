@@ -72,6 +72,9 @@ class SyncPromoUI : public content::WebUIController {
   // only for platforms where |ENABLE_ONE_CLICK_SIGNIN| is defined.
   static bool UseWebBasedSigninFlow();
 
+  // Forces UseWebBasedSigninFlow() to return true when set; used in tests only.
+  static void ForceWebBasedSigninFlowForTesting(bool force);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncPromoUI);
 };

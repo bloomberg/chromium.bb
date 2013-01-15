@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
@@ -21,7 +20,6 @@
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -212,7 +210,6 @@ class OneClickSigninHelperTest : public content::RenderViewHostTestHarness {
  private:
   // Members to fake that we are on the UI thread.
   content::TestBrowserThread ui_thread_;
-  CommandLine::StringVector previous_argv_;
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninHelperTest);
 };
@@ -223,24 +220,14 @@ OneClickSigninHelperTest::OneClickSigninHelperTest()
 }
 
 void OneClickSigninHelperTest::SetUp() {
-  // Copy the current command line so that it can be restored in TearDown().
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  previous_argv_ = command_line->argv();
-  // Append kUseWebBasedSigninFlow so that CanOfferOnIOThreadImpl() can proceed
-  // past the test for that switch.
-  command_line->AppendSwitch(switches::kUseWebBasedSigninFlow);
-
+  SyncPromoUI::ForceWebBasedSigninFlowForTesting(true);
   profile_ = new TestingProfile();
   browser_context_.reset(profile_);
   content::RenderViewHostTestHarness::SetUp();
 }
 
 void OneClickSigninHelperTest::TearDown() {
-  // Restore the previous command line.
-  CommandLine::Reset();
-  CommandLine::Init(0, NULL);
-  CommandLine::ForCurrentProcess()->InitFromArgv(previous_argv_);
-  ASSERT_EQ(previous_argv_, CommandLine::ForCurrentProcess()->argv());
+  SyncPromoUI::ForceWebBasedSigninFlowForTesting(false);
   content::RenderViewHostTestHarness::TearDown();
 }
 
