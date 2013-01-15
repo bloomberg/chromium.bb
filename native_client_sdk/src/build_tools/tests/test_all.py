@@ -14,6 +14,7 @@ sys.path.append(os.path.join(SDK_DIR, 'tools', 'tests'))
 
 TEST_MODULES = [
     'oshelpers_test',
+    'create_nmf_test',
     'httpd_test',
     'sdktools_test',
     'sdktools_commands_test',
