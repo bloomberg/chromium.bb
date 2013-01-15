@@ -976,6 +976,9 @@ class ExtensionService
   // Whether any extension should be considered for wipeout.
   bool wipeout_is_active_;
 
+  // How many extensions were wiped out.
+  size_t wipeout_count_;
+
   NaClModuleInfoList nacl_module_list_;
 
   extensions::AppSyncBundle app_sync_bundle_;

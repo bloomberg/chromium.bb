@@ -358,6 +358,7 @@ ExtensionService::ExtensionService(Profile* profile,
       browser_terminating_(false),
       installs_delayed_(false),
       wipeout_is_active_(false),
+      wipeout_count_(0u),
       app_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       extension_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       app_shortcut_manager_(profile) {
@@ -605,6 +606,8 @@ void ExtensionService::Init() {
   if (wipeout_is_active_) {
     extension_prefs_->SetSideloadWipeoutDone();
     wipeout_is_active_ = false;  // Wipeout is only on during load.
+    UMA_HISTOGRAM_BOOLEAN("DisabledExtension.SideloadWipeoutNeeded",
+                          wipeout_count_ > 0u);
   }
 
   if (extension_prefs_->NeedsStorageGarbageCollection()) {
@@ -2296,6 +2299,7 @@ void ExtensionService::MaybeWipeout(
         static_cast<Extension::DisableReason>(
         Extension::DISABLE_SIDELOAD_WIPEOUT));
     UMA_HISTOGRAM_BOOLEAN("DisabledExtension.ExtensionWipedStatus", true);
+    wipeout_count_++;
   }
 }
 

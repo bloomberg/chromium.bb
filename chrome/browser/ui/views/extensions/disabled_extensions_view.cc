@@ -99,17 +99,18 @@ void DisabledExtensionsView::MaybeShow(Browser* browser,
   if (!extensions::FeatureSwitch::sideload_wipeout()->IsEnabled())
     return;
 
-  static bool done_showing_ui = false;
-  if (done_showing_ui)
+  static bool done_checking = false;
+  if (done_checking)
     return;  // Only show the bubble once per launch.
 
-  // A pref that counts how often the bubble has been shown.
-  IntegerPrefMember sideload_wipeout_bubble_shown;
-  sideload_wipeout_bubble_shown.Init(
-      prefs::kExtensionsSideloadWipeoutBubbleShown,
-          browser->profile()->GetPrefs());
-  if (sideload_wipeout_bubble_shown.GetValue() >= kShowSideloadWipeoutBubbleMax)
+  // A pref that counts how often the Sideload Wipeout bubble has been shown.
+  IntegerPrefMember bubble_shown;
+  bubble_shown.Init(prefs::kExtensionsSideloadWipeoutBubbleShown,
+                    browser->profile()->GetPrefs());
+  if (bubble_shown.GetValue() >= kShowSideloadWipeoutBubbleMax) {
+    done_checking = true;
     return;
+  }
 
   // Fetch all disabled extensions.
   ExtensionService* extension_service =
@@ -117,17 +118,15 @@ void DisabledExtensionsView::MaybeShow(Browser* browser,
           browser->profile())->extension_service();
   scoped_ptr<const ExtensionSet> wiped_out(
       extension_service->GetWipedOutExtensions());
-  UMA_HISTOGRAM_BOOLEAN("DisabledExtension.SideloadWipeoutNeeded",
-                        wiped_out->size() > 0);
   if (wiped_out->size()) {
     DisabledExtensionsView* bubble_delegate =
         new DisabledExtensionsView(
             anchor_view, browser, wiped_out.release());
     views::BubbleDelegateView::CreateBubble(bubble_delegate);
     bubble_delegate->ShowWhenReady();
-
-    done_showing_ui = true;
   }
+
+  done_checking = true;
 }
 
 void DisabledExtensionsView::ShowWhenReady() {
