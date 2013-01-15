@@ -5,7 +5,7 @@
 #include "content/browser/download/download_file_factory.h"
 
 #include "content/browser/download/download_file_impl.h"
-#include "content/browser/power_save_blocker.h"
+#include "content/public/browser/power_save_blocker.h"
 
 namespace content {
 
@@ -21,7 +21,7 @@ DownloadFile* DownloadFileFactory::CreateFile(
     const net::BoundNetLog& bound_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer) {
   scoped_ptr<PowerSaveBlocker> psb(
-      new PowerSaveBlocker(
+      PowerSaveBlocker::Create(
           PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
           "Download in progress"));
   return new DownloadFileImpl(

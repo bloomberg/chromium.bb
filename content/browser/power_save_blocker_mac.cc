@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/power_save_blocker.h"
+#include "content/browser/power_save_blocker_impl.h"
 
 #include <IOKit/pwr_mgt/IOPMLib.h>
 
@@ -36,8 +36,8 @@ base::LazyInstance<base::Thread, PowerSaveBlockerLazyInstanceTraits>
 
 }  // namespace
 
-class PowerSaveBlocker::Delegate
-    : public base::RefCountedThreadSafe<PowerSaveBlocker::Delegate> {
+class PowerSaveBlockerImpl::Delegate
+    : public base::RefCountedThreadSafe<PowerSaveBlockerImpl::Delegate> {
  public:
   Delegate(PowerSaveBlockerType type, const std::string& reason)
       : type_(type), reason_(reason), assertion_(kIOPMNullAssertionID) {}
@@ -54,7 +54,7 @@ class PowerSaveBlocker::Delegate
   IOPMAssertionID assertion_;
 };
 
-void PowerSaveBlocker::Delegate::ApplyBlock() {
+void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
   DCHECK_EQ(base::PlatformThread::CurrentId(),
             g_power_thread.Pointer()->thread_id());
 
@@ -84,7 +84,7 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
   }
 }
 
-void PowerSaveBlocker::Delegate::RemoveBlock() {
+void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
   DCHECK_EQ(base::PlatformThread::CurrentId(),
             g_power_thread.Pointer()->thread_id());
 
@@ -95,15 +95,15 @@ void PowerSaveBlocker::Delegate::RemoveBlock() {
   }
 }
 
-PowerSaveBlocker::PowerSaveBlocker(PowerSaveBlockerType type,
-                                   const std::string& reason)
+PowerSaveBlockerImpl::PowerSaveBlockerImpl(PowerSaveBlockerType type,
+                                           const std::string& reason)
     : delegate_(new Delegate(type, reason)) {
   g_power_thread.Pointer()->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&Delegate::ApplyBlock, delegate_));
 }
 
-PowerSaveBlocker::~PowerSaveBlocker() {
+PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
   g_power_thread.Pointer()->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&Delegate::RemoveBlock, delegate_));

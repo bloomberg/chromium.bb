@@ -14,10 +14,10 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_net_log_parameters.h"
-#include "content/browser/power_save_blocker.h"
+#include "content/browser/download/download_stats.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_destination_observer.h"
-#include "content/browser/download/download_stats.h"
+#include "content/public/browser/power_save_blocker.h"
 #include "net/base/io_buffer.h"
 
 namespace content {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/power_save_blocker.h"
+#include "content/browser/power_save_blocker_impl.h"
 
 #include <X11/Xlib.h>
 #include <X11/extensions/dpms.h>
@@ -63,12 +63,12 @@ const char kFreeDesktopAPIInterfaceName[] =
 const char kFreeDesktopAPIObjectPath[] =
     "/org/freedesktop/PowerManagement/Inhibit";
 
-}  // anonymous namespace
+}  // namespace
 
 namespace content {
 
-class PowerSaveBlocker::Delegate
-    : public base::RefCountedThreadSafe<PowerSaveBlocker::Delegate> {
+class PowerSaveBlockerImpl::Delegate
+    : public base::RefCountedThreadSafe<PowerSaveBlockerImpl::Delegate> {
  public:
   // Picks an appropriate D-Bus API to use based on the desktop environment.
   Delegate(PowerSaveBlockerType type, const std::string& reason);
@@ -128,8 +128,8 @@ class PowerSaveBlocker::Delegate
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
-PowerSaveBlocker::Delegate::Delegate(PowerSaveBlockerType type,
-                                     const std::string& reason)
+PowerSaveBlockerImpl::Delegate::Delegate(PowerSaveBlockerType type,
+                                         const std::string& reason)
     : type_(type),
       reason_(reason),
       api_(NO_API),
@@ -139,7 +139,7 @@ PowerSaveBlocker::Delegate::Delegate(PowerSaveBlockerType type,
   // object yet. We'll do it later in ApplyBlock(), on the FILE thread.
 }
 
-void PowerSaveBlocker::Delegate::Init() {
+void PowerSaveBlockerImpl::Delegate::Init() {
   base::AutoLock lock(lock_);
   DCHECK(!enqueue_apply_);
   enqueue_apply_ = true;
@@ -147,7 +147,7 @@ void PowerSaveBlocker::Delegate::Init() {
                           base::Bind(&Delegate::InitOnUIThread, this));
 }
 
-void PowerSaveBlocker::Delegate::CleanUp() {
+void PowerSaveBlockerImpl::Delegate::CleanUp() {
   base::AutoLock lock(lock_);
   if (enqueue_apply_) {
     // If a call to ApplyBlock() has not yet been enqueued because we are still
@@ -160,7 +160,7 @@ void PowerSaveBlocker::Delegate::CleanUp() {
   }
 }
 
-void PowerSaveBlocker::Delegate::InitOnUIThread() {
+void PowerSaveBlockerImpl::Delegate::InitOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::AutoLock lock(lock_);
   api_ = SelectAPI();
@@ -174,7 +174,7 @@ void PowerSaveBlocker::Delegate::InitOnUIThread() {
   enqueue_apply_ = false;
 }
 
-void PowerSaveBlocker::Delegate::ApplyBlock(DBusAPI api) {
+void PowerSaveBlockerImpl::Delegate::ApplyBlock(DBusAPI api) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!bus_.get());  // ApplyBlock() should only be called once.
 
@@ -254,7 +254,7 @@ void PowerSaveBlocker::Delegate::ApplyBlock(DBusAPI api) {
   }
 }
 
-void PowerSaveBlocker::Delegate::RemoveBlock(DBusAPI api) {
+void PowerSaveBlockerImpl::Delegate::RemoveBlock(DBusAPI api) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(bus_.get());  // RemoveBlock() should only be called once.
 
@@ -296,7 +296,7 @@ void PowerSaveBlocker::Delegate::RemoveBlock(DBusAPI api) {
 }
 
 // static
-bool PowerSaveBlocker::Delegate::DPMSEnabled() {
+bool PowerSaveBlockerImpl::Delegate::DPMSEnabled() {
   Display* display = base::MessagePumpForUI::GetDefaultXDisplay();
   BOOL enabled = false;
   int dummy;
@@ -308,7 +308,7 @@ bool PowerSaveBlocker::Delegate::DPMSEnabled() {
 }
 
 // static
-DBusAPI PowerSaveBlocker::Delegate::SelectAPI() {
+DBusAPI PowerSaveBlockerImpl::Delegate::SelectAPI() {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   switch (base::nix::GetDesktopEnvironment(env.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_GNOME:
@@ -329,13 +329,13 @@ DBusAPI PowerSaveBlocker::Delegate::SelectAPI() {
   return NO_API;
 }
 
-PowerSaveBlocker::PowerSaveBlocker(
+PowerSaveBlockerImpl::PowerSaveBlockerImpl(
     PowerSaveBlockerType type, const std::string& reason)
     : delegate_(new Delegate(type, reason)) {
   delegate_->Init();
 }
 
-PowerSaveBlocker::~PowerSaveBlocker() {
+PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
   delegate_->CleanUp();
 }
 
