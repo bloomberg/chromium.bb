@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "net/base/io_buffer.h"
 
 namespace net {
 
@@ -42,7 +43,8 @@ TestCompletionCallback::TestCompletionCallback()
                    base::Unretained(this)))) {
 }
 
-TestCompletionCallback::~TestCompletionCallback() {}
+TestCompletionCallback::~TestCompletionCallback() {
+}
 
 TestInt64CompletionCallback::TestInt64CompletionCallback()
     : ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
@@ -50,6 +52,20 @@ TestInt64CompletionCallback::TestInt64CompletionCallback()
                    base::Unretained(this)))) {
 }
 
-TestInt64CompletionCallback::~TestInt64CompletionCallback() {}
+TestInt64CompletionCallback::~TestInt64CompletionCallback() {
+}
+
+ReleaseBufferCompletionCallback::ReleaseBufferCompletionCallback(
+    IOBuffer* buffer) : buffer_(buffer) {
+}
+
+ReleaseBufferCompletionCallback::~ReleaseBufferCompletionCallback() {
+}
+
+void ReleaseBufferCompletionCallback::SetResult(int result) {
+  if (!buffer_->HasOneRef())
+    result = net::ERR_FAILED;
+  TestCompletionCallback::SetResult(result);
+}
 
 }  // namespace net

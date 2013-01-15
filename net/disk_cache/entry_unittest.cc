@@ -510,24 +510,6 @@ TEST_F(DiskCacheEntryTest, MemoryOnlyExternalAsyncIO) {
   ExternalAsyncIO();
 }
 
-// Makes sure that the buffer is not referenced when the callback runs.
-class ReleaseBufferCompletionCallback: public net::TestCompletionCallback {
- public:
-  explicit ReleaseBufferCompletionCallback(net::IOBuffer* buffer)
-      : buffer_(buffer) {
-  }
-
- private:
-  virtual void SetResult(int result) OVERRIDE {
-    if (!buffer_->HasOneRef())
-      result = net::ERR_FAILED;
-    TestCompletionCallback::SetResult(result);
-  }
-
-  net::IOBuffer* buffer_;
-  DISALLOW_COPY_AND_ASSIGN(ReleaseBufferCompletionCallback);
-};
-
 // Tests that IOBuffers are not referenced after IO completes.
 void DiskCacheEntryTest::ReleaseBuffer() {
   disk_cache::Entry* entry = NULL;
@@ -538,7 +520,7 @@ void DiskCacheEntryTest::ReleaseBuffer() {
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
   CacheTestFillBuffer(buffer->data(), kBufferSize, false);
 
-  ReleaseBufferCompletionCallback cb(buffer);
+  net::ReleaseBufferCompletionCallback cb(buffer);
   int rv = entry->WriteData(0, 0, buffer, kBufferSize, cb.callback(), false);
   EXPECT_EQ(kBufferSize, cb.GetResult(rv));
   entry->Close();

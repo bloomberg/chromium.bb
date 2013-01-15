@@ -552,6 +552,29 @@ TEST(HttpCache, SimpleGETNoDiskCache2) {
   EXPECT_FALSE(cache.http_cache()->GetCurrentBackend());
 }
 
+// Tests that IOBuffers are not referenced after IO completes.
+TEST(HttpCache, ReleaseBuffer) {
+  MockHttpCache cache;
+
+  // Write to the cache.
+  RunTransactionTest(cache.http_cache(), kSimpleGET_Transaction);
+
+  MockHttpRequest request(kSimpleGET_Transaction);
+  scoped_ptr<net::HttpTransaction> trans;
+  int rv = cache.http_cache()->CreateTransaction(&trans, NULL);
+  ASSERT_EQ(net::OK, rv);
+
+  const int kBufferSize = 10;
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+  net::ReleaseBufferCompletionCallback cb(buffer);
+
+  rv = trans->Start(&request, cb.callback(), net::BoundNetLog());
+  EXPECT_EQ(net::OK, cb.GetResult(rv));
+
+  rv = trans->Read(buffer, kBufferSize, cb.callback());
+  EXPECT_EQ(kBufferSize, cb.GetResult(rv));
+}
+
 TEST(HttpCache, SimpleGETWithDiskFailures) {
   MockHttpCache cache;
 

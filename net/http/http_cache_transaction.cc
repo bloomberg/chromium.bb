@@ -470,6 +470,8 @@ void HttpCache::Transaction::DoCallback(int rv) {
   DCHECK(rv != ERR_IO_PENDING);
   DCHECK(!callback_.is_null());
 
+  read_buf_ = NULL;  // Release the buffer before invoking the callback.
+
   // Since Run may result in Read being called, clear callback_ up front.
   CompletionCallback c = callback_;
   callback_.Reset();

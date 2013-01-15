@@ -24,6 +24,8 @@
 
 namespace net {
 
+class IOBuffer;
+
 namespace internal {
 
 class TestCompletionCallbackBaseInternal {
@@ -106,6 +108,19 @@ class TestInt64CompletionCallback : public TestInt64CompletionCallbackBase {
   const Int64CompletionCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInt64CompletionCallback);
+};
+
+// Makes sure that the buffer is not referenced when the callback runs.
+class ReleaseBufferCompletionCallback: public TestCompletionCallback {
+ public:
+  explicit ReleaseBufferCompletionCallback(IOBuffer* buffer);
+  virtual ~ReleaseBufferCompletionCallback();
+
+ private:
+  virtual void SetResult(int result) OVERRIDE;
+
+  IOBuffer* buffer_;
+  DISALLOW_COPY_AND_ASSIGN(ReleaseBufferCompletionCallback);
 };
 
 }  // namespace net
