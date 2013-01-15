@@ -216,23 +216,6 @@ void LayerTreeHost::acquireLayerTextures()
 void LayerTreeHost::didBeginFrame()
 {
     m_client->didBeginFrame();
-
-    if (m_debugState.continuousPainting)
-        setNeedsDisplayOnAllLayersRecursive(m_rootLayer.get());
-}
-
-void LayerTreeHost::setNeedsDisplayOnAllLayersRecursive(Layer* layer)
-{
-    if (!layer)
-        return;
-
-    layer->setNeedsDisplay();
-
-    setNeedsDisplayOnAllLayersRecursive(layer->maskLayer());
-    setNeedsDisplayOnAllLayersRecursive(layer->replicaLayer());
-
-    for (size_t childIndex = 0; childIndex < layer->children().size(); ++childIndex)
-        setNeedsDisplayOnAllLayersRecursive(layer->children()[childIndex].get());
 }
 
 void LayerTreeHost::updateAnimations(base::TimeTicks frameBeginTime)

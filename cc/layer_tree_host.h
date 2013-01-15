@@ -230,8 +230,6 @@ private:
     bool animateLayersRecursive(Layer* current, base::TimeTicks time);
     void setAnimationEventsRecursive(const AnimationEventsVector&, Layer*, base::Time wallClockTime);
 
-    void setNeedsDisplayOnAllLayersRecursive(Layer* layer);
-
     bool m_animating;
     bool m_needsFullTreeSync;
 
