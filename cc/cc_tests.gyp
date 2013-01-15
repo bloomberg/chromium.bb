@@ -60,6 +60,7 @@
       'tile_priority_unittest.cc',
       'tiled_layer_impl_unittest.cc',
       'tiled_layer_unittest.cc',
+      'tiling_data_unittest.cc',
       'tree_synchronizer_unittest.cc',
       'timing_function_unittest.cc',
       'test/fake_web_graphics_context_3d_unittest.cc',
