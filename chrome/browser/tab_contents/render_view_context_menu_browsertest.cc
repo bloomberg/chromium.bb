@@ -10,6 +10,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_browsertest_util.h"
+#include "chrome/browser/tab_contents/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -28,25 +29,6 @@
 using content::WebContents;
 
 namespace {
-
-class TestRenderViewContextMenu : public RenderViewContextMenu {
- public:
-  TestRenderViewContextMenu(WebContents* web_contents,
-                            content::ContextMenuParams params)
-      : RenderViewContextMenu(web_contents, params) { }
-
-  virtual void PlatformInit() { }
-  virtual void PlatformCancel() { }
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) {
-    return false;
-  }
-
-  bool IsItemPresent(int command_id) {
-    return menu_model_.GetIndexOfCommandId(command_id) != -1;
-  }
-};
 
 class ContextMenuBrowserTest : public InProcessBrowserTest {
  public:

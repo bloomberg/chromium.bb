@@ -1181,6 +1181,8 @@
         'browser/tab_contents/render_view_context_menu_browsertest.cc',
         'browser/tab_contents/render_view_context_menu_browsertest_util.cc',
         'browser/tab_contents/render_view_context_menu_browsertest_util.h',
+        'browser/tab_contents/render_view_context_menu_test_util.cc',
+        'browser/tab_contents/render_view_context_menu_test_util.h',
         'browser/tab_contents/spellchecker_submenu_observer_browsertest.cc',
         'browser/tab_contents/spelling_menu_observer_browsertest.cc',
         'browser/tab_contents/view_source_browsertest.cc',

@@ -4,7 +4,17 @@
 
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 
+#include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/tab_contents/render_view_context_menu_test_util.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/test_browser_thread.h"
 #include "extensions/common/url_pattern.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -236,4 +246,51 @@ TEST_F(RenderViewContextMenuTest, TargetIgnoredForSelectionOnImage) {
   URLPatternSet patterns = CreatePatternSet("*://test.none/*");
 
   EXPECT_TRUE(ExtensionContextAndPatternMatch(params, contexts, patterns));
+}
+
+class RenderViewContextMenuPrefsTest : public ChromeRenderViewHostTestHarness {
+ public:
+  RenderViewContextMenuPrefsTest()
+      : browser_thread_(content::BrowserThread::UI, &message_loop_),
+        registry_(profile(), NULL) {}
+
+  TestRenderViewContextMenu* CreateContextMenu() {
+    content::ContextMenuParams params = CreateParams(MenuItem::LINK);
+    params.unfiltered_link_url = params.link_url;
+    content::WebContents* wc = web_contents();
+    TestRenderViewContextMenu* menu = new TestRenderViewContextMenu(
+        wc, params);
+    // TestingProfile (returned by profile()) does not provide a protocol
+    // registry.
+    menu->protocol_handler_registry_ = &registry_;
+    menu->Init();
+    return menu;
+  }
+
+ private:
+  content::TestBrowserThread browser_thread_;
+  ProtocolHandlerRegistry registry_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuPrefsTest);
+};
+
+// Verifies when Incognito Mode is not available (disabled by policy),
+// Open Link in Incognito Window link in the context menu is disabled.
+TEST_F(RenderViewContextMenuPrefsTest,
+       DisableOpenInIncognitoWindowWhenIncognitoIsDisabled) {
+  scoped_ptr<TestRenderViewContextMenu> menu(CreateContextMenu());
+
+  // Initially the Incognito mode is be enabled. So is the Open Link in
+  // Incognito Window link.
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+  EXPECT_TRUE(
+      menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+
+  // Disable Incognito mode.
+  IncognitoModePrefs::SetAvailability(profile()->GetPrefs(),
+                                      IncognitoModePrefs::DISABLED);
+  menu.reset(CreateContextMenu());
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+  EXPECT_FALSE(
+      menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
 }

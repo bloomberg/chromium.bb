@@ -190,6 +190,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
 
  private:
   friend class RenderViewContextMenuTest;
+  friend class RenderViewContextMenuPrefsTest;
 
   static bool IsDevToolsURL(const GURL& url);
   static bool IsInternalResourcesURL(const GURL& url);
