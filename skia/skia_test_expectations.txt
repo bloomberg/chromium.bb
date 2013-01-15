@@ -51,4 +51,6 @@
 crbug.com/165935 fast/forms/button-generated-content.html [ ImageOnlyFailure ]
 crbug.com/165935 fast/forms/button-inner-block-reuse.html [ ImageOnlyFailure ]
 
+crbug.com/170082 platform/chromium/virtual/gpu/fast/canvas/canvas-imageSmoothingEnabled-patterns.html [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
