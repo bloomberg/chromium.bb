@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/download/download_request_infobar_delegate.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,6 +25,9 @@ class MockTabDownloadState : public DownloadRequestLimiter::TabDownloadState {
   bool accepted() const { return accepted_; }
 
  private:
+  // To produce weak pointers for infobar_ construction.
+  base::WeakPtrFactory<DownloadRequestLimiter::TabDownloadState> factory_;
+
   // The actual infobar delegate we're listening to.
   scoped_ptr<DownloadRequestInfoBarDelegate> infobar_;
 
@@ -33,13 +37,14 @@ class MockTabDownloadState : public DownloadRequestLimiter::TabDownloadState {
   // True if we have gotten a Accept response. Meaningless if |responded_| is
   // not true.
   bool accepted_;
+
 };
 
 MockTabDownloadState::MockTabDownloadState()
-    : infobar_(DownloadRequestInfoBarDelegate::Create(this)),
+    : factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      infobar_(DownloadRequestInfoBarDelegate::Create(factory_.GetWeakPtr())),
       responded_(false),
-      accepted_(false) {
-}
+      accepted_(false) {}
 
 MockTabDownloadState::~MockTabDownloadState() {
   EXPECT_TRUE(responded_);
@@ -55,7 +60,7 @@ void MockTabDownloadState::Accept() {
   EXPECT_FALSE(responded_);
   responded_ = true;
   accepted_ = true;
-  infobar_->set_host(NULL);
+  factory_.InvalidateWeakPtrs();
 }
 
 

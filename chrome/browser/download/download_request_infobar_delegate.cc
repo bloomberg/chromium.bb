@@ -18,14 +18,14 @@ DownloadRequestInfoBarDelegate::~DownloadRequestInfoBarDelegate() {
 // static
 void DownloadRequestInfoBarDelegate::Create(
     InfoBarService* infobar_service,
-    DownloadRequestLimiter::TabDownloadState* host) {
+    base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host) {
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
       new DownloadRequestInfoBarDelegate(infobar_service, host)));
 }
 
 DownloadRequestInfoBarDelegate::DownloadRequestInfoBarDelegate(
     InfoBarService* infobar_service,
-    DownloadRequestLimiter::TabDownloadState* host)
+    base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host)
     : ConfirmInfoBarDelegate(infobar_service),
       host_(host) {
 }
@@ -47,7 +47,8 @@ string16 DownloadRequestInfoBarDelegate::GetButtonLabel(
 
 bool DownloadRequestInfoBarDelegate::Accept() {
   if (host_) {
-    // Accept() call will nullify host_ if no further prompts are required.
+    // Accept() call will invalidate host_ weak pointer if no further
+    // prompts are required.
     host_->Accept();
   }
 
