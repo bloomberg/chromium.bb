@@ -122,7 +122,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
 
   void ReadAndExpectFrameReadyWith(
       AudioDecoder::Status status,
-      const scoped_refptr<Buffer>& audio_frame) {
+      const scoped_refptr<DataBuffer>& audio_frame) {
     if (status != AudioDecoder::kOk)
       EXPECT_CALL(*this, FrameReady(status, IsNull()));
     else if (audio_frame->IsEndOfStream())
@@ -217,7 +217,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
   MOCK_METHOD1(RequestDecryptorNotification, void(const DecryptorReadyCB&));
 
   MOCK_METHOD2(FrameReady, void(AudioDecoder::Status,
-                                const scoped_refptr<Buffer>&));
+                                const scoped_refptr<DataBuffer>&));
 
   MessageLoop message_loop_;
   scoped_refptr<DecryptingAudioDecoder> decoder_;
@@ -233,8 +233,8 @@ class DecryptingAudioDecoderTest : public testing::Test {
 
   // Constant buffer/frames to be returned by the |demuxer_| and |decryptor_|.
   scoped_refptr<DecoderBuffer> encrypted_buffer_;
-  scoped_refptr<Buffer> decoded_frame_;
-  scoped_refptr<Buffer> end_of_stream_frame_;
+  scoped_refptr<DataBuffer> decoded_frame_;
+  scoped_refptr<DataBuffer> end_of_stream_frame_;
   Decryptor::AudioBuffers decoded_frame_list_;
 
  private:

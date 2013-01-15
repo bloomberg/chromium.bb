@@ -10,12 +10,12 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/audio/audio_util.h"
-#include "media/base/buffers.h"
+#include "media/base/data_buffer.h"
 
 namespace media {
 
 // The starting size in bytes for |audio_buffer_|.
-// Previous usage maintained a deque of 16 Buffers, each of size 4Kb. This
+// Previous usage maintained a deque of 16 DataBuffers, each of size 4Kb. This
 // worked well, so we maintain this number of bytes (16 * 4096).
 static const int kStartingBufferSizeInBytes = 65536;
 
@@ -388,7 +388,8 @@ base::TimeDelta AudioRendererAlgorithm::GetTime() {
   return audio_buffer_.current_time();
 }
 
-void AudioRendererAlgorithm::EnqueueBuffer(Buffer* buffer_in) {
+void AudioRendererAlgorithm::EnqueueBuffer(
+    const scoped_refptr<DataBuffer>& buffer_in) {
   DCHECK(!buffer_in->IsEndOfStream());
   audio_buffer_.Append(buffer_in);
   needs_more_data_ = false;

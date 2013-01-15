@@ -17,6 +17,7 @@
 #include "media/audio/audio_util.h"
 #include "media/base/audio_splicer.h"
 #include "media/base/bind_to_loop.h"
+#include "media/base/data_buffer.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_switches.h"
 #include "media/filters/audio_decoder_selector.h"
@@ -324,8 +325,9 @@ AudioRendererImpl::~AudioRendererImpl() {
   DCHECK(!algorithm_.get());
 }
 
-void AudioRendererImpl::DecodedAudioReady(AudioDecoder::Status status,
-                                          const scoped_refptr<Buffer>& buffer) {
+void AudioRendererImpl::DecodedAudioReady(
+    AudioDecoder::Status status,
+    const scoped_refptr<DataBuffer>& buffer) {
   base::AutoLock auto_lock(lock_);
   DCHECK(state_ == kPaused || state_ == kPrerolling || state_ == kPlaying ||
          state_ == kUnderflow || state_ == kRebuffering || state_ == kStopped);
@@ -367,7 +369,7 @@ void AudioRendererImpl::DecodedAudioReady(AudioDecoder::Status status,
 }
 
 bool AudioRendererImpl::HandleSplicerBuffer(
-    const scoped_refptr<Buffer>& buffer) {
+    const scoped_refptr<DataBuffer>& buffer) {
   if (buffer->IsEndOfStream()) {
     received_end_of_stream_ = true;
 
@@ -440,7 +442,7 @@ void AudioRendererImpl::SetPlaybackRate(float playback_rate) {
 }
 
 bool AudioRendererImpl::IsBeforePrerollTime(
-    const scoped_refptr<Buffer>& buffer) {
+    const scoped_refptr<DataBuffer>& buffer) {
   return (state_ == kPrerolling) && buffer && !buffer->IsEndOfStream() &&
       (buffer->GetTimestamp() + buffer->GetDuration()) < preroll_timestamp_;
 }

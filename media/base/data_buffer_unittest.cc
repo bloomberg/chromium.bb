@@ -28,6 +28,47 @@ TEST(DataBufferTest, Constructors) {
   ASSERT_NE(0, memcmp(buffer3->GetData(), kTestData, kTestDataSize));
 }
 
+TEST(DataBufferTest, Timestamp) {
+  const base::TimeDelta kZero;
+  const base::TimeDelta kTimestampA = base::TimeDelta::FromMicroseconds(1337);
+  const base::TimeDelta kTimestampB = base::TimeDelta::FromMicroseconds(1234);
+
+  scoped_refptr<DataBuffer> buffer = new DataBuffer(0);
+  EXPECT_TRUE(buffer->GetTimestamp() == kZero);
+
+  buffer->SetTimestamp(kTimestampA);
+  EXPECT_TRUE(buffer->GetTimestamp() == kTimestampA);
+
+  buffer->SetTimestamp(kTimestampB);
+  EXPECT_TRUE(buffer->GetTimestamp() == kTimestampB);
+}
+
+TEST(DataBufferTest, Duration) {
+  const base::TimeDelta kZero;
+  const base::TimeDelta kDurationA = base::TimeDelta::FromMicroseconds(1337);
+  const base::TimeDelta kDurationB = base::TimeDelta::FromMicroseconds(1234);
+
+  scoped_refptr<DataBuffer> buffer = new DataBuffer(0);
+  EXPECT_TRUE(buffer->GetDuration() == kZero);
+
+  buffer->SetDuration(kDurationA);
+  EXPECT_TRUE(buffer->GetDuration() == kDurationA);
+
+  buffer->SetDuration(kDurationB);
+  EXPECT_TRUE(buffer->GetDuration() == kDurationB);
+}
+
+TEST(DataBufferTest, IsEndOfStream) {
+  const uint8 kData[] = { 0x00, 0xFF };
+  const int kDataSize = arraysize(kData);
+
+  scoped_refptr<DataBuffer> buffer = new DataBuffer(0);
+  EXPECT_TRUE(buffer->IsEndOfStream());
+
+  buffer = new DataBuffer(kData, kDataSize);
+  EXPECT_FALSE(buffer->IsEndOfStream());
+}
+
 TEST(DataBufferTest, ReadingWriting) {
   const char kData[] = "hello";
   const int kDataSize = arraysize(kData);

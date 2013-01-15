@@ -2,6 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef MEDIA_BASE_DECODER_BUFFER_H_
+#define MEDIA_BASE_DECODER_BUFFER_H_
+
+#include "base/memory/aligned_memory.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/time.h"
+#include "build/build_config.h"
+#include "media/base/media_export.h"
+
+namespace media {
+
+class DecryptConfig;
+
 // A specialized buffer for interfacing with audio / video decoders.
 //
 // Specifically ensures that data is aligned and padded as necessary by the
@@ -9,19 +23,8 @@
 // allocated using FFmpeg with particular alignment and padding requirements.
 //
 // Also includes decoder specific functionality for decryption.
-
-#ifndef MEDIA_BASE_DECODER_BUFFER_H_
-#define MEDIA_BASE_DECODER_BUFFER_H_
-
-#include "base/memory/aligned_memory.h"
-#include "base/memory/scoped_ptr.h"
-#include "build/build_config.h"
-#include "media/base/buffers.h"
-#include "media/base/decrypt_config.h"
-
-namespace media {
-
-class MEDIA_EXPORT DecoderBuffer : public Buffer {
+class MEDIA_EXPORT DecoderBuffer
+    : public base::RefCountedThreadSafe<DecoderBuffer> {
  public:
   enum {
     kPaddingSize = 16,
@@ -44,17 +47,29 @@ class MEDIA_EXPORT DecoderBuffer : public Buffer {
   // and GetWritableData() will return NULL and GetDataSize() will return 0.
   static scoped_refptr<DecoderBuffer> CreateEOSBuffer();
 
-  // Buffer implementation.
-  virtual const uint8* GetData() const OVERRIDE;
-  virtual int GetDataSize() const OVERRIDE;
+  base::TimeDelta GetTimestamp() const;
+  void SetTimestamp(const base::TimeDelta& timestamp);
 
-  // Returns a read-write pointer to the buffer data.
-  virtual uint8* GetWritableData();
+  base::TimeDelta GetDuration() const;
+  void SetDuration(const base::TimeDelta& duration);
 
-  virtual const DecryptConfig* GetDecryptConfig() const;
-  virtual void SetDecryptConfig(scoped_ptr<DecryptConfig> decrypt_config);
+  const uint8* GetData() const;
+  uint8* GetWritableData() const;
+
+  int GetDataSize() const;
+
+  const DecryptConfig* GetDecryptConfig() const;
+  void SetDecryptConfig(scoped_ptr<DecryptConfig> decrypt_config);
+
+  // If there's no data in this buffer, it represents end of stream.
+  //
+  // TODO(scherkus): Change to be an actual settable flag as opposed to being
+  // based on the value of |data_|, see http://crbug.com/169133
+  bool IsEndOfStream() const;
 
  protected:
+  friend class base::RefCountedThreadSafe<DecoderBuffer>;
+
   // Allocates a buffer of size |size| >= 0 and copies |data| into it.  Buffer
   // will be padded and aligned as necessary.  If |data| is NULL then |data_| is
   // set to NULL and |buffer_size_| to 0.
@@ -62,6 +77,9 @@ class MEDIA_EXPORT DecoderBuffer : public Buffer {
   virtual ~DecoderBuffer();
 
  private:
+  base::TimeDelta timestamp_;
+  base::TimeDelta duration_;
+
   int buffer_size_;
   scoped_ptr<uint8, base::ScopedPtrAlignedFree> data_;
   scoped_ptr<DecryptConfig> decrypt_config_;

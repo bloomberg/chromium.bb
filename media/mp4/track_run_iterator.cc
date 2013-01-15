@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "media/base/buffers.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/mp4/rcheck.h"
 

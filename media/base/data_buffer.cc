@@ -9,22 +9,19 @@
 namespace media {
 
 DataBuffer::DataBuffer(scoped_array<uint8> buffer, int buffer_size)
-    : Buffer(base::TimeDelta(), base::TimeDelta()),
-      data_(buffer.Pass()),
+    : data_(buffer.Pass()),
       buffer_size_(buffer_size),
       data_size_(buffer_size) {
 }
 
 DataBuffer::DataBuffer(int buffer_size)
-    : Buffer(base::TimeDelta(), base::TimeDelta()),
-      buffer_size_(buffer_size),
+    : buffer_size_(buffer_size),
       data_size_(0) {
   Initialize();
 }
 
 DataBuffer::DataBuffer(const uint8* data, int data_size)
-    : Buffer(base::TimeDelta(), base::TimeDelta()),
-      buffer_size_(data_size),
+    : buffer_size_(data_size),
       data_size_(data_size) {
   Initialize();
   memcpy(data_.get(), data, data_size_);
@@ -43,16 +40,36 @@ void DataBuffer::Initialize() {
   data_.reset(new uint8[buffer_size_]);
 }
 
+base::TimeDelta DataBuffer::GetTimestamp() const {
+  return timestamp_;
+}
+
+void DataBuffer::SetTimestamp(const base::TimeDelta& timestamp) {
+  timestamp_ = timestamp;
+}
+
+base::TimeDelta DataBuffer::GetDuration() const {
+  return duration_;
+}
+
+void DataBuffer::SetDuration(const base::TimeDelta& duration) {
+  duration_ = duration;
+}
+
+bool DataBuffer::IsEndOfStream() const {
+  return data_ == NULL;
+}
+
 const uint8* DataBuffer::GetData() const {
+  return data_.get();
+}
+
+uint8* DataBuffer::GetWritableData() {
   return data_.get();
 }
 
 int DataBuffer::GetDataSize() const {
   return data_size_;
-}
-
-uint8* DataBuffer::GetWritableData() {
-  return data_.get();
 }
 
 void DataBuffer::SetDataSize(int data_size) {

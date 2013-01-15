@@ -23,12 +23,13 @@
 #define MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_H_
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/seekable_buffer.h"
 
 namespace media {
 
-class Buffer;
+class DataBuffer;
 
 class MEDIA_EXPORT AudioRendererAlgorithm {
  public:
@@ -61,7 +62,7 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
 
   // Enqueues a buffer. It is called from the owner of the algorithm after a
   // read completes.
-  void EnqueueBuffer(Buffer* buffer_in);
+  void EnqueueBuffer(const scoped_refptr<DataBuffer>& buffer_in);
 
   float playback_rate() const { return playback_rate_; }
   void SetPlaybackRate(float new_rate);

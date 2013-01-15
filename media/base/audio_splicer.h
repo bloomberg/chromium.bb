@@ -14,7 +14,7 @@
 namespace media {
 
 class AudioDecoderConfig;
-class Buffer;
+class DataBuffer;
 
 // Helper class that handles filling gaps and resolving overlaps.
 class MEDIA_EXPORT AudioSplicer {
@@ -29,17 +29,17 @@ class MEDIA_EXPORT AudioSplicer {
   // Adds a new buffer full of samples or end of stream buffer to the splicer.
   // Returns true if the buffer was accepted. False is returned if an error
   // occurred.
-  bool AddInput(const scoped_refptr<Buffer>& input);
+  bool AddInput(const scoped_refptr<DataBuffer>& input);
 
   // Returns true if the splicer has a buffer to return.
   bool HasNextBuffer() const;
 
   // Removes the next buffer from the output buffer queue and returns it.
   // This should only be called if HasNextBuffer() returns true.
-  scoped_refptr<Buffer> GetNextBuffer();
+  scoped_refptr<DataBuffer> GetNextBuffer();
 
  private:
-  void AddOutputBuffer(const scoped_refptr<Buffer>& buffer);
+  void AddOutputBuffer(const scoped_refptr<DataBuffer>& buffer);
 
   AudioTimestampHelper output_timestamp_helper_;
 
@@ -49,7 +49,7 @@ class MEDIA_EXPORT AudioSplicer {
   // in the source content.
   int min_gap_size_;
 
-  std::deque<scoped_refptr<Buffer> > output_buffers_;
+  std::deque<scoped_refptr<DataBuffer> > output_buffers_;
   bool received_end_of_stream_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioSplicer);

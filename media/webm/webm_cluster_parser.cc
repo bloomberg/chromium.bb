@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "media/base/data_buffer.h"
+#include "media/base/buffers.h"
 #include "media/base/decrypt_config.h"
 #include "media/webm/webm_constants.h"
 

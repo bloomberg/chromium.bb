@@ -11,6 +11,7 @@
 #include "base/sys_byteorder.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_timestamp_helper.h"
+#include "media/base/buffers.h"
 #include "media/base/data_buffer.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer.h"
@@ -29,7 +30,8 @@ static uint16 ReadLE16(const uint8* data, size_t data_size, int read_offset) {
 }
 
 // Returns true if the decode result was end of stream.
-static inline bool IsEndOfStream(int decoded_size, Buffer* input) {
+static inline bool IsEndOfStream(int decoded_size,
+                                 const scoped_refptr<DecoderBuffer>& input) {
   // Two conditions to meet to declare end of stream for this decoder:
   // 1. Opus didn't output anything.
   // 2. An end of stream buffer is received.

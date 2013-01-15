@@ -13,7 +13,7 @@
 
 namespace media {
 
-class Buffer;
+class DataBuffer;
 class DemuxerStream;
 
 class MEDIA_EXPORT AudioDecoder
@@ -43,7 +43,7 @@ class MEDIA_EXPORT AudioDecoder
   // indicate the end of the stream. A NULL buffer pointer indicates an aborted
   // Read(). This can happen if the DemuxerStream gets flushed and doesn't have
   // any more data to return.
-  typedef base::Callback<void(Status, const scoped_refptr<Buffer>&)> ReadCB;
+  typedef base::Callback<void(Status, const scoped_refptr<DataBuffer>&)> ReadCB;
   virtual void Read(const ReadCB& read_cb) = 0;
 
   // Reset decoder state, dropping any queued encoded data.

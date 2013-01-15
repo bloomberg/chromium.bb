@@ -10,14 +10,12 @@
 namespace media {
 
 DecoderBuffer::DecoderBuffer(int buffer_size)
-    : Buffer(base::TimeDelta(), base::TimeDelta()),
-      buffer_size_(buffer_size) {
+    : buffer_size_(buffer_size) {
   Initialize();
 }
 
 DecoderBuffer::DecoderBuffer(const uint8* data, int buffer_size)
-    : Buffer(base::TimeDelta(), base::TimeDelta()),
-      buffer_size_(buffer_size) {
+    : buffer_size_(buffer_size) {
   // Prevent invalid allocations.  Also used to create end of stream buffers.
   if (!data || buffer_size <= 0) {
     buffer_size_ = 0;
@@ -47,16 +45,32 @@ scoped_refptr<DecoderBuffer> DecoderBuffer::CreateEOSBuffer() {
   return make_scoped_refptr(new DecoderBuffer(NULL, 0));
 }
 
+base::TimeDelta DecoderBuffer::GetTimestamp() const {
+  return timestamp_;
+}
+
+void DecoderBuffer::SetTimestamp(const base::TimeDelta& timestamp) {
+  timestamp_ = timestamp;
+}
+
+base::TimeDelta DecoderBuffer::GetDuration() const {
+  return duration_;
+}
+
+void DecoderBuffer::SetDuration(const base::TimeDelta& duration) {
+  duration_ = duration;
+}
+
 const uint8* DecoderBuffer::GetData() const {
+  return data_.get();
+}
+
+uint8* DecoderBuffer::GetWritableData() const {
   return data_.get();
 }
 
 int DecoderBuffer::GetDataSize() const {
   return buffer_size_;
-}
-
-uint8* DecoderBuffer::GetWritableData() {
-  return data_.get();
 }
 
 const DecryptConfig* DecoderBuffer::GetDecryptConfig() const {
@@ -65,6 +79,10 @@ const DecryptConfig* DecoderBuffer::GetDecryptConfig() const {
 
 void DecoderBuffer::SetDecryptConfig(scoped_ptr<DecryptConfig> decrypt_config) {
   decrypt_config_ = decrypt_config.Pass();
+}
+
+bool DecoderBuffer::IsEndOfStream() const {
+  return data_ == NULL;
 }
 
 }  // namespace media

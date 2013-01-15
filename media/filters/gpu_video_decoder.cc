@@ -300,7 +300,7 @@ void GpuVideoDecoder::RequestBufferDecode(
 }
 
 void GpuVideoDecoder::RecordBufferData(
-    const BitstreamBuffer& bitstream_buffer, const Buffer& buffer) {
+    const BitstreamBuffer& bitstream_buffer, const DecoderBuffer& buffer) {
   input_buffer_data_.push_front(BufferData(
       bitstream_buffer.id(), buffer.GetTimestamp(),
       demuxer_stream_->video_decoder_config().visible_rect(),

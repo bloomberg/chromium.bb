@@ -41,6 +41,8 @@
 
 namespace media {
 
+class DataBuffer;
+
 class MEDIA_EXPORT SeekableBuffer {
  public:
   // Constructs an instance with |forward_capacity| and |backward_capacity|.
@@ -75,7 +77,7 @@ class MEDIA_EXPORT SeekableBuffer {
   // Appends |buffer_in| to this buffer. Returns false if forward_bytes() is
   // greater than or equals to forward_capacity(), true otherwise. The data
   // is added to the buffer in any case.
-  bool Append(Buffer* buffer_in);
+  bool Append(const scoped_refptr<DataBuffer>& buffer_in);
 
   // Appends |size| bytes of |data| to the buffer. Result is the same
   // as for Append(Buffer*).
@@ -128,7 +130,7 @@ class MEDIA_EXPORT SeekableBuffer {
 
  private:
   // Definition of the buffer queue.
-  typedef std::list<scoped_refptr<Buffer> > BufferQueue;
+  typedef std::list<scoped_refptr<DataBuffer> > BufferQueue;
 
   // A helper method to evict buffers in the backward direction until backward
   // bytes is within the backward capacity.

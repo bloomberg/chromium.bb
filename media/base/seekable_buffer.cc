@@ -60,14 +60,14 @@ bool SeekableBuffer::GetCurrentChunk(const uint8** data, int* size) const {
   return true;
 }
 
-bool SeekableBuffer::Append(Buffer* buffer_in) {
+bool SeekableBuffer::Append(const scoped_refptr<DataBuffer>& buffer_in) {
   if (buffers_.empty() && buffer_in->GetTimestamp() != kNoTimestamp()) {
     current_time_ = buffer_in->GetTimestamp();
   }
 
   // Since the forward capacity is only used to check the criteria for buffer
   // full, we always append data to the buffer.
-  buffers_.push_back(scoped_refptr<Buffer>(buffer_in));
+  buffers_.push_back(buffer_in);
 
   // After we have written the first buffer, update |current_buffer_| to point
   // to it.
@@ -172,7 +172,7 @@ void SeekableBuffer::EvictBackwardBuffers() {
     BufferQueue::iterator i = buffers_.begin();
     if (i == current_buffer_)
       break;
-    scoped_refptr<Buffer> buffer = *i;
+    scoped_refptr<DataBuffer> buffer = *i;
     backward_bytes_ -= buffer->GetDataSize();
     DCHECK_GE(backward_bytes_, 0);
 
@@ -196,7 +196,7 @@ int SeekableBuffer::InternalRead(uint8* data, int size,
     if (current_buffer == buffers_.end())
       break;
 
-    scoped_refptr<Buffer> buffer = *current_buffer;
+    scoped_refptr<DataBuffer> buffer = *current_buffer;
 
     int remaining_bytes_in_buffer =
         buffer->GetDataSize() - current_buffer_offset;

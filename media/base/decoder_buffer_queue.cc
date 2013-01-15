@@ -5,6 +5,7 @@
 #include "media/base/decoder_buffer_queue.h"
 
 #include "base/logging.h"
+#include "media/base/buffers.h"
 #include "media/base/decoder_buffer.h"
 
 namespace media {

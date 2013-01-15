@@ -35,7 +35,7 @@ void AudioSplicer::Reset() {
   received_end_of_stream_ = false;
 }
 
-bool AudioSplicer::AddInput(const scoped_refptr<Buffer>& input){
+bool AudioSplicer::AddInput(const scoped_refptr<DataBuffer>& input){
   DCHECK(!received_end_of_stream_ || input->IsEndOfStream());
 
   if (input->IsEndOfStream()) {
@@ -125,13 +125,13 @@ bool AudioSplicer::HasNextBuffer() const {
   return !output_buffers_.empty();
 }
 
-scoped_refptr<Buffer> AudioSplicer::GetNextBuffer() {
-  scoped_refptr<Buffer> ret = output_buffers_.front();
+scoped_refptr<DataBuffer> AudioSplicer::GetNextBuffer() {
+  scoped_refptr<DataBuffer> ret = output_buffers_.front();
   output_buffers_.pop_front();
   return ret;
 }
 
-void AudioSplicer::AddOutputBuffer(const scoped_refptr<Buffer>& buffer) {
+void AudioSplicer::AddOutputBuffer(const scoped_refptr<DataBuffer>& buffer) {
   output_timestamp_helper_.AddBytes(buffer->GetDataSize());
   output_buffers_.push_back(buffer);
 }

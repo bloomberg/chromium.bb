@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/time.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/decrypt_config.h"
 #include "webkit/media/crypto/ppapi/cdm_video_decoder.h"
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)

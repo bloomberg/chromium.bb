@@ -125,7 +125,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   void ReusePictureBuffer(int64 picture_buffer_id);
 
   void RecordBufferData(
-      const BitstreamBuffer& bitstream_buffer, const Buffer& buffer);
+      const BitstreamBuffer& bitstream_buffer, const DecoderBuffer& buffer);
   void GetBufferData(int32 id, base::TimeDelta* timetamp,
                      gfx::Rect* visible_rect, gfx::Size* natural_size);
 

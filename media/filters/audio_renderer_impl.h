@@ -28,7 +28,6 @@
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_renderer.h"
 #include "media/base/audio_renderer_sink.h"
-#include "media/base/buffers.h"
 #include "media/base/decryptor.h"
 #include "media/filters/audio_renderer_algorithm.h"
 
@@ -84,11 +83,11 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // Callback from the audio decoder delivering decoded audio samples.
   void DecodedAudioReady(AudioDecoder::Status status,
-                         const scoped_refptr<Buffer>& buffer);
+                         const scoped_refptr<DataBuffer>& buffer);
 
   // Handles buffers that come out of |splicer_|.
   // Returns true if more buffers are needed.
-  bool HandleSplicerBuffer(const scoped_refptr<Buffer>& buffer);
+  bool HandleSplicerBuffer(const scoped_refptr<DataBuffer>& buffer);
 
   // Helper functions for AudioDecoder::Status values passed to
   // DecodedAudioReady().
@@ -140,7 +139,7 @@ class MEDIA_EXPORT AudioRendererImpl
   // Returns true if the data in the buffer is all before
   // |preroll_timestamp_|. This can only return true while
   // in the kPrerolling state.
-  bool IsBeforePrerollTime(const scoped_refptr<Buffer>& buffer);
+  bool IsBeforePrerollTime(const scoped_refptr<DataBuffer>& buffer);
 
   // Called when |decoder_selector_| selected the |selected_decoder|.
   // |decrypting_demuxer_stream| was also populated if a DecryptingDemuxerStream

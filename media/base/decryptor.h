@@ -17,7 +17,7 @@
 namespace media {
 
 class AudioDecoderConfig;
-class Buffer;
+class DataBuffer;
 class DecoderBuffer;
 class VideoDecoderConfig;
 class VideoFrame;
@@ -146,7 +146,7 @@ class MEDIA_EXPORT Decryptor {
 
   // Helper structure for managing multiple decoded audio buffers per input.
   // TODO(xhwang): Rename this to AudioFrames.
-  typedef std::list<scoped_refptr<Buffer> > AudioBuffers;
+  typedef std::list<scoped_refptr<DataBuffer> > AudioBuffers;
 
   // Indicates completion of audio/video decrypt-and-decode operation.
   //
