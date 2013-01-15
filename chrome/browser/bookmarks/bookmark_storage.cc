@@ -15,6 +15,7 @@
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/startup_metric_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -49,6 +50,8 @@ void AddBookmarksToIndex(BookmarkLoadDetails* details,
 void LoadCallback(const FilePath& path,
                   BookmarkStorage* storage,
                   BookmarkLoadDetails* details) {
+  startup_metric_utils::ScopedSlowStartupUMA
+      scoped_timer("Startup.SlowStartupBookmarksLoad");
   bool bookmark_file_exists = file_util::PathExists(path);
   if (bookmark_file_exists) {
     JSONFileValueSerializer serializer(path);

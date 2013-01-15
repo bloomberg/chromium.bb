@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_STARTUP_METRIC_UTILS_H_
 #define CHROME_COMMON_STARTUP_METRIC_UTILS_H_
 
+#include <string>
+
 #include "base/time.h"
 
 // Utility functions to support metric collection for browser startup.
@@ -29,8 +31,27 @@ void SetNonBrowserUIDisplayed();
 // timestamp.
 void RecordMainEntryPointTime();
 
-// Return the time recorded by RecordMainEntryPointTime().
-const base::Time MainEntryStartTime();
+// Called just before the message loop is about to start. Entry point to record
+// startup stats.
+void OnBrowserStartupComplete();
+
+// Scoper that records the time period before it's destructed in a histogram
+// with the given name. The histogram is only recorded for slow chrome startups.
+// Useful for trying to figure out what parts of Chrome cause slow startup.
+class ScopedSlowStartupUMA {
+ public:
+  explicit ScopedSlowStartupUMA(const std::string& histogram_name)
+      : start_time_(base::TimeTicks::Now()),
+        histogram_name_(histogram_name) {}
+
+  ~ScopedSlowStartupUMA();
+
+ private:
+  const base::TimeTicks start_time_;
+  const std::string histogram_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedSlowStartupUMA);
+};
 
 }  // namespace startup_metric_utils
 

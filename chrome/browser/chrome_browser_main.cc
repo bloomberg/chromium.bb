@@ -1615,29 +1615,8 @@ void RecordBrowserStartupTime() {
         base::Time::Now() - *process_creation_time);
 #endif // OS_MACOSX || OS_WIN
 
-  // Startup.BrowserMessageLoopStartTime exhibits instability in the field
-  // which limits its usefullness in all scenarios except when we have a very
-  // large sample size.
-  // Attempt to mitigate this with a new metric:
-  // * Measure time from main entry rather than the OS' notion of process start
-  //   time.
-  // * Only measure launches that occur 7 minutes after boot to try to avoid
-  //   cases where Chrome is auto-started and IO is heavily loaded.
-  const int64 kSevenMinutesInMilliseconds =
-      base::TimeDelta::FromMinutes(7).InMilliseconds();
-  if (base::SysInfo::Uptime() < kSevenMinutesInMilliseconds)
-    return;
-
-  // Set up to match Startup.BrowserMessageLoopStartTime measurement above.
-  const base::TimeDelta kStartupTimeMin(base::TimeDelta::FromMilliseconds(1));
-  const base::TimeDelta kStartupTimeMax(base::TimeDelta::FromHours(1));
-  static const size_t kStartupTimeBuckets(100);
-  HISTOGRAM_CUSTOM_TIMES(
-      "Startup.BrowserMessageLoopStartTimeFromMainEntry",
-      base::Time::Now() - startup_metric_utils::MainEntryStartTime(),
-      kStartupTimeMin,
-      kStartupTimeMax,
-      kStartupTimeBuckets);
+  // Record collected startup metrics.
+  startup_metric_utils::OnBrowserStartupComplete();
 }
 
 // This code is specific to the Windows-only PreReadExperiment field-trial.

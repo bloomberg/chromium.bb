@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/startup_metric_utils.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -500,6 +501,8 @@ SafeBrowsingDatabase* SafeBrowsingDatabaseManager::GetDatabase() {
   DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
   if (database_)
     return database_;
+  startup_metric_utils::ScopedSlowStartupUMA
+      scoped_timer("Startup.SlowStartupSafeBrowsingGetDatabase");
   const base::TimeTicks before = base::TimeTicks::Now();
 
   SafeBrowsingDatabase* database =

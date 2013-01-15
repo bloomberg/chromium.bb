@@ -35,6 +35,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/startup_metric_utils.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -164,6 +165,9 @@ SafeBrowsingService::~SafeBrowsingService() {
 }
 
 void SafeBrowsingService::Initialize() {
+  startup_metric_utils::ScopedSlowStartupUMA
+      scoped_timer("Startup.SlowStartupSafeBrowsingServiceInitialize");
+
   url_request_context_getter_ =
       new SafeBrowsingURLRequestContextGetter(this);
 
