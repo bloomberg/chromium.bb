@@ -253,6 +253,9 @@ ChromeWebUIDataSource* CreatePrintPreviewUISource() {
                              IDS_PRINT_PREVIEW_OPTION_HEADER_FOOTER);
   source->AddLocalizedString("optionFitToPage",
                              IDS_PRINT_PREVIEW_OPTION_FIT_TO_PAGE);
+  source->AddLocalizedString(
+      "optionBackgroundColorsAndImages",
+      IDS_PRINT_PREVIEW_OPTION_BACKGROUND_COLORS_AND_IMAGES);
   source->AddLocalizedString("marginsLabel", IDS_PRINT_PREVIEW_MARGINS_LABEL);
   source->AddLocalizedString("defaultMargins",
                              IDS_PRINT_PREVIEW_DEFAULT_MARGINS);
@@ -344,7 +347,8 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
       dialog_closed_(false) {
   // Set up the chrome://print/ data source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, CreatePrintPreviewUISource());
+  ChromeURLDataManager::AddDataSourceImpl(profile,
+                                          CreatePrintPreviewUISource());
 
   // Set up the chrome://theme/ source.
   ChromeURLDataManager::AddDataSource(profile, new ThemeSource(profile));
