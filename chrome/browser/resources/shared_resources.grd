@@ -41,6 +41,8 @@ without changes to the corresponding grd file. -->
                  file="shared/css/alert_overlay.css" type="chrome_html" />
       <structure name="IDR_SHARED_CSS_BUBBLE"
                  file="shared/css/bubble.css" type="chrome_html" />
+      <structure name="IDR_SHARED_CSS_BUBBLE_BUTTON"
+                 file="shared/css/bubble_button.css" type="chrome_html" />
       <structure name="IDR_SHARED_CSS_DIALOGS"
                  file="shared/css/dialogs.css" type="chrome_html" />
       <structure name="IDR_SHARED_CSS_LIST"
@@ -95,6 +97,8 @@ without changes to the corresponding grd file. -->
                  type="chrome_html" />
       <structure name="IDR_SHARED_JS_CR_UI_BUBBLE"
                  file="shared/js/cr/ui/bubble.js" type="chrome_html" />
+      <structure name="IDR_SHARED_JS_CR_UI_BUBBLE_BUTTON"
+                 file="shared/js/cr/ui/bubble_button.js" type="chrome_html" />
       <structure name="IDR_SHARED_JS_CR_UI_CARD_SLIDER"
                  file="shared/js/cr/ui/card_slider.js" type="chrome_html" />
       <structure name="IDR_SHARED_JS_CR_UI_COMMAND"
