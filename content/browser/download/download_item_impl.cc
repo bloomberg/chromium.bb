@@ -379,12 +379,15 @@ void DownloadItemImpl::Cancel(bool user_cancel) {
 
   RecordDownloadCount(CANCELLED_COUNT);
 
-  TransitionTo(CANCELLED_INTERNAL);
-
   CancelDownloadFile();
 
-  // Cancel the originating URL request.
-  request_handle_->CancelRequest();
+  if (state_ != INTERRUPTED_INTERNAL) {
+    // Cancel the originating URL request unless it's already been cancelled
+    // by interrupt.
+    request_handle_->CancelRequest();
+  }
+
+  TransitionTo(CANCELLED_INTERNAL);
 }
 
 void DownloadItemImpl::Delete(DeleteReason reason) {
@@ -491,9 +494,13 @@ bool DownloadItemImpl::IsTemporary() const {
   return is_temporary_;
 }
 
+// TODO(rdsmith): Figure out whether or not we want this probe routine
+// to consider interrupted (resumably) downloads partial downloads.
+// Conceptually the answer is probably yes, but everywhere that currently
+// uses the routine is using it as a synonym for IsInProgress().
 bool DownloadItemImpl::IsPartialDownload() const {
   DownloadState state = InternalToExternalState(state_);
-  return (state == IN_PROGRESS) || (state == INTERRUPTED);
+  return (state == IN_PROGRESS);
 }
 
 bool DownloadItemImpl::IsInProgress() const {
