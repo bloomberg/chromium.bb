@@ -1666,6 +1666,7 @@
             '../third_party/cld/cld.gyp:cld',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/libjingle/libjingle.gyp:libjingle',
+            '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
             '../tools/json_schema_compiler/test/json_schema_compiler_tests.gyp:json_schema_compiler_tests',
             '../ui/gl/gl.gyp:gl',
             '../v8/tools/gyp/v8.gyp:v8',

@@ -80,6 +80,64 @@ TEST(PhoneNumberTest, Matcher) {
               matching_types.end());
 }
 
+// Verify that PhoneNumber::SetInfo() correctly formats the incoming number.
+TEST(PhoneNumberTest, SetInfo) {
+  AutofillProfile profile;
+  profile.SetCountryCode("US");
+
+  PhoneNumber phone(&profile);
+  EXPECT_EQ(string16(), phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+
+  // Set the formatted info directly.
+  EXPECT_TRUE(phone.SetInfo(PHONE_HOME_WHOLE_NUMBER,
+                            ASCIIToUTF16("(650) 234-5678"), "US"));
+  EXPECT_EQ(ASCIIToUTF16("(650) 234-5678"),
+            phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+
+  // Unformatted numbers should be formatted.
+  EXPECT_TRUE(phone.SetInfo(PHONE_HOME_WHOLE_NUMBER,
+                            ASCIIToUTF16("8887776666"), "US"));
+  EXPECT_EQ(ASCIIToUTF16("(888) 777-6666"),
+            phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+
+  // Differently formatted numbers should be re-formatted.
+  EXPECT_TRUE(phone.SetInfo(PHONE_HOME_WHOLE_NUMBER,
+                            ASCIIToUTF16("800-432-8765"), "US"));
+  EXPECT_EQ(ASCIIToUTF16("(800) 432-8765"),
+            phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+
+  // Invalid numbers should not be stored.  In the US, phone numbers cannot
+  // start with the digit '1'.
+  EXPECT_FALSE(phone.SetInfo(PHONE_HOME_WHOLE_NUMBER,
+                             ASCIIToUTF16("650111111"), "US"));
+  EXPECT_EQ(string16(), phone.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+}
+
+// Test that cached phone numbers are correctly invalidated and updated.
+TEST(PhoneNumberTest, UpdateCachedPhoneNumber) {
+  AutofillProfile profile;
+  profile.SetCountryCode("US");
+
+  PhoneNumber phone(&profile);
+  phone.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("6502345678"));
+  EXPECT_EQ(ASCIIToUTF16("650"), phone.GetInfo(PHONE_HOME_CITY_CODE, "US"));
+
+  // Update the area code.
+  phone.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("8322345678"));
+  EXPECT_EQ(ASCIIToUTF16("832"), phone.GetInfo(PHONE_HOME_CITY_CODE, "US"));
+
+  // Change the phone number to have a UK format, but try to parse with the
+  // wrong locale.
+  phone.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("07023456789"));
+  EXPECT_EQ(string16(), phone.GetInfo(PHONE_HOME_CITY_CODE, "US"));
+
+  // Now try parsing using the correct locale.  Note that the profile's country
+  // code should override the app locale, which is still set to "US".
+  profile.SetCountryCode("GB");
+  phone.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("07023456789"));
+  EXPECT_EQ(ASCIIToUTF16("70"), phone.GetInfo(PHONE_HOME_CITY_CODE, "US"));
+}
+
 TEST(PhoneNumberTest, PhoneCombineHelper) {
   AutofillProfile profile;
   profile.SetCountryCode("US");
