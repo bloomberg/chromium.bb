@@ -81,8 +81,6 @@ public class TestCallbackHelperContainer {
     }
 
     public static class OnEvaluateJavaScriptResultHelper extends CallbackHelper {
-        private volatile Integer mRequestId;
-        private volatile Integer mId;
         private String mJsonResult;
 
         /**
@@ -91,14 +89,22 @@ public class TestCallbackHelperContainer {
          * @param code A JavaScript code to be evaluated.
          */
         public void evaluateJavaScript(ContentViewCore contentViewCore, String code) {
-            setRequestId(contentViewCore.evaluateJavaScript(code));
+            ContentViewCore.JavaScriptCallback callback =
+                new ContentViewCore.JavaScriptCallback() {
+                    @Override
+                    public void handleJavaScriptResult(String jsonResult) {
+                        notifyCalled(jsonResult);
+                    }
+                };
+            contentViewCore.evaluateJavaScript(code, callback);
+            mJsonResult = null;
         }
 
         /**
          * Returns true if the evaluation started by evaluateJavaScript() has completed.
          */
         public boolean hasValue() {
-            return mId != null;
+            return mJsonResult != null;
         }
 
         /**
@@ -109,7 +115,7 @@ public class TestCallbackHelperContainer {
         public String getJsonResultAndClear() {
             assert hasValue();
             String result = mJsonResult;
-            setRequestId(null);
+            mJsonResult = null;
             return result;
         }
 
@@ -141,21 +147,8 @@ public class TestCallbackHelperContainer {
             return hasValue();
         }
 
-        private void setRequestId(Integer requestId) {
-            mRequestId = requestId;
-            mId = null;
-            mJsonResult = null;
-        }
-
-        public void notifyCalled(int id, String jsonResult) {
-            if (mRequestId == null) {
-                Log.w("TestCallbackHelperContainer",
-                        "Received JavaScript eval result when request id was not set");
-                return;
-            }
-            if (id != mRequestId.intValue()) return;
-            assert mId == null;
-            mId = Integer.valueOf(id);
+        public void notifyCalled(String jsonResult) {
+            assert !hasValue();
             mJsonResult = jsonResult;
             notifyCalled();
         }

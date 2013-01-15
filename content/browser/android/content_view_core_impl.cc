@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "cc/layer.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/load_url_params.h"
@@ -174,10 +175,6 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
     dpi_scale_ = device_info->GetDPIScale();
   }
 
-  notification_registrar_.Add(this,
-                              NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
-                              NotificationService::AllSources());
-
   // Currently, the only use case we have for overriding a user agent involves
   // spoofing a desktop Linux user agent for "Request desktop site".
   // Automatically set it for all WebContents so that it is available when a
@@ -269,25 +266,6 @@ void ContentViewCoreImpl::Observe(int type,
         if (!obj.is_null()) {
           Java_ContentViewCore_onRenderProcessSwap(env, obj.obj(), 0, pid);
         }
-      }
-      break;
-    }
-    case NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT: {
-      if (!web_contents_ || Source<RenderViewHost>(source).ptr() !=
-          web_contents_->GetRenderViewHost()) {
-        return;
-      }
-
-      JNIEnv* env = base::android::AttachCurrentThread();
-      std::pair<int, Value*>* result_pair =
-          Details<std::pair<int, Value*> >(details).ptr();
-      std::string json;
-      base::JSONWriter::Write(result_pair->second, &json);
-      ScopedJavaLocalRef<jstring> j_json = ConvertUTF8ToJavaString(env, json);
-      ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
-      if (!j_obj.is_null()) {
-        Java_ContentViewCore_onEvaluateJavaScriptResult(env, j_obj.obj(),
-            static_cast<jint>(result_pair->first), j_json.obj());
       }
       break;
     }
@@ -1248,15 +1226,46 @@ void ContentViewCoreImpl::UndoScrollFocusedEditableNodeIntoView(
       new ViewMsg_UndoScrollFocusedEditableNodeIntoView(host->GetRoutingID()));
 }
 
-jint ContentViewCoreImpl::EvaluateJavaScript(JNIEnv* env,
+namespace {
+void JavaScriptResultCallback(ScopedJavaGlobalRef<jobject>* callback,
+                              const base::Value* result) {
+  // |callback| is passed as base::Owned, so it will automatically be deleted
+  // when this base::Callback goes out of scope.
+  JNIEnv* env = base::android::AttachCurrentThread();
+  std::string json;
+  base::JSONWriter::Write(result, &json);
+  ScopedJavaLocalRef<jstring> j_json = ConvertUTF8ToJavaString(env, json);
+  Java_ContentViewCore_onEvaluateJavaScriptResult(env,
+                                                  j_json.obj(),
+                                                  callback->obj());
+}
+}  // namespace
+
+void ContentViewCoreImpl::EvaluateJavaScript(JNIEnv* env,
                                              jobject obj,
-                                             jstring script) {
+                                             jstring script,
+                                             jobject callback) {
   RenderViewHost* host = web_contents_->GetRenderViewHost();
   DCHECK(host);
 
-  string16 script_utf16 = ConvertJavaStringToUTF16(env, script);
-  return host->ExecuteJavascriptInWebFrameNotifyResult(string16(),
-                                                       script_utf16);
+  if (!callback) {
+    // No callback requested.
+    host->ExecuteJavascriptInWebFrame(string16(),  // frame_xpath
+                                      ConvertJavaStringToUTF16(env, script));
+    return;
+  }
+
+  // Secure the Java callback in a scoped object and give ownership of it to the
+  // base::Callback.
+  ScopedJavaGlobalRef<jobject>* j_callback = new ScopedJavaGlobalRef<jobject>();
+  j_callback->Reset(env, callback);
+  content::RenderViewHost::JavascriptResultCallback c_callback =
+      base::Bind(&JavaScriptResultCallback, base::Owned(j_callback));
+
+  host->ExecuteJavascriptInWebFrameCallbackResult(
+      string16(),  // frame_xpath
+      ConvertJavaStringToUTF16(env, script),
+      c_callback);
 }
 
 bool ContentViewCoreImpl::GetUseDesktopUserAgent(
@@ -1330,14 +1339,6 @@ jint Init(JNIEnv* env, jobject obj,
       reinterpret_cast<WebContents*>(native_web_contents),
       reinterpret_cast<ui::WindowAndroid*>(native_window));
   return reinterpret_cast<jint>(view);
-}
-
-jint EvaluateJavaScript(JNIEnv* env, jobject obj, jstring script) {
-  ContentViewCoreImpl* view = static_cast<ContentViewCoreImpl*>(
-      ContentViewCore::GetNativeContentViewCore(env, obj));
-  DCHECK(view);
-
-  return view->EvaluateJavaScript(env, obj, script);
 }
 
 bool RegisterContentViewCore(JNIEnv* env) {

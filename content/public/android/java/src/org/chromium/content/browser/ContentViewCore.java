@@ -1097,18 +1097,26 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         }
     }
 
+    public interface JavaScriptCallback {
+        void handleJavaScriptResult(String jsonResult);
+    }
+
     /**
-     * Injects the passed JavaScript code in the current page and evaluates it.
-     * Once evaluated, an asynchronous call to
-     * ContentViewClient.onJavaScriptEvaluationResult is made. Used in automation
-     * tests.
+     * Injects the passed Javascript code in the current page and evaluates it.
+     * If a result is required, pass in a callback.
+     * Used in automation tests.
      *
-     * @return an id that is passed along in the asynchronous onJavaScriptEvaluationResult callback
+     * @param script The Javascript to execute.
+     * @param message The callback to be fired off when a result is ready. The script's
+     *                result will be json encoded and passed as the parameter, and the call
+     *                will be made on the main thread.
+     *                If no result is required, pass null.
      * @throws IllegalStateException If the ContentView has been destroyed.
      */
-    public int evaluateJavaScript(String script) throws IllegalStateException {
+    public void evaluateJavaScript(
+            String script, JavaScriptCallback callback) throws IllegalStateException {
         checkIsAlive();
-        return nativeEvaluateJavaScript(script);
+        nativeEvaluateJavaScript(mNativeContentViewCore, script, callback);
     }
 
     /**
@@ -2043,8 +2051,9 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onEvaluateJavaScriptResult(int id, String jsonResult) {
-        getContentViewClient().onEvaluateJavaScriptResult(id, jsonResult);
+    private static void onEvaluateJavaScriptResult(
+            String jsonResult, JavaScriptCallback callback) {
+        callback.handleJavaScriptResult(jsonResult);
     }
 
     @SuppressWarnings("unused")
@@ -2555,7 +2564,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     private native void nativeClearHistory(int nativeContentViewCoreImpl);
 
-    private native int nativeEvaluateJavaScript(String script);
+    private native void nativeEvaluateJavaScript(int nativeContentViewCoreImpl,
+            String script, JavaScriptCallback callback);
 
     private native int nativeGetNativeImeAdapter(int nativeContentViewCoreImpl);
 

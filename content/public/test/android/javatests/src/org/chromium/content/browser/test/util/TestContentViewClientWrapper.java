@@ -58,12 +58,6 @@ public class TestContentViewClientWrapper extends TestContentViewClient {
     }
 
     @Override
-    public void onEvaluateJavaScriptResult(int id, String jsonResult) {
-        super.onEvaluateJavaScriptResult(id, jsonResult);
-        mWrappedClient.onEvaluateJavaScriptResult(id, jsonResult);
-    }
-
-    @Override
     public boolean shouldOverrideScroll(float deltaX, float deltaY, float currX, float currY) {
         return mWrappedClient.shouldOverrideScroll(deltaX, deltaY, currX, currX);
     }

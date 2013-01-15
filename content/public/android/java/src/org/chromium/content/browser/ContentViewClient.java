@@ -92,15 +92,6 @@ public class ContentViewClient {
     public void onImeEvent() {
     }
 
-    /**
-     * A callback invoked after the JavaScript code passed to evaluateJavaScript
-     * has finished execution.
-     * Used in automation tests.
-     * @hide
-     */
-    public void onEvaluateJavaScriptResult(int id, String jsonResult) {
-    }
-
     // TODO (dtrainor): Should expose getScrollX/Y from ContentView or make
     // computeHorizontalScrollOffset()/computeVerticalScrollOffset() public.
     /**

@@ -416,17 +416,11 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
 
     /**
      * Injects the passed JavaScript code in the current page and evaluates it.
-     * Once evaluated, an asynchronous call to
-     * ContentViewClient.onJavaScriptEvaluationResult is made. Used in automation
-     * tests.
      *
-     * @return an id that is passed along in the asynchronous onJavaScriptEvaluationResult callback
      * @throws IllegalStateException If the ContentView has been destroyed.
-     *
-     * TODO(nileshagrawal): Remove this method from the public interface.
      */
-    public int evaluateJavaScript(String script) throws IllegalStateException {
-        return mContentViewCore.evaluateJavaScript(script);
+    public void evaluateJavaScript(String script) throws IllegalStateException {
+        mContentViewCore.evaluateJavaScript(script, null);
     }
 
     /**
