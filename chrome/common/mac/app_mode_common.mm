@@ -11,7 +11,7 @@ NSString* const kCrAppModeShortcutIDKey = @"CrAppModeShortcutID";
 NSString* const kCrAppModeShortcutNameKey = @"CrAppModeShortcutName";
 NSString* const kCrAppModeShortcutURLKey = @"CrAppModeShortcutURL";
 NSString* const kCrAppModeUserDataDirKey = @"CrAppModeUserDataDir";
-NSString* const kCrAppModeExtensionPathKey = @"CrAppModeExtensionPath";
+NSString* const kCrAppModeProfileDirKey = @"CrAppModeProfileDir";
 
 NSString* const kLastRunAppBundlePathPrefsKey = @"LastRunAppBundlePath";
 

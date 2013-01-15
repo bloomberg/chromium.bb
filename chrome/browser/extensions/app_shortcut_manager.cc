@@ -60,24 +60,6 @@ AppShortcutManager::AppShortcutManager(Profile* profile)
 
 AppShortcutManager::~AppShortcutManager() {}
 
-void AppShortcutManager::OnImageLoaded(const gfx::Image& image) {
-  // If the image failed to load (e.g. if the resource being loaded was empty)
-  // use the standard application icon.
-  if (image.IsEmpty()) {
-    gfx::Image default_icon =
-        ResourceBundle::GetSharedInstance().GetImageNamed(IDR_APP_DEFAULT_ICON);
-    int size = kDesiredSizes[arraysize(kDesiredSizes) - 1];
-    SkBitmap bmp = skia::ImageOperations::Resize(
-          *default_icon.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST,
-          size, size);
-    shortcut_info_.favicon = gfx::Image(bmp);
-  } else {
-    shortcut_info_.favicon = image;
-  }
-
-  web_app::UpdateAllShortcuts(shortcut_info_);
-}
-
 void AppShortcutManager::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
@@ -173,6 +155,24 @@ void AppShortcutManager::UpdateApplicationShortcuts(
   ImageLoader::Get(profile_)->LoadImagesAsync(extension, info_list,
       base::Bind(&AppShortcutManager::OnImageLoaded,
                  weak_factory_.GetWeakPtr()));
+}
+
+void AppShortcutManager::OnImageLoaded(const gfx::Image& image) {
+  // If the image failed to load (e.g. if the resource being loaded was empty)
+  // use the standard application icon.
+  if (image.IsEmpty()) {
+    gfx::Image default_icon =
+        ResourceBundle::GetSharedInstance().GetImageNamed(IDR_APP_DEFAULT_ICON);
+    int size = kDesiredSizes[arraysize(kDesiredSizes) - 1];
+    SkBitmap bmp = skia::ImageOperations::Resize(
+          *default_icon.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST,
+          size, size);
+    shortcut_info_.favicon = gfx::Image(bmp);
+  } else {
+    shortcut_info_.favicon = image;
+  }
+
+  web_app::UpdateAllShortcuts(shortcut_info_);
 }
 
 void AppShortcutManager::DeleteApplicationShortcuts(

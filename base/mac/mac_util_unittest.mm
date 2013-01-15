@@ -16,6 +16,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+#include <errno.h>
+#include <sys/xattr.h>
+
 namespace base {
 namespace mac {
 
@@ -204,6 +207,46 @@ TEST_F(MacUtilTest, ParseModelIdentifier) {
   EXPECT_EQ(model, "MacBookPro");
   EXPECT_EQ(6, major);
   EXPECT_EQ(2, minor);
+}
+
+TEST_F(MacUtilTest, TestRemoveQuarantineAttribute) {
+  ScopedTempDir temp_dir_;
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  FilePath dummy_folder_path = temp_dir_.path().Append("DummyFolder");
+  ASSERT_TRUE(file_util::CreateDirectory(dummy_folder_path));
+  const char* quarantine_str = "0000;4b392bb2;Chromium;|org.chromium.Chromium";
+  const char* file_path_str = dummy_folder_path.value().c_str();
+  EXPECT_EQ(0, setxattr(file_path_str, "com.apple.quarantine",
+      quarantine_str, strlen(quarantine_str), 0, 0));
+  EXPECT_EQ(static_cast<long>(strlen(quarantine_str)),
+      getxattr(file_path_str, "com.apple.quarantine",
+          NULL, 0, 0, 0));
+  EXPECT_TRUE(RemoveQuarantineAttribute(dummy_folder_path));
+  EXPECT_EQ(-1, getxattr(file_path_str, "com.apple.quarantine", NULL, 0, 0, 0));
+  EXPECT_EQ(ENOATTR, errno);
+}
+
+TEST_F(MacUtilTest, TestRemoveQuarantineAttributeTwice) {
+  ScopedTempDir temp_dir_;
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  FilePath dummy_folder_path = temp_dir_.path().Append("DummyFolder");
+  const char* file_path_str = dummy_folder_path.value().c_str();
+  ASSERT_TRUE(file_util::CreateDirectory(dummy_folder_path));
+  EXPECT_EQ(-1, getxattr(file_path_str, "com.apple.quarantine", NULL, 0, 0, 0));
+  // No quarantine attribute to begin with, but RemoveQuarantineAttribute still
+  // succeeds because in the end the folder still doesn't have the quarantine
+  // attribute set.
+  EXPECT_TRUE(RemoveQuarantineAttribute(dummy_folder_path));
+  EXPECT_TRUE(RemoveQuarantineAttribute(dummy_folder_path));
+  EXPECT_EQ(ENOATTR, errno);
+}
+
+TEST_F(MacUtilTest, TestRemoveQuarantineAttributeNonExistentPath) {
+  ScopedTempDir temp_dir_;
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  FilePath non_existent_path = temp_dir_.path().Append("DummyPath");
+  ASSERT_FALSE(file_util::PathExists(non_existent_path));
+  EXPECT_FALSE(RemoveQuarantineAttribute(non_existent_path));
 }
 
 }  // namespace

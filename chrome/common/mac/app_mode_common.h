@@ -15,6 +15,13 @@
 
 namespace app_mode {
 
+// Keys for a custom 'launch platform app' Apple event. When Chrome receives
+// this event, it should launch the app specified by the direct key in the
+// event, in the profile specified by the 'pdir' key.
+const AEEventClass kAEChromeAppClass = 'cApp';
+const AEEventID kAEChromeAppLaunch = 'lnch';
+const AEKeyword kAEProfileDirKey = 'pdir';
+
 // The key under which the browser's bundle ID will be stored in the
 // app mode launcher bundle's Info.plist.
 extern NSString* const kBrowserBundleIDKey;
@@ -32,7 +39,7 @@ extern NSString* const kCrAppModeShortcutURLKey;
 extern NSString* const kCrAppModeUserDataDirKey;
 
 // Key for the app's extension path.
-extern NSString* const kCrAppModeExtensionPathKey;
+extern NSString* const kCrAppModeProfileDirKey;
 
 // When the Chrome browser is run, it stores its location in the defaults
 // system using this key.
@@ -92,8 +99,8 @@ struct ChromeAppModeInfo {
   // Path to the app's user data directory.
   FilePath user_data_dir;
 
-  // Path to the app's extension.
-  FilePath extension_path;
+  // Directory of the profile associated with the app.
+  FilePath profile_dir;
 };
 
 }  // namespace app_mode

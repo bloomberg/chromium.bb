@@ -6,8 +6,11 @@
 
 #import <Cocoa/Cocoa.h>
 #import <IOKit/IOKitLib.h>
+
+#include <errno.h>
 #include <string.h>
 #include <sys/utsname.h>
+#include <sys/xattr.h>
 
 #include "base/file_path.h"
 #include "base/logging.h"
@@ -482,6 +485,12 @@ bool WasLaunchedAsHiddenLoginItem() {
     return false;
   }
   return IsHiddenLoginItem(item);
+}
+
+bool RemoveQuarantineAttribute(const FilePath& file_path) {
+  const char kQuarantineAttrName[] = "com.apple.quarantine";
+  int status = removexattr(file_path.value().c_str(), kQuarantineAttrName, 0);
+  return status == 0 || errno == ENOATTR;
 }
 
 namespace {

@@ -121,6 +121,10 @@ BASE_EXPORT bool WasLaunchedAsLoginOrResumeItem();
 // 'Login Item' with 'hide on startup' flag. Used to suppress opening windows.
 BASE_EXPORT bool WasLaunchedAsHiddenLoginItem();
 
+// Remove the quarantine xattr from the given file. Returns false if there was
+// an error, or true otherwise.
+BASE_EXPORT bool RemoveQuarantineAttribute(const FilePath& file_path);
+
 // Run-time OS version checks. Use these instead of
 // base::SysInfo::OperatingSystemVersionNumbers. Prefer the "OrEarlier" and
 // "OrLater" variants to those that check for a specific version, unless you

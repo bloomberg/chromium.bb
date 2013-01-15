@@ -8,10 +8,14 @@
 // those app bundles.
 
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
+#include "base/mac/foundation_util.h"
+#include "base/mac/mac_logging.h"
+#include "base/mac/mac_util.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/sys_string_conversions.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -25,12 +29,11 @@ extern "C" {
 __attribute__((visibility("default")))
 int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info);
 
-// TODO(viettrungluu): put this in a header file somewhere.
-int ChromeMain(int argc, char** argv);
-
 }  // extern "C"
 
 int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
+  base::mac::ScopedNSAutoreleasePool scoped_pool;
+
   if (info->major_version < app_mode::kCurrentChromeAppModeInfoMajorVersion) {
     RAW_LOG(ERROR, "App Mode Loader too old.");
     return 1;
@@ -40,33 +43,47 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
     return 1;
   }
 
-  RAW_CHECK(!info->chrome_versioned_path.empty());
-  FilePath* chrome_versioned_path = new FilePath(info->chrome_versioned_path);
-  RAW_CHECK(!chrome_versioned_path->empty());
-  chrome::SetOverrideVersionedDirectory(chrome_versioned_path);
-  base::mac::SetOverrideOuterBundlePath(info->chrome_outer_bundle_path);
-  base::mac::SetOverrideFrameworkBundlePath(
-      chrome_versioned_path->Append(chrome::kFrameworkName));
+  FSRef app_fsref;
+  if (!base::mac::FSRefFromPath(info->chrome_outer_bundle_path.value(),
+        &app_fsref)) {
+    PLOG(ERROR) << "base::mac::FSRefFromPath failed for "
+        << info->chrome_outer_bundle_path.value();
+    return 1;
+  }
+  std::string silent = std::string("--") + switches::kSilentLaunch;
+  CFArrayRef launch_args =
+      base::mac::NSToCFCast(@[base::SysUTF8ToNSString(silent)]);
 
-  // This struct is used to communicate information to the Chrome code, prefer
-  // this to modifying the command line below.
-  struct ShellIntegration::AppModeInfo app_mode_info;
-  ShellIntegration::SetAppModeInfo(&app_mode_info);
-
-  CommandLine command_line(CommandLine::NO_PROGRAM);
-  command_line.AppendSwitch(info->argv[0]);
-
-  RAW_CHECK(info->app_mode_id.size());
-  command_line.AppendSwitchASCII(switches::kAppId, info->app_mode_id);
-  command_line.AppendSwitchPath(switches::kUserDataDir, info->user_data_dir);
-  // TODO(sail): Use a different flag that doesn't imply Location::LOAD for the
-  // extension.
-  command_line.AppendSwitchPath(switches::kLoadExtension, info->extension_path);
-
-  int argc = command_line.argv().size();
-  char* argv[argc];
-  for (int i = 0; i < argc; ++i)
-    argv[i] = const_cast<char*>(command_line.argv()[i].c_str());
-
-  return ChromeMain(argc, argv);
+  LSApplicationParameters ls_parameters = {
+    0,     // version
+    kLSLaunchDefaults,
+    &app_fsref,
+    NULL,  // asyncLaunchRefCon
+    NULL,  // environment
+    launch_args,
+    NULL   // initialEvent
+  };
+  NSAppleEventDescriptor* initial_event =
+      [NSAppleEventDescriptor
+          appleEventWithEventClass:app_mode::kAEChromeAppClass
+                           eventID:app_mode::kAEChromeAppLaunch
+                  targetDescriptor:nil
+                          returnID:kAutoGenerateReturnID
+                     transactionID:kAnyTransactionID];
+  NSAppleEventDescriptor* appid_descriptor = [NSAppleEventDescriptor
+      descriptorWithString:base::SysUTF8ToNSString(info->app_mode_id)];
+  [initial_event setParamDescriptor:appid_descriptor
+                         forKeyword:keyDirectObject];
+  NSAppleEventDescriptor* profile_dir_descriptor = [NSAppleEventDescriptor
+      descriptorWithString:base::SysUTF8ToNSString(info->profile_dir.value())];
+  [initial_event setParamDescriptor:profile_dir_descriptor
+                         forKeyword:app_mode::kAEProfileDirKey];
+  ls_parameters.initialEvent = const_cast<AEDesc*>([initial_event aeDesc]);
+  // Send the Apple Event using launch services, launching Chrome if necessary.
+  OSStatus status = LSOpenApplication(&ls_parameters, NULL);
+  if (status != noErr) {
+    OSSTATUS_LOG(ERROR, status) << "LSOpenApplication";
+    return 1;
+  }
+  return 0;
 }

@@ -6,6 +6,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <sys/xattr.h>
+#include <errno.h>
+
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
@@ -45,6 +48,7 @@ ShellIntegration::ShortcutInfo GetShortcutInfo() {
   info.extension_path = FilePath("/fake/extension/path");
   info.title = ASCIIToUTF16("Shortcut Title");
   info.url = GURL("http://example.com/");
+  info.profile_path = FilePath("Default");
   return info;
 }
 
@@ -52,19 +56,18 @@ ShellIntegration::ShortcutInfo GetShortcutInfo() {
 
 namespace web_app {
 
-// This test is disabled for the following reasons:
-// * The plist still isn't filled in correctly.
-// * WebAppShortcutCreator::CreateShortcut() opens a Finder window which it
-//   shouldn't be doing when run from a unit test.
 TEST(WebAppShortcutCreatorTest, CreateShortcut) {
   base::ScopedTempDir scoped_temp_dir;
   EXPECT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
-  FilePath dst_path = scoped_temp_dir.path().Append("a.app");
 
   ShellIntegration::ShortcutInfo info = GetShortcutInfo();
+
+  FilePath dst_folder = scoped_temp_dir.path();
+  FilePath dst_path = dst_folder.Append(UTF16ToUTF8(info.title) + ".app");
+
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(info);
   EXPECT_CALL(shortcut_creator, GetDestinationPath(_))
-      .WillRepeatedly(Return(dst_path));
+      .WillRepeatedly(Return(dst_folder));
   EXPECT_CALL(shortcut_creator, RevealGeneratedBundleInFinder(dst_path));
 
   EXPECT_TRUE(shortcut_creator.CreateShortcut());
@@ -89,6 +92,30 @@ TEST(WebAppShortcutCreatorTest, CreateShortcut) {
     EXPECT_EQ([value rangeOfString:@"@APP_"].location, NSNotFound)
         << [key UTF8String] << ":" << [value UTF8String];
   }
+}
+
+TEST(WebAppShortcutCreatorTest, RunShortcut) {
+  base::ScopedTempDir scoped_temp_dir;
+  EXPECT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+
+  ShellIntegration::ShortcutInfo info = GetShortcutInfo();
+
+  FilePath dst_folder = scoped_temp_dir.path();
+  dst_folder = FilePath("/Applications");
+  FilePath dst_path = dst_folder.Append(UTF16ToUTF8(info.title) + ".app");
+
+  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(info);
+  EXPECT_CALL(shortcut_creator, GetDestinationPath(_))
+      .WillRepeatedly(Return(dst_folder));
+  EXPECT_CALL(shortcut_creator, RevealGeneratedBundleInFinder(dst_path));
+
+  EXPECT_TRUE(shortcut_creator.CreateShortcut());
+  EXPECT_TRUE(file_util::PathExists(dst_path));
+
+  ssize_t status = getxattr(
+      dst_path.value().c_str(), "com.apple.quarantine", NULL, 0, 0, 0);
+  EXPECT_EQ(-1, status);
+  EXPECT_EQ(ENOATTR, errno);
 }
 
 TEST(WebAppShortcutCreatorTest, CreateFailure) {

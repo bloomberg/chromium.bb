@@ -123,6 +123,8 @@ bool WebAppShortcutCreator::CreateShortcut() {
     return false;
   }
 
+  dst_path = dst_path.Append(app_file_name);
+  base::mac::RemoveQuarantineAttribute(dst_path);
   RevealGeneratedBundleInFinder(dst_path);
 
   return true;
@@ -187,8 +189,8 @@ bool WebAppShortcutCreator::UpdatePlist(const FilePath& app_path) const {
             forKey:base::mac::CFToNSCast(kCFBundleIdentifierKey)];
   [plist setObject:base::mac::FilePathToNSString(user_data_dir_)
             forKey:app_mode::kCrAppModeUserDataDirKey];
-  [plist setObject:base::mac::FilePathToNSString(info_.extension_path)
-            forKey:app_mode::kCrAppModeExtensionPathKey];
+  [plist setObject:base::mac::FilePathToNSString(info_.profile_path.BaseName())
+            forKey:app_mode::kCrAppModeProfileDirKey];
   return [plist writeToFile:plist_path atomically:YES];
 }
 
