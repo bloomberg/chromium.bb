@@ -38,6 +38,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
@@ -170,6 +171,8 @@ class TestEnvironment {
     webkit_platform_support_.reset(
         new TestWebKitPlatformSupport(unit_test_mode,
                                       shadow_platform_delegate));
+    WebKit::setIDBFactory(
+        webkit_platform_support_.get()->idbFactory());
 
 #if defined(OS_ANDROID)
     // Make sure we have enough decoding resources for layout tests.
