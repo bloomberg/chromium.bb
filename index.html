@@ -355,6 +355,11 @@ when filling selection rects.</p>
 <h3><a name="bugfix-simplifiedIteratorFix">bugfix/simplifiedIteratorFix</a> (Edward Christie)</h3>
 <p>TODO</p>
 
+<h3><a name="bugfix-singleCellDelete">bugfix/singleCellDelete</a> (Shezan Baig; D37576223)</h3>
+<p>Open <a href="repros/singleCellDelete.html">this link</a> in Chrome, and
+delete the text in the single table cell.  The entire table will get deleted,
+but we only expect the text inside the cell to be deleted.</p>
+
 <h3><a name="bugfix-svgscale">bugfix/svgscale</a> (Shezan Baig; D32353761; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=85335">85335</a>)</h3>
 <p>Open <a href="repros/svgscale.html">this link</a> in Chrome.  When a SVG
 file is used as a css background, or in an <code>img</code> element, it does
