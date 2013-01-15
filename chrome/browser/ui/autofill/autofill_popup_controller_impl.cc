@@ -140,6 +140,34 @@ void AutofillPopupControllerImpl::Hide() {
   HideInternal();
 }
 
+bool AutofillPopupControllerImpl::HandleKeyPressEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  switch (event.windowsKeyCode) {
+    case ui::VKEY_UP:
+      SelectPreviousLine();
+      return true;
+    case ui::VKEY_DOWN:
+      SelectNextLine();
+      return true;
+    case ui::VKEY_PRIOR:  // Page up.
+      SetSelectedLine(0);
+      return true;
+    case ui::VKEY_NEXT:  // Page down.
+      SetSelectedLine(names().size() - 1);
+      return true;
+    case ui::VKEY_ESCAPE:
+      HideInternal();
+      return true;
+    case ui::VKEY_DELETE:
+      return (event.modifiers & content::NativeWebKeyboardEvent::ShiftKey) &&
+             RemoveSelectedLine();
+    case ui::VKEY_RETURN:
+      return AcceptSelectedLine();
+    default:
+      return false;
+  }
+}
+
 void AutofillPopupControllerImpl::ViewDestroyed() {
   delete this;
 }
@@ -306,34 +334,6 @@ int AutofillPopupControllerImpl::selected_line() const {
 
 bool AutofillPopupControllerImpl::delete_icon_hovered() const {
   return delete_icon_hovered_;
-}
-
-bool AutofillPopupControllerImpl::HandleKeyPressEvent(
-    const content::NativeWebKeyboardEvent& event) {
-  switch (event.windowsKeyCode) {
-    case ui::VKEY_UP:
-      SelectPreviousLine();
-      return true;
-    case ui::VKEY_DOWN:
-      SelectNextLine();
-      return true;
-    case ui::VKEY_PRIOR:  // Page up.
-      SetSelectedLine(0);
-      return true;
-    case ui::VKEY_NEXT:  // Page down.
-      SetSelectedLine(names().size() - 1);
-      return true;
-    case ui::VKEY_ESCAPE:
-      HideInternal();
-      return true;
-    case ui::VKEY_DELETE:
-      return (event.modifiers & content::NativeWebKeyboardEvent::ShiftKey) &&
-             RemoveSelectedLine();
-    case ui::VKEY_RETURN:
-      return AcceptSelectedLine();
-    default:
-      return false;
-  }
 }
 
 void AutofillPopupControllerImpl::HideInternal() {

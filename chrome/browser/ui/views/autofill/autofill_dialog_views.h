@@ -15,9 +15,14 @@
 
 class ConstrainedWindowViews;
 
+namespace content {
+class KeyboardListener;
+}
+
 namespace views {
 class Checkbox;
 class Combobox;
+class FocusManager;
 class ImageButton;
 class Label;
 class MenuRunner;
@@ -229,6 +234,9 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // Runs the suggestion menu (triggered by each section's |suggested_button|.
   scoped_ptr<views::MenuRunner> menu_runner_;
+
+  // The focus manager for |window_|.
+  views::FocusManager* focus_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogViews);
 };
