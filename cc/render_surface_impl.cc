@@ -224,8 +224,14 @@ void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQ
 
     gfx::RectF maskUVRect(0.0f, 0.0f, 1.0f, 1.0f);
     if (maskLayer) {
-        float scaleX = contentRect().width() / maskLayer->contentsScaleX() / maskLayer->bounds().width();
-        float scaleY = contentRect().height() / maskLayer->contentsScaleY() / maskLayer->bounds().height();
+        // Because the RenderSurface is sized base on the screen footprint,
+        // there can be a scale between the RenderSurface and the owning layer,
+        // as well as the mask. While the mask doesn't have a drawTransform, the
+        // owning layer has it (and should be pure scaling), so use that to
+        // scale the mask to the right size.
+        gfx::Vector2dF maskDrawScale = MathUtil::computeTransform2dScaleComponents(m_owningLayer->drawTransform(), 1.f);
+        float scaleX = contentRect().width() / maskLayer->contentsScaleX() / maskLayer->bounds().width() / maskDrawScale.x();
+        float scaleY = contentRect().height() / maskLayer->contentsScaleY() / maskLayer->bounds().height() / maskDrawScale.y();
 
         maskUVRect = gfx::RectF(static_cast<float>(contentRect().x()) / contentRect().width() * scaleX,
                                 static_cast<float>(contentRect().y()) / contentRect().height() * scaleY,

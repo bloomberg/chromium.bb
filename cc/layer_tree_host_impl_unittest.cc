@@ -4427,6 +4427,139 @@ TEST_P(LayerTreeHostImplTestWithDelegatingRenderer, FrameIncludesDamageRect)
     drawFrameAndTestDamage(noDamage);
 }
 
+class FakeMaskLayerImpl : public LayerImpl {
+public:
+    static scoped_ptr<FakeMaskLayerImpl> create(LayerTreeImpl* treeImpl, int id)
+    {
+        return make_scoped_ptr(new FakeMaskLayerImpl(treeImpl, id));
+    }
+
+    virtual ResourceProvider::ResourceId contentsResourceId() const { return 0; }
+
+private:
+    FakeMaskLayerImpl(LayerTreeImpl* treeImpl, int id) : LayerImpl(treeImpl, id) { }
+};
+
+TEST_P(LayerTreeHostImplTest, maskLayerWithScaling)
+{
+    // Root
+    //  |
+    //  +-- Scaling Layer (adds a 2x scale)
+    //       |
+    //       +-- Content Layer
+    //             +--Mask
+    scoped_ptr<LayerImpl> scopedRoot = LayerImpl::create(m_hostImpl->activeTree(), 1);
+    LayerImpl* root = scopedRoot.get();
+    m_hostImpl->activeTree()->SetRootLayer(scopedRoot.Pass());
+
+    scoped_ptr<LayerImpl> scopedScalingLayer = LayerImpl::create(m_hostImpl->activeTree(), 2);
+    LayerImpl* scalingLayer = scopedScalingLayer.get();
+    root->addChild(scopedScalingLayer.Pass());
+
+    scoped_ptr<LayerImpl> scopedContentLayer = LayerImpl::create(m_hostImpl->activeTree(), 3);
+    LayerImpl* contentLayer = scopedContentLayer.get();
+    scalingLayer->addChild(scopedContentLayer.Pass());
+
+    scoped_ptr<FakeMaskLayerImpl> scopedMaskLayer = FakeMaskLayerImpl::create(m_hostImpl->activeTree(), 4);
+    FakeMaskLayerImpl* maskLayer = scopedMaskLayer.get();
+    contentLayer->setMaskLayer(scopedMaskLayer.PassAs<LayerImpl>());
+
+    gfx::Size rootSize(100, 100);
+    root->setBounds(rootSize);
+    root->setContentBounds(rootSize);
+    root->setPosition(gfx::PointF());
+    root->setAnchorPoint(gfx::PointF());
+
+    gfx::Size scalingLayerSize(50, 50);
+    scalingLayer->setBounds(scalingLayerSize);
+    scalingLayer->setContentBounds(scalingLayerSize);
+    scalingLayer->setPosition(gfx::PointF());
+    scalingLayer->setAnchorPoint(gfx::PointF());
+    gfx::Transform scale;
+    scale.Scale(2.0, 2.0);
+    scalingLayer->setTransform(scale);
+
+    contentLayer->setBounds(scalingLayerSize);
+    contentLayer->setContentBounds(scalingLayerSize);
+    contentLayer->setPosition(gfx::PointF());
+    contentLayer->setAnchorPoint(gfx::PointF());
+    contentLayer->setDrawsContent(true);
+
+    maskLayer->setBounds(scalingLayerSize);
+    maskLayer->setContentBounds(scalingLayerSize);
+    maskLayer->setPosition(gfx::PointF());
+    maskLayer->setAnchorPoint(gfx::PointF());
+    maskLayer->setDrawsContent(true);
+
+
+    // Check that the tree scaling is correctly taken into account for the mask,
+    // that should fully map onto the quad.
+    float deviceScaleFactor = 1.f;
+    m_hostImpl->setViewportSize(rootSize, rootSize);
+    m_hostImpl->setDeviceScaleFactor(deviceScaleFactor);
+    {
+        LayerTreeHostImpl::FrameData frame;
+        EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
+
+        ASSERT_EQ(1u, frame.renderPasses.size());
+        ASSERT_EQ(1u, frame.renderPasses[0]->quad_list.size());
+        ASSERT_EQ(DrawQuad::RENDER_PASS, frame.renderPasses[0]->quad_list[0]->material);
+        const RenderPassDrawQuad* renderPassQuad = RenderPassDrawQuad::MaterialCast(frame.renderPasses[0]->quad_list[0]);
+        EXPECT_EQ(renderPassQuad->rect.ToString(), gfx::Rect(0, 0, 100, 100).ToString());
+        EXPECT_EQ(renderPassQuad->mask_uv_rect.ToString(), gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString());
+
+        m_hostImpl->drawLayers(frame);
+        m_hostImpl->didDrawAllLayers(frame);
+    }
+
+
+    // Applying a DSF should change the render surface size, but won't affect
+    // which part of the mask is used.
+    deviceScaleFactor = 2.f;
+    gfx::Size deviceViewport(gfx::ToFlooredSize(gfx::ScaleSize(rootSize, deviceScaleFactor)));
+    m_hostImpl->setViewportSize(rootSize, deviceViewport);
+    m_hostImpl->setDeviceScaleFactor(deviceScaleFactor);
+    m_hostImpl->setNeedsUpdateDrawProperties();
+    {
+        LayerTreeHostImpl::FrameData frame;
+        EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
+
+        ASSERT_EQ(1u, frame.renderPasses.size());
+        ASSERT_EQ(1u, frame.renderPasses[0]->quad_list.size());
+        ASSERT_EQ(DrawQuad::RENDER_PASS, frame.renderPasses[0]->quad_list[0]->material);
+        const RenderPassDrawQuad* renderPassQuad = RenderPassDrawQuad::MaterialCast(frame.renderPasses[0]->quad_list[0]);
+        EXPECT_EQ(renderPassQuad->rect.ToString(), gfx::Rect(0, 0, 200, 200).ToString());
+        EXPECT_EQ(renderPassQuad->mask_uv_rect.ToString(), gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString());
+
+        m_hostImpl->drawLayers(frame);
+        m_hostImpl->didDrawAllLayers(frame);
+    }
+
+
+    // Applying an equivalent content scale on the content layer and the mask
+    // should still result in the same part of the mask being used.
+    gfx::Size contentsBounds(gfx::ToRoundedSize(gfx::ScaleSize(scalingLayerSize, deviceScaleFactor)));
+    contentLayer->setContentBounds(contentsBounds);
+    contentLayer->setContentsScale(deviceScaleFactor, deviceScaleFactor);
+    maskLayer->setContentBounds(contentsBounds);
+    maskLayer->setContentsScale(deviceScaleFactor, deviceScaleFactor);
+    m_hostImpl->setNeedsUpdateDrawProperties();
+    {
+        LayerTreeHostImpl::FrameData frame;
+        EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
+
+        ASSERT_EQ(1u, frame.renderPasses.size());
+        ASSERT_EQ(1u, frame.renderPasses[0]->quad_list.size());
+        ASSERT_EQ(DrawQuad::RENDER_PASS, frame.renderPasses[0]->quad_list[0]->material);
+        const RenderPassDrawQuad* renderPassQuad = RenderPassDrawQuad::MaterialCast(frame.renderPasses[0]->quad_list[0]);
+        EXPECT_EQ(renderPassQuad->rect.ToString(), gfx::Rect(0, 0, 200, 200).ToString());
+        EXPECT_EQ(renderPassQuad->mask_uv_rect.ToString(), gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString());
+
+        m_hostImpl->drawLayers(frame);
+        m_hostImpl->didDrawAllLayers(frame);
+    }
+}
+
 INSTANTIATE_TEST_CASE_P(LayerTreeHostImplTests,
                         LayerTreeHostImplTest,
                         ::testing::Values(false, true));
