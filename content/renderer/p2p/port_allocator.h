@@ -8,8 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_util.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURLLoaderClient.h"
 #include "third_party/libjingle/source/talk/p2p/client/basicportallocator.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
 
 namespace WebKit {
 class WebFrame;
