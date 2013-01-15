@@ -1830,14 +1830,6 @@ bool ExtensionService::PopulateExtensionErrorUI(
         needs_alert = true;
       }
     }
-
-    // Orphaned extensions.
-    if (extension_prefs_->IsExtensionOrphaned(e->id())) {
-      if (!extension_prefs_->IsOrphanedExtensionAcknowledged(e->id())) {
-        extension_error_ui->AddOrphanedExtension(e->id());
-        needs_alert = true;
-      }
-    }
   }
 
   return needs_alert;
@@ -1853,11 +1845,6 @@ void ExtensionService::HandleExtensionAlertAccept() {
   for (ExtensionIdSet::const_iterator iter = extension_ids->begin();
        iter != extension_ids->end(); ++iter) {
     extension_prefs_->AcknowledgeBlacklistedExtension(*iter);
-  }
-  extension_ids = extension_error_ui_->get_orphaned_extension_ids();
-  for (ExtensionIdSet::const_iterator iter = extension_ids->begin();
-       iter != extension_ids->end(); ++iter) {
-    extension_prefs_->AcknowledgeOrphanedExtension(*iter);
   }
 }
 

@@ -18,8 +18,7 @@ using extensions::ExtensionIdSet;
 ExtensionErrorUI::ExtensionErrorUI(ExtensionService* extension_service)
     : extension_service_(extension_service),
       external_extension_ids_(new ExtensionIdSet),
-      blacklisted_extension_ids_(new ExtensionIdSet),
-      orphaned_extension_ids_(new ExtensionIdSet) {
+      blacklisted_extension_ids_(new ExtensionIdSet) {
   DCHECK(extension_service_);
 }
 
@@ -32,10 +31,6 @@ void ExtensionErrorUI::AddExternalExtension(const std::string& id) {
 
 void ExtensionErrorUI::AddBlacklistedExtension(const std::string& id) {
   blacklisted_extension_ids_->insert(id);
-}
-
-void ExtensionErrorUI::AddOrphanedExtension(const std::string& id) {
-  orphaned_extension_ids_->insert(id);
 }
 
 string16 ExtensionErrorUI::GenerateMessageSection(
@@ -64,10 +59,7 @@ string16 ExtensionErrorUI::GenerateMessage() {
                                 IDS_APP_ALERT_ITEM_EXTERNAL) +
          GenerateMessageSection(blacklisted_extension_ids_.get(),
                                 IDS_EXTENSION_ALERT_ITEM_BLACKLISTED,
-                                IDS_APP_ALERT_ITEM_BLACKLISTED) +
-         GenerateMessageSection(orphaned_extension_ids_.get(),
-                                IDS_EXTENSION_ALERT_ITEM_ORPHANED,
-                                IDS_APP_ALERT_ITEM_ORPHANED);
+                                IDS_APP_ALERT_ITEM_BLACKLISTED);
 }
 
 string16 ExtensionErrorUI::GetBubbleViewMessage() {

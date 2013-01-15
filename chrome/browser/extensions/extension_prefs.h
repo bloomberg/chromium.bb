@@ -205,9 +205,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // to use Blacklist::GetBlacklistedIDs rather than this method.
   bool IsExtensionBlacklisted(const std::string& id) const;
 
-  // Based on extension id, checks prefs to see if it is orphaned.
-  bool IsExtensionOrphaned(const std::string& id);
-
   // Increment the count of how many times we prompted the user to acknowledge
   // the given extension, and return the new count.
   int IncrementAcknowledgePromptCount(const std::string& extension_id);
@@ -223,10 +220,6 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // Whether the user has acknowledged a blacklisted extension.
   bool IsBlacklistedExtensionAcknowledged(const std::string& extension_id);
   void AcknowledgeBlacklistedExtension(const std::string& extension_id);
-
-  // Whether the user has acknowledged an orphaned extension.
-  bool IsOrphanedExtensionAcknowledged(const std::string& extension_id);
-  void AcknowledgeOrphanedExtension(const std::string& extension_id);
 
   // Returns true if the extension notification code has already run for the
   // first time for this profile. Currently we use this flag to mean that any

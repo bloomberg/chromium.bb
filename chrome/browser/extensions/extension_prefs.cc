@@ -77,7 +77,6 @@ const char kPrefExcludeFromSideloadWipeout[] = "exclude_from_sideload_wipeout";
 // Indicates whether the user has acknowledged various types of extensions.
 const char kPrefExternalAcknowledged[] = "ack_external";
 const char kPrefBlacklistAcknowledged[] = "ack_blacklist";
-const char kPrefOrphanAcknowledged[] = "ack_orphan";
 
 // Indicates whether to show an install warning when the user enables.
 const char kExtensionDidEscalatePermissions[] = "install_warning_on_enable";
@@ -601,13 +600,6 @@ void ExtensionPrefs::SetExtensionPrefPermissionSet(
   }
 }
 
-bool ExtensionPrefs::IsExtensionOrphaned(const std::string& extension_id) {
-  // TODO(miket): we believe that this test will hinge on the number of
-  // consecutive times that an update check has returned a certain response
-  // versus a success response. For now nobody is orphaned.
-  return false;
-}
-
 int ExtensionPrefs::IncrementAcknowledgePromptCount(
     const std::string& extension_id) {
   int count = 0;
@@ -648,19 +640,6 @@ void ExtensionPrefs::AcknowledgeBlacklistedExtension(
     const std::string& extension_id) {
   DCHECK(Extension::IdIsValid(extension_id));
   UpdateExtensionPref(extension_id, kPrefBlacklistAcknowledged,
-                      Value::CreateBooleanValue(true));
-  UpdateExtensionPref(extension_id, kPrefAcknowledgePromptCount, NULL);
-}
-
-bool ExtensionPrefs::IsOrphanedExtensionAcknowledged(
-    const std::string& extension_id) {
-  return ReadExtensionPrefBoolean(extension_id, kPrefOrphanAcknowledged);
-}
-
-void ExtensionPrefs::AcknowledgeOrphanedExtension(
-    const std::string& extension_id) {
-  DCHECK(Extension::IdIsValid(extension_id));
-  UpdateExtensionPref(extension_id, kPrefOrphanAcknowledged,
                       Value::CreateBooleanValue(true));
   UpdateExtensionPref(extension_id, kPrefAcknowledgePromptCount, NULL);
 }

@@ -25,7 +25,6 @@ class ExtensionErrorUI {
   // hasn't yet acknowledged.
   void AddExternalExtension(const std::string& id);
   void AddBlacklistedExtension(const std::string& id);
-  void AddOrphanedExtension(const std::string& id);
 
   // Returns sets replaying the IDs that have been added with the
   // Add[...]Extension methods.
@@ -35,10 +34,6 @@ class ExtensionErrorUI {
 
   const extensions::ExtensionIdSet* get_blacklisted_extension_ids() const {
     return blacklisted_extension_ids_.get();
-  }
-
-  const extensions::ExtensionIdSet* get_orphaned_extension_ids() const {
-    return orphaned_extension_ids_.get();
   }
 
   // Shows the installation error in a bubble view. Should return true if a
@@ -73,7 +68,6 @@ class ExtensionErrorUI {
   ExtensionService* extension_service_;
   scoped_ptr<extensions::ExtensionIdSet> external_extension_ids_;
   scoped_ptr<extensions::ExtensionIdSet> blacklisted_extension_ids_;
-  scoped_ptr<extensions::ExtensionIdSet> orphaned_extension_ids_;
   string16 message_;  // Displayed in the body of the alert.
 
   // For a given set of extension IDs, generates appropriate text

@@ -2720,7 +2720,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_FILE_TOO_SHORT"
 	       desc="Download page message: A download resumption was attempted, but the file didn't exist or wasn't as large as expected">
-	Destination file was truncated or removed since last download.	
+	Destination file was truncated or removed since last download.
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_NETWORK_TIMEOUT"
                desc="Network Timeout.">
@@ -4911,17 +4911,11 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_EXTENSION_ALERT_ITEM_BLACKLISTED" desc="A statement that an extension has been newly blacklisted. http://www.google.com/support/chrome/bin/answer.py?hl=en&amp;answer=1210215 contains the language on which we're basing the phrasing.">
         The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" was automatically removed.
       </message>
-      <message name="IDS_EXTENSION_ALERT_ITEM_ORPHANED" desc="A statement that an extension formerly live in the App Store has been delisted.">
-        Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>."
-      </message>
       <message name="IDS_APP_ALERT_ITEM_EXTERNAL" desc="A statement that an external packaged app has been newly installed. End users have no idea what an 'external' app is, so we simply call them apps.">
         The app "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been added.
       </message>
       <message name="IDS_APP_ALERT_ITEM_BLACKLISTED" desc="A statement that a packaged app has been newly blacklisted. http://www.google.com/support/chrome/bin/answer.py?hl=en&amp;answer=1210215 contains the language on which we're basing the phrasing.">
         The app "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" was automatically removed.
-      </message>
-      <message name="IDS_APP_ALERT_ITEM_ORPHANED" desc="A statement that a packaged app formerly live in the App Store has been delisted.">
-        Update checks have repeatedly failed for the app "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>."
       </message>
       <message name="IDS_EXTENSION_ALERT_ITEM_OK" desc="The title of the default button acknowledging the information presented.">
         OK
@@ -15283,7 +15277,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_PROFILES_REMOVE_SHORTCUT_CHECKBOX" desc="Remove Shortcut Checkbox">
       Remove desktop shortcut for this user
     </message>
- 
+
     <!-- Tracing about page strings -->
     <message name="IDS_TRACING_TITLE" desc="Title for the about:tracing page.">
       Tracing
