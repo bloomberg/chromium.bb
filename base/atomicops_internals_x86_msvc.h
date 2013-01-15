@@ -9,6 +9,15 @@
 
 #include <windows.h>
 
+#if defined(ARCH_CPU_64_BITS)
+// windows.h #defines this (only on x64). This causes problems because the
+// public API also uses MemoryBarrier at the public name for this fence. So, on
+// X64, undef it, and call its documented
+// (http://msdn.microsoft.com/en-us/library/windows/desktop/ms684208.aspx)
+// implementation directly.
+#undef MemoryBarrier
+#endif
+
 namespace base {
 namespace subtle {
 
@@ -46,8 +55,13 @@ inline Atomic32 NoBarrier_AtomicIncrement(volatile Atomic32* ptr,
 #error "We require at least vs2005 for MemoryBarrier"
 #endif
 inline void MemoryBarrier() {
+#if defined(ARCH_CPU_64_BITS)
+  // See #undef and note at the top of this file.
+  __faststorefence();
+#else
   // We use MemoryBarrier from WinNT.h
   ::MemoryBarrier();
+#endif
 }
 
 inline Atomic32 Acquire_CompareAndSwap(volatile Atomic32* ptr,
