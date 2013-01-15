@@ -46,8 +46,10 @@ using WebKit::WebVector;
 namespace {
 
 using autofill::ExtractAutofillableElements;
-using autofill::IsTextInput;
+using autofill::IsAutofillableInputElement;
+using autofill::IsCheckableElement;
 using autofill::IsSelectElement;
+using autofill::IsTextInput;
 
 // The maximum length allowed for form data.
 const size_t kMaxDataLength = 1024;
@@ -70,7 +72,7 @@ bool HasTagName(const WebNode& node, const WebKit::WebString& tag) {
 
 bool IsAutofillableElement(const WebFormControlElement& element) {
   const WebInputElement* input_element = toWebInputElement(&element);
-  return IsTextInput(input_element) || IsSelectElement(element);
+  return IsAutofillableInputElement(input_element) || IsSelectElement(element);
 }
 
 // Appends |suffix| to |prefix| so that any intermediary whitespace is collapsed
@@ -462,13 +464,12 @@ void ForEachMatchingFormField(const WebFormElement& form_element,
 
     bool is_initiating_element = (*element == initiating_element);
 
+    // Only autofill empty fields and the field that initiated the filling,
+    // i.e. the field the user is currently editing and interacting with.
     const WebInputElement* input_element = toWebInputElement(element);
-    if (IsTextInput(input_element)) {
-      // Only autofill empty fields and the field that initiated the filling,
-      // i.e. the field the user is currently editing and interacting with.
-      if (!is_initiating_element && !input_element->value().isEmpty())
-        continue;
-    }
+    if (IsTextInput(input_element) && !is_initiating_element &&
+        !input_element->value().isEmpty())
+      continue;
 
     if (!element->isEnabled() || element->isReadOnly() ||
         (only_focusable_elements && !element->isFocusable()))
@@ -500,13 +501,15 @@ void FillFormField(const FormFieldData& data,
       // Clear the current IME composition (the underline), if there is one.
       input_element->document().frame()->unmarkText();
     }
-  } else {
-    DCHECK(IsSelectElement(*field));
+  } else if (IsSelectElement(*field)) {
     WebSelectElement select_element = field->to<WebSelectElement>();
     if (select_element.value() != data.value) {
       select_element.setValue(data.value);
       select_element.dispatchFormControlChangeEvent();
     }
+  } else {
+    DCHECK(IsCheckableElement(input_element));
+    input_element->setChecked(data.is_checked, true);
   }
 }
 
@@ -519,7 +522,8 @@ void PreviewFormField(const FormFieldData& data,
   if (data.value.empty())
     return;
 
-  // Only preview input fields.
+  // Only preview input fields. Excludes checkboxes and radio buttons, as there
+  // is no provision for setSuggestedCheckedValue in WebInputElement.
   WebInputElement* input_element = toWebInputElement(field);
   if (!IsTextInput(input_element))
     return;
@@ -564,7 +568,25 @@ bool IsTextInput(const WebInputElement* element) {
 }
 
 bool IsSelectElement(const WebFormControlElement& element) {
-  return element.formControlType() == ASCIIToUTF16("select-one");
+  // Is static for improving performance.
+  CR_DEFINE_STATIC_LOCAL(WebString, kSelectOne, ("select-one"));
+  return element.formControlType() == kSelectOne;
+}
+
+bool IsCheckableElement(const WebInputElement* element) {
+  // Is static for improving performance.
+  CR_DEFINE_STATIC_LOCAL(WebString, kRadio, ("radio"));
+  CR_DEFINE_STATIC_LOCAL(WebString, kCheckbox, ("checkbox"));
+
+  if (!element)
+    return false;
+
+  WebString formControlType = element->formControlType();
+  return formControlType == kCheckbox || formControlType == kRadio;
+}
+
+bool IsAutofillableInputElement(const WebInputElement* element) {
+  return IsTextInput(element) || IsCheckableElement(element);
 }
 
 const string16 GetFormIdentifier(const WebFormElement& form) {
@@ -625,7 +647,8 @@ void ExtractAutofillableElements(
       // TODO(jhawkins): WebKit currently doesn't handle the autocomplete
       // attribute for select control elements, but it probably should.
       WebInputElement* input_element = toWebInputElement(&control_elements[i]);
-      if (IsTextInput(input_element) && !input_element->autoComplete())
+      if (IsAutofillableInputElement(input_element) &&
+          !input_element->autoComplete())
         continue;
     }
 
@@ -657,11 +680,14 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
     return;
 
   const WebInputElement* input_element = toWebInputElement(&element);
-  if (IsTextInput(input_element)) {
-    field->max_length = input_element->maxLength();
+  if (IsAutofillableInputElement(input_element)) {
+    if (IsTextInput(input_element))
+      field->max_length = input_element->maxLength();
+
     field->is_autofilled = input_element->isAutofilled();
     field->is_focusable = input_element->isFocusable();
     field->should_autocomplete = input_element->autoComplete();
+    field->is_checkable = IsCheckableElement(input_element);
   } else if (extract_mask & EXTRACT_OPTIONS) {
     // Set option strings on the field if available.
     DCHECK(IsSelectElement(element));
@@ -675,7 +701,7 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
     return;
 
   string16 value;
-  if (IsTextInput(input_element)) {
+  if (IsAutofillableInputElement(input_element)) {
     value = input_element->value();
   } else {
     DCHECK(IsSelectElement(element));
@@ -752,7 +778,8 @@ bool WebFormElementToFormData(
       continue;
 
     const WebInputElement* input_element = toWebInputElement(&control_element);
-    if (requirements & REQUIRE_AUTOCOMPLETE && IsTextInput(input_element) &&
+    if (requirements & REQUIRE_AUTOCOMPLETE &&
+        IsAutofillableInputElement(input_element) &&
         !input_element->autoComplete())
       continue;
 
@@ -954,7 +981,7 @@ bool FormWithElementIsAutofilled(const WebInputElement& element) {
                               &control_elements);
   for (size_t i = 0; i < control_elements.size(); ++i) {
     WebInputElement* input_element = toWebInputElement(&control_elements[i]);
-    if (!IsTextInput(input_element))
+    if (!IsAutofillableInputElement(input_element))
       continue;
 
     if (input_element->isAutofilled())

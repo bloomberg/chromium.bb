@@ -100,7 +100,8 @@ std::string FormStructureBrowserTest::FormStructuresToString(
 #if defined(OS_WIN)
 #define MAYBE_DataDrivenHeuristics(n) DISABLED_DataDrivenHeuristics##n
 #else
-#define MAYBE_DataDrivenHeuristics(n) DataDrivenHeuristics##n
+// TODO(ramankk): Renable DataDrivenHeuristics tests. http://crbug.com/169948.
+#define MAYBE_DataDrivenHeuristics(n) DISABLED_DataDrivenHeuristics##n
 #endif
 IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest, DataDrivenHeuristics00) {
   const FilePath::CharType kFileNamePattern[] = FILE_PATH_LITERAL("00_*.html");
