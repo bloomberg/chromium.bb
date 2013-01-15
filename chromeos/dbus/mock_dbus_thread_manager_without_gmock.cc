@@ -114,12 +114,6 @@ ShillManagerClient*
   return NULL;
 }
 
-ShillNetworkClient*
-    MockDBusThreadManagerWithoutGMock::GetShillNetworkClient() {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 ShillProfileClient*
     MockDBusThreadManagerWithoutGMock::GetShillProfileClient() {
   NOTIMPLEMENTED();

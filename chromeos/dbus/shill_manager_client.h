@@ -38,6 +38,7 @@ class CHROMEOS_EXPORT ShillManagerClient {
    public:
     virtual void AddDevice(const std::string& device_path) = 0;
     virtual void RemoveDevice(const std::string& device_path) = 0;
+    virtual void ResetDevices() = 0;
     virtual void AddService(const std::string& service_path,
                             bool add_to_watch_list) = 0;
     virtual void AddServiceAtIndex(const std::string& service_path,
@@ -46,6 +47,8 @@ class CHROMEOS_EXPORT ShillManagerClient {
     virtual void RemoveService(const std::string& service_path) = 0;
     virtual void AddTechnology(const std::string& type, bool enabled) = 0;
     virtual void RemoveTechnology(const std::string& type) = 0;
+    virtual void AddGeoNetwork(const std::string& technology,
+                               const base::DictionaryValue& network) = 0;
 
     // Used to reset all properties; does not notify observers.
     virtual void ClearProperties() = 0;
@@ -77,9 +80,14 @@ class CHROMEOS_EXPORT ShillManagerClient {
   // method call finishes.  The caller is responsible to delete the result.
   // Thie method returns NULL when method call fails.
   //
-  // TODO(hashimoto): Refactor CrosGetWifiAccessPoints and remove this method.
+  // TODO(hashimoto): Refactor blocking calls and remove this method.
   // crosbug.com/29902
   virtual base::DictionaryValue* CallGetPropertiesAndBlock() = 0;
+
+  // Calls GetNetworksForGeolocation method.
+  // |callback| is called after the method call succeeds.
+  virtual void GetNetworksForGeolocation(
+      const DictionaryValueCallback& callback) = 0;
 
   // Calls SetProperty method.
   // |callback| is called after the method call succeeds.

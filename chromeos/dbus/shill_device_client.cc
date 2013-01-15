@@ -375,8 +375,7 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
 
   virtual void AddDevice(const std::string& device_path,
                          const std::string& type,
-                         const std::string& object_path,
-                         const std::string& connection_path) OVERRIDE {
+                         const std::string& object_path) OVERRIDE {
     base::DictionaryValue* properties = GetDeviceProperties(device_path);
     properties->SetWithoutPathExpansion(
         flimflam::kTypeProperty,
@@ -386,7 +385,7 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
         base::Value::CreateStringValue(object_path));
     properties->SetWithoutPathExpansion(
         flimflam::kDBusConnectionProperty,
-        base::Value::CreateStringValue(connection_path));
+        base::Value::CreateStringValue("/stub"));
   }
 
   virtual void RemoveDevice(const std::string& device_path) OVERRIDE {
@@ -397,18 +396,25 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
     stub_devices_.Clear();
   }
 
+  virtual void SetDeviceProperty(const std::string& device_path,
+                                 const std::string& name,
+                                 const base::Value& value) {
+    SetProperty(dbus::ObjectPath(device_path), name, value,
+                base::Bind(&base::DoNothing),
+                base::Bind(&ShillDeviceClientStubImpl::ErrorFunction));
+  }
+
  private:
   typedef ObserverList<ShillPropertyChangedObserver> PropertyObserverList;
 
   void SetDefaultProperties() {
     // Add a wifi device. Note: path matches Manager entry.
-    AddDevice("stub_wifi_device1", flimflam::kTypeWifi,
-              "/device/wifi1", "/stub");
+    AddDevice("stub_wifi_device1", flimflam::kTypeWifi, "/device/wifi1");
 
     // Add a cellular device. Used in SMS stub. Note: path matches
     // Manager entry.
     AddDevice("stub_cellular_device1", flimflam::kTypeCellular,
-              "/device/cellular1", "/stub");
+              "/device/cellular1");
   }
 
   void PassStubDeviceProperties(const dbus::ObjectPath& device_path,
@@ -469,6 +475,11 @@ class ShillDeviceClientStubImpl : public ShillDeviceClient,
     PropertyObserverList* observer_list = new PropertyObserverList();
     observer_list_[device_path] = observer_list;
     return *observer_list;
+  }
+
+  static void ErrorFunction(const std::string& error_name,
+                            const std::string& error_message) {
+    LOG(ERROR) << "Shill Error: " << error_name << " : " << error_message;
   }
 
   // Dictionary of <device_name, Dictionary>.

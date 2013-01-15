@@ -36,12 +36,12 @@ struct CHROMEOS_EXPORT SMS {
 struct CHROMEOS_EXPORT WifiAccessPoint {
   WifiAccessPoint();
   ~WifiAccessPoint();
+  std::string ssid;  // The ssid of the WiFi node if available.
   std::string mac_address;  // The mac address of the WiFi node.
-  std::string name;         // The SSID of the WiFi node.
-  base::Time timestamp;     // Timestamp when this AP was detected.
-  int signal_strength;      // Radio signal strength measured in dBm.
-  int signal_to_noise;      // Current signal to noise ratio measured in dB.
-  int channel;              // Wifi channel number.
+  base::Time timestamp;  // Timestamp when this AP was detected.
+  int signal_strength;  // Radio signal strength measured in dBm.
+  int signal_to_noise;  // Current signal to noise ratio measured in dB.
+  int channel;  // Wifi channel number.
 };
 
 typedef std::vector<WifiAccessPoint> WifiAccessPointVector;

@@ -25,7 +25,6 @@
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill_manager_client.h"
-#include "chromeos/dbus/shill_network_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
@@ -102,8 +101,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
         ShillIPConfigClient::Create(client_type, system_bus_.get()));
     shill_manager_client_.reset(
         ShillManagerClient::Create(client_type, system_bus_.get()));
-    shill_network_client_.reset(
-        ShillNetworkClient::Create(client_type, system_bus_.get()));
     shill_profile_client_.reset(
         ShillProfileClient::Create(client_type, system_bus_.get()));
     shill_service_client_.reset(
@@ -253,10 +250,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return shill_manager_client_.get();
   }
 
-  virtual ShillNetworkClient* GetShillNetworkClient() OVERRIDE {
-    return shill_network_client_.get();
-  }
-
   virtual ShillProfileClient* GetShillProfileClient() OVERRIDE {
     return shill_profile_client_.get();
   }
@@ -369,7 +362,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<ShillDeviceClient> shill_device_client_;
   scoped_ptr<ShillIPConfigClient> shill_ipconfig_client_;
   scoped_ptr<ShillManagerClient> shill_manager_client_;
-  scoped_ptr<ShillNetworkClient> shill_network_client_;
   scoped_ptr<ShillProfileClient> shill_profile_client_;
   scoped_ptr<ShillServiceClient> shill_service_client_;
   scoped_ptr<GsmSMSClient> gsm_sms_client_;

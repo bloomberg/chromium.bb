@@ -46,10 +46,12 @@ class CHROMEOS_EXPORT ShillDeviceClient {
    public:
     virtual void AddDevice(const std::string& device_path,
                            const std::string& type,
-                           const std::string& object_path,
-                           const std::string& connection_path) = 0;
+                           const std::string& object_path) = 0;
     virtual void RemoveDevice(const std::string& device_path) = 0;
     virtual void ClearDevices() = 0;
+    virtual void SetDeviceProperty(const std::string& device_path,
+                                   const std::string& name,
+                                   const base::Value& value) = 0;
 
    protected:
     ~TestInterface() {}
