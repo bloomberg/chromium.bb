@@ -227,9 +227,7 @@ void ShowExtensionInstallDialogImpl(
     const ExtensionInstallPrompt::Prompt& prompt) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 #if defined(OS_WIN)
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableAppListOptIn) &&
-      BrowserDistribution::GetDistribution()->AppHostIsSupported() &&
+  if (BrowserDistribution::GetDistribution()->AppHostIsSupported() &&
       prompt.extension()->is_platform_app()) {
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE,

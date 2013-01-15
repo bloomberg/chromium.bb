@@ -132,7 +132,6 @@ extern const char kDnsPrefetchDisable[];
 extern const char kDumpHistogramsOnExit[];
 extern const char kDisableSyncTabs[];
 extern const char kEasyOffStoreExtensionInstall[];
-extern const char kEnableAppListOptIn[];
 extern const char kEnableAsyncDns[];
 extern const char kEnableAuthNegotiatePort[];
 extern const char kEnableAutologin[];
