@@ -768,6 +768,11 @@ void AutofillManager::OnSetDataList(const std::vector<string16>& values,
                                     const std::vector<string16>& labels,
                                     const std::vector<string16>& icons,
                                     const std::vector<int>& unique_ids) {
+  if (labels.size() != values.size() ||
+      icons.size() != values.size() ||
+      unique_ids.size() != values.size()) {
+    return;
+  }
   if (external_delegate_) {
     external_delegate_->SetCurrentDataListValues(values,
                                                  labels,
