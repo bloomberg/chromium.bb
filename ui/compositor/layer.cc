@@ -28,15 +28,10 @@
 
 namespace {
 
-const float EPSILON = 1e-3f;
-
-bool IsApproximateMultipleOf(float value, float base) {
-  float remainder = fmod(fabs(value), base);
-  return remainder < EPSILON || base - remainder < EPSILON;
-}
-
 const ui::Layer* GetRoot(const ui::Layer* layer) {
-  return layer->parent() ? GetRoot(layer->parent()) : layer;
+  while (layer->parent())
+    layer = layer->parent();
+  return layer;
 }
 
 }  // namespace
