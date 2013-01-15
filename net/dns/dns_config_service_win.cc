@@ -316,6 +316,20 @@ class RegistryWatcher : public base::win::ObjectWatcher::Delegate,
   DISALLOW_COPY_AND_ASSIGN(RegistryWatcher);
 };
 
+// Returns true iff |address| is DNS address from IPv6 stateless discovery,
+// i.e., matches fec0:0:0:ffff::{1,2,3}.
+// http://tools.ietf.org/html/draft-ietf-ipngwg-dns-discovery
+bool IsStatelessDiscoveryAddress(const IPAddressNumber& address) {
+  if (address.size() != kIPv6AddressSize)
+    return false;
+  const uint8 kPrefix[] = {
+      0xfe, 0xc0, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  };
+  return std::equal(kPrefix, kPrefix + arraysize(kPrefix),
+                    address.begin()) && (address.back() < 4);
+}
+
 }  // namespace
 
 FilePath GetHostsPath() {
@@ -374,6 +388,8 @@ ConfigParseWinResult ConvertSettingsToDnsConfig(
       IPEndPoint ipe;
       if (ipe.FromSockAddr(address->Address.lpSockaddr,
                            address->Address.iSockaddrLength)) {
+        if (IsStatelessDiscoveryAddress(ipe.address()))
+          continue;
         // Override unset port.
         if (!ipe.port())
           ipe = IPEndPoint(ipe.address(), dns_protocol::kDefaultPort);
