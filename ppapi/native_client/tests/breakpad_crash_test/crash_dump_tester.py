@@ -58,9 +58,18 @@ def StartCrashService(browser_path, dumps_dir, windows_pipe_name,
   cleanup_funcs.append(Cleanup)
 
 
-def GetDumpFiles(dumps_dir):
-  all_files = [os.path.join(dumps_dir, dump_file)
-               for dump_file in os.listdir(dumps_dir)]
+def ListPathsInDir(dir_path):
+  if os.path.exists(dir_path):
+    return [os.path.join(dir_path, name)
+            for name in os.listdir(dir_path)]
+  else:
+    return []
+
+
+def GetDumpFiles(dumps_dirs):
+  all_files = [filename
+               for dumps_dir in dumps_dirs
+               for filename in ListPathsInDir(dumps_dir)]
   sys.stdout.write('crash_dump_tester: Found %i files\n' % len(all_files))
   for dump_file in all_files:
     sys.stdout.write('  %s\n' % dump_file)
@@ -88,19 +97,20 @@ def Main(cleanup_funcs):
                     help='Pass this if we are running tests for x86-64 Windows')
   options, args = parser.parse_args()
 
-  dumps_dir = tempfile.mkdtemp(prefix='nacl_crash_dump_tester_')
-  def CleanUpDumpsDir():
-    browsertester.browserlauncher.RemoveDirectory(dumps_dir)
-  cleanup_funcs.append(CleanUpDumpsDir)
+  temp_dir = tempfile.mkdtemp(prefix='nacl_crash_dump_tester_')
+  def CleanUpTempDir():
+    browsertester.browserlauncher.RemoveDirectory(temp_dir)
+  cleanup_funcs.append(CleanUpTempDir)
 
   # To get a guaranteed unique pipe name, use the base name of the
   # directory we just created.
-  windows_pipe_name = r'\\.\pipe\%s_crash_service' % os.path.basename(dumps_dir)
+  windows_pipe_name = r'\\.\pipe\%s_crash_service' % os.path.basename(temp_dir)
 
   # This environment variable enables Breakpad crash dumping in
   # non-official builds of Chromium.
   os.environ['CHROME_HEADLESS'] = '1'
   if sys.platform == 'win32':
+    dumps_dir = temp_dir
     # Override the default (global) Windows pipe name that Chromium will
     # use for out-of-process crash reporting.
     os.environ['CHROME_BREAKPAD_PIPE_NAME'] = windows_pipe_name
@@ -121,11 +131,31 @@ def Main(cleanup_funcs):
     # it has successfully created the named pipe.
     time.sleep(1)
   elif sys.platform == 'darwin':
+    dumps_dir = temp_dir
     os.environ['BREAKPAD_DUMP_LOCATION'] = dumps_dir
+  elif sys.platform.startswith('linux'):
+    # The "--user-data-dir" option is not effective for the Breakpad
+    # setup in Linux Chromium, because Breakpad is initialized before
+    # "--user-data-dir" is read.  So we set HOME to redirect the crash
+    # dumps to a temporary directory.
+    home_dir = temp_dir
+    os.environ['HOME'] = home_dir
+    # On Linux, we also need to set CHROME_ENABLE_BREAKPAD.
+    os.environ['CHROME_ENABLE_BREAKPAD'] = '1'
 
   result = browser_tester.Run(options.url, options)
 
-  dmp_files = GetDumpFiles(dumps_dir)
+  # Find crash dump results.
+  if sys.platform.startswith('linux'):
+    # Look in "~/.config/*/Crash Reports".  This will find crash
+    # reports under ~/.config/chromium or ~/.config/google-chrome, or
+    # under other subdirectories in case the branding is changed.
+    dumps_dirs = [os.path.join(path, 'Crash Reports')
+                  for path in ListPathsInDir(os.path.join(home_dir, '.config'))]
+  else:
+    dumps_dirs = [dumps_dir]
+  dmp_files = GetDumpFiles(dumps_dirs)
+
   failed = False
   msg = ('crash_dump_tester: ERROR: Got %i crash dumps but expected %i\n' %
          (len(dmp_files), options.expected_crash_dumps))

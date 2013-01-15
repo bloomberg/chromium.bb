@@ -6,6 +6,11 @@
 
 namespace env_vars {
 
+// Enable Breakpad crash reporting.  This is used for automated
+// testing of Breakpad in Chromium builds where Breakpad is compiled
+// in by default but not usually enabled.
+const char kEnableBreakpad[] = "CHROME_ENABLE_BREAKPAD";
+
 // We call running in unattended mode (for automated testing) "headless".
 // This mode can be enabled using this variable or by the kNoErrorDialogs
 // switch.

@@ -9,6 +9,7 @@
 
 namespace env_vars {
 
+extern const char kEnableBreakpad[];
 extern const char kHeadless[];
 extern const char kLogFileName[];
 extern const char kSessionLogDir[];

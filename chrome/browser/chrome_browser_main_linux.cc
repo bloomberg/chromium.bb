@@ -43,31 +43,60 @@ bool IsCrashReportingEnabled(const PrefService* local_state) {
   // Check whether we should initialize the crash reporter. It may be disabled
   // through configuration policy or user preference. It must be disabled for
   // Guest mode on Chrome OS in Stable channel.
-  // The kHeadless environment variable overrides the decision, but only if the
-  // crash service is under control of the user. It is used by QA testing
-  // infrastructure to switch on generation of crash reports.
-#if defined(OS_CHROMEOS)
-  bool is_guest_session =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession);
-  bool is_stable_channel =
-      chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_STABLE;
-  // TODO(pastarmovj): Consider the TrustedGet here.
-  bool reporting_enabled;
-  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                            &reporting_enabled);
-  bool breakpad_enabled =
-      !(is_guest_session && is_stable_channel) && reporting_enabled;
-  if (!breakpad_enabled)
-    breakpad_enabled = getenv(env_vars::kHeadless) != NULL;
+  // Environment variables may override the decision, but only if the
+  // crash service is under control of the user. It is used by QA
+  // testing infrastructure to switch on generation of crash reports.
+  bool use_env_var = true;
+
+  // Convert #define to a variable so that we can use if() rather than
+  // #if below and so at least compile-test the Chrome code in
+  // Chromium builds.
+#if defined(GOOGLE_CHROME_BUILD)
+  bool is_chrome_build = true;
 #else
-  const PrefService::Preference* metrics_reporting_enabled =
-      local_state->FindPreference(prefs::kMetricsReportingEnabled);
-  CHECK(metrics_reporting_enabled);
-  bool breakpad_enabled =
-      local_state->GetBoolean(prefs::kMetricsReportingEnabled);
-  if (!breakpad_enabled && metrics_reporting_enabled->IsUserModifiable())
-    breakpad_enabled = getenv(env_vars::kHeadless) != NULL;
+  bool is_chrome_build = false;
+#endif
+
+  // Check these settings in Chrome builds only, to reduce the chance
+  // that we accidentally upload crash dumps from Chromium builds.
+  bool breakpad_enabled = false;
+  if (is_chrome_build) {
+#if defined(OS_CHROMEOS)
+    bool is_guest_session =
+        CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession);
+    bool is_stable_channel =
+        chrome::VersionInfo::GetChannel() ==
+        chrome::VersionInfo::CHANNEL_STABLE;
+    // TODO(pastarmovj): Consider the TrustedGet here.
+    bool reporting_enabled;
+    chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
+                                              &reporting_enabled);
+    breakpad_enabled =
+        !(is_guest_session && is_stable_channel) && reporting_enabled;
+#else
+    const PrefService::Preference* metrics_reporting_enabled =
+        local_state->FindPreference(prefs::kMetricsReportingEnabled);
+    CHECK(metrics_reporting_enabled);
+    breakpad_enabled = local_state->GetBoolean(prefs::kMetricsReportingEnabled);
+    use_env_var = metrics_reporting_enabled->IsUserModifiable();
 #endif  // defined(OS_CHROMEOS)
+  }
+
+  if (use_env_var) {
+    // Linux Breakpad interferes with the debug stack traces produced
+    // by EnableInProcessStackDumping(), used in browser_tests, so we
+    // do not allow CHROME_HEADLESS=1 to enable Breakpad in Chromium
+    // because the buildbots have CHROME_HEADLESS set.  However, we
+    // allow CHROME_HEADLESS to enable Breakpad in Chrome for
+    // compatibility with Breakpad/Chrome tests that may rely on this.
+    // TODO(mseaborn): Change tests to use CHROME_ENABLE_BREAKPAD
+    // instead.
+    if (is_chrome_build && !breakpad_enabled)
+      breakpad_enabled = getenv(env_vars::kHeadless) != NULL;
+    if (!breakpad_enabled)
+      breakpad_enabled = getenv(env_vars::kEnableBreakpad) != NULL;
+  }
+
   return breakpad_enabled;
 }
 #endif  // defined(USE_LINUX_BREAKPAD)

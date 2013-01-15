@@ -863,9 +863,9 @@
 
     # Enable strict glibc debug mode.
     'glibcxx_debug%': 0,
-
-    # Override whether we should use Breakpad on Linux. I.e. for Chrome bot.
-    'linux_breakpad%': 0,
+    # Compile in Breakpad support by default so that it can be tested,
+    # even if it not enabled by default at runtime.
+    'linux_breakpad%': 1,
     # And if we want to dump symbols for Breakpad-enabled builds.
     'linux_dump_symbols%': 0,
     # And if we want to strip the binary after dumping symbols.
@@ -1027,9 +1027,6 @@
             'gcc_version%': '<!(python <(DEPTH)/build/compiler_version.py)',
           }, {
             'gcc_version%': 0,
-          }],
-          ['branding=="Chrome"', {
-            'linux_breakpad%': 1,
           }],
           # All Chrome builds have breakpad symbols, but only process the
           # symbols from official builds.
@@ -2806,8 +2803,10 @@
             ],
           }],
           ['linux_breakpad==1', {
-            'cflags': [ '-g' ],
             'defines': ['USE_LINUX_BREAKPAD'],
+          }],
+          ['linux_dump_symbols==1', {
+            'cflags': [ '-g' ],
             'conditions': [
               ['target_arch=="ia32"', {
                 'target_conditions': [

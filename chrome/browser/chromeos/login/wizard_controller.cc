@@ -454,7 +454,7 @@ void WizardController::OnEulaAccepted() {
 
   CrosSettings::Get()->SetBoolean(kStatsReportingPref, uma_enabled);
   if (uma_enabled) {
-#if defined(USE_LINUX_BREAKPAD)
+#if defined(USE_LINUX_BREAKPAD) && defined(GOOGLE_CHROME_BUILD)
     // The crash reporter initialization needs IO to complete.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     InitCrashReporter();

@@ -23,10 +23,20 @@ ChromeBrowserMainPartsAndroid::~ChromeBrowserMainPartsAndroid() {
 
 void ChromeBrowserMainPartsAndroid::PreProfileInit() {
 #if defined(USE_LINUX_BREAKPAD)
+#if defined(GOOGLE_CHROME_BUILD)
   // TODO(jcivelli): we should not initialize the crash-reporter when it was not
   // enabled. Right now if it is disabled we still generate the minidumps but we
   // do not upload them.
-  InitCrashReporter();
+  bool breakpad_enabled = true;
+#else
+  bool breakpad_enabled = false;
+#endif
+  // Allow Breakpad to be enabled in Chromium builds for testing purposes.
+  if (!breakpad_enabled)
+    breakpad_enabled = getenv(env_vars::kEnableBreakpad) != NULL;
+
+  if (breakpad_enabled)
+    InitCrashReporter();
 #endif
 
   ChromeBrowserMainParts::PreProfileInit();
