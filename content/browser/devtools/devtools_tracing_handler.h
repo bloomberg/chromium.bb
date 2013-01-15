@@ -10,6 +10,8 @@
 
 namespace content {
 
+class DevToolsWebSocketSender;
+
 // This class bridges DevTools remote debugging server with the trace
 // infrastructure.
 class DevToolsTracingHandler
@@ -34,13 +36,9 @@ class DevToolsTracingHandler
  private:
   base::Value* Start(const base::DictionaryValue* params);
   base::Value* End(const base::DictionaryValue* params);
-  base::Value* HasCompleted(const base::DictionaryValue* params);
-  base::Value* GetTraceAndReset(const base::DictionaryValue* params);
+  void SendNotification(const std::string& method, const std::string& value);
 
-  bool has_completed_;
-
-  std::vector<std::string> buffer_;
-  int buffer_data_size_;
+  bool is_running_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsTracingHandler);
 };

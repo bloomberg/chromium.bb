@@ -612,7 +612,8 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
       Send500(connection_id, "Another client already attached");
       return;
     }
-    browser_target_.reset(new DevToolsBrowserTarget(connection_id));
+    browser_target_.reset(new DevToolsBrowserTarget(
+        thread_->message_loop_proxy().get(), server_.get(), connection_id));
     browser_target_->RegisterHandler(new DevToolsTracingHandler());
     AcceptWebSocket(connection_id, request);
     return;

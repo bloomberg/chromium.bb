@@ -4,17 +4,77 @@
 
 #include "content/browser/devtools/devtools_browser_target.h"
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop_proxy.h"
 #include "base/values.h"
-
+#include "net/server/http_server.h"
 
 namespace content {
 
-DevToolsBrowserTarget::DevToolsBrowserTarget(int connection_id)
-    : connection_id_(connection_id) {
+namespace {
+
+class NotifierImpl : public DevToolsBrowserTarget::Notifier {
+ public:
+  NotifierImpl(
+      base::MessageLoopProxy* message_loop_proxy,
+      net::HttpServer* http_server,
+      int connection_id)
+     : message_loop_proxy_(message_loop_proxy),
+       server_(http_server),
+       connection_id_(connection_id) {
+  }
+
+  virtual ~NotifierImpl() {}
+
+  // DevToolsBrowserTarget::Notifier
+  virtual void Notify(const std::string& data) OVERRIDE {
+    message_loop_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&net::HttpServer::SendOverWebSocket,
+                   server_,
+                   connection_id_,
+                   data));
+  }
+
+ private:
+  base::MessageLoopProxy* const message_loop_proxy_;
+  net::HttpServer* const server_;
+  const int connection_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotifierImpl);
+};
+
+}  // namespace
+
+DevToolsBrowserTarget::Handler::Handler()
+    : notifier_(NULL) {
+}
+
+DevToolsBrowserTarget::Handler::~Handler() {
+}
+
+void DevToolsBrowserTarget::Handler::set_notifier(
+    DevToolsBrowserTarget::Notifier* notifier) {
+  notifier_ = notifier;
+}
+
+DevToolsBrowserTarget::Notifier* DevToolsBrowserTarget::Handler::notifier()
+    const {
+  return notifier_;
+}
+
+DevToolsBrowserTarget::DevToolsBrowserTarget(
+    base::MessageLoopProxy* message_loop_proxy,
+    net::HttpServer* http_server,
+    int connection_id)
+    : notifier_(
+          new NotifierImpl(message_loop_proxy, http_server, connection_id)),
+      connection_id_(connection_id) {
 }
 
 DevToolsBrowserTarget::~DevToolsBrowserTarget() {
@@ -26,6 +86,7 @@ void DevToolsBrowserTarget::RegisterHandler(Handler* handler) {
   std::string domain = handler->Domain();
   DCHECK(handlers_.find(domain) == handlers_.end());
   handlers_[domain] = handler;
+  handler->set_notifier(notifier_.get());
 }
 
 std::string DevToolsBrowserTarget::HandleMessage(const std::string& data) {
@@ -87,9 +148,7 @@ std::string DevToolsBrowserTarget::SerializeErrorResponse(
   error_response->Set("error", error_object);
   // Serialize response.
   std::string json_response;
-  base::JSONWriter::WriteWithOptions(error_response.get(),
-                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                     &json_response);
+  base::JSONWriter::Write(error_response.get(), &json_response);
   return json_response;
 }
 
@@ -109,9 +168,7 @@ std::string DevToolsBrowserTarget::SerializeResponse(
 
   // Serialize response.
   std::string json_response;
-  base::JSONWriter::WriteWithOptions(ret.get(),
-                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                     &json_response);
+  base::JSONWriter::Write(ret.get(), &json_response);
   return json_response;
 }
 

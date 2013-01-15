@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/values.h"
 #include "content/browser/devtools/devtools_http_handler_impl.h"
@@ -15,8 +16,7 @@
 namespace content {
 
 DevToolsTracingHandler::DevToolsTracingHandler()
-    : has_completed_(false),
-      buffer_data_size_(0) {
+    : is_running_(false) {
 }
 
 DevToolsTracingHandler::~DevToolsTracingHandler() {
@@ -27,13 +27,14 @@ std::string DevToolsTracingHandler::Domain() {
 }
 
 void DevToolsTracingHandler::OnEndTracingComplete() {
-  has_completed_ = true;
+  is_running_ = false;
+  SendNotification("Tracing.tracingComplete", "");
 }
 
 void DevToolsTracingHandler::OnTraceDataCollected(
     const scoped_refptr<base::RefCountedString>& trace_fragment) {
-  buffer_.push_back(trace_fragment->data());
-  buffer_data_size_ += trace_fragment->data().size();
+  if (is_running_)
+    SendNotification("Tracing.dataCollected", trace_fragment->data());
 }
 
 base::Value* DevToolsTracingHandler::OnProtocolCommand(
@@ -44,10 +45,6 @@ base::Value* DevToolsTracingHandler::OnProtocolCommand(
     return Start(params);
   else if (method == "Tracing.end")
     return End(params);
-  else if (method == "Tracing.hasCompleted")
-    return HasCompleted(params);
-  else if (method == "Tracing.getTraceAndReset")
-    return GetTraceAndReset(params);
 
   base::DictionaryValue* error_object = new base::DictionaryValue();
   error_object->SetInteger("code", -1);
@@ -64,6 +61,7 @@ base::Value* DevToolsTracingHandler::Start(
   if (params && params->HasKey("categories"))
     params->GetString("categories", &categories);
   TraceController::GetInstance()->BeginTracing(this, categories);
+  is_running_ = true;
 
   return base::Value::CreateBooleanValue(true);
 }
@@ -75,28 +73,24 @@ base::Value* DevToolsTracingHandler::End(
   return base::Value::CreateBooleanValue(true);
 }
 
+void DevToolsTracingHandler::SendNotification(
+    const std::string& method, const std::string& value) {
+  scoped_ptr<base::DictionaryValue> ret(new base::DictionaryValue());
+  ret->SetString("method", method);
 
-base::Value* DevToolsTracingHandler::HasCompleted(
-    const base::DictionaryValue* /* params */) {
+  if (!value.empty()) {
+    base::DictionaryValue* params = new base::DictionaryValue();
+    params->SetString("value", value);
 
-  return base::Value::CreateBooleanValue(has_completed_);
-}
-
-base::Value* DevToolsTracingHandler::GetTraceAndReset(
-    const base::DictionaryValue* /* params */) {
-  std::string ret;
-  ret.reserve(buffer_data_size_);
-  for (std::vector<std::string>::const_iterator i = buffer_.begin();
-       i != buffer_.end(); ++i) {
-    if (!ret.empty())
-      ret.append(",");
-    ret.append(*i);
+    ret->Set("params", params);
   }
-  buffer_.clear();
-  has_completed_ = false;
-  buffer_data_size_ = 0;
 
-  return base::Value::CreateStringValue(ret);
+  // Serialize response.
+  std::string json_response;
+  base::JSONWriter::Write(ret.get(), &json_response);
+
+  notifier()->Notify(json_response);
 }
+
 
 }  // namespace content

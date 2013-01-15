@@ -9,22 +9,44 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace base {
 
 class DictionaryValue;
+class MessageLoopProxy;
 class Value;
 
 }  // namespace base
+
+namespace net {
+class HttpServer;
+}  // namespace net
+
 
 namespace content {
 
 // This class handles the "Browser" target for remote debugging.
 class DevToolsBrowserTarget {
  public:
+  // A thin interface to send notifications over WebSocket.
+  class Notifier {
+   public:
+    virtual ~Notifier() {}
+
+    virtual void Notify(const std::string& data) = 0;
+
+   protected:
+    Notifier() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Notifier);
+  };
+
   class Handler {
    public:
-    virtual ~Handler() {}
+    virtual ~Handler();
 
     // Returns the domain name for this handler.
     virtual std::string Domain() = 0;
@@ -35,9 +57,24 @@ class DevToolsBrowserTarget {
         const std::string& method,
         const base::DictionaryValue* params,
         base::Value** error_message_out) = 0;
+
+    void set_notifier(Notifier* notifier);
+    Notifier* notifier() const;
+
+   protected:
+    Handler();
+
+   private:
+    Notifier* notifier_;
+
+    DISALLOW_COPY_AND_ASSIGN(Handler);
   };
 
-  explicit DevToolsBrowserTarget(int connection_id);
+
+
+  DevToolsBrowserTarget(base::MessageLoopProxy* message_loop_proxy,
+                        net::HttpServer* server,
+                        int connection_id);
   ~DevToolsBrowserTarget();
 
   int connection_id() const { return connection_id_; }
@@ -48,6 +85,7 @@ class DevToolsBrowserTarget {
   std::string HandleMessage(const std::string& data);
 
  private:
+  scoped_ptr<Notifier> notifier_;
   const int connection_id_;
 
   typedef std::map<std::string, Handler*> HandlersMap;
