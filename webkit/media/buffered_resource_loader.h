@@ -12,10 +12,10 @@
 #include "base/timer.h"
 #include "googleurl/src/gurl.h"
 #include "media/base/seekable_buffer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURLLoader.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURLLoaderClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoader.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "webkit/media/active_loader.h"
 
 namespace media {
