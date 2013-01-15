@@ -5,6 +5,7 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 
 import org.chromium.content.common.CommandLine;
 
@@ -28,11 +29,27 @@ public class DeviceUtils {
     }
 
     /**
+     * Checks if the device should be treated as TV. Note that this should be
+     * invoked before {@link #isTablet(Context)} to get the correct result
+     * since they are not orthogonal.
+     *
+     * @param context Android context
+     * @return {@code true} if the device should be treated as TV.
+     */
+    public static boolean isTv(Context context) {
+        PackageManager manager = context.getPackageManager();
+        if (manager != null) {
+            return manager.hasSystemFeature(PackageManager.FEATURE_TELEVISION);
+        }
+        return false;
+    }
+
+    /**
      * Appends the switch specifying which user agent should be used for this device.
-     * @param contex The context for the caller activity.
+     * @param context The context for the caller activity.
      */
     public static void addDeviceSpecificUserAgentSwitch(Context context) {
-        if (isTablet(context)) {
+        if (isTv(context) || isTablet(context)) {
             CommandLine.getInstance().appendSwitch(CommandLine.TABLET_UI);
         } else {
             CommandLine.getInstance().appendSwitch(CommandLine.USE_MOBILE_UA);
