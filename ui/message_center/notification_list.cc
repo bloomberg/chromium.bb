@@ -35,17 +35,20 @@ void NotificationList::SetMessageCenterVisible(bool visible) {
   if (message_center_visible_ == visible)
     return;
   message_center_visible_ = visible;
-  if (!visible) {
-    // When the list is hidden, clear the unread count, and mark all
-    // notifications as read and shown.
+  // When the center appears, mark all notifications as shown, and
+  // when the center is hidden, clear the unread count, and mark all
+  // notifications as read.
+  if (!visible)
     unread_count_ = 0;
-    for (NotificationMap::iterator mapiter = notifications_.begin();
-         mapiter != notifications_.end(); ++mapiter) {
-      for (Notifications::iterator iter = mapiter->second.begin();
-           iter != mapiter->second.end(); ++iter) {
-        iter->is_read = true;
+
+  for (NotificationMap::iterator mapiter = notifications_.begin();
+       mapiter != notifications_.end(); ++mapiter) {
+    for (Notifications::iterator iter = mapiter->second.begin();
+         iter != mapiter->second.end(); ++iter) {
+      if (visible)
         iter->shown_as_popup = true;
-      }
+      else
+        iter->is_read = true;
     }
   }
 }
