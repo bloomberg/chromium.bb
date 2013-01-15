@@ -9,9 +9,14 @@
 #include <vector>
 #include "base/basictypes.h"
 #include "chrome/browser/ui/panels/panel_collection.h"
+#include "chrome/browser/ui/panels/panel_constants.h"
 #include "ui/gfx/rect.h"
 
+class NativePanelStack;
 class PanelManager;
+namespace gfx {
+class Vector2d;
+}
 
 class StackedPanelCollection : public PanelCollection {
  public:
@@ -53,16 +58,38 @@ class StackedPanelCollection : public PanelCollection {
   Panel* GetPanelAbove(Panel* panel) const;
   bool HasPanel(Panel* panel) const;
 
-  bool empty() const { return panels_.empty(); }
+  void MoveAllDraggingPanelsInstantly(const gfx::Vector2d& delta_origin);
+
+  NativePanelStack* native_stack() const { return native_stack_; }
   int num_panels() const { return panels_.size(); }
   const Panels& panels() const { return panels_; }
-  Panel* top_panel() const { return panels_.front(); }
-  Panel* bottom_panel() const { return panels_.back(); }
+  Panel* top_panel() const { return panels_.empty() ? NULL : panels_.front(); }
+  Panel* bottom_panel() const {
+    return panels_.empty() ? NULL : panels_.back();
+  }
 
  private:
-  PanelManager* panel_manager_;  // Weak, owns us.
+  struct PanelPlacement {
+    Panel* panel;
+    gfx::Point position;
+    // Used to remember the top panel, if different from |panel|, for use when
+    // restoring it. When there're only 2 panels in the stack and the bottom
+    // panel is being dragged out of the stack, both panels will be moved to
+    // the detached collection. We need to track the top panel in order to
+    // put it back to the same stack of the dragging panel.
+    Panel* top_panel;
+
+    PanelPlacement() : panel(NULL), top_panel(NULL) { }
+  };
+
+  PanelManager* panel_manager_;
+
+  NativePanelStack* native_stack_;  // Weak, owns us.
 
   Panels panels_;  // The top panel is in the front of the list.
+
+  // Used to save the placement information for a panel.
+  PanelPlacement saved_panel_placement_;
 
   DISALLOW_COPY_AND_ASSIGN(StackedPanelCollection);
 };

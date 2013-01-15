@@ -27,6 +27,7 @@ class PanelCollection;
 class PanelHost;
 class PanelManager;
 class Profile;
+class StackedPanelCollection;
 
 namespace content {
 class WebContents;
@@ -87,6 +88,8 @@ class Panel : public BaseWindow,
 
   CommandUpdater* command_updater();
   Profile* profile() const;
+
+  const extensions::Extension* GetExtension() const;
 
   // Returns web contents of the panel, if any. There may be none if web
   // contents have not been added to the panel yet.
@@ -175,6 +178,8 @@ class Panel : public BaseWindow,
   void set_collection(PanelCollection* new_collection) {
     collection_ = new_collection;
   }
+
+  StackedPanelCollection* stack() const;
 
   ExpansionState expansion_state() const { return expansion_state_; }
   const gfx::Size& min_size() const { return min_size_; }
@@ -295,6 +300,9 @@ class Panel : public BaseWindow,
   // Updates UI to reflect that the web cotents receives the focus.
   void WebContentsFocused(content::WebContents* contents);
 
+  // Moves the panel by delta instantly.
+  void MoveByInstantly(const gfx::Vector2d& delta_origin);
+
  protected:
   // Panel can only be created using PanelManager::CreatePanel() or subclass.
   // |app_name| is the default title for Panels when the page content does not
@@ -324,8 +332,6 @@ class Panel : public BaseWindow,
 
   // Configures the renderer for auto resize (if auto resize is enabled).
   void ConfigureAutoResize(content::WebContents* web_contents);
-
-  const extensions::Extension* GetExtension() const;
 
   // Load the app's image, firing a load state change when loaded.
   void UpdateAppIcon();

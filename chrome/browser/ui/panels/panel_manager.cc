@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/panels/panel_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/ui/panels/panel_resize_controller.h"
+#include "chrome/browser/ui/panels/stacked_panel_collection.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -139,6 +140,9 @@ void PanelManager::OnDisplayAreaChanged(const gfx::Rect& display_area) {
 
   docked_collection_->OnDisplayAreaChanged(old_display_area);
   detached_collection_->OnDisplayAreaChanged(old_display_area);
+  for (Stacks::const_iterator iter = stacks_.begin();
+       iter != stacks_.end(); iter++)
+    (*iter)->OnDisplayAreaChanged(old_display_area);
 }
 
 void PanelManager::OnFullScreenModeChanged(bool is_full_screen) {
@@ -242,6 +246,18 @@ void PanelManager::OnPanelClosed(Panel* panel) {
       content::NotificationService::NoDetails());
 }
 
+StackedPanelCollection* PanelManager::CreateStack() {
+  StackedPanelCollection* stack = new StackedPanelCollection(this);
+  stacks_.push_back(stack);
+  return stack;
+}
+
+void PanelManager::RemoveStack(StackedPanelCollection* stack) {
+  DCHECK_EQ(0, stack->num_panels());
+  stacks_.remove(stack);
+  stack->CloseAll();
+}
+
 void PanelManager::StartDragging(Panel* panel,
                                  const gfx::Point& mouse_location) {
   drag_controller_->StartDragging(panel, mouse_location);
@@ -315,7 +331,12 @@ void PanelManager::CloseAll() {
 }
 
 int PanelManager::num_panels() const {
-  return detached_collection_->num_panels() + docked_collection_->num_panels();
+  int count = detached_collection_->num_panels() +
+              docked_collection_->num_panels();
+  for (Stacks::const_iterator iter = stacks_.begin();
+       iter != stacks_.end(); iter++)
+    count += (*iter)->num_panels();
+  return count;
 }
 
 std::vector<Panel*> PanelManager::panels() const {
@@ -328,6 +349,31 @@ std::vector<Panel*> PanelManager::panels() const {
            docked_collection_->panels().begin();
        iter != docked_collection_->panels().end(); ++iter)
     panels.push_back(*iter);
+  for (Stacks::const_iterator stack_iter = stacks_.begin();
+       stack_iter != stacks_.end(); stack_iter++) {
+    for (StackedPanelCollection::Panels::const_iterator iter =
+             (*stack_iter)->panels().begin();
+         iter != (*stack_iter)->panels().end(); ++stack_iter) {
+      panels.push_back(*iter);
+    }
+  }
+  return panels;
+}
+
+std::vector<Panel*> PanelManager::GetDetachedAndStackedPanels() const {
+  std::vector<Panel*> panels;
+  for (DetachedPanelCollection::Panels::const_iterator iter =
+           detached_collection_->panels().begin();
+       iter != detached_collection_->panels().end(); ++iter)
+    panels.push_back(*iter);
+  for (Stacks::const_iterator stack_iter = stacks_.begin();
+       stack_iter != stacks_.end(); stack_iter++) {
+    for (StackedPanelCollection::Panels::const_iterator iter =
+             (*stack_iter)->panels().begin();
+         iter != (*stack_iter)->panels().end(); ++iter) {
+      panels.push_back(*iter);
+    }
+  }
   return panels;
 }
 

@@ -6,12 +6,16 @@
 #define CHROME_BROWSER_UI_PANELS_PANEL_DRAG_CONTROLLER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/point.h"
+#include "chrome/browser/ui/panels/panel_collection.h"
 #include "ui/gfx/vector2d.h"
 
 class Panel;
 class PanelCollection;
 class PanelManager;
+namespace gfx {
+class Point;
+class Rect;
+}
 
 // Controls all the drags initiated for all panels, including detaching,
 // docking, stacking, snapping and intra-collection dragging.
@@ -35,17 +39,52 @@ class PanelDragController {
   // For testing.
   static int GetDetachDockedPanelThresholdForTesting();
   static int GetDockDetachedPanelThresholdForTesting();
+  static int GetGluePanelDistanceThresholdForTesting();
+  static int GetGluePanelOverlapThresholdForTesting();
 
  private:
+  enum GlueAction {
+    STACK,
+    SNAP
+  };
+
+  enum GlueEdge {
+    TOP_EDGE,
+    BOTTOM_EDGE,
+    LEFT_EDGE,
+    RIGHT_EDGE
+  };
+
   gfx::Point GetPanelPositionForMouseLocation(
       const gfx::Point& mouse_location) const;
 
   // |target_position| is in screen coordinate systems. It contains the proposed
   //  panel origin to move to. Returns true if the request has been performed.
-  bool TryDetach(const gfx::Point& target_position);
-  bool TryDock(const gfx::Point& target_position);
+  void TryDetach(const gfx::Point& target_position);
+  void TryDock(const gfx::Point& target_position);
+  void TryStack(const gfx::Point& target_position);
+  bool TryUnstackFromTop(const gfx::Point& target_position);
+  bool TryUnstackFromBottom(const gfx::Point& target_position);
+  void TrySnap(gfx::Point* target_position);
+
+  // Finds the panel that the dragging panel with |potential_position| could
+  // snap to or stack with. If such panel is found, |target_bounds| contains the
+  // new bounds for the dragging panel and |target_edge| contains the matched
+  // edge.
+  Panel* FindPanelToGlue(const gfx::Point& potential_position,
+                         GlueAction action,
+                         gfx::Rect* target_bounds,
+                         GlueEdge* target_edge) const;
+
+  // Moves the |panel| (and all panels below if it is in a stack) to a different
+  // collection.
+  void MovePanelAndBelowToCollection(
+      Panel* panel,
+      PanelCollection* target_collection,
+      PanelCollection::PositioningMask positioning_mask) const;
 
   PanelManager* panel_manager_;  // Weak, owns us.
+  bool panel_stacking_enabled_;
 
   // Panel currently being dragged.
   Panel* dragging_panel_;

@@ -15,6 +15,7 @@
 #include "ui/gfx/rect.h"
 
 class NativePanelTesting;
+class StackedPanelCollection;
 
 class BasePanelBrowserTest : public InProcessBrowserTest {
  public:
@@ -77,6 +78,9 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
 
   Panel* CreateDockedPanel(const std::string& name, const gfx::Rect& bounds);
   Panel* CreateDetachedPanel(const std::string& name, const gfx::Rect& bounds);
+  Panel* CreateStackedPanel(const std::string& name,
+                            const gfx::Rect& bounds,
+                            StackedPanelCollection* stack);
 
   static NativePanelTesting* CreateNativePanelTesting(Panel* panel);
 
