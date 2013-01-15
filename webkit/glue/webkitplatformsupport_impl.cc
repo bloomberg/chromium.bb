@@ -4,10 +4,6 @@
 
 #include "webkit/glue/webkitplatformsupport_impl.h"
 
-#if defined(OS_LINUX)
-#include <malloc.h>
-#endif
-
 #include <math.h>
 
 #include <vector>
@@ -46,6 +42,7 @@
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
 #include "webkit/glue/touch_fling_gesture_curve.h"
+#include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/websocketstreamhandle_impl.h"
 #include "webkit/glue/webthread_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
@@ -57,10 +54,6 @@
 
 #if defined(OS_ANDROID)
 #include "webkit/glue/fling_animator_impl_android.h"
-#endif
-
-#if defined(OS_LINUX)
-#include "v8/include/v8.h"
 #endif
 
 using WebKit::WebAudioBus;
@@ -834,31 +827,6 @@ static scoped_ptr<base::ProcessMetrics> CurrentProcessMetrics() {
 #endif
 }
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-static size_t memoryUsageMB() {
-  struct mallinfo minfo = mallinfo();
-  uint64_t mem_usage =
-#if defined(USE_TCMALLOC)
-      minfo.uordblks
-#else
-      (minfo.hblkhd + minfo.arena)
-#endif
-      >> 20;
-
-  v8::HeapStatistics stat;
-  v8::V8::GetHeapStatistics(&stat);
-  return mem_usage + (static_cast<uint64_t>(stat.total_heap_size()) >> 20);
-}
-#elif defined(OS_MACOSX)
-static size_t memoryUsageMB() {
-  return CurrentProcessMetrics()->GetWorkingSetSize() >> 20;
-}
-#else
-static size_t memoryUsageMB() {
-  return CurrentProcessMetrics()->GetPagefileUsage() >> 20;
-}
-#endif
-
 static size_t getMemoryUsageMB(bool bypass_cache) {
   size_t current_mem_usage = 0;
   MemoryUsageCache* mem_usage_cache_singleton = MemoryUsageCache::GetInstance();
@@ -866,7 +834,7 @@ static size_t getMemoryUsageMB(bool bypass_cache) {
       mem_usage_cache_singleton->IsCachedValueValid(&current_mem_usage))
     return current_mem_usage;
 
-  current_mem_usage = memoryUsageMB();
+  current_mem_usage = MemoryUsageKB() >> 10;
   mem_usage_cache_singleton->SetMemoryValue(current_mem_usage);
   return current_mem_usage;
 }

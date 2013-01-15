@@ -30,6 +30,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "ui/base/ui_base_switches.h"
+#include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
 
 #if defined(OS_MACOSX)
@@ -84,6 +85,20 @@ class RendererMessageLoopObserver : public MessageLoop::TaskObserver {
   DISALLOW_COPY_AND_ASSIGN(RendererMessageLoopObserver);
 };
 
+// For measuring memory usage after each task. Behind a command line flag.
+class MemoryObserver : public MessageLoop::TaskObserver {
+ public:
+  MemoryObserver() {}
+
+  virtual void WillProcessTask(base::TimeTicks time_posted) OVERRIDE {}
+
+  virtual void DidProcessTask(base::TimeTicks time_posted) OVERRIDE {
+    HISTOGRAM_MEMORY_KB("Memory.RendererUsed", webkit_glue::MemoryUsageKB());
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MemoryObserver);
+};
+
 // mainline routine for running as the Renderer process
 int RendererMain(const MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN_ETW("RendererMain", 0, "");
@@ -134,6 +149,12 @@ int RendererMain(const MainFunctionParams& parameters) {
               MessageLoop::TYPE_UI : MessageLoop::TYPE_DEFAULT);
 #endif
   main_message_loop.AddTaskObserver(&task_observer);
+
+  scoped_ptr<MemoryObserver> memory_observer;
+  if (parsed_command_line.HasSwitch(switches::kMemoryMetrics)) {
+    memory_observer.reset(new MemoryObserver());
+    main_message_loop.AddTaskObserver(memory_observer.get());
+  }
 
   base::PlatformThread::SetName("CrRendererMain");
 

@@ -486,6 +486,10 @@ const char kLoggingLevel[]                  = "log-level";
 // Make plugin processes log their sent and received messages to VLOG(1).
 const char kLogPluginMessages[]             = "log-plugin-messages";
 
+// Sample memory usage with high frequency and store the results to the
+// Renderer.Memory histogram. Used in memory tests.
+const char kMemoryMetrics[]                 = "memory-metrics";
+
 // Causes the process to run as a NativeClient broker
 // (used for launching NaCl loader processes on 64-bit Windows).
 const char kNaClBrokerProcess[]             = "nacl-broker";

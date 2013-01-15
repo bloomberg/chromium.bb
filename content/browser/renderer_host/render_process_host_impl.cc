@@ -819,6 +819,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kInProcessWebGL,
     switches::kJavaScriptFlags,
     switches::kLoggingLevel,
+    switches::kMemoryMetrics,
 #if defined(OS_ANDROID)
     switches::kMediaPlayerInRenderProcess,
     switches::kNetworkCountryIso,

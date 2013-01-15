@@ -217,6 +217,9 @@ class Lock;
         base::CustomHistogram::FactoryGet(name, custom_ranges, \
                                           base::HistogramBase::kNoFlags))
 
+#define HISTOGRAM_MEMORY_KB(name, sample) HISTOGRAM_CUSTOM_COUNTS( \
+    name, sample, 1000, 500000, 50)
+
 //------------------------------------------------------------------------------
 // Define Debug vs non-debug flavors of macros.
 #ifndef NDEBUG
