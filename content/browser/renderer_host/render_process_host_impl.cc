@@ -514,6 +514,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetID(), PROCESS_TYPE_RENDERER, resource_context,
       storage_partition_impl_->GetAppCacheService(),
       ChromeBlobStorageContext::GetFor(browser_context),
+      storage_partition_impl_->GetFileSystemContext(),
       new RendererURLRequestContextSelector(browser_context, GetID()));
 
   channel_->AddFilter(resource_message_filter);

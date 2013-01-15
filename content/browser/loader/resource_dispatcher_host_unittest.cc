@@ -185,7 +185,7 @@ class ForwardingFilter : public ResourceMessageFilter {
     : ResourceMessageFilter(
         ChildProcessHostImpl::GenerateChildProcessUniqueId(),
         PROCESS_TYPE_RENDERER,
-        resource_context, NULL, NULL,
+        resource_context, NULL, NULL, NULL,
         new MockURLRequestContextSelector(
             resource_context->GetRequestContext())),
       dest_(dest) {

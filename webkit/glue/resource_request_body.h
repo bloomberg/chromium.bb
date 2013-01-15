@@ -17,6 +17,10 @@ namespace base {
 class TaskRunner;
 }
 
+namespace fileapi {
+class FileSystemContext;
+}
+
 namespace net {
 class UploadDataStream;
 }
@@ -46,11 +50,14 @@ class WEBKIT_GLUE_EXPORT ResourceRequestBody
                                  const base::Time& expected_modification_time);
 
   // Creates a new UploadDataStream from this request body. This also resolves
-  // any blob references using given |blob_controller|. |task_runner| is used to
-  // perform file operations when the data gets uploaded.
+  // any blob references using given |blob_controller|. |file_system_context| is
+  // used to create FileStreamReader for files with filesystem URLs.
+  // |file_task_runner| is used to perform file operations when the data gets
+  // uploaded.
   net::UploadDataStream* ResolveElementsAndCreateUploadDataStream(
       webkit_blob::BlobStorageController* blob_controller,
-      base::TaskRunner* task_runner);
+      fileapi::FileSystemContext* file_system_context,
+      base::TaskRunner* file_task_runner);
 
   const std::vector<Element>* elements() const { return &elements_; }
   std::vector<Element>* elements_mutable() { return &elements_; }

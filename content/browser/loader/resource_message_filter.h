@@ -11,6 +11,10 @@
 #include "content/public/common/process_type.h"
 #include "webkit/glue/resource_type.h"
 
+namespace fileapi {
+class FileSystemContext;
+}  // namespace fileapi
+
 namespace net {
 class URLRequestContext;
 }  // namespace net
@@ -47,6 +51,7 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
       ResourceContext* resource_context,
       ChromeAppCacheService* appcache_service,
       ChromeBlobStorageContext* blob_storage_context,
+      fileapi::FileSystemContext* file_system_context,
       URLRequestContextSelector* url_request_context_selector);
 
   // BrowserMessageFilter implementation.
@@ -64,6 +69,10 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
 
   ChromeBlobStorageContext* blob_storage_context() const {
     return blob_storage_context_;
+  }
+
+  fileapi::FileSystemContext* file_system_context() const {
+    return file_system_context_;
   }
 
   // Returns the net::URLRequestContext for the given request.
@@ -88,6 +97,7 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
 
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 
   const scoped_ptr<URLRequestContextSelector> url_request_context_selector_;
 

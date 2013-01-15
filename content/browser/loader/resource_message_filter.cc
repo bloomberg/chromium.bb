@@ -8,6 +8,7 @@
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/browser/resource_context.h"
+#include "webkit/fileapi/file_system_context.h"
 
 namespace content {
 
@@ -17,12 +18,14 @@ ResourceMessageFilter::ResourceMessageFilter(
     ResourceContext* resource_context,
     ChromeAppCacheService* appcache_service,
     ChromeBlobStorageContext* blob_storage_context,
+    fileapi::FileSystemContext* file_system_context,
     URLRequestContextSelector* url_request_context_selector)
     : child_id_(child_id),
       process_type_(process_type),
       resource_context_(resource_context),
       appcache_service_(appcache_service),
       blob_storage_context_(blob_storage_context),
+      file_system_context_(file_system_context),
       url_request_context_selector_(url_request_context_selector) {
   DCHECK(resource_context);
   DCHECK(url_request_context_selector);

@@ -9,6 +9,7 @@
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
 #include "webkit/blob/blob_storage_controller.h"
+#include "webkit/fileapi/upload_file_system_file_element_reader.h"
 
 using webkit_blob::BlobData;
 using webkit_blob::BlobStorageController;
@@ -96,7 +97,8 @@ void ResourceRequestBody::AppendFileSystemFileRange(
 net::UploadDataStream*
 ResourceRequestBody::ResolveElementsAndCreateUploadDataStream(
     BlobStorageController* blob_controller,
-    base::TaskRunner* task_runner) {
+    fileapi::FileSystemContext* file_system_context,
+    base::TaskRunner* file_task_runner) {
   // Resolve all blob elements.
   std::vector<const Element*> resolved_elements;
   for (size_t i = 0; i < elements_.size(); ++i) {
@@ -118,11 +120,16 @@ ResourceRequestBody::ResolveElementsAndCreateUploadDataStream(
         break;
       case Element::TYPE_FILE:
         element_readers.push_back(
-            new FileElementReader(this, task_runner, element));
+            new FileElementReader(this, file_task_runner, element));
         break;
       case Element::TYPE_FILE_FILESYSTEM:
-        // TODO(kinuko): Resolve FileSystemURL before creating UploadData.
-        NOTREACHED();
+        element_readers.push_back(
+            new fileapi::UploadFileSystemFileElementReader(
+                file_system_context,
+                element.url(),
+                element.offset(),
+                element.length(),
+                element.expected_modification_time()));
         break;
       case Element::TYPE_BLOB:
         // Blob elements should be resolved beforehand.

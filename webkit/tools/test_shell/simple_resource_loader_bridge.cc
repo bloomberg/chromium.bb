@@ -466,6 +466,8 @@ class RequestProxy
           params->request_body->ResolveElementsAndCreateUploadDataStream(
               static_cast<TestShellRequestContext*>(g_request_context)->
               blob_storage_controller(),
+              static_cast<TestShellRequestContext*>(g_request_context)->
+              file_system_context(),
               base::MessageLoopProxy::current())));
     }
     SimpleAppCacheSystem::SetExtraRequestInfo(

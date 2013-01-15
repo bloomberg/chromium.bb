@@ -960,6 +960,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
     request->set_upload(make_scoped_ptr(
         request_data.request_body->ResolveElementsAndCreateUploadDataStream(
             filter_->blob_storage_context()->controller(),
+            filter_->file_system_context(),
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE))));
   }
 

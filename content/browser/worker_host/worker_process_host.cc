@@ -218,6 +218,7 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       process_->GetData().id, PROCESS_TYPE_WORKER, resource_context_,
       partition_.appcache_service(),
       blob_storage_context,
+      partition_.filesystem_context(),
       new URLRequestContextSelector(url_request_context,
                                     media_url_request_context));
   process_->GetHost()->AddFilter(resource_message_filter);
