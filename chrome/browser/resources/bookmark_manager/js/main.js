@@ -1445,6 +1445,20 @@ function computeParentFolderForNewItem() {
 }
 
 /**
+ * Callback for rename folder and edit command. This starts editing for
+ * selected item.
+ */
+function editSelectedItem() {
+  if (document.activeElement == tree) {
+    tree.selectedItem.editing = true;
+  } else {
+    var li = list.getListItem(list.selectedItem);
+    if (li)
+      li.editing = true;
+  }
+}
+
+/**
  * Callback for the new folder command. This creates a new folder and starts
  * a rename of it.
  */
@@ -1575,6 +1589,14 @@ function selectItemsAfterUserAction(target, opt_selectedTreeId) {
 }
 
 /**
+ * Record user action.
+ * @param {string} name An user action name.
+ */
+function recordUserAction(name) {
+  chrome.metricsPrivate.recordUserAction('BookmarkManager_Command_' + name);
+}
+
+/**
  * Handler for the command event. This is used for context menu of list/tree
  * and organized menu.
  * @param {!Event} e The event object.
@@ -1584,67 +1606,83 @@ function handleCommand(e) {
   var commandId = command.id;
   switch (commandId) {
     case 'import-menu-command':
+      recordUserAction('Import');
       chrome.bookmarks.import();
       break;
     case 'export-menu-command':
+      recordUserAction('Export');
       chrome.bookmarks.export();
       break;
     case 'undo-command':
-      if (performGlobalUndo)
+      if (performGlobalUndo) {
+        recordUserAction('UndoGlobal');
         performGlobalUndo();
+      } else {
+        recordUserAction('UndoNone');
+      }
       break;
     case 'show-in-folder-command':
+      recordUserAction('ShowInFolder');
       showInFolder();
       break;
     case 'open-in-new-tab-command':
     case 'open-in-background-tab-command':
+      recordUserAction('OpenInNewTab');
       openBookmarks(LinkKind.BACKGROUND_TAB);
       break;
     case 'open-in-new-window-command':
+    recordUserAction('OpenInNewWindow');
       openBookmarks(LinkKind.WINDOW);
       break;
     case 'open-incognito-window-command':
+      recordUserAction('OpenIncognito');
       openBookmarks(LinkKind.INCOGNITO);
       break;
     case 'delete-command':
+      recordUserAction('Delete');
       deleteBookmarks();
       break;
     case 'copy-command':
+      recordUserAction('Copy');
       chrome.bookmarkManagerPrivate.copy(getSelectedBookmarkIds(),
                                          updatePasteCommand);
       break;
     case 'cut-command':
+      recordUserAction('Cut');
       chrome.bookmarkManagerPrivate.cut(getSelectedBookmarkIds(),
                                         updatePasteCommand);
       break;
     case 'paste-command':
+      recordUserAction('Paste');
       selectItemsAfterUserAction(list);
       chrome.bookmarkManagerPrivate.paste(list.parentId,
                                           getSelectedBookmarkIds());
       break;
     case 'sort-command':
+      recordUserAction('Sort');
       chrome.bookmarkManagerPrivate.sortChildren(list.parentId);
       break;
     case 'rename-folder-command':
+      editSelectedItem();
+      break;
     case 'edit-command':
-      if (document.activeElement == tree)
-        tree.selectedItem.editing = true;
-      else {
-        var li = list.getListItem(list.selectedItem);
-        if (li)
-          li.editing = true;
-      }
+      recordUserAction('Edit');
+      editSelectedItem();
       break;
     case 'new-folder-command':
+      recordUserAction('NewFolder');
       newFolder();
       break;
     case 'add-new-bookmark-command':
+      recordUserAction('AddPage');
       addPage();
       break;
     case 'open-in-same-window-command':
+      recordUserAction('OpenInSame');
       openItem();
       break;
     case 'undo-delete-command':
+      recordUserAction('UndoDelete');
       undoDelete();
       break;
   }

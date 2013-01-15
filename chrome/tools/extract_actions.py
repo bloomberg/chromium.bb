@@ -287,6 +287,31 @@ def AddAboutFlagsActions(actions):
       print >>sys.stderr, 'WARNING: This line is marked for recording ' + \
           'about:flags metrics, but is not in the proper format:\n' + line
 
+def AddBookmarkManagerActions(actions):
+  """Add actions that are used by BookmarkManager.
+
+  Arguments
+    actions: set of actions to add to.
+  """
+  actions.add('BookmarkManager_Command_AddPage')
+  actions.add('BookmarkManager_Command_Copy')
+  actions.add('BookmarkManager_Command_Cut')
+  actions.add('BookmarkManager_Command_Delete')
+  actions.add('BookmarkManager_Command_Edit')
+  actions.add('BookmarkManager_Command_Export')
+  actions.add('BookmarkManager_Command_Import')
+  actions.add('BookmarkManager_Command_NewFolder')
+  actions.add('BookmarkManager_Command_OpenIncognito')
+  actions.add('BookmarkManager_Command_OpenInNewTab')
+  actions.add('BookmarkManager_Command_OpenInNewWindow')
+  actions.add('BookmarkManager_Command_OpenInSame')
+  actions.add('BookmarkManager_Command_Paste')
+  actions.add('BookmarkManager_Command_ShowInFolder')
+  actions.add('BookmarkManager_Command_Sort')
+  actions.add('BookmarkManager_Command_UndoDelete')
+  actions.add('BookmarkManager_Command_UndoGlobal')
+  actions.add('BookmarkManager_Command_UndoNone')
+
 def AddChromeOSActions(actions):
   """Add actions reported by non-Chrome processes in Chrome OS.
 
@@ -507,6 +532,7 @@ def main(argv):
   AddChromeOSActions(actions)
   AddExtensionActions(actions)
   AddAndroidActions(actions)
+  AddBookmarkManagerActions(actions)
 
   if hash_output:
     f = open(chromeactions_path, "w")
