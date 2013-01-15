@@ -9,6 +9,8 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
+#include "chrome/common/url_constants.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -23,7 +25,8 @@ enum TestIndicies {
   kRecent,
   kOld,
   kReallyOld,
-  kOldButPinned
+  kOldButPinned,
+  kReloadableUI,
 };
 }  // namespace
 
@@ -78,6 +81,13 @@ TEST_F(OomPriorityManagerTest, Comparator) {
     test_list.push_back(stats);
   }
 
+  {
+    OomPriorityManager::TabStats stats;
+    stats.is_reloadable_ui = true;
+    stats.renderer_handle = kReloadableUI;
+    test_list.push_back(stats);
+  }
+
   // This entry sorts to the front, so by adding it last we verify that
   // we are actually sorting the array.
   {
@@ -98,6 +108,28 @@ TEST_F(OomPriorityManagerTest, Comparator) {
   EXPECT_EQ(kRecent, test_list[4].renderer_handle);
   EXPECT_EQ(kOld, test_list[5].renderer_handle);
   EXPECT_EQ(kReallyOld, test_list[6].renderer_handle);
+  EXPECT_EQ(kReloadableUI, test_list[7].renderer_handle);
+}
+
+TEST_F(OomPriorityManagerTest, IsReloadableUI) {
+  EXPECT_TRUE(OomPriorityManager::IsReloadableUI(
+      GURL(chrome::kChromeUIDownloadsURL)));
+  EXPECT_TRUE(OomPriorityManager::IsReloadableUI(
+      GURL(chrome::kChromeUIHistoryURL)));
+  EXPECT_TRUE(OomPriorityManager::IsReloadableUI(
+      GURL(chrome::kChromeUINewTabURL)));
+  EXPECT_TRUE(OomPriorityManager::IsReloadableUI(
+      GURL(chrome::kChromeUISettingsURL)));
+
+  // Debugging URLs are not included.
+  EXPECT_FALSE(OomPriorityManager::IsReloadableUI(
+      GURL(chrome::kChromeUIDiscardsURL)));
+  EXPECT_FALSE(OomPriorityManager::IsReloadableUI(
+      GURL(chrome::kChromeUINetInternalsURL)));
+
+  // Prefix matches are included.
+  EXPECT_TRUE(OomPriorityManager::IsReloadableUI(
+      GURL("chrome://settings/fakeSetting")));
 }
 
 }  // namespace chromeos

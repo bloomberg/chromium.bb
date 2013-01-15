@@ -19,6 +19,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class GURL;
+
 namespace chromeos {
 
 class LowMemoryObserver;
@@ -59,11 +61,13 @@ class OomPriorityManager : public content::NotificationObserver {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OomPriorityManagerTest, Comparator);
+  FRIEND_TEST_ALL_PREFIXES(OomPriorityManagerTest, IsReloadableUI);
 
   struct TabStats {
     TabStats();
     ~TabStats();
     bool is_app;  // browser window is an app
+    bool is_reloadable_ui;  // Reloadable web UI page, like NTP or Settings.
     bool is_pinned;
     bool is_selected;  // selected in the currently active browser window
     bool is_discarded;
@@ -73,6 +77,10 @@ class OomPriorityManager : public content::NotificationObserver {
     int64 tab_contents_id;  // unique ID per WebContents
   };
   typedef std::vector<TabStats> TabStatsList;
+
+  // Returns true if the |url| represents an internal Chrome web UI page that
+  // can be easily reloaded and hence makes a good choice to discard.
+  static bool IsReloadableUI(const GURL& url);
 
   // Discards a tab with the given unique ID.  Returns true if discard occurred.
   bool DiscardTabById(int64 target_web_contents_id);

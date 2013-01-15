@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -76,7 +77,7 @@ const int kSuspendThresholdSeconds = kAdjustmentIntervalSeconds * 4;
 // The default interval in milliseconds to wait before setting the score of
 // currently focused tab. Must be be long enough that a user who is flipping
 // through tabs with Ctrl-Tab does not mark each every tab as "focused".
-const int kFocusedTabScoreAdjustIntervalMs = 2000;
+const int kFocusedTabScoreAdjustIntervalMs = 1500;
 
 // Returns a unique ID for a WebContents.  Do not cast back to a pointer, as
 // the WebContents could be deleted if the user closed the tab.
@@ -134,6 +135,7 @@ void OomMemoryDetails::OnDetailsAvailable() {
 
 OomPriorityManager::TabStats::TabStats()
   : is_app(false),
+    is_reloadable_ui(false),
     is_pinned(false),
     is_selected(false),
     is_discarded(false),
@@ -199,6 +201,7 @@ std::vector<string16> OomPriorityManager::GetTabTitles() {
     str += base::IntToString16(score);
     str += ASCIIToUTF16(")");
     str += ASCIIToUTF16(it->is_app ? " app" : "");
+    str += ASCIIToUTF16(it->is_reloadable_ui ? " reloadable_ui" : "");
     str += ASCIIToUTF16(it->is_pinned ? " pinned" : "");
     str += ASCIIToUTF16(it->is_discarded ? " discarded" : "");
     titles.push_back(str);
@@ -230,6 +233,30 @@ void OomPriorityManager::LogMemoryAndDiscardTab() {
   // Deletes itself upon completion.
   OomMemoryDetails* details = new OomMemoryDetails();
   details->StartFetch(MemoryDetails::SKIP_USER_METRICS);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// OomPriorityManager, private:
+
+// static
+bool OomPriorityManager::IsReloadableUI(const GURL& url) {
+  // There are many chrome:// UI URLs, but only look for the ones that users
+  // are likely to have open. Most of the benefit is the from NTP URL.
+  const char* kReloadableUrlPrefixes[] = {
+      chrome::kChromeUIDownloadsURL,
+      chrome::kChromeUIHistoryURL,
+      chrome::kChromeUINewTabURL,
+      chrome::kChromeUISettingsURL,
+  };
+  // Prefix-match against the table above. Use strncmp to avoid allocating
+  // memory to convert the URL prefix constants into std::strings.
+  for (size_t i = 0; i < arraysize(kReloadableUrlPrefixes); ++i) {
+    if (!strncmp(url.spec().c_str(),
+                 kReloadableUrlPrefixes[i],
+                 strlen(kReloadableUrlPrefixes[i])))
+      return true;
+  }
+  return false;
 }
 
 bool OomPriorityManager::DiscardTabById(int64 target_web_contents_id) {
@@ -331,6 +358,11 @@ bool OomPriorityManager::CompareTabStats(TabStats first,
   // Being currently selected is most important to protect.
   if (first.is_selected != second.is_selected)
     return first.is_selected;
+
+  // Tab with internal web UI like NTP or Settings are good choices to discard,
+  // so protect non-Web UI and let the other conditionals finish the sort.
+  if (first.is_reloadable_ui != second.is_reloadable_ui)
+    return !first.is_reloadable_ui;
 
   // Being pinned is important to protect.
   if (first.is_pinned != second.is_pinned)
@@ -469,6 +501,7 @@ OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
       if (!contents->IsCrashed()) {
         TabStats stats;
         stats.is_app = is_browser_for_app;
+        stats.is_reloadable_ui = IsReloadableUI(contents->GetURL());
         stats.is_pinned = model->IsTabPinned(i);
         stats.is_selected = browser_active && model->IsTabSelected(i);
         stats.is_discarded = model->IsTabDiscarded(i);
