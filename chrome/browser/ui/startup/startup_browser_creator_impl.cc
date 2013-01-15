@@ -841,7 +841,7 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
       browser->tab_strip_model()->ActivateTabAt(0, false);
   }
 
-  // The default behaviour is to show the window, as expressed by the default
+  // The default behavior is to show the window, as expressed by the default
   // value of StartupBrowserCreated::show_main_browser_window_. If this was set
   // to true ahead of this place, it means another task must have been spawned
   // to take care of that.

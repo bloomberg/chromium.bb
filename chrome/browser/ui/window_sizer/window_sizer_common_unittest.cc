@@ -155,11 +155,12 @@ ui::WindowShowState GetWindowShowState(
     ui::WindowShowState show_state_persisted,
     ui::WindowShowState show_state_last,
     Source source,
-    const Browser* browser) {
-  gfx::Rect bounds = p1024x768;
-  gfx::Rect work_area = p1024x768;
+    const Browser* browser,
+    const gfx::Rect& display_config) {
+  gfx::Rect bounds = display_config;
+  gfx::Rect work_area = display_config;
   TestMonitorInfoProvider* mip = new TestMonitorInfoProvider;
-  mip->AddMonitor(p1024x768, p1024x768);
+  mip->AddMonitor(display_config, display_config);
   TestStateProvider* sp = new TestStateProvider;
   if (source == PERSISTED || source == BOTH)
     sp->SetPersistentState(bounds, work_area, show_state_persisted, true);

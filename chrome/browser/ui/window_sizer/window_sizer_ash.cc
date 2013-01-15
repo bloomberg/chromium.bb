@@ -12,12 +12,17 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/gfx/screen.h"
 
 namespace {
+
+// When a window gets opened in default mode and the screen is less then this
+// width, the window will get opened in maximized mode.
+const int kForceMaximizeWidthLimit = 1450;
 
 // Check if the given browser is 'valid': It is a tabbed, non minimized
 // window, which intersects with the |bounds_in_screen| area of a given screen.
@@ -131,7 +136,7 @@ bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
 
   if (browser_ && browser_->is_type_tabbed()) {
     aura::RootWindow* active = ash::Shell::GetActiveRootWindow();
-    // Always open new window inthe active display.
+    // Always open new window in the active display.
     gfx::Rect active_area = active->GetBoundsInScreen();
     gfx::Rect work_area =
         monitor_info_provider_->GetMonitorWorkAreaMatching(active_area);
@@ -139,14 +144,21 @@ bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
     // This is a window / app. See if there is no window and try to place it.
     int count = GetNumberOfValidTopLevelBrowserWindows(work_area);
     aura::Window* top_window = GetTopWindow(work_area);
-    // The window should not be able to reflect on itself.
+    // Our window should not have any impact if we are already on top.
     if (browser_->window() &&
         top_window == browser_->window()->GetNativeWindow())
-      return true;
+      top_window = NULL;
     // If there is no valid other window we take the coordinates as is.
-    if (!count || !top_window)
+    if (!count || !top_window) {
+      // When using "small screens" we want to always open in full screen mode.
+      if (passed_show_state == ui::SHOW_STATE_DEFAULT &&
+          work_area.width() < kForceMaximizeWidthLimit &&
+          (!browser_->window() || !browser_->window()->IsFullscreen()) &&
+          (!browser_->fullscreen_controller() ||
+           !browser_->fullscreen_controller()->IsFullscreenForBrowser()))
+        *show_state = ui::SHOW_STATE_MAXIMIZED;
       return true;
-
+    }
     bool maximized = ash::wm::IsWindowMaximized(top_window);
     // We ignore the saved show state, but look instead for the top level
     // window's show state.

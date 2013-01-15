@@ -36,6 +36,10 @@ static const gfx::Rect top_s1024x768(0, -768, 1024, 768);
 // the immediate bottom of the primary 1024x768 monitor.
 static const gfx::Rect bottom_s1024x768(0, 768, 1024, 768);
 
+// Represents a 1600x1200 monitor that is the secondary monitor, arranged to
+// the immediate bottom of the primary 1600x1200 monitor.
+static const gfx::Rect bottom_s1600x1200(0, 1200, 1600, 1200);
+
 // The work area for 1024x768 monitors with different taskbar orientations.
 static const gfx::Rect taskbar_bottom_work_area(0, 0, 1024, 734);
 static const gfx::Rect taskbar_top_work_area(0, 34, 1024, 734);
@@ -149,10 +153,12 @@ void GetWindowBounds(const gfx::Rect& monitor1_bounds,
 
 // Set up the various show states and get the resulting show state from
 // the WindowSizer.
+// The |display_config| is the primary display configuration used.
 ui::WindowShowState GetWindowShowState(
     ui::WindowShowState show_state_persisted,
     ui::WindowShowState show_state_last,
     Source source,
-    const Browser* browser);
+    const Browser* browser,
+    const gfx::Rect& display_config);
 
 #endif  // CHROME_BROWSER_UI_WINDOW_SIZER_WINDOW_SIZER_COMMON_UNITTEST_H_

@@ -328,6 +328,11 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 
   if (!BrowserList::empty()) {
     browser_ = *BrowserList::begin();
+#if defined(USE_ASH)
+    // There are cases where windows get created maximized by default.
+    if (browser_->window()->IsMaximized())
+      browser_->window()->Restore();
+#endif
     content::WaitForLoadStop(chrome::GetActiveWebContents(browser_));
   }
 

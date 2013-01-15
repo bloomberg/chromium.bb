@@ -467,7 +467,7 @@ class Browser : public TabStripModelObserver,
   void MaybeUpdateBookmarkBarStateForInstantPreview(
       const chrome::search::Mode& mode);
 
-  FullscreenController* fullscreen_controller() {
+  FullscreenController* fullscreen_controller() const {
     return fullscreen_controller_.get();
   }
 
