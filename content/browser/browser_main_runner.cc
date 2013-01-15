@@ -74,6 +74,13 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
 
     notification_service_.reset(new NotificationServiceImpl);
 
+#if defined(OS_WIN)
+    // Ole must be initialized before starting message pump, so that TSF
+    // (Text Services Framework) module can interact with the message pump
+    // on Windows 8 Metro mode.
+    ole_initializer_.reset(new ui::ScopedOleInitializer);
+#endif  // OS_WIN
+
     main_loop_.reset(new BrowserMainLoop(parameters));
 
     main_loop_->Init();
@@ -97,7 +104,6 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     // Make this call before going multithreaded, or spawning any subprocesses.
     base::allocator::SetupSubprocessAllocator();
 #endif
-    ole_initializer_.reset(new ui::ScopedOleInitializer);
     if (base::win::IsTSFAwareRequired())
       ui::TSFBridge::Initialize();
 #endif  // OS_WIN
