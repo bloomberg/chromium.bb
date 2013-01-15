@@ -39,4 +39,10 @@ TEST(BindObjcBlockTest, TestScopedClosureRunnerRelease) {
   EXPECT_EQ(1, run_count);
 }
 
+TEST(BindObjcBlockTest, TestReturnValue) {
+  const int kReturnValue = 42;
+  base::Callback<int(void)> c = base::BindBlock(^{return kReturnValue;});
+  EXPECT_EQ(kReturnValue, c.Run());
+}
+
 }  // namespace
