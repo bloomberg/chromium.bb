@@ -171,6 +171,12 @@ void ProcessBacktrace(void *const *trace,
 #endif  // defined(USE_SYMBOLIZE)
 }
 
+void PrintToStderr(const char* output) {
+  // NOTE: This code MUST be async-signal safe (it's used by in-process
+  // stack dumping signal handler). NO malloc or stdio is allowed here.
+  ignore_result(HANDLE_EINTR(write(STDERR_FILENO, output, strlen(output))));
+}
+
 void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
   // NOTE: This code MUST be async-signal safe.
   // NO malloc or stdio is allowed here.
@@ -182,10 +188,70 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
   if (BeingDebugged())
     BreakDebugger();
 
-  char buf[1024] = "Received signal ";
-  size_t buf_len = strlen(buf);
-  internal::itoa_r(signal, buf + buf_len, sizeof(buf) - buf_len, 10, 0);
-  RAW_LOG(ERROR, buf);
+  PrintToStderr("Received signal ");
+  char buf[1024] = { 0 };
+  internal::itoa_r(signal, buf, sizeof(buf), 10, 0);
+  PrintToStderr(buf);
+  if (signal == SIGBUS) {
+    if (info->si_code == BUS_ADRALN)
+      PrintToStderr(" BUS_ADRALN ");
+    else if (info->si_code == BUS_ADRERR)
+      PrintToStderr(" BUS_ADRERR ");
+    else if (info->si_code == BUS_OBJERR)
+      PrintToStderr(" BUS_OBJERR ");
+    else
+      PrintToStderr(" <unknown> ");
+  } else if (signal == SIGFPE) {
+    if (info->si_code == FPE_FLTDIV)
+      PrintToStderr(" FPE_FLTDIV ");
+    else if (info->si_code == FPE_FLTINV)
+      PrintToStderr(" FPE_FLTINV ");
+    else if (info->si_code == FPE_FLTOVF)
+      PrintToStderr(" FPE_FLTOVF ");
+    else if (info->si_code == FPE_FLTRES)
+      PrintToStderr(" FPE_FLTRES ");
+    else if (info->si_code == FPE_FLTSUB)
+      PrintToStderr(" FPE_FLTSUB ");
+    else if (info->si_code == FPE_FLTUND)
+      PrintToStderr(" FPE_FLTUND ");
+    else if (info->si_code == FPE_INTDIV)
+      PrintToStderr(" FPE_INTDIV ");
+    else if (info->si_code == FPE_INTOVF)
+      PrintToStderr(" FPE_INTOVF ");
+    else
+      PrintToStderr(" <unknown> ");
+  } else if (signal == SIGILL) {
+    if (info->si_code == ILL_BADSTK)
+      PrintToStderr(" ILL_BADSTK ");
+    else if (info->si_code == ILL_COPROC)
+      PrintToStderr(" ILL_COPROC ");
+    else if (info->si_code == ILL_ILLOPN)
+      PrintToStderr(" ILL_ILLOPN ");
+    else if (info->si_code == ILL_ILLADR)
+      PrintToStderr(" ILL_ILLADR ");
+    else if (info->si_code == ILL_ILLTRP)
+      PrintToStderr(" ILL_ILLTRP ");
+    else if (info->si_code == ILL_PRVOPC)
+      PrintToStderr(" ILL_PRVOPC ");
+    else if (info->si_code == ILL_PRVREG)
+      PrintToStderr(" ILL_PRVREG ");
+    else
+      PrintToStderr(" <unknown> ");
+  } else if (signal == SIGSEGV) {
+    if (info->si_code == SEGV_MAPERR)
+      PrintToStderr(" SEGV_MAPERR ");
+    else if (info->si_code == SEGV_ACCERR)
+      PrintToStderr(" SEGV_ACCERR ");
+    else
+      PrintToStderr(" <unknown> ");
+  }
+  if (signal == SIGBUS || signal == SIGFPE ||
+      signal == SIGILL || signal == SIGSEGV) {
+    internal::itoa_r(reinterpret_cast<intptr_t>(info->si_addr),
+                     buf, sizeof(buf), 16, 12);
+    PrintToStderr(buf);
+  }
+  PrintToStderr("\n");
 
   debug::StackTrace().PrintBacktrace();
 
@@ -250,18 +316,15 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
 #endif
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(registers); i++) {
-    HANDLE_EINTR(write(STDERR_FILENO,
-                       registers[i].label,
-                       strlen(registers[i].label)));
+    PrintToStderr(registers[i].label);
     internal::itoa_r(registers[i].value, buf, sizeof(buf),
                      16, kRegisterPadding);
-    HANDLE_EINTR(write(STDERR_FILENO, buf, strlen(buf)));
+    PrintToStderr(buf);
 
-    if ((i + 1) % 4 == 0) {
-      HANDLE_EINTR(write(STDERR_FILENO, "\n", 1));
-    }
+    if ((i + 1) % 4 == 0)
+      PrintToStderr("\n");
   }
-  HANDLE_EINTR(write(STDERR_FILENO, "\n", 1));
+  PrintToStderr("\n");
 #endif
 #elif defined(OS_MACOSX)
   // TODO(shess): Port to 64-bit.
@@ -314,7 +377,7 @@ class PrintBacktraceOutputHandler : public BacktraceOutputHandler {
   virtual void HandleOutput(const char* output) {
     // NOTE: This code MUST be async-signal safe (it's used by in-process
     // stack dumping signal handler). NO malloc or stdio is allowed here.
-    ignore_result(HANDLE_EINTR(write(STDERR_FILENO, output, strlen(output))));
+    PrintToStderr(output);
   }
 
  private:
