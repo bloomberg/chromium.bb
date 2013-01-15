@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1270,7 +1270,7 @@ void Extension::ClearTabSpecificPermissions(int tab_id) const {
 
 Extension::ManifestData* Extension::GetManifestData(const std::string& key)
     const {
-  DCHECK(finished_parsing_manifest_);
+  DCHECK(finished_parsing_manifest_ || thread_checker_.CalledOnValidThread());
   ManifestDataMap::const_iterator iter = manifest_data_.find(key);
   if (iter != manifest_data_.end())
     return iter->second.get();
@@ -1279,7 +1279,7 @@ Extension::ManifestData* Extension::GetManifestData(const std::string& key)
 
 void Extension::SetManifestData(const std::string& key,
                                 Extension::ManifestData* data) {
-  DCHECK(!finished_parsing_manifest_);
+  DCHECK(!finished_parsing_manifest_ && thread_checker_.CalledOnValidThread());
   manifest_data_[key] = linked_ptr<ManifestData>(data);
 }
 
@@ -2585,10 +2585,12 @@ bool Extension::LoadManifestHandlerFeatures(string16* error) {
   std::vector<std::string> keys = ManifestHandler::GetKeys();
   for (size_t i = 0; i < keys.size(); ++i) {
     Value* value = NULL;
-    if (!manifest_->Get(keys[i], &value))
-      continue;
-    if (!ManifestHandler::Get(keys[i])->Parse(value, this, error))
+    if (!manifest_->Get(keys[i], &value)) {
+      if (!ManifestHandler::Get(keys[i])->HasNoKey(this, error))
+        return false;
+    } else if (!ManifestHandler::Get(keys[i])->Parse(value, this, error)) {
       return false;
+    }
   }
   return true;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,12 @@ class ManifestHandler {
   virtual bool Parse(const base::Value* value,
                      Extension* extension,
                      string16* error) = 0;
+
+  // Perform any initialization which is necessary when the Handler's key is
+  // not present in the manifest.
+  // Returns true on success or false on failure; if false, |error| will
+  // be set to a failure message.
+  virtual bool HasNoKey(Extension* extension, string16* error);
 
   // Associate |handler| with |key| in the manifest. Takes ownership
   // of |handler|. TODO(yoz): Decide how to handle dotted subkeys.

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -1110,6 +1111,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Set to true at the end of InitValue when initialization is finished.
   bool finished_parsing_manifest_;
+
+  // Ensures that any call to GetManifestData() prior to finishing
+  // initialization happens from the same thread (this can happen when certain
+  // parts of the initialization process need information from previous parts).
+  base::ThreadChecker thread_checker_;
 
   // Whether this extension requests isolated storage.
   bool is_storage_isolated_;
