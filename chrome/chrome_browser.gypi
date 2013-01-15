@@ -2386,6 +2386,8 @@
             ['include', 'browser/policy/policy_service.h'],
             ['include', 'browser/policy/policy_service_stub.cc'],
             ['include', 'browser/policy/policy_service_stub.h'],
+            ['include', 'browser/policy/url_blacklist_manager.cc'],
+            ['include', 'browser/policy/url_blacklist_manager.h'],
           ],
         }],
         ['enable_plugins==1', {
