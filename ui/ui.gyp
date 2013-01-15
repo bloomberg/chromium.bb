@@ -714,6 +714,10 @@
             '../',
             '../third_party/wtl/include',
           ],
+          # TODO(jschuh): C4267: http://crbug.com/167187 size_t -> int
+          # C4324 is structure was padded due to __declspec(align()), which is
+          # uninteresting.
+          'msvs_disabled_warnings': [ 4267, 4324 ],
           'msvs_settings': {
             'VCLinkerTool': {
               'DelayLoadDLLs': [

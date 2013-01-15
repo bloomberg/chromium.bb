@@ -35,10 +35,10 @@ CHARRANGE Range::ToCHARRANGE() const {
     return r;
 
   const LONG kLONGMax = std::numeric_limits<LONG>::max();
-  DCHECK_LE(static_cast<LONG>(start()), kLONGMax);
-  DCHECK_LE(static_cast<LONG>(end()), kLONGMax);
-  r.cpMin = start();
-  r.cpMax = end();
+  CHECK_LE(static_cast<LONG>(start()), kLONGMax);
+  CHECK_LE(static_cast<LONG>(end()), kLONGMax);
+  r.cpMin = static_cast<LONG>(start());
+  r.cpMax = static_cast<LONG>(end());
   return r;
 }
 

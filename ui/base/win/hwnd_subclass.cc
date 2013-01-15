@@ -29,7 +29,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 }
 
 WNDPROC GetCurrentWndProc(HWND target) {
-  return reinterpret_cast<WNDPROC>(GetWindowLong(target, GWL_WNDPROC));
+  return reinterpret_cast<WNDPROC>(GetWindowLongPtr(target, GWLP_WNDPROC));
 }
 
 }  // namespace

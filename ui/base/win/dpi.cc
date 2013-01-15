@@ -47,7 +47,8 @@ bool IsInHighDPIMode() {
 void EnableHighDPISupport() {
   typedef BOOL(WINAPI *SetProcessDPIAwarePtr)(VOID);
   SetProcessDPIAwarePtr set_process_dpi_aware_func =
-      GetProcAddress(GetModuleHandleA("user32.dll"), "SetProcessDPIAware");
+      reinterpret_cast<SetProcessDPIAwarePtr>(
+          GetProcAddress(GetModuleHandleA("user32.dll"), "SetProcessDPIAware"));
   if (set_process_dpi_aware_func)
     set_process_dpi_aware_func();
 }

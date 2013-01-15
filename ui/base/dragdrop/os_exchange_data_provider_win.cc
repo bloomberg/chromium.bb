@@ -964,10 +964,8 @@ static STGMEDIUM* GetStorageForFileDescriptor(
   FILEGROUPDESCRIPTOR* descriptor = locked_mem.get();
   descriptor->cItems = 1;
   descriptor->fgd[0].dwFlags = FD_LINKUI;
-  wcsncpy_s(descriptor->fgd[0].cFileName,
-            MAX_PATH,
-            file_name.c_str(),
-            std::min(file_name.size(), MAX_PATH - 1u));
+  wcsncpy_s(descriptor->fgd[0].cFileName, MAX_PATH, file_name.c_str(),
+            std::min(file_name.size(), static_cast<size_t>(MAX_PATH - 1u)));
 
   STGMEDIUM* storage = new STGMEDIUM;
   storage->tymed = TYMED_HGLOBAL;

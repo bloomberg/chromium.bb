@@ -65,7 +65,7 @@ class UI_EXPORT Range {
 
   // Returns the absolute value of the length.
   size_t length() const {
-    int length = end() - start();
+    ptrdiff_t length = end() - start();
     return length >= 0 ? length : -length;
   }
 

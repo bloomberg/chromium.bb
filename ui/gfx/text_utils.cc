@@ -13,7 +13,7 @@ string16 RemoveAcceleratorChar(const string16& s,
                                int* accelerated_char_pos,
                                int* accelerated_char_span) {
   bool escaped = false;
-  int last_char_pos = -1;
+  ptrdiff_t last_char_pos = -1;
   int last_char_span = 0;
   base::i18n::UTF16CharIterator chars(&s);
   string16 accelerator_removed;
