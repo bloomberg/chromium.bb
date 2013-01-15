@@ -74,11 +74,18 @@ def FindChrome(src_dir, options):
       'xcodebuild/%s/Google Chrome.app/Contents/MacOS/Google Chrome' % mode,
   ]
 
-  # Pick the first one we find.
+  # Pick the one with the newest timestamp.
+  latest_mtime = 0
+  latest_path = None
   for chrome in chrome_locations:
     chrome_filename = os.path.join(src_dir, chrome)
     if os.path.exists(chrome_filename):
-      return chrome_filename
+      mtime = os.path.getmtime(chrome_filename)
+      if mtime > latest_mtime:
+        latest_mtime = mtime
+        latest_path = chrome_filename
+  if latest_path is not None:
+    return latest_path
   raise Exception('Cannot find a chome binary - specify one with '
                   '--browser_path?')
 
