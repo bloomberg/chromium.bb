@@ -26,8 +26,15 @@ namespace chromeos {
 class CHROMEOS_EXPORT CryptohomeClient {
  public:
   // A callback to handle AsyncCallStatus signals.
-  typedef base::Callback<void(int async_id, bool return_status, int return_code)
-                         > AsyncCallStatusHandler;
+  typedef base::Callback<void(int async_id,
+                              bool return_status,
+                              int return_code)>
+      AsyncCallStatusHandler;
+  // A callback to handle AsyncCallStatusWithData signals.
+  typedef base::Callback<void(int async_id,
+                              bool return_status,
+                              const std::string& data)>
+      AsyncCallStatusWithDataHandler;
   // A callback to handle responses of AsyncXXX methods.
   typedef base::Callback<void(int async_id)> AsyncMethodCallback;
   // A callback to handle responses of Pkcs11GetTpmTokenInfo method.
@@ -43,15 +50,16 @@ class CHROMEOS_EXPORT CryptohomeClient {
   static CryptohomeClient* Create(DBusClientImplementationType type,
                                   dbus::Bus* bus);
 
-  // Sets AsyncCallStatus signal handler.
+  // Sets AsyncCallStatus signal handlers.
   // |handler| is called when results for AsyncXXX methods are returned.
   // Cryptohome service will process the calls in a first-in-first-out manner
   // when they are made in parallel.
-  virtual void SetAsyncCallStatusHandler(
-      const AsyncCallStatusHandler& handler) = 0;
+  virtual void SetAsyncCallStatusHandlers(
+      const AsyncCallStatusHandler& handler,
+      const AsyncCallStatusWithDataHandler& data_handler) = 0;
 
-  // Resets AsyncCallStatus signal handler.
-  virtual void ResetAsyncCallStatusHandler() = 0;
+  // Resets AsyncCallStatus signal handlers.
+  virtual void ResetAsyncCallStatusHandlers() = 0;
 
   // Calls IsMounted method and returns true when the call succeeds.
   virtual void IsMounted(const BoolDBusMethodCallback& callback) = 0;
@@ -162,6 +170,51 @@ class CHROMEOS_EXPORT CryptohomeClient {
   // Calls InstallAttributesIsFirstInstall method and returns true when the call
   // succeeds. This method blocks until the call returns.
   virtual bool InstallAttributesIsFirstInstall(bool* is_first_install) = 0;
+
+  // Calls the TpmAttestationIsPrepared dbus method.  The callback is called
+  // when the operation completes.
+  virtual void TpmAttestationIsPrepared(
+        const BoolDBusMethodCallback& callback) = 0;
+
+  // Calls the TpmAttestationIsEnrolled dbus method.  The callback is called
+  // when the operation completes.
+  virtual void TpmAttestationIsEnrolled(
+        const BoolDBusMethodCallback& callback) = 0;
+
+  // Asynchronously creates an attestation enrollment request.  The callback
+  // will be called when the dbus call completes.  When the operation completes,
+  // the AsyncCallStatusWithDataHandler signal handler is called.  The data that
+  // is sent with the signal is an enrollment request to be sent to the Privacy
+  // CA.  The enrollment is completed by calling AsyncTpmAttestationEnroll.
+  virtual void AsyncTpmAttestationCreateEnrollRequest(
+      const AsyncMethodCallback& callback) = 0;
+
+  // Asynchronously finishes an attestation enrollment operation.  The callback
+  // will be called when the dbus call completes.  When the operation completes,
+  // the AsyncCallStatusHandler signal handler is called.  |pca_response| is the
+  // response to the enrollment request emitted by the Privacy CA.
+  virtual void AsyncTpmAttestationEnroll(
+      const std::string& pca_response,
+      const AsyncMethodCallback& callback) = 0;
+
+  // Asynchronously creates an attestation certificate request.  The callback
+  // will be called when the dbus call completes.  When the operation completes,
+  // the AsyncCallStatusWithDataHandler signal handler is called.  The data that
+  // is sent with the signal is a certificate request to be sent to the Privacy
+  // CA.  The certificate request is completed by calling
+  // AsyncTpmAttestationFinishCertRequest.
+  virtual void AsyncTpmAttestationCreateCertRequest(
+      bool is_cert_for_owner,
+      const AsyncMethodCallback& callback) = 0;
+
+  // Asynchronously finishes a certificate request operation.  The callback will
+  // be called when the dbus call completes.  When the operation completes, the
+  // AsyncCallStatusWithDataHandler signal handler is called.  The data that is
+  // sent with the signal is a certificate chain in PEM format.  |pca_response|
+  // is the response to the certificate request emitted by the Privacy CA.
+  virtual void AsyncTpmAttestationFinishCertRequest(
+      const std::string& pca_response,
+      const AsyncMethodCallback& callback) = 0;
 
  protected:
   // Create() should be used instead.

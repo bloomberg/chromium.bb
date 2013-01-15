@@ -40,17 +40,27 @@ class CryptohomeClientImpl : public CryptohomeClient {
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&CryptohomeClientImpl::OnSignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
+    proxy_->ConnectToSignal(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kSignalAsyncCallStatusWithData,
+        base::Bind(&CryptohomeClientImpl::OnAsyncCallStatusWithData,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&CryptohomeClientImpl::OnSignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   // CryptohomeClient override.
-  virtual void SetAsyncCallStatusHandler(const AsyncCallStatusHandler& handler)
-      OVERRIDE {
+  virtual void SetAsyncCallStatusHandlers(
+      const AsyncCallStatusHandler& handler,
+      const AsyncCallStatusWithDataHandler& data_handler) OVERRIDE {
     async_call_status_handler_ = handler;
+    async_call_status_data_handler_ = data_handler;
   }
 
   // CryptohomeClient override.
-  virtual void ResetAsyncCallStatusHandler() OVERRIDE {
+  virtual void ResetAsyncCallStatusHandlers() OVERRIDE {
     async_call_status_handler_.Reset();
+    async_call_status_data_handler_.Reset();
   }
 
   // CryptohomeClient override.
@@ -297,6 +307,82 @@ class CryptohomeClientImpl : public CryptohomeClient {
     return CallBoolMethodAndBlock(&method_call, is_first_install);
   }
 
+  // CryptohomeClient override.
+  virtual void TpmAttestationIsPrepared(
+        const BoolDBusMethodCallback& callback) OVERRIDE {
+    INITIALIZE_METHOD_CALL(method_call,
+                           cryptohome::kCryptohomeTpmIsAttestationPrepared);
+    return CallBoolMethod(&method_call, callback);
+  }
+
+  // CryptohomeClient override.
+  virtual void TpmAttestationIsEnrolled(
+        const BoolDBusMethodCallback& callback) OVERRIDE {
+    INITIALIZE_METHOD_CALL(method_call,
+                           cryptohome::kCryptohomeTpmIsAttestationEnrolled);
+    return CallBoolMethod(&method_call, callback);
+  }
+
+  // CryptohomeClient override.
+  virtual void AsyncTpmAttestationCreateEnrollRequest(
+      const AsyncMethodCallback& callback) OVERRIDE {
+    INITIALIZE_METHOD_CALL(
+        method_call,
+        cryptohome::kCryptohomeAsyncTpmAttestationCreateEnrollRequest);
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  }
+
+  // CryptohomeClient override.
+  virtual void AsyncTpmAttestationEnroll(
+      const std::string& pca_response,
+      const AsyncMethodCallback& callback) OVERRIDE {
+    INITIALIZE_METHOD_CALL(method_call,
+                           cryptohome::kCryptohomeAsyncTpmAttestationEnroll);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendArrayOfBytes(
+        reinterpret_cast<const uint8*>(pca_response.data()),
+        pca_response.size());
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  }
+
+  // CryptohomeClient override.
+  virtual void AsyncTpmAttestationCreateCertRequest(
+      bool is_cert_for_owner,
+      const AsyncMethodCallback& callback) OVERRIDE {
+    INITIALIZE_METHOD_CALL(
+        method_call,
+        cryptohome::kCryptohomeAsyncTpmAttestationCreateCertRequest);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendBool(is_cert_for_owner);
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  }
+
+  // CryptohomeClient override.
+  virtual void AsyncTpmAttestationFinishCertRequest(
+      const std::string& pca_response,
+      const AsyncMethodCallback& callback) OVERRIDE {
+    INITIALIZE_METHOD_CALL(
+        method_call,
+        cryptohome::kCryptohomeAsyncTpmAttestationFinishCertRequest);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendArrayOfBytes(
+        reinterpret_cast<const uint8*>(pca_response.data()),
+        pca_response.size());
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  }
+
  private:
   // Handles the result of AsyncXXX methods.
   void OnAsyncMethodCall(const AsyncMethodCallback& callback,
@@ -416,6 +502,26 @@ class CryptohomeClientImpl : public CryptohomeClient {
       async_call_status_handler_.Run(async_id, return_status, return_code);
   }
 
+  // Handles AsyncCallStatusWithData signal.
+  void OnAsyncCallStatusWithData(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    int async_id = 0;
+    bool return_status = false;
+    uint8* return_data_buffer = NULL;
+    size_t return_data_length = 0;
+    if (!reader.PopInt32(&async_id) ||
+        !reader.PopBool(&return_status) ||
+        !reader.PopArrayOfBytes(&return_data_buffer, &return_data_length)) {
+      LOG(ERROR) << "Invalid signal: " << signal->ToString();
+      return;
+    }
+    if (!async_call_status_data_handler_.is_null()) {
+      std::string return_data(reinterpret_cast<char*>(return_data_buffer),
+                              return_data_length);
+      async_call_status_data_handler_.Run(async_id, return_status, return_data);
+    }
+  }
+
   // Handles the result of signal connection setup.
   void OnSignalConnected(const std::string& interface,
                          const std::string& signal,
@@ -427,6 +533,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   dbus::ObjectProxy* proxy_;
   BlockingMethodCaller blocking_method_caller_;
   AsyncCallStatusHandler async_call_status_handler_;
+  AsyncCallStatusWithDataHandler async_call_status_data_handler_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
@@ -448,14 +555,17 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   virtual ~CryptohomeClientStubImpl() {}
 
   // CryptohomeClient override.
-  virtual void SetAsyncCallStatusHandler(const AsyncCallStatusHandler& handler)
-      OVERRIDE {
+  virtual void SetAsyncCallStatusHandlers(
+      const AsyncCallStatusHandler& handler,
+      const AsyncCallStatusWithDataHandler& data_handler) OVERRIDE {
     async_call_status_handler_ = handler;
+    async_call_status_data_handler_ = data_handler;
   }
 
   // CryptohomeClient override.
-  virtual void ResetAsyncCallStatusHandler() OVERRIDE {
+  virtual void ResetAsyncCallStatusHandlers() OVERRIDE {
     async_call_status_handler_.Reset();
+    async_call_status_data_handler_.Reset();
   }
 
   // CryptohomeClient override.
@@ -474,7 +584,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   virtual void AsyncCheckKey(const std::string& username,
                              const std::string& key,
                              const AsyncMethodCallback& callback) OVERRIDE {
-    ReturnAsyncMethodResult(callback);
+    ReturnAsyncMethodResult(callback, false);
   }
 
   // CryptohomeClient override.
@@ -482,13 +592,13 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
                                const std::string& from_key,
                                const std::string& to_key,
                                const AsyncMethodCallback& callback) OVERRIDE {
-    ReturnAsyncMethodResult(callback);
+    ReturnAsyncMethodResult(callback, false);
   }
 
   // CryptohomeClient override.
   virtual void AsyncRemove(const std::string& username,
                            const AsyncMethodCallback& callback) OVERRIDE {
-    ReturnAsyncMethodResult(callback);
+    ReturnAsyncMethodResult(callback, false);
   }
 
   // CryptohomeClient override.
@@ -504,12 +614,12 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
                           const std::string& key,
                           int flags,
                           const AsyncMethodCallback& callback) OVERRIDE {
-    ReturnAsyncMethodResult(callback);
+    ReturnAsyncMethodResult(callback, false);
   }
 
   // CryptohomeClient override.
   virtual void AsyncMountGuest(const AsyncMethodCallback& callback) OVERRIDE {
-    ReturnAsyncMethodResult(callback);
+    ReturnAsyncMethodResult(callback, false);
   }
 
   // CryptohomeClient override.
@@ -627,32 +737,84 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
     return true;
   }
 
+  // CryptohomeClient override.
+  virtual void TpmAttestationIsPrepared(
+        const BoolDBusMethodCallback& callback) OVERRIDE {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
+  }
+
+  // CryptohomeClient override.
+  virtual void TpmAttestationIsEnrolled(
+        const BoolDBusMethodCallback& callback) OVERRIDE {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, true));
+  }
+
+  // CryptohomeClient override.
+  virtual void AsyncTpmAttestationCreateEnrollRequest(
+      const AsyncMethodCallback& callback) OVERRIDE {
+    ReturnAsyncMethodResult(callback, true);
+  }
+
+  // CryptohomeClient override.
+  virtual void AsyncTpmAttestationEnroll(
+      const std::string& pca_response,
+      const AsyncMethodCallback& callback) OVERRIDE {
+    ReturnAsyncMethodResult(callback, false);
+  }
+
+  // CryptohomeClient override.
+  virtual void AsyncTpmAttestationCreateCertRequest(
+      bool is_cert_for_owner,
+      const AsyncMethodCallback& callback) OVERRIDE {
+    ReturnAsyncMethodResult(callback, true);
+  }
+
+  // CryptohomeClient override.
+  virtual void AsyncTpmAttestationFinishCertRequest(
+      const std::string& pca_response,
+      const AsyncMethodCallback& callback) OVERRIDE {
+    ReturnAsyncMethodResult(callback, true);
+  }
+
  private:
   // Posts tasks which return fake results to the UI thread.
-  void ReturnAsyncMethodResult(const AsyncMethodCallback& callback) {
+  void ReturnAsyncMethodResult(const AsyncMethodCallback& callback,
+                               bool returns_data) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&CryptohomeClientStubImpl::ReturnAsyncMethodResultInternal,
                    weak_ptr_factory_.GetWeakPtr(),
-                   callback));
+                   callback,
+                   returns_data));
   }
 
   // This method is used to implement ReturnAsyncMethodResult.
-  void ReturnAsyncMethodResultInternal(const AsyncMethodCallback& callback) {
+  void ReturnAsyncMethodResultInternal(const AsyncMethodCallback& callback,
+                                       bool returns_data) {
     callback.Run(async_call_id_);
-    if (!async_call_status_handler_.is_null()) {
+    if (!returns_data && !async_call_status_handler_.is_null()) {
       MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(async_call_status_handler_,
                      async_call_id_,
                      true,
                      cryptohome::MOUNT_ERROR_NONE));
+    } else if (returns_data && !async_call_status_data_handler_.is_null()) {
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(async_call_status_data_handler_,
+                     async_call_id_,
+                     true,
+                     std::string()));
     }
     ++async_call_id_;
   }
 
   int async_call_id_;
   AsyncCallStatusHandler async_call_status_handler_;
+  AsyncCallStatusWithDataHandler async_call_status_data_handler_;
   int tpm_is_ready_counter_;
   std::map<std::string, std::vector<uint8> > install_attrs_;
   bool locked_;

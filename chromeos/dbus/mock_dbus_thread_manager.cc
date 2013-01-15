@@ -171,9 +171,9 @@ MockDBusThreadManager::MockDBusThreadManager()
       .Times(AnyNumber());
 
   // Called from AsyncMethodCaller ctor and dtor.
-  EXPECT_CALL(*mock_cryptohome_client_.get(), SetAsyncCallStatusHandler(_))
+  EXPECT_CALL(*mock_cryptohome_client_.get(), SetAsyncCallStatusHandlers(_, _))
       .Times(AnyNumber());
-  EXPECT_CALL(*mock_cryptohome_client_.get(), ResetAsyncCallStatusHandler())
+  EXPECT_CALL(*mock_cryptohome_client_.get(), ResetAsyncCallStatusHandlers())
       .Times(AnyNumber());
 
   // Called from BrightnessController::GetBrightnessPercent as part of ash tray

@@ -33,6 +33,8 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
   // A callback type which is called back on the UI thread when the results of
   // method calls are ready.
   typedef base::Callback<void(bool success, MountError return_code)> Callback;
+  typedef base::Callback<void(bool success, const std::string& data)>
+      DataCallback;
 
   virtual ~AsyncMethodCaller() {}
 
@@ -80,6 +82,33 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
   // |user_email| and then nuke it.
   virtual void AsyncRemove(const std::string& user_email,
                            Callback callback) = 0;
+
+  // Asks cryptohomed to asynchronously create an attestation enrollment
+  // request.  On success the data sent to |callback| is a request to be sent
+  // to the Privacy CA.
+  virtual void AsyncTpmAttestationCreateEnrollRequest(
+      const DataCallback& callback) = 0;
+
+  // Asks cryptohomed to asynchronously finish an attestation enrollment.
+  // |pca_response| is the response to the enrollment request emitted by the
+  // Privacy CA.
+  virtual void AsyncTpmAttestationEnroll(const std::string& pca_response,
+                                         const Callback& callback) = 0;
+
+  // Asks cryptohomed to asynchronously create an attestation certificate
+  // request.  On success the data sent to |callback| is a request to be sent
+  // to the Privacy CA.
+  virtual void AsyncTpmAttestationCreateCertRequest(
+      bool is_cert_for_owner,
+      const DataCallback& callback) = 0;
+
+  // Asks cryptohomed to asynchronously finish an attestation certificate
+  // request.  On success the data sent to |callback| is a certificate chain
+  // in PEM format.  |pca_response| is the response to the certificate request
+  // emitted by the Privacy CA.
+  virtual void AsyncTpmAttestationFinishCertRequest(
+      const std::string& pca_response,
+      const DataCallback& callback) = 0;
 
   // Creates the global AsyncMethodCaller instance.
   static void Initialize();

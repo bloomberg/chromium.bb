@@ -35,6 +35,15 @@ class MockAsyncMethodCaller : public AsyncMethodCaller {
   MOCK_METHOD1(AsyncMountGuest, void(Callback callback));
   MOCK_METHOD2(AsyncRemove, void(const std::string& user_email,
                                  Callback callback));
+  MOCK_METHOD1(AsyncTpmAttestationCreateEnrollRequest,
+               void(const DataCallback& callback));
+  MOCK_METHOD2(AsyncTpmAttestationEnroll,
+               void(const std::string& pca_response, const Callback& callback));
+  MOCK_METHOD2(AsyncTpmAttestationCreateCertRequest,
+               void(bool is_cert_for_owner, const DataCallback& callback));
+  MOCK_METHOD2(AsyncTpmAttestationFinishCertRequest,
+               void(const std::string& pca_response,
+                    const DataCallback& callback));
 
  private:
   bool success_;
