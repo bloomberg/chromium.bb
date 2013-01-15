@@ -1377,7 +1377,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     }
   }
 
-  // Oberridden from CloudPolicyStore::Observer
+  // Overridden from CloudPolicyStore::Observer
   virtual void OnStoreLoaded(policy::CloudPolicyStore* store) OVERRIDE {
     UpdateEnterpriseDomain();
   }

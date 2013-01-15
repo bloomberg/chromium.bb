@@ -72,7 +72,6 @@ class VpnListDetailedView : public NetworkListDetailedViewBase {
   virtual void RefreshNetworkScrollWithEmptyNetworkList() OVERRIDE {
     ClearNetworkScrollWithEmptyNetworkList();
     HoverHighlightView* container = new HoverHighlightView(this);
-    container->set_fixed_height(kTrayPopupItemHeight);
     container->AddLabel(ui::ResourceBundle::GetSharedInstance().
         GetLocalizedString(IDS_ASH_STATUS_TRAY_NETWORK_NO_VPN),
         gfx::Font::NORMAL);

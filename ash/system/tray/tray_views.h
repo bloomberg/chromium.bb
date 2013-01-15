@@ -123,11 +123,14 @@ class HoverHighlightView : public ActionableView {
                                   gfx::Font::FontStyle style,
                                   bool checked);
 
+  // Allows view to expand its height.
+  // Size of unexapandable view is fixed and equals to kTrayPopupItemHeight.
+  void SetExpandable(bool expandable);
+
   void set_highlight_color(SkColor color) { highlight_color_ = color; }
   void set_default_color(SkColor color) { default_color_ = color; }
   void set_text_highlight_color(SkColor c) { text_highlight_color_ = c; }
   void set_text_default_color(SkColor color) { text_default_color_ = color; }
-  void set_fixed_height(int height) { fixed_height_ = height; }
 
   views::Label* text_label() {
     return text_label_;
@@ -151,8 +154,8 @@ class HoverHighlightView : public ActionableView {
   SkColor default_color_;
   SkColor text_highlight_color_;
   SkColor text_default_color_;
-  int fixed_height_;
   bool hover_;
+  bool expandable_;
 
   DISALLOW_COPY_AND_ASSIGN(HoverHighlightView);
 };

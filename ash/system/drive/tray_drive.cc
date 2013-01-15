@@ -352,7 +352,6 @@ class DriveDetailedView : public TrayDetailsView,
       return;
 
     HoverHighlightView* container = new HoverHighlightView(this);
-    container->set_fixed_height(kTrayPopupItemHeight);
     container->AddLabel(ui::ResourceBundle::GetSharedInstance().
         GetLocalizedString(IDS_ASH_STATUS_TRAY_DRIVE_SETTINGS),
         gfx::Font::NORMAL);

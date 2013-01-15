@@ -201,8 +201,8 @@ HoverHighlightView::HoverHighlightView(ViewClickListener* listener)
       default_color_(0),
       text_highlight_color_(0),
       text_default_color_(0),
-      fixed_height_(0),
-      hover_(false) {
+      hover_(false),
+      expandable_(false) {
   set_notify_enter_exit_on_child(true);
 }
 
@@ -286,6 +286,13 @@ views::Label* HoverHighlightView::AddCheckableLabel(const string16& text,
   }
 }
 
+void HoverHighlightView::SetExpandable(bool expandable) {
+  if (expandable != expandable_) {
+    expandable_ = expandable;
+    InvalidateLayout();
+  }
+}
+
 bool HoverHighlightView::PerformAction(const ui::Event& event) {
   if (!listener_)
     return false;
@@ -295,8 +302,8 @@ bool HoverHighlightView::PerformAction(const ui::Event& event) {
 
 gfx::Size HoverHighlightView::GetPreferredSize() {
   gfx::Size size = ActionableView::GetPreferredSize();
-  if (fixed_height_)
-    size.set_height(fixed_height_);
+  if (!expandable_ || size.height() < kTrayPopupItemHeight)
+    size.set_height(kTrayPopupItemHeight);
   return size;
 }
 
@@ -626,7 +633,6 @@ SpecialPopupRow::~SpecialPopupRow() {
 void SpecialPopupRow::SetTextLabel(int string_id, ViewClickListener* listener) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   HoverHighlightView* container = new HoverHighlightView(listener);
-  container->set_fixed_height(kTrayPopupItemHeight);
   container->SetLayoutManager(new
       views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3, kIconPaddingLeft));
 

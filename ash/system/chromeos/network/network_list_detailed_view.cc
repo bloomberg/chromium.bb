@@ -76,7 +76,6 @@ void NetworkListDetailedView::AppendNetworkEntries() {
   CreateScrollableList();
 
   HoverHighlightView* container = new HoverHighlightView(this);
-  container->set_fixed_height(kTrayPopupItemHeight);
   container->AddLabel(ui::ResourceBundle::GetSharedInstance().
                       GetLocalizedString(
                           IDS_ASH_STATUS_TRAY_MOBILE_VIEW_ACCOUNT),
@@ -85,7 +84,6 @@ void NetworkListDetailedView::AppendNetworkEntries() {
   view_mobile_account_ = container;
 
   container = new HoverHighlightView(this);
-  container->set_fixed_height(kTrayPopupItemHeight);
   container->AddLabel(ui::ResourceBundle::GetSharedInstance().
                       GetLocalizedString(IDS_ASH_STATUS_TRAY_SETUP_MOBILE),
                       gfx::Font::NORMAL);
@@ -101,7 +99,6 @@ void NetworkListDetailedView::GetAvailableNetworkList(
 void NetworkListDetailedView::RefreshNetworkScrollWithEmptyNetworkList() {
   ClearNetworkScrollWithEmptyNetworkList();
   HoverHighlightView* container = new HoverHighlightView(this);
-  container->set_fixed_height(kTrayPopupItemHeight);
 
   if (Shell::GetInstance()->system_tray_delegate()->GetWifiEnabled()) {
     NetworkIconInfo info;

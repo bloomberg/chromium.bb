@@ -319,7 +319,6 @@ void NetworkStateListDetailedView::CreateNetworkEntries() {
   CreateScrollableList();
 
   HoverHighlightView* container = new HoverHighlightView(this);
-  container->set_fixed_height(kTrayPopupItemHeight);
   container->AddLabel(
       ui::ResourceBundle::GetSharedInstance().
       GetLocalizedString(IDS_ASH_STATUS_TRAY_MOBILE_VIEW_ACCOUNT),
@@ -328,7 +327,6 @@ void NetworkStateListDetailedView::CreateNetworkEntries() {
   view_mobile_account_ = container;
 
   container = new HoverHighlightView(this);
-  container->set_fixed_height(kTrayPopupItemHeight);
   container->AddLabel(ui::ResourceBundle::GetSharedInstance().
                       GetLocalizedString(IDS_ASH_STATUS_TRAY_SETUP_MOBILE),
                       gfx::Font::NORMAL);
@@ -457,7 +455,6 @@ void NetworkStateListDetailedView::RefreshNetworkList() {
     if (it == service_path_map_.end()) {
       // Create a new view.
       container = new HoverHighlightView(this);
-      container->set_fixed_height(kTrayPopupItemHeight);
       container->AddIconAndLabel(
           info->image,
           info->description,

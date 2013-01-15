@@ -62,11 +62,11 @@ views::View* EnterpriseDefaultView::CreateChildView(
       rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_ENTERPRISE_DARK);
   HoverHighlightView* child = new HoverHighlightView(click_listener_);
   child->AddIconAndLabel(*icon, message, gfx::Font::NORMAL);
-  child->text_label()->SetElideBehavior(views::Label::ELIDE_AT_END);
-  child->text_label()->SetFont(rb.GetFont(ui::ResourceBundle::SmallFont));
-  child->set_fixed_height(kTrayPopupItemHeight);
+  child->text_label()->SetMultiLine(true);
+  child->text_label()->SetAllowCharacterBreak(true);
   child->set_border(views::Border::CreateEmptyBorder(0,
       kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingHorizontal));
+  child->SetExpandable(true);
   child->SetVisible(true);
   return child;
 }

@@ -102,7 +102,6 @@ class IMEDetailedView : public TrayDetailsView,
     CreateScrollableList();
     for (size_t i = 0; i < list.size(); i++) {
       HoverHighlightView* container = new HoverHighlightView(this);
-      container->set_fixed_height(kTrayPopupItemHeight);
       container->AddLabel(list[i].name,
           list[i].selected ? gfx::Font::BOLD : gfx::Font::NORMAL);
       scroll_content()->AddChildView(container);
@@ -114,7 +113,6 @@ class IMEDetailedView : public TrayDetailsView,
     property_map_.clear();
     for (size_t i = 0; i < property_list.size(); i++) {
       HoverHighlightView* container = new HoverHighlightView(this);
-      container->set_fixed_height(kTrayPopupItemHeight);
       container->AddLabel(
           property_list[i].name,
           property_list[i].selected ? gfx::Font::BOLD : gfx::Font::NORMAL);
@@ -128,7 +126,6 @@ class IMEDetailedView : public TrayDetailsView,
 
   void AppendSettings() {
     HoverHighlightView* container = new HoverHighlightView(this);
-    container->set_fixed_height(kTrayPopupItemHeight);
     container->AddLabel(ui::ResourceBundle::GetSharedInstance().
         GetLocalizedString(IDS_ASH_STATUS_TRAY_IME_SETTINGS),
         gfx::Font::NORMAL);

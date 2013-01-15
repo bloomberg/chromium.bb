@@ -182,7 +182,6 @@ HoverHighlightView* AccessibilityDetailedView::AddScrollListItem(
     gfx::Font::FontStyle style,
     bool checked) {
   HoverHighlightView* container = new HoverHighlightView(this);
-  container->set_fixed_height(kTrayPopupItemHeight);
   container->AddCheckableLabel(text, style, checked);
   scroll_content()->AddChildView(container);
   return container;

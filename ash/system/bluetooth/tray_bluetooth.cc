@@ -221,7 +221,6 @@ class BluetoothDetailedView : public TrayDetailsView,
                                         bool checked,
                                         bool enabled) {
     HoverHighlightView* container = new HoverHighlightView(this);
-    container->set_fixed_height(kTrayPopupItemHeight);
     views::Label* label = container->AddCheckableLabel(text, style, checked);
     label->SetEnabled(enabled);
     scroll_content()->AddChildView(container);
@@ -240,7 +239,6 @@ class BluetoothDetailedView : public TrayDetailsView,
         ash::Shell::GetInstance()->system_tray_delegate();
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     HoverHighlightView* container = new HoverHighlightView(this);
-    container->set_fixed_height(kTrayPopupItemHeight);
     container->AddLabel(
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BLUETOOTH_ADD_DEVICE),
         gfx::Font::NORMAL);
