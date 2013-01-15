@@ -182,6 +182,12 @@ Chrome supports. -->
         <message name="IDS_SHORTCUT_NEW_WINDOW" desc="The text label of the New window shortcut context menu entry as of Windows 8">
           New window
         </message>
+        <message name="IDS_MISSING_WINDOWS_SYSTEM_FILES_TITLE" desc="Title string on an error dialog to notify that the system is missing some Windows system files">
+          Windows error detected
+        </message>
+        <message name="IDS_MISSING_WINDOWS_SYSTEM_FILES_MESSAGE" desc="Warning message on an error dialog to notify that the system is missing some Windows system files">
+          Your computer is missing some important Windows system files, so Chrome will be unable to function correctly.
+        </message>
       </if>
       <message name="IDS_INSTANT_OPT_IN_TITLE" desc="Title of the instant confirm dialog">
         Google Chrome Instant

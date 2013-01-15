@@ -1629,6 +1629,8 @@
         'browser/ui/views/login_prompt_views.cc',
         'browser/ui/views/login_view.cc',
         'browser/ui/views/login_view.h',
+        'browser/ui/views/missing_system_file_dialog_win.cc',
+        'browser/ui/views/missing_system_file_dialog_win.h',
         'browser/ui/views/native_constrained_window_aura.cc',
         'browser/ui/views/native_constrained_window_win.cc',
         'browser/ui/views/notifications/balloon_collection_views.cc',
