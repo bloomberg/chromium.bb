@@ -29,6 +29,8 @@ namespace cc {
 
 static inline SkPaint createPaint()
 {
+    SkPaint paint;
+#if (SK_R32_SHIFT || SK_B32_SHIFT != 16)
     // The SkCanvas is in RGBA but the shader is expecting BGRA, so we need to
     // swizzle our colors when drawing to the SkCanvas.
     SkColorMatrix swizzleMatrix;
@@ -39,11 +41,10 @@ static inline SkPaint createPaint()
     swizzleMatrix.fMat[2 + 5 * 0] = 1;
     swizzleMatrix.fMat[3 + 5 * 3] = 1;
 
-    SkPaint paint;
     skia::RefPtr<SkColorMatrixFilter> filter =
         skia::AdoptRef(new SkColorMatrixFilter(swizzleMatrix));
     paint.setColorFilter(filter.get());
-
+#endif
     return paint;
 }
 
