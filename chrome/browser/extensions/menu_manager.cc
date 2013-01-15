@@ -351,7 +351,7 @@ bool MenuManager::AddContextItem(
 
   // If this is the first item for this extension, start loading its icon.
   if (first_item)
-    icon_manager_.LoadIcon(extension);
+    icon_manager_.LoadIcon(profile_, extension);
 
   return true;
 }

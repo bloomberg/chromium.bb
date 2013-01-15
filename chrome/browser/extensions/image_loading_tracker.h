@@ -131,7 +131,6 @@ class ImageLoadingTracker : public content::NotificationObserver {
   // usage of this class, so once this list is empty this class can and
   // should be removed.
   friend class CreateChromeApplicationShortcutView;
-  friend class ExtensionIconManager;
   friend class ExtensionInfoBar;
   friend class ExtensionInfoBarGtk;
   friend class InfobarBridge;

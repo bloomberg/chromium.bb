@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/skia_util.h"
@@ -77,10 +78,9 @@ class TestIconManager : public ExtensionIconManager {
   // Implements the ImageLoadingTracker::Observer interface, and calls through
   // to the base class' implementation. Then it lets the test know that an
   // image load was observed.
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE {
-    ExtensionIconManager::OnImageLoaded(image, extension_id, index);
+  virtual void OnImageLoaded(const std::string& extension_id,
+                             const gfx::Image& image) OVERRIDE {
+    ExtensionIconManager::OnImageLoaded(extension_id, image);
     test_->ImageLoadObserved();
   }
 
@@ -101,6 +101,7 @@ SkBitmap GetDefaultIcon() {
 
 // Tests loading an icon for an extension, removing it, then re-loading it.
 TEST_F(ExtensionIconManagerTest, LoadRemoveLoad) {
+  scoped_ptr<Profile> profile(new TestingProfile());
   SkBitmap default_icon = GetDefaultIcon();
 
   FilePath test_dir;
@@ -121,7 +122,7 @@ TEST_F(ExtensionIconManagerTest, LoadRemoveLoad) {
   TestIconManager icon_manager(this);
 
   // Load the icon and grab the bitmap.
-  icon_manager.LoadIcon(extension.get());
+  icon_manager.LoadIcon(profile.get(), extension.get());
   WaitForImageLoad();
   SkBitmap first_icon = icon_manager.GetIcon(extension->id());
   EXPECT_FALSE(gfx::BitmapsAreEqual(first_icon, default_icon));
@@ -131,7 +132,7 @@ TEST_F(ExtensionIconManagerTest, LoadRemoveLoad) {
 
   // Now re-load the icon - we should get the same result bitmap (and not the
   // default icon).
-  icon_manager.LoadIcon(extension.get());
+  icon_manager.LoadIcon(profile.get(), extension.get());
   WaitForImageLoad();
   SkBitmap second_icon = icon_manager.GetIcon(extension->id());
   EXPECT_FALSE(gfx::BitmapsAreEqual(second_icon, default_icon));
@@ -160,9 +161,10 @@ TEST_F(ExtensionIconManagerTest, LoadComponentExtensionResource) {
       Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension.get());
 
+  scoped_ptr<Profile> profile(new TestingProfile());
   TestIconManager icon_manager(this);
   // Load the icon and grab the bitmap.
-  icon_manager.LoadIcon(extension.get());
+  icon_manager.LoadIcon(profile.get(), extension.get());
   WaitForImageLoad();
   SkBitmap first_icon = icon_manager.GetIcon(extension->id());
   EXPECT_FALSE(gfx::BitmapsAreEqual(first_icon, default_icon));
@@ -172,7 +174,7 @@ TEST_F(ExtensionIconManagerTest, LoadComponentExtensionResource) {
 
   // Now re-load the icon - we should get the same result bitmap (and not the
   // default icon).
-  icon_manager.LoadIcon(extension.get());
+  icon_manager.LoadIcon(profile.get(), extension.get());
   WaitForImageLoad();
   SkBitmap second_icon = icon_manager.GetIcon(extension->id());
   EXPECT_FALSE(gfx::BitmapsAreEqual(second_icon, default_icon));

@@ -113,6 +113,8 @@ class OmniboxAPI : public ProfileKeyedAPI,
   }
   static const bool kServiceRedirectedInIncognito = true;
 
+  Profile* profile_;
+
   TemplateURLService* url_service_;
 
   // List of extensions waiting for the TemplateURLService to Load to

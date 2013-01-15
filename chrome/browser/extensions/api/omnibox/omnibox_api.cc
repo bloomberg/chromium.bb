@@ -129,7 +129,8 @@ void ExtensionOmniboxEventRouter::OnInputCancelled(
 }
 
 OmniboxAPI::OmniboxAPI(Profile* profile)
-    : url_service_(TemplateURLServiceFactory::GetForProfile(profile)) {
+    : profile_(profile),
+      url_service_(TemplateURLServiceFactory::GetForProfile(profile)) {
   ManifestHandler::Register(extension_manifest_keys::kOmnibox,
                             new OmniboxHandler);
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
@@ -173,8 +174,8 @@ void OmniboxAPI::Observe(int type,
     const std::string& keyword = OmniboxInfo::GetKeyword(extension);
     if (!keyword.empty()) {
       // Load the omnibox icon so it will be ready to display in the URL bar.
-      omnibox_popup_icon_manager_.LoadIcon(extension);
-      omnibox_icon_manager_.LoadIcon(extension);
+      omnibox_popup_icon_manager_.LoadIcon(profile_, extension);
+      omnibox_icon_manager_.LoadIcon(profile_, extension);
 
       if (url_service_) {
         url_service_->Load();

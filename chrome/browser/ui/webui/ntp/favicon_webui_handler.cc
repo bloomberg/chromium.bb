@@ -53,10 +53,9 @@ class ExtensionIconColorManager : public ExtensionIconManager {
         handler_(handler) {}
   virtual ~ExtensionIconColorManager() {}
 
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE {
-    ExtensionIconManager::OnImageLoaded(image, extension_id, index);
+  virtual void OnImageLoaded(const std::string& extension_id,
+                             const gfx::Image& image) OVERRIDE {
+    ExtensionIconManager::OnImageLoaded(extension_id, image);
     handler_->NotifyAppIconReady(extension_id);
   }
 
@@ -152,7 +151,7 @@ void FaviconWebUIHandler::HandleGetAppIconDominantColor(
       extension_id, false);
   if (!extension)
     return;
-  app_icon_color_manager_->LoadIcon(extension);
+  app_icon_color_manager_->LoadIcon(extension_service->profile(), extension);
 }
 
 void FaviconWebUIHandler::NotifyAppIconReady(const std::string& extension_id) {
