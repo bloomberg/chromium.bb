@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "base/compiler_specific.h"
 #include "webkit/media/crypto/ppapi/cdm/content_decryption_module.h"
@@ -15,8 +16,17 @@
 struct AVCodecContext;
 struct AVFrame;
 
+namespace media {
+class AudioBus;
+class AudioTimestampHelper;
+}
+
 namespace webkit_media {
 
+// TODO(xhwang): This class is partially cloned from media::FFmpegAudioDecoder.
+// When media::FFmpegAudioDecoder is updated, it's a pain to keep this class
+// in sync with media::FFmpegAudioDecoder. We need a long term sustainable
+// solution for this. See http://crbug.com/169203
 class FFmpegCdmAudioDecoder {
  public:
   explicit FFmpegCdmAudioDecoder(cdm::Allocator* allocator);
@@ -38,7 +48,7 @@ class FFmpegCdmAudioDecoder {
                            cdm::AudioFrames* decoded_frames);
 
  private:
-  void ResetAudioTimingData();
+  void ResetTimestampState();
   void ReleaseFFmpegResources();
 
   base::TimeDelta GetNextOutputTimestamp() const;
@@ -58,10 +68,13 @@ class FFmpegCdmAudioDecoder {
   int samples_per_second_;
 
   // Used for computing output timestamps.
+  scoped_ptr<media::AudioTimestampHelper> output_timestamp_helper_;
   int bytes_per_frame_;
-  base::TimeDelta output_timestamp_base_;
-  int64_t total_frames_decoded_;
   base::TimeDelta last_input_timestamp_;
+
+  // We may need to convert the audio data coming out of FFmpeg from planar
+  // float to integer.
+  scoped_ptr<media::AudioBus> converter_bus_;
 
   // Number of output sample bytes to drop before generating output buffers.
   // This is required for handling negative timestamps when decoding Vorbis

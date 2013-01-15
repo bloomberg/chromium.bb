@@ -26,6 +26,13 @@ class Decryptor;
 // that no locks are required for thread safety.
 class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
  public:
+  // We do not currently have a way to let the Decryptor choose the output
+  // audio sample format and notify us of its choice. Therefore, we require all
+  // Decryptor implementations to decode audio into a fixed integer sample
+  // format designated by kSupportedBitsPerChannel.
+  // TODO(xhwang): Remove this restriction after http://crbug.com/169105 fixed.
+  static const int kSupportedBitsPerChannel;
+
   DecryptingAudioDecoder(
       const scoped_refptr<base::MessageLoopProxy>& message_loop,
       const SetDecryptorReadyCB& set_decryptor_ready_cb);

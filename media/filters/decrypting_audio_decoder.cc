@@ -25,6 +25,8 @@ namespace media {
 #define BIND_TO_LOOP(function) \
     media::BindToLoop(message_loop_, base::Bind(function, this))
 
+const int DecryptingAudioDecoder::kSupportedBitsPerChannel = 16;
+
 static inline bool IsOutOfSync(const base::TimeDelta& timestamp_1,
                                const base::TimeDelta& timestamp_2) {
   // Out of sync of 100ms would be pretty noticeable and we should keep any
@@ -170,8 +172,17 @@ void DecryptingAudioDecoder::SetDecryptor(Decryptor* decryptor) {
   set_decryptor_ready_cb_.Reset();
   decryptor_ = decryptor;
 
+  const AudioDecoderConfig& input_config =
+      demuxer_stream_->audio_decoder_config();
   scoped_ptr<AudioDecoderConfig> scoped_config(new AudioDecoderConfig());
-  scoped_config->CopyFrom(demuxer_stream_->audio_decoder_config());
+  scoped_config->Initialize(input_config.codec(),
+                            kSampleFormatS16,
+                            input_config.channel_layout(),
+                            input_config.samples_per_second(),
+                            input_config.extra_data(),
+                            input_config.extra_data_size(),
+                            input_config.is_encrypted(),
+                            false);
 
   state_ = kPendingDecoderInit;
   decryptor_->InitializeAudioDecoder(
@@ -281,8 +292,17 @@ void DecryptingAudioDecoder::DoDecryptAndDecodeBuffer(
   if (status == DemuxerStream::kConfigChanged) {
     DVLOG(2) << "DoDecryptAndDecodeBuffer() - kConfigChanged";
 
-    scoped_ptr<AudioDecoderConfig> scoped_config(new AudioDecoderConfig());
-    scoped_config->CopyFrom(demuxer_stream_->audio_decoder_config());
+  const AudioDecoderConfig& input_config =
+      demuxer_stream_->audio_decoder_config();
+  scoped_ptr<AudioDecoderConfig> scoped_config(new AudioDecoderConfig());
+  scoped_config->Initialize(input_config.codec(),
+                            kSampleFormatS16,
+                            input_config.channel_layout(),
+                            input_config.samples_per_second(),
+                            input_config.extra_data(),
+                            input_config.extra_data_size(),
+                            input_config.is_encrypted(),
+                            false);
 
     state_ = kPendingConfigChange;
     decryptor_->DeinitializeDecoder(Decryptor::kAudio);
@@ -445,7 +465,7 @@ void DecryptingAudioDecoder::DoReset() {
 
 void DecryptingAudioDecoder::UpdateDecoderConfig() {
   const AudioDecoderConfig& config = demuxer_stream_->audio_decoder_config();
-  bits_per_channel_ = config.bits_per_channel();
+  bits_per_channel_ = kSupportedBitsPerChannel;
   channel_layout_ = config.channel_layout();
   samples_per_second_ = config.samples_per_second();
   const int kBitsPerByte = 8;

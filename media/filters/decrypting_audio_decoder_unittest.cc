@@ -114,7 +114,8 @@ class DecryptingAudioDecoderTest : public testing::Test {
                        CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, true, true);
     InitializeAndExpectStatus(config_, PIPELINE_OK);
 
-    EXPECT_EQ(config_.bits_per_channel(), decoder_->bits_per_channel());
+    EXPECT_EQ(DecryptingAudioDecoder::kSupportedBitsPerChannel,
+              decoder_->bits_per_channel());
     EXPECT_EQ(config_.channel_layout(), decoder_->channel_layout());
     EXPECT_EQ(config_.samples_per_second(), decoder_->samples_per_second());
   }

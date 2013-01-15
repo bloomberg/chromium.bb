@@ -174,6 +174,8 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/media/media.gyp:media',
+        # Include the following for media::AudioBus.
+        '<(DEPTH)/media/media.gyp:shared_memory_support',
       ],
       'sources': [
         'crypto/ppapi/cdm_video_decoder.cc',
