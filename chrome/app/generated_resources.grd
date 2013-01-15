@@ -9351,7 +9351,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
 
       <message name="IDS_ERRORPAGES_TITLE_NOT_AVAILABLE" desc="Title of the error page when we can't connect to a site.">
-        <ph name="SITE">$1<ex>google.xom</ex></ph> is not available
+        <ph name="SITE">$1<ex>google.com</ex></ph> is not available
       </message>
       <message name="IDS_ERRORPAGES_TITLE_ACCESS_DENIED" desc="Title in the error page when a server returns a 403.  Also suitable for similar error codes.">
         Access to <ph name="URL">$1<ex>http://www.google.com/foo/bar</ex></ph> denied.
@@ -9418,6 +9418,11 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         The connection to
         <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>
         was interrupted.
+      </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_CHANGED" desc="Summary in the error page when the connection failed because the network has changed.">
+        The connection to
+        <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>
+        was interrupted by a change in the network connection.
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_CONNECTION_REFUSED" desc="Summary in the error page when we try and connect to a server, but the server doesn't let us.">
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>'s
@@ -9633,6 +9638,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_CONNECTION_FAILED" desc="The error message displayed when we can not reach the website.">
         The attempt to connect to the server failed.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_NETWORK_CHANGED" desc="The error message displayed when a connection is interrupted because the network changed.">
+        A network change was detected.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_NAME_NOT_RESOLVED" desc="The error message displayed when a dns look up fails.">
         Unable to resolve the server's DNS address.
