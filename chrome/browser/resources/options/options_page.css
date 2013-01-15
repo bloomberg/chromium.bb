@@ -477,13 +477,29 @@ html:not([enablePepperFlashSettings]) .pepper-flash-settings {
   padding: 0;
 }
 
+.controlled-setting-indicator {
+  display: none;
+}
+
 input:-webkit-any([type='text'],[type='url'],:not([type])) +
     .controlled-setting-indicator {
   -webkit-margin-start: 5px;
 }
 
-.controlled-setting-indicator:not([controlled-by]) {
-  display: none;
+.controlled-setting-indicator[controlled-by] {
+  display: inline-block;
+  height: 0;
+  line-height: 1;
+  vertical-align: middle;
+  width: 16px;
+}
+
+.controlled-setting-indicator[controlled-by] > div {
+  background-size: 16px;
+  height: 16px;
+  position: relative;
+  top: -8px;
+  width: 16px;
 }
 
 .controlled-setting-indicator[controlled-by='policy'] > div {
