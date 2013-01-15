@@ -733,11 +733,14 @@ class NinjaWriter:
       cflags_c = self.msvs_settings.GetCflagsC(config_name)
       cflags_cc = self.msvs_settings.GetCflagsCC(config_name)
       extra_defines = self.msvs_settings.GetComputedDefines(config_name)
-      obj = 'obj'
-      if self.toolset != 'target':
-        obj += '.' + self.toolset
-      pdbpath = os.path.normpath(os.path.join(obj, self.base_dir,
-                                              self.name + '.pdb'))
+      pdbpath = self.msvs_settings.GetCompilerPdbName(
+          config_name, self.ExpandSpecial)
+      if not pdbpath:
+        obj = 'obj'
+        if self.toolset != 'target':
+          obj += '.' + self.toolset
+        pdbpath = os.path.normpath(os.path.join(obj, self.base_dir,
+                                                self.name + '.pdb'))
       self.WriteVariableList('pdbname', [pdbpath])
       self.WriteVariableList('pchprefix', [self.name])
     else:

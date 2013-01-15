@@ -279,6 +279,16 @@ class MsvsSettings(object):
         ('VCCLCompilerTool', 'PreprocessorDefinitions'), config, default=[]))
     return defines
 
+  def GetCompilerPdbName(self, config, expand_special):
+    """Get the pdb file name that should be used for compiler invocations, or
+    None if there's no explicit name specified."""
+    config = self._TargetConfig(config)
+    pdbname = self._Setting(
+        ('VCCLCompilerTool', 'ProgramDataBaseFileName'), config)
+    if pdbname:
+      pdbname = expand_special(self.ConvertVSMacros(pdbname))
+    return pdbname
+
   def GetOutputName(self, config, expand_special):
     """Gets the explicitly overridden output name for a target or returns None
     if it's not overridden."""
