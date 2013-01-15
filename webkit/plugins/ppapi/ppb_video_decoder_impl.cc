@@ -139,6 +139,7 @@ int32_t PPB_VideoDecoder_Impl::Decode(
     return PP_ERROR_FAILED;
 
   PPB_Buffer_Impl* buffer = static_cast<PPB_Buffer_Impl*>(enter.object());
+  DCHECK_GE(bitstream_buffer->id, 0);
   media::BitstreamBuffer decode_buffer(
       bitstream_buffer->id,
       buffer->shared_memory()->handle(),
@@ -160,6 +161,7 @@ void PPB_VideoDecoder_Impl::AssignPictureBuffers(
   std::vector<media::PictureBuffer> wrapped_buffers;
   for (uint32 i = 0; i < no_of_buffers; i++) {
     PP_PictureBuffer_Dev in_buf = buffers[i];
+    DCHECK_GE(in_buf.id, 0);
     media::PictureBuffer buffer(
         in_buf.id,
         gfx::Size(in_buf.size.width, in_buf.size.height),

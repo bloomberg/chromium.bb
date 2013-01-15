@@ -603,7 +603,9 @@ void GLRenderingVDAClient::DecodeNextFragments() {
   base::SharedMemoryHandle dup_handle;
   CHECK(shm.ShareToProcess(base::Process::Current().handle(), &dup_handle));
   media::BitstreamBuffer bitstream_buffer(
-      next_bitstream_buffer_id_++, dup_handle, next_fragment_size);
+      next_bitstream_buffer_id_, dup_handle, next_fragment_size);
+  // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
+  next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x3FFFFFFF;
   decoder_->Decode(bitstream_buffer);
   ++outstanding_decodes_;
   encoded_data_next_pos_to_decode_ = end_pos;

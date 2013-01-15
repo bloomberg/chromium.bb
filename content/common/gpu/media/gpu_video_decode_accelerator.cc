@@ -205,6 +205,11 @@ void GpuVideoDecodeAccelerator::Initialize(
 void GpuVideoDecodeAccelerator::OnDecode(
     base::SharedMemoryHandle handle, int32 id, uint32 size) {
   DCHECK(video_decode_accelerator_.get());
+  if (id < 0) {
+    DLOG(FATAL) << "BitstreamBuffer id " << id << " out of range";
+    NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
+    return;
+  }
   video_decode_accelerator_->Decode(media::BitstreamBuffer(id, handle, size));
 }
 
@@ -224,6 +229,11 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
 
   std::vector<media::PictureBuffer> buffers;
   for (uint32 i = 0; i < buffer_ids.size(); ++i) {
+    if (buffer_ids[i] < 0) {
+      DLOG(FATAL) << "Buffer id " << buffer_ids[i] << " out of range";
+      NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
+      return;
+    }
     gpu::gles2::TextureManager::TextureInfo* info =
         texture_manager->GetTextureInfo(texture_ids[i]);
     if (!info) {

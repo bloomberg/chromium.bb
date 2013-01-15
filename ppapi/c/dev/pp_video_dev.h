@@ -61,7 +61,8 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VideoDecoder_Profile, 4);
  */
 struct PP_VideoBitstreamBuffer_Dev {
   /**
-   * Client-specified identifier for the bitstream buffer.
+   * Client-specified identifier for the bitstream buffer. Valid values are
+   * non-negative.
    */
   int32_t id;
   /**
@@ -83,7 +84,7 @@ struct PP_PictureBuffer_Dev {
   /**
    * Client-specified id for the picture buffer. By using this value client can
    * keep track of the buffers it has assigned to the video decoder and how they
-   * are passed back to it.
+   * are passed back to it. Valid values are non-negative.
    */
   int32_t id;
   /**

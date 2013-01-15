@@ -218,8 +218,8 @@ class MEDIA_EXPORT GpuVideoDecoder
   // picture_buffer_id and the frame wrapping the corresponding Picture, for
   // frames that have been decoded but haven't been requested by a Read() yet.
   std::list<scoped_refptr<VideoFrame> > ready_video_frames_;
-  int64 next_picture_buffer_id_;
-  int64 next_bitstream_buffer_id_;
+  int32 next_picture_buffer_id_;
+  int32 next_bitstream_buffer_id_;
 
   // Indicates decoding error occurred.
   bool error_occured_;

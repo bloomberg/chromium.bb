@@ -284,7 +284,9 @@ void GpuVideoDecoder::RequestBufferDecode(
   SHMBuffer* shm_buffer = GetSHM(size);
   memcpy(shm_buffer->shm->memory(), buffer->GetData(), size);
   BitstreamBuffer bitstream_buffer(
-      next_bitstream_buffer_id_++, shm_buffer->shm->handle(), size);
+      next_bitstream_buffer_id_, shm_buffer->shm->handle(), size);
+  // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
+  next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x3FFFFFFF;
   bool inserted = bitstream_buffers_in_decoder_.insert(std::make_pair(
       bitstream_buffer.id(), BufferPair(shm_buffer, buffer))).second;
   DCHECK(inserted);
