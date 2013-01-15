@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/panels/taskbar_window_thumbnailer_win.h"
+#include "chrome/browser/ui/views/panels/taskbar_window_thumbnailer_win.h"
 
 #include <dwmapi.h>
 

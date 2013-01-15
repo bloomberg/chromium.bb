@@ -28,7 +28,7 @@
 #if defined(OS_WIN) && !defined(USE_ASH) && !defined(USE_AURA)
 #include "base/win/windows_version.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/ui/panels/taskbar_window_thumbnailer_win.h"
+#include "chrome/browser/ui/views/panels/taskbar_window_thumbnailer_win.h"
 #include "ui/base/win/shell.h"
 #include "ui/gfx/icon_util.h"
 #endif

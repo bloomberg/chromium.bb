@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PANELS_TASKBAR_WINDOW_THUMBNAILER_WIN_H_
-#define CHROME_BROWSER_UI_PANELS_TASKBAR_WINDOW_THUMBNAILER_WIN_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PANELS_TASKBAR_WINDOW_THUMBNAILER_WIN_H_
+#define CHROME_BROWSER_UI_VIEWS_PANELS_TASKBAR_WINDOW_THUMBNAILER_WIN_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/win/hwnd_subclass.h"
@@ -43,4 +43,4 @@ class TaskbarWindowThumbnailerWin : public ui::HWNDMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(TaskbarWindowThumbnailerWin);
 };
 
-#endif  // CHROME_BROWSER_UI_PANELS_TASKBAR_WINDOW_THUMBNAILER_WIN_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PANELS_TASKBAR_WINDOW_THUMBNAILER_WIN_H_
