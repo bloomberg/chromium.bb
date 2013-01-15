@@ -321,19 +321,21 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
 
   // The "report error" and "show diagnostic" commands can have a number
   // appended to them, which is the index of the element they apply to.
-  int element_index = 0;
+  size_t element_index = 0;
   size_t colon_index = command.find(':');
   if (colon_index != std::string::npos) {
     DCHECK(colon_index < command.size() - 1);
+    int result_int = 0;
     bool result = base::StringToInt(base::StringPiece(command.begin() +
                                                       colon_index + 1,
                                                       command.end()),
-                                    &element_index);
+                                    &result_int);
     command = command.substr(0, colon_index);
-    DCHECK(result);
+    if (result)
+      element_index = static_cast<size_t>(result_int);
   }
 
-  if (element_index >= static_cast<int>(unsafe_resources_.size())) {
+  if (element_index >= unsafe_resources_.size()) {
     NOTREACHED();
     return;
   }
