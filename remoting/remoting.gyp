@@ -1772,7 +1772,7 @@
       'type': 'none',
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)',
-        'grit_resource_ids': 'resource_ids',
+        'grit_resource_ids': 'resources/resource_ids',
         'sources': [
           'base/resources_unittest.cc',
           'host/plugin/host_script_object.cc',
