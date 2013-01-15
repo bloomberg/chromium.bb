@@ -11,7 +11,7 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-// Next tag: 13
+// Next tag: 12
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -73,6 +73,7 @@ message SystemProfileProto {
   }
   optional OS os = 5;
 
+  // Next tag for Hardware: 13
   // Information on the user's hardware.
   message Hardware {
     // The CPU architecture (x86, PowerPC, x86_64, ...)
@@ -105,6 +106,10 @@ message SystemProfileProto {
 
     // The device scale factor of the primary screen.
     optional float primary_screen_scale_factor = 12;
+
+    // Max DPI for any attached screen. (Windows only)
+    optional float max_dpi_x = 9;
+    optional float max_dpi_y = 10;
 
     // Information on the GPU
     message Graphics {

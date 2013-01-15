@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metrics/metrics_log.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -262,6 +263,44 @@ void ProductDataToProto(const GoogleUpdateSettings::ProductData& product_data,
   }
 }
 #endif
+
+#if defined(OS_WIN)
+struct ScreenDPIInformation{
+  double max_dpi_x;
+  double max_dpi_y;
+};
+
+// Called once for each connected monitor.
+BOOL CALLBACK GetMonitorDPICallback(HMONITOR, HDC hdc, LPRECT, LPARAM dwData) {
+  const double kMillimetersPerInch = 25.4;
+  ScreenDPIInformation* screen_info =
+      reinterpret_cast<ScreenDPIInformation*>(dwData);
+  // Size of screen, in mm.
+  DWORD size_x = GetDeviceCaps(hdc, HORZSIZE);
+  DWORD size_y = GetDeviceCaps(hdc, VERTSIZE);
+  double dpi_x = (size_x > 0) ?
+      GetDeviceCaps(hdc, HORZRES) / (size_x / kMillimetersPerInch) : 0;
+  double dpi_y = (size_y > 0) ?
+      GetDeviceCaps(hdc, VERTRES) / (size_y / kMillimetersPerInch) : 0;
+  screen_info->max_dpi_x = std::max(dpi_x, screen_info->max_dpi_x);
+  screen_info->max_dpi_y = std::max(dpi_y, screen_info->max_dpi_y);
+  return TRUE;
+}
+
+void WriteScreenDPIInformationProto(SystemProfileProto::Hardware* hardware) {
+  HDC desktop_dc = GetDC(NULL);
+  if (desktop_dc) {
+    ScreenDPIInformation si = {0,0};
+    if (EnumDisplayMonitors(desktop_dc, NULL, GetMonitorDPICallback,
+            reinterpret_cast<LPARAM>(&si))) {
+      hardware->set_max_dpi_x(si.max_dpi_x);
+      hardware->set_max_dpi_y(si.max_dpi_y);
+    }
+    ReleaseDC(GetDesktopWindow(), desktop_dc);
+  }
+}
+
+#endif  // defined(OS_WIN)
 
 }  // namespace
 
@@ -813,6 +852,10 @@ void MetricsLog::RecordEnvironmentProto(
   hardware->set_primary_screen_height(display_size.height());
   hardware->set_primary_screen_scale_factor(GetScreenDeviceScaleFactor());
   hardware->set_screen_count(GetScreenCount());
+
+#if defined(OS_WIN)
+  WriteScreenDPIInformationProto(hardware);
+#endif
 
   WriteGoogleUpdateProto(google_update_metrics);
 
