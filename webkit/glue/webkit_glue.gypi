@@ -211,8 +211,6 @@
         '../plugins/ppapi/ppb_buffer_impl.h',
         '../plugins/ppapi/ppb_directory_reader_impl.cc',
         '../plugins/ppapi/ppb_directory_reader_impl.h',
-        '../plugins/ppapi/ppb_file_io_impl.cc',
-        '../plugins/ppapi/ppb_file_io_impl.h',
         '../plugins/ppapi/ppb_file_ref_impl.cc',
         '../plugins/ppapi/ppb_file_ref_impl.h',
         '../plugins/ppapi/ppb_file_system_impl.cc',
