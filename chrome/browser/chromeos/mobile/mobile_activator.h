@@ -13,8 +13,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
+
+class TestMobileActivator;
 
 // Cellular plan config document.
 class CellularConfigDocument
@@ -57,8 +60,6 @@ class MobileActivator
     PLAN_ACTIVATION_START                   = 0,
     // Initial over the air activation attempt.
     PLAN_ACTIVATION_TRYING_OTASP            = 1,
-    // Reconnection after the initial activation attempt.
-    PLAN_ACTIVATION_RECONNECTING_OTASP_TRY  = 2,
     // Performing pre-activation process.
     PLAN_ACTIVATION_INITIATING_ACTIVATION   = 3,
     // Reconnecting to network.
@@ -67,7 +68,7 @@ class MobileActivator
     PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING  = 5,
     // Showing payment portal page.
     PLAN_ACTIVATION_SHOWING_PAYMENT         = 6,
-    // Reconnecting after successful plan payment.
+    // Decides whether to load the portal again or call us done.
     PLAN_ACTIVATION_RECONNECTING_PAYMENT    = 7,
     // Delaying activation until payment portal catches up.
     PLAN_ACTIVATION_DELAY_OTASP             = 8,
@@ -75,8 +76,6 @@ class MobileActivator
     PLAN_ACTIVATION_START_OTASP             = 9,
     // Attempting activation.
     PLAN_ACTIVATION_OTASP                   = 10,
-    // Reconnecting after activation attempt.
-    PLAN_ACTIVATION_RECONNECTING_OTASP      = 11,
     // Finished activation.
     PLAN_ACTIVATION_DONE                    = 12,
     // Error occured during activation process.
@@ -107,7 +106,7 @@ class MobileActivator
   bool RunningActivation() const;
   // Activation state.
   PlanActivationState state() const { return state_; }
-  // Initiates activation process.
+  // Initiates activation process.  Can only be called from the UI thread.
   void InitiateActivation(const std::string& service_path);
   // Terminates activation process if already started.
   void TerminateActivation();
@@ -118,6 +117,14 @@ class MobileActivator
 
  private:
   friend struct DefaultSingletonTraits<MobileActivator>;
+  friend class TestMobileActivator;
+  FRIEND_TEST_ALL_PREFIXES(MobileActivatorTest, BasicFlowForNewDevices);
+  FRIEND_TEST_ALL_PREFIXES(MobileActivatorTest, OTASPScheduling);
+  FRIEND_TEST_ALL_PREFIXES(MobileActivatorTest,
+                           ReconnectOnDisconnectFromPaymentPortal);
+  FRIEND_TEST_ALL_PREFIXES(MobileActivatorTest, StartAtStart);
+  // We reach directly into the activator for testing purposes.
+  friend class MobileActivatorTest;
 
   MobileActivator();
   virtual ~MobileActivator();
@@ -130,49 +137,49 @@ class MobileActivator
 
   // Continue activation after inital setup (config load).
   void ContinueActivation();
-  // Process payment transaction results.
-  void SetTransactionStatus(bool success);
+  // Handles the signal that the payment portal has finished loading.
+  void HandlePortalLoaded(bool success);
+  // Handles the signal that the user has finished with the portal.
+  void HandleSetTransactionStatus(bool success);
   // Starts activation.
   void StartActivation();
-  // Retried OTASP.
+  // Called after we delay our OTASP (after payment).
   void RetryOTASP();
   // Continues activation process. This method is called after we disconnect
   // due to detected connectivity issue to kick off reconnection.
-  void ContinueConnecting(int delay);
+  void ContinueConnecting();
 
   // Sends message to host registration page with system/user info data.
   void SendDeviceInfo();
 
-  // Callback for when |reconnect_timer_| fires.
-  void ReconnectTimerFired();
   // Starts OTASP process.
   void StartOTASP();
-  // Checks if we need to reconnect due to failed connection attempt.
-  bool NeedsReconnecting(CellularNetwork* network,
-                         PlanActivationState* new_state,
-                         std::string* error_description);
-  // Disconnect from network.
-  void DisconnectFromNetwork(CellularNetwork* network);
-  // Connects to cellular network, resets connection timer.
-  bool ConnectToNetwork(CellularNetwork* network, int delay);
+  // Called when an OTASP attempt times out.
+  void HandleOTASPTimeout();
   // Forces disconnect / reconnect when we detect portal connectivity issues.
-  void ForceReconnect(CellularNetwork* network, int delay);
-  // Reports connection timeout.
-  bool ConnectionTimeout();
+  void ForceReconnect(CellularNetwork* network, PlanActivationState next_state);
+  // Called when ForceReconnect takes too long to reconnect.
+  void ReconnectTimedOut();
   // Verify the state of cellular network and modify internal state.
-  void EvaluateCellularNetwork(CellularNetwork* network);
+  virtual void EvaluateCellularNetwork(CellularNetwork* network);
+  // PickNextState selects the desired state based on the current state of the
+  // modem and the activator.  It does not transition to this state however.
+  PlanActivationState PickNextState(CellularNetwork* network,
+                                    std::string* error_description) const;
+  // One of PickNext*State are called in PickNextState based on whether the
+  // modem is online or not.
+  PlanActivationState PickNextOnlineState(CellularNetwork* network) const;
+  PlanActivationState PickNextOfflineState(CellularNetwork* network) const;
   // Check the current cellular network for error conditions.
   bool GotActivationError(CellularNetwork* network,
-                          std::string* error);
+                          std::string* error) const;
   // Sends status updates to WebUI page.
   void UpdatePage(CellularNetwork* network,
                   const std::string& error_description);
   // Changes internal state.
-  void ChangeState(CellularNetwork* network,
-                   PlanActivationState new_state,
-                   const std::string& error_description);
-  // Prepares network devices for cellular activation process.
-  void SetupActivationProcess(CellularNetwork* network);
+  virtual void ChangeState(CellularNetwork* network,
+                           PlanActivationState new_state,
+                           const std::string& error_description);
   // Resets network devices after cellular activation process.
   // |network| should be NULL if the activation process failed.
   void CompleteActivation(CellularNetwork* network);
@@ -183,7 +190,7 @@ class MobileActivator
   // Reenables SSL certificate revocation checking mechanism.
   void ReEnableCertRevocationChecking();
   // Return error message for a given code.
-  std::string GetErrorMessage(const std::string& code);
+  std::string GetErrorMessage(const std::string& code) const;
 
   // Converts the currently active CellularNetwork device into a JS object.
   static void GetDeviceInfo(CellularNetwork* network,
@@ -198,11 +205,14 @@ class MobileActivator
                                           std::string* error);
   // Finds cellular network that matches |meid_| or |iccid_|, reattach network
   // change observer if |reattach_observer| flag is set.
-  CellularNetwork* FindMatchingCellularNetwork(bool reattach_observer);
+  virtual CellularNetwork* FindMatchingCellularNetwork(bool reattach_observer);
+  // Starts the OTASP timeout timer.  If the timer fires, we'll force a
+  // disconnect/reconnect cycle on this network.
+  virtual void StartOTASPTimer();
 
-  // Returns next reconnection state based on the current activation phase.
-  static PlanActivationState GetNextReconnectState(PlanActivationState state);
   static const char* GetStateDescription(PlanActivationState state);
+
+  virtual NetworkLibrary* GetNetworkLibrary() const;
 
   scoped_refptr<CellularConfigDocument> cellular_config_;
   // Internal handler state.
@@ -211,30 +221,32 @@ class MobileActivator
   std::string meid_;
   // ICCID of the SIM card on cellular device to activate.
   std::string iccid_;
-  // Service path of network begin activated. Please note that the path can
-  // change during the activation process even though it is still representing
-  // the same service.
+  // Service path of network being activated. Note that the path can change
+  // during the activation process while still representing the same service.
   std::string service_path_;
   // Flags that controls if cert_checks needs to be restored
   // after the activation of cellular network.
   bool reenable_cert_check_;
-  bool evaluating_;
-  // True if we think that another tab is already running activation.
-  bool already_running_;
-  // True activation process had been terminated.
+  // True if activation process has been terminated.
   bool terminated_;
   // Connection retry counter.
   int connection_retry_count_;
-  // Post payment reconnect wait counters.
-  int reconnect_wait_count_;
+  // Counters for how many times we've tried each OTASP step.
+  int initial_OTASP_attempts_;
+  int trying_OTASP_attempts_;
+  int final_OTASP_attempts_;
   // Payment portal reload/reconnect attempt count.
   int payment_reconnect_count_;
-  // Activation retry attempt count;
-  int activation_attempt_;
-  // Connection start time.
-  base::Time connection_start_time_;
-  // Timer that monitors reconnection timeouts.
-  base::RepeatingTimer<MobileActivator> reconnect_timer_;
+  // Timer that monitors how long we spend in error-prone states.
+  base::RepeatingTimer<MobileActivator> state_duration_timer_;
+
+  // State we will return to if we are disconnected.
+  PlanActivationState post_reconnect_state_;
+  // Called to continue the reconnect attempt.
+  base::RepeatingTimer<MobileActivator> continue_reconnect_timer_;
+  // Called when the reconnect attempt times out.
+  base::OneShotTimer<MobileActivator> reconnect_timeout_timer_;
+
 
   ObserverList<Observer> observers_;
 

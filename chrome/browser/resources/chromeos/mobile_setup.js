@@ -13,7 +13,6 @@ cr.define('mobile', function() {
   MobileSetup.PLAN_ACTIVATION_PAGE_LOADING = -1;
   MobileSetup.PLAN_ACTIVATION_START = 0;
   MobileSetup.PLAN_ACTIVATION_TRYING_OTASP = 1;
-  MobileSetup.PLAN_ACTIVATION_RECONNECTING_OTASP_TRY = 2;
   MobileSetup.PLAN_ACTIVATION_INITIATING_ACTIVATION = 3;
   MobileSetup.PLAN_ACTIVATION_RECONNECTING = 4;
   MobileSetup.PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING = 5;
@@ -22,7 +21,6 @@ cr.define('mobile', function() {
   MobileSetup.PLAN_ACTIVATION_DELAY_OTASP = 8;
   MobileSetup.PLAN_ACTIVATION_START_OTASP = 9;
   MobileSetup.PLAN_ACTIVATION_OTASP = 10;
-  MobileSetup.PLAN_ACTIVATION_RECONNECTING_OTASP = 11;
   MobileSetup.PLAN_ACTIVATION_DONE = 12;
   MobileSetup.PLAN_ACTIVATION_ERROR = 0xFF;
 
@@ -147,8 +145,6 @@ cr.define('mobile', function() {
         case MobileSetup.PLAN_ACTIVATION_START_OTASP:
         case MobileSetup.PLAN_ACTIVATION_RECONNECTING:
         case MobileSetup.PLAN_ACTIVATION_RECONNECTING_PAYMENT:
-        case MobileSetup.PLAN_ACTIVATION_RECONNECTING_OTASP_TRY:
-        case MobileSetup.PLAN_ACTIVATION_RECONNECTING_OTASP:
           $('statusHeader').textContent =
               MobileSetup.localStrings_.getString('connecting_header');
           $('auxHeader').textContent =

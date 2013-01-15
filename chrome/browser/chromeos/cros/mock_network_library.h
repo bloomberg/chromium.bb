@@ -199,6 +199,18 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD2(SetActiveNetwork, bool(ConnectionType, const std::string&));
 };
 
+class MockCellularNetwork : public CellularNetwork {
+ public:
+  explicit MockCellularNetwork(const std::string& service_path);
+  virtual ~MockCellularNetwork();
+
+  MOCK_METHOD0(StartActivation, bool(void));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockCellularNetwork);
+};
+
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROS_MOCK_NETWORK_LIBRARY_H_

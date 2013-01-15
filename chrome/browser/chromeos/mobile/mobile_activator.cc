@@ -41,29 +41,16 @@ const char kCellularConfigPath[] =
 const char kVersionField[] = "version";
 const char kErrorsField[] = "errors";
 
-// Number of times we will retry to restart the activation process in case
-// there is no connectivity in the restricted pool.
-const int kMaxActivationAttempt = 3;
-// Number of times we will retry to reconnect if connection fails.
-const int kMaxConnectionRetry = 10;
+// Number of times we'll try an OTASP before failing the activation process.
+const int kMaxOTASPTries = 3;
 // Number of times we will retry to reconnect and reload payment portal page.
-const int kMaxPortalReconnectCount = 5;
-// Number of times we will retry to reconnect if connection fails.
-const int kMaxConnectionRetryOTASP = 30;
-// Number of times we will retry to reconnect after payment is processed.
-const int kMaxReconnectAttemptOTASP = 30;
-// Reconnect retry delay (after payment is processed).
-const int kPostPaymentReconnectDelayMS = 30000;   // 30s.
-// Connection timeout in seconds.
-const int kConnectionTimeoutSeconds = 45;
-// Reconnect delay.
+const int kMaxPortalReconnectCount = 2;
+// Time between connection attempts when forcing a reconnect.
 const int kReconnectDelayMS = 3000;
-// Reconnect timer delay.
-const int kReconnectTimerDelayMS = 5000;
-// Reconnect delay after previous failure.
-const int kFailedReconnectDelayMS = 10000;
 // Retry delay after failed OTASP attempt.
-const int kOTASPRetryDelay = 20000;
+const int kOTASPRetryDelay = 40000;
+// Maximum amount of time we'll wait for a service to reconnect.
+const int kMaxReconnectTime = 30000;
 
 // Error codes matching codes defined in the cellular config file.
 const char kErrorDefault[] = "default";
@@ -105,12 +92,10 @@ void CellularConfigDocument::LoadCellularConfigFile() {
   if (!file_util::PathExists(config_path))
     return;
 
-  if (LoadFromFile(config_path)) {
+  if (LoadFromFile(config_path))
     DVLOG(1) << "Cellular config file loaded: " << kCellularConfigPath;
-  } else {
-    LOG(ERROR) << "Error loading cellular config file: " <<
-        kCellularConfigPath;
-  }
+  else
+    LOG(ERROR) << "Error loading cellular config file: " << kCellularConfigPath;
 }
 
 CellularConfigDocument::~CellularConfigDocument() {}
@@ -167,12 +152,9 @@ MobileActivator::MobileActivator()
     : cellular_config_(new CellularConfigDocument()),
       state_(PLAN_ACTIVATION_PAGE_LOADING),
       reenable_cert_check_(false),
-      evaluating_(false),
       terminated_(true),
       connection_retry_count_(0),
-      reconnect_wait_count_(0),
-      payment_reconnect_count_(0),
-      activation_attempt_(0) {
+      payment_reconnect_count_(0) {
 }
 
 MobileActivator::~MobileActivator() {
@@ -188,9 +170,11 @@ void MobileActivator::TerminateActivation() {
   if (!CrosLibrary::Get())
     return;
 
-  reconnect_timer_.Stop();
-  NetworkLibrary* lib =
-      CrosLibrary::Get()->GetNetworkLibrary();
+  state_duration_timer_.Stop();
+  continue_reconnect_timer_.Stop();
+  reconnect_timeout_timer_.Stop();
+
+  NetworkLibrary* lib = GetNetworkLibrary();
   lib->RemoveNetworkManagerObserver(this);
   lib->RemoveObserverForAllNetworks(this);
   if (lib->IsLocked())
@@ -200,8 +184,6 @@ void MobileActivator::TerminateActivation() {
   iccid_.clear();
   service_path_.clear();
   state_ = PLAN_ACTIVATION_PAGE_LOADING;
-  reconnect_wait_count_ = 0;
-  evaluating_ = false;
   reenable_cert_check_ = false;
   terminated_ = true;
   // Release the previous cellular config and setup a new empty one.
@@ -229,15 +211,18 @@ void MobileActivator::OnNetworkChanged(NetworkLibrary* cros,
 }
 
 void MobileActivator::AddObserver(MobileActivator::Observer* observer) {
+  DCHECK(content::BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.AddObserver(observer);
 }
 
 void MobileActivator::RemoveObserver(MobileActivator::Observer* observer) {
+  DCHECK(content::BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.RemoveObserver(observer);
 }
 
 void MobileActivator::InitiateActivation(const std::string& service_path) {
-  NetworkLibrary* lib = CrosLibrary::Get()->GetNetworkLibrary();
+  DCHECK(content::BrowserThread::CurrentlyOn(BrowserThread::UI));
+  NetworkLibrary* lib = GetNetworkLibrary();
   CellularNetwork* network = lib->FindCellularNetworkByPath(service_path);
   if (!network) {
     LOG(ERROR) << "Cellular service can't be found: " << service_path;
@@ -262,24 +247,54 @@ void MobileActivator::InitiateActivation(const std::string& service_path) {
 }
 
 void MobileActivator::ContinueActivation() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CellularNetwork* network = FindMatchingCellularNetwork(false);
   if (!network || !network->SupportsActivation())
     return;
 
-  DCHECK(!CrosLibrary::Get()->GetNetworkLibrary()->IsLocked());
-  SetupActivationProcess(network);
+  NetworkLibrary* lib = GetNetworkLibrary();
+
+  DisableCertRevocationChecking();
+  // We want shill to connect us after activations.
+  network->SetAutoConnect(true);
+
+  DCHECK(!lib->IsLocked());
+  lib->Lock();
 
   StartActivation();
 }
 
 void MobileActivator::OnSetTransactionStatus(bool success) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&MobileActivator::SetTransactionStatus,
+      base::Bind(&MobileActivator::HandleSetTransactionStatus,
                  AsWeakPtr(), success));
 }
 
+void MobileActivator::HandleSetTransactionStatus(bool success) {
+  // The payment is received, try to reconnect and check the status all over
+  // again.
+  if (success && state_ == PLAN_ACTIVATION_SHOWING_PAYMENT) {
+    NetworkLibrary* lib = GetNetworkLibrary();
+    lib->SignalCellularPlanPayment();
+    UMA_HISTOGRAM_COUNTS("Cellular.PaymentReceived", 1);
+    CellularNetwork* network = FindMatchingCellularNetwork(true);
+    if (network && network->activate_over_non_cellular_network()) {
+      state_ = PLAN_ACTIVATION_DONE;
+      EvaluateCellularNetwork(network);
+    } else {
+      StartOTASP();
+    }
+  } else {
+    UMA_HISTOGRAM_COUNTS("Cellular.PaymentFailed", 1);
+  }
+}
+
 void MobileActivator::OnPortalLoaded(bool success) {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      base::Bind(&MobileActivator::HandlePortalLoaded,
+                 AsWeakPtr(), success));
+}
+
+void MobileActivator::HandlePortalLoaded(bool success) {
   CellularNetwork* network = FindMatchingCellularNetwork(true);
   if (!network) {
     ChangeState(NULL, PLAN_ACTIVATION_ERROR,
@@ -298,9 +313,11 @@ void MobileActivator::OnPortalLoaded(bool success) {
                     GetErrorMessage(kErrorNoService));
         return;
       }
-      // Disconnect now, this should force reconnection and we will retry to
-      // load the frame containing payment portal again.
-      DisconnectFromNetwork(network);
+
+      // Reconnect and try and load the frame again.
+      ChangeState(network,
+                  PLAN_ACTIVATION_RECONNECTING,
+                  GetErrorMessage(kFailedPaymentError));
     }
   } else {
     NOTREACHED() << "Called paymentPortalLoad while in unexpected state: "
@@ -310,7 +327,7 @@ void MobileActivator::OnPortalLoaded(bool success) {
 
 CellularNetwork* MobileActivator::FindMatchingCellularNetwork(
     bool reattach_observer) {
-  NetworkLibrary* lib = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* lib = GetNetworkLibrary();
   for (CellularNetworkVector::const_iterator it =
            lib->cellular_networks().begin();
        it != lib->cellular_networks().end(); ++it) {
@@ -332,10 +349,16 @@ CellularNetwork* MobileActivator::FindMatchingCellularNetwork(
   return NULL;
 }
 
+void MobileActivator::StartOTASPTimer() {
+  state_duration_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kOTASPRetryDelay),
+      this, &MobileActivator::HandleOTASPTimeout);
+}
+
 void MobileActivator::StartActivation() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UMA_HISTOGRAM_COUNTS("Cellular.MobileSetupStart", 1);
-  NetworkLibrary* lib = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* lib = GetNetworkLibrary();
   CellularNetwork* network = FindMatchingCellularNetwork(true);
   // Check if we can start activation process.
   if (!network) {
@@ -352,9 +375,6 @@ void MobileActivator::StartActivation() {
 
   // Start monitoring network property changes.
   lib->AddNetworkManagerObserver(this);
-  lib->RemoveObserverForAllNetworks(this);
-  lib->AddNetworkObserver(network->service_path(), this);
-
   if (network->activate_over_non_cellular_network()) {
     // Fast forward to payment portal loading if the activation is performed
     // over a non-cellular network.
@@ -363,241 +383,263 @@ void MobileActivator::StartActivation() {
                 PLAN_ACTIVATION_DONE :
                 PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING,
                 "");
-  } else {
+  } else if (lib->HasRecentCellularPlanPayment() &&
+             network->activation_state() ==
+                 ACTIVATION_STATE_PARTIALLY_ACTIVATED) {
     // Try to start with OTASP immediately if we have received payment recently.
-    state_ = lib->HasRecentCellularPlanPayment() ?
-                 PLAN_ACTIVATION_START_OTASP :
-                 PLAN_ACTIVATION_START;
+    state_ = PLAN_ACTIVATION_START_OTASP;
+  } else {
+    state_ =  PLAN_ACTIVATION_START;
   }
+
   EvaluateCellularNetwork(network);
 }
 
 void MobileActivator::RetryOTASP() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(state_ == PLAN_ACTIVATION_DELAY_OTASP);
   StartOTASP();
 }
 
-void MobileActivator::ContinueConnecting(int delay) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CellularNetwork* network = FindMatchingCellularNetwork(true);
-  if (network && network->connecting_or_connected()) {
-    EvaluateCellularNetwork(network);
-  } else {
-    ConnectToNetwork(network, delay);
-  }
-}
-
-void MobileActivator::SetTransactionStatus(bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // The payment is received, try to reconnect and check the status all over
-  // again.
-  if (success && state_ == PLAN_ACTIVATION_SHOWING_PAYMENT) {
-    NetworkLibrary* lib = CrosLibrary::Get()->GetNetworkLibrary();
-    lib->SignalCellularPlanPayment();
-    UMA_HISTOGRAM_COUNTS("Cellular.PaymentReceived", 1);
-
-    CellularNetwork* network = FindMatchingCellularNetwork(true);
-    if (network && network->activate_over_non_cellular_network()) {
-      state_ = PLAN_ACTIVATION_DONE;
-      EvaluateCellularNetwork(network);
-    } else {
-      StartOTASP();
-    }
-  } else {
-    UMA_HISTOGRAM_COUNTS("Cellular.PaymentFailed", 1);
-  }
-}
-
 void MobileActivator::StartOTASP() {
-  state_ = PLAN_ACTIVATION_START_OTASP;
   CellularNetwork* network = FindMatchingCellularNetwork(true);
-  if (network &&
-      network->connected() &&
-      network->activation_state() == ACTIVATION_STATE_ACTIVATED) {
-    CrosLibrary::Get()->GetNetworkLibrary()->DisconnectFromNetwork(network);
-  } else {
-    EvaluateCellularNetwork(network);
-  }
-}
-
-void MobileActivator::ReconnectTimerFired() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Permit network connection changes only in reconnecting states.
-  if (state_ != PLAN_ACTIVATION_RECONNECTING_OTASP_TRY &&
-      state_ != PLAN_ACTIVATION_RECONNECTING &&
-      state_ != PLAN_ACTIVATION_RECONNECTING_PAYMENT &&
-      state_ != PLAN_ACTIVATION_RECONNECTING_OTASP)
-    return;
-  CellularNetwork* network = FindMatchingCellularNetwork(true);
-  if (!network) {
-    // No service, try again since this is probably just transient condition.
-    LOG(WARNING) << "Service not present at reconnect attempt.";
-  }
+  ChangeState(network, PLAN_ACTIVATION_START_OTASP, std::string());
   EvaluateCellularNetwork(network);
 }
 
-void MobileActivator::DisconnectFromNetwork(CellularNetwork* network) {
-  DCHECK(network);
-  LOG(INFO) << "Disconnecting from: " << network->service_path();
-  CrosLibrary::Get()->GetNetworkLibrary()->DisconnectFromNetwork(network);
-  // Disconnect will force networks to be reevaluated, so
-  // we don't want to continue processing on this path anymore.
-  evaluating_ = false;
-}
-
-bool MobileActivator::NeedsReconnecting(CellularNetwork* network,
-                                        PlanActivationState* new_state,
-                                        std::string* error_description) {
-  DCHECK(network);
-  if (!network->failed() && !ConnectionTimeout())
-    return false;
-
-  // Try to reconnect again if reconnect failed, or if for some
-  // reasons we are still not connected after 45 seconds.
-  int max_retries = (state_ == PLAN_ACTIVATION_RECONNECTING_OTASP) ?
-                        kMaxConnectionRetryOTASP : kMaxConnectionRetry;
-  if (connection_retry_count_ < max_retries) {
-    UMA_HISTOGRAM_COUNTS("Cellular.ConnectionRetry", 1);
-    ConnectToNetwork(network, kFailedReconnectDelayMS);
-    return true;
+void MobileActivator::HandleOTASPTimeout() {
+  LOG(WARNING) << "OTASP seems to be taking too long.";
+  CellularNetwork* network = FindMatchingCellularNetwork(true);
+  // We're here because one of OTASP steps is taking too long to complete.
+  // Usually, this means something bad has happened below us.
+  if (state_ == PLAN_ACTIVATION_INITIATING_ACTIVATION) {
+    ++initial_OTASP_attempts_;
+    if (initial_OTASP_attempts_ <= kMaxOTASPTries) {
+      ChangeState(network,
+                  PLAN_ACTIVATION_RECONNECTING,
+                  GetErrorMessage(kErrorDefault));
+      return;
+    }
+  } else if (state_ == PLAN_ACTIVATION_TRYING_OTASP) {
+    ++trying_OTASP_attempts_;
+    if (trying_OTASP_attempts_ <= kMaxOTASPTries) {
+      ChangeState(network,
+                  PLAN_ACTIVATION_RECONNECTING,
+                  GetErrorMessage(kErrorDefault));
+      return;
+    }
+  } else if (state_ == PLAN_ACTIVATION_OTASP) {
+    ++final_OTASP_attempts_;
+    if (final_OTASP_attempts_ <= kMaxOTASPTries) {
+      // Give the portal time to propagate all those magic bits.
+      ChangeState(network,
+                  PLAN_ACTIVATION_DELAY_OTASP,
+                  GetErrorMessage(kErrorDefault));
+      return;
+    }
+  } else {
+    LOG(ERROR) << "OTASP timed out from a non-OTASP wait state?";
   }
-  // We simply can't connect anymore after all these tries.
-  UMA_HISTOGRAM_COUNTS("Cellular.ConnectionFailed", 1);
-  *new_state = PLAN_ACTIVATION_ERROR;
-  *error_description = GetErrorMessage(kFailedConnectivity);
-  return false;
+  LOG(ERROR) << "OTASP failed too many times; aborting.";
+  ChangeState(network,
+              PLAN_ACTIVATION_ERROR,
+              GetErrorMessage(kErrorDefault));
 }
 
-bool MobileActivator::ConnectToNetwork(CellularNetwork* network, int delay) {
-  if (network && network->connecting_or_connected())
-    return true;
-  // Permit network connection changes only in reconnecting states.
-  if (state_ != PLAN_ACTIVATION_RECONNECTING_OTASP_TRY &&
-      state_ != PLAN_ACTIVATION_RECONNECTING &&
-      state_ != PLAN_ACTIVATION_RECONNECTING_PAYMENT &&
-      state_ != PLAN_ACTIVATION_RECONNECTING_OTASP) return false;
-  connection_retry_count_++;
-  connection_start_time_ = base::Time::Now();
-  if (!network) {
-    LOG(WARNING) << "Connect failed, will try again in a little bit.";
-    // If we coudn't connect during reconnection phase, try to reconnect
-    // with a delay (and try to reconnect if needed).
-    BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&MobileActivator::ContinueConnecting, AsWeakPtr(), delay),
-        base::TimeDelta::FromMilliseconds(delay));
-    return false;
-  }
-  LOG(INFO) << "Connecting to: " << network->service_path();
-  CrosLibrary::Get()->GetNetworkLibrary()->ConnectToCellularNetwork(network);
-  return true;
-}
-
-void MobileActivator::ForceReconnect(CellularNetwork* network, int delay) {
+void MobileActivator::ForceReconnect(CellularNetwork* network,
+                                     PlanActivationState next_state) {
   DCHECK(network);
+  // Store away our next destination for when we complete.
+  post_reconnect_state_ = next_state;
   UMA_HISTOGRAM_COUNTS("Cellular.ActivationRetry", 1);
-  // Reset reconnect metrics.
-  connection_retry_count_ = 0;
-  connection_start_time_ = base::Time();
   // First, disconnect...
   LOG(INFO) << "Disconnecting from " << network->service_path();
-  CrosLibrary::Get()->GetNetworkLibrary()->DisconnectFromNetwork(network);
-  // Check the network state 3s after we disconnect to make sure.
-  BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&MobileActivator::ContinueConnecting, AsWeakPtr(), delay),
-      base::TimeDelta::FromMilliseconds(delay));
+  // Explicit service Disconnect()s disable autoconnect on the service until
+  // Connect() is called on the service again.  Hence this dance to explicitly
+  // call Connect().
+  GetNetworkLibrary()->DisconnectFromNetwork(network);
+  // Keep trying to connect until told otherwise.
+  continue_reconnect_timer_.Stop();
+  continue_reconnect_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kReconnectDelayMS),
+      this, &MobileActivator::ContinueConnecting);
+  // If we don't ever connect again, we're going to call this a failure.
+  reconnect_timeout_timer_.Stop();
+  reconnect_timeout_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kMaxReconnectTime),
+      this, &MobileActivator::ReconnectTimedOut);
 }
 
-bool MobileActivator::ConnectionTimeout() {
-  return (base::Time::Now() -
-            connection_start_time_).InSeconds() > kConnectionTimeoutSeconds;
+void MobileActivator::ReconnectTimedOut() {
+  LOG(ERROR) << "Ending activation attempt after failing to reconnect.";
+  ChangeState(FindMatchingCellularNetwork(true),
+              PLAN_ACTIVATION_ERROR,
+              GetErrorMessage(kFailedConnectivity));
+}
+
+void MobileActivator::ContinueConnecting() {
+  CellularNetwork* network = FindMatchingCellularNetwork(true);
+  if (network && network->connected()) {
+    if (network->restricted_pool() &&
+        network->error() == ERROR_DNS_LOOKUP_FAILED) {
+      // It isn't an error to be in a restricted pool, but if DNS doesn't work,
+      // then we're not getting traffic through at all.  Just disconnect and
+      // try again.
+      GetNetworkLibrary()->DisconnectFromNetwork(network);
+      return;
+    }
+    // Stop this callback
+    continue_reconnect_timer_.Stop();
+    EvaluateCellularNetwork(network);
+  } else {
+    LOG(WARNING) << "Connect failed, will try again in a little bit.";
+    if (network) {
+      LOG(INFO) << "Connecting to: " << network->service_path();
+      GetNetworkLibrary()->ConnectToCellularNetwork(network);
+    }
+  }
 }
 
 void MobileActivator::EvaluateCellularNetwork(CellularNetwork* network) {
-  if (terminated_)
-    return;
-
-  PlanActivationState new_state = state_;
-  if (!network) {
-    LOG(WARNING) << "Cellular service lost";
-    if (state_ == PLAN_ACTIVATION_RECONNECTING_OTASP_TRY ||
-        state_ == PLAN_ACTIVATION_RECONNECTING ||
-        state_ == PLAN_ACTIVATION_RECONNECTING_PAYMENT ||
-        state_ == PLAN_ACTIVATION_RECONNECTING_OTASP) {
-      // This might be the legit case when service is lost after activation.
-      // We need to make sure we force reconnection as soon as it shows up.
-      LOG(INFO) << "Force service reconnection";
-      connection_start_time_ = base::Time();
-    }
+  if (terminated_) {
+    LOG(ERROR) << "Tried to run MobileActivator state machine while "
+               << "terminated.";
     return;
   }
 
-  // Prevent this method from being called if it is already on the stack.
-  // This might happen on some state transitions (ie. connect, disconnect).
-  if (evaluating_)
+  if (!network) {
+    LOG(WARNING) << "Cellular service lost";
     return;
-  evaluating_ = true;
-  std::string error_description;
+  }
 
-  LOG(WARNING) << "Cellular:\n  service=" << network->GetStateString().c_str()
+  LOG(WARNING) << "Cellular:\n  service=" << network->GetStateString()
       << "\n  ui=" << GetStateDescription(state_)
-      << "\n  activation=" << network->GetActivationStateString().c_str()
-      << "\n  error=" << network->GetErrorString().c_str()
-      << "\n  setvice_path=" << network->service_path().c_str();
+      << "\n  activation=" << network->GetActivationStateString()
+      << "\n  error=" << network->GetErrorString()
+      << "\n  setvice_path=" << network->service_path()
+      << "\n  connected=" << network->connected();
+
+  std::string error_description;
+  PlanActivationState new_state = PickNextState(network, &error_description);
+
+  ChangeState(network, new_state, error_description);
+}
+
+MobileActivator::PlanActivationState MobileActivator::PickNextState(
+    CellularNetwork* network, std::string* error_description) const {
+  PlanActivationState new_state = state_;
+  if (!network->connected())
+    new_state = PickNextOfflineState(network);
+  else
+    new_state = PickNextOnlineState(network);
+  if (new_state != PLAN_ACTIVATION_ERROR &&
+      GotActivationError(network, error_description)) {
+    // Check for this special case when we try to do activate partially
+    // activated device. If that attempt failed, try to disconnect to clear the
+    // state and reconnect again.
+    if ((network->activation_state() == ACTIVATION_STATE_PARTIALLY_ACTIVATED ||
+         network->activation_state() == ACTIVATION_STATE_ACTIVATING) &&
+        (network->error() == ERROR_NO_ERROR ||
+         network->error() == ERROR_OTASP_FAILED) &&
+        network->state() == STATE_ACTIVATION_FAILURE) {
+      LOG(WARNING) << "Activation failure detected "
+                   << network->service_path();
+      switch (state_) {
+        case PLAN_ACTIVATION_OTASP:
+          new_state = PLAN_ACTIVATION_DELAY_OTASP;
+          break;
+        case PLAN_ACTIVATION_INITIATING_ACTIVATION:
+        case PLAN_ACTIVATION_TRYING_OTASP:
+          new_state = PLAN_ACTIVATION_START;
+          break;
+        case PLAN_ACTIVATION_START:
+          // We are just starting, so this must be previous activation attempt
+          // failure.
+          new_state = PLAN_ACTIVATION_TRYING_OTASP;
+          break;
+        case PLAN_ACTIVATION_DELAY_OTASP:
+          new_state = state_;
+          break;
+        default:
+          new_state = PLAN_ACTIVATION_ERROR;
+          break;
+      }
+    } else {
+      LOG(WARNING) << "Unexpected activation failure for "
+                   << network->service_path();
+      new_state = PLAN_ACTIVATION_ERROR;
+    }
+  }
+
+  if (new_state == PLAN_ACTIVATION_ERROR && !error_description->length())
+    *error_description = GetErrorMessage(kErrorDefault);
+  return new_state;
+}
+
+MobileActivator::PlanActivationState MobileActivator::PickNextOfflineState(
+    CellularNetwork* network) const {
+  PlanActivationState new_state = state_;
   switch (state_) {
-    case PLAN_ACTIVATION_START: {
+    case PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING:
+    case PLAN_ACTIVATION_SHOWING_PAYMENT:
+      if (!network->activate_over_non_cellular_network())
+        new_state = PLAN_ACTIVATION_RECONNECTING;
+      break;
+    case PLAN_ACTIVATION_START:
       switch (network->activation_state()) {
-        case ACTIVATION_STATE_ACTIVATED: {
-          if (network->disconnected()) {
-            new_state = PLAN_ACTIVATION_RECONNECTING;
-          } else if (network->connected()) {
-            if (network->restricted_pool()) {
-              new_state = PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING;
-            } else {
-              new_state = PLAN_ACTIVATION_DONE;
-            }
-          } else {
-            LOG(WARNING) << "Unknown transition";
-          }
+        case ACTIVATION_STATE_ACTIVATED:
+          if (network->restricted_pool())
+            new_state = PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING;
+          else
+            new_state = PLAN_ACTIVATION_DONE;
           break;
-        }
-        default: {
-          if (network->disconnected() ||
-              network->state() == STATE_ACTIVATION_FAILURE) {
-            new_state = (network->activation_state() ==
-                         ACTIVATION_STATE_PARTIALLY_ACTIVATED) ?
-                            PLAN_ACTIVATION_TRYING_OTASP :
-                            PLAN_ACTIVATION_INITIATING_ACTIVATION;
-          } else if (network->connected()) {
-            DisconnectFromNetwork(network);
-            return;
-          } else {
-            LOG(WARNING) << "Unknown transition";
-          }
+        case ACTIVATION_STATE_PARTIALLY_ACTIVATED:
+          new_state = PLAN_ACTIVATION_TRYING_OTASP;
           break;
-        }
+        default:
+          new_state = PLAN_ACTIVATION_INITIATING_ACTIVATION;
+          break;
       }
       break;
-    }
+    default: {
+      LOG(INFO) << "Waiting for cellular service to connect.";
+      } break;
+  }
+  return new_state;
+}
+
+MobileActivator::PlanActivationState MobileActivator::PickNextOnlineState(
+    CellularNetwork* network) const {
+  PlanActivationState new_state = state_;
+  switch (state_) {
+    case PLAN_ACTIVATION_START:
+      switch (network->activation_state()) {
+        case ACTIVATION_STATE_ACTIVATED:
+          if (network->restricted_pool())
+            new_state = PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING;
+          else
+            new_state = PLAN_ACTIVATION_DONE;
+          break;
+        case ACTIVATION_STATE_PARTIALLY_ACTIVATED:
+          new_state = PLAN_ACTIVATION_TRYING_OTASP;
+          break;
+        default:
+          new_state = PLAN_ACTIVATION_INITIATING_ACTIVATION;
+          break;
+      }
+      break;
     case PLAN_ACTIVATION_START_OTASP: {
       switch (network->activation_state()) {
-        case ACTIVATION_STATE_PARTIALLY_ACTIVATED: {
-          if (network->disconnected()) {
-            new_state = PLAN_ACTIVATION_OTASP;
-          } else if (network->connected()) {
-            DisconnectFromNetwork(network);
-            return;
-          } else {
-            LOG(WARNING) << "Unknown transition";
-          }
+        case ACTIVATION_STATE_PARTIALLY_ACTIVATED:
+          new_state = PLAN_ACTIVATION_OTASP;
           break;
-        }
         case ACTIVATION_STATE_ACTIVATED:
-          new_state = PLAN_ACTIVATION_RECONNECTING_OTASP;
+          new_state = PLAN_ACTIVATION_RECONNECTING;
           break;
         default: {
           LOG(WARNING) << "Unexpected activation state for device "
-                       << network->service_path().c_str();
+                       << network->service_path();
           break;
         }
       }
@@ -605,8 +647,7 @@ void MobileActivator::EvaluateCellularNetwork(CellularNetwork* network) {
     }
     case PLAN_ACTIVATION_DELAY_OTASP:
       // Just ignore any changes until the OTASP retry timer kicks in.
-      evaluating_ = false;
-      return;
+      break;
     case PLAN_ACTIVATION_INITIATING_ACTIVATION: {
       switch (network->activation_state()) {
         case ACTIVATION_STATE_ACTIVATED:
@@ -624,216 +665,43 @@ void MobileActivator::EvaluateCellularNetwork(CellularNetwork* network) {
       break;
     }
     case PLAN_ACTIVATION_OTASP:
-    case PLAN_ACTIVATION_TRYING_OTASP: {
-      switch (network->activation_state()) {
-        case ACTIVATION_STATE_ACTIVATED:
-          if (network->disconnected()) {
-            new_state = GetNextReconnectState(state_);
-          } else if (network->connected()) {
-            if (network->restricted_pool()) {
-              new_state = PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING;
-            } else {
-              new_state = PLAN_ACTIVATION_DONE;
-            }
-          }
-          break;
-        case ACTIVATION_STATE_PARTIALLY_ACTIVATED:
-          if (network->connected()) {
-            if (network->restricted_pool()) {
-              new_state = PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING;
-            } else {
-              LOG(WARNING) << "Unknown transition";
-            }
-          } else {
-            new_state = GetNextReconnectState(state_);
-          }
-          break;
-        case ACTIVATION_STATE_NOT_ACTIVATED:
-        case ACTIVATION_STATE_ACTIVATING:
-          // Wait in this state until activation state changes.
-          break;
-        default:
-          LOG(WARNING) << "Unknown transition";
-          break;
+    case PLAN_ACTIVATION_TRYING_OTASP:
+      if (network->activation_state() == ACTIVATION_STATE_NOT_ACTIVATED ||
+          network->activation_state() == ACTIVATION_STATE_ACTIVATING) {
+        LOG(INFO) << "Waiting for the OTASP to finish and the service to "
+                  << "come back online";
+      } else if (network->activation_state() == ACTIVATION_STATE_ACTIVATED) {
+        new_state = PLAN_ACTIVATION_DONE;
+      } else {
+        new_state = PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING;
       }
       break;
-    }
-    case PLAN_ACTIVATION_RECONNECTING_OTASP_TRY:
     case PLAN_ACTIVATION_RECONNECTING_PAYMENT:
-    case PLAN_ACTIVATION_RECONNECTING: {
-      if (network->connected()) {
-        // Wait until the service shows up and gets activated.
-        switch (network->activation_state()) {
-          case ACTIVATION_STATE_PARTIALLY_ACTIVATED:
-          case ACTIVATION_STATE_ACTIVATED:
-            if (network->restricted_pool()) {
-              if (network->error() == ERROR_DNS_LOOKUP_FAILED) {
-                LOG(WARNING) << "No connectivity for device "
-                             << network->service_path().c_str();
-                // If we are connected but there is no connectivity at all,
-                // restart the whole process again.
-                if (activation_attempt_ < kMaxActivationAttempt) {
-                  activation_attempt_++;
-                  LOG(WARNING) << "Reconnect attempt #"
-                               << activation_attempt_;
-                  ForceReconnect(network, kFailedReconnectDelayMS);
-                  evaluating_ = false;
-                  return;
-                } else {
-                  new_state = PLAN_ACTIVATION_ERROR;
-                  UMA_HISTOGRAM_COUNTS("Cellular.ActivationRetryFailure", 1);
-                  error_description = GetErrorMessage(kFailedConnectivity);
-                }
-              } else {
-                // If we have already received payment, don't show the payment
-                // page again. We should try to reconnect after some
-                // time instead.
-                new_state = PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING;
-              }
-            } else if (network->activation_state() ==
-                           ACTIVATION_STATE_ACTIVATED) {
-              new_state = PLAN_ACTIVATION_DONE;
-            } else {
-              LOG(WARNING) << "Unknown transition";
-            }
-            break;
-          default:
-            LOG(WARNING) << "Unknown transition";
-            break;
-        }
-      } else if (NeedsReconnecting(network, &new_state, &error_description)) {
-        evaluating_ = false;
-        return;
-      } else {
-        LOG(WARNING) << "Unknown transition";
-      }
+      if (!network->restricted_pool() &&
+          network->activation_state() == ACTIVATION_STATE_ACTIVATED)
+        // We're not portalled, and we're already activated, so we're online!
+        new_state = PLAN_ACTIVATION_DONE;
+      else
+        new_state = PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING;
       break;
-    }
-    case PLAN_ACTIVATION_RECONNECTING_OTASP: {
-      if (network->connected()) {
-        // Wait until the service shows up and gets activated.
-        switch (network->activation_state()) {
-          case ACTIVATION_STATE_PARTIALLY_ACTIVATED:
-          case ACTIVATION_STATE_ACTIVATED:
-            if (network->restricted_pool()) {
-              LOG(WARNING) << "Still no connectivity after OTASP for device "
-                           << network->service_path().c_str();
-              // If we have already received payment, don't show the payment
-              // page again. We should try to reconnect after some time instead.
-              if (reconnect_wait_count_ < kMaxReconnectAttemptOTASP) {
-                reconnect_wait_count_++;
-                LOG(WARNING) << "OTASP reconnect attempt #"
-                             << reconnect_wait_count_;
-                ForceReconnect(network, kPostPaymentReconnectDelayMS);
-                evaluating_ = false;
-                return;
-              } else {
-                new_state = PLAN_ACTIVATION_ERROR;
-                LOG(WARNING) << "Plan activation error, logging UMA stat";
-                UMA_HISTOGRAM_COUNTS("Cellular.PostPaymentConnectFailure", 1);
-                error_description = GetErrorMessage(kFailedConnectivity);
-              }
-            } else if (network->online()) {
-              new_state = PLAN_ACTIVATION_DONE;
-            } else {
-              LOG(WARNING) << "Unknown transition";
-            }
-            break;
-          default:
-            LOG(WARNING) << "Unknown transition";
-            break;
-        }
-      } else if (NeedsReconnecting(network, &new_state, &error_description)) {
-        evaluating_ = false;
-        return;
-      } else {
-        LOG(WARNING) << "Unknown transition";
-      }
-      break;
-    }
+    // Initial state
     case PLAN_ACTIVATION_PAGE_LOADING:
       break;
     // Just ignore all signals until the site confirms payment.
     case PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING:
-    case PLAN_ACTIVATION_SHOWING_PAYMENT: {
-      // If the activation is performed over a cellular network that is
-      // currently disconnected, try reconnecting to that network.
-      if (!network->activate_over_non_cellular_network() &&
-          network->disconnected()) {
-        new_state = PLAN_ACTIVATION_RECONNECTING_PAYMENT;
-      }
+    case PLAN_ACTIVATION_SHOWING_PAYMENT:
       break;
-    }
-      // Activation completed/failed, ignore network changes.
+    // Go where we decided earlier.
+    case PLAN_ACTIVATION_RECONNECTING:
+      new_state = post_reconnect_state_;
+      break;
+    // Activation completed/failed, ignore network changes.
     case PLAN_ACTIVATION_DONE:
     case PLAN_ACTIVATION_ERROR:
       break;
   }
 
-  if (new_state != PLAN_ACTIVATION_ERROR &&
-      GotActivationError(network, &error_description)) {
-    // Check for this special case when we try to do activate partially
-    // activated device. If that attempt failed, try to disconnect to clear the
-    // state and reconnect again.
-    if ((network->activation_state() ==
-            ACTIVATION_STATE_PARTIALLY_ACTIVATED ||
-        network->activation_state() == ACTIVATION_STATE_ACTIVATING) &&
-        (network->error() == ERROR_NO_ERROR ||
-            network->error() == ERROR_OTASP_FAILED) &&
-        network->state() == STATE_ACTIVATION_FAILURE) {
-      LOG(WARNING) << "Activation failure detected "
-                   << network->service_path().c_str();
-      switch (state_) {
-        case PLAN_ACTIVATION_OTASP:
-        case PLAN_ACTIVATION_RECONNECTING_OTASP:
-          new_state = PLAN_ACTIVATION_DELAY_OTASP;
-          break;
-        case PLAN_ACTIVATION_TRYING_OTASP:
-          new_state = PLAN_ACTIVATION_RECONNECTING_OTASP_TRY;
-          break;
-        case PLAN_ACTIVATION_INITIATING_ACTIVATION:
-          new_state = PLAN_ACTIVATION_RECONNECTING;
-          break;
-        case PLAN_ACTIVATION_START:
-          // We are just starting, so this must be previous activation attempt
-          // failure.
-          new_state = PLAN_ACTIVATION_TRYING_OTASP;
-          break;
-        case PLAN_ACTIVATION_DELAY_OTASP:
-        case PLAN_ACTIVATION_RECONNECTING_OTASP_TRY:
-        case PLAN_ACTIVATION_RECONNECTING:
-          new_state = state_;
-          break;
-        default:
-          new_state = PLAN_ACTIVATION_ERROR;
-          break;
-      }
-    } else {
-      LOG(WARNING) << "Unexpected activation failure for "
-                   << network->service_path().c_str();
-      new_state = PLAN_ACTIVATION_ERROR;
-    }
-  }
-
-  if (new_state == PLAN_ACTIVATION_ERROR && !error_description.length())
-    error_description = GetErrorMessage(kErrorDefault);
-
-  ChangeState(network, new_state, error_description);
-  evaluating_ = false;
-}
-
-MobileActivator::PlanActivationState MobileActivator::GetNextReconnectState(
-    MobileActivator::PlanActivationState state) {
-  switch (state) {
-    case PLAN_ACTIVATION_INITIATING_ACTIVATION:
-      return PLAN_ACTIVATION_RECONNECTING;
-    case PLAN_ACTIVATION_OTASP:
-      return PLAN_ACTIVATION_RECONNECTING_OTASP;
-    case PLAN_ACTIVATION_TRYING_OTASP:
-      return PLAN_ACTIVATION_RECONNECTING_OTASP_TRY;
-    default:
-      return PLAN_ACTIVATION_RECONNECTING;
-  }
+  return new_state;
 }
 
 // Debugging helper function, will take it out at the end.
@@ -843,32 +711,28 @@ const char* MobileActivator::GetStateDescription(PlanActivationState state) {
       return "PAGE_LOADING";
     case PLAN_ACTIVATION_START:
       return "ACTIVATION_START";
-    case PLAN_ACTIVATION_TRYING_OTASP:
-      return "TRYING_OTASP";
-    case PLAN_ACTIVATION_RECONNECTING_OTASP_TRY:
-      return "RECONNECTING_OTASP_TRY";
     case PLAN_ACTIVATION_INITIATING_ACTIVATION:
       return "INITIATING_ACTIVATION";
-    case PLAN_ACTIVATION_RECONNECTING:
-      return "RECONNECTING";
+    case PLAN_ACTIVATION_TRYING_OTASP:
+      return "TRYING_OTASP";
     case PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING:
       return "PAYMENT_PORTAL_LOADING";
     case PLAN_ACTIVATION_SHOWING_PAYMENT:
       return "SHOWING_PAYMENT";
     case PLAN_ACTIVATION_RECONNECTING_PAYMENT:
       return "RECONNECTING_PAYMENT";
-    case PLAN_ACTIVATION_START_OTASP:
-      return "START_OTASP";
     case PLAN_ACTIVATION_DELAY_OTASP:
       return "DELAY_OTASP";
+    case PLAN_ACTIVATION_START_OTASP:
+      return "START_OTASP";
     case PLAN_ACTIVATION_OTASP:
       return "OTASP";
-    case PLAN_ACTIVATION_RECONNECTING_OTASP:
-      return "RECONNECTING_OTASP";
     case PLAN_ACTIVATION_DONE:
       return "DONE";
     case PLAN_ACTIVATION_ERROR:
       return "ERROR";
+    case PLAN_ACTIVATION_RECONNECTING:
+      return "RECONNECTING";
   }
   return "UNKNOWN";
 }
@@ -877,14 +741,11 @@ const char* MobileActivator::GetStateDescription(PlanActivationState state) {
 void MobileActivator::CompleteActivation(
     CellularNetwork* network) {
   // Remove observers, we are done with this page.
-  NetworkLibrary* lib = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* lib = GetNetworkLibrary();
   lib->RemoveNetworkManagerObserver(this);
   lib->RemoveObserverForAllNetworks(this);
   if (lib->IsLocked())
     lib->Unlock();
-  // If we have successfully activated the connection, set autoconnect flag.
-  if (network)
-    network->SetAutoConnect(true);
   // Reactivate other types of connections if we have
   // shut them down previously.
   ReEnableCertRevocationChecking();
@@ -900,25 +761,19 @@ void MobileActivator::ChangeState(CellularNetwork* network,
                                   PlanActivationState new_state,
                                   const std::string& error_description) {
   static bool first_time = true;
+  LOG(INFO) << "Activation state flip old = "
+            << GetStateDescription(state_)
+            << ", new = " << GetStateDescription(new_state);
   if (state_ == new_state && !first_time)
     return;
-  LOG(WARNING) << "Activation state flip old = "
-      << GetStateDescription(state_)
-      << ", new = " << GetStateDescription(new_state);
   first_time = false;
+  LOG(INFO) << "Transitioning...";
 
-  // Pick action that should happen on leaving the old state.
-  switch (state_) {
-    case PLAN_ACTIVATION_RECONNECTING_OTASP_TRY:
-    case PLAN_ACTIVATION_RECONNECTING:
-    case PLAN_ACTIVATION_RECONNECTING_OTASP:
-      if (reconnect_timer_.IsRunning()) {
-        reconnect_timer_.Stop();
-      }
-      break;
-    default:
-      break;
-  }
+  // Kill all the possible timers and callbacks we might have outstanding.
+  state_duration_timer_.Stop();
+  continue_reconnect_timer_.Stop();
+  reconnect_timeout_timer_.Stop();
+  const PlanActivationState old_state = state_;
   state_ = new_state;
 
   // Signal to observers layer that the state is changing.
@@ -936,48 +791,69 @@ void MobileActivator::ChangeState(CellularNetwork* network,
           base::TimeDelta::FromMilliseconds(kOTASPRetryDelay));
       break;
     }
+    case PLAN_ACTIVATION_START_OTASP:
+      break;
     case PLAN_ACTIVATION_INITIATING_ACTIVATION:
     case PLAN_ACTIVATION_TRYING_OTASP:
     case PLAN_ACTIVATION_OTASP:
       DCHECK(network);
-      LOG(WARNING) << "Activating service " << network->service_path().c_str();
+      LOG(WARNING) << "Activating service " << network->service_path();
       UMA_HISTOGRAM_COUNTS("Cellular.ActivationTry", 1);
       if (!network->StartActivation()) {
         UMA_HISTOGRAM_COUNTS("Cellular.ActivationFailure", 1);
+        LOG(ERROR) << "Failed to call Activate() on service in shill.";
         if (new_state == PLAN_ACTIVATION_OTASP) {
           ChangeState(network, PLAN_ACTIVATION_DELAY_OTASP, std::string());
         } else {
-          ChangeState(network, PLAN_ACTIVATION_ERROR,
+          ChangeState(network,
+                      PLAN_ACTIVATION_ERROR,
                       GetErrorMessage(kFailedConnectivity));
         }
+      } else {
+        StartOTASPTimer();
       }
       break;
-    case PLAN_ACTIVATION_RECONNECTING_OTASP_TRY:
-    case PLAN_ACTIVATION_RECONNECTING:
-    case PLAN_ACTIVATION_RECONNECTING_PAYMENT:
-    case PLAN_ACTIVATION_RECONNECTING_OTASP: {
-      // Start reconnect timer. This will ensure that we are not left in
-      // limbo by the network library.
-      if (!reconnect_timer_.IsRunning()) {
-        reconnect_timer_.Start(
-            FROM_HERE,
-            base::TimeDelta::FromMilliseconds(kReconnectTimerDelayMS),
-            this, &MobileActivator::ReconnectTimerFired);
-      }
-      // Reset connection metrics and try to connect.
-      reconnect_wait_count_ = 0;
-      connection_retry_count_ = 0;
-      connection_start_time_ = base::Time::Now();
-      ConnectToNetwork(network, kReconnectDelayMS);
-      break;
-    }
     case PLAN_ACTIVATION_PAGE_LOADING:
       return;
     case PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING:
     case PLAN_ACTIVATION_SHOWING_PAYMENT:
+    case PLAN_ACTIVATION_RECONNECTING_PAYMENT:
       // Fix for fix SSL for the walled gardens where cert chain verification
       // might not work.
       break;
+    case PLAN_ACTIVATION_RECONNECTING: {
+      PlanActivationState next_state = old_state;
+      // Pick where we want to return to after we reconnect.
+      switch (old_state) {
+        case PLAN_ACTIVATION_PAYMENT_PORTAL_LOADING:
+        case PLAN_ACTIVATION_SHOWING_PAYMENT:
+          // We decide here what to do next based on the state of the modem.
+          next_state = PLAN_ACTIVATION_RECONNECTING_PAYMENT;
+          break;
+        case PLAN_ACTIVATION_INITIATING_ACTIVATION:
+        case PLAN_ACTIVATION_TRYING_OTASP:
+          next_state = PLAN_ACTIVATION_START;
+          break;
+        case PLAN_ACTIVATION_START_OTASP:
+        case PLAN_ACTIVATION_OTASP:
+          if (!network || !network->connected()) {
+            next_state = PLAN_ACTIVATION_START_OTASP;
+          } else {
+            // We're online, which means we've conspired with
+            // PickNextOnlineState to reconnect after activation (that's the
+            // only way we see this transition).  Thus, after we reconnect, we
+            // should be done.
+            next_state = PLAN_ACTIVATION_DONE;
+          }
+          break;
+        default:
+          LOG(ERROR) << "Transitioned to RECONNECTING from an unexpected "
+                     << "state.";
+          break;
+      }
+      ForceReconnect(network, next_state);
+      break;
+    }
     case PLAN_ACTIVATION_DONE:
       DCHECK(network);
       CompleteActivation(network);
@@ -1014,20 +890,8 @@ void MobileActivator::DisableCertRevocationChecking() {
   }
 }
 
-void MobileActivator::SetupActivationProcess(CellularNetwork* network) {
-  if (!network)
-    return;
-
-  DisableCertRevocationChecking();
-  NetworkLibrary* lib = CrosLibrary::Get()->GetNetworkLibrary();
-  // Disable autoconnect to cellular network.
-  network->SetAutoConnect(false);
-
-  lib->Lock();
-}
-
 bool MobileActivator::GotActivationError(
-    CellularNetwork* network, std::string* error) {
+    CellularNetwork* network, std::string* error) const {
   DCHECK(network);
   bool got_error = false;
   const char* error_code = kErrorDefault;
@@ -1038,26 +902,22 @@ bool MobileActivator::GotActivationError(
     if (network->activation_state() ==
             ACTIVATION_STATE_PARTIALLY_ACTIVATED) {
       error_code = kErrorBadConnectionPartial;
-    } else if (network->activation_state() ==
-            ACTIVATION_STATE_ACTIVATED) {
-      if (network->roaming_state() == ROAMING_STATE_HOME) {
+    } else if (network->activation_state() == ACTIVATION_STATE_ACTIVATED) {
+      if (network->roaming_state() == ROAMING_STATE_HOME)
         error_code = kErrorBadConnectionActivated;
-      } else if (network->roaming_state() == ROAMING_STATE_ROAMING) {
+      else if (network->roaming_state() == ROAMING_STATE_ROAMING)
         error_code = kErrorRoamingOnConnection;
-      }
     }
     got_error = true;
   } else if (network->state() == STATE_ACTIVATION_FAILURE) {
     if (network->error() == ERROR_NEED_EVDO) {
-      if (network->activation_state() ==
-              ACTIVATION_STATE_PARTIALLY_ACTIVATED)
+      if (network->activation_state() == ACTIVATION_STATE_PARTIALLY_ACTIVATED)
         error_code = kErrorNoEVDO;
     } else if (network->error() == ERROR_NEED_HOME_NETWORK) {
-      if (network->activation_state() ==
-              ACTIVATION_STATE_NOT_ACTIVATED) {
+      if (network->activation_state() == ACTIVATION_STATE_NOT_ACTIVATED) {
         error_code = kErrorRoamingActivation;
       } else if (network->activation_state() ==
-                    ACTIVATION_STATE_PARTIALLY_ACTIVATED) {
+                 ACTIVATION_STATE_PARTIALLY_ACTIVATED) {
         error_code = kErrorRoamingPartiallyActivated;
       }
     }
@@ -1073,8 +933,7 @@ bool MobileActivator::GotActivationError(
 void MobileActivator::GetDeviceInfo(CellularNetwork* network,
                                     DictionaryValue* value) {
   DCHECK(network);
-  NetworkLibrary* cros =
-      CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   if (!cros)
     return;
   value->SetString("carrier", network->name());
@@ -1091,8 +950,12 @@ void MobileActivator::GetDeviceInfo(CellularNetwork* network,
   }
 }
 
-std::string MobileActivator::GetErrorMessage(const std::string& code) {
+std::string MobileActivator::GetErrorMessage(const std::string& code) const {
   return cellular_config_->GetErrorMessage(code);
+}
+
+NetworkLibrary* MobileActivator::GetNetworkLibrary() const {
+  return CrosLibrary::Get()->GetNetworkLibrary();
 }
 
 }  // namespace chromeos

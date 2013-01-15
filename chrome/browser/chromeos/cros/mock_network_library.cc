@@ -10,4 +10,9 @@ MockNetworkLibrary::MockNetworkLibrary() {}
 
 MockNetworkLibrary::~MockNetworkLibrary() {}
 
+MockCellularNetwork::MockCellularNetwork(const std::string& service_path)
+    : CellularNetwork(service_path) {}
+
+MockCellularNetwork::~MockCellularNetwork() {}
+
 }  // namespace chromeos
