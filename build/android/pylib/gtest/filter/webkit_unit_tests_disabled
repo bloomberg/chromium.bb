@@ -2,6 +2,8 @@
 
 # crbug.com/159935
 ScrollingCoordinatorChromiumTest.nonFastScrollableRegion
+# crbug.com/169975
+ScrollingCoordinatorChromiumTest.touchOverflowScrolling
 WebCompositorInputHandlerImplTest.gestureFlingAnimates
 WebCompositorInputHandlerImplTest.gestureFlingTransferResets
 WebPageSerializerTest.HTMLNodes
