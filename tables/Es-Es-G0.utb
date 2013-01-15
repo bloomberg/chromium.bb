@@ -81,7 +81,7 @@ punctuation \X201c 14568 	abrir comillas
 punctuation \X201d 12348 	cerrar comillas
 punctuation ( 1268		abre paréntesis
 punctuation ) 3457		cierra paréntesis
-punctuation \X2018 4			apóstrofo
+punctuation ' 4			apóstrofo
 punctuation \x00ab 238		comillas angulares izquierda
 punctuation \x00bb 567		comillas angulares derecha
 punctuation [ 2367		abre corchetes
@@ -182,7 +182,8 @@ sign \X008e 148		sin nombre
 sign \X017d 148		sin nombre
 sign \X008f 58		
 sign \X0090 68		sin 	nombre
-sign \X2019 378		apóstrofo
+sign \X2018 4		apóstrofo
+sign \X2019 4		apóstrofo
 sign \X0095 1458		signo
 sign \X2022 1458		signo
 sign \X0096 368		guión
