@@ -45,24 +45,19 @@ void DumpAccessibilityTreeHelper::RecursiveDumpAccessibilityTree(
 }
 
 void DumpAccessibilityTreeHelper::SetFilters(
-    const std::set<string16>& allow_filters,
-    const std::set<string16>& deny_filters) {
-  allow_filters_ = allow_filters;
-  deny_filters_ = deny_filters;
+    const std::vector<Filter>& filters) {
+  filters_ = filters;
 }
 
 bool DumpAccessibilityTreeHelper::MatchesFilters(
     const string16& text, bool default_result) {
-  std::set<string16>::const_iterator iter = allow_filters_.begin();
-  for (iter = allow_filters_.begin(); iter != allow_filters_.end(); ++iter) {
-    if (MatchPattern(text, *iter))
-      return true;
+  std::vector<Filter>::const_iterator iter = filters_.begin();
+  bool allow = default_result;
+  for (iter = filters_.begin(); iter != filters_.end(); ++iter) {
+    if (MatchPattern(text, iter->match_str))
+      allow = (iter->type == Filter::ALLOW);
   }
-  for (iter = deny_filters_.begin(); iter != deny_filters_.end(); ++iter) {
-    if (MatchPattern(text, *iter))
-      return false;
-  }
-  return default_result;
+  return allow;
 }
 
 void DumpAccessibilityTreeHelper::StartLine() {

@@ -37,6 +37,8 @@ namespace {
 
 namespace content {
 
+typedef DumpAccessibilityTreeHelper::Filter Filter;
+
 // This test takes a snapshot of the platform BrowserAccessibility tree and
 // tests it against an expected baseline.
 //
@@ -75,15 +77,13 @@ class DumpAccessibilityTreeTest : public ContentBrowserTest {
     return diff_lines;
   }
 
-  void AddDefaultFilters(std::set<string16>* allow_filters,
-                         std::set<string16>* deny_filters) {
-    allow_filters->insert(ASCIIToUTF16("FOCUSABLE"));
-    allow_filters->insert(ASCIIToUTF16("READONLY"));
+  void AddDefaultFilters(std::vector<Filter>* filters) {
+    filters->push_back(Filter(ASCIIToUTF16("FOCUSABLE"), Filter::ALLOW));
+    filters->push_back(Filter(ASCIIToUTF16("READONLY"), Filter::ALLOW));
   }
 
   void ParseFilters(const std::string& test_html,
-                    std::set<string16>* allow_filters,
-                    std::set<string16>* deny_filters) {
+                    std::vector<Filter>* filters) {
     std::vector<std::string> lines;
     base::SplitString(test_html, '\n', &lines);
     for (std::vector<std::string>::const_iterator iter = lines.begin();
@@ -92,10 +92,13 @@ class DumpAccessibilityTreeTest : public ContentBrowserTest {
       const std::string& line = *iter;
       const std::string& allow_str = helper_.GetAllowString();
       const std::string& deny_str = helper_.GetDenyString();
-      if (StartsWithASCII(line, allow_str, true))
-        allow_filters->insert(UTF8ToUTF16(line.substr(allow_str.size())));
-      else if (StartsWithASCII(line, deny_str, true))
-        deny_filters->insert(UTF8ToUTF16(line.substr(deny_str.size())));
+      if (StartsWithASCII(line, allow_str, true)) {
+        filters->push_back(Filter(UTF8ToUTF16(line.substr(allow_str.size())),
+                                  Filter::ALLOW));
+      } else if (StartsWithASCII(line, deny_str, true)) {
+        filters->push_back(Filter(UTF8ToUTF16(line.substr(deny_str.size())),
+                                  Filter::DENY));
+      }
     }
   }
 
@@ -130,11 +133,10 @@ void DumpAccessibilityTreeTest::RunTest(const FilePath::CharType* file_path) {
   file_util::ReadFileToString(html_file, &html_contents);
 
   // Parse filters in the test file.
-  std::set<string16> allow_filters;
-  std::set<string16> deny_filters;
-  AddDefaultFilters(&allow_filters, &deny_filters);
-  ParseFilters(html_contents, &allow_filters, &deny_filters);
-  helper_.SetFilters(allow_filters, deny_filters);
+  std::vector<Filter> filters;
+  AddDefaultFilters(&filters);
+  ParseFilters(html_contents, &filters);
+  helper_.SetFilters(filters);
 
   // Read the expected file.
   std::string expected_contents_raw;
