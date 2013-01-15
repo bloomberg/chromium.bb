@@ -158,6 +158,7 @@ class Binary4RegisterDualResultLtV6RdHiLoNotRn : Binary4RegisterDualResult
 class Binary4RegisterDualResultNoCondsUpdate : Binary4RegisterDualResult
 class Binary4RegisterDualResultUsesRnRm : Binary4RegisterDualResult
 class Deprecated : UnsafeCondDecoder
+class Forbidden : UnsafeCondDecoder
 class ForbiddenCondDecoder : UnsafeCondDecoder
 class ForbiddenUncondDecoder : UnsafeUncondDecoder
 class LdrImmediateOp : Load2RegisterImm12Op
@@ -1013,61 +1014,75 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 | else:     = Undefined  # Note on table description.
 +--
 
-# TODO(karl): Add uses to corresponding classes.
 +-- msr_immediate_and_hints (See Section A5.2.11)
+*Nop
+  { cond(31:28) }
+  baseline := CondDecoder;
+  defs := {};
+  uses := {};
+*Forbidden *Nop
+  baseline := Forbidden;
+  safety := true => FORBIDDEN;
+*Msr
+  { cond(31:28), mask(19:18), imm12(11:0) }
+  baseline := MoveImmediate12ToApsr;
+  imm32 := ARMExpandImm(imm12);
+  write_nzcvq := mask(1)=1;
+  write_g := mask(0)=1;
+  defs := {NZCV if write_nzcvq else None};
+  uses := {};
+  # TODO(karl): model that ASPR.GE is set if write_g, and that
+  # ASPR.Q is set if write_nzcvq.
+  safety := mask=00 => DECODER_ERROR;
++--
 | op(22) op1(19:16) op2(7:0)
-| 0      0000       0000_0000  = CondDecoder => DontCareInst
-                                 Nop_Rule_110_A1_P222
-                                 cccc0011001000001111000000000000 (v6K,v6T2)
-| "      "          0000_0001  = CondDecoder => DontCareInst
-                                 Yield_Rule_413_A1_P812
-                                 cccc0011001000001111000000000001 (v6K)
-| "      "          0000_0010  = ForbiddenCondDecoder => Forbidden
+| 0      0000       0000_0000  = *Nop
+                                 pattern := cccc0011001000001111000000000000;
+                                 rule := NOP;
+                                 arch := (v6K, v6T2);
+| "      "          0000_0001  = *Nop
+                                 pattern := cccc0011001000001111000000000001;
+                                 rule := YIELD;
+                                 arch := v6K;    
+| "      "          0000_0010  = *Forbidden
                                  # Don't allow, may put hardware to sleep
                                  # until a send event occurs.
-                                 Wfe_Rule_411_A1_P808
-                                 cccc0011001000001111000000000010 (v6K)
-| "      "          0000_0011  = ForbiddenCondDecoder => Forbidden
+                                 pattern := cccc0011001000001111000000000010;
+                                 rule := WFE;
+                                 arch := v6K;
+| "      "          0000_0011  = *Forbidden
                                  # Don't allow, may put hardware to sleep
                                  # until a send event occurs.
-                                 Wfi_Rule_412_A1_P810
-                                 cccc0011001000001111000000000011 (v6K)
-| "      "          0000_0100  = ForbiddenCondDecoder => Forbidden
+                                 pattern := cccc0011001000001111000000000011;
+                                 rule := WFI;
+                                 arch := v6K;
+| "      "          0000_0100  = *Forbidden
                                  # Don't allow, causes an event to be
                                  # signalled to all processors in the
                                  # multiprocessor system.
-                                 Sev_Rule_158_A1_P316
-                                 cccc0011001000001111000000000100 (v6K)
-| "      "          1111_xxxx  = ForbiddenCondDecoder => Forbidden
+                                 pattern := cccc0011001000001111000000000100;
+                                 rule := SEV;
+                                 arch := v6K;
+| "      "          1111_xxxx  = *Forbidden
                                  # Don't allow unless there is a good reason
                                  # for it.
-                                 Dbg_Rule_40_A1_P88
-                                 cccc001100100000111100001111iiii (v7)
-| "      0100       -          = MoveImmediate12ToApsr => DontCareInst
-                                 # Note: DontCareInst will act like the
-                                 # conditions flag is always changed, which
-                                 # is a safe presumption.
-                                 Msr_Rule_103_A1_P208
-                                 cccc0011001001001111iiiiiiiiiiii
-| "      1x00       "          = MoveImmediate12ToApsr => DontCareInst
-                                 # TODO(jfb) This and the above are the same
-                                 #           except for the pattern: 0b00 mask
-                                 #           isn't allowed.
-                                 Msr_Rule_103_A1_P208
-                                 cccc001100101x001111iiiiiiiiiiii
-| "      xx01       -          = ForbiddenCondDecoder => Forbidden
-                                 Msr_Rule_B6_1_6_A1_PB6_12
-                                 cccc00110010ii011111iiiiiiiiiiii
+                                 pattern := cccc001100100000111100001111iiii;
+                                 rule := DBG;
+                                 arch := v7;
+# Note: mask(19:18)=00 isn't allowed for MSR_immediate (checked by
+# following 2 rows).
+| "      0100       -          = *Msr
+                                 pattern := cccc00110010mm001111iiiiiiiiiiii;
+                                 rule := MSR_immediate;
+| "      1x00       "          "
+| "      xx01       -          = *Forbidden
                                  # MSR(immediate), ring0 version
-| "      xx1x       -          = ForbiddenCondDecoder => Forbidden
-                                 Msr_Rule_B6_1_6_A1_PB6_12
-                                 cccc00110010ii1i1111iiiiiiiiiiii
-                                 # MSR(immediate), ring0 version
-| 1      -          -          = ForbiddenCondDecoder => Forbidden
-                                 Msr_Rule_B6_1_6_A1_PB6_12
-                                 cccc00110110iiii1111iiiiiiiiiiii
-                                 # MSR(immediate), ring0 version
-| else:                        = Forbidden  # Unallocated hints, page A5-17
+                                 pattern := cccc00110r10mmmm1111iiiiiiiiiiii;
+                                 rule := MSR_immediate;
+| "      xx1x       -          "
+| 1      -          -          "
+# Unallocated hints, see note on table description.
+| else:                        = *Forbidden  
 +--
 
 +-- miscellaneous_instructions (See Section A5.2.12)

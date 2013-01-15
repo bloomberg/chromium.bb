@@ -11,6 +11,130 @@
 
 namespace nacl_arm_dec {
 
+// SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0:
+//
+//   {M: M(5),
+//    Pc: 15,
+//    Ra: Ra(15:12),
+//    Rd: Rd(19:16),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    arch: v6,
+//    baseline: Binary4RegisterDualOpNoCondsUpdate,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), M(5), Rn(3:0)],
+//    pattern: cccc01110101ddddaaaammmm00r1nnnn,
+//    rule: SMMLA,
+//    safety: [Ra  ==
+//            Pc => DECODER_ERROR,
+//      Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm, Ra}}
+RegisterList SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+SafetyLevel SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) => DECODER_ERROR
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return DECODER_ERROR;
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(11:8), inst(15:12)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
+// SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0:
+//
+//   {M: M(5),
+//    Pc: 15,
+//    Ra: Ra(15:12),
+//    Rd: Rd(19:16),
+//    Rm: Rm(11:8),
+//    Rn: Rn(3:0),
+//    arch: v6,
+//    baseline: Binary4RegisterDualOpNoCondsUpdate,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd},
+//    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), M(5), Rn(3:0)],
+//    pattern: cccc01110101ddddaaaammmm11r1nnnn,
+//    rule: SMMLS,
+//    safety: [Ra  ==
+//            Pc => DECODER_ERROR,
+//      Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
+//    uses: {Rn, Rm, Ra}}
+RegisterList SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{inst(19:16)}'
+  return RegisterList().
+   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
+}
+
+SafetyLevel SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // 15  ==
+  //          inst(15:12) => DECODER_ERROR
+  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
+    return DECODER_ERROR;
+
+  // 15  ==
+  //          inst(19:16) ||
+  //       15  ==
+  //          inst(3:0) ||
+  //       15  ==
+  //          inst(11:8) => UNPREDICTABLE
+  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
+       (((15) == ((inst.Bits() & 0x0000000F)))) ||
+       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
+    return UNPREDICTABLE;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{inst(3:0), inst(11:8), inst(15:12)}'
+  return RegisterList().
+   Add(Register((inst.Bits() & 0x0000000F))).
+   Add(Register(((inst.Bits() & 0x00000F00) >> 8))).
+   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
+}
+
 // SMMUL_cccc01110101dddd1111mmmm00r1nnnn_case_0:
 //
 //   {M: M(5),
@@ -2987,6 +3111,14 @@ defs(Instruction inst) const {
    Add(Register(16));
 }
 
+SafetyLevel TEQ_immediate_cccc00110011nnnn0000iiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
+
 RegisterList TEQ_immediate_cccc00110011nnnn0000iiiiiiiiiiii_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -3031,6 +3163,14 @@ defs(Instruction inst) const {
        ? 16
        : 32)));
 }
+
+SafetyLevel TEQ_register_cccc00010011nnnn0000iiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
 
 RegisterList TEQ_register_cccc00010011nnnn0000iiiiitt0mmmm_case_0::
 uses(Instruction inst) const {
@@ -3120,6 +3260,14 @@ defs(Instruction inst) const {
    Add(Register(16));
 }
 
+SafetyLevel TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
+
 RegisterList TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -3164,6 +3312,14 @@ defs(Instruction inst) const {
        ? 16
        : 32)));
 }
+
+SafetyLevel TST_register_cccc00010001nnnn0000iiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
 
 RegisterList TST_register_cccc00010001nnnn0000iiiiitt0mmmm_case_0::
 uses(Instruction inst) const {
@@ -5070,6 +5226,42 @@ uses(Instruction inst) const {
   // uses: '{inst(3:0)}'
   return RegisterList().
    Add(Register((inst.Bits() & 0x0000000F)));
+}
+
+// Unnamed_case_0:
+//
+//   {baseline: Forbidden,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList Unnamed_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel Unnamed_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList Unnamed_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
 }
 
 // VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_0:

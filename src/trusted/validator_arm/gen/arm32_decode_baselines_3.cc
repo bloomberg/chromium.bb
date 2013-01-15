@@ -1424,6 +1424,14 @@ is_literal_load(Instruction inst) const {
   return ((((inst.Bits() & 0x000F0000) >> 16)) == (15));
 }
 
+SafetyLevel VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
+
 RegisterList VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -1479,6 +1487,14 @@ is_literal_load(Instruction inst) const {
   //          inst(19:16)'
   return ((((inst.Bits() & 0x000F0000) >> 16)) == (15));
 }
+
+SafetyLevel VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
 
 RegisterList VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0::
 uses(Instruction inst) const {
@@ -3274,6 +3290,14 @@ defs(Instruction inst) const {
        ? 16
        : ((inst.Bits() & 0x0000F000) >> 12))));
 }
+
+SafetyLevel VMRS_cccc111011110001tttt101000010000_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
 
 // VMSR_cccc111011100001tttt101000010000_case_0:
 //
@@ -11805,6 +11829,117 @@ safety(Instruction inst) const {
 
 
 RegisterList VZIP_111100111d11ss10dddd00011qm0mmmm_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// WFE_cccc0011001000001111000000000010_case_0:
+//
+//   {arch: v6K,
+//    baseline: Forbidden,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0011001000001111000000000010,
+//    rule: WFE,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList WFE_cccc0011001000001111000000000010_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel WFE_cccc0011001000001111000000000010_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList WFE_cccc0011001000001111000000000010_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// WFI_cccc0011001000001111000000000011_case_0:
+//
+//   {arch: v6K,
+//    baseline: Forbidden,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0011001000001111000000000011,
+//    rule: WFI,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList WFI_cccc0011001000001111000000000011_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel WFI_cccc0011001000001111000000000011_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList WFI_cccc0011001000001111000000000011_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// YIELD_cccc0011001000001111000000000001_case_0:
+//
+//   {arch: v6K,
+//    baseline: CondDecoder,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0011001000001111000000000001,
+//    rule: YIELD,
+//    uses: {}}
+RegisterList YIELD_cccc0011001000001111000000000001_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel YIELD_cccc0011001000001111000000000001_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList YIELD_cccc0011001000001111000000000001_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
   // uses: '{}'

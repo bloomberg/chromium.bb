@@ -528,11 +528,11 @@ class BreakPointAndConstantPoolHead_BKPT
     : public BreakPointAndConstantPoolHead {
 };
 
-class CondDecoder_Nop_Rule_110_A1_P222
+class CondDecoder_NOP
     : public CondDecoder {
 };
 
-class CondDecoder_Yield_Rule_413_A1_P812
+class CondDecoder_YIELD
     : public CondDecoder {
 };
 
@@ -632,6 +632,26 @@ class DuplicateToAdvSIMDRegisters_VDUP_arm_core_register
     : public DuplicateToAdvSIMDRegisters {
 };
 
+class Forbidden_DBG
+    : public Forbidden {
+};
+
+class Forbidden_MSR_immediate
+    : public Forbidden {
+};
+
+class Forbidden_SEV
+    : public Forbidden {
+};
+
+class Forbidden_WFE
+    : public Forbidden {
+};
+
+class Forbidden_WFI
+    : public Forbidden {
+};
+
 class Forbidden_None
     : public Forbidden {
 };
@@ -641,10 +661,6 @@ class ForbiddenCondDecoder_BXJ
 };
 
 class ForbiddenCondDecoder_Cdp_Rule_A1
-    : public ForbiddenCondDecoder {
-};
-
-class ForbiddenCondDecoder_Dbg_Rule_40_A1_P88
     : public ForbiddenCondDecoder {
 };
 
@@ -716,10 +732,6 @@ class ForbiddenCondDecoder_Mrrc_Rule_A1
     : public ForbiddenCondDecoder {
 };
 
-class ForbiddenCondDecoder_Msr_Rule_B6_1_6_A1_PB6_12
-    : public ForbiddenCondDecoder {
-};
-
 class ForbiddenCondDecoder_SMC
     : public ForbiddenCondDecoder {
 };
@@ -744,23 +756,11 @@ class ForbiddenCondDecoder_STRT_A2
     : public ForbiddenCondDecoder {
 };
 
-class ForbiddenCondDecoder_Sev_Rule_158_A1_P316
-    : public ForbiddenCondDecoder {
-};
-
 class ForbiddenCondDecoder_Stc_Rule_A2
     : public ForbiddenCondDecoder {
 };
 
 class ForbiddenCondDecoder_Svc_Rule_A1
-    : public ForbiddenCondDecoder {
-};
-
-class ForbiddenCondDecoder_Wfe_Rule_411_A1_P808
-    : public ForbiddenCondDecoder {
-};
-
-class ForbiddenCondDecoder_Wfi_Rule_412_A1_P810
     : public ForbiddenCondDecoder {
 };
 
@@ -960,7 +960,7 @@ class MoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_two_single
     : public MoveDoubleVfpRegisterOp {
 };
 
-class MoveImmediate12ToApsr_Msr_Rule_103_A1_P208
+class MoveImmediate12ToApsr_MSR_immediate
     : public MoveImmediate12ToApsr {
 };
 
@@ -1972,18 +1972,6 @@ class Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1_ROR_immediate
     : public Actual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1 {
 };
 
-class DontCareInst_Msr_Rule_103_A1_P208
-    : public DontCareInst {
-};
-
-class DontCareInst_Nop_Rule_110_A1_P222
-    : public DontCareInst {
-};
-
-class DontCareInst_Yield_Rule_413_A1_P812
-    : public DontCareInst {
-};
-
 class Forbidden_BXJ
     : public Forbidden {
 };
@@ -2005,10 +1993,6 @@ class Forbidden_Clrex_Rule_30_A1_P70
 };
 
 class Forbidden_Cps_Rule_b6_1_1_A1_B6_3
-    : public Forbidden {
-};
-
-class Forbidden_Dbg_Rule_40_A1_P88
     : public Forbidden {
 };
 
@@ -2080,10 +2064,6 @@ class Forbidden_Mrrc_Rule_A1
     : public Forbidden {
 };
 
-class Forbidden_Msr_Rule_B6_1_6_A1_PB6_12
-    : public Forbidden {
-};
-
 class Forbidden_Rfe_Rule_B6_1_10_A1_B6_16
     : public Forbidden {
 };
@@ -2093,10 +2073,6 @@ class Forbidden_SMC
 };
 
 class Forbidden_Setend_Rule_157_P314
-    : public Forbidden {
-};
-
-class Forbidden_Sev_Rule_158_A1_P316
     : public Forbidden {
 };
 
@@ -2117,14 +2093,6 @@ class Forbidden_Svc_Rule_A1
 };
 
 class Forbidden_Unallocated_hints
-    : public Forbidden {
-};
-
-class Forbidden_Wfe_Rule_411_A1_P808
-    : public Forbidden {
-};
-
-class Forbidden_Wfi_Rule_412_A1_P810
     : public Forbidden {
 };
 
@@ -3743,28 +3711,28 @@ class NamedBreakPointAndConstantPoolHead_BKPT
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBreakPointAndConstantPoolHead_BKPT);
 };
 
-class NamedCondDecoder_Nop_Rule_110_A1_P222
+class NamedCondDecoder_NOP
     : public NamedClassDecoder {
  public:
-  NamedCondDecoder_Nop_Rule_110_A1_P222()
-    : NamedClassDecoder(decoder_, "CondDecoder Nop_Rule_110_A1_P222")
+  NamedCondDecoder_NOP()
+    : NamedClassDecoder(decoder_, "CondDecoder NOP")
   {}
 
  private:
-  nacl_arm_dec::CondDecoder_Nop_Rule_110_A1_P222 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondDecoder_Nop_Rule_110_A1_P222);
+  nacl_arm_dec::CondDecoder_NOP decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondDecoder_NOP);
 };
 
-class NamedCondDecoder_Yield_Rule_413_A1_P812
+class NamedCondDecoder_YIELD
     : public NamedClassDecoder {
  public:
-  NamedCondDecoder_Yield_Rule_413_A1_P812()
-    : NamedClassDecoder(decoder_, "CondDecoder Yield_Rule_413_A1_P812")
+  NamedCondDecoder_YIELD()
+    : NamedClassDecoder(decoder_, "CondDecoder YIELD")
   {}
 
  private:
-  nacl_arm_dec::CondDecoder_Yield_Rule_413_A1_P812 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondDecoder_Yield_Rule_413_A1_P812);
+  nacl_arm_dec::CondDecoder_YIELD decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedCondDecoder_YIELD);
 };
 
 class NamedCondVfpOp_Vabs_Rule_269_A2_P532
@@ -4055,6 +4023,66 @@ class NamedDuplicateToAdvSIMDRegisters_VDUP_arm_core_register
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDuplicateToAdvSIMDRegisters_VDUP_arm_core_register);
 };
 
+class NamedForbidden_DBG
+    : public NamedClassDecoder {
+ public:
+  NamedForbidden_DBG()
+    : NamedClassDecoder(decoder_, "Forbidden DBG")
+  {}
+
+ private:
+  nacl_arm_dec::Forbidden_DBG decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_DBG);
+};
+
+class NamedForbidden_MSR_immediate
+    : public NamedClassDecoder {
+ public:
+  NamedForbidden_MSR_immediate()
+    : NamedClassDecoder(decoder_, "Forbidden MSR_immediate")
+  {}
+
+ private:
+  nacl_arm_dec::Forbidden_MSR_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_MSR_immediate);
+};
+
+class NamedForbidden_SEV
+    : public NamedClassDecoder {
+ public:
+  NamedForbidden_SEV()
+    : NamedClassDecoder(decoder_, "Forbidden SEV")
+  {}
+
+ private:
+  nacl_arm_dec::Forbidden_SEV decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_SEV);
+};
+
+class NamedForbidden_WFE
+    : public NamedClassDecoder {
+ public:
+  NamedForbidden_WFE()
+    : NamedClassDecoder(decoder_, "Forbidden WFE")
+  {}
+
+ private:
+  nacl_arm_dec::Forbidden_WFE decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_WFE);
+};
+
+class NamedForbidden_WFI
+    : public NamedClassDecoder {
+ public:
+  NamedForbidden_WFI()
+    : NamedClassDecoder(decoder_, "Forbidden WFI")
+  {}
+
+ private:
+  nacl_arm_dec::Forbidden_WFI decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_WFI);
+};
+
 class NamedForbidden_None
     : public NamedClassDecoder {
  public:
@@ -4089,18 +4117,6 @@ class NamedForbiddenCondDecoder_Cdp_Rule_A1
  private:
   nacl_arm_dec::ForbiddenCondDecoder_Cdp_Rule_A1 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbiddenCondDecoder_Cdp_Rule_A1);
-};
-
-class NamedForbiddenCondDecoder_Dbg_Rule_40_A1_P88
-    : public NamedClassDecoder {
- public:
-  NamedForbiddenCondDecoder_Dbg_Rule_40_A1_P88()
-    : NamedClassDecoder(decoder_, "ForbiddenCondDecoder Dbg_Rule_40_A1_P88")
-  {}
-
- private:
-  nacl_arm_dec::ForbiddenCondDecoder_Dbg_Rule_40_A1_P88 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbiddenCondDecoder_Dbg_Rule_40_A1_P88);
 };
 
 class NamedForbiddenCondDecoder_ERET
@@ -4307,18 +4323,6 @@ class NamedForbiddenCondDecoder_Mrrc_Rule_A1
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbiddenCondDecoder_Mrrc_Rule_A1);
 };
 
-class NamedForbiddenCondDecoder_Msr_Rule_B6_1_6_A1_PB6_12
-    : public NamedClassDecoder {
- public:
-  NamedForbiddenCondDecoder_Msr_Rule_B6_1_6_A1_PB6_12()
-    : NamedClassDecoder(decoder_, "ForbiddenCondDecoder Msr_Rule_B6_1_6_A1_PB6_12")
-  {}
-
- private:
-  nacl_arm_dec::ForbiddenCondDecoder_Msr_Rule_B6_1_6_A1_PB6_12 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbiddenCondDecoder_Msr_Rule_B6_1_6_A1_PB6_12);
-};
-
 class NamedForbiddenCondDecoder_SMC
     : public NamedClassDecoder {
  public:
@@ -4391,18 +4395,6 @@ class NamedForbiddenCondDecoder_STRT_A2
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbiddenCondDecoder_STRT_A2);
 };
 
-class NamedForbiddenCondDecoder_Sev_Rule_158_A1_P316
-    : public NamedClassDecoder {
- public:
-  NamedForbiddenCondDecoder_Sev_Rule_158_A1_P316()
-    : NamedClassDecoder(decoder_, "ForbiddenCondDecoder Sev_Rule_158_A1_P316")
-  {}
-
- private:
-  nacl_arm_dec::ForbiddenCondDecoder_Sev_Rule_158_A1_P316 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbiddenCondDecoder_Sev_Rule_158_A1_P316);
-};
-
 class NamedForbiddenCondDecoder_Stc_Rule_A2
     : public NamedClassDecoder {
  public:
@@ -4425,30 +4417,6 @@ class NamedForbiddenCondDecoder_Svc_Rule_A1
  private:
   nacl_arm_dec::ForbiddenCondDecoder_Svc_Rule_A1 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbiddenCondDecoder_Svc_Rule_A1);
-};
-
-class NamedForbiddenCondDecoder_Wfe_Rule_411_A1_P808
-    : public NamedClassDecoder {
- public:
-  NamedForbiddenCondDecoder_Wfe_Rule_411_A1_P808()
-    : NamedClassDecoder(decoder_, "ForbiddenCondDecoder Wfe_Rule_411_A1_P808")
-  {}
-
- private:
-  nacl_arm_dec::ForbiddenCondDecoder_Wfe_Rule_411_A1_P808 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbiddenCondDecoder_Wfe_Rule_411_A1_P808);
-};
-
-class NamedForbiddenCondDecoder_Wfi_Rule_412_A1_P810
-    : public NamedClassDecoder {
- public:
-  NamedForbiddenCondDecoder_Wfi_Rule_412_A1_P810()
-    : NamedClassDecoder(decoder_, "ForbiddenCondDecoder Wfi_Rule_412_A1_P810")
-  {}
-
- private:
-  nacl_arm_dec::ForbiddenCondDecoder_Wfi_Rule_412_A1_P810 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbiddenCondDecoder_Wfi_Rule_412_A1_P810);
 };
 
 class NamedForbiddenCondDecoder_extra_load_store_instructions_unpriviledged
@@ -5039,16 +5007,16 @@ class NamedMoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_two_s
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveDoubleVfpRegisterOp_VMOV_between_two_ARM_core_registers_and_two_single_precision_registers);
 };
 
-class NamedMoveImmediate12ToApsr_Msr_Rule_103_A1_P208
+class NamedMoveImmediate12ToApsr_MSR_immediate
     : public NamedClassDecoder {
  public:
-  NamedMoveImmediate12ToApsr_Msr_Rule_103_A1_P208()
-    : NamedClassDecoder(decoder_, "MoveImmediate12ToApsr Msr_Rule_103_A1_P208")
+  NamedMoveImmediate12ToApsr_MSR_immediate()
+    : NamedClassDecoder(decoder_, "MoveImmediate12ToApsr MSR_immediate")
   {}
 
  private:
-  nacl_arm_dec::MoveImmediate12ToApsr_Msr_Rule_103_A1_P208 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveImmediate12ToApsr_Msr_Rule_103_A1_P208);
+  nacl_arm_dec::MoveImmediate12ToApsr_MSR_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveImmediate12ToApsr_MSR_immediate);
 };
 
 class NamedMoveVfpRegisterOp_VMOV_between_ARM_core_register_and_single_precision_register
@@ -8075,42 +8043,6 @@ class NamedActual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1_ROR_imme
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedActual_LSL_immediate_cccc0001101s0000ddddiiiii000mmmm_case_1_ROR_immediate);
 };
 
-class NamedDontCareInst_Msr_Rule_103_A1_P208
-    : public NamedClassDecoder {
- public:
-  NamedDontCareInst_Msr_Rule_103_A1_P208()
-    : NamedClassDecoder(decoder_, "DontCareInst Msr_Rule_103_A1_P208")
-  {}
-
- private:
-  nacl_arm_dec::DontCareInst_Msr_Rule_103_A1_P208 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDontCareInst_Msr_Rule_103_A1_P208);
-};
-
-class NamedDontCareInst_Nop_Rule_110_A1_P222
-    : public NamedClassDecoder {
- public:
-  NamedDontCareInst_Nop_Rule_110_A1_P222()
-    : NamedClassDecoder(decoder_, "DontCareInst Nop_Rule_110_A1_P222")
-  {}
-
- private:
-  nacl_arm_dec::DontCareInst_Nop_Rule_110_A1_P222 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDontCareInst_Nop_Rule_110_A1_P222);
-};
-
-class NamedDontCareInst_Yield_Rule_413_A1_P812
-    : public NamedClassDecoder {
- public:
-  NamedDontCareInst_Yield_Rule_413_A1_P812()
-    : NamedClassDecoder(decoder_, "DontCareInst Yield_Rule_413_A1_P812")
-  {}
-
- private:
-  nacl_arm_dec::DontCareInst_Yield_Rule_413_A1_P812 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDontCareInst_Yield_Rule_413_A1_P812);
-};
-
 class NamedForbidden_BXJ
     : public NamedClassDecoder {
  public:
@@ -8181,18 +8113,6 @@ class NamedForbidden_Cps_Rule_b6_1_1_A1_B6_3
  private:
   nacl_arm_dec::Forbidden_Cps_Rule_b6_1_1_A1_B6_3 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_Cps_Rule_b6_1_1_A1_B6_3);
-};
-
-class NamedForbidden_Dbg_Rule_40_A1_P88
-    : public NamedClassDecoder {
- public:
-  NamedForbidden_Dbg_Rule_40_A1_P88()
-    : NamedClassDecoder(decoder_, "Forbidden Dbg_Rule_40_A1_P88")
-  {}
-
- private:
-  nacl_arm_dec::Forbidden_Dbg_Rule_40_A1_P88 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_Dbg_Rule_40_A1_P88);
 };
 
 class NamedForbidden_ERET
@@ -8399,18 +8319,6 @@ class NamedForbidden_Mrrc_Rule_A1
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_Mrrc_Rule_A1);
 };
 
-class NamedForbidden_Msr_Rule_B6_1_6_A1_PB6_12
-    : public NamedClassDecoder {
- public:
-  NamedForbidden_Msr_Rule_B6_1_6_A1_PB6_12()
-    : NamedClassDecoder(decoder_, "Forbidden Msr_Rule_B6_1_6_A1_PB6_12")
-  {}
-
- private:
-  nacl_arm_dec::Forbidden_Msr_Rule_B6_1_6_A1_PB6_12 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_Msr_Rule_B6_1_6_A1_PB6_12);
-};
-
 class NamedForbidden_Rfe_Rule_B6_1_10_A1_B6_16
     : public NamedClassDecoder {
  public:
@@ -8445,18 +8353,6 @@ class NamedForbidden_Setend_Rule_157_P314
  private:
   nacl_arm_dec::Forbidden_Setend_Rule_157_P314 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_Setend_Rule_157_P314);
-};
-
-class NamedForbidden_Sev_Rule_158_A1_P316
-    : public NamedClassDecoder {
- public:
-  NamedForbidden_Sev_Rule_158_A1_P316()
-    : NamedClassDecoder(decoder_, "Forbidden Sev_Rule_158_A1_P316")
-  {}
-
- private:
-  nacl_arm_dec::Forbidden_Sev_Rule_158_A1_P316 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_Sev_Rule_158_A1_P316);
 };
 
 class NamedForbidden_Srs_Rule_B6_1_10_A1_B6_20
@@ -8517,30 +8413,6 @@ class NamedForbidden_Unallocated_hints
  private:
   nacl_arm_dec::Forbidden_Unallocated_hints decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_Unallocated_hints);
-};
-
-class NamedForbidden_Wfe_Rule_411_A1_P808
-    : public NamedClassDecoder {
- public:
-  NamedForbidden_Wfe_Rule_411_A1_P808()
-    : NamedClassDecoder(decoder_, "Forbidden Wfe_Rule_411_A1_P808")
-  {}
-
- private:
-  nacl_arm_dec::Forbidden_Wfe_Rule_411_A1_P808 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_Wfe_Rule_411_A1_P808);
-};
-
-class NamedForbidden_Wfi_Rule_412_A1_P810
-    : public NamedClassDecoder {
- public:
-  NamedForbidden_Wfi_Rule_412_A1_P810()
-    : NamedClassDecoder(decoder_, "Forbidden Wfi_Rule_412_A1_P810")
-  {}
-
- private:
-  nacl_arm_dec::Forbidden_Wfi_Rule_412_A1_P810 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedForbidden_Wfi_Rule_412_A1_P810);
 };
 
 class NamedUndefined_Undefined_A5_6

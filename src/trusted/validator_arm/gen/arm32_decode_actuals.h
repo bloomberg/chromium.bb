@@ -2160,6 +2160,99 @@ class Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10ddd
       Actual_CVT_between_half_precision_and_single_precision_111100111d11ss10dddd011p00m0mmmm_case_1);
 };
 
+// Actual_DBG_cccc001100100000111100001111iiii_case_1
+//
+// Actual:
+//   {defs: {},
+//    safety: [true => FORBIDDEN],
+//    uses: {}}
+//
+// Baseline:
+//   {arch: v7,
+//    baseline: Forbidden,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc001100100000111100001111iiii,
+//    rule: DBG,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {baseline: Forbidden,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
+//    rule: MSR_immediate,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {arch: v6K,
+//    baseline: Forbidden,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0011001000001111000000000100,
+//    rule: SEV,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {baseline: Forbidden,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {arch: v6K,
+//    baseline: Forbidden,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0011001000001111000000000010,
+//    rule: WFE,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+//
+// Baseline:
+//   {arch: v6K,
+//    baseline: Forbidden,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0011001000001111000000000011,
+//    rule: WFI,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class Actual_DBG_cccc001100100000111100001111iiii_case_1
+     : public ClassDecoder {
+ public:
+  Actual_DBG_cccc001100100000111100001111iiii_case_1()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_DBG_cccc001100100000111100001111iiii_case_1);
+};
+
 // Actual_LDMDA_LDMFA_cccc100000w1nnnnrrrrrrrrrrrrrrrr_case_1
 //
 // Actual:
@@ -4121,6 +4214,47 @@ class Actual_MRS_cccc00010r001111dddd000000000000_case_1
       Actual_MRS_cccc00010r001111dddd000000000000_case_1);
 };
 
+// Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1
+//
+// Actual:
+//   {defs: {16
+//         if inst(19:18)(1)=1
+//         else 32},
+//    safety: [inst(19:18)=00 => DECODER_ERROR],
+//    uses: {}}
+//
+// Baseline:
+//   {NZCV: 16,
+//    None: 32,
+//    baseline: MoveImmediate12ToApsr,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {NZCV
+//         if write_nzcvq
+//         else None},
+//    fields: [cond(31:28), mask(19:18), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ARMExpandImm(imm12),
+//    mask: mask(19:18),
+//    pattern: cccc00110010mm001111iiiiiiiiiiii,
+//    rule: MSR_immediate,
+//    safety: [mask(19:18)=00 => DECODER_ERROR],
+//    uses: {},
+//    write_g: mask(0)=1,
+//    write_nzcvq: mask(1)=1}
+class Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1
+     : public ClassDecoder {
+ public:
+  Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_1);
+};
+
 // Actual_MSR_register_cccc00010010mm00111100000000nnnn_case_1
 //
 // Actual:
@@ -4219,6 +4353,46 @@ class Actual_MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_1
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Actual_MUL_A1_cccc0000000sdddd0000mmmm1001nnnn_case_1);
+};
+
+// Actual_NOP_cccc0011001000001111000000000000_case_1
+//
+// Actual:
+//   {defs: {},
+//    uses: {}}
+//
+// Baseline:
+//   {arch: ['v6K', 'v6T2'],
+//    baseline: CondDecoder,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0011001000001111000000000000,
+//    rule: NOP,
+//    uses: {}}
+//
+// Baseline:
+//   {arch: v6K,
+//    baseline: CondDecoder,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0011001000001111000000000001,
+//    rule: YIELD,
+//    uses: {}}
+class Actual_NOP_cccc0011001000001111000000000000_case_1
+     : public ClassDecoder {
+ public:
+  Actual_NOP_cccc0011001000001111000000000000_case_1()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Actual_NOP_cccc0011001000001111000000000000_case_1);
 };
 
 // Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1

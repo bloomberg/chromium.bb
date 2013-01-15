@@ -39,9 +39,9 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , BranchImmediate24_instance_()
   , BranchToRegister_instance_()
   , BreakPointAndConstantPoolHead_instance_()
+  , CondDecoder_instance_()
   , DataBarrier_instance_()
   , Deprecated_instance_()
-  , DontCareInst_instance_()
   , DuplicateToAdvSIMDRegisters_instance_()
   , Forbidden_instance_()
   , ForbiddenCondDecoder_instance_()
@@ -63,6 +63,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , MaskedBinary2RegisterImmediateOp_instance_()
   , MaskedBinaryRegisterImmediateTest_instance_()
   , MoveDoubleVfpRegisterOp_instance_()
+  , MoveImmediate12ToApsr_instance_()
   , MoveVfpRegisterOp_instance_()
   , MoveVfpRegisterOpWithTypeSel_instance_()
   , PermanentlyUndefined_instance_()
@@ -1808,7 +1809,7 @@ const ClassDecoder& Arm32DecoderState::decode_msr_immediate_and_hints(
           0x00000000 /* op2(7:0)=0000000x */ &&
       (inst.Bits() & 0x0000FF00)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx */) {
-    return DontCareInst_instance_;
+    return CondDecoder_instance_;
   }
 
   if ((inst.Bits() & 0x00400000)  ==
@@ -1839,7 +1840,7 @@ const ClassDecoder& Arm32DecoderState::decode_msr_immediate_and_hints(
           0x00040000 /* op1(19:16)=0100 */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return DontCareInst_instance_;
+    return MoveImmediate12ToApsr_instance_;
   }
 
   if ((inst.Bits() & 0x00400000)  ==
@@ -1848,7 +1849,7 @@ const ClassDecoder& Arm32DecoderState::decode_msr_immediate_and_hints(
           0x00080000 /* op1(19:16)=1x00 */ &&
       (inst.Bits() & 0x0000F000)  ==
           0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
-    return DontCareInst_instance_;
+    return MoveImmediate12ToApsr_instance_;
   }
 
   if ((inst.Bits() & 0x00400000)  ==

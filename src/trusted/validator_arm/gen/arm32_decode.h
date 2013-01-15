@@ -172,9 +172,9 @@ class Arm32DecoderState : DecoderState {
   const BranchImmediate24 BranchImmediate24_instance_;
   const BranchToRegister BranchToRegister_instance_;
   const BreakPointAndConstantPoolHead BreakPointAndConstantPoolHead_instance_;
+  const CondDecoder CondDecoder_instance_;
   const DataBarrier DataBarrier_instance_;
   const Deprecated Deprecated_instance_;
-  const DontCareInst DontCareInst_instance_;
   const DuplicateToAdvSIMDRegisters DuplicateToAdvSIMDRegisters_instance_;
   const Forbidden Forbidden_instance_;
   const ForbiddenCondDecoder ForbiddenCondDecoder_instance_;
@@ -196,6 +196,7 @@ class Arm32DecoderState : DecoderState {
   const MaskedBinary2RegisterImmediateOp MaskedBinary2RegisterImmediateOp_instance_;
   const MaskedBinaryRegisterImmediateTest MaskedBinaryRegisterImmediateTest_instance_;
   const MoveDoubleVfpRegisterOp MoveDoubleVfpRegisterOp_instance_;
+  const MoveImmediate12ToApsr MoveImmediate12ToApsr_instance_;
   const MoveVfpRegisterOp MoveVfpRegisterOp_instance_;
   const MoveVfpRegisterOpWithTypeSel MoveVfpRegisterOpWithTypeSel_instance_;
   const PermanentlyUndefined PermanentlyUndefined_instance_;

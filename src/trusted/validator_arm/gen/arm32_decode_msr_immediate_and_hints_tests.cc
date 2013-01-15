@@ -35,12 +35,14 @@ namespace nacl_arm_test {
 // Neutral case:
 // inst(22)=0 & inst(19:16)=0000 & inst(7:0)=00000000 & inst(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {baseline: 'CondDecoder',
-//       constraints: }
+//       constraints: ,
+//       defs: {}}
 //
 // Representaive case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000000 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {baseline: CondDecoder,
-//       constraints: }
+//       constraints: ,
+//       defs: {}}
 class CondDecoderTesterCase0
     : public CondDecoderTester {
  public:
@@ -49,6 +51,8 @@ class CondDecoderTesterCase0
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool CondDecoderTesterCase0
@@ -75,15 +79,29 @@ bool CondDecoderTesterCase0
       PassesParsePreconditions(inst, decoder);
 }
 
+bool CondDecoderTesterCase0
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(CondDecoderTester::
+               ApplySanityChecks(inst, decoder));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
+}
+
 // Neutral case:
 // inst(22)=0 & inst(19:16)=0000 & inst(7:0)=00000001 & inst(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {baseline: 'CondDecoder',
-//       constraints: }
+//       constraints: ,
+//       defs: {}}
 //
 // Representaive case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000001 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {baseline: CondDecoder,
-//       constraints: }
+//       constraints: ,
+//       defs: {}}
 class CondDecoderTesterCase1
     : public CondDecoderTester {
  public:
@@ -92,6 +110,8 @@ class CondDecoderTesterCase1
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool CondDecoderTesterCase1
@@ -118,15 +138,32 @@ bool CondDecoderTesterCase1
       PassesParsePreconditions(inst, decoder);
 }
 
+bool CondDecoderTesterCase1
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(CondDecoderTester::
+               ApplySanityChecks(inst, decoder));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
+}
+
 // Neutral case:
 // inst(22)=0 & inst(19:16)=0000 & inst(7:0)=00000010 & inst(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: }
+//    = {baseline: 'Forbidden',
+//       constraints: ,
+//       defs: {},
+//       safety: [true => FORBIDDEN]}
 //
 // Representaive case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000010 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {baseline: ForbiddenCondDecoder,
-//       constraints: }
+//    = {baseline: Forbidden,
+//       constraints: ,
+//       defs: {},
+//       safety: [true => FORBIDDEN],
+//       true: true}
 class UnsafeCondDecoderTesterCase2
     : public UnsafeCondDecoderTester {
  public:
@@ -135,6 +172,8 @@ class UnsafeCondDecoderTesterCase2
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool UnsafeCondDecoderTesterCase2
@@ -161,15 +200,35 @@ bool UnsafeCondDecoderTesterCase2
       PassesParsePreconditions(inst, decoder);
 }
 
+bool UnsafeCondDecoderTesterCase2
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(UnsafeCondDecoderTester::
+               ApplySanityChecks(inst, decoder));
+
+  // safety: true => FORBIDDEN
+  EXPECT_TRUE(!(true));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
+}
+
 // Neutral case:
 // inst(22)=0 & inst(19:16)=0000 & inst(7:0)=00000011 & inst(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: }
+//    = {baseline: 'Forbidden',
+//       constraints: ,
+//       defs: {},
+//       safety: [true => FORBIDDEN]}
 //
 // Representaive case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000011 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {baseline: ForbiddenCondDecoder,
-//       constraints: }
+//    = {baseline: Forbidden,
+//       constraints: ,
+//       defs: {},
+//       safety: [true => FORBIDDEN],
+//       true: true}
 class UnsafeCondDecoderTesterCase3
     : public UnsafeCondDecoderTester {
  public:
@@ -178,6 +237,8 @@ class UnsafeCondDecoderTesterCase3
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool UnsafeCondDecoderTesterCase3
@@ -204,15 +265,35 @@ bool UnsafeCondDecoderTesterCase3
       PassesParsePreconditions(inst, decoder);
 }
 
+bool UnsafeCondDecoderTesterCase3
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(UnsafeCondDecoderTester::
+               ApplySanityChecks(inst, decoder));
+
+  // safety: true => FORBIDDEN
+  EXPECT_TRUE(!(true));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
+}
+
 // Neutral case:
 // inst(22)=0 & inst(19:16)=0000 & inst(7:0)=00000100 & inst(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: }
+//    = {baseline: 'Forbidden',
+//       constraints: ,
+//       defs: {},
+//       safety: [true => FORBIDDEN]}
 //
 // Representaive case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000100 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {baseline: ForbiddenCondDecoder,
-//       constraints: }
+//    = {baseline: Forbidden,
+//       constraints: ,
+//       defs: {},
+//       safety: [true => FORBIDDEN],
+//       true: true}
 class UnsafeCondDecoderTesterCase4
     : public UnsafeCondDecoderTester {
  public:
@@ -221,6 +302,8 @@ class UnsafeCondDecoderTesterCase4
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool UnsafeCondDecoderTesterCase4
@@ -247,15 +330,35 @@ bool UnsafeCondDecoderTesterCase4
       PassesParsePreconditions(inst, decoder);
 }
 
+bool UnsafeCondDecoderTesterCase4
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(UnsafeCondDecoderTester::
+               ApplySanityChecks(inst, decoder));
+
+  // safety: true => FORBIDDEN
+  EXPECT_TRUE(!(true));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
+}
+
 // Neutral case:
 // inst(22)=0 & inst(19:16)=0000 & inst(7:0)=1111xxxx & inst(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: }
+//    = {baseline: 'Forbidden',
+//       constraints: ,
+//       defs: {},
+//       safety: [true => FORBIDDEN]}
 //
 // Representaive case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=1111xxxx & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {baseline: ForbiddenCondDecoder,
-//       constraints: }
+//    = {baseline: Forbidden,
+//       constraints: ,
+//       defs: {},
+//       safety: [true => FORBIDDEN],
+//       true: true}
 class UnsafeCondDecoderTesterCase5
     : public UnsafeCondDecoderTester {
  public:
@@ -264,6 +367,8 @@ class UnsafeCondDecoderTesterCase5
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool UnsafeCondDecoderTesterCase5
@@ -290,15 +395,43 @@ bool UnsafeCondDecoderTesterCase5
       PassesParsePreconditions(inst, decoder);
 }
 
+bool UnsafeCondDecoderTesterCase5
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(UnsafeCondDecoderTester::
+               ApplySanityChecks(inst, decoder));
+
+  // safety: true => FORBIDDEN
+  EXPECT_TRUE(!(true));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
+}
+
 // Neutral case:
 // inst(22)=0 & inst(19:16)=0100 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {baseline: 'MoveImmediate12ToApsr',
-//       constraints: }
+//       constraints: ,
+//       defs: {16
+//            if inst(19:18)(1)=1
+//            else 32},
+//       safety: [inst(19:18)=00 => DECODER_ERROR]}
 //
 // Representaive case:
 // op(22)=0 & op1(19:16)=0100 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: MoveImmediate12ToApsr,
-//       constraints: }
+//    = {NZCV: 16,
+//       None: 32,
+//       baseline: MoveImmediate12ToApsr,
+//       constraints: ,
+//       defs: {NZCV
+//            if write_nzcvq
+//            else None},
+//       fields: [mask(19:18)],
+//       mask: mask(19:18),
+//       safety: [mask(19:18)=00 => DECODER_ERROR],
+//       write_nzcvq: mask(1)=1}
 class MoveImmediate12ToApsrTesterCase6
     : public MoveImmediate12ToApsrTester {
  public:
@@ -307,6 +440,8 @@ class MoveImmediate12ToApsrTesterCase6
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool MoveImmediate12ToApsrTesterCase6
@@ -330,15 +465,50 @@ bool MoveImmediate12ToApsrTesterCase6
       PassesParsePreconditions(inst, decoder);
 }
 
+bool MoveImmediate12ToApsrTesterCase6
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(MoveImmediate12ToApsrTester::
+               ApplySanityChecks(inst, decoder));
+
+  // safety: mask(19:18)=00 => DECODER_ERROR
+  EXPECT_TRUE((inst.Bits() & 0x000C0000)  !=
+          0x00000000);
+
+  // defs: {NZCV
+  //       if write_nzcvq
+  //       else None};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
+   Add(Register(((((inst.Bits() & 0x000C0000) >> 18) & 0x00000002)  ==
+          0x00000002
+       ? 16
+       : 32)))));
+
+  return true;
+}
+
 // Neutral case:
 // inst(22)=0 & inst(19:16)=1x00 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {baseline: 'MoveImmediate12ToApsr',
-//       constraints: }
+//       constraints: ,
+//       defs: {16
+//            if inst(19:18)(1)=1
+//            else 32},
+//       safety: [inst(19:18)=00 => DECODER_ERROR]}
 //
 // Representaive case:
 // op(22)=0 & op1(19:16)=1x00 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: MoveImmediate12ToApsr,
-//       constraints: }
+//    = {NZCV: 16,
+//       None: 32,
+//       baseline: MoveImmediate12ToApsr,
+//       constraints: ,
+//       defs: {NZCV
+//            if write_nzcvq
+//            else None},
+//       fields: [mask(19:18)],
+//       mask: mask(19:18),
+//       safety: [mask(19:18)=00 => DECODER_ERROR],
+//       write_nzcvq: mask(1)=1}
 class MoveImmediate12ToApsrTesterCase7
     : public MoveImmediate12ToApsrTester {
  public:
@@ -347,6 +517,8 @@ class MoveImmediate12ToApsrTesterCase7
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool MoveImmediate12ToApsrTesterCase7
@@ -370,15 +542,42 @@ bool MoveImmediate12ToApsrTesterCase7
       PassesParsePreconditions(inst, decoder);
 }
 
+bool MoveImmediate12ToApsrTesterCase7
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(MoveImmediate12ToApsrTester::
+               ApplySanityChecks(inst, decoder));
+
+  // safety: mask(19:18)=00 => DECODER_ERROR
+  EXPECT_TRUE((inst.Bits() & 0x000C0000)  !=
+          0x00000000);
+
+  // defs: {NZCV
+  //       if write_nzcvq
+  //       else None};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList().
+   Add(Register(((((inst.Bits() & 0x000C0000) >> 18) & 0x00000002)  ==
+          0x00000002
+       ? 16
+       : 32)))));
+
+  return true;
+}
+
 // Neutral case:
 // inst(22)=0 & inst(19:16)=xx01 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: }
+//    = {baseline: 'Forbidden',
+//       constraints: ,
+//       defs: {},
+//       safety: [true => FORBIDDEN]}
 //
 // Representaive case:
 // op(22)=0 & op1(19:16)=xx01 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: ForbiddenCondDecoder,
-//       constraints: }
+//    = {baseline: Forbidden,
+//       constraints: ,
+//       defs: {},
+//       safety: [true => FORBIDDEN],
+//       true: true}
 class UnsafeCondDecoderTesterCase8
     : public UnsafeCondDecoderTester {
  public:
@@ -387,6 +586,8 @@ class UnsafeCondDecoderTesterCase8
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool UnsafeCondDecoderTesterCase8
@@ -410,15 +611,35 @@ bool UnsafeCondDecoderTesterCase8
       PassesParsePreconditions(inst, decoder);
 }
 
+bool UnsafeCondDecoderTesterCase8
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(UnsafeCondDecoderTester::
+               ApplySanityChecks(inst, decoder));
+
+  // safety: true => FORBIDDEN
+  EXPECT_TRUE(!(true));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
+}
+
 // Neutral case:
 // inst(22)=0 & inst(19:16)=xx1x & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: }
+//    = {baseline: 'Forbidden',
+//       constraints: ,
+//       defs: {},
+//       safety: [true => FORBIDDEN]}
 //
 // Representaive case:
 // op(22)=0 & op1(19:16)=xx1x & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: ForbiddenCondDecoder,
-//       constraints: }
+//    = {baseline: Forbidden,
+//       constraints: ,
+//       defs: {},
+//       safety: [true => FORBIDDEN],
+//       true: true}
 class UnsafeCondDecoderTesterCase9
     : public UnsafeCondDecoderTester {
  public:
@@ -427,6 +648,8 @@ class UnsafeCondDecoderTesterCase9
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool UnsafeCondDecoderTesterCase9
@@ -450,15 +673,35 @@ bool UnsafeCondDecoderTesterCase9
       PassesParsePreconditions(inst, decoder);
 }
 
+bool UnsafeCondDecoderTesterCase9
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(UnsafeCondDecoderTester::
+               ApplySanityChecks(inst, decoder));
+
+  // safety: true => FORBIDDEN
+  EXPECT_TRUE(!(true));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
+}
+
 // Neutral case:
 // inst(22)=1 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'ForbiddenCondDecoder',
-//       constraints: }
+//    = {baseline: 'Forbidden',
+//       constraints: ,
+//       defs: {},
+//       safety: [true => FORBIDDEN]}
 //
 // Representaive case:
 // op(22)=1 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: ForbiddenCondDecoder,
-//       constraints: }
+//    = {baseline: Forbidden,
+//       constraints: ,
+//       defs: {},
+//       safety: [true => FORBIDDEN],
+//       true: true}
 class UnsafeCondDecoderTesterCase10
     : public UnsafeCondDecoderTester {
  public:
@@ -467,6 +710,8 @@ class UnsafeCondDecoderTesterCase10
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
 };
 
 bool UnsafeCondDecoderTesterCase10
@@ -487,6 +732,21 @@ bool UnsafeCondDecoderTesterCase10
       PassesParsePreconditions(inst, decoder);
 }
 
+bool UnsafeCondDecoderTesterCase10
+::ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                    const NamedClassDecoder& decoder) {
+  NC_PRECOND(UnsafeCondDecoderTester::
+               ApplySanityChecks(inst, decoder));
+
+  // safety: true => FORBIDDEN
+  EXPECT_TRUE(!(true));
+
+  // defs: {};
+  EXPECT_TRUE(decoder.defs(inst).IsSame(RegisterList()));
+
+  return true;
+}
+
 // The following are derived class decoder testers for decoder actions
 // associated with a pattern of an action. These derived classes introduce
 // a default constructor that automatically initializes the expected decoder
@@ -496,19 +756,21 @@ bool UnsafeCondDecoderTesterCase10
 // inst(22)=0 & inst(19:16)=0000 & inst(7:0)=00000000 & inst(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {baseline: 'CondDecoder',
 //       constraints: ,
-//       rule: 'Nop_Rule_110_A1_P222'}
+//       defs: {},
+//       rule: 'NOP'}
 //
 // Representative case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000000 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {baseline: CondDecoder,
 //       constraints: ,
-//       rule: Nop_Rule_110_A1_P222}
+//       defs: {},
+//       rule: NOP}
 class CondDecoderTester_Case0
     : public CondDecoderTesterCase0 {
  public:
   CondDecoderTester_Case0()
     : CondDecoderTesterCase0(
-      state_.CondDecoder_Nop_Rule_110_A1_P222_instance_)
+      state_.CondDecoder_NOP_instance_)
   {}
 };
 
@@ -516,99 +778,121 @@ class CondDecoderTester_Case0
 // inst(22)=0 & inst(19:16)=0000 & inst(7:0)=00000001 & inst(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {baseline: 'CondDecoder',
 //       constraints: ,
-//       rule: 'Yield_Rule_413_A1_P812'}
+//       defs: {},
+//       rule: 'YIELD'}
 //
 // Representative case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000001 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {baseline: CondDecoder,
 //       constraints: ,
-//       rule: Yield_Rule_413_A1_P812}
+//       defs: {},
+//       rule: YIELD}
 class CondDecoderTester_Case1
     : public CondDecoderTesterCase1 {
  public:
   CondDecoderTester_Case1()
     : CondDecoderTesterCase1(
-      state_.CondDecoder_Yield_Rule_413_A1_P812_instance_)
+      state_.CondDecoder_YIELD_instance_)
   {}
 };
 
 // Neutral case:
 // inst(22)=0 & inst(19:16)=0000 & inst(7:0)=00000010 & inst(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {baseline: 'ForbiddenCondDecoder',
+//    = {baseline: 'Forbidden',
 //       constraints: ,
-//       rule: 'Wfe_Rule_411_A1_P808'}
+//       defs: {},
+//       rule: 'WFE',
+//       safety: [true => FORBIDDEN]}
 //
 // Representative case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000010 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {baseline: ForbiddenCondDecoder,
+//    = {baseline: Forbidden,
 //       constraints: ,
-//       rule: Wfe_Rule_411_A1_P808}
-class ForbiddenCondDecoderTester_Case2
+//       defs: {},
+//       rule: WFE,
+//       safety: [true => FORBIDDEN],
+//       true: true}
+class ForbiddenTester_Case2
     : public UnsafeCondDecoderTesterCase2 {
  public:
-  ForbiddenCondDecoderTester_Case2()
+  ForbiddenTester_Case2()
     : UnsafeCondDecoderTesterCase2(
-      state_.ForbiddenCondDecoder_Wfe_Rule_411_A1_P808_instance_)
+      state_.Forbidden_WFE_instance_)
   {}
 };
 
 // Neutral case:
 // inst(22)=0 & inst(19:16)=0000 & inst(7:0)=00000011 & inst(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {baseline: 'ForbiddenCondDecoder',
+//    = {baseline: 'Forbidden',
 //       constraints: ,
-//       rule: 'Wfi_Rule_412_A1_P810'}
+//       defs: {},
+//       rule: 'WFI',
+//       safety: [true => FORBIDDEN]}
 //
 // Representative case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000011 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {baseline: ForbiddenCondDecoder,
+//    = {baseline: Forbidden,
 //       constraints: ,
-//       rule: Wfi_Rule_412_A1_P810}
-class ForbiddenCondDecoderTester_Case3
+//       defs: {},
+//       rule: WFI,
+//       safety: [true => FORBIDDEN],
+//       true: true}
+class ForbiddenTester_Case3
     : public UnsafeCondDecoderTesterCase3 {
  public:
-  ForbiddenCondDecoderTester_Case3()
+  ForbiddenTester_Case3()
     : UnsafeCondDecoderTesterCase3(
-      state_.ForbiddenCondDecoder_Wfi_Rule_412_A1_P810_instance_)
+      state_.Forbidden_WFI_instance_)
   {}
 };
 
 // Neutral case:
 // inst(22)=0 & inst(19:16)=0000 & inst(7:0)=00000100 & inst(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {baseline: 'ForbiddenCondDecoder',
+//    = {baseline: 'Forbidden',
 //       constraints: ,
-//       rule: 'Sev_Rule_158_A1_P316'}
+//       defs: {},
+//       rule: 'SEV',
+//       safety: [true => FORBIDDEN]}
 //
 // Representative case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000100 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {baseline: ForbiddenCondDecoder,
+//    = {baseline: Forbidden,
 //       constraints: ,
-//       rule: Sev_Rule_158_A1_P316}
-class ForbiddenCondDecoderTester_Case4
+//       defs: {},
+//       rule: SEV,
+//       safety: [true => FORBIDDEN],
+//       true: true}
+class ForbiddenTester_Case4
     : public UnsafeCondDecoderTesterCase4 {
  public:
-  ForbiddenCondDecoderTester_Case4()
+  ForbiddenTester_Case4()
     : UnsafeCondDecoderTesterCase4(
-      state_.ForbiddenCondDecoder_Sev_Rule_158_A1_P316_instance_)
+      state_.Forbidden_SEV_instance_)
   {}
 };
 
 // Neutral case:
 // inst(22)=0 & inst(19:16)=0000 & inst(7:0)=1111xxxx & inst(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {baseline: 'ForbiddenCondDecoder',
+//    = {baseline: 'Forbidden',
 //       constraints: ,
-//       rule: 'Dbg_Rule_40_A1_P88'}
+//       defs: {},
+//       rule: 'DBG',
+//       safety: [true => FORBIDDEN]}
 //
 // Representative case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=1111xxxx & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {baseline: ForbiddenCondDecoder,
+//    = {baseline: Forbidden,
 //       constraints: ,
-//       rule: Dbg_Rule_40_A1_P88}
-class ForbiddenCondDecoderTester_Case5
+//       defs: {},
+//       rule: DBG,
+//       safety: [true => FORBIDDEN],
+//       true: true}
+class ForbiddenTester_Case5
     : public UnsafeCondDecoderTesterCase5 {
  public:
-  ForbiddenCondDecoderTester_Case5()
+  ForbiddenTester_Case5()
     : UnsafeCondDecoderTesterCase5(
-      state_.ForbiddenCondDecoder_Dbg_Rule_40_A1_P88_instance_)
+      state_.Forbidden_DBG_instance_)
   {}
 };
 
@@ -616,19 +900,32 @@ class ForbiddenCondDecoderTester_Case5
 // inst(22)=0 & inst(19:16)=0100 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {baseline: 'MoveImmediate12ToApsr',
 //       constraints: ,
-//       rule: 'Msr_Rule_103_A1_P208'}
+//       defs: {16
+//            if inst(19:18)(1)=1
+//            else 32},
+//       rule: 'MSR_immediate',
+//       safety: [inst(19:18)=00 => DECODER_ERROR]}
 //
 // Representative case:
 // op(22)=0 & op1(19:16)=0100 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: MoveImmediate12ToApsr,
+//    = {NZCV: 16,
+//       None: 32,
+//       baseline: MoveImmediate12ToApsr,
 //       constraints: ,
-//       rule: Msr_Rule_103_A1_P208}
+//       defs: {NZCV
+//            if write_nzcvq
+//            else None},
+//       fields: [mask(19:18)],
+//       mask: mask(19:18),
+//       rule: MSR_immediate,
+//       safety: [mask(19:18)=00 => DECODER_ERROR],
+//       write_nzcvq: mask(1)=1}
 class MoveImmediate12ToApsrTester_Case6
     : public MoveImmediate12ToApsrTesterCase6 {
  public:
   MoveImmediate12ToApsrTester_Case6()
     : MoveImmediate12ToApsrTesterCase6(
-      state_.MoveImmediate12ToApsr_Msr_Rule_103_A1_P208_instance_)
+      state_.MoveImmediate12ToApsr_MSR_immediate_instance_)
   {}
 };
 
@@ -636,79 +933,107 @@ class MoveImmediate12ToApsrTester_Case6
 // inst(22)=0 & inst(19:16)=1x00 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {baseline: 'MoveImmediate12ToApsr',
 //       constraints: ,
-//       rule: 'Msr_Rule_103_A1_P208'}
+//       defs: {16
+//            if inst(19:18)(1)=1
+//            else 32},
+//       rule: 'MSR_immediate',
+//       safety: [inst(19:18)=00 => DECODER_ERROR]}
 //
 // Representative case:
 // op(22)=0 & op1(19:16)=1x00 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: MoveImmediate12ToApsr,
+//    = {NZCV: 16,
+//       None: 32,
+//       baseline: MoveImmediate12ToApsr,
 //       constraints: ,
-//       rule: Msr_Rule_103_A1_P208}
+//       defs: {NZCV
+//            if write_nzcvq
+//            else None},
+//       fields: [mask(19:18)],
+//       mask: mask(19:18),
+//       rule: MSR_immediate,
+//       safety: [mask(19:18)=00 => DECODER_ERROR],
+//       write_nzcvq: mask(1)=1}
 class MoveImmediate12ToApsrTester_Case7
     : public MoveImmediate12ToApsrTesterCase7 {
  public:
   MoveImmediate12ToApsrTester_Case7()
     : MoveImmediate12ToApsrTesterCase7(
-      state_.MoveImmediate12ToApsr_Msr_Rule_103_A1_P208_instance_)
+      state_.MoveImmediate12ToApsr_MSR_immediate_instance_)
   {}
 };
 
 // Neutral case:
 // inst(22)=0 & inst(19:16)=xx01 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'ForbiddenCondDecoder',
+//    = {baseline: 'Forbidden',
 //       constraints: ,
-//       rule: 'Msr_Rule_B6_1_6_A1_PB6_12'}
+//       defs: {},
+//       rule: 'MSR_immediate',
+//       safety: [true => FORBIDDEN]}
 //
 // Representative case:
 // op(22)=0 & op1(19:16)=xx01 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: ForbiddenCondDecoder,
+//    = {baseline: Forbidden,
 //       constraints: ,
-//       rule: Msr_Rule_B6_1_6_A1_PB6_12}
-class ForbiddenCondDecoderTester_Case8
+//       defs: {},
+//       rule: MSR_immediate,
+//       safety: [true => FORBIDDEN],
+//       true: true}
+class ForbiddenTester_Case8
     : public UnsafeCondDecoderTesterCase8 {
  public:
-  ForbiddenCondDecoderTester_Case8()
+  ForbiddenTester_Case8()
     : UnsafeCondDecoderTesterCase8(
-      state_.ForbiddenCondDecoder_Msr_Rule_B6_1_6_A1_PB6_12_instance_)
+      state_.Forbidden_MSR_immediate_instance_)
   {}
 };
 
 // Neutral case:
 // inst(22)=0 & inst(19:16)=xx1x & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'ForbiddenCondDecoder',
+//    = {baseline: 'Forbidden',
 //       constraints: ,
-//       rule: 'Msr_Rule_B6_1_6_A1_PB6_12'}
+//       defs: {},
+//       rule: 'MSR_immediate',
+//       safety: [true => FORBIDDEN]}
 //
 // Representative case:
 // op(22)=0 & op1(19:16)=xx1x & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: ForbiddenCondDecoder,
+//    = {baseline: Forbidden,
 //       constraints: ,
-//       rule: Msr_Rule_B6_1_6_A1_PB6_12}
-class ForbiddenCondDecoderTester_Case9
+//       defs: {},
+//       rule: MSR_immediate,
+//       safety: [true => FORBIDDEN],
+//       true: true}
+class ForbiddenTester_Case9
     : public UnsafeCondDecoderTesterCase9 {
  public:
-  ForbiddenCondDecoderTester_Case9()
+  ForbiddenTester_Case9()
     : UnsafeCondDecoderTesterCase9(
-      state_.ForbiddenCondDecoder_Msr_Rule_B6_1_6_A1_PB6_12_instance_)
+      state_.Forbidden_MSR_immediate_instance_)
   {}
 };
 
 // Neutral case:
 // inst(22)=1 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: 'ForbiddenCondDecoder',
+//    = {baseline: 'Forbidden',
 //       constraints: ,
-//       rule: 'Msr_Rule_B6_1_6_A1_PB6_12'}
+//       defs: {},
+//       rule: 'MSR_immediate',
+//       safety: [true => FORBIDDEN]}
 //
 // Representative case:
 // op(22)=1 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {baseline: ForbiddenCondDecoder,
+//    = {baseline: Forbidden,
 //       constraints: ,
-//       rule: Msr_Rule_B6_1_6_A1_PB6_12}
-class ForbiddenCondDecoderTester_Case10
+//       defs: {},
+//       rule: MSR_immediate,
+//       safety: [true => FORBIDDEN],
+//       true: true}
+class ForbiddenTester_Case10
     : public UnsafeCondDecoderTesterCase10 {
  public:
-  ForbiddenCondDecoderTester_Case10()
+  ForbiddenTester_Case10()
     : UnsafeCondDecoderTesterCase10(
-      state_.ForbiddenCondDecoder_Msr_Rule_B6_1_6_A1_PB6_12_instance_)
+      state_.Forbidden_MSR_immediate_instance_)
   {}
 };
 
@@ -723,255 +1048,298 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(22)=0 & inst(19:16)=0000 & inst(7:0)=00000000 & inst(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: 'DontCareInst',
+//    = {actual: 'CondDecoder',
 //       baseline: 'CondDecoder',
 //       constraints: ,
+//       defs: {},
 //       pattern: 'cccc0011001000001111000000000000',
-//       rule: 'Nop_Rule_110_A1_P222'}
+//       rule: 'NOP'}
 //
-// Representative case:
+// Representaive case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000000 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: DontCareInst,
+//    = {actual: CondDecoder,
 //       baseline: CondDecoder,
 //       constraints: ,
+//       defs: {},
 //       pattern: cccc0011001000001111000000000000,
-//       rule: Nop_Rule_110_A1_P222}
+//       rule: NOP}
 TEST_F(Arm32DecoderStateTests,
        CondDecoderTester_Case0_TestCase0) {
-  CondDecoderTester_Case0 baseline_tester;
-  NamedDontCareInst_Nop_Rule_110_A1_P222 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0011001000001111000000000000");
+  CondDecoderTester_Case0 tester;
+  tester.Test("cccc0011001000001111000000000000");
 }
 
 // Neutral case:
 // inst(22)=0 & inst(19:16)=0000 & inst(7:0)=00000001 & inst(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: 'DontCareInst',
+//    = {actual: 'CondDecoder',
 //       baseline: 'CondDecoder',
 //       constraints: ,
+//       defs: {},
 //       pattern: 'cccc0011001000001111000000000001',
-//       rule: 'Yield_Rule_413_A1_P812'}
+//       rule: 'YIELD'}
 //
-// Representative case:
+// Representaive case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000001 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
-//    = {actual: DontCareInst,
+//    = {actual: CondDecoder,
 //       baseline: CondDecoder,
 //       constraints: ,
+//       defs: {},
 //       pattern: cccc0011001000001111000000000001,
-//       rule: Yield_Rule_413_A1_P812}
+//       rule: YIELD}
 TEST_F(Arm32DecoderStateTests,
        CondDecoderTester_Case1_TestCase1) {
-  CondDecoderTester_Case1 baseline_tester;
-  NamedDontCareInst_Yield_Rule_413_A1_P812 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0011001000001111000000000001");
+  CondDecoderTester_Case1 tester;
+  tester.Test("cccc0011001000001111000000000001");
 }
 
 // Neutral case:
 // inst(22)=0 & inst(19:16)=0000 & inst(7:0)=00000010 & inst(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenCondDecoder',
+//       baseline: 'Forbidden',
 //       constraints: ,
+//       defs: {},
 //       pattern: 'cccc0011001000001111000000000010',
-//       rule: 'Wfe_Rule_411_A1_P808'}
+//       rule: 'WFE',
+//       safety: [true => FORBIDDEN]}
 //
-// Representative case:
+// Representaive case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000010 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Forbidden,
-//       baseline: ForbiddenCondDecoder,
+//       baseline: Forbidden,
 //       constraints: ,
+//       defs: {},
 //       pattern: cccc0011001000001111000000000010,
-//       rule: Wfe_Rule_411_A1_P808}
+//       rule: WFE,
+//       safety: [true => FORBIDDEN],
+//       true: true}
 TEST_F(Arm32DecoderStateTests,
-       ForbiddenCondDecoderTester_Case2_TestCase2) {
-  ForbiddenCondDecoderTester_Case2 baseline_tester;
-  NamedForbidden_Wfe_Rule_411_A1_P808 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0011001000001111000000000010");
+       ForbiddenTester_Case2_TestCase2) {
+  ForbiddenTester_Case2 tester;
+  tester.Test("cccc0011001000001111000000000010");
 }
 
 // Neutral case:
 // inst(22)=0 & inst(19:16)=0000 & inst(7:0)=00000011 & inst(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenCondDecoder',
+//       baseline: 'Forbidden',
 //       constraints: ,
+//       defs: {},
 //       pattern: 'cccc0011001000001111000000000011',
-//       rule: 'Wfi_Rule_412_A1_P810'}
+//       rule: 'WFI',
+//       safety: [true => FORBIDDEN]}
 //
-// Representative case:
+// Representaive case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000011 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Forbidden,
-//       baseline: ForbiddenCondDecoder,
+//       baseline: Forbidden,
 //       constraints: ,
+//       defs: {},
 //       pattern: cccc0011001000001111000000000011,
-//       rule: Wfi_Rule_412_A1_P810}
+//       rule: WFI,
+//       safety: [true => FORBIDDEN],
+//       true: true}
 TEST_F(Arm32DecoderStateTests,
-       ForbiddenCondDecoderTester_Case3_TestCase3) {
-  ForbiddenCondDecoderTester_Case3 baseline_tester;
-  NamedForbidden_Wfi_Rule_412_A1_P810 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0011001000001111000000000011");
+       ForbiddenTester_Case3_TestCase3) {
+  ForbiddenTester_Case3 tester;
+  tester.Test("cccc0011001000001111000000000011");
 }
 
 // Neutral case:
 // inst(22)=0 & inst(19:16)=0000 & inst(7:0)=00000100 & inst(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenCondDecoder',
+//       baseline: 'Forbidden',
 //       constraints: ,
+//       defs: {},
 //       pattern: 'cccc0011001000001111000000000100',
-//       rule: 'Sev_Rule_158_A1_P316'}
+//       rule: 'SEV',
+//       safety: [true => FORBIDDEN]}
 //
-// Representative case:
+// Representaive case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000100 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Forbidden,
-//       baseline: ForbiddenCondDecoder,
+//       baseline: Forbidden,
 //       constraints: ,
+//       defs: {},
 //       pattern: cccc0011001000001111000000000100,
-//       rule: Sev_Rule_158_A1_P316}
+//       rule: SEV,
+//       safety: [true => FORBIDDEN],
+//       true: true}
 TEST_F(Arm32DecoderStateTests,
-       ForbiddenCondDecoderTester_Case4_TestCase4) {
-  ForbiddenCondDecoderTester_Case4 baseline_tester;
-  NamedForbidden_Sev_Rule_158_A1_P316 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0011001000001111000000000100");
+       ForbiddenTester_Case4_TestCase4) {
+  ForbiddenTester_Case4 tester;
+  tester.Test("cccc0011001000001111000000000100");
 }
 
 // Neutral case:
 // inst(22)=0 & inst(19:16)=0000 & inst(7:0)=1111xxxx & inst(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenCondDecoder',
+//       baseline: 'Forbidden',
 //       constraints: ,
+//       defs: {},
 //       pattern: 'cccc001100100000111100001111iiii',
-//       rule: 'Dbg_Rule_40_A1_P88'}
+//       rule: 'DBG',
+//       safety: [true => FORBIDDEN]}
 //
-// Representative case:
+// Representaive case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=1111xxxx & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Forbidden,
-//       baseline: ForbiddenCondDecoder,
+//       baseline: Forbidden,
 //       constraints: ,
+//       defs: {},
 //       pattern: cccc001100100000111100001111iiii,
-//       rule: Dbg_Rule_40_A1_P88}
+//       rule: DBG,
+//       safety: [true => FORBIDDEN],
+//       true: true}
 TEST_F(Arm32DecoderStateTests,
-       ForbiddenCondDecoderTester_Case5_TestCase5) {
-  ForbiddenCondDecoderTester_Case5 baseline_tester;
-  NamedForbidden_Dbg_Rule_40_A1_P88 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc001100100000111100001111iiii");
+       ForbiddenTester_Case5_TestCase5) {
+  ForbiddenTester_Case5 tester;
+  tester.Test("cccc001100100000111100001111iiii");
 }
 
 // Neutral case:
 // inst(22)=0 & inst(19:16)=0100 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: 'DontCareInst',
+//    = {actual: 'MoveImmediate12ToApsr',
 //       baseline: 'MoveImmediate12ToApsr',
 //       constraints: ,
-//       pattern: 'cccc0011001001001111iiiiiiiiiiii',
-//       rule: 'Msr_Rule_103_A1_P208'}
+//       defs: {16
+//            if inst(19:18)(1)=1
+//            else 32},
+//       pattern: 'cccc00110010mm001111iiiiiiiiiiii',
+//       rule: 'MSR_immediate',
+//       safety: [inst(19:18)=00 => DECODER_ERROR]}
 //
-// Representative case:
+// Representaive case:
 // op(22)=0 & op1(19:16)=0100 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: DontCareInst,
+//    = {NZCV: 16,
+//       None: 32,
+//       actual: MoveImmediate12ToApsr,
 //       baseline: MoveImmediate12ToApsr,
 //       constraints: ,
-//       pattern: cccc0011001001001111iiiiiiiiiiii,
-//       rule: Msr_Rule_103_A1_P208}
+//       defs: {NZCV
+//            if write_nzcvq
+//            else None},
+//       fields: [mask(19:18)],
+//       mask: mask(19:18),
+//       pattern: cccc00110010mm001111iiiiiiiiiiii,
+//       rule: MSR_immediate,
+//       safety: [mask(19:18)=00 => DECODER_ERROR],
+//       write_nzcvq: mask(1)=1}
 TEST_F(Arm32DecoderStateTests,
        MoveImmediate12ToApsrTester_Case6_TestCase6) {
-  MoveImmediate12ToApsrTester_Case6 baseline_tester;
-  NamedDontCareInst_Msr_Rule_103_A1_P208 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0011001001001111iiiiiiiiiiii");
+  MoveImmediate12ToApsrTester_Case6 tester;
+  tester.Test("cccc00110010mm001111iiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(22)=0 & inst(19:16)=1x00 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: 'DontCareInst',
+//    = {actual: 'MoveImmediate12ToApsr',
 //       baseline: 'MoveImmediate12ToApsr',
 //       constraints: ,
-//       pattern: 'cccc001100101x001111iiiiiiiiiiii',
-//       rule: 'Msr_Rule_103_A1_P208'}
+//       defs: {16
+//            if inst(19:18)(1)=1
+//            else 32},
+//       pattern: 'cccc00110010mm001111iiiiiiiiiiii',
+//       rule: 'MSR_immediate',
+//       safety: [inst(19:18)=00 => DECODER_ERROR]}
 //
-// Representative case:
+// Representaive case:
 // op(22)=0 & op1(19:16)=1x00 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
-//    = {actual: DontCareInst,
+//    = {NZCV: 16,
+//       None: 32,
+//       actual: MoveImmediate12ToApsr,
 //       baseline: MoveImmediate12ToApsr,
 //       constraints: ,
-//       pattern: cccc001100101x001111iiiiiiiiiiii,
-//       rule: Msr_Rule_103_A1_P208}
+//       defs: {NZCV
+//            if write_nzcvq
+//            else None},
+//       fields: [mask(19:18)],
+//       mask: mask(19:18),
+//       pattern: cccc00110010mm001111iiiiiiiiiiii,
+//       rule: MSR_immediate,
+//       safety: [mask(19:18)=00 => DECODER_ERROR],
+//       write_nzcvq: mask(1)=1}
 TEST_F(Arm32DecoderStateTests,
        MoveImmediate12ToApsrTester_Case7_TestCase7) {
-  MoveImmediate12ToApsrTester_Case7 baseline_tester;
-  NamedDontCareInst_Msr_Rule_103_A1_P208 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc001100101x001111iiiiiiiiiiii");
+  MoveImmediate12ToApsrTester_Case7 tester;
+  tester.Test("cccc00110010mm001111iiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(22)=0 & inst(19:16)=xx01 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenCondDecoder',
+//       baseline: 'Forbidden',
 //       constraints: ,
-//       pattern: 'cccc00110010ii011111iiiiiiiiiiii',
-//       rule: 'Msr_Rule_B6_1_6_A1_PB6_12'}
+//       defs: {},
+//       pattern: 'cccc00110r10mmmm1111iiiiiiiiiiii',
+//       rule: 'MSR_immediate',
+//       safety: [true => FORBIDDEN]}
 //
-// Representative case:
+// Representaive case:
 // op(22)=0 & op1(19:16)=xx01 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: Forbidden,
-//       baseline: ForbiddenCondDecoder,
+//       baseline: Forbidden,
 //       constraints: ,
-//       pattern: cccc00110010ii011111iiiiiiiiiiii,
-//       rule: Msr_Rule_B6_1_6_A1_PB6_12}
+//       defs: {},
+//       pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
+//       rule: MSR_immediate,
+//       safety: [true => FORBIDDEN],
+//       true: true}
 TEST_F(Arm32DecoderStateTests,
-       ForbiddenCondDecoderTester_Case8_TestCase8) {
-  ForbiddenCondDecoderTester_Case8 baseline_tester;
-  NamedForbidden_Msr_Rule_B6_1_6_A1_PB6_12 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc00110010ii011111iiiiiiiiiiii");
+       ForbiddenTester_Case8_TestCase8) {
+  ForbiddenTester_Case8 tester;
+  tester.Test("cccc00110r10mmmm1111iiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(22)=0 & inst(19:16)=xx1x & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenCondDecoder',
+//       baseline: 'Forbidden',
 //       constraints: ,
-//       pattern: 'cccc00110010ii1i1111iiiiiiiiiiii',
-//       rule: 'Msr_Rule_B6_1_6_A1_PB6_12'}
+//       defs: {},
+//       pattern: 'cccc00110r10mmmm1111iiiiiiiiiiii',
+//       rule: 'MSR_immediate',
+//       safety: [true => FORBIDDEN]}
 //
-// Representative case:
+// Representaive case:
 // op(22)=0 & op1(19:16)=xx1x & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: Forbidden,
-//       baseline: ForbiddenCondDecoder,
+//       baseline: Forbidden,
 //       constraints: ,
-//       pattern: cccc00110010ii1i1111iiiiiiiiiiii,
-//       rule: Msr_Rule_B6_1_6_A1_PB6_12}
+//       defs: {},
+//       pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
+//       rule: MSR_immediate,
+//       safety: [true => FORBIDDEN],
+//       true: true}
 TEST_F(Arm32DecoderStateTests,
-       ForbiddenCondDecoderTester_Case9_TestCase9) {
-  ForbiddenCondDecoderTester_Case9 baseline_tester;
-  NamedForbidden_Msr_Rule_B6_1_6_A1_PB6_12 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc00110010ii1i1111iiiiiiiiiiii");
+       ForbiddenTester_Case9_TestCase9) {
+  ForbiddenTester_Case9 tester;
+  tester.Test("cccc00110r10mmmm1111iiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(22)=1 & inst(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: 'Forbidden',
-//       baseline: 'ForbiddenCondDecoder',
+//       baseline: 'Forbidden',
 //       constraints: ,
-//       pattern: 'cccc00110110iiii1111iiiiiiiiiiii',
-//       rule: 'Msr_Rule_B6_1_6_A1_PB6_12'}
+//       defs: {},
+//       pattern: 'cccc00110r10mmmm1111iiiiiiiiiiii',
+//       rule: 'MSR_immediate',
+//       safety: [true => FORBIDDEN]}
 //
-// Representative case:
+// Representaive case:
 // op(22)=1 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: Forbidden,
-//       baseline: ForbiddenCondDecoder,
+//       baseline: Forbidden,
 //       constraints: ,
-//       pattern: cccc00110110iiii1111iiiiiiiiiiii,
-//       rule: Msr_Rule_B6_1_6_A1_PB6_12}
+//       defs: {},
+//       pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
+//       rule: MSR_immediate,
+//       safety: [true => FORBIDDEN],
+//       true: true}
 TEST_F(Arm32DecoderStateTests,
-       ForbiddenCondDecoderTester_Case10_TestCase10) {
-  ForbiddenCondDecoderTester_Case10 baseline_tester;
-  NamedForbidden_Msr_Rule_B6_1_6_A1_PB6_12 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc00110110iiii1111iiiiiiiiiiii");
+       ForbiddenTester_Case10_TestCase10) {
+  ForbiddenTester_Case10 tester;
+  tester.Test("cccc00110r10mmmm1111iiiiiiiiiiii");
 }
 
 }  // namespace nacl_arm_test

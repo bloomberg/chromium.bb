@@ -1573,6 +1573,14 @@ defs(Instruction inst) const {
    Add(Register(16));
 }
 
+SafetyLevel CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
+
 RegisterList CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -1617,6 +1625,14 @@ defs(Instruction inst) const {
        ? 16
        : 32)));
 }
+
+SafetyLevel CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
 
 RegisterList CMN_register_cccc00010111nnnn0000iiiiitt0mmmm_case_0::
 uses(Instruction inst) const {
@@ -1704,6 +1720,14 @@ defs(Instruction inst) const {
    Add(Register(16));
 }
 
+SafetyLevel CMP_immediate_cccc00110101nnnn0000iiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
+
 RegisterList CMP_immediate_cccc00110101nnnn0000iiiiiiiiiiii_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -1748,6 +1772,14 @@ defs(Instruction inst) const {
        ? 16
        : 32)));
 }
+
+SafetyLevel CMP_register_cccc00010101nnnn0000iiiiitt0mmmm_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
 
 RegisterList CMP_register_cccc00010101nnnn0000iiiiitt0mmmm_case_0::
 uses(Instruction inst) const {
@@ -1865,6 +1897,45 @@ safety(Instruction inst) const {
   return MAY_BE_SAFE;
 }
 
+
+// DBG_cccc001100100000111100001111iiii_case_0:
+//
+//   {arch: v7,
+//    baseline: Forbidden,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc001100100000111100001111iiii,
+//    rule: DBG,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList DBG_cccc001100100000111100001111iiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel DBG_cccc001100100000111100001111iiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList DBG_cccc001100100000111100001111iiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
 
 // EOR_immediate_cccc0010001snnnnddddiiiiiiiiiiii_case_0:
 //
@@ -4625,6 +4696,14 @@ is_literal_load(Instruction inst) const {
   return true;
 }
 
+SafetyLevel LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
+
 RegisterList LDR_literal_cccc0101u0011111ttttiiiiiiiiiiii_case_0::
 uses(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
@@ -5585,6 +5664,97 @@ uses(Instruction inst) const {
   return RegisterList();
 }
 
+// MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0:
+//
+//   {NZCV: 16,
+//    None: 32,
+//    baseline: MoveImmediate12ToApsr,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {NZCV
+//         if write_nzcvq
+//         else None},
+//    fields: [cond(31:28), mask(19:18), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ARMExpandImm(imm12),
+//    mask: mask(19:18),
+//    pattern: cccc00110010mm001111iiiiiiiiiiii,
+//    rule: MSR_immediate,
+//    safety: [mask(19:18)=00 => DECODER_ERROR],
+//    uses: {},
+//    write_g: mask(0)=1,
+//    write_nzcvq: mask(1)=1}
+RegisterList MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{16
+  //       if inst(19:18)(1)=1
+  //       else 32}'
+  return RegisterList().
+   Add(Register(((((inst.Bits() & 0x000C0000) >> 18) & 0x00000002)  ==
+          0x00000002
+       ? 16
+       : 32)));
+}
+
+SafetyLevel MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // inst(19:18)=00 => DECODER_ERROR
+  if ((inst.Bits() & 0x000C0000)  ==
+          0x00000000)
+    return DECODER_ERROR;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MSR_immediate_cccc00110010mm001111iiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
+// MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0:
+//
+//   {baseline: Forbidden,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc00110r10mmmm1111iiiiiiiiiiii,
+//    rule: MSR_immediate,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList MSR_immediate_cccc00110r10mmmm1111iiiiiiiiiiii_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // MSR_register_cccc00010010mm00111100000000nnnn_case_0:
 //
 //   {NZCV: 16,
@@ -5934,6 +6104,39 @@ uses(Instruction inst) const {
   return RegisterList().
    Add(Register((inst.Bits() & 0x0000000F))).
    Add(Register(((inst.Bits() & 0x00000F00) >> 8)));
+}
+
+// NOP_cccc0011001000001111000000000000_case_0:
+//
+//   {arch: ['v6K', 'v6T2'],
+//    baseline: CondDecoder,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0011001000001111000000000000,
+//    rule: NOP,
+//    uses: {}}
+RegisterList NOP_cccc0011001000001111000000000000_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel NOP_cccc0011001000001111000000000000_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList NOP_cccc0011001000001111000000000000_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
 }
 
 // ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_0:
@@ -8094,6 +8297,45 @@ uses(Instruction inst) const {
    Add(Register((inst.Bits() & 0x0000000F)));
 }
 
+// SEV_cccc0011001000001111000000000100_case_0:
+//
+//   {arch: v6K,
+//    baseline: Forbidden,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0011001000001111000000000100,
+//    rule: SEV,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+RegisterList SEV_cccc0011001000001111000000000100_case_0::
+defs(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // defs: '{}'
+  return RegisterList();
+}
+
+SafetyLevel SEV_cccc0011001000001111000000000100_case_0::
+safety(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+
+  // true => FORBIDDEN
+  if (true)
+    return FORBIDDEN;
+
+  return MAY_BE_SAFE;
+}
+
+
+RegisterList SEV_cccc0011001000001111000000000100_case_0::
+uses(Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // uses: '{}'
+  return RegisterList();
+}
+
 // SHADD16_cccc01100011nnnndddd11110001mmmm_case_0:
 //
 //   {Pc: 15,
@@ -8982,130 +9224,6 @@ uses(Instruction inst) const {
    Add(Register(((inst.Bits() & 0x0000F000) >> 12))).
    Add(Register(((inst.Bits() & 0x00000F00) >> 8))).
    Add(Register((inst.Bits() & 0x0000000F)));
-}
-
-// SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0:
-//
-//   {M: M(5),
-//    Pc: 15,
-//    Ra: Ra(15:12),
-//    Rd: Rd(19:16),
-//    Rm: Rm(11:8),
-//    Rn: Rn(3:0),
-//    arch: v6,
-//    baseline: Binary4RegisterDualOpNoCondsUpdate,
-//    cond: cond(31:28),
-//    constraints: ,
-//    defs: {Rd},
-//    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), M(5), Rn(3:0)],
-//    pattern: cccc01110101ddddaaaammmm00r1nnnn,
-//    rule: SMMLA,
-//    safety: [Ra  ==
-//            Pc => DECODER_ERROR,
-//      Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
-//    uses: {Rn, Rm, Ra}}
-RegisterList SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0::
-defs(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // defs: '{inst(19:16)}'
-  return RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
-}
-
-SafetyLevel SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0::
-safety(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-
-  // 15  ==
-  //          inst(15:12) => DECODER_ERROR
-  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
-    return DECODER_ERROR;
-
-  // 15  ==
-  //          inst(19:16) ||
-  //       15  ==
-  //          inst(3:0) ||
-  //       15  ==
-  //          inst(11:8) => UNPREDICTABLE
-  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F)))) ||
-       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
-    return UNPREDICTABLE;
-
-  return MAY_BE_SAFE;
-}
-
-
-RegisterList SMMLA_cccc01110101ddddaaaammmm00r1nnnn_case_0::
-uses(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // uses: '{inst(3:0), inst(11:8), inst(15:12)}'
-  return RegisterList().
-   Add(Register((inst.Bits() & 0x0000000F))).
-   Add(Register(((inst.Bits() & 0x00000F00) >> 8))).
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
-}
-
-// SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0:
-//
-//   {M: M(5),
-//    Pc: 15,
-//    Ra: Ra(15:12),
-//    Rd: Rd(19:16),
-//    Rm: Rm(11:8),
-//    Rn: Rn(3:0),
-//    arch: v6,
-//    baseline: Binary4RegisterDualOpNoCondsUpdate,
-//    cond: cond(31:28),
-//    constraints: ,
-//    defs: {Rd},
-//    fields: [cond(31:28), Rd(19:16), Ra(15:12), Rm(11:8), M(5), Rn(3:0)],
-//    pattern: cccc01110101ddddaaaammmm11r1nnnn,
-//    rule: SMMLS,
-//    safety: [Ra  ==
-//            Pc => DECODER_ERROR,
-//      Pc in {Rd, Rn, Rm} => UNPREDICTABLE],
-//    uses: {Rn, Rm, Ra}}
-RegisterList SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0::
-defs(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // defs: '{inst(19:16)}'
-  return RegisterList().
-   Add(Register(((inst.Bits() & 0x000F0000) >> 16)));
-}
-
-SafetyLevel SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0::
-safety(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-
-  // 15  ==
-  //          inst(15:12) => DECODER_ERROR
-  if (((((inst.Bits() & 0x0000F000) >> 12)) == (15)))
-    return DECODER_ERROR;
-
-  // 15  ==
-  //          inst(19:16) ||
-  //       15  ==
-  //          inst(3:0) ||
-  //       15  ==
-  //          inst(11:8) => UNPREDICTABLE
-  if ((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) ||
-       (((15) == ((inst.Bits() & 0x0000000F)))) ||
-       (((15) == (((inst.Bits() & 0x00000F00) >> 8)))))
-    return UNPREDICTABLE;
-
-  return MAY_BE_SAFE;
-}
-
-
-RegisterList SMMLS_cccc01110101ddddaaaammmm11r1nnnn_case_0::
-uses(Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
-  // uses: '{inst(3:0), inst(11:8), inst(15:12)}'
-  return RegisterList().
-   Add(Register((inst.Bits() & 0x0000000F))).
-   Add(Register(((inst.Bits() & 0x00000F00) >> 8))).
-   Add(Register(((inst.Bits() & 0x0000F000) >> 12)));
 }
 
 }  // namespace nacl_arm_dec

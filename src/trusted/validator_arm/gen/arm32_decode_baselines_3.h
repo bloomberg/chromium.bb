@@ -693,6 +693,7 @@ class VLDR_cccc1101ud01nnnndddd1010iiiiiiii_case_0
   virtual Register base_address_register(Instruction i) const;
   virtual RegisterList defs(Instruction inst) const;
   virtual bool is_literal_load(Instruction i) const;
+  virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
@@ -733,6 +734,7 @@ class VLDR_cccc1101ud01nnnndddd1011iiiiiiii_case_0
   virtual Register base_address_register(Instruction i) const;
   virtual RegisterList defs(Instruction inst) const;
   virtual bool is_literal_load(Instruction i) const;
+  virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
@@ -1910,6 +1912,7 @@ class VMRS_cccc111011110001tttt101000010000_case_0
   VMRS_cccc111011110001tttt101000010000_case_0()
      : ClassDecoder() {}
   virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VMRS_cccc111011110001tttt101000010000_case_0);
@@ -7425,6 +7428,82 @@ class VZIP_111100111d11ss10dddd00011qm0mmmm_case_0
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       VZIP_111100111d11ss10dddd00011qm0mmmm_case_0);
+};
+
+// WFE_cccc0011001000001111000000000010_case_0:
+//
+//   {arch: v6K,
+//    baseline: Forbidden,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0011001000001111000000000010,
+//    rule: WFE,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class WFE_cccc0011001000001111000000000010_case_0
+     : public ClassDecoder {
+ public:
+  WFE_cccc0011001000001111000000000010_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      WFE_cccc0011001000001111000000000010_case_0);
+};
+
+// WFI_cccc0011001000001111000000000011_case_0:
+//
+//   {arch: v6K,
+//    baseline: Forbidden,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0011001000001111000000000011,
+//    rule: WFI,
+//    safety: [true => FORBIDDEN],
+//    true: true,
+//    uses: {}}
+class WFI_cccc0011001000001111000000000011_case_0
+     : public ClassDecoder {
+ public:
+  WFI_cccc0011001000001111000000000011_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      WFI_cccc0011001000001111000000000011_case_0);
+};
+
+// YIELD_cccc0011001000001111000000000001_case_0:
+//
+//   {arch: v6K,
+//    baseline: CondDecoder,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {},
+//    fields: [cond(31:28)],
+//    pattern: cccc0011001000001111000000000001,
+//    rule: YIELD,
+//    uses: {}}
+class YIELD_cccc0011001000001111000000000001_case_0
+     : public ClassDecoder {
+ public:
+  YIELD_cccc0011001000001111000000000001_case_0()
+     : ClassDecoder() {}
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      YIELD_cccc0011001000001111000000000001_case_0);
 };
 
 } // namespace nacl_arm_test
