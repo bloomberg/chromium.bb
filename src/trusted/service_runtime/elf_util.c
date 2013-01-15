@@ -350,14 +350,6 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
     }
   }
 
-  /*
-   * Memory allocation will use NaClRoundPage(nap->break_addr), but
-   * the system notion of break is always an exact address.  Even
-   * though we must allocate and make accessible multiples of pages,
-   * the linux-style brk system call (which returns current break on
-   * failure) permits an arbitrarily aligned address as argument.
-   */
-
   return LOAD_OK;
 }
 

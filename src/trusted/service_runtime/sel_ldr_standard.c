@@ -264,6 +264,12 @@ NaClErrorCode NaClAppLoadFileAslr(struct Gio        *gp,
    * max_vaddr -- the break or the boundary between data (initialized
    * and bss) and the address space hole -- does not have to be at a
    * page boundary.
+   *
+   * Memory allocation will use NaClRoundPage(nap->break_addr), but
+   * the system notion of break is always an exact address.  Even
+   * though we must allocate and make accessible multiples of pages,
+   * the linux-style brk system call (which returns current break on
+   * failure) permits a non-aligned address as argument.
    */
   nap->break_addr = max_vaddr;
   nap->data_end = max_vaddr;
