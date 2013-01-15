@@ -130,7 +130,6 @@ class ImageLoadingTracker : public content::NotificationObserver {
   // This class is deprecated. This just lists all currently remaining
   // usage of this class, so once this list is empty this class can and
   // should be removed.
-  friend class CreateChromeApplicationShortcutsDialogGtk;
   friend class CreateChromeApplicationShortcutView;
   friend class ExtensionIconManager;
   friend class ExtensionInfoBar;

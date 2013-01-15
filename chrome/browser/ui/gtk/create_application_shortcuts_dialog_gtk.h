@@ -9,7 +9,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/shell_integration.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -29,6 +28,10 @@ class WebContents;
 
 namespace extensions {
 class Extension;
+}
+
+namespace gfx {
+class Image;
 }
 
 class CreateApplicationShortcutsDialogGtk
@@ -104,8 +107,7 @@ class CreateWebApplicationShortcutsDialogGtk
 };
 
 class CreateChromeApplicationShortcutsDialogGtk
-  : public CreateApplicationShortcutsDialogGtk,
-    public ImageLoadingTracker::Observer {
+  : public CreateApplicationShortcutsDialogGtk {
  public:
   // Displays the dialog box to create application shortcuts for |app|.
   static void Show(GtkWindow* parent, Profile* profile,
@@ -115,12 +117,6 @@ class CreateChromeApplicationShortcutsDialogGtk
                                             Profile* profile,
                                             const extensions::Extension* app);
 
-  // Implement ImageLoadingTracker::Observer.  |tracker_| is used to
-  // load the app's icon.  This method recieves the icon, and adds
-  // it to the "Create Shortcut" dailog box.
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE;
 
  protected:
   virtual ~CreateChromeApplicationShortcutsDialogGtk() {}
@@ -129,9 +125,11 @@ class CreateChromeApplicationShortcutsDialogGtk
       const ShellIntegration::ShortcutInfo& shortcut_info) OVERRIDE;
 
  private:
+  void OnImageLoaded(const gfx::Image& image);
+
+ private:
   const extensions::Extension* app_;
   FilePath profile_path_;
-  ImageLoadingTracker tracker_;
   DISALLOW_COPY_AND_ASSIGN(CreateChromeApplicationShortcutsDialogGtk);
 };
 

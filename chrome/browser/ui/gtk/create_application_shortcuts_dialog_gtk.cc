@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/environment.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/shell_integration_linux.h"
@@ -316,8 +317,7 @@ CreateChromeApplicationShortcutsDialogGtk::
         const Extension* app)
       : CreateApplicationShortcutsDialogGtk(parent),
         app_(app),
-        profile_path_(profile->GetPath()),
-        ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this))  {
+        profile_path_(profile->GetPath())  {
 
   // Get shortcut information now, it's needed for our UI.
   web_app::UpdateShortcutInfoForApp(*app, profile, &shortcut_info_);
@@ -333,20 +333,16 @@ CreateChromeApplicationShortcutsDialogGtk::
     icon_resource = app_->GetIconResource(
         kIconPreviewSizePixels, ExtensionIconSet::MATCH_SMALLER);
 
-  // Note that tracker_.LoadImage() can call OnImageLoaded() before it returns,
-  // if the image is cached.  This is very rare.  Do not do anything after
-  // calling LoadImage() that OnImageLoaded() depends on.
-  tracker_.LoadImage(app_,
-                     icon_resource,
-                     max_size,
-                     ImageLoadingTracker::DONT_CACHE);
+  // Load icon asynchronously
+  extensions::ImageLoader* loader = extensions::ImageLoader::Get(profile);
+  loader->LoadImageAsync(app_, icon_resource, max_size,
+      base::Bind(&CreateChromeApplicationShortcutsDialogGtk::OnImageLoaded,
+                 this));
 }
 
-// Called by tracker_ when the app's icon is loaded.
+// Called when the app's icon is loaded.
 void CreateChromeApplicationShortcutsDialogGtk::OnImageLoaded(
-    const gfx::Image& image,
-    const std::string& extension_id,
-    int index) {
+    const gfx::Image& image) {
   if (image.IsEmpty()) {
     shortcut_info_.favicon =
         ResourceBundle::GetSharedInstance().GetImageNamed(IDR_APP_DEFAULT_ICON);
