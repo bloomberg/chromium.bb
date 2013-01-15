@@ -200,13 +200,6 @@ void WaitForNavigations(NavigationController* controller,
       content::GetQuitTaskForRunLoop(&run_loop));
 }
 
-void WaitForNewTab(Browser* browser) {
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::Source<content::WebContentsDelegate>(browser));
-  observer.Wait();
-}
-
 Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
   Browser* new_browser = GetBrowserNotInSet(excluded_browsers);
   if (new_browser == NULL) {

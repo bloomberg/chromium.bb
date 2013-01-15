@@ -12,6 +12,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -107,9 +108,12 @@ class ChromeRenderProcessHostTest : public InProcessBrowserTest {
 
     // Create a new TYPE_TABBED tab.  It should be in its own process.
     GURL page1("data:text/html,hello world1");
+
+    ui_test_utils::WindowedTabAddedNotificationObserver observer1(
+        content::NotificationService::AllSources());
     chrome::ShowSingletonTab(browser(), page1);
-    if (browser()->tab_strip_model()->count() == tab_count)
-      ui_test_utils::WaitForNewTab(browser());
+    observer1.Wait();
+
     tab_count++;
     host_count++;
     EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
@@ -121,9 +125,10 @@ class ChromeRenderProcessHostTest : public InProcessBrowserTest {
 
     // Create another TYPE_TABBED tab.  It should share the previous process.
     GURL page2("data:text/html,hello world2");
+    ui_test_utils::WindowedTabAddedNotificationObserver observer2(
+        content::NotificationService::AllSources());
     chrome::ShowSingletonTab(browser(), page2);
-    if (browser()->tab_strip_model()->count() == tab_count)
-      ui_test_utils::WaitForNewTab(browser());
+    observer2.Wait();
     tab_count++;
     EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
     tab2 = browser()->tab_strip_model()->GetWebContentsAt(tab_count - 1);
@@ -136,9 +141,10 @@ class ChromeRenderProcessHostTest : public InProcessBrowserTest {
     // exercise bug 43448 where extension and WebUI tabs could get combined into
     // normal renderers.
     GURL history(chrome::kChromeUIHistoryURL);
+    ui_test_utils::WindowedTabAddedNotificationObserver observer3(
+        content::NotificationService::AllSources());
     chrome::ShowSingletonTab(browser(), history);
-    if (browser()->tab_strip_model()->count() == tab_count)
-      ui_test_utils::WaitForNewTab(browser());
+    observer3.Wait();
     tab_count++;
     EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
     tab2 = browser()->tab_strip_model()->GetWebContentsAt(tab_count - 1);
@@ -149,9 +155,10 @@ class ChromeRenderProcessHostTest : public InProcessBrowserTest {
     // Create a TYPE_EXTENSION tab.  It should be in its own process.
     // (the bookmark manager is implemented as an extension)
     GURL bookmarks(chrome::kChromeUIBookmarksURL);
+    ui_test_utils::WindowedTabAddedNotificationObserver observer4(
+        content::NotificationService::AllSources());
     chrome::ShowSingletonTab(browser(), bookmarks);
-    if (browser()->tab_strip_model()->count() == tab_count)
-      ui_test_utils::WaitForNewTab(browser());
+    observer4.Wait();
     tab_count++;
     host_count++;
     EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
@@ -191,9 +198,10 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, ProcessPerTab) {
 
   // Create a new TYPE_TABBED tab.  It should be in its own process.
   GURL page1("data:text/html,hello world1");
+  ui_test_utils::WindowedTabAddedNotificationObserver observer1(
+      content::NotificationService::AllSources());
   chrome::ShowSingletonTab(browser(), page1);
-  if (browser()->tab_strip_model()->count() == tab_count)
-    ui_test_utils::WaitForNewTab(browser());
+  observer1.Wait();
   tab_count++;
   host_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
@@ -201,25 +209,28 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, ProcessPerTab) {
 
   // Create another TYPE_TABBED tab.  It should share the previous process.
   GURL page2("data:text/html,hello world2");
+  ui_test_utils::WindowedTabAddedNotificationObserver observer2(
+      content::NotificationService::AllSources());
   chrome::ShowSingletonTab(browser(), page2);
-  if (browser()->tab_strip_model()->count() == tab_count)
-    ui_test_utils::WaitForNewTab(browser());
+  observer2.Wait();
   tab_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
   // Create another new tab.  It should share the process with the other WebUI.
+  ui_test_utils::WindowedTabAddedNotificationObserver observer3(
+      content::NotificationService::AllSources());
   chrome::NewTab(browser());
-  if (browser()->tab_strip_model()->count() == tab_count)
-    ui_test_utils::WaitForNewTab(browser());
+  observer3.Wait();
   tab_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
 
   // Create another new tab.  It should share the process with the other WebUI.
+  ui_test_utils::WindowedTabAddedNotificationObserver observer4(
+      content::NotificationService::AllSources());
   chrome::NewTab(browser());
-  if (browser()->tab_strip_model()->count() == tab_count)
-    ui_test_utils::WaitForNewTab(browser());
+  observer4.Wait();
   tab_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
   EXPECT_EQ(host_count, RenderProcessHostCount());
@@ -285,9 +296,10 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   int host_count = 1;
 
   GURL page1("data:text/html,hello world1");
+  ui_test_utils::WindowedTabAddedNotificationObserver observer1(
+      content::NotificationService::AllSources());
   chrome::ShowSingletonTab(browser(), page1);
-  if (browser()->tab_strip_model()->count() == tab_count)
-    ui_test_utils::WaitForNewTab(browser());
+  observer1.Wait();
   tab_count++;
   host_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
@@ -318,9 +330,10 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   int host_count = 1;
 
   GURL page1("data:text/html,hello world1");
+  ui_test_utils::WindowedTabAddedNotificationObserver observer1(
+      content::NotificationService::AllSources());
   chrome::ShowSingletonTab(browser(), page1);
-  if (browser()->tab_strip_model()->count() == tab_count)
-    ui_test_utils::WaitForNewTab(browser());
+  observer1.Wait();
   tab_count++;
   host_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());

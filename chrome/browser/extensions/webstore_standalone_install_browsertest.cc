@@ -143,13 +143,13 @@ IN_PROC_BROWSER_TEST_F(WebstoreStandaloneInstallTest, InstallNotSupported) {
       browser(),
       GenerateTestServerUrl(kAppDomain, "install_not_supported.html"));
 
+  ui_test_utils::WindowedTabAddedNotificationObserver observer(
+      content::NotificationService::AllSources());
   RunTest("runTest");
+  observer.Wait();
 
   // The inline install should fail, and a store-provided URL should be opened
   // in a new tab.
-  if (browser()->tab_strip_model()->count() == 1) {
-    ui_test_utils::WaitForNewTab(browser());
-  }
   WebContents* web_contents = chrome::GetActiveWebContents(browser());
   EXPECT_EQ(GURL("http://cws.com/show-me-the-money"), web_contents->GetURL());
 }

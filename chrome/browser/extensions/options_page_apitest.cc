@@ -11,43 +11,45 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 
 using extensions::Extension;
 
-// Used to simulate a click on the first button named 'Options'.
+// Used to simulate a click on the first element named 'Options'.
 static const char kScriptClickOptionButton[] =
     "(function() { "
-    "  var button = document.evaluate(\"//button[text()='Options']\","
-    "      document, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,"
-    "      null).snapshotItem(0);"
+    "  var button = document.querySelector('.options-link');"
     "  button.click();"
     "})();";
 
 // Test that an extension with an options page makes an 'Options' button appear
 // on chrome://extensions, and that clicking the button opens a new tab with the
 // extension's options page.
-// Disabled.  See http://crbug.com/26948 for details.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OptionsPage) {
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      browser()->profile())->extension_service();
+  size_t installed_extensions = service->extensions()->size();
   // Install an extension with an options page.
   const Extension* extension =
       InstallExtension(test_data_dir_.AppendASCII("options.crx"), 1);
   ASSERT_TRUE(extension);
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
-  ASSERT_EQ(1u, service->extensions()->size());
+  EXPECT_EQ(installed_extensions + 1, service->extensions()->size());
 
   // Go to the Extension Settings page and click the Options button.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIExtensionsURL));
   TabStripModel* tab_strip = browser()->tab_strip_model();
-  ASSERT_TRUE(content::ExecuteScript(tab_strip->GetActiveWebContents(),
-                                     kScriptClickOptionButton));
-
-  // If the options page hasn't already come up, wait for it.
-  if (tab_strip->count() == 1) {
-    ui_test_utils::WaitForNewTab(browser());
-  }
-  ASSERT_EQ(2, tab_strip->count());
+  ui_test_utils::WindowedTabAddedNotificationObserver observer(
+      content::NotificationService::AllSources());
+  // NOTE: Currently the above script needs to execute in an iframe. The
+  // selector for that iframe may break if the layout of the extensions
+  // page changes.
+  EXPECT_TRUE(content::ExecuteScriptInFrame(
+      tab_strip->GetActiveWebContents(),
+      "//iframe[starts-with(@src, 'chrome://extension')]",
+      kScriptClickOptionButton));
+  observer.Wait();
+  EXPECT_EQ(2, tab_strip->count());
 
   EXPECT_EQ(extension->GetResourceURL("options.html"),
             tab_strip->GetWebContentsAt(1)->GetURL());
