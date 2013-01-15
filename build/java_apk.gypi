@@ -53,9 +53,7 @@
 #    dependencies from being re-included.
 #  native_libs_paths - The path to any native library to be included in this
 #    target. This should be a path in <(SHARED_LIB_DIR). A stripped copy of
-#    the library will be included in the apk and symbolic links to the
-#    unstripped copy will be added to <(android_product_out) to enable native
-#    debugging.
+#    the library will be included in the apk.
 #  resource_dir - The directory for resources.
 #  R_package - A custom Java package to generate the resource file R.java in.
 #    By default, the package given in AndroidManifest.xml will be used.

@@ -233,15 +233,9 @@ sdk_build_init() {
 
   common_vars_defines
 
-  DEFINES+=" sdk_build=1"
-
   # Sets android specific directories to NOT_SDK_COMPLIANT.  This will allow
   # android_gyp to generate make files, but will cause errors when (and only
   # when) building targets that depend on these directories.
-  DEFINES+=" android_src='NOT_SDK_COMPLIANT'"
-  DEFINES+=" android_product_out=${CHROME_SRC}/out/android"
-  DEFINES+=" android_lib='NOT_SDK_COMPLIANT'"
-  DEFINES+=" android_static_lib='NOT_SDK_COMPLIANT'"
   DEFINES+=" android_sdk=${ANDROID_SDK_ROOT}/${sdk_suffix}"
   DEFINES+=" android_sdk_root=${ANDROID_SDK_ROOT}"
   DEFINES+=" android_sdk_tools=${ANDROID_SDK_ROOT}/platform-tools"
@@ -286,9 +280,7 @@ ${ANDROID_SDK_VERSION}
       print os.path.relpath('${ANDROID_SDK_ROOT}/../tools/linux', \
       '${ANDROID_BUILD_TOP}')")
   DEFINES+=" android_build_type=1"
-  DEFINES+=" sdk_build=0"
   DEFINES+=" android_src=\$(GYP_ABS_ANDROID_TOP_DIR)"
-  DEFINES+=" android_product_out=NOT_USED_ON_WEBVIEW"
   DEFINES+=" android_sdk=\$(GYP_ABS_ANDROID_TOP_DIR)/${ANDROID_SDK}"
   DEFINES+=" android_sdk_root=\$(GYP_ABS_ANDROID_TOP_DIR)/${ANDROID_SDK}"
   DEFINES+=" android_sdk_tools=\$(GYP_ABS_ANDROID_TOP_DIR)/${ANDROID_SDK_TOOLS}"
