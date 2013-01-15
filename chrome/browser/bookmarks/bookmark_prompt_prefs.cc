@@ -4,12 +4,8 @@
 
 #include "chrome/browser/bookmarks/bookmark_prompt_prefs.h"
 
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/pref_names.h"
-
-namespace {
-
-}  // namespace
 
 BookmarkPromptPrefs::BookmarkPromptPrefs(PrefServiceBase* user_prefs)
     : prefs_(user_prefs) {

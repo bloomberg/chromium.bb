@@ -6,7 +6,7 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/pref_names.h"
 

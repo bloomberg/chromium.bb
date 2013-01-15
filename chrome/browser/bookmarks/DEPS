@@ -19,7 +19,7 @@ include_rules = [
   "!chrome/browser/history/query_parser.h",
   "!chrome/browser/history/snippet.h",
   "!chrome/browser/history/url_database.h",
-  "!chrome/browser/prefs/pref_service.h",
+  "!chrome/browser/prefs/pref_service_syncable.h",
   "!chrome/browser/profiles/profile.h",
   "!chrome/browser/profiles/profile_dependency_manager.h",
   "!chrome/browser/profiles/profile_keyed_service.h",
