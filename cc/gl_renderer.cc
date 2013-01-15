@@ -778,14 +778,10 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     gfx::QuadF deviceLayerQuad = MathUtil::mapQuad(deviceTransform, gfx::QuadF(quad->visibleContentRect()), clipped);
     DCHECK(!clipped);
 
-    // TODO(reveman): Axis-aligned is not enough to avoid anti-aliasing.
-    // Bounding rectangle for quad also needs to be expressible as
-    // an integer rectangle. crbug.com/169374
-    bool isAxisAlignedInTarget = deviceLayerQuad.IsRectilinear();
-    bool useAA = !clipped && !isAxisAlignedInTarget && quad->IsAntialiased();
-
     TileProgramUniforms uniforms;
-    if (useAA) {
+    // For now, we simply skip anti-aliasing with the quad is clipped. This only happens
+    // on perspective transformed layers that go partially behind the camera.
+    if (quad->IsAntialiased() && !clipped) {
         if (quad->swizzle_contents)
             tileUniformLocation(tileProgramSwizzleAA(), uniforms);
         else
@@ -810,6 +806,7 @@ void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* qua
     GLenum filter = (quad->IsAntialiased() || scaled || !quad->quadTransform().IsIdentityOrIntegerTranslation()) ? GL_LINEAR : GL_NEAREST;
     ResourceProvider::ScopedSamplerGL quadResourceLock(m_resourceProvider, quad->resource_id, GL_TEXTURE_2D, filter);
 
+    bool useAA = !clipped && quad->IsAntialiased();
     if (useAA) {
         LayerQuad deviceLayerBounds = LayerQuad(gfx::QuadF(deviceLayerQuad.BoundingBox()));
         deviceLayerBounds.inflateAntiAliasingDistance();

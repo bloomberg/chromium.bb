@@ -48,6 +48,13 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
 
   SharedQuadState* sharedQuadState =
       quadSink.useSharedQuadState(createSharedQuadState());
+  bool clipped = false;
+  gfx::QuadF target_quad = MathUtil::mapQuad(
+      drawTransform(),
+      gfx::QuadF(rect),
+      clipped);
+  bool isAxisAlignedInTarget = !clipped && target_quad.IsRectilinear();
+  bool useAA = !isAxisAlignedInTarget;
 
   if (showDebugBorders()) {
     for (PictureLayerTilingSet::Iterator iter(&tilings_,
@@ -124,10 +131,10 @@ void PictureLayerImpl::appendQuads(QuadSink& quadSink,
                  texture_rect,
                  iter.texture_size(),
                  iter->contents_swizzled(),
-                 outside_left_edge,
-                 outside_top_edge,
-                 outside_right_edge,
-                 outside_bottom_edge);
+                 outside_left_edge && useAA,
+                 outside_top_edge && useAA,
+                 outside_right_edge && useAA,
+                 outside_bottom_edge && useAA);
     quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
 
     if (!seen_tilings.size() || seen_tilings.back() != iter.CurrentTiling())
