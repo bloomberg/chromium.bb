@@ -27,7 +27,7 @@ MAX_UPLOAD_ATTEMPTS = 5
 MIN_SIZE_FOR_DIRECT_BLOBSTORE = 20 * 1024
 
 # The number of files to check the isolate server for each query.
-ITEMS_PER_CONTAINS_QUERY = 100
+ITEMS_PER_CONTAINS_QUERY = 500
 
 # A list of already compressed extension types that should not receive any
 # compression before being uploaded.
@@ -256,17 +256,18 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
 
   # Starts the zip and upload process for a given query. The query is assumed
   # to be in the format (relfile, metadata).
+  uploaded = []
   def zip_and_upload(query):
     relfile, metadata = query
     infile = os.path.join(indir, relfile)
     zipping_pool.add_task(zip_and_trigger_upload, infile, metadata,
                           remote_uploader.add_item)
+    uploaded.append(query)
 
   # Generate the list of files that need to be uploaded (since some may already
   # be on the server).
   base_url = base_url.rstrip('/')
   contains_hash_url = base_url + '/content/contains/' + namespace
-  to_upload = []
   next_queries = []
   for relfile, metadata in infiles.iteritems():
     if 'l' in metadata:
@@ -298,7 +299,7 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
       'Total:      %6d, %9.1fkb',
       total,
       sum(m.get('s', 0) for m in infiles.itervalues()) / 1024.)
-  cache_hit = set(infiles.iterkeys()) - set(x[0] for x in to_upload)
+  cache_hit = set(infiles.iterkeys()) - set(x[0] for x in uploaded)
   cache_hit_size = sum(infiles[i].get('s', 0) for i in cache_hit)
   logging.info(
       'cache hit:  %6d, %9.1fkb, %6.2f%% files, %6.2f%% size',
@@ -306,7 +307,7 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
       cache_hit_size / 1024.,
       len(cache_hit) * 100. / total,
       cache_hit_size * 100. / total_size if total_size else 0)
-  cache_miss = to_upload
+  cache_miss = uploaded
   cache_miss_size = sum(infiles[i[0]].get('s', 0) for i in cache_miss)
   logging.info(
       'cache miss: %6d, %9.1fkb, %6.2f%% files, %6.2f%% size',
