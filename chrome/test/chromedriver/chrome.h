@@ -23,6 +23,9 @@ class Chrome {
   // Load a given URL in the main frame.
   virtual Status Load(const std::string& url) = 0;
 
+  // Reload the current page.
+  virtual Status Reload() = 0;
+
   // Evaluates a JavaScript expression in a specified frame and returns
   // the result. |frame| is a frame ID or an empty string for the main frame.
   // If the expression evaluates to a element, it will be bound to a unique ID

@@ -98,6 +98,17 @@ class ChromeDriverTest(unittest.TestCase):
         'document.body.innerHTML = "<div>a</div><div>b</div>";')
     self.assertEqual(2, len(self._driver.FindElements('tag name', 'div')))
 
+  def testGetCurrentUrl(self):
+    self.assertEqual('about:blank', self._driver.GetCurrentUrl())
+
+  def testGoBackAndGoForward(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.GoBack()
+    self._driver.GoForward()
+
+  def testRefresh(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.Refresh()
 
 if __name__ == '__main__':
   parser = optparse.OptionParser()

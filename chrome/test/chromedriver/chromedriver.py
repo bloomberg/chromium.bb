@@ -108,6 +108,18 @@ class ChromeDriver(object):
     return self._ExecuteSessionCommand(
          'setTimeout', {'type' : type, 'ms': timeout})
 
+  def GetCurrentUrl(self):
+    return self._ExecuteSessionCommand('getCurrentUrl')
+
+  def GoBack(self):
+    return self._ExecuteSessionCommand('goBack')
+
+  def GoForward(self):
+    return self._ExecuteSessionCommand('goForward')
+
+  def Refresh(self):
+    return self._ExecuteSessionCommand('refresh')
+
   def Quit(self):
     """Quits the browser and ends the session."""
     self._ExecuteSessionCommand('quit')

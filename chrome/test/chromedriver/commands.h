@@ -89,4 +89,28 @@ Status ExecuteSetTimeout(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+// Get the current page url.
+Status ExecuteGetCurrentUrl(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Navigate backward in the browser history.
+Status ExecuteGoBack(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Navigate forward in the browser history.
+Status ExecuteGoForward(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Refresh the current page.
+Status ExecuteRefresh(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 #endif  // CHROME_TEST_CHROMEDRIVER_COMMANDS_H_

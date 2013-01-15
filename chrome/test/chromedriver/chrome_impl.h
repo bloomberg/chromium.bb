@@ -40,6 +40,7 @@ class ChromeImpl : public Chrome {
 
   // Overridden from Chrome:
   virtual Status Load(const std::string& url) OVERRIDE;
+  virtual Status Reload() OVERRIDE;
   virtual Status EvaluateScript(const std::string& frame,
                                 const std::string& expression,
                                 scoped_ptr<base::Value>* result) OVERRIDE;

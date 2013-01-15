@@ -55,6 +55,14 @@ void CommandExecutorImpl::Init() {
       base::Bind(&ExecuteFindElements)));
   command_map_.Set("setTimeout", base::Bind(execute_session_command,
       base::Bind(&ExecuteSetTimeout)));
+  command_map_.Set("getCurrentUrl", base::Bind(execute_session_command,
+      base::Bind(&ExecuteGetCurrentUrl)));
+  command_map_.Set("goBack", base::Bind(execute_session_command,
+      base::Bind(&ExecuteGoBack)));
+  command_map_.Set("goForward", base::Bind(execute_session_command,
+      base::Bind(&ExecuteGoForward)));
+  command_map_.Set("refresh", base::Bind(execute_session_command,
+      base::Bind(&ExecuteRefresh)));
   Command quit_command = base::Bind(execute_session_command,
       base::Bind(&ExecuteQuit, &session_map_));
   command_map_.Set("quit", quit_command);

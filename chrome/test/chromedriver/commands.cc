@@ -277,3 +277,35 @@ Status ExecuteSetTimeout(
     return Status(kUnknownError, "unknown type of timeout:" + type);
   return Status(kOk);
 }
+
+Status ExecuteGetCurrentUrl(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  base::ListValue args;
+  return session->chrome->CallFunction(
+      "", "function() { return document.URL; }", args, value);
+}
+
+Status ExecuteGoBack(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  return session->chrome->EvaluateScript(
+      "", "window.history.back();", value);
+}
+
+Status ExecuteGoForward(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  return session->chrome->EvaluateScript(
+      "", "window.history.forward();", value);
+}
+
+Status ExecuteRefresh(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  return session->chrome->Reload();
+}

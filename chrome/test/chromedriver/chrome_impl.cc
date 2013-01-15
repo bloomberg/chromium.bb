@@ -100,6 +100,12 @@ Status ChromeImpl::Load(const std::string& url) {
   return client_->SendCommand("Page.navigate", params);
 }
 
+Status ChromeImpl::Reload() {
+  base::DictionaryValue params;
+  params.SetBoolean("ignoreCache", false);
+  return client_->SendCommand("Page.reload", params);
+}
+
 Status ChromeImpl::EvaluateScript(const std::string& frame,
                                   const std::string& expression,
                                   scoped_ptr<base::Value>* result) {
