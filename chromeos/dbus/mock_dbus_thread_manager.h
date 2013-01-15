@@ -32,6 +32,7 @@ class MockDebugDaemonClient;
 class MockShillDeviceClient;
 class MockShillIPConfigClient;
 class MockShillManagerClient;
+class MockShillNetworkClient;
 class MockShillProfileClient;
 class MockShillServiceClient;
 class MockGsmSMSClient;
@@ -71,6 +72,7 @@ class MockDBusThreadManager : public DBusThreadManager {
   MOCK_METHOD0(GetShillDeviceClient, ShillDeviceClient*(void));
   MOCK_METHOD0(GetShillIPConfigClient, ShillIPConfigClient*(void));
   MOCK_METHOD0(GetShillManagerClient, ShillManagerClient*(void));
+  MOCK_METHOD0(GetShillNetworkClient, ShillNetworkClient*(void));
   MOCK_METHOD0(GetShillProfileClient, ShillProfileClient*(void));
   MOCK_METHOD0(GetShillServiceClient, ShillServiceClient*(void));
   MOCK_METHOD0(GetGsmSMSClient, GsmSMSClient*(void));
@@ -130,6 +132,9 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockShillManagerClient* mock_shill_manager_client() {
     return mock_shill_manager_client_.get();
   }
+  MockShillNetworkClient* mock_shill_network_client() {
+    return mock_shill_network_client_.get();
+  }
   MockShillProfileClient* mock_shill_profile_client() {
     return mock_shill_profile_client_.get();
   }
@@ -183,6 +188,7 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<MockShillDeviceClient> mock_shill_device_client_;
   scoped_ptr<MockShillIPConfigClient> mock_shill_ipconfig_client_;
   scoped_ptr<MockShillManagerClient> mock_shill_manager_client_;
+  scoped_ptr<MockShillNetworkClient> mock_shill_network_client_;
   scoped_ptr<MockShillProfileClient> mock_shill_profile_client_;
   scoped_ptr<MockShillServiceClient> mock_shill_service_client_;
   scoped_ptr<MockGsmSMSClient> mock_gsm_sms_client_;

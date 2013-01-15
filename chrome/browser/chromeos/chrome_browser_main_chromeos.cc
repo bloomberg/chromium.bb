@@ -86,11 +86,9 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/display/output_configurator.h"
-#include "chromeos/network/geolocation_handler.h"
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_change_notifier_factory_chromeos.h"
 #include "chromeos/network/network_configuration_handler.h"
-#include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/power/power_state_override.h"
@@ -287,23 +285,17 @@ class DBusServices {
   // longer required. (Switch is set in about_flags.cc and not applied until
   // after DBusServices() is called).
   void InitializeNetworkHandlers() {
-    network_handlers_initialized_ = true;
-
-    // Always initialize these handlers which should not conflict with
-    // NetworkLibrary.
     chromeos::network_event_log::Initialize();
-    chromeos::GeolocationHandler::Initialize();
-
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kEnableNewNetworkHandlers)) {
-      chromeos::NetworkDeviceHandler::Initialize();
-      chromeos::NetworkStateHandler::Initialize();
-      chromeos::NetworkConfigurationHandler::Initialize();
-      // TODO(gauravsh): This needs re-factoring. NetworkChangeNotifier choice
-      // needs to be made before about:flags are processed.
-      if (use_new_network_change_notifier_)
-        NetworkChangeNotifierFactoryChromeos::GetInstance()->Initialize();
-    }
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kEnableNewNetworkHandlers))
+      return;
+    chromeos::NetworkStateHandler::Initialize();
+    chromeos::NetworkConfigurationHandler::Initialize();
+    network_handlers_initialized_ = true;
+    // TODO(gauravsh): This needs re-factoring. NetworkChangeNotifier choice
+    // needs to be made before about:flags are processed.
+    if (use_new_network_change_notifier_)
+      NetworkChangeNotifierFactoryChromeos::GetInstance()->Initialize();
   }
 
   ~DBusServices() {
@@ -315,16 +307,10 @@ class DBusServices {
     if (cros_initialized_ && CrosLibrary::Get())
       CrosLibrary::Shutdown();
 
+    chromeos::network_event_log::Shutdown();
     if (network_handlers_initialized_) {
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-              chromeos::switches::kEnableNewNetworkHandlers)) {
-        chromeos::NetworkDeviceHandler::Shutdown();
-        chromeos::NetworkStateHandler::Shutdown();
-        chromeos::NetworkConfigurationHandler::Shutdown();
-      }
-
-      chromeos::GeolocationHandler::Shutdown();
-      chromeos::network_event_log::Shutdown();
+      chromeos::NetworkStateHandler::Shutdown();
+      chromeos::NetworkConfigurationHandler::Shutdown();
     }
 
     cryptohome::AsyncMethodCaller::Shutdown();

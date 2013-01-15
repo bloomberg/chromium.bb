@@ -759,6 +759,7 @@
         'browser/geolocation/chrome_geolocation_permission_context_unittest.cc',
         'browser/geolocation/geolocation_infobar_queue_controller_unittest.cc',
         'browser/geolocation/geolocation_settings_state_unittest.cc',
+        'browser/geolocation/wifi_data_provider_unittest_chromeos.cc',
         'browser/global_keyboard_shortcuts_mac_unittest.mm',
         'browser/google/google_search_counter_unittest.cc',
         'browser/google/google_update_settings_unittest.cc',

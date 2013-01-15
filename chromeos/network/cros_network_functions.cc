@@ -12,6 +12,7 @@
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill_network_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "chromeos/dbus/shill_service_client.h"
@@ -647,6 +648,92 @@ void CrosRequestIPConfigRefresh(const std::string& ipconfig_path) {
   DBusThreadManager::Get()->GetShillIPConfigClient()->Refresh(
       dbus::ObjectPath(ipconfig_path),
       base::Bind(&DoNothingWithCallStatus));
+}
+
+bool CrosGetWifiAccessPoints(WifiAccessPointVector* result) {
+  scoped_ptr<base::DictionaryValue> manager_properties(
+      DBusThreadManager::Get()->GetShillManagerClient()->
+      CallGetPropertiesAndBlock());
+  if (!manager_properties.get()) {
+    LOG(WARNING) << "Couldn't read managers's properties";
+    return false;
+  }
+
+  base::ListValue* devices = NULL;
+  if (!manager_properties->GetListWithoutPathExpansion(
+          flimflam::kDevicesProperty, &devices)) {
+    LOG(WARNING) << flimflam::kDevicesProperty << " property not found";
+    return false;
+  }
+  const base::Time now = base::Time::Now();
+  bool found_at_least_one_device = false;
+  result->clear();
+  for (size_t i = 0; i < devices->GetSize(); i++) {
+    std::string device_path;
+    if (!devices->GetString(i, &device_path)) {
+      LOG(WARNING) << "Couldn't get devices[" << i << "]";
+      continue;
+    }
+    scoped_ptr<base::DictionaryValue> device_properties(
+        DBusThreadManager::Get()->GetShillDeviceClient()->
+        CallGetPropertiesAndBlock(dbus::ObjectPath(device_path)));
+    if (!device_properties.get()) {
+      LOG(WARNING) << "Couldn't read device's properties " << device_path;
+      continue;
+    }
+
+    base::ListValue* networks = NULL;
+    if (!device_properties->GetListWithoutPathExpansion(
+            flimflam::kNetworksProperty, &networks))
+      continue;  // Some devices do not list networks, e.g. ethernet.
+
+    base::Value* device_powered_value = NULL;
+    bool device_powered = false;
+    if (device_properties->GetWithoutPathExpansion(
+            flimflam::kPoweredProperty, &device_powered_value) &&
+        device_powered_value->GetAsBoolean(&device_powered) &&
+        !device_powered)
+      continue;  // Skip devices that are not powered up.
+
+    int scan_interval = 0;
+    device_properties->GetIntegerWithoutPathExpansion(
+        flimflam::kScanIntervalProperty, &scan_interval);
+
+    found_at_least_one_device = true;
+    for (size_t j = 0; j < networks->GetSize(); j++) {
+      std::string network_path;
+      if (!networks->GetString(j, &network_path)) {
+        LOG(WARNING) << "Couldn't get networks[" << j << "]";
+        continue;
+      }
+
+      scoped_ptr<base::DictionaryValue> network_properties(
+          DBusThreadManager::Get()->GetShillNetworkClient()->
+          CallGetPropertiesAndBlock(dbus::ObjectPath(network_path)));
+      if (!network_properties.get()) {
+        LOG(WARNING) << "Couldn't read network's properties " << network_path;
+        continue;
+      }
+
+      // Using the scan interval as a proxy for approximate age.
+      // TODO(joth): Replace with actual age, when available from dbus.
+      const int age_seconds = scan_interval;
+      WifiAccessPoint ap;
+      network_properties->GetStringWithoutPathExpansion(
+          flimflam::kAddressProperty, &ap.mac_address);
+      network_properties->GetStringWithoutPathExpansion(
+          flimflam::kNameProperty, &ap.name);
+      ap.timestamp = now - base::TimeDelta::FromSeconds(age_seconds);
+      network_properties->GetIntegerWithoutPathExpansion(
+          flimflam::kSignalStrengthProperty, &ap.signal_strength);
+      network_properties->GetIntegerWithoutPathExpansion(
+          flimflam::kWifiChannelProperty, &ap.channel);
+      result->push_back(ap);
+    }
+  }
+  if (!found_at_least_one_device)
+    return false;  // No powered device found that has a 'Networks' array.
+  return true;
 }
 
 void CrosConfigureService(const base::DictionaryValue& properties) {

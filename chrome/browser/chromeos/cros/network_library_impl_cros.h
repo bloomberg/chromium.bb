@@ -63,6 +63,7 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
                           const NetworkOperationCallback& completed) OVERRIDE;
   virtual bool IsCellularAlwaysInRoaming() OVERRIDE;
   virtual void RequestNetworkScan() OVERRIDE;
+  virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) OVERRIDE;
 
   virtual void RefreshIPConfig(Network* network) OVERRIDE;
 

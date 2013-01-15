@@ -51,6 +51,7 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   virtual ShillDeviceClient* GetShillDeviceClient() OVERRIDE;
   virtual ShillIPConfigClient* GetShillIPConfigClient() OVERRIDE;
   virtual ShillManagerClient* GetShillManagerClient() OVERRIDE;
+  virtual ShillNetworkClient* GetShillNetworkClient() OVERRIDE;
   virtual ShillProfileClient* GetShillProfileClient() OVERRIDE;
   virtual ShillServiceClient* GetShillServiceClient() OVERRIDE;
   virtual GsmSMSClient* GetGsmSMSClient() OVERRIDE;

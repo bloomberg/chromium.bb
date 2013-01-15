@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_NETWORK_SHILL_PROPERTY_HANDLER_H_
-#define CHROMEOS_NETWORK_SHILL_PROPERTY_HANDLER_H_
+#ifndef CHROMEOS_NETWORK_NETWORK_STATE_HANDLER_IMPL_H_
+#define CHROMEOS_NETWORK_NETWORK_STATE_HANDLER_IMPL_H_
 
 #include <list>
 #include <map>
@@ -173,4 +173,4 @@ class CHROMEOS_EXPORT ShillPropertyHandler
 }  // namespace internal
 }  // namespace chromeos
 
-#endif  // CHROMEOS_NETWORK_SHILL_PROPERTY_HANDLER_H_
+#endif  // CHROMEOS_NETWORK_NETWORK_STATE_HANDLER_IMPL_H_

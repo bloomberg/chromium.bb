@@ -1551,6 +1551,14 @@ class NetworkLibrary {
   // Request a scan for new wifi networks.
   virtual void RequestNetworkScan() = 0;
 
+  // Reads out the results of the last wifi scan. These results are not
+  // pre-cached in the library, so the call may block whilst the results are
+  // read over IPC.
+  // Returns false if an error occurred in reading the results. Note that
+  // a true return code only indicates the result set was successfully read,
+  // it does not imply a scan has successfully completed yet.
+  virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) = 0;
+
   // TODO(joth): Add GetCellTowers to retrieve a CellTowerVector.
 
   // Return true if a profile matching |type| is loaded.

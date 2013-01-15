@@ -65,7 +65,7 @@ class NetworkSmsHandlerTest : public testing::Test {
         DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
     ASSERT_TRUE(device_test);
     device_test->AddDevice("stub_cellular_device2", flimflam::kTypeCellular,
-                           "/org/freedesktop/ModemManager1/stub/0");
+                           "/org/freedesktop/ModemManager1/stub/0", ":stub.0");
   }
 
   virtual void TearDown() OVERRIDE {

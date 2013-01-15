@@ -67,6 +67,8 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
   virtual bool IsCellularAlwaysInRoaming() OVERRIDE;
   virtual void RequestNetworkScan() OVERRIDE;
 
+  virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) OVERRIDE;
+
   virtual void RefreshIPConfig(Network* network) OVERRIDE;
 
   virtual void DisconnectFromNetwork(const Network* network) OVERRIDE;

@@ -659,6 +659,12 @@ void NetworkLibraryImplStub::RequestNetworkScan() {
       base::TimeDelta::FromMilliseconds(kScanDelayMs));
 }
 
+bool NetworkLibraryImplStub::GetWifiAccessPoints(
+    WifiAccessPointVector* result) {
+  *result = WifiAccessPointVector();
+  return true;
+}
+
 void NetworkLibraryImplStub::RefreshIPConfig(Network* network) {
 }
 

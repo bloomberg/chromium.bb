@@ -194,6 +194,7 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   // virtual SetCarrier implemented in derived classes.
   // virtual IsCellularAlwaysInRoaming implemented in derived classes.
   // virtual RequestNetworkScan implemented in derived classes.
+  // virtual GetWifiAccessPoints implemented in derived classes.
 
   virtual bool HasProfileType(NetworkProfileType type) const OVERRIDE;
   virtual bool CanConnectToNetwork(const Network* network) const OVERRIDE;

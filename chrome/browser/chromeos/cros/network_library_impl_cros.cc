@@ -463,6 +463,12 @@ void NetworkLibraryImplCros::RequestNetworkScan() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+bool NetworkLibraryImplCros::GetWifiAccessPoints(
+    WifiAccessPointVector* result) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return CrosGetWifiAccessPoints(result);
+}
+
 void NetworkLibraryImplCros::RefreshIPConfig(Network* network) {
   DCHECK(network);
   CrosRequestNetworkDeviceProperties(
