@@ -712,11 +712,11 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_OFF" desc="In the settings tab, the option indication the screen magnifier is off.">
     Off
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_FULL" desc="In the settings tab, the option indication the screen magnifier is set to full.">
-    Full
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_FULL" desc="In the settings tab, the option indication the screen magnifier is set to entire screen (full screen) mode.">
+    Entire Screen
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_PARTIAL" desc="In the settings tab, the option indication the screen magnifier is set to partial.">
-    Partial
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_PARTIAL" desc="In the settings tab, the option indication the screen magnifier is set to lens (partial screen) mode.">
+    Lens
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_TOUCHPAD_TAP_DRAGGING_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for tap dragging.">
     Enable tap dragging
