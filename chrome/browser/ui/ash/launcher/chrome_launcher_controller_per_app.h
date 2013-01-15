@@ -284,6 +284,10 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
   bool IsWebContentHandledByApplication(content::WebContents* web_contents,
                                         const std::string& app_id);
 
+  // Get the favicon for the application list by giving the |web_content|.
+  // Note that for incognito windows the incognito icon will be returned.
+  gfx::Image GetAppListIcon(content::WebContents* web_contents) const;
+
  protected:
   // ChromeLauncherController overrides:
 

@@ -119,9 +119,7 @@ AppShortcutLauncherItemController::GetApplicationList() {
   for (size_t i = 0; i < content_list.size(); i++) {
     content::WebContents* web_contents = content_list[i];
     // Get the icon.
-    FaviconTabHelper* favicon_tab_helper =
-            FaviconTabHelper::FromWebContents(web_contents);
-        gfx::Image app_icon = favicon_tab_helper->GetFavicon();
+    gfx::Image app_icon = app_controller_->GetAppListIcon(web_contents);
     items->push_back(new ChromeLauncherAppMenuItemTab(
                              web_contents->GetTitle(),
                              app_icon.IsEmpty() ? NULL : &app_icon,

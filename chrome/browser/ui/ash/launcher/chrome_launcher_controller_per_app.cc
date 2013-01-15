@@ -51,6 +51,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/url_pattern.h"
+#include "grit/ash_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -955,6 +956,19 @@ bool ChromeLauncherControllerPerApp::IsWebContentHandledByApplication(
           (web_contents_to_app_id_[web_contents] == app_id));
 }
 
+gfx::Image ChromeLauncherControllerPerApp::GetAppListIcon(
+    content::WebContents* web_contents) const {
+  const Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (profile->IsOffTheRecord() && !profile->IsGuestSession()) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    return rb.GetImageNamed(IDR_AURA_LAUNCHER_INCOGNITO_BROWSER);
+  }
+  FaviconTabHelper* favicon_tab_helper =
+      FaviconTabHelper::FromWebContents(web_contents);
+  return favicon_tab_helper->GetFavicon();
+}
+
 ash::LauncherID ChromeLauncherControllerPerApp::CreateAppShortcutLauncherItem(
     const std::string& app_id,
     int index) {
@@ -1237,9 +1251,7 @@ ChromeLauncherControllerPerApp::GetBrowserApplicationList() {
     TabStripModel* tab_strip = browser->tab_strip_model();
     WebContents* web_contents =
         tab_strip->GetWebContentsAt(tab_strip->active_index());
-    FaviconTabHelper* favicon_tab_helper =
-        FaviconTabHelper::FromWebContents(web_contents);
-    gfx::Image app_icon = favicon_tab_helper->GetFavicon();
+    gfx::Image app_icon = GetAppListIcon(web_contents);
     items->push_back(new ChromeLauncherAppMenuItemBrowser(
                              web_contents->GetTitle(),
                              app_icon.IsEmpty() ? NULL : &app_icon,

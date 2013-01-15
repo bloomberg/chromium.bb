@@ -119,7 +119,7 @@ std::string Profile::GetDebugName() {
   return name;
 }
 
-bool Profile::IsGuestSession() {
+bool Profile::IsGuestSession() const {
 #if defined(OS_CHROMEOS)
   static bool is_guest_session =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession);
