@@ -19,7 +19,6 @@
       ],
     },
 
-    'remoting_host_linux_clipboard%': 1,
     'remoting_multi_process%': '<(remoting_multi_process)',
 
     # The |major|, |build| and |patch| versions are inherited from Chrome.
@@ -236,11 +235,6 @@
       '..',  # Root of Chrome checkout
     ],
     'conditions': [
-      ['remoting_host_linux_clipboard != 0', {
-        'defines': [
-          'REMOTING_HOST_LINUX_CLIPBOARD',
-        ],
-      }],
       ['remoting_multi_process != 0', {
         'defines': [
           'REMOTING_MULTI_PROCESS',
