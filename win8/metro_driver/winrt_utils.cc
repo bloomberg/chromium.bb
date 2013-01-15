@@ -23,7 +23,8 @@ void CheckHR(HRESULT hr, const char* message) {
 
 HSTRING MakeHString(const string16& str) {
   HSTRING hstr;
-  if (FAILED(::WindowsCreateString(str.c_str(), str.size(), &hstr))) {
+  if (FAILED(::WindowsCreateString(str.c_str(), static_cast<UINT32>(str.size()),
+                                   &hstr))) {
     PLOG(DFATAL) << "Hstring creation failed";
   }
   return hstr;

@@ -45,7 +45,9 @@ class StringVectorImpl : public mswr::RuntimeClass<StringVectorItf> {
     return ::WindowsDuplicateString(strings_[index], item);
   }
   STDMETHOD(get_Size)(unsigned *size) {
-    *size = strings_.size();
+    if (strings_.size() > UINT_MAX)
+      return E_UNEXPECTED;
+    *size = static_cast<unsigned>(strings_.size());
     return S_OK;
   }
   STDMETHOD(GetView)(winfoundtn::Collections::IVectorView<HSTRING> **view) {
@@ -209,7 +211,7 @@ HRESULT OpenFilePickerSession::SinglePickerDone(SingleFileAsyncOp* async,
         hr = storage_item->get_Path(file_path.GetAddressOf());
 
       if (SUCCEEDED(hr)) {
-        size_t path_len = 0;
+        UINT32 path_len = 0;
         const wchar_t* path_str =
             ::WindowsGetStringRawBuffer(file_path.Get(), &path_len);
 
@@ -377,7 +379,7 @@ HRESULT OpenFilePickerSession::ComposeMultiFileResult(
   // Empty the output string.
   result->clear();
 
-  size_t num_files = 0;
+  unsigned int num_files = 0;
   HRESULT hr = files->get_Size(&num_files);
   if (FAILED(hr))
     return hr;
@@ -392,7 +394,7 @@ HRESULT OpenFilePickerSession::ComposeMultiFileResult(
   FilePath base_path;
 
   // Iterate through the collection and append the file paths to the result.
-  for (size_t i = 0; i < num_files; ++i) {
+  for (unsigned int i = 0; i < num_files; ++i) {
     mswr::ComPtr<winstorage::IStorageFile> file;
     hr = files->GetAt(i, file.GetAddressOf());
     if (FAILED(hr))
