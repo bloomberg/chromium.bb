@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net/net_error_info.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 
@@ -132,7 +133,8 @@ void NetErrorTabHelper::OnDnsProbeFinished(DnsProbeResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(dns_probe_running_);
 
-  // TODO(ttuttle): Notify renderer of probe results.
+  // Notify renderer of DNS probe results.
+  Send(new ChromeViewMsg_NetErrorInfo(routing_id(), result));
 
   set_dns_probe_running(false);
 }
