@@ -26,6 +26,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -193,7 +194,7 @@ bool ExtensionDownloader::AddExtension(const Extension& extension,
   // Skip extensions with empty update URLs converted from user
   // scripts.
   if (extension.converted_from_user_script() &&
-      extension.update_url().is_empty()) {
+      ManifestURL::GetUpdateURL(&extension).is_empty()) {
     return false;
   }
 
@@ -205,7 +206,8 @@ bool ExtensionDownloader::AddExtension(const Extension& extension,
     update_url_data = delegate_->GetUpdateUrlData(extension.id());
 
   return AddExtensionData(extension.id(), *extension.version(),
-                          extension.GetType(), extension.update_url(),
+                          extension.GetType(),
+                          ManifestURL::GetUpdateURL(&extension),
                           update_url_data, request_id);
 }
 

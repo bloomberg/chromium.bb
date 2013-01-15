@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -57,7 +58,7 @@ GURL UrlForExtension(const Extension* extension,
 
   // For extensions lacking launch urls, determine a reasonable fallback.
   if (!url.is_valid()) {
-    url = extension->options_url();
+    url = extensions::ManifestURL::GetOptionsPage(extension);
     if (!url.is_valid())
       url = GURL(chrome::kChromeUIExtensionsURL);
   }

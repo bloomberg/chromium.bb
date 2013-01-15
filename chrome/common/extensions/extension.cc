@@ -464,7 +464,7 @@ void Extension::GetBasicInfo(bool enabled,
   info->SetString(info_keys::kVersionKey, VersionString());
   info->SetString(info_keys::kDescriptionKey, description());
   info->SetString(info_keys::kOptionsUrlKey,
-                  options_url().possibly_invalid_spec());
+                  ManifestURL::GetOptionsPage(this).possibly_invalid_spec());
   info->SetString(info_keys::kHomepageUrlKey,
                   ManifestURL::GetHomepageURL(this).possibly_invalid_spec());
   info->SetString(info_keys::kDetailsUrlKey,
@@ -1120,7 +1120,7 @@ bool Extension::CanCaptureVisiblePage(const GURL& page_url,
 }
 
 bool Extension::UpdatesFromGallery() const {
-  return extension_urls::IsWebstoreUpdateUrl(update_url());
+  return extension_urls::IsWebstoreUpdateUrl(ManifestURL::GetUpdateURL(this));
 }
 
 bool Extension::OverlapsWithOrigin(const GURL& origin) const {
@@ -1153,7 +1153,7 @@ Extension::SyncType Extension::GetSyncType() const {
   //
   // TODO(akalin): Relax this restriction once we've put in UI to
   // approve synced extensions.
-  if (!update_url().is_empty() && !UpdatesFromGallery())
+  if (!ManifestURL::GetUpdateURL(this).is_empty() && !UpdatesFromGallery())
     return SYNC_TYPE_NONE;
 
   // Disallow extensions with native code plugins.
@@ -1963,7 +1963,6 @@ bool Extension::LoadSharedFeatures(
     const APIPermissionSet& api_permissions,
     string16* error) {
   if (!LoadDescription(error) ||
-      !LoadUpdateURL(error) ||
       !LoadIcons(error) ||
       !LoadCommands(error) ||
       !LoadPlugins(error) ||
@@ -1973,7 +1972,6 @@ bool Extension::LoadSharedFeatures(
       !LoadRequirements(error) ||
       !LoadDefaultLocale(error) ||
       !LoadOfflineEnabled(error) ||
-      !LoadOptionsPage(error) ||
       // LoadBackgroundScripts() must be called before LoadBackgroundPage().
       !LoadBackgroundScripts(error) ||
       !LoadBackgroundPage(api_permissions, error) ||
@@ -2017,25 +2015,6 @@ bool Extension::LoadManifestVersion(string16* error) {
     return false;
   }
 
-  return true;
-}
-
-bool Extension::LoadUpdateURL(string16* error) {
-  if (!manifest_->HasKey(keys::kUpdateURL))
-    return true;
-  std::string tmp_update_url;
-  if (!manifest_->GetString(keys::kUpdateURL, &tmp_update_url)) {
-    *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kInvalidUpdateURL, "");
-    return false;
-  }
-  update_url_ = GURL(tmp_update_url);
-  if (!update_url_.is_valid() ||
-      update_url_.has_ref()) {
-    *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kInvalidUpdateURL, tmp_update_url);
-    return false;
-  }
   return true;
 }
 
@@ -2387,40 +2366,6 @@ bool Extension::LoadOfflineEnabled(string16* error) {
     *error = ASCIIToUTF16(errors::kInvalidOfflineEnabled);
     return false;
   }
-  return true;
-}
-
-bool Extension::LoadOptionsPage(string16* error) {
-  if (!manifest_->HasKey(keys::kOptionsPage))
-    return true;
-  std::string options_str;
-  if (!manifest_->GetString(keys::kOptionsPage, &options_str)) {
-    *error = ASCIIToUTF16(errors::kInvalidOptionsPage);
-    return false;
-  }
-
-  if (is_hosted_app()) {
-    // hosted apps require an absolute URL.
-    GURL options_url(options_str);
-    if (!options_url.is_valid() ||
-        !(options_url.SchemeIs("http") || options_url.SchemeIs("https"))) {
-      *error = ASCIIToUTF16(errors::kInvalidOptionsPageInHostedApp);
-      return false;
-    }
-    options_url_ = options_url;
-  } else {
-    GURL absolute(options_str);
-    if (absolute.is_valid()) {
-      *error = ASCIIToUTF16(errors::kInvalidOptionsPageExpectUrlInPackage);
-      return false;
-    }
-    options_url_ = GetResourceURL(options_str);
-    if (!options_url_.is_valid()) {
-      *error = ASCIIToUTF16(errors::kInvalidOptionsPage);
-      return false;
-    }
-  }
-
   return true;
 }
 

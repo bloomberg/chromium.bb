@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -310,7 +311,7 @@ void ExtensionProcessManager::CreateBackgroundHost(
 
 void ExtensionProcessManager::OpenOptionsPage(const Extension* extension,
                                               Browser* browser) {
-  DCHECK(!extension->options_url().is_empty());
+  DCHECK(!extensions::ManifestURL::GetOptionsPage(extension).is_empty());
 
   // Force the options page to open in non-OTR window, because it won't be
   // able to save settings from OTR.
@@ -320,7 +321,8 @@ void ExtensionProcessManager::OpenOptionsPage(const Extension* extension,
                                                 browser->host_desktop_type());
   }
 
-  OpenURLParams params(extension->options_url(), Referrer(), SINGLETON_TAB,
+  OpenURLParams params(extensions::ManifestURL::GetOptionsPage(extension),
+                       Referrer(), SINGLETON_TAB,
                        content::PAGE_TRANSITION_LINK, false);
   browser->OpenURL(params);
   browser->window()->Show();

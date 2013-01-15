@@ -88,6 +88,7 @@
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -2339,7 +2340,8 @@ void ExtensionService::OnExtensionInstalled(
 
       LOG(WARNING) << "ShouldAllowInstall() returned false for "
                    << id << " of type " << extension->GetType()
-                   << " and update URL " << extension->update_url().spec()
+                   << " and update URL "
+                   << extensions::ManifestURL::GetUpdateURL(extension).spec()
                    << "; not installing";
 
       content::NotificationService::current()->Notify(

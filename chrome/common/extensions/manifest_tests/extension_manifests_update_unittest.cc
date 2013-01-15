@@ -2,16 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
-
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::Extension;
 
 namespace errors = extension_manifest_errors;
 
-TEST_F(ExtensionManifestTest, UpdateUrls) {
+class UpdateURLManifestTest : public ExtensionManifestTest {
+  virtual void SetUp() OVERRIDE {
+    ExtensionManifestTest::SetUp();
+    extensions::ManifestHandler::Register(extension_manifest_keys::kUpdateURL,
+                                          new extensions::UpdateURLHandler);
+  }
+};
+
+TEST_F(UpdateURLManifestTest, UpdateUrls) {
   // Test several valid update urls
   Testcase testcases[] = {
     Testcase("update_url_valid_1.json", Extension::INTERNAL,

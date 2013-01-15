@@ -48,6 +48,16 @@ const GURL ManifestURL::GetHomepageURL(const Extension* extension) {
       GURL::EmptyGURL();
 }
 
+// static
+const GURL& ManifestURL::GetUpdateURL(const Extension* extension) {
+  return GetManifestURL(extension, keys::kUpdateURL);
+}
+
+// static
+const GURL& ManifestURL::GetOptionsPage(const Extension* extension) {
+  return GetManifestURL(extension, keys::kOptionsPage);
+}
+
 URLOverrides::URLOverrides() {
 }
 
@@ -112,6 +122,78 @@ bool HomepageURLHandler::Parse(const base::Value* value,
     return false;
   }
   extension->SetManifestData(keys::kHomepageURL, manifest_url.release());
+  return true;
+}
+
+UpdateURLHandler::UpdateURLHandler() {
+}
+
+UpdateURLHandler::~UpdateURLHandler() {
+}
+
+bool UpdateURLHandler::Parse(const base::Value* value,
+                             Extension* extension,
+                             string16* error) {
+  scoped_ptr<ManifestURL> manifest_url(new ManifestURL);
+  std::string tmp_update_url;
+
+  if (!value->GetAsString(&tmp_update_url)) {
+    *error = ErrorUtils::FormatErrorMessageUTF16(
+        errors::kInvalidUpdateURL, "");
+    return false;
+  }
+
+  manifest_url->url_ = GURL(tmp_update_url);
+  if (!manifest_url->url_.is_valid() ||
+      manifest_url->url_.has_ref()) {
+    *error = ErrorUtils::FormatErrorMessageUTF16(
+        errors::kInvalidUpdateURL, tmp_update_url);
+    return false;
+  }
+
+  extension->SetManifestData(keys::kUpdateURL, manifest_url.release());
+  return true;
+}
+
+OptionsPageHandler::OptionsPageHandler() {
+}
+
+OptionsPageHandler::~OptionsPageHandler() {
+}
+
+bool OptionsPageHandler::Parse(const base::Value* value,
+                               Extension* extension,
+                               string16* error) {
+  scoped_ptr<ManifestURL> manifest_url(new ManifestURL);
+  std::string options_str;
+  if (!value->GetAsString(&options_str)) {
+    *error = ASCIIToUTF16(errors::kInvalidOptionsPage);
+    return false;
+  }
+
+  if (extension->is_hosted_app()) {
+    // hosted apps require an absolute URL.
+    GURL options_url(options_str);
+    if (!options_url.is_valid() ||
+        !(options_url.SchemeIs("http") || options_url.SchemeIs("https"))) {
+      *error = ASCIIToUTF16(errors::kInvalidOptionsPageInHostedApp);
+      return false;
+    }
+    manifest_url->url_ = options_url;
+  } else {
+    GURL absolute(options_str);
+    if (absolute.is_valid()) {
+      *error = ASCIIToUTF16(errors::kInvalidOptionsPageExpectUrlInPackage);
+      return false;
+    }
+    manifest_url->url_ = extension->GetResourceURL(options_str);
+    if (!manifest_url->url_.is_valid()) {
+      *error = ASCIIToUTF16(errors::kInvalidOptionsPage);
+      return false;
+    }
+  }
+
+  extension->SetManifestData(keys::kOptionsPage, manifest_url.release());
   return true;
 }
 

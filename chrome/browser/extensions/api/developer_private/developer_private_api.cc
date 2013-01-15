@@ -100,13 +100,14 @@ scoped_ptr<developer::ItemInfo> DeveloperPrivateAPI::CreateItemInfo(
 
   info->homepage_url.reset(new std::string(
       extensions::ManifestURL::GetHomepageURL(&item).spec()));
-  if (!item.options_url().is_empty()) {
-    info->options_url.reset(new std::string(item.options_url().spec()));
+  if (!ManifestURL::GetOptionsPage(&item).is_empty()) {
+    info->options_url.reset(
+        new std::string(ManifestURL::GetOptionsPage(&item).spec()));
   }
 
-  if (!item.update_url().is_empty()) {
-    info->update_url.reset(new std::string(
-        item.update_url().spec()));
+  if (!ManifestURL::GetUpdateURL(&item).is_empty()) {
+    info->update_url.reset(
+        new std::string(ManifestURL::GetUpdateURL(&item).spec()));
   }
 
   if (item.is_app()) {

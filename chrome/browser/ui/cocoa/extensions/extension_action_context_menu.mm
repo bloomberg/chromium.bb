@@ -29,6 +29,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_details.h"
@@ -204,7 +205,7 @@ enum {
       break;
     }
     case kExtensionContextOptions: {
-      DCHECK(!extension_->options_url().is_empty());
+      DCHECK(!extensions::ManifestURL::GetOptionsPage(extension_).is_empty());
       extensions::ExtensionSystem::Get(browser_->profile())->process_manager()->
           OpenOptionsPage(extension_, browser_);
       break;
@@ -273,7 +274,8 @@ enum {
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
   if ([menuItem tag] == kExtensionContextOptions) {
     // Disable 'Options' if there are no options to set.
-    return extension_->options_url().spec().length() > 0;
+    return extensions::ManifestURL::
+        GetOptionsPage(extension_).spec().length() > 0;
   }
   return YES;
 }

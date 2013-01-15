@@ -684,7 +684,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool has_lazy_background_page() const {
     return has_background_page() && !background_page_is_persistent_;
   }
-  const GURL& options_url() const { return options_url_; }
   const GURL& details_url() const { return details_url_;}
   const PermissionSet* optional_permission_set() const {
     return optional_permission_set_.get();
@@ -697,7 +696,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const InstallWarningVector& install_warnings() const {
     return install_warnings_;
   }
-  const GURL& update_url() const { return update_url_; }
   const ExtensionIconSet& icons() const { return icons_; }
   const extensions::Manifest* manifest() const {
     return manifest_.get();
@@ -837,7 +835,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                           string16* error);
   bool LoadDescription(string16* error);
   bool LoadManifestVersion(string16* error);
-  bool LoadUpdateURL(string16* error);
   bool LoadIcons(string16* error);
   bool LoadCommands(string16* error);
   bool LoadPlugins(string16* error);
@@ -848,7 +845,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadRequirements(string16* error);
   bool LoadDefaultLocale(string16* error);
   bool LoadOfflineEnabled(string16* error);
-  bool LoadOptionsPage(string16* error);
   bool LoadBackgroundScripts(string16* error);
   bool LoadBackgroundScripts(const std::string& key, string16* error);
   bool LoadBackgroundPage(const APIPermissionSet& api_permissions,
@@ -1076,9 +1072,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // allowing them to run in different processes.
   bool allow_background_js_access_;
 
-  // Optional URL to a page for setting options/preferences.
-  GURL options_url_;
-
   // URL to the webstore page of the extension.
   GURL details_url_;
 
@@ -1099,9 +1092,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // A file containing a list of sites for Managed Mode.
   FilePath content_pack_site_list_;
-
-  // URL for fetching an update manifest
-  GURL update_url_;
 
   // The manifest from which this extension was created.
   scoped_ptr<Manifest> manifest_;

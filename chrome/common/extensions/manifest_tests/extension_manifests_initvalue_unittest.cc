@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
-
 #include "base/i18n/rtl.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -19,7 +19,15 @@
 
 namespace errors = extension_manifest_errors;
 
-TEST_F(ExtensionManifestTest, InitFromValueInvalid) {
+class InitValueManifestTest : public ExtensionManifestTest {
+  virtual void SetUp() OVERRIDE {
+    ExtensionManifestTest::SetUp();
+    extensions::ManifestHandler::Register(extension_manifest_keys::kOptionsPage,
+                                          new extensions::OptionsPageHandler);
+  }
+};
+
+TEST_F(InitValueManifestTest, InitFromValueInvalid) {
   Testcase testcases[] = {
     Testcase("init_invalid_version_missing.json", errors::kInvalidVersion),
     Testcase("init_invalid_version_invalid.json", errors::kInvalidVersion),
@@ -71,7 +79,7 @@ TEST_F(ExtensionManifestTest, InitFromValueInvalid) {
                EXPECT_TYPE_ERROR);
 }
 
-TEST_F(ExtensionManifestTest, InitFromValueValid) {
+TEST_F(InitValueManifestTest, InitFromValueValid) {
   scoped_refptr<extensions::Extension> extension(LoadAndExpectSuccess(
       "init_valid_minimal.json"));
 
@@ -93,8 +101,10 @@ TEST_F(ExtensionManifestTest, InitFromValueValid) {
 
   // Test with an options page.
   extension = LoadAndExpectSuccess("init_valid_options.json");
-  EXPECT_EQ("chrome-extension", extension->options_url().scheme());
-  EXPECT_EQ("/options.html", extension->options_url().path());
+  EXPECT_EQ("chrome-extension",
+            extensions::ManifestURL::GetOptionsPage(extension).scheme());
+  EXPECT_EQ("/options.html",
+            extensions::ManifestURL::GetOptionsPage(extension).path());
 
   Testcase testcases[] = {
     // Test that an empty list of page actions does not stop a browser action
@@ -122,7 +132,7 @@ TEST_F(ExtensionManifestTest, InitFromValueValid) {
                EXPECT_TYPE_SUCCESS);
 }
 
-TEST_F(ExtensionManifestTest, InitFromValueValidNameInRTL) {
+TEST_F(InitValueManifestTest, InitFromValueValidNameInRTL) {
 #if defined(TOOLKIT_GTK)
   GtkTextDirection gtk_dir = gtk_widget_get_default_direction();
   gtk_widget_set_default_direction(GTK_TEXT_DIR_RTL);

@@ -15,6 +15,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sync/api/sync_error_factory_mock.h"
@@ -353,7 +354,7 @@ TEST_F(ThemeSyncableServiceTest, UpdateThemeSpecificsFromCurrentTheme) {
   EXPECT_TRUE(theme_specifics.use_custom_theme());
   EXPECT_EQ(theme_extension_->id(), theme_specifics.custom_theme_id());
   EXPECT_EQ(theme_extension_->name(), theme_specifics.custom_theme_name());
-  EXPECT_EQ(theme_extension_->update_url().spec(),
+  EXPECT_EQ(extensions::ManifestURL::GetUpdateURL(theme_extension_).spec(),
             theme_specifics.custom_theme_update_url());
 }
 
@@ -370,7 +371,7 @@ TEST_F(ThemeSyncableServiceTest, GetAllSyncData) {
   EXPECT_TRUE(theme_specifics.use_custom_theme());
   EXPECT_EQ(theme_extension_->id(), theme_specifics.custom_theme_id());
   EXPECT_EQ(theme_extension_->name(), theme_specifics.custom_theme_name());
-  EXPECT_EQ(theme_extension_->update_url().spec(),
+  EXPECT_EQ(extensions::ManifestURL::GetUpdateURL(theme_extension_).spec(),
             theme_specifics.custom_theme_update_url());
 }
 
@@ -433,7 +434,7 @@ TEST_F(ThemeSyncableServiceTest, OnThemeChangeByUser) {
   EXPECT_TRUE(change_specifics.use_custom_theme());
   EXPECT_EQ(theme_extension_->id(), change_specifics.custom_theme_id());
   EXPECT_EQ(theme_extension_->name(), change_specifics.custom_theme_name());
-  EXPECT_EQ(theme_extension_->update_url().spec(),
+  EXPECT_EQ(extensions::ManifestURL::GetUpdateURL(theme_extension_).spec(),
             change_specifics.custom_theme_update_url());
 }
 

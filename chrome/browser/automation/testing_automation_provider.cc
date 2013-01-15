@@ -120,6 +120,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -3719,7 +3720,7 @@ void TestingAutomationProvider::GetExtensionsInfo(DictionaryValue* args,
     extension_value->SetString("background_url",
                                extension->GetBackgroundURL().spec());
     extension_value->SetString("options_url",
-                               extension->options_url().spec());
+        extensions::ManifestURL::GetOptionsPage(extension).spec());
     extension_value->Set("host_permissions",
                          GetHostPermissions(extension, false));
     extension_value->Set("effective_host_permissions",

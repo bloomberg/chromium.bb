@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/app_sync_data.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "sync/api/sync_data.h"
 #include "sync/protocol/extension_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
@@ -43,7 +44,7 @@ ExtensionSyncData::ExtensionSyncData(const Extension& extension,
       enabled_(enabled),
       incognito_enabled_(incognito_enabled),
       version_(*extension.version()),
-      update_url_(extension.update_url()),
+      update_url_(ManifestURL::GetUpdateURL(&extension)),
       name_(extension.non_localized_name()) {
 }
 

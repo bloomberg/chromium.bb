@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/theme_specifics.pb.h"
 
@@ -268,7 +269,7 @@ void ThemeSyncableService::GetThemeSpecificsFromCurrentTheme(
     theme_specifics->set_custom_theme_name(current_theme->name());
     theme_specifics->set_custom_theme_id(current_theme->id());
     theme_specifics->set_custom_theme_update_url(
-        current_theme->update_url().spec());
+        extensions::ManifestURL::GetUpdateURL(current_theme).spec());
   } else {
     DCHECK(!current_theme);
     theme_specifics->clear_custom_theme_name();

@@ -2,24 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
-
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extension_manifest_errors;
 
-TEST_F(ExtensionManifestTest, OptionsPageInApps) {
+class OptionsPageManifestTest : public ExtensionManifestTest {
+  virtual void SetUp() OVERRIDE {
+    ExtensionManifestTest::SetUp();
+    extensions::ManifestHandler::Register(extension_manifest_keys::kOptionsPage,
+                                          new extensions::OptionsPageHandler);
+  }
+};
+
+TEST_F(OptionsPageManifestTest, OptionsPageInApps) {
   scoped_refptr<extensions::Extension> extension;
 
   // Allow options page with absolute URL in hosted apps.
   extension = LoadAndExpectSuccess("hosted_app_absolute_options.json");
-  EXPECT_STREQ("http",
-               extension->options_url().scheme().c_str());
-  EXPECT_STREQ("example.com",
-               extension->options_url().host().c_str());
-  EXPECT_STREQ("options.html",
-               extension->options_url().ExtractFileName().c_str());
+  EXPECT_STREQ(
+      "http",
+      extensions::ManifestURL::GetOptionsPage(extension).scheme().c_str());
+  EXPECT_STREQ(
+      "example.com",
+      extensions::ManifestURL::GetOptionsPage(extension).host().c_str());
+  EXPECT_STREQ(
+      "options.html",
+      extensions::ManifestURL::
+          GetOptionsPage(extension).ExtractFileName().c_str());
 
   Testcase testcases[] = {
     // Forbid options page with relative URL in hosted apps.

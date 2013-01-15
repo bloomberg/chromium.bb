@@ -26,6 +26,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/common/context_menu_params.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -304,9 +305,10 @@ void ExtensionAppItem::ShowExtensionOptions() {
   if (!extension)
     return;
 
-  chrome::NavigateParams params(profile_,
-                                extension->options_url(),
-                                content::PAGE_TRANSITION_LINK);
+  chrome::NavigateParams params(
+      profile_,
+      extensions::ManifestURL::GetOptionsPage(extension),
+      content::PAGE_TRANSITION_LINK);
   chrome::Navigate(&params);
 }
 
@@ -425,7 +427,7 @@ bool ExtensionAppItem::IsCommandIdEnabled(int command_id) const {
   } else if (command_id == OPTIONS) {
     const Extension* extension = GetExtension();
     return IsExtensionEnabled(profile_, extension_id_) && extension &&
-        !extension->options_url().is_empty();
+           !extensions::ManifestURL::GetOptionsPage(extension).is_empty();
   } else if (command_id == UNINSTALL) {
     const Extension* extension = GetExtension();
     const extensions::ManagementPolicy* policy =

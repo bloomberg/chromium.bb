@@ -17,6 +17,8 @@ class HomepageURLManifestTest : public ExtensionManifestTest {
     ExtensionManifestTest::SetUp();
     extensions::ManifestHandler::Register(extension_manifest_keys::kHomepageURL,
                                           new extensions::HomepageURLHandler);
+    extensions::ManifestHandler::Register(extension_manifest_keys::kUpdateURL,
+                                          new extensions::UpdateURLHandler);
   }
 };
 

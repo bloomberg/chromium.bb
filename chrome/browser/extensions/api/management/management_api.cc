@@ -95,7 +95,8 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
   info->offline_enabled = extension.offline_enabled();
   info->version = extension.VersionString();
   info->description = extension.description();
-  info->options_url = extension.options_url().spec();
+  info->options_url =
+      extensions::ManifestURL::GetOptionsPage(&extension).spec();
   info->homepage_url.reset(new std::string(
       extensions::ManifestURL::GetHomepageURL(&extension).spec()));
   info->may_disable = system->management_policy()->
@@ -127,9 +128,9 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
     }
   }
 
-  if (!extension.update_url().is_empty()) {
+  if (!extensions::ManifestURL::GetUpdateURL(&extension).is_empty()) {
     info->update_url.reset(new std::string(
-        extension.update_url().spec()));
+        extensions::ManifestURL::GetUpdateURL(&extension).spec()));
   }
 
   if (extension.is_app()) {

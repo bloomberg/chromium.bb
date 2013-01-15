@@ -74,6 +74,8 @@ class ExtensionProcessManager : public content::NotificationObserver {
                                                Browser* browser);
 
   // Open the extension's options page.
+  // TODO(yoz): Move this function to a more appropriate location.
+  // crbug.com/157279
   void OpenOptionsPage(const extensions::Extension* extension,
                        Browser* browser);
 

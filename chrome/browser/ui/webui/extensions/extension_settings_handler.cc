@@ -784,7 +784,8 @@ void ExtensionSettingsHandler::HandleUninstallMessage(const ListValue* args) {
 
 void ExtensionSettingsHandler::HandleOptionsMessage(const ListValue* args) {
   const Extension* extension = GetActiveExtension(args);
-  if (!extension || extension->options_url().is_empty())
+  if (!extension ||
+      extensions::ManifestURL::GetOptionsPage(extension).is_empty())
     return;
   extensions::ExtensionSystem::Get(Profile::FromWebUI(web_ui()))->
       process_manager()->OpenOptionsPage(extension,

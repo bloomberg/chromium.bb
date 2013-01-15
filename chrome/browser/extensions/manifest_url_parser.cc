@@ -22,6 +22,10 @@ ManifestURLParser::ManifestURLParser(Profile* profile)
                             new DevToolsPageHandler);
   ManifestHandler::Register(extension_manifest_keys::kHomepageURL,
                             new HomepageURLHandler);
+  ManifestHandler::Register(extension_manifest_keys::kUpdateURL,
+                            new UpdateURLHandler);
+  ManifestHandler::Register(extension_manifest_keys::kOptionsPage,
+                            new OptionsPageHandler);
   ManifestHandler::Register(extension_manifest_keys::kChromeURLOverrides,
                             new URLOverridesHandler);
 

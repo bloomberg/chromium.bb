@@ -43,6 +43,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_details.h"
@@ -456,6 +458,8 @@ class ExtensionUpdaterTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     prefs_.reset(new TestExtensionPrefs(loop_.message_loop_proxy()));
+    extensions::ManifestHandler::Register(extension_manifest_keys::kUpdateURL,
+                                          new extensions::UpdateURLHandler);
   }
 
   virtual void TearDown() OVERRIDE {

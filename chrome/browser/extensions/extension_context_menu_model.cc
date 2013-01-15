@@ -70,7 +70,8 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
     return false;
 
   if (command_id == CONFIGURE) {
-    return extension->options_url().spec().length() > 0;
+    return
+        extensions::ManifestURL::GetOptionsPage(extension).spec().length() > 0;
   } else if (command_id == NAME) {
     // The NAME links to the Homepage URL. If the extension doesn't have a
     // homepage, we just disable this menu item.
@@ -109,7 +110,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
       break;
     }
     case CONFIGURE:
-      DCHECK(!extension->options_url().is_empty());
+      DCHECK(!extensions::ManifestURL::GetOptionsPage(extension).is_empty());
       extensions::ExtensionSystem::Get(profile_)->process_manager()->
           OpenOptionsPage(extension, browser_);
       break;
