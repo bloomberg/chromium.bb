@@ -575,14 +575,16 @@ bool IsSelectElement(const WebFormControlElement& element) {
 
 bool IsCheckableElement(const WebInputElement* element) {
   // Is static for improving performance.
-  CR_DEFINE_STATIC_LOCAL(WebString, kRadio, ("radio"));
+  // TODO(ramankk): Uncomment kRadio part after testing for regression.
+  // CR_DEFINE_STATIC_LOCAL(WebString, kRadio, ("radio"));
   CR_DEFINE_STATIC_LOCAL(WebString, kCheckbox, ("checkbox"));
 
   if (!element)
     return false;
 
   WebString formControlType = element->formControlType();
-  return formControlType == kCheckbox || formControlType == kRadio;
+  // TODO(ramankk): Uncomment kRadio part after testing for regression.
+  return formControlType == kCheckbox; // || formControlType == kRadio;
 }
 
 bool IsAutofillableInputElement(const WebInputElement* element) {
