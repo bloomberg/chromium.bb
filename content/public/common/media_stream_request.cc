@@ -4,6 +4,8 @@
 
 #include "content/public/common/media_stream_request.h"
 
+#include "base/logging.h"
+
 namespace content {
 
 bool IsAudioMediaType(MediaStreamType type) {
@@ -34,12 +36,14 @@ MediaStreamRequest::MediaStreamRequest(
     int render_view_id,
     const GURL& security_origin,
     MediaStreamRequestType request_type,
+    const std::string& requested_device_id,
     MediaStreamType audio_type,
     MediaStreamType video_type)
     : render_process_id(render_process_id),
       render_view_id(render_view_id),
       security_origin(security_origin),
       request_type(request_type),
+      requested_device_id(requested_device_id),
       audio_type(audio_type),
       video_type(video_type) {
 }

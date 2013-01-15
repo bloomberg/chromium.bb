@@ -76,6 +76,7 @@ struct CONTENT_EXPORT MediaStreamRequest {
       int render_view_id,
       const GURL& security_origin,
       MediaStreamRequestType request_type,
+      const std::string& requested_device_id,
       MediaStreamType audio_type,
       MediaStreamType video_type);
 
@@ -91,10 +92,15 @@ struct CONTENT_EXPORT MediaStreamRequest {
   GURL security_origin;
 
   // Stores the type of request that was made to the media controller. Right now
-  // this is only used to destinguish between WebRTC and Pepper requests, as the
+  // this is only used to distinguish between WebRTC and Pepper requests, as the
   // latter should not be subject to user approval but only to policy check.
   // Pepper requests are signified by the |MEDIA_OPEN_DEVICE| value.
   MediaStreamRequestType request_type;
+
+  // Stores the requested device id. Used only if the |request_type| filed is
+  // set to |MEDIA_OPEN_DEVICE| to indicate which device the request is for as
+  // in that case the decision is not left to the user but to the media client.
+  std::string requested_device_id;
 
   // Flag to indicate if the request contains audio.
   MediaStreamType audio_type;

@@ -63,7 +63,8 @@ class MediaStreamDeviceUIControllerTest
                                   dummy_render_view_id,
                                   components,
                                   security_origin,
-                                  MEDIA_GENERATE_STREAM);
+                                  MEDIA_GENERATE_STREAM,
+                                  std::string());
   }
 
   scoped_ptr<MessageLoop> message_loop_;

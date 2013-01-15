@@ -47,30 +47,43 @@ void GetDefaultDevicesForProfile(Profile* profile,
                                  bool video,
                                  content::MediaStreamDevices* devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(profile);
+  DCHECK(audio || video);
+
+  PrefService* prefs = profile->GetPrefs();
+  std::string default_device;
+  if (audio) {
+    default_device = prefs->GetString(prefs::kDefaultAudioCaptureDevice);
+    GetRequestedDevice(default_device, true, false, devices);
+  }
+
+  if (video) {
+    default_device = prefs->GetString(prefs::kDefaultVideoCaptureDevice);
+    GetRequestedDevice(default_device, false, true, devices);
+  }
+}
+
+void GetRequestedDevice(const std::string& requested_device_id,
+                        bool audio,
+                        bool video,
+                        content::MediaStreamDevices* devices) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(audio || video);
 
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaInternals::GetInstance()->GetMediaCaptureDevicesDispatcher();
-  PrefService* prefs = profile->GetPrefs();
   if (audio) {
-    std::string default_device;
-    default_device = prefs->GetString(prefs::kDefaultAudioCaptureDevice);
     const content::MediaStreamDevices& audio_devices =
         dispatcher->GetAudioCaptureDevices();
     const content::MediaStreamDevice* const device =
-        FindDefaultDeviceWithId(audio_devices, default_device);
+        media::FindDefaultDeviceWithId(audio_devices, requested_device_id);
     if (device)
       devices->push_back(*device);
   }
-
   if (video) {
-    std::string default_device;
-    default_device = prefs->GetString(prefs::kDefaultVideoCaptureDevice);
     const content::MediaStreamDevices& video_devices =
-           dispatcher->GetVideoCaptureDevices();
+        dispatcher->GetVideoCaptureDevices();
     const content::MediaStreamDevice* const device =
-        FindDefaultDeviceWithId(video_devices, default_device);
+        media::FindDefaultDeviceWithId(video_devices, requested_device_id);
     if (device)
       devices->push_back(*device);
   }

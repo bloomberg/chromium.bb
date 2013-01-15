@@ -45,7 +45,8 @@ class CONTENT_EXPORT MediaStreamUIController {
                      int render_view_id,
                      const StreamOptions& stream_components,
                      const GURL& security_origin,
-                     MediaStreamRequestType request_type);
+                     MediaStreamRequestType request_type,
+                     const std::string& requested_device_id);
 
   // Called to cancel a pending UI request of capture device access when the
   // user has no action for the media stream InfoBar.

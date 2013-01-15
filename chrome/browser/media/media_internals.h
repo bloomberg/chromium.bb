@@ -31,6 +31,14 @@ void GetDefaultDevicesForProfile(Profile* profile,
                                  bool video,
                                  content::MediaStreamDevices* devices);
 
+// Helper for picking the device that was requested for an OpenDevice request.
+// If the device requested is not available it will revert to using the first
+// available one instead or will return an empty list if no devices of the
+// requested kind are present.
+void GetRequestedDevice(const std::string& requested_device_id,
+                        bool audio,
+                        bool video,
+                        content::MediaStreamDevices* devices);
 }
 
 // This class stores information about currently active media.
