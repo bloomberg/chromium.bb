@@ -51,6 +51,10 @@ const char kAshDisablePanelFitting[] = "ash-disable-panel-fitting";
 // Enable advanced gestures (e.g. for window management).
 const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
 
+// Always enable brightness control. Used by machines that don't report their
+// main monitor as internal.
+const char kAshEnableBrightnessControl[] = "ash-enable-brightness-control";
+
 // Enable workspace switching via a three finger vertical scroll.
 const char kAshEnableWorkspaceScrubbing[] = "ash-enable-workspace-scrubbing";
 

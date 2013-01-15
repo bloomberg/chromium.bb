@@ -29,6 +29,7 @@ ASH_EXPORT extern const char kAshDisablePanelFitting[];
 ASH_EXPORT extern const char kAshDisableBootAnimation2[];
 ASH_EXPORT extern const char kAshDisableNewLockAnimations[];
 ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
+ASH_EXPORT extern const char kAshEnableBrightnessControl[];
 #if defined(OS_LINUX)
 ASH_EXPORT extern const char kAshEnableMemoryMonitor[];
 #endif

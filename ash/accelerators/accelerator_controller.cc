@@ -783,8 +783,11 @@ void AcceleratorController::SetBrightnessControlDelegate(
     scoped_ptr<BrightnessControlDelegate> brightness_control_delegate) {
   // Install brightness control delegate only when internal
   // display exists.
-  if (Shell::GetInstance()->display_manager()->HasInternalDisplay())
+  if (Shell::GetInstance()->display_manager()->HasInternalDisplay() ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshEnableBrightnessControl)) {
     brightness_control_delegate_.swap(brightness_control_delegate);
+  }
 }
 
 void AcceleratorController::SetImeControlDelegate(
