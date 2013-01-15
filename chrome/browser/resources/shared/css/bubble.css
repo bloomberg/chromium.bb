@@ -99,3 +99,7 @@ html[dir='rtl'] .bubble-close {
   border-radius: 6px;
   box-sizing: border-box;
 }
+
+.auto-close-bubble {
+  position: fixed;
+}

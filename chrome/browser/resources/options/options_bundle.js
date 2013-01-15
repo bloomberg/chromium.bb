@@ -6,7 +6,6 @@
 // settings page into a single file which will be flattened and served
 // as a single resource.
 <include src="preferences.js"></include>
-<include src="options_bubble.js"></include>
 <include src="controlled_setting.js"></include>
 <include src="deletable_item_list.js"></include>
 <include src="editable_text_field.js"></include>

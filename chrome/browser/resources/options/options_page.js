@@ -408,7 +408,7 @@ cr.define('options', function() {
 
   /**
    * Returns the currently visible bubble, or null if no bubble is visible.
-   * @return {OptionsBubble} The bubble currently being shown.
+   * @return {AutoCloseBubble} The bubble currently being shown.
    */
   OptionsPage.getVisibleBubble = function() {
     var bubble = OptionsPage.bubble_;
@@ -428,7 +428,7 @@ cr.define('options', function() {
   OptionsPage.showBubble = function(content, target, domSibling, location) {
     OptionsPage.hideBubble();
 
-    var bubble = new options.OptionsBubble;
+    var bubble = new cr.ui.AutoCloseBubble;
     bubble.anchorNode = target;
     bubble.domSibling = domSibling;
     bubble.arrowLocation = location;

@@ -452,12 +452,6 @@ html:not([enablePepperFlashSettings]) .pepper-flash-settings {
   display: none;
 }
 
-/* Bubble. */
-
-.options-bubble {
-  position: fixed;
-}
-
 /* Controlled setting indicator and bubble. */
 
 .controlled-setting-with-label {
