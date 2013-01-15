@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERY_LINUX_MTP_RECURSIVE_DEVICE_OBJECT_ENUMERATOR_H_
 #define CHROME_BROWSER_MEDIA_GALLERY_LINUX_MTP_RECURSIVE_DEVICE_OBJECT_ENUMERATOR_H_
 
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -20,6 +21,8 @@ class WaitableEvent;
 }
 
 namespace chrome {
+
+class MTPDeviceObjectEnumerator;
 
 // Recursively enumerate each file entry from a given media file entry set.
 class MTPRecursiveDeviceObjectEnumerator
@@ -40,6 +43,13 @@ class MTPRecursiveDeviceObjectEnumerator
   virtual base::Time LastModifiedTime() OVERRIDE;
 
  private:
+  typedef uint32_t DirectoryEntryId;
+
+  // Returns an enumerator to traverse the subdirectory objects. If there
+  // is no subdirectory, returns NULL. The caller owns the returned
+  // MTPDeviceObjectEnumerator.
+  scoped_ptr<MTPDeviceObjectEnumerator> GetSubdirectoryEnumerator();
+
   // Stores the device handle that was used to open the device.
   const std::string device_handle_;
 
@@ -47,15 +57,14 @@ class MTPRecursiveDeviceObjectEnumerator
   // ReadMTPDirectoryWorker object on the correct thread.
   scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
 
-  // List of top-level directory file entries.
-  const std::vector<MtpFileEntry> file_entries_;
-
-  // Iterator to access the individual file entries.
-  std::vector<MtpFileEntry>::const_iterator file_entry_iter_;
-
   // Enumerator to access current directory Id/path entries.
+  scoped_ptr<MTPDeviceObjectEnumerator> current_enumerator_;
+
   scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
-      current_enumerator_;
+      empty_enumerator_;
+
+  // Queue of untraversed directories.
+  std::queue<DirectoryEntryId> untraversed_directory_entry_ids_;
 
   // |media_task_runner_| can wait on this event until the requested operation
   // is complete.

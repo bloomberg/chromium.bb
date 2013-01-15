@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media_gallery/linux/mtp_device_object_enumerator.h"
 
+#include "base/logging.h"
+
 namespace chrome {
 
 MTPDeviceObjectEnumerator::MTPDeviceObjectEnumerator(
@@ -34,6 +36,19 @@ bool MTPDeviceObjectEnumerator::IsDirectory() {
 
 base::Time MTPDeviceObjectEnumerator::LastModifiedTime() {
   return base::Time::FromTimeT(current_file_info_.modification_time());
+}
+
+bool MTPDeviceObjectEnumerator::GetEntryId(uint32_t* entry_id) const {
+  DCHECK(entry_id);
+  if (file_entry_iter_ == file_entries_.end())
+    return false;
+
+  *entry_id = file_entry_iter_->item_id();
+  return true;
+}
+
+bool MTPDeviceObjectEnumerator::HasMoreEntries() const {
+  return file_entry_iter_ != file_entries_.end();
 }
 
 }  // namespace chrome
