@@ -113,30 +113,90 @@ SUPPORTED_ATTRIBUTES = [
 ]
 
 
-def ParseInstructionAndOperands(s):
-  # If instruction name is quoted, it is allowed to contain spaces.
-  if s.startswith('"'):
-    i = s.index('"', 1)
-    instruction_name = s[1:i]
-    operands = s[i+1:].split()
-  else:
-    operands = s.split()
-    instruction_name = operands.pop(0)
+class Operand(object):
 
-  read_write_attr = r'[\'=!&]?'
-  arg_type = r'[acdbfgioprtxBCDEGHIJLMNOPQRSUVWXY]'
-  size = (r'|2|7|b|d|do|dq|fq|o|p|pb|pd|pdw|pdwx|pdx|ph|phx|pi|pj|pjx|pk|pkx|'
-          r'pq|pqw|pqwx|pqx|ps|psx|pw|q|r|s|sb|sd|se|si|sq|sr|ss|st|sw|sx|'
-          r'v|w|x|y|z')
-  implicit_mark = r'\*?'
+  # Operand read/write modes.
+  UNUSED = '\''
+  READ = '='
+  WRITE = '!'
+  READ_WRITE = '&'
+
+  read_write_attr_regex = r'[%s%s%s%s]?' % (UNUSED, READ, WRITE, READ_WRITE)
+  arg_type_regex = r'[acdbfgioprtxBCDEGHIJLMNOPQRSUVWXY]'
+  size_regex = (
+      r'|2|7|b|d|do|dq|fq|o|p|pb|pd|pdw|pdwx|pdx|ph|phx|pi|pj|pjx|pk|pkx|'
+      r'pq|pqw|pqwx|pqx|ps|psx|pw|q|r|s|sb|sd|se|si|sq|sr|ss|st|sw|sx|'
+      r'v|w|x|y|z')
+  implicit_mark_regex = r'\*?'
 
   operand_regex = re.compile(r'(%s)(%s)(%s)(%s)$' % (
-      read_write_attr,
-      arg_type,
-      size, implicit_mark))
+      read_write_attr_regex,
+      arg_type_regex,
+      size_regex,
+      implicit_mark_regex))
 
-  for operand in operands:
-    assert operand_regex.match(operand), operand
+  @staticmethod
+  def Parse(s, default_rw):
+    m = Operand.operand_regex.match(s)
+
+    return Operand(
+        read_write_attr=m.group(1) or default_rw,
+        arg_type=m.group(2),
+        size=m.group(3),
+        implicit=(m.group(4) == '*'))
+
+  def __init__(self, read_write_attr, arg_type, size, implicit=False):
+    self.read_write_attr = read_write_attr
+    self.arg_type = arg_type
+    self.size = size
+    self.implicit = implicit
+
+  def Readable(self):
+    return self.read_write_attr in [self.READ, self.READ_WRITE]
+
+  def Writable(self):
+    return self.read_write_attr in [self.WRITE, self.READ_WRITE]
+
+  def __str__(self):
+    return '%s%s%s%s' % (
+        self.read_write_attr,
+        self.arg_type,
+        self.size,
+        '*' if self.implicit else '')
+
+
+class Instruction(object):
+
+  @staticmethod
+  def Parse(s):
+    instruction = Instruction()
+
+    # If instruction name is quoted, it is allowed to contain spaces.
+    if s.startswith('"'):
+      i = s.index('"', 1)
+      instruction.name = s[1:i]
+      operands = s[i+1:].split()
+    else:
+      operands = s.split()
+      instruction.name = operands.pop(0)
+
+    instruction.operands = []
+    for i, op in enumerate(operands):
+      # By default one- and two-operand instructions are assumed to read all
+      # operands and store result to the last one, while instructions with
+      # three or more operands are assumed to read all operands except last one
+      # which is used to store the result of the execution.
+      last = (i == len(operands) - 1)
+      if len(operands) <= 2:
+        default_rw = Operand.READ_WRITE if last else Operand.READ
+      else:
+        default_rw = Operand.WRITE if last else Operand.READ
+      instruction.operands.append(Operand.Parse(op, default_rw=default_rw))
+
+    return instruction
+
+  def __str__(self):
+    return ' '.join([self.name] + map(str, self.operands))
 
 
 def ParseDefFile(filename):
@@ -172,7 +232,7 @@ def ParseDefFile(filename):
     else:
       attributes = []
 
-    ParseInstructionAndOperands(instruction_and_operands)
+    Instruction.Parse(instruction_and_operands)
 
     opcode_regex = re.compile(
         r'0x[0-9a-f]{2}|'  # raw bytes
