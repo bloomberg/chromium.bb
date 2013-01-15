@@ -487,6 +487,23 @@ TEST_F(QuicConnectionTest, LeastUnackedLower) {
   ProcessAckPacket(&frame2, false);
 }
 
+TEST_F(QuicConnectionTest, LargestObservedLower) {
+  SendStreamDataToPeer(1, "foo", 0, false, NULL);
+  SendStreamDataToPeer(1, "bar", 3, false, NULL);
+  SendStreamDataToPeer(1, "eep", 6, false, NULL);
+
+  // Start out saying the largest observed is 2.
+  QuicAckFrame frame(2, 0);
+  EXPECT_CALL(visitor_, OnAck(_));
+  ProcessAckPacket(&frame);
+
+  // Now change it to 1, and it should cause a connection error.
+  QuicAckFrame frame2(1, 0);
+  EXPECT_CALL(visitor_, ConnectionClose(QUIC_INVALID_ACK_DATA, false));
+  EXPECT_CALL(*scheduler_, SentPacket(_, _, _));
+  ProcessAckPacket(&frame2, false);
+}
+
 TEST_F(QuicConnectionTest, LeastUnackedGreaterThanPacketSequenceNumber) {
   EXPECT_CALL(visitor_, ConnectionClose(QUIC_INVALID_ACK_DATA, false));
   EXPECT_CALL(*scheduler_, SentPacket(_, _, _));

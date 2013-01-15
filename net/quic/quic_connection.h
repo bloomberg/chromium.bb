@@ -335,9 +335,9 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   QuicCongestionFeedbackFrame outgoing_congestion_feedback_;
 
   // Track some client state so we can do less bookkeeping
-  //
   QuicPacketSequenceNumber largest_seen_packet_with_ack_;
-  QuicPacketSequenceNumber least_packet_awaiting_ack_;
+  QuicPacketSequenceNumber peer_largest_observed_packet_;
+  QuicPacketSequenceNumber peer_least_packet_awaiting_ack_;
 
   // When new packets are created which may be resent, they are added
   // to this map, which contains owning pointers.

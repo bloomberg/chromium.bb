@@ -76,7 +76,8 @@ QuicConnection::QuicConnection(QuicGuid guid,
       should_send_ack_(false),
       should_send_congestion_feedback_(false),
       largest_seen_packet_with_ack_(0),
-      least_packet_awaiting_ack_(0),
+      peer_largest_observed_packet_(0),
+      peer_least_packet_awaiting_ack_(0),
       write_blocked_(false),
       packet_creator_(guid_, &framer_),
       timeout_(QuicTime::Delta::FromMicroseconds(kDefaultTimeoutUs)),
@@ -216,15 +217,24 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
     return false;
   }
 
+  if (incoming_ack.received_info.largest_observed <
+      peer_largest_observed_packet_) {
+    DLOG(ERROR) << "Client's largest_observed packet decreased:"
+                << incoming_ack.received_info.largest_observed << " vs "
+                << peer_largest_observed_packet_;
+    // We got an error for data we have not sent.  Error out.
+    return false;
+  }
+
   // We can't have too many unacked packets, or our ack frames go over
   // kMaxPacketSize.
   DCHECK_LE(incoming_ack.received_info.missing_packets.size(),
             kMaxUnackedPackets);
 
-  if (incoming_ack.sent_info.least_unacked < least_packet_awaiting_ack_) {
+  if (incoming_ack.sent_info.least_unacked < peer_least_packet_awaiting_ack_) {
     DLOG(INFO) << "Client sent low least_unacked: "
                << incoming_ack.sent_info.least_unacked
-               << " vs " << least_packet_awaiting_ack_;
+               << " vs " << peer_least_packet_awaiting_ack_;
     // We never process old ack frames, so this number should only increase.
     return false;
   }
@@ -245,11 +255,16 @@ void QuicConnection::UpdatePacketInformationReceivedByPeer(
     const QuicAckFrame& incoming_ack) {
   QuicConnectionVisitorInterface::AckedPackets acked_packets;
 
-  // Initialize the lowest unacked packet to the lower of the next outgoing
-  // sequence number and the largest observed packet in the incoming ack.
+  // ValidateAck should fail if largest_observed ever shrinks.
+  DCHECK_LE(peer_largest_observed_packet_,
+            incoming_ack.received_info.largest_observed);
+  peer_largest_observed_packet_ = incoming_ack.received_info.largest_observed;
+
+  // Pick an upper bound for the lowest_unacked; we'll then loop through the
+  // unacked packets and lower it if necessary.
   QuicPacketSequenceNumber lowest_unacked = min(
       packet_creator_.sequence_number() + 1,
-      incoming_ack.received_info.largest_observed + 1);
+      peer_largest_observed_packet_ + 1);
 
   int resent_packets = 0;
 
@@ -286,7 +301,7 @@ void QuicConnection::UpdatePacketInformationReceivedByPeer(
       // Determine if this packet is being explicitly nacked and, if so, if it
       // is worth resending.
       QuicPacketSequenceNumber resend_number = 0;
-      if (it->first < incoming_ack.received_info.largest_observed) {
+      if (it->first < peer_largest_observed_packet_) {
         // The peer got packets after this sequence number.  This is an explicit
         // nack.
         ++(it->second.number_nacks);
@@ -338,10 +353,10 @@ void QuicConnection::UpdatePacketInformationSentByPeer(
     const QuicAckFrame& incoming_ack) {
   // Make sure we also don't ack any packets lower than the peer's
   // last-packet-awaiting-ack.
-  if (incoming_ack.sent_info.least_unacked > least_packet_awaiting_ack_) {
+  if (incoming_ack.sent_info.least_unacked > peer_least_packet_awaiting_ack_) {
     outgoing_ack_.received_info.ClearMissingBefore(
         incoming_ack.sent_info.least_unacked);
-    least_packet_awaiting_ack_ = incoming_ack.sent_info.least_unacked;
+    peer_least_packet_awaiting_ack_ = incoming_ack.sent_info.least_unacked;
   }
 
   // Possibly close any FecGroups which are now irrelevant
@@ -540,9 +555,11 @@ void QuicConnection::AckPacket(const QuicPacketHeader& header) {
 bool QuicConnection::MaybeResendPacketForRTO(
     QuicPacketSequenceNumber sequence_number) {
   // If the packet hasn't been acked and we're getting truncated acks, ignore
-  // the RTO; it may have been received by the peer and just wasn't acked
-  // due to the ack frame running out of space.
+  // any RTO for packets larger than the peer's largest observed packet; it may
+  // have been received by the peer and just wasn't acked due to the ack frame
+  // running out of space.
   if (received_truncated_ack_ &&
+      sequence_number > peer_largest_observed_packet_ &&
       ContainsKey(unacked_packets_, sequence_number)) {
     return false;
   } else {
