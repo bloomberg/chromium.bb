@@ -118,14 +118,19 @@
       'actions': [
         {
           'action_name': 'generate_gl_bindings',
+          'variables': {
+            'generator_path': 'generate_bindings.py',
+            'conditions': [
+              ['use_system_mesa==0', {
+                'header_paths': '../../third_party/mesa/MesaLib/include:../../third_party/khronos',
+              }, { # use_system_mesa==1
+                'header_paths': '/usr/include',
+              }],
+            ],
+          },
           'inputs': [
-            'generate_bindings.py',
-            '<(DEPTH)/third_party/khronos/GLES2/gl2ext.h',
-            '<(DEPTH)/third_party/khronos/EGL/eglext.h',
-            '<(DEPTH)/third_party/mesa/MesaLib/include/GL/glext.h',
-            '<(DEPTH)/third_party/mesa/MesaLib/include/GL/glx.h',
-            '<(DEPTH)/third_party/mesa/MesaLib/include/GL/glxext.h',
-            '<(DEPTH)/third_party/mesa/MesaLib/include/GL/wglext.h',
+            '<(generator_path)',
+            '<!@(python <(generator_path) --header-paths=<(header_paths) --inputs)',
           ],
           'outputs': [
             '<(gl_binding_output_dir)/gl_bindings_autogen_egl.cc',
@@ -157,7 +162,8 @@
           ],
           'action': [
             'python',
-            'generate_bindings.py',
+            '<(generator_path)',
+            '--header-paths=<(header_paths)',
             '<(gl_binding_output_dir)',
           ],
         },

@@ -11,11 +11,12 @@
 {
   'variables': {
     'shim_headers_path': '<(SHARED_INTERMEDIATE_DIR)/shim_headers/<(_target_name)/<(_toolset)',
+    'shim_generator_additional_args%': [],
   },
   'include_dirs+++': [
     '<(shim_headers_path)',
   ],
-  'direct_dependent_settings': {
+  'all_dependent_settings': {
     'include_dirs++++': [
       '<(shim_headers_path)',
     ],
@@ -27,6 +28,7 @@
         'generator_args': [
           '--headers-root', '<(headers_root_path)',
           '--output-directory', '<(shim_headers_path)',
+          '<@(shim_generator_additional_args)',
           '<@(header_filenames)',
         ],
       },

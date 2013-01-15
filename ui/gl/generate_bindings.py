@@ -5,6 +5,7 @@
 
 """code generator for GL/GLES extension wrangler."""
 
+import optparse
 import os
 import collections
 import re
@@ -1147,20 +1148,22 @@ GLX_FUNCTIONS = [
 ]
 
 FUNCTION_SETS = [
-  [GL_FUNCTIONS, 'gl', ['../../third_party/mesa/MesaLib/include/GL/glext.h',
-    '../../third_party/khronos/GLES2/gl2ext.h'], []],
+  [GL_FUNCTIONS, 'gl', [
+      'GL/glext.h',
+      'GLES2/gl2ext.h',
+      # Files below are Chromium-specific and shipped with Chromium sources.
+      'GLES2/gl2chromium.h',
+      'GLES2/gl2extchromium.h'
+  ], []],
   [OSMESA_FUNCTIONS, 'osmesa', [], []],
-  [EGL_FUNCTIONS, 'egl', ['../../third_party/khronos/EGL/eglext.h'],
+  [EGL_FUNCTIONS, 'egl', ['EGL/eglext.h'],
     [
       'EGL_ANGLE_d3d_share_handle_client_buffer',
       'EGL_ANGLE_surface_d3d_texture_2d_share_handle',
     ],
   ],
-  [WGL_FUNCTIONS, 'wgl', [
-    '../../third_party/mesa/MesaLib/include/GL/wglext.h'], []],
-  [GLX_FUNCTIONS, 'glx', [
-    '../../third_party/mesa/MesaLib/include/GL/glx.h',
-    '../../third_party/mesa/MesaLib/include/GL/glxext.h'], []],
+  [WGL_FUNCTIONS, 'wgl', ['GL/wglext.h'], []],
+  [GLX_FUNCTIONS, 'glx', ['GL/glx.h', 'GL/glxext.h'], []],
 ]
 
 def GenerateHeader(file, functions, set_name, used_extension_functions):
@@ -1591,7 +1594,7 @@ def ParseExtensionFunctionsFromHeader(header_file):
     Map of extension name => functions.
   """
   extension_start = re.compile(r'#define ([A-Z]+_[A-Z]+_[a-zA-Z]\w+) 1')
-  extension_function = re.compile(r'.+\s+([a-z]+\w+)\s*\(.+\);')
+  extension_function = re.compile(r'.+\s+([a-z]+\w+)\s*\(')
   typedef = re.compile(r'typedef .*')
   macro_start = re.compile(r'^#(if|ifdef|ifndef).*')
   macro_end = re.compile(r'^#endif.*')
@@ -1702,15 +1705,50 @@ def GetUsedExtensionFunctions(functions, extension_headers, extra_extensions):
   return used_extension_functions
 
 
+def ResolveHeader(header, header_paths):
+  paths = header_paths.split(':')
+
+  # Always use a path for Chromium-specific extensions. They are extracted
+  # to separate files.
+  paths.append('../../gpu')
+
+  root = os.path.abspath(os.path.dirname(__file__))
+
+  for path in paths:
+    result = os.path.join(path, header)
+    if not os.path.isabs(path):
+      result = os.path.relpath(os.path.join(root, result), os.getcwd())
+    if os.path.exists(result):
+      # Always use forward slashes as path separators. Otherwise backslashes
+      # may be incorrectly interpreted as escape characters.
+      return result.replace(os.path.sep, '/')
+
+  raise Exception('Header %s not found.' % header)
+
+
 def main(argv):
   """This is the main function."""
 
-  if len(argv) >= 1:
-    dir = argv[0]
+  parser = optparse.OptionParser()
+  parser.add_option('--inputs', action='store_true')
+  parser.add_option('--header-paths')
+
+  options, args = parser.parse_args(argv)
+
+  if options.inputs:
+    for [_, _, headers, _] in FUNCTION_SETS:
+      for header in headers:
+        print ResolveHeader(header, options.header_paths)
+    return 0
+
+  if len(args) >= 1:
+    dir = args[0]
   else:
     dir = '.'
 
   for [functions, set_name, extension_headers, extensions] in FUNCTION_SETS:
+    extension_headers = [ResolveHeader(h, options.header_paths)
+                         for h in extension_headers]
     used_extension_functions = GetUsedExtensionFunctions(
         functions, extension_headers, extensions)
 

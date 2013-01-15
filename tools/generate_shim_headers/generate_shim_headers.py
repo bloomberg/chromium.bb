@@ -21,15 +21,14 @@ SHIM_TEMPLATE = """
 #if defined(OFFICIAL_BUILD)
 #error shim headers must not be used in official builds!
 #endif
-
-#include <%s>
 """
 
 
 def GeneratorMain(argv):
   parser = optparse.OptionParser()
-  parser.add_option('--headers-root')
+  parser.add_option('--headers-root', action='append')
   parser.add_option('--output-directory')
+  parser.add_option('--use-include-next', action='store_true')
   parser.add_option('--outputs', action='store_true')
   parser.add_option('--generate', action='store_true')
 
@@ -45,17 +44,40 @@ def GeneratorMain(argv):
   source_tree_root = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', '..'))
 
-  target_directory = os.path.join(
-    options.output_directory,
-    os.path.relpath(options.headers_root, source_tree_root))
-  if options.generate and not os.path.exists(target_directory):
-    os.makedirs(target_directory)
-  for header_filename in args:
-    if options.outputs:
-      yield os.path.join(target_directory, header_filename)
-    if options.generate:
-      with open(os.path.join(target_directory, header_filename), 'w') as f:
-        f.write(SHIM_TEMPLATE % header_filename)
+  for root in options.headers_root:
+    target_directory = os.path.join(
+      options.output_directory,
+      os.path.relpath(root, source_tree_root))
+    if options.generate and not os.path.exists(target_directory):
+      os.makedirs(target_directory)
+
+    for header_spec in args:
+      if ';' in header_spec:
+        (header_filename,
+         include_before,
+         include_after) = header_spec.split(';', 2)
+      else:
+        header_filename = header_spec
+        include_before = ''
+        include_after = ''
+      if options.outputs:
+        yield os.path.join(target_directory, header_filename)
+      if options.generate:
+        with open(os.path.join(target_directory, header_filename), 'w') as f:
+          f.write(SHIM_TEMPLATE)
+
+          if include_before:
+            for header in include_before.split(':'):
+              f.write('#include %s\n' % header)
+
+          if options.use_include_next:
+            f.write('#include_next <%s>\n' % header_filename)
+          else:
+            f.write('#include <%s>\n' % header_filename)
+
+          if include_after:
+            for header in include_after.split(':'):
+              f.write('#include %s\n' % header)
 
 
 def DoMain(argv):

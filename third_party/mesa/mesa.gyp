@@ -7,8 +7,6 @@
     # Disable warnings as errors for mesa until they're fixed or disabled.
     # http://crbug.com/143877
     'win_third_party_warn_as_error': 'false',
-
-    'use_system_mesa%': 0,
   },
   'conditions': [
     ['use_system_mesa==0', {
@@ -592,6 +590,32 @@
         {
           'target_name': 'mesa_headers',
           'type': 'none',
+          'variables': {
+            'headers_root_path': 'MesaLib/include',
+            # This list can easily be updated using the command below:
+            # find third_party/mesa/MesaLib/include -iname '*.h' \
+            # -printf "'%p',\n" | grep -v internal | sed -e \
+            # 's|third_party/mesa/MesaLib/include/||' | sort -u
+            'header_filenames': [
+              'GL/glext.h',
+              'GL/glfbdev.h',
+              'GL/gl.h',
+              'GL/gl_mangle.h',
+              'GL/glu.h',
+              'GL/glu_mangle.h',
+              'GL/glxext.h',
+              'GL/glx.h',
+              'GL/glx_mangle.h',
+              'GL/mesa_wgl.h',
+              'GL/osmesa.h',
+              'GL/vms_x_fix.h',
+              'GL/wglext.h',
+              'GL/wmesa.h',
+            ],
+          },
+          'includes': [
+            '../../build/shim_headers.gypi',
+          ],
         },
         {
           'target_name': 'mesa',
