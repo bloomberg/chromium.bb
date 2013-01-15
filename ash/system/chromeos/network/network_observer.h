@@ -33,6 +33,7 @@ class NetworkObserver {
     // ash relevant subset of network_constants.h connection type.
     NETWORK_ETHERNET,
     NETWORK_CELLULAR,
+    NETWORK_CELLULAR_LTE,
     NETWORK_WIFI,
     NETWORK_BLUETOOTH,
     NETWORK_UNKNOWN,

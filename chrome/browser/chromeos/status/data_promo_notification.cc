@@ -199,13 +199,21 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
     else
       link_message_id = IDS_STATUSBAR_NETWORK_VIEW_ACCOUNT;
 
+    ash::NetworkObserver::NetworkType type =
+        ash::NetworkObserver::NETWORK_CELLULAR;
+    const chromeos::CellularNetwork* net = cros->cellular_network();
+    if (net && (net->network_technology() == NETWORK_TECHNOLOGY_LTE ||
+            net->network_technology() == NETWORK_TECHNOLOGY_LTE_ADVANCED)) {
+      type = ash::NetworkObserver::NETWORK_CELLULAR_LTE;
+    }
+
     std::vector<string16> links;
     links.push_back(l10n_util::GetStringUTF16(link_message_id));
     if (!deal_info_url_.empty())
       links.push_back(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
     ash::Shell::GetInstance()->system_tray_notifier()->NotifySetNetworkMessage(
         listener, ash::NetworkObserver::MESSAGE_DATA_PROMO,
-        ash::NetworkObserver::NETWORK_CELLULAR, string16(), message, links);
+        type, string16(), message, links);
     check_for_promo_ = false;
     SetShow3gPromoNotification(false);
     if (carrier_deal_promo_pref != kNotificationCountPrefDefault)
