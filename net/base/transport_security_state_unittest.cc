@@ -445,7 +445,7 @@ TEST_F(TransportSecurityStateTest, Preloaded) {
   EXPECT_FALSE(ShouldRedirect("foo.www.sandbox.mydigipass.com"));
 
   EXPECT_TRUE(ShouldRedirect("crypto.cat"));
-  EXPECT_TRUE(ShouldRedirect("foo.crypto.cat"));
+  EXPECT_FALSE(ShouldRedirect("foo.crypto.cat"));
 
   EXPECT_TRUE(ShouldRedirect("bigshinylock.minazo.net"));
   EXPECT_TRUE(ShouldRedirect("foo.bigshinylock.minazo.net"));
