@@ -481,8 +481,10 @@ GLenum TextureManager::TextureInfo::SetParameter(
         return GL_INVALID_ENUM;
       }
       manager_->GetMemTracker(pool_)->TrackMemFree(estimated_size());
+      manager_->GetMemTracker(pool_)->UpdateMemRepresented();
       pool_ = param;
       manager_->GetMemTracker(pool_)->TrackMemAlloc(estimated_size());
+      manager_->GetMemTracker(pool_)->UpdateMemRepresented();
       break;
     case GL_TEXTURE_WRAP_S:
       if (!feature_info->validators()->texture_wrap_mode.IsValid(param)) {

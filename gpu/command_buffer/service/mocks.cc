@@ -36,5 +36,10 @@ MockShaderTranslator::~MockShaderTranslator() {}
 MockProgramCache::MockProgramCache() {}
 MockProgramCache::~MockProgramCache() {}
 
+MockMemoryTracker::MockMemoryTracker() {}
+MockMemoryTracker::~MockMemoryTracker() {}
+
 }  // namespace gles2
 }  // namespace gpu
+
+

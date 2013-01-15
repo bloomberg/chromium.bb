@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
+#include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/program_cache.h"
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -108,6 +109,19 @@ class MockProgramCache : public ProgramCache {
       const LocationMap* bind_attrib_location_map));
  private:
   MOCK_METHOD0(ClearBackend, void());
+};
+
+class MockMemoryTracker : public MemoryTracker {
+ public:
+  MockMemoryTracker();
+
+  MOCK_METHOD3(TrackMemoryAllocatedChange, void(
+      size_t old_size, size_t new_size, Pool pool));
+
+ private:
+  friend class ::testing::StrictMock<MockMemoryTracker>;
+  friend class base::RefCounted< ::testing::StrictMock<MockMemoryTracker> >;
+  virtual ~MockMemoryTracker();
 };
 
 }  // namespace gles2
