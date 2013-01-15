@@ -11,10 +11,6 @@
 #include "net/base/net_export.h"
 #include "net/quic/quic_protocol.h"
 
-namespace gfe2 {
-  class BalsaHeaders;
-}
-
 namespace net {
 
 class NET_EXPORT_PRIVATE QuicUtils {
