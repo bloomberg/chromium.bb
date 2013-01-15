@@ -97,7 +97,7 @@ FileTransferController.prototype = {
                                     this.onBeforePaste_.bind(this));
     this.document_.addEventListener('paste',
                                     this.onPaste_.bind(this));
-    this.document_.copyCommand_ = this.document_.querySelector('command#copy');
+    this.copyCommand_ = this.document_.querySelector('command#copy');
   },
 
   /**
