@@ -515,6 +515,7 @@ void TreeView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void TreeView::OnFocus() {
+  View::OnFocus();
   SchedulePaintForNode(selected_node_);
 }
 
