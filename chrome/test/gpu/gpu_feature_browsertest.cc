@@ -255,13 +255,7 @@ IN_PROC_BROWSER_TEST_F(AcceleratedCompositingTest,
   RunEventTest(url, kSwapBuffersEvent, false);
 }
 
-// Flaky on ChromeOS, http://crbug.com/168972
-#if defined(OS_CHROMEOS)
-#define MAYBE_WebGLAllowed DISABLED_WebGLAllowed
-#else
-#define MAYBE_WebGLAllowed WebGLAllowed
-#endif
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_WebGLAllowed) {
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLAllowed) {
   GpuFeatureType type =
       GpuDataManager::GetInstance()->GetBlacklistedFeatures();
   EXPECT_EQ(type, 0);
@@ -270,13 +264,7 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_WebGLAllowed) {
   RunEventTest(url, kWebGLCreationEvent, true);
 }
 
-// Flaky on ChromeOS, http://crbug.com/168972
-#if defined(OS_CHROMEOS)
-#define MAYBE_WebGLBlocked DISABLED_WebGLBlocked
-#else
-#define MAYBE_WebGLBlocked WebGLBlocked
-#endif
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_WebGLBlocked) {
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLBlocked) {
   const std::string json_blacklist =
       "{\n"
       "  \"name\": \"gpu blacklist\",\n"
