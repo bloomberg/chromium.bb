@@ -204,6 +204,12 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
 #else
   DCHECK(message_loop_->BelongsToCurrentThread());
 
+  if (virtual_audio_input_stream_) {
+    // Do not attempt to resample, nor cache via AudioOutputDispatcher, when
+    // opening output streams for browser-wide audio mirroring.
+    return MakeAudioOutputStream(params);
+  }
+
   bool use_audio_output_resampler =
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableAudioOutputResampler) &&
