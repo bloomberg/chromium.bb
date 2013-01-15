@@ -51,6 +51,28 @@ class BASE_EXPORT ScopedCrashKey {
   DISALLOW_COPY_AND_ASSIGN(ScopedCrashKey);
 };
 
+// Before setting values for a key, all the keys must be registered.
+struct BASE_EXPORT CrashKey {
+  // The name of the crash key, used in the above functions.
+  const char* const key_name;
+
+  // For values longer than chunk_max_length, the value can be chunked into
+  // values named "key_name-1", "key_name-2", etc. This is the maximum number of
+  // numbered chunks to use before the value is truncated.
+  size_t num_chunks;
+};
+
+// Before the crash key logging mechanism can be used, all crash keys must be
+// registered with this function. The function returns the amount of space
+// the crash reporting implementation should allocate space for the registered
+// crash keys. |chunk_max_length| is the maximum size that a value in a single
+// chunk can be.
+BASE_EXPORT size_t InitCrashKeys(const CrashKey* const keys, size_t count,
+                                 size_t chunk_max_length);
+
+// Returns the correspnding crash key object or NULL for a given key.
+BASE_EXPORT const CrashKey* LookupCrashKey(const base::StringPiece& key);
+
 typedef void (*SetCrashKeyValueFuncT)(const base::StringPiece&,
                                       const base::StringPiece&);
 typedef void (*ClearCrashKeyValueFuncT)(const base::StringPiece&);
@@ -60,6 +82,16 @@ typedef void (*ClearCrashKeyValueFuncT)(const base::StringPiece&);
 BASE_EXPORT void SetCrashKeyReportingFunctions(
     SetCrashKeyValueFuncT set_key_func,
     ClearCrashKeyValueFuncT clear_key_func);
+
+// Helper function that breaks up a value according to the parameters
+// specified by the crash key object.
+BASE_EXPORT std::vector<std::string> ChunkCrashKeyValue(
+    const CrashKey& crash_key,
+    const base::StringPiece& value,
+    size_t chunk_max_length);
+
+// Resets the crash key system so it can be reinitialized. For testing only.
+BASE_EXPORT void ResetCrashLoggingForTesting();
 
 }  // namespace debug
 }  // namespace base

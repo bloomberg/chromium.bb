@@ -5,7 +5,13 @@
 #ifndef CHROME_COMMON_CRASH_KEYS_H_
 #define CHROME_COMMON_CRASH_KEYS_H_
 
+#include "base/debug/crash_logging.h"
+
 namespace crash_keys {
+
+// Registers all of the potential crash keys that can be sent to the crash
+// reporting server. Returns the size of the union of all keys.
+size_t RegisterChromeCrashKeys();
 
 // Crash Key Name Constants ////////////////////////////////////////////////////
 

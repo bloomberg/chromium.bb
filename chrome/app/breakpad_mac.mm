@@ -27,6 +27,7 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/crash_keys.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -251,16 +252,16 @@ void InitCrashReporter() {
     return;
   }
 
+  // Initialize the scoped crash key system.
+  base::debug::SetCrashKeyReportingFunctions(&SetCrashKeyValueImpl,
+                                             &ClearCrashKeyValueImpl);
+  crash_keys::RegisterChromeCrashKeys();
+
   // Set Breakpad metadata values.  These values are added to Info.plist during
   // the branded Google Chrome.app build.
   SetCrashKeyValue(@"ver", [info_dictionary objectForKey:@BREAKPAD_VERSION]);
   SetCrashKeyValue(@"prod", [info_dictionary objectForKey:@BREAKPAD_PRODUCT]);
   SetCrashKeyValue(@"plat", @"OS X");
-
-  // Enable child process crashes to include the page URL.
-  // TODO: Should this only be done for certain process types?
-  base::debug::SetCrashKeyReportingFunctions(&SetCrashKeyValueImpl,
-                                             &ClearCrashKeyValueImpl);
 
   if (!is_browser) {
     // Get the guid from the command line switch.
