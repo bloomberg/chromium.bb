@@ -8,6 +8,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "extensions/common/error_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,6 +28,9 @@ class FileBrowserHandlerManifestTest : public ExtensionManifestTest {
     extensions::ManifestHandler::Register(
         extension_manifest_keys::kFileBrowserHandlers,
         new FileBrowserHandlerParser);
+    extensions::ManifestHandler::Register(
+        keys::kChromeURLOverrides,
+        new extensions::URLOverridesHandler);
   }
 };
 
