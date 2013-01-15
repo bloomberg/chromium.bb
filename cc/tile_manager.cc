@@ -155,9 +155,14 @@ public:
     if (ams.resolution != bms.resolution)
       return ams.resolution < bms.resolution;
 
-    return
-      ams.time_to_needed_in_seconds <
-      bms.time_to_needed_in_seconds;
+    if (ams.time_to_needed_in_seconds !=  bms.time_to_needed_in_seconds)
+      return ams.time_to_needed_in_seconds < bms.time_to_needed_in_seconds;
+
+    gfx::Rect a_rect = a->content_rect();
+    gfx::Rect b_rect = b->content_rect();
+    if (a_rect.y() != b_rect.y())
+      return a_rect.y() < b_rect.y();
+    return a_rect.x() < b_rect.x();
   }
 };
 
