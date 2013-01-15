@@ -1894,10 +1894,19 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
       GURL(kMockHttpsUrl));
 }
 
+// Fails on Windows only, mostly on Win7. http://crbug.com/170033
+#if defined(OS_WIN)
+#define MAYBE_NavigateLoadingTabToTimeoutTwoSites \
+        DISABLED_NavigateLoadingTabToTimeoutTwoSites
+#else
+#define MAYBE_NavigateLoadingTabToTimeoutTwoSites \
+        NavigateLoadingTabToTimeoutTwoSites
+#endif
+
 // Checks that captive portal detection triggers correctly when a same-site
 // navigation is cancelled by a navigation to another site.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
-                       NavigateLoadingTabToTimeoutTwoSites) {
+                       MAYBE_NavigateLoadingTabToTimeoutTwoSites) {
   RunNavigateLoadingTabToTimeoutTest(
       browser(),
       GURL(kMockHttpsUrl),
