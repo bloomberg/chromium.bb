@@ -35,6 +35,8 @@
         'debug_utils.h',
         'dip_util.cc',
         'dip_util.h',
+        'float_animation_curve_adapter.cc',
+        'float_animation_curve_adapter.h',
         'layer.cc',
         'layer.h',
         'layer_animation_delegate.h',
@@ -55,6 +57,8 @@
         # UI tests need TestWebGraphicsContext3D, so we always build it.
         'test_web_graphics_context_3d.cc',
         'test_web_graphics_context_3d.h',
+        'transform_animation_curve_adapter.cc',
+        'transform_animation_curve_adapter.h',
       ],
       'conditions': [
         ['OS == "win" and use_aura == 1', {
