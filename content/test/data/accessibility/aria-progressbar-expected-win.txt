@@ -1,0 +1,5 @@
+#<skip - STATE_SYSTEM_READONLY is not being set. http://crbug.com/169554>
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
+    ROLE_SYSTEM_PROGRESSBAR READONLY STATE_SYSTEM_READONLY valuetext:3 currentValue=3.00 minimumValue=1.00 maxiumumValue=37.00
+    ROLE_SYSTEM_PROGRESSBAR READONLY STATE_SYSTEM_READONLY valuetext:three currentValue=0.00 minimumValue=1.00 maxiumumValue=96.00
+

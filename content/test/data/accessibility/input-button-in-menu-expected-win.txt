@@ -1,0 +1,6 @@
+#<skip - role not set correctly. http://crbug.com/169574>
+ROLE_SYSTEM_DOCUMENT name='' READONLY FOCUSABLE
+    IA2_ROLE_SECTION name='' READONLY
+        ROLE_SYSTEM_MENUITEM name='Button in menu element' FOCUSABLE
+    ROLE_SYSTEM_MENUPOPUP name=''
+        ROLE_SYSTEM_MENUITEM name='Button in element with menu role' FOCUSABLE

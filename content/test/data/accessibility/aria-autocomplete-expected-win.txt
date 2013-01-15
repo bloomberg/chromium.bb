@@ -1,0 +1,9 @@
+#<skip - IA2_STATE_SUPPORTS_AUTOCOMPLETION not set. http://crbug.com/169559
+       - autocomplete:<value> attribute not set. http://crbug.com/169563 >
+ROLE_SYSTEM_DOCUMENT name='' READONLY FOCUSABLE
+    IA2_ROLE_SECTION name='' autocomplete:inline IA2_STATE_SUPPORTS_AUTOCOMPLETION
+        ROLE_SYSTEM_TEXT name='autocomplete=inline' READONLY
+    IA2_ROLE_SECTION name='' autocomplete:list IA2_STATE_SUPPORTS_AUTOCOMPLETION
+        ROLE_SYSTEM_TEXT name='autocomplete=list' READONLY
+    IA2_ROLE_SECTION name='' autocomplete:both IA2_STATE_SUPPORTS_AUTOCOMPLETION
+        ROLE_SYSTEM_TEXT name='autocomplete=both' READONLY

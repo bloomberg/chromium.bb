@@ -1,0 +1,4 @@
+#<skip -- wrong roleDescription (bug)>
+AXWebArea subrole=(null) roleDescription='HTML content' title='' value=''
+    AXGroup subrole=AXLandmarkContentInfo roleDescription='address' title='' value=''
+        AXStaticText subrole=(null) roleDescription='text' title='' value='Please contact John Citizen for more information.'

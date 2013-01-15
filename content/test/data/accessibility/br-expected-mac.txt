@@ -1,0 +1,4 @@
+AXWebArea title='' value=''
+    AXGroup title='' value=''
+        AXStaticText title='' value='Text line 1 '
+        AXStaticText title='' value='Text line 2'

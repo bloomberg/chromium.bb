@@ -1,0 +1,7 @@
+# The spec states that <wbr> should have a role of AXGroup, but that seems
+# wrong, so we assume this is correct.
+ROLE_SYSTEM_DOCUMENT name='' READONLY FOCUSABLE
+    IA2_ROLE_SECTION name='' READONLY
+        ROLE_SYSTEM_TEXT name='Supercali' READONLY
+        ROLE_SYSTEM_TEXT name='fragilistic' READONLY
+        ROLE_SYSTEM_TEXT name='expialidocious' READONLY

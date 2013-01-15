@@ -10,6 +10,7 @@
 
 #include "base/file_path.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/common/accessibility_node_data.h"
@@ -66,7 +67,15 @@ string16 DumpAccessibilityTreeHelper::ToString(
     Add(false, *it);
   }
   Add(false, L"role_name='" + acc_obj->role_name() + L"'");
-  Add(false, L"value='" + acc_obj->value() + L"'");
+  VARIANT currentValue;
+  if (acc_obj->get_currentValue(&currentValue) != S_FALSE)
+    Add(false, StringPrintf(L"currentValue=%.2f", V_R8(&currentValue)));
+  VARIANT minimumValue;
+  if (acc_obj->get_minimumValue(&minimumValue) != S_FALSE)
+    Add(false, StringPrintf(L"minimumValue=%.2f", V_R8(&minimumValue)));
+  VARIANT maximumValue;
+  if (acc_obj->get_maximumValue(&maximumValue) != S_FALSE)
+    Add(false, StringPrintf(L"maximumValue=%.2f", V_R8(&maximumValue)));
   Add(false, L"description='" + description + L"'");
   return UTF8ToUTF16(prefix) + FinishLine() + ASCIIToUTF16("\n");
 }

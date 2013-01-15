@@ -115,9 +115,9 @@ void DumpAccessibilityTreeTest::RunTest(const FilePath::CharType* file_path) {
 
   // Setup test paths.
   FilePath dir_test_data;
-  EXPECT_TRUE(PathService::Get(DIR_TEST_DATA, &dir_test_data));
+  ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &dir_test_data));
   FilePath test_path(dir_test_data.Append(FILE_PATH_LITERAL("accessibility")));
-  EXPECT_TRUE(file_util::PathExists(test_path))
+  ASSERT_TRUE(file_util::PathExists(test_path))
       << test_path.LossyDisplayName();
 
   FilePath html_file = test_path.Append(FilePath(file_path));
@@ -223,6 +223,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityA) {
   RunTest(FILE_PATH_LITERAL("a.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAddress) {
+  RunTest(FILE_PATH_LITERAL("address.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAName) {
   RunTest(FILE_PATH_LITERAL("a-name.html"));
 }
@@ -236,16 +240,48 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunTest(FILE_PATH_LITERAL("aria-application.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaAutocomplete) {
+  RunTest(FILE_PATH_LITERAL("aria-autocomplete.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaCombobox) {
   RunTest(FILE_PATH_LITERAL("aria-combobox.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaInvalid) {
+  RunTest(FILE_PATH_LITERAL("aria-invalid.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaMenu) {
   RunTest(FILE_PATH_LITERAL("aria-menu.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaMenuitemradio) {
+  RunTest(FILE_PATH_LITERAL("aria-menuitemradio.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaProgressbar) {
+  RunTest(FILE_PATH_LITERAL("aria-progressbar.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaToolbar) {
+  RunTest(FILE_PATH_LITERAL("toolbar.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAWithImg) {
   RunTest(FILE_PATH_LITERAL("a-with-img.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityBdo) {
+  RunTest(FILE_PATH_LITERAL("bdo.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityBR) {
+  RunTest(FILE_PATH_LITERAL("br.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityButtonNameCalc) {
@@ -282,6 +318,16 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityHR) {
   RunTest(FILE_PATH_LITERAL("hr.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityInputButtonInMenu) {
+  RunTest(FILE_PATH_LITERAL("input-button-in-menu.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityInputImageButtonInMenu) {
+  RunTest(FILE_PATH_LITERAL("input-image-button-in-menu.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputRange) {
   RunTest(FILE_PATH_LITERAL("input-range.html"));
 }
@@ -303,6 +349,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityP) {
   RunTest(FILE_PATH_LITERAL("p.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySelect) {
+  RunTest(FILE_PATH_LITERAL("select.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySpinButton) {
   RunTest(FILE_PATH_LITERAL("spinbutton.html"));
 }
@@ -314,6 +364,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityUl) {
   RunTest(FILE_PATH_LITERAL("ul.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityWbr) {
+  RunTest(FILE_PATH_LITERAL("wbr.html"));
 }
 
 }  // namespace content

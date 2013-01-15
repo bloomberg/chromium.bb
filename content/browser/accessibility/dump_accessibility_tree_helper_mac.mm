@@ -38,8 +38,13 @@ string16 DumpAccessibilityTreeHelper::ToString(BrowserAccessibility* node,
                           "'"));
   Add(true, Format(node, "title='", @selector(title), "'"));
   Add(true, Format(node, "value='", @selector(value), "'"));
+  Add(false, Format(node, "minValue='", @selector(minValue), "'"));
+  Add(false, Format(node, "maxValue='", @selector(maxValue), "'"));
+  Add(false, Format(node, "valueDescription='", @selector(valueDescription),
+                    "'"));
   Add(false, Format(node, "description='", @selector(description), "'"));
   Add(false, Format(node, "help='", @selector(help), "'"));
+  Add(false, Format(node, "invalid='", @selector(invalid), "'"));
   return ASCIIToUTF16(prefix) + FinishLine() + ASCIIToUTF16("\n");
 }
 

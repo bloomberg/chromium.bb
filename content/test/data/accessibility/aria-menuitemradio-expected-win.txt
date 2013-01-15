@@ -1,0 +1,7 @@
+#<skip - Role not set correctly. http://crbug.com/169569
+       - checkable:true attribute not set. http://crbug.com/169573>
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
+    IA2_ROLE_RADIO_MENU_ITEM STATE_SYSTEM_CHECKED checkable:true
+        ROLE_SYSTEM_TEXT name='Menu item 1' READONLY
+    IA2_ROLE_RADIO_MENU_ITEM checkable:true
+        ROLE_SYSTEM_TEXT name='Menu item 2' READONLY

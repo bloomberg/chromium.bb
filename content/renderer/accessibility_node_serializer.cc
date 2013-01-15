@@ -502,9 +502,9 @@ void SerializeAccessibilityNode(
       dst->role == dst->ROLE_SPIN_BUTTON) {
     dst->float_attributes[dst->ATTR_VALUE_FOR_RANGE] = src.valueForRange();
     dst->float_attributes[dst->ATTR_MAX_VALUE_FOR_RANGE] =
-        src.minValueForRange();
-    dst->float_attributes[dst->ATTR_MIN_VALUE_FOR_RANGE] =
         src.maxValueForRange();
+    dst->float_attributes[dst->ATTR_MIN_VALUE_FOR_RANGE] =
+        src.minValueForRange();
   }
 
   if (dst->role == dst->ROLE_DOCUMENT ||

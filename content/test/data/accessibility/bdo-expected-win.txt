@@ -1,0 +1,7 @@
+# The spec states that <bdo> should have a role of AXGroup, but that seems
+# wrong, so we assume this is correct.
+ROLE_SYSTEM_DOCUMENT name='' READONLY FOCUSABLE
+    IA2_ROLE_SECTION name='' READONLY
+        ROLE_SYSTEM_TEXT name='Some LTR text' READONLY
+        ROLE_SYSTEM_TEXT name='Some RTL text ' READONLY
+        ROLE_SYSTEM_TEXT name='with some LTR text embedded' READONLY

@@ -1,0 +1,9 @@
+#<skip - role should be AXMenuItem. http://crbug.com/169578
+       - role description should be 'menu item'. http://crbug.com/169580
+       - AXMenuItemMarkChar should be \236. http://crbug.com/169582>
+AXWebArea roleDescription='HTML content'
+    AXMenu roleDescription='menu'
+        AXMenuItem roleDescription='menu item' AXMenuItemMarkChar='\236'
+            AXStaticText roleDescription='text' value='Menu item 1'
+        AXMenuItem roleDescription='menu item' AXMenuItemMarkChar='(null)'
+            AXStaticText roleDescription='text' value='Menu item 2'

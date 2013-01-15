@@ -43,6 +43,7 @@
 // isIgnored returns whether or not the accessibility object
 // should be ignored by the accessibility hierarchy.
 @property(nonatomic, readonly, getter=isIgnored) BOOL ignored;
+@property(nonatomic, readonly) NSString* invalid;
 // The origin of this object in the page's document.
 // This is relative to webkit's top-left origin, not Cocoa's
 // bottom-left origin.
