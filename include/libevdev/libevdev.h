@@ -26,6 +26,7 @@ enum EvdevClass_ {
   EvdevClassUnknown,
   EvdevClassKeyboard,
   EvdevClassMouse,
+  EvdevClassMultitouchMouse,
   EvdevClassTablet,
   EvdevClassTouchpad,
   EvdevClassTouchscreen,

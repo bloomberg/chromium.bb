@@ -296,8 +296,13 @@ static EvdevClass EvdevProbeClass(EvdevInfoPtr info) {
       return EvdevClassKeyboard;
 
   if (TestBit(REL_X, info->rel_bitmask) &&
-      TestBit(REL_Y, info->rel_bitmask))
-    return EvdevClassMouse;
+      TestBit(REL_Y, info->rel_bitmask)) {
+    if (TestBit(ABS_MT_POSITION_X, info->abs_bitmask) &&
+        TestBit(ABS_MT_POSITION_Y, info->abs_bitmask))
+      return EvdevClassMultitouchMouse;
+    else
+      return EvdevClassMouse;
+  }
 
   if (TestBit(ABS_X, info->abs_bitmask) &&
       TestBit(ABS_Y, info->abs_bitmask)) {
@@ -331,6 +336,7 @@ static const char* EvdevClassToString(EvdevClass cls) {
     case EvdevClassUnknown:     return "EvdevClassUnknown";
     case EvdevClassKeyboard:    return "EvdevClassKeyboard";
     case EvdevClassMouse:       return "EvdevClassMouse";
+    case EvdevClassMultitouchMouse: return "EvdevClassMultitouchMouse";
     case EvdevClassTablet:      return "EvdevClassTablet";
     case EvdevClassTouchpad:    return "EvdevClassTouchpad";
     case EvdevClassTouchscreen: return "EvdevClassTouchscreen";
