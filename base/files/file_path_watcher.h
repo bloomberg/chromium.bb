@@ -33,23 +33,6 @@ class BASE_EXPORT FilePathWatcher {
   // that case, the callback won't be invoked again.
   typedef base::Callback<void(const FilePath& path, bool error)> Callback;
 
-  // Declares the callback client code implements to receive notifications. Note
-  // that implementations of this interface should not keep a reference to the
-  // corresponding FileWatcher object to prevent a reference cycle.
-  //
-  // Deprecated: see comment on Watch() below.
-  class Delegate : public base::RefCountedThreadSafe<Delegate> {
-   public:
-    virtual void OnFilePathChanged(const FilePath& path) = 0;
-    // Called when platform specific code detected an error. The watcher will
-    // not call OnFilePathChanged for future changes.
-    virtual void OnFilePathError(const FilePath& path) {}
-
-   protected:
-    friend class base::RefCountedThreadSafe<Delegate>;
-    virtual ~Delegate() {}
-  };
-
   // Used internally to encapsulate different members on different platforms.
   // TODO(jhawkins): Move this into its own file. Also fix the confusing naming
   // wrt Delegate vs PlatformDelegate.
@@ -60,7 +43,7 @@ class BASE_EXPORT FilePathWatcher {
     // Start watching for the given |path| and notify |delegate| about changes.
     virtual bool Watch(const FilePath& path,
                        bool recursive,
-                       Delegate* delegate) WARN_UNUSED_RESULT = 0;
+                       const Callback& callback) WARN_UNUSED_RESULT = 0;
 
     // Stop watching. This is called from FilePathWatcher's dtor in order to
     // allow to shut down properly while the object is still alive.
@@ -107,17 +90,6 @@ class BASE_EXPORT FilePathWatcher {
   // or when deleted without having been executed at all, as can happen during
   // shutdown.
   static void CancelWatch(const scoped_refptr<PlatformDelegate>& delegate);
-
-  // Register interest in any changes on |path|. OnPathChanged will be called
-  // back for each change. Returns true on success.
-  // OnFilePathChanged() will be called on the same thread as Watch() is called,
-  // which should have a MessageLoop of TYPE_IO.
-  //
-  // Deprecated: new code should use the callback interface, declared below.
-  // The FilePathWatcher::Delegate interface will be removed once all client
-  // code has been updated. http://crbug.com/130980
-  virtual bool Watch(const FilePath& path, Delegate* delegate)
-      WARN_UNUSED_RESULT;
 
   // Invokes |callback| whenever updates to |path| are detected. This should be
   // called at most once, and from a MessageLoop of TYPE_IO. Set |recursive| to

@@ -101,7 +101,7 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
   // Returns true if watch for |path| has been added successfully.
   virtual bool Watch(const FilePath& path,
                      bool recursive,
-                     FilePathWatcher::Delegate* delegate) OVERRIDE;
+                     const FilePathWatcher::Callback& callback) OVERRIDE;
 
   // Cancel the watch. This unregisters the instance with InotifyReader.
   virtual void Cancel() OVERRIDE;
@@ -137,8 +137,8 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
   // that exists. Updates |watched_path_|. Returns true on success.
   bool UpdateWatches() WARN_UNUSED_RESULT;
 
-  // Delegate to notify upon changes.
-  scoped_refptr<FilePathWatcher::Delegate> delegate_;
+  // Callback to notify upon changes.
+  FilePathWatcher::Callback callback_;
 
   // The file or directory we're supposed to watch.
   FilePath target_;
@@ -295,8 +295,7 @@ void InotifyReader::OnInotifyEvent(const inotify_event* event) {
   }
 }
 
-FilePathWatcherImpl::FilePathWatcherImpl()
-    : delegate_(NULL) {
+FilePathWatcherImpl::FilePathWatcherImpl() {
 }
 
 void FilePathWatcherImpl::OnFilePathChanged(InotifyReader::Watch fired_watch,
@@ -339,7 +338,7 @@ void FilePathWatcherImpl::OnFilePathChanged(InotifyReader::Watch fired_watch,
       // IN_ISDIR set in the event masks. As a result we may sometimes
       // call UpdateWatches() unnecessarily.
       if (change_on_target_path && !UpdateWatches()) {
-        delegate_->OnFilePathError(target_);
+        callback_.Run(target_, true /* error */);
         return;
       }
 
@@ -354,7 +353,7 @@ void FilePathWatcherImpl::OnFilePathChanged(InotifyReader::Watch fired_watch,
       if (target_changed ||
           (change_on_target_path && !created) ||
           (change_on_target_path && file_util::PathExists(target_))) {
-        delegate_->OnFilePathChanged(target_);
+        callback_.Run(target_, false);
         return;
       }
     }
@@ -363,7 +362,7 @@ void FilePathWatcherImpl::OnFilePathChanged(InotifyReader::Watch fired_watch,
 
 bool FilePathWatcherImpl::Watch(const FilePath& path,
                                 bool recursive,
-                                FilePathWatcher::Delegate* delegate) {
+                                const FilePathWatcher::Callback& callback) {
   DCHECK(target_.empty());
   DCHECK(MessageLoopForIO::current());
   if (recursive) {
@@ -373,7 +372,7 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
   }
 
   set_message_loop(base::MessageLoopProxy::current());
-  delegate_ = delegate;
+  callback_ = callback;
   target_ = path;
   MessageLoop::current()->AddDestructionObserver(this);
 
@@ -390,7 +389,7 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
 }
 
 void FilePathWatcherImpl::Cancel() {
-  if (!delegate_) {
+  if (callback_.is_null()) {
     // Watch was never called, or the |message_loop_| thread is already gone.
     set_cancelled();
     return;
@@ -410,9 +409,9 @@ void FilePathWatcherImpl::CancelOnMessageLoopThread() {
   if (!is_cancelled())
     set_cancelled();
 
-  if (delegate_) {
+  if (!callback_.is_null()) {
     MessageLoop::current()->RemoveDestructionObserver(this);
-    delegate_ = NULL;
+    callback_.Reset();
   }
 
   for (WatchVector::iterator watch_entry(watches_.begin());

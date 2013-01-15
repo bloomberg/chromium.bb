@@ -16,7 +16,7 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
  public:
   virtual bool Watch(const FilePath& path,
                      bool recursive,
-                     FilePathWatcher::Delegate* delegate) OVERRIDE {
+                     const FilePathWatcher::Callback& callback) OVERRIDE {
     return false;
   }
 

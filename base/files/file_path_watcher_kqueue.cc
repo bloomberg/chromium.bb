@@ -66,7 +66,7 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
   // FilePathWatcher::PlatformDelegate overrides.
   virtual bool Watch(const FilePath& path,
                      bool recursive,
-                     FilePathWatcher::Delegate* delegate) OVERRIDE;
+                     const FilePathWatcher::Callback& callback) OVERRIDE;
   virtual void Cancel() OVERRIDE;
 
  protected:
@@ -141,7 +141,7 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
   EventVector events_;
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
   MessageLoopForIO::FileDescriptorWatcher kqueue_watcher_;
-  scoped_refptr<FilePathWatcher::Delegate> delegate_;
+  FilePathWatcher::Callback callback_;
   FilePath target_;
   int kqueue_;
 
@@ -364,7 +364,7 @@ void FilePathWatcherImpl::OnFileCanReadWithoutBlocking(int fd) {
   // Error values are stored within updates, so check to make sure that no
   // errors occurred.
   if (!AreKeventValuesValid(&updates[0], count)) {
-    delegate_->OnFilePathError(target_);
+    callback_.Run(target_, true /* error */);
     Cancel();
     return;
   }
@@ -411,13 +411,13 @@ void FilePathWatcherImpl::OnFileCanReadWithoutBlocking(int fd) {
 
   if (update_watches) {
     if (!UpdateWatches(&send_notification)) {
-      delegate_->OnFilePathError(target_);
+      callback_.Run(target_, true /* error */);
       Cancel();
     }
   }
 
   if (send_notification) {
-    delegate_->OnFilePathChanged(target_);
+    callback_.Run(target_, false);
   }
 }
 
@@ -431,10 +431,10 @@ void FilePathWatcherImpl::WillDestroyCurrentMessageLoop() {
 
 bool FilePathWatcherImpl::Watch(const FilePath& path,
                                 bool recursive,
-                                FilePathWatcher::Delegate* delegate) {
+                                const FilePathWatcher::Callback& callback) {
   DCHECK(MessageLoopForIO::current());
   DCHECK(target_.value().empty());  // Can only watch one path.
-  DCHECK(delegate);
+  DCHECK(!callback.is_null());
   DCHECK_EQ(kqueue_, -1);
 
   if (recursive) {
@@ -443,7 +443,7 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
     return false;
   }
 
-  delegate_ = delegate;
+  callback_ = callback;
   target_ = path;
 
   MessageLoop::current()->AddDestructionObserver(this);
@@ -499,7 +499,7 @@ void FilePathWatcherImpl::CancelOnMessageLoopThread() {
     events_.clear();
     io_message_loop_ = NULL;
     MessageLoop::current()->RemoveDestructionObserver(this);
-    delegate_ = NULL;
+    callback_.Reset();
   }
 }
 
