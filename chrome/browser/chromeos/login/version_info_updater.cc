@@ -156,6 +156,10 @@ void VersionInfoUpdater::OnVersion(const std::string& version) {
 void VersionInfoUpdater::OnBootTimesNoop(
     const BootTimesLoader::BootTimes& boot_times) {}
 
+// Mask it out for ASAN before the bug is fixed, see crbug.com/170034
+#if defined(ADDRESS_SANITIZER)
+__attribute__((no_address_safety_analysis))
+#endif  // defined(ADDRESS_SANITIZER)
 void VersionInfoUpdater::OnBootTimes(
     const BootTimesLoader::BootTimes& boot_times) {
   const char* kBootTimesNoChromeExec =
