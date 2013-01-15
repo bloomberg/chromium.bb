@@ -74,10 +74,11 @@ const int kAdjustmentIntervalSeconds = 10;
 // machine was suspended and correct our timing statistics.
 const int kSuspendThresholdSeconds = kAdjustmentIntervalSeconds * 4;
 
-// The default interval in milliseconds to wait before setting the score of
-// currently focused tab. Must be be long enough that a user who is flipping
-// through tabs with Ctrl-Tab does not mark each every tab as "focused".
-const int kFocusedTabScoreAdjustIntervalMs = 1500;
+// When switching to a new tab the tab's renderer's OOM score needs to be
+// updated to reflect its front-most status and protect it from discard.
+// However, doing this immediately might slow down tab switch time, so wait
+// a little while before doing the adjustment.
+const int kFocusedTabScoreAdjustIntervalMs = 500;
 
 // Returns a unique ID for a WebContents.  Do not cast back to a pointer, as
 // the WebContents could be deleted if the user closed the tab.
