@@ -155,11 +155,8 @@ void ScrollView::SetHeader(View* header) {
 gfx::Rect ScrollView::GetVisibleRect() const {
   if (!contents_)
     return gfx::Rect();
-
-  const int x = horiz_sb_->visible() ? horiz_sb_->GetPosition() : 0;
-  const int y = vert_sb_->visible() ? vert_sb_->GetPosition() : 0;
-  return gfx::Rect(x, y, contents_viewport_->width(),
-                   contents_viewport_->height());
+  return gfx::Rect(-contents_->x(), -contents_->y(),
+                   contents_viewport_->width(), contents_viewport_->height());
 }
 
 int ScrollView::GetScrollBarWidth() const {

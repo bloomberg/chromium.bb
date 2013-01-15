@@ -214,4 +214,27 @@ TEST(ScrollViewTest, HeaderScrollsWithContent) {
   EXPECT_EQ("-1,0", header->bounds().origin().ToString());
 }
 
+
+// Verifies ScrollRectToVisible() on the child works.
+TEST(ScrollViewTest, ScrollRectToVisible) {
+  ScrollView scroll_view;
+  CustomView* contents = new CustomView;
+  scroll_view.SetContents(contents);
+  contents->SetPreferredSize(gfx::Size(500, 1000));
+
+  scroll_view.SetBoundsRect(gfx::Rect(0, 0, 100, 100));
+  scroll_view.Layout();
+  EXPECT_EQ("0,0", contents->bounds().origin().ToString());
+
+  // Scroll to y=405 height=10, this should make the y position of the content
+  // at (405 + 10) - viewport_height (scroll region bottom aligned).
+  contents->ScrollRectToVisible(gfx::Rect(0, 405, 10, 10));
+  const int viewport_height = contents->parent()->height();
+  EXPECT_EQ(-(415 - viewport_height), contents->y());
+
+  // Scroll to the current y-location and 10x10; should do nothing.
+  contents->ScrollRectToVisible(gfx::Rect(0, -contents->y(), 10, 10));
+  EXPECT_EQ(-(415 - viewport_height), contents->y());
+}
+
 }  // namespace views
