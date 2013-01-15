@@ -437,7 +437,7 @@ void Channel::ChannelImpl::OnIOCompleted(MessageLoopForIO::IOContext* context,
       input_state_.is_pending = false;
       if (!bytes_transfered)
         ok = false;
-      else
+      else if (pipe_ != INVALID_HANDLE_VALUE)
         ok = AsyncReadComplete(bytes_transfered);
     } else {
       DCHECK(!bytes_transfered);
