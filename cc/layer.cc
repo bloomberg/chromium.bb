@@ -637,11 +637,6 @@ void Layer::pushPropertiesTo(LayerImpl* layer)
 
     layer->setStackingOrderChanged(m_stackingOrderChanged);
 
-    if (maskLayer())
-        maskLayer()->pushPropertiesTo(layer->maskLayer());
-    if (replicaLayer())
-        replicaLayer()->pushPropertiesTo(layer->replicaLayer());
-
     m_layerAnimationController->pushAnimationUpdatesTo(layer->layerAnimationController());
 
     // Reset any state that should be cleared for the next update.
