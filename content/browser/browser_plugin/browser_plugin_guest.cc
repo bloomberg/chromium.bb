@@ -439,23 +439,19 @@ void BrowserPluginGuest::OnNavigateGuest(
     int instance_id,
     const std::string& src) {
   GURL url(src);
-  WebContentsImpl* guest_web_contents =
-      static_cast<WebContentsImpl*>(web_contents());
-
   // We do not load empty urls in web_contents.
   // If a guest sets empty src attribute after it has navigated to some
   // non-empty page, the action is considered no-op. This empty src navigation
-  // should never be sent to BrowserPluginEmbedder (browser process).
+  // should never be sent to BrowserPluginGuest (browser process).
   DCHECK(!src.empty());
   if (!src.empty()) {
-    // Because guests do not swap processes on navigation, only navigations to
+    // As guests do not swap processes on navigation, only navigations to
     // normal web URLs are supported.  No protocol handlers are installed for
     // other schemes (e.g., WebUI or extensions), and no permissions or bindings
     // can be granted to the guest process.
-    guest_web_contents->GetController().LoadURL(url,
-                                                Referrer(),
-                                                PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                                std::string());
+    web_contents()->GetController().LoadURL(url, Referrer(),
+                                            PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                            std::string());
   }
 }
 
