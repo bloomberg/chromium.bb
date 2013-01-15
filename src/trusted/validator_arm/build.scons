@@ -84,7 +84,9 @@ GEN_TABLES = ["ARMv7",
 # actual decoders. This list is used to allow us to incrementally change over
 # tables, as they pass the appropriate tests.
 AUTO_GEN_TABLES = ["ARMv7",
-                   "data_processing_register"]
+                   "data_processing_register",
+                   "data_processing_register_shifted_register",
+                   ]
 
 # The separators to use for splitting up automatically generated baseline
 # classes.
