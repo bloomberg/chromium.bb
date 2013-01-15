@@ -3399,7 +3399,7 @@ Battery full
     Login has been resticted to the owner account only. Please reboot and sign in with the owner account. The machine will auto reboot in 30 seconds.
   </message>
   <message name="IDS_LOGIN_ERROR_OWNER_KEY_LOST" desc="Couldn't sign in because the owner key has been lost">
-    Login has been cancelled because some of the device settings have been corrupted.
+    Sign-in has been canceled because some of the device settings have been corrupted.
   </message>
   <message name="IDS_LOGIN_ERROR_TPM_FAILURE" desc="Couldn't sign in because of the critical TPM error.">
     Oops, something went wrong with signing in.
