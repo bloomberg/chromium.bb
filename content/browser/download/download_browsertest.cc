@@ -760,9 +760,13 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
   DownloadManagerForShell(shell())->Shutdown();
 }
 
+#if defined(OS_WIN)
 // Disabled because of flakiness on Windows. http://crbug.com/169882
-IN_PROC_BROWSER_TEST_F(DownloadContentTest,
-                       DISABLED_ResumeInterruptedDownload) {
+#define MAYBE_ResumeInterruptedDownload DISABLED_ResumeInterruptedDownload
+#else
+#define MAYBE_ResumeInterruptedDownload ResumeInterruptedDownload
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, MAYBE_ResumeInterruptedDownload) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDownloadResumption);
   ASSERT_TRUE(test_server()->Start());
