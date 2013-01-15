@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "google_apis/gaia/gaia_auth_consumer.h"
 
 class CommandLine;
 class GURL;
@@ -66,7 +65,6 @@ class LoginUtils {
       const std::string& username,
       const std::string& display_email,
       const std::string& password,
-      bool pending_requests,
       bool using_oauth,
       bool has_cookies,
       Delegate* delegate) = 0;
@@ -100,15 +98,6 @@ class LoginUtils {
 
   // Restores authentication session after crash.
   virtual void RestoreAuthenticationSession(Profile* profile) = 0;
-
-  // Starts process of fetching OAuth2 tokens (based on OAuth1 tokens found
-  // in |user_profile|) and kicks off internal services that depend on them.
-  virtual void StartTokenServices(Profile* user_profile) = 0;
-
-  // Supply credentials for sync and others to use.
-  virtual void StartSignedInServices(
-      Profile* profile,
-      const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
 
   // Stops background fetchers.
   virtual void StopBackgroundFetchers() = 0;

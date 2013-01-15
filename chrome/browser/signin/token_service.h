@@ -151,8 +151,8 @@ class TokenService : public GaiaAuthConsumer,
   // called.
   bool TokensLoadedFromDB() const;
 
-  // Returns true if the token service has all credentials needed to fetch
-  // tokens.
+  // Returns true if the token service has either GAIA credentials or OAuth2
+  // tokens needed to fetch other service tokens.
   virtual bool AreCredentialsValid() const;
 
   // Tokens will be fetched for all services(sync, talk) in the background.
@@ -167,6 +167,7 @@ class TokenService : public GaiaAuthConsumer,
   // Typical use is to create an OAuth2 token for appropriate scope and then
   // use that token to call a Google API.
   virtual bool HasOAuthLoginToken() const;
+  virtual bool HasOAuthLoginAccessToken() const;
   virtual const std::string& GetOAuth2LoginRefreshToken() const;
   const std::string& GetOAuth2LoginAccessToken() const;
 
@@ -190,6 +191,9 @@ class TokenService : public GaiaAuthConsumer,
       const WDTypedResult* result) OVERRIDE;
 
  protected:
+  // Saves OAuth2 credentials.
+  void SaveOAuth2Credentials(const ClientOAuthResult& result);
+
   void set_tokens_loaded(bool loaded) {
     tokens_loaded_ = loaded;
   }

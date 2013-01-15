@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_OAUTH_LOGIN_VERIFIER_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_OAUTH_LOGIN_VERIFIER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_OAUTH1_LOGIN_VERIFIER_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_OAUTH1_LOGIN_VERIFIER_H_
 
 #include <string>
 
@@ -15,34 +15,37 @@
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 
-class Profile;
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace chromeos {
 
 // Verifies OAuth1 access token by performing OAuthLogin. Fetches user cookies
 // on successful OAuth authentication.
-class OAuthLoginVerifier : public base::SupportsWeakPtr<OAuthLoginVerifier>,
-                           public GaiaOAuthConsumer,
-                           public GaiaAuthConsumer {
+class OAuth1LoginVerifier : public base::SupportsWeakPtr<OAuth1LoginVerifier>,
+                            public GaiaOAuthConsumer,
+                            public GaiaAuthConsumer {
  public:
   class Delegate {
    public:
     virtual ~Delegate() {}
-    virtual void OnOAuthVerificationSucceeded(const std::string& user_name,
-                                              const std::string& sid,
-                                              const std::string& lsid,
-                                              const std::string& auth) {}
-    virtual void OnOAuthVerificationFailed(const std::string& user_name) {}
-    virtual void OnUserCookiesFetchSucceeded(const std::string& user_name) {}
-    virtual void OnUserCookiesFetchFailed(const std::string& user_name) {}
+    virtual void OnOAuth1VerificationSucceeded(const std::string& user_name,
+                                               const std::string& sid,
+                                               const std::string& lsid,
+                                               const std::string& auth) {}
+    virtual void OnOAuth1VerificationFailed(const std::string& user_name) {}
+    virtual void OnCookiesFetchWithOAuth1Succeeded(
+        const std::string& user_name) {}
+    virtual void OnCookiesFetchWithOAuth1Failed(const std::string& user_name) {}
   };
 
-  OAuthLoginVerifier(OAuthLoginVerifier::Delegate* delegate,
-                     Profile* user_profile,
-                     const std::string& oauth1_token,
-                     const std::string& oauth1_secret,
-                     const std::string& username);
-  virtual ~OAuthLoginVerifier();
+  OAuth1LoginVerifier(OAuth1LoginVerifier::Delegate* delegate,
+                      net::URLRequestContextGetter* user_request_context,
+                      const std::string& oauth1_token,
+                      const std::string& oauth1_secret,
+                      const std::string& username);
+  virtual ~OAuth1LoginVerifier();
 
   bool is_done() {
     return step_ == VERIFICATION_STEP_FAILED ||
@@ -86,7 +89,7 @@ class OAuthLoginVerifier : public base::SupportsWeakPtr<OAuthLoginVerifier>,
   virtual void OnMergeSessionFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
 
-  OAuthLoginVerifier::Delegate* delegate_;
+  OAuth1LoginVerifier::Delegate* delegate_;
   GaiaOAuthFetcher oauth_fetcher_;
   GaiaAuthFetcher gaia_fetcher_;
   std::string oauth1_token_;
@@ -94,13 +97,12 @@ class OAuthLoginVerifier : public base::SupportsWeakPtr<OAuthLoginVerifier>,
   std::string sid_;
   std::string lsid_;
   std::string username_;
-  Profile* user_profile_;
   int verification_count_;
   VerificationStep step_;
 
-  DISALLOW_COPY_AND_ASSIGN(OAuthLoginVerifier);
+  DISALLOW_COPY_AND_ASSIGN(OAuth1LoginVerifier);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_OAUTH_LOGIN_VERIFIER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_OAUTH1_LOGIN_VERIFIER_H_

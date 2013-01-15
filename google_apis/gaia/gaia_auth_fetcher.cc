@@ -21,6 +21,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -155,6 +156,9 @@ const char GaiaAuthFetcher::kAuthHeaderFormat[] =
     "Authorization: GoogleLogin auth=%s";
 // static
 const char GaiaAuthFetcher::kOAuthHeaderFormat[] = "Authorization: OAuth %s";
+// static
+const char GaiaAuthFetcher::kOAuth2BearerHeaderFormat[] =
+    "Authorization: Bearer %s";
 // static
 const char GaiaAuthFetcher::kClientLoginToOAuth2CookiePartSecure[] = "Secure";
 // static
@@ -354,7 +358,9 @@ void GaiaAuthFetcher::ParseClientLoginResponse(const std::string& data,
   using std::vector;
   using std::pair;
   using std::string;
-
+  sid->clear();
+  lsid->clear();
+  token->clear();
   vector<pair<string, string> > tokens;
   base::SplitStringIntoKeyValuePairs(data, '=', '\n', &tokens);
   for (vector<pair<string, string> >::iterator i = tokens.begin();
@@ -367,6 +373,10 @@ void GaiaAuthFetcher::ParseClientLoginResponse(const std::string& data,
       token->assign(i->second);
     }
   }
+  // If this was a request for uberauth token, then that's all we've got in
+  // data.
+  if (sid->empty() && lsid->empty() && token->empty())
+    token->assign(data);
 }
 
 // static
@@ -434,7 +444,8 @@ std::string GaiaAuthFetcher::MakeOAuthLoginBody(const std::string& service,
                                                 const std::string& source) {
   std::string encoded_service = net::EscapeUrlEncodedData(service, true);
   std::string encoded_source = net::EscapeUrlEncodedData(source, true);
-  return StringPrintf(kOAuthLoginFormat, encoded_service.c_str(),
+  return StringPrintf(kOAuthLoginFormat,
+                      encoded_service.c_str(),
                       encoded_source.c_str());
 }
 
@@ -770,7 +781,7 @@ void GaiaAuthFetcher::StartOAuthLogin(const std::string& access_token,
 
   request_body_ = MakeOAuthLoginBody(service, source_);
   std::string authentication_header =
-      base::StringPrintf("Authorization: Bearer %s", access_token.c_str());
+      base::StringPrintf(kOAuth2BearerHeaderFormat, access_token.c_str());
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
                                    authentication_header,
@@ -1072,8 +1083,16 @@ void GaiaAuthFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   int response_code = source->GetResponseCode();
   std::string data;
   source->GetResponseAsString(&data);
-  DVLOG(2) << "Gaia fetcher response code: " << response_code;
-  DVLOG(2) << "Gaia fetcher response data: " << data;
+#ifndef NDEBUG
+  std::string headers;
+  if (source->GetResponseHeaders())
+    source->GetResponseHeaders()->GetNormalizedHeaders(&headers);
+  DVLOG(2) << "Response " << url.spec() << ", code = " << response_code << "\n"
+           << headers << "\n";
+  DVLOG(2) << "data: " << data << "\n";
+#endif
+  // Retrieve the response headers from the request.  Must only be called after
+  // the OnURLFetchComplete callback has run.
   if (url == client_login_gurl_) {
     OnClientLoginFetched(data, status, response_code);
   } else if (url == issue_auth_token_gurl_) {

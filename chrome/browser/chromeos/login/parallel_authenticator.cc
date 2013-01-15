@@ -187,9 +187,7 @@ ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
       already_reported_success_(false),
       owner_is_verified_(false),
       user_can_login_(false),
-      using_oauth_(
-          !CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kSkipOAuthLogin)) {
+      using_oauth_(true) {
 }
 
 void ParallelAuthenticator::AuthenticateToLogin(
@@ -387,8 +385,11 @@ void ParallelAuthenticator::RecordOAuthCheckFailure(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(using_oauth_);
   // Mark this account's OAuth token state as invalid in the local state.
-  UserManager::Get()->SaveUserOAuthStatus(user_name,
-                                          User::OAUTH_TOKEN_STATUS_INVALID);
+  UserManager::Get()->SaveUserOAuthStatus(
+      user_name,
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceOAuth1) ?
+          User::OAUTH1_TOKEN_STATUS_INVALID :
+          User::OAUTH2_TOKEN_STATUS_INVALID);
 }
 
 void ParallelAuthenticator::RecoverEncryptedData(

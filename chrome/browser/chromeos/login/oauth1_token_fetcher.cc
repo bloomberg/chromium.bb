@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -29,13 +28,11 @@ const char kServiceScopeChromeOS[] =
 
 namespace chromeos {
 
-OAuth1TokenFetcher::OAuth1TokenFetcher(OAuth1TokenFetcher::Delegate* delegate,
-                                       Profile* auth_profile)
+OAuth1TokenFetcher::OAuth1TokenFetcher(
+    OAuth1TokenFetcher::Delegate* delegate,
+    net::URLRequestContextGetter* auth_context_getter)
     : delegate_(delegate),
-      auth_profile_(auth_profile),
-      oauth_fetcher_(this,
-                     auth_profile_->GetRequestContext(),
-                     kServiceScopeChromeOS),
+      oauth_fetcher_(this, auth_context_getter, kServiceScopeChromeOS),
       retry_count_(0) {
   DCHECK(delegate);
 }
@@ -75,19 +72,19 @@ bool OAuth1TokenFetcher::RetryOnError(const GoogleServiceAuthError& error) {
         base::TimeDelta::FromMilliseconds(kOAuth1TokenRequestRestartDelay));
     return true;
   }
-  LOG(WARNING) << "Unrecoverable error or retry count max reached.";
+  LOG(ERROR) << "Unrecoverable error or retry count max reached.";
   return false;
 }
 
 void OAuth1TokenFetcher::OnGetOAuthTokenSuccess(
     const std::string& oauth_token) {
-  VLOG(1) << "Got OAuth request token!";
+  LOG(INFO) << "Got OAuth request token!";
 }
 
 void OAuth1TokenFetcher::OnGetOAuthTokenFailure(
     const GoogleServiceAuthError& error) {
-  LOG(WARNING) << "Failed to get OAuth1 request token, error: "
-               << error.state();
+  LOG(ERROR) << "Failed to get OAuth1 request token, error: "
+             << error.state();
   if (!RetryOnError(error))
     delegate_->OnOAuth1AccessTokenFetchFailed();
 }
@@ -95,15 +92,15 @@ void OAuth1TokenFetcher::OnGetOAuthTokenFailure(
 void OAuth1TokenFetcher::OnOAuthGetAccessTokenSuccess(
     const std::string& token,
     const std::string& secret) {
-  VLOG(1) << "Got OAuth v1 token!";
+  LOG(INFO) << "Got OAuth v1 token!";
   retry_count_ = 0;
   delegate_->OnOAuth1AccessTokenAvailable(token, secret);
 }
 
 void OAuth1TokenFetcher::OnOAuthGetAccessTokenFailure(
     const GoogleServiceAuthError& error) {
-  LOG(WARNING) << "Failed fetching OAuth1 access token, error: "
-               << error.state();
+  LOG(ERROR) << "Failed fetching OAuth1 access token, error: "
+             << error.state();
   if (!RetryOnError(error))
     delegate_->OnOAuth1AccessTokenFetchFailed();
 }

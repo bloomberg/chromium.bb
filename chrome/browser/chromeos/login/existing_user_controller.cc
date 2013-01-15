@@ -686,7 +686,6 @@ void ExistingUserController::OnLoginSuccess(
   LoginUtils::Get()->PrepareProfile(username,
                                     display_email_,
                                     password,
-                                    pending_requests,
                                     using_oauth,
                                     has_cookies,
                                     this);
@@ -988,8 +987,11 @@ void ExistingUserController::ShowGaiaPasswordChanged(
     const std::string& username) {
   // Invalidate OAuth token, since it can't be correct after password is
   // changed.
-  UserManager::Get()->SaveUserOAuthStatus(username,
-                                          User::OAUTH_TOKEN_STATUS_INVALID);
+  UserManager::Get()->SaveUserOAuthStatus(
+      username,
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceOAuth1) ?
+          User::OAUTH1_TOKEN_STATUS_INVALID :
+          User::OAUTH2_TOKEN_STATUS_INVALID);
 
   login_display_->SetUIEnabled(true);
   login_display_->ShowGaiaPasswordChanged(username);

@@ -113,6 +113,15 @@ void TokenService::AddAuthTokenManually(const std::string& service,
   token_map_[service] = auth_token;
   FireTokenAvailableNotification(service, auth_token);
   SaveAuthTokenToDB(service, auth_token);
+
+#if defined(OS_CHROMEOS)
+  // We don't ever want to fetch OAuth2 tokens from LSO service token in case
+  // when ChromeOS is in forced OAuth2 use mode. OAuth2 token should only
+  // arrive into token service exclusively through UpdateCredentialsWithOAuth2.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceOAuth1))
+    return;
+#endif
+
   // If we got ClientLogin token for "lso" service, and we don't already have
   // OAuth2 tokens, start fetching OAuth2 login scoped token pair.
   if (service == GaiaConstants::kLSOService && !HasOAuthLoginToken()) {
@@ -162,10 +171,8 @@ void TokenService::UpdateCredentials(
 }
 
 void TokenService::UpdateCredentialsWithOAuth2(
-    const GaiaAuthConsumer::ClientOAuthResult& credentials) {
-  // Will be implemented once the ClientOAuth signin is complete.  Not called
-  // yet by any code.
-  NOTREACHED();
+    const GaiaAuthConsumer::ClientOAuthResult& oauth2_tokens) {
+  SaveOAuth2Credentials(oauth2_tokens);
 }
 
 void TokenService::LoadTokensFromDB() {
@@ -256,6 +263,10 @@ bool TokenService::HasOAuthLoginToken() const {
   return HasTokenForService(GaiaConstants::kGaiaOAuth2LoginRefreshToken);
 }
 
+bool TokenService::HasOAuthLoginAccessToken() const {
+  return HasTokenForService(GaiaConstants::kGaiaOAuth2LoginAccessToken);
+}
+
 const std::string& TokenService::GetOAuth2LoginRefreshToken() const {
   return GetTokenForService(GaiaConstants::kGaiaOAuth2LoginRefreshToken);
 }
@@ -343,13 +354,16 @@ void TokenService::OnIssueAuthTokenFailure(const std::string& service,
 void TokenService::OnClientOAuthSuccess(const ClientOAuthResult& result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Got OAuth2 login token pair";
+  SaveOAuth2Credentials(result);
+}
+
+void TokenService::SaveOAuth2Credentials(const ClientOAuthResult& result) {
   token_map_[GaiaConstants::kGaiaOAuth2LoginRefreshToken] =
       result.refresh_token;
   token_map_[GaiaConstants::kGaiaOAuth2LoginAccessToken] = result.access_token;
+  // Save refresh token only since access token is transient anyway.
   SaveAuthTokenToDB(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
       result.refresh_token);
-  SaveAuthTokenToDB(GaiaConstants::kGaiaOAuth2LoginAccessToken,
-      result.access_token);
   // We don't save expiration information for now.
 
   FOR_DIAGNOSTICS_OBSERVERS(

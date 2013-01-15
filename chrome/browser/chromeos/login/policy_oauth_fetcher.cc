@@ -8,8 +8,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -20,19 +18,21 @@ const char kServiceScopeChromeOSDeviceManagement[] =
     "https://www.googleapis.com/auth/chromeosdevicemanagement";
 }  // namespace
 
-PolicyOAuthFetcher::PolicyOAuthFetcher(Profile* profile,
-                                       const std::string& oauth1_token,
-                                       const std::string& oauth1_secret)
+PolicyOAuthFetcher::PolicyOAuthFetcher(
+    net::URLRequestContextGetter* context_getter,
+    const std::string& oauth1_token,
+    const std::string& oauth1_secret)
     : oauth_fetcher_(this,
-                     profile->GetRequestContext(),
+                     context_getter,
                      kServiceScopeChromeOSDeviceManagement),
       oauth1_token_(oauth1_token),
       oauth1_secret_(oauth1_secret) {
 }
 
-PolicyOAuthFetcher::PolicyOAuthFetcher(Profile* profile)
+PolicyOAuthFetcher::PolicyOAuthFetcher(
+    net::URLRequestContextGetter* context_getter)
     : oauth_fetcher_(this,
-                     profile->GetRequestContext(),
+                     context_getter,
                      kServiceScopeChromeOSDeviceManagement) {
 }
 

@@ -161,7 +161,6 @@ class StubLogin : public LoginStatusConsumer,
       LoginUtils::Get()->PrepareProfile(username,
                                         std::string(),
                                         password,
-                                        pending_requests,
                                         using_oauth,
                                         false,
                                         this);

@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -25,7 +24,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -60,9 +58,6 @@ LoginPerformer::LoginPerformer(Delegate* delegate)
       screen_lock_requested_(false),
       initial_online_auth_pending_(false),
       auth_mode_(AUTH_MODE_INTERNAL),
-      using_oauth_(
-          !CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kSkipOAuthLogin)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(default_performer_ == NULL)
       << "LoginPerformer should have only one instance.";
@@ -147,66 +142,21 @@ void LoginPerformer::OnLoginSuccess(
   UMA_HISTOGRAM_ENUMERATION("Login.SuccessReason", pending_requests, 2);
 
   VLOG(1) << "LoginSuccess, pending_requests " << pending_requests;
-  if (delegate_) {
-    // After delegate_->OnLoginSuccess(...) is called, delegate_ releases
-    // LoginPerformer ownership. LP now manages it's lifetime on its own.
-    // 2 things could make it exist longer:
-    // 1. ScreenLock active (pending correct new password input)
-    // 2. Pending online auth request.
-    if (!pending_requests)
-      MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-    else
-      initial_online_auth_pending_ = true;
+  DCHECK(delegate_);
+  // After delegate_->OnLoginSuccess(...) is called, delegate_ releases
+  // LoginPerformer ownership. LP now manages it's lifetime on its own.
+  // 2 things could make it exist longer:
+  // 1. ScreenLock active (pending correct new password input)
+  // 2. Pending online auth request.
+  if (!pending_requests)
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  else
+    initial_online_auth_pending_ = true;
 
-    delegate_->OnLoginSuccess(username,
-                              password,
-                              pending_requests,
-                              using_oauth);
-    return;
-  } else {
-    // Online login has succeeded.
-    DCHECK(!pending_requests)
-        << "Pending request w/o delegate_ should not happen!";
-    // It is not guaranted, that profile creation has been finished yet. So use
-    // async version here.
-    ProfileManager::CreateDefaultProfileAsync(
-        base::Bind(&LoginPerformer::OnProfileCreated,
-                   weak_factory_.GetWeakPtr()));
-  }
-}
-
-void LoginPerformer::OnProfileCreated(
-    Profile* profile,
-    Profile::CreateStatus status) {
-  CHECK(profile);
-  switch (status) {
-    case Profile::CREATE_STATUS_INITIALIZED:
-      break;
-    case Profile::CREATE_STATUS_CREATED:
-      return;
-    case Profile::CREATE_STATUS_FAIL:
-    default:
-      NOTREACHED();
-      return;
-  }
-
-  if (using_oauth_)
-    LoginUtils::Get()->StartTokenServices(profile);
-
-  // Don't unlock screen if it was locked while we're waiting
-  // for initial online auth.
-  if (ScreenLocker::default_screen_locker() &&
-      !initial_online_auth_pending_) {
-    DVLOG(1) << "Online login OK - unlocking screen.";
-    RequestScreenUnlock();
-    // Do not delete itself just yet, wait for unlock.
-    // See ResolveScreenUnlocked().
-    return;
-  }
-  initial_online_auth_pending_ = false;
-  // There's nothing else that's holding LP from deleting itself -
-  // no ScreenLock, no pending requests.
-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  delegate_->OnLoginSuccess(username,
+                            password,
+                            pending_requests,
+                            using_oauth);
 }
 
 void LoginPerformer::OnOffTheRecordLoginSuccess() {

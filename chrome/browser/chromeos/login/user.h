@@ -48,10 +48,12 @@ class User {
 
   // User OAuth token status according to the last check.
   typedef enum {
-    OAUTH_TOKEN_STATUS_UNKNOWN = 0,
-    OAUTH_TOKEN_STATUS_INVALID = 1,
-    OAUTH_TOKEN_STATUS_VALID   = 2,
-  } OAuthTokenStatus;
+     OAUTH_TOKEN_STATUS_UNKNOWN  = 0,
+     OAUTH1_TOKEN_STATUS_INVALID = 1,
+     OAUTH1_TOKEN_STATUS_VALID   = 2,
+     OAUTH2_TOKEN_STATUS_INVALID = 3,
+     OAUTH2_TOKEN_STATUS_VALID   = 4,
+   } OAuthTokenStatus;
 
   // Returned as |image_index| when user-selected file or photo is used as
   // user image.

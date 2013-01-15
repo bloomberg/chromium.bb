@@ -6954,6 +6954,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_LAUNCHER_PER_DISPLAY_DESCRIPTION" desc="Description for the flag to enable launchers on all displaysj.">
           All displays will have a launcher when enabled.
         </message>
+        <message name="IDS_FLAGS_FORCE_OAUTH1_DISPLAY_NAME" desc="Name for the flag to force legacy authentication mode.">
+           Legacy user authentication.
+        </message>
+        <message name="IDS_FLAGS_FORCE_OAUTH1_DISPLAY_DESCRIPTION" desc="Description for the force legacy authentication mode.">
+          Forces use of legacy OAuth1 flow for ChromeOS user authentication.
+        </message>
       </if>
 
       <message name="IDS_FLAGS_OLD_CHECKBOX_STYLE" desc="Name of the flag to turn off the new checkbox style.">

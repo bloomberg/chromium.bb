@@ -401,23 +401,15 @@ User::OAuthTokenStatus UserManagerImpl::LoadUserOAuthStatus(
     const std::string& username) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSkipOAuthLogin)) {
-    // Use OAUTH_TOKEN_STATUS_VALID flag if kSkipOAuthLogin is present.
-    return User::OAUTH_TOKEN_STATUS_VALID;
-  } else {
-    PrefService* local_state = g_browser_process->local_state();
-    const DictionaryValue* prefs_oauth_status =
-        local_state->GetDictionary(kUserOAuthTokenStatus);
-
-    int oauth_token_status = User::OAUTH_TOKEN_STATUS_UNKNOWN;
-    if (prefs_oauth_status &&
-        prefs_oauth_status->GetIntegerWithoutPathExpansion(username,
-            &oauth_token_status)) {
-      return static_cast<User::OAuthTokenStatus>(oauth_token_status);
-    }
+  PrefService* local_state = g_browser_process->local_state();
+  const DictionaryValue* prefs_oauth_status =
+      local_state->GetDictionary(kUserOAuthTokenStatus);
+  int oauth_token_status = User::OAUTH_TOKEN_STATUS_UNKNOWN;
+  if (prefs_oauth_status &&
+      prefs_oauth_status->GetIntegerWithoutPathExpansion(
+          username, &oauth_token_status)) {
+    return static_cast<User::OAuthTokenStatus>(oauth_token_status);
   }
-
   return User::OAUTH_TOKEN_STATUS_UNKNOWN;
 }
 
@@ -530,8 +522,11 @@ void UserManagerImpl::OnStateChanged() {
     // TODO(altimofeev): this code isn't needed after crosbug.com/25978 is
     // implemented.
     DVLOG(1) << "Invalidate OAuth token because of a sync error.";
-    SaveUserOAuthStatus(logged_in_user_->email(),
-                        User::OAUTH_TOKEN_STATUS_INVALID);
+    SaveUserOAuthStatus(
+        logged_in_user_->email(),
+        CommandLine::ForCurrentProcess()->HasSwitch(::switches::kForceOAuth1) ?
+            User::OAUTH1_TOKEN_STATUS_INVALID :
+            User::OAUTH2_TOKEN_STATUS_INVALID);
   }
 }
 

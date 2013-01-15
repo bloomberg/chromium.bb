@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
       .Times(1)
       .WillOnce(WithArg<0>(Invoke(CreateAuthenticator)));
   EXPECT_CALL(*mock_login_utils_,
-              PrepareProfile(kUsername, _, kPassword, false, _, _, _))
+              PrepareProfile(kUsername, _, kPassword, _, _, _))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
                                   &base::Callback<void(void)>::Run));
@@ -317,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
       .Times(1)
       .WillOnce(WithArg<0>(Invoke(CreateAuthenticatorNewUser)));
   EXPECT_CALL(*mock_login_utils_,
-              PrepareProfile(kNewUsername, _, kPassword, false, _, _, _))
+              PrepareProfile(kNewUsername, _, kPassword, _, _, _))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
                                   &base::Callback<void(void)>::Run));

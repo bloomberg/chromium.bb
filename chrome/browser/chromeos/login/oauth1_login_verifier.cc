@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/oauth_login_verifier.h"
+#include "chrome/browser/chromeos/login/oauth1_login_verifier.h"
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -32,30 +31,30 @@ const char kServiceScopeChromeOS[] =
 
 }  // namespace
 
-OAuthLoginVerifier::OAuthLoginVerifier(OAuthLoginVerifier::Delegate* delegate,
-                                       Profile* user_profile,
-                                       const std::string& oauth1_token,
-                                       const std::string& oauth1_secret,
-                                       const std::string& username)
+OAuth1LoginVerifier::OAuth1LoginVerifier(
+    OAuth1LoginVerifier::Delegate* delegate,
+    net::URLRequestContextGetter* user_request_context,
+    const std::string& oauth1_token,
+    const std::string& oauth1_secret,
+    const std::string& username)
     : delegate_(delegate),
       oauth_fetcher_(this,
                      g_browser_process->system_request_context(),
                      kServiceScopeChromeOS),
       gaia_fetcher_(this,
                     std::string(GaiaConstants::kChromeOSSource),
-                    user_profile->GetRequestContext()),
+                    user_request_context),
       oauth1_token_(oauth1_token),
       oauth1_secret_(oauth1_secret),
       username_(username),
-      user_profile_(user_profile),
       verification_count_(0),
       step_(VERIFICATION_STEP_UNVERIFIED) {
 }
 
-OAuthLoginVerifier::~OAuthLoginVerifier() {
+OAuth1LoginVerifier::~OAuth1LoginVerifier() {
 }
 
-void OAuthLoginVerifier::StartOAuthVerification() {
+void OAuth1LoginVerifier::StartOAuthVerification() {
   if (oauth1_token_.empty() || oauth1_secret_.empty()) {
     // Empty OAuth1 access token or secret probably means that we are
     // dealing with a legacy ChromeOS account. This should be treated as
@@ -64,19 +63,16 @@ void OAuthLoginVerifier::StartOAuthVerification() {
         GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   } else {
     oauth_fetcher_.StartOAuthLogin(GaiaConstants::kChromeOSSource,
-                                   GaiaConstants::kPicasaService,
+                                   GaiaConstants::kSyncService,
                                    oauth1_token_,
                                    oauth1_secret_);
   }
 }
 
-void OAuthLoginVerifier::ContinueVerification() {
+void OAuth1LoginVerifier::ContinueVerification() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Check if we have finished with this one already.
   if (is_done())
-    return;
-
-  if (user_profile_ != ProfileManager::GetDefaultProfile())
     return;
 
   // Check if we currently trying to fetch something.
@@ -91,7 +87,7 @@ void OAuthLoginVerifier::ContinueVerification() {
     if (!network || !network->connected() || network->restricted_pool()) {
       BrowserThread::PostDelayedTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&OAuthLoginVerifier::ContinueVerification, AsWeakPtr()),
+          base::Bind(&OAuth1LoginVerifier::ContinueVerification, AsWeakPtr()),
           base::TimeDelta::FromMilliseconds(kOAuthVerificationRestartDelay));
       return;
     }
@@ -99,28 +95,28 @@ void OAuthLoginVerifier::ContinueVerification() {
 
   verification_count_++;
   if (step_ == VERIFICATION_STEP_UNVERIFIED) {
-    DVLOG(1) << "Retrying to verify OAuth1 access tokens.";
+    LOG(INFO) << "Retrying to verify OAuth1 access tokens.";
     StartOAuthVerification();
   } else {
-    DVLOG(1) << "Retrying to fetch user cookies.";
+    LOG(INFO) << "Retrying to fetch user cookies.";
     StartCookiesRetrieval();
   }
 }
 
-void OAuthLoginVerifier::StartCookiesRetrieval() {
+void OAuth1LoginVerifier::StartCookiesRetrieval() {
   DCHECK(!sid_.empty());
   DCHECK(!lsid_.empty());
   gaia_fetcher_.StartIssueAuthToken(sid_, lsid_, GaiaConstants::kGaiaService);
 }
 
-bool OAuthLoginVerifier::RetryOnError(const GoogleServiceAuthError& error) {
+bool OAuth1LoginVerifier::RetryOnError(const GoogleServiceAuthError& error) {
   if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED ||
       error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE ||
       error.state() == GoogleServiceAuthError::REQUEST_CANCELED) {
     if (verification_count_ < kMaxOAuthTokenVerificationAttemptCount) {
       BrowserThread::PostDelayedTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&OAuthLoginVerifier::ContinueVerification, AsWeakPtr()),
+          base::Bind(&OAuth1LoginVerifier::ContinueVerification, AsWeakPtr()),
           base::TimeDelta::FromMilliseconds(kOAuthVerificationRestartDelay));
       return true;
     }
@@ -129,29 +125,30 @@ bool OAuthLoginVerifier::RetryOnError(const GoogleServiceAuthError& error) {
   return false;
 }
 
-void OAuthLoginVerifier::OnOAuthLoginSuccess(const std::string& sid,
+void OAuth1LoginVerifier::OnOAuthLoginSuccess(const std::string& sid,
                                              const std::string& lsid,
                                              const std::string& auth) {
+  LOG(INFO) << "OAuthLogin successful";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   step_ = VERIFICATION_STEP_OAUTH_VERIFIED;
   verification_count_ = 0;
   sid_ = sid;
   lsid_ = lsid;
-  delegate_->OnOAuthVerificationSucceeded(username_, sid, lsid, auth);
+  delegate_->OnOAuth1VerificationSucceeded(username_, sid, lsid, auth);
   StartCookiesRetrieval();
 }
 
-void OAuthLoginVerifier::OnOAuthLoginFailure(
+void OAuth1LoginVerifier::OnOAuthLoginFailure(
     const GoogleServiceAuthError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LOG(WARNING) << "Failed to verify OAuth1 access tokens,"
-               << " error.state=" << error.state();
+  LOG(ERROR) << "Failed to verify OAuth1 access tokens,"
+             << " error: " << error.state();
 
   if (!RetryOnError(error)) {
     UMA_HISTOGRAM_ENUMERATION("LoginVerifier.LoginFailureWithNoRetry",
                               error.state(),
                               GoogleServiceAuthError::NUM_STATES);
-    delegate_->OnOAuthVerificationFailed(username_);
+    delegate_->OnOAuth1VerificationFailed(username_);
   } else {
     UMA_HISTOGRAM_ENUMERATION("LoginVerifier.LoginFailureWithRetry",
                               error.state(),
@@ -159,7 +156,7 @@ void OAuthLoginVerifier::OnOAuthLoginFailure(
   }
 }
 
-void OAuthLoginVerifier::OnCookieFetchFailed(
+void OAuth1LoginVerifier::OnCookieFetchFailed(
     const GoogleServiceAuthError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -167,7 +164,7 @@ void OAuthLoginVerifier::OnCookieFetchFailed(
     UMA_HISTOGRAM_ENUMERATION("LoginVerifier.CookieFetchFailureWithNoRetry",
                               error.state(),
                               GoogleServiceAuthError::NUM_STATES);
-    delegate_->OnUserCookiesFetchFailed(username_);
+    delegate_->OnCookiesFetchWithOAuth1Failed(username_);
   } else {
     UMA_HISTOGRAM_ENUMERATION("LoginVerifier.CookieFetchFailureWithRetry",
                               error.state(),
@@ -175,31 +172,32 @@ void OAuthLoginVerifier::OnCookieFetchFailed(
   }
 }
 
-void OAuthLoginVerifier::OnIssueAuthTokenSuccess(
+void OAuth1LoginVerifier::OnIssueAuthTokenSuccess(
     const std::string& service,
     const std::string& auth_token) {
+  LOG(INFO) << "IssueAuthToken successful";
   gaia_fetcher_.StartMergeSession(auth_token);
 }
 
-void OAuthLoginVerifier::OnIssueAuthTokenFailure(
+void OAuth1LoginVerifier::OnIssueAuthTokenFailure(
     const std::string& service,
       const GoogleServiceAuthError& error) {
-  DVLOG(1) << "Failed IssueAuthToken request,"
-           << " error.state=" << error.state();
+  LOG(ERROR) << "IssueAuthToken failed,"
+             << " error: " << error.state();
   OnCookieFetchFailed(error);
 }
 
-void OAuthLoginVerifier::OnMergeSessionSuccess(const std::string& data) {
+void OAuth1LoginVerifier::OnMergeSessionSuccess(const std::string& data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DVLOG(1) << "MergeSession successful.";
+  LOG(INFO) << "MergeSession successful.";
   step_ = VERIFICATION_STEP_COOKIES_FETCHED;
-  delegate_->OnUserCookiesFetchSucceeded(username_);
+  delegate_->OnCookiesFetchWithOAuth1Succeeded(username_);
 }
 
-void OAuthLoginVerifier::OnMergeSessionFailure(
+void OAuth1LoginVerifier::OnMergeSessionFailure(
     const GoogleServiceAuthError& error) {
-  DVLOG(1) << "Failed MergeSession request,"
-           << " error.state=" << error.state();
+  LOG(ERROR) << "Failed MergeSession request,"
+             << " error: " << error.state();
   OnCookieFetchFailed(error);
 }
 

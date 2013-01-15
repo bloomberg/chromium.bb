@@ -12,7 +12,9 @@
 #include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
 
-class Profile;
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace chromeos {
 
@@ -25,12 +27,12 @@ class PolicyOAuthFetcher : public GaiaOAuthConsumer {
  public:
   // Fetches the device management service's oauth token using |oauth1_token|
   // and |oauth1_secret| as access tokens.
-  PolicyOAuthFetcher(Profile* profile,
+  PolicyOAuthFetcher(net::URLRequestContextGetter* context_getter,
                      const std::string& oauth1_token,
                      const std::string& oauth1_secret);
   // Fetches the device management service's oauth token, after also retrieving
   // the access tokens.
-  explicit PolicyOAuthFetcher(Profile* profile);
+  explicit PolicyOAuthFetcher(net::URLRequestContextGetter* context_getter);
   virtual ~PolicyOAuthFetcher();
 
   void Start();

@@ -13,7 +13,9 @@
 #include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
 
-class Profile;
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace chromeos {
 
@@ -32,7 +34,7 @@ class OAuth1TokenFetcher : public base::SupportsWeakPtr<OAuth1TokenFetcher>,
   };
 
   OAuth1TokenFetcher(OAuth1TokenFetcher::Delegate* delegate,
-                     Profile* auth_profile);
+                     net::URLRequestContextGetter* auth_context_getter);
   virtual ~OAuth1TokenFetcher();
 
   void Start();
@@ -54,7 +56,6 @@ class OAuth1TokenFetcher : public base::SupportsWeakPtr<OAuth1TokenFetcher>,
       const GoogleServiceAuthError& error) OVERRIDE;
 
   OAuth1TokenFetcher::Delegate* delegate_;
-  Profile* auth_profile_;
   GaiaOAuthFetcher oauth_fetcher_;
 
   // The retry counter. Increment this only when failure happened.

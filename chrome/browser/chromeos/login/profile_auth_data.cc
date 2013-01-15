@@ -164,4 +164,5 @@ void ProfileAuthData::Transfer(
 
   TransferDefaultAuthCache(from_profile, to_profile);
 }
+
 }  // namespace chromeos

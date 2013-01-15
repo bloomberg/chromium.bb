@@ -182,6 +182,9 @@ class LoginUtilsTest : public testing::Test,
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kDeviceManagementUrl, kDMServer);
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
+    // TODO(mnissler): Figure out how to beat this test into submission on
+    // OAuth2 path.
+    command_line->AppendSwitch(switches::kForceOAuth1);
 
     local_state_.Get()->RegisterStringPref(prefs::kApplicationLocale, "");
 
@@ -400,14 +403,12 @@ class LoginUtilsTest : public testing::Test,
                                  username,
                                  "password");
 
-    const bool kPendingRequests = false;
     const bool kUsingOAuth = true;
     // Setting |kHasCookies| to false prevents ProfileAuthData::Transfer from
     // waiting for an IO task before proceeding.
     const bool kHasCookies = false;
     LoginUtils::Get()->PrepareProfile(username, std::string(), "password",
-                                      kPendingRequests, kUsingOAuth,
-                                      kHasCookies, this);
+                                      kUsingOAuth, kHasCookies, this);
     device_settings_test_helper.Flush();
     RunUntilIdle();
   }

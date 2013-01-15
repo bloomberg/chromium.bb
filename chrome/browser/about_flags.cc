@@ -913,6 +913,13 @@ const Experiment kExperiments[] = {
 #endif  // defined(USE_ASH)
 #if defined(OS_CHROMEOS)
   {
+    "force-oauth1",
+    IDS_FLAGS_FORCE_OAUTH1_DISPLAY_NAME,
+    IDS_FLAGS_FORCE_OAUTH1_DISPLAY_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(::switches::kForceOAuth1),
+  },
+  {
     "disable-new-oobe",
     IDS_FLAGS_DISABLE_NEW_OOBE,
     IDS_FLAGS_DISABLE_NEW_OOBE_DESCRIPTION,

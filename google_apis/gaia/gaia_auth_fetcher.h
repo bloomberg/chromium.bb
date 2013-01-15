@@ -69,13 +69,29 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
                         HostedAccountsSetting allow_hosted_accounts);
 
   // Start a request to obtain service token for the the account identified by
-  // |sid| and |lsid| and the service|service|.
+  // |sid| and |lsid| and the |service|.
   //
   // Either OnIssueAuthTokenSuccess or OnIssueAuthTokenFailure will be
   // called on the consumer on the original thread.
   void StartIssueAuthToken(const std::string& sid,
                            const std::string& lsid,
                            const char* const service);
+
+  // Start a request to obtain |service| token for the the account identified by
+  // |uber_token|.
+  //
+  // Either OnIssueAuthTokenSuccess or OnIssueAuthTokenFailure will be
+  // called on the consumer on the original thread.
+  void StartTokenAuth(const std::string& uber_token,
+                      const char* const service);
+
+  // Start a request to obtain service token for the the account identified by
+  // |oauth2_access_token| and the |service|.
+  //
+  // Either OnIssueAuthTokenSuccess or OnIssueAuthTokenFailure will be
+  // called on the consumer on the original thread.
+  void StartIssueAuthTokenForOAuth2(const std::string& oauth2_access_token,
+                                    const char* const service);
 
   // Start a request to exchange an "lso" service token given by |auth_token|
   // for an OAuthLogin-scoped oauth2 token.
@@ -156,7 +172,8 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   // challenges are never issued.
   //
   // Either OnClientLoginSuccess or OnClientLoginFailure will be
-  // called on the consumer on the original thread.
+  // called on the consumer on the original thread. If |service| is empty,
+  // the call will attempt to fetch uber auth token.
   void StartOAuthLogin(const std::string& access_token,
                        const std::string& service);
 
@@ -225,6 +242,7 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   // Constants for request/response for OAuth2 requests.
   static const char kAuthHeaderFormat[];
   static const char kOAuthHeaderFormat[];
+  static const char kOAuth2BearerHeaderFormat[];
   static const char kClientLoginToOAuth2CookiePartSecure[];
   static const char kClientLoginToOAuth2CookiePartHttpOnly[];
   static const char kClientLoginToOAuth2CookiePartCodePrefix[];

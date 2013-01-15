@@ -130,9 +130,15 @@ void SigninManager::Initialize(Profile* profile) {
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
   if (token_service) {
     token_service->Initialize(GaiaConstants::kChromeSource, profile_);
+    // ChromeOS will kick off TokenService::LoadTokensFromDB from
+    // OAuthLoginManager once the rest of the Profile is fully initialized.
+    // Starting it from here would cause OAuthLoginManager mismatch the origin
+    // of OAuth2 tokens.
+#if !defined(OS_CHROMEOS)
     if (!authenticated_username_.empty()) {
       token_service->LoadTokensFromDB();
     }
+#endif
   }
   if (!user.empty() && !IsAllowedUsername(user)) {
     // User is signed in, but the username is invalid - the administrator must
@@ -554,7 +560,7 @@ void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
   // If we have oauth2 tokens, tell token service about them so it does not
   // need to fetch them again.
   if (!temp_oauth_login_tokens_.refresh_token.empty()) {
-    token_service->OnClientOAuthSuccess(temp_oauth_login_tokens_);
+    token_service->UpdateCredentialsWithOAuth2(temp_oauth_login_tokens_);
     temp_oauth_login_tokens_ = ClientOAuthResult();
   }
 }

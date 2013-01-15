@@ -1451,9 +1451,6 @@ const char kEnableTouchpadThreeFingerClick[]
 const char kEnableTouchpadThreeFingerSwipe[]
     = "enable-touchpad-three-finger-swipe";
 
-// Skips OAuth part of ChromeOS login process.
-const char kSkipOAuthLogin[]                = "skip-oauth-login";
-
 // Enable Kiosk mode for ChromeOS.
 const char kEnableKioskMode[]               = "enable-kiosk-mode";
 
@@ -1469,6 +1466,10 @@ const char kEnableStaticIPConfig[]          = "enable-static-ip-config";
 
 // Passed to Chrome on first boot. Not passed on restart after sign out.
 const char kFirstBoot[] = "first-boot";
+
+// Forces driving authentication through the legacy OAuth1 flow instead of
+// new flow based on OAuth2.
+const char kForceOAuth1[]                  = "force-oauth1";
 
 // If true, the Chromebook has a Chrome OS keyboard. Don't use the flag for
 // Chromeboxes.
