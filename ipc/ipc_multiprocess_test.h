@@ -5,7 +5,7 @@
 #ifndef IPC_IPC_MULTIPROCESS_TEST_H_
 #define IPC_IPC_MULTIPROCESS_TEST_H_
 
-#include "base/test/multiprocess_test.h"
+#include "testing/multiprocess_func_list.h"
 
 // Use this macro when your sub-process is using an IPCChannel to communicate
 // with the test process.

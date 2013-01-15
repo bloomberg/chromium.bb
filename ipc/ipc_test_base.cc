@@ -26,7 +26,6 @@
 #include "ipc/ipc_multiprocess_test.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_switches.h"
-#include "testing/multiprocess_func_list.h"
 
 const char kTestClientChannel[] = "T1";
 const char kReflectorChannel[] = "T2";

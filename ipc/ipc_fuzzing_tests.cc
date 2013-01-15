@@ -14,7 +14,6 @@
 #include "ipc/ipc_multiprocess_test.h"
 #include "ipc/ipc_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/multiprocess_func_list.h"
 
 // IPC messages for testing ----------------------------------------------------
 

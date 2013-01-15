@@ -27,7 +27,6 @@
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_test_base.h"
-#include "testing/multiprocess_func_list.h"
 
 namespace {
 
