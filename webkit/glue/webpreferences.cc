@@ -471,6 +471,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setDeferredImageDecodingEnabled(deferred_image_decoding_enabled);
   settings->setShouldRespectImageOrientation(should_respect_image_orientation);
 
+  settings->setUnsafePluginPastingEnabled(false);
   settings->setEditingBehavior(
       static_cast<WebSettings::EditingBehavior>(editing_behavior));
 
