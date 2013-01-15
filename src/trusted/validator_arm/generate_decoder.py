@@ -16,6 +16,10 @@ Options include:
         If =bool is omitted, 'True' is assumped. Legal values for bool is
         'True' and 'False'.
   --table_remove=name - Remove table 'name' from decoder. May be repeated.
+  --auto-actual=name - Install automatically generated actuals into the
+        decoder table with the given name. May be repeated.
+  --auto-baseline-sep=name - Use as separator to split up automatically
+        generated baseline classes.
 
   name - Only generate tests for table 'name'. May be repeated.
 
@@ -34,19 +38,6 @@ import dgen_decoder_output
 import dgen_test_output
 import dgen_actuals
 import dgen_baselines
-
-# Defines the number of files to use when generating baseline classes.
-# The main reason for splitting into multiple files is to deal with
-# size limitations of the Rietveld server.
-_NUM_BASELINE_FILES = 3
-
-# Holds the suffixes used to hold baseline .h header files.
-_BASELINE_SUFFIXES_H = [('baselines_%s.h' % c)
-                        for c in range(1, _NUM_BASELINE_FILES+1)]
-
-# Holds the suffixes used to hold baseline .cc files.
-_BASELINE_SUFFIXES_CC = [('baselines_%s.cc' % c)
-                         for c in range(1, _NUM_BASELINE_FILES+1)]
 
 def _localize_filename(filename):
   """ Strips off directories above 'native_client', returning
@@ -68,6 +59,7 @@ def main(argv):
     # Define default command line arguments.
     cl_args = {'add-rule-patterns': 'True',
                'auto-actual': [],
+               'auto-baseline-sep': [],
                'table_remove': [],
                'table': [],
                }
@@ -90,6 +82,9 @@ def main(argv):
         else:
           # Single valued CL arugment, update to hold value.
           cl_args[cl_name] = cl_value
+
+    # Fix separators by sorting.
+    cl_args['auto-baseline-sep'] = sorted(cl_args['auto-baseline-sep'])
 
     print "cl args = %s" % cl_args
 
@@ -139,11 +134,11 @@ def main(argv):
     elif output_filename.endswith('baselines.h'):
       dgen_baselines.generate_baselines_base_h(
           decoder, decoder_name, _localize_filename(output_filename),
-          f, cl_args, _NUM_BASELINE_FILES)
-    elif name_suffix_in(output_filename, _BASELINE_SUFFIXES_H):
+          f, cl_args)
+    elif _baseline_suffix_in(output_filename, 'baselines_%s.h', cl_args):
       dgen_baselines.generate_baselines_h(
           decoder, decoder_name, _localize_filename(output_filename),
-          f, cl_args, _NUM_BASELINE_FILES)
+          f, cl_args)
     elif output_filename.endswith('baselines.h'):
       dgen_baselines.generate_baselines_h(
           decoder, decoder_name, _localize_filename(output_filename),
@@ -160,10 +155,10 @@ def main(argv):
       dgen_actuals.generate_actuals_cc(
           decoder, decoder_name, _localize_filename(output_filename),
           f, cl_args)
-    elif name_suffix_in(output_filename, _BASELINE_SUFFIXES_CC):
+    elif _baseline_suffix_in(output_filename, 'baselines_%s.cc', cl_args):
       dgen_baselines.generate_baselines_cc(
           decoder, decoder_name, _localize_filename(output_filename),
-          f, cl_args, _NUM_BASELINE_FILES)
+          f, cl_args)
     elif output_filename.endswith('.cc'):
       dgen_decoder_output.generate_cc(
           decoder, decoder_name, _localize_filename(output_filename),
@@ -175,9 +170,11 @@ def main(argv):
 
     return 0
 
-def name_suffix_in(name, suffixes):
-  for suffix in suffixes:
-    if name.endswith(suffix):
+def _baseline_suffix_in(name, format, cl_args):
+  num_baselines = len(cl_args['auto-baseline-sep']) + 1
+  assert num_baselines > 1
+  for n in range(1, num_baselines + 1):
+    if name.endswith(format % n):
       return True
   return False
 

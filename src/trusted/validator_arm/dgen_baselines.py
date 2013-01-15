@@ -102,7 +102,7 @@ BASELINE_BASE_H_FOOTER="""
 """
 
 def generate_baselines_base_h(decoder, decoder_name,
-                               filename, out, cl_args, num_blocks):
+                               filename, out, cl_args):
   """Generates baseline decoder C++ declarations in the given file.
 
     Args:
@@ -111,10 +111,10 @@ def generate_baselines_base_h(decoder, decoder_name,
         filename: The (localized) name for the .h file.
         out: a COutput object to write to.
         cl_args: A dictionary of additional command line arguments.
-        num_blocks: The number of header files to chunk the
-            baseline classes.
         """
   if not decoder.primary: raise Exception('No tables provided.')
+
+  num_blocks = GetNumberCodeBlocks(cl_args)
 
   assert filename.endswith('baselines.h')
 
@@ -147,7 +147,7 @@ BASELINE_H_FOOTER="""
 """
 
 def generate_baselines_h(decoder, decoder_name,
-                         filename, out, cl_args, num_blocks):
+                         filename, out, cl_args):
   """Generates baseline decoder C++ declarations in the given file.
 
     Args:
@@ -156,10 +156,11 @@ def generate_baselines_h(decoder, decoder_name,
         filename: The (localized) name for the .h file.
         out: a COutput object to write to.
         cl_args: A dictionary of additional command line arguments.
-        num_blocks: The number of header files to chunk the
-            baseline classes.
         """
   if not decoder.primary: raise Exception('No tables provided.')
+
+  separators = cl_args['auto-baseline-sep']
+  num_blocks = GetNumberCodeBlocksFromSeparators(separators)
 
   # Find block to print
   block = FindBlockIndex(filename, 'baselines_%s.h', num_blocks)
@@ -171,7 +172,7 @@ def generate_baselines_h(decoder, decoder_name,
       }
   out.write(BASELINE_H_HEADER % values)
   _print_baseline_headers(
-      GetBaselineDecodersBlock(decoder, block, num_blocks), out)
+      GetBaselineDecodersBlock(decoder, block, separators), out)
   out.write(BASELINE_H_FOOTER % values)
 
 BASELINE_CC_HEADER="""%(FILE_HEADER)s
@@ -186,7 +187,7 @@ BASELINE_CC_FOOTER="""
 """
 
 def generate_baselines_cc(decoder, decoder_name, filename,
-                          out, cl_args, num_blocks):
+                          out, cl_args):
   """Generates the baseline decoder C++ definitions in the given file.
 
     Args:
@@ -195,11 +196,12 @@ def generate_baselines_cc(decoder, decoder_name, filename,
         filename: The (localized) name for the .h file.
         out: a COutput object to write to.
         cl_args: A dictionary of additional command line arguments.
-        num_blocks: The number of header files to chunk the
-            baseline classes.
         """
 
   if not decoder.primary: raise Exception('No tables provided.')
+
+  separators = cl_args['auto-baseline-sep']
+  num_blocks = GetNumberCodeBlocks(cl_args)
 
   # Find block to print
   block = FindBlockIndex(filename, 'baselines_%s.cc', num_blocks)
@@ -211,7 +213,7 @@ def generate_baselines_cc(decoder, decoder_name, filename,
 
   out.write(BASELINE_CC_HEADER % values)
   _print_baseline_classes(
-      GetBaselineDecodersBlock(decoder, block, num_blocks), out)
+      GetBaselineDecodersBlock(decoder, block, separators), out)
   out.write(BASELINE_CC_FOOTER % values)
 
 BASELINE_CLASS_HEADER="""
@@ -277,15 +279,43 @@ def BaselineName(baseline):
   """Returns the name to use for the baseline."""
   return BASELINE_TO_NAME_MAP[baseline]
 
-def GetBaselineDecodersBlock(decoder, n, num_blocks):
-  assert n <= num_blocks
+def GetBaselineDecodersBlock(decoder, n, separators):
+  """Returns the (sorted) list of baseline class to include
+     in block n, assuming baseline classes are split using
+     the list of separators."""
+  num_blocks = GetNumberCodeBlocksFromSeparators(separators)
+  assert n > 0 and n <= num_blocks
   baselines = GetBaselineDecoders(decoder)
-  block_size = len(baselines) / num_blocks
-  assert block_size > 0
-  if n < num_blocks:
-    return baselines[((n-1)*block_size):(n*block_size)]
-  else:
-    return baselines[((n-1)*block_size):]
+  return [base for base in baselines
+          if ((n == 1
+               or IsPrefixLeBaseline(separators[n-2], base)) and
+              (n == num_blocks or
+               not IsPrefixLeBaseline(separators[n-1], base)))]
+
+def IsPrefixLeBaseline(prefix, baseline):
+  """Returns true if the prefix is less than or equal to the
+     corresponding prefix length of the baseline name."""
+  baseline_name = BaselineName(baseline)
+  prefix_len = len(prefix)
+  baseline_len = len(baseline_name)
+  baseline_prefix = (baseline_name[0:prefix_len]
+                     if prefix_len < baseline_len
+                     else baseline_name)
+  return prefix <= baseline_prefix
+
+def GetNumberCodeBlocksFromSeparators(separators):
+  """Returns the number of code blocks to use, base on the
+     list of spearators to use.
+     """
+  num_blocks = len(separators) + 1
+  assert num_blocks >= 2
+  return num_blocks
+
+def GetNumberCodeBlocks(cl_args):
+  """Gets the number of code blocks to break baseline classes into."""
+  num_blocks = len(cl_args['auto-baseline-sep']) + 1
+  assert num_blocks >= 2
+  return num_blocks
 
 def FindBlockIndex(filename, format, num_blocks):
   for block in range(1, num_blocks+1):

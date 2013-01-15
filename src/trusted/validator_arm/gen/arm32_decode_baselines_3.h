@@ -14,6 +14,504 @@
 
 namespace nacl_arm_dec {
 
+// VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0:
+//
+//   {D: D(22),
+//    None: 32,
+//    Pc: 15,
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Sp: 13,
+//    Vd: Vd(15:12),
+//    align: align(5:4),
+//    alignment: 1
+//         if align(5:4)=00
+//         else 4 << align,
+//    arch: ASIMD,
+//    base: n,
+//    baseline: VectorLoadStoreMultiple1,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {base}
+//         if wback
+//         else {},
+//    ebytes: 1 << size,
+//    elements: 8 / ebytes,
+//    esize: 8 * ebytes,
+//    fields: [D(22),
+//      Rn(19:16),
+//      Vd(15:12),
+//      type(11:8),
+//      size(7:6),
+//      align(5:4),
+//      Rm(3:0)],
+//    m: Rm,
+//    n: Rn,
+//    pattern: 111101000d10nnnnddddttttssaammmm,
+//    register_index: (m  !=
+//            Pc &&
+//         m  !=
+//            Sp),
+//    regs: 1
+//         if type(11:8)=0111
+//         else 2
+//         if type(11:8)=1010
+//         else 3
+//         if type(11:8)=0110
+//         else 4
+//         if type(11:8)=0010
+//         else 0,
+//    rule: VLD1_multiple_single_elements,
+//    safety: [type(11:8)=0111 &&
+//         align(1)=1 => UNDEFINED,
+//      type(11:8)=1010 &&
+//         align(5:4)=11 => UNDEFINED,
+//      type(11:8)=0110 &&
+//         align(1)=1 => UNDEFINED,
+//      not type in bitset {'0111', '1010', '0110', '0010'} => DECODER_ERROR,
+//      n  ==
+//            Pc ||
+//         d + regs  >
+//            32 => UNPREDICTABLE],
+//    size: size(7:6),
+//    small_imm_base_wb: not register_index,
+//    type: type(11:8),
+//    uses: {m
+//         if wback
+//         else None, n},
+//    wback: (m  !=
+//            Pc)}
+class VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0
+     : public ClassDecoder {
+ public:
+  VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VLD1_multiple_single_elements_111101000d10nnnnddddttttssaammmm_case_0);
+};
+
+// VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0:
+//
+//   {D: D(22),
+//    None: 32,
+//    Pc: 15,
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Sp: 13,
+//    T: T(5),
+//    Vd: Vd(15:12),
+//    a: a(4),
+//    alignment: 1
+//         if a(4)=0
+//         else ebytes,
+//    arch: ASIMD,
+//    base: n,
+//    baseline: VectorLoadSingle1AllLanes,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {base}
+//         if wback
+//         else {},
+//    ebytes: 1 << size,
+//    elements: 8 / ebytes,
+//    fields: [D(22),
+//      Rn(19:16),
+//      Vd(15:12),
+//      size(7:6),
+//      T(5),
+//      a(4),
+//      Rm(3:0)],
+//    m: Rm,
+//    n: Rn,
+//    pattern: 111101001d10nnnndddd1100sstammmm,
+//    register_index: (m  !=
+//            Pc &&
+//         m  !=
+//            Sp),
+//    regs: 1
+//         if T(5)=0
+//         else 2,
+//    rule: VLD1_single_element_to_all_lanes,
+//    safety: [size(7:6)=11 ||
+//         (size(7:6)=00 &&
+//         a(4)=1) => UNDEFINED,
+//      n  ==
+//            Pc ||
+//         d + regs  >
+//            32 => UNPREDICTABLE],
+//    size: size(7:6),
+//    small_imm_base_wb: not register_index,
+//    uses: {m
+//         if wback
+//         else None, n},
+//    wback: (m  !=
+//            Pc)}
+class VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0
+     : public ClassDecoder {
+ public:
+  VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VLD1_single_element_to_all_lanes_111101001d10nnnndddd1100sstammmm_case_0);
+};
+
+// VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0:
+//
+//   {D: D(22),
+//    None: 32,
+//    Pc: 15,
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Sp: 13,
+//    Vd: Vd(15:12),
+//    alignment: 1
+//         if size(11:10)=00
+//         else (1
+//         if index_align(0)=0
+//         else 2)
+//         if size(11:10)=01
+//         else (1
+//         if index_align(1:0)=00
+//         else 4)
+//         if size(11:10)=10
+//         else 0,
+//    arch: ASIMD,
+//    base: n,
+//    baseline: VectorLoadStoreSingle1,
+//    constraints: ,
+//    d: D:Vd,
+//    defs: {base}
+//         if wback
+//         else {},
+//    ebytes: 1 << size,
+//    esize: 8 * ebytes,
+//    fields: [D(22),
+//      Rn(19:16),
+//      Vd(15:12),
+//      size(11:10),
+//      index_align(7:4),
+//      Rm(3:0)],
+//    inc: 1
+//         if size(11:10)=00
+//         else (1
+//         if index_align(1)=0
+//         else 2)
+//         if size(11:10)=01
+//         else (1
+//         if index_align(2)=0
+//         else 2)
+//         if size(11:10)=10
+//         else 0,
+//    index: index_align(3:1)
+//         if size(11:10)=00
+//         else index_align(3:2)
+//         if size(11:10)=01
+//         else index_align(3)
+//         if size(11:10)=10
+//         else 0,
+//    index_align: index_align(7:4),
+//    m: Rm,
+//    n: Rn,
+//    pattern: 111101001d10nnnnddddss00aaaammmm,
+//    register_index: (m  !=
+//            Pc &&
+//         m  !=
+//            Sp),
+//    rule: VLD1_single_element_to_one_lane,
+//    safety: [size(11:10)=11 => UNDEFINED,
+//      size(11:10)=00 &&
+//         index_align(0)=~0 => UNDEFINED,
+//      size(11:10)=01 &&
+//         index_align(1)=~0 => UNDEFINED,
+//      size(11:10)=10 &&
+//         index_align(2)=~0 => UNDEFINED,
+//      size(11:10)=10 &&
+//         index_align(1:0)=~00 &&
+//         index_align(1:0)=~11 => UNDEFINED,
+//      n  ==
+//            Pc => UNPREDICTABLE],
+//    size: size(11:10),
+//    small_imm_base_wb: not register_index,
+//    uses: {m
+//         if wback
+//         else None, n},
+//    wback: (m  !=
+//            Pc)}
+class VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0
+     : public ClassDecoder {
+ public:
+  VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VLD1_single_element_to_one_lane_111101001d10nnnnddddss00aaaammmm_case_0);
+};
+
+// VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0:
+//
+//   {D: D(22),
+//    None: 32,
+//    Pc: 15,
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Sp: 13,
+//    Vd: Vd(15:12),
+//    align: align(5:4),
+//    alignment: 1
+//         if align(5:4)=00
+//         else 4 << align,
+//    arch: ASIMD,
+//    base: n,
+//    baseline: VectorLoadStoreMultiple2,
+//    constraints: ,
+//    d: D:Vd,
+//    d2: d + inc,
+//    defs: {base}
+//         if wback
+//         else {},
+//    ebytes: 1 << size,
+//    elements: 8 / ebytes,
+//    esize: 8 * ebytes,
+//    fields: [D(22),
+//      Rn(19:16),
+//      Vd(15:12),
+//      type(11:8),
+//      size(7:6),
+//      align(5:4),
+//      Rm(3:0)],
+//    inc: 1
+//         if type(11:8)=1000
+//         else 2,
+//    m: Rm,
+//    n: Rn,
+//    pattern: 111101000d10nnnnddddttttssaammmm,
+//    register_index: (m  !=
+//            Pc &&
+//         m  !=
+//            Sp),
+//    regs: 1
+//         if type in bitset {'1000', '1001'}
+//         else 2,
+//    rule: VLD2_multiple_2_element_structures,
+//    safety: [size(7:6)=11 => UNDEFINED,
+//      type in bitset {'1000', '1001'} &&
+//         align(5:4)=11 => UNDEFINED,
+//      not type in bitset {'1000', '1001', '0011'} => DECODER_ERROR,
+//      n  ==
+//            Pc ||
+//         d2 + regs  >
+//            32 => UNPREDICTABLE],
+//    size: size(7:6),
+//    small_imm_base_wb: not register_index,
+//    type: type(11:8),
+//    uses: {m
+//         if wback
+//         else None, n},
+//    wback: (m  !=
+//            Pc)}
+class VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0
+     : public ClassDecoder {
+ public:
+  VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VLD2_multiple_2_element_structures_111101000d10nnnnddddttttssaammmm_case_0);
+};
+
+// VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0:
+//
+//   {D: D(22),
+//    None: 32,
+//    Pc: 15,
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Sp: 13,
+//    T: T(5),
+//    Vd: Vd(15:12),
+//    a: a(4),
+//    alignment: 1
+//         if a(4)=0
+//         else 2 * ebytes,
+//    arch: ASIMD,
+//    base: n,
+//    baseline: VectorLoadSingle2AllLanes,
+//    constraints: ,
+//    d: D:Vd,
+//    d2: d + inc,
+//    defs: {base}
+//         if wback
+//         else {},
+//    ebytes: 1 << size,
+//    elements: 8 / ebytes,
+//    fields: [D(22),
+//      Rn(19:16),
+//      Vd(15:12),
+//      size(7:6),
+//      T(5),
+//      a(4),
+//      Rm(3:0)],
+//    inc: 1
+//         if T(5)=0
+//         else 2,
+//    m: Rm,
+//    n: Rn,
+//    pattern: 111101001d10nnnndddd1101sstammmm,
+//    register_index: (m  !=
+//            Pc &&
+//         m  !=
+//            Sp),
+//    rule: VLD2_single_2_element_structure_to_all_lanes,
+//    safety: [size(7:6)=11 => UNDEFINED,
+//      n  ==
+//            Pc ||
+//         d2  >
+//            31 => UNPREDICTABLE],
+//    size: size(7:6),
+//    small_imm_base_wb: not register_index,
+//    uses: {m
+//         if wback
+//         else None, n},
+//    wback: (m  !=
+//            Pc)}
+class VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0
+     : public ClassDecoder {
+ public:
+  VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VLD2_single_2_element_structure_to_all_lanes_111101001d10nnnndddd1101sstammmm_case_0);
+};
+
+// VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0:
+//
+//   {D: D(22),
+//    None: 32,
+//    Pc: 15,
+//    Rm: Rm(3:0),
+//    Rn: Rn(19:16),
+//    Sp: 13,
+//    Vd: Vd(15:12),
+//    alignment: (1
+//         if index_align(0)=0
+//         else 2)
+//         if size(11:10)=00
+//         else (1
+//         if index_align(0)=0
+//         else 4)
+//         if size(11:10)=01
+//         else (1
+//         if index_align(0)=0
+//         else 8)
+//         if size(11:10)=10
+//         else 0,
+//    arch: ASIMD,
+//    base: n,
+//    baseline: VectorLoadStoreSingle2,
+//    constraints: ,
+//    d: D:Vd,
+//    d2: d + inc,
+//    defs: {base}
+//         if wback
+//         else {},
+//    ebytes: 1 << size,
+//    esize: 8 * ebytes,
+//    fields: [D(22),
+//      Rn(19:16),
+//      Vd(15:12),
+//      size(11:10),
+//      index_align(7:4),
+//      Rm(3:0)],
+//    inc: 1
+//         if size(11:10)=00
+//         else (1
+//         if index_align(1)=0
+//         else 2)
+//         if size(11:10)=01
+//         else (1
+//         if index_align(2)=0
+//         else 2)
+//         if size(11:10)=10
+//         else 0,
+//    index: index_align(3:1)
+//         if size(11:10)=00
+//         else index_align(3:2)
+//         if size(11:10)=01
+//         else index_align(3)
+//         if size(11:10)=10
+//         else 0,
+//    index_align: index_align(7:4),
+//    m: Rm,
+//    n: Rn,
+//    pattern: 111101001d10nnnnddddss01aaaammmm,
+//    register_index: (m  !=
+//            Pc &&
+//         m  !=
+//            Sp),
+//    rule: VLD2_single_2_element_structure_to_one_lane,
+//    safety: [size(11:10)=11 => UNDEFINED,
+//      size(11:10)=10 &&
+//         index_align(1)=~0 => UNDEFINED,
+//      n  ==
+//            Pc ||
+//         d2  >
+//            31 => UNPREDICTABLE],
+//    size: size(11:10),
+//    small_imm_base_wb: not register_index,
+//    uses: {m
+//         if wback
+//         else None, n},
+//    wback: (m  !=
+//            Pc)}
+class VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0
+     : public ClassDecoder {
+ public:
+  VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0()
+     : ClassDecoder() {}
+  virtual Register base_address_register(Instruction i) const;
+  virtual RegisterList defs(Instruction inst) const;
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual bool base_address_register_writeback_small_immediate(
+      Instruction i) const;
+  virtual RegisterList uses(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VLD2_single_2_element_structure_to_one_lane_111101001d10nnnnddddss01aaaammmm_case_0);
+};
+
 // VLD3_multiple_3_element_structures_111101000d10nnnnddddttttssaammmm_case_0:
 //
 //   {D: D(22),

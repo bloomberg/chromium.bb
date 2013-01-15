@@ -86,6 +86,15 @@ GEN_TABLES = ["ARMv7",
 AUTO_GEN_TABLES = ["ARMv7",
                    "data_processing_register"]
 
+# The separators to use for splitting up automatically generated baseline
+# classes.
+AUTO_BASELINE_SEPARATORS = ['SMM', 'VLD']
+
+# Generates the corresponding automatically generated baseline classes,
+# when split into files using the separators in AUTO_BASELINE_SEPARATORS
+def GenerateBaselineFiles(format):
+  return [(format % (n+1)) for n in range(len(AUTO_BASELINE_SEPARATORS)+1)]
+
 # Changes table name to test name.
 def _TableTestName(tbl):
   return 'arm32_decode_' + tbl + '_tests'
@@ -98,19 +107,15 @@ def _gen_file(filename):
 GEN_TEST_LIST = [_TableTestName(x) + '.cc' for x in GEN_TABLES]
 
 # Other files, besides test files, that are generated.
-GEN_OTHER_LIST = ['arm32_decode.cc', 'arm32_decode.h',
-                  'arm32_decode_actuals.h',
-                  'arm32_decode_actuals.cc',
-                  'arm32_decode_baselines.h',
-                  'arm32_decode_baselines_1.h',
-                  'arm32_decode_baselines_2.h',
-                  'arm32_decode_baselines_3.h',
-                  'arm32_decode_baselines_1.cc',
-                  'arm32_decode_baselines_2.cc',
-                  'arm32_decode_baselines_3.cc',
-                  'arm32_decode_named.cc' ,
-                  'arm32_decode_named_classes.h',
-                  'arm32_decode_named_decoder.h']
+GEN_OTHER_LIST = (['arm32_decode.cc', 'arm32_decode.h',
+                   'arm32_decode_actuals.h',
+                   'arm32_decode_actuals.cc',
+                   'arm32_decode_baselines.h',
+                   'arm32_decode_named.cc' ,
+                   'arm32_decode_named_classes.h',
+                   'arm32_decode_named_decoder.h'] +
+                  GenerateBaselineFiles('arm32_decode_baselines_%s.h') +
+                  GenerateBaselineFiles('arm32_decode_baselines_%s.cc'))
 
 # Set of generated source files.
 GEN_LIST = [_gen_file(x) for x in (GEN_TEST_LIST + GEN_OTHER_LIST)]
@@ -132,6 +137,8 @@ def _generate_source(filename, table=None):
     cl_args += ' --table=' + table
   for tbl in AUTO_GEN_TABLES:
     cl_args += ' --auto-actual=' + tbl
+  for sep in AUTO_BASELINE_SEPARATORS:
+    cl_args += ' --auto-baseline-sep=' + sep
   env.Command(target=_gen_file(filename),
               source=['armv7.table',
                       'generate_decoder.py',
