@@ -447,13 +447,10 @@ double ProcessMetrics::GetCPUUsage() {
   if (time_delta == 0)
     return 0;
 
-  // We add time_delta / 2 so the result is rounded.
-  double cpu = static_cast<double>((system_time_delta * 100.0) / time_delta);
-
   last_system_time_ = task_time;
   last_time_ = time;
 
-  return cpu;
+  return static_cast<double>(system_time_delta * 100.0) / time_delta;
 }
 
 mach_port_t ProcessMetrics::TaskForPid(ProcessHandle process) const {
