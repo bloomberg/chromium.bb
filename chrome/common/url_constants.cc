@@ -101,8 +101,6 @@ const char kChromeUISlideshowURL[] = "chrome://slideshow/";
 const char kChromeUISystemInfoURL[] = "chrome://system/";
 const char kChromeUITermsOemURL[] = "chrome://terms/oem";
 const char kChromeUIUserImageURL[] = "chrome://userimage/";
-const char kChromeUIWallpaperImageURL[] = "chrome://wallpaper/";
-const char kChromeUIWallpaperThumbnailURL[] = "chrome://wallpaper-thumb/";
 #endif
 
 #if defined(USE_ASH)
@@ -248,7 +246,6 @@ const char kChromeUISimUnlockHost[] = "sim-unlock";
 const char kChromeUISlideshowHost[] = "slideshow";
 const char kChromeUISystemInfoHost[] = "system";
 const char kChromeUIUserImageHost[] = "userimage";
-const char kChromeUIWallpaperImageHost[] = "wallpaper";
 const char kChromeUIWallpaperThumbnailHost[] = "wallpaper-thumb";
 
 const char kChromeUIMenu[] = "menu";

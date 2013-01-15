@@ -2007,8 +2007,6 @@
         'browser/ui/webui/options/chromeos/timezone_options_util.h',
         'browser/ui/webui/options/chromeos/user_image_source.cc',
         'browser/ui/webui/options/chromeos/user_image_source.h',
-        'browser/ui/webui/options/chromeos/wallpaper_source.cc',
-        'browser/ui/webui/options/chromeos/wallpaper_source.h',
         'browser/ui/webui/options/clear_browser_data_handler.cc',
         'browser/ui/webui/options/clear_browser_data_handler.h',
         'browser/ui/webui/options/content_settings_handler.cc',

@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
-#include "chrome/browser/ui/webui/options/chromeos/wallpaper_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/jstemplate_builder.h"
