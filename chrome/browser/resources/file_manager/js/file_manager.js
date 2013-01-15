@@ -128,10 +128,18 @@ DialogType.isModal = function(type) {
   FileManager.GOOGLE_DRIVE_HELP =
       'https://support.google.com/chromeos/?p=filemanager_drivehelp';
 
- /**
+  /**
    * Location of Google Drive specific help.
    */
   FileManager.GOOGLE_DRIVE_ROOT = 'https://drive.google.com';
+
+  /**
+   * Location of Files App specific help.
+   * TODO(haruki): Replace this with a proper smart link to let the server
+   * choose better page language.
+   */
+  FileManager.FILES_APP_HELP =
+      'http://support.google.com/chromeos/bin/answer.py?answer=1056323';
 
   /**
    * Number of milliseconds in a day.
@@ -147,6 +155,33 @@ DialogType.isModal = function(type) {
 
   function removeChildren(element) {
     element.textContent = '';
+  }
+
+  /**
+   * Update the elemenst to display the information about remainig space for
+   * the storage.
+   * @param {!Element} spaceInnerBar Block element for a percentage bar
+   *                                 representing the remaining space.
+   * @param {!Element} spaceInfoLabel Inline element to contain the message.
+   * @param {!Element} spaceOuterBar Block element around the percentage bar.
+   */
+   function updateSpaceInfo(
+      sizeStatsResult, spaceInnerBar, spaceInfoLabel, spaceOuterBar) {
+    spaceInnerBar.removeAttribute('pending');
+    if (sizeStatsResult) {
+      var sizeStr = util.bytesToSi(sizeStatsResult.remainingSizeKB * 1024);
+      spaceInfoLabel.textContent = strf('SPACE_AVAILABLE', sizeStr);
+
+      var usedSpace =
+          sizeStatsResult.totalSizeKB - sizeStatsResult.remainingSizeKB;
+      spaceInnerBar.style.width =
+          (100 * usedSpace / sizeStatsResult.totalSizeKB) + '%';
+
+      spaceOuterBar.style.display = '';
+    } else {
+      spaceOuterBar.style.display = 'none';
+      spaceInfoLabel.textContent = str('FAILED_SPACE_INFO');
+    }
   }
 
   // Public statics.
@@ -479,6 +514,10 @@ DialogType.isModal = function(type) {
         this.dialogDom_.querySelector('#roots-context-menu');
     cr.ui.Menu.decorate(this.rootsContextMenu_);
 
+    this.downloadsRootContextMenu_ =
+        this.dialogDom_.querySelector('#downloads-root-context-menu');
+    cr.ui.Menu.decorate(this.downloadsRootContextMenu_);
+
     this.textContextMenu_ =
         this.dialogDom_.querySelector('#text-context-menu');
     cr.ui.Menu.decorate(this.textContextMenu_);
@@ -545,6 +584,9 @@ DialogType.isModal = function(type) {
 
     CommandUtil.registerCommand(doc, 'gdata-go-to-drive',
         Commands.gdataGoToDriveCommand, this);
+
+    CommandUtil.registerCommand(doc, 'files-app-help',
+        Commands.filesAppHelpCommand, this);
 
     CommandUtil.registerCommand(doc, 'paste',
         Commands.pasteFileCommand, doc, this.fileTransferController_);
@@ -1354,9 +1396,43 @@ DialogType.isModal = function(type) {
       li.appendChild(eject);
     }
 
-    // To enable photo import dialog, set this context menu for Downloads and
-    // remove 'hidden' attribute on import-photos command.
-    if (rootType != RootType.GDATA && rootType != RootType.DOWNLOADS) {
+    // Add a context menu for the root. "Downloads" has a menu item showing the
+    // remaining space information.
+    if (rootType == RootType.DOWNLOADS) {
+      cr.ui.contextMenuHandler.setContextMenu(li,
+                                              this.downloadsRootContextMenu_);
+
+      var downloadsRootContextMenu = this.downloadsRootContextMenu_;
+      var downloadsSpaceInfoLabel =
+          this.dialogDom_.querySelector('#downloads-space-info-label');
+
+      var downloadsSpaceInnerBar =
+          this.dialogDom_.querySelector('#downloads-space-info-bar');
+      var downloadsSpaceOuterBar =
+          this.dialogDom_.querySelector('#downloads-space-info-bar').
+              parentNode;
+
+      if (this.downloadsRootContextMenuListener_) {
+        cr.ui.contextMenuHandler.removeEventListener(
+            'show', this.downloadsRootContextMenuListener_);
+      }
+      this.downloadsRootContextMenuListener_ = function(ev) {
+        // Check available space on opening the context menu for Downloads.
+        if (ev.element != li || ev.menu != downloadsRootContextMenu)
+          return;
+
+        downloadsSpaceInnerBar.setAttribute('pending', '');
+        chrome.fileBrowserPrivate.getSizeStats(
+            util.makeFilesystemUrl(path),
+            function(sizeStats) {
+              updateSpaceInfo(sizeStats, downloadsSpaceInnerBar,
+                              downloadsSpaceInfoLabel, downloadsSpaceOuterBar);
+            });
+      };
+
+      cr.ui.contextMenuHandler.addEventListener(
+        'show', this.downloadsRootContextMenuListener_);
+    } else if (rootType != RootType.GDATA) {
       cr.ui.contextMenuHandler.setContextMenu(li, this.rootsContextMenu_);
     }
 
@@ -2718,21 +2794,8 @@ DialogType.isModal = function(type) {
     gdataSpaceInnerBar.setAttribute('pending', '');
     chrome.fileBrowserPrivate.getSizeStats(
         this.directoryModel_.getCurrentRootUrl(), function(result) {
-          gdataSpaceInnerBar.removeAttribute('pending');
-          if (result) {
-            var sizeInGb = util.bytesToSi(result.remainingSizeKB * 1024);
-            gdataSpaceInfoLabel.textContent =
-                strf('DRIVE_SPACE_AVAILABLE', sizeInGb);
-
-            var usedSpace = result.totalSizeKB - result.remainingSizeKB;
-            gdataSpaceInnerBar.style.width =
-                (100 * usedSpace / result.totalSizeKB) + '%';
-
-            gdataSpaceOuterBar.style.display = '';
-          } else {
-            gdataSpaceOuterBar.style.display = 'none';
-            gdataSpaceInfoLabel.textContent = str('DRIVE_FAILED_SPACE_INFO');
-          }
+          updateSpaceInfo(result, gdataSpaceInnerBar, gdataSpaceInfoLabel,
+                          gdataSpaceOuterBar);
         });
   };
 

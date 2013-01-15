@@ -2,17 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('cr.ui', function() {
+// require: event_target.js
 
+cr.define('cr.ui', function() {
+  /** @const */ var EventTarget = cr.EventTarget;
+  /** @const */ var Event = cr.Event;
   /** @const */ var Menu = cr.ui.Menu;
 
   /**
    * Handles context menus.
    * @constructor
+   * @extends {EventTarget}
    */
   function ContextMenuHandler() {}
 
   ContextMenuHandler.prototype = {
+    __proto__: EventTarget.prototype,
 
     /**
      * The menu that we are currently showing.
@@ -48,6 +53,11 @@ cr.define('cr.ui', function() {
       menu.addEventListener('contextmenu', this);
       menu.addEventListener('activate', this);
       this.positionMenu_(e, menu);
+
+      var ev = new Event('show');
+      ev.element = menu.contextElement;
+      ev.menu = menu;
+      this.dispatchEvent(ev);
     },
 
     /**
@@ -59,6 +69,7 @@ cr.define('cr.ui', function() {
         return;
 
       menu.hidden = true;
+      var originalContextElement = menu.contextElement;
       menu.contextElement = null;
       var doc = menu.ownerDocument;
       doc.removeEventListener('keydown', this, true);
@@ -74,6 +85,11 @@ cr.define('cr.ui', function() {
       // that is the case we wait some short period before we allow the menu
       // to be shown again.
       this.hideTimestamp_ = cr.isWindows ? Date.now() : 0;
+
+      var ev = new Event('hide');
+      ev.element = menu.contextElement;
+      ev.menu = menu;
+      this.dispatchEvent(ev);
     },
 
     /**

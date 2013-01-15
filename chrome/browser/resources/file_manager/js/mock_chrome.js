@@ -598,11 +598,8 @@ chrome.fileBrowserPrivate = {
       DRIVE_SHOW_HOSTED_FILES_OPTION: 'Show Google Docs files',
       DRIVE_CLEAR_LOCAL_CACHE: 'Clear local cache',
       DRIVE_RELOAD: 'Reload',
-      DRIVE_WAITING_FOR_SPACE_INFO: 'Waiting for space info...',
-      DRIVE_FAILED_SPACE_INFO: 'Failed to retrieve space info',
       DRIVE_BUY_MORE_SPACE: 'Buy more storage...',
       DRIVE_VISIT_DRIVE_GOOGLE_COM: 'Go to drive.google.com...',
-      DRIVE_SPACE_AVAILABLE: '$1 left',
 
       DRIVE_BUY_MORE_SPACE_LINK: 'Buy more storage',
       DRIVE_SPACE_AVAILABLE_LONG: 'Google Drive space left: $1.',
@@ -744,6 +741,12 @@ chrome.fileBrowserPrivate = {
       TIME_YESTERDAY: 'Yesterday $1',
 
       ALL_FILES_FILTER: 'All files',
+
+      SPACE_AVAILABLE: '$1 left',
+      WAITING_FOR_SPACE_INFO: 'Waiting for space info...',
+      FAILED_SPACE_INFO: 'Failed to retrieve space info',
+
+      HELP_LINK_LABEL: 'Help',
 
       DEFAULT_ACTION_LABEL: '(default)',
       ASH: true,

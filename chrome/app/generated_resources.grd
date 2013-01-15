@@ -13024,9 +13024,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_DRIVE_MENU_HELP" desc="In the Google Drive settings menu, name of the Help item.">
         Help
       </message>
-      <message name="IDS_FILE_BROWSER_DRIVE_SPACE_AVAILABLE" desc="Menu item showing space left on Google Drive">
-        <ph name="SPACE_AVAILABLE">$1<ex>4.8 GB</ex></ph> left
-      </message>
       <message name="IDS_FILE_BROWSER_DRIVE_BUY_MORE_SPACE" desc="Menu item, offering user to buy more space on Google Drive">
         Buy more storage...
       </message>
@@ -13038,12 +13035,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_FILE_BROWSER_DRIVE_BUY_MORE_SPACE_LINK" desc="Text on the link, offering user to buy more space on Google Drive">
         Buy more storage
-      </message>
-      <message name="IDS_FILE_BROWSER_DRIVE_WAITING_FOR_SPACE_INFO" desc="Menu item, saying that FileBrowser is waiting for account's space information from Drive servers. When actual data arrives, this item will be replaced with IDS_FILE_BROWSER_DRIVE_SPACE_AVAILABLE">
-        Waiting for space info...
-      </message>
-      <message name="IDS_FILE_BROWSER_DRIVE_FAILED_SPACE_INFO" desc="Menu item, saying that FileBrowser is failed to retrieve account's space information from Drive servers.">
-        Failed to retrieve space info
       </message>
       <message name="IDS_FILE_BROWSER_DRIVE_OUT_OF_SPACE_HEADER" desc="Message informing the user that there is not enough space to make the selected file(s) available offline.">
         You have run out of space
@@ -13322,6 +13313,20 @@ Some features may be unavailable.  Please check that the profile exists and you 
 
       <message name="IDS_FILE_BROWSER_ALL_FILES_FILTER" desc="All Files filter for Open/Save dialog">
         All files
+      </message>
+
+      <message name="IDS_FILE_BROWSER_SPACE_AVAILABLE" desc="Menu item showing space left for storage.">
+        <ph name="SPACE_AVAILABLE">$1<ex>4.8 GB</ex></ph> left
+      </message>
+      <message name="IDS_FILE_BROWSER_WAITING_FOR_SPACE_INFO" desc="Menu item, saying that FileBrowser is waiting for space information for storage. When actual data arrives, this item will be replaced with IDS_FILE_BROWSER_SPACE_AVAILABLE">
+        Waiting for space info...
+      </message>
+      <message name="IDS_FILE_BROWSER_FAILED_SPACE_INFO" desc="Menu item, saying that FileBrowser is failed to retrieve space information.">
+        Failed to retrieve space info
+      </message>
+
+      <message name="IDS_FILE_BROWSER_HELP_LINK_LABEL" desc="Label for a link to help pages in a general context menu in file browser.">
+        Help
       </message>
 
       <!-- Bookmark manager -->

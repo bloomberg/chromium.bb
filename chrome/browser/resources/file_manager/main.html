@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="../shared/css/list.css"></link>
     <link rel="stylesheet" href="../shared/css/table.css"></link>
     <link rel="stylesheet" href="../shared/css/menu.css"></link>
-    
+
     <link rel="stylesheet" href="css/combobutton.css"></link>
     <link rel="stylesheet" href="css/file_manager.css"></link>
     <link rel="stylesheet" href="css/file_types.css"></link>
@@ -142,6 +142,9 @@
           i18n-values="label:OPEN_WITH_BUTTON_LABEL"></command>
       <command id="zip-selection"
           i18n-values="label:ZIP_SELECTION_BUTTON_LABEL"></command>
+
+      <command id="files-app-help" i18n-values="label:HELP_LINK_LABEL">
+      </command>
     </commands>
 
     <menu id="file-context-menu" class="chrome-menu" showShortcuts>
@@ -167,6 +170,8 @@
       <menuitem command="#import-photos"></menuitem>
       <menuitem command="#unmount"></menuitem>
       <menuitem command="#format"></menuitem>
+      <hr>
+      <menuitem command="#files-app-help"></menuitem>
     </menu>
 
     <menu id="docs-settings" class="chrome-menu">
@@ -182,7 +187,7 @@
       <hr>
       <div id="gdata-space-info" disabled>
         <span id="gdata-space-info-label"
-            i18n-content=DRIVE_WAITING_FOR_SPACE_INFO
+            i18n-content=WAITING_FOR_SPACE_INFO
             ></span>
         <div><div id="gdata-space-info-bar" style="width:100%" pending></div
             ></div>
@@ -200,6 +205,18 @@
         <menuitem command="#copy"></menuitem>
         <menuitem command="#paste"></menuitem>
         <menuitem command="#delete"></menuitem>
+    </menu>
+
+    <menu id="downloads-root-context-menu" class="chrome-menu">
+      <div id="downloads-space-info" disabled>
+        <span id="downloads-space-info-label"
+            i18n-content=WAITING_FOR_SPACE_INFO
+            ></span>
+        <div>
+          <div id="downloads-space-info-bar" style="width:100%" pending></div>
+        </div>
+      </div>
+      <menuitem command="#files-app-help"></menuitem>
     </menu>
 
     <div class=dialog-title invisibleif="full-page">[TITLE]</div>
