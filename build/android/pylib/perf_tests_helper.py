@@ -23,6 +23,9 @@ def _EscapePerfResult(s):
 
 def GeomMeanAndStdDevFromHistogram(histogram_json):
   histogram = json.loads(histogram_json)
+  # Handle empty histograms gracefully.
+  if not 'buckets' in histogram:
+    return 0.0, 0.0
   count = 0
   sum_of_logs = 0
   for bucket in histogram['buckets']:
