@@ -361,6 +361,14 @@ void RenderWidgetHostViewAura::InitAsPopup(
   }
   SetBounds(gfx::Rect(origin_in_parent, bounds_in_screen.size()));
   Show();
+
+#if defined(OS_CHROMEOS)
+  // Web Popups need capture for proper behavior including dismissal.
+  // SetCapture is called after Show because it will only succeed when
+  // the window is visible.
+  if (popup_type_ != WebKit::WebPopupTypeNone)
+    window_->SetCapture();
+#endif
 }
 
 void RenderWidgetHostViewAura::InitAsFullscreen(
@@ -1541,15 +1549,25 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
     host_->ForwardMouseEvent(mouse_event);
   }
 
+#if defined(OS_CHROMEOS)
+  bool allow_capture_change = popup_type_ == WebKit::WebPopupTypeNone &&
+      (!popup_child_host_view_ ||
+       popup_child_host_view_->popup_type_ == WebKit::WebPopupTypeNone);
+#else
+  bool allow_capture_change = true;
+#endif
+
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
-      window_->SetCapture();
+      if (allow_capture_change)
+        window_->SetCapture();
       // Confirm existing composition text on mouse click events, to make sure
       // the input caret won't be moved with an ongoing composition text.
       FinishImeCompositionSession();
       break;
     case ui::ET_MOUSE_RELEASED:
-      window_->ReleaseCapture();
+      if (allow_capture_change)
+        window_->ReleaseCapture();
       break;
     default:
       break;
