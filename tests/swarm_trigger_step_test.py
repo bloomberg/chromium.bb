@@ -9,6 +9,7 @@ import os
 import StringIO
 import sys
 import unittest
+import urllib2
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
@@ -128,15 +129,23 @@ def MockUrlOpenNoZip(url_or_request, data=None):
   return MockUrlOpen(url_or_request, data, has_return_value=chr(0))
 
 
+def MockUrlOpenServerErrors(*_args, **_kwargs):
+  raise urllib2.URLError('unable to find server')
+
+
 class ManifestTest(unittest.TestCase):
   def setUp(self):
-    self.old_ZipFile = swarm_trigger_step.zipfile.ZipFile
+    self.old_sleep = swarm_trigger_step.time.sleep
     self.old_urlopen = swarm_trigger_step.urllib2.urlopen
+    self.old_ZipFile = swarm_trigger_step.zipfile.ZipFile
+
+    swarm_trigger_step.time.sleep = lambda x: None
     swarm_trigger_step.zipfile.ZipFile = MockZipFile
 
   def tearDown(self):
-    swarm_trigger_step.zipfile.ZipFile = self.old_ZipFile
+    swarm_trigger_step.time.sleep = self.old_sleep
     swarm_trigger_step.urllib2.urlopen = self.old_urlopen
+    swarm_trigger_step.zipfile.ZipFile = self.old_ZipFile
 
   def test_basic_manifest(self):
     options = Options(shards=2)
@@ -176,6 +185,11 @@ class ManifestTest(unittest.TestCase):
         0,
         swarm_trigger_step.ProcessManifest(
             FILE_HASH, TEST_NAME, options.shards, '*', options))
+
+  def test_url_open_with_errors(self):
+    swarm_trigger_step.urllib2.urlopen = MockUrlOpenServerErrors
+
+    self.assertEqual(None, swarm_trigger_step.UrlOpen('http://fake.com'))
 
 
 if __name__ == '__main__':
