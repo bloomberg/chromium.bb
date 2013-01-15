@@ -13,6 +13,7 @@ class PrefServiceSyncable;
 // The Web UI handler for chrome://signin.
 class SyncPromoUI : public content::WebUIController {
  public:
+  // Please keep this in sync with enums in sync_promo_trial.cc.
   enum Source {
     SOURCE_START_PAGE = 0, // This must be first.
     SOURCE_NTP_LINK,
