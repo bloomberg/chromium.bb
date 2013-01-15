@@ -418,12 +418,6 @@ makes it possible for us to get a reference to the
 <code>TestShellRequestContext</code> from the
 <code>SimpleResourceLoaderBridge</code>.</p>
 
-<h3><a name="feature-fontSmoothing">feature/fontSmoothing</a> (Calum Robinson; D36278764)</h3>
-<p>This is a feature we needed in our product, so it is unlikely that we will
-send this upstream.</p>
-<p>This branch adds an API to control the font smoothing selection because the
-product relies on its own custom setting and not the OS default.</p>
-
 <h3><a name="feature-indentOutdentBB">feature/indentOutdentBB</a> (Shezan Baig; D36805707, D32177325)</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
 send this upstream.</p>
@@ -523,6 +517,8 @@ system settings), the app does not pick up the new setting.</p>
 ticket, however, this is not so much of an issue for Chrome because Chrome just
 creates new processes for each tab, so it picks up the new setting that
 way.</p>
+<p>This branch also adds a way to set these flags externally, because our
+product has an option to bypass the system default setting.</p>
 
 <h3><a name="feature-tableEditing">feature/tableEditing</a> (Shezan Baig; D37611655)</h3>
 <p>TODO</p>
@@ -599,6 +595,10 @@ available upstream.</p>
 <h3><a name="feature-disableV8SetAccessCheckCallbacks">feature/disableV8SetAccessCheckCallbacks</a> (Tianyin Zhang)</h3>
 <p>Retired in favor of <code><a
         href="#bugfix-nonWindowContexts">bugfix/nonWindowContexts</a></code></p>
+
+<h3><a name="feature-fontSmoothing">feature/fontSmoothing</a> (Calum Robinson; D36278764)</h3>
+<p>Retired in favor of <code><a
+        href="#feature-resetCachedGDISettings">feature/resetCachedGDISettings</a></code></p>
 
 <h3><a name="feature-instrumentRandomVirtualAlloc">feature/instrumentRandomVirtualAlloc</a> (Tianyin Zhang)</h3>
 <p>Retired in favor of <code><a
