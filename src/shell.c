@@ -2664,7 +2664,6 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 		break;
 	default:
 		ws = get_current_workspace(shell);
-		lower_fullscreen_layer(shell);
 		weston_surface_restack(es, &ws->layer.surface_list);
 		break;
 	}
