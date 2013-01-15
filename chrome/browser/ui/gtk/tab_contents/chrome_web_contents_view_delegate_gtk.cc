@@ -155,6 +155,10 @@ void ChromeWebContentsViewDelegateGtk::ShowContextMenu(
       new RenderViewContextMenuGtk(web_contents_, params, view));
   context_menu_->Init();
 
+  // Don't show empty menus.
+  if (context_menu_->menu_model().GetItemCount() == 0)
+    return;
+
   gfx::Rect bounds;
   web_contents_->GetView()->GetContainerBounds(&bounds);
   gfx::Point point = bounds.origin();
