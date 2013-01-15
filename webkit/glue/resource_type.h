@@ -6,7 +6,7 @@
 #define WEBKIT_GLUE_RESOURCE_TYPE_H__
 
 #include "base/basictypes.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 class ResourceType {

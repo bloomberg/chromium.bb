@@ -6,7 +6,7 @@
 #define WEBCLIPBOARD_IMPL_H_
 
 #include "base/compiler_specific.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebClipboard.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebClipboard.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "webkit/glue/webkit_glue_export.h"
 

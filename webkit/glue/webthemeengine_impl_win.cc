@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "ui/native_theme/native_theme.h"
 
 using WebKit::WebCanvas;

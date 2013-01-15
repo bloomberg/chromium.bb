@@ -16,7 +16,7 @@
 #include "base/nullable_string16.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebReferrerPolicy.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebReferrerPolicy.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 struct IDataObject;

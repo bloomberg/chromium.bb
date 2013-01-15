@@ -5,7 +5,7 @@
 #ifndef WEBKIT_GLUE_WEBTHEMEENGINE_IMPL_MAC_H_
 #define WEBKIT_GLUE_WEBTHEMEENGINE_IMPL_MAC_H_
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/mac/WebThemeEngine.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/mac/WebThemeEngine.h"
 
 namespace webkit_glue {
 

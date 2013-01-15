@@ -52,7 +52,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURLResponse.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 namespace WebKit {

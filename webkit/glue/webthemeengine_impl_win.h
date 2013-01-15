@@ -5,7 +5,7 @@
 #ifndef WEBKIT_GLUE_WEBTHEMEENGINE_IMPL_WIN_H_
 #define WEBKIT_GLUE_WEBTHEMEENGINE_IMPL_WIN_H_
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/win/WebThemeEngine.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/win/WebThemeEngine.h"
 
 namespace webkit_glue {
 

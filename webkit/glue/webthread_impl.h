@@ -8,7 +8,7 @@
 
 #include "base/threading/thread.h"
 #include "base/memory/scoped_ptr.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebThread.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebThread.h"
 #include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {

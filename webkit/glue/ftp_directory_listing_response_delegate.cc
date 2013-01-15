@@ -17,8 +17,8 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/ftp/ftp_directory_listing_parser.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURLLoaderClient.h"
 #include "webkit/glue/weburlresponse_extradata_impl.h"
 
 using net::FtpDirectoryListingEntry;
