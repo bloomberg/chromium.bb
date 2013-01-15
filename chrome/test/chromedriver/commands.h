@@ -70,4 +70,23 @@ Status ExecuteGetTitle(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+// Search for an element on the page, starting from the document root.
+Status ExecuteFindElement(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Search for multiple elements on the page, starting from the document root.
+Status ExecuteFindElements(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Configure the amount of time that a particular type of operation can execute
+// for before they are aborted and a timeout error is returned to the client.
+Status ExecuteSetTimeout(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 #endif  // CHROME_TEST_CHROMEDRIVER_COMMANDS_H_

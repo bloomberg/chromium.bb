@@ -7,9 +7,15 @@ import json
 
 class ChromeDriverException(Exception):
   pass
+class NoSuchElement(ChromeDriverException):
+  pass
 class UnknownCommand(ChromeDriverException):
   pass
 class UnknownError(ChromeDriverException):
+  pass
+class XPathLookupError(ChromeDriverException):
+  pass
+class InvalidSelector(ChromeDriverException):
   pass
 class SessionNotCreatedException(ChromeDriverException):
   pass
@@ -18,8 +24,11 @@ class NoSuchSession(ChromeDriverException):
 
 def _ExceptionForResponse(response):
   exception_class_map = {
+    7: NoSuchElement,
     9: UnknownCommand,
     13: UnknownError,
+    19: XPathLookupError,
+    32: InvalidSelector,
     33: SessionNotCreatedException,
     100: NoSuchSession
   }
@@ -86,6 +95,18 @@ class ChromeDriver(object):
 
   def GetTitle(self):
     return self._ExecuteSessionCommand('getTitle')
+
+  def FindElement(self, strategy, target):
+    return self._ExecuteSessionCommand(
+         'findElement', {'using': strategy, 'value': target})
+
+  def FindElements(self, strategy, target):
+    return self._ExecuteSessionCommand(
+         'findElements', {'using': strategy, 'value': target})
+
+  def SetTimeout(self, type, timeout):
+    return self._ExecuteSessionCommand(
+         'setTimeout', {'type' : type, 'ms': timeout})
 
   def Quit(self):
     """Quits the browser and ends the session."""

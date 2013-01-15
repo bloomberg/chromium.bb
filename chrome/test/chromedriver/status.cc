@@ -11,10 +11,16 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
   switch (code) {
     case kOk:
       return "ok";
+    case kNoSuchElement:
+      return "no such element";
     case kUnknownCommand:
       return "unknown command";
     case kUnknownError:
       return "unknown error";
+    case kXPathLookupError:
+      return "xpath lookup error";
+    case kInvalidSelector:
+      return "invalid selector";
     case kSessionNotCreatedException:
       return "session not created exception";
     case kNoSuchSession:

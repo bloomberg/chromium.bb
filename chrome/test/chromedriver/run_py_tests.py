@@ -88,6 +88,16 @@ class ChromeDriverTest(unittest.TestCase):
     self.assertEquals(1, self._driver.ExecuteScript(script))
     self.assertEqual('title', self._driver.GetTitle())
 
+  def testFindElement(self):
+    self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div>a</div><div>b</div>";')
+    self.assertEqual(1, len(self._driver.FindElement('tag name', 'div')))
+
+  def testFindElements(self):
+    self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div>a</div><div>b</div>";')
+    self.assertEqual(2, len(self._driver.FindElements('tag name', 'div')))
+
 
 if __name__ == '__main__':
   parser = optparse.OptionParser()

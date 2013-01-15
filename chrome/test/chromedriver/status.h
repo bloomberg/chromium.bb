@@ -10,8 +10,11 @@
 // WebDriver standard status codes.
 enum StatusCode {
   kOk = 0,
+  kNoSuchElement = 7,
   kUnknownCommand = 9,
   kUnknownError = 13,
+  kXPathLookupError = 19,
+  kInvalidSelector = 32,
   kSessionNotCreatedException = 33,
   // Chrome-specific status codes.
   kNoSuchSession = 100,
