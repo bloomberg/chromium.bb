@@ -376,6 +376,7 @@ void TaskManagerView::Init() {
   columns_.back().sortable = true;
   columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_FPS_COLUMN,
                                      ui::TableColumn::RIGHT, -1, 0));
+  columns_.back().sortable = true;
   columns_.push_back(ui::TableColumn(IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN,
                                      ui::TableColumn::RIGHT, -1, 0));
   columns_.back().sortable = true;

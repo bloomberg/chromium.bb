@@ -103,11 +103,12 @@ TEST_F(TaskManagerWindowControllerTest, SelectionAdaptsToSorting) {
   ASSERT_EQ(2, [controller numberOfRowsInTableView:table]);
 
   // Select row 0 in the table (corresponds to row 1 in the model).
-  [table  selectRowIndexes:[NSIndexSet indexSetWithIndex:0]
-      byExtendingSelection:NO];
+  [table selectRowIndexes:[NSIndexSet indexSetWithIndex:0]
+     byExtendingSelection:NO];
 
   // Change the name of resource2 so that it becomes row 1 in the table.
   resource2.title_ = UTF8ToUTF16("zzz");
+  bridge->task_manager()->model()->Refresh();
   bridge->OnItemsChanged(1, 1);
 
   // Check that the selection has moved to row 1.

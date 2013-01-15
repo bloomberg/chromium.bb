@@ -64,9 +64,32 @@ const FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
 
 class TaskManagerBrowserTest : public ExtensionBrowserTest {
  public:
+  TaskManagerBrowserTest() {}
+  virtual ~TaskManagerBrowserTest() {}
+
   TaskManagerModel* model() const {
     return TaskManager::GetInstance()->model();
   }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    ExtensionBrowserTest::SetUpOnMainThread();
+
+    EXPECT_EQ(0, model()->ResourceCount());
+
+    EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
+
+    // Show the task manager. This populates the model, and helps with debugging
+    // (you see the task manager).
+    browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
+
+    // New Tab Page.
+    TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
+  }
+
+  void Refresh() {
+    model()->Refresh();
+  }
+
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
@@ -78,6 +101,9 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
     command_line->AppendSwitch(switches::kDisableGpuProcessPrelaunch);
     command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TaskManagerBrowserTest);
 };
 
 #if defined(OS_MACOSX) || defined(OS_LINUX)
@@ -88,19 +114,10 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
 
 // Regression test for http://crbug.com/13361
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_ShutdownWhileOpen) {
-  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  // Showing task manager handled by SetUp.
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
-  EXPECT_EQ(0, model()->ResourceCount());
-
-  // Show the task manager. This populates the model, and helps with debugging
-  // (you see the task manager).
-  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
-
-  // New Tab Page.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
-
   int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
   // Open a new tab and make sure we notice that.
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
@@ -130,15 +147,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
 #define MAYBE_NoticePanelChanges NoticePanelChanges
 #endif
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_NoticePanelChanges) {
-  EXPECT_EQ(0, model()->ResourceCount());
-
-  // Show the task manager. This populates the model, and helps with debugging
-  // (you see the task manager).
-  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
-
-  // New Tab Page.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
-
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
                     .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
@@ -176,16 +184,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_NoticePanelChanges) {
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeBGContentsChanges) {
-  EXPECT_EQ(0, model()->ResourceCount());
-  EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
-
-  // Show the task manager. This populates the model, and helps with debugging
-  // (you see the task manager).
-  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
-
-  // New Tab Page.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
-
   // Open a new background contents and make sure we notice that.
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                      FilePath(kTitle1File)));
@@ -207,15 +205,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeBGContentsChanges) {
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillBGContents) {
-  EXPECT_EQ(0, model()->ResourceCount());
-  EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
-
-  // Show the task manager. This populates the model, and helps with debugging
-  // (you see the task manager).
-  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
-
-  // New Tab Page.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
   int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
 
   // Open a new background contents and make sure we notice that.
@@ -264,14 +253,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillBGContents) {
 #define MAYBE_KillPanelExtension KillPanelExtension
 #endif
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_KillPanelExtension) {
-  EXPECT_EQ(0, model()->ResourceCount());
-
-  // Show the task manager. This populates the model, and helps with debugging
-  // (you see the task manager).
-  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
-
-  // New Tab Page.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
   int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
 
   ASSERT_TRUE(LoadExtension(
@@ -302,16 +283,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_KillPanelExtension) {
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionChanges) {
-  EXPECT_EQ(0, model()->ResourceCount());
-  EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
-
-  // Show the task manager. This populates the model, and helps with debugging
-  // (you see the task manager).
-  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
-
-  // New Tab Page.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
-
   // Loading an extension with a background page should result in a new
   // resource being created for it.
   ASSERT_TRUE(LoadExtension(
@@ -326,12 +297,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionChanges) {
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTabs) {
-  // Show the task manager. This populates the model, and helps with debugging
-  // (you see the task manager).
-  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
-  // Wait for loading of task manager.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
-
   int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
@@ -372,12 +337,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTabs) {
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabs) {
-  // Show the task manager. This populates the model, and helps with debugging
-  // (you see the task manager).
-  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
-  // Wait for loading of task manager.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
-
   int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("packaged_app")));
@@ -411,12 +370,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabs) {
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabs) {
-  // Show the task manager. This populates the model, and helps with debugging
-  // (you see the task manager).
-  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
-
-  // New Tab Page.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
   int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
 
   // The app under test acts on URLs whose host is "localhost",
@@ -438,6 +391,9 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabs) {
   AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
   observer.Wait();
 
+  // Force the TaskManager to query the title.
+  Refresh();
+
   // Check that the third entry's title starts with "Tab:".
   string16 tab_prefix = l10n_util::GetStringFUTF16(
       IDS_TASK_MANAGER_TAB_PREFIX, string16());
@@ -448,11 +404,15 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabs) {
   // since it hasn't changed to an app process yet.
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("api_test").AppendASCII("app_process")));
+  // Force the TaskManager to query the title.
+  Refresh();
   ASSERT_TRUE(StartsWith(model()->GetResourceTitle(resource_count),
                          tab_prefix, true));
 
   // Now reload and check that the last entry's title now starts with "App:".
   ui_test_utils::NavigateToURL(browser(), url);
+  // Force the TaskManager to query the title.
+  Refresh();
   string16 app_prefix = l10n_util::GetStringFUTF16(
       IDS_TASK_MANAGER_APP_PREFIX, string16());
   ASSERT_TRUE(StartsWith(model()->GetResourceTitle(resource_count),
@@ -462,19 +422,15 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabs) {
   DisableExtension(last_loaded_extension_id_);
   ui_test_utils::NavigateToURL(browser(), url);
 
+  // Force the TaskManager to query the title.
+  Refresh();
+
   // The third entry's title should be back to a normal tab.
   ASSERT_TRUE(StartsWith(model()->GetResourceTitle(resource_count),
                          tab_prefix, true));
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_KillExtension) {
-  EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
-  // Show the task manager. This populates the model, and helps with debugging
-  // (you see the task manager).
-  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
-  // Wait for loading of task manager.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
-
   int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
 
   ASSERT_TRUE(LoadExtension(
@@ -498,12 +454,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_KillExtension) {
 // Disabled, http://crbug.com/66957.
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
                        DISABLED_KillExtensionAndReload) {
-  // Show the task manager. This populates the model, and helps with debugging
-  // (you see the task manager).
-  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
-  // Wait for loading of task manager.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
-
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("common").AppendASCII("background_page")));
 
@@ -541,12 +491,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
 
 // Regression test for http://crbug.com/18693.
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_ReloadExtension) {
-  // Show the task manager. This populates the model, and helps with debugging
-  // (you see the task manager).
-  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
-  // Wait for loading of task manager.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
-
   int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
   LOG(INFO) << "loading extension";
   ASSERT_TRUE(LoadExtension(
@@ -587,14 +531,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_ReloadExtension) {
 // Crashy, http://crbug.com/42301.
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
                        DISABLED_PopulateWebCacheFields) {
-  EXPECT_EQ(0, model()->ResourceCount());
-
-  // Show the task manager. This populates the model, and helps with debugging
-  // (you see the task manager).
-  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
-
-  // New Tab Page.
-  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
   int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
 
   // Open a new tab and make sure we notice that.

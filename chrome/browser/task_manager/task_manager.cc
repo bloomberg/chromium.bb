@@ -74,6 +74,28 @@ int ValueCompare(T value1, T value2) {
   return 1;
 }
 
+// Used when one or both of the results to compare are unavailable.
+int OrderUnavailableValue(bool v1, bool v2) {
+  if (!v1 && !v2)
+    return 0;
+  return v1 ? 1 : -1;
+}
+
+// Used by TaskManagerModel::CompareValues(). See it for details of return
+// value.
+template <class T>
+int ValueCompareMember(const TaskManagerModel* model,
+                       bool (TaskManagerModel::*f)(int, T*) const,
+                       int row1,
+                       int row2) {
+  T value1;
+  T value2;
+  bool value1_valid = (model->*f)(row1, &value1);
+  bool value2_valid = (model->*f)(row2, &value2);
+  return value1_valid && value2_valid ? ValueCompare(value1, value2) :
+      OrderUnavailableValue(value1_valid, value2_valid);
+}
+
 string16 FormatStatsSize(const WebKit::WebCache::ResourceTypeStat& stat) {
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT,
       ui::FormatBytesWithUnits(stat.size, ui::DATA_UNITS_KIBIBYTE, false),
@@ -100,6 +122,43 @@ bool IsSharedByGroup(int col_id) {
 }
 
 }  // namespace
+
+TaskManagerModel::PerResourceValues::PerResourceValues()
+    : is_title_valid(false),
+      is_profile_name_valid(false),
+      network_usage(0),
+      is_process_id_valid(false),
+      process_id(0),
+      is_goats_teleported_valid(false),
+      goats_teleported(0),
+      is_webcore_stats_valid(false),
+      is_fps_valid(false),
+      fps(0),
+      is_sqlite_memory_bytes_valid(false),
+      sqlite_memory_bytes(0),
+      is_v8_memory_valid(false),
+      v8_memory_allocated(0),
+      v8_memory_used(0) {
+}
+
+TaskManagerModel::PerResourceValues::~PerResourceValues() {
+}
+
+TaskManagerModel::PerProcessValues::PerProcessValues()
+    : is_cpu_usage_valid(false),
+      cpu_usage(0),
+      is_private_and_shared_valid(false),
+      private_bytes(0),
+      shared_bytes(0),
+      is_physical_memory_valid(false),
+      physical_memory(0),
+      is_video_memory_valid(false),
+      video_memory(0),
+      video_memory_has_duplicates(false) {
+}
+
+TaskManagerModel::PerProcessValues::~PerProcessValues() {
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerModel class
@@ -155,8 +214,7 @@ void TaskManagerModel::RemoveObserver(TaskManagerModelObserver* observer) {
 }
 
 int TaskManagerModel::GetResourceUniqueId(int index) const {
-  CHECK_LT(index, ResourceCount());
-  return resources_[index]->get_unique_id();
+  return GetResource(index)->get_unique_id();
 }
 
 int TaskManagerModel::GetResourceIndexByUniqueId(const int unique_id) const {
@@ -227,19 +285,26 @@ string16 TaskManagerModel::GetResourceById(int index, int col_id) const {
   }
 }
 
-string16 TaskManagerModel::GetResourceTitle(int index) const {
-  CHECK_LT(index, ResourceCount());
-  return resources_[index]->GetTitle();
+const string16& TaskManagerModel::GetResourceTitle(int index) const {
+  PerResourceValues& values = GetPerResourceValues(index);
+  if (!values.is_title_valid) {
+    values.is_title_valid = true;
+    values.title = GetResource(index)->GetTitle();
+  }
+  return values.title;
 }
 
-string16 TaskManagerModel::GetResourceProfileName(int index) const {
-  CHECK_LT(index, ResourceCount());
-  return resources_[index]->GetProfileName();
+const string16& TaskManagerModel::GetResourceProfileName(int index) const {
+  PerResourceValues& values(GetPerResourceValues(index));
+  if (!values.is_profile_name_valid) {
+    values.is_profile_name_valid = true;
+    values.profile_name = GetResource(index)->GetProfileName();
+  }
+  return values.profile_name;
 }
 
 int64 TaskManagerModel::GetNetworkUsage(int index) const {
-  CHECK_LT(index, ResourceCount());
-  return GetNetworkUsage(resources_[index]);
+  return GetNetworkUsage(GetResource(index));
 }
 
 string16 TaskManagerModel::GetResourceNetworkUsage(int index) const {
@@ -254,12 +319,10 @@ string16 TaskManagerModel::GetResourceNetworkUsage(int index) const {
 }
 
 double TaskManagerModel::GetCPUUsage(int index) const {
-  CHECK_LT(index, ResourceCount());
-  return GetCPUUsage(resources_[index]);
+  return GetCPUUsage(GetResource(index));
 }
 
 string16 TaskManagerModel::GetResourceCPUUsage(int index) const {
-  CHECK_LT(index, ResourceCount());
   return UTF8ToUTF16(base::StringPrintf(
 #if defined(OS_MACOSX)
       // Activity Monitor shows %cpu with one decimal digit -- be
@@ -268,7 +331,7 @@ string16 TaskManagerModel::GetResourceCPUUsage(int index) const {
 #else
       "%.0f",
 #endif
-      GetCPUUsage(resources_[index])));
+      GetCPUUsage(GetResource(index))));
 }
 
 string16 TaskManagerModel::GetResourcePrivateMemory(int index) const {
@@ -291,14 +354,17 @@ string16 TaskManagerModel::GetResourcePhysicalMemory(int index) const {
   return GetMemCellText(phys_mem);
 }
 
-int TaskManagerModel::GetProcessId(int index) const {
-  CHECK_LT(index, ResourceCount());
-  return base::GetProcId(resources_[index]->GetProcess());
+base::ProcessId TaskManagerModel::GetProcessId(int index) const {
+  PerResourceValues& values(GetPerResourceValues(index));
+  if (!values.is_process_id_valid) {
+    values.is_process_id_valid = true;
+    values.process_id = base::GetProcId(GetResource(index)->GetProcess());
+  }
+  return values.process_id;
 }
 
 base::ProcessHandle TaskManagerModel::GetProcess(int index) const {
-  CHECK_LT(index, ResourceCount());
-  return resources_[index]->GetProcess();
+  return GetResource(index)->GetProcess();
 }
 
 string16 TaskManagerModel::GetResourceProcessId(int index) const {
@@ -312,85 +378,71 @@ string16 TaskManagerModel::GetResourceGoatsTeleported(int index) const {
 
 string16 TaskManagerModel::GetResourceWebCoreImageCacheSize(
     int index) const {
-  CHECK_LT(index, ResourceCount());
-  if (!resources_[index]->ReportsCacheStats())
+  if (!CacheWebCoreStats(index))
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
-  const WebKit::WebCache::ResourceTypeStats stats(
-      resources_[index]->GetWebCoreCacheStats());
-  return FormatStatsSize(stats.images);
+  return FormatStatsSize(GetPerResourceValues(index).webcore_stats.images);
 }
 
 string16 TaskManagerModel::GetResourceWebCoreScriptsCacheSize(
     int index) const {
-  CHECK_LT(index, ResourceCount());
-  if (!resources_[index]->ReportsCacheStats())
+  if (!CacheWebCoreStats(index))
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
-  const WebKit::WebCache::ResourceTypeStats stats(
-      resources_[index]->GetWebCoreCacheStats());
-  return FormatStatsSize(stats.scripts);
+  return FormatStatsSize(GetPerResourceValues(index).webcore_stats.scripts);
 }
 
 string16 TaskManagerModel::GetResourceWebCoreCSSCacheSize(
     int index) const {
-  CHECK_LT(index, ResourceCount());
-  if (!resources_[index]->ReportsCacheStats())
+  if (!CacheWebCoreStats(index))
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
-  const WebKit::WebCache::ResourceTypeStats stats(
-      resources_[index]->GetWebCoreCacheStats());
-  return FormatStatsSize(stats.cssStyleSheets);
+  return FormatStatsSize(
+      GetPerResourceValues(index).webcore_stats.cssStyleSheets);
 }
 
 string16 TaskManagerModel::GetResourceVideoMemory(int index) const {
-  CHECK_LT(index, ResourceCount());
-
-  bool result;
   size_t video_memory;
   bool has_duplicates;
-  result = GetVideoMemory(index, &video_memory, &has_duplicates);
-
-  if (!result || !video_memory) {
+  if (!GetVideoMemory(index, &video_memory, &has_duplicates) || !video_memory)
     return ASCIIToUTF16("N/A");
-  } else if (has_duplicates) {
+  if (has_duplicates) {
     return ASCIIToUTF16("(") +
-           GetMemCellText(video_memory) +
-           ASCIIToUTF16(")");
-  } else {
-    return GetMemCellText(video_memory);
+        GetMemCellText(video_memory) +
+        ASCIIToUTF16(")");
   }
+  return GetMemCellText(video_memory);
 }
 
 string16 TaskManagerModel::GetResourceFPS(
     int index) const {
-  CHECK_LT(index, ResourceCount());
-  if (!resources_[index]->ReportsFPS())
+  float fps = 0;
+  if (!GetFPS(index, &fps))
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
-  double fps = resources_[index]->GetFPS();
   return UTF8ToUTF16(base::StringPrintf("%.0f", fps));
 }
 
 string16 TaskManagerModel::GetResourceSqliteMemoryUsed(int index) const {
-  CHECK_LT(index, ResourceCount());
-  if (!resources_[index]->ReportsSqliteMemoryUsed())
+  size_t bytes = 0;
+  if (!GetSqliteMemoryUsedBytes(index, &bytes))
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
-  return GetMemCellText(resources_[index]->SqliteMemoryUsedBytes());
+  return GetMemCellText(bytes);
 }
 
 string16 TaskManagerModel::GetResourceV8MemoryAllocatedSize(
     int index) const {
-  if (!resources_[index]->ReportsV8MemoryStats())
+  size_t memory_allocated = 0, memory_used = 0;
+  if (!GetV8MemoryUsed(index, &memory_used) ||
+      !GetV8Memory(index, &memory_allocated))
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT,
-      ui::FormatBytesWithUnits(resources_[index]->GetV8MemoryAllocated(),
+      ui::FormatBytesWithUnits(memory_allocated,
                                ui::DATA_UNITS_KIBIBYTE,
                                false),
-      ui::FormatBytesWithUnits(resources_[index]->GetV8MemoryUsed(),
+      ui::FormatBytesWithUnits(memory_used,
                                ui::DATA_UNITS_KIBIBYTE,
                                false));
 }
 
 bool TaskManagerModel::IsResourceFirstInGroup(int index) const {
-  CHECK_LT(index, ResourceCount());
-  TaskManager::Resource* resource = resources_[index];
+  TaskManager::Resource* resource = GetResource(index);
   GroupMap::const_iterator iter = group_map_.find(resource->GetProcess());
   DCHECK(iter != group_map_.end());
   const ResourceList* group = iter->second;
@@ -398,8 +450,7 @@ bool TaskManagerModel::IsResourceFirstInGroup(int index) const {
 }
 
 bool TaskManagerModel::IsResourceLastInGroup(int index) const {
-  CHECK_LT(index, ResourceCount());
-  TaskManager::Resource* resource = resources_[index];
+  TaskManager::Resource* resource = GetResource(index);
   GroupMap::const_iterator iter = group_map_.find(resource->GetProcess());
   DCHECK(iter != group_map_.end());
   const ResourceList* group = iter->second;
@@ -407,13 +458,11 @@ bool TaskManagerModel::IsResourceLastInGroup(int index) const {
 }
 
 bool TaskManagerModel::IsBackgroundResource(int index) const {
-  CHECK_LT(index, ResourceCount());
-  return resources_[index]->IsBackground();
+  return GetResource(index)->IsBackground();
 }
 
 gfx::ImageSkia TaskManagerModel::GetResourceIcon(int index) const {
-  CHECK_LT(index, ResourceCount());
-  gfx::ImageSkia icon = resources_[index]->GetIcon();
+  gfx::ImageSkia icon = GetResource(index)->GetIcon();
   if (!icon.isNull())
     return icon;
 
@@ -424,8 +473,7 @@ gfx::ImageSkia TaskManagerModel::GetResourceIcon(int index) const {
 
 TaskManagerModel::GroupRange
 TaskManagerModel::GetGroupRangeForResource(int index) const {
-  CHECK_LT(index, ResourceCount());
-  TaskManager::Resource* resource = resources_[index];
+  TaskManager::Resource* resource = GetResource(index);
   GroupMap::const_iterator group_iter =
       group_map_.find(resource->GetProcess());
   DCHECK(group_iter != group_map_.end());
@@ -435,7 +483,7 @@ TaskManagerModel::GetGroupRangeForResource(int index) const {
     return std::make_pair(index, 1);
   } else {
     for (int i = index; i >= 0; --i) {
-      if (resources_[i] == (*group)[0])
+      if (GetResource(i) == (*group)[0])
         return std::make_pair(i, group->size());
     }
     NOTREACHED();
@@ -477,6 +525,7 @@ int TaskManagerModel::GetResourceIndexForGroup(int group_index,
 
 int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
   CHECK(row1 < ResourceCount() && row2 < ResourceCount());
+  // TODO(sky): convert to switch.
   if (col_id == IDS_TASK_MANAGER_TASK_COLUMN) {
     // Let's do the default, string compare on the resource title.
     static icu::Collator* collator = NULL;
@@ -488,8 +537,8 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
         NOTREACHED();
       }
     }
-    string16 title1 = GetResourceTitle(row1);
-    string16 title2 = GetResourceTitle(row2);
+    const string16& title1 = GetResourceTitle(row1);
+    const string16& title2 = GetResourceTitle(row2);
     UErrorCode compare_status = U_ZERO_ERROR;
     UCollationResult compare_result = collator->compare(
         static_cast<const UChar*>(title1.c_str()),
@@ -500,112 +549,96 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
     DCHECK(U_SUCCESS(compare_status));
     return compare_result;
   } else if (col_id == IDS_TASK_MANAGER_PROFILE_NAME_COLUMN) {
-    string16 profile1 = GetResourceProfileName(row1);
-    string16 profile2 = GetResourceProfileName(row2);
+    const string16& profile1 = GetResourceProfileName(row1);
+    const string16& profile2 = GetResourceProfileName(row2);
     return profile1.compare(0, profile1.length(), profile2, 0,
                             profile2.length());
   } else if (col_id == IDS_TASK_MANAGER_NET_COLUMN) {
-    return ValueCompare<int64>(GetNetworkUsage(resources_[row1]),
-                               GetNetworkUsage(resources_[row2]));
+    return ValueCompare(GetNetworkUsage(GetResource(row1)),
+                        GetNetworkUsage(GetResource(row2)));
   } else if (col_id == IDS_TASK_MANAGER_CPU_COLUMN) {
-    return ValueCompare<double>(GetCPUUsage(resources_[row1]),
-                                GetCPUUsage(resources_[row2]));
+    return ValueCompare(GetCPUUsage(GetResource(row1)),
+                        GetCPUUsage(GetResource(row2)));
   } else if (col_id == IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN) {
-    size_t value1;
-    size_t value2;
-    if (!GetPrivateMemory(row1, &value1) || !GetPrivateMemory(row2, &value2))
-      return 0;
-    return ValueCompare<size_t>(value1, value2);
+    return ValueCompareMember(
+        this, &TaskManagerModel::GetPrivateMemory, row1, row2);
   } else if (col_id == IDS_TASK_MANAGER_SHARED_MEM_COLUMN) {
-    size_t value1;
-    size_t value2;
-    if (!GetSharedMemory(row1, &value1) || !GetSharedMemory(row2, &value2))
-      return 0;
-    return ValueCompare<size_t>(value1, value2);
+    return ValueCompareMember(
+        this, &TaskManagerModel::GetSharedMemory, row1, row2);
   } else if (col_id == IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN) {
-    size_t value1;
-    size_t value2;
-    if (!GetPhysicalMemory(row1, &value1) ||
-        !GetPhysicalMemory(row2, &value2))
-      return 0;
-    return ValueCompare<size_t>(value1, value2);
+    return ValueCompareMember(
+        this, &TaskManagerModel::GetPhysicalMemory, row1, row2);
   } else if (col_id == IDS_TASK_MANAGER_PROCESS_ID_COLUMN) {
-    int proc1_id = base::GetProcId(resources_[row1]->GetProcess());
-    int proc2_id = base::GetProcId(resources_[row2]->GetProcess());
-    return ValueCompare<int>(proc1_id, proc2_id);
+    base::ProcessId proc1_id = GetProcessId(row1);
+    base::ProcessId proc2_id = GetProcessId(row2);
+    return ValueCompare(proc1_id, proc2_id);
   } else if (col_id == IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN ||
              col_id == IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN ||
              col_id == IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN) {
-    WebKit::WebCache::ResourceTypeStats stats1 = { { 0 } };
-    WebKit::WebCache::ResourceTypeStats stats2 = { { 0 } };
-    if (resources_[row1]->ReportsCacheStats())
-      stats1 = resources_[row1]->GetWebCoreCacheStats();
-    if (resources_[row2]->ReportsCacheStats())
-      stats2 = resources_[row2]->GetWebCoreCacheStats();
-    if (IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN == col_id)
-      return ValueCompare<size_t>(stats1.images.size, stats2.images.size);
-    if (IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN == col_id)
-      return ValueCompare<size_t>(stats1.scripts.size, stats2.scripts.size);
-    DCHECK_EQ(IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN, col_id);
-    return ValueCompare<size_t>(stats1.cssStyleSheets.size,
-                                stats2.cssStyleSheets.size);
+    bool row1_stats_valid = CacheWebCoreStats(row1);
+    bool row2_stats_valid = CacheWebCoreStats(row2);
+    if (row1_stats_valid && row2_stats_valid) {
+      const WebKit::WebCache::ResourceTypeStats& stats1(
+          GetPerResourceValues(row1).webcore_stats);
+      const WebKit::WebCache::ResourceTypeStats& stats2(
+          GetPerResourceValues(row2).webcore_stats);
+      switch (col_id) {
+        case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
+          return ValueCompare(stats1.images.size, stats2.images.size);
+        case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
+          return ValueCompare(stats1.scripts.size, stats2.scripts.size);
+        case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
+          return ValueCompare(stats1.cssStyleSheets.size,
+                              stats2.cssStyleSheets.size);
+        default:
+          NOTREACHED();
+          return 0;
+      }
+    }
+    return OrderUnavailableValue(row1_stats_valid, row2_stats_valid);
   } else if (col_id == IDS_TASK_MANAGER_FPS_COLUMN) {
-    return ValueCompare<float>(resources_[row1]->GetFPS(),
-                               resources_[row2]->GetFPS());
+    return ValueCompareMember(
+        this, &TaskManagerModel::GetFPS, row1, row2);
   } else if (col_id == IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN) {
     size_t value1;
     size_t value2;
     bool has_duplicates;
-    if (!GetVideoMemory(row1, &value1, &has_duplicates)) value1 = 0;
-    if (!GetVideoMemory(row2, &value2, &has_duplicates)) value2 = 0;
-    return ValueCompare<size_t>(value1, value2);
+    bool value1_valid = GetVideoMemory(row1, &value1, &has_duplicates);
+    bool value2_valid = GetVideoMemory(row2, &value2, &has_duplicates);
+    return value1_valid && value2_valid ? ValueCompare(value1, value2) :
+        OrderUnavailableValue(value1_valid, value2_valid);
   } else if (col_id == IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN) {
-    return ValueCompare<int>(GetGoatsTeleported(row1),
-                             GetGoatsTeleported(row2));
+    return ValueCompare(GetGoatsTeleported(row1), GetGoatsTeleported(row2));
   } else if (col_id == IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN) {
-    size_t value1;
-    size_t value2;
-    bool reports_v8_memory1 = GetV8Memory(row1, &value1);
-    bool reports_v8_memory2 = GetV8Memory(row2, &value2);
-    if (reports_v8_memory1 == reports_v8_memory2)
-      return ValueCompare<size_t>(value1, value2);
-    else
-      return reports_v8_memory1 ? 1 : -1;
+    return ValueCompareMember(
+        this, &TaskManagerModel::GetV8Memory, row1, row2);
+  } else if (col_id == IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN) {
+    return ValueCompareMember(
+        this, &TaskManagerModel::GetSqliteMemoryUsedBytes, row1, row2);
   } else {
     NOTREACHED();
     return 0;
   }
 }
 
-base::ProcessHandle TaskManagerModel::GetResourceProcessHandle(int index)
-    const {
-  CHECK_LT(index, ResourceCount());
-  return resources_[index]->GetProcess();
-}
-
 int TaskManagerModel::GetUniqueChildProcessId(int index) const {
-  CHECK_LT(index, ResourceCount());
-  return resources_[index]->GetUniqueChildProcessId();
+  return GetResource(index)->GetUniqueChildProcessId();
 }
 
 TaskManager::Resource::Type TaskManagerModel::GetResourceType(int index) const {
-  CHECK_LT(index, ResourceCount());
-  return resources_[index]->GetType();
+  return GetResource(index)->GetType();
 }
 
 WebContents* TaskManagerModel::GetResourceWebContents(int index) const {
-  CHECK_LT(index, ResourceCount());
-  return resources_[index]->GetWebContents();
+  return GetResource(index)->GetWebContents();
 }
 
 const extensions::Extension* TaskManagerModel::GetResourceExtension(
     int index) const {
-  CHECK_LT(index, ResourceCount());
-  return resources_[index]->GetExtension();
+  return GetResource(index)->GetExtension();
 }
 
-int64 TaskManagerModel::GetNetworkUsage(TaskManager::Resource* resource)
-    const {
+int64 TaskManagerModel::GetNetworkUsage(TaskManager::Resource* resource) const {
   int64 net_usage = GetNetworkUsageForResource(resource);
   if (net_usage == 0 && !resource->SupportNetworkUsage())
     return -1;
@@ -613,121 +646,125 @@ int64 TaskManagerModel::GetNetworkUsage(TaskManager::Resource* resource)
 }
 
 double TaskManagerModel::GetCPUUsage(TaskManager::Resource* resource) const {
-  CPUUsageMap::const_iterator iter =
-      cpu_usage_map_.find(resource->GetProcess());
-  if (iter == cpu_usage_map_.end())
-    return 0;
-  return iter->second;
+  const PerProcessValues& values(per_process_cache_[resource->GetProcess()]);
+  // Returns 0 if not valid, which is fine.
+  return values.cpu_usage;
 }
 
 bool TaskManagerModel::GetPrivateMemory(int index, size_t* result) const {
-  base::ProcessHandle handle = resources_[index]->GetProcess();
-  MemoryUsageMap::const_iterator iter = memory_usage_map_.find(handle);
-  if (iter == memory_usage_map_.end()) {
-    MemoryUsageEntry usage;
-    if (!GetAndCacheMemoryMetrics(handle, &usage))
-      return false;
-
-    *result = usage.first;
-  } else {
-    *result = iter->second.first;
-  }
-
+  *result = 0;
+  base::ProcessHandle handle = GetResource(index)->GetProcess();
+  if (!CachePrivateAndSharedMemory(handle))
+    return false;
+  *result = per_process_cache_[handle].private_bytes;
   return true;
 }
 
 bool TaskManagerModel::GetSharedMemory(int index, size_t* result) const {
-  base::ProcessHandle handle = resources_[index]->GetProcess();
-  MemoryUsageMap::const_iterator iter = memory_usage_map_.find(handle);
-  if (iter == memory_usage_map_.end()) {
-    MemoryUsageEntry usage;
-    if (!GetAndCacheMemoryMetrics(handle, &usage))
-      return false;
-
-    *result = usage.second;
-  } else {
-    *result = iter->second.second;
-  }
-
+  *result = 0;
+  base::ProcessHandle handle = GetResource(index)->GetProcess();
+  if (!CachePrivateAndSharedMemory(handle))
+    return false;
+  *result = per_process_cache_[handle].shared_bytes;
   return true;
 }
 
 bool TaskManagerModel::GetPhysicalMemory(int index, size_t* result) const {
   *result = 0;
-  base::ProcessMetrics* process_metrics;
-  if (!GetProcessMetricsForRow(index, &process_metrics))
-    return false;
-  base::WorkingSetKBytes ws_usage;
-  if (!process_metrics->GetWorkingSetKBytes(&ws_usage))
-    return false;
 
-  // Memory = working_set.private + working_set.shareable.
-  // We exclude the shared memory.
-  size_t total_bytes = process_metrics->GetWorkingSetSize();
-  total_bytes -= ws_usage.shared * 1024;
-  *result = total_bytes;
+  base::ProcessHandle handle = GetResource(index)->GetProcess();
+  PerProcessValues& values(per_process_cache_[handle]);
+
+  if (!values.is_physical_memory_valid) {
+    base::WorkingSetKBytes ws_usage;
+    MetricsMap::const_iterator iter = metrics_map_.find(handle);
+    if (iter == metrics_map_.end() ||
+        !iter->second->GetWorkingSetKBytes(&ws_usage))
+      return false;
+
+    // Memory = working_set.private + working_set.shareable.
+    // We exclude the shared memory.
+    values.is_physical_memory_valid = true;
+    values.physical_memory = iter->second->GetWorkingSetSize();
+    values.physical_memory -= ws_usage.shared * 1024;
+  }
+  *result = values.physical_memory;
   return true;
 }
 
 bool TaskManagerModel::GetWebCoreCacheStats(
-    int index, WebKit::WebCache::ResourceTypeStats* result) const {
-  if (!resources_[index]->ReportsCacheStats())
+    int index,
+    WebKit::WebCache::ResourceTypeStats* result) const {
+  if (!CacheWebCoreStats(index))
     return false;
-
-  *result = resources_[index]->GetWebCoreCacheStats();
+  *result = GetPerResourceValues(index).webcore_stats;
   return true;
 }
 
-bool TaskManagerModel::GetVideoMemory(
-    int index, size_t* video_memory, bool* has_duplicates) const {
-  TaskManager::Resource* resource = resources_[index];
-  base::ProcessId pid = base::GetProcId(resource->GetProcess());
-  content::GPUVideoMemoryUsageStats::ProcessMap::const_iterator i =
-      video_memory_usage_stats_.process_map.find(pid);
-  if (i == video_memory_usage_stats_.process_map.end()) {
-    *video_memory = 0;
-    *has_duplicates = false;
-    return false;
+bool TaskManagerModel::GetVideoMemory(int index,
+                                      size_t* video_memory,
+                                      bool* has_duplicates) const {
+  *video_memory = 0;
+  *has_duplicates = false;
+
+  base::ProcessId pid = GetProcessId(index);
+  PerProcessValues& values(
+      per_process_cache_[GetResource(index)->GetProcess()]);
+  if (!values.is_video_memory_valid) {
+    content::GPUVideoMemoryUsageStats::ProcessMap::const_iterator i =
+        video_memory_usage_stats_.process_map.find(pid);
+    if (i == video_memory_usage_stats_.process_map.end())
+      return false;
+    values.is_video_memory_valid = true;
+    values.video_memory = i->second.video_memory;
+    values.video_memory_has_duplicates = i->second.has_duplicates;
   }
-  *video_memory = (*i).second.video_memory;
-  *has_duplicates = (*i).second.has_duplicates;
+  *video_memory = values.video_memory;
+  *has_duplicates = values.video_memory_has_duplicates;
   return true;
 }
 
 bool TaskManagerModel::GetFPS(int index, float* result) const {
   *result = 0;
-  if (!resources_[index]->ReportsFPS())
-    return false;
-
-  *result = resources_[index]->GetFPS();
+  PerResourceValues& values(GetPerResourceValues(index));
+  if (!values.is_fps_valid) {
+    if (!GetResource(index)->ReportsFPS())
+      return false;
+    values.is_fps_valid = true;
+    values.fps = GetResource(index)->GetFPS();
+  }
+  *result = values.fps;
   return true;
 }
 
 bool TaskManagerModel::GetSqliteMemoryUsedBytes(
-    int index, size_t* result) const {
+    int index,
+    size_t* result) const {
   *result = 0;
-  if (!resources_[index]->ReportsSqliteMemoryUsed())
-    return false;
-
-  *result = resources_[index]->SqliteMemoryUsedBytes();
+  PerResourceValues& values(GetPerResourceValues(index));
+  if (!values.is_sqlite_memory_bytes_valid) {
+    if (!GetResource(index)->ReportsSqliteMemoryUsed())
+      return false;
+    values.is_sqlite_memory_bytes_valid = true;
+    values.sqlite_memory_bytes = GetResource(index)->SqliteMemoryUsedBytes();
+  }
+  *result = values.sqlite_memory_bytes;
   return true;
 }
 
 bool TaskManagerModel::GetV8Memory(int index, size_t* result) const {
   *result = 0;
-  if (!resources_[index]->ReportsV8MemoryStats())
+  if (!CacheV8Memory(index))
     return false;
-
-  *result = resources_[index]->GetV8MemoryAllocated();
+  *result = GetPerResourceValues(index).v8_memory_allocated;
   return true;
 }
 
 bool TaskManagerModel::GetV8MemoryUsed(int index, size_t* result) const {
   *result = 0;
-  if (!resources_[index]->ReportsV8MemoryStats())
+  if (!CacheV8Memory(index))
     return false;
-
-  *result = resources_[index]->GetV8MemoryUsed();
+  *result = GetPerResourceValues(index).v8_memory_used;
   return true;
 }
 
@@ -737,18 +774,22 @@ bool TaskManagerModel::CanActivate(int index) const {
 }
 
 bool TaskManagerModel::CanInspect(int index) const {
-  CHECK_LT(index, ResourceCount());
-  return resources_[index]->CanInspect();
+  return GetResource(index)->CanInspect();
 }
 
 void TaskManagerModel::Inspect(int index) const {
   CHECK_LT(index, ResourceCount());
-  resources_[index]->Inspect();
+  GetResource(index)->Inspect();
 }
 
 int TaskManagerModel::GetGoatsTeleported(int index) const {
-  int seed = goat_salt_ * (index + 1);
-  return (seed >> 16) & 255;
+  PerResourceValues& values(GetPerResourceValues(index));
+  if (!values.is_goats_teleported_valid) {
+    values.is_goats_teleported_valid = true;
+    values.goats_teleported = goat_salt_ * (index + 1);
+    values.goats_teleported = (values.goats_teleported >> 16) & 255;
+  }
+  return values.goats_teleported;
 }
 
 string16 TaskManagerModel::GetMemCellText(int64 number) const {
@@ -813,7 +854,7 @@ void TaskManagerModel::StartUpdating() {
   if (update_state_ == IDLE) {
       MessageLoop::current()->PostTask(
           FROM_HERE,
-          base::Bind(&TaskManagerModel::Refresh, this));
+          base::Bind(&TaskManagerModel::RefreshCallback, this));
   }
   update_state_ = TASK_PENDING;
 
@@ -845,6 +886,17 @@ void TaskManagerModel::AddResourceProvider(
     TaskManager::ResourceProvider* provider) {
   DCHECK(provider);
   providers_.push_back(provider);
+}
+
+TaskManagerModel::PerResourceValues& TaskManagerModel::GetPerResourceValues(
+    int index) const {
+  return per_resource_cache_[GetResource(index)];
+}
+
+TaskManager::Resource* TaskManagerModel::GetResource(int index) const {
+  CHECK_GE(index, 0);
+  CHECK_LT(index, static_cast<int>(resources_.size()));
+  return resources_[index];
 }
 
 void TaskManagerModel::AddResource(TaskManager::Resource* resource) {
@@ -922,10 +974,6 @@ void TaskManagerModel::RemoveResource(TaskManager::Resource* resource) {
       delete pm_iter->second;
       metrics_map_.erase(process);
     }
-    // And we don't need the CPU usage anymore either.
-    CPUUsageMap::iterator cpu_iter = cpu_usage_map_.find(process);
-    if (cpu_iter != cpu_usage_map_.end())
-      cpu_usage_map_.erase(cpu_iter);
   }
 
   // Prepare to remove the entry from the model list.
@@ -945,9 +993,6 @@ void TaskManagerModel::RemoveResource(TaskManager::Resource* resource) {
       current_byte_count_map_.find(resource);
   if (net_iter != current_byte_count_map_.end())
     current_byte_count_map_.erase(net_iter);
-  net_iter = displayed_network_usage_map_.find(resource);
-  if (net_iter != displayed_network_usage_map_.end())
-    displayed_network_usage_map_.erase(net_iter);
 
   // Notify the table that the contents have changed.
   FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
@@ -964,11 +1009,12 @@ void TaskManagerModel::Clear() {
 
     // Clear the process related info.
     STLDeleteValues(&metrics_map_);
-    cpu_usage_map_.clear();
 
     // Clear the network maps.
     current_byte_count_map_.clear();
-    displayed_network_usage_map_.clear();
+
+    per_resource_cache_.clear();
+    per_process_cache_.clear();
 
     FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
                       OnItemsRemoved(0, size));
@@ -1057,7 +1103,9 @@ class TaskManagerModelGpuDataManagerObserver
 };
 
 void TaskManagerModel::RefreshVideoMemoryUsageStats() {
-  if (pending_video_memory_usage_stats_update_) return;
+  if (pending_video_memory_usage_stats_update_)
+    return;
+
   if (!video_memory_usage_stats_observer_.get()) {
     video_memory_usage_stats_observer_.reset(
         new TaskManagerModelGpuDataManagerObserver());
@@ -1066,7 +1114,7 @@ void TaskManagerModel::RefreshVideoMemoryUsageStats() {
   content::GpuDataManager::GetInstance()->RequestVideoMemoryUsageStatsUpdate();
 }
 
-void TaskManagerModel::Refresh() {
+void TaskManagerModel::RefreshCallback() {
   DCHECK_NE(IDLE, update_state_);
 
   if (update_state_ == STOPPING) {
@@ -1075,45 +1123,52 @@ void TaskManagerModel::Refresh() {
     return;
   }
 
+  Refresh();
+
+  // Schedule the next update.
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&TaskManagerModel::RefreshCallback, this),
+      base::TimeDelta::FromMilliseconds(kUpdateTimeMs));
+}
+
+void TaskManagerModel::Refresh() {
   goat_salt_ = base::RandUint64();
+
+  per_resource_cache_.clear();
+  per_process_cache_.clear();
 
   // Compute the CPU usage values.
   // Note that we compute the CPU usage for all resources (instead of doing it
   // lazily) as process_util::GetCPUUsage() returns the CPU usage since the last
   // time it was called, and not calling it everytime would skew the value the
   // next time it is retrieved (as it would be for more than 1 cycle).
-  cpu_usage_map_.clear();
   for (ResourceList::iterator iter = resources_.begin();
        iter != resources_.end(); ++iter) {
     base::ProcessHandle process = (*iter)->GetProcess();
-    CPUUsageMap::iterator cpu_iter = cpu_usage_map_.find(process);
-    if (cpu_iter != cpu_usage_map_.end())
-      continue;  // Already computed.
+    PerProcessValues& values(per_process_cache_[process]);
+    if (values.is_cpu_usage_valid)
+      continue;
 
+    values.is_cpu_usage_valid = true;
     MetricsMap::iterator metrics_iter = metrics_map_.find(process);
     DCHECK(metrics_iter != metrics_map_.end());
-    cpu_usage_map_[process] = metrics_iter->second->GetCPUUsage();
+    values.cpu_usage = metrics_iter->second->GetCPUUsage();
   }
-
-  // Clear the memory values so they can be querried lazily.
-  memory_usage_map_.clear();
 
   // Send a request to refresh GPU memory consumption values
   RefreshVideoMemoryUsageStats();
 
   // Compute the new network usage values.
-  displayed_network_usage_map_.clear();
   base::TimeDelta update_time =
       base::TimeDelta::FromMilliseconds(kUpdateTimeMs);
   for (ResourceValueMap::iterator iter = current_byte_count_map_.begin();
        iter != current_byte_count_map_.end(); ++iter) {
-    if (update_time > base::TimeDelta::FromSeconds(1)) {
-      int divider = update_time.InSeconds();
-      displayed_network_usage_map_[iter->first] = iter->second / divider;
-    } else {
-      displayed_network_usage_map_[iter->first] = iter->second *
-          (1 / update_time.InSeconds());
-    }
+    PerResourceValues* values = &(per_resource_cache_[iter->first]);
+    if (update_time > base::TimeDelta::FromSeconds(1))
+      values->network_usage = iter->second / update_time.InSeconds();
+    else
+      values->network_usage = iter->second * (1 / update_time.InSeconds());
 
     // Then we reset the current byte count.
     iter->second = 0;
@@ -1129,21 +1184,12 @@ void TaskManagerModel::Refresh() {
     FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
                       OnItemsChanged(0, ResourceCount()));
   }
-
-  // Schedule the next update.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&TaskManagerModel::Refresh, this),
-      base::TimeDelta::FromMilliseconds(kUpdateTimeMs));
 }
 
 int64 TaskManagerModel::GetNetworkUsageForResource(
     TaskManager::Resource* resource) const {
-  ResourceValueMap::const_iterator iter =
-      displayed_network_usage_map_.find(resource);
-  if (iter == displayed_network_usage_map_.end())
-    return 0;
-  return iter->second;
+  // Returns default of 0 if no network usage.
+  return per_resource_cache_[resource].network_usage;
 }
 
 void TaskManagerModel::BytesRead(BytesReadParam param) {
@@ -1246,19 +1292,6 @@ void TaskManagerModel::NotifyBytesRead(const net::URLRequest& request,
                      routing_id, byte_count));
 }
 
-bool TaskManagerModel::GetProcessMetricsForRow(
-    int row, base::ProcessMetrics** proc_metrics) const {
-  DCHECK(row < ResourceCount());
-  *proc_metrics = NULL;
-
-  MetricsMap::const_iterator iter =
-      metrics_map_.find(resources_[row]->GetProcess());
-  if (iter == metrics_map_.end())
-    return false;
-  *proc_metrics = iter->second;
-  return true;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManager class
 ////////////////////////////////////////////////////////////////////////////////
@@ -1314,12 +1347,11 @@ bool TaskManager::IsBrowserProcess(int index) const {
   // If some of the selection is out of bounds, ignore. This may happen when
   // killing a process that manages several pages.
   return index < model_->ResourceCount() &&
-      model_->GetResourceProcessHandle(index) ==
-      base::GetCurrentProcessHandle();
+      model_->GetProcess(index) == base::GetCurrentProcessHandle();
 }
 
 void TaskManager::KillProcess(int index) {
-  base::ProcessHandle process = model_->GetResourceProcessHandle(index);
+  base::ProcessHandle process = model_->GetProcess(index);
   DCHECK(process);
   if (process != base::GetCurrentProcessHandle())
     base::KillProcess(process, content::RESULT_CODE_KILLED, false);
@@ -1365,16 +1397,43 @@ void TaskManager::OpenAboutMemory(chrome::HostDesktopType desktop_type) {
   chrome::Navigate(&params);
 }
 
-bool TaskManagerModel::GetAndCacheMemoryMetrics(base::ProcessHandle handle,
-                                                MemoryUsageEntry* usage) const {
+bool TaskManagerModel::CachePrivateAndSharedMemory(
+    base::ProcessHandle handle) const {
+  PerProcessValues& values(per_process_cache_[handle]);
+  if (values.is_private_and_shared_valid)
+    return true;
+
   MetricsMap::const_iterator iter = metrics_map_.find(handle);
-  if (iter == metrics_map_.end())
+  if (iter == metrics_map_.end() ||
+      !iter->second->GetMemoryBytes(&values.private_bytes,
+                                    &values.shared_bytes)) {
     return false;
+  }
 
-  if (!iter->second->GetMemoryBytes(&usage->first, &usage->second))
-    return false;
+  values.is_private_and_shared_valid = true;
+  return true;
+}
 
-  memory_usage_map_.insert(std::make_pair(handle, *usage));
+bool TaskManagerModel::CacheWebCoreStats(int index) const {
+  PerResourceValues& values(GetPerResourceValues(index));
+  if (!values.is_webcore_stats_valid) {
+    if (!GetResource(index)->ReportsCacheStats())
+      return false;
+    values.is_webcore_stats_valid = true;
+    values.webcore_stats = GetResource(index)->GetWebCoreCacheStats();
+  }
+  return true;
+}
+
+bool TaskManagerModel::CacheV8Memory(int index) const {
+  PerResourceValues& values(GetPerResourceValues(index));
+  if (!values.is_v8_memory_valid) {
+    if (!GetResource(index)->ReportsV8MemoryStats())
+      return false;
+    values.is_v8_memory_valid = true;
+    values.v8_memory_allocated = GetResource(index)->GetV8MemoryAllocated();
+    values.v8_memory_used = GetResource(index)->GetV8MemoryUsed();
+  }
   return true;
 }
 
