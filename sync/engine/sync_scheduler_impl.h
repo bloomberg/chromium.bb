@@ -263,6 +263,8 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl :
 
   virtual void OnActionableError(const sessions::SyncSessionSnapshot& snapshot);
 
+  void set_pending_nudge(SyncSessionJob* job);
+
   base::WeakPtrFactory<SyncSchedulerImpl> weak_ptr_factory_;
 
   // A second factory specially for weak_handle_this_, to allow the handle
