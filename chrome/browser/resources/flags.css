@@ -4,7 +4,9 @@
 
 body {
   margin: 10px;
+<if expr="not pp_ifdef('android')">
   min-width: 47em;
+</if>
   /* Should match needs-restart.(height + padding-top + padding-bottom + 5) */
   padding-bottom: 65px;
 }
@@ -14,35 +16,28 @@ a {
   font-size: 103%;
 }
 
-div#header {
-  -webkit-padding-start: 0;
-  box-sizing: border-box;
-  margin-bottom: 1.05em;
-  /* 67px is the height of the header's background image. */
-  min-height: 67px;
-  overflow: hidden;
-  padding-bottom: 20px;
-  padding-top: 20px;
-  position: relative;
-}
-
-#header h1 {
+#header {
   -webkit-padding-start: 75px;
   background: -webkit-image-set(
       url('../../app/theme/default_100_percent/flags_section.png') 1x,
       url('../../app/theme/default_200_percent/flags_section.png') 2x)
-      0 20px no-repeat;
-  display: inline;
-  margin: 0;
-  padding-bottom: 40px;
-  padding-top: 40px;
+      no-repeat left center;
+  box-sizing: border-box;
+  display: table;
+  margin-bottom: 1.05em;
+  /* 67px is the height of the header's image. */
+  min-height: 67px;
+  overflow: hidden;
+  position: relative;
 }
 
-html[dir=rtl] #header h1 {
-  background: -webkit-image-set(
-      url('../../app/theme/default_100_percent/flags_section.png') 1x,
-      url('../../app/theme/default_200_percent/flags_section.png') 2x)
-      right no-repeat;
+#title-spacer {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+html[dir=rtl] #header {
+  background-position: right center;
 }
 
 h1 {
