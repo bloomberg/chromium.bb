@@ -7,6 +7,8 @@
  * This file defines the trusted buffer interface.
  */
 
+[generate_thunk]
+
 label Chrome {
   M14 = 0.1
 };
