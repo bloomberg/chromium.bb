@@ -8,6 +8,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
@@ -54,6 +55,7 @@ bool AreElementsEqual(const net::UploadElementReader& reader,
 }  // namespace
 
 TEST(ResourceRequestBodyTest, CreateUploadDataStreamWithoutBlob) {
+  MessageLoop message_loop;
   scoped_refptr<ResourceRequestBody> request_body = new ResourceRequestBody;
 
   const char kData[] = "123";
@@ -90,6 +92,7 @@ TEST(ResourceRequestBodyTest, CreateUploadDataStreamWithoutBlob) {
 }
 
 TEST(ResourceRequestBodyTest, ResolveBlobAndCreateUploadDataStream) {
+  MessageLoop message_loop;
   // Setup blob data for testing.
   base::Time time1, time2;
   base::Time::FromString("Tue, 15 Nov 1994, 12:45:26 GMT", &time1);

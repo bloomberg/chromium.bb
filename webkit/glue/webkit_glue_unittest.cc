@@ -10,6 +10,7 @@
 #include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColorPriv.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 
 namespace {
@@ -33,10 +34,25 @@ TEST(WebkitGlueTest, DecodeImage) {
   EXPECT_EQ(2, image.height());
   EXPECT_EQ(SkBitmap::kARGB_8888_Config, image.config());
   image.lockPixels();
-  EXPECT_EQ(SK_ColorBLACK, *image.getAddr32(0, 0));
-  EXPECT_EQ(SK_ColorRED, *image.getAddr32(1, 0));
-  EXPECT_EQ(SK_ColorGREEN, *image.getAddr32(0, 1));
-  EXPECT_EQ(SK_ColorBLUE, *image.getAddr32(1, 1));
+  uint32_t pixel = *image.getAddr32(0, 0); // Black
+  EXPECT_EQ(0x00U, SkGetPackedR32(pixel));
+  EXPECT_EQ(0x00U, SkGetPackedG32(pixel));
+  EXPECT_EQ(0x00U, SkGetPackedB32(pixel));
+
+  pixel = *image.getAddr32(1, 0); // Red
+  EXPECT_EQ(0xffU, SkGetPackedR32(pixel));
+  EXPECT_EQ(0x00U, SkGetPackedG32(pixel));
+  EXPECT_EQ(0x00U, SkGetPackedB32(pixel));
+
+  pixel = *image.getAddr32(0, 1); // Green
+  EXPECT_EQ(0x00U, SkGetPackedR32(pixel));
+  EXPECT_EQ(0xffU, SkGetPackedG32(pixel));
+  EXPECT_EQ(0x00U, SkGetPackedB32(pixel));
+
+  pixel = *image.getAddr32(1, 1); // Blue
+  EXPECT_EQ(0x00U, SkGetPackedR32(pixel));
+  EXPECT_EQ(0x00U, SkGetPackedG32(pixel));
+  EXPECT_EQ(0xffU, SkGetPackedB32(pixel));
   image.unlockPixels();
 }
 
@@ -98,6 +114,7 @@ class TestWebKitPlatformSupport
 };
 
 TEST(WebkitGlueTest, SuspendResumeSharedTimer) {
+  MessageLoop message_loop;
   TestWebKitPlatformSupport platform_support;
 
   // Set a timer to fire as soon as possible.
@@ -106,7 +123,7 @@ TEST(WebkitGlueTest, SuspendResumeSharedTimer) {
   platform_support.SuspendSharedTimer();
   // The above timer would have posted a task which can be processed out of the
   // message loop.
-  MessageLoop::current()->RunUntilIdle();
+  message_loop.RunUntilIdle();
   // Set a mock time after 1 second to simulate timers suspended for 1 second.
   double new_time = base::Time::Now().ToDoubleT() + 1;
   platform_support.set_mock_monotonically_increasing_time(new_time);
