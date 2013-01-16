@@ -37,8 +37,6 @@ class PhoneField : public FormField {
   FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix2);
   FRIEND_TEST_ALL_PREFIXES(PhoneFieldTest, CountryAndCityAndPhoneNumber);
 
-  PhoneField();
-
   // This is for easy description of the possible parsing paths of the phone
   // fields.
   enum RegexType {
@@ -56,15 +54,6 @@ class PhoneField : public FormField {
     REGEX_SEPARATOR,
   };
 
-  string16 GetRegExp(RegexType regex_id) const;
-
-  // |field| - field to fill up on successful parsing.
-  // |iter| - in/out. Form field iterator, points to the first field that is
-  //   attempted to be parsed. If parsing successful, points to the first field
-  //   after parsed fields.
-  // TODO(isherman): This method doc is out of date.
-  static bool ParseInternal(PhoneField* field, AutofillScanner* scanner);
-
   // Parsed fields.
   enum PhonePart {
     FIELD_NONE = -1,
@@ -77,15 +66,22 @@ class PhoneField : public FormField {
     FIELD_MAX,
   };
 
-  // FIELD_PHONE is always present; holds suffix if prefix is present.
-  // The rest could be NULL.
-  const AutofillField* parsed_phone_fields_[FIELD_MAX];
-
-  static struct Parser {
+  struct Parser {
     RegexType regex;       // Field matching reg-ex.
     PhonePart phone_part;  // Index of the field.
     size_t max_size;       // Max size of the field to match. 0 means any.
-  } phone_field_grammars_[];
+  };
+
+  static const Parser kPhoneFieldGrammars[];
+
+  PhoneField();
+
+  // Returns the regular expression string correspoding to |regex_id|
+  static string16 GetRegExp(RegexType regex_id);
+
+  // FIELD_PHONE is always present; holds suffix if prefix is present.
+  // The rest could be NULL.
+  const AutofillField* parsed_phone_fields_[FIELD_MAX];
 
   DISALLOW_COPY_AND_ASSIGN(PhoneField);
 };
