@@ -125,9 +125,6 @@ class IPC_EXPORT Channel : public Sender {
   // connection and listen for new ones, use ResetToAcceptingConnectionState.
   void Close();
 
-  // Modify the Channel's listener.
-  void set_listener(Listener* listener);
-
   // Get the process ID for the connected peer.
   //
   // Returns base::kNullProcessId if the peer is not connected yet. Watch out

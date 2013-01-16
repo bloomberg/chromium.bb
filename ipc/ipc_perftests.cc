@@ -88,8 +88,8 @@ class EventTimeTracker {
 // "quit" is sent, it will exit.
 class ChannelReflectorListener : public IPC::Listener {
  public:
-  explicit ChannelReflectorListener(IPC::Channel* channel)
-      : channel_(channel),
+  ChannelReflectorListener()
+      : channel_(NULL),
         latency_tracker_("Client messages") {
     VLOG(1) << "Client listener up";
   }
@@ -99,7 +99,14 @@ class ChannelReflectorListener : public IPC::Listener {
     latency_tracker_.ShowResults();
   }
 
+  void Init(IPC::Channel* channel) {
+    DCHECK(!channel_);
+    channel_ = channel;
+  }
+
   virtual bool OnMessageReceived(const IPC::Message& message) {
+    CHECK(channel_);
+
     PickleIterator iter(message);
     int64 time_internal;
     EXPECT_TRUE(iter.ReadInt64(&time_internal));
@@ -138,8 +145,8 @@ class ChannelReflectorListener : public IPC::Listener {
 
 class ChannelPerfListener : public IPC::Listener {
  public:
-  ChannelPerfListener(IPC::Channel* channel)
-      : channel_(channel),
+  ChannelPerfListener()
+      : channel_(NULL),
         msg_count_(0),
         msg_size_(0),
         count_down_(0),
@@ -149,6 +156,11 @@ class ChannelPerfListener : public IPC::Listener {
 
   ~ChannelPerfListener() {
     VLOG(1) << "Server listener down";
+  }
+
+  void Init(IPC::Channel* channel) {
+    DCHECK(!channel_);
+    channel_ = channel;
   }
 
   // Call this before running the message loop.
@@ -161,6 +173,8 @@ class ChannelPerfListener : public IPC::Listener {
   }
 
   virtual bool OnMessageReceived(const IPC::Message& message) {
+    CHECK(channel_);
+
     PickleIterator iter(message);
     int64 time_internal;
     EXPECT_TRUE(iter.ReadInt64(&time_internal));
@@ -216,9 +230,10 @@ class ChannelPerfListener : public IPC::Listener {
 
 TEST_F(IPCChannelPerfTest, Performance) {
   // Setup IPC channel.
-  IPC::Channel chan(kReflectorChannel, IPC::Channel::MODE_SERVER, NULL);
-  ChannelPerfListener perf_listener(&chan);
-  chan.set_listener(&perf_listener);
+  ChannelPerfListener perf_listener;
+  IPC::Channel chan(kReflectorChannel, IPC::Channel::MODE_SERVER,
+                    &perf_listener);
+  perf_listener.Init(&chan);
   ASSERT_TRUE(chan.Connect());
 
   base::ProcessHandle process_handle = SpawnChild(TEST_REFLECTOR, &chan);
@@ -261,9 +276,10 @@ TEST_F(IPCChannelPerfTest, Performance) {
 // This message loop bounces all messages back to the sender.
 MULTIPROCESS_IPC_TEST_MAIN(RunReflector) {
   MessageLoopForIO main_message_loop;
-  IPC::Channel chan(kReflectorChannel, IPC::Channel::MODE_CLIENT, NULL);
-  ChannelReflectorListener channel_reflector_listener(&chan);
-  chan.set_listener(&channel_reflector_listener);
+  ChannelReflectorListener channel_reflector_listener;
+  IPC::Channel chan(kReflectorChannel, IPC::Channel::MODE_CLIENT,
+                    &channel_reflector_listener);
+  channel_reflector_listener.Init(&chan);
   CHECK(chan.Connect());
 
   MessageLoop::current()->Run();

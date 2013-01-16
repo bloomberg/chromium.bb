@@ -369,10 +369,6 @@ void Channel::Close() {
   channel_impl_->Close();
 }
 
-void Channel::set_listener(Listener* listener) {
-  channel_impl_->set_listener(listener);
-}
-
 base::ProcessId Channel::peer_pid() const {
   // This shouldn't actually get used in the untrusted side of the proxy, and we
   // don't have the real pid anyway.

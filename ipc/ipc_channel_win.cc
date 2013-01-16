@@ -477,10 +477,6 @@ void Channel::Close() {
     channel_impl_->Close();
 }
 
-void Channel::set_listener(Listener* listener) {
-  channel_impl_->set_listener(listener);
-}
-
 base::ProcessId Channel::peer_pid() const {
   return channel_impl_->peer_pid();
 }
