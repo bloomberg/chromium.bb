@@ -602,7 +602,7 @@
       'name': 'ForceSafeSearch',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:24-', 'chrome_os:0.24-'],
+      'supported_on': ['chrome.*:25-', 'chrome_os:0.25-'],
       'features': {
         'can_be_recommended': False,
         'dynamic_refresh': True,
