@@ -689,22 +689,18 @@ lzcnt Eq Gq, data16 rexw 0xf3 0x0f 0xbd, amd64 CPUFeature_LZCNT nacl-forbidden
 ######## MFENCE ################################################################
 mfence, 0x0f 0xae 0xf0, CPUFeature_SSE2
 ######## MOV ###################################################################
-mov G E, 0x88, nacl-amd64-modifiable nacl-amd64-zero-extends
-mov E G, 0x8a, nacl-amd64-modifiable nacl-amd64-zero-extends
-mov Sw Mw, 0x8c /s, nacl-forbidden
-mov Sw Rv, 0x8c /s, nacl-forbidden
-mov Ew Sw, 0x8e /s, nacl-forbidden
-mov Ib rb, 0xb0, nacl-amd64-modifiable nacl-amd64-zero-extends
-mov Iv rv, 0xb8, nacl-amd64-modifiable nacl-amd64-zero-extends
-mov I E, 0xc6 /0, nacl-amd64-modifiable nacl-amd64-zero-extends
-mov Ob ab, 0xa0, ia32
-mov Ov av, 0xa1, ia32
-mov ab Ob, 0xa2, ia32
-mov av Ov, 0xa3, ia32
-movabs Ob ab, 0xa0, amd64 nacl-forbidden
-movabs Ov av, 0xa1, amd64 nacl-forbidden
-movabs ab Ob, 0xa2, amd64 nacl-forbidden
-movabs av Ov, 0xa3, amd64 nacl-forbidden
+mov G !E, 0x88, nacl-amd64-modifiable nacl-amd64-zero-extends
+mov E !G, 0x8a, nacl-amd64-modifiable nacl-amd64-zero-extends
+mov Sw !Mw, 0x8c /s, nacl-forbidden
+mov Sw !Rv, 0x8c /s, nacl-forbidden
+mov Ew !Sw, 0x8e /s, nacl-forbidden
+mov Ib !rb, 0xb0, nacl-amd64-modifiable nacl-amd64-zero-extends
+mov Iv !rv, 0xb8, nacl-amd64-modifiable nacl-amd64-zero-extends
+mov I !E, 0xc6 /0, nacl-amd64-modifiable nacl-amd64-zero-extends
+mov O !a, 0xa0, ia32
+mov a !O, 0xa2, ia32
+movabs O !a, 0xa0, amd64 nacl-forbidden
+movabs a !O, 0xa2, amd64 nacl-forbidden
 ######## MOVBE #################################################################
 # Textbook definition of “movbe” as per AMD/Intel manuals looks like this:
 #  movbe Mv Gv, 0x0f 0x38 0xf0, CPUFeature_MOVBE
