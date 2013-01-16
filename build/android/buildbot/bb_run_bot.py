@@ -94,8 +94,11 @@ def GetBotStepMap():
          'bb_run_findbugs', 'bb_zip_build'], None, None),
       B('fyi-builder-rel',
         ['bb_compile', 'bb_compile_experimental', 'bb_zip_build'], None, None),
-      B('fyi-tests', std_test_steps, T(std_tests, ['--experimental']), None),
+      B('fyi-tests', std_test_steps,
+        T(std_tests, ['--experimental', '--upload-to-flakiness-server']), None),
       B('perf-tests-rel', std_test_steps, T([], ['--install=ContentShell']),
+        None),
+      B('try-fyi-tests', std_test_steps, T(std_tests, ['--experimental']),
         None),
       B('webkit-latest-tests', std_test_steps, T(['unit']), None),
       B('webkit-latest-webkit-tests', std_test_steps,
@@ -113,7 +116,6 @@ def GetBotStepMap():
       ('try-tests-dbg', 'main-tests-dbg'),
       ('try-clang-builder', 'main-clang-builder'),
       ('try-fyi-builder-dbg', 'fyi-builder-dbg'),
-      ('try-fyi-tests', 'fyi-tests'),
   ]
   for to_id, from_id in copy_map:
     assert to_id not in bot_map

@@ -168,6 +168,9 @@ def RunInstrumentationSuite(options, test):
     args.append('--release')
   if options.asan:
     args.append('--tool=asan')
+  if options.upload_to_flakiness_server:
+    args.append('--flakiness-dashboard-server='
+                'chrome-android-staging-results.appspot.com')
 
   RunCmd(['build/android/run_instrumentation_tests.py'] + args)
 
@@ -279,6 +282,8 @@ def main(argv):
                     help='Install an apk by name')
   parser.add_option('--reboot', action='store_true',
                     help='Reboot devices before running tests')
+  parser.add_option('--upload-to-flakiness-server', action='store_true',
+                    help='Upload the results to the flakiness dashboard.')
   options, args = parser.parse_args(argv[1:])
 
   def ParserError(msg):
