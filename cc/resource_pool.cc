@@ -11,7 +11,7 @@ namespace cc {
 ResourcePool::Resource::Resource(cc::ResourceProvider* resource_provider,
                                  const gfx::Size& size,
                                  GLenum format)
-    : cc::Resource(resource_provider->createResource(
+    : cc::Resource(resource_provider->createManagedResource(
                        size,
                        format,
                        ResourceProvider::TextureUsageAny),
