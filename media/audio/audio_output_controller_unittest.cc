@@ -171,7 +171,7 @@ class AudioOutputControllerTest : public testing::Test {
         base::Bind(&AudioOutputController::OnDeviceChange, controller_));
   }
 
-  void Divert(bool was_playing, bool will_be_playing) {
+  void Divert(bool was_playing, int num_times_to_be_started) {
     if (was_playing) {
       // Expect the handler to receive one OnPlaying() call as a result of the
       // stream switching.
@@ -182,17 +182,14 @@ class AudioOutputControllerTest : public testing::Test {
     EXPECT_CALL(mock_stream_, Open())
         .WillOnce(Return(true));
     EXPECT_CALL(mock_stream_, SetVolume(kTestVolume));
-    if (will_be_playing) {
+    if (num_times_to_be_started > 0) {
       EXPECT_CALL(mock_stream_, Start(NotNull()))
-          .Times(AtLeast(1))
+          .Times(num_times_to_be_started)
           .WillRepeatedly(
               Invoke(&mock_stream_, &MockAudioOutputStream::SetCallback));
+      EXPECT_CALL(mock_stream_, Stop())
+          .Times(num_times_to_be_started);
     }
-    // Always expect a Stop() call--even without a Start() call--since
-    // AudioOutputController likes to play it safe and Stop() before any
-    // Close().
-    EXPECT_CALL(mock_stream_, Stop())
-        .Times(AtLeast(1));
 
     controller_->StartDiverting(&mock_stream_);
   }
@@ -227,9 +224,9 @@ class AudioOutputControllerTest : public testing::Test {
   }
 
   // These help make test sequences more readable.
-  void DivertNeverPlaying() { Divert(false, false); }
-  void DivertWillEventuallyBePlaying() { Divert(false, true); }
-  void DivertWhilePlaying() { Divert(true, true); }
+  void DivertNeverPlaying() { Divert(false, 0); }
+  void DivertWillEventuallyBeTwicePlayed() { Divert(false, 2); }
+  void DivertWhilePlaying() { Divert(true, 1); }
   void RevertWasNotPlaying() { Revert(false); }
   void RevertWhilePlaying() { Revert(true); }
 
@@ -356,7 +353,7 @@ TEST_F(AudioOutputControllerTest, PlayDivertRevertDivertRevertClose) {
 TEST_F(AudioOutputControllerTest, DivertPlayPausePlayRevertClose) {
   Create(kSamplesPerPacket);
   WaitForCreate();
-  DivertWillEventuallyBePlaying();
+  DivertWillEventuallyBeTwicePlayed();
   Play();
   WaitForPlay();
   ReadDivertedAudioData();
