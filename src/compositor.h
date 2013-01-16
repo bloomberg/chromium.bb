@@ -211,11 +211,18 @@ struct weston_xkb_info {
 	xkb_led_index_t scroll_led;
 };
 
+struct weston_keyboard {
+	struct wl_keyboard keyboard;
+
+	struct wl_keyboard_grab input_method_grab;
+	struct wl_resource *input_method_resource;
+};
+
 struct weston_seat {
 	struct wl_seat seat;
 	struct wl_pointer pointer;
 	int has_pointer;
-	struct wl_keyboard keyboard;
+	struct weston_keyboard keyboard;
 	int has_keyboard;
 	struct wl_touch touch;
 	int has_touch;

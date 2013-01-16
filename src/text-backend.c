@@ -77,7 +77,6 @@ struct input_method_context {
 	struct wl_list link;
 
 	struct wl_resource *keyboard;
-	struct wl_keyboard_grab grab;
 };
 
 struct text_backend {
@@ -455,14 +454,17 @@ static void
 input_method_context_grab_key(struct wl_keyboard_grab *grab,
 			      uint32_t time, uint32_t key, uint32_t state_w)
 {
-	struct input_method_context *input_method_context = container_of(grab, struct input_method_context, grab);
+	struct weston_keyboard *keyboard = (struct weston_keyboard *)grab->keyboard;
+	struct wl_display *display;
 	uint32_t serial;
-       
-	if (input_method_context->keyboard) {
-		serial = wl_display_next_serial(input_method_context->model->ec->wl_display);
-		wl_keyboard_send_key(input_method_context->keyboard,
-				     serial, time, key, state_w);
-	}
+
+	if (!keyboard->input_method_resource)
+		return;
+
+	display = wl_client_get_display(keyboard->input_method_resource->client);
+	serial = wl_display_next_serial(display);
+	wl_keyboard_send_key(keyboard->input_method_resource,
+			     serial, time, key, state_w);
 }
 
 static void
@@ -470,12 +472,12 @@ input_method_context_grab_modifier(struct wl_keyboard_grab *grab, uint32_t seria
 				   uint32_t mods_depressed, uint32_t mods_latched,
 				   uint32_t mods_locked, uint32_t group)
 {
-	struct input_method_context *input_method_context = container_of(grab, struct input_method_context, grab);
+	struct weston_keyboard *keyboard = (struct weston_keyboard *)grab->keyboard;
 
-	if (!input_method_context->keyboard)
+	if (!keyboard->input_method_resource)
 		return;
 
-	wl_keyboard_send_modifiers(input_method_context->keyboard,
+	wl_keyboard_send_modifiers(keyboard->input_method_resource,
 				   serial, mods_depressed, mods_latched,
 				   mods_locked, group);
 }
@@ -493,7 +495,7 @@ input_method_context_grab_keyboard(struct wl_client *client,
 	struct input_method_context *context = resource->data;
 	struct wl_resource *cr;
 	struct weston_seat *seat = context->input_method->seat;
-	struct wl_keyboard *keyboard = seat->seat.keyboard;
+	struct weston_keyboard *keyboard = &seat->keyboard;
 
 	cr = wl_client_add_object(client, &wl_keyboard_interface,
 				  NULL, id, context);
@@ -505,10 +507,11 @@ input_method_context_grab_keyboard(struct wl_client *client,
 				seat->xkb_info.keymap_fd,
 				seat->xkb_info.keymap_size);
 
-	if (keyboard->grab != &keyboard->default_grab) {
-		wl_keyboard_end_grab(keyboard);
+	if (keyboard->keyboard.grab != &keyboard->keyboard.default_grab) {
+		wl_keyboard_end_grab(&keyboard->keyboard);
 	}
-	wl_keyboard_start_grab(keyboard, &context->grab);
+	wl_keyboard_start_grab(&keyboard->keyboard, &keyboard->input_method_grab);
+	keyboard->input_method_resource = cr;
 }
 
 static void
@@ -600,8 +603,6 @@ input_method_context_create(struct text_model *model,
 	context->input_method = input_method;
 	input_method->context = context;
 
-	context->grab.interface = &input_method_context_grab;
-
 	wl_client_add_resource(input_method->input_method_binding->client, &context->resource);
 
 	input_method_send_activate(input_method->input_method_binding, &context->resource, serial);
@@ -610,13 +611,17 @@ input_method_context_create(struct text_model *model,
 static void
 input_method_context_end_keyboard_grab(struct input_method_context *context)
 {
-	struct wl_keyboard_grab *grab = &context->grab;
+	struct wl_keyboard_grab *grab = &context->input_method->seat->keyboard.input_method_grab;
+	struct weston_keyboard *keyboard = (struct weston_keyboard *)grab->keyboard;
 
-	if (grab->keyboard && (grab->keyboard->grab == grab)) {
+	if (!grab->keyboard)
+		return;
+
+	if (grab->keyboard->grab == grab)
 		wl_keyboard_end_grab(grab->keyboard);
-	}
-}
 
+	keyboard->input_method_resource = NULL;
+}
 
 static void
 unbind_input_method(struct wl_resource *resource)
@@ -699,6 +704,7 @@ input_method_init_seat(struct weston_seat *seat)
 	if (seat->has_keyboard) {
 		seat->input_method->keyboard_focus_listener.notify = handle_keyboard_focus;
 		wl_signal_add(&seat->seat.keyboard->focus_signal, &seat->input_method->keyboard_focus_listener);
+		seat->keyboard.input_method_grab.interface = &input_method_context_grab;
 	}
 
 	seat->input_method->focus_listener_initialized = 1;

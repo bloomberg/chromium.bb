@@ -406,11 +406,14 @@ binding_key(struct wl_keyboard_grab *grab,
 	struct wl_display *display;
 	enum wl_keyboard_key_state state = state_w;
 	uint32_t serial;
+	struct weston_keyboard *keyboard = (struct weston_keyboard *)grab->keyboard;
 
 	resource = grab->keyboard->focus_resource;
 	if (key == b->key) {
 		if (state == WL_KEYBOARD_KEY_STATE_RELEASED) {
 			wl_keyboard_end_grab(grab->keyboard);
+			if (keyboard->input_method_resource)
+				keyboard->keyboard.grab = &keyboard->input_method_grab;
 			free(b);
 		}
 	} else if (resource) {

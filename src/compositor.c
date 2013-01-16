@@ -1792,7 +1792,7 @@ notify_axis(struct weston_seat *seat, uint32_t time, uint32_t axis,
 WL_EXPORT void
 notify_modifiers(struct weston_seat *seat, uint32_t serial)
 {
-	struct wl_keyboard *keyboard = &seat->keyboard;
+	struct wl_keyboard *keyboard = &seat->keyboard.keyboard;
 	struct wl_keyboard_grab *grab = keyboard->grab;
 	uint32_t mods_depressed, mods_latched, mods_locked, group;
 	uint32_t mods_lookup;
@@ -1881,10 +1881,10 @@ notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
 	   enum weston_key_state_update update_state)
 {
 	struct weston_compositor *compositor = seat->compositor;
-	struct wl_keyboard *keyboard = seat->seat.keyboard;
+	struct weston_keyboard *keyboard = &seat->keyboard;
 	struct weston_surface *focus =
-		(struct weston_surface *) keyboard->focus;
-	struct wl_keyboard_grab *grab = keyboard->grab;
+		(struct weston_surface *) keyboard->keyboard.focus;
+	struct wl_keyboard_grab *grab = keyboard->keyboard.grab;
 	uint32_t serial = wl_display_next_serial(compositor->wl_display);
 	uint32_t *k, *end;
 
@@ -1893,14 +1893,14 @@ notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
 			compositor->ping_handler(focus, serial);
 
 		weston_compositor_idle_inhibit(compositor);
-		keyboard->grab_key = key;
-		keyboard->grab_time = time;
+		keyboard->keyboard.grab_key = key;
+		keyboard->keyboard.grab_time = time;
 	} else {
 		weston_compositor_idle_release(compositor);
 	}
 
-	end = keyboard->keys.data + keyboard->keys.size;
-	for (k = keyboard->keys.data; k < end; k++) {
+	end = keyboard->keyboard.keys.data + keyboard->keyboard.keys.size;
+	for (k = keyboard->keyboard.keys.data; k < end; k++) {
 		if (*k == key) {
 			/* Ignore server-generated repeats. */
 			if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
@@ -1908,16 +1908,17 @@ notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
 			*k = *--end;
 		}
 	}
-	keyboard->keys.size = (void *) end - keyboard->keys.data;
+	keyboard->keyboard.keys.size = (void *) end - keyboard->keyboard.keys.data;
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-		k = wl_array_add(&keyboard->keys, sizeof *k);
+		k = wl_array_add(&keyboard->keyboard.keys, sizeof *k);
 		*k = key;
 	}
 
-	if (grab == &keyboard->default_grab) {
+	if (grab == &keyboard->keyboard.default_grab ||
+	    grab == &keyboard->input_method_grab) {
 		weston_compositor_run_key_binding(compositor, seat, time, key,
 						  state);
-		grab = keyboard->grab;
+		grab = keyboard->keyboard.grab;
 	}
 
 	grab->interface->key(grab, time, key, state);
@@ -2507,8 +2508,8 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 
 	seat->xkb_state.leds = 0;
 
-	wl_keyboard_init(&seat->keyboard);
-	wl_seat_set_keyboard(&seat->seat, &seat->keyboard);
+	wl_keyboard_init(&seat->keyboard.keyboard);
+	wl_seat_set_keyboard(&seat->seat, &seat->keyboard.keyboard);
 
 	seat->has_keyboard = 1;
 }

@@ -155,7 +155,7 @@ activate_surface(struct wl_client *client, struct wl_resource *resource,
 
 	if (surface) {
 		weston_surface_activate(surface, seat);
-		notify_keyboard_focus_in(seat, &seat->keyboard.keys,
+		notify_keyboard_focus_in(seat, &seat->keyboard.keyboard.keys,
 					 STATE_UPDATE_AUTOMATIC);
 	}
 	else {
