@@ -889,6 +889,7 @@
              'has_java_resources': 1,
              'R_package': 'org.chromium.ui',
              'R_package_relpath': 'org/chromium/ui',
+             'java_strings_grd': 'android_ui_strings.grd',
            },
            'dependencies': [
              '../base/base.gyp:base_java',

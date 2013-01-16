@@ -57,6 +57,8 @@
 #  resource_dir - The directory for resources.
 #  R_package - A custom Java package to generate the resource file R.java in.
 #    By default, the package given in AndroidManifest.xml will be used.
+#  java_strings_grd - The name of the grd file from which to generate localized
+#    strings.xml files, if any.
 
 {
   'variables': {
@@ -76,6 +78,8 @@
     'additional_res_dirs': [],
     'additional_res_packages': [],
     'is_test_apk%': 0,
+    'java_strings_grd%': '',
+    'grit_grd_file%': '',
   },
   'sources': [
       '<@(native_libs_paths)'
@@ -109,6 +113,36 @@
       ],
     },
   ],
+  'conditions': [
+    ['R_package != ""', {
+      'variables': {
+        # We generate R.java in package R_package (in addition to the package
+        # listed in the AndroidManifest.xml, which is unavoidable).
+        'additional_res_dirs': ['<(DEPTH)/build/android/ant/empty/res'],
+        'additional_res_packages': ['<(R_package)'],
+        'additional_R_text_files': ['<(PRODUCT_DIR)/<(package_name)/R.txt'],
+      },
+    }],
+    ['java_strings_grd != ""', {
+      'variables': {
+        'out_res_dir': '<(SHARED_INTERMEDIATE_DIR)/<(package_name)_apk/res',
+        'additional_res_dirs': ['<(out_res_dir)'],
+        # grit_grd_file is used by grit_action.gypi, included below.
+        'grit_grd_file': '<(java_in_dir)/strings/<(java_strings_grd)',
+      },
+      'actions': [
+        {
+          'action_name': 'generate_localized_strings_xml',
+          'variables': {
+            'grit_out_dir': '<(out_res_dir)',
+            # resource_ids is unneeded since we don't generate .h headers.
+            'grit_resource_ids': '',
+          },
+          'includes': ['../build/grit_action.gypi'],
+        },
+      ],
+    }],
+  ],
   'actions': [
     {
       'action_name': 'ant_<(package_name)_apk',
@@ -128,6 +162,14 @@
       'conditions': [
         ['resource_dir!=""', {
           'inputs': ['<!@(find <(java_in_dir)/<(resource_dir) -name "*")']
+        }],
+        ['java_strings_grd != ""', {
+          'inputs': [
+            # TODO(newt): replace this with .../values/strings.xml once
+            # the English strings.xml is generated as well? That would be
+            # simpler and faster and should be equivalent.
+            '<!@pymod_do_main(grit_info <@(grit_defines) --outputs "<(out_res_dir)" <(grit_grd_file))',
+          ],
         }],
         ['is_test_apk == 1', {
           'variables': {
@@ -180,16 +222,5 @@
         '<(CONFIGURATION_NAME)',
       ]
     },
-  ],
-  'conditions': [
-    ['R_package != ""', {
-      'variables': {
-        # We generate R.java in package R_package (in addition to the package
-        # listed in the AndroidManifest.xml, which is unavoidable).
-        'additional_res_dirs': ['<(DEPTH)/build/android/ant/empty/res'],
-        'additional_res_packages': ['<(R_package)'],
-        'additional_R_text_files': ['<(PRODUCT_DIR)/<(package_name)/R.txt'],
-      },
-    }],
   ],
 }

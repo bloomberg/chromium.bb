@@ -303,6 +303,7 @@
             'has_java_resources': 1,
             'R_package': 'org.chromium.content',
             'R_package_relpath': 'org/chromium/content',
+            'java_strings_grd': 'android_content_strings.grd',
           },
           'conditions': [
             ['android_build_type == 0', {
