@@ -741,12 +741,6 @@ const char kEnableWebViewSynchronousAPIs[] = "enable-webview-synchronous-apis";
 const char kChildCleanExit[]                = "child-clean-exit";
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
-// Use the system SSL library (Secure Transport on Mac, SChannel on Windows)
-// instead of NSS for SSL.
-const char kUseSystemSSL[]                  = "use-system-ssl";
-#endif
-
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 const char kDisableCarbonInterposing[]      = "disable-carbon-interposing";
 #endif

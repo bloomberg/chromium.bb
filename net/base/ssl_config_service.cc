@@ -123,11 +123,6 @@ uint16 SSLConfigService::default_version_min() {
 }
 
 // static
-void SSLConfigService::SetDefaultVersionMax(uint16 version_max) {
-  g_default_version_max = version_max;
-}
-
-// static
 uint16 SSLConfigService::default_version_max() {
   return g_default_version_max;
 }

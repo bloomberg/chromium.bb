@@ -85,8 +85,6 @@ struct NET_EXPORT SSLConfig {
   // first uint8 occupying the most significant byte.
   // Ex: To disable TLS_RSA_WITH_RC4_128_MD5, specify 0x0004, while to
   // disable TLS_ECDH_ECDSA_WITH_RC4_128_SHA, specify 0xC002.
-  //
-  // Note: Not implemented when using Schannel/SSLClientSocketWin.
   std::vector<uint16> disabled_cipher_suites;
 
   bool cached_info_enabled;  // True if TLS cached info extension is enabled.
@@ -179,8 +177,7 @@ class NET_EXPORT SSLConfigService
   // Gets the default minimum protocol version.
   static uint16 default_version_min();
 
-  // Sets and gets the default maximum protocol version.
-  static void SetDefaultVersionMax(uint16 version_max);
+  // Gets the default maximum protocol version.
   static uint16 default_version_max();
 
   // Is SNI available in this configuration?

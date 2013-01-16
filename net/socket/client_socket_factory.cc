@@ -10,15 +10,9 @@
 #include "build/build_config.h"
 #include "net/base/cert_database.h"
 #include "net/socket/client_socket_handle.h"
-#if defined(OS_WIN)
-#include "net/socket/ssl_client_socket_nss.h"
-#include "net/socket/ssl_client_socket_win.h"
-#elif defined(USE_OPENSSL)
+#if defined(USE_OPENSSL)
 #include "net/socket/ssl_client_socket_openssl.h"
-#elif defined(USE_NSS) || defined(OS_IOS)
-#include "net/socket/ssl_client_socket_nss.h"
-#elif defined(OS_MACOSX)
-#include "net/socket/ssl_client_socket_mac.h"
+#elif defined(USE_NSS) || defined(OS_MACOSX) || defined(OS_WIN)
 #include "net/socket/ssl_client_socket_nss.h"
 #endif
 #include "net/socket/tcp_client_socket.h"
@@ -29,8 +23,6 @@ namespace net {
 class X509Certificate;
 
 namespace {
-
-bool g_use_system_ssl = false;
 
 // ChromeOS and Linux may require interaction with smart cards or TPMs, which
 // may cause NSS functions to block for upwards of several seconds. To avoid
@@ -112,25 +104,9 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
 #if defined(USE_OPENSSL)
     return new SSLClientSocketOpenSSL(transport_socket, host_and_port,
                                       ssl_config, context);
-#elif defined(USE_NSS) || defined(OS_IOS)
+#elif defined(USE_NSS) || defined(OS_MACOSX) || defined(OS_WIN)
     return new SSLClientSocketNSS(nss_task_runner, transport_socket,
                                   host_and_port, ssl_config, context);
-#elif defined(OS_WIN)
-    if (g_use_system_ssl) {
-      return new SSLClientSocketWin(transport_socket, host_and_port,
-                                    ssl_config, context);
-    }
-    return new SSLClientSocketNSS(nss_task_runner, transport_socket,
-                                  host_and_port, ssl_config,
-                                  context);
-#elif defined(OS_MACOSX)
-    if (g_use_system_ssl) {
-      return new SSLClientSocketMac(transport_socket, host_and_port,
-                                    ssl_config, context);
-    }
-    return new SSLClientSocketNSS(nss_task_runner, transport_socket,
-                                  host_and_port, ssl_config,
-                                  context);
 #else
     NOTIMPLEMENTED();
     return NULL;
@@ -166,19 +142,6 @@ SSLClientSocket* ClientSocketFactory::CreateSSLClientSocket(
 // static
 ClientSocketFactory* ClientSocketFactory::GetDefaultFactory() {
   return g_default_client_socket_factory.Pointer();
-}
-
-// static
-void ClientSocketFactory::UseSystemSSL() {
-  g_use_system_ssl = true;
-
-#if defined(OS_WIN)
-  // Reflect the capability of SSLClientSocketWin.
-  SSLConfigService::SetDefaultVersionMax(SSL_PROTOCOL_VERSION_TLS1);
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
-  // Reflect the capability of SSLClientSocketMac.
-  SSLConfigService::SetDefaultVersionMax(SSL_PROTOCOL_VERSION_TLS1);
-#endif
 }
 
 }  // namespace net

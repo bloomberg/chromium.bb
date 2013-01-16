@@ -64,9 +64,6 @@ class NET_EXPORT ClientSocketFactory {
 
   // Returns the default ClientSocketFactory.
   static ClientSocketFactory* GetDefaultFactory();
-
-  // Instructs the default ClientSocketFactory to use the system SSL library.
-  static void UseSystemSSL();
 };
 
 }  // namespace net

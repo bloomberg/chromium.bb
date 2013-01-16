@@ -70,10 +70,6 @@ typedef scoped_ptr_malloc<const CERT_CONTEXT,
 
 //-----------------------------------------------------------------------------
 
-// TODO(wtc): This is a copy of the MapSecurityError function in
-// ssl_client_socket_win.cc.  Another function that maps Windows error codes
-// to our network error codes is WinInetUtil::OSErrorToNetError.  We should
-// eliminate the code duplication.
 int MapSecurityError(SECURITY_STATUS err) {
   // There are numerous security error codes, but these are the ones we thus
   // far find interesting.

@@ -279,24 +279,8 @@ void BrowserMainLoop::EarlyInitialization() {
 #endif
 
 #if !defined(USE_OPENSSL)
-  // Use NSS for SSL by default.
-  // The default client socket factory uses NSS for SSL by default on
-  // Windows and Mac.
-  bool init_nspr = false;
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  if (parsed_command_line_.HasSwitch(switches::kUseSystemSSL)) {
-    net::ClientSocketFactory::UseSystemSSL();
-  } else {
-    init_nspr = true;
-  }
-  UMA_HISTOGRAM_BOOLEAN("Chrome.CommandLineUseSystemSSL", !init_nspr);
-#elif defined(USE_NSS)
-  init_nspr = true;
-#endif
-  if (init_nspr) {
-    // We want to be sure to init NSPR on the main thread.
-    crypto::EnsureNSPRInit();
-  }
+  // We want to be sure to init NSPR on the main thread.
+  crypto::EnsureNSPRInit();
 #endif  // !defined(USE_OPENSSL)
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
