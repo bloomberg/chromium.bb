@@ -57,12 +57,6 @@ _TEST_ONLY_WARNING = (
     'Email joi@chromium.org if you have questions.')
 
 
-_HTTPS_ONLY_WARNING = (
-    'You should prefer to refer to HTTPS URLs, rather than HTTP URLs.\n'
-    'Do not bypass this warning if there is an equivalent HTTPS endpoint\n'
-    'that you could refer to instead. (Contact: palmer@chromium.org)')
-
-
 _INCLUDE_ORDER_WARNING = (
     'Your #include order seems to be broken. Send mail to\n'
     'marja@chromium.org if this is not the case.')
@@ -200,65 +194,23 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
   problems = []
   for f in input_api.AffectedSourceFiles(FilterFile):
     local_path = f.LocalPath()
-    for line_number, line in enumerate(input_api.ReadFile(f).splitlines()):
-      if inclusion_pattern.search(line) and not exclusion_pattern.search(line):
+    lines = input_api.ReadFile(f).splitlines()
+    line_number = 0
+    for line in lines:
+      if (inclusion_pattern.search(line) and
+          not exclusion_pattern.search(line)):
         problems.append(
-          '%s:%d\n    %s' % (local_path, line_number + 1, line.strip()))
+          '%s:%d\n    %s' % (local_path, line_number, line.strip()))
+      line_number += 1
 
   if problems:
-    if input_api.is_committing:
+    if not input_api.is_committing:
+      return [output_api.PresubmitPromptWarning(_TEST_ONLY_WARNING, problems)]
+    else:
       # We don't warn on commit, to avoid stopping commits going through CQ.
       return [output_api.PresubmitNotifyResult(_TEST_ONLY_WARNING, problems)]
-    else:
-      return [output_api.PresubmitPromptWarning(_TEST_ONLY_WARNING, problems)]
-
-  return []
-
-
-def _CheckNoHttpUrls(input_api, output_api):
-  """Attempts to prevent use of http:// URLs. Production Chrome code, and
-  Chromium infrastructure code, should strive to use https:// URLs (preferably
-  HSTS and with pinned public keys, as well). Some URLs will not be
-  translatable, but gradually the number of those should diminish.
-  """
-
-  # Include all sorts of files, both code and infrastructure scripts.
-  file_inclusion_pattern = r'.+\.(h|cc|cpp|cxx|mm|py|bat|sh)$'
-
-  inclusion_pattern = input_api.re.compile(r'''["']http:/''',
-                                           input_api.re.IGNORECASE)
-
-  # Allow http:/ in comments. https://chromium.org and
-  # https://cr{bug,osbug,rev}.com don't work yet. See e.g.
-  # https://code.google.com/p/chromium/issues/detail?id=106096.
-  # TODO(palmer): Remove this once 106096 and its dependent bugs are fixed.
-  exclusion_pattern = input_api.re.compile(r'(#|//|/\*| \*).*http:/',
-                                           input_api.re.IGNORECASE)
-
-  def FilterFile(affected_file):
-    black_list = (_TEST_CODE_EXCLUDED_PATHS +
-                  input_api.DEFAULT_BLACK_LIST)
-    return input_api.FilterSourceFile(
-      affected_file,
-      white_list=(file_inclusion_pattern, ),
-      black_list=black_list)
-
-  problems = []
-  for f in input_api.AffectedSourceFiles(FilterFile):
-    local_path = f.LocalPath()
-    for line_number, line in enumerate(input_api.ReadFile(f).splitlines()):
-      if inclusion_pattern.search(line) and not exclusion_pattern.search(line):
-        problems.append(
-          '%s:%d\n    %s' % (local_path, line_number + 1, line.strip()))
-
-  if problems:
-    if input_api.is_committing:
-      # We don't warn on commit, to avoid stopping commits going through CQ.
-      return [output_api.PresubmitNotifyResult(_HTTPS_ONLY_WARNING, problems)]
-    else:
-      return [output_api.PresubmitPromptWarning(_HTTPS_ONLY_WARNING, problems)]
-
-  return []
+  else:
+    return []
 
 
 def _CheckNoIOStreamInHeaders(input_api, output_api):
@@ -469,12 +421,12 @@ def _CheckUnwantedDependencies(input_api, output_api):
         'You added one or more #includes that violate checkdeps rules.',
         error_descriptions))
   if warning_descriptions:
-    if input_api.is_committing:
+    if not input_api.is_committing:
+      warning_factory = output_api.PresubmitPromptWarning
+    else:
       # We don't want to block use of the CQ when there is a warning
       # of this kind, so we only show a message when committing.
       warning_factory = output_api.PresubmitNotifyResult
-    else:
-      warning_factory = output_api.PresubmitPromptWarning
     results.append(warning_factory(
         'You added one or more #includes of files that are temporarily\n'
         'allowed but being removed. Can you avoid introducing the\n'
@@ -652,13 +604,13 @@ def _CheckIncludeOrder(input_api, output_api):
 
   results = []
   if warnings:
-    if input_api.is_committing:
+    if not input_api.is_committing:
+      results.append(output_api.PresubmitPromptWarning(_INCLUDE_ORDER_WARNING,
+                                                       warnings))
+    else:
       # We don't warn on commit, to avoid stopping commits going through CQ.
       results.append(output_api.PresubmitNotifyResult(_INCLUDE_ORDER_WARNING,
                                                       warnings))
-    else:
-      results.append(output_api.PresubmitPromptWarning(_INCLUDE_ORDER_WARNING,
-                                                       warnings))
   return results
 
 
@@ -706,19 +658,19 @@ def _CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api):
         problems.append((f.LocalPath(), line_num, line))
 
   if problems:
-    if input_api.is_committing:
+    if not input_api.is_committing:
+      warning_factory = output_api.PresubmitPromptWarning
+    else:
       # We don't want to block use of the CQ when there is a warning
       # of this kind, so we only show a message when committing.
       warning_factory = output_api.PresubmitNotifyResult
-    else:
-      warning_factory = output_api.PresubmitPromptWarning
     return [warning_factory(
         'Most layers below src/chrome/ should not hardcode service URLs.\n'
         'Are you sure this is correct? (Contact: joi@chromium.org)',
         ['  %s:%d:  %s' % (
             problem[0], problem[1], problem[2]) for problem in problems])]
-
-  return []
+  else:
+    return []
 
 
 def _CommonChecks(input_api, output_api):
@@ -743,7 +695,6 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckForVersionControlConflicts(input_api, output_api))
   results.extend(_CheckPatchFiles(input_api, output_api))
   results.extend(_CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api))
-  results.extend(_CheckNoHttpUrls(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
@@ -832,8 +783,8 @@ def _CheckPatchFiles(input_api, output_api):
   if problems:
     return [output_api.PresubmitError(
         "Don't commit .rej and .orig files.", problems)]
-
-  return []
+  else:
+    return []
 
 
 def CheckChangeOnUpload(input_api, output_api):
@@ -852,9 +803,9 @@ def CheckChangeOnCommit(input_api, output_api):
   results.extend(input_api.canned_checks.CheckTreeIsOpen(
       input_api,
       output_api,
-      json_url='https://chromium-status.appspot.com/current?format=json'))
+      json_url='http://chromium-status.appspot.com/current?format=json'))
   results.extend(input_api.canned_checks.CheckRietveldTryJobExecution(input_api,
-      output_api, 'https://codereview.chromium.org',
+      output_api, 'http://codereview.chromium.org',
       ('win_rel', 'linux_rel', 'mac_rel, win:compile'),
       'tryserver@chromium.org'))
 
