@@ -5,7 +5,7 @@
 #include "webkit/support/web_gesture_curve_mock.h"
 
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGestureCurveTarget.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebPoint.h"
 #include "webkit/support/weburl_loader_mock_factory.h"
 
 WebGestureCurveMock::WebGestureCurveMock(const WebKit::WebFloatPoint& velocity,

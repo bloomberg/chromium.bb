@@ -6,9 +6,9 @@
 #define WEBKIT_SUPPORT_WEB_GESTURE_CURVE_MOCK_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGestureCurve.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFloatPoint.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 
 // A simple class for mocking a WebGestureCurve. The curve flings at velocity
 // indefinitely.
