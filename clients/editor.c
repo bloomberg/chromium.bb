@@ -59,6 +59,7 @@ struct text_entry {
 		xkb_mod_mask_t shift_mask;
 	} keysym;
 	uint32_t serial;
+	uint32_t content_purpose;
 };
 
 struct editor {
@@ -550,6 +551,19 @@ text_entry_update_layout(struct text_entry *entry)
 }
 
 static void
+text_entry_update(struct text_entry *entry)
+{
+	text_model_set_content_type(entry->model,
+				    TEXT_MODEL_CONTENT_HINT_NONE,
+				    entry->content_purpose);
+
+	text_model_set_surrounding_text(entry->model,
+					entry->text,
+					entry->cursor,
+					entry->anchor);
+}
+
+static void
 text_entry_insert_at_cursor(struct text_entry *entry, const char *text)
 {
 	char *new_text = malloc(strlen(entry->text) + strlen(text) + 1);
@@ -568,10 +582,7 @@ text_entry_insert_at_cursor(struct text_entry *entry, const char *text)
 
 	widget_schedule_redraw(entry->widget);
 
-	text_model_set_surrounding_text(entry->model,
-					entry->text,
-					entry->cursor,
-					entry->anchor);
+	text_entry_update(entry);
 }
 
 static void
@@ -648,10 +659,7 @@ text_entry_set_cursor_position(struct text_entry *entry,
 
 	widget_schedule_redraw(entry->widget);
 
-	text_model_set_surrounding_text(entry->model,
-					entry->text,
-					entry->cursor,
-					entry->anchor);
+	text_entry_update(entry);
 }
 
 static void
@@ -669,10 +677,7 @@ text_entry_set_anchor_position(struct text_entry *entry,
 
 	widget_schedule_redraw(entry->widget);
 
-	text_model_set_surrounding_text(entry->model,
-					entry->text,
-					entry->cursor,
-					entry->anchor);
+	text_entry_update(entry);
 }
 
 static void
@@ -691,10 +696,7 @@ text_entry_delete_text(struct text_entry *entry,
 
 	widget_schedule_redraw(entry->widget);
 
-	text_model_set_surrounding_text(entry->model,
-					entry->text,
-					entry->cursor,
-					entry->anchor);
+	text_entry_update(entry);
 }
 
 static void
@@ -986,7 +988,8 @@ main(int argc, char *argv[])
 	editor.widget = frame_create(editor.window, &editor);
 
 	editor.entry = text_entry_create(&editor, "Entry");
-	editor.editor = text_entry_create(&editor, "Editor");
+	editor.editor = text_entry_create(&editor, "Numeric");
+	editor.editor->content_purpose = TEXT_MODEL_CONTENT_PURPOSE_NUMBER;
 
 	window_set_title(editor.window, "Text Editor");
 	window_set_key_handler(editor.window, key_handler);
