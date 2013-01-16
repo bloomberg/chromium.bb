@@ -383,6 +383,7 @@ public class AwContents {
     }
 
     public boolean onPrepareDrawGL(Canvas canvas) {
+        if (mNativeAwContents == 0) return false;
         nativeSetScrollForHWFrame(mNativeAwContents,
                 mContainerView.getScrollX(), mContainerView.getScrollY());
 
@@ -391,6 +392,7 @@ public class AwContents {
     }
 
     public void onDraw(Canvas canvas) {
+        if (mNativeAwContents == 0) return;
         if (!nativeDrawSW(mNativeAwContents, canvas)) {
             Log.w(TAG, "Native DrawSW failed; clearing to background color.");
             int c = mContentViewCore.getBackgroundColor();
