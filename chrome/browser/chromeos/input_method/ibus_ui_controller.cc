@@ -78,33 +78,6 @@ class IBusChromeOSClientImpl : public ui::internal::IBusClient {
   DISALLOW_COPY_AND_ASSIGN(IBusChromeOSClientImpl);
 };
 
-InputMethodLookupTable::InputMethodLookupTable()
-    : visible(false),
-      cursor_absolute_index(0),
-      page_size(0),
-      orientation(kHorizontal) {
-}
-
-InputMethodLookupTable::~InputMethodLookupTable() {
-}
-
-std::string InputMethodLookupTable::ToString() const {
-  std::stringstream stream;
-  stream << "visible: " << visible << "\n";
-  stream << "cursor_absolute_index: " << cursor_absolute_index << "\n";
-  stream << "page_size: " << page_size << "\n";
-  stream << "orientation: " << orientation << "\n";
-  stream << "candidates:";
-  for (size_t i = 0; i < candidates.size(); ++i) {
-    stream << " [" << candidates[i] << "]";
-  }
-  stream << "\nlabels:";
-  for (size_t i = 0; i < labels.size(); ++i) {
-    stream << " [" << labels[i] << "]";
-  }
-  return stream.str();
-}
-
 // The real implementation of the IBusUiController.
 IBusUiController::IBusUiController() {
   ui::InputMethodIBus* input_method = GetChromeInputMethod();
@@ -199,42 +172,7 @@ void IBusUiController::HidePreeditText() {
 
 void IBusUiController::UpdateLookupTable(const ibus::IBusLookupTable& table,
                                          bool visible) {
-  // TODO(nona): Use ibus::IBusLookupTable instead.
-  InputMethodLookupTable lookup_table;
-  lookup_table.visible = visible;
-
-  // Copy the orientation information.
-  if (table.orientation() == ibus::IBusLookupTable::VERTICAL) {
-    lookup_table.orientation = InputMethodLookupTable::kVertical;
-  } else {
-    lookup_table.orientation = InputMethodLookupTable::kHorizontal;
-  }
-
-  lookup_table.show_at_composition_head = table.show_window_at_composition();
-
-  // Copy candidates and annotations to |lookup_table|.
-  for (size_t i = 0; i < table.candidates().size(); ++i) {
-    const ibus::IBusLookupTable::Entry& entry = table.candidates()[i];
-    lookup_table.candidates.push_back(entry.value);
-    lookup_table.labels.push_back(entry.label);
-    lookup_table.annotations.push_back(entry.annotation);
-
-    InputMethodLookupTable::Description description;
-    description.title = entry.description_title;
-    description.body = entry.description_body;
-    lookup_table.descriptions.push_back(description);
-  }
-
-  lookup_table.cursor_absolute_index = table.cursor_position();
-  lookup_table.page_size = table.page_size();
-  // Ensure that the page_size is non-zero to avoid div-by-zero error.
-  if (lookup_table.page_size <= 0) {
-    DVLOG(1) << "Invalid page size: " << lookup_table.page_size;
-    lookup_table.page_size = 1;
-  }
-
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnUpdateLookupTable(lookup_table));
+  FOR_EACH_OBSERVER(Observer, observers_, OnUpdateLookupTable(table, visible));
 }
 
 }  // namespace input_method

@@ -8,6 +8,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/input_method/ibus_ui_controller.h"
+#include "chromeos/dbus/ibus/ibus_lookup_table.h"
 #include "ui/views/view.h"
 
 namespace gfx {
@@ -15,6 +16,7 @@ class Font;
 }
 
 namespace chromeos {
+class IBusLookupTable;
 namespace input_method {
 
 class CandidateView;
@@ -96,12 +98,12 @@ class CandidateWindowView : public views::View {
   // don't have to update candidate views. This happens when the user just
   // moves the cursor in the same page in the candidate window.
   static bool ShouldUpdateCandidateViews(
-      const InputMethodLookupTable& old_table,
-      const InputMethodLookupTable& new_table);
+      const ibus::IBusLookupTable& old_table,
+      const ibus::IBusLookupTable& new_table);
 
   // Updates candidates of the candidate window from |lookup_table|.
   // Candidates are arranged per |orientation|.
-  void UpdateCandidates(const InputMethodLookupTable& lookup_table);
+  void UpdateCandidates(const ibus::IBusLookupTable& lookup_table);
 
   // Resizes and moves the parent frame. The two actions should be
   // performed consecutively as resizing may require the candidate window
@@ -153,8 +155,7 @@ class CandidateWindowView : public views::View {
                            DoNotChangeRowHeightWithLabelSwitchTest);
 
   // Initializes the candidate views if needed.
-  void MaybeInitializeCandidateViews(
-      const InputMethodLookupTable& lookup_table);
+  void MaybeInitializeCandidateViews(const ibus::IBusLookupTable& lookup_table);
 
   // Returns the appropriate area (header or footer) to put auxiliary texts.
   InformationTextArea* GetAuxiliaryTextArea();
@@ -168,7 +169,7 @@ class CandidateWindowView : public views::View {
   void NotifyIfCandidateWindowOpenedOrClosed();
 
   // The lookup table (candidates).
-  InputMethodLookupTable lookup_table_;
+  ibus::IBusLookupTable lookup_table_;
 
   // The index in the current page of the candidate currently being selected.
   int selected_candidate_index_in_page_;

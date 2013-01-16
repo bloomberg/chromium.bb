@@ -5,7 +5,7 @@
 // The header files provides APIs for monitoring and controlling input
 // method UI status. The APIs encapsulate the APIs of IBus, the underlying
 // input method framework.
-// TODO(nona): Remove InputMethodLookupTable and IBusUiController.
+// TODO(nona): Remove IBusUiController.
 
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_UI_CONTROLLER_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_IBUS_UI_CONTROLLER_H_
@@ -30,59 +30,6 @@ const char kPanelObjectKey[] = "panel-object";
 class InputMethodDescriptor;
 typedef std::vector<InputMethodDescriptor> InputMethodDescriptors;
 
-// The struct represents the input method lookup table (list of candidates).
-// Used for InputMethodUpdateLookupTableMonitorFunction.
-struct InputMethodLookupTable {
-  enum Orientation {
-    kVertical,
-    kHorizontal,
-  };
-
-  struct Description {
-    std::string title;  // Description title string in UTF-8.
-    std::string body;  // Description body string in UTF-8.
-  };
-
-  InputMethodLookupTable();
-
-  ~InputMethodLookupTable();
-
-  // Debug print function.
-  std::string ToString() const;
-
-  // True if the lookup table is visible.
-  bool visible;
-
-  // Zero-origin index of the current cursor position in the all
-  // candidates. If the cursor is pointing to the third candidate in the
-  // second page when the page size is 10, the value will be 12 as it's
-  // 13th candidate.
-  int cursor_absolute_index;
-
-  // Page size is the max number of candidates shown in a page. Usually
-  // it's about 10, depending on the backend conversion engine.
-  int page_size;
-
-  // True if the candidate window should be shown under the first character of
-  // composition string.
-  bool show_at_composition_head;
-
-  // Candidate strings in UTF-8.
-  std::vector<std::string> candidates;
-
-  // The orientation of the candidates in the candidate window.
-  Orientation orientation;
-
-  // Label strings in UTF-8 (ex. "1", "2", "3", ...).
-  std::vector<std::string> labels;
-
-  // Annotation strings in UTF-8 (ex. "Hankaku Katakana").
-  std::vector<std::string> annotations;
-
-  // Description entries. This text is shown in Infolist window.
-  std::vector<Description> descriptions;
-};
-
 // IBusUiController is used to interact with the IBus daemon.
 class IBusUiController : public ibus::IBusPanelCandidateWindowHandlerInterface {
  public:
@@ -106,7 +53,8 @@ class IBusUiController : public ibus::IBusPanelCandidateWindowHandlerInterface {
                                        bool visible) = 0;
 
     // Called when the lookup table is updated.
-    virtual void OnUpdateLookupTable(const InputMethodLookupTable& table) = 0;
+    virtual void OnUpdateLookupTable(const ibus::IBusLookupTable& table,
+                                     bool visible) = 0;
 
     // Called when the preedit text is updated.
     virtual void OnUpdatePreeditText(const std::string& utf8_text,

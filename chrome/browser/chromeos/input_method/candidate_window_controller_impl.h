@@ -18,6 +18,10 @@ class Widget;
 }  // namespace views
 
 namespace chromeos {
+// TODO(nona): remove ibus namespace
+namespace ibus {
+class IBusLookupTable;
+}  // namespace ibus
 namespace input_method {
 
 class DelayableWidget;
@@ -56,7 +60,7 @@ class CandidateWindowControllerImpl : public CandidateWindowController,
   // Converts |lookup_table| to infolist entries. |focused_index| become
   // InfolistWindowView::InvalidFocusIndex if there is no selected entries.
   static void ConvertLookupTableToInfolistEntry(
-      const InputMethodLookupTable& lookup_table,
+      const ibus::IBusLookupTable& lookup_table,
       std::vector<InfolistWindowView::Entry>* infolist_entries,
       size_t* focused_index);
 
@@ -86,7 +90,8 @@ class CandidateWindowControllerImpl : public CandidateWindowController,
   virtual void OnUpdateAuxiliaryText(const std::string& utf8_text,
                                      bool visible) OVERRIDE;
   virtual void OnUpdateLookupTable(
-      const InputMethodLookupTable& lookup_table) OVERRIDE;
+      const ibus::IBusLookupTable& lookup_table,
+      bool visible) OVERRIDE;
   virtual void OnUpdatePreeditText(const std::string& utf8_text,
                                    unsigned int cursor, bool visible) OVERRIDE;
 

@@ -160,7 +160,7 @@ void CandidateWindowControllerImpl::OnUpdateAuxiliaryText(
 
 // static
 void CandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
-    const InputMethodLookupTable& lookup_table,
+    const ibus::IBusLookupTable& lookup_table,
     std::vector<InfolistWindowView::Entry>* infolist_entries,
     size_t* focused_index) {
   DCHECK(focused_index);
@@ -169,15 +169,17 @@ void CandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
   infolist_entries->clear();
 
   const size_t cursor_index_in_page =
-      lookup_table.cursor_absolute_index % lookup_table.page_size;
+      lookup_table.cursor_position() % lookup_table.page_size();
 
-  for (size_t i = 0; i < lookup_table.descriptions.size(); ++i) {
-    if (lookup_table.descriptions[i].title.empty() &&
-        lookup_table.descriptions[i].body.empty())
+  for (size_t i = 0; i < lookup_table.candidates().size(); ++i) {
+    const ibus::IBusLookupTable::Entry& ibus_entry =
+        lookup_table.candidates()[i];
+    if (ibus_entry.description_title.empty() &&
+        ibus_entry.description_body.empty())
       continue;
     InfolistWindowView::Entry entry;
-    entry.title = lookup_table.descriptions[i].title;
-    entry.body = lookup_table.descriptions[i].body;
+    entry.title = ibus_entry.description_title;
+    entry.body = ibus_entry.description_body;
     infolist_entries->push_back(entry);
     if (i == cursor_index_in_page)
       *focused_index = infolist_entries->size() - 1;
@@ -207,9 +209,10 @@ bool CandidateWindowControllerImpl::ShouldUpdateInfolist(
 }
 
 void CandidateWindowControllerImpl::OnUpdateLookupTable(
-    const InputMethodLookupTable& lookup_table) {
+    const ibus::IBusLookupTable& lookup_table,
+    bool visible) {
   // If it's not visible, hide the lookup table and return.
-  if (!lookup_table.visible) {
+  if (!visible) {
     candidate_window_->HideLookupTable();
     infolist_window_->Hide();
     return;
