@@ -1786,6 +1786,11 @@ void RenderWidgetHostViewAura::OnLostResources() {
   UpdateExternalTexture();
   locks_pending_commit_.clear();
 
+  // Make sure all ImageTransportClients are deleted now that the context those
+  // are using is becoming invalid. This sends pending ACKs and needs to happen
+  // after calling UpdateExternalTexture() which syncs with the impl thread.
+  RunCompositingDidCommitCallbacks();
+
   DCHECK(!shared_surface_handle_.is_null());
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->DestroySharedSurfaceHandle(shared_surface_handle_);
