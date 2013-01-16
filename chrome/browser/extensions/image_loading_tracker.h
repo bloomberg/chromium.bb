@@ -133,7 +133,6 @@ class ImageLoadingTracker : public content::NotificationObserver {
   friend class CreateChromeApplicationShortcutView;
   friend class ExtensionInfoBar;
   friend class ExtensionInfoBarGtk;
-  friend class InfobarBridge;
   friend class Panel;
   friend class ShellWindow;
   friend class extensions::IconImage;

@@ -9,7 +9,7 @@
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
@@ -52,13 +52,12 @@ const CGFloat kToolbarMaxHeightPx = 72.0;
 
 // A helper class to bridge the asynchronous Skia bitmap loading mechanism to
 // the extension's button.
-class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
-                      public ImageLoadingTracker::Observer {
+class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
  public:
   explicit InfobarBridge(ExtensionInfoBarController* owner)
       : owner_(owner),
         delegate_([owner delegate]->AsExtensionInfoBarDelegate()),
-        tracker_(this) {
+        ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
     delegate_->set_observer(this);
     LoadIcon();
   }
@@ -75,18 +74,19 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
     ExtensionResource icon_resource =
         extension->GetIconResource(extension_misc::EXTENSION_ICON_BITTY,
                                    ExtensionIconSet::MATCH_EXACTLY);
-    tracker_.LoadImage(extension, icon_resource,
-                       gfx::Size(extension_misc::EXTENSION_ICON_BITTY,
-                                 extension_misc::EXTENSION_ICON_BITTY),
-                       ImageLoadingTracker::DONT_CACHE);
+    extensions::ImageLoader* loader =
+        extensions::ImageLoader::Get(delegate_->extension_host()->profile());
+    loader->LoadImageAsync(extension, icon_resource,
+                           gfx::Size(extension_misc::EXTENSION_ICON_BITTY,
+                                     extension_misc::EXTENSION_ICON_BITTY),
+                           base::Bind(&InfobarBridge::OnImageLoaded,
+                                      weak_ptr_factory_.GetWeakPtr()));
   }
 
   // ImageLoadingTracker::Observer implementation.
   // TODO(andybons): The infobar view implementations share a lot of the same
   // code. Come up with a strategy to share amongst them.
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE {
+  void OnImageLoaded(const gfx::Image& image) {
     if (!delegate_)
       return;  // The delegate can go away while the image asynchronously loads.
 
@@ -129,8 +129,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
   // Weak.
   ExtensionInfoBarDelegate* delegate_;
 
-  // Loads the extensions's icon on the file thread.
-  ImageLoadingTracker tracker_;
+  base::WeakPtrFactory<InfobarBridge> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InfobarBridge);
 };
