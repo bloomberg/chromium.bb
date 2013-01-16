@@ -78,7 +78,7 @@ scoped_ptr<SyncWebSocket> CreateMockSyncWebSocket() {
 TEST(DevToolsClientImpl, SendCommand) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
-  DevToolsClientImpl client(factory, "http://url", NULL);
+  DevToolsClientImpl client(factory, "http://url");
   base::DictionaryValue params;
   params.SetInteger("param", 1);
   ASSERT_EQ(kOk, client.SendCommand("method", params).code());
@@ -87,7 +87,7 @@ TEST(DevToolsClientImpl, SendCommand) {
 TEST(DevToolsClientImpl, SendCommandAndGetResult) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket>);
-  DevToolsClientImpl client(factory, "http://url", NULL);
+  DevToolsClientImpl client(factory, "http://url");
   base::DictionaryValue params;
   params.SetInteger("param", 1);
   scoped_ptr<base::DictionaryValue> result;
@@ -125,7 +125,7 @@ class MockSyncWebSocket2 : public SyncWebSocket {
 TEST(DevToolsClientImpl, SendCommandConnectFails) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket2>);
-  DevToolsClientImpl client(factory, "http://url", NULL);
+  DevToolsClientImpl client(factory, "http://url");
   base::DictionaryValue params;
   ASSERT_TRUE(client.SendCommand("method", params).IsError());
 }
@@ -156,7 +156,7 @@ class MockSyncWebSocket3 : public SyncWebSocket {
 TEST(DevToolsClientImpl, SendCommandSendFails) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket3>);
-  DevToolsClientImpl client(factory, "http://url", NULL);
+  DevToolsClientImpl client(factory, "http://url");
   base::DictionaryValue params;
   ASSERT_TRUE(client.SendCommand("method", params).IsError());
 }
@@ -186,7 +186,7 @@ class MockSyncWebSocket4 : public SyncWebSocket {
 TEST(DevToolsClientImpl, SendCommandReceiveNextMessageFails) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<MockSyncWebSocket4>);
-  DevToolsClientImpl client(factory, "http://url", NULL);
+  DevToolsClientImpl client(factory, "http://url");
   base::DictionaryValue params;
   ASSERT_TRUE(client.SendCommand("method", params).IsError());
 }
@@ -311,7 +311,7 @@ bool ReturnEventThenResponse(
 TEST(DevToolsClientImpl, SendCommandOnlyConnectsOnce) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<FakeSyncWebSocket>);
-  DevToolsClientImpl client(factory, "http://url", NULL, base::Bind(
+  DevToolsClientImpl client(factory, "http://url", base::Bind(
       &ReturnCommand));
   base::DictionaryValue params;
   ASSERT_TRUE(client.SendCommand("method", params).IsOk());
@@ -321,7 +321,7 @@ TEST(DevToolsClientImpl, SendCommandOnlyConnectsOnce) {
 TEST(DevToolsClientImpl, SendCommandBadResponse) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<FakeSyncWebSocket>);
-  DevToolsClientImpl client(factory, "http://url", NULL, base::Bind(
+  DevToolsClientImpl client(factory, "http://url", base::Bind(
       &ReturnBadResponse));
   base::DictionaryValue params;
   ASSERT_TRUE(client.SendCommand("method", params).IsError());
@@ -330,7 +330,7 @@ TEST(DevToolsClientImpl, SendCommandBadResponse) {
 TEST(DevToolsClientImpl, SendCommandBadId) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<FakeSyncWebSocket>);
-  DevToolsClientImpl client(factory, "http://url", NULL, base::Bind(
+  DevToolsClientImpl client(factory, "http://url", base::Bind(
       &ReturnCommandBadId));
   base::DictionaryValue params;
   ASSERT_TRUE(client.SendCommand("method", params).IsError());
@@ -339,7 +339,7 @@ TEST(DevToolsClientImpl, SendCommandBadId) {
 TEST(DevToolsClientImpl, SendCommandResponseError) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket<FakeSyncWebSocket>);
-  DevToolsClientImpl client(factory, "http://url", NULL, base::Bind(
+  DevToolsClientImpl client(factory, "http://url", base::Bind(
       &ReturnCommandError));
   base::DictionaryValue params;
   ASSERT_TRUE(client.SendCommand("method", params).IsError());
@@ -350,8 +350,9 @@ TEST(DevToolsClientImpl, SendCommandEventBeforeResponse) {
       base::Bind(&CreateMockSyncWebSocket<FakeSyncWebSocket>);
   MockListener listener;
   bool first = true;
-  DevToolsClientImpl client(factory, "http://url", &listener, base::Bind(
+  DevToolsClientImpl client(factory, "http://url", base::Bind(
       &ReturnEventThenResponse, &first));
+  client.AddListener(&listener);
   base::DictionaryValue params;
   scoped_ptr<base::DictionaryValue> result;
   ASSERT_TRUE(client.SendCommandAndGetResult("method", params, &result).IsOk());

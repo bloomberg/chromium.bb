@@ -27,11 +27,9 @@ InspectorCommandResponse::~InspectorCommandResponse() {}
 
 DevToolsClientImpl::DevToolsClientImpl(
     const SyncWebSocketFactory& factory,
-    const std::string& url,
-    DevToolsEventListener* listener)
+    const std::string& url)
     : socket_(factory.Run().Pass()),
       url_(url),
-      listener_(listener),
       parser_func_(base::Bind(&internal::ParseInspectorMessage)),
       connected_(false),
       next_id_(1) {}
@@ -39,11 +37,9 @@ DevToolsClientImpl::DevToolsClientImpl(
 DevToolsClientImpl::DevToolsClientImpl(
     const SyncWebSocketFactory& factory,
     const std::string& url,
-    DevToolsEventListener* listener,
     const ParserFunc& parser_func)
     : socket_(factory.Run().Pass()),
       url_(url),
-      listener_(listener),
       parser_func_(parser_func),
       connected_(false),
       next_id_(1) {}
@@ -69,6 +65,11 @@ Status DevToolsClientImpl::SendCommandAndGetResult(
     return Status(kUnknownError, "inspector response missing result");
   result->reset(intermediate_result.release());
   return Status(kOk);
+}
+
+void DevToolsClientImpl::AddListener(DevToolsEventListener* listener) {
+  DCHECK(listener);
+  listeners_.push_back(listener);
 }
 
 Status DevToolsClientImpl::SendCommandInternal(
@@ -102,8 +103,7 @@ Status DevToolsClientImpl::SendCommandInternal(
     if (!parser_func_.Run(message, command_id, &type, &event, &response))
       return Status(kUnknownError, "bad inspector message: " + message);
     if (type == internal::kEventMessageType) {
-      if (listener_)
-        listener_->OnEvent(event.method, *event.params);
+      NotifyEventListeners(event.method, *event.params);
     } else {
       if (response.id != command_id) {
         return Status(kUnknownError,
@@ -115,6 +115,15 @@ Status DevToolsClientImpl::SendCommandInternal(
       }
       return Status(kUnknownError, "inspector error: " + response.error);
     }
+  }
+}
+
+void DevToolsClientImpl::NotifyEventListeners(
+    const std::string& method,
+    const base::DictionaryValue& params) {
+  for (std::list<DevToolsEventListener*>::iterator iter = listeners_.begin();
+       iter != listeners_.end(); ++iter) {
+    (*iter)->OnEvent(method, params);
   }
 }
 

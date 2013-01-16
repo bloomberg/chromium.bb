@@ -81,7 +81,8 @@ Status ChromeImpl::Init() {
   if (debugger_urls.empty())
     return Status(kUnknownError, "unable to discover open pages");
   client_.reset(new DevToolsClientImpl(
-      socket_factory_, debugger_urls.front(), dom_tracker_.get()));
+      socket_factory_, debugger_urls.front()));
+  client_->AddListener(dom_tracker_.get());
 
   // Perform necessary configuration of the DevTools client.
   // Fetch the root document node so that Inspector will push DOM node

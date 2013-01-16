@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_DEVTOOLS_CLIENT_IMPL_H_
 #define CHROME_TEST_CHROMEDRIVER_DEVTOOLS_CLIENT_IMPL_H_
 
+#include <list>
 #include <string>
 
 #include "base/basictypes.h"
@@ -51,8 +52,7 @@ class DevToolsClientImpl : public DevToolsClient {
  public:
   // Listener may be NULL.
   DevToolsClientImpl(const SyncWebSocketFactory& factory,
-                     const std::string& url,
-                     DevToolsEventListener* listener);
+                     const std::string& url);
 
   typedef base::Callback<bool(
       const std::string&,
@@ -62,7 +62,6 @@ class DevToolsClientImpl : public DevToolsClient {
       internal::InspectorCommandResponse*)> ParserFunc;
   DevToolsClientImpl(const SyncWebSocketFactory& factory,
                      const std::string& url,
-                     DevToolsEventListener* listener,
                      const ParserFunc& parser_func);
 
   virtual ~DevToolsClientImpl();
@@ -74,16 +73,19 @@ class DevToolsClientImpl : public DevToolsClient {
       const std::string& method,
       const base::DictionaryValue& params,
       scoped_ptr<base::DictionaryValue>* result) OVERRIDE;
+  virtual void AddListener(DevToolsEventListener* listener) OVERRIDE;
 
  private:
   Status SendCommandInternal(
       const std::string& method,
       const base::DictionaryValue& params,
       scoped_ptr<base::DictionaryValue>* result);
+  virtual void NotifyEventListeners(const std::string& method,
+                                    const base::DictionaryValue& params);
   scoped_ptr<SyncWebSocket> socket_;
   GURL url_;
-  DevToolsEventListener* listener_;
   ParserFunc parser_func_;
+  std::list<DevToolsEventListener*> listeners_;
   bool connected_;
   int next_id_;
 

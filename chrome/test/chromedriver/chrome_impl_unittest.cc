@@ -95,6 +95,7 @@ class FakeDevToolsClient : public DevToolsClient {
     result->reset(result_.DeepCopy());
     return Status(kOk);
   }
+  virtual void AddListener(DevToolsEventListener* listener) OVERRIDE {}
 
  private:
   Status status_;
