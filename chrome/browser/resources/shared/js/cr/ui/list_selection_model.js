@@ -309,6 +309,7 @@ cr.define('cr.ui', function() {
       this.beginChange();
       var oldLeadIndex = this.leadIndex;
       var oldAnchorIndex = this.anchorIndex;
+      var oldSelectedItemsCount = this.selectedIndexes.length;
 
       this.selectedIndexes = this.selectedIndexes.map(function(oldIndex) {
         return permutation[oldIndex];
@@ -321,6 +322,13 @@ cr.define('cr.ui', function() {
         this.leadIndex = permutation[oldLeadIndex];
       if (oldAnchorIndex != -1)
         this.anchorIndex = permutation[oldAnchorIndex];
+
+      if (oldSelectedItemsCount && !this.selectedIndexes.length) {
+        // All selected items are deleted. We move selection to next item of
+        // last selected item.
+        this.selectedIndexes = [oldLeadIndex];
+      }
+
       this.endChange();
     },
 
