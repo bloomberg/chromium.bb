@@ -65,25 +65,25 @@
       <structure type="chrome_scaled_image" name="IDR_BUBBLE_TR" file="bubble_tr.png" />
       <structure type="chrome_scaled_image" name="IDR_BUBBLE_T_ARROW" file="bubble_pointer_t.png" />
       <if expr="is_posix and not is_macosx and not pp_ifdef('use_aura')">
-        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_INDETERMINATE" file="linux-checkbox-disabled-indeterminate.png" />
-        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_OFF" file="linux-checkbox-disabled-off.png" />
-        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_ON" file="linux-checkbox-disabled-on.png" />
-        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_INDETERMINATE" file="linux-checkbox-indeterminate.png" />
-        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_OFF" file="linux-checkbox-off.png" />
-        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_ON" file="linux-checkbox-on.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_INDETERMINATE" file="linux/linux-checkbox-disabled-indeterminate.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_OFF" file="linux/linux-checkbox-disabled-off.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_ON" file="linux/linux-checkbox-disabled-on.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_INDETERMINATE" file="linux/linux-checkbox-indeterminate.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_OFF" file="linux/linux-checkbox-off.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_ON" file="linux/linux-checkbox-on.png" />
       </if>
       <if expr="pp_ifdef('use_aura')">
         <!-- TODO(jamescook): Replace Linux images with Aura-specific ones. -->
-        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_INDETERMINATE" file="linux-checkbox-disabled-indeterminate.png" />
-        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_OFF" file="linux-checkbox-disabled-off.png" />
-        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_ON" file="linux-checkbox-disabled-on.png" />
-        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_INDETERMINATE" file="linux-checkbox-indeterminate.png" />
-        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_OFF" file="linux-checkbox-off.png" />
-        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_ON" file="linux-checkbox-on.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_INDETERMINATE" file="linux/linux-checkbox-disabled-indeterminate.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_OFF" file="linux/linux-checkbox-disabled-off.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_ON" file="linux/linux-checkbox-disabled-on.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_INDETERMINATE" file="linux/linux-checkbox-indeterminate.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_OFF" file="linux/linux-checkbox-off.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_ON" file="linux/linux-checkbox-on.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_CHECKMARK" file="checkmark.png" />
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_CLOSE" file="linux_close.png" />
+        <structure type="chrome_scaled_image" name="IDR_CLOSE" file="linux/linux_close.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_CLOSE" file="close.png" />
@@ -96,8 +96,8 @@
       <structure type="chrome_scaled_image" name="IDR_CLOSE_DIALOG_H" file="close_dialog_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_DIALOG_P" file="close_dialog_pressed.png" />
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_CLOSE_H" file="linux_close_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_CLOSE_P" file="linux_close_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_CLOSE_H" file="linux/linux_close_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_CLOSE_P" file="linux/linux_close_pressed.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_CLOSE_H" file="close_hover.png" />
@@ -122,9 +122,9 @@
       <structure type="chrome_scaled_image" name="IDR_FRAME_APP_PANEL" file="frame_app_panel_default.png" />
       <structure type="chrome_scaled_image" name="IDR_FRAME_INACTIVE" file="frame_default_inactive.png" />
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_MAXIMIZE" file="linux_maximize.png" />
-        <structure type="chrome_scaled_image" name="IDR_MAXIMIZE_H" file="linux_maximize_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_MAXIMIZE_P" file="linux_maximize_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_MAXIMIZE" file="linux/linux_maximize.png" />
+        <structure type="chrome_scaled_image" name="IDR_MAXIMIZE_H" file="linux/linux_maximize_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_MAXIMIZE_P" file="linux/linux_maximize_pressed.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_MAXIMIZE" file="maximize.png" />
@@ -149,9 +149,9 @@
       </if>
       <structure type="chrome_scaled_image" name="IDR_MENU_DROPARROW" file="cros/menu_droparrow.png" />
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_MINIMIZE" file="linux_minimize.png" />
-        <structure type="chrome_scaled_image" name="IDR_MINIMIZE_H" file="linux_minimize_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_MINIMIZE_P" file="linux_minimize_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_MINIMIZE" file="linux/linux_minimize.png" />
+        <structure type="chrome_scaled_image" name="IDR_MINIMIZE_H" file="linux/linux_minimize_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_MINIMIZE_P" file="linux/linux_minimize_pressed.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_MINIMIZE" file="minimize.png" />
@@ -164,24 +164,24 @@
       <structure type="chrome_scaled_image" name="IDR_PANEL_BOTTOM_LEFT_CORNER" file="panel_bottom_left_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_BOTTOM_RIGHT_CORNER" file="panel_bottom_right_corner.png" />
       <if expr="is_posix and not is_macosx and not pp_ifdef('use_aura')">
-        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BAR" file="linux-progress-bar.png" />
-        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_LEFT" file="linux-progress-border-left.png" />
-        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_RIGHT" file="linux-progress-border-right.png" />
-        <structure type="chrome_scaled_image" name="IDR_PROGRESS_VALUE" file="linux-progress-value.png" />
-        <structure type="chrome_scaled_image" name="IDR_RADIO_DISABLED_OFF" file="linux-radio-disabled-off.png" />
-        <structure type="chrome_scaled_image" name="IDR_RADIO_DISABLED_ON" file="linux-radio-disabled-on.png" />
-        <structure type="chrome_scaled_image" name="IDR_RADIO_OFF" file="linux-radio-off.png" />
-        <structure type="chrome_scaled_image" name="IDR_RADIO_ON" file="linux-radio-on.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BAR" file="linux/linux-progress-bar.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_LEFT" file="linux/linux-progress-border-left.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_RIGHT" file="linux/linux-progress-border-right.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROGRESS_VALUE" file="linux/linux-progress-value.png" />
+        <structure type="chrome_scaled_image" name="IDR_RADIO_DISABLED_OFF" file="linux/linux-radio-disabled-off.png" />
+        <structure type="chrome_scaled_image" name="IDR_RADIO_DISABLED_ON" file="linux/linux-radio-disabled-on.png" />
+        <structure type="chrome_scaled_image" name="IDR_RADIO_OFF" file="linux/linux-radio-off.png" />
+        <structure type="chrome_scaled_image" name="IDR_RADIO_ON" file="linux/linux-radio-on.png" />
       </if>
       <if expr="pp_ifdef('use_aura')">
-        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BAR" file="linux-progress-bar.png" />
-        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_LEFT" file="linux-progress-border-left.png" />
-        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_RIGHT" file="linux-progress-border-right.png" />
-        <structure type="chrome_scaled_image" name="IDR_PROGRESS_VALUE" file="linux-progress-value.png" />
-        <structure type="chrome_scaled_image" name="IDR_RADIO_DISABLED_OFF" file="linux-radio-disabled-off.png" />
-        <structure type="chrome_scaled_image" name="IDR_RADIO_DISABLED_ON" file="linux-radio-disabled-on.png" />
-        <structure type="chrome_scaled_image" name="IDR_RADIO_OFF" file="linux-radio-off.png" />
-        <structure type="chrome_scaled_image" name="IDR_RADIO_ON" file="linux-radio-on.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BAR" file="linux/linux-progress-bar.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_LEFT" file="linux/linux-progress-border-left.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_RIGHT" file="linux/linux-progress-border-right.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROGRESS_VALUE" file="linux/linux-progress-value.png" />
+        <structure type="chrome_scaled_image" name="IDR_RADIO_DISABLED_OFF" file="linux/linux-radio-disabled-off.png" />
+        <structure type="chrome_scaled_image" name="IDR_RADIO_DISABLED_ON" file="linux/linux-radio-disabled-on.png" />
+        <structure type="chrome_scaled_image" name="IDR_RADIO_OFF" file="linux/linux-radio-off.png" />
+        <structure type="chrome_scaled_image" name="IDR_RADIO_ON" file="linux/linux-radio-on.png" />
  
         <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_CENTER_H" file="cros/aura_scrollbar_base_horizontal_hover_center.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_LEFT_H" file="cros/aura_scrollbar_base_horizontal_hover_left.png" />
@@ -209,9 +209,9 @@
         <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_TOP_P" file="cros/aura_scrollbar_thumb_vertical_pressed_top.png" />
       </if>
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_RESTORE" file="linux_restore.png" />
-        <structure type="chrome_scaled_image" name="IDR_RESTORE_H" file="linux_restore_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_RESTORE_P" file="linux_restore_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_RESTORE" file="linux/linux_restore.png" />
+        <structure type="chrome_scaled_image" name="IDR_RESTORE_H" file="linux/linux_restore_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_RESTORE_P" file="linux/linux_restore_pressed.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_RESTORE" file="restore.png" />
