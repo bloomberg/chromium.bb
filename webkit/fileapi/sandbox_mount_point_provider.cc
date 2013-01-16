@@ -437,8 +437,6 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
   int64 usage = 0;
 
   while (!(file_path_each = enumerator->Next()).empty()) {
-    base::PlatformFileInfo file_info;
-    FilePath platform_file_path;
     usage += enumerator->Size();
     usage += ObfuscatedFileUtil::ComputeFilePathCost(file_path_each);
   }
