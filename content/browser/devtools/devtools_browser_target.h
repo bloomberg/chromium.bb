@@ -9,8 +9,10 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 
 namespace base {
 
@@ -24,53 +26,55 @@ namespace net {
 class HttpServer;
 }  // namespace net
 
-
 namespace content {
 
 // This class handles the "Browser" target for remote debugging.
 class DevToolsBrowserTarget {
  public:
-  // A thin interface to send notifications over WebSocket.
-  class Notifier {
+  typedef base::Callback<void(const std::string& method,
+                              base::DictionaryValue* params,
+                              base::Value* error)> Notifier;
+
+  class DomainHandler {
    public:
-    virtual ~Notifier() {}
-
-    virtual void Notify(const std::string& data) = 0;
-
-   protected:
-    Notifier() {}
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Notifier);
-  };
-
-  class Handler {
-   public:
-    virtual ~Handler();
+    typedef base::Callback<base::DictionaryValue*(
+        const base::DictionaryValue* params,
+        base::Value** error_out)> CommandHandler;
+    virtual ~DomainHandler();
 
     // Returns the domain name for this handler.
-    virtual std::string Domain() = 0;
+    std::string domain() { return domain_; }
 
-    // |return_value| and |error_message_out| ownership is transferred to the
-    // caller.
-    virtual base::Value* OnProtocolCommand(
-        const std::string& method,
-        const base::DictionaryValue* params,
-        base::Value** error_message_out) = 0;
-
-    void set_notifier(Notifier* notifier);
-    Notifier* notifier() const;
+    void RegisterCommandHandler(const std::string& command,
+                                CommandHandler handler);
 
    protected:
-    Handler();
+    explicit DomainHandler(const std::string& domain);
+
+    // |params| and |error_out| ownership is transferred to the
+    // caller.
+    virtual base::DictionaryValue* HandleCommand(
+        const std::string& method,
+        const base::DictionaryValue* params,
+        base::Value** error_out);
+
+    // Sends notification to the client. Passes ownership of |params| and
+    // |error|.
+    void SendNotification(const std::string& method,
+                          base::DictionaryValue* params,
+                          base::Value* error);
 
    private:
-    Notifier* notifier_;
+    friend class DevToolsBrowserTarget;
+    void set_notifier(Notifier notifier) { notifier_ = notifier; }
 
-    DISALLOW_COPY_AND_ASSIGN(Handler);
+    std::string domain_;
+    Notifier notifier_;
+    typedef std::map<std::string, CommandHandler> CommandHandlers;
+    CommandHandlers command_handlers_;
+
+    DISALLOW_COPY_AND_ASSIGN(DomainHandler);
   };
-
-
 
   DevToolsBrowserTarget(base::MessageLoopProxy* message_loop_proxy,
                         net::HttpServer* server,
@@ -80,23 +84,29 @@ class DevToolsBrowserTarget {
   int connection_id() const { return connection_id_; }
 
   // Takes ownership of |handler|.
-  void RegisterHandler(Handler* handler);
+  void RegisterDomainHandler(DomainHandler* handler);
 
   std::string HandleMessage(const std::string& data);
 
  private:
-  scoped_ptr<Notifier> notifier_;
-  const int connection_id_;
-
-  typedef std::map<std::string, Handler*> HandlersMap;
-  HandlersMap handlers_;
+  // Sends notification to the client. Passes ownership of |params| and
+  // |error|.
+  void SendNotification(const std::string& method,
+                        base::DictionaryValue* params,
+                        base::Value* error);
 
   // Takes ownership of |error_object|.
   std::string SerializeErrorResponse(int request_id, base::Value* error_object);
 
-  base::Value* CreateErrorObject(int error_code, const std::string& message);
+  std::string SerializeResponse(int request_id, base::DictionaryValue* result);
 
-  std::string SerializeResponse(int request_id, base::Value* response);
+  base::MessageLoopProxy* const message_loop_proxy_;
+  net::HttpServer* const http_server_;
+  const int connection_id_;
+
+  typedef std::map<std::string, DomainHandler*> DomainHandlerMap;
+  DomainHandlerMap handlers_;
+  base::WeakPtrFactory<DevToolsBrowserTarget> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsBrowserTarget);
 };

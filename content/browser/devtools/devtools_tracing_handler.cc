@@ -15,82 +15,64 @@
 
 namespace content {
 
+namespace {
+
+const char kTracingDomain[] = "Tracing";
+
+const char kTracingStartCommand[] = "Tracing.start";
+const char kTracingEndCommand[] = "Tracing.end";
+
+const char kTracingCompleteNotification[] = "Tracing.tracingComplete";
+const char kTracingDataCollected[] = "Tracing.dataCollected";
+
+const char kCategoriesParam[] = "categories";
+
+}  // namespace
+
 DevToolsTracingHandler::DevToolsTracingHandler()
-    : is_running_(false) {
+    : DevToolsBrowserTarget::DomainHandler(kTracingDomain),
+      is_running_(false) {
+  RegisterCommandHandler(kTracingStartCommand,
+                         Bind(&DevToolsTracingHandler::OnStart,
+                              base::Unretained(this)));
+  RegisterCommandHandler(kTracingEndCommand,
+                         Bind(&DevToolsTracingHandler::OnEnd,
+                              base::Unretained(this)));
 }
 
 DevToolsTracingHandler::~DevToolsTracingHandler() {
 }
 
-std::string DevToolsTracingHandler::Domain() {
-  return "Tracing";
-}
-
 void DevToolsTracingHandler::OnEndTracingComplete() {
   is_running_ = false;
-  SendNotification("Tracing.tracingComplete", "");
+  SendNotification(kTracingCompleteNotification, NULL, NULL);
 }
 
 void DevToolsTracingHandler::OnTraceDataCollected(
     const scoped_refptr<base::RefCountedString>& trace_fragment) {
-  if (is_running_)
-    SendNotification("Tracing.dataCollected", trace_fragment->data());
+  if (is_running_) {
+    base::DictionaryValue* params = new base::DictionaryValue();
+    params->SetString("value", trace_fragment->data());
+    SendNotification(kTracingDataCollected, params, NULL);
+  }
 }
 
-base::Value* DevToolsTracingHandler::OnProtocolCommand(
-    const std::string& method,
+base::DictionaryValue* DevToolsTracingHandler::OnStart(
     const base::DictionaryValue* params,
     base::Value** error_out) {
-  if (method == "Tracing.start")
-    return Start(params);
-  else if (method == "Tracing.end")
-    return End(params);
-
-  base::DictionaryValue* error_object = new base::DictionaryValue();
-  error_object->SetInteger("code", -1);
-  error_object->SetString("message", "Invalid method");
-
-  *error_out = error_object;
-
+  std::string categories;
+  if (params && params->HasKey(kCategoriesParam))
+    params->GetString(kCategoriesParam, &categories);
+  TraceController::GetInstance()->BeginTracing(this, categories);
+  is_running_ = true;
   return NULL;
 }
 
-base::Value* DevToolsTracingHandler::Start(
-    const base::DictionaryValue* params) {
-  std::string categories;
-  if (params && params->HasKey("categories"))
-    params->GetString("categories", &categories);
-  TraceController::GetInstance()->BeginTracing(this, categories);
-  is_running_ = true;
-
-  return base::Value::CreateBooleanValue(true);
-}
-
-base::Value* DevToolsTracingHandler::End(
-    const base::DictionaryValue* /* params */) {
+base::DictionaryValue* DevToolsTracingHandler::OnEnd(
+    const base::DictionaryValue* params,
+    base::Value** error_out) {
   TraceController::GetInstance()->EndTracingAsync(this);
-
-  return base::Value::CreateBooleanValue(true);
+  return NULL;
 }
-
-void DevToolsTracingHandler::SendNotification(
-    const std::string& method, const std::string& value) {
-  scoped_ptr<base::DictionaryValue> ret(new base::DictionaryValue());
-  ret->SetString("method", method);
-
-  if (!value.empty()) {
-    base::DictionaryValue* params = new base::DictionaryValue();
-    params->SetString("value", value);
-
-    ret->Set("params", params);
-  }
-
-  // Serialize response.
-  std::string json_response;
-  base::JSONWriter::Write(ret.get(), &json_response);
-
-  notifier()->Notify(json_response);
-}
-
 
 }  // namespace content

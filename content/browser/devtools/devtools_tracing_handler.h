@@ -16,7 +16,7 @@ class DevToolsWebSocketSender;
 // infrastructure.
 class DevToolsTracingHandler
     : public TraceSubscriber,
-      public DevToolsBrowserTarget::Handler {
+      public DevToolsBrowserTarget::DomainHandler {
  public:
   DevToolsTracingHandler();
   virtual ~DevToolsTracingHandler();
@@ -26,17 +26,11 @@ class DevToolsTracingHandler
   virtual void OnTraceDataCollected(
       const scoped_refptr<base::RefCountedString>& trace_fragment) OVERRIDE;
 
-  // DevToolBrowserTarget::Handler:
-  virtual std::string Domain() OVERRIDE;
-  virtual base::Value* OnProtocolCommand(
-      const std::string& method,
-      const base::DictionaryValue* params,
-      base::Value** error_out) OVERRIDE;
-
  private:
-  base::Value* Start(const base::DictionaryValue* params);
-  base::Value* End(const base::DictionaryValue* params);
-  void SendNotification(const std::string& method, const std::string& value);
+  base::DictionaryValue* OnStart(const base::DictionaryValue* params,
+                                 base::Value** error_out);
+  base::DictionaryValue* OnEnd(const base::DictionaryValue* params,
+                               base::Value** error_out);
 
   bool is_running_;
 
