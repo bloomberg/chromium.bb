@@ -3260,11 +3260,17 @@ bind_screensaver(struct wl_client *client,
 static void
 input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 {
-	struct weston_mode *mode = surface->output->current;
+	struct weston_mode *mode;
 	int32_t width = weston_surface_buffer_width(surface);
 	int32_t height = weston_surface_buffer_height(surface);
-	float x = (mode->width - width) / 2;
-	float y = mode->height - height;
+	float x, y;
+
+	if (!weston_surface_is_mapped(surface))
+		return;
+
+	mode = surface->output->current;
+	x = (mode->width - width) / 2;
+	y = mode->height - height;
 
 	/* Don't map the input panel here, wait for
 	 * show_input_panels signal. */
