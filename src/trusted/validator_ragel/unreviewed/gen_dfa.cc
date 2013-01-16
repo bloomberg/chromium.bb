@@ -668,18 +668,18 @@ class MarkedInstruction : public Instruction {
       required_prefixes_(),
       optional_prefixes_(),
       rex_(),
-      opcode_in_modrm_(false),
-      opcode_in_imm_(false) {
+      signature_after_modrm_(false),
+      signature_after_imm_(false) {
     if (has_flag("branch_hint")) optional_prefixes_.insert("branch_hint");
     if (has_flag("condrep")) optional_prefixes_.insert("condrep");
     if (has_flag("rep")) optional_prefixes_.insert("rep");
     for (std::vector<std::string>::const_iterator opcode = opcodes_.begin();
          opcode != opcodes_.end(); ++opcode)
       if (*opcode == "/") {
-        opcode_in_imm_ = true;
+        signature_after_imm_ = true;
         break;
       } else if (opcode->find('/') != opcode->npos) {
-        opcode_in_modrm_ = true;
+        signature_after_modrm_ = true;
         break;
       }
     // If register is stored in opcode we need to expand opcode now.
@@ -723,8 +723,8 @@ class MarkedInstruction : public Instruction {
                              required_prefixes_,
                              optional_prefixes_,
                              rex_,
-                             opcode_in_modrm_,
-                             opcode_in_imm_);
+                             signature_after_modrm_,
+                             signature_after_imm_);
   }
 
   MarkedInstruction with_operands(
@@ -733,8 +733,8 @@ class MarkedInstruction : public Instruction {
                              required_prefixes_,
                              optional_prefixes_,
                              rex_,
-                             opcode_in_modrm_,
-                             opcode_in_imm_);
+                             signature_after_modrm_,
+                             signature_after_imm_);
   }
 
   MarkedInstruction with_opcodes(
@@ -743,8 +743,8 @@ class MarkedInstruction : public Instruction {
                              required_prefixes_,
                              optional_prefixes_,
                              rex_,
-                             opcode_in_modrm_,
-                             opcode_in_imm_);
+                             signature_after_modrm_,
+                             signature_after_imm_);
   }
 
   MarkedInstruction with_flags(const std::set<std::string>& flags) const {
@@ -752,8 +752,8 @@ class MarkedInstruction : public Instruction {
                              required_prefixes_,
                              optional_prefixes_,
                              rex_,
-                             opcode_in_modrm_,
-                             opcode_in_imm_);
+                             signature_after_modrm_,
+                             signature_after_imm_);
   }
 
   MarkedInstruction with_flag(std::string flag) const {
@@ -857,16 +857,16 @@ class MarkedInstruction : public Instruction {
 
   MarkedInstruction set_opcode_in_modrm(void) const {
     MarkedInstruction result = *this;
-    result.opcode_in_modrm_ = true;
+    result.signature_after_modrm_ = true;
     return result;
   }
 
-  bool opcode_in_modrm(void) const {
-    return opcode_in_modrm_;
+  bool signature_after_modrm(void) const {
+    return signature_after_modrm_;
   }
 
-  bool opcode_in_imm(void) const {
-    return opcode_in_imm_;
+  bool signature_after_imm(void) const {
+    return signature_after_imm_;
   }
 
  private:
@@ -908,29 +908,32 @@ class MarkedInstruction : public Instruction {
     }
   } rex_;
 
-  // True iff “reg” field in “ModR/M byte” is used as an opcode extension.
-  // Note that this covers cases where “reg-to-reg” instruction and
-  // “reg-to-memory” instruction have diffrently-sized operands, e.g. 128bit
+  // True iff "reg" field in "ModR/M byte" is used as an opcode extension.
+  // Note that this covers cases where "reg-to-reg" instruction and
+  // "reg-to-memory" instruction have diffrently-sized operands, e.g. 128bit
   // XMM register and 32bit single-precision float.
-  bool opcode_in_modrm_ : 1;
+  // If this flag is set, we can't tell instruction opcode and/or operand sizes
+  // until we consume ModR/M byte.
+  bool signature_after_modrm_ : 1;
 
-  // True iff “imm” byte is used as an opcode extension.  Used mostly by 3D Now!
-  // instructions, but there are some multimedia instructions which use “imm”
-  // byte in a similar fashion, such as “vcmppd”.
-  bool opcode_in_imm_ : 1;
+  // True iff "imm" byte is used as an opcode extension.  Used mostly by 3D Now!
+  // instructions, but there are some multimedia instructions which use "imm"
+  // byte in a similar fashion, such as "vcmppd". In such cases we don't know
+  // what instruction we are dealing with until we consumed imm byte.
+  bool signature_after_imm_ : 1;
 
   MarkedInstruction(const Instruction& instruction,
                     const std::multiset<std::string>& required_prefixes,
                     const std::multiset<std::string>& optional_prefixes,
                     const RexType& rex,
-                    bool opcode_in_modrm,
-                    bool opcode_in_imm) :
+                    bool signature_after_modrm,
+                    bool signature_after_imm) :
     Instruction(instruction),
     required_prefixes_(required_prefixes),
     optional_prefixes_(optional_prefixes),
     rex_(rex),
-    opcode_in_modrm_(opcode_in_modrm),
-    opcode_in_imm_(opcode_in_imm) {
+    signature_after_modrm_(signature_after_modrm),
+    signature_after_imm_(signature_after_imm) {
   }
 };
 
@@ -1262,23 +1265,34 @@ void PrintOpcodeInImmediate(const MarkedInstruction& instruction) {
       fprintf(out_file, " %s", opcode->c_str());
 }
 
-// PrintOpcodeRecognition prints appropriate actions for the case where opcode
-// is recognized.
+// PrintSignature prints actions describing instruction and its operands' types:
+//  * name of the instruction
+//  * number of operands
+//  * types of the operands
+//  * whether each operand is read and whether each operand is written
 //
-// This may happen in three positions:
-//  • after “official opcode bytes” - normal case.
-//  • after “ModR/M byte”.
-//  • after “imm byte”.
+// Additionally, for implied operands (like %rax or %ds:(%rsi)) actions
+// responsible for recognition of these operands are printed.
 //
-// In all cases we need to store information about the detected instruction:
-//  • name of the instruction.
-//  • number of operands.
-//  • sizes of the operands.
-//  • recognition of implied operands (e.g. %rax or %ds:(%rsi).
-void PrintOpcodeRecognition(const MarkedInstruction& instruction,
-                            bool memory_access) {
+// Example signature:
+//   @instruction_add
+//   @operands_count_is_2
+//   @operand0_8bit
+//   @operand1_8bit
+//   @operand0_readwrite
+//   @operand1_read
+//
+// This function is called as soon as we get all required information. There
+// are three possibilities depending on the encoding:
+//  * after "official opcode bytes" - normal case.
+//  * after "ModR/M byte".
+//  * after "imm byte".
+// These cases are discriminated by signature_after_modrm and
+// signature_after_imm fields.
+void PrintSignature(const MarkedInstruction& instruction,
+                    bool memory_access) {
   const std::vector<std::string>& opcodes = instruction.opcodes();
-  if (instruction.opcode_in_modrm()) {
+  if (instruction.signature_after_modrm()) {
     fprintf(out_file, " (");
     for (std::vector<std::string>::const_reverse_iterator opcode =
            opcodes.rbegin(); opcode != opcodes.rend(); ++opcode)
@@ -1314,7 +1328,7 @@ void PrintOpcodeRecognition(const MarkedInstruction& instruction,
     fprintf(out_file, " @instruction_%s",
             ToCIdentifier(instruction.name()).c_str());
   } else {
-    if (instruction.opcode_in_imm())
+    if (instruction.signature_after_imm())
       fprintf(out_file, " @last_byte_is_not_immediate");
     else if (instruction.has_flag("nacl-amd64-modifiable") &&
              enabled(kParseOperands) &&
@@ -1422,8 +1436,8 @@ void PrintOpcodeRecognition(const MarkedInstruction& instruction,
       (opcodes.size() < 3 ||
        (opcodes[0] != "0xc4" &&
         (opcodes[0] != "0x8f" || opcodes[1] == "/0")))) {
-    if (!instruction.opcode_in_imm() && IsModRMRMIsUsed(instruction)) {
-      if (instruction.opcode_in_modrm())
+    if (!instruction.signature_after_imm() && IsModRMRMIsUsed(instruction)) {
+      if (instruction.signature_after_modrm())
         fprintf(out_file, " any* & ");
       else
         fprintf(out_file, " (");
@@ -1437,9 +1451,9 @@ void PrintOpcodeRecognition(const MarkedInstruction& instruction,
       fprintf(out_file, " @set_spurious_rex_r");
     if (!instruction.rex_w())
       fprintf(out_file, " @set_spurious_rex_w");
-    if (!instruction.opcode_in_imm() && IsModRMRMIsUsed(instruction))
+    if (!instruction.signature_after_imm() && IsModRMRMIsUsed(instruction))
       fprintf(out_file, " any* &");
-  } else if (instruction.opcode_in_modrm())
+  } else if (instruction.signature_after_modrm())
     fprintf(out_file, " any* &");
 }
 
@@ -1578,11 +1592,11 @@ void PrintOneSizeDefinitionNoModRM(const MarkedInstruction& instruction) {
   PrintLegacyPrefixes(instruction);
   PrintREXPrefix(instruction);
   PrintMainOpcodePart(instruction);
-  if (instruction.opcode_in_imm()) {
+  if (instruction.signature_after_imm()) {
     PrintOpcodeInImmediate(instruction);
-    PrintOpcodeRecognition(instruction, false);
+    PrintSignature(instruction, false);
   } else {
-    PrintOpcodeRecognition(instruction, false);
+    PrintSignature(instruction, false);
     PrintImmediateArguments(instruction);
   }
   if (opcodes[0] == "(0x90|0x91|0x92|0x93|0x94|0x95|0x96|0x97)")
@@ -1622,8 +1636,8 @@ void PrintOneSizeDefinitionModRMRegister(const MarkedInstruction& instruction) {
   PrintLegacyPrefixes(adjusted_instruction);
   PrintREXPrefix(adjusted_instruction);
   PrintMainOpcodePart(adjusted_instruction);
-  if (!adjusted_instruction.opcode_in_imm())
-    PrintOpcodeRecognition(adjusted_instruction, false);
+  if (!adjusted_instruction.signature_after_imm())
+    PrintSignature(adjusted_instruction, false);
   fprintf(out_file, " modrm_registers");
   if (enabled(kParseOperands)) {
     size_t operand_index = 0;
@@ -1665,17 +1679,17 @@ void PrintOneSizeDefinitionModRMRegister(const MarkedInstruction& instruction) {
     }
   }
   const std::vector<std::string>& opcodes = adjusted_instruction.opcodes();
-  if (!adjusted_instruction.opcode_in_imm() &&
-      (adjusted_instruction.opcode_in_modrm() ||
+  if (!adjusted_instruction.signature_after_imm() &&
+      (adjusted_instruction.signature_after_modrm() ||
        (enabled(kInstructionName) &&
         !ia32_mode &&
         (opcodes.size() < 3 ||
          (opcodes[0] != "0xc4" &&
           (opcodes[0] != "0x8f" || opcodes[1] == "/0"))))))
     fprintf(out_file, ")");
-  if (adjusted_instruction.opcode_in_imm()) {
+  if (adjusted_instruction.signature_after_imm()) {
     PrintOpcodeInImmediate(adjusted_instruction);
-    PrintOpcodeRecognition(adjusted_instruction, false);
+    PrintSignature(adjusted_instruction, false);
   } else {
     PrintImmediateArguments(adjusted_instruction);
   }
@@ -1722,11 +1736,11 @@ void PrintOneSizeDefinitionModRMMemory(const MarkedInstruction& instruction) {
     PrintLegacyPrefixes(adjusted_instruction);
     PrintREXPrefix(adjusted_instruction);
     PrintMainOpcodePart(adjusted_instruction);
-    if (!adjusted_instruction.opcode_in_imm())
-      PrintOpcodeRecognition(adjusted_instruction, true);
+    if (!adjusted_instruction.signature_after_imm())
+      PrintSignature(adjusted_instruction, true);
     const std::vector<std::string>& opcodes = adjusted_instruction.opcodes();
-    if (!adjusted_instruction.opcode_in_imm() &&
-        (adjusted_instruction.opcode_in_modrm() ||
+    if (!adjusted_instruction.signature_after_imm() &&
+        (adjusted_instruction.signature_after_modrm() ||
          (enabled(kInstructionName) &&
           !ia32_mode &&
           (opcodes.size() < 3 ||
@@ -1782,9 +1796,9 @@ void PrintOneSizeDefinitionModRMMemory(const MarkedInstruction& instruction) {
         !adjusted_instruction.has_flag("no_memory_access"))
       fprintf(out_file, " @check_access");
     fprintf(out_file, ")");
-    if (adjusted_instruction.opcode_in_imm()) {
+    if (adjusted_instruction.signature_after_imm()) {
       PrintOpcodeInImmediate(adjusted_instruction);
-      PrintOpcodeRecognition(adjusted_instruction, true);
+      PrintSignature(adjusted_instruction, true);
     } else {
       PrintImmediateArguments(adjusted_instruction);
     }
@@ -1800,7 +1814,7 @@ void PrintOneSizeDefinitionModRMMemory(const MarkedInstruction& instruction) {
 // “downstream” (that is: above this line) use this description.
 MarkedInstruction ExpandOperandSizeStrings(const MarkedInstruction& instruction,
                                            bool memory_access) {
-  bool opcode_in_modrm = instruction.opcode_in_modrm();
+  bool depends_on_mod = false;
   bool memory_operands = false;
   std::vector<MarkedInstruction::Operand> operands =
     instruction.operands();
@@ -1971,7 +1985,7 @@ MarkedInstruction ExpandOperandSizeStrings(const MarkedInstruction& instruction,
               !operand->write)) {
           operand->enabled = false;
         } else if (enabled(kParseOperands) && memory_or_register) {
-          opcode_in_modrm |= memory_ne_register;
+          depends_on_mod |= memory_ne_register;
           memory_operands |= memory_operand;
         }
       } else {
@@ -1991,10 +2005,11 @@ MarkedInstruction ExpandOperandSizeStrings(const MarkedInstruction& instruction,
          flag != flags.end(); ++flag)
       if (memory_access &&
           strncmp(flag->c_str(), "att-show-memory-suffix-", 23) == 0)
-        opcode_in_modrm = true;
+        depends_on_mod = true;
   }
-  if (opcode_in_modrm &&
-      !instruction.opcode_in_modrm() && !instruction.opcode_in_imm()) {
+  if (depends_on_mod &&
+      !instruction.signature_after_modrm() &&
+      !instruction.signature_after_imm()) {
     std::vector<std::string> opcodes = instruction.opcodes();
     opcodes.push_back(memory_operands ? "/m" : "/r");
     return instruction.set_opcode_in_modrm().with_operands(operands).
