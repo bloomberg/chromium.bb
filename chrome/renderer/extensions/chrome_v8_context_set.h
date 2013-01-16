@@ -69,6 +69,9 @@ class ChromeV8ContextSet {
                                   content::RenderView* render_view,
                                   const GURL& event_url) const;
 
+  // Cleans up contexts belonging to an unloaded extension.
+  void OnExtensionUnloaded(const std::string& extension_id);
+
  private:
   ContextSet contexts_;
 

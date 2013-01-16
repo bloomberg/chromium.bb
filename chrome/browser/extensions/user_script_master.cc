@@ -385,10 +385,6 @@ void UserScriptMaster::Observe(int type,
       }
       user_scripts_ = new_user_scripts;
       should_start_load = true;
-
-      // TODO(aa): Do we want to do something smarter for the scripts that have
-      // already been injected?
-
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {

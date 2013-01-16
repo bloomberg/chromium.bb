@@ -504,6 +504,8 @@ void Dispatcher::OnUnloaded(const std::string& id) {
   // changed origin whitelist.
   user_script_slave_->RemoveIsolatedWorld(id);
 
+  v8_context_set_.OnExtensionUnloaded(id);
+
   // We don't do anything with existing platform-app stylesheets. They will
   // stay resident, but the URL pattern corresponding to the unloaded
   // extension's URL just won't match anything anymore.
