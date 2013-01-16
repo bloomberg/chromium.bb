@@ -338,13 +338,35 @@ input_method_context_commit_string(struct wl_client *client,
 
 static void
 input_method_context_preedit_string(struct wl_client *client,
-				   struct wl_resource *resource,
-				   const char *text,
-				   uint32_t index)
+				    struct wl_resource *resource,
+				    const char *text,
+				    const char *commit)
 {
 	struct input_method_context *context = resource->data;
 
-	text_model_send_preedit_string(&context->model->resource, text, index);
+	text_model_send_preedit_string(&context->model->resource, text, commit);
+}
+
+static void
+input_method_context_preedit_styling(struct wl_client *client,
+				     struct wl_resource *resource,
+				     uint32_t index,
+				     uint32_t length,
+				     uint32_t style)
+{
+	struct input_method_context *context = resource->data;
+
+	text_model_send_preedit_styling(&context->model->resource, index, length, style);
+}
+
+static void
+input_method_context_preedit_cursor(struct wl_client *client,
+				    struct wl_resource *resource,
+				    int32_t cursor)
+{
+	struct input_method_context *context = resource->data;
+
+	text_model_send_preedit_cursor(&context->model->resource, cursor);
 }
 
 static void
@@ -495,6 +517,8 @@ static const struct input_method_context_interface input_method_context_implemen
 	input_method_context_destroy,
 	input_method_context_commit_string,
 	input_method_context_preedit_string,
+	input_method_context_preedit_styling,
+	input_method_context_preedit_cursor,
 	input_method_context_delete_surrounding_text,
 	input_method_context_modifiers_map,
 	input_method_context_keysym,

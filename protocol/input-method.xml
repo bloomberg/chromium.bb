@@ -47,7 +47,19 @@
         Send the pre-edit string text to the applications text model.
       </description>
       <arg name="text" type="string"/>
+      <arg name="commit" type="string"/>
+    </request>
+    <request name="preedit_styling">
       <arg name="index" type="uint"/>
+      <arg name="length" type="uint"/>
+      <arg name="style" type="uint"/>
+    </request>
+    <request name="preedit_cursor">
+      <description summary="pre-edit cursor">
+        Sets the cursor position inside the composing text (as byte index)
+        relative to the start of the composing text.
+      </description>
+      <arg name="index" type="int"/>
     </request>
     <request name="delete_surrounding_text">
       <arg name="index" type="int"/>

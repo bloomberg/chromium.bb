@@ -226,9 +226,11 @@ virtual_keyboard_commit_preedit(struct virtual_keyboard *keyboard)
 	    strlen(keyboard->preedit_string) == 0)
 		return;
 
+	input_method_context_preedit_cursor(keyboard->context,
+					    0);
 	input_method_context_preedit_string(keyboard->context,
 					    "",
-					    0);
+					    "");
 	input_method_context_commit_string(keyboard->context,
 					   keyboard->preedit_string,
 					   strlen(keyboard->preedit_string));
@@ -250,9 +252,11 @@ keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *
 
 			keyboard->keyboard->preedit_string = strcat(keyboard->keyboard->preedit_string,
 								    label);
+			input_method_context_preedit_cursor(keyboard->keyboard->context,
+							    strlen(keyboard->keyboard->preedit_string));
 			input_method_context_preedit_string(keyboard->keyboard->context,
 							    keyboard->keyboard->preedit_string,
-							    strlen(keyboard->keyboard->preedit_string));
+							    keyboard->keyboard->preedit_string);
 			break;
 		case keytype_backspace:
 			if (state != WL_POINTER_BUTTON_STATE_PRESSED)
@@ -263,9 +267,11 @@ keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *
 									     -1, 1);
 			} else {
 				keyboard->keyboard->preedit_string[strlen(keyboard->keyboard->preedit_string) - 1] = '\0';
+				input_method_context_preedit_cursor(keyboard->keyboard->context,
+								    strlen(keyboard->keyboard->preedit_string));
 				input_method_context_preedit_string(keyboard->keyboard->context,
 								    keyboard->keyboard->preedit_string,
-								    strlen(keyboard->keyboard->preedit_string));
+								    keyboard->keyboard->preedit_string);
 			}
 			break;
 		case keytype_enter:
@@ -386,9 +392,11 @@ input_method_context_reset(void *data,
 	fprintf(stderr, "Reset pre-edit buffer\n");
 
 	if (strlen(keyboard->preedit_string)) {
+		input_method_context_preedit_cursor(context,
+						    0);
 		input_method_context_preedit_string(context,
 						    "",
-						    0);
+						    "");
 		free(keyboard->preedit_string);
 		keyboard->preedit_string = strdup("");
 	}

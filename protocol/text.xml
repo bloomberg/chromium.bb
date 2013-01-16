@@ -73,7 +73,7 @@
         be reseted, for example after the text was changed outside of the
         normal input method flow.
       </description>
-     </request>
+    </request>
     <request name="set_micro_focus">
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
@@ -101,7 +101,7 @@
         to the start of the composing text.
       </description>
       <arg name="text" type="string"/>
-      <arg name="index" type="uint"/>
+      <arg name="commit" type="string"/>
     </event>
     <event name="delete_surrounding_text">
       <description summary="delete surrounding text">
@@ -112,7 +112,27 @@
       <arg name="index" type="int"/>
       <arg name="length" type="uint"/>
     </event>
-    <event name="preedit_styling"/>
+    <enum name="preedit_style">
+      <entry name="default" value="1"/>
+      <entry name="active" value="2"/>
+      <entry name="inactive" value="3"/>
+      <entry name="highlight" value="4"/>
+      <entry name="underline" value="5"/>
+      <entry name="selection" value="6"/>
+      <entry name="incorrect" value="7"/>
+    </enum>
+    <event name="preedit_styling">
+      <arg name="index" type="uint"/>
+      <arg name="length" type="uint"/>
+      <arg name="style" type="uint"/>
+    </event>
+    <event name="preedit_cursor">
+      <description summary="pre-edit cursor">
+        Sets the cursor position inside the composing text (as byte index)
+        relative to the start of the composing text.
+      </description>
+      <arg name="index" type="int"/>
+    </event>
     <event name="modifiers_map">
       <description summary="modifiers map">
         Transfer an array of 0-terminated modifiers names. The position in

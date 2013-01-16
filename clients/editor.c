@@ -51,8 +51,14 @@ struct text_entry {
 	int active;
 	uint32_t cursor;
 	uint32_t anchor;
-	char *preedit_text;
-	uint32_t preedit_cursor;
+	struct {
+		char *text;
+		int32_t cursor;
+		char *commit;
+	} preedit;
+	struct {
+		int32_t cursor;
+	} preedit_info;
 	struct text_model *model;
 	struct text_layout *layout;
 	struct {
@@ -312,17 +318,12 @@ static void
 text_model_preedit_string(void *data,
 			  struct text_model *text_model,
 			  const char *text,
-			  uint32_t index)
+			  const char *commit)
 {
 	struct text_entry *entry = data;
 
-	if (index > strlen(text)) {
-		fprintf(stderr, "Invalid cursor index %d\n", index);
-		index = strlen(text);
-	}
-
 	text_entry_delete_selected_text(entry);
-	text_entry_set_preedit(entry, text, index);
+	text_entry_set_preedit(entry, text, entry->preedit_info.cursor);
 
 	widget_schedule_redraw(entry->widget);
 }
@@ -360,8 +361,21 @@ text_model_delete_surrounding_text(void *data,
 
 static void
 text_model_preedit_styling(void *data,
-			   struct text_model *text_model)
+			   struct text_model *text_model,
+			   uint32_t index,
+			   uint32_t length,
+			   uint32_t style)
 {
+}
+
+static void
+text_model_preedit_cursor(void *data,
+			  struct text_model *text_model,
+			  int32_t index)
+{
+	struct text_entry *entry = data;
+
+	entry->preedit_info.cursor = index;
 }
 
 static void
@@ -474,6 +488,7 @@ static const struct text_model_listener text_model_listener = {
 	text_model_preedit_string,
 	text_model_delete_surrounding_text,
 	text_model_preedit_styling,
+	text_model_preedit_cursor,
 	text_model_modifiers_map,
 	text_model_keysym,
 	text_model_selection_replacement,
@@ -496,8 +511,6 @@ text_entry_create(struct editor *editor, const char *text)
 	entry->active = 0;
 	entry->cursor = strlen(text);
 	entry->anchor = entry->cursor;
-	entry->preedit_text = NULL;
-	entry->preedit_cursor = 0;
 	entry->model = text_model_factory_create_text_model(editor->text_model_factory);
 	text_model_add_listener(entry->model, &text_model_listener, entry);
 
@@ -600,17 +613,17 @@ text_entry_update_layout(struct text_entry *entry)
 	char *text;
 
 	assert(((unsigned int)entry->cursor) <= strlen(entry->text) +
-	       (entry->preedit_text ? strlen(entry->preedit_text) : 0));
+	       (entry->preedit.text ? strlen(entry->preedit.text) : 0));
 
-	if (!entry->preedit_text) {
+	if (!entry->preedit.text) {
 		text_layout_set_text(entry->layout, entry->text);
 		return;
 	}
 
-	text = malloc(strlen(entry->text) + strlen(entry->preedit_text) + 1);
+	text = malloc(strlen(entry->text) + strlen(entry->preedit.text) + 1);
 	strncpy(text, entry->text, entry->cursor);
-	strcpy(text + entry->cursor, entry->preedit_text);
-	strcpy(text + entry->cursor + strlen(entry->preedit_text),
+	strcpy(text + entry->cursor, entry->preedit.text);
+	strcpy(text + entry->cursor + strlen(entry->preedit.text),
 	       entry->text + entry->cursor);
 
 	text_layout_set_text(entry->layout, text);
@@ -647,17 +660,17 @@ text_entry_set_preedit(struct text_entry *entry,
 		       const char *preedit_text,
 		       int preedit_cursor)
 {
-	if (entry->preedit_text) {
-		free(entry->preedit_text);
-		entry->preedit_text = NULL;
-		entry->preedit_cursor = 0;
+	if (entry->preedit.text) {
+		free(entry->preedit.text);
+		entry->preedit.text = NULL;
+		entry->preedit.cursor = 0;
 	}
 
 	if (!preedit_text)
 		return;
 
-	entry->preedit_text = strdup(preedit_text);
-	entry->preedit_cursor = preedit_cursor;
+	entry->preedit.text = strdup(preedit_text);
+	entry->preedit.cursor = preedit_cursor;
 
 	text_entry_update_layout(entry);
 }
@@ -670,8 +683,9 @@ text_entry_set_cursor_position(struct text_entry *entry,
 
 	text_model_reset(entry->model);
 
-	if (entry->cursor >= entry->preedit_cursor) {
-		entry->cursor -= entry->preedit_cursor;
+	if (entry->preedit.cursor > 0 &&
+	    entry->cursor >= (uint32_t)entry->preedit.cursor) {
+		entry->cursor -= entry->preedit.cursor;
 	}
 
 	text_entry_update_layout(entry);
@@ -760,9 +774,12 @@ text_entry_draw_cursor(struct text_entry *entry, cairo_t *cr)
 	cairo_text_extents_t extents;
 	cairo_rectangle_t cursor_pos;
 
+	if (entry->preedit.text && entry->preedit.cursor < 0)
+		return;
+
 	text_layout_extents(entry->layout, &extents);
 	text_layout_get_cursor_pos(entry->layout,
-				   entry->cursor + entry->preedit_cursor,
+				   entry->cursor + entry->preedit.cursor,
 				   &cursor_pos);
 
 	cairo_set_line_width(cr, 1.0);
@@ -778,14 +795,14 @@ text_entry_draw_preedit(struct text_entry *entry, cairo_t *cr)
 	cairo_rectangle_t start;
 	cairo_rectangle_t end;
 
-	if (!entry->preedit_text)
+	if (!entry->preedit.text)
 		return;
 
 	text_layout_extents(entry->layout, &extents);
 
 	text_layout_index_to_pos(entry->layout, entry->cursor, &start);
 	text_layout_index_to_pos(entry->layout,
-				 entry->cursor + strlen(entry->preedit_text),
+				 entry->cursor + strlen(entry->preedit.text),
 				 &end);
 
 	cairo_save (cr);
