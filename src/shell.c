@@ -3309,6 +3309,14 @@ input_panel_set_surface(struct wl_client *client,
 	surface->private = shell;
 	surface->output = output;
 
+	/* Do not do anything when surface is already in the list of 
+	 * input panel surfaces
+	 */
+	wl_list_for_each(input_panel_surface, &shell->input_panel.surfaces, link) {
+		if (input_panel_surface->surface == surface)
+			return;
+	}
+
 	input_panel_surface = malloc(sizeof *input_panel_surface);
 	if (!input_panel_surface) {
 		wl_resource_post_no_memory(resource);
