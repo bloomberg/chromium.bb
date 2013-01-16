@@ -913,6 +913,10 @@ void BrowserPlugin::updateGeometry(
   int old_width = width();
   int old_height = height();
   plugin_rect_ = window_rect;
+  if (compositing_helper_) {
+    compositing_helper_->SetContainerSize(gfx::Size(window_rect.width,
+                                                    window_rect.height));
+  }
   // In AutoSize mode, guests don't care when the BrowserPlugin container is
   // resized. If |!resize_ack_received_|, then we are still waiting on a
   // previous resize to be ACK'ed and so we don't issue additional resizes

@@ -47,20 +47,54 @@ void BrowserPluginCompositingHelper::EnableCompositing(bool enable) {
   container_->setWebLayer(enable ? web_layer_.get() : NULL);
 }
 
-void BrowserPluginCompositingHelper::OnBuffersSwapped(const gfx::Size& size,
-                                               const std::string& mailbox_name,
-                                               int gpu_route_id,
-                                               int gpu_host_id) {
+void BrowserPluginCompositingHelper::OnBuffersSwapped(
+    const gfx::Size& size,
+    const std::string& mailbox_name,
+    int gpu_route_id,
+    int gpu_host_id) {
+  if (buffer_size_ != size) {
+    buffer_size_ = size;
+    UpdateUVRect();
+  }
   if (!last_mailbox_valid_)
     SendACK(std::string(), host_routing_id_, gpu_route_id, gpu_host_id, 0);
 
-  last_mailbox_valid_ = !mailbox_name.empty();
-  texture_layer_->setTextureMailbox(mailbox_name,
-                                    base::Bind(&SendACK,
-                                               mailbox_name,
-                                               host_routing_id_,
-                                               gpu_route_id,
-                                               gpu_host_id));
+  bool current_mailbox_valid = !mailbox_name.empty();
+  if (!current_mailbox_valid && !last_mailbox_valid_)
+    return;
+
+  cc::TextureLayer::MailboxCallback callback;
+  if (current_mailbox_valid) {
+    callback = base::Bind(&SendACK,
+                          mailbox_name,
+                          host_routing_id_,
+                          gpu_route_id,
+                          gpu_host_id);
+  }
+  texture_layer_->setTextureMailbox(mailbox_name, callback);
+  last_mailbox_valid_ = current_mailbox_valid;
+}
+
+void BrowserPluginCompositingHelper::SetContainerSize(const gfx::Size& size) {
+  if (container_size_ == size)
+    return;
+
+  container_size_ = size;
+  UpdateUVRect();
+}
+
+void BrowserPluginCompositingHelper::UpdateUVRect() {
+  if (!texture_layer_)
+    return;
+
+  gfx::RectF uv_rect(0, 0, 1, 1);
+  if (!buffer_size_.IsEmpty() && !container_size_.IsEmpty()) {
+    uv_rect.set_width(static_cast<float>(container_size_.width()) /
+                      static_cast<float>(buffer_size_.width()));
+    uv_rect.set_height(static_cast<float>(container_size_.height()) /
+                       static_cast<float>(buffer_size_.height()));
+  }
+  texture_layer_->setUVRect(uv_rect);
 }
 
 }  // namespace content

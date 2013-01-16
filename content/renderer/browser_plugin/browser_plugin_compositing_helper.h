@@ -34,10 +34,16 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper {
                         const std::string& mailbox_name,
                         int gpu_route_id,
                         int gpu_host_id);
+  void SetContainerSize(const gfx::Size&);
 
  private:
+  void UpdateUVRect();
+
   int host_routing_id_;
   bool last_mailbox_valid_;
+
+  gfx::Size buffer_size_;
+  gfx::Size container_size_;
 
   scoped_refptr<cc::TextureLayer> texture_layer_;
   scoped_ptr<WebKit::WebLayer> web_layer_;
