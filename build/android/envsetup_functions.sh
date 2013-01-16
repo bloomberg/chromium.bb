@@ -129,9 +129,6 @@ common_vars_defines() {
       print_usage
       return 1
   esac
-
-  DEFINES+=" android_gdbserver=${ANDROID_NDK_ROOT}/prebuilt/\
-android-${TARGET_ARCH}/gdbserver/gdbserver"
 }
 
 
@@ -232,16 +229,6 @@ sdk_build_init() {
   unset ANDROID_TOOLCHAIN
 
   common_vars_defines
-
-  # Sets android specific directories to NOT_SDK_COMPLIANT.  This will allow
-  # android_gyp to generate make files, but will cause errors when (and only
-  # when) building targets that depend on these directories.
-  DEFINES+=" android_sdk=${ANDROID_SDK_ROOT}/${sdk_suffix}"
-  DEFINES+=" android_sdk_root=${ANDROID_SDK_ROOT}"
-  DEFINES+=" android_sdk_tools=${ANDROID_SDK_ROOT}/platform-tools"
-  DEFINES+=" android_sdk_version=${ANDROID_SDK_VERSION}"
-  DEFINES+=" android_toolchain=${ANDROID_TOOLCHAIN}"
-
   common_gyp_vars
 
   if [[ -n "$CHROME_ANDROID_BUILD_WEBVIEW" ]]; then
