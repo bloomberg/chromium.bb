@@ -1745,3 +1745,11 @@
    fun:EventUnittest_NamedEventDispatch_Test
    fun:testing::internal::TestFactoryImpl::CreateTest
 }
+{
+   bug_170332
+   Heapcheck:Leak
+   fun:CancelableTaskTracker::NewTrackedTaskId
+   fun:PasswordStore::GetLogins
+   fun:PasswordStoreTest_IgnoreOldWwwGoogleLogins_Test::TestBody
+}
+

@@ -208,3 +208,10 @@
   fun:media::ReleaseData
   fun:base::internal::RunnableAdapter::Run
 }
+
+{
+   bug_170334
+   ThreadSanitizer:Race
+   ...
+   fun:net::NetworkChangeNotifierWinTest::~NetworkChangeNotifierWinTest
+}
