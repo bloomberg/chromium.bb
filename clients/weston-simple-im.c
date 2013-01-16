@@ -70,6 +70,8 @@ struct simple_im {
 	xkb_mod_mask_t shift_mask;
 
 	keyboard_input_key_handler_t key_handler;
+
+	uint32_t serial;
 };
 
 static const struct compose_seq compose_seqs[] = {
@@ -110,13 +112,16 @@ input_method_context_surrounding_text(void *data,
 
 static void
 input_method_context_reset(void *data,
-			   struct input_method_context *context)
+			   struct input_method_context *context,
+			   uint32_t serial)
 {
 	struct simple_im *keyboard = data;
 
 	fprintf(stderr, "Reset pre-edit buffer\n");
 
 	keyboard->compose_state = state_normal;
+
+	keyboard->serial = serial;
 }
 
 static const struct input_method_context_listener input_method_context_listener = {
@@ -247,7 +252,8 @@ static const struct wl_keyboard_listener input_method_keyboard_listener = {
 static void
 input_method_activate(void *data,
 		      struct input_method *input_method,
-		      struct input_method_context *context)
+		      struct input_method_context *context,
+		      uint32_t serial)
 {
 	struct simple_im *keyboard = data;
 
@@ -255,6 +261,8 @@ input_method_activate(void *data,
 		input_method_context_destroy(keyboard->context);
 
 	keyboard->compose_state = state_normal;
+
+	keyboard->serial = serial;
 
 	keyboard->context = context;
 	input_method_context_add_listener(context,
@@ -371,10 +379,13 @@ simple_im_key_handler(struct simple_im *keyboard,
 		if (cs) {
 			if (cs->keys[i + 1] == 0) {
 				input_method_context_preedit_cursor(keyboard->context,
+								    keyboard->serial,
 								    0);
 				input_method_context_preedit_string(keyboard->context,
+								    keyboard->serial,
 								    "", "");
 				input_method_context_commit_string(keyboard->context,
+								   keyboard->serial,
 								   cs->text,
 								   strlen(cs->text));
 				keyboard->compose_state = state_normal;
@@ -386,8 +397,10 @@ simple_im_key_handler(struct simple_im *keyboard,
 				}
 
 				input_method_context_preedit_cursor(keyboard->context,
+								    keyboard->serial,
 								    strlen(text));
 				input_method_context_preedit_string(keyboard->context,
+								    keyboard->serial,
 								    text,
 								    text);
 			}
@@ -398,10 +411,13 @@ simple_im_key_handler(struct simple_im *keyboard,
 				idx += xkb_keysym_to_utf8(keyboard->compose_seq.keys[j], text + idx, sizeof(text) - idx);
 			}
 			input_method_context_preedit_cursor(keyboard->context,
+							    keyboard->serial,
 							    0);
 			input_method_context_preedit_string(keyboard->context,
+							    keyboard->serial,
 							    "", "");
 			input_method_context_commit_string(keyboard->context,
+							   keyboard->serial,
 							   text,
 							   strlen(text));
 			keyboard->compose_state = state_normal;
@@ -418,6 +434,7 @@ simple_im_key_handler(struct simple_im *keyboard,
 		return;
 
 	input_method_context_commit_string(keyboard->context,
+					   keyboard->serial,
 					   text,
 					   strlen(text));
 }

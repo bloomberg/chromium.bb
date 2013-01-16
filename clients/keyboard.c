@@ -41,6 +41,7 @@ struct virtual_keyboard {
 	struct {
 		xkb_mod_mask_t shift_mask;
 	} keysym;
+	uint32_t serial;
 };
 
 enum key_type {
@@ -227,11 +228,14 @@ virtual_keyboard_commit_preedit(struct virtual_keyboard *keyboard)
 		return;
 
 	input_method_context_preedit_cursor(keyboard->context,
+					    keyboard->serial,
 					    0);
 	input_method_context_preedit_string(keyboard->context,
+					    keyboard->serial,
 					    "",
 					    "");
 	input_method_context_commit_string(keyboard->context,
+					   keyboard->serial,
 					   keyboard->preedit_string,
 					   strlen(keyboard->preedit_string));
 	free(keyboard->preedit_string);
@@ -253,8 +257,10 @@ keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *
 			keyboard->keyboard->preedit_string = strcat(keyboard->keyboard->preedit_string,
 								    label);
 			input_method_context_preedit_cursor(keyboard->keyboard->context,
+							    keyboard->keyboard->serial,
 							    strlen(keyboard->keyboard->preedit_string));
 			input_method_context_preedit_string(keyboard->keyboard->context,
+							    keyboard->keyboard->serial,
 							    keyboard->keyboard->preedit_string,
 							    keyboard->keyboard->preedit_string);
 			break;
@@ -264,12 +270,15 @@ keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *
 
 			if (strlen(keyboard->keyboard->preedit_string) == 0) {
 				input_method_context_delete_surrounding_text(keyboard->keyboard->context,
+									     keyboard->keyboard->serial,
 									     -1, 1);
 			} else {
 				keyboard->keyboard->preedit_string[strlen(keyboard->keyboard->preedit_string) - 1] = '\0';
 				input_method_context_preedit_cursor(keyboard->keyboard->context,
+								    keyboard->keyboard->serial,
 								    strlen(keyboard->keyboard->preedit_string));
 				input_method_context_preedit_string(keyboard->keyboard->context,
+								    keyboard->keyboard->serial,
 								    keyboard->keyboard->preedit_string,
 								    keyboard->keyboard->preedit_string);
 			}
@@ -385,7 +394,8 @@ input_method_context_surrounding_text(void *data,
 
 static void
 input_method_context_reset(void *data,
-			   struct input_method_context *context)
+			   struct input_method_context *context,
+			   uint32_t serial)
 {
 	struct virtual_keyboard *keyboard = data;
 
@@ -393,13 +403,17 @@ input_method_context_reset(void *data,
 
 	if (strlen(keyboard->preedit_string)) {
 		input_method_context_preedit_cursor(context,
+						    serial,
 						    0);
 		input_method_context_preedit_string(context,
+						    serial,
 						    "",
 						    "");
 		free(keyboard->preedit_string);
 		keyboard->preedit_string = strdup("");
 	}
+
+	keyboard->serial = serial;
 }
 
 static const struct input_method_context_listener input_method_context_listener = {
@@ -410,7 +424,8 @@ static const struct input_method_context_listener input_method_context_listener 
 static void
 input_method_activate(void *data,
 		      struct input_method *input_method,
-		      struct input_method_context *context)
+		      struct input_method_context *context,
+		      uint32_t serial)
 {
 	struct virtual_keyboard *keyboard = data;
 	struct wl_array modifiers_map;
@@ -422,6 +437,7 @@ input_method_activate(void *data,
 		free(keyboard->preedit_string);
 
 	keyboard->preedit_string = strdup("");
+	keyboard->serial = serial;
 
 	keyboard->context = context;
 	input_method_context_add_listener(context,

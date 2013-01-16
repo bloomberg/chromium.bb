@@ -64,6 +64,7 @@ struct text_entry {
 	struct {
 		xkb_mod_mask_t shift_mask;
 	} keysym;
+	uint32_t serial;
 };
 
 struct editor {
@@ -300,6 +301,7 @@ static void text_entry_delete_selected_text(struct text_entry *entry);
 static void
 text_model_commit_string(void *data,
 			 struct text_model *text_model,
+			 uint32_t serial,
 			 const char *text,
 			 uint32_t index)
 {
@@ -317,6 +319,7 @@ text_model_commit_string(void *data,
 static void
 text_model_preedit_string(void *data,
 			  struct text_model *text_model,
+			  uint32_t serial,
 			  const char *text,
 			  const char *commit)
 {
@@ -331,6 +334,7 @@ text_model_preedit_string(void *data,
 static void
 text_model_delete_surrounding_text(void *data,
 				   struct text_model *text_model,
+				   uint32_t serial,
 				   int32_t index,
 				   uint32_t length)
 {
@@ -362,6 +366,7 @@ text_model_delete_surrounding_text(void *data,
 static void
 text_model_preedit_styling(void *data,
 			   struct text_model *text_model,
+			   uint32_t serial,
 			   uint32_t index,
 			   uint32_t length,
 			   uint32_t style)
@@ -371,6 +376,7 @@ text_model_preedit_styling(void *data,
 static void
 text_model_preedit_cursor(void *data,
 			  struct text_model *text_model,
+			  uint32_t serial,
 			  int32_t index)
 {
 	struct text_entry *entry = data;
@@ -594,7 +600,10 @@ text_entry_activate(struct text_entry *entry,
 {
 	struct wl_surface *surface = window_get_wl_surface(entry->window);
 
+	entry->serial++;
+
 	text_model_activate(entry->model,
+			    entry->serial,
 			    seat,
 			    surface);
 }
@@ -681,7 +690,9 @@ text_entry_set_cursor_position(struct text_entry *entry,
 {
 	entry->cursor = text_layout_xy_to_index(entry->layout, x, y);
 
-	text_model_reset(entry->model);
+	entry->serial++;
+
+	text_model_reset(entry->model, entry->serial);
 
 	if (entry->preedit.cursor > 0 &&
 	    entry->cursor >= (uint32_t)entry->preedit.cursor) {

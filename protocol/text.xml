@@ -56,6 +56,7 @@
         model and tracked for focus lost. The activated event is emitted on
         successful activation.
       </description>
+      <arg name="serial" type="uint"/>
       <arg name="seat" type="object" interface="wl_seat"/>
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
@@ -73,6 +74,7 @@
         be reseted, for example after the text was changed outside of the
         normal input method flow.
       </description>
+      <arg name="serial" type="uint"/>
     </request>
     <request name="set_micro_focus">
       <arg name="x" type="int"/>
@@ -90,6 +92,7 @@
         or the result of some composing (pre-edit). It also sets the new
         cursor position (as byte index) relative to the inserted text.
       </description>
+      <arg name="serial" type="uint"/>
       <arg name="text" type="string"/>
       <arg name="index" type="uint"/>
     </event>
@@ -100,6 +103,7 @@
         be removed. It also sets the cursor position (as byte index) relative
         to the start of the composing text.
       </description>
+      <arg name="serial" type="uint"/>
       <arg name="text" type="string"/>
       <arg name="commit" type="string"/>
     </event>
@@ -109,6 +113,7 @@
         deleted. Index is relative to the current cursor (as byte index).
         Length is the length of deleted text (as bytes).
       </description>
+      <arg name="serial" type="uint"/>
       <arg name="index" type="int"/>
       <arg name="length" type="uint"/>
     </event>
@@ -122,6 +127,7 @@
       <entry name="incorrect" value="7"/>
     </enum>
     <event name="preedit_styling">
+      <arg name="serial" type="uint"/>
       <arg name="index" type="uint"/>
       <arg name="length" type="uint"/>
       <arg name="style" type="uint"/>
@@ -131,6 +137,7 @@
         Sets the cursor position inside the composing text (as byte index)
         relative to the start of the composing text.
       </description>
+      <arg name="serial" type="uint"/>
       <arg name="index" type="int"/>
     </event>
     <event name="modifiers_map">
