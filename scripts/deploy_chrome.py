@@ -37,9 +37,6 @@ from chromite.lib import sudo
 
 _USAGE = "deploy_chrome [--]\n\n %s" % __doc__
 
-GS_HTTP = 'https://commondatastorage.googleapis.com'
-GSUTIL_URL = '%s/chromeos-public/gsutil.tar.gz' % GS_HTTP
-GS_RETRIES = 5
 KERNEL_A_PARTITION = 2
 KERNEL_B_PARTITION = 4
 
