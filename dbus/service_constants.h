@@ -698,6 +698,7 @@ const char kLinkMonitorTechnologiesProperty[] =
 const char kPortalCheckIntervalProperty[] = "PortalCheckInterval";
 const char kShortDNSTimeoutTechnologiesProperty[] =
     "ShortDNSTimeoutTechnologies";
+const char kUninitializedTechnologiesProperty[] = "UninitializedTechnologies";
 
 // Service property names.
 const char kActivateOverNonCellularNetworkProperty[] =
