@@ -592,11 +592,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(ChromeViewHostMsg_GetSearchProviderInstallState,
                            GURL /* inquiry url */,
                            search_provider::InstallState /* install */)
 
-// Send back histograms as vector of pickled-histogram strings.
-IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_RendererHistograms,
-                     int, /* sequence number of Renderer Histograms. */
-                     std::vector<std::string>)
-
 // Sends back stats about the V8 heap.
 IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_V8HeapStats,
                      int /* size of heap (allocated from the OS) */,
@@ -622,12 +617,6 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedUnauthorizedPlugin,
 // cache and current renderer framerate.
 IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_ResourceTypeStats,
                      WebKit::WebCache::ResourceTypeStats)
-
-
-// Notifies the browser of the language (ISO 639_1 code language, such as fr,
-// en, zh...) of the current page.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_PageLanguageDetermined,
-                    std::string /* the language */)
 
 // Notifies the browser that a page has been translated.
 IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_PageTranslated,

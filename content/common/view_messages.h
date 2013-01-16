@@ -1542,11 +1542,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateTitle,
                     string16 /* title */,
                     WebKit::WebTextDirection /* title direction */)
 
-// Changes the icon url for the page in the UI.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateIconURL,
-                    int32,
-                    GURL)
-
 // Change the encoding name of the page in UI when the page has detected
 // proper encoding name.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateEncoding,
@@ -2031,11 +2026,6 @@ IPC_SYNC_MESSAGE_ROUTED3_2(ViewHostMsg_RunBeforeUnloadConfirm,
                            bool      /* in - is a reload */,
                            bool      /* out - success */,
                            string16  /* out - This is ignored.*/)
-
-// Sent when the renderer process is done processing a DataReceived
-// message.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DataReceived_ACK,
-                    int /* request_id */)
 
 // Sent when a provisional load on the main frame redirects.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_DidRedirectProvisionalLoad,
