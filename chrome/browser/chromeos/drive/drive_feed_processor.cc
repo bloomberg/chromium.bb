@@ -17,6 +17,21 @@ using content::BrowserThread;
 
 namespace drive {
 
+namespace {
+
+// Callback for DriveResourceMetadata::SetLargestChangestamp.
+// Runs |on_complete_callback|. |on_complete_callback| must not be null.
+void RunOnCompleteCallback(const base::Closure& on_complete_callback,
+                           DriveFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!on_complete_callback.is_null());
+  DCHECK_EQ(DRIVE_FILE_OK, error);
+
+  on_complete_callback.Run();
+}
+
+}  // namespace
+
 class DriveFeedProcessor::FeedToEntryProtoMapUMAStats {
  public:
   FeedToEntryProtoMapUMAStats()
@@ -382,11 +397,11 @@ void DriveFeedProcessor::OnUpdateRootUploadUrl(
 
 void DriveFeedProcessor::OnComplete() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!on_complete_callback_.is_null());
 
   resource_metadata_->set_loaded(true);
-  resource_metadata_->set_largest_changestamp(largest_changestamp_);
-  on_complete_callback_.Run();
+  resource_metadata_->SetLargestChangestamp(
+      largest_changestamp_,
+      base::Bind(&RunOnCompleteCallback, on_complete_callback_));
 }
 
 void DriveFeedProcessor::Clear() {

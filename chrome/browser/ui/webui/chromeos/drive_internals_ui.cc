@@ -235,6 +235,14 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::AccountMetadataFeed> account_metadata);
 
+  // Callback for DriveFilesystem::GetMetadata for local update.
+  void OnGetFilesystemMetadataForLocal(
+      const drive::DriveFileSystemMetadata& metadata);
+
+  // Callback for DriveFilesystem::GetMetadata for local update.
+  void OnGetFilesystemMetadataForDeltaUpdate(
+      const drive::DriveFileSystemMetadata& metadata);
+
   // Called when the page requests periodic update.
   void OnPeriodicUpdate(const base::ListValue* args);
 
@@ -401,11 +409,18 @@ void DriveInternalsWebUIHandler::UpdateAccountMetadataSection(
 
 void DriveInternalsWebUIHandler::UpdateLocalMetadataSection(
     google_apis::DriveServiceInterface* drive_service) {
-  DCHECK(drive_service);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  GetSystemService()->file_system()->GetMetadata(
+      base::Bind(&DriveInternalsWebUIHandler::OnGetFilesystemMetadataForLocal,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForLocal(
+    const drive::DriveFileSystemMetadata& metadata) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::DictionaryValue local_metadata;
-  const drive::DriveFileSystemMetadata metadata =
-      GetSystemService()->file_system()->GetMetadata();
   local_metadata.SetDouble("account-largest-changestamp-local",
                            metadata.largest_changestamp);
   local_metadata.SetBoolean("account-metadata-loaded", metadata.loaded);
@@ -414,8 +429,17 @@ void DriveInternalsWebUIHandler::UpdateLocalMetadataSection(
 }
 
 void DriveInternalsWebUIHandler::UpdateDeltaUpdateStatusSection() {
-  const drive::DriveFileSystemMetadata metadata =
-      GetSystemService()->file_system()->GetMetadata();
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  GetSystemService()->file_system()->GetMetadata(
+      base::Bind(
+          &DriveInternalsWebUIHandler::OnGetFilesystemMetadataForDeltaUpdate,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForDeltaUpdate(
+    const drive::DriveFileSystemMetadata& metadata) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::DictionaryValue delta_update_status;
   delta_update_status.SetBoolean("push-notification-enabled",

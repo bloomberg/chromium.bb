@@ -230,6 +230,20 @@ void DriveResourceMetadata::ClearRoot() {
   root_.reset();
 }
 
+void DriveResourceMetadata::GetLargestChangestamp(
+    const GetChangestampCallback& callback) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(callback, largest_changestamp_));
+}
+
+void DriveResourceMetadata::SetLargestChangestamp(
+    int64 value,
+    const FileOperationCallback& callback) {
+  largest_changestamp_ = value;
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(callback, DRIVE_FILE_OK));
+}
+
 void DriveResourceMetadata::AddEntryToDirectory(
     const FilePath& directory_path,
     scoped_ptr<google_apis::ResourceEntry> entry,

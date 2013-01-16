@@ -134,7 +134,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                scoped_ptr<google_apis::ResourceEntry> doc_entry,
                                const FilePath& file_content_path,
                                const FileOperationCallback& callback) OVERRIDE;
-  virtual DriveFileSystemMetadata GetMetadata() const OVERRIDE;
+  virtual void GetMetadata(
+      const GetFilesystemMetadataCallback& callback) OVERRIDE;
   virtual void Reload() OVERRIDE;
 
   // file_system::OperationObserver overrides.

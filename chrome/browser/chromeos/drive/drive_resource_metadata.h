@@ -90,6 +90,8 @@ typedef base::Callback<void(DriveFileError error,
 typedef base::Callback<void(const std::set<FilePath>&)>
     GetChildDirectoriesCallback;
 
+typedef base::Callback<void(int64)> GetChangestampCallback;
+
 // This is a part of EntryInfoPairResult.
 struct EntryInfoResult {
   EntryInfoResult();
@@ -132,14 +134,15 @@ class DriveResourceMetadata {
   size_t serialized_size() const { return serialized_size_; }
   void set_serialized_size(size_t size) { serialized_size_ = size; }
 
-  // Largest change timestamp that was the source of content for the current
-  // state of the root directory.
-  int64 largest_changestamp() const { return largest_changestamp_; }
-  void set_largest_changestamp(int64 value) { largest_changestamp_ = value; }
-
   // True if the file system feed is loaded from the cache or from the server.
   bool loaded() const { return loaded_; }
   void set_loaded(bool loaded) { loaded_ = loaded; }
+
+  // Largest change timestamp that was the source of content for the current
+  // state of the root directory.
+  void GetLargestChangestamp(const GetChangestampCallback& callback);
+  void SetLargestChangestamp(int64 value,
+                             const FileOperationCallback& callback);
 
   // Add |entry| to directory with path |directory_path| and invoke the
   // callback asynchronously.

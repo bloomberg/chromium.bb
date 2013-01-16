@@ -153,6 +153,19 @@ void RunGetEntryInfoWithFilePathCallback(
   callback.Run(error, path, entry_proto.Pass());
 }
 
+// Callback for DriveResourceMetadata::GetLargestChangestamp.
+// |callback| must not be null.
+void OnGetLargestChangestamp(
+    DriveFileSystemMetadata metadata,  // Will be modified.
+    const GetFilesystemMetadataCallback& callback,
+    int64 largest_changestamp) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  metadata.largest_changestamp = largest_changestamp;
+  callback.Run(metadata);
+}
+
 }  // namespace
 
 // DriveFileSystem::FindFirstMissingParentDirectoryParams implementation.
@@ -1781,9 +1794,12 @@ void DriveFileSystem::AddUploadedFileToCache(
                 params.callback);
 }
 
-DriveFileSystemMetadata DriveFileSystem::GetMetadata() const {
+void DriveFileSystem::GetMetadata(
+    const GetFilesystemMetadataCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
   DriveFileSystemMetadata metadata;
-  metadata.largest_changestamp = resource_metadata_->largest_changestamp();
   metadata.loaded = resource_metadata_->loaded();
   metadata.refreshing = feed_loader_->refreshing();
 
@@ -1793,7 +1809,8 @@ DriveFileSystemMetadata DriveFileSystem::GetMetadata() const {
   metadata.last_update_check_time = last_update_check_time_;
   metadata.last_update_check_error = last_update_check_error_;
 
-  return metadata;
+  resource_metadata_->GetLargestChangestamp(
+      base::Bind(&OnGetLargestChangestamp, metadata, callback));
 }
 
 void DriveFileSystem::OnDisableDriveHostedFilesChanged() {

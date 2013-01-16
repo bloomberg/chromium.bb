@@ -34,10 +34,17 @@ void CopyResultsFromInitFromDBCallback(DriveFileError* expected_error,
   *expected_error = actual_error;
 }
 
+// Copies result from GetChildDirectoriesCallback.
 void CopyResultFromGetChildDirectoriesCallback(
     std::set<FilePath>* out_child_directories,
     const std::set<FilePath>& in_child_directories) {
   *out_child_directories = in_child_directories;
+}
+
+// Copies result from GetChangestampCallback.
+void CopyResultFromGetChangestampCallback(
+    int64* out_changestamp, int64 in_changestamp) {
+  *out_changestamp = in_changestamp;
 }
 
 }  // namespace
@@ -178,6 +185,26 @@ TEST_F(DriveResourceMetadataTest, VersionCheck) {
   ASSERT_TRUE(proto.SerializeToString(&serialized_proto));
   // This should fail as the version is newer.
   ASSERT_FALSE(resource_metadata.ParseFromString(serialized_proto));
+}
+
+TEST_F(DriveResourceMetadataTest, LargestChangestamp) {
+  DriveResourceMetadata resource_metadata;
+
+  int64 in_changestamp = 123456;
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  resource_metadata.SetLargestChangestamp(
+      in_changestamp,
+      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback,
+                 &error));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+
+  int64 out_changestamp = 0;
+  resource_metadata.GetLargestChangestamp(
+      base::Bind(&CopyResultFromGetChangestampCallback,
+                 &out_changestamp));
+  google_apis::test_util::RunBlockingPoolTask();
+  DCHECK_EQ(in_changestamp, out_changestamp);
 }
 
 TEST_F(DriveResourceMetadataTest, GetEntryByResourceId_RootDirectory) {

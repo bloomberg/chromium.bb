@@ -72,6 +72,10 @@ typedef base::Callback<void(DriveFileError error,
                             int64 bytes_total,
                             int64 bytes_used)> GetAvailableSpaceCallback;
 
+// Used to get drive filesystem metadata.
+typedef base::Callback<void(const DriveFileSystemMetadata&)>
+    GetFilesystemMetadataCallback;
+
 // Drive file system abstraction layer.
 // The interface is defined to make DriveFileSystem mockable.
 class DriveFileSystemInterface {
@@ -341,8 +345,9 @@ class DriveFileSystemInterface {
                                const FileOperationCallback& callback) = 0;
 
   // Returns miscellaneous metadata of the file system like the largest
-  // timestamp. Used in chrome:drive-internals.
-  virtual DriveFileSystemMetadata GetMetadata() const = 0;
+  // timestamp. Used in chrome:drive-internals. |callback| must not be null.
+  virtual void GetMetadata(
+      const GetFilesystemMetadataCallback& callback) = 0;
 
   // Reloads the file system feeds from the server.
   virtual void Reload() = 0;

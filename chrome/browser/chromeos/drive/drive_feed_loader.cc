@@ -256,9 +256,6 @@ void DriveFeedLoader::ReloadFromServerIfNeeded(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  DVLOG(1) << "ReloadFromServerIfNeeded local_changestamp="
-           << resource_metadata_->largest_changestamp()
-           << ", loaded=" << resource_metadata_->loaded();
 
   // Sets the refreshing flag, so that the caller does not send refresh requests
   // in parallel (see DriveFileSystem::CheckForUpdates). Corresponding
@@ -291,15 +288,28 @@ void DriveFeedLoader::OnGetAccountMetadata(
   DCHECK(!callback.is_null());
   DCHECK(refreshing_);
 
-  int64 local_changestamp = resource_metadata_->largest_changestamp();
   int64 remote_changestamp = 0;
-
   // When account metadata successfully fetched, parse the latest changestamp.
   if (util::GDataToDriveFileError(status) == DRIVE_FILE_OK) {
     DCHECK(account_metadata);
     webapps_registry_->UpdateFromFeed(*account_metadata);
     remote_changestamp = account_metadata->largest_changestamp();
   }
+
+  resource_metadata_->GetLargestChangestamp(
+      base::Bind(&DriveFeedLoader::CompareChangestampsAndLoadIfNeeded,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback,
+                 remote_changestamp));
+}
+
+void DriveFeedLoader::CompareChangestampsAndLoadIfNeeded(
+    const FileOperationCallback& callback,
+    int64 remote_changestamp,
+    int64 local_changestamp) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  DCHECK(refreshing_);
 
   if (remote_changestamp > 0 && local_changestamp >= remote_changestamp) {
     if (local_changestamp > remote_changestamp) {
