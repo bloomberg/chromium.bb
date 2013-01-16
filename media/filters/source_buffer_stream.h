@@ -246,6 +246,10 @@ class MEDIA_EXPORT SourceBufferStream {
   // have a keyframe after |timestamp| then kNoTimestamp() is returned.
   base::TimeDelta FindKeyframeAfterTimestamp(const base::TimeDelta timestamp);
 
+  // Returns "VIDEO" for a video SourceBufferStream and "AUDIO" for an audio
+  // one.
+  std::string GetStreamTypeName() const;
+
   // Callback used to report error strings that can help the web developer
   // figure out what is wrong with the content.
   LogCB log_cb_;

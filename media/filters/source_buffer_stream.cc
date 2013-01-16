@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 namespace media {
@@ -364,6 +365,10 @@ void SourceBufferStream::OnNewMediaSegment(
 
 bool SourceBufferStream::Append(
     const SourceBufferStream::BufferQueue& buffers) {
+  TRACE_EVENT2("mse", "SourceBufferStream::Append",
+               "stream type", GetStreamTypeName(),
+               "buffers to append", buffers.size());
+
   DCHECK(!buffers.empty());
   DCHECK(media_segment_start_time_ != kNoTimestamp());
 
@@ -554,6 +559,10 @@ void SourceBufferStream::GarbageCollectIfNeeded() {
 
 int SourceBufferStream::FreeBuffers(int total_bytes_to_free,
                                     bool reverse_direction) {
+  TRACE_EVENT2("mse", "SourceBufferStream::FreeBuffers",
+               "total bytes to free", total_bytes_to_free,
+               "reverse direction", reverse_direction);
+
   DCHECK_GT(total_bytes_to_free, 0);
   int bytes_to_free = total_bytes_to_free;
   int bytes_freed = 0;
@@ -1232,6 +1241,16 @@ base::TimeDelta SourceBufferStream::FindKeyframeAfterTimestamp(
   // First check for a keyframe timestamp >= |timestamp|
   // in the current range.
   return (*itr)->NextKeyframeTimestamp(timestamp);
+}
+
+std::string SourceBufferStream::GetStreamTypeName() const {
+  if (!video_configs_.empty()) {
+    DCHECK(audio_configs_.empty());
+    return "VIDEO";
+  }
+
+  DCHECK(!audio_configs_.empty());
+  return "AUDIO";
 }
 
 SourceBufferRange::SourceBufferRange(
