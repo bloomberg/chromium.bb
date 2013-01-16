@@ -966,10 +966,13 @@ bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurfa
     // Since we will create a new resource provider, we cannot continue to use
     // the old resources (i.e. renderSurfaces and texture IDs). Clear them
     // before we destroy the old resource provider.
-    if (rootLayer()) {
+    if (rootLayer())
         clearRenderSurfaces();
-        sendDidLoseOutputSurfaceRecursive(rootLayer());
-    }
+    if (activeTree()->RootLayer())
+        sendDidLoseOutputSurfaceRecursive(activeTree()->RootLayer());
+    if (pendingTree() && pendingTree()->RootLayer())
+        sendDidLoseOutputSurfaceRecursive(pendingTree()->RootLayer());
+
     // Note: order is important here.
     m_renderer.reset();
     m_tileManager.reset();

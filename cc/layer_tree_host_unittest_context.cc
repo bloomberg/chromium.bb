@@ -13,6 +13,7 @@
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/layer_tree_impl.h"
+#include "cc/picture_layer.h"
 #include "cc/scrollbar_layer.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_content_layer.h"
@@ -811,6 +812,51 @@ class LayerTreeHostContextTestFailsImmediately :
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestFailsImmediately);
+
+class ImplSidePaintingLayerTreeHostContextTest
+    : public LayerTreeHostContextTest {
+ public:
+  virtual void initializeSettings(LayerTreeSettings& settings) OVERRIDE {
+    settings.implSidePainting = true;
+  }
+};
+
+class LayerTreeHostContextTestImplSidePainting :
+    public ImplSidePaintingLayerTreeHostContextTest {
+ public:
+  virtual void setupTree() OVERRIDE {
+    scoped_refptr<Layer> root = Layer::create();
+    root->setBounds(gfx::Size(10, 10));
+    root->setAnchorPoint(gfx::PointF());
+    root->setIsDrawable(true);
+
+    scoped_refptr<PictureLayer> picture = PictureLayer::create(&client_);
+    picture->setBounds(gfx::Size(10, 10));
+    picture->setAnchorPoint(gfx::PointF());
+    picture->setIsDrawable(true);
+    root->addChild(picture);
+
+    m_layerTreeHost->setRootLayer(root);
+    LayerTreeHostContextTest::setupTree();
+  }
+
+  virtual void beginTest() OVERRIDE {
+    times_to_lose_during_commit_ = 1;
+    postSetNeedsCommitToMainThread();
+  }
+
+  virtual void afterTest() OVERRIDE {}
+
+  virtual void didRecreateOutputSurface(bool succeeded) OVERRIDE {
+    EXPECT_TRUE(succeeded);
+    endTest();
+  }
+
+ private:
+  FakeContentLayerClient client_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostContextTestImplSidePainting)
 
 }  // namespace
 }  // namespace cc

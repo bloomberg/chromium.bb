@@ -89,7 +89,8 @@ TileManager::~TileManager() {
   // This should finish all pending tasks and release any uninitialized
   // resources.
   raster_worker_pool_.reset();
-  ManageTiles();
+  CheckForCompletedSetPixels();
+  DCHECK(tiles_with_pending_set_pixels_.size() == 0);
   DCHECK(tiles_.size() == 0);
 }
 

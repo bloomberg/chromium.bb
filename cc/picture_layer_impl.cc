@@ -183,6 +183,10 @@ void PictureLayerImpl::didBecomeActive() {
   tilings_.MoveTilePriorities(PENDING_TREE, ACTIVE_TREE);
 }
 
+void PictureLayerImpl::didLoseOutputSurface() {
+  tilings_.RemoveAllTilings();
+}
+
 void PictureLayerImpl::calculateContentsScale(
     float ideal_contents_scale,
     float* contents_scale_x,
