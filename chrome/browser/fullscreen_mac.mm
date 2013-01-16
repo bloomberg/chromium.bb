@@ -4,48 +4,43 @@
 
 #import "chrome/browser/fullscreen.h"
 
+#import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
 #import "base/logging.h"
 
-// Replicate specific 10.7 SDK declarations for building with prior SDKs.
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-enum {
-  NSApplicationPresentationFullScreen = 1 << 10
-};
-
-#endif  // MAC_OS_X_VERSION_10_7
-
-namespace {
-
-BOOL AreOptionsFullScreen(NSApplicationPresentationOptions options) {
-  // If both dock and menu bar are hidden, that is the equivalent of the Carbon
-  // SystemUIMode (or Info.plist's LSUIPresentationMode) kUIModeAllHidden.
-  if (((options & NSApplicationPresentationHideDock) ||
-       (options & NSApplicationPresentationAutoHideDock)) &&
-      ((options & NSApplicationPresentationHideMenuBar) ||
-       (options & NSApplicationPresentationAutoHideMenuBar))) {
-    return YES;
-  }
-
-  if (options & NSApplicationPresentationFullScreen)
-    return YES;
-
-  return NO;
-}
-
-}  // namespace
-
 @interface FullScreenMonitor : NSObject {
  @private
   BOOL fullScreen_;
+  EventHandlerRef eventHandler_;
 }
 
 @property (nonatomic, getter=isFullScreen) BOOL fullScreen;
 
 @end
+
+static OSStatus handleAppEvent(EventHandlerCallRef myHandler,
+                               EventRef event,
+                               void* userData) {
+  DCHECK(userData);
+
+  FullScreenMonitor* fullScreenMonitor =
+      reinterpret_cast<FullScreenMonitor*>(userData);
+
+  UInt32 mode = 0;
+  OSStatus status = GetEventParameter(event,
+                                      kEventParamSystemUIMode,
+                                      typeUInt32,
+                                      NULL,
+                                      sizeof(UInt32),
+                                      NULL,
+                                      &mode);
+  if (status != noErr)
+    return status;
+  BOOL isFullScreenMode = mode == kUIModeAllHidden;
+  [fullScreenMonitor setFullScreen:isFullScreenMode];
+  return noErr;
+}
 
 @implementation FullScreenMonitor
 
@@ -53,28 +48,33 @@ BOOL AreOptionsFullScreen(NSApplicationPresentationOptions options) {
 
 - (id)init {
   if ((self = [super init])) {
-    [NSApp addObserver:self
-            forKeyPath:@"currentSystemPresentationOptions"
-               options:NSKeyValueObservingOptionNew |
-                       NSKeyValueObservingOptionInitial
-               context:nil];
+    // Check if the user is in presentation mode initially.
+    SystemUIMode currentMode;
+    GetSystemUIMode(&currentMode, NULL);
+    fullScreen_ = currentMode == kUIModeAllHidden;
+
+    // Register a Carbon event to receive the notification about the login
+    // session's UI mode change.
+    EventTypeSpec events[] =
+      {{ kEventClassApplication, kEventAppSystemUIModeChanged }};
+    OSStatus status = InstallApplicationEventHandler(
+        NewEventHandlerUPP(handleAppEvent),
+        GetEventTypeCount(events),
+        events,
+        self,
+        &eventHandler_);
+    if (status) {
+      [self release];
+      self = nil;
+    }
   }
   return self;
 }
 
 - (void)dealloc {
-  [NSApp removeObserver:self
-             forKeyPath:@"currentSystemPresentationOptions"];
+  if (eventHandler_)
+    RemoveEventHandler(eventHandler_);
   [super dealloc];
-}
-
-- (void)observeValueForKeyPath:(NSString*)keyPath
-                      ofObject:(id)object
-                        change:(NSDictionary*)change
-                       context:(void*)context {
-  NSApplicationPresentationOptions options =
-      [[change objectForKey:NSKeyValueChangeNewKey] integerValue];
-  [self setFullScreen:AreOptionsFullScreen(options)];
 }
 
 @end
@@ -92,7 +92,7 @@ void StopFullScreenMonitor() {
 }
 
 bool IsFullScreenMode() {
-  // Check if the main display has been captured (by games in particular).
+  // Check if the main display has been captured (game in particular).
   if (CGDisplayIsCaptured(CGMainDisplayID()))
     return true;
 

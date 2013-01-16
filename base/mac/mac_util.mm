@@ -31,16 +31,17 @@ namespace {
 
 // The current count of outstanding requests for full screen mode from browser
 // windows, plugins, etc.
-int g_full_screen_requests[kNumFullScreenModes] = { 0 };
+int g_full_screen_requests[kNumFullScreenModes] = { 0, 0, 0};
 
-// Sets the appropriate application presentation option based on the current
-// full screen requests.  Since only one presentation option can be active at a
-// given time, full screen requests are ordered by priority.  If there are no
-// outstanding full screen requests, reverts to normal mode.  If the correct
-// presentation option is already set, does nothing.
+// Sets the appropriate SystemUIMode based on the current full screen requests.
+// Since only one SystemUIMode can be active at a given time, full screen
+// requests are ordered by priority.  If there are no outstanding full screen
+// requests, reverts to normal mode.  If the correct SystemUIMode is already
+// set, does nothing.
 void SetUIMode() {
-  NSApplicationPresentationOptions current_options =
-      [NSApp presentationOptions];
+  // Get the current UI mode.
+  SystemUIMode current_mode;
+  GetSystemUIMode(&current_mode, NULL);
 
   // Determine which mode should be active, based on which requests are
   // currently outstanding.  More permissive requests take precedence.  For
@@ -48,20 +49,19 @@ void SetUIMode() {
   // windows request |kFullScreenModeHideDock| when the fullscreen overlay is
   // down.  Precedence goes to plugins in this case, so AutoHideAll wins over
   // HideDock.
-  NSApplicationPresentationOptions desired_options =
-      NSApplicationPresentationDefault;
+  SystemUIMode desired_mode = kUIModeNormal;
+  SystemUIOptions desired_options = 0;
   if (g_full_screen_requests[kFullScreenModeAutoHideAll] > 0) {
-    desired_options = NSApplicationPresentationHideDock |
-                      NSApplicationPresentationAutoHideMenuBar;
+    desired_mode = kUIModeAllHidden;
+    desired_options = kUIOptionAutoShowMenuBar;
   } else if (g_full_screen_requests[kFullScreenModeHideDock] > 0) {
-    desired_options = NSApplicationPresentationHideDock;
+    desired_mode = kUIModeContentHidden;
   } else if (g_full_screen_requests[kFullScreenModeHideAll] > 0) {
-    desired_options = NSApplicationPresentationHideDock |
-                      NSApplicationPresentationHideMenuBar;
+    desired_mode = kUIModeAllHidden;
   }
 
-  if (current_options != desired_options)
-    [NSApp setPresentationOptions:desired_options];
+  if (current_mode != desired_mode)
+    SetSystemUIMode(desired_mode, desired_options);
 }
 
 // Looks into Shared File Lists corresponding to Login Items for the item
