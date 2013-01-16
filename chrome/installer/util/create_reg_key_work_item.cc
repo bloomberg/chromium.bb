@@ -63,7 +63,6 @@ bool CreateRegKeyWorkItem::Do() {
           LOG(ERROR) << key_path << " exists, this is not expected.";
           return false;
         }
-        VLOG(1) << key_path << " exists";
         // Remove the key path from list if it is already present.
         key_list_.pop_back();
       } else if (disposition == REG_CREATED_NEW_KEY) {
