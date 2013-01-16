@@ -104,7 +104,7 @@ bool CryptoFramer::ProcessInput(StringPiece input) {
       for (int i = 0; i < num_entries_; ++i) {
         StringPiece value;
         reader.ReadStringPiece(&value, tag_length_map_[tags_[i]]);
-        tag_value_map_[tags_[i]] = value;
+        tag_value_map_[tags_[i]] = value.as_string();
       }
       CryptoHandshakeMessage message;
       message.tag = message_tag_;

@@ -52,9 +52,11 @@ QuicCryptoClientStream* QuicClientSession::GetCryptoStream() {
 };
 
 int QuicClientSession::CryptoConnect(const CompletionCallback& callback) {
-  CryptoHandshakeMessage message;
-  message.tag = kCHLO;
-  crypto_stream_.SendHandshakeMessage(message);
+  if (!crypto_stream_.CryptoConnect()) {
+    // TODO(wtc): change crypto_stream_.CryptoConnect() to return a
+    // QuicErrorCode and map it to a net error code.
+    return ERR_CONNECTION_FAILED;
+  }
 
   if (IsCryptoHandshakeComplete()) {
     return OK;

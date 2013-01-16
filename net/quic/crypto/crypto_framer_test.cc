@@ -34,28 +34,19 @@ class TestCryptoVisitor : public ::net::CryptoFramerVisitorInterface {
       : error_count_(0) {
   }
 
-  ~TestCryptoVisitor() {}
-
   virtual void OnError(CryptoFramer* framer) {
-    LOG(ERROR) << "CryptoFramer Error: " << framer->error();
-    error_count_++;
+    DLOG(ERROR) << "CryptoFramer Error: " << framer->error();
+    ++error_count_;
   }
 
   virtual void OnHandshakeMessage(const CryptoHandshakeMessage& message) {
-    message_tags_.push_back(message.tag);
-    message_maps_.push_back(map<CryptoTag, string>());
-    CryptoTagValueMap::const_iterator it = message.tag_value_map.begin();
-    while (it != message.tag_value_map.end()) {
-      message_maps_.back()[it->first] = it->second.as_string();
-      ++it;
-    }
+    messages_.push_back(message);
   }
 
   // Counters from the visitor callbacks.
   int error_count_;
 
-  CryptoTagVector message_tags_;
-  vector<map<CryptoTag, string> > message_maps_;
+  vector<CryptoHandshakeMessage> messages_;
 };
 
 }  // namespace test
@@ -219,12 +210,11 @@ TEST(CryptoFramerTest, ProcessInput) {
   EXPECT_TRUE(framer.ProcessInput(StringPiece(AsChars(input),
                                               arraysize(input))));
   EXPECT_EQ(0u, framer.InputBytesRemaining());
-  ASSERT_EQ(1u, visitor.message_tags_.size());
-  EXPECT_EQ(0xFFAA7733, visitor.message_tags_[0]);
-  ASSERT_EQ(1u, visitor.message_maps_.size());
-  EXPECT_EQ(2u, visitor.message_maps_[0].size());
-  EXPECT_EQ("abcdef",visitor.message_maps_[0][0x12345678]);
-  EXPECT_EQ("ghijk", visitor.message_maps_[0][0x12345679]);
+  ASSERT_EQ(1u, visitor.messages_.size());
+  EXPECT_EQ(0xFFAA7733, visitor.messages_[0].tag);
+  EXPECT_EQ(2u, visitor.messages_[0].tag_value_map.size());
+  EXPECT_EQ("abcdef", visitor.messages_[0].tag_value_map[0x12345678]);
+  EXPECT_EQ("ghijk", visitor.messages_[0].tag_value_map[0x12345679]);
 }
 
 TEST(CryptoFramerTest, ProcessInputWithThreeKeys) {
@@ -265,13 +255,12 @@ TEST(CryptoFramerTest, ProcessInputWithThreeKeys) {
   EXPECT_TRUE(framer.ProcessInput(StringPiece(AsChars(input),
                                               arraysize(input))));
   EXPECT_EQ(0u, framer.InputBytesRemaining());
-  ASSERT_EQ(1u, visitor.message_tags_.size());
-  EXPECT_EQ(0xFFAA7733, visitor.message_tags_[0]);
-  ASSERT_EQ(1u, visitor.message_maps_.size());
-  EXPECT_EQ(3u, visitor.message_maps_[0].size());
-  EXPECT_EQ("abcdef",visitor.message_maps_[0][0x12345678]);
-  EXPECT_EQ("ghijk", visitor.message_maps_[0][0x12345679]);
-  EXPECT_EQ("lmnopqr", visitor.message_maps_[0][0x1234567A]);
+  ASSERT_EQ(1u, visitor.messages_.size());
+  EXPECT_EQ(0xFFAA7733, visitor.messages_[0].tag);
+  EXPECT_EQ(3u, visitor.messages_[0].tag_value_map.size());
+  EXPECT_EQ("abcdef", visitor.messages_[0].tag_value_map[0x12345678]);
+  EXPECT_EQ("ghijk", visitor.messages_[0].tag_value_map[0x12345679]);
+  EXPECT_EQ("lmnopqr", visitor.messages_[0].tag_value_map[0x1234567A]);
 }
 
 TEST(CryptoFramerTest, ProcessInputIncrementally) {
@@ -304,12 +293,11 @@ TEST(CryptoFramerTest, ProcessInputIncrementally) {
     EXPECT_TRUE(framer.ProcessInput(StringPiece(AsChars(input)+ i, 1)));
   }
   EXPECT_EQ(0u, framer.InputBytesRemaining());
-  ASSERT_EQ(1u, visitor.message_tags_.size());
-  EXPECT_EQ(0xFFAA7733, visitor.message_tags_[0]);
-  ASSERT_EQ(1u, visitor.message_maps_.size());
-  EXPECT_EQ(2u, visitor.message_maps_[0].size());
-  EXPECT_EQ("abcdef",visitor.message_maps_[0][0x12345678]);
-  EXPECT_EQ("ghijk", visitor.message_maps_[0][0x12345679]);
+  ASSERT_EQ(1u, visitor.messages_.size());
+  EXPECT_EQ(0xFFAA7733, visitor.messages_[0].tag);
+  EXPECT_EQ(2u, visitor.messages_[0].tag_value_map.size());
+  EXPECT_EQ("abcdef", visitor.messages_[0].tag_value_map[0x12345678]);
+  EXPECT_EQ("ghijk", visitor.messages_[0].tag_value_map[0x12345679]);
 }
 
 TEST(CryptoFramerTest, ProcessInputTagsOutOfOrder) {

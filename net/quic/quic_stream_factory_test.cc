@@ -23,15 +23,17 @@ namespace test {
 class QuicStreamFactoryTest : public ::testing::Test {
  protected:
   QuicStreamFactoryTest()
-      : factory_(&host_resolver_, &socket_factory_,
-                 &random_generator_,
-                 new MockClock()),
+      : clock_(new MockClock()),
+        factory_(&host_resolver_, &socket_factory_,
+                 &random_generator_, clock_),
         host_port_proxy_pair_(HostPortPair("www.google.com", 443),
                               ProxyServer::Direct()) {
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructChlo() {
-    scoped_ptr<QuicPacket> chlo(ConstructHandshakePacket(0xDEADBEEF, kCHLO));
+    scoped_ptr<QuicPacket> chlo(ConstructClientHelloPacket(0xDEADBEEF,
+                                                           clock_,
+                                                           &random_generator_));
     QuicFramer framer(QuicDecrypter::Create(kNULL),
                       QuicEncrypter::Create(kNULL));
     return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(*chlo));
@@ -117,6 +119,7 @@ class QuicStreamFactoryTest : public ::testing::Test {
   MockHostResolver host_resolver_;
   MockClientSocketFactory socket_factory_;
   MockRandom random_generator_;
+  MockClock* clock_;  // Owned by factory_.
   QuicStreamFactory factory_;
   HostPortProxyPair host_port_proxy_pair_;
   BoundNetLog net_log_;

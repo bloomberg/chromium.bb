@@ -32,6 +32,11 @@ void CompareQuicDataWithHexError(const std::string& description,
 // Constructs a basic crypto handshake message
 QuicPacket* ConstructHandshakePacket(QuicGuid guid, CryptoTag tag);
 
+// Constructs a ClientHello crypto handshake message
+QuicPacket* ConstructClientHelloPacket(QuicGuid guid,
+                                       const QuicClock* clock,
+                                       QuicRandom* random_generator);
+
 class MockFramerVisitor : public QuicFramerVisitorInterface {
  public:
   MockFramerVisitor();
@@ -148,6 +153,9 @@ class MockHelper : public QuicConnectionHelperInterface {
 class MockConnection : public QuicConnection {
  public:
   MockConnection(QuicGuid guid, IPEndPoint address);
+  MockConnection(QuicGuid guid,
+                 IPEndPoint address,
+                 QuicConnectionHelperInterface* helper);
   virtual ~MockConnection();
 
   MOCK_METHOD3(ProcessUdpPacket, void(const IPEndPoint& self_address,
@@ -197,8 +205,6 @@ class MockSession : public QuicSession {
                ReliableQuicStream*(QuicStreamId id));
   MOCK_METHOD0(GetCryptoStream, QuicCryptoStream*());
   MOCK_METHOD0(CreateOutgoingReliableStream, ReliableQuicStream*());
-  MOCK_METHOD3(WriteData,
-               void(QuicStreamId id, base::StringPiece data, bool fin));
   MOCK_METHOD4(WriteData, QuicConsumedData(QuicStreamId id,
                                            base::StringPiece data,
                                            QuicStreamOffset offset, bool fin));

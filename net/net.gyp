@@ -680,6 +680,8 @@
         'quic/crypto/crypto_framer.h',
         'quic/crypto/crypto_protocol.cc',
         'quic/crypto/crypto_protocol.h',
+        'quic/crypto/crypto_utils.cc',
+        'quic/crypto/crypto_utils.h',
         'quic/crypto/null_decrypter.cc',
         'quic/crypto/null_decrypter.h',
         'quic/crypto/null_encrypter.cc',

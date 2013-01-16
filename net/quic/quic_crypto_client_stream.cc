@@ -5,7 +5,9 @@
 #include "net/quic/quic_crypto_client_stream.h"
 
 #include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_session.h"
 
 namespace net {
 
@@ -30,6 +32,17 @@ void QuicCryptoClientStream::OnHandshakeMessage(
   // TODO(rch): correctly validate the message
   SetHandshakeComplete(QUIC_NO_ERROR);
   return;
+}
+
+bool QuicCryptoClientStream::CryptoConnect() {
+  client_crypto_config_.SetDefaults();
+  CryptoUtils::GenerateNonce(session()->connection()->clock(),
+                             session()->connection()->random_generator(),
+                             &nonce_);
+  CryptoHandshakeMessage message;
+  CryptoUtils::FillClientHelloMessage(client_crypto_config_, nonce_, &message);
+  SendHandshakeMessage(message);
+  return true;
 }
 
 }  // namespace net

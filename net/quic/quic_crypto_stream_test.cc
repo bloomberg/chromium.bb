@@ -4,16 +4,17 @@
 
 #include "net/quic/quic_crypto_stream.h"
 
-#include <map>
 #include <string>
+#include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using std::map;
 using std::string;
+using std::vector;
 
 namespace net {
 namespace test {
@@ -26,26 +27,15 @@ class MockQuicCryptoStream : public QuicCryptoStream {
   }
 
   void OnHandshakeMessage(const CryptoHandshakeMessage& message) {
-    message_tags_.push_back(message.tag);
-    message_maps_.push_back(map<CryptoTag, string>());
-    CryptoTagValueMap::const_iterator it = message.tag_value_map.begin();
-    while (it != message.tag_value_map.end()) {
-      message_maps_.back()[it->first] = it->second.as_string();
-      ++it;
-    }
+    messages_.push_back(message);
   }
 
-  std::vector<CryptoTag>* message_tags() {
-    return &message_tags_;
-  }
-
-  std::vector<std::map<CryptoTag, string> >* message_maps() {
-    return &message_maps_;
+  vector<CryptoHandshakeMessage>* messages() {
+    return &messages_;
   }
 
  private:
-  std::vector<CryptoTag> message_tags_;
-  std::vector<std::map<CryptoTag, string> > message_maps_;
+  vector<CryptoHandshakeMessage> messages_;
 
   DISALLOW_COPY_AND_ASSIGN(MockQuicCryptoStream);
 };
@@ -94,11 +84,11 @@ TEST_F(QuicCryptoStreamTest, ProcessData) {
   EXPECT_EQ(message_data_->length(),
             stream_.ProcessData(message_data_->data(),
                                 message_data_->length()));
-  ASSERT_EQ(1u, stream_.message_tags()->size());
-  EXPECT_EQ(kSHLO, (*stream_.message_tags())[0]);
-  EXPECT_EQ(2u, (*stream_.message_maps())[0].size());
-  EXPECT_EQ("abc", (*stream_.message_maps())[0][1]);
-  EXPECT_EQ("def", (*stream_.message_maps())[0][2]);
+  ASSERT_EQ(1u, stream_.messages()->size());
+  EXPECT_EQ(kSHLO, (*stream_.messages())[0].tag);
+  EXPECT_EQ(2u, (*stream_.messages())[0].tag_value_map.size());
+  EXPECT_EQ("abc", (*stream_.messages())[0].tag_value_map[1]);
+  EXPECT_EQ("def", (*stream_.messages())[0].tag_value_map[2]);
 }
 
 TEST_F(QuicCryptoStreamTest, ProcessBadData) {
