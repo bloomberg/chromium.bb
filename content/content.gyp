@@ -88,7 +88,16 @@
             'content_browser.gypi',
           ],
           'dependencies': [
-            'content_common', 'content_resources.gyp:content_resources',
+            'content_common',
+            'content_resources.gyp:content_resources',
+          ],
+          'conditions': [
+            ['OS != "ios"', {
+              'dependencies': [
+                'content_gpu',
+                'content_renderer',
+              ],
+            }],
           ],
         },
         {
