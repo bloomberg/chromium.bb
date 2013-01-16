@@ -15,7 +15,6 @@
 
 #if defined(OS_ANDROID)
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/android/crash_dump_manager.h"
 #endif
 
 namespace content {
@@ -232,12 +231,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
  private:
   // Sets io_thread_application_locale_ to the given value.
   void SetApplicationLocaleOnIOThread(const std::string& locale);
-
-#if defined(OS_ANDROID)
-  void InitCrashDumpManager();
-
-  scoped_ptr<CrashDumpManager> crash_dump_manager_;
-#endif
 
   // Set of origins that can use TCP/UDP private APIs from NaCl.
   std::set<std::string> allowed_socket_origins_;

@@ -619,10 +619,6 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
   RendererContentSettingRules rules;
   GetRendererContentSettingRules(profile->GetHostContentSettingsMap(), &rules);
   host->Send(new ChromeViewMsg_SetContentSettingRules(rules));
-
-#if defined(OS_ANDROID) && defined(USE_LINUX_BREAKPAD)
-  InitCrashDumpManager();
-#endif
 }
 
 content::WebUIControllerFactory*
@@ -1846,7 +1842,7 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
                                          FileDescriptor(f, true)));
 
 #if defined(USE_LINUX_BREAKPAD)
-  f = crash_dump_manager_->CreateMinidumpFile(child_process_id);
+  f = CrashDumpManager::GetInstance()->CreateMinidumpFile(child_process_id);
   if (f == base::kInvalidPlatformFileValue) {
     LOG(ERROR) << "Failed to create file for minidump, crash reporting will be "
         "disabled for this process.";
@@ -1870,13 +1866,6 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 #if defined(OS_WIN)
 const wchar_t* ChromeContentBrowserClient::GetResourceDllName() {
   return chrome::kBrowserResourcesDll;
-}
-#endif
-
-#if defined(OS_ANDROID)
-void ChromeContentBrowserClient::InitCrashDumpManager() {
-  if (!crash_dump_manager_.get())
-    crash_dump_manager_.reset(new CrashDumpManager());
 }
 #endif
 

@@ -25,8 +25,20 @@
 
 using content::BrowserThread;
 
+// static
+CrashDumpManager* CrashDumpManager::instance_ = NULL;
+
+// static
+CrashDumpManager* CrashDumpManager::GetInstance() {
+  return instance_;
+}
+
 CrashDumpManager::CrashDumpManager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!instance_);
+
+  instance_ = this;
+
   notification_registrar_.Add(this,
                               content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                               content::NotificationService::AllSources());
@@ -42,6 +54,7 @@ CrashDumpManager::CrashDumpManager() {
 }
 
 CrashDumpManager::~CrashDumpManager() {
+  instance_ = NULL;
 }
 
 int CrashDumpManager::CreateMinidumpFile(int child_process_id) {

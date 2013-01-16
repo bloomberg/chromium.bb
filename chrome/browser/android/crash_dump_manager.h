@@ -29,8 +29,10 @@ class RenderProcessHost;
 // processes and take the appropriate action when the render process terminates.
 class CrashDumpManager : public content::NotificationObserver {
  public:
-  // Should be created on the UI thread.
-  CrashDumpManager();
+  // This object is a singleton created and owned by the
+  // ChromeBrowserMainPartsAndroid.
+  static CrashDumpManager* GetInstance();
+
   virtual ~CrashDumpManager();
 
   // Returns a file descriptor that should be used to generate a minidump for
@@ -38,6 +40,11 @@ class CrashDumpManager : public content::NotificationObserver {
   int CreateMinidumpFile(int child_process_id);
 
  private:
+  friend class ChromeBrowserMainPartsAndroid;
+
+  // Should be created on the UI thread.
+  CrashDumpManager();
+
   typedef std::map<int, FilePath> ChildProcessIDToMinidumpPath;
 
   static void ProcessMinidump(const FilePath& minidump_path,
@@ -54,6 +61,8 @@ class CrashDumpManager : public content::NotificationObserver {
   // from the PROCESS_LAUNCHER and UI threads.
   base::Lock child_process_id_to_minidump_path_lock_;
   ChildProcessIDToMinidumpPath child_process_id_to_minidump_path_;
+
+  static CrashDumpManager* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(CrashDumpManager);
 };

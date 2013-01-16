@@ -6,6 +6,7 @@
 
 #include "base/path_service.h"
 #include "chrome/app/breakpad_linux.h"
+#include "chrome/browser/android/crash_dump_manager.h"
 #include "chrome/common/env_vars.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/common/main_function_params.h"
@@ -36,8 +37,10 @@ void ChromeBrowserMainPartsAndroid::PreProfileInit() {
   if (!breakpad_enabled)
     breakpad_enabled = getenv(env_vars::kEnableBreakpad) != NULL;
 
-  if (breakpad_enabled)
+  if (breakpad_enabled) {
     InitCrashReporter();
+    crash_dump_manager_.reset(new CrashDumpManager());
+  }
 #endif
 
   ChromeBrowserMainParts::PreProfileInit();
