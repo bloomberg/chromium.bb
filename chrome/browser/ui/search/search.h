@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 
+class GURL;
 class Profile;
 
 namespace chrome {
@@ -35,6 +36,10 @@ bool IsQueryExtractionEnabled(Profile* profile);
 
 // Force query extraction to be enabled for tests.
 void EnableQueryExtractionForTesting();
+
+// Returns true if |url| has the same scheme, host, port and path as the
+// Instant URL set via --instant-url.
+bool IsForcedInstantURL(const GURL& url);
 
 // Type for a collection of experiment configuration parameters.
 typedef std::vector<std::pair<std::string, std::string> > FieldTrialFlags;

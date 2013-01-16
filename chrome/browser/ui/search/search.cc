@@ -18,8 +18,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #endif
 
-namespace chrome {
-namespace search {
+namespace {
 
 // Configuration options for Embedded Search.
 // InstantExtended field trials are named in such a way that we can parse out
@@ -42,62 +41,10 @@ const char kGroupNumberPrefix[] = "Group";
 // be ignored and Instant Extended will not be enabled by default.
 const char kDisablingSuffix[] = "DISABLED";
 
-// Given a field trial group name in the above format, parses out the group
-// number and configuration flags.  Will return a group number of 0 on error.
-void GetFieldTrialInfo(const std::string& group_name,
-                       FieldTrialFlags* flags,
-                       uint64* group_number) {
-  if (!EndsWith(group_name, kDisablingSuffix, true) &&
-      StartsWithASCII(group_name, kGroupNumberPrefix, true)) {
-    // We have a valid trial that starts with "Group" and isn't disabled.
-    size_t first_space = group_name.find(" ");
-    std::string group_prefix = group_name;
-    if (first_space != std::string::npos) {
-      // There is a flags section of the group name.  Split that out and parse
-      // it.
-      group_prefix = group_name.substr(0, first_space);
-      base::SplitStringIntoKeyValuePairs(
-          group_name.substr(first_space), ':', ' ', flags);
-    }
-    if (!base::StringToUint64(group_prefix.substr(strlen(kGroupNumberPrefix)),
-                              group_number)) {
-      // Could not parse group number.
-      *group_number = 0;
-    }
-  }
-}
+}  // namespace
 
-// Given a FieldTrialFlags object, returns the string value of the provided
-// flag.
-std::string GetStringValueForFlagWithDefault(
-    const std::string& flag,
-    const std::string& default_value,
-    FieldTrialFlags& flags) {
-  FieldTrialFlags::const_iterator i;
-  for (i = flags.begin(); i != flags.end(); i++) {
-    if (i->first == flag)
-      return i->second;
-  }
-  return default_value;
-}
-
-// Given a FieldTrialFlags object, returns the uint64 value of the provided
-// flag.
-uint64 GetUInt64ValueForFlagWithDefault(
-    const std::string& flag, uint64 default_value, FieldTrialFlags& flags) {
-  uint64 value;
-  if (!base::StringToUint64(GetStringValueForFlagWithDefault(flag, "", flags),
-                            &value))
-    return default_value;
-  return value;
-}
-
-// Given a FieldTrialFlags object, returns the boolean value of the provided
-// flag.
-bool GetBoolValueForFlagWithDefault(
-    const std::string& flag, bool default_value, FieldTrialFlags& flags) {
-  return !!GetUInt64ValueForFlagWithDefault(flag, default_value ? 1 : 0, flags);
-}
+namespace chrome {
+namespace search {
 
 // Check whether or not the Extended API should be used on the given profile.
 bool IsInstantExtendedAPIEnabled(Profile* profile) {
@@ -190,6 +137,75 @@ void EnableQueryExtractionForTesting() {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableInstantExtendedAPI);
 #endif
+}
+
+bool IsForcedInstantURL(const GURL& url) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kInstantURL))
+    return false;
+
+  GURL instant_url(command_line->GetSwitchValueASCII(switches::kInstantURL));
+  return url.scheme() == instant_url.scheme() &&
+         url.host() == instant_url.host() &&
+         url.port() == instant_url.port() &&
+         url.path() == instant_url.path();
+}
+
+// Given a field trial group name in the above format, parses out the group
+// number and configuration flags.  Will return a group number of 0 on error.
+void GetFieldTrialInfo(const std::string& group_name,
+                       FieldTrialFlags* flags,
+                       uint64* group_number) {
+  if (!EndsWith(group_name, kDisablingSuffix, true) &&
+      StartsWithASCII(group_name, kGroupNumberPrefix, true)) {
+    // We have a valid trial that starts with "Group" and isn't disabled.
+    size_t first_space = group_name.find(" ");
+    std::string group_prefix = group_name;
+    if (first_space != std::string::npos) {
+      // There is a flags section of the group name.  Split that out and parse
+      // it.
+      group_prefix = group_name.substr(0, first_space);
+      base::SplitStringIntoKeyValuePairs(
+          group_name.substr(first_space), ':', ' ', flags);
+    }
+    if (!base::StringToUint64(group_prefix.substr(strlen(kGroupNumberPrefix)),
+                              group_number)) {
+      // Could not parse group number.
+      *group_number = 0;
+    }
+  }
+}
+
+// Given a FieldTrialFlags object, returns the string value of the provided
+// flag.
+std::string GetStringValueForFlagWithDefault(
+    const std::string& flag,
+    const std::string& default_value,
+    FieldTrialFlags& flags) {
+  FieldTrialFlags::const_iterator i;
+  for (i = flags.begin(); i != flags.end(); i++) {
+    if (i->first == flag)
+      return i->second;
+  }
+  return default_value;
+}
+
+// Given a FieldTrialFlags object, returns the uint64 value of the provided
+// flag.
+uint64 GetUInt64ValueForFlagWithDefault(
+    const std::string& flag, uint64 default_value, FieldTrialFlags& flags) {
+  uint64 value;
+  if (!base::StringToUint64(GetStringValueForFlagWithDefault(flag, "", flags),
+                            &value))
+    return default_value;
+  return value;
+}
+
+// Given a FieldTrialFlags object, returns the boolean value of the provided
+// flag.
+bool GetBoolValueForFlagWithDefault(
+    const std::string& flag, bool default_value, FieldTrialFlags& flags) {
+  return !!GetUInt64ValueForFlagWithDefault(flag, default_value ? 1 : 0, flags);
 }
 
 }  // namespace search

@@ -37,6 +37,9 @@ bool IsSearchEnabled(Profile* profile) {
 
 
 bool IsSearchResults(const GURL& url, Profile* profile) {
+  if (chrome::search::IsForcedInstantURL(url))
+    return true;
+
   // Profile can be NULL in unit tests.
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile);

@@ -42,21 +42,6 @@ using content::WebContents;
 
 namespace {
 
-// Returns true if |url| has the same host, port and path as the instant URL
-// set via --instant-url.
-bool IsForcedInstantURL(const GURL& url) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kInstantURL)) {
-    GURL instant_url(command_line->GetSwitchValueASCII(switches::kInstantURL));
-    if (url.host() == instant_url.host() &&
-        url.port() == instant_url.port() &&
-        url.path() == instant_url.path()) {
-      return true;
-    }
-  }
-  return false;
-}
-
 // Coerces an instant URL to look like a regular search URL so we can extract
 // query terms from the URL.
 GURL ConvertInstantURLToSearchURL(const GURL& instant_url,
@@ -266,7 +251,7 @@ string16 ToolbarModelImpl::TryToExtractSearchTermsFromURL() const {
 
   // Coerce URLs set via --instant-url to look like a regular search URL so we
   // can extract search terms from them.
-  if (IsForcedInstantURL(url))
+  if (chrome::search::IsForcedInstantURL(url))
     url = ConvertInstantURLToSearchURL(url, *template_url);
 
   if (!template_url->HasSearchTermsReplacementKey(url))
