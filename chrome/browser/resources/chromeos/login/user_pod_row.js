@@ -279,9 +279,10 @@ cr.define('login', function() {
     get needGaiaSignin() {
       // Gaia signin is performed if the user has an invalid oauth token and is
       // not currently signed in (i.e. not the lock screen).
+      // Locally managed users never require GAIA signin.
       return this.user.oauthTokenStatus != OAuthTokenStatus.VALID_OLD &&
           this.user.oauthTokenStatus != OAuthTokenStatus.VALID_NEW &&
-          !this.user.signedIn;
+          !this.user.signedIn && !this.user.locallyManagedUser;
     },
 
     /**

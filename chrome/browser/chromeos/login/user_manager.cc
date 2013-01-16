@@ -11,6 +11,10 @@ namespace chromeos {
 // static
 const char UserManager::kStubUser[] = "stub-user@example.com";
 
+// static
+const char UserManager::kLocallyManagedUserDomain[] =
+    "locally-managed.localhost";
+
 // Class that is holds pointer to UserManager instance.
 // One could set UserManager mock instance through it (see UserManager::Set).
 class UserManagerImplWrapper {

@@ -42,6 +42,11 @@ void MockAuthenticator::AuthenticateToUnlock(const std::string& username,
                       std::string(), std::string());
 }
 
+void MockAuthenticator::LoginAsLocallyManagedUser(const std::string& username,
+                                                  const std::string& password) {
+  consumer_->OnLoginSuccess(expected_username_, "", false, false);
+}
+
 void MockAuthenticator::LoginRetailMode() {
   consumer_->OnRetailModeLoginSuccess();
 }

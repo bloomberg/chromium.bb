@@ -242,6 +242,12 @@ void WebUILoginDisplay::MigrateUserData(const std::string& old_password) {
     delegate_->MigrateUserData(old_password);
 }
 
+void WebUILoginDisplay::CreateLocallyManagedUser(const std::string& username) {
+  DCHECK(delegate_);
+  if (delegate_)
+    delegate_->CreateLocallyManagedUser(username);
+}
+
 void WebUILoginDisplay::LoadWallpaper(const std::string& username) {
   WallpaperManager::Get()->SetUserWallpaper(username);
 }

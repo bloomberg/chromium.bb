@@ -592,6 +592,7 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
     case user::LOGGED_IN_USER:
     case user::LOGGED_IN_OWNER:
     case user::LOGGED_IN_PUBLIC:
+    case user::LOGGED_IN_LOCALLY_MANAGED:
       avatar_->SetImage(
           ash::Shell::GetInstance()->system_tray_delegate()->GetUserImage(),
           gfx::Size(kUserIconSize, kUserIconSize));

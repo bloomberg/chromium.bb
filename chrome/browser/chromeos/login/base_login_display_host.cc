@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
+#include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/policy/auto_enrollment_client.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -374,6 +375,13 @@ void ShowLoginWizard(const std::string& first_screen_name,
                      const gfx::Size& size) {
   if (browser_shutdown::IsTryingToQuit())
     return;
+
+  // Managed mode is defined as a machine-level setting so we have to reset it
+  // each time login screen is shown. See also http://crbug.com/167642
+  // TODO(nkostylev): Remove this call when managed mode scope is
+  // limited to user session.
+  if (ManagedMode::IsInManagedMode())
+    ManagedMode::LeaveManagedMode();
 
   VLOG(1) << "Showing OOBE screen: " << first_screen_name;
 

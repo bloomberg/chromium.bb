@@ -63,7 +63,8 @@ class ParallelAuthenticator : public Authenticator,
     UNLOCK,          // Screen unlock succeeded.
     ONLINE_FAILED,   // Online login disallowed, but offline succeeded.
     GUEST_LOGIN,     // Logged in guest mode.
-    PUBLIC_ACCOUNT_LOGIN,  // Logged into a public account.
+    PUBLIC_ACCOUNT_LOGIN,        // Logged into a public account.
+    LOCALLY_MANAGED_USER_LOGIN,  // Logged in as a locally managed user.
     LOGIN_FAILED,    // Login denied.
     OWNER_REQUIRED   // Login is restricted to the owner only.
   };
@@ -112,6 +113,12 @@ class ParallelAuthenticator : public Authenticator,
   // LoginStatusConsumer in a same way as AuthenticateToLogin does.
   virtual void AuthenticateToUnlock(const std::string& username,
                                     const std::string& password) OVERRIDE;
+
+  // Initiates locally managed user login.
+  // Creates cryptohome if missing or mounts existing one and
+  // notifies consumer on the success/failure.
+  virtual void LoginAsLocallyManagedUser(const std::string& username,
+                                         const std::string& password) OVERRIDE;
 
   // Initiates retail mode login.
   // Mounts tmpfs and notifies consumer on the success/failure.

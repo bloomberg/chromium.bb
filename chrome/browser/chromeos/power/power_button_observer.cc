@@ -37,6 +37,8 @@ ash::user::LoginStatus GetCurrentLoginStatus() {
       return ash::user::LOGGED_IN_KIOSK;
     case User::USER_TYPE_PUBLIC_ACCOUNT:
       return ash::user::LOGGED_IN_PUBLIC;
+    case User::USER_TYPE_LOCALLY_MANAGED:
+      return ash::user::LOGGED_IN_LOCALLY_MANAGED;
   }
 
   NOTREACHED();

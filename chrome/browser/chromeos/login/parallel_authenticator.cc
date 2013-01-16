@@ -282,6 +282,22 @@ void ParallelAuthenticator::AuthenticateToUnlock(const std::string& username,
                  scoped_refptr<ParallelAuthenticator>(this)));
 }
 
+void ParallelAuthenticator::LoginAsLocallyManagedUser(
+    const std::string& username,
+    const std::string& password) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // TODO(nkostylev): Pass proper value for |user_is_new| or remove (not used).
+  current_state_.reset(
+      new AuthAttemptState(username, password,
+                           HashPassword(password),
+                           "", "",
+                           User::USER_TYPE_LOCALLY_MANAGED,
+                           false));
+  Mount(current_state_.get(),
+        scoped_refptr<ParallelAuthenticator>(this),
+        cryptohome::CREATE_IF_MISSING);
+}
+
 void ParallelAuthenticator::LoginRetailMode() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Note: |kRetailModeUserEMail| is used in other places to identify a retail
@@ -622,6 +638,14 @@ void ParallelAuthenticator::Resolve() {
           BrowserThread::UI, FROM_HERE,
           base::Bind(&ParallelAuthenticator::OnLoginSuccess, this, false));
       break;
+    case LOCALLY_MANAGED_USER_LOGIN:
+      using_oauth_ = false;
+      // TODO(nkostylev): Figure out whether there's need to call
+      // a separate success method here.
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&ParallelAuthenticator::OnLoginSuccess, this, false));
+      break;
     case LOGIN_FAILED:
       current_state_->ResetCryptohomeStatus();
       BrowserThread::PostTask(BrowserThread::UI,
@@ -775,6 +799,8 @@ ParallelAuthenticator::ResolveCryptohomeSuccessState() {
     return DEMO_LOGIN;
   if (current_state_->user_type == User::USER_TYPE_PUBLIC_ACCOUNT)
     return PUBLIC_ACCOUNT_LOGIN;
+  if (current_state_->user_type == User::USER_TYPE_LOCALLY_MANAGED)
+    return LOCALLY_MANAGED_USER_LOGIN;
 
   if (!VerifyOwner())
     return CONTINUE;

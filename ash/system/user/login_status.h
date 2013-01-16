@@ -11,13 +11,14 @@ namespace ash {
 namespace user {
 
 enum LoginStatus {
-  LOGGED_IN_LOCKED, // A user has locked the screen.
-  LOGGED_IN_USER,   // A normal user is logged in.
-  LOGGED_IN_OWNER,  // The owner of the device is logged in.
-  LOGGED_IN_GUEST,  // A guest is logged in (i.e. incognito)
-  LOGGED_IN_KIOSK,  // Is in kiosk mode.
-  LOGGED_IN_PUBLIC, // A public account is logged in.
-  LOGGED_IN_NONE,   // Not logged in.
+  LOGGED_IN_LOCKED,  // A user has locked the screen.
+  LOGGED_IN_USER,    // A normal user is logged in.
+  LOGGED_IN_OWNER,   // The owner of the device is logged in.
+  LOGGED_IN_GUEST,   // A guest is logged in (i.e. incognito)
+  LOGGED_IN_KIOSK,   // Is in kiosk mode.
+  LOGGED_IN_PUBLIC,  // A public account is logged in.
+  LOGGED_IN_LOCALLY_MANAGED, // A locally managed user is logged in.
+  LOGGED_IN_NONE,    // Not logged in.
 };
 
 string16 GetLocalizedSignOutStringForStatus(LoginStatus status, bool multiline);

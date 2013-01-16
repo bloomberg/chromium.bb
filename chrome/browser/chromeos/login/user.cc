@@ -61,6 +61,18 @@ class GuestUser : public User {
   DISALLOW_COPY_AND_ASSIGN(GuestUser);
 };
 
+class LocallyManagedUser : public User {
+ public:
+  explicit LocallyManagedUser(const std::string& username);
+  virtual ~LocallyManagedUser();
+
+  // Overridden from User:
+  virtual UserType GetType() const OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LocallyManagedUser);
+};
+
 class RetailModeUser : public User {
  public:
   RetailModeUser();
@@ -113,6 +125,10 @@ User* User::CreateRegularUser(const std::string& email) {
 
 User* User::CreateGuestUser() {
   return new GuestUser;
+}
+
+User* User::CreateLocallyManagedUser(const std::string& username) {
+  return new LocallyManagedUser(username);
 }
 
 User* User::CreateRetailModeUser() {
@@ -176,6 +192,18 @@ GuestUser::~GuestUser() {}
 
 User::UserType GuestUser::GetType() const {
   return USER_TYPE_GUEST;
+}
+
+LocallyManagedUser::LocallyManagedUser(const std::string& username)
+    : User(username) {
+  size_t separator_pos = username.find('@');
+  set_display_email(username.substr(0, separator_pos));
+}
+
+LocallyManagedUser::~LocallyManagedUser() {}
+
+User::UserType LocallyManagedUser::GetType() const {
+  return USER_TYPE_LOCALLY_MANAGED;
 }
 
 RetailModeUser::RetailModeUser() : User(kRetailModeUserEMail) {

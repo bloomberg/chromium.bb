@@ -32,7 +32,8 @@ class UserImageManagerImpl : public UserImageManager,
   virtual ~UserImageManagerImpl();
   virtual void LoadUserImages(const UserList& users) OVERRIDE;
   virtual void UserLoggedIn(const std::string& email,
-                            bool user_is_new) OVERRIDE;
+                            bool user_is_new,
+                            bool user_is_local) OVERRIDE;
   virtual void SaveUserDefaultImageIndex(const std::string& username,
                                          int image_index) OVERRIDE;
   virtual void SaveUserImage(const std::string& username,

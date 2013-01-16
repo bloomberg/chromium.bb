@@ -39,6 +39,8 @@ class MockAuthenticator : public Authenticator {
   virtual void AuthenticateToUnlock(const std::string& username,
                                     const std::string& password) OVERRIDE;
 
+  virtual void LoginAsLocallyManagedUser(const std::string& username,
+                                         const std::string& password) OVERRIDE;
   virtual void LoginRetailMode() OVERRIDE;
   virtual void LoginAsPublicAccount(const std::string& username) OVERRIDE;
   virtual void LoginOffTheRecord() OVERRIDE;

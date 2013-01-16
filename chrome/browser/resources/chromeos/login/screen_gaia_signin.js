@@ -270,12 +270,16 @@ cr.define('login', function() {
 
       $('createAccount').hidden = !data.createAccount;
       $('guestSignin').hidden = !data.guestSignin;
+      $('createLocallyManagedUser').hidden = !data.createLocallyManagedUser;
       // Only show Cancel button when user pods can be displayed.
       $('login-header-bar').allowCancel =
           data.isShowUsers && $('pod-row').pods.length;
 
-      // Sign-in right panel is hidden if all its items are hidden.
-      var noRightPanel = $('createAccount').hidden && $('guestSignin').hidden;
+      // Sign-in right panel is hidden if all of its items are hidden.
+      var noRightPanel = $('gaia-signin-reason').hidden &&
+                         $('createAccount').hidden &&
+                         $('guestSignin').hidden &&
+                         $('createLocallyManagedUser').hidden;
       this.classList[noRightPanel ? 'add' : 'remove']('no-right-panel');
       if (Oobe.getInstance().currentScreen === this)
         Oobe.getInstance().updateScreenSize(this);
@@ -413,18 +417,25 @@ cr.define('login', function() {
      */
     updateLocalizedContent: function() {
       $('createAccount').innerHTML = localStrings.getStringF(
-        'createAccount',
-        '<a id="createAccountLink" class="signin-link" href="#">',
-        '</a>');
+          'createAccount',
+          '<a id="createAccountLink" class="signin-link" href="#">',
+          '</a>');
       $('guestSignin').innerHTML = localStrings.getStringF(
           'guestSignin',
           '<a id="guestSigninLink" class="signin-link" href="#">',
+          '</a>');
+      $('createLocallyManagedUser').innerHTML = localStrings.getStringF(
+          'createLocallyManagedUser',
+          '<a id="createLocallyManagedUserLink" class="signin-link" href="#">',
           '</a>');
       $('createAccountLink').onclick = function() {
         chrome.send('createAccount');
       };
       $('guestSigninLink').onclick = function() {
         chrome.send('launchIncognito');
+      };
+      $('createLocallyManagedUserLink').onclick = function() {
+        chrome.send('createLocallyManagedUser');
       };
     },
 

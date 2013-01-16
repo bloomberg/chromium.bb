@@ -27,6 +27,7 @@ class MockUserManager : public UserManager {
   MOCK_METHOD2(UserLoggedIn, void(const std::string&, bool));
   MOCK_METHOD0(RetailModeUserLoggedIn, void(void));
   MOCK_METHOD0(GuestUserLoggedIn, void(void));
+  MOCK_METHOD1(LocallyManagedUserLoggedIn, void(const std::string&));
   MOCK_METHOD1(PublicAccountUserLoggedIn, void(User*));
   MOCK_METHOD2(RegularUserLoggedIn, void(const std::string&, bool));
   MOCK_METHOD1(RegularUserLoggedInAsEphemeral, void(const std::string&));
@@ -52,6 +53,7 @@ class MockUserManager : public UserManager {
   MOCK_CONST_METHOD0(IsLoggedInAsDemoUser, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsPublicAccount, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsGuest, bool(void));
+  MOCK_CONST_METHOD0(IsLoggedInAsLocallyManagedUser, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsStub, bool(void));
   MOCK_CONST_METHOD0(IsSessionStarted, bool(void));
   MOCK_CONST_METHOD0(HasBrowserRestarted, bool(void));

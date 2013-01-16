@@ -48,6 +48,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_util_chromeos.h"
+#include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/preconnect.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -269,6 +270,9 @@ class LoginUtilsImpl
   void RestoreAuthSession(Profile* user_profile,
                           bool restore_from_auth_cookies);
 
+  // Callback when managed mode preferences have been applied.
+  void EnteredManagedMode(bool success);
+
   // Initializes RLZ. If |disabled| is true, RLZ pings are disabled.
   void InitRlz(Profile* user_profile, bool disabled);
 
@@ -449,25 +453,34 @@ void LoginUtilsImpl::DelegateDeleted(LoginUtils::Delegate* delegate) {
 void LoginUtilsImpl::InitProfilePreferences(Profile* user_profile) {
   if (UserManager::Get()->IsCurrentUserNew())
     SetFirstLoginPrefs(user_profile->GetPrefs());
-  // Make sure that the google service username is properly set (we do this
-  // on every sign in, not just the first login, to deal with existing
-  // profiles that might not have it set yet).
-  StringPrefMember google_services_username;
-  google_services_username.Init(prefs::kGoogleServicesUsername,
-                                user_profile->GetPrefs());
-  google_services_username.SetValue(
-      UserManager::Get()->GetLoggedInUser()->display_email());
+
+  if (!UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
+    // Make sure that the google service username is properly set (we do this
+    // on every sign in, not just the first login, to deal with existing
+    // profiles that might not have it set yet).
+    StringPrefMember google_services_username;
+    google_services_username.Init(prefs::kGoogleServicesUsername,
+                                  user_profile->GetPrefs());
+    google_services_username.SetValue(
+        UserManager::Get()->GetLoggedInUser()->display_email());
+  }
+
   // Make sure we flip every profile to not share proxies if the user hasn't
   // specified so explicitly.
   const PrefService::Preference* use_shared_proxies_pref =
       user_profile->GetPrefs()->FindPreference(prefs::kUseSharedProxies);
   if (use_shared_proxies_pref->IsDefaultValue())
     user_profile->GetPrefs()->SetBoolean(prefs::kUseSharedProxies, false);
-  policy::NetworkConfigurationUpdater* network_configuration_updater =
-      g_browser_process->browser_policy_connector()->
-      GetNetworkConfigurationUpdater();
-  if (network_configuration_updater)
-    network_configuration_updater->OnUserPolicyInitialized();
+
+  // Locally managed users do not have user policy initialized.
+  if (!UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
+    policy::NetworkConfigurationUpdater* network_configuration_updater =
+        g_browser_process->browser_policy_connector()->
+        GetNetworkConfigurationUpdater();
+    if (network_configuration_updater)
+      network_configuration_updater->OnUserPolicyInitialized();
+  }
+
   RespectLocalePreference(user_profile);
 }
 
@@ -508,7 +521,19 @@ void LoginUtilsImpl::OnProfileCreated(
     return;
   }
 
-  FinalizePrepareProfile(user_profile);
+  if (UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
+    // Apply managed mode first.
+    ManagedMode::EnterManagedMode(
+        user_profile,
+        base::Bind(&LoginUtilsImpl::EnteredManagedMode, AsWeakPtr()));
+  } else {
+    FinalizePrepareProfile(user_profile);
+  }
+}
+
+void LoginUtilsImpl::EnteredManagedMode(bool success) {
+  // TODO(nkostylev): What if entering managed mode fails?
+  FinalizePrepareProfile(ProfileManager::GetDefaultProfile());
 }
 
 void LoginUtilsImpl::CompleteProfileCreate(Profile* user_profile) {

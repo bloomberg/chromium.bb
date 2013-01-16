@@ -37,6 +37,9 @@ class LoginDisplay : public RemoveUserDelegate {
     // Create new Google account.
     virtual void CreateAccount() = 0;
 
+    // Create a new locally managed user.
+    virtual void CreateLocallyManagedUser(const std::string& username) = 0;
+
     // Complete sign process with specified |username| and |password|.
     // Used for new users authenticated through an extension.
     virtual void CompleteLogin(const std::string& username,

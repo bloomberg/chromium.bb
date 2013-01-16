@@ -48,6 +48,10 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   virtual void AuthenticateToUnlock(const std::string& username,
                                     const std::string& password) = 0;
 
+  // Initiates locally managed user login.
+  virtual void LoginAsLocallyManagedUser(const std::string& username,
+                                         const std::string& password) = 0;
+
   // Initiates retail mode login.
   virtual void LoginRetailMode() = 0;
 

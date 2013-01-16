@@ -40,6 +40,7 @@
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "policy/policy_constants.h"
 
@@ -225,6 +226,12 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
     User* user = const_cast<User*>(FindUserInList(email));
     if (user && user->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT) {
       PublicAccountUserLoggedIn(user);
+    } else if ((user &&
+                user->GetType() == User::USER_TYPE_LOCALLY_MANAGED) ||
+               (!user &&
+                gaia::ExtractDomainName(email) ==
+                    UserManager::kLocallyManagedUserDomain)) {
+      LocallyManagedUserLoggedIn(email);
     } else if (browser_restart && email == g_browser_process->local_state()->
                    GetString(kPublicAccountPendingDataRemoval)) {
       PublicAccountUserLoggedIn(User::CreatePublicAccountUser(email));
@@ -235,7 +242,8 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
       RegularUserLoggedIn(email, browser_restart);
     }
 
-    // Start the session length limiter.
+    // Initialize the session length limiter and start it only if
+    // session limit is defined by the policy.
     session_length_limiter_.reset(new SessionLengthLimiter(NULL,
                                                            browser_restart));
   }
@@ -247,7 +255,9 @@ void UserManagerImpl::RetailModeUserLoggedIn() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   is_current_user_new_ = true;
   logged_in_user_ = User::CreateRetailModeUser();
-  user_image_manager_->UserLoggedIn(kRetailModeUserEMail, is_current_user_new_);
+  user_image_manager_->UserLoggedIn(kRetailModeUserEMail,
+                                    is_current_user_new_,
+                                    true);
   WallpaperManager::Get()->SetInitialUserWallpaper(kRetailModeUserEMail, false);
 }
 
@@ -258,20 +268,54 @@ void UserManagerImpl::GuestUserLoggedIn() {
   logged_in_user_->SetStubImage(User::kInvalidImageIndex, false);
 }
 
+void UserManagerImpl::LocallyManagedUserLoggedIn(
+    const std::string& username) {
+  // TODO(nkostylev): Refactor, share code with RegularUserLoggedIn().
+
+  // Remove the user from the user list.
+  logged_in_user_ = RemoveRegularOrLocallyManagedUserFromList(username);
+
+  // If the user was not found on the user list, create a new user.
+  if (!logged_in_user_) {
+    is_current_user_new_ = true;
+    logged_in_user_ = User::CreateLocallyManagedUser(username);
+    // Leaving OAuth token status at the default state = unknown.
+    WallpaperManager::Get()->SetInitialUserWallpaper(username, true);
+  }
+
+  // Add the user to the front of the user list.
+  ListPrefUpdate prefs_users_update(g_browser_process->local_state(),
+                                    kRegularUsers);
+  prefs_users_update->Insert(0, new base::StringValue(username));
+  users_.insert(users_.begin(), logged_in_user_);
+
+  // Now that user is in the list, save display name.
+  if (is_current_user_new_) {
+    SaveUserDisplayName(logged_in_user_->email(),
+                        logged_in_user_->GetDisplayName());
+  }
+
+  user_image_manager_->UserLoggedIn(username, is_current_user_new_, true);
+  WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
+
+   // Make sure that new data is persisted to Local State.
+  g_browser_process->local_state()->CommitPendingWrite();
+}
+
 void UserManagerImpl::PublicAccountUserLoggedIn(User* user) {
   is_current_user_new_ = true;
   logged_in_user_ = user;
   // The UserImageManager chooses a random avatar picture when a user logs in
   // for the first time. Tell the UserImageManager that this user is not new to
   // prevent the avatar from getting changed.
-  user_image_manager_->UserLoggedIn(user->email(), false);
+  user_image_manager_->UserLoggedIn(user->email(), false, true);
   WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
 }
 
 void UserManagerImpl::RegularUserLoggedIn(const std::string& email,
                                           bool browser_restart) {
   // Remove the user from the user list.
-  logged_in_user_ = RemoveRegularUserFromList(email);
+  logged_in_user_ = RemoveRegularOrLocallyManagedUserFromList(email);
 
   // If the user was not found on the user list, create a new user.
   if (!logged_in_user_) {
@@ -289,7 +333,7 @@ void UserManagerImpl::RegularUserLoggedIn(const std::string& email,
   prefs_users_update->Insert(0, new base::StringValue(email));
   users_.insert(users_.begin(), logged_in_user_);
 
-  user_image_manager_->UserLoggedIn(email, is_current_user_new_);
+  user_image_manager_->UserLoggedIn(email, is_current_user_new_, false);
 
   if (!browser_restart) {
     // For GAIA login flow, logged in user wallpaper may not be loaded.
@@ -305,7 +349,7 @@ void UserManagerImpl::RegularUserLoggedInAsEphemeral(const std::string& email) {
   is_current_user_new_ = true;
   is_current_user_ephemeral_regular_user_ = true;
   logged_in_user_ = User::CreateRegularUser(email);
-  user_image_manager_->UserLoggedIn(email, is_current_user_new_);
+  user_image_manager_->UserLoggedIn(email, is_current_user_new_, false);
   WallpaperManager::Get()->SetInitialUserWallpaper(email, false);
 }
 
@@ -327,7 +371,8 @@ void UserManagerImpl::RemoveUser(const std::string& email,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const User* user = FindUser(email);
-  if (!user || user->GetType() != User::USER_TYPE_REGULAR)
+  if (!user || (user->GetType() != User::USER_TYPE_REGULAR &&
+                user->GetType() != User::USER_TYPE_LOCALLY_MANAGED))
     return;
 
   // Sanity check: we must not remove single user. This check may seem
@@ -349,7 +394,7 @@ void UserManagerImpl::RemoveUserFromList(const std::string& email) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   EnsureUsersLoaded();
   RemoveNonCryptohomeData(email);
-  delete RemoveRegularUserFromList(email);
+  delete RemoveRegularOrLocallyManagedUserFromList(email);
   // Make sure that new data is persisted to Local State.
   g_browser_process->local_state()->CommitPendingWrite();
 }
@@ -487,7 +532,8 @@ void UserManagerImpl::Observe(int type,
       RetrieveTrustedDevicePolicies();
       break;
     case chrome::NOTIFICATION_PROFILE_ADDED:
-      if (IsUserLoggedIn() && !IsLoggedInAsGuest()) {
+      if (IsUserLoggedIn() && !IsLoggedInAsGuest() &&
+          !IsLoggedInAsLocallyManagedUser()) {
         Profile* profile = content::Source<Profile>(source).ptr();
         if (!profile->IsOffTheRecord() &&
             profile == ProfileManager::GetDefaultProfile()) {
@@ -596,6 +642,12 @@ bool UserManagerImpl::IsLoggedInAsGuest() const {
          logged_in_user_->GetType() == User::USER_TYPE_GUEST;
 }
 
+bool UserManagerImpl::IsLoggedInAsLocallyManagedUser() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return IsUserLoggedIn() &&
+      logged_in_user_->GetType() == User::USER_TYPE_LOCALLY_MANAGED;
+}
+
 bool UserManagerImpl::IsLoggedInAsStub() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return IsUserLoggedIn() && logged_in_user_->email() == kStubUser;
@@ -682,15 +734,21 @@ void UserManagerImpl::EnsureUsersLoaded() {
   const DictionaryValue* prefs_display_emails =
       local_state->GetDictionary(kUserDisplayEmail);
 
-  // Load regular users.
+  // Load regular users and locally managed users.
   std::vector<std::string> regular_users;
   std::set<std::string> regular_users_set;
   ParseUserList(*prefs_regular_users, std::set<std::string>(), "",
                 &regular_users, &regular_users_set);
   for (std::vector<std::string>::const_iterator it = regular_users.begin();
        it != regular_users.end(); ++it) {
-    User* user = User::CreateRegularUser(*it);
-    user->set_oauth_token_status(LoadUserOAuthStatus(*it));
+    User* user = NULL;
+    if (gaia::ExtractDomainName(*it) ==
+            UserManager::kLocallyManagedUserDomain) {
+      user = User::CreateLocallyManagedUser(*it);
+    } else {
+      user = User::CreateRegularUser(*it);
+      user->set_oauth_token_status(LoadUserOAuthStatus(*it));
+    }
     users_.push_back(user);
 
     string16 display_name;
@@ -833,19 +891,22 @@ void UserManagerImpl::RemoveNonCryptohomeData(const std::string& email) {
   prefs_display_email_update->RemoveWithoutPathExpansion(email, NULL);
 }
 
-User *UserManagerImpl::RemoveRegularUserFromList(const std::string& email) {
+User* UserManagerImpl::RemoveRegularOrLocallyManagedUserFromList(
+    const std::string& username) {
   ListPrefUpdate prefs_users_update(g_browser_process->local_state(),
                                     kRegularUsers);
   prefs_users_update->Clear();
   User* user = NULL;
   for (UserList::iterator it = users_.begin(); it != users_.end(); ) {
     const std::string user_email = (*it)->email();
-    if (user_email == email) {
+    if (user_email == username) {
       user = *it;
       it = users_.erase(it);
     } else {
-      if ((*it)->GetType() == User::USER_TYPE_REGULAR)
+      if ((*it)->GetType() == User::USER_TYPE_REGULAR ||
+          (*it)->GetType() == User::USER_TYPE_LOCALLY_MANAGED) {
         prefs_users_update->Append(new base::StringValue(user_email));
+      }
       ++it;
     }
   }

@@ -127,7 +127,9 @@ cr.define('login', function() {
                                           error);
         return;
       }
-      if (loginAttempts > MAX_LOGIN_ATTEMPTS_IN_POD) {
+      // Show web authentication if this is not a locally managed user.
+      if (loginAttempts > MAX_LOGIN_ATTEMPTS_IN_POD &&
+          !activatedPod.user.locallyManagedUser) {
         activatedPod.showSigninUI();
       } else {
         // We want bubble's arrow to point to the first letter of input.

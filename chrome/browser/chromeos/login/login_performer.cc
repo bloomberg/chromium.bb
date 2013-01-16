@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -217,6 +218,7 @@ void LoginPerformer::Observe(int type,
 
 ////////////////////////////////////////////////////////////////////////////////
 // LoginPerformer, public:
+
 void LoginPerformer::PerformLogin(const std::string& username,
                                   const std::string& password,
                                   AuthorizationMode auth_mode) {
@@ -265,6 +267,29 @@ void LoginPerformer::PerformLogin(const std::string& username,
     else
       NOTREACHED();
   }
+}
+
+void LoginPerformer::CreateLocallyManagedUser(const std::string& username,
+                                              const std::string& password) {
+  // We should always add locally managed user domain.
+  // This ensures that usernames will not conflict with other user types.
+  LoginAsLocallyManagedUser(
+      username + "@" + UserManager::kLocallyManagedUserDomain,
+      password);
+}
+
+void LoginPerformer::LoginAsLocallyManagedUser(const std::string& username,
+                                               const std::string& password) {
+  DCHECK_EQ(UserManager::kLocallyManagedUserDomain,
+            gaia::ExtractDomainName(username));
+  // TODO(nkostylev): Check that policy allows locally managed user login.
+  authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&Authenticator::LoginAsLocallyManagedUser,
+                 authenticator_.get(),
+                 username,
+                 password));
 }
 
 void LoginPerformer::LoginRetailMode() {

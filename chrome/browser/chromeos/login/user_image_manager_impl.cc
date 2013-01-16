@@ -255,26 +255,30 @@ void UserImageManagerImpl::LoadUserImages(const UserList& users) {
 }
 
 void UserImageManagerImpl::UserLoggedIn(const std::string& email,
-                                        bool user_is_new) {
+                                        bool user_is_new,
+                                        bool user_is_local) {
   if (user_is_new) {
     SetInitialUserImage(email);
   } else {
     int image_index = UserManager::Get()->GetLoggedInUser()->image_index();
-    // If current user image is profile image, it needs to be refreshed.
-    bool download_profile_image = image_index == User::kProfileImageIndex;
-    if (download_profile_image)
-      InitDownloadedProfileImage();
 
-    // Download user's profile data (full name and optionally image) to see if
-    // it has changed.
-    BrowserThread::PostDelayedTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&UserImageManagerImpl::DownloadProfileData,
-                   base::Unretained(this),
-                   kProfileDownloadReasonLoggedIn,
-                   download_profile_image),
-        base::TimeDelta::FromSeconds(kProfileDataDownloadDelaySec));
+    if (!user_is_local) {
+      // If current user image is profile image, it needs to be refreshed.
+      bool download_profile_image = image_index == User::kProfileImageIndex;
+      if (download_profile_image)
+        InitDownloadedProfileImage();
+
+      // Download user's profile data (full name and optionally image) to see if
+      // it has changed.
+      BrowserThread::PostDelayedTask(
+          BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&UserImageManagerImpl::DownloadProfileData,
+                     base::Unretained(this),
+                     kProfileDownloadReasonLoggedIn,
+                     download_profile_image),
+          base::TimeDelta::FromSeconds(kProfileDataDownloadDelaySec));
+    }
 
     UMA_HISTOGRAM_ENUMERATION("UserImage.LoggedIn",
                               ImageIndexToHistogramIndex(image_index),
@@ -291,10 +295,12 @@ void UserImageManagerImpl::UserLoggedIn(const std::string& email,
     }
   }
 
-  // Set up a repeating timer for refreshing the profile data.
-  profile_download_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kProfileRefreshIntervalSec),
-      this, &UserImageManagerImpl::DownloadProfileDataScheduled);
+  if (!user_is_local) {
+    // Set up a repeating timer for refreshing the profile data.
+    profile_download_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromSeconds(kProfileRefreshIntervalSec),
+        this, &UserImageManagerImpl::DownloadProfileDataScheduled);
+  }
 }
 
 void UserImageManagerImpl::SaveUserDefaultImageIndex(

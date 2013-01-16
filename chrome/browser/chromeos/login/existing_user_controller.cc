@@ -50,6 +50,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "grit/generated_resources.h"
 #include "net/http/http_auth_cache.h"
@@ -302,6 +303,28 @@ void ExistingUserController::CreateAccount() {
   LoginAsGuest();
 }
 
+void ExistingUserController::CreateLocallyManagedUser(
+    const std::string& username) {
+  // TODO(nkostylev): Check that policy allows creation of such account type.
+  if (username.empty())
+    return;
+
+  // Disable clicking on other windows.
+  login_display_->SetUIEnabled(false);
+
+  LoginPerformer::Delegate* delegate = this;
+  if (login_performer_delegate_.get())
+    delegate = login_performer_delegate_.get();
+  // Only one instance of LoginPerformer should exist at a time.
+  login_performer_.reset(NULL);
+  login_performer_.reset(new LoginPerformer(delegate));
+  is_login_in_progress_ = true;
+  // Using username as the passphrase.
+  // TODO(nkostylev): UI to enter password.
+  login_performer_->CreateLocallyManagedUser(username, username);
+  // TODO(nkostylev): A11y message.
+}
+
 void ExistingUserController::CompleteLogin(const std::string& username,
                                            const std::string& password) {
   if (!host_) {
@@ -401,7 +424,12 @@ void ExistingUserController::PerformLogin(
   }
 
   is_login_in_progress_ = true;
-  login_performer_->PerformLogin(username, password, auth_mode);
+  if (gaia::ExtractDomainName(username) ==
+          UserManager::kLocallyManagedUserDomain) {
+    login_performer_->LoginAsLocallyManagedUser(username, password);
+  } else {
+    login_performer_->PerformLogin(username, password, auth_mode);
+  }
   accessibility::MaybeSpeak(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN));
 }

@@ -93,6 +93,9 @@ class SigninScreenHandlerDelegate {
   // and migrate to new password.
   virtual void MigrateUserData(const std::string& old_password) = 0;
 
+  // Create a new locally managed user.
+  virtual void CreateLocallyManagedUser(const std::string& username) = 0;
+
   // Load wallpaper for given |username|.
   virtual void LoadWallpaper(const std::string& username) = 0;
 
@@ -268,6 +271,7 @@ class SigninScreenHandler
   void HandleToggleResetScreen(const base::ListValue* args);
   void HandleLaunchHelpApp(const base::ListValue* args);
   void HandleCreateAccount(const base::ListValue* args);
+  void HandleCreateLocallyManagedUser(const base::ListValue* args);
   void HandleAccountPickerReady(const base::ListValue* args);
   void HandleWallpaperReady(const base::ListValue* args);
   void HandleLoginWebuiReady(const base::ListValue* args);

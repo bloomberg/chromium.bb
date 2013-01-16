@@ -50,6 +50,7 @@ class UserManagerImpl
                             bool browser_restart) OVERRIDE;
   virtual void RetailModeUserLoggedIn() OVERRIDE;
   virtual void GuestUserLoggedIn() OVERRIDE;
+  virtual void LocallyManagedUserLoggedIn(const std::string& username) OVERRIDE;
   virtual void PublicAccountUserLoggedIn(User* user) OVERRIDE;
   virtual void RegularUserLoggedIn(const std::string& email,
                                    bool browser_restart) OVERRIDE;
@@ -83,6 +84,7 @@ class UserManagerImpl
   virtual bool IsLoggedInAsDemoUser() const OVERRIDE;
   virtual bool IsLoggedInAsPublicAccount() const OVERRIDE;
   virtual bool IsLoggedInAsGuest() const OVERRIDE;
+  virtual bool IsLoggedInAsLocallyManagedUser() const OVERRIDE;
   virtual bool IsLoggedInAsStub() const OVERRIDE;
   virtual bool IsSessionStarted() const OVERRIDE;
   virtual bool HasBrowserRestarted() const OVERRIDE;
@@ -147,10 +149,10 @@ class UserManagerImpl
   // avatar, OAuth token status, display name, display email).
   void RemoveNonCryptohomeData(const std::string& email);
 
-  // Removes a regular user from the user list. Returns the user if found or
-  // NULL otherwise. Also removes the user from the persistent regular user
-  // list.
-  User *RemoveRegularUserFromList(const std::string& email);
+  // Removes a regular or locally managed user from the user list.
+  // Returns the user if found or NULL otherwise.
+  // Also removes the user from the persistent user list.
+  User* RemoveRegularOrLocallyManagedUserFromList(const std::string& username);
 
   // Replaces the list of public accounts with |public_accounts|. Ensures that
   // data belonging to accounts no longer on the list is removed. Returns |true|

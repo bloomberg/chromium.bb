@@ -35,6 +35,9 @@ class UserManager {
   // Username for stub login when not running on ChromeOS.
   static const char kStubUser[];
 
+  // Domain that is used for all locally managed users.
+  static const char kLocallyManagedUserDomain[];
+
   // Returns a shared instance of a UserManager. Not thread-safe, should only be
   // called from the main UI thread.
   static UserManager* Get();
@@ -85,6 +88,9 @@ class UserManager {
 
   // Indicates that user just started incognito session.
   virtual void GuestUserLoggedIn() = 0;
+
+  // Indicates that a locally managed user just logged in.
+  virtual void LocallyManagedUserLoggedIn(const std::string& username) = 0;
 
   // Indicates that a user just logged into a public account.
   virtual void PublicAccountUserLoggedIn(User* user) = 0;
@@ -181,6 +187,9 @@ class UserManager {
 
   // Returns true if we're logged in as a Guest.
   virtual bool IsLoggedInAsGuest() const = 0;
+
+  // Returns true if we're logged in as a locally managed user.
+  virtual bool IsLoggedInAsLocallyManagedUser() const = 0;
 
   // Returns true if we're logged in as the stub user used for testing on Linux.
   virtual bool IsLoggedInAsStub() const = 0;

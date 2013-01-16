@@ -196,6 +196,10 @@ void WebUIScreenLocker::CreateAccount() {
   NOTREACHED();
 }
 
+void WebUIScreenLocker::CreateLocallyManagedUser(const std::string& username) {
+  NOTREACHED();
+}
+
 void WebUIScreenLocker::CompleteLogin(const std::string& username,
                                       const std::string& password) {
   NOTREACHED();
