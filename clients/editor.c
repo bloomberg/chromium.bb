@@ -304,6 +304,24 @@ text_model_keysym(void *data,
 		return;
 	}
 
+	if (key == XKB_KEY_BackSpace) {
+		const char *start, *end;
+
+		text_entry_commit_and_reset(entry);
+
+		start = utf8_prev_char(entry->text, entry->text + entry->cursor);
+
+		if (start == NULL)
+			return;
+
+		end = utf8_end_char(entry->text + entry->cursor);
+		text_entry_delete_text(entry,
+				       start - entry->text,
+				       end - start);
+
+		return;
+	}
+
 	switch (key) {
 		case XKB_KEY_Tab:
 			key_label = "Tab";
