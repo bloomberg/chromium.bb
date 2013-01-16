@@ -9,6 +9,7 @@
 #include "ash/magnifier/magnifier_constants.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/stacking_controller.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -207,6 +208,10 @@ void ChromeShellDelegate::ToggleMaximized() {
     return;
   }
   ash::wm::ToggleMaximizedWindow(window);
+  // Experiment with automatically entering immersive mode when the user presses
+  // the F4 maximize key.
+  window->SetProperty(ash::internal::kImmersiveModeKey,
+                      ash::wm::IsWindowMaximized(window));
 }
 
 void ChromeShellDelegate::OpenFileManager() {

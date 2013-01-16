@@ -17,6 +17,7 @@
 #include "ash/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/wm/shelf_layout_manager.h"
+#include "ash/wm/window_properties.h"
 #endif
 
 namespace {
@@ -182,8 +183,8 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, MAYBE_ImmersiveMode) {
 }
 
 #if defined(USE_ASH)
-// Test shelf auto-hide toggling behavior.
-IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveShelf) {
+// Ash-specific immersive mode tests.
+IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveAsh) {
 #if defined(OS_WIN)
   // Not running in Ash, so this doesn't doesn't make sense.
   if (!ash::Shell::HasInstance())
@@ -220,5 +221,13 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerTest, ImmersiveShelf) {
   // Disabling immersive mode maintains the user's auto-hide selection.
   immersive_controller->SetEnabled(false);
   EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
+
+  // Setting the window property directly toggles immersive mode.
+  aura::Window* window = browser_view->GetWidget()->GetNativeWindow();
+  window->SetProperty(ash::internal::kImmersiveModeKey, true);
+  EXPECT_TRUE(immersive_controller->enabled());
+  window->SetProperty(ash::internal::kImmersiveModeKey, false);
+  EXPECT_FALSE(immersive_controller->enabled());
 }
-#endif  // defined(OS_CHROMEOS)
+
+#endif  // defined(USE_ASH)

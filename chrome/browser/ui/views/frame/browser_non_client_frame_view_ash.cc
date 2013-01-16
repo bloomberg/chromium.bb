@@ -202,10 +202,17 @@ void BrowserNonClientFrameViewAsh::ResetWindowControls() {
   // Only show them during a reveal.
   ImmersiveModeController* controller =
       browser_view()->immersive_mode_controller();
-  bool show_buttons = !controller->enabled() || controller->IsRevealed();
-  immersive_button_->SetVisible(show_buttons);
-  size_button_->SetVisible(show_buttons);
-  close_button_->SetVisible(show_buttons);
+  if (controller->enabled()) {
+    bool revealed = controller->IsRevealed();
+    immersive_button_->SetVisible(revealed);
+    size_button_->SetVisible(revealed);
+    close_button_->SetVisible(revealed);
+  } else {
+    // Only show immersive button for maximized windows.
+    immersive_button_->SetVisible(frame()->IsMaximized());
+    size_button_->SetVisible(true);
+    close_button_->SetVisible(true);
+  }
 
   size_button_->SetState(views::CustomButton::STATE_NORMAL);
   // The close button isn't affected by this constraint.
