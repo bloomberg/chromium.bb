@@ -161,6 +161,9 @@ class VirtualAudioInputStreamTest
   }
 
   void WaitForDataPulls() {
+    // Wait until audio thread is idle before calling output_streams_.size().
+    SyncWithAudioThread();
+
     const int count = output_streams_.size();
     for (int i = 0; i < count; ++i) {
       source_.WaitForDataPulls();
