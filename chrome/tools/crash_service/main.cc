@@ -44,13 +44,15 @@ int __stdcall wWinMain(HINSTANCE instance, HINSTANCE, wchar_t* cmd_line,
   GetCrashServiceDirectory(&operating_dir);
   FilePath log_file = operating_dir.Append(kStandardLogFile);
 
-  // Logging to a file with pid, tid and timestamp.
+  // Logging to stderr (to help with debugging failures on the
+  // buildbots) and to a file.
   logging::InitLogging(
       log_file.value().c_str(),
-      logging::LOG_ONLY_TO_FILE,
+      logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,
       logging::LOCK_LOG_FILE,
       logging::APPEND_TO_OLD_LOG_FILE,
       logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+  // Logging with pid, tid and timestamp.
   logging::SetLogItems(true, true, true, false);
 
   VLOG(1) << "session start. cmdline is [" << cmd_line << "]";

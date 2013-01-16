@@ -42,6 +42,7 @@ def StartCrashService(browser_path, dumps_dir, windows_pipe_name,
   # Find crash_service.exe relative to chrome.exe.  This is a bit icky.
   browser_dir = os.path.dirname(browser_path)
   proc = subprocess.Popen([os.path.join(browser_dir, crash_service_exe),
+                           '--v=1',  # Verbose output for debugging failures
                            '--dumps-dir=%s' % dumps_dir,
                            '--pipe-name=%s' % windows_pipe_name])
 
