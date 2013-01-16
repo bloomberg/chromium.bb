@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/panels/panel_collection.h"
 #include "chrome/browser/ui/panels/panel_host.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/stacked_panel_collection.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -243,6 +244,11 @@ Profile* Panel::profile() const {
 
 const std::string Panel::extension_id() const {
   return web_app::GetExtensionIdFromApplicationName(app_name_);
+}
+
+StackedPanelCollection* Panel::stack() const {
+  return collection_ && collection_->type() == PanelCollection::STACKED ?
+      static_cast<StackedPanelCollection*>(collection_) : NULL;
 }
 
 content::WebContents* Panel::GetWebContents() const {
@@ -807,6 +813,12 @@ void Panel::LoadingStateChanged(bool is_loading) {
 
 void Panel::WebContentsFocused(content::WebContents* contents) {
   native_panel_->PanelWebContentsFocused(contents);
+}
+
+void Panel::MoveByInstantly(const gfx::Vector2d& delta_origin) {
+  gfx::Rect bounds = GetBounds();
+  bounds.Offset(delta_origin);
+  SetPanelBoundsInstantly(bounds);
 }
 
 const extensions::Extension* Panel::GetExtension() const {

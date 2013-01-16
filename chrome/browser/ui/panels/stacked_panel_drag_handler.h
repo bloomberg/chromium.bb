@@ -15,7 +15,11 @@ class Point;
 // Handles all the drags to unstacked free-floating panels.
 class StackedPanelDragHandler {
  public:
-  static void HandleDrag(Panel* panel, const gfx::Point& target_position);
+  static void HandleDrag(Panel* panel,
+                         const gfx::Point& target_position,
+                         bool in_orginal_collection);
+
+  static void FinalizeDrag(Panel* panel);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(StackedPanelDragHandler);
