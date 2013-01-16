@@ -15,6 +15,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "remoting/capturer/shared_buffer.h"
 #include "remoting/capturer/video_frame_capturer.h"
+#include "remoting/host/desktop_environment.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -46,24 +47,28 @@ class IpcVideoFrameCapturer;
 // integration process.
 class DesktopSessionProxy
     : public base::RefCountedThreadSafe<DesktopSessionProxy>,
+      public DesktopEnvironment,
       public IPC::Listener {
  public:
   DesktopSessionProxy(
-      scoped_refptr<base::SingleThreadTaskRunner> audio_capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner);
+      const std::string& client_jid,
+      const base::Closure& disconnect_callback);
+
+  // DesktopEnvironment implementation.
+  virtual scoped_ptr<AudioCapturer> CreateAudioCapturer(
+      scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner) OVERRIDE;
+  virtual scoped_ptr<EventExecutor> CreateEventExecutor(
+      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) OVERRIDE;
+  virtual scoped_ptr<VideoFrameCapturer> CreateVideoCapturer(
+      scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner) OVERRIDE;
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
-
-  // Initializes the object. |client_jid| specifies the client session's JID.
-  // |disconnect_callback| specifies a callback that disconnects the client
-  // session when invoked.
-  // Initialize() should be called before AttachToDesktop() is called.
-  void Initialize(const std::string& client_jid,
-                  const base::Closure& disconnect_callback);
 
   // Connects to the desktop session agent.
   bool AttachToDesktop(IPC::PlatformFileForTransit desktop_process,
@@ -76,11 +81,6 @@ class DesktopSessionProxy
   // Disconnects the client session that owns |this|.
   void DisconnectSession();
 
-  // APIs used to implement the VideoFrameCapturer interface. These must be
-  // called on |video_capture_task_runner_|.
-  void InvalidateRegion(const SkRegion& invalid_region);
-  void CaptureFrame();
-
   // Stores |audio_capturer| to be used to post captured audio packets.
   // |audio_capturer| must be valid until StopAudioCapturer() is called.
   void StartAudioCapturer(IpcAudioCapturer* audio_capturer);
@@ -88,6 +88,11 @@ class DesktopSessionProxy
   // Clears the cached pointer to the audio capturer. Any packets captured after
   // StopAudioCapturer() has been called will be silently dropped.
   void StopAudioCapturer();
+
+  // APIs used to implement the VideoFrameCapturer interface. These must be
+  // called on |video_capture_task_runner_|.
+  void InvalidateRegion(const SkRegion& invalid_region);
+  void CaptureFrame();
 
   // Stores |video_capturer| to be used to post captured video frames.
   // |video_capturer| must be valid until StopVideoCapturer() is called.

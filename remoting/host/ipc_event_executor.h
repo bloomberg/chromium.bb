@@ -17,7 +17,8 @@ class DesktopSessionProxy;
 // agent running in the desktop integration process.
 class IpcEventExecutor : public EventExecutor {
  public:
-  IpcEventExecutor(scoped_refptr<DesktopSessionProxy> desktop_session_proxy);
+  explicit IpcEventExecutor(
+      scoped_refptr<DesktopSessionProxy> desktop_session_proxy);
   virtual ~IpcEventExecutor();
 
   // ClipboardStub interface.

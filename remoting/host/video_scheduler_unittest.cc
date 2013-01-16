@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
+#include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/capturer/capture_data.h"
 #include "remoting/capturer/video_capturer_mock_objects.h"
 #include "remoting/codec/video_encoder.h"
@@ -44,10 +45,6 @@ ACTION(FinishSend) {
   arg1.Run();
 }
 
-ACTION_P2(StopVideoScheduler, scheduler, task) {
-  scheduler->get()->Stop(task);
-}
-
 }  // namespace
 
 static const int kWidth = 640;
@@ -77,15 +74,18 @@ class VideoSchedulerTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
+    task_runner_ = new AutoThreadTaskRunner(
+        message_loop_.message_loop_proxy(), run_loop_.QuitClosure());
+
     encoder_ = new MockVideoEncoder();
   }
 
-  void StartVideoScheduler() {
+  void StartVideoScheduler(scoped_ptr<VideoFrameCapturer> capturer) {
     scheduler_ = VideoScheduler::Create(
-        message_loop_.message_loop_proxy(),
-        message_loop_.message_loop_proxy(),
-        message_loop_.message_loop_proxy(),
-        &capturer_,
+        task_runner_, // Capture
+        task_runner_, // Encode
+        task_runner_, // Network
+        capturer.Pass(),
         scoped_ptr<VideoEncoder>(encoder_),
         &client_stub_,
         &video_stub_);
@@ -93,13 +93,16 @@ class VideoSchedulerTest : public testing::Test {
 
   void GenerateOnCaptureCompleted();
 
+  void StopVideoScheduler();
+
  protected:
   MessageLoop message_loop_;
+  base::RunLoop run_loop_;
+  scoped_refptr<AutoThreadTaskRunner> task_runner_;
   scoped_refptr<VideoScheduler> scheduler_;
 
   MockClientStub client_stub_;
   MockVideoStub video_stub_;
-  MockVideoFrameCapturer capturer_;
 
   // The following mock objects are owned by VideoScheduler.
   MockVideoEncoder* encoder_;
@@ -117,21 +120,24 @@ void VideoSchedulerTest::GenerateOnCaptureCompleted() {
   scheduler_->OnCaptureCompleted(data_);
 }
 
+void VideoSchedulerTest::StopVideoScheduler() {
+  scheduler_->Stop();
+  scheduler_ = NULL;
+}
+
 // This test mocks capturer, encoder and network layer to simulate one capture
 // cycle. When the first encoded packet is submitted to the network
 // VideoScheduler is instructed to come to a complete stop. We expect the stop
 // sequence to be executed successfully.
 TEST_F(VideoSchedulerTest, StartAndStop) {
-  Expectation capturer_start = EXPECT_CALL(capturer_, Start(_));
+  scoped_ptr<MockVideoFrameCapturer> capturer_(new MockVideoFrameCapturer());
+  Expectation capturer_start = EXPECT_CALL(*capturer_, Start(_));
 
   data_ = new CaptureData(NULL, kWidth * CaptureData::kBytesPerPixel,
                           SkISize::Make(kWidth, kHeight));
 
-  // Create a RunLoop through which to drive |message_loop_|.
-  base::RunLoop run_loop;
-
   // First the capturer is called.
-  Expectation capturer_capture = EXPECT_CALL(capturer_, CaptureFrame())
+  Expectation capturer_capture = EXPECT_CALL(*capturer_, CaptureFrame())
       .After(capturer_start)
       .WillRepeatedly(InvokeWithoutArgs(
           this, &VideoSchedulerTest::GenerateOnCaptureCompleted));
@@ -149,15 +155,17 @@ TEST_F(VideoSchedulerTest, StartAndStop) {
   EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
       .WillOnce(DoAll(
           FinishSend(),
-          StopVideoScheduler(&scheduler_, run_loop.QuitClosure())))
+          InvokeWithoutArgs(this, &VideoSchedulerTest::StopVideoScheduler)))
       .RetiresOnSaturation();
 
-  EXPECT_CALL(capturer_, Stop())
+  EXPECT_CALL(*capturer_, Stop())
       .After(capturer_capture);
 
   // Start video frame capture.
-  StartVideoScheduler();
-  run_loop.Run();
+  StartVideoScheduler(capturer_.PassAs<VideoFrameCapturer>());
+
+  task_runner_ = NULL;
+  run_loop_.Run();
 }
 
 }  // namespace remoting

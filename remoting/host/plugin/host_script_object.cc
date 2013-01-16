@@ -17,9 +17,9 @@
 #include "net/base/net_util.h"
 #include "remoting/base/auth_token_util.h"
 #include "remoting/base/auto_thread.h"
+#include "remoting/host/basic_desktop_environment.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
-#include "remoting/host/desktop_environment_factory.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_key_pair.h"
@@ -214,8 +214,7 @@ void HostNPScriptObject::It2MeImpl::Connect(
   }
 
   // Create the desktop environment factory.
-  desktop_environment_factory_.reset(new DesktopEnvironmentFactory(
-      host_context_->input_task_runner(), host_context_->ui_task_runner()));
+  desktop_environment_factory_.reset(new BasicDesktopEnvironmentFactory());
 
   // Start monitoring configured policies.
   policy_watcher_.reset(
@@ -366,9 +365,11 @@ void HostNPScriptObject::It2MeImpl::FinishConnect(
       CreateHostSessionManager(network_settings,
                                host_context_->url_request_context_getter()),
       host_context_->audio_task_runner(),
+      host_context_->input_task_runner(),
       host_context_->video_capture_task_runner(),
       host_context_->video_encode_task_runner(),
-      host_context_->network_task_runner());
+      host_context_->network_task_runner(),
+      host_context_->ui_task_runner());
   host_->AddStatusObserver(this);
   log_to_server_.reset(
       new LogToServer(host_, ServerLogEntry::IT2ME, signal_strategy_.get()));

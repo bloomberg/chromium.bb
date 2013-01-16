@@ -34,6 +34,7 @@
 #include "remoting/base/breakpad.h"
 #include "remoting/base/constants.h"
 #include "remoting/capturer/video_frame_capturer.h"
+#include "remoting/host/basic_desktop_environment.h"
 #include "remoting/host/branding.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -41,7 +42,7 @@
 #include "remoting/host/config_file_watcher.h"
 #include "remoting/host/curtain_mode.h"
 #include "remoting/host/curtaining_host_observer.h"
-#include "remoting/host/desktop_environment_factory.h"
+#include "remoting/host/desktop_environment.h"
 #include "remoting/host/desktop_resizer.h"
 #include "remoting/host/desktop_session_connector.h"
 #include "remoting/host/dns_blackhole_checker.h"
@@ -52,7 +53,7 @@
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_user_interface.h"
 #include "remoting/host/ipc_constants.h"
-#include "remoting/host/ipc_desktop_environment_factory.h"
+#include "remoting/host/ipc_desktop_environment.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/log_to_server.h"
 #include "remoting/host/logging.h"
@@ -85,7 +86,7 @@
 #if defined(OS_WIN)
 #include <commctrl.h>
 #include "base/win/scoped_handle.h"
-#include "remoting/host/win/session_desktop_environment_factory.h"
+#include "remoting/host/win/session_desktop_environment.h"
 #endif  // defined(OS_WIN)
 
 #if defined(TOOLKIT_GTK)
@@ -569,24 +570,18 @@ void HostProcess::StartOnUiThread() {
 #if defined(REMOTING_MULTI_PROCESS)
   IpcDesktopEnvironmentFactory* desktop_environment_factory =
       new IpcDesktopEnvironmentFactory(
-          daemon_channel_.get(),
-          context_->audio_task_runner(),
-          context_->input_task_runner(),
           context_->network_task_runner(),
-          context_->ui_task_runner(),
-          context_->video_capture_task_runner());
+          daemon_channel_.get());
   desktop_session_connector_ = desktop_environment_factory;
 #else // !defined(REMOTING_MULTI_PROCESS)
   DesktopEnvironmentFactory* desktop_environment_factory =
       new SessionDesktopEnvironmentFactory(
-          context_->input_task_runner(), context_->ui_task_runner(),
           base::Bind(&HostProcess::SendSasToConsole, this));
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
 #else  // !defined(OS_WIN)
   DesktopEnvironmentFactory* desktop_environment_factory =
-      new DesktopEnvironmentFactory(
-          context_->input_task_runner(), context_->ui_task_runner());
+      new BasicDesktopEnvironmentFactory();
 #endif  // !defined(OS_WIN)
 
   desktop_environment_factory_.reset(desktop_environment_factory);
@@ -894,9 +889,11 @@ void HostProcess::StartHost() {
       CreateHostSessionManager(network_settings,
                                context_->url_request_context_getter()),
       context_->audio_task_runner(),
+      context_->input_task_runner(),
       context_->video_capture_task_runner(),
       context_->video_encode_task_runner(),
-      context_->network_task_runner());
+      context_->network_task_runner(),
+      context_->ui_task_runner());
 
   // TODO(simonmorris): Get the maximum session duration from a policy.
 #if defined(OS_LINUX)

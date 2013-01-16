@@ -5,7 +5,6 @@
 #ifndef REMOTING_HOST_AUDIO_SCHEDULER_H_
 #define REMOTING_HOST_AUDIO_SCHEDULER_H_
 
-#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -36,17 +35,17 @@ class AudioScheduler : public base::RefCountedThreadSafe<AudioScheduler> {
   static scoped_refptr<AudioScheduler> Create(
       scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      AudioCapturer* audio_capturer,
+      scoped_ptr<AudioCapturer> audio_capturer,
       scoped_ptr<AudioEncoder> audio_encoder,
       protocol::AudioStub* audio_stub);
 
-  // Stop the recording session.
-  void Stop(const base::Closure& done_task);
+  // Stops the recording session.
+  void Stop();
 
-  // Enable or disable audio on a running session.
-  // This leaves the audio capturer running, and only affects whether or not the
-  // captured audio is encoded and sent on the wire.
-  void SetEnabled(bool enabled);
+  // Pauses or resumes audio on a running session. This leaves the audio
+  // capturer running, and only affects whether or not the captured audio is
+  // encoded and sent on the wire.
+  void Pause(bool pause);
 
  private:
   friend class base::RefCountedThreadSafe<AudioScheduler>;
@@ -54,7 +53,7 @@ class AudioScheduler : public base::RefCountedThreadSafe<AudioScheduler> {
   AudioScheduler(
       scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      AudioCapturer* audio_capturer,
+      scoped_ptr<AudioCapturer> audio_capturer,
       scoped_ptr<AudioEncoder> audio_encoder,
       protocol::AudioStub* audio_stub);
   virtual ~AudioScheduler();
@@ -63,7 +62,7 @@ class AudioScheduler : public base::RefCountedThreadSafe<AudioScheduler> {
   void StartOnAudioThread();
 
   // Called on the audio thread to stop capturing.
-  void StopOnAudioThread(const base::Closure& done_task);
+  void StopOnAudioThread();
 
   // Called on the audio thread when a new audio packet is available.
   void EncodeAudioPacket(scoped_ptr<AudioPacket> packet);
@@ -74,7 +73,7 @@ class AudioScheduler : public base::RefCountedThreadSafe<AudioScheduler> {
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
-  AudioCapturer* audio_capturer_;
+  scoped_ptr<AudioCapturer> audio_capturer_;
 
   scoped_ptr<AudioEncoder> audio_encoder_;
 

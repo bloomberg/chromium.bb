@@ -18,7 +18,8 @@ class DesktopSessionProxy;
 
 class IpcAudioCapturer : public AudioCapturer {
  public:
-  IpcAudioCapturer(scoped_refptr<DesktopSessionProxy> desktop_session_proxy);
+  explicit IpcAudioCapturer(
+      scoped_refptr<DesktopSessionProxy> desktop_session_proxy);
   virtual ~IpcAudioCapturer();
 
   // AudioCapturer interface.

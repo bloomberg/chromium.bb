@@ -73,9 +73,11 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
       DesktopEnvironmentFactory* desktop_environment_factory,
       scoped_ptr<protocol::SessionManager> session_manager,
       scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   // Asynchronously start the host process.
   //
@@ -169,9 +171,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   virtual ~ChromotingHost();
 
-  // Called when a client session is stopped completely.
-  void OnClientStopped();
-
   // Called from Shutdown() to finish shutdown.
   void ShutdownFinish();
 
@@ -182,9 +181,11 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   DesktopEnvironmentFactory* desktop_environment_factory_;
   scoped_ptr<protocol::SessionManager> session_manager_;
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   // Connection objects.
   SignalStrategy* signal_strategy_;
@@ -194,11 +195,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   // The connections to remote clients.
   ClientList clients_;
-
-  // The number of allocated |ClientSession| objects. |clients_count_| can be
-  // greater than |clients_.size()| because it also includes the objects that
-  // are about to be deleted.
-  int clients_count_;
 
   // Tracks the internal state of the host.
   State state_;
