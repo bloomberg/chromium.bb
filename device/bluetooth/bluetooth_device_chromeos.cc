@@ -28,6 +28,7 @@
 #include "device/bluetooth/bluetooth_adapter_chromeos.h"
 #include "device/bluetooth/bluetooth_out_of_band_pairing_data.h"
 #include "device/bluetooth/bluetooth_service_record.h"
+#include "device/bluetooth/bluetooth_service_record_chromeos.h"
 #include "device/bluetooth/bluetooth_socket_chromeos.h"
 #include "device/bluetooth/bluetooth_utils.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -404,7 +405,7 @@ void BluetoothDeviceChromeOs::CollectServiceRecordsCallback(
   for (BluetoothDeviceClient::ServiceMap::const_iterator i =
       service_map.begin(); i != service_map.end(); ++i) {
     records.push_back(
-        new BluetoothServiceRecord(address(), i->second));
+        new BluetoothServiceRecordChromeOS(address(), i->second));
   }
   callback.Run(records);
 }

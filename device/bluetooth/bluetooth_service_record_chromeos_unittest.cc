@@ -9,7 +9,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "device/bluetooth/bluetooth_service_record.h"
+#include "device/bluetooth/bluetooth_service_record_chromeos.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -20,9 +20,9 @@ static const char* kSerialUuid = "00001101-0000-1000-8000-00805f9b34fb";
 
 }  // namespace
 
-namespace device {
+namespace chromeos {
 
-class BluetoothServiceRecordTest : public testing::Test {
+class BluetoothServiceRecordChromeOSTest : public testing::Test {
  public:
   FilePath GetTestDataFilePath(const char* file) {
     FilePath path;
@@ -36,11 +36,11 @@ class BluetoothServiceRecordTest : public testing::Test {
   }
 };
 
-TEST_F(BluetoothServiceRecordTest, RfcommService) {
+TEST_F(BluetoothServiceRecordChromeOSTest, RfcommService) {
   std::string xml_data;
   file_util::ReadFileToString(GetTestDataFilePath("rfcomm.xml"), &xml_data);
 
-  BluetoothServiceRecord service_record(kAddress, xml_data);
+  BluetoothServiceRecordChromeOS service_record(kAddress, xml_data);
   EXPECT_EQ(kAddress, service_record.address());
   EXPECT_EQ("Headset Audio Gateway", service_record.name());
   EXPECT_TRUE(service_record.SupportsRfcomm());
@@ -48,31 +48,31 @@ TEST_F(BluetoothServiceRecordTest, RfcommService) {
   EXPECT_EQ(kCustomUuid, service_record.uuid());
 }
 
-TEST_F(BluetoothServiceRecordTest, ShortUuid) {
+TEST_F(BluetoothServiceRecordChromeOSTest, ShortUuid) {
   std::string xml_data;
   file_util::ReadFileToString(GetTestDataFilePath("short_uuid.xml"), &xml_data);
-  BluetoothServiceRecord short_uuid_service_record(kAddress, xml_data);
+  BluetoothServiceRecordChromeOS short_uuid_service_record(kAddress, xml_data);
   EXPECT_EQ(kSerialUuid, short_uuid_service_record.uuid());
 
   xml_data.clear();
   file_util::ReadFileToString(
       GetTestDataFilePath("medium_uuid.xml"), &xml_data);
-  BluetoothServiceRecord medium_uuid_service_record(kAddress, xml_data);
+  BluetoothServiceRecordChromeOS medium_uuid_service_record(kAddress, xml_data);
   EXPECT_EQ(kSerialUuid, medium_uuid_service_record.uuid());
 }
 
-TEST_F(BluetoothServiceRecordTest, CleanUuid) {
+TEST_F(BluetoothServiceRecordChromeOSTest, CleanUuid) {
   std::string xml_data;
   file_util::ReadFileToString(GetTestDataFilePath("uppercase_uuid.xml"),
       &xml_data);
-  BluetoothServiceRecord service_record(kAddress, xml_data);
+  BluetoothServiceRecordChromeOS service_record(kAddress, xml_data);
   EXPECT_EQ(kCustomUuid, service_record.uuid());
 
   xml_data.clear();
   file_util::ReadFileToString(GetTestDataFilePath("invalid_uuid.xml"),
       &xml_data);
-  BluetoothServiceRecord invalid_service_record(kAddress, xml_data);
+  BluetoothServiceRecordChromeOS invalid_service_record(kAddress, xml_data);
   EXPECT_EQ("", invalid_service_record.uuid());
 }
 
-}  // namespace device
+}  // namespace chromeos

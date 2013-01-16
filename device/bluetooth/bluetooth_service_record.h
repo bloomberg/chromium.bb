@@ -9,8 +9,6 @@
 
 #include "base/basictypes.h"
 
-class XmlReader;
-
 namespace device {
 
 // BluetoothServiceRecord represents an SDP service record.
@@ -19,30 +17,27 @@ namespace device {
 // that have been necessary so far.
 class BluetoothServiceRecord {
  public:
-   BluetoothServiceRecord(
-       const std::string& address,
-       const std::string& xml_data);
+  virtual ~BluetoothServiceRecord();
 
-   // The human-readable name of this service.
-   const std::string& name() const { return name_; }
+  // The human-readable name of this service.
+  const std::string& name() const { return name_; }
 
-   // The address of the BluetoothDevice providing this service.
-   const std::string& address() const { return address_; }
+  // The address of the BluetoothDevice providing this service.
+  const std::string& address() const { return address_; }
 
-   // The UUID of the service.  This field may be empty if no UUID was
-   // specified in the service record.
-   const std::string& uuid() const { return uuid_; }
+  // The UUID of the service.  This field may be empty if no UUID was
+  // specified in the service record.
+  const std::string& uuid() const { return uuid_; }
 
-   // Indicates if this service supports RFCOMM communication.
-   bool SupportsRfcomm() const { return supports_rfcomm_; }
+  // Indicates if this service supports RFCOMM communication.
+  bool SupportsRfcomm() const { return supports_rfcomm_; }
 
-   // The RFCOMM channel to use, if this service supports RFCOMM communication.
-   // The return value is undefined if SupportsRfcomm() returns false.
-   uint8 rfcomm_channel() const { return rfcomm_channel_; }
+  // The RFCOMM channel to use, if this service supports RFCOMM communication.
+  // The return value is undefined if SupportsRfcomm() returns false.
+  uint8 rfcomm_channel() const { return rfcomm_channel_; }
 
- private:
-  void ExtractChannels(XmlReader* reader);
-  void ExtractUuid(XmlReader* reader);
+ protected:
+  BluetoothServiceRecord();
 
   std::string address_;
   std::string name_;
@@ -51,6 +46,7 @@ class BluetoothServiceRecord {
   bool supports_rfcomm_;
   uint8 rfcomm_channel_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(BluetoothServiceRecord);
 };
 
