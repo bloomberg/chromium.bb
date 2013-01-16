@@ -287,7 +287,7 @@ const char kEnableFastback[]                = "enable-fastback";
 // or to a specified width and height using --enable-fixed-layout=w,h
 const char kEnableFixedLayout[]             = "enable-fixed-layout";
 
-// Enable the JavaScript Full Screen API.
+// Disable the JavaScript Full Screen API.
 const char kDisableFullScreen[]             = "disable-fullscreen";
 
 // Enable Text Service Framework(TSF) for text inputting instead of IMM32. This
