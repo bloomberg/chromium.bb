@@ -42,7 +42,7 @@
         Sets the plain surrounding text around the input position. Cursor is the
         byte index within the surrounding text. Anchor is the byte index of the
         selection anchor within the surrounding text. If there is no selected
-	text anchor is the same as cursor.
+        text anchor is the same as cursor.
       </description>
       <arg name="text" type="string"/>
       <arg name="cursor" type="uint"/>
@@ -145,6 +145,8 @@
         to commit could be either just a single character after a key press
         or the result of some composing (pre-edit). It also sets the new
         cursor position (as byte index) relative to the inserted text.
+
+        Any previously set composing text should be removed.
       </description>
       <arg name="serial" type="uint"/>
       <arg name="text" type="string"/>
@@ -154,8 +156,10 @@
       <description summary="pre-edit">
         Notify when a new composing text (pre-edit) should be set around the
         current cursor position. Any previously set composing text should
-        be removed. It also sets the cursor position (as byte index) relative
-        to the start of the composing text.
+        be removed.
+
+        The commit text can be used to replace the preedit text on reset
+        (for example on unfocus).
       </description>
       <arg name="serial" type="uint"/>
       <arg name="text" type="string"/>
@@ -181,6 +185,15 @@
       <entry name="incorrect" value="7"/>
     </enum>
     <event name="preedit_styling">
+      <description summary="pre-edit styling">
+        Sets styling information on composing text. The style is applied for
+        length (in bytes) characters from index relative to the beginning of
+        the composing text (as byte index). Multiple styles can be applied
+        to a composing text.
+
+        This event should be handled as part of a following preedit_string
+        event.
+      </description>
       <arg name="serial" type="uint"/>
       <arg name="index" type="uint"/>
       <arg name="length" type="uint"/>
@@ -190,6 +203,9 @@
       <description summary="pre-edit cursor">
         Sets the cursor position inside the composing text (as byte index)
         relative to the start of the composing text.
+
+        This event should be handled as part of a following preedit_string
+        event.
       </description>
       <arg name="serial" type="uint"/>
       <arg name="index" type="int"/>
@@ -208,8 +224,8 @@
         for normal text input operations, which should be done with
         commit_string, delete_surrounfing_text, etc. The key event follows
         the wl_keyboard key event convention. State is a XKB keysym, state a
-	wl_keyboard key_state. Modifiers are a mask for effective modifiers
-	(where the modfier indices are set by the modifiers_map event)
+        wl_keyboard key_state. Modifiers are a mask for effective modifiers
+        (where the modfier indices are set by the modifiers_map event)
       </description>
       <arg name="serial" type="uint"/>
       <arg name="time" type="uint"/>
