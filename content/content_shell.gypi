@@ -54,6 +54,8 @@
       'sources': [
         'shell/geolocation/shell_access_token_store.cc',
         'shell/geolocation/shell_access_token_store.h',
+        'shell/minimal_ash.cc',
+        'shell/minimal_ash.h',
         'shell/paths_mac.h',
         'shell/paths_mac.mm',
         'shell/shell.cc',
@@ -104,8 +106,6 @@
         'shell/shell_resource_context.h',
         'shell/shell_resource_dispatcher_host_delegate.cc',
         'shell/shell_resource_dispatcher_host_delegate.h',
-        'shell/shell_stacking_client_ash.cc',
-        'shell/shell_stacking_client_ash.h',
         'shell/shell_switches.cc',
         'shell/shell_switches.h',
         'shell/shell_url_request_context_getter.cc',

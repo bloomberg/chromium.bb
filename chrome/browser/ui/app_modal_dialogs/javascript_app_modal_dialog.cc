@@ -10,6 +10,10 @@
 #include "content/public/browser/web_contents_view.h"
 #include "ui/base/text/text_elider.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/root_window.h"
+#endif
+
 using content::JavaScriptDialogCreator;
 using content::WebContents;
 
@@ -80,6 +84,13 @@ JavaScriptAppModalDialog::~JavaScriptAppModalDialog() {
 NativeAppModalDialog* JavaScriptAppModalDialog::CreateNativeDialog() {
   gfx::NativeWindow parent_window =
       web_contents()->GetView()->GetTopLevelNativeWindow();
+#if defined(USE_AURA)
+  if (!parent_window->GetRootWindow()) {
+    // When we are part of a WebContents that isn't actually being displayed on
+    // the screen, we can't actually attach to it.
+    parent_window = NULL;
+  }
+#endif
   return NativeAppModalDialog::CreateNativeJavaScriptPrompt(this,
                                                             parent_window);
 }

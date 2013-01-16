@@ -221,18 +221,19 @@ Widget::~Widget() {
 
 // static
 Widget* Widget::CreateWindow(WidgetDelegate* delegate) {
-  Widget* widget = new Widget;
-  Widget::InitParams params;
-  params.delegate = delegate;
-  params.top_level = true;
-  widget->Init(params);
-  return widget;
+  return CreateWindowWithBounds(delegate, gfx::Rect());
 }
 
 // static
 Widget* Widget::CreateWindowWithBounds(WidgetDelegate* delegate,
                                        const gfx::Rect& bounds) {
-  return CreateWindowWithParentAndBounds(delegate, NULL, bounds);
+  Widget* widget = new Widget;
+  Widget::InitParams params;
+  params.bounds = bounds;
+  params.delegate = delegate;
+  params.top_level = true;
+  widget->Init(params);
+  return widget;
 }
 
 // static

@@ -22,7 +22,6 @@ namespace aura {
 class RootWindow;
 class Window;
 namespace client {
-class StackingClient;
 class UserActionClient;
 }
 }
@@ -218,9 +217,6 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a menu model of the context for the |root_window|.
   virtual ui::MenuModel* CreateContextMenu(aura::RootWindow* root_window) = 0;
-
-  // Creates the stacking client. Shell takes ownership of the object.
-  virtual aura::client::StackingClient* CreateStackingClient() = 0;
 
   // Creates a root window host factory. Shell takes ownership of the returned
   // value.

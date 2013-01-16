@@ -9,12 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_parts.h"
 
-namespace aura {
-namespace client {
-class StackingClient;
-}
-}
-
 namespace content {
 class ShellBrowserContext;
 struct MainFunctionParams;
@@ -44,9 +38,6 @@ class ExamplesBrowserMainParts : public content::BrowserMainParts {
   scoped_ptr<content::ShellBrowserContext> browser_context_;
 
   scoped_ptr<ViewsDelegate> views_delegate_;
-#if defined(USE_AURA)
-  scoped_ptr<aura::client::StackingClient> stacking_client_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ExamplesBrowserMainParts);
 };
