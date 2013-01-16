@@ -134,41 +134,40 @@ class InstantTest : public InProcessBrowserTest {
     return "domAutomationController.send(" + script + ")";
   }
 
-  bool GetBoolFromJS(content::RenderViewHost* rvh,
+  bool GetBoolFromJS(content::WebContents* contents,
                      const std::string& script,
                      bool* result) WARN_UNUSED_RESULT {
-    return content::ExecuteScriptAndExtractBool(rvh, WrapScript(script),
+    return content::ExecuteScriptAndExtractBool(contents, WrapScript(script),
                                                 result);
   }
 
-  bool GetIntFromJS(content::RenderViewHost* rvh,
+  bool GetIntFromJS(content::WebContents* contents,
                     const std::string& script,
                     int* result) WARN_UNUSED_RESULT {
-    return content::ExecuteScriptAndExtractInt(rvh, WrapScript(script), result);
+    return content::ExecuteScriptAndExtractInt(contents, WrapScript(script),
+                                               result);
   }
 
-  bool GetStringFromJS(content::RenderViewHost* rvh,
+  bool GetStringFromJS(content::WebContents* contents,
                        const std::string& script,
                        std::string* result) WARN_UNUSED_RESULT {
-    return content::ExecuteScriptAndExtractString(rvh, WrapScript(script),
+    return content::ExecuteScriptAndExtractString(contents, WrapScript(script),
                                                   result);
   }
 
   bool UpdateSearchState(content::WebContents* contents) WARN_UNUSED_RESULT {
-    content::RenderViewHost* rvh = contents->GetRenderViewHost();
-    return GetIntFromJS(rvh, "onvisibilitycalls", &onvisibilitycalls_) &&
-           GetIntFromJS(rvh, "onchangecalls", &onchangecalls_) &&
-           GetIntFromJS(rvh, "onsubmitcalls", &onsubmitcalls_) &&
-           GetIntFromJS(rvh, "oncancelcalls", &oncancelcalls_) &&
-           GetIntFromJS(rvh, "onresizecalls", &onresizecalls_) &&
-           GetStringFromJS(rvh, "value", &value_) &&
-           GetBoolFromJS(rvh, "verbatim", &verbatim_) &&
-           GetIntFromJS(rvh, "height", &height_);
+    return GetIntFromJS(contents, "onvisibilitycalls", &onvisibilitycalls_) &&
+           GetIntFromJS(contents, "onchangecalls", &onchangecalls_) &&
+           GetIntFromJS(contents, "onsubmitcalls", &onsubmitcalls_) &&
+           GetIntFromJS(contents, "oncancelcalls", &oncancelcalls_) &&
+           GetIntFromJS(contents, "onresizecalls", &onresizecalls_) &&
+           GetStringFromJS(contents, "value", &value_) &&
+           GetBoolFromJS(contents, "verbatim", &verbatim_) &&
+           GetIntFromJS(contents, "height", &height_);
   }
 
   bool ExecuteScript(const std::string& script) WARN_UNUSED_RESULT {
-    return content::ExecuteScript(
-        instant()->GetPreviewContents()->GetRenderViewHost(), script);
+    return content::ExecuteScript(instant()->GetPreviewContents(), script);
   }
 
   bool CheckVisibilityIs(content::WebContents* contents,
@@ -176,8 +175,7 @@ class InstantTest : public InProcessBrowserTest {
     bool actual = !expected;  // Purposely start with a mis-match.
     // We can only use ASSERT_*() in a method that returns void, hence this
     // convoluted check.
-    return GetBoolFromJS(contents->GetRenderViewHost(),
-                         "!document.webkitHidden", &actual) &&
+    return GetBoolFromJS(contents, "!document.webkitHidden", &actual) &&
            actual == expected;
   }
 
@@ -251,11 +249,10 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
   // Use the Instant page as the active tab, so we can exploit its visibility
   // handler to check visibility transitions.
   ui_test_utils::NavigateToURL(browser(), instant_url_);
-  content::RenderViewHost* active_rvh =
-      chrome::GetActiveWebContents(browser())->GetRenderViewHost();
+  content::WebContents* active_tab = chrome::GetActiveWebContents(browser());
 
   int active_tab_onvisibilitycalls = -1;
-  EXPECT_TRUE(GetIntFromJS(active_rvh, "onvisibilitycalls",
+  EXPECT_TRUE(GetIntFromJS(active_tab, "onvisibilitycalls",
                            &active_tab_onvisibilitycalls));
   EXPECT_EQ(0, active_tab_onvisibilitycalls);
 
@@ -280,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
   // The preview was shown once, and the active tab was never hidden.
   EXPECT_EQ(1, onvisibilitycalls_);
   active_tab_onvisibilitycalls = -1;
-  EXPECT_TRUE(GetIntFromJS(active_rvh, "onvisibilitycalls",
+  EXPECT_TRUE(GetIntFromJS(active_tab, "onvisibilitycalls",
                            &active_tab_onvisibilitycalls));
   EXPECT_EQ(0, active_tab_onvisibilitycalls);
 }
@@ -333,8 +330,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
 
   // Check that the searchbox API values have been reset.
   std::string value;
-  EXPECT_TRUE(GetStringFromJS(preview_tab->GetRenderViewHost(),
-                              "chrome.searchBox.value", &value));
+  EXPECT_TRUE(GetStringFromJS(preview_tab, "chrome.searchBox.value", &value));
   EXPECT_EQ("", value);
 
   // However, the page should've correctly received the committed query.
@@ -394,8 +390,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
 
   // Check that the searchbox API values have been reset.
   std::string value;
-  EXPECT_TRUE(GetStringFromJS(preview_tab->GetRenderViewHost(),
-                              "chrome.searchBox.value", &value));
+  EXPECT_TRUE(GetStringFromJS(preview_tab, "chrome.searchBox.value", &value));
   EXPECT_EQ("", value);
 
   // However, the page should've correctly received the committed query.
@@ -984,7 +979,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, CommitInNewTab) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   int active_tab_onvisibilitycalls = -1;
-  EXPECT_TRUE(GetIntFromJS(active_tab->GetRenderViewHost(), "onvisibilitycalls",
+  EXPECT_TRUE(GetIntFromJS(active_tab, "onvisibilitycalls",
                            &active_tab_onvisibilitycalls));
   EXPECT_EQ(0, active_tab_onvisibilitycalls);
 
@@ -1006,7 +1001,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, CommitInNewTab) {
   EXPECT_EQ(2, active_tab->GetController().GetEntryCount());
   EXPECT_EQ(instant_url_, omnibox()->model()->PermanentURL());
   active_tab_onvisibilitycalls = -1;
-  EXPECT_TRUE(GetIntFromJS(active_tab->GetRenderViewHost(), "onvisibilitycalls",
+  EXPECT_TRUE(GetIntFromJS(active_tab, "onvisibilitycalls",
                            &active_tab_onvisibilitycalls));
   EXPECT_EQ(0, active_tab_onvisibilitycalls);
 
@@ -1033,8 +1028,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, CommitInNewTab) {
 
   // Check that the searchbox API values have been reset.
   std::string value;
-  EXPECT_TRUE(GetStringFromJS(preview_tab->GetRenderViewHost(),
-                              "chrome.searchBox.value", &value));
+  EXPECT_TRUE(GetStringFromJS(preview_tab, "chrome.searchBox.value", &value));
   EXPECT_EQ("", value);
 
   // However, the page should've correctly received the committed query.
@@ -1046,7 +1040,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, CommitInNewTab) {
 
   // The ex-active tab should've gotten a visibility change marking it hidden.
   EXPECT_NE(active_tab, preview_tab);
-  EXPECT_TRUE(GetIntFromJS(active_tab->GetRenderViewHost(), "onvisibilitycalls",
+  EXPECT_TRUE(GetIntFromJS(active_tab, "onvisibilitycalls",
                            &active_tab_onvisibilitycalls));
   EXPECT_EQ(1, active_tab_onvisibilitycalls);
 }
