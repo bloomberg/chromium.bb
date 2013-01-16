@@ -346,7 +346,7 @@ TraceLog* TraceLog::GetInstance() {
 }
 
 TraceLog::TraceLog()
-    : enabled_(false),
+    : enable_count_(0),
       dispatching_to_observer_list_(false),
       watch_category_(NULL) {
   // Trace is enabled or disabled on one thread while other threads are
@@ -444,7 +444,7 @@ const unsigned char* TraceLog::GetCategoryEnabledInternal(const char* name) {
       ANNOTATE_LEAKING_OBJECT_PTR(new_name);
       g_categories[new_index] = new_name;
       DCHECK(!g_category_enabled[new_index]);
-      if (enabled_) {
+      if (enable_count_) {
         // Note that if both included and excluded_categories are empty, the
         // else clause below excludes nothing, thereby enabling this category.
         if (!included_categories_.empty()) {
@@ -477,8 +477,23 @@ void TraceLog::GetKnownCategories(std::vector<std::string>* categories) {
 void TraceLog::SetEnabled(const std::vector<std::string>& included_categories,
                           const std::vector<std::string>& excluded_categories) {
   AutoLock lock(lock_);
-  if (enabled_)
+
+  if (enable_count_++ > 0) {
+    // Tracing is already enabled, so just merge in enabled categories.
+    // We only expand the set of enabled categories upon nested SetEnable().
+    if (!included_categories_.empty() && !included_categories.empty()) {
+      included_categories_.insert(included_categories_.end(),
+                                  included_categories.begin(),
+                                  included_categories.end());
+      EnableMatchingCategories(included_categories_, CATEGORY_ENABLED, 0);
+    } else {
+      // If either old or new included categories are empty, allow all events.
+      included_categories_.clear();
+      excluded_categories_.clear();
+      EnableMatchingCategories(excluded_categories_, 0, CATEGORY_ENABLED);
+    }
     return;
+  }
 
   if (dispatching_to_observer_list_) {
     DLOG(ERROR) <<
@@ -492,7 +507,6 @@ void TraceLog::SetEnabled(const std::vector<std::string>& included_categories,
   dispatching_to_observer_list_ = false;
 
   logged_events_.reserve(1024);
-  enabled_ = true;
   included_categories_ = included_categories;
   excluded_categories_ = excluded_categories;
   // Note that if both included and excluded_categories are empty, the else
@@ -528,7 +542,7 @@ void TraceLog::GetEnabledTraceCategories(
     std::vector<std::string>* included_out,
     std::vector<std::string>* excluded_out) {
   AutoLock lock(lock_);
-  if (enabled_) {
+  if (enable_count_) {
     *included_out = included_categories_;
     *excluded_out = excluded_categories_;
   }
@@ -536,7 +550,8 @@ void TraceLog::GetEnabledTraceCategories(
 
 void TraceLog::SetDisabled() {
   AutoLock lock(lock_);
-  if (!enabled_)
+  DCHECK(enable_count_ > 0);
+  if (--enable_count_ != 0)
     return;
 
   if (dispatching_to_observer_list_) {
@@ -550,7 +565,6 @@ void TraceLog::SetDisabled() {
                     OnTraceLogWillDisable());
   dispatching_to_observer_list_ = false;
 
-  enabled_ = false;
   included_categories_.clear();
   excluded_categories_.clear();
   watch_category_ = NULL;

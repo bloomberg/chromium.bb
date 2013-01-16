@@ -71,7 +71,8 @@ class TraceEventTestFixture : public testing::Test {
   }
 
   void EndTraceAndFlush() {
-    TraceLog::GetInstance()->SetDisabled();
+    while (TraceLog::GetInstance()->IsEnabled())
+      TraceLog::GetInstance()->SetDisabled();
     TraceLog::GetInstance()->Flush(
         base::Bind(&TraceEventTestFixture::OnTraceDataCollected,
                    base::Unretained(this)));
@@ -696,11 +697,14 @@ TEST_F(TraceEventTestFixture, EnabledObserverDoesntFireOnSecondEnable) {
   // Cleanup.
   TraceLog::GetInstance()->RemoveEnabledStateObserver(&observer);
   TraceLog::GetInstance()->SetEnabled(false);
+  TraceLog::GetInstance()->SetEnabled(false);
 }
 
-TEST_F(TraceEventTestFixture, EnabledObserverDoesntFireOnUselessDisable) {
+TEST_F(TraceEventTestFixture, EnabledObserverDoesntFireOnNestedDisable) {
   ManualTestSetUp();
 
+  TraceLog::GetInstance()->SetEnabled(true);
+  TraceLog::GetInstance()->SetEnabled(true);
 
   testing::StrictMock<MockEnabledStateChangedObserver> observer;
   TraceLog::GetInstance()->AddEnabledStateObserver(&observer);
@@ -714,6 +718,7 @@ TEST_F(TraceEventTestFixture, EnabledObserverDoesntFireOnUselessDisable) {
 
   // Cleanup.
   TraceLog::GetInstance()->RemoveEnabledStateObserver(&observer);
+  TraceLog::GetInstance()->SetEnabled(false);
 }
 
 TEST_F(TraceEventTestFixture, EnabledObserverFiresOnDisable) {
@@ -1353,6 +1358,57 @@ TEST_F(TraceEventTestFixture, TracingIsLazy) {
   EXPECT_EQ(1, a);
 
   EndTraceAndFlush();
+}
+
+TEST_F(TraceEventTestFixture, TraceEnableDisable) {
+  ManualTestSetUp();
+
+  TraceLog* trace_log = TraceLog::GetInstance();
+  trace_log->SetEnabled(std::string());
+  EXPECT_TRUE(trace_log->IsEnabled());
+  trace_log->SetDisabled();
+  EXPECT_FALSE(trace_log->IsEnabled());
+
+  trace_log->SetEnabled(true);
+  EXPECT_TRUE(trace_log->IsEnabled());
+  const std::vector<std::string> empty;
+  trace_log->SetEnabled(empty, empty);
+  EXPECT_TRUE(trace_log->IsEnabled());
+  trace_log->SetEnabled(false);
+  EXPECT_TRUE(trace_log->IsEnabled());
+  trace_log->SetDisabled();
+  EXPECT_FALSE(trace_log->IsEnabled());
+}
+
+TEST_F(TraceEventTestFixture, TraceCategoriesAfterNestedEnable) {
+  ManualTestSetUp();
+
+  TraceLog* trace_log = TraceLog::GetInstance();
+  trace_log->SetEnabled(std::string("foo,bar"));
+  EXPECT_TRUE(*trace_log->GetCategoryEnabled("foo"));
+  EXPECT_TRUE(*trace_log->GetCategoryEnabled("bar"));
+  EXPECT_FALSE(*trace_log->GetCategoryEnabled("baz"));
+  trace_log->SetEnabled(std::string("foo2"));
+  EXPECT_TRUE(*trace_log->GetCategoryEnabled("foo2"));
+  EXPECT_FALSE(*trace_log->GetCategoryEnabled("baz"));
+  trace_log->SetEnabled(std::string(""));
+  EXPECT_TRUE(*trace_log->GetCategoryEnabled("foo"));
+  EXPECT_TRUE(*trace_log->GetCategoryEnabled("baz"));
+  trace_log->SetDisabled();
+  trace_log->SetDisabled();
+  trace_log->SetDisabled();
+  EXPECT_FALSE(*trace_log->GetCategoryEnabled("foo"));
+  EXPECT_FALSE(*trace_log->GetCategoryEnabled("baz"));
+
+  trace_log->SetEnabled(std::string("-foo,-bar"));
+  EXPECT_FALSE(*trace_log->GetCategoryEnabled("foo"));
+  EXPECT_TRUE(*trace_log->GetCategoryEnabled("baz"));
+  trace_log->SetEnabled(std::string("moo"));
+  EXPECT_TRUE(*trace_log->GetCategoryEnabled("baz"));
+  EXPECT_TRUE(*trace_log->GetCategoryEnabled("moo"));
+  EXPECT_TRUE(*trace_log->GetCategoryEnabled("foo"));
+  trace_log->SetDisabled();
+  trace_log->SetDisabled();
 }
 
 }  // namespace debug
