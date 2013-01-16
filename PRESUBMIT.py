@@ -106,4 +106,4 @@ def CheckChangeOnCommit(input_api, output_api):
 
 
 def GetPreferredTrySlaves():
-  return ['gyp-win32', 'gyp-win64', 'gyp-linux', 'gyp-mac']
+  return ['gyp-win32', 'gyp-win64', 'gyp-linux', 'gyp-mac', 'gyp-android']
