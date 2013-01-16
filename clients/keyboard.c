@@ -38,6 +38,7 @@ struct virtual_keyboard {
 	struct input_method_context *context;
 	struct display *display;
 	char *preedit_string;
+	uint32_t preedit_style;
 	struct {
 		xkb_mod_mask_t shift_mask;
 	} keysym;
@@ -55,7 +56,8 @@ enum key_type {
 	keytype_arrow_up,
 	keytype_arrow_left,
 	keytype_arrow_right,
-	keytype_arrow_down
+	keytype_arrow_down,
+	keytype_style
 };
 
 struct key {
@@ -105,12 +107,23 @@ static const struct key keys[] = {
 	{ keytype_switch, "ABC", "abc", 1},
 
 	{ keytype_symbols, "?123", "?123", 1},
-	{ keytype_space, "", "", 6},
+	{ keytype_space, "", "", 5},
 	{ keytype_arrow_up, "/\\", "/\\", 1},
 	{ keytype_arrow_left, "<", "<", 1},
 	{ keytype_arrow_right, ">", ">", 1},
 	{ keytype_arrow_down, "\\/", "\\/", 1},
-	{ keytype_symbols, "?123", "?123", 1}
+	{ keytype_style, "", "", 2}
+};
+
+static const char *style_labels[] = {
+	"none",
+	"default",
+	"active",
+	"inactive",
+	"highlight",
+	"underline",
+	"selection",
+	"incorrect"
 };
 
 static const unsigned int columns = 12;
@@ -132,10 +145,23 @@ struct keyboard {
 	enum keyboard_state state;
 };
 
+static const char *
+label_from_key(struct keyboard *keyboard,
+	       const struct key *key)
+{
+	if (key->key_type == keytype_style)
+		return style_labels[keyboard->keyboard->preedit_style];
+
+	if (keyboard->state == keyboardstate_default)
+		return key->label;
+	else
+		return key->alt;
+}
+
 static void
-draw_key(const struct key *key,
+draw_key(struct keyboard *keyboard,
+	 const struct key *key,
 	 cairo_t *cr,
-	 enum keyboard_state state,
 	 unsigned int row,
 	 unsigned int col)
 {
@@ -156,7 +182,7 @@ draw_key(const struct key *key,
 	cairo_stroke(cr);
 
 	/* Paint text */
-	label = state == keyboardstate_default ? key->label : key->alt;
+	label = label_from_key(keyboard, key);
 	cairo_text_extents(cr, label, &extents);
 
 	cairo_translate(cr,
@@ -201,7 +227,7 @@ redraw_handler(struct widget *widget, void *data)
 
 	for (i = 0; i < sizeof(keys) / sizeof(*keys); ++i) {
 		cairo_set_source_rgb(cr, 0, 0, 0);
-		draw_key(&keys[i], cr, keyboard->state, row, col);
+		draw_key(keyboard, &keys[i], cr, row, col);
 		col += keys[i].width;
 		if (col >= columns) {
 			row += 1;
@@ -243,6 +269,24 @@ virtual_keyboard_commit_preedit(struct virtual_keyboard *keyboard)
 }
 
 static void
+virtual_keyboard_send_preedit(struct virtual_keyboard *keyboard)
+{
+	if (keyboard->preedit_style)
+		input_method_context_preedit_styling(keyboard->context,
+						     keyboard->serial,
+						     0,
+						     strlen(keyboard->preedit_string),
+						     keyboard->preedit_style);
+	input_method_context_preedit_cursor(keyboard->context,
+					    keyboard->serial,
+					    strlen(keyboard->preedit_string));
+	input_method_context_preedit_string(keyboard->context,
+					    keyboard->serial,
+					    keyboard->preedit_string,
+					    keyboard->preedit_string);
+}
+
+static void
 keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *key, struct input *input, enum wl_pointer_button_state state)
 {
 	const char *label = keyboard->state == keyboardstate_default ? key->label : key->alt;
@@ -256,13 +300,7 @@ keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *
 
 			keyboard->keyboard->preedit_string = strcat(keyboard->keyboard->preedit_string,
 								    label);
-			input_method_context_preedit_cursor(keyboard->keyboard->context,
-							    keyboard->keyboard->serial,
-							    strlen(keyboard->keyboard->preedit_string));
-			input_method_context_preedit_string(keyboard->keyboard->context,
-							    keyboard->keyboard->serial,
-							    keyboard->keyboard->preedit_string,
-							    keyboard->keyboard->preedit_string);
+			virtual_keyboard_send_preedit(keyboard->keyboard);
 			break;
 		case keytype_backspace:
 			if (state != WL_POINTER_BUTTON_STATE_PRESSED)
@@ -274,13 +312,7 @@ keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *
 									     -1, 1);
 			} else {
 				keyboard->keyboard->preedit_string[strlen(keyboard->keyboard->preedit_string) - 1] = '\0';
-				input_method_context_preedit_cursor(keyboard->keyboard->context,
-								    keyboard->keyboard->serial,
-								    strlen(keyboard->keyboard->preedit_string));
-				input_method_context_preedit_string(keyboard->keyboard->context,
-								    keyboard->keyboard->serial,
-								    keyboard->keyboard->preedit_string,
-								    keyboard->keyboard->preedit_string);
+				virtual_keyboard_send_preedit(keyboard->keyboard);
 			}
 			break;
 		case keytype_enter:
@@ -343,6 +375,12 @@ keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *
 						    display_get_serial(keyboard->keyboard->display),
 						    time, 
 						    XKB_KEY_Down, key_state, mod_mask);
+			break;
+		case keytype_style:
+			if (state != WL_POINTER_BUTTON_STATE_PRESSED)
+				break;
+			keyboard->keyboard->preedit_style = (keyboard->keyboard->preedit_style + 1) % 8; /* TODO */
+			virtual_keyboard_send_preedit(keyboard->keyboard);
 			break;
 	}
 }
@@ -536,14 +574,13 @@ main(int argc, char *argv[])
 {
 	struct virtual_keyboard virtual_keyboard;
 
+	memset(&virtual_keyboard, 0, sizeof virtual_keyboard);
+
 	virtual_keyboard.display = display_create(argc, argv);
 	if (virtual_keyboard.display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;
 	}
-
-	virtual_keyboard.context = NULL;
-	virtual_keyboard.preedit_string = NULL;
 
 	display_set_user_data(virtual_keyboard.display, &virtual_keyboard);
 	display_set_global_handler(virtual_keyboard.display, global_handler);
