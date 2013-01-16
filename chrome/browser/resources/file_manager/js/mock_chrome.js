@@ -674,7 +674,6 @@ chrome.fileBrowserPrivate = {
       SELECT_OPEN_MULTI_FILE_TITLE: 'Select one or more files',
       SELECT_SAVEAS_FILE_TITLE: 'Save file as',
 
-      COMPUTING_SELECTION: 'Computing selection...',
       MANY_FILES_SELECTED: '$1 files selected',
       MANY_DIRECTORIES_SELECTED: '$1 folders selected',
       MANY_ENTRIES_SELECTED: '$1 items selected',

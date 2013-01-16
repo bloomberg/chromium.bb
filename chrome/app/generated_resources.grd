@@ -12973,9 +12973,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Save file as
       </message>
 
-      <message name="IDS_FILE_BROWSER_COMPUTING_SELECTION" desc="Computing selection...">
-        Computing selection...
-      </message>
       <message name="IDS_FILE_BROWSER_MANY_FILES_SELECTED" desc="Many files selected.">
         <ph name="SELCTED_FILE_COUNT">$1<ex>13</ex></ph> files selected
       </message>

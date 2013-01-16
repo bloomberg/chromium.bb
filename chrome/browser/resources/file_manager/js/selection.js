@@ -191,10 +191,6 @@ SelectionHandler.prototype.onSelectionChanged = function(event) {
   if (this.selectionUpdateTimer_) {
     clearTimeout(this.selectionUpdateTimer_);
     this.selectionUpdateTimer_ = null;
-
-    // The selection is changing quicker than we can update the UI.
-    // Clear the UI.
-    this.clearUI();
   }
 
   if (!indexes.length) {
@@ -204,7 +200,6 @@ SelectionHandler.prototype.onSelectionChanged = function(event) {
     return;
   }
 
-  this.previewText_.textContent = str('COMPUTING_SELECTION');
   this.hideCalculating_();
 
   // The rest of the selection properties are computed via (sometimes lengthy)
