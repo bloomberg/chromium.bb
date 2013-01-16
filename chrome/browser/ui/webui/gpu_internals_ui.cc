@@ -318,6 +318,15 @@ Value* GetFeatureStatus() {
           "Panel fitting is unavailable, either disabled at the command"
           " line or not supported by the current system.",
           false
+      },
+      {
+          "force_compositing_mode",
+          flags & content::GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE,
+          !content::IsForceCompositingModeEnabled() &&
+          !(flags & content::GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE),
+          "Force compositing mode is off, either disabled at the command"
+          " line or not supported by the current system.",
+          false
       }
   };
   const size_t kNumFeatures = sizeof(kGpuFeatureInfo) / sizeof(GpuFeatureInfo);

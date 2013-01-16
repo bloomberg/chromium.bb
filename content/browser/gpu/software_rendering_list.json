@@ -41,8 +41,8 @@
 // 19. "blacklist" is a list of gpu feature strings, valid values include
 //     "accelerated_2d_canvas", "accelerated_compositing", "webgl",
 //     "multisampling", "flash_3d", "flash_stage3d", "texture_sharing",
-//     "accelerated_video", "accelerated_video_decode", "panel_fitting", and
-//     "all".
+//     "accelerated_video", "accelerated_video_decode", "panel_fitting",
+//     "force_compositing_mode", and "all".
 //     This field is mandatory.
 // 20. "description" has the description of the entry.
 // 21. "webkit_bugs" is an array of associated webkit bug numbers.
@@ -75,7 +75,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "4.9",
+  "version": "4.10",
   "entries": [
     {
       "id": 1,
@@ -200,7 +200,8 @@
         "accelerated_video_decode",
         "3d_css",
         "multisampling",
-        "flash_3d"
+        "flash_3d",
+        "force_compositing_mode"
       ]
     },
     {
@@ -224,7 +225,8 @@
         "accelerated_video_decode",
         "3d_css",
         "multisampling",
-        "flash_3d"
+        "flash_3d",
+        "force_compositing_mode"
       ]
     },
     {
@@ -248,7 +250,8 @@
         "accelerated_video_decode",
         "3d_css",
         "multisampling",
-        "flash_3d"
+        "flash_3d",
+        "force_compositing_mode"
       ]
     },
     {
@@ -272,7 +275,8 @@
         "accelerated_video_decode",
         "3d_css",
         "multisampling",
-        "flash_3d"
+        "flash_3d",
+        "force_compositing_mode"
       ]
     },
     {

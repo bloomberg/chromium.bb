@@ -88,6 +88,7 @@ cr.define('gpu', function() {
         // GPU Switching
         'gpu_switching': 'GPU Switching',
         'panel_fitting': 'Panel Fitting',
+        'force_compositing_mode': 'Force Compositing Mode',
       };
       var statusLabelMap = {
         'disabled_software': 'Software only. Hardware acceleration disabled.',

@@ -29,6 +29,8 @@ TEST(GpuUtilsTest, GpuFeatureTypFromString) {
             GPU_FEATURE_TYPE_ACCELERATED_VIDEO);
   EXPECT_EQ(StringToGpuFeatureType("panel_fitting"),
             GPU_FEATURE_TYPE_PANEL_FITTING);
+  EXPECT_EQ(StringToGpuFeatureType("force_compositing_mode"),
+            GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE);
   EXPECT_EQ(StringToGpuFeatureType("all"), GPU_FEATURE_TYPE_ALL);
   EXPECT_EQ(StringToGpuFeatureType("xxx"), GPU_FEATURE_TYPE_UNKNOWN);
 }
@@ -65,6 +67,9 @@ TEST(GpuUtilsTest, GpuFeatureTypeToString) {
   EXPECT_STREQ(
       GpuFeatureTypeToString(GPU_FEATURE_TYPE_PANEL_FITTING).c_str(),
       "panel_fitting");
+  EXPECT_STREQ(
+      GpuFeatureTypeToString(GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE).c_str(),
+      "force_compositing_mode");
   EXPECT_STREQ(
       GpuFeatureTypeToString(GPU_FEATURE_TYPE_ALL).c_str(), "all");
   EXPECT_STREQ(GpuFeatureTypeToString(

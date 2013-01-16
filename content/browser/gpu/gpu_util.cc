@@ -29,6 +29,7 @@ const char kGpuFeatureNameAcceleratedVideoDecode[] = "accelerated_video_decode";
 const char kGpuFeatureName3dCss[] = "3d_css";
 const char kGpuFeatureNameAcceleratedVideo[] = "accelerated_video";
 const char kGpuFeatureNamePanelFitting[] = "panel_fitting";
+const char kGpuFeatureNameForceCompositingMode[] = "force_compositing_mode";
 const char kGpuFeatureNameAll[] = "all";
 const char kGpuFeatureNameUnknown[] = "unknown";
 
@@ -108,6 +109,8 @@ GpuFeatureType StringToGpuFeatureType(const std::string& feature_string) {
     return GPU_FEATURE_TYPE_ACCELERATED_VIDEO;
   if (feature_string == kGpuFeatureNamePanelFitting)
     return GPU_FEATURE_TYPE_PANEL_FITTING;
+  if (feature_string == kGpuFeatureNameForceCompositingMode)
+    return GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE;
   if (feature_string == kGpuFeatureNameAll)
     return GPU_FEATURE_TYPE_ALL;
   return GPU_FEATURE_TYPE_UNKNOWN;
@@ -140,6 +143,8 @@ std::string GpuFeatureTypeToString(GpuFeatureType type) {
       matches.push_back(kGpuFeatureNameAcceleratedVideo);
     if (type & GPU_FEATURE_TYPE_PANEL_FITTING)
       matches.push_back(kGpuFeatureNamePanelFitting);
+    if (type & GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE)
+      matches.push_back(kGpuFeatureNameForceCompositingMode);
     if (!matches.size())
       matches.push_back(kGpuFeatureNameUnknown);
   }

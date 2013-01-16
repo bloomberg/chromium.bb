@@ -954,6 +954,7 @@ bool GpuBlacklist::GpuBlacklistEntry::SetBlacklistedFeatures(
       case GPU_FEATURE_TYPE_3D_CSS:
       case GPU_FEATURE_TYPE_ACCELERATED_VIDEO:
       case GPU_FEATURE_TYPE_PANEL_FITTING:
+      case GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE:
       case GPU_FEATURE_TYPE_ALL:
         feature_type |= type;
         break;
