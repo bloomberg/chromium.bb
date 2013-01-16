@@ -22,13 +22,13 @@
 #include "content/renderer/media/webrtc_local_audio_renderer.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaConstraints.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaStreamRegistry.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamComponent.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSource.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "webkit/media/media_stream_audio_renderer.h"
 
 namespace content {

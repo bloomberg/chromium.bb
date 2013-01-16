@@ -8,10 +8,10 @@
 #include "base/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_extra_data.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamComponent.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSource.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 
 namespace content {
 

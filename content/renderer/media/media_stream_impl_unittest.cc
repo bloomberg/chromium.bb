@@ -12,11 +12,11 @@
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "media/base/video_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamComponent.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSource.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 
 namespace content {
 

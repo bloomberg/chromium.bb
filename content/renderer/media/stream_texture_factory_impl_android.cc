@@ -12,8 +12,8 @@
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/renderer/render_thread_impl.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStreamTextureClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "ui/gfx/size.h"
 
 namespace {

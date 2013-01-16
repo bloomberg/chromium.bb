@@ -19,10 +19,10 @@
 #include "content/renderer/p2p/ipc_socket_factory.h"
 #include "content/renderer/p2p/port_allocator.h"
 #include "jingle/glue/thread_wrapper.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamComponent.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSource.h"
 
 #if !defined(USE_OPENSSL)
 #include "net/socket/nss_ssl_util.h"

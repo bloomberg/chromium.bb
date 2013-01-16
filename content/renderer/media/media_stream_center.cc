@@ -14,14 +14,14 @@
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "third_party/libjingle/source/talk/app/webrtc/jsep.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamCenterClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamComponent.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSource.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSourcesRequest.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamCenterClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSourcesRequest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/libjingle/source/talk/app/webrtc/jsep.h"
 
 namespace content {
 
