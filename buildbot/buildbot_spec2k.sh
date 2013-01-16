@@ -339,9 +339,7 @@ pnacl-arm-hw() {
 pnacl-x8664() {
   clobber
   build-prerequisites "x86-64" "bitcode"
-  local setups="SetupPnaclX8664 \
-               SetupPnaclX8664Opt \
-               SetupPnaclTranslatorX8664 \
+  local setups="SetupPnaclX8664Opt \
                SetupPnaclTranslatorX8664Opt \
                SetupPnaclTranslatorFastX8664Opt"
   build-tests "${setups}" all 1 3
@@ -355,9 +353,7 @@ pnacl-x8664() {
 pnacl-x8632() {
   clobber
   build-prerequisites "x86-32" "bitcode"
-  local setups="SetupPnaclX8632 \
-                SetupPnaclX8632Opt \
-                SetupPnaclTranslatorX8632 \
+  local setups="SetupPnaclX8632Opt \
                 SetupPnaclTranslatorX8632Opt \
                 SetupPnaclTranslatorFastX8632Opt"
   build-tests "${setups}" all 1 3
