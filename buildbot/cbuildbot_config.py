@@ -14,6 +14,9 @@ import optparse
 import sys
 import urllib
 
+sys.path.insert(0, constants.SOURCE_ROOT)
+from chromite.lib import gs
+
 GS_PATH_DEFAULT = 'default' # Means gs://chromeos-archive/ + bot_id
 
 # Contains the valid build config suffixes in the order that they are dumped.
@@ -1025,8 +1028,7 @@ _release = full.derive(official, internal,
   nowithdebug=True,
   binhost_bucket='gs://chromeos-dev-installer',
   binhost_key='RELEASE_BINHOST',
-  binhost_base_url=
-    'https://commondatastorage.googleapis.com/chromeos-dev-installer',
+  binhost_base_url=gs.PUBLIC_BASE_HTTPS_URL + 'chromeos-dev-installer',
   dev_installer_prebuilts=True,
   git_sync=False,
   vm_tests=constants.FULL_AU_TEST_TYPE,

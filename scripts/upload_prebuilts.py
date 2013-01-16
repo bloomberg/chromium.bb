@@ -53,7 +53,7 @@ _SDK_GS_BUCKET = 'gs://chromiumos-sdk'
 # relative to build path
 _PRIVATE_OVERLAY_DIR = 'src/private-overlays'
 _GOOGLESTORAGE_ACL_FILE = 'googlestorage_acl.xml'
-_BINHOST_BASE_URL = 'https://commondatastorage.googleapis.com/chromeos-prebuilt'
+_BINHOST_BASE_URL = gs.PUBLIC_BASE_HTTPS_URL + 'chromeos-prebuilt'
 _PREBUILT_BASE_DIR = 'src/third_party/chromiumos-overlay/chromeos/config/'
 # Created in the event of new host targets becoming available
 _PREBUILT_MAKE_CONF = {'amd64': os.path.join(_PREBUILT_BASE_DIR,

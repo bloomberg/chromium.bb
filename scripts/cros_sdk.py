@@ -14,13 +14,14 @@ from chromite.buildbot import constants
 from chromite.lib import cgroups
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import gs
 from chromite.lib import locking
 from chromite.lib import osutils
 
 cros_build_lib.STRICT_SUDO = True
 
 
-DEFAULT_URL = 'https://commondatastorage.googleapis.com/chromiumos-sdk'
+DEFAULT_URL = gs.PUBLIC_BASE_HTTPS_URL + 'chromiumos-sdk'
 COMPRESSION_PREFERENCE = ('xz', 'bz2')
 
 # TODO(zbehan): Remove the dependency on these, reimplement them in python
