@@ -1103,7 +1103,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusBeforeNavigation) {
 
 // This test verifies that if we lose the guest, and get a new one,
 // the new guest will inherit the focus state of the old guest.
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, FocusPreservation) {
+// crbug.com/170249
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_FocusPreservation) {
   const char* kEmbedderURL = "files/browser_plugin_embedder.html";
   StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, "");
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
