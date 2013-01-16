@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_SHELL_MINIMAL_ASH_H_
-#define CONTENT_SHELL_MINIMAL_ASH_H_
+#ifndef CONTENT_SHELL_SHELL_STACKING_CLIENT_ASH_H_
+#define CONTENT_SHELL_SHELL_STACKING_CLIENT_ASH_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -37,10 +37,10 @@ namespace content {
 // Creates a minimal environment for running the shell. We can't pull in all of
 // ash here, but we can create attach several of the same things we'd find in
 // the ash parts of the code.
-class MinimalAsh : public aura::client::StackingClient {
+class ShellStackingClientAsh : public aura::client::StackingClient {
  public:
-  MinimalAsh();
-  virtual ~MinimalAsh();
+  ShellStackingClientAsh();
+  virtual ~ShellStackingClientAsh();
 
   // Overridden from client::StackingClient:
   virtual aura::Window* GetDefaultParent(aura::Window* context,
@@ -58,9 +58,9 @@ class MinimalAsh : public aura::client::StackingClient {
   scoped_ptr<aura::test::TestActivationClient> test_activation_client_;
   scoped_ptr<aura::client::FocusClient> focus_client_;
 
-  DISALLOW_COPY_AND_ASSIGN(MinimalAsh);
+  DISALLOW_COPY_AND_ASSIGN(ShellStackingClientAsh);
 };
 
 }  // namespace content;
 
-#endif  // CONTENT_SHELL_MINIMAL_ASH_H_
+#endif  // CONTENT_SHELL_SHELL_STACKING_CLIENT_ASH_H_

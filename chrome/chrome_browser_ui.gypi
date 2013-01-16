@@ -194,6 +194,8 @@
         'browser/ui/aura/active_desktop_monitor.h',
         'browser/ui/aura/chrome_browser_main_extra_parts_aura.cc',
         'browser/ui/aura/chrome_browser_main_extra_parts_aura.h',
+        'browser/ui/aura/stacking_client_aura.cc',
+        'browser/ui/aura/stacking_client_aura.h',
         'browser/ui/aura/tabs/dock_info_aurax11.cc',
         'browser/ui/autofill/autofill_dialog_controller.cc',
         'browser/ui/autofill/autofill_dialog_controller.h',

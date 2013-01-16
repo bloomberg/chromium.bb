@@ -11,11 +11,11 @@ namespace test {
 
 TestStackingClient::TestStackingClient(RootWindow* root_window)
     : root_window_(root_window) {
-  client::SetStackingClient(root_window_, this);
+  client::SetStackingClient(this);
 }
 
 TestStackingClient::~TestStackingClient() {
-  client::SetStackingClient(root_window_, NULL);
+  client::SetStackingClient(NULL);
 }
 
 Window* TestStackingClient::GetDefaultParent(Window* context,

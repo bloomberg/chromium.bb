@@ -372,6 +372,8 @@
         'widget/desktop_aura/desktop_screen_win.cc',
         'widget/desktop_aura/desktop_screen_win.h',
         'widget/desktop_aura/desktop_screen_x11.cc',
+        'widget/desktop_aura/desktop_stacking_client.cc',
+        'widget/desktop_aura/desktop_stacking_client.h',
         'widget/desktop_aura/x11_desktop_handler.cc',
         'widget/desktop_aura/x11_desktop_handler.h',
         'widget/desktop_aura/x11_desktop_window_move_client.cc',

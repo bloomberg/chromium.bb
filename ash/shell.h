@@ -33,6 +33,7 @@ class Window;
 namespace client {
 class ActivationClient;
 class FocusClient;
+class StackingClient;
 class UserActionClient;
 }
 }
@@ -428,6 +429,8 @@ class ASH_EXPORT Shell
   }
 #endif  // defined(OS_CHROMEOS)
 
+ aura::client::StackingClient* stacking_client();
+
  RootWindowHostFactory* root_window_host_factory() {
    return root_window_host_factory_.get();
  }
@@ -508,6 +511,7 @@ class ASH_EXPORT Shell
 
   scoped_ptr<internal::AppListController> app_list_controller_;
 
+  scoped_ptr<aura::client::StackingClient> stacking_client_;
   scoped_ptr<internal::ActivationController> activation_controller_;
   scoped_ptr<internal::CaptureController> capture_controller_;
   scoped_ptr<internal::DragDropController> drag_drop_controller_;

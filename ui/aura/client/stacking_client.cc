@@ -16,22 +16,34 @@ namespace client {
 DEFINE_WINDOW_PROPERTY_KEY(
     StackingClient*, kRootWindowStackingClientKey, NULL);
 
-void SetStackingClient(Window* window, StackingClient* stacking_client) {
-  DCHECK(window);
+void SetStackingClient(StackingClient* stacking_client) {
+  Env::GetInstance()->set_stacking_client(stacking_client);
+}
 
-  RootWindow* root_window = window->GetRootWindow();
-  DCHECK(root_window);
-  root_window->SetProperty(kRootWindowStackingClientKey, stacking_client);
+StackingClient* GetStackingClient() {
+  return Env::GetInstance()->stacking_client();
+}
+
+void SetStackingClient(Window* window, StackingClient* stacking_client) {
+  if (window) {
+    RootWindow* root_window = window->GetRootWindow();
+    DCHECK(root_window);
+    root_window->SetProperty(kRootWindowStackingClientKey, stacking_client);
+  } else {
+    SetStackingClient(stacking_client);
+  }
 }
 
 StackingClient* GetStackingClient(Window* window) {
-  DCHECK(window);
-  RootWindow* root_window = window->GetRootWindow();
-  DCHECK(root_window);
-  StackingClient* root_window_stacking_client =
-      root_window->GetProperty(kRootWindowStackingClientKey);
-  DCHECK(root_window_stacking_client);
-  return root_window_stacking_client;
+  if (window) {
+    RootWindow* root_window = window->GetRootWindow();
+    DCHECK(root_window);
+    StackingClient* root_window_stacking_client =
+        root_window->GetProperty(kRootWindowStackingClientKey);
+    if (root_window_stacking_client)
+      return root_window_stacking_client;
+  }
+  return GetStackingClient();
 }
 
 }  // namespace client

@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/observer_list.h"
 #include "ui/aura/aura_export.h"
+#include "ui/aura/client/stacking_client.h"
 #include "ui/base/events/event_handler.h"
 #include "ui/base/events/event_target.h"
 #include "ui/gfx/point.h"
@@ -63,6 +64,11 @@ class AURA_EXPORT Env : public ui::EventTarget {
   bool render_white_bg() const { return render_white_bg_; }
   void set_render_white_bg(bool value) { render_white_bg_ = value; }
 
+  client::StackingClient* stacking_client() { return stacking_client_; }
+  void set_stacking_client(client::StackingClient* stacking_client) {
+    stacking_client_ = stacking_client;
+  }
+
   // Returns the native event dispatcher. The result should only be passed to
   // base::RunLoop(dispatcher), or used to dispatch an event by
   // |Dispatch(const NativeEvent&)| on it. It must never be stored.
@@ -96,6 +102,7 @@ class AURA_EXPORT Env : public ui::EventTarget {
   gfx::Point last_mouse_location_;
   bool is_touch_down_;
   bool render_white_bg_;
+  client::StackingClient* stacking_client_;
 
 #if defined(USE_X11)
   DeviceListUpdaterAuraX11 device_list_updater_aurax11_;

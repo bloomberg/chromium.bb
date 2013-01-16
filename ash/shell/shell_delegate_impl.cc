@@ -11,6 +11,7 @@
 #include "ash/shell/context_menu.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/stacking_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/message_loop.h"
 #include "ui/aura/window.h"
@@ -212,6 +213,10 @@ double ShellDelegateImpl::GetSavedScreenMagnifierScale() {
 
 ui::MenuModel* ShellDelegateImpl::CreateContextMenu(aura::RootWindow* root) {
   return new ContextMenu(root);
+}
+
+aura::client::StackingClient* ShellDelegateImpl::CreateStackingClient() {
+  return new StackingController;
 }
 
 RootWindowHostFactory* ShellDelegateImpl::CreateRootWindowHostFactory() {

@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/test_launcher_delegate.h"
+#include "ash/wm/stacking_controller.h"
 #include "ash/wm/window_util.h"
 #include "content/public/test/test_browser_context.h"
 #include "ui/aura/window.h"
@@ -201,6 +202,10 @@ ui::MenuModel* TestShellDelegate::CreateContextMenu(aura::RootWindow* root) {
 
 double TestShellDelegate::GetSavedScreenMagnifierScale() {
   return std::numeric_limits<double>::min();
+}
+
+aura::client::StackingClient* TestShellDelegate::CreateStackingClient() {
+  return new StackingController;
 }
 
 RootWindowHostFactory* TestShellDelegate::CreateRootWindowHostFactory() {

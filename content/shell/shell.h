@@ -1,6 +1,7 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #ifndef CONTENT_SHELL_SHELL_H_
 #define CONTENT_SHELL_SHELL_H_
 
@@ -26,14 +27,14 @@ typedef struct _GtkToolItem GtkToolItem;
 #elif defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
 #elif defined(USE_AURA)
-#if defined(OS_CHROMEOS)
-namespace content {
-class MinimalAsh;
-}
-#endif
 namespace views {
 class Widget;
 class ViewsDelegate;
+}
+namespace aura {
+namespace client {
+class StackingClient;
+}
 }
 #endif
 
@@ -236,9 +237,7 @@ class Shell : public WebContentsDelegate,
 #elif defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 #elif defined(USE_AURA)
-#if defined(OS_CHROMEOS)
-  static content::MinimalAsh* minimal_ash_;
-#endif
+  static aura::client::StackingClient* stacking_client_;
   static views::ViewsDelegate* views_delegate_;
 
   views::Widget* window_widget_;

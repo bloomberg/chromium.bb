@@ -167,10 +167,7 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
   scoped_refptr<SimpleMessageBoxViews> dialog(
       new SimpleMessageBoxViews(title, message, type));
 
-  if (parent)
-    views::Widget::CreateWindowWithParent(dialog, parent)->Show();
-  else
-    views::Widget::CreateWindow(dialog)->Show();
+  views::Widget::CreateWindowWithParent(dialog, parent)->Show();
 
 #if defined(USE_AURA)
   // Use the widget's window itself so that the message loop

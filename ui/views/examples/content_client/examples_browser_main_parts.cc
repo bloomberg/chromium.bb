@@ -22,6 +22,7 @@
 #include "ui/aura/env.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
+#include "ui/views/widget/desktop_aura/desktop_stacking_client.h"
 #include "ui/views/widget/native_widget_aura.h"
 #endif
 
@@ -39,6 +40,8 @@ void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_.reset(new content::ShellBrowserContext(false));
 
 #if !defined(OS_CHROMEOS) && defined(USE_AURA)
+  stacking_client_.reset(new DesktopStackingClient);
+  aura::client::SetStackingClient(stacking_client_.get());
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, CreateDesktopScreen());
 #endif
@@ -51,6 +54,7 @@ void ExamplesBrowserMainParts::PostMainMessageLoopRun() {
   browser_context_.reset();
   views_delegate_.reset();
 #if defined(USE_AURA)
+  stacking_client_.reset();
   aura::Env::DeleteInstance();
 #endif
 }

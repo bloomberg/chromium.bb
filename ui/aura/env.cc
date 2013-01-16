@@ -26,7 +26,8 @@ Env* Env::instance_ = NULL;
 Env::Env()
     : mouse_button_flags_(0),
       is_touch_down_(false),
-      render_white_bg_(true) {
+      render_white_bg_(true),
+      stacking_client_(NULL) {
 }
 
 Env::~Env() {

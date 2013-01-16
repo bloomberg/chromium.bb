@@ -81,11 +81,11 @@ class DemoStackingClient : public aura::client::StackingClient {
  public:
   explicit DemoStackingClient(aura::RootWindow* root_window)
       : root_window_(root_window) {
-    aura::client::SetStackingClient(root_window_, this);
+    aura::client::SetStackingClient(this);
   }
 
   virtual ~DemoStackingClient() {
-    aura::client::SetStackingClient(root_window_, NULL);
+    aura::client::SetStackingClient(NULL);
   }
 
   // Overridden from aura::client::StackingClient:
