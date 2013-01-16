@@ -30,7 +30,9 @@
 
 #include "window.h"
 #include "input-method-client-protocol.h"
+#include "text-client-protocol.h"
 #include "desktop-shell-client-protocol.h"
+
 
 struct virtual_keyboard {
 	struct input_panel *input_panel;
@@ -43,6 +45,10 @@ struct virtual_keyboard {
 		xkb_mod_mask_t shift_mask;
 	} keysym;
 	uint32_t serial;
+	uint32_t content_hint;
+	uint32_t content_purpose;
+	struct window *window;
+	struct widget *widget;
 };
 
 enum key_type {
@@ -69,7 +75,15 @@ struct key {
 	unsigned int width;
 };
 
-static const struct key keys[] = {
+struct layout {
+	const struct key *keys;
+	uint32_t count;
+
+	uint32_t columns;
+	uint32_t rows;
+};
+
+static const struct key normal_keys[] = {
 	{ keytype_default, "q", "Q", 1},
 	{ keytype_default, "w", "W", 1},
 	{ keytype_default, "e", "E", 1},
@@ -115,6 +129,42 @@ static const struct key keys[] = {
 	{ keytype_style, "", "", 2}
 };
 
+static const struct key numeric_keys[] = {
+	{ keytype_default, "1", "1", 1},
+	{ keytype_default, "2", "2", 1},
+	{ keytype_default, "3", "3", 1},
+	{ keytype_default, "4", "4", 1},
+	{ keytype_default, "5", "5", 1},
+	{ keytype_default, "6", "6", 1},
+	{ keytype_default, "7", "7", 1},
+	{ keytype_default, "8", "8", 1},
+	{ keytype_default, "9", "9", 1},
+	{ keytype_default, "0", "0", 1},
+	{ keytype_backspace, "<--", "<--", 2},
+
+	{ keytype_space, "", "", 4},
+	{ keytype_enter, "Enter", "Enter", 2},
+	{ keytype_arrow_up, "/\\", "/\\", 1},
+	{ keytype_arrow_left, "<", "<", 1},
+	{ keytype_arrow_right, ">", ">", 1},
+	{ keytype_arrow_down, "\\/", "\\/", 1},
+	{ keytype_style, "", "", 2}
+};
+
+static const struct layout normal_layout = {
+	normal_keys,
+	sizeof(normal_keys) / sizeof(*normal_keys),
+	12,
+	4
+};
+
+static const struct layout numeric_layout = {
+	numeric_keys,
+	sizeof(numeric_keys) / sizeof(*numeric_keys),
+	12,
+	2
+};
+
 static const char *style_labels[] = {
 	"none",
 	"default",
@@ -125,9 +175,6 @@ static const char *style_labels[] = {
 	"selection",
 	"incorrect"
 };
-
-static const unsigned int columns = 12;
-static const unsigned int rows = 4;
 
 static const double key_width = 60;
 static const double key_height = 50;
@@ -196,6 +243,18 @@ draw_key(struct keyboard *keyboard,
 	cairo_restore(cr);
 }
 
+static const struct layout *
+get_current_layout(struct virtual_keyboard *keyboard)
+{
+	switch (keyboard->content_purpose) {
+		case TEXT_MODEL_CONTENT_PURPOSE_DIGITS:
+		case TEXT_MODEL_CONTENT_PURPOSE_NUMBER:
+			return &numeric_layout;
+		default:
+			return &normal_layout;
+	}
+}
+
 static void
 redraw_handler(struct widget *widget, void *data)
 {
@@ -205,6 +264,9 @@ redraw_handler(struct widget *widget, void *data)
 	cairo_t *cr;
 	unsigned int i;
 	unsigned int row = 0, col = 0;
+	const struct layout *layout;
+
+	layout = get_current_layout(keyboard->keyboard);
 
 	surface = window_get_surface(keyboard->window);
 	widget_get_allocation(keyboard->widget, &allocation);
@@ -220,16 +282,16 @@ redraw_handler(struct widget *widget, void *data)
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 1, 1, 1, 0.75);
-	cairo_rectangle(cr, 0, 0, columns * key_width, rows * key_height);
+	cairo_rectangle(cr, 0, 0, layout->columns * key_width, layout->rows * key_height);
 	cairo_paint(cr);
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 
-	for (i = 0; i < sizeof(keys) / sizeof(*keys); ++i) {
+	for (i = 0; i < layout->count; ++i) {
 		cairo_set_source_rgb(cr, 0, 0, 0);
-		draw_key(keyboard, &keys[i], cr, row, col);
-		col += keys[i].width;
-		if (col >= columns) {
+		draw_key(keyboard, &layout->keys[i], cr, row, col);
+		col += layout->keys[i].width;
+		if (col >= layout->columns) {
 			row += 1;
 			col = 0;
 		}
@@ -396,6 +458,9 @@ button_handler(struct widget *widget,
 	int32_t x, y;
 	int row, col;
 	unsigned int i;
+	const struct layout *layout;
+
+	layout = get_current_layout(keyboard->keyboard);
 
 	if (button != BTN_LEFT) {
 		return;
@@ -408,11 +473,11 @@ button_handler(struct widget *widget,
 	y -= allocation.y;
 
 	row = y / key_height;
-	col = x / key_width + row * columns;
-	for (i = 0; i < sizeof(keys) / sizeof(*keys); ++i) {
-		col -= keys[i].width;
+	col = x / key_width + row * layout->columns;
+	for (i = 0; i < layout->count; ++i) {
+		col -= layout->keys[i].width;
 		if (col < 0) {
-			keyboard_handle_key(keyboard, time, &keys[i], input, state);
+			keyboard_handle_key(keyboard, time, &layout->keys[i], input, state);
 			break;
 		}
 	}
@@ -427,7 +492,18 @@ input_method_context_surrounding_text(void *data,
 				      uint32_t cursor,
 				      uint32_t anchor)
 {
+	struct virtual_keyboard *keyboard = data;
+	const struct layout *layout;
+
+	layout = get_current_layout(keyboard);
+
 	fprintf(stderr, "Surrounding text updated: %s\n", text);
+
+	window_schedule_resize(keyboard->window,
+			       layout->columns * key_width,
+			       layout->rows * key_height);
+
+	widget_schedule_redraw(keyboard->widget);
 }
 
 static void
@@ -454,9 +530,22 @@ input_method_context_reset(void *data,
 	keyboard->serial = serial;
 }
 
+static void
+input_method_context_content_type(void *data,
+				  struct input_method_context *context,
+				  uint32_t hint,
+				  uint32_t purpose)
+{
+	struct virtual_keyboard *keyboard = data;
+
+	keyboard->content_hint = hint;
+	keyboard->content_purpose = purpose;
+}
+
 static const struct input_method_context_listener input_method_context_listener = {
 	input_method_context_surrounding_text,
-	input_method_context_reset
+	input_method_context_reset,
+	input_method_context_content_type
 };
 
 static void
@@ -531,6 +620,9 @@ static void
 keyboard_create(struct output *output, struct virtual_keyboard *virtual_keyboard)
 {
 	struct keyboard *keyboard;
+	const struct layout *layout;
+
+	layout = get_current_layout(virtual_keyboard);
 
 	keyboard = malloc(sizeof *keyboard);
 	memset(keyboard, 0, sizeof *keyboard);
@@ -538,6 +630,8 @@ keyboard_create(struct output *output, struct virtual_keyboard *virtual_keyboard
 	keyboard->keyboard = virtual_keyboard;
 	keyboard->window = window_create_custom(virtual_keyboard->display);
 	keyboard->widget = window_add_widget(keyboard->window, keyboard);
+	virtual_keyboard->window = keyboard->window;
+	virtual_keyboard->widget = keyboard->widget;
 
 	window_set_title(keyboard->window, "Virtual keyboard");
 	window_set_user_data(keyboard->window, keyboard);
@@ -547,8 +641,8 @@ keyboard_create(struct output *output, struct virtual_keyboard *virtual_keyboard
 	widget_set_button_handler(keyboard->widget, button_handler);
 
 	window_schedule_resize(keyboard->window,
-			       columns * key_width,
-			       rows * key_height);
+			       layout->columns * key_width,
+			       layout->rows * key_height);
 
 	input_panel_set_surface(virtual_keyboard->input_panel,
 				window_get_wl_surface(keyboard->window),
