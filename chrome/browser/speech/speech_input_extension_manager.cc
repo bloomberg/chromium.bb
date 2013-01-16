@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -17,6 +19,7 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "chrome/browser/speech/speech_input_extension_api.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
@@ -58,82 +61,6 @@ const char kOnResultEvent[] = "experimental.speechInput.onResult";
 const char kOnSoundStartEvent[] = "experimental.speechInput.onSoundStart";
 const char kOnSoundEndEvent[] = "experimental.speechInput.onSoundEnd";
 
-// Wrap an SpeechInputExtensionManager using scoped_refptr to avoid
-// assertion failures on destruction because of not using release().
-class SpeechInputExtensionManagerWrapper : public ProfileKeyedService {
- public:
-  explicit SpeechInputExtensionManagerWrapper(
-      SpeechInputExtensionManager* manager)
-      : manager_(manager) {}
-
-  virtual ~SpeechInputExtensionManagerWrapper() {}
-
-  SpeechInputExtensionManager* manager() const { return manager_.get(); }
-
- private:
-  // Methods from ProfileKeyedService.
-  virtual void Shutdown() OVERRIDE {
-    manager()->ShutdownOnUIThread();
-  }
-
-  scoped_refptr<SpeechInputExtensionManager> manager_;
-};
-}
-
-// Factory for SpeechInputExtensionManagers as profile keyed services.
-class SpeechInputExtensionManager::Factory : public ProfileKeyedServiceFactory {
- public:
-  static void Initialize();
-  static Factory* GetInstance();
-
-  SpeechInputExtensionManagerWrapper* GetForProfile(Profile* profile);
-
- private:
-  friend struct DefaultSingletonTraits<Factory>;
-
-  Factory();
-  virtual ~Factory();
-
-  // ProfileKeyedServiceFactory methods:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
-  virtual bool ServiceRedirectedInIncognito() const OVERRIDE { return false; }
-  virtual bool ServiceIsNULLWhileTesting() const OVERRIDE { return true; }
-  virtual bool ServiceIsCreatedWithProfile() const OVERRIDE { return true; }
-
-  DISALLOW_COPY_AND_ASSIGN(Factory);
-};
-
-void SpeechInputExtensionManager::Factory::Initialize() {
-  GetInstance();
-}
-
-SpeechInputExtensionManager::Factory*
-    SpeechInputExtensionManager::Factory::GetInstance() {
-  return Singleton<SpeechInputExtensionManager::Factory>::get();
-}
-
-SpeechInputExtensionManagerWrapper*
-    SpeechInputExtensionManager::Factory::GetForProfile(
-    Profile* profile) {
-  return static_cast<SpeechInputExtensionManagerWrapper*>(
-      GetServiceForProfile(profile, true));
-}
-
-SpeechInputExtensionManager::Factory::Factory()
-    : ProfileKeyedServiceFactory("SpeechInputExtensionManager",
-                                 ProfileDependencyManager::GetInstance()) {
-}
-
-SpeechInputExtensionManager::Factory::~Factory() {
-}
-
-ProfileKeyedService*
-    SpeechInputExtensionManager::Factory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  scoped_refptr<SpeechInputExtensionManager> manager(
-      new SpeechInputExtensionManager(profile));
-  return new SpeechInputExtensionManagerWrapper(manager);
 }
 
 SpeechInputExtensionInterface::SpeechInputExtensionInterface() {
@@ -159,15 +86,12 @@ SpeechInputExtensionManager::~SpeechInputExtensionManager() {
 
 SpeechInputExtensionManager* SpeechInputExtensionManager::GetForProfile(
     Profile* profile) {
-  SpeechInputExtensionManagerWrapper* wrapper =
-      Factory::GetInstance()->GetForProfile(profile);
-  if (!wrapper)
+  extensions::SpeechInputAPI* speech_input_api =
+      extensions::ProfileKeyedAPIFactory<extensions::SpeechInputAPI>::
+          GetForProfile(profile);
+  if (!speech_input_api)
     return NULL;
-  return wrapper->manager();
-}
-
-void SpeechInputExtensionManager::InitializeFactory() {
-  Factory::Initialize();
+  return speech_input_api->manager();
 }
 
 void SpeechInputExtensionManager::Observe(int type,
@@ -765,3 +689,31 @@ void SpeechInputExtensionManager::StopSucceededOnUIThread() {
 void SpeechInputExtensionManager::OnAudioLevelsChange(int session_id,
                                                       float volume,
                                                       float noise_volume) {}
+
+namespace extensions {
+
+SpeechInputAPI::SpeechInputAPI(Profile* profile)
+    : manager_(new SpeechInputExtensionManager(profile)) {
+  ExtensionFunctionRegistry* registry =
+      ExtensionFunctionRegistry::GetInstance();
+  registry->RegisterFunction<StartSpeechInputFunction>();
+  registry->RegisterFunction<StopSpeechInputFunction>();
+  registry->RegisterFunction<IsRecordingSpeechInputFunction>();
+}
+
+SpeechInputAPI::~SpeechInputAPI() {
+}
+
+void SpeechInputAPI::Shutdown() {
+    manager_->ShutdownOnUIThread();
+}
+
+static base::LazyInstance<ProfileKeyedAPIFactory<SpeechInputAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<SpeechInputAPI>* SpeechInputAPI::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
+}  // namespace extensions

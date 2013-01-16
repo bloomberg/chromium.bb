@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 
@@ -88,9 +89,6 @@ class SpeechInputExtensionManager
   // Returns the corresponding manager for the given profile, creating
   // a new one if required.
   static SpeechInputExtensionManager* GetForProfile(Profile* profile);
-
-  // Initialize the ProfileKeyedServiceFactory.
-  static void InitializeFactory();
 
   // Request to start speech recognition for the provided extension.
   bool Start(const std::string& extension_id,
@@ -188,7 +186,6 @@ class SpeechInputExtensionManager
   virtual ~SpeechInputExtensionManager();
 
   friend class base::RefCountedThreadSafe<SpeechInputExtensionManager>;
-  class Factory;
 
   // Lock used to allow exclusive access to the state variable and methods that
   // either read or write on it. This is required since the speech code
@@ -211,5 +208,37 @@ class SpeechInputExtensionManager
   bool is_recognition_in_progress_;
   int speech_recognition_session_id_;
 };
+
+namespace extensions {
+
+class SpeechInputAPI : public ProfileKeyedAPI {
+ public:
+  explicit SpeechInputAPI(Profile* profile);
+  virtual ~SpeechInputAPI();
+
+  // Convenience method to get the SpeechInputExtensionAPI for a profile.
+  static SpeechInputAPI* GetForProfile(Profile* profile);
+
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<SpeechInputAPI>* GetFactoryInstance();
+
+  SpeechInputExtensionManager* manager() const { return manager_.get(); }
+
+ private:
+  friend class ProfileKeyedAPIFactory<SpeechInputAPI>;
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() {
+    return "SpeechInputAPI";
+  }
+  static const bool kServiceIsNULLWhileTesting = true;
+  static const bool kServiceIsCreatedWithProfile = true;
+  // Methods from ProfileKeyedService.
+  virtual void Shutdown() OVERRIDE;
+
+  scoped_refptr<SpeechInputExtensionManager> manager_;
+};
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_SPEECH_SPEECH_INPUT_EXTENSION_MANAGER_H_

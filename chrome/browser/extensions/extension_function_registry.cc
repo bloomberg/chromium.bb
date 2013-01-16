@@ -27,7 +27,6 @@
 #include "chrome/browser/extensions/system/system_api.h"
 #include "chrome/browser/infobars/infobar_extension_api.h"
 #include "chrome/browser/rlz/rlz_extension_api.h"
-#include "chrome/browser/speech/speech_input_extension_api.h"
 #include "chrome/common/extensions/api/generated_api.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -164,13 +163,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   // Omnibox.
   RegisterFunction<extensions::OmniboxSendSuggestionsFunction>();
   RegisterFunction<extensions::OmniboxSetDefaultSuggestionFunction>();
-
-#if defined(ENABLE_INPUT_SPEECH)
-  // Speech input.
-  RegisterFunction<StartSpeechInputFunction>();
-  RegisterFunction<StopSpeechInputFunction>();
-  RegisterFunction<IsRecordingSpeechInputFunction>();
-#endif
 
 #if defined(TOOLKIT_VIEWS)
   // Input.

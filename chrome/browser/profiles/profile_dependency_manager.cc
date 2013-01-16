@@ -275,6 +275,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::PreferenceAPI::GetFactoryInstance();
   extensions::ProcessesAPI::GetFactoryInstance();
   extensions::PushMessagingAPI::GetFactoryInstance();
+#if defined(ENABLE_INPUT_SPEECH)
+  extensions::SpeechInputAPI::GetFactoryInstance();
+#endif
   extensions::SuggestedLinksRegistryFactory::GetInstance();
   extensions::TabCaptureRegistryFactory::GetInstance();
   extensions::TabsWindowsAPI::GetFactoryInstance();
@@ -322,7 +325,6 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   ThumbnailServiceFactory::GetInstance();
   SigninManagerFactory::GetInstance();
 #if defined(ENABLE_INPUT_SPEECH)
-  SpeechInputExtensionManager::InitializeFactory();
   ChromeSpeechRecognitionPreferences::InitializeFactory();
 #endif
   SpellcheckServiceFactory::GetInstance();
