@@ -123,6 +123,7 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   FRIEND_TEST_ALL_PREFIXES(DisplayManagerTest, TestNativeDisplaysChanged);
   FRIEND_TEST_ALL_PREFIXES(DisplayManagerTest,
                            NativeDisplaysChangedAfterPrimaryChange);
+  FRIEND_TEST_ALL_PREFIXES(DisplayManagerTest, AutomaticOverscanInsets);
   friend class ash::AcceleratorControllerTest;
   friend class test::DisplayManagerTestApi;
   friend class DisplayManagerTest;
@@ -132,6 +133,8 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
 
   // Metadata for each display.
   struct DisplayInfo {
+    DisplayInfo();
+
     // The cached name of the display.
     std::string name;
 
@@ -141,6 +144,14 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
 
     // The overscan insets for the display.
     gfx::Insets overscan_insets_in_dip;
+
+    // True if we detect that the display has overscan area. False if the
+    // display doesn't have it, or failed to detect it.
+    bool has_overscan;
+
+    // True if the |overscan_insets_in_dip| is specified. This is set because
+    // the user may specify an empty inset intentionally.
+    bool has_custom_overscan_insets;
   };
 
   void Init();
@@ -162,14 +173,17 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   // the center of the nearest display if it's outside of all displays.
   void EnsurePointerInDisplays();
 
-  // Updates |display_names_| by calling platform-dependent functions.
-  void RefreshDisplayNames();
+  // Updates |display_info_| by calling platform-dependent functions.
+  void RefreshDisplayInfo();
 
   // Update the display's id in the |display_list| to match the ones
   // stored in this display manager's |displays_|. This is used to
   // emulate display change behavior during the test byn creating the
   // display list with the same display ids but with different bounds
   void SetDisplayIdsForTest(DisplayList* display_list) const;
+
+  // Forcibly specify 'has_overscan' flag of the DisplayInfo for specified |id|.
+  void SetHasOverscanFlagForTest(int64 id, bool has_overscan);
 
   DisplayList displays_;
 
