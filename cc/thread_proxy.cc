@@ -252,7 +252,7 @@ void ThreadProxy::renderingStats(RenderingStats* stats)
     CompletionEvent completion;
     Proxy::implThread()->postTask(base::Bind(&ThreadProxy::renderingStatsOnImplThread,
                                              m_implThreadWeakPtr,  &completion, stats));
-    stats->totalCommitTimeInSeconds = m_totalCommitTime.InSecondsF();
+    stats->totalCommitTime = m_totalCommitTime;
     stats->totalCommitCount = m_totalCommitCount;
 
     completion.wait();

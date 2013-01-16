@@ -51,7 +51,7 @@ void ContentLayerUpdater::paintContents(SkCanvas* canvas, const gfx::Rect& conte
     gfx::RectF opaqueLayerRect;
     base::TimeTicks paintBeginTime = base::TimeTicks::Now();
     m_painter->paint(canvas, layerRect, opaqueLayerRect);
-    stats.totalPaintTimeInSeconds += (base::TimeTicks::Now() - paintBeginTime).InSecondsF();
+    stats.totalPaintTime += base::TimeTicks::Now() - paintBeginTime;
     canvas->restore();
 
     stats.totalPixelsPainted += contentRect.width() * contentRect.height();

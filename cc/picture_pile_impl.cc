@@ -88,8 +88,7 @@ void PicturePileImpl::Raster(
   }
   canvas->restore();
 
-  stats->totalRasterizeTimeInSeconds += (base::TimeTicks::Now() -
-                                         rasterizeBeginTime).InSecondsF();
+  stats->totalRasterizeTime += base::TimeTicks::Now() - rasterizeBeginTime;
 }
 
 void PicturePileImpl::GatherPixelRefs(

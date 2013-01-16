@@ -10,9 +10,6 @@ RenderingStats::RenderingStats()
     : numAnimationFrames(0),
       numFramesSentToScreen(0),
       droppedFrameCount(0),
-      totalPaintTimeInSeconds(0),
-      totalRasterizeTimeInSeconds(0),
-      totalCommitTimeInSeconds(0),
       totalCommitCount(0),
       totalPixelsPainted(0),
       totalPixelsRasterized(0),
@@ -22,19 +19,19 @@ RenderingStats::RenderingStats()
       numMissingTiles(0),
       totalDeferredImageDecodeCount(0),
       totalDeferredImageCacheHitCount(0),
-      totalImageGatheringCount(0),
-      totalDeferredImageDecodeTimeInSeconds(0),
-      totalImageGatheringTimeInSeconds(0) {
+      totalImageGatheringCount(0) {
 }
 
 void RenderingStats::EnumerateFields(Enumerator* enumerator) const {
     enumerator->AddInt64("numAnimationFrames", numAnimationFrames);
     enumerator->AddInt64("numFramesSentToScreen", numFramesSentToScreen);
     enumerator->AddInt64("droppedFrameCount", droppedFrameCount);
-    enumerator->AddDouble("totalPaintTimeInSeconds", totalPaintTimeInSeconds);
+    enumerator->AddDouble("totalPaintTimeInSeconds",
+                          totalPaintTime.InSecondsF());
     enumerator->AddDouble("totalRasterizeTimeInSeconds",
-                          totalRasterizeTimeInSeconds);
-    enumerator->AddDouble("totalCommitTimeInSeconds", totalCommitTimeInSeconds);
+                          totalRasterizeTime.InSecondsF());
+    enumerator->AddDouble("totalCommitTimeInSeconds",
+                          totalCommitTime.InSecondsF());
     enumerator->AddInt64("totalCommitCount", totalCommitCount);
     enumerator->AddInt64("totalPixelsPainted", totalPixelsPainted);
     enumerator->AddInt64("totalPixelsRasterized", totalPixelsRasterized);
@@ -48,9 +45,9 @@ void RenderingStats::EnumerateFields(Enumerator* enumerator) const {
                          totalDeferredImageCacheHitCount);
     enumerator->AddInt64("totalImageGatheringCount", totalImageGatheringCount);
     enumerator->AddDouble("totalDeferredImageDecodeTimeInSeconds",
-                          totalDeferredImageDecodeTimeInSeconds);
+                          totalDeferredImageDecodeTime.InSecondsF());
     enumerator->AddDouble("totalImageGatheringTimeInSeconds",
-                          totalImageGatheringTimeInSeconds);
+                          totalImageGatheringTime.InSecondsF());
 }
 
 }  // namespace cc

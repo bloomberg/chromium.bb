@@ -262,8 +262,8 @@ void TileManager::GetRenderingStats(RenderingStats* stats) {
   stats->totalDeferredImageCacheHitCount =
       rendering_stats_.totalDeferredImageCacheHitCount;
   stats->totalImageGatheringCount = rendering_stats_.totalImageGatheringCount;
-  stats->totalImageGatheringTimeInSeconds =
-      rendering_stats_.totalImageGatheringTimeInSeconds;
+  stats->totalImageGatheringTime =
+      rendering_stats_.totalImageGatheringTime;
 }
 
 void TileManager::GetMemoryStats(
@@ -388,8 +388,8 @@ void TileManager::GatherPixelRefsForTile(Tile* tile) {
     const_cast<PicturePileImpl *>(tile->picture_pile())->GatherPixelRefs(
         tile->content_rect_, managed_state.pending_pixel_refs);
     rendering_stats_.totalImageGatheringCount++;
-    rendering_stats_.totalImageGatheringTimeInSeconds +=
-        (base::TimeTicks::Now() - gather_begin_time).InSecondsF();
+    rendering_stats_.totalImageGatheringTime +=
+        base::TimeTicks::Now() - gather_begin_time;
     managed_state.need_to_gather_pixel_refs = false;
   }
 }

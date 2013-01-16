@@ -16,9 +16,9 @@ struct CC_EXPORT RenderingStats {
     int64 numAnimationFrames;
     int64 numFramesSentToScreen;
     int64 droppedFrameCount;
-    double totalPaintTimeInSeconds;
-    double totalRasterizeTimeInSeconds;
-    double totalCommitTimeInSeconds;
+    base::TimeDelta totalPaintTime;
+    base::TimeDelta totalRasterizeTime;
+    base::TimeDelta totalCommitTime;
     int64 totalCommitCount;
     int64 totalPixelsPainted;
     int64 totalPixelsRasterized;
@@ -29,8 +29,8 @@ struct CC_EXPORT RenderingStats {
     int64 totalDeferredImageDecodeCount;
     int64 totalDeferredImageCacheHitCount;
     int64 totalImageGatheringCount;
-    double totalDeferredImageDecodeTimeInSeconds;
-    double totalImageGatheringTimeInSeconds;
+    base::TimeDelta totalDeferredImageDecodeTime;
+    base::TimeDelta totalImageGatheringTime;
     // Note: when adding new members, please remember to update enumerateFields
     // in rendering_stats.cc.
 

@@ -38,8 +38,8 @@ void RunImageDecodeTask(skia::LazyPixelRef* pixel_ref, RenderingStats* stats) {
   base::TimeTicks decode_begin_time = base::TimeTicks::Now();
   pixel_ref->Decode();
   stats->totalDeferredImageDecodeCount++;
-  stats->totalDeferredImageDecodeTimeInSeconds +=
-      (base::TimeTicks::Now() - decode_begin_time).InSecondsF();
+  stats->totalDeferredImageDecodeTime +=
+      base::TimeTicks::Now() - decode_begin_time;
 }
 
 const char* kRasterThreadNamePrefix = "CompositorRaster";
@@ -55,12 +55,12 @@ RasterWorkerPool::Thread::Task::Task(Thread* thread) : thread_(thread) {
 }
 
 RasterWorkerPool::Thread::Task::~Task() {
-  thread_->rendering_stats_.totalRasterizeTimeInSeconds +=
-      rendering_stats_.totalRasterizeTimeInSeconds;
+  thread_->rendering_stats_.totalRasterizeTime +=
+      rendering_stats_.totalRasterizeTime;
   thread_->rendering_stats_.totalPixelsRasterized +=
       rendering_stats_.totalPixelsRasterized;
-  thread_->rendering_stats_.totalDeferredImageDecodeTimeInSeconds +=
-      rendering_stats_.totalDeferredImageDecodeTimeInSeconds;
+  thread_->rendering_stats_.totalDeferredImageDecodeTime +=
+      rendering_stats_.totalDeferredImageDecodeTime;
   thread_->rendering_stats_.totalDeferredImageDecodeCount +=
       rendering_stats_.totalDeferredImageDecodeCount;
 
@@ -136,21 +136,21 @@ void RasterWorkerPool::PostImageDecodeTaskAndReply(
 }
 
 void RasterWorkerPool::GetRenderingStats(RenderingStats* stats) {
-  stats->totalRasterizeTimeInSeconds = 0;
+  stats->totalRasterizeTime = base::TimeDelta();
   stats->totalPixelsRasterized = 0;
   stats->totalDeferredImageDecodeCount = 0;
-  stats->totalDeferredImageDecodeTimeInSeconds = 0;
+  stats->totalDeferredImageDecodeTime = base::TimeDelta();
   for (ThreadVector::iterator it = raster_threads_.begin();
        it != raster_threads_.end(); ++it) {
     Thread* thread = *it;
-    stats->totalRasterizeTimeInSeconds +=
-        thread->rendering_stats().totalRasterizeTimeInSeconds;
+    stats->totalRasterizeTime +=
+        thread->rendering_stats().totalRasterizeTime;
     stats->totalPixelsRasterized +=
         thread->rendering_stats().totalPixelsRasterized;
     stats->totalDeferredImageDecodeCount +=
         thread->rendering_stats().totalDeferredImageDecodeCount;
-    stats->totalDeferredImageDecodeTimeInSeconds +=
-        thread->rendering_stats().totalDeferredImageDecodeTimeInSeconds;
+    stats->totalDeferredImageDecodeTime +=
+        thread->rendering_stats().totalDeferredImageDecodeTime;
   }
 }
 

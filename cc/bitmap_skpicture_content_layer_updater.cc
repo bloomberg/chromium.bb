@@ -29,7 +29,7 @@ void BitmapSkPictureContentLayerUpdater::Resource::update(ResourceUpdateQueue& q
     SkCanvas canvas(&device);
     base::TimeTicks paintBeginTime = base::TimeTicks::Now();
     updater()->paintContentsRect(&canvas, sourceRect, stats);
-    stats.totalPaintTimeInSeconds += (base::TimeTicks::Now() - paintBeginTime).InSecondsF();
+    stats.totalPaintTime += base::TimeTicks::Now() - paintBeginTime;
 
     ResourceUpdate upload = ResourceUpdate::Create(
         texture(), &m_bitmap, sourceRect, sourceRect, destOffset);
@@ -65,7 +65,7 @@ void BitmapSkPictureContentLayerUpdater::paintContentsRect(SkCanvas* canvas, con
                       contentRect().y() - sourceRect.y());
     base::TimeTicks rasterizeBeginTime = base::TimeTicks::Now();
     drawPicture(canvas);
-    stats.totalRasterizeTimeInSeconds += (base::TimeTicks::Now() - rasterizeBeginTime).InSecondsF();
+    stats.totalRasterizeTime += base::TimeTicks::Now() - rasterizeBeginTime;
     stats.totalPixelsRasterized += sourceRect.width() * sourceRect.height();
 }
 

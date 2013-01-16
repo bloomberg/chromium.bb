@@ -153,7 +153,7 @@ bool SingleThreadProxy::recreateOutputSurface()
 
 void SingleThreadProxy::renderingStats(RenderingStats* stats)
 {
-    stats->totalCommitTimeInSeconds = m_totalCommitTime.InSecondsF();
+    stats->totalCommitTime = m_totalCommitTime;
     stats->totalCommitCount = m_totalCommitCount;
     m_layerTreeHostImpl->renderingStats(stats);
 }

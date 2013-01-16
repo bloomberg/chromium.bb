@@ -79,8 +79,7 @@ void Picture::Record(ContentLayerClient* painter,
   gfx::RectF opaque_layer_rect;
   base::TimeTicks beginPaintTime = base::TimeTicks::Now();
   painter->paintContents(canvas, layer_rect_, opaque_layer_rect);
-  double delta = (base::TimeTicks::Now() - beginPaintTime).InSecondsF();
-  stats.totalPaintTimeInSeconds += delta;
+  stats.totalPaintTime += base::TimeTicks::Now() - beginPaintTime;
   stats.totalPixelsPainted += layer_rect_.width() *
                               layer_rect_.height();
 

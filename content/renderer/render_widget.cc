@@ -805,7 +805,7 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
       base::TimeDelta paint_time =
           base::TimeTicks::HighResNow() - paint_begin_ticks;
       if (!is_accelerated_compositing_active_)
-        software_stats_.totalPaintTimeInSeconds += paint_time.InSecondsF();
+        software_stats_.totalPaintTime += paint_time;
     }
   } else {
     // Normal painting case.
@@ -819,7 +819,7 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
       base::TimeDelta paint_time =
           base::TimeTicks::HighResNow() - paint_begin_ticks;
       if (!is_accelerated_compositing_active_)
-        software_stats_.totalPaintTimeInSeconds += paint_time.InSecondsF();
+        software_stats_.totalPaintTime += paint_time;
     }
 
     // Flush to underlying bitmap.  TODO(darin): is this needed?
@@ -832,7 +832,7 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
   if (kEnableGpuBenchmarking) {
     base::TimeDelta rasterize_time =
         base::TimeTicks::HighResNow() - rasterize_begin_ticks;
-    software_stats_.totalRasterizeTimeInSeconds += rasterize_time.InSecondsF();
+    software_stats_.totalRasterizeTime += rasterize_time;
 
     int64 num_pixels_processed = rect.width() * rect.height();
     software_stats_.totalPixelsPainted += num_pixels_processed;
@@ -2003,12 +2003,12 @@ void RenderWidget::GetRenderingStats(
       software_stats_.numAnimationFrames;
   stats.rendering_stats.numFramesSentToScreen +=
       software_stats_.numFramesSentToScreen;
-  stats.rendering_stats.totalPaintTimeInSeconds +=
-      software_stats_.totalPaintTimeInSeconds;
+  stats.rendering_stats.totalPaintTime +=
+      software_stats_.totalPaintTime;
   stats.rendering_stats.totalPixelsPainted +=
       software_stats_.totalPixelsPainted;
-  stats.rendering_stats.totalRasterizeTimeInSeconds +=
-      software_stats_.totalRasterizeTimeInSeconds;
+  stats.rendering_stats.totalRasterizeTime +=
+      software_stats_.totalRasterizeTime;
   stats.rendering_stats.totalPixelsRasterized +=
       software_stats_.totalPixelsRasterized;
 }
