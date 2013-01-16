@@ -5,6 +5,8 @@
 #include "chrome/browser/memory_details.h"
 
 #include <set>
+#include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/process_util.h"
@@ -28,8 +30,10 @@ void AddNonChildChromeProcesses(
     std::vector<ProcessMemoryInformation>* processes) {
   base::ProcessIterator process_iter(NULL);
   while (const ProcessEntry* process_entry = process_iter.NextProcessEntry()) {
-    if (process_entry->cmd_line_args_[0].find(
-        chrome::kHelperProcessExecutableName) == std::string::npos) {
+    const std::vector<std::string>& cmd_args = process_entry->cmd_line_args();
+    if (cmd_args.empty() ||
+        cmd_args[0].find(chrome::kHelperProcessExecutableName) ==
+            std::string::npos) {
       continue;
     }
     ProcessMemoryInformation info;
