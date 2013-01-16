@@ -296,7 +296,7 @@ TEST(OSExchangeDataTest, TestURLExchangeFormats) {
   OSExchangeData data;
   std::string url_spec = "http://www.google.com/";
   GURL url(url_spec);
-  std::wstring url_title = L"Google";
+  std::wstring url_title = L"www.google.com";
   data.SetURL(url, url_title);
   std::wstring output;
 

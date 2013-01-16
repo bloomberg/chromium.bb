@@ -22,11 +22,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
-#include "grit/ui_strings.h"
 #include "net/base/net_util.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/events/event.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/tree_node_iterator.h"
 
 using base::Time;
@@ -274,14 +272,6 @@ bool CanPasteFromClipboard(const BookmarkNode* node) {
   if (!node)
     return false;
   return BookmarkNodeData::ClipboardContainsBookmarks();
-}
-
-string16 GetNameForURL(const GURL& url) {
-  if (url.is_valid()) {
-    return net::GetSuggestedFilename(url, "", "", "", "", std::string());
-  } else {
-    return l10n_util::GetStringUTF16(IDS_APP_UNTITLED_SHORTCUT_FILE_NAME);
-  }
 }
 
 // This is used with a tree iterator to skip subtrees which are not visible.

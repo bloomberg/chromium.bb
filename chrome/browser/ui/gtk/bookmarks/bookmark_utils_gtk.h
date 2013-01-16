@@ -14,6 +14,7 @@
 class BookmarkModel;
 class BookmarkNode;
 class GtkThemeService;
+class GURL;
 class Profile;
 
 typedef struct _GdkDragContext GdkDragContext;
@@ -106,6 +107,10 @@ bool CreateNewBookmarkFromNetscapeURL(
     BookmarkModel* model,
     const BookmarkNode* parent,
     int idx);
+
+// Returns a name for the given URL. Used for drags into bookmark areas when
+// the source doesn't specify a title.
+string16 GetNameForURL(const GURL& url);
 
 }  // namespace bookmark_utils
 

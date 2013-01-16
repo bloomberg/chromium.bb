@@ -96,10 +96,6 @@ void PasteFromClipboard(BookmarkModel* model,
 // Returns true if the user can copy from the pasteboard.
 bool CanPasteFromClipboard(const BookmarkNode* node);
 
-// Returns a name for the given URL. Used for drags into bookmark areas when
-// the source doesn't specify a title.
-string16 GetNameForURL(const GURL& url);
-
 // Returns a vector containing up to |max_count| of the most recently modified
 // folders. This never returns an empty vector.
 std::vector<const BookmarkNode*> GetMostRecentlyModifiedFolders(

@@ -388,7 +388,10 @@ bool OSExchangeDataProviderWin::GetURLAndTitle(GURL* url,
     GURL test_url(url_str);
     if (test_url.is_valid()) {
       *url = test_url;
+      *title = net::GetSuggestedFilename(*url, "", "", "", "", std::string());
       return true;
+    } else {
+      *title = l10n_util::GetStringUTF16(IDS_APP_UNTITLED_SHORTCUT_FILE_NAME);
     }
   } else if (GetPlainTextURL(source_object_, url)) {
     title->clear();
