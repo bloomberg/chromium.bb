@@ -289,7 +289,7 @@ bool TSFBridgeDelegate::CreateDocumentManager(TSFTextStore* text_store,
   }
 
   DWORD edit_cookie = TF_INVALID_EDIT_COOKIE;
-  if (FAILED(document_manager_for_editable_->CreateContext(
+  if (FAILED((*document_manager)->CreateContext(
       client_id_,
       0,
       static_cast<ITextStoreACP*>(text_store),
