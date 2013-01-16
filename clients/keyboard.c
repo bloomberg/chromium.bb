@@ -331,17 +331,22 @@ virtual_keyboard_commit_preedit(struct virtual_keyboard *keyboard)
 }
 
 static void
-virtual_keyboard_send_preedit(struct virtual_keyboard *keyboard)
+virtual_keyboard_send_preedit(struct virtual_keyboard *keyboard,
+			      int32_t cursor)
 {
+	uint32_t index = strlen(keyboard->preedit_string);
+
 	if (keyboard->preedit_style)
 		input_method_context_preedit_styling(keyboard->context,
 						     keyboard->serial,
 						     0,
 						     strlen(keyboard->preedit_string),
 						     keyboard->preedit_style);
+	if (cursor > 0)
+		index = cursor;
 	input_method_context_preedit_cursor(keyboard->context,
 					    keyboard->serial,
-					    strlen(keyboard->preedit_string));
+					    index);
 	input_method_context_preedit_string(keyboard->context,
 					    keyboard->serial,
 					    keyboard->preedit_string,
@@ -362,7 +367,7 @@ keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *
 
 			keyboard->keyboard->preedit_string = strcat(keyboard->keyboard->preedit_string,
 								    label);
-			virtual_keyboard_send_preedit(keyboard->keyboard);
+			virtual_keyboard_send_preedit(keyboard->keyboard, -1);
 			break;
 		case keytype_backspace:
 			if (state != WL_POINTER_BUTTON_STATE_PRESSED)
@@ -374,7 +379,7 @@ keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *
 									     -1, 1);
 			} else {
 				keyboard->keyboard->preedit_string[strlen(keyboard->keyboard->preedit_string) - 1] = '\0';
-				virtual_keyboard_send_preedit(keyboard->keyboard);
+				virtual_keyboard_send_preedit(keyboard->keyboard, -1);
 			}
 			break;
 		case keytype_enter:
@@ -442,7 +447,7 @@ keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *
 			if (state != WL_POINTER_BUTTON_STATE_PRESSED)
 				break;
 			keyboard->keyboard->preedit_style = (keyboard->keyboard->preedit_style + 1) % 8; /* TODO */
-			virtual_keyboard_send_preedit(keyboard->keyboard);
+			virtual_keyboard_send_preedit(keyboard->keyboard, -1);
 			break;
 	}
 }
@@ -542,10 +547,25 @@ input_method_context_content_type(void *data,
 	keyboard->content_purpose = purpose;
 }
 
+static void
+input_method_context_invoke_action(void *data,
+				   struct input_method_context *context,
+				   uint32_t button,
+				   uint32_t index)
+{
+	struct virtual_keyboard *keyboard = data;
+
+	if (button != BTN_LEFT)
+		return;
+
+	virtual_keyboard_send_preedit(keyboard, index);
+}
+
 static const struct input_method_context_listener input_method_context_listener = {
 	input_method_context_surrounding_text,
 	input_method_context_reset,
-	input_method_context_content_type
+	input_method_context_content_type,
+	input_method_context_invoke_action
 };
 
 static void
