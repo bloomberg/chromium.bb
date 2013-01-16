@@ -4,6 +4,8 @@
 
 #include "cc/test/mock_quad_culler.h"
 
+#include "cc/draw_quad.h"
+
 namespace cc {
 
 MockQuadCuller::MockQuadCuller()

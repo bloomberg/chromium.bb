@@ -760,18 +760,19 @@ void LayerTreeHostImpl::OnCanDrawStateChangedForTree(LayerTreeImpl*)
 
 CompositorFrameMetadata LayerTreeHostImpl::makeCompositorFrameMetadata() const
 {
-    if (!rootScrollLayer())
-        return CompositorFrameMetadata();
-
     CompositorFrameMetadata metadata;
-    metadata.root_scroll_offset = rootScrollLayer()->scrollOffset() + rootScrollLayer()->scrollDelta();
-    if (!m_settings.pageScalePinchZoomEnabled)
-        metadata.root_scroll_offset.Scale(1 / m_pinchZoomViewport.page_scale_factor());
     metadata.page_scale_factor = m_pinchZoomViewport.total_page_scale_factor();
     metadata.viewport_size = m_pinchZoomViewport.Bounds().size();
     metadata.root_layer_size = contentSize();
     metadata.min_page_scale_factor = m_pinchZoomViewport.min_page_scale_factor();
     metadata.max_page_scale_factor = m_pinchZoomViewport.max_page_scale_factor();
+
+    if (!rootScrollLayer())
+      return metadata;
+
+    metadata.root_scroll_offset = rootScrollLayer()->scrollOffset() + rootScrollLayer()->scrollDelta();
+    if (!m_settings.pageScalePinchZoomEnabled)
+        metadata.root_scroll_offset.Scale(1 / m_pinchZoomViewport.page_scale_factor());
 
     return metadata;
 }
@@ -990,7 +991,7 @@ bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurfa
       m_tileManager.reset(new TileManager(this, resourceProvider.get(), m_settings.numRasterThreads));
 
     if (outputSurface->Capabilities().has_parent_compositor)
-        m_renderer = DelegatingRenderer::Create(this, resourceProvider.get());
+        m_renderer = DelegatingRenderer::Create(this, outputSurface.get(), resourceProvider.get());
     else if (outputSurface->Context3D())
         m_renderer = GLRenderer::create(this, outputSurface.get(), resourceProvider.get());
     else if (outputSurface->SoftwareDevice())

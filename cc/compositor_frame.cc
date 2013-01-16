@@ -10,4 +10,10 @@ CompositorFrame::CompositorFrame() {}
 
 CompositorFrame::~CompositorFrame() {}
 
+void CompositorFrame::AssignTo(CompositorFrame* target) {
+  target->delegated_frame_data = delegated_frame_data.Pass();
+  target->gl_frame_data = gl_frame_data.Pass();
+  target->metadata = metadata;
+}
+
 }  // namespace cc

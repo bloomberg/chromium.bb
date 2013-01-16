@@ -1177,7 +1177,7 @@ void GLRenderer::finishDrawingFrame(DrawingFrame& frame)
         compositor_frame.metadata = m_client->makeCompositorFrameMetadata();
         compositor_frame.gl_frame_data.reset(new GLFrameData());
         // FIXME: Fill in GLFrameData when we implement swapping with it.
-        m_outputSurface->SendFrameToParentCompositor(compositor_frame);
+        m_outputSurface->SendFrameToParentCompositor(&compositor_frame);
     }
 }
 

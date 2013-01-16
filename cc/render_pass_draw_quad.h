@@ -65,6 +65,9 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
   // background of the render pass, from behind it.
   WebKit::WebFilterOperations background_filters;
 
+  virtual void AppendResources(ResourceProvider::ResourceIdArray* resources)
+      OVERRIDE;
+
   static const RenderPassDrawQuad* MaterialCast(const DrawQuad*);
 
 private:

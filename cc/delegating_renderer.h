@@ -12,6 +12,7 @@
 
 namespace cc {
 
+class OutputSurface;
 class ResourceProvider;
 
 class CC_EXPORT DelegatingRenderer :
@@ -21,7 +22,9 @@ class CC_EXPORT DelegatingRenderer :
 {
  public:
   static scoped_ptr<DelegatingRenderer> Create(
-      RendererClient* client, ResourceProvider* resource_provider);
+      RendererClient* client,
+      OutputSurface* output_surface,
+      ResourceProvider* resource_provider);
   virtual ~DelegatingRenderer();
 
   virtual const RendererCapabilities& capabilities() const OVERRIDE;
@@ -50,9 +53,11 @@ class CC_EXPORT DelegatingRenderer :
 
 private:
   DelegatingRenderer(RendererClient* client,
+                     OutputSurface* output_surface,
                      ResourceProvider* resource_provider);
   bool Initialize();
 
+  OutputSurface* output_surface_;
   ResourceProvider* resource_provider_;
   RendererCapabilities capabilities_;
   bool visible_;

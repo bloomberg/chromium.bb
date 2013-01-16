@@ -19,14 +19,11 @@ class TestRenderPass : public cc::RenderPass {
     return make_scoped_ptr(new TestRenderPass);
   }
 
-  void AppendQuad(scoped_ptr<cc::DrawQuad> quad) {
-    quad_list.push_back(quad.Pass());
-  }
-  void AppendSharedQuadState(scoped_ptr<cc::SharedQuadState> state) {
-    shared_quad_state_list.push_back(state.Pass());
-  }
+  void AppendQuad(scoped_ptr<cc::DrawQuad> quad);
+  void AppendSharedQuadState(scoped_ptr<cc::SharedQuadState> state);
 
-  void AppendOneOfEveryQuadType(cc::ResourceProvider*);
+  void AppendOneOfEveryQuadType(
+      cc::ResourceProvider*, RenderPass::Id child_pass);
 
  protected:
   TestRenderPass() : RenderPass() {}

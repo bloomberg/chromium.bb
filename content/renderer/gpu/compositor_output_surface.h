@@ -44,8 +44,7 @@ class CompositorOutputSurface
   virtual const struct Capabilities& Capabilities() const OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* Context3D() const OVERRIDE;
   virtual cc::SoftwareOutputDevice* SoftwareDevice() const OVERRIDE;
-  virtual void SendFrameToParentCompositor(
-      const cc::CompositorFrame&) OVERRIDE;
+  virtual void SendFrameToParentCompositor(cc::CompositorFrame*) OVERRIDE;
 
  private:
   class CompositorOutputSurfaceProxy :

@@ -12,6 +12,7 @@
       'damage_tracker_unittest.cc',
       'delay_based_time_source_unittest.cc',
       'delegated_renderer_layer_impl_unittest.cc',
+      'delegating_renderer_unittest.cc',
       'draw_quad_unittest.cc',
       'float_quad_unittest.cc',
       'frame_rate_controller_unittest.cc',

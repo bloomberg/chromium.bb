@@ -24,7 +24,8 @@ class TestHooks : public WebKit::WebAnimationDelegate {
 public:
     virtual void beginCommitOnThread(LayerTreeHostImpl*) { }
     virtual void commitCompleteOnThread(LayerTreeHostImpl*) { }
-    virtual bool prepareToDrawOnThread(LayerTreeHostImpl*);
+    virtual bool prepareToDrawOnThread(
+        LayerTreeHostImpl*, LayerTreeHostImpl::FrameData&, bool result);
     virtual void drawLayersOnThread(LayerTreeHostImpl*) { }
     virtual void animateLayers(LayerTreeHostImpl*, base::TimeTicks monotonicTime, bool hasUnfinishedAnimation) { }
     virtual void willAnimateLayers(LayerTreeHostImpl*, base::TimeTicks monotonicTime) { }

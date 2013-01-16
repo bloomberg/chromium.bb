@@ -21,6 +21,8 @@ class CC_EXPORT CompositorFrame {
   CompositorFrameMetadata metadata;
   scoped_ptr<DelegatedFrameData> delegated_frame_data;
   scoped_ptr<GLFrameData> gl_frame_data;
+
+  void AssignTo(CompositorFrame* target);
 };
 
 }  // namespace cc

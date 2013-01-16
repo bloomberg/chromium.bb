@@ -49,6 +49,13 @@ void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->v_plane = v_plane;
 }
 
+void YUVVideoDrawQuad::AppendResources(
+    ResourceProvider::ResourceIdArray* resources) {
+  resources->push_back(y_plane.resourceId);
+  resources->push_back(u_plane.resourceId);
+  resources->push_back(v_plane.resourceId);
+}
+
 const YUVVideoDrawQuad* YUVVideoDrawQuad::MaterialCast(
     const DrawQuad* quad) {
   DCHECK(quad->material == DrawQuad::YUV_VIDEO_CONTENT);

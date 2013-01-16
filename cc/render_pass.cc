@@ -4,6 +4,9 @@
 
 #include "cc/render_pass.h"
 
+#include "cc/draw_quad.h"
+#include "cc/shared_quad_state.h"
+
 namespace cc {
 
 scoped_ptr<RenderPass> RenderPass::Create() {

@@ -9,11 +9,9 @@
 
 #include "base/basictypes.h"
 #include "cc/cc_export.h"
-#include "cc/draw_quad.h"
 #include "cc/hash_pair.h"
 #include "cc/scoped_ptr_hash_map.h"
 #include "cc/scoped_ptr_vector.h"
-#include "cc/shared_quad_state.h"
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -22,6 +20,9 @@
 #include "ui/gfx/transform.h"
 
 namespace cc {
+
+class DrawQuad;
+class SharedQuadState;
 
 // A list of DrawQuad objects, sorted internally in front-to-back order.
 class QuadList : public ScopedPtrVector<DrawQuad> {
