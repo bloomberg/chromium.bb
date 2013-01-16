@@ -47,6 +47,7 @@
         '../cc/cc_tests.gyp:cc_unittests',
         '../chrome/chrome.gyp:unit_tests',
         '../components/components.gyp:components_unittests',
+        '../content/content.gyp:content_browsertests',
         '../content/content.gyp:content_shell_test_apk',
         '../content/content.gyp:content_unittests',
         '../gpu/gpu.gyp:gpu_unittests',
