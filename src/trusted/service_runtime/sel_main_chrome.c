@@ -351,6 +351,20 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
 
   ret_code = NaClWaitForMainThreadToExit(nap);
 
+  if (NACL_ABI_WIFEXITED(nap->exit_status)) {
+    /*
+     * Under Chrome, a call to _exit() often indicates that something
+     * has gone awry, so we report it here to aid debugging.
+     *
+     * This conditional does not run if the NaCl process was
+     * terminated forcibly, which is the normal case under Chrome.
+     * This forcible exit is triggered by the renderer closing the
+     * trusted SRPC channel, which we record as NACL_ABI_SIGKILL
+     * internally.
+     */
+    NaClLog(LOG_INFO, "NaCl untrusted code called _exit(0x%x)\n", ret_code);
+  }
+
   /*
    * exit_group or equiv kills any still running threads while module
    * addr space is still valid.  otherwise we'd have to kill threads
