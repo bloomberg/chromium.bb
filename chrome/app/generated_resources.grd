@@ -6564,6 +6564,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_PANEL_STACKING_DESCRIPTION" desc="Description for the flag to enable panel stacking.">
         Enabling this option allows detached panels to be stacked together.
       </message>
+      <message name="IDS_FLAGS_ENABLE_WEBGL_NAME" desc="Name of the 'Enable WebGL' lab.">
+        Enable WebGL
+      </message>
+      <message name="IDS_FLAGS_ENABLE_WEBGL_DESCRIPTION" desc="Description for the flag to enable WebGL.">
+        Enabling this option allows web applications to access the WebGL API.
+      </message>
       <message name="IDS_FLAGS_DISABLE_WEBGL_NAME" desc="Name of the 'Disable WebGL' lab.">
         Disable WebGL
       </message>

@@ -13,6 +13,7 @@
 #include "chrome/browser/android/process_utils.h"
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
 #include "chrome/browser/history/android/sqlite_cursor.h"
+#include "chrome/browser/lifetime/application_lifetime_android.h"
 #include "chrome/browser/ui/android/autofill/autofill_popup_view_android.h"
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
@@ -29,6 +30,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "WebContentsDelegateAndroid",
       components::RegisterWebContentsDelegateAndroidJni },
   // Register JNI for chrome classes.
+  { "ApplicationLifetime", browser::RegisterApplicationLifetimeAndroid},
   { "AutofillPopup",
       AutofillPopupViewAndroid::RegisterAutofillPopupViewAndroid},
   { "ChromeBrowserProvider",

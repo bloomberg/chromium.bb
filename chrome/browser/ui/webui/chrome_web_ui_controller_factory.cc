@@ -199,6 +199,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<WebDialogUI>;
   if (url.spec() == chrome::kChromeUIConstrainedHTMLTestURL)
     return &NewWebUI<ConstrainedWebDialogUI>;
+  if (url.host() == chrome::kChromeUIFlagsHost)
+    return &NewWebUI<FlagsUI>;
   if (url.host() == chrome::kChromeUIGpuInternalsHost)
     return &NewWebUI<GpuInternalsUI>;
   if (url.host() == chrome::kChromeUIHistoryFrameHost)
@@ -259,10 +261,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Feedback on Android uses the built-in feedback app.
   if (url.host() == chrome::kChromeUIFeedbackHost)
     return &NewWebUI<FeedbackUI>;
-  // chrome://flags is currently unsupported on Android.
-  // TODO(satish): Enable after http://crbug.com/143146 is fixed.
-  if (url.host() == chrome::kChromeUIFlagsHost)
-    return &NewWebUI<FlagsUI>;
   // Flash is not available on android.
   if (url.host() == chrome::kChromeUIFlashHost)
     return &NewWebUI<FlashUI>;
@@ -597,6 +595,9 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   if (page_url.host() == chrome::kChromeUICrashesHost)
     return CrashesUI::GetFaviconResourceBytes(scale_factor);
 
+  if (page_url.host() == chrome::kChromeUIFlagsHost)
+    return FlagsUI::GetFaviconResourceBytes(scale_factor);
+
   if (page_url.host() == chrome::kChromeUIHistoryHost)
     return HistoryUI::GetFaviconResourceBytes(scale_factor);
 
@@ -608,11 +609,6 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   // Android uses the native download manager.
   if (page_url.host() == chrome::kChromeUIDownloadsHost)
     return DownloadsUI::GetFaviconResourceBytes(scale_factor);
-
-  // chrome://flags is currently unsupported on Android.
-  // TODO(satish): Enable after http://crbug.com/143146 is fixed.
-  if (page_url.host() == chrome::kChromeUIFlagsHost)
-    return FlagsUI::GetFaviconResourceBytes(scale_factor);
 
   // Android doesn't use the Options pages.
   if (page_url.host() == chrome::kChromeUISettingsFrameHost)

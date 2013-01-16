@@ -67,7 +67,6 @@
         # * code below browser/extensions
         'browser/about_flags.cc',
         'browser/about_flags.h',
-        'browser/about_flags_android.cc',
         'browser/accessibility/accessibility_extension_api_constants.cc',
         'browser/accessibility/accessibility_extension_api_constants.h',
         'browser/accessibility/accessibility_events.cc',
@@ -974,6 +973,8 @@
         'browser/language_usage_metrics.h',
         'browser/lifetime/application_lifetime.cc',
         'browser/lifetime/application_lifetime.h',
+        'browser/lifetime/application_lifetime_android.cc',
+        'browser/lifetime/application_lifetime_android.h',
         'browser/lifetime/application_lifetime_aura.cc',
         'browser/lifetime/application_lifetime_gtk.cc',
         'browser/lifetime/application_lifetime_mac.mm',
@@ -2765,17 +2766,11 @@
             'browser/bookmarks/bookmark_html_writer.cc',
             'browser/ssl/ssl_add_certificate.cc',
 
-            # about:flags is unsupported.
-            'browser/about_flags.cc',
-            'browser/about_flags.h',
-
             'browser/jankometer.cc',
             'browser/sync/sync_global_error.cc',
             'browser/sync/sync_global_error.h',
 
-            # There's no Browser/BrowserList on Android.
             'browser/download/download_crx_util.cc',
-            'browser/lifetime/application_lifetime_stub.cc',
             'browser/net/gaia/gaia_oauth_fetcher.cc',
             'browser/omnibox_search_hint.cc',
             'browser/page_cycler/page_cycler.cc',
@@ -2796,8 +2791,6 @@
             'browser/tab_contents/spelling_bubble_model.h',
             'browser/tab_contents/spelling_menu_observer.cc',
             'browser/tab_contents/spelling_menu_observer.h',
-            'browser/upgrade_detector.cc',
-            'browser/upgrade_detector.h',
             'browser/upgrade_detector_impl.cc',
             'browser/upgrade_detector_impl.h',
 
@@ -2812,7 +2805,6 @@
             ['exclude', '^browser/first_run/'],
             ['include', '^browser/first_run/first_run.cc'], # For ctor/dtor of a struct.
             ['exclude', '^browser/importer/'],
-            ['exclude', '^browser/lifetime/'],
             ['exclude', '^browser/managed_mode/'],
             ['exclude', '^browser/service/'],
             ['exclude', '^browser/speech/'],
@@ -3116,6 +3108,7 @@
           'target_name': 'chrome_browser_jni_headers',
           'type': 'none',
           'sources': [
+            'android/java/src/org/chromium/chrome/browser/ApplicationLifetime.java',
             'android/java/src/org/chromium/chrome/browser/autofill/AutofillPopupGlue.java',
             'android/java/src/org/chromium/chrome/browser/ChromeBrowserProvider.java',
             'android/java/src/org/chromium/chrome/browser/ChromeHttpAuthHandler.java',

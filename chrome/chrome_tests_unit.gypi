@@ -2110,10 +2110,6 @@
             # Sync setup uses native ui.
             'browser/ui/webui/sync_setup_handler_unittest.cc',
 
-            # about:flags is unsupported.
-            'browser/about_flags_unittest.cc',
-
-            # There's no Browser/BrowserList on Android.
             'browser/browser_commands_unittest.cc',
             'browser/download/download_shelf_unittest.cc',
             'browser/managed_mode/managed_mode_unittest.cc',

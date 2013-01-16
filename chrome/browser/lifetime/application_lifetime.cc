@@ -27,6 +27,10 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/lifetime/application_lifetime_android.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_application_mac.h"
 #endif
@@ -86,14 +90,17 @@ void AttemptExitInternal() {
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
 
-#if !defined(OS_MACOSX)
-  // On most platforms, closing all windows causes the application to exit.
-  CloseAllBrowsers();
-#else
+#if defined(OS_ANDROID)
+  // Tell the Java code to finish() the Activity.
+  TerminateAndroid();
+#elif defined(OS_MACOSX)
   // On the Mac, the application continues to run once all windows are closed.
   // Terminate will result in a CloseAllBrowsers() call, and once (and if)
   // that is done, will cause the application to exit cleanly.
   chrome_browser_application_mac::Terminate();
+#else
+  // On most platforms, closing all windows causes the application to exit.
+  CloseAllBrowsers();
 #endif
 }
 
@@ -236,6 +243,8 @@ void AttemptUserExit() {
 #endif
 }
 
+// The Android implementation is in application_lifetime_android.cc
+#if !defined(OS_ANDROID)
 void AttemptRestart() {
   // TODO(beng): Can this use ProfileManager::GetLoadedProfiles instead?
   BrowserList::const_iterator it;
@@ -256,6 +265,7 @@ void AttemptRestart() {
   AttemptExit();
 #endif
 }
+#endif
 
 #if defined(OS_WIN)
 void AttemptRestartWithModeSwitch() {
@@ -272,8 +282,11 @@ void AttemptExit() {
   // don't notify users of crashes beyond this point.
   // Note that MarkAsCleanShutdown() does not set UMA's exit cleanly bit
   // so crashes during shutdown are still reported in UMA.
+#if !defined(OS_ANDROID)
+  // Android doesn't use Browser.
   if (AreAllBrowsersCloseable())
     MarkAsCleanShutdown();
+#endif
   AttemptExitInternal();
 }
 

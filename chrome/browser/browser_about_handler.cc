@@ -28,6 +28,7 @@ const char* const kPaths[] = {
   chrome::kChromeUICrashesHost,
   chrome::kChromeUICreditsHost,
   chrome::kChromeUIDNSHost,
+  chrome::kChromeUIFlagsHost,
   chrome::kChromeUIGpuInternalsHost,
   chrome::kChromeUIHistoryHost,
   chrome::kChromeUIIPCHost,
@@ -51,8 +52,6 @@ const char* const kPaths[] = {
 #else
   chrome::kChromeUIBookmarksHost,
   chrome::kChromeUIDownloadsHost,
-  // TODO(dfalcantara): Enable after http://crbug.com/143146 is fixed.
-  chrome::kChromeUIFlagsHost,
   chrome::kChromeUIFlashHost,
   chrome::kChromeUIInspectHost,
   chrome::kChromeUIPluginsHost,
