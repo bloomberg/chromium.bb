@@ -1113,7 +1113,8 @@ class Strace(ApiBase):
           r'^([^\(]+)(.*) \<unfinished \.\.\.\ exit status \d+>$')
       # An interrupted function call the hard way. Usually observed with futex()
       # on ubuntu 12.04.
-      RE_INTERRUPTED_HARD = re.compile(r'^([^\(]+)\([A-Z0-9a-fx\,\_\|\{\} ]*$')
+      RE_INTERRUPTED_HARD = re.compile(r'^([^\(]+)\('
+                                       '[A-Z0-9a-z:\,\_\|\{\}\(\)\>\< ]*$')
       # A resumed function call.
       RE_RESUMED = re.compile(r'^<\.\.\. ([^ ]+) resumed> (.+)$')
       # A process received a signal.

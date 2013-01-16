@@ -532,6 +532,24 @@ if sys.platform != 'win32':
       }
       self.assertEquals(expected, self._load_context(lines, ROOT_DIR))
 
+    def test_futex_missing_in_partial_action_with_no_process(self):
+      # That's how futex() calls roll even more (again).
+      lines = [
+          (self._ROOT_PID, 'futex(0x7134840, FUTEX_WAIT_PRIVATE, 2, '
+           'NULL <ptrace(SYSCALL):No such process>'),
+      ]
+      expected = {
+         'root': {
+           'children': [],
+           'command': None,
+           'executable': None,
+           'files': [],
+           'initial_cwd': unicode(ROOT_DIR),
+           'pid': self._ROOT_PID,
+         },
+       }
+      self.assertEquals(expected, self._load_context(lines, ROOT_DIR))
+
     def test_open(self):
       lines = [
         (self._ROOT_PID,
