@@ -123,7 +123,7 @@ bool Session::SendPacketOnly(Packet *pkt) {
   }
 
   if (GetFlags() & DEBUG_SEND) {
-    NaClLog(LOG_INFO, "TX %s\n", outstr.str().c_str());
+    NaClLog(1, "TX %s\n", outstr.str().c_str());
   }
 
   // Send XSUM as two nible 8bit value preceeded by '#'
@@ -187,7 +187,7 @@ bool Session::GetPacket(Packet *pkt) {
   NibbleToInt(ch, &val);
   fin_xsum |= val;
 
-  if (GetFlags() & DEBUG_RECV) NaClLog(LOG_INFO, "RX %s\n", in.c_str());
+  if (GetFlags() & DEBUG_RECV) NaClLog(1, "RX %s\n", in.c_str());
 
   pkt->ParseSequence();
 

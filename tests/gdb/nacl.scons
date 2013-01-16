@@ -37,7 +37,7 @@ if env.Bit('tests_use_irt'):
 if not env.Bit('nacl_static_link'):
   test_args += ['--ld_so', env.File('${NACL_SDK_LIB}/runnable-ld.so'),
                 '--library_path', env['NACL_SDK_LIB']]
-test_args += ['--'] + env.AddBootstrap(env.GetSelLdr(), [])
+test_args += ['--'] + env.AddBootstrap(env.GetSelLdr(), ['-v'])
 
 extra_deps = [env.File('gdb_test.py')]
 
