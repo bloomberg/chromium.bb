@@ -41,10 +41,10 @@ ExtensionActivityUI::ExtensionActivityUI(content::WebUI* web_ui)
   // Resources.
   source->add_resource_path("extension_activity.js", IDR_EXTENSION_ACTIVITY_JS);
   source->set_default_resource(IDR_EXTENSION_ACTIVITY_HTML);
-  profile_ = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile_, source);
-  ChromeURLDataManager::AddDataSource(
-      profile_, new SharedResourcesDataSource());
+
+  Profile* profile = Profile::FromWebUI(web_ui);
+  ChromeURLDataManager::AddDataSourceImpl(profile, source);
+  ChromeURLDataManager::AddDataSource(profile, new SharedResourcesDataSource());
 
   // Callback handlers.
   web_ui->RegisterMessageCallback("requestExtensionData",
@@ -54,8 +54,7 @@ ExtensionActivityUI::ExtensionActivityUI(content::WebUI* web_ui)
 
 ExtensionActivityUI::~ExtensionActivityUI() {
   if (extension_)
-    extensions::ActivityLog::GetInstance(profile_)->RemoveObserver(
-        extension_, this);
+    extensions::ActivityLog::GetInstance()->RemoveObserver(extension_, this);
 }
 
 void ExtensionActivityUI::HandleRequestExtensionData(
@@ -66,7 +65,8 @@ void ExtensionActivityUI::HandleRequestExtensionData(
   if (!args->GetString(0, &extension_id))
     return;
 
-  ExtensionService* extension_service = profile_->GetExtensionService();
+  ExtensionService* extension_service = Profile::FromWebUI(web_ui())->
+      GetExtensionService();
   extension_ = extension_service->GetExtensionById(extension_id, false);
   if (!extension_)
     return;
@@ -90,15 +90,15 @@ void ExtensionActivityUI::HandleRequestExtensionData(
   web_ui()->CallJavascriptFunction("extension_activity.handleExtensionData",
                                    result);
 
-  extensions::ActivityLog::GetInstance(profile_)->AddObserver(extension_, this);
+  extensions::ActivityLog::GetInstance()->AddObserver(extension_, this);
 }
 
 void ExtensionActivityUI::OnExtensionActivity(
       const extensions::Extension* extension,
       extensions::ActivityLog::Activity activity,
-      const std::string& message) {
+      const std::vector<std::string>& messages) {
   scoped_ptr<ListValue> messages_list(new ListValue());
-  messages_list->AppendString(message);
+  messages_list->AppendStrings(messages);
 
   DictionaryValue result;
   result.SetInteger("activity", activity);

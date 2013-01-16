@@ -158,8 +158,6 @@ const FilePath::CharType kCRLSetFilename[] =
     FPL("Certificate Revocation Lists");
 const FilePath::CharType kCustomDictionaryFileName[] =
     FPL("Custom Dictionary.txt");
-const FilePath::CharType kExtensionActivityLogFilename[] =
-    FPL("Extension Activity");
 const FilePath::CharType kExtensionsCookieFilename[] = FPL("Extension Cookies");
 const FilePath::CharType kFaviconsFilename[] = FPL("Favicons");
 const FilePath::CharType kFirstRunSentinel[] = FPL("First Run");
