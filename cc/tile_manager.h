@@ -98,6 +98,7 @@ class CC_EXPORT TileManager {
       Tile* tile, WhichTree tree, const TilePriority& new_priority);
 
  private:
+  void SortTiles();
   void AssignGpuMemoryToTiles();
   void FreeResourcesForTile(Tile* tile);
   void ScheduleManageTiles();

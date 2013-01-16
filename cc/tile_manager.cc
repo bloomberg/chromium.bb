@@ -166,6 +166,13 @@ public:
   }
 };
 
+void TileManager::SortTiles() {
+  TRACE_EVENT0("cc", "TileManager::SortTiles");
+
+  // Sort by bin, resolution and time until needed.
+  std::sort(tiles_.begin(), tiles_.end(), BinComparator());
+}
+
 void TileManager::ManageTiles() {
   TRACE_EVENT0("cc", "TileManager::ManageTiles");
   manage_tiles_pending_ = false;
@@ -220,8 +227,7 @@ void TileManager::ManageTiles() {
     mts.bin = bin_map[mts.bin];
   }
 
-  // Sort by bin.
-  std::sort(tiles_.begin(), tiles_.end(), BinComparator());
+  SortTiles();
 
   // Assign gpu memory and determine what tiles need to be rasterized.
   AssignGpuMemoryToTiles();
