@@ -1,4 +1,4 @@
-# Copyright 2012 The Chromium Authors. All rights reserved.
+ # Copyright 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
@@ -643,6 +643,8 @@
         'browser/download/download_status_updater_unittest.cc',
         'browser/enumerate_modules_model_unittest_win.cc',
         'browser/extensions/active_tab_unittest.cc',
+        'browser/extensions/activity_database_unittest.cc',
+        'browser/extensions/activity_log_unittest.cc',
         'browser/extensions/admin_policy_unittest.cc',
         'browser/extensions/api/alarms/alarms_api_unittest.cc',
         'browser/extensions/api/api_resource_manager_unittest.cc',
@@ -1736,6 +1738,8 @@
         }],
         ['enable_extensions==0', {
           'sources/': [
+            ['exclude', '^browser/extensions/activity_database_unittest.cc'],
+            ['exclude', '^browser/extensions/activity_log_unittest.cc'],
             ['exclude', '^browser/extensions/api/'],
             ['exclude', '^browser/sync/glue/chrome_extensions_activity_monitor_unittest.cc'],
             ['exclude', '^common/extensions/api/'],

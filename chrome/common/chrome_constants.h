@@ -61,6 +61,7 @@ extern const FilePath::CharType kCacheDirname[];
 extern const FilePath::CharType kCookieFilename[];
 extern const FilePath::CharType kCRLSetFilename[];
 extern const FilePath::CharType kCustomDictionaryFileName[];
+extern const FilePath::CharType kExtensionActivityLogFilename[];
 extern const FilePath::CharType kExtensionsCookieFilename[];
 extern const FilePath::CharType kFaviconsFilename[];
 extern const FilePath::CharType kFirstRunSentinel[];

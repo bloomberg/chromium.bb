@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/bind.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
@@ -27,6 +28,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "ipc/ipc_message.h"
@@ -45,40 +47,55 @@ const char kAccessDenied[] = "access denied";
 const char kQuotaExceeded[] = "quota exceeded";
 
 void LogSuccess(const Extension* extension,
-                const ExtensionHostMsg_Request_Params& params) {
-  extensions::ActivityLog* activity_log =
-      extensions::ActivityLog::GetInstance();
-  if (activity_log->HasObservers(extension)) {
-    std::string call_signature = params.name + "(";
-    ListValue::const_iterator it = params.arguments.begin();
-    for (; it != params.arguments.end(); ++it) {
-      std::string arg;
-      JSONStringValueSerializer serializer(&arg);
-      if (serializer.SerializeAndOmitBinaryValues(**it)) {
-        if (it != params.arguments.begin())
-          call_signature += ", ";
-        call_signature += arg;
-      }
-    }
-    call_signature += ")";
-
-    activity_log->Log(extension,
-                      extensions::ActivityLog::ACTIVITY_EXTENSION_API_CALL,
-                      call_signature);
+                const std::string& api_name,
+                scoped_ptr<ListValue> args,
+                Profile* profile) {
+  // The ActivityLog can only be accessed from the main (UI) thread.  If we're
+  // running on the wrong thread, re-dispatch from the main thread.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(&LogSuccess,
+                                       extension,
+                                       api_name,
+                                       Passed(args.Pass()),
+                                       profile));
+  } else {
+    extensions::ActivityLog* activity_log =
+        extensions::ActivityLog::GetInstance(profile);
+    if (activity_log->HasObservers(extension))
+      activity_log->LogAPIAction(extension, api_name, args.get(), "");
   }
 }
 
 void LogFailure(const Extension* extension,
-                const std::string& func_name,
-                const char* reason) {
-  extensions::ActivityLog* activity_log =
-      extensions::ActivityLog::GetInstance();
-  if (activity_log->HasObservers(extension)) {
-    activity_log->Log(extension,
-                      extensions::ActivityLog::ACTIVITY_EXTENSION_API_BLOCK,
-                      func_name + ": " + reason);
+                const std::string& api_name,
+                scoped_ptr<ListValue> args,
+                const char* reason,
+                Profile* profile) {
+  // The ActivityLog can only be accessed from the main (UI) thread.  If we're
+  // running on the wrong thread, re-dispatch from the main thread.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(&LogFailure,
+                                       extension,
+                                       api_name,
+                                       Passed(args.Pass()),
+                                       reason,
+                                       profile));
+  } else {
+    extensions::ActivityLog* activity_log =
+        extensions::ActivityLog::GetInstance(profile);
+    if (activity_log->HasObservers(extension))
+      activity_log->LogBlockedAction(extension,
+                                     api_name,
+                                     args.get(),
+                                     reason,
+                                     "");
   }
 }
+
 
 // Separate copy of ExtensionAPI used for IO thread extension functions. We need
 // this because ExtensionAPI has mutable data. It should be possible to remove
@@ -129,15 +146,21 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
     const ExtensionHostMsg_Request_Params& params) {
   const Extension* extension =
       extension_info_map->extensions().GetByID(params.extension_id);
-
+  Profile* profile_cast = static_cast<Profile*>(profile);
   scoped_refptr<ExtensionFunction> function(
       CreateExtensionFunction(params, extension, render_process_id,
                               extension_info_map->process_map(),
                               g_global_io_data.Get().api.get(),
                               profile,
                               ipc_sender, NULL, routing_id));
+  scoped_ptr<ListValue> args(params.arguments.DeepCopy());
+
   if (!function) {
-    LogFailure(extension, params.name, kAccessDenied);
+    LogFailure(extension,
+               params.name,
+               args.Pass(),
+               kAccessDenied,
+               profile_cast);
     return;
   }
 
@@ -153,7 +176,11 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
       extension_info_map->IsIncognitoEnabled(extension->id()));
 
   if (!CheckPermissions(function, extension, params, ipc_sender, routing_id)) {
-    LogFailure(extension, params.name, kAccessDenied);
+    LogFailure(extension,
+               params.name,
+               args.Pass(),
+               kAccessDenied,
+               profile_cast);
     return;
   }
 
@@ -163,11 +190,18 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
                                               &params.arguments,
                                               base::TimeTicks::Now());
   if (violation_error.empty()) {
+    LogSuccess(extension,
+               params.name,
+               args.Pass(),
+               profile_cast);
     function->Run();
-    LogSuccess(extension, params);
   } else {
+    LogFailure(extension,
+               params.name,
+               args.Pass(),
+               kQuotaExceeded,
+               profile_cast);
     function->OnQuotaExceeded(violation_error);
-    LogFailure(extension, params.name, kQuotaExceeded);
   }
 }
 
@@ -204,8 +238,14 @@ void ExtensionFunctionDispatcher::Dispatch(
                               extensions::ExtensionAPI::GetSharedInstance(),
                               profile(), render_view_host, render_view_host,
                               render_view_host->GetRoutingID()));
+  scoped_ptr<ListValue> args(params.arguments.DeepCopy());
+
   if (!function) {
-    LogFailure(extension, params.name, kAccessDenied);
+    LogFailure(extension,
+               params.name,
+               args.Pass(),
+               kAccessDenied,
+               profile());
     return;
   }
 
@@ -221,7 +261,11 @@ void ExtensionFunctionDispatcher::Dispatch(
 
   if (!CheckPermissions(function, extension, params, render_view_host,
                         render_view_host->GetRoutingID())) {
-    LogFailure(extension, params.name, kAccessDenied);
+    LogFailure(extension,
+               params.name,
+               args.Pass(),
+               kAccessDenied,
+               profile());
     return;
   }
 
@@ -233,12 +277,15 @@ void ExtensionFunctionDispatcher::Dispatch(
   if (violation_error.empty()) {
     // See crbug.com/39178.
     ExternalProtocolHandler::PermitLaunchUrl();
-
+    LogSuccess(extension, params.name, args.Pass(), profile());
     function->Run();
-    LogSuccess(extension, params);
   } else {
+    LogFailure(extension,
+               params.name,
+               args.Pass(),
+               kQuotaExceeded,
+               profile());
     function->OnQuotaExceeded(violation_error);
-    LogFailure(extension, params.name, kQuotaExceeded);
   }
 
   // Note: do not access |this| after this point. We may have been deleted
