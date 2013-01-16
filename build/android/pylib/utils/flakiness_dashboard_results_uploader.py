@@ -10,6 +10,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import xml
+
 
 # Include path when ran from a Chromium checkout.
 sys.path.append(
