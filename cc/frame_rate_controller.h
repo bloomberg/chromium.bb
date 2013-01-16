@@ -29,6 +29,10 @@ class FrameRateControllerTimeSourceAdapter;
 
 class CC_EXPORT FrameRateController {
 public:
+    enum {
+        kDefaultMaxFramesPending = 2
+    };
+
     explicit FrameRateController(scoped_refptr<TimeSource>);
     // Alternate form of FrameRateController with unthrottled frame-rate.
     explicit FrameRateController(Thread*);
@@ -48,6 +52,7 @@ public:
     void didFinishFrame();
     void didAbortAllPendingFrames();
     void setMaxFramesPending(int); // 0 for unlimited.
+    int maxFramesPending() const { return m_maxFramesPending; }
 
     // This returns null for unthrottled frame-rate.
     base::TimeTicks nextTickTime();

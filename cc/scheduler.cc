@@ -99,6 +99,11 @@ void Scheduler::setMaxFramesPending(int maxFramesPending)
     m_frameRateController->setMaxFramesPending(maxFramesPending);
 }
 
+int Scheduler::maxFramesPending() const
+{
+    return m_frameRateController->maxFramesPending();
+}
+
 void Scheduler::setSwapBuffersCompleteSupported(bool supported)
 {
     m_frameRateController->setSwapBuffersCompleteSupported(supported);
