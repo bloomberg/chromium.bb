@@ -204,8 +204,8 @@ GLES2Implementation::~GLES2Implementation() {
   // If it's destroyed it will use this GLES2Implemenation.
   share_group_->SetGLES2ImplementationForDestruction(this);
   share_group_ = NULL;
-  // Finally, finish commands and free shared memory buffers.
-  FreeEverything();
+  // Make sure the commands make it the service.
+  Finish();
 }
 
 GLES2CmdHelper* GLES2Implementation::helper() const {
