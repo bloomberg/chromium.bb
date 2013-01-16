@@ -543,6 +543,8 @@
         'process_util_unittest_mac.mm',
         'profiler/tracked_time_unittest.cc',
         'rand_util_unittest.cc',
+        'safe_numerics_unittest.cc',
+        'safe_numerics_unittest.nc',
         'scoped_native_library_unittest.cc',
         'scoped_observer.h',
         'security_unittest.cc',
