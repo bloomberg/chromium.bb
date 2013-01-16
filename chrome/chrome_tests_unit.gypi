@@ -1039,7 +1039,6 @@
         'browser/shell_integration_win_unittest.cc',
         'browser/signin/oauth2_token_service_request_unittest.cc',
         'browser/signin/oauth2_token_service_unittest.cc',
-        'browser/signin/signin_global_error_unittest.cc',
         'browser/signin/signin_manager_fake.cc',
         'browser/signin/signin_manager_fake.h',
         'browser/signin/signin_manager_unittest.cc',

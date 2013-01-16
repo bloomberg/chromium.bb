@@ -6,13 +6,11 @@
 
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/signin/oauth2_token_service.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service_factory.h"
 
 OAuth2TokenServiceFactory::OAuth2TokenServiceFactory()
     : ProfileKeyedServiceFactory("OAuth2TokenService",
                                  ProfileDependencyManager::GetInstance()) {
-  DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(TokenServiceFactory::GetInstance());
 }
 

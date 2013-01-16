@@ -121,10 +121,7 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
   }
 }
 
-ProfileSyncServiceHarness::~ProfileSyncServiceHarness() {
-  if (service_->HasObserver(this))
-    service_->RemoveObserver(this);
-}
+ProfileSyncServiceHarness::~ProfileSyncServiceHarness() {}
 
 // static
 ProfileSyncServiceHarness* ProfileSyncServiceHarness::CreateAndAttach(

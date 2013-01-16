@@ -15,8 +15,6 @@
 #include "base/timer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -130,9 +128,6 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
 
   const OAuth2TokenService::ScopeSet& GetScopeSet() const;
   const std::string& GetRefreshToken() const;
-
-  // The error result from this fetcher.
-  const GoogleServiceAuthError& error() const { return error_; }
 
  protected:
    // OAuth2AccessTokenConsumer
@@ -321,9 +316,7 @@ OAuth2TokenService::Consumer::Consumer() {
 OAuth2TokenService::Consumer::~Consumer() {
 }
 
-OAuth2TokenService::OAuth2TokenService()
-    : profile_(NULL),
-      last_auth_error_(GoogleServiceAuthError::NONE) {
+OAuth2TokenService::OAuth2TokenService() : profile_(NULL) {
 }
 
 OAuth2TokenService::~OAuth2TokenService() {
@@ -347,17 +340,7 @@ void OAuth2TokenService::Initialize(Profile* profile) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_AVAILABLE,
                  token_service_source);
-  SigninManagerFactory::GetForProfile(profile_)->signin_global_error()->
-      AddProvider(this);
 }
-
-void OAuth2TokenService::Shutdown() {
-  if (profile_) {
-    SigninManagerFactory::GetForProfile(profile_)->signin_global_error()->
-        RemoveProvider(this);
-  }
-}
-
 
 // static
 void OAuth2TokenService::InformConsumer(
@@ -429,10 +412,6 @@ scoped_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
 
 void OAuth2TokenService::OnFetchComplete(Fetcher* fetcher) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  // Update the auth error state so auth errors are appropriately communicated
-  // to the user.
-  UpdateAuthError(fetcher->error());
 
   // Note |fetcher| is recorded in |pending_fetcher_| mapped to its refresh
   // token and scope set. This is guaranteed as follows; here a Fetcher is said
@@ -520,23 +499,4 @@ void OAuth2TokenService::Observe(int type,
   // OAuth2 access tokens. If this token either changes or is cleared, any
   // available tokens must be invalidated.
   token_cache_.clear();
-  UpdateAuthError(GoogleServiceAuthError::None());
-}
-
-void OAuth2TokenService::UpdateAuthError(const GoogleServiceAuthError& error) {
-  // Do not report connection errors as these are not actually auth errors.
-  // We also want to avoid masking a "real" auth error just because we
-  // subsequently get a transient network error.
-  if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED)
-    return;
-
-  if (error.state() != last_auth_error_.state()) {
-    last_auth_error_ = error;
-    SigninManagerFactory::GetForProfile(profile_)->signin_global_error()->
-        AuthStatusChanged();
-  }
-}
-
-GoogleServiceAuthError OAuth2TokenService::GetAuthStatus() const {
-  return last_auth_error_;
 }

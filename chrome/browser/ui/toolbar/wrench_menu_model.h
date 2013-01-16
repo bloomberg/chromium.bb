@@ -16,7 +16,6 @@
 
 class BookmarkSubMenuModel;
 class Browser;
-class GlobalError;
 class RecentTabsSubMenuModel;
 class TabStripModel;
 
@@ -148,11 +147,7 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
   // |new_menu| should be set to true.
   void CreateZoomMenu(bool new_menu);
 
-  // Various GlobalError objects share a single menu item. This helper routine
-  // returns the GlobalError object that is currently displaying a message in
-  // that item, otherwise returns NULL if we should display one of the default
-  // messages.
-  GlobalError* GetActiveSignedInServiceError() const;
+  string16 GetSyncMenuLabel() const;
 
   // Models for the special menu items with buttons.
   scoped_ptr<ui::ButtonMenuItemModel> edit_menu_item_model_;

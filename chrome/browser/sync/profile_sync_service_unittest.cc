@@ -250,7 +250,6 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
                                      harness_.service.get()));
 
   harness_.service->Initialize();
-  harness_.service->Shutdown();
   harness_.service.reset();
 }
 

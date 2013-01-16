@@ -40,6 +40,10 @@ class SyncGlobalError : public GlobalError,
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged() OVERRIDE;
 
+  // For non-ChromeOS we customize the "Sign in to sync" wrench menu item
+  // instead of adding a new wrench menu item at the bottom.
+  bool HasCustomizedSyncMenuItem();
+
  private:
   string16 bubble_accept_label_;
   string16 bubble_message_;

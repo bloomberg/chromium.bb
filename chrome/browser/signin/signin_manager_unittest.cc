@@ -61,7 +61,6 @@ class SigninManagerTest : public TokenServiceTestHarness {
   virtual void TearDown() OVERRIDE {
     // Destroy the SigninManager here, because it relies on profile_ which is
     // freed in the base class.
-    manager_->Shutdown();
     manager_.reset(NULL);
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
     prefs_.reset(NULL);
@@ -209,7 +208,6 @@ TEST_F(SigninManagerTest, SignInClientLogin) {
   EXPECT_EQ(0U, google_login_failure_.size());
 
   // Should persist across resets.
-  manager_->Shutdown();
   manager_.reset(new SigninManager());
   manager_->Initialize(profile_.get());
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
@@ -279,7 +277,6 @@ TEST_F(SigninManagerTest, SignInWithCredentials) {
   EXPECT_EQ(0U, google_login_failure_.size());
 
   // Should persist across resets.
-  manager_->Shutdown();
   manager_.reset(new SigninManager());
   manager_->Initialize(profile_.get());
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
@@ -343,7 +340,6 @@ TEST_F(SigninManagerTest, ClearTransientSigninData) {
      profile_->GetPrefs()->GetString(prefs::kGoogleServicesUsername).empty());
 
   // On reset it should be regenerated.
-  manager_->Shutdown();
   manager_.reset(new SigninManager());
   manager_->Initialize(profile_.get());
 
@@ -362,7 +358,6 @@ TEST_F(SigninManagerTest, SignOutClientLogin) {
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
   EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(prefs::kIsGooglePlusUser));
   // Should not be persisted anymore
-  manager_->Shutdown();
   manager_.reset(new SigninManager());
   manager_->Initialize(profile_.get());
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
@@ -380,7 +375,6 @@ TEST_F(SigninManagerTest, SignInFailureClientLogin) {
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   // Should not be persisted
-  manager_->Shutdown();
   manager_.reset(new SigninManager());
   manager_->Initialize(profile_.get());
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());

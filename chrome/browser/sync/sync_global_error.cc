@@ -21,6 +21,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+typedef GoogleServiceAuthError AuthError;
+
 SyncGlobalError::SyncGlobalError(ProfileSyncService* service,
                                  SigninManager* signin)
     : service_(service),
@@ -49,7 +51,7 @@ bool SyncGlobalError::HasMenuItem() {
 }
 
 int SyncGlobalError::MenuItemCommandID() {
-  return IDC_SHOW_SIGNIN_ERROR;
+  return IDC_SHOW_SYNC_ERROR;
 }
 
 string16 SyncGlobalError::MenuItemLabel() {
@@ -57,6 +59,14 @@ string16 SyncGlobalError::MenuItemLabel() {
 }
 
 void SyncGlobalError::ExecuteMenuItem(Browser* browser) {
+#if defined(OS_CHROMEOS)
+  if (service_->GetAuthError().state() != AuthError::NONE) {
+    DLOG(INFO) << "Signing out the user to fix a sync error.";
+    // TODO(beng): seems like this could just call browser::AttemptUserExit().
+    chrome::ExecuteCommand(browser, IDC_EXIT);
+    return;
+  }
+#endif
   LoginUIService* login_ui = LoginUIServiceFactory::GetForProfile(
       service_->profile());
   if (login_ui->current_login_ui()) {
@@ -124,4 +134,8 @@ void SyncGlobalError::OnStateChanged() {
           profile)->NotifyErrorsChanged(this);
     }
   }
+}
+
+bool SyncGlobalError::HasCustomizedSyncMenuItem() {
+  return !menu_label_.empty();
 }

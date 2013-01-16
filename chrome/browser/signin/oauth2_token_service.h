@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
-#include "chrome/browser/signin/signin_global_error.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -47,7 +46,6 @@ class Profile;
 // Note the request should be started from the UI thread. To start a request
 // from other thread, please use OAuth2TokenServiceRequest.
 class OAuth2TokenService : public content::NotificationObserver,
-                           public SigninGlobalError::AuthStatusProvider,
                            public ProfileKeyedService {
  public:
   // Class representing a request that fetches an OAuth2 access token.
@@ -82,9 +80,6 @@ class OAuth2TokenService : public content::NotificationObserver,
   // Initializes this token service with the profile.
   void Initialize(Profile* profile);
 
-  // ProfileKeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
-
   // Starts a request for an OAuth2 access token using the OAuth2 refresh token
   // maintained by TokenService. The caller owns the returned Request. |scopes|
   // is the set of scopes to get an access token for, |consumer| is the object
@@ -103,9 +98,6 @@ class OAuth2TokenService : public content::NotificationObserver,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // SigninGlobalError::AuthStatusProvider implementation.
-  virtual GoogleServiceAuthError GetAuthStatus() const OVERRIDE;
 
  private:
   // Class that fetches an OAuth2 access token for a given set of scopes and
@@ -143,15 +135,8 @@ class OAuth2TokenService : public content::NotificationObserver,
   // Called when |fetcher| finishes fetching.
   void OnFetchComplete(Fetcher* fetcher);
 
-  // Updates the internal cache of the result from the most-recently-completed
-  // auth request (used for reporting errors to the user).
-  void UpdateAuthError(const GoogleServiceAuthError& error);
-
   // The profile with which this instance was initialized, or NULL.
   Profile* profile_;
-
-  // The auth status from the most-recently-completed request.
-  GoogleServiceAuthError last_auth_error_;
 
   // Getter to use for fetchers.
   scoped_refptr<net::URLRequestContextGetter> getter_;

@@ -36,7 +36,6 @@ class CookieSettings;
 class GaiaAuthFetcher;
 class Profile;
 class PrefService;
-class SigninGlobalError;
 
 // Details for the Notification type GOOGLE_SIGNIN_SUCCESSFUL.
 // A listener might use this to make note of a username / password
@@ -166,22 +165,10 @@ class SigninManager : public GaiaAuthConsumer,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  SigninGlobalError* signin_global_error() {
-    return signin_global_error_.get();
-  }
-
-  // ProfileKeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
-
  protected:
   // Weak pointer to parent profile (protected so FakeSigninManager can access
   // it).
   Profile* profile_;
-
-  // Used to show auth errors in the wrench menu. The SigninGlobalError is
-  // different than most GlobalErrors in that its lifetime is controlled by
-  // SigninManager (so we can expose a reference for use in the wrench menu).
-  scoped_ptr<SigninGlobalError> signin_global_error_;
 
  private:
   enum SigninType {
@@ -262,7 +249,7 @@ class SigninManager : public GaiaAuthConsumer,
   // not need to mint new ones.
   ClientOAuthResult temp_oauth_login_tokens_;
 
-  // The list of SigninDiagnosticObservers.
+  // The list of SigninDiagnosticObservers
   ObserverList<signin_internals_util::SigninDiagnosticsObserver>
       signin_diagnostics_observers_;
 

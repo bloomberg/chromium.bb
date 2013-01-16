@@ -8,14 +8,12 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/token_service_factory.h"
-#include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/pref_names.h"
 
 SigninManagerFactory::SigninManagerFactory()
     : ProfileKeyedServiceFactory("SigninManager",
                                  ProfileDependencyManager::GetInstance()) {
   DependsOn(TokenServiceFactory::GetInstance());
-  DependsOn(GlobalErrorServiceFactory::GetInstance());
 }
 
 SigninManagerFactory::~SigninManagerFactory() {}
