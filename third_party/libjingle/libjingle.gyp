@@ -149,6 +149,8 @@
         ],
       }, {
         'defines': [
+          'SSL_USE_NSS',
+          'HAVE_NSS_SSL_H',
           'SSL_USE_NSS_RNG',
         ],
         'conditions': [
@@ -160,6 +162,7 @@
           }],
           ['OS == "mac" or OS == "ios" or OS == "win"', {
             'dependencies': [
+              '<(DEPTH)/net/third_party/nss/ssl.gyp:libssl',
               '<(DEPTH)/third_party/nss/nss.gyp:nspr',
               '<(DEPTH)/third_party/nss/nss.gyp:nss',
             ],
@@ -334,6 +337,8 @@
         '<(libjingle_source)/talk/base/socketstream.h',
         '<(libjingle_source)/talk/base/ssladapter.cc',
         '<(libjingle_source)/talk/base/ssladapter.h',
+        '<(libjingle_source)/talk/base/sslidentity.cc',
+        '<(libjingle_source)/talk/base/sslidentity.h',
         '<(libjingle_source)/talk/base/sslsocketfactory.cc',
         '<(libjingle_source)/talk/base/sslsocketfactory.h',
         '<(libjingle_source)/talk/base/sslstreamadapter.cc',

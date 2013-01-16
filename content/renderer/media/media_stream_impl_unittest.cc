@@ -112,8 +112,8 @@ class MediaStreamImplTest : public ::testing::Test {
     if (video)
       EXPECT_EQ(1u, extra_data->local_stream()->video_tracks()->count());
     if (audio && video) {
-      EXPECT_NE(extra_data->local_stream()->audio_tracks()->at(0)->label(),
-                extra_data->local_stream()->video_tracks()->at(0)->label());
+      EXPECT_NE(extra_data->local_stream()->audio_tracks()->at(0)->id(),
+                extra_data->local_stream()->video_tracks()->at(0)->id());
     }
     return desc;
   }

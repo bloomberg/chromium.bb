@@ -105,11 +105,6 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
                            webrtc::PeerConnectionObserver* observer);
 
   // Creates a libjingle representation of a Session description. Used by a
-  // PeerConnectionHandlerJsep instance.
-  virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
-      const std::string& sdp);
-
-  // Creates a libjingle representation of a Session description. Used by a
   // RTCPeerConnectionHandler instance.
   virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
       const std::string& type,

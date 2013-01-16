@@ -365,9 +365,9 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithBadSelector) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, OnStateChange) {
-  // Ready states.
+  // Signaling states.
   webrtc::PeerConnectionObserver::StateType state =
-      webrtc::PeerConnectionObserver::kReadyState;
+      webrtc::PeerConnectionObserver::kSignalingState;
   mock_peer_connection_->SetReadyState(
       webrtc::PeerConnectionInterface::kHaveRemoteOffer);
   pc_handler_->OnStateChange(state);

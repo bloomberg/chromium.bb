@@ -29,9 +29,8 @@ template <class TrackList>
 static webrtc::MediaStreamTrackInterface* GetLocalTrack(
     const std::string& source_id,
     TrackList* tracks) {
-  // TODO(hta): Look at MediaStreamTrackInterface - lookup by ID belongs below.
   for (size_t i = 0; i < tracks->count(); ++i) {
-    if (tracks->at(i)->label() == source_id)
+    if (tracks->at(i)->id() == source_id)
       return tracks->at(i);
   }
   return NULL;
@@ -81,9 +80,9 @@ PeerConnectionHandlerBase::CreateWebKitStreamDescriptor(
     webrtc::AudioTrackInterface* audio_track = audio_tracks->at(i);
     DCHECK(audio_track);
     audio_source_vector[i].initialize(
-        UTF8ToUTF16(audio_track->label()),
+        UTF8ToUTF16(audio_track->id()),
         WebKit::WebMediaStreamSource::TypeAudio,
-        UTF8ToUTF16(audio_track->label()));
+        UTF8ToUTF16(audio_track->id()));
   }
 
   // Add video tracks.
@@ -91,9 +90,9 @@ PeerConnectionHandlerBase::CreateWebKitStreamDescriptor(
     webrtc::VideoTrackInterface* video_track = video_tracks->at(i);
     DCHECK(video_track);
     video_source_vector[i].initialize(
-        UTF8ToUTF16(video_track->label()),
+        UTF8ToUTF16(video_track->id()),
         WebKit::WebMediaStreamSource::TypeVideo,
-        UTF8ToUTF16(video_track->label()));
+        UTF8ToUTF16(video_track->id()));
   }
   WebKit::WebMediaStreamDescriptor descriptor;
   descriptor.initialize(UTF8ToUTF16(stream->label()),

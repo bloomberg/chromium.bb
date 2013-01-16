@@ -46,7 +46,7 @@ static webrtc::MediaStreamTrackInterface* GetTrack(
     const std::string& source_id,
     TrackList* tracks) {
   for (size_t i = 0; i < tracks->count(); ++i) {
-    if (tracks->at(i)->label() == source_id)
+    if (tracks->at(i)->id() == source_id)
       return tracks->at(i);
   }
   return NULL;

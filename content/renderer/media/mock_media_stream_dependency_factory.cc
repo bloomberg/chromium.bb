@@ -133,10 +133,10 @@ webrtc::MediaSourceInterface::SourceState MockVideoSource::state() const {
   return state_;
 }
 
-MockLocalVideoTrack::MockLocalVideoTrack(std::string label,
+MockLocalVideoTrack::MockLocalVideoTrack(std::string id,
                                          webrtc::VideoSourceInterface* source)
     : enabled_(false),
-      label_(label),
+      id_(id),
       source_(source) {
 }
 
@@ -160,7 +160,7 @@ std::string MockLocalVideoTrack::kind() const {
   return "";
 }
 
-std::string MockLocalVideoTrack::label() const { return label_; }
+std::string MockLocalVideoTrack::id() const { return id_; }
 
 bool MockLocalVideoTrack::enabled() const { return enabled_; }
 
@@ -196,7 +196,7 @@ std::string MockLocalAudioTrack::kind() const {
   return "";
 }
 
-std::string MockLocalAudioTrack::label() const { return label_; }
+std::string MockLocalAudioTrack::id() const { return id_; }
 
 bool MockLocalAudioTrack::enabled() const { return enabled_; }
 
@@ -357,29 +357,23 @@ MockMediaStreamDependencyFactory::CreateLocalMediaStream(
 
 scoped_refptr<webrtc::VideoTrackInterface>
 MockMediaStreamDependencyFactory::CreateLocalVideoTrack(
-    const std::string& label,
+    const std::string& id,
     webrtc::VideoSourceInterface* source) {
   DCHECK(mock_pc_factory_created_);
   scoped_refptr<webrtc::VideoTrackInterface> track(
       new talk_base::RefCountedObject<MockLocalVideoTrack>(
-          label, source));
+          id, source));
   return track;
 }
 
 scoped_refptr<webrtc::LocalAudioTrackInterface>
 MockMediaStreamDependencyFactory::CreateLocalAudioTrack(
-    const std::string& label,
+    const std::string& id,
     webrtc::AudioDeviceModule* audio_device) {
   DCHECK(mock_pc_factory_created_);
   scoped_refptr<webrtc::LocalAudioTrackInterface> track(
-      new talk_base::RefCountedObject<MockLocalAudioTrack>(label));
+      new talk_base::RefCountedObject<MockLocalAudioTrack>(id));
   return track;
-}
-
-SessionDescriptionInterface*
-MockMediaStreamDependencyFactory::CreateSessionDescription(
-    const std::string& sdp) {
-  return CreateSessionDescription ("unknown", sdp);
 }
 
 SessionDescriptionInterface*

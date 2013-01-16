@@ -117,10 +117,8 @@ MockPeerConnectionImpl::MockPeerConnectionImpl(
       remote_streams_(new talk_base::RefCountedObject<MockStreamCollection>),
       hint_audio_(false),
       hint_video_(false),
-      action_(kAnswer),
-      ice_options_(kOnlyRelay),
       sdp_mline_index_(-1),
-      ready_state_(kNew),
+      signaling_state_(kNew),
       ice_state_(kIceNew) {
 }
 
@@ -204,49 +202,11 @@ bool MockPeerConnectionImpl::GetStats(
 }
 
 MockPeerConnectionImpl::ReadyState MockPeerConnectionImpl::ready_state() {
-  return ready_state_;
+  return signaling_state_;
 }
 
-bool MockPeerConnectionImpl::StartIce(IceOptions options) {
-  ice_options_ = options;
-  return true;
-}
-
-webrtc::SessionDescriptionInterface* MockPeerConnectionImpl::CreateOffer(
-    const webrtc::MediaHints& hints) {
-  hint_audio_ = hints.has_audio();
-  hint_video_ = hints.has_video();
-  return dependency_factory_->CreateSessionDescription(kDummyOffer);
-}
-
-webrtc::SessionDescriptionInterface* MockPeerConnectionImpl::CreateAnswer(
-    const webrtc::MediaHints& hints,
-    const webrtc::SessionDescriptionInterface* offer) {
-  hint_audio_ = hints.has_audio();
-  hint_video_ = hints.has_video();
-  offer->ToString(&description_sdp_);
-  return dependency_factory_->CreateSessionDescription(description_sdp_);
-}
-
-bool MockPeerConnectionImpl::SetLocalDescription(
-    Action action,
-    webrtc::SessionDescriptionInterface* desc) {
-  action_ = action;
-  local_desc_.reset(desc);
-  return desc->ToString(&description_sdp_);
-}
-
-bool MockPeerConnectionImpl::SetRemoteDescription(
-    Action action,
-    webrtc::SessionDescriptionInterface* desc) {
-  action_ = action;
-  remote_desc_.reset(desc);
-  return desc->ToString(&description_sdp_);
-}
-
-bool MockPeerConnectionImpl::ProcessIceMessage(
-    const webrtc::IceCandidateInterface* ice_candidate) {
-  return AddIceCandidate(ice_candidate);
+MockPeerConnectionImpl::ReadyState MockPeerConnectionImpl::signaling_state() {
+  return signaling_state_;
 }
 
 const webrtc::SessionDescriptionInterface*
@@ -268,7 +228,7 @@ void MockPeerConnectionImpl::CreateOffer(
     const MediaConstraintsInterface* constraints) {
   DCHECK(observer);
   created_sessiondescription_.reset(
-      dependency_factory_->CreateSessionDescription(kDummyOffer));
+      dependency_factory_->CreateSessionDescription("unknown", kDummyOffer));
 }
 
 void MockPeerConnectionImpl::CreateAnswer(
@@ -276,7 +236,7 @@ void MockPeerConnectionImpl::CreateAnswer(
     const MediaConstraintsInterface* constraints) {
   DCHECK(observer);
   created_sessiondescription_.reset(
-      dependency_factory_->CreateSessionDescription(kDummyAnswer));
+      dependency_factory_->CreateSessionDescription("unknown", kDummyAnswer));
 }
 
 void MockPeerConnectionImpl::SetLocalDescription(

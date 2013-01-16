@@ -62,16 +62,14 @@ GetWebKitIceState(webrtc::PeerConnectionInterface::IceState ice_state) {
 static WebKit::WebRTCPeerConnectionHandlerClient::ReadyState
 GetWebKitReadyState(webrtc::PeerConnectionInterface::ReadyState ready_state) {
   switch (ready_state) {
-    case webrtc::PeerConnectionInterface::kNew:
-      return WebKit::WebRTCPeerConnectionHandlerClient::ReadyStateNew;
+    case webrtc::PeerConnectionInterface::kStable:
+      return WebKit::WebRTCPeerConnectionHandlerClient::ReadyStateActive;
 
     case webrtc::PeerConnectionInterface::kHaveLocalOffer:
     case webrtc::PeerConnectionInterface::kHaveLocalPrAnswer:
     case webrtc::PeerConnectionInterface::kHaveRemoteOffer:
     case webrtc::PeerConnectionInterface::kHaveRemotePrAnswer:
       return WebKit::WebRTCPeerConnectionHandlerClient::ReadyStateOpening;
-    case webrtc::PeerConnectionInterface::kActive:
-      return WebKit::WebRTCPeerConnectionHandlerClient::ReadyStateActive;
     case webrtc::PeerConnectionInterface::kClosed:
       return WebKit::WebRTCPeerConnectionHandlerClient::ReadyStateClosed;
     default:
@@ -517,7 +515,7 @@ void RTCPeerConnectionHandler::OnError() {
 
 void RTCPeerConnectionHandler::OnStateChange(StateType state_changed) {
   switch (state_changed) {
-    case kReadyState: {
+    case kSignalingState: {
       WebKit::WebRTCPeerConnectionHandlerClient::ReadyState ready_state =
           GetWebKitReadyState(native_peer_connection_->ready_state());
       client_->didChangeReadyState(ready_state);

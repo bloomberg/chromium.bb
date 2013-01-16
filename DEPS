@@ -18,7 +18,7 @@ vars = {
   "nacl_tools_revision": "10001",  # native_client/DEPS: tools_rev
   "gtm_revision": "578",
 
-  "libjingle_revision": "257",
+  "libjingle_revision": "263",
   "libphonenumber_revision": "456",
   "libvpx_revision": "176485",
   "lss_revision": "17",
@@ -39,7 +39,7 @@ vars = {
   # and V8 without interference from each other.
   "webrtc_revision": "3370",
   "jsoncpp_revision": "248",
-  "nss_revision": "175939",
+  "nss_revision": "176741",
 }
 
 deps = {

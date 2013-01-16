@@ -367,11 +367,6 @@ MediaStreamDependencyFactory::CreateLocalAudioTrack(
 }
 
 webrtc::SessionDescriptionInterface*
-MediaStreamDependencyFactory::CreateSessionDescription(const std::string& sdp) {
-  return webrtc::CreateSessionDescription(sdp);
-}
-
-webrtc::SessionDescriptionInterface*
 MediaStreamDependencyFactory::CreateSessionDescription(const std::string& type,
                                                        const std::string& sdp) {
   return webrtc::CreateSessionDescription(type, sdp);

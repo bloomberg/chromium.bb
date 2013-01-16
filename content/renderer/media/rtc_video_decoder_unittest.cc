@@ -126,7 +126,7 @@ class MockVideoTrack : public webrtc::VideoTrackInterface {
     NOTIMPLEMENTED();
     return "";
   }
-  virtual std::string label() const OVERRIDE {
+  virtual std::string id() const OVERRIDE {
     NOTIMPLEMENTED();
     return "";
   }

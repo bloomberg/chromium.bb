@@ -39,14 +39,14 @@ class MockVideoSource : public webrtc::VideoSourceInterface {
 
 class MockLocalVideoTrack : public webrtc::VideoTrackInterface {
  public:
-  MockLocalVideoTrack(std::string label,
+  MockLocalVideoTrack(std::string id,
                       webrtc::VideoSourceInterface* source);
   virtual void AddRenderer(webrtc::VideoRendererInterface* renderer) OVERRIDE;
   virtual void RemoveRenderer(
       webrtc::VideoRendererInterface* renderer) OVERRIDE;
   virtual cricket::VideoRenderer* FrameInput() OVERRIDE;
   virtual std::string kind() const OVERRIDE;
-  virtual std::string label() const OVERRIDE;
+  virtual std::string id() const OVERRIDE;
   virtual bool enabled() const OVERRIDE;
   virtual TrackState state() const OVERRIDE;
   virtual bool set_enabled(bool enable) OVERRIDE;
@@ -60,18 +60,18 @@ class MockLocalVideoTrack : public webrtc::VideoTrackInterface {
 
  private:
   bool enabled_;
-  std::string label_;
+  std::string id_;
   scoped_refptr<webrtc::VideoSourceInterface> source_;
 };
 
 class MockLocalAudioTrack : public webrtc::AudioTrackInterface {
  public:
-  explicit MockLocalAudioTrack(const std::string& label)
+  explicit MockLocalAudioTrack(const std::string& id)
     : enabled_(false),
-      label_(label) {
+      id_(id) {
   }
   virtual std::string kind() const OVERRIDE;
-  virtual std::string label() const OVERRIDE;
+  virtual std::string id() const OVERRIDE;
   virtual bool enabled() const OVERRIDE;
   virtual TrackState state() const OVERRIDE;
   virtual bool set_enabled(bool enable) OVERRIDE;
@@ -85,7 +85,7 @@ class MockLocalAudioTrack : public webrtc::AudioTrackInterface {
 
  private:
   bool enabled_;
-  std::string label_;
+  std::string id_;
 };
 
 // A mock factory for creating different objects for
@@ -108,13 +108,11 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
   virtual scoped_refptr<webrtc::LocalMediaStreamInterface>
       CreateLocalMediaStream(const std::string& label) OVERRIDE;
   virtual scoped_refptr<webrtc::VideoTrackInterface>
-      CreateLocalVideoTrack(const std::string& label,
+      CreateLocalVideoTrack(const std::string& id,
                             webrtc::VideoSourceInterface* source) OVERRIDE;
   virtual scoped_refptr<webrtc::LocalAudioTrackInterface>
-      CreateLocalAudioTrack(const std::string& label,
+      CreateLocalAudioTrack(const std::string& id,
                             webrtc::AudioDeviceModule* audio_device) OVERRIDE;
-  virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
-      const std::string& sdp) OVERRIDE;
   virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
       const std::string& type,
       const std::string& sdp) OVERRIDE;
