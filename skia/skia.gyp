@@ -218,6 +218,7 @@
         'GR_STATIC_RECT_VB=1',
         'GR_AGGRESSIVE_SHADER_OPTS=1',
         'SK_DEFERRED_CANVAS_USES_GPIPE=1',
+        'SK_ENABLE_INST_COUNT=0',
 
         # this flag can be removed entirely once this has baked for a while
         'SK_ALLOW_OVER_32K_BITMAPS',
@@ -560,6 +561,7 @@
           'SK_DEFERRED_CANVAS_USES_GPIPE=1',
           'GR_GL_CUSTOM_SETUP_HEADER="GrGLConfig_chrome.h"',
           'GR_AGGRESSIVE_SHADER_OPTS=1',
+          'SK_ENABLE_INST_COUNT=0',
         ],
         'conditions': [
           [ 'chromeos == 1', {
