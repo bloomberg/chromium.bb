@@ -53,11 +53,11 @@ class MessagePumpForUI;
 // A MessageLoop is used to process events for a particular thread.  There is
 // at most one MessageLoop instance per thread.
 //
-// Events include at a minimum Task instances submitted to PostTask or those
-// managed by TimerManager.  Depending on the type of message pump used by the
-// MessageLoop other events such as UI messages may be processed.  On Windows
-// APC calls (as time permits) and signals sent to a registered set of HANDLEs
-// may also be processed.
+// Events include at a minimum Task instances submitted to PostTask and its
+// variants.  Depending on the type of message pump used by the MessageLoop
+// other events such as UI messages may be processed.  On Windows APC calls (as
+// time permits) and signals sent to a registered set of HANDLEs may also be
+// processed.
 //
 // NOTE: Unless otherwise specified, a MessageLoop's methods may only be called
 // on the thread where the MessageLoop's Run method executes.
@@ -490,10 +490,9 @@ class BASE_EXPORT MessageLoop : public base::MessagePump::Delegate {
   // A profiling histogram showing the counts of various messages and events.
   base::Histogram* message_histogram_;
 
-  // A null terminated list which creates an incoming_queue of tasks that are
-  // acquired under a mutex for processing on this instance's thread. These
-  // tasks have not yet been sorted out into items for our work_queue_ vs items
-  // that will be handled by the TimerManager.
+  // An incoming queue of tasks that are acquired under a mutex for processing
+  // on this instance's thread. These tasks have not yet been sorted out into
+  // items for our work_queue_ vs delayed_work_queue_.
   base::TaskQueue incoming_queue_;
   // Protect access to incoming_queue_.
   mutable base::Lock incoming_queue_lock_;
