@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/stl_util.h"
+#include "base/task_runner_util.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
@@ -35,6 +36,12 @@ StorageType PPFileSystemTypeToQuotaStorageType(PP_FileSystemType type) {
   NOTREACHED();
   return quota::kStorageTypeUnknown;
 }
+
+int WriteAdapter(PlatformFile file, int64 offset,
+                 scoped_ptr<char[]> data, int size) {
+  return base::WritePlatformFile(file, offset, data.get(), size);
+}
+
 }  // namespace
 
 class QuotaFileIO::PendingOperationBase {
@@ -100,10 +107,12 @@ class QuotaFileIO::WriteOperation : public PendingOperationBase {
       return;
     }
 
-    if (!base::FileUtilProxy::Write(
-            plugin_delegate->GetFileThreadMessageLoopProxy(),
-            quota_io_->file_, offset_, buffer_.get(), bytes_to_write_,
-            base::Bind(&WriteOperation::DidFinish,
+    if (!base::PostTaskAndReplyWithResult(
+            plugin_delegate->GetFileThreadMessageLoopProxy(), FROM_HERE,
+            base::Bind(&WriteAdapter,
+                       quota_io_->file_, offset_,
+                       base::Passed(&buffer_), bytes_to_write_),
+            base::Bind(&WriteOperation::DidWrite,
                        weak_factory_.GetWeakPtr()))) {
       DidFail(base::PLATFORM_FILE_ERROR_FAILED);
       return;
@@ -123,6 +132,12 @@ class QuotaFileIO::WriteOperation : public PendingOperationBase {
   }
 
  private:
+  void DidWrite(int bytes_written) {
+    base::PlatformFileError error = bytes_written > 0 ?
+        base::PLATFORM_FILE_OK : base::PLATFORM_FILE_ERROR_FAILED;
+    DidFinish(error, bytes_written);
+  }
+
   void DidFinish(PlatformFileError status, int bytes_written) {
     finished_ = true;
     status_ = status;
@@ -140,7 +155,7 @@ class QuotaFileIO::WriteOperation : public PendingOperationBase {
   }
 
   const int64_t offset_;
-  scoped_array<char> buffer_;
+  scoped_ptr<char[]> buffer_;
   const int32_t bytes_to_write_;
   WriteCallback callback_;
   bool finished_;
