@@ -203,6 +203,7 @@
       'resource_update_controller.h',
       'resource_update_queue.cc',
       'resource_update_queue.h',
+      'ring_buffer.h',
       'scheduler.cc',
       'scheduler.h',
       'scheduler_state_machine.cc',

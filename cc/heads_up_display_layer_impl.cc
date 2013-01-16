@@ -215,9 +215,10 @@ int HeadsUpDisplayLayerImpl::drawFPSCounter(SkCanvas* canvas, FrameRateCounter* 
 void HeadsUpDisplayLayerImpl::drawFPSCounterText(SkCanvas* canvas, SkPaint& paint, FrameRateCounter* fpsCounter, SkRect bounds)
 {
     // Update FPS text - not every frame so text is readable
-    if (base::TimeDelta(fpsCounter->timeStampOfRecentFrame(0) - textUpdateTime).InSecondsF() > 0.25) {
+    base::TimeTicks now = base::TimeTicks::Now();
+    if (base::TimeDelta(now - textUpdateTime).InSecondsF() > 0.25) {
         m_averageFPS = fpsCounter->getAverageFPS();
-        textUpdateTime = fpsCounter->timeStampOfRecentFrame(0);
+        textUpdateTime = now;
     }
 
     // Draw FPS text.
@@ -260,7 +261,7 @@ void HeadsUpDisplayLayerImpl::drawFPSCounterGraphAndHistogram(SkCanvas* canvas, 
     double histogram[histogramSize] = {0};
     double maxBucketValue = 0;
 
-    for (int i = 1; i < fpsCounter->timeStampHistorySize() - 1; ++i) {
+    for (size_t i = 1; i < fpsCounter->timeStampHistorySize() - 1; ++i) {
         base::TimeDelta delta = fpsCounter->timeStampOfRecentFrame(i + 1) - fpsCounter->timeStampOfRecentFrame(i);
 
         // Skip this particular instantaneous frame rate if it is not likely to have been valid.

@@ -4,7 +4,7 @@
 
 #include "cc/frame_rate_counter.h"
 
-#include <cmath>
+#include <limits>
 
 #include "base/metrics/histogram.h"
 #include "cc/proxy.h"
@@ -15,56 +15,39 @@ const double FrameRateCounter::kFrameTooFast = 1.0 / 70.0; // measured in second
 const double FrameRateCounter::kFrameTooSlow = 1.0 / 4.0;
 const double FrameRateCounter::kDroppedFrameTime = 1.0 / 50.0;
 
-// safeMod works on -1, returning m-1 in that case.
-static inline int safeMod(int number, int modulus)
-{
-    return (number + modulus) % modulus;
-}
-
 // static
 scoped_ptr<FrameRateCounter> FrameRateCounter::create(bool hasImplThread) {
   return make_scoped_ptr(new FrameRateCounter(hasImplThread));
 }
 
-inline base::TimeDelta FrameRateCounter::frameInterval(int frameNumber) const
+inline base::TimeDelta FrameRateCounter::recentFrameInterval(size_t n) const
 {
-    return m_timeStampHistory[frameIndex(frameNumber)] -
-        m_timeStampHistory[frameIndex(frameNumber - 1)];
-}
-
-inline int FrameRateCounter::frameIndex(int frameNumber) const
-{
-    return safeMod(frameNumber, kTimeStampHistorySize);
+    DCHECK(n > 0);
+    return m_ringBuffer.ReadBuffer(n) - m_ringBuffer.ReadBuffer(n - 1);
 }
 
 FrameRateCounter::FrameRateCounter(bool hasImplThread)
     : m_hasImplThread(hasImplThread)
-    , m_currentFrameNumber(1)
     , m_droppedFrameCount(0)
 {
-    m_timeStampHistory[0] = base::TimeTicks::Now();
-    m_timeStampHistory[1] = m_timeStampHistory[0];
-    for (int i = 2; i < kTimeStampHistorySize; i++)
-        m_timeStampHistory[i] = base::TimeTicks();
 }
 
-void FrameRateCounter::markBeginningOfFrame(base::TimeTicks timestamp)
+void FrameRateCounter::saveTimeStamp(base::TimeTicks timestamp)
 {
-    m_timeStampHistory[frameIndex(m_currentFrameNumber)] = timestamp;
-    base::TimeDelta frameIntervalSeconds = frameInterval(m_currentFrameNumber);
+    m_ringBuffer.SaveToBuffer(timestamp);
 
-    if (m_hasImplThread && m_currentFrameNumber > 0) {
+    // Check if frame interval can be computed.
+    if (m_ringBuffer.CurrentIndex() < 2)
+        return;
+
+    base::TimeDelta frameIntervalSeconds = recentFrameInterval(m_ringBuffer.BufferSize() - 1);
+
+    if (m_hasImplThread && m_ringBuffer.CurrentIndex() > 0)
         HISTOGRAM_CUSTOM_COUNTS("Renderer4.CompositorThreadImplDrawDelay", frameIntervalSeconds.InMilliseconds(), 1, 120, 60);
-    }
 
     if (!isBadFrameInterval(frameIntervalSeconds) &&
         frameIntervalSeconds.InSecondsF() > kDroppedFrameTime)
         ++m_droppedFrameCount;
-}
-
-void FrameRateCounter::markEndOfFrame()
-{
-    m_currentFrameNumber += 1;
 }
 
 bool FrameRateCounter::isBadFrameInterval(base::TimeDelta intervalBetweenConsecutiveFrames) const
@@ -76,14 +59,30 @@ bool FrameRateCounter::isBadFrameInterval(base::TimeDelta intervalBetweenConsecu
     return intervalTooFast || intervalTooSlow;
 }
 
-bool FrameRateCounter::isBadFrame(int frameNumber) const
+void FrameRateCounter::getMinAndMaxFPS(double& minFPS, double& maxFPS) const
 {
-    return isBadFrameInterval(frameInterval(frameNumber));
+    minFPS = std::numeric_limits<double>::max();
+    maxFPS = 0;
+
+    for (size_t i = m_ringBuffer.BufferSize() - 1; i > 0 && m_ringBuffer.IsFilledIndex(i - 1); --i) {
+        base::TimeDelta delta = recentFrameInterval(i);
+
+        if (isBadFrameInterval(delta))
+            continue;
+
+        DCHECK(delta.InSecondsF() > 0);
+        double fps = 1.0 / delta.InSecondsF();
+
+        minFPS = std::min(fps, minFPS);
+        maxFPS = std::max(fps, maxFPS);
+    }
+
+    if (minFPS > maxFPS)
+        minFPS = maxFPS;
 }
 
 double FrameRateCounter::getAverageFPS() const
 {
-    int frameNumber = m_currentFrameNumber - 1;
     int frameCount = 0;
     double frameTimesTotal = 0;
     double averageFPS = 0;
@@ -99,30 +98,32 @@ double FrameRateCounter::getAverageFPS() const
     //
     // isBadFrameInterval encapsulates the frame too slow/frame too fast logic.
 
-    while (frameIndex(frameNumber) != frameIndex(m_currentFrameNumber) && frameNumber >= 0 && frameTimesTotal < 1.0) {
-        base::TimeDelta delta = frameInterval(frameNumber);
+    for (size_t i = m_ringBuffer.BufferSize() - 1; i > 0 && m_ringBuffer.IsFilledIndex(i - 1) && frameTimesTotal < 1.0; --i) {
+        base::TimeDelta delta = recentFrameInterval(i);
 
         if (!isBadFrameInterval(delta)) {
             frameCount++;
             frameTimesTotal += delta.InSecondsF();
         } else if (frameCount)
             break;
-
-        frameNumber--;
     }
 
-    if (frameCount)
+    if (frameCount) {
+        DCHECK(frameTimesTotal > 0);
         averageFPS = frameCount / frameTimesTotal;
+    }
 
     return averageFPS;
 }
 
-base::TimeTicks FrameRateCounter::timeStampOfRecentFrame(int n) const
+base::TimeTicks FrameRateCounter::timeStampOfRecentFrame(size_t n) const
 {
-    DCHECK(n >= 0);
-    DCHECK(n < kTimeStampHistorySize);
-    int desiredIndex = (frameIndex(m_currentFrameNumber) + n) % kTimeStampHistorySize;
-    return m_timeStampHistory[desiredIndex];
+    DCHECK(n < m_ringBuffer.BufferSize());
+
+    if (m_ringBuffer.IsFilledIndex(n))
+        return m_ringBuffer.ReadBuffer(n);
+
+    return base::TimeTicks();
 }
 
 }  // namespace cc

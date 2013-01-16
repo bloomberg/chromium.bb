@@ -798,7 +798,7 @@ void LayerTreeHostImpl::drawLayers(FrameData& frame)
     // FIXME: use the frame begin time from the overall compositor scheduler.
     // This value is currently inaccessible because it is up in Chromium's
     // RenderWidget.
-    m_fpsCounter->markBeginningOfFrame(base::TimeTicks::Now());
+    m_fpsCounter->saveTimeStamp(base::TimeTicks::Now());
 
     if (m_debugState.showHudRects())
         m_debugRectHistory->saveDebugRectsForCurrentFrame(rootLayer(), *frame.renderSurfaceLayerList, frame.occludingScreenSpaceRects, frame.nonOccludingScreenSpaceRects, m_debugState);
@@ -848,8 +848,6 @@ const RendererCapabilities& LayerTreeHostImpl::rendererCapabilities() const
 bool LayerTreeHostImpl::swapBuffers()
 {
     DCHECK(m_renderer);
-
-    m_fpsCounter->markEndOfFrame();
     return m_renderer->swapBuffers();
 }
 
