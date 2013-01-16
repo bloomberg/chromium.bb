@@ -19,6 +19,7 @@
         'chrome_resources.gyp:theme_resources',
         'common',
         '../base/base.gyp:test_support_base',
+        '../base/base.gyp:base_prefs_test_support',
         '../content/content.gyp:content_app',
         '../content/content.gyp:test_support_content',
         '../media/media.gyp:media_test_support',
@@ -252,13 +253,6 @@
         'test/logging/win/test_log_collector.h',
         'test/ppapi/ppapi_test.cc',
         'test/ppapi/ppapi_test.h',
-
-        # TODO(joi): Move to 'base_prefs' target in base/base.gyp once
-        # Prefs move is complete and dependencies have been broken.
-        '../base/prefs/testing_pref_store.cc',
-        '../base/prefs/testing_pref_store.h',
-        '../base/prefs/pref_store_observer_mock.cc',
-        '../base/prefs/pref_store_observer_mock.h',
 
         '../ui/gfx/image/image_unittest_util.h',
         '../ui/gfx/image/image_unittest_util.cc',
@@ -1597,11 +1591,9 @@
 
         # TODO(joi): Move to 'base_prefs' target in base/base.gyp once
         # Prefs move is complete and dependencies have been broken.
+        '../base/prefs/json_pref_store_unittest.cc',
         '../base/prefs/public/pref_change_registrar_unittest.cc',
         '../base/prefs/public/pref_member_unittest.cc',
-        '../base/prefs/overlay_user_pref_store_unittest.cc',
-        '../base/prefs/pref_value_map_unittest.cc',
-        '../base/prefs/json_pref_store_unittest.cc',
 
         # TODO(joi): Move the google_apis tests to a separate
         # google_apis_unittests executable.

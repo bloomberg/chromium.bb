@@ -354,6 +354,21 @@
       ],
     },
     {
+      'target_name': 'base_prefs_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        'base',
+        'base_prefs',
+        '../testing/gmock.gyp:gmock',
+      ],
+      'sources': [
+        'prefs/pref_store_observer_mock.cc',
+        'prefs/pref_store_observer_mock.h',
+        'prefs/testing_pref_store.cc',
+        'prefs/testing_pref_store.h',
+      ],
+    },
+    {
       # This is the subset of files from base that should not be used with a
       # dynamic library. Note that this library cannot depend on base because
       # base depends on base_static.
@@ -520,6 +535,8 @@
         'platform_file_unittest.cc',
         'posix/file_descriptor_shuffle_unittest.cc',
         'pr_time_unittest.cc',
+        'prefs/overlay_user_pref_store_unittest.cc',
+        'prefs/pref_value_map_unittest.cc',
         'process_util_unittest.cc',
         'process_util_unittest_ios.cc',
         'process_util_unittest_mac.h',
@@ -603,6 +620,7 @@
       'dependencies': [
         'base',
         'base_i18n',
+        'base_prefs_test_support',
         'base_static',
         'run_all_unittests',
         'test_support_base',
