@@ -692,7 +692,12 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableSpeechInput(
       !command_line.HasSwitch(switches::kDisableSpeechInput));
 
+#if defined(OS_ANDROID)
+  // Web Speech API Speech recognition is not implemented on Android yet.
+  WebRuntimeFeatures::enableScriptedSpeech(false);
+#else
   WebRuntimeFeatures::enableScriptedSpeech(true);
+#endif
 
   WebRuntimeFeatures::enableFileSystem(
       !command_line.HasSwitch(switches::kDisableFileSystem));
