@@ -31,8 +31,6 @@
 #include "window.h"
 #include "input-method-client-protocol.h"
 #include "text-client-protocol.h"
-#include "desktop-shell-client-protocol.h"
-
 
 struct virtual_keyboard {
 	struct input_panel *input_panel;
@@ -641,6 +639,7 @@ keyboard_create(struct output *output, struct virtual_keyboard *virtual_keyboard
 {
 	struct keyboard *keyboard;
 	const struct layout *layout;
+	struct input_panel_surface *ips;
 
 	layout = get_current_layout(virtual_keyboard);
 
@@ -664,9 +663,11 @@ keyboard_create(struct output *output, struct virtual_keyboard *virtual_keyboard
 			       layout->columns * key_width,
 			       layout->rows * key_height);
 
-	input_panel_set_surface(virtual_keyboard->input_panel,
-				window_get_wl_surface(keyboard->window),
-				output_get_wl_output(output));
+
+	ips = input_panel_get_input_panel_surface(virtual_keyboard->input_panel,
+						  window_get_wl_surface(keyboard->window));
+
+	input_panel_surface_set_toplevel(ips, INPUT_PANEL_SURFACE_POSITION_CENTER_BOTTOM);
 }
 
 static void

@@ -157,4 +157,28 @@
       <arg name="context" type="object" interface="input_method_context"/>
     </event>
   </interface>
+
+  <interface name="input_panel" version="1">
+    <description summary="interface for implementing keyboards">
+      Only one client can bind this interface at a time.
+    </description>
+
+    <request name="get_input_panel_surface">
+      <arg name="id" type="new_id" interface="input_panel_surface"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
+  </interface>
+
+  <interface name="input_panel_surface" version="1">
+    <enum name="position">
+      <entry name="center_bottom" value="0"/>
+    </enum>
+
+    <request name="set_toplevel">
+      <description summary="set the surface type as a keyboard">
+	A keybaord surface is only shown, when a text model is active
+      </description>
+      <arg name="position" type="uint"/>
+    </request>
+  </interface>
 </protocol>

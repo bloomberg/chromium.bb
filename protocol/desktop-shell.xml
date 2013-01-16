@@ -98,22 +98,4 @@
     </request>
 
   </interface>
-
-  <interface name="input_panel" version="1">
-    <description summary="interface for implementing keyboards">
-      Only one client can bind this interface at a time.
-    </description>
-
-    <request name="set_surface">
-      <description summary="set the surface type as a keyboard">
-	A keybaord surface is only shown, when a text model is active
-      </description>
-
-      <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="output" type="object" interface="wl_output"/>
-    </request>
-
-  </interface>
-
-
 </protocol>

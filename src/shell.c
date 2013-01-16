@@ -35,6 +35,7 @@
 #include <wayland-server.h>
 #include "compositor.h"
 #include "desktop-shell-server-protocol.h"
+#include "input-method-server-protocol.h"
 #include "workspaces-server-protocol.h"
 #include "../shared/config-parser.h"
 
@@ -65,9 +66,13 @@ struct workspace {
 };
 
 struct input_panel_surface {
+	struct wl_resource resource;
+
+	struct desktop_shell *shell;
+
 	struct wl_list link;
 	struct weston_surface *surface;
-	struct wl_listener listener;
+	struct wl_listener surface_destroy_listener;
 };
 
 struct desktop_shell {
@@ -3282,59 +3287,129 @@ input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 }
 
 static void
-destroy_input_panel_surface(struct wl_listener *listener,
-			    void *data)
+destroy_input_panel_surface(struct input_panel_surface *input_panel_surface)
 {
-	struct input_panel_surface *input_panel_surface =
-		container_of(listener, struct input_panel_surface, listener);
-
-	wl_list_remove(&listener->link);
+	wl_list_remove(&input_panel_surface->surface_destroy_listener.link);
 	wl_list_remove(&input_panel_surface->link);
+
+	input_panel_surface->surface->configure = NULL;
 
 	free(input_panel_surface);
 }
 
-static void
-input_panel_set_surface(struct wl_client *client,
-			struct wl_resource *resource,
-			struct wl_resource *surface_resource,
-			struct wl_resource *output_resource)
+static struct input_panel_surface *
+get_input_panel_surface(struct weston_surface *surface)
 {
-	struct desktop_shell *shell = resource->data;
-	struct weston_surface *surface = surface_resource->data;
-	struct weston_output *output = output_resource->data;
+	if (surface->configure == input_panel_configure) {
+		return surface->private;
+	} else {
+		return NULL;
+	}
+}
+
+static void
+input_panel_handle_surface_destroy(struct wl_listener *listener, void *data)
+{
+	struct input_panel_surface *ipsurface = container_of(listener,
+							     struct input_panel_surface,
+							     surface_destroy_listener);
+
+	if (ipsurface->resource.client) {
+		wl_resource_destroy(&ipsurface->resource);
+	} else {
+		wl_signal_emit(&ipsurface->resource.destroy_signal,
+			       &ipsurface->resource);
+		destroy_input_panel_surface(ipsurface);
+	}
+}
+static struct input_panel_surface *
+create_input_panel_surface(struct desktop_shell *shell,
+			   struct weston_surface *surface)
+{
 	struct input_panel_surface *input_panel_surface;
 
+	input_panel_surface = calloc(1, sizeof *input_panel_surface);
+	if (!input_panel_surface)
+		return NULL;
+
 	surface->configure = input_panel_configure;
-	surface->private = shell;
-	surface->output = output;
+	surface->private = input_panel_surface;
 
-	/* Do not do anything when surface is already in the list of 
-	 * input panel surfaces
-	 */
-	wl_list_for_each(input_panel_surface, &shell->input_panel.surfaces, link) {
-		if (input_panel_surface->surface == surface)
-			return;
-	}
-
-	input_panel_surface = malloc(sizeof *input_panel_surface);
-	if (!input_panel_surface) {
-		wl_resource_post_no_memory(resource);
-		return;
-	}
+	input_panel_surface->shell = shell;
 
 	input_panel_surface->surface = surface;
-	input_panel_surface->listener.notify = destroy_input_panel_surface;
 
-	wl_signal_add(&surface_resource->destroy_signal,
-		      &input_panel_surface->listener);
+	wl_signal_init(&input_panel_surface->resource.destroy_signal);
+	input_panel_surface->surface_destroy_listener.notify = input_panel_handle_surface_destroy;
+	wl_signal_add(&surface->surface.resource.destroy_signal,
+		      &input_panel_surface->surface_destroy_listener);
+
+	wl_list_init(&input_panel_surface->link);
+
+	return input_panel_surface;
+}
+
+static void
+input_panel_surface_set_toplevel(struct wl_client *client,
+				 struct wl_resource *resource,
+				 uint32_t position)
+{
+	struct input_panel_surface *input_panel_surface = resource->data;
+	struct desktop_shell *shell = input_panel_surface->shell;
 
 	wl_list_insert(&shell->input_panel.surfaces,
 		       &input_panel_surface->link);
 }
 
+static const struct input_panel_surface_interface input_panel_surface_implementation = {
+	input_panel_surface_set_toplevel
+};
+
+static void
+destroy_input_panel_surface_resource(struct wl_resource *resource)
+{
+	struct input_panel_surface *ipsurf = resource->data;
+
+	destroy_input_panel_surface(ipsurf);
+}
+
+static void
+input_panel_get_input_panel_surface(struct wl_client *client,
+				    struct wl_resource *resource,
+				    uint32_t id,
+				    struct wl_resource *surface_resource)
+{
+	struct weston_surface *surface = surface_resource->data;
+	struct desktop_shell *shell = resource->data;
+	struct input_panel_surface *ipsurf;
+
+	if (get_input_panel_surface(surface)) {
+		wl_resource_post_error(surface_resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "input_panel::get_input_panel_surface already requested");
+		return;
+	}
+
+	ipsurf = create_input_panel_surface(shell, surface);
+	if (!ipsurf) {
+		wl_resource_post_error(surface_resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "surface->configure already set");
+		return;
+	}
+
+	ipsurf->resource.destroy = destroy_input_panel_surface_resource;
+	ipsurf->resource.object.id = id;
+	ipsurf->resource.object.interface = &input_panel_surface_interface;
+	ipsurf->resource.object.implementation =
+		(void (**)(void)) &input_panel_surface_implementation;
+	ipsurf->resource.data = ipsurf;
+
+	wl_client_add_resource(client, &ipsurf->resource);
+}
+
 static const struct input_panel_interface input_panel_implementation = {
-	input_panel_set_surface
+	input_panel_get_input_panel_surface
 };
 
 static void
