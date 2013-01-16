@@ -16,7 +16,7 @@
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/thunk/ppb_url_loader_api.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURLLoaderClient.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace WebKit {

@@ -5,7 +5,7 @@
 #ifndef WEBKIT_PLUGINS_SAD_PLUGIN_H_
 #define WEBKIT_PLUGINS_SAD_PLUGIN_H_
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCanvas.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 class SkBitmap;

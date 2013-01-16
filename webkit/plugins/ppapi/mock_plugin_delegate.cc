@@ -8,7 +8,7 @@
 #include "base/message_loop_proxy.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGamepads.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGamepads.h"
 #include "webkit/plugins/ppapi/mock_platform_image_2d.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"

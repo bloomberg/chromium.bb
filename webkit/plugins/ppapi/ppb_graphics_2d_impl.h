@@ -14,7 +14,7 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_graphics_2d_api.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCanvas.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 namespace gfx {
