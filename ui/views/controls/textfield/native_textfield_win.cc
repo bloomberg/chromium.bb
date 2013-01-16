@@ -1084,6 +1084,10 @@ void NativeTextfieldWin::OnSysChar(TCHAR ch, UINT repeat_count, UINT flags) {
     SetMsgHandled(false);
 }
 
+void NativeTextfieldWin::OnFinalMessage(HWND hwnd) {
+  delete this;
+}
+
 void NativeTextfieldWin::HandleKeystroke() {
   const MSG* msg = GetCurrentMessage();
   ScopedFreeze freeze(this, GetTextObjectModel());

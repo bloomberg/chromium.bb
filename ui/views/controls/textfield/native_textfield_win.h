@@ -219,6 +219,9 @@ class NativeTextfieldWin
   void OnKillFocus(HWND hwnd);
   void OnSysChar(TCHAR ch, UINT repeat_count, UINT flags);
 
+  // CWindowImpl overrides:
+  virtual void OnFinalMessage(HWND hwnd) OVERRIDE;
+
   // Helper function for OnChar() and OnKeyDown() that handles keystrokes that
   // could change the text in the edit.
   // Note: This function assumes GetCurrentMessage() returns a MSG with
