@@ -15,6 +15,7 @@
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_decoder_config.h"
+#include "media/mp4/es_descriptor.h"
 #include "media/mp4/mp4_stream_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,8 +30,10 @@ static const char kMp4InitDataType[] = "video/mp4";
 class MP4StreamParserTest : public testing::Test {
  public:
   MP4StreamParserTest()
-      : parser_(new MP4StreamParser(false)),
-        configs_received_(false) {
+      : configs_received_(false) {
+    std::set<int> audio_object_types;
+    audio_object_types.insert(kISO_14496_3);
+    parser_.reset(new MP4StreamParser(audio_object_types, false));
   }
 
  protected:
@@ -162,6 +165,13 @@ TEST_F(MP4StreamParserTest, TestReinitialization) {
   EXPECT_TRUE(AppendDataInPieces(buffer->GetData(),
                                  buffer->GetDataSize(),
                                  512));
+}
+
+TEST_F(MP4StreamParserTest, TestMPEG2_AAC_LC) {
+  std::set<int> audio_object_types;
+  audio_object_types.insert(kISO_13818_7_AAC_LC);
+  parser_.reset(new MP4StreamParser(audio_object_types, false));
+  ParseMP4File("bear-mpeg2-aac-only_frag.mp4", 512);
 }
 
 // TODO(strobe): Create and test media which uses CENC auxiliary info stored

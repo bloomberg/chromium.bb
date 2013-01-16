@@ -5,6 +5,7 @@
 #ifndef MEDIA_MP4_MP4_STREAM_PARSER_H_
 #define MEDIA_MP4_MP4_STREAM_PARSER_H_
 
+#include <set>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -24,7 +25,7 @@ class BoxReader;
 
 class MEDIA_EXPORT MP4StreamParser : public StreamParser {
  public:
-  MP4StreamParser(bool has_sbr);
+  MP4StreamParser(const std::set<int>& audio_object_types, bool has_sbr);
   virtual ~MP4StreamParser();
 
   virtual void Init(const InitCB& init_cb, const NewConfigCB& config_cb,
@@ -107,6 +108,8 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   bool has_video_;
   uint32 audio_track_id_;
   uint32 video_track_id_;
+  // The object types allowed for audio tracks.
+  std::set<int> audio_object_types_;
   bool has_sbr_;
   bool is_audio_track_encrypted_;
   bool is_video_track_encrypted_;

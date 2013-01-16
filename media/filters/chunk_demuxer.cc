@@ -17,6 +17,7 @@
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/video_decoder_config.h"
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#include "media/mp4/es_descriptor.h"
 #include "media/mp4/mp4_stream_parser.h"
 #endif
 #include "media/webm/webm_stream_parser.h"
@@ -59,16 +60,30 @@ static StreamParser* BuildWebMParser(const std::vector<std::string>& codecs) {
 
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
 static const CodecInfo kH264CodecInfo = { "avc1.*", DemuxerStream::VIDEO };
-static const CodecInfo kAACCodecInfo = { "mp4a.40.*", DemuxerStream::AUDIO };
+static const CodecInfo kMPEG4AACLCCodecInfo = {
+  "mp4a.40.2", DemuxerStream::AUDIO
+};
+
+static const CodecInfo kMPEG4AACSBRCodecInfo = {
+  "mp4a.40.5", DemuxerStream::AUDIO
+};
+
+static const CodecInfo kMPEG2AACLCCodecInfo = {
+  "mp4a.67", DemuxerStream::AUDIO
+};
 
 static const CodecInfo* kVideoMP4Codecs[] = {
   &kH264CodecInfo,
-  &kAACCodecInfo,
+  &kMPEG4AACLCCodecInfo,
+  &kMPEG4AACSBRCodecInfo,
+  &kMPEG2AACLCCodecInfo,
   NULL
 };
 
 static const CodecInfo* kAudioMP4Codecs[] = {
-  &kAACCodecInfo,
+  &kMPEG4AACLCCodecInfo,
+  &kMPEG4AACSBRCodecInfo,
+  &kMPEG2AACLCCodecInfo,
   NULL
 };
 
@@ -76,15 +91,22 @@ static const CodecInfo* kAudioMP4Codecs[] = {
 static const char* kSBRCodecId = "mp4a.40.5";
 
 static StreamParser* BuildMP4Parser(const std::vector<std::string>& codecs) {
+  std::set<int> audio_object_types;
   bool has_sbr = false;
   for (size_t i = 0; i < codecs.size(); ++i) {
+    if (MatchPattern(codecs[i], kMPEG2AACLCCodecInfo.pattern)) {
+      audio_object_types.insert(mp4::kISO_13818_7_AAC_LC);
+    } else {
+      audio_object_types.insert(mp4::kISO_14496_3);
+    }
+
     if (codecs[i] == kSBRCodecId) {
       has_sbr = true;
       break;
     }
   }
 
-  return new mp4::MP4StreamParser(has_sbr);
+  return new mp4::MP4StreamParser(audio_object_types, has_sbr);
 }
 #endif
 
