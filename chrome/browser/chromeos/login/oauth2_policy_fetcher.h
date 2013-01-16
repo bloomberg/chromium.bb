@@ -10,17 +10,15 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
+#include "net/url_request/url_request_context_getter.h"
 
 class GaiaAuthFetcher;
 class OAuth2AccessTokenFetcher;
-
-namespace net {
-class URLRequestContextGetter;
-}
 
 namespace chromeos {
 
@@ -90,6 +88,8 @@ class OAuth2PolicyFetcher : public base::SupportsWeakPtr<OAuth2PolicyFetcher>,
   void RetryOnError(const GoogleServiceAuthError& error,
                     const base::Closure& task);
 
+  scoped_refptr<net::URLRequestContextGetter> auth_context_getter_;
+  scoped_refptr<net::URLRequestContextGetter> system_context_getter_;
   scoped_ptr<GaiaAuthFetcher> refresh_token_fetcher_;
   scoped_ptr<OAuth2AccessTokenFetcher> access_token_fetcher_;
   std::string policy_token_;

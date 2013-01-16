@@ -38,12 +38,8 @@ const char kServiceScopeChromeOSDeviceManagement[] =
 OAuth2PolicyFetcher::OAuth2PolicyFetcher(
     net::URLRequestContextGetter* auth_context_getter,
     net::URLRequestContextGetter* system_context_getter)
-    : refresh_token_fetcher_(
-          new GaiaAuthFetcher(this,
-                              GaiaConstants::kChromeSource,
-                              auth_context_getter)),
-      access_token_fetcher_(
-          new OAuth2AccessTokenFetcher(this, system_context_getter)),
+    : auth_context_getter_(auth_context_getter),
+      system_context_getter_(system_context_getter),
       retry_count_(0),
       failed_(false) {
 }
@@ -51,8 +47,7 @@ OAuth2PolicyFetcher::OAuth2PolicyFetcher(
 OAuth2PolicyFetcher::OAuth2PolicyFetcher(
     net::URLRequestContextGetter* system_context_getter,
     const std::string& oauth2_refresh_token)
-    : access_token_fetcher_(
-          new OAuth2AccessTokenFetcher(this, system_context_getter)),
+    : system_context_getter_(system_context_getter),
       oauth2_refresh_token_(oauth2_refresh_token),
       retry_count_(0),
       failed_(false) {
@@ -72,12 +67,18 @@ void OAuth2PolicyFetcher::Start() {
 
 void OAuth2PolicyFetcher::StartFetchingRefreshToken() {
   DCHECK(refresh_token_fetcher_.get());
+  refresh_token_fetcher_.reset(
+            new GaiaAuthFetcher(this,
+                                GaiaConstants::kChromeSource,
+                                auth_context_getter_));
   refresh_token_fetcher_->StartCookieForOAuthLoginTokenExchange(EmptyString());
 }
 
 void OAuth2PolicyFetcher::StartFetchingAccessToken() {
   std::vector<std::string> scopes;
   scopes.push_back(kServiceScopeChromeOSDeviceManagement);
+  access_token_fetcher_.reset(
+      new OAuth2AccessTokenFetcher(this, system_context_getter_));
   access_token_fetcher_->Start(
       GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
       GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
