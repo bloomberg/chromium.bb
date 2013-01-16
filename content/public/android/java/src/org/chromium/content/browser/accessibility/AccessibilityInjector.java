@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser.accessibility;
 
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
@@ -166,9 +167,17 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
      * Checks whether or not touch to explore is enabled on the system.
      */
     public boolean accessibilityIsAvailable() {
+        // Need to make sure we actually have a service running that requires injecting
+        // this script.
+        List<AccessibilityServiceInfo> services =
+                getAccessibilityManager().getEnabledAccessibilityServiceList(
+                        AccessibilityServiceInfo.FEEDBACK_BRAILLE |
+                        AccessibilityServiceInfo.FEEDBACK_SPOKEN);
+
         return getAccessibilityManager().isEnabled() &&
                 mContentViewCore.getContentSettings() != null &&
-                mContentViewCore.getContentSettings().getJavaScriptEnabled();
+                mContentViewCore.getContentSettings().getJavaScriptEnabled() &&
+                services.size() > 0;
     }
 
     /**
