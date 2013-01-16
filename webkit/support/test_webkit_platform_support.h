@@ -99,6 +99,9 @@ class TestWebKitPlatformSupport :
   virtual double audioHardwareSampleRate();
   virtual size_t audioHardwareBufferSize();
   virtual WebKit::WebAudioDevice* createAudioDevice(size_t bufferSize,
+      unsigned numberOfInputChannels, unsigned numberOfChannels,
+      double sampleRate, WebKit::WebAudioDevice::RenderCallback*);
+  virtual WebKit::WebAudioDevice* createAudioDevice(size_t bufferSize,
       unsigned numberOfChannels, double sampleRate,
       WebKit::WebAudioDevice::RenderCallback*);
 

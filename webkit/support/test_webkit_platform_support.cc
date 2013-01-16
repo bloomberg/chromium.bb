@@ -444,6 +444,14 @@ size_t TestWebKitPlatformSupport::audioHardwareBufferSize() {
 }
 
 WebKit::WebAudioDevice* TestWebKitPlatformSupport::createAudioDevice(
+    size_t bufferSize, unsigned numberOfInputChannels,
+    unsigned numberOfChannels, double sampleRate,
+    WebKit::WebAudioDevice::RenderCallback*) {
+  return new WebAudioDeviceMock(sampleRate);
+}
+
+// TODO(crogers): remove once WebKit switches to new API.
+WebKit::WebAudioDevice* TestWebKitPlatformSupport::createAudioDevice(
     size_t bufferSize, unsigned numberOfChannels, double sampleRate,
     WebKit::WebAudioDevice::RenderCallback*) {
   return new WebAudioDeviceMock(sampleRate);
