@@ -234,8 +234,18 @@ text_model_set_preedit(struct wl_client *client,
 
 static void
 text_model_set_content_type(struct wl_client *client,
-			    struct wl_resource *resource)
+			    struct wl_resource *resource,
+			    uint32_t hint,
+			    uint32_t purpose)
 {
+	struct text_model *text_model = resource->data;
+	struct input_method *input_method, *next;
+
+	wl_list_for_each_safe(input_method, next, &text_model->input_methods, link) {
+		if (!input_method->context)
+			continue;
+		input_method_context_send_content_type(&input_method->context->resource, hint, purpose);
+	}
 }
 
 static const struct text_model_interface text_model_implementation = {

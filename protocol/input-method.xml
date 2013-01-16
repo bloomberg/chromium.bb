@@ -123,6 +123,10 @@
     <event name="reset">
       <arg name="serial" type="uint"/>
     </event>
+    <event name="content_type">
+      <arg name="hint" type="uint"/>
+      <arg name="purpose" type="uint"/>
+    </event>
   </interface>
 
   <interface name="input_method" version="1">
