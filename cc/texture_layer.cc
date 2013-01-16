@@ -195,7 +195,7 @@ bool TextureLayer::blocksPendingCommit() const
     // Double-buffered texture layers need to be blocked until they can be made
     // triple-buffered.  Single-buffered layers already prevent draws, so
     // can block too for simplicity.
-    return true;
+    return drawsContent();
 }
 
 bool TextureLayer::canClipSelf() const

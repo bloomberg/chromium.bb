@@ -843,6 +843,13 @@ void LayerTreeHost::setDeviceScaleFactor(float deviceScaleFactor)
     setNeedsCommit();
 }
 
+bool LayerTreeHost::blocksPendingCommit() const
+{
+    if (!m_rootLayer)
+        return false;
+    return m_rootLayer->blocksPendingCommitRecursive();
+}
+
 void LayerTreeHost::animateLayers(base::TimeTicks time)
 {
     if (!m_settings.acceleratedAnimationEnabled || m_animationRegistrar->active_animation_controllers().empty())

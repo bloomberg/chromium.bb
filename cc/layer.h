@@ -286,6 +286,8 @@ public:
     // compatible with the main thread running freely, such as a double-buffered
     // canvas that doesn't want to be triple-buffered across all three trees.
     virtual bool blocksPendingCommit() const;
+    // Returns true if anything in this tree blocksPendingCommit.
+    bool blocksPendingCommitRecursive() const;
 
     virtual bool canClipSelf() const;
 

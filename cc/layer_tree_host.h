@@ -203,6 +203,8 @@ public:
 
     skia::RefPtr<SkPicture> capturePicture();
 
+    bool blocksPendingCommit() const;
+
 protected:
     LayerTreeHost(LayerTreeHostClient*, const LayerTreeSettings&);
     bool initialize(scoped_ptr<Thread> implThread);

@@ -720,8 +720,17 @@ void ThreadProxy::scheduledActionCommit()
 
     m_nextFrameIsNewlyCommittedFrameOnImplThread = true;
 
-    m_commitCompletionEventOnImplThread->signal();
-    m_commitCompletionEventOnImplThread = 0;
+    if (m_layerTreeHost->settings().implSidePainting && m_layerTreeHost->blocksPendingCommit())
+    {
+        // For some layer types in impl-side painting, the commit is held until
+        // the pending tree is activated.
+        TRACE_EVENT_INSTANT0("cc", "HoldCommit");
+    }
+    else
+    {
+        m_commitCompletionEventOnImplThread->signal();
+        m_commitCompletionEventOnImplThread = 0;
+    }
 
     // SetVisible kicks off the next scheduler action, so this must be last.
     m_schedulerOnImplThread->setVisible(m_layerTreeHostImpl->visible());
@@ -779,6 +788,15 @@ ScheduledActionDrawAndSwapResult ThreadProxy::scheduledActionDrawAndSwapInternal
         result.didDraw = true;
     }
     m_layerTreeHostImpl->didDrawAllLayers(frame);
+
+    // Check for tree activation.
+    if (m_commitCompletionEventOnImplThread && !m_layerTreeHostImpl->pendingTree())
+    {
+        TRACE_EVENT_INSTANT0("cc", "ReleaseCommitbyActivation");
+        DCHECK(m_layerTreeHostImpl->settings().implSidePainting);
+        m_commitCompletionEventOnImplThread->signal();
+        m_commitCompletionEventOnImplThread = 0;
+    }
 
     // Check for a pending compositeAndReadback.
     if (m_readbackRequestOnImplThread) {

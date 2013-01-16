@@ -132,6 +132,22 @@ bool Layer::canClipSelf() const
     return false;
 }
 
+bool Layer::blocksPendingCommitRecursive() const
+{
+    if (blocksPendingCommit())
+        return true;
+    if (maskLayer() && maskLayer()->blocksPendingCommitRecursive())
+        return true;
+    if (replicaLayer() && replicaLayer()->blocksPendingCommitRecursive())
+        return true;
+    for (size_t i = 0; i < m_children.size(); ++i)
+    {
+        if (m_children[i]->blocksPendingCommitRecursive())
+            return true;
+    }
+    return false;
+}
+
 void Layer::setParent(Layer* layer)
 {
     DCHECK(!layer || !layer->hasAncestor(this));
