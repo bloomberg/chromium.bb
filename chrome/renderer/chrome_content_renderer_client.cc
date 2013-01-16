@@ -26,6 +26,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "chrome/common/extensions/web_accessible_resources_handler.h"
 #include "chrome/common/external_ipc_fuzzer.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/localized_error.h"
@@ -126,6 +127,9 @@ void RegisterExtensionManifestHandlers() {
   extensions::ManifestHandler::Register(
       extension_manifest_keys::kDevToolsPage,
       new extensions::DevToolsPageHandler);
+  extensions::ManifestHandler::Register(
+      extension_manifest_keys::kWebAccessibleResources,
+      new extensions::WebAccessibleResourcesHandler);
 }
 
 static void AppendParams(const std::vector<string16>& additional_names,

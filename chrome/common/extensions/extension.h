@@ -367,9 +367,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool ResourceMatches(const URLPatternSet& pattern_set,
                        const std::string& resource) const;
 
-  // Returns true if the specified resource is web accessible.
-  bool IsResourceWebAccessible(const std::string& relative_path) const;
-
   // Returns true if the specified page is sandboxed (served in a unique
   // origin).
   bool IsSandboxedPage(const std::string& relative_path) const;
@@ -378,9 +375,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // served with.
   std::string GetResourceContentSecurityPolicy(const std::string& relative_path)
       const;
-
-  // Returns true when 'web_accessible_resources' are defined for the extension.
-  bool HasWebAccessibleResources() const;
 
   // Returns an extension resource object. |relative_path| should be UTF8
   // encoded.
@@ -839,7 +833,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadCommands(string16* error);
   bool LoadPlugins(string16* error);
   bool LoadNaClModules(string16* error);
-  bool LoadWebAccessibleResources(string16* error);
   bool LoadSandboxedPages(string16* error);
   // Must be called after LoadPlugins().
   bool LoadRequirements(string16* error);
@@ -1041,9 +1034,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   scoped_ptr<extensions::Command> page_action_command_;
   scoped_ptr<extensions::Command> script_badge_command_;
   extensions::CommandMap named_commands_;
-
-  // Optional list of web accessible extension resources.
-  URLPatternSet web_accessible_resources_;
 
   // Optional list of extension pages that are sandboxed (served from a unique
   // origin with a different Content Security Policy).

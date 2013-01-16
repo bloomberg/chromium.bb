@@ -1,0 +1,94 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/common/extensions/web_accessible_resources_handler.h"
+
+#include "base/memory/scoped_ptr.h"
+#include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
+#include "base/values.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "extensions/common/error_utils.h"
+
+namespace extensions {
+
+namespace keys = extension_manifest_keys;
+namespace errors = extension_manifest_errors;
+
+namespace {
+
+const WebAccessibleResourcesInfo* GetResourcesInfo(const Extension* extension) {
+  return static_cast<WebAccessibleResourcesInfo*>(
+      extension->GetManifestData(keys::kWebAccessibleResources));
+}
+
+}  // namespace
+
+WebAccessibleResourcesInfo::WebAccessibleResourcesInfo() {
+}
+
+WebAccessibleResourcesInfo::~WebAccessibleResourcesInfo() {
+}
+
+// static
+bool WebAccessibleResourcesInfo::IsResourceWebAccessible(
+    const Extension* extension,
+    const std::string& relative_path) {
+  // For old manifest versions which do not specify web_accessible_resources
+  // we always allow resource loads.
+  if (extension->manifest_version() < 2 &&
+      !WebAccessibleResourcesInfo::HasWebAccessibleResources(extension))
+    return true;
+
+  const WebAccessibleResourcesInfo* info = GetResourcesInfo(extension);
+  return info &&
+         extension->ResourceMatches(
+             info->web_accessible_resources_, relative_path);
+}
+
+// static
+bool WebAccessibleResourcesInfo::HasWebAccessibleResources(
+    const Extension* extension) {
+  const WebAccessibleResourcesInfo* info = GetResourcesInfo(extension);
+  return info && info->web_accessible_resources_.size() > 0;
+}
+
+WebAccessibleResourcesHandler::WebAccessibleResourcesHandler() {
+}
+
+WebAccessibleResourcesHandler::~WebAccessibleResourcesHandler() {
+}
+
+bool WebAccessibleResourcesHandler::Parse(const base::Value* value,
+                                          Extension* extension,
+                                          string16* error) {
+  scoped_ptr<WebAccessibleResourcesInfo> info(new WebAccessibleResourcesInfo);
+  const ListValue* list_value = NULL;
+  if (!value->GetAsList(&list_value)) {
+    *error = ASCIIToUTF16(errors::kInvalidWebAccessibleResourcesList);
+    return false;
+  }
+  for (size_t i = 0; i < list_value->GetSize(); ++i) {
+    std::string relative_path;
+    if (!list_value->GetString(i, &relative_path)) {
+      *error = ErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidWebAccessibleResource, base::IntToString(i));
+      return false;
+    }
+    URLPattern pattern(URLPattern::SCHEME_EXTENSION);
+    if (pattern.Parse(extension->url().spec()) != URLPattern::PARSE_SUCCESS) {
+      *error = ErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidURLPatternError, extension->url().spec());
+      return false;
+    }
+    while (relative_path[0] == '/')
+      relative_path = relative_path.substr(1, relative_path.length() - 1);
+    pattern.SetPath(pattern.path() + relative_path);
+    info->web_accessible_resources_.AddPattern(pattern);
+  }
+  extension->SetManifestData(keys::kWebAccessibleResources, info.release());
+  return true;
+}
+
+}  // namespace extensions

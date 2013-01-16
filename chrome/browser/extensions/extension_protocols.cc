@@ -24,6 +24,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/web_accessible_resources_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/common/constants.h"
@@ -353,8 +354,10 @@ ExtensionProtocolHandler::MaybeCreateJob(
     content_security_policy =
         extension->GetResourceContentSecurityPolicy(resource_path);
     if ((extension->manifest_version() >= 2 ||
-             extension->HasWebAccessibleResources()) &&
-        extension->IsResourceWebAccessible(resource_path))
+         extensions::WebAccessibleResourcesInfo::HasWebAccessibleResources(
+             extension)) &&
+        extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
+            extension, resource_path))
       send_cors_header = true;
   }
 

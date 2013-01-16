@@ -37,6 +37,7 @@
 #include "chrome/browser/extensions/app_restore_service_factory.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/manifest_url_parser.h"
+#include "chrome/browser/extensions/web_accessible_resources_parser.h"
 #include "chrome/browser/extensions/web_intents_parser.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
@@ -282,6 +283,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::TabCaptureRegistryFactory::GetInstance();
   extensions::TabsWindowsAPI::GetFactoryInstance();
   extensions::TtsAPI::GetFactoryInstance();
+  extensions::WebAccessibleResourcesParser::GetFactoryInstance();
   extensions::WebIntentsParser::GetFactoryInstance();
   extensions::WebNavigationAPI::GetFactoryInstance();
 #endif

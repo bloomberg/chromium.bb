@@ -11,6 +11,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "chrome/common/extensions/web_accessible_resources_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/page_transition_types.h"
 #include "extensions/common/constants.h"
@@ -51,9 +52,10 @@ bool ResourceRequestPolicy::CanRequestResource(
     return false;
   }
 
-  // Disallow loading of extension resources which are not explicitely listed
+  // Disallow loading of extension resources which are not explicitly listed
   // as web accessible if the manifest version is 2 or greater.
-  if (!extension->IsResourceWebAccessible(resource_url.path()) &&
+  if (!WebAccessibleResourcesInfo::IsResourceWebAccessible(
+          extension, resource_url.path()) &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableExtensionsResourceWhitelist)) {
     GURL frame_url = frame->document().url();

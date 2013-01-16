@@ -501,16 +501,6 @@ bool Extension::ResourceMatches(const URLPatternSet& pattern_set,
   return pattern_set.MatchesURL(extension_url_.Resolve(resource));
 }
 
-bool Extension::IsResourceWebAccessible(const std::string& relative_path)
-    const {
-  // For old manifest versions which do not specify web_accessible_resources
-  // we always allow resource loads.
-  if (manifest_version_ < 2 && !HasWebAccessibleResources())
-    return true;
-
-  return ResourceMatches(web_accessible_resources_, relative_path);
-}
-
 bool Extension::IsSandboxedPage(const std::string& relative_path) const {
   return ResourceMatches(sandboxed_pages_, relative_path);
 }
@@ -519,10 +509,6 @@ std::string Extension::GetResourceContentSecurityPolicy(
     const std::string& relative_path) const {
   return IsSandboxedPage(relative_path) ?
       sandboxed_pages_content_security_policy_ : content_security_policy();
-}
-
-bool Extension::HasWebAccessibleResources() const {
-  return web_accessible_resources_.size() > 0;
 }
 
 ExtensionResource Extension::GetResource(
@@ -1967,7 +1953,6 @@ bool Extension::LoadSharedFeatures(
       !LoadCommands(error) ||
       !LoadPlugins(error) ||
       !LoadNaClModules(error) ||
-      !LoadWebAccessibleResources(error) ||
       !LoadSandboxedPages(error) ||
       !LoadRequirements(error) ||
       !LoadDefaultLocale(error) ||
@@ -2180,36 +2165,6 @@ bool Extension::LoadNaClModules(string16* error) {
     nacl_modules_.push_back(NaClModuleInfo());
     nacl_modules_.back().url = GetResourceURL(path_str);
     nacl_modules_.back().mime_type = mime_type;
-  }
-
-  return true;
-}
-
-bool Extension::LoadWebAccessibleResources(string16* error) {
-  if (!manifest_->HasKey(keys::kWebAccessibleResources))
-    return true;
-  ListValue* list_value = NULL;
-  if (!manifest_->GetList(keys::kWebAccessibleResources, &list_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidWebAccessibleResourcesList);
-    return false;
-  }
-  for (size_t i = 0; i < list_value->GetSize(); ++i) {
-    std::string relative_path;
-    if (!list_value->GetString(i, &relative_path)) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidWebAccessibleResource, base::IntToString(i));
-      return false;
-    }
-    URLPattern pattern(URLPattern::SCHEME_EXTENSION);
-    if (pattern.Parse(extension_url_.spec()) != URLPattern::PARSE_SUCCESS) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidURLPatternError, extension_url_.spec());
-      return false;
-    }
-    while (relative_path[0] == '/')
-      relative_path = relative_path.substr(1, relative_path.length() - 1);
-    pattern.SetPath(pattern.path() + relative_path);
-    web_accessible_resources_.AddPattern(pattern);
   }
 
   return true;

@@ -709,6 +709,8 @@
         'browser/extensions/user_script_listener.h',
         'browser/extensions/user_script_master.cc',
         'browser/extensions/user_script_master.h',
+        'browser/extensions/web_accessible_resources_parser.cc',
+        'browser/extensions/web_accessible_resources_parser.h',
         'browser/extensions/web_intent_callbacks.cc',
         'browser/extensions/web_intent_callbacks.h',
         'browser/extensions/web_intents_parser.cc',

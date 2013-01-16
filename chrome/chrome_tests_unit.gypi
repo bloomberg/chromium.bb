@@ -1502,6 +1502,7 @@
         'common/extensions/manifest_tests/extension_manifests_ui_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_update_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_validapp_unittest.cc',
+        'common/extensions/manifest_tests/extension_manifests_web_accessible_resources_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_web_intents_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_web_unittest.cc',
         'common/extensions/matcher/regex_set_matcher_unittest.cc',
