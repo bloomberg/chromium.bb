@@ -77,8 +77,9 @@ cr.define('ntp', function() {
       this.uninstall_.addEventListener('activate',
                                        this.onUninstall_.bind(this));
 
-      if (!cr.isMac && !cr.isChromeOS) {
-        menu.appendChild(cr.ui.MenuItem.createSeparator());
+      if (!cr.isChromeOS) {
+        this.createShortcutSeparator_ =
+            menu.appendChild(cr.ui.MenuItem.createSeparator());
         this.createShortcut_ = this.appendMenuItem_('appcreateshortcut');
         this.createShortcut_.addEventListener(
             'activate', this.onCreateShortcut_.bind(this));
@@ -149,6 +150,8 @@ cr.define('ntp', function() {
         this.disableNotifications_.hidden = false;
         this.disableNotifications_.checked = notificationsDisabled;
       }
+      this.createShortcutSeparator_.hidden = this.createShortcut_.hidden =
+          !app.appData.packagedApp;
     },
 
     /**

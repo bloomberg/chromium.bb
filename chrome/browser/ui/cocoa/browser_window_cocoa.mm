@@ -16,6 +16,7 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -42,6 +43,8 @@
 #import "chrome/browser/ui/cocoa/web_dialog_window_controller.h"
 #import "chrome/browser/ui/cocoa/website_settings_bubble_controller.h"
 #include "chrome/browser/ui/page_info_bubble.h"
+#include "chrome/browser/ui/web_applications/web_app_ui.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -565,7 +568,11 @@ void BrowserWindowCocoa::HandleKeyboardEvent(
 
 void BrowserWindowCocoa::ShowCreateChromeAppShortcutsDialog(
     Profile* profile, const extensions::Extension* app) {
-  NOTIMPLEMENTED();
+  // Normally we would show a dialog, but since we always create the app
+  // shortcut in /Applications there are no options for the user to choose.
+  ShellIntegration::ShortcutInfo shortcut_info;
+  web_app::UpdateShortcutInfoForApp(*app, profile, &shortcut_info);
+  web_app::CreateShortcuts(shortcut_info);
 }
 
 void BrowserWindowCocoa::Cut() {
