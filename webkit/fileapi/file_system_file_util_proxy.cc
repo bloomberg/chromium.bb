@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task_runner_util.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
@@ -113,7 +114,7 @@ bool FileSystemFileUtilProxy::Delete(
     const FileSystemURL& url,
     bool recursive,
     const StatusCallback& callback) {
-  return base::FileUtilProxy::RelayFileTask(
+  return base::PostTaskAndReplyWithResult(
       context->task_runner(), FROM_HERE,
       Bind(&FileUtilHelper::Delete, context, file_util, url, recursive),
       callback);
@@ -143,7 +144,7 @@ bool FileSystemFileUtilProxy::Copy(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
-  return base::FileUtilProxy::RelayFileTask(
+  return base::PostTaskAndReplyWithResult(
       context->task_runner(), FROM_HERE,
       Bind(&FileUtilHelper::Copy,
            context, src_util, dest_util, src_url, dest_url),
@@ -157,7 +158,7 @@ bool FileSystemFileUtilProxy::CopyInForeignFile(
     const FilePath& src_local_disk_file_path,
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
-  return base::FileUtilProxy::RelayFileTask(
+  return base::PostTaskAndReplyWithResult(
       context->task_runner(), FROM_HERE,
       Bind(&FileSystemFileUtil::CopyInForeignFile, Unretained(dest_util),
            context, src_local_disk_file_path, dest_url),
@@ -172,7 +173,7 @@ bool FileSystemFileUtilProxy::Move(
       const FileSystemURL& src_url,
       const FileSystemURL& dest_url,
     const StatusCallback& callback) {
-  return base::FileUtilProxy::RelayFileTask(
+  return base::PostTaskAndReplyWithResult(
       context->task_runner(), FROM_HERE,
       Bind(&FileUtilHelper::Move,
            context, src_util, dest_util, src_url, dest_url),
@@ -201,7 +202,7 @@ bool FileSystemFileUtilProxy::CreateDirectory(
     bool exclusive,
     bool recursive,
     const StatusCallback& callback) {
-  return base::FileUtilProxy::RelayFileTask(
+  return base::PostTaskAndReplyWithResult(
       context->task_runner(), FROM_HERE,
       Bind(&FileSystemFileUtil::CreateDirectory, Unretained(file_util),
            context, url, exclusive, recursive),
@@ -258,7 +259,7 @@ bool FileSystemFileUtilProxy::Touch(
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
-  return base::FileUtilProxy::RelayFileTask(
+  return base::PostTaskAndReplyWithResult(
       context->task_runner(), FROM_HERE,
       Bind(&FileSystemFileUtil::Touch, Unretained(file_util),
            context, url, last_access_time, last_modified_time),
@@ -272,7 +273,7 @@ bool FileSystemFileUtilProxy::Truncate(
     const FileSystemURL& url,
     int64 length,
     const StatusCallback& callback) {
-  return base::FileUtilProxy::RelayFileTask(
+  return base::PostTaskAndReplyWithResult(
       context->task_runner(), FROM_HERE,
       Bind(&FileSystemFileUtil::Truncate, Unretained(file_util),
            context, url, length),

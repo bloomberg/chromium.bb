@@ -292,7 +292,7 @@ bool FileUtilProxy::Delete(TaskRunner* task_runner,
                            const FilePath& file_path,
                            bool recursive,
                            const StatusCallback& callback) {
-  return RelayFileTask(
+  return base::PostTaskAndReplyWithResult(
       task_runner, FROM_HERE,
       Bind(&DeleteAdapter, file_path, recursive),
       callback);
@@ -303,7 +303,7 @@ bool FileUtilProxy::RecursiveDelete(
     TaskRunner* task_runner,
     const FilePath& file_path,
     const StatusCallback& callback) {
-  return RelayFileTask(
+  return base::PostTaskAndReplyWithResult(
       task_runner, FROM_HERE,
       Bind(&DeleteAdapter, file_path, true /* recursive */),
       callback);
@@ -397,16 +397,6 @@ bool FileUtilProxy::Flush(
       FROM_HERE,
       Bind(&FlushPlatformFile, file),
       Bind(&CallWithTranslatedParameter, callback));
-}
-
-// static
-bool FileUtilProxy::RelayFileTask(
-    TaskRunner* task_runner,
-    const tracked_objects::Location& from_here,
-    const FileTask& file_task,
-    const StatusCallback& callback) {
-  return base::PostTaskAndReplyWithResult(
-      task_runner, from_here, file_task, callback);
 }
 
 // static

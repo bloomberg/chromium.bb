@@ -169,12 +169,6 @@ class BASE_EXPORT FileUtilProxy {
       const StatusCallback& callback);
 
   // Relay helpers.
-  static bool RelayFileTask(
-      TaskRunner* task_runner,
-      const tracked_objects::Location& from_here,
-      const FileTask& task,
-      const StatusCallback& callback);
-
   static bool RelayCreateOrOpen(
       TaskRunner* task_runner,
       const CreateOrOpenTask& open_task,
