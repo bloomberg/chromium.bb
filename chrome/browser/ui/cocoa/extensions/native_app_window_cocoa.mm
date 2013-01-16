@@ -13,6 +13,8 @@
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -262,6 +264,9 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
       window,
       extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
       shell_window));
+  registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
+                 content::Source<content::NavigationController>(
+                     &web_contents()->GetController()));
 }
 
 void NativeAppWindowCocoa::InstallView() {
@@ -636,6 +641,17 @@ void NativeAppWindowCocoa::InstallDraggableRegionViews() {
                                        iter->height())];
     [webView addSubview:controlRegion];
   }
+}
+
+void NativeAppWindowCocoa::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
+    web_contents()->Focus();
+    return;
+  }
+  NOTREACHED();
 }
 
 void NativeAppWindowCocoa::FlashFrame(bool flash) {

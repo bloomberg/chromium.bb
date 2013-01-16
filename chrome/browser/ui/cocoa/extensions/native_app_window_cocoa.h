@@ -14,6 +14,8 @@
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/draggable_region.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
 
 class ExtensionKeybindingRegistryCocoa;
@@ -40,7 +42,8 @@ class SkRegion;
 @end
 
 // Cocoa bridge to AppWindow.
-class NativeAppWindowCocoa : public NativeAppWindow {
+class NativeAppWindowCocoa : public NativeAppWindow,
+                             public content::NotificationObserver {
  public:
   NativeAppWindowCocoa(ShellWindow* shell_window,
                        const ShellWindow::CreateParams& params);
@@ -133,6 +136,11 @@ class NativeAppWindowCocoa : public NativeAppWindow {
   void UpdateDraggableRegionsForCustomDrag(
       const std::vector<extensions::DraggableRegion>& regions);
 
+  // Overridden from content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   ShellWindow* shell_window_; // weak - ShellWindow owns NativeAppWindow.
 
   bool has_frame_;
@@ -165,6 +173,8 @@ class NativeAppWindowCocoa : public NativeAppWindow {
   // The Extension Command Registry used to determine which keyboard events to
   // handle.
   scoped_ptr<ExtensionKeybindingRegistryCocoa> extension_keybinding_registry_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeAppWindowCocoa);
 };

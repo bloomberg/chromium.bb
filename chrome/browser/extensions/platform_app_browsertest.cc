@@ -33,6 +33,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/test/test_utils.h"
 #include "googleurl/src/gurl.h"
@@ -931,6 +933,19 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Messaging) {
   LoadAndLaunchPlatformApp("messaging/app2");
   LoadAndLaunchPlatformApp("messaging/app1");
   EXPECT_TRUE(result_catcher.GetNextResult());
+}
+
+// TODO(jeremya): this doesn't work on GTK yet. See http://crbug.com/159450.
+#if defined(TOOLKIT_GTK)
+#define MAYBE_WebContentsHasFocus DISABLED_WebContentsHasFocus
+#else
+#define MAYBE_WebContentsHasFocus WebContentsHasFocus
+#endif
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WebContentsHasFocus) {
+  const Extension* extension = LoadAndLaunchPlatformApp("minimal");
+  ShellWindow* window = CreateShellWindow(extension);
+  EXPECT_TRUE(window->web_contents()->GetRenderWidgetHostView()->HasFocus());
+  CloseShellWindow(window);
 }
 
 }  // namespace extensions
