@@ -37,6 +37,9 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
                          DeviceSettingsService* device_settings_service);
   virtual ~DeviceSettingsProvider();
 
+  // Returns true if |path| is handled by this provider.
+  static bool IsDeviceSetting(const std::string& name);
+
   // CrosSettingsProvider implementation.
   virtual const base::Value* Get(const std::string& path) const OVERRIDE;
   virtual TrustedStatus PrepareTrustedValues(

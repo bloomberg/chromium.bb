@@ -67,11 +67,6 @@ const char* kKnownSettings[] = {
 // Legacy policy file location. Used to detect migration from pre v12 ChromeOS.
 const char kLegacyPolicyFile[] = "/var/lib/whitelist/preferences";
 
-bool IsControlledSetting(const std::string& pref_path) {
-  const char** end = kKnownSettings + arraysize(kKnownSettings);
-  return std::find(kKnownSettings, end, pref_path) != end;
-}
-
 bool HasOldMetricsFile() {
   // TODO(pastarmovj): Remove this once migration is not needed anymore.
   // If the value is not set we should try to migrate legacy consent file.
@@ -103,6 +98,12 @@ DeviceSettingsProvider::~DeviceSettingsProvider() {
   device_settings_service_->RemoveObserver(this);
 }
 
+// static
+bool DeviceSettingsProvider::IsDeviceSetting(const std::string& name) {
+  const char** end = kKnownSettings + arraysize(kKnownSettings);
+  return std::find(kKnownSettings, end, name) != end;
+}
+
 void DeviceSettingsProvider::DoSet(const std::string& path,
                                    const base::Value& in_value) {
   // Make sure that either the current user is the device owner or the
@@ -116,7 +117,7 @@ void DeviceSettingsProvider::DoSet(const std::string& path,
     return;
   }
 
-  if (IsControlledSetting(path)) {
+  if (IsDeviceSetting(path)) {
     pending_changes_.push_back(PendingQueueElement(path, in_value.DeepCopy()));
     if (!store_callback_factory_.HasWeakPtrs())
       SetInPolicy();
@@ -657,7 +658,7 @@ bool DeviceSettingsProvider::MitigateMissingPolicy() {
 }
 
 const base::Value* DeviceSettingsProvider::Get(const std::string& path) const {
-  if (IsControlledSetting(path)) {
+  if (IsDeviceSetting(path)) {
     const base::Value* value;
     if (values_cache_.GetValue(path, &value))
       return value;
@@ -677,7 +678,7 @@ DeviceSettingsProvider::TrustedStatus
 }
 
 bool DeviceSettingsProvider::HandlesSetting(const std::string& path) const {
-  return IsControlledSetting(path);
+  return IsDeviceSetting(path);
 }
 
 DeviceSettingsProvider::TrustedStatus
