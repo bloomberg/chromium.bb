@@ -103,7 +103,7 @@ class CONTENT_EXPORT GpuMemoryManager :
   void Manage();
   void SetClientsHibernatedState() const;
   size_t GetVisibleClientAllocation() const;
-  size_t GetCurrentBackgroundedAvailableGpuMemory() const;
+  size_t GetCurrentNonvisibleAvailableGpuMemory() const;
   void AssignSurfacesAllocationsNonuniform();
   void AssignSurfacesAllocationsUniform();
   void AssignNonSurfacesAllocations();
@@ -112,7 +112,7 @@ class CONTENT_EXPORT GpuMemoryManager :
   // on what the stubs' contexts report.
   void UpdateAvailableGpuMemory();
   void UpdateUnmanagedMemoryLimits();
-  void UpdateBackgroundedAvailableGpuMemory();
+  void UpdateNonvisibleAvailableGpuMemory();
 
   // The amount of video memory which is available for allocation.
   size_t GetAvailableGpuMemory() const;
@@ -125,8 +125,8 @@ class CONTENT_EXPORT GpuMemoryManager :
   size_t GetMaximumTotalGpuMemory() const;
 
   // The maximum and minimum amount of memory that a tab may be assigned.
-  size_t GetMaximumTabAllocation() const;
-  size_t GetMinimumTabAllocation() const;
+  size_t GetMaximumClientAllocation() const;
+  size_t GetMinimumClientAllocation() const;
 
   // Get a reasonable memory limit from a viewport's surface area.
   static size_t CalcAvailableFromViewportArea(int viewport_area);
@@ -179,8 +179,8 @@ class CONTENT_EXPORT GpuMemoryManager :
     bytes_unmanaged_limit_step_ = bytes;
   }
 
-  void TestingSetBackgroundedAvailableGpuMemory(size_t bytes) {
-    bytes_backgrounded_available_gpu_memory_ = bytes;
+  void TestingSetNonvisibleAvailableGpuMemory(size_t bytes) {
+    bytes_nonvisible_available_gpu_memory_ = bytes;
   }
 
   GpuChannelManager* channel_manager_;
@@ -214,13 +214,13 @@ class CONTENT_EXPORT GpuMemoryManager :
   bool bytes_minimum_per_client_overridden_;
 
   // The maximum amount of memory that can be allocated for GPU resources
-  // in backgrounded renderers.
-  size_t bytes_backgrounded_available_gpu_memory_;
+  // in nonvisible renderers.
+  size_t bytes_nonvisible_available_gpu_memory_;
 
   // The current total memory usage, and historical maximum memory usage
   size_t bytes_allocated_managed_current_;
   size_t bytes_allocated_managed_visible_;
-  size_t bytes_allocated_managed_backgrounded_;
+  size_t bytes_allocated_managed_nonvisible_;
   size_t bytes_allocated_unmanaged_current_;
   size_t bytes_allocated_historical_max_;
 
@@ -234,7 +234,7 @@ class CONTENT_EXPORT GpuMemoryManager :
 
   // The number of browser windows that exist. If we ever receive a
   // GpuMsg_SetVideoMemoryWindowCount, then we use this to compute memory
-  // budgets, instead of doing more complicated stub-based calculations.
+  // allocations, instead of doing more complicated stub-based calculations.
   bool window_count_has_been_received_;
   uint32 window_count_;
 
