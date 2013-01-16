@@ -37,6 +37,7 @@
 #include "cc/software_renderer.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/texture_uploader.h"
+#include "cc/top_controls_manager.h"
 #include "cc/util.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/vector2d_conversions.h"
@@ -155,6 +156,9 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
     DCHECK(m_proxy->isImplThread());
     didVisibilityChange(this, m_visible);
 
+    if (settings.calculateTopControlsPosition)
+        m_topControlsManager = TopControlsManager::Create(this, settings.topControlsHeightPx);
+
     // LTHI always has an active tree.
     m_activeTree = LayerTreeImpl::create(this);
 }
@@ -230,6 +234,8 @@ void LayerTreeHostImpl::animate(base::TimeTicks monotonicTime, base::Time wallCl
     animatePageScale(monotonicTime);
     animateLayers(monotonicTime, wallClockTime);
     animateScrollbars(monotonicTime);
+    if (m_topControlsManager)
+        m_topControlsManager->Animate(monotonicTime);
 }
 
 void LayerTreeHostImpl::manageTiles()
@@ -331,6 +337,8 @@ void LayerTreeHostImpl::updateDrawProperties()
       return;
     }
 
+    if (m_topControlsManager)
+      m_topControlsManager->UpdateDrawPositions();
     activeTree()->UpdateDrawProperties();
     if (pendingTree())
       pendingTree()->UpdateDrawProperties();
@@ -766,6 +774,10 @@ CompositorFrameMetadata LayerTreeHostImpl::makeCompositorFrameMetadata() const
     metadata.root_layer_size = contentSize();
     metadata.min_page_scale_factor = m_pinchZoomViewport.min_page_scale_factor();
     metadata.max_page_scale_factor = m_pinchZoomViewport.max_page_scale_factor();
+    if (m_topControlsManager) {
+        metadata.location_bar_offset = gfx::Vector2dF(0.f, m_topControlsManager->controls_top_offset());
+        metadata.location_bar_content_translation = gfx::Vector2dF(0.f, m_topControlsManager->content_top_offset());
+    }
 
     if (!rootScrollLayer())
       return metadata;
@@ -897,6 +909,11 @@ static LayerImpl* findScrollLayerForContentLayer(LayerImpl* layerImpl)
         return layerImpl->parent();
 
     return 0;
+}
+
+LayerTreeImpl* LayerTreeHostImpl::activeTree()
+{
+    return m_activeTree.get();
 }
 
 void LayerTreeHostImpl::createPendingTree()
@@ -1102,6 +1119,11 @@ void LayerTreeHostImpl::updateMaxScrollOffset()
         pendingTree()->UpdateMaxScrollOffset();
 }
 
+void LayerTreeHostImpl::setNeedsUpdateDrawProperties()
+{
+    m_needsUpdateDrawProperties = true;
+}
+
 void LayerTreeHostImpl::setNeedsRedraw()
 {
     m_client->setNeedsRedrawOnImplThread();
@@ -1116,6 +1138,9 @@ bool LayerTreeHostImpl::ensureRenderSurfaceLayerList()
 InputHandlerClient::ScrollStatus LayerTreeHostImpl::scrollBegin(gfx::Point viewportPoint, InputHandlerClient::ScrollInputType type)
 {
     TRACE_EVENT0("cc", "LayerTreeHostImpl::scrollBegin");
+
+    if (m_topControlsManager)
+        m_topControlsManager->ScrollBegin();
 
     DCHECK(!currentlyScrollingLayer());
     clearCurrentlyScrollingLayer();
@@ -1249,6 +1274,9 @@ bool LayerTreeHostImpl::scrollBy(const gfx::Point& viewportPoint,
         if (m_settings.pageScalePinchZoomEnabled && layerImpl == rootScrollLayer())
             viewport = &m_pinchZoomViewport;
         gfx::Vector2dF appliedDelta;
+        if (m_topControlsManager && layerImpl == rootScrollLayer())
+            pendingDelta = m_topControlsManager->ScrollBy(pendingDelta);
+
         if (m_scrollDeltaIsInViewportSpace) {
             float scaleFromViewportToScreenSpace = m_deviceScaleFactor;
             appliedDelta = scrollLayerWithViewportSpaceDelta(viewport, *layerImpl, scaleFromViewportToScreenSpace, viewportPoint, pendingDelta);
@@ -1293,6 +1321,8 @@ void LayerTreeHostImpl::clearCurrentlyScrollingLayer()
 
 void LayerTreeHostImpl::scrollEnd()
 {
+    if (m_topControlsManager)
+        m_topControlsManager->ScrollEnd();
     clearCurrentlyScrollingLayer();
 }
 

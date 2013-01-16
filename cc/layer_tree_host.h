@@ -247,6 +247,7 @@ private:
 
     scoped_refptr<Layer> m_rootLayer;
     scoped_refptr<HeadsUpDisplayLayer> m_hudLayer;
+    scoped_refptr<Layer> m_topControlsContentLayer;
 
     scoped_ptr<PrioritizedResourceManager> m_contentsTextureManager;
     scoped_ptr<PrioritizedResource> m_surfaceMemoryPlaceholder;

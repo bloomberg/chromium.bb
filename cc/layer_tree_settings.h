@@ -30,11 +30,13 @@ class CC_EXPORT LayerTreeSettings {
   bool canUseLCDText;
   bool shouldClearRootRenderPass;
   bool useLinearFadeScrollbarAnimator;
+  bool calculateTopControlsPosition;
   float minimumContentsScale;
   float lowResContentsScaleFactor;
   double refreshRate;
   size_t maxPartialTextureUpdates;
   size_t numRasterThreads;
+  int topControlsHeightPx;
   gfx::Size defaultTileSize;
   gfx::Size maxUntiledLayerSize;
   gfx::Size minimumOcclusionTrackingSize;

@@ -11,8 +11,8 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/vector2d_f.h"
 #include "webkit/glue/webcursor.h"
 
 #if defined(TOOLKIT_GTK)
@@ -159,7 +159,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
                                float page_scale_factor,
                                float min_page_scale_factor,
                                float max_page_scale_factor,
-                               const gfx::Size& content_size) OVERRIDE;
+                               const gfx::Size& content_size,
+                               const gfx::Vector2dF& controls_offset,
+                               const gfx::Vector2dF& content_offset) OVERRIDE;
   virtual void HasTouchEventHandlers(bool need_touch_events) OVERRIDE;
 #endif  // defined(OS_ANDROID)
 

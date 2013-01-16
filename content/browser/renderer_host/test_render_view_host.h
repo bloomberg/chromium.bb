@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/test_renderer_host.h"
+#include "ui/gfx/vector2d_f.h"
 
 // This file provides a testing framework for mocking out the RenderProcessHost
 // layer. It allows you to test RenderViewHost, WebContentsImpl,
@@ -153,7 +154,9 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
                                float page_scale_factor,
                                float min_page_scale_factor,
                                float max_page_scale_factor,
-                               const gfx::Size& content_size) OVERRIDE {}
+                               const gfx::Size& content_size,
+                               const gfx::Vector2dF& controls_offset,
+                               const gfx::Vector2dF& content_offset) OVERRIDE {}
   virtual void HasTouchEventHandlers(bool need_touch_events) OVERRIDE {}
 #elif defined(OS_WIN) && !defined(USE_AURA)
   virtual void WillWmDestroy() OVERRIDE;

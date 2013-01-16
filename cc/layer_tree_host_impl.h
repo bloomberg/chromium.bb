@@ -18,6 +18,7 @@
 #include "cc/render_pass_sink.h"
 #include "cc/renderer.h"
 #include "cc/tile_manager.h"
+#include "cc/top_controls_manager_client.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -35,6 +36,7 @@ class LayerTreeImpl;
 class PageScaleAnimation;
 class RenderPassDrawQuad;
 class ResourceProvider;
+class TopControlsManager;
 struct RendererCapabilities;
 struct RenderingStats;
 
@@ -59,7 +61,8 @@ public:
 class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
                                     public RendererClient,
                                     public TileManagerClient,
-                                    public OutputSurfaceClient {
+                                    public OutputSurfaceClient,
+                                    public TopControlsManagerClient {
     typedef std::vector<LayerImpl*> LayerList;
 
 public:
@@ -76,6 +79,11 @@ public:
     virtual void startPageScaleAnimation(gfx::Vector2d targetOffset, bool anchorPoint, float pageScale, base::TimeTicks startTime, base::TimeDelta duration) OVERRIDE;
     virtual void scheduleAnimation() OVERRIDE;
     virtual bool haveTouchEventHandlersAt(const gfx::Point&) OVERRIDE;
+
+    // TopControlsManagerClient implementation.
+    virtual LayerTreeImpl* activeTree() OVERRIDE;
+    virtual void setNeedsUpdateDrawProperties() OVERRIDE;
+    virtual void setNeedsRedraw() OVERRIDE;
 
     struct CC_EXPORT FrameData : public RenderPassSink {
         FrameData();
@@ -150,7 +158,6 @@ public:
 
     void readback(void* pixels, const gfx::Rect&);
 
-    LayerTreeImpl* activeTree() { return m_activeTree.get(); }
     const LayerTreeImpl* activeTree() const { return m_activeTree.get(); }
     LayerTreeImpl* pendingTree() { return m_pendingTree.get(); }
     const LayerTreeImpl* pendingTree() const { return m_pendingTree.get(); }
@@ -188,9 +195,6 @@ public:
     bool needsAnimateLayers() const { return !m_animationRegistrar->active_animation_controllers().empty(); }
 
     bool needsUpdateDrawProperties() const { return m_needsUpdateDrawProperties; }
-    void setNeedsUpdateDrawProperties() { m_needsUpdateDrawProperties = true; }
-
-    void setNeedsRedraw();
 
     void renderingStats(RenderingStats*) const;
 
@@ -202,6 +206,7 @@ public:
     FrameRateCounter* fpsCounter() const { return m_fpsCounter.get(); }
     DebugRectHistory* debugRectHistory() const { return m_debugRectHistory.get(); }
     ResourceProvider* resourceProvider() const { return m_resourceProvider.get(); }
+    TopControlsManager* topControlsManager() const { return m_topControlsManager.get(); }
 
     Proxy* proxy() const { return m_proxy; }
 
@@ -317,6 +322,8 @@ private:
     bool m_needsUpdateDrawProperties;
     bool m_pinchGestureActive;
     gfx::Point m_previousPinchAnchor;
+
+    scoped_ptr<TopControlsManager> m_topControlsManager;
 
     scoped_ptr<PageScaleAnimation> m_pageScaleAnimation;
 

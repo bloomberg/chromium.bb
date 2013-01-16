@@ -28,6 +28,7 @@
 #include "cc/switches.h"
 #include "cc/thread.h"
 #include "cc/thread_proxy.h"
+#include "cc/top_controls_manager.h"
 #include "cc/tree_synchronizer.h"
 
 namespace {
@@ -298,6 +299,9 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     hostImpl->setPageScaleFactorAndLimits(m_pageScaleFactor, m_minPageScaleFactor, m_maxPageScaleFactor);
     hostImpl->setDebugState(m_debugState);
 
+    if (m_settings.calculateTopControlsPosition && m_topControlsContentLayer && hostImpl->topControlsManager())
+        hostImpl->topControlsManager()->set_content_layer_id(m_topControlsContentLayer->id());
+
     m_commitNumber++;
 }
 
@@ -436,6 +440,8 @@ void LayerTreeHost::setRootLayer(scoped_refptr<Layer> rootLayer)
 
     if (m_hudLayer)
         m_hudLayer->removeFromParent();
+    if (m_topControlsContentLayer)
+        m_topControlsContentLayer->removeFromParent();
 
     setNeedsFullTreeSync();
 }
@@ -531,6 +537,22 @@ void LayerTreeHost::updateLayers(ResourceUpdateQueue& queue, size_t memoryAlloca
 
     if (memoryAllocationLimitBytes)
         m_contentsTextureManager->setMaxMemoryLimitBytes(memoryAllocationLimitBytes);
+
+    if (m_settings.calculateTopControlsPosition) {
+        if (!m_topControlsContentLayer) {
+            m_topControlsContentLayer = Layer::create();
+            m_topControlsContentLayer->setIsDrawable(false);
+            m_topControlsContentLayer->setDebugName("Top Controls Content");
+        }
+
+        // Insert a layer that allows the top controls manager to move around
+        // the content without clobbering/being clobbered by other transforms.
+        if (!LayerTreeHostCommon::findLayerInSubtree(m_rootLayer.get(), m_topControlsContentLayer->id())) {
+            m_topControlsContentLayer->setLayerTreeHost(m_rootLayer->layerTreeHost());
+            m_topControlsContentLayer->setChildren(m_rootLayer->children());
+            m_rootLayer->addChild(m_topControlsContentLayer);
+        }
+    }
 
     updateLayers(rootLayer(), queue);
 }

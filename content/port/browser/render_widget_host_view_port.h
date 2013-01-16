@@ -237,7 +237,9 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
                                float page_scale_factor,
                                float min_page_scale_factor,
                                float max_page_scale_factor,
-                               const gfx::Size& content_size) = 0;
+                               const gfx::Size& content_size,
+                               const gfx::Vector2dF& controls_offset,
+                               const gfx::Vector2dF& content_offset) = 0;
   virtual void HasTouchEventHandlers(bool need_touch_events) = 0;
 #endif
 

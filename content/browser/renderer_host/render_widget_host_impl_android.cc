@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/port/browser/render_widget_host_view_port.h"
+#include "ui/gfx/vector2d_f.h"
 
 namespace content {
 
@@ -18,7 +19,9 @@ void RenderWidgetHostImpl::OnUpdateFrameInfo(
                            page_scale_factor,
                            min_page_scale_factor,
                            max_page_scale_factor,
-                           content_size);
+                           content_size,
+                           gfx::Vector2dF(),
+                           gfx::Vector2dF());
 }
 
 }  // namespace content

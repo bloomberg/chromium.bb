@@ -372,7 +372,9 @@ void RenderWidgetHostViewGuest::UpdateFrameInfo(
     float page_scale_factor,
     float min_page_scale_factor,
     float max_page_scale_factor,
-    const gfx::Size& content_size) {
+    const gfx::Size& content_size,
+    const gfx::Vector2dF& controls_offset,
+    const gfx::Vector2dF& content_offset) {
   NOTIMPLEMENTED();
 }
 

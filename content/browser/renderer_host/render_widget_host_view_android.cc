@@ -597,7 +597,9 @@ void RenderWidgetHostViewAndroid::UpdateFrameInfo(
     float page_scale_factor,
     float min_page_scale_factor,
     float max_page_scale_factor,
-    const gfx::Size& content_size) {
+    const gfx::Size& content_size,
+    const gfx::Vector2dF& controls_offset,
+    const gfx::Vector2dF& content_offset) {
   if (content_view_core_) {
     content_view_core_->UpdateContentSize(content_size.width(),
                                           content_size.height());
@@ -606,6 +608,8 @@ void RenderWidgetHostViewAndroid::UpdateFrameInfo(
     content_view_core_->UpdateScrollOffsetAndPageScaleFactor(scroll_offset.x(),
                                                              scroll_offset.y(),
                                                              page_scale_factor);
+    content_view_core_->UpdateOffsetsForFullscreen(controls_offset.y(),
+                                                   content_offset.y());
   }
 }
 

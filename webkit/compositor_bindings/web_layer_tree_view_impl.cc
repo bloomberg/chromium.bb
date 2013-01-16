@@ -5,6 +5,7 @@
 #include "web_layer_tree_view_impl.h"
 
 #include "base/command_line.h"
+#include "base/string_number_conversions.h"
 #include "cc/font_atlas.h"
 #include "cc/input_handler.h"
 #include "cc/layer.h"
@@ -51,6 +52,20 @@ bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSetti
     settings.initialDebugState.showPlatformLayerTree = webSettings.showPlatformLayerTree;
     settings.initialDebugState.showDebugBorders = webSettings.showDebugBorders;
     settings.implSidePainting = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnableImplSidePainting);
+
+    settings.calculateTopControlsPosition = CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableTopControlsPositionCalculation);
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopControlsHeight)) {
+        std::string controls_height_str =
+            CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kTopControlsHeight);
+        int controls_height;
+        if (base::StringToInt(controls_height_str, &controls_height) && controls_height > 0)
+            settings.topControlsHeightPx = controls_height;
+    }
+    if (settings.calculateTopControlsPosition && (settings.topControlsHeightPx <= 0 || !settings.compositorFrameMessage)) {
+        DCHECK(false) << "Top controls repositioning enabled without valid height or compositorFrameMessage set.";
+        settings.calculateTopControlsPosition = false;
+    }
+
     m_layerTreeHost = LayerTreeHost::create(this, settings, implThread.Pass());
     if (!m_layerTreeHost.get())
         return false;

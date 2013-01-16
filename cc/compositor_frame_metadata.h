@@ -29,9 +29,10 @@ class CC_EXPORT CompositorFrameMetadata
   float min_page_scale_factor;
   float max_page_scale_factor;
 
-  // Used to position the Android location top bar, whose precise
-  // position is computed by the renderer compositor.
+  // Used to position the Android location top bar and page content, whose
+  // precise position is computed by the renderer compositor.
   gfx::Vector2dF location_bar_offset;
+  gfx::Vector2dF location_bar_content_translation;
 };
 
 }  // namespace cc

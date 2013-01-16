@@ -853,6 +853,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kEnableCompositorFrameMessage,
     cc::switches::kEnableImplSidePainting,
     cc::switches::kEnablePartialSwap,
+    cc::switches::kEnableTopControlsPositionCalculation,
     cc::switches::kNumRasterThreads,
     cc::switches::kShowPropertyChangedRects,
     cc::switches::kShowSurfaceDamageRects,
@@ -861,6 +862,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kShowNonOccludingRects,
     cc::switches::kShowOccludingRects,
     cc::switches::kTraceOverdraw,
+    cc::switches::kTopControlsHeight,
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));
