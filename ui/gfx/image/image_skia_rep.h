@@ -8,9 +8,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_export.h"
+#include "ui/gfx/size.h"
 
 namespace gfx {
-class Size;
 
 // An ImageSkiaRep represents a bitmap and the scale factor it is intended for.
 class UI_EXPORT ImageSkiaRep {
@@ -37,6 +37,9 @@ class UI_EXPORT ImageSkiaRep {
   // Get width and height of bitmap in pixels.
   int pixel_width() const { return bitmap_.width(); }
   int pixel_height() const { return bitmap_.height(); }
+  Size pixel_size() const {
+    return Size(pixel_width(), pixel_height());
+  }
 
   // Retrieves the scale that the bitmap will be painted at.
   float GetScale() const;

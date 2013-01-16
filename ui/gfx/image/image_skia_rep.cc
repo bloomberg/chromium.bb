@@ -4,8 +4,6 @@
 
 #include "ui/gfx/image/image_skia_rep.h"
 
-#include "ui/gfx/size.h"
-
 namespace gfx {
 
 ImageSkiaRep::ImageSkiaRep()
