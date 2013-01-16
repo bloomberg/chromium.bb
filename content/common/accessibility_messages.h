@@ -14,8 +14,8 @@
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_param_traits.h"
 #include "ipc/param_traits_macros.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebPoint.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT

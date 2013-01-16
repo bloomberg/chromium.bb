@@ -5,8 +5,8 @@
 #include "content/common/db_message_filter.h"
 
 #include "content/common/database_messages.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
 namespace content {
 
