@@ -32,7 +32,6 @@ scoped_ptr<TopControlsManager> TopControlsManager::Create(
 TopControlsManager::TopControlsManager(TopControlsManagerClient* client,
                                        float top_controls_height)
     : client_(client),
-      content_layer_id_(0),
       is_overlay_mode_(false),
       top_controls_height_(top_controls_height),
       controls_top_offset_(0),
@@ -59,19 +58,6 @@ void TopControlsManager::UpdateDrawPositions() {
     StartAnimationIfNecessary();
     previous_root_scroll_offset_ = RootScrollLayerTotalScrollY();
   }
-
-  float offset_top = is_overlay_mode_ ? 0 : content_top_offset_;
-
-  LayerImpl* content_layer =
-      client_->activeTree()->FindActiveTreeLayerById(content_layer_id_);
-  DCHECK(content_layer);
-  if (content_layer) {
-    gfx::Transform transform;
-    transform.Translate(0, offset_top);
-    content_layer->setTransform(transform);
-  }
-
-  // TODO(tedchoc): Adjust fixed position layers as well.
 }
 
 void TopControlsManager::ScrollBegin() {

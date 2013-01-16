@@ -28,7 +28,6 @@ class CC_EXPORT TopControlsManager {
                                                float top_controls_height);
   virtual ~TopControlsManager();
 
-  void set_content_layer_id(int id) { content_layer_id_ = id; }
   float controls_top_offset() { return controls_top_offset_; }
   float content_top_offset() { return content_top_offset_; }
   float is_overlay_mode() { return is_overlay_mode_; }
@@ -60,7 +59,6 @@ class CC_EXPORT TopControlsManager {
                                       // this.
 
   scoped_ptr<KeyframedFloatAnimationCurve> top_controls_animation_;
-  int content_layer_id_;
   bool is_showing_animation_;
   bool is_overlay_mode_;
   float controls_top_offset_;
