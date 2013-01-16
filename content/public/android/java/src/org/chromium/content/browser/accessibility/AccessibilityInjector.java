@@ -56,6 +56,10 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
 
     private final String mAccessibilityScreenReaderUrl;
 
+    // To support building against the JELLY_BEAN and not JELLY_BEAN_MR1 SDK we need to add this
+    // constant here.
+    private static final int FEEDBACK_BRAILLE = 0x00000020;
+
     // constants for determining script injection strategy
     private static final int ACCESSIBILITY_SCRIPT_INJECTION_UNDEFINED = -1;
     private static final int ACCESSIBILITY_SCRIPT_INJECTION_OPTED_OUT = 0;
@@ -171,8 +175,7 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
         // this script.
         List<AccessibilityServiceInfo> services =
                 getAccessibilityManager().getEnabledAccessibilityServiceList(
-                        AccessibilityServiceInfo.FEEDBACK_BRAILLE |
-                        AccessibilityServiceInfo.FEEDBACK_SPOKEN);
+                        FEEDBACK_BRAILLE | AccessibilityServiceInfo.FEEDBACK_SPOKEN);
 
         return getAccessibilityManager().isEnabled() &&
                 mContentViewCore.getContentSettings() != null &&
