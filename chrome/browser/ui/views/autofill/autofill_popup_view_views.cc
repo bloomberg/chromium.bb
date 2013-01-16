@@ -119,18 +119,12 @@ void AutofillPopupViewViews::Show() {
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     params.delegate = this;
-    params.can_activate = false;
     params.transparent = true;
     params.parent = controller_->container_view();
     widget->Init(params);
     widget->SetContentsView(this);
+    widget->SetBounds(controller_->popup_bounds());
     widget->Show();
-
-    // Allow the popup to appear anywhere on the screen, since it may need
-    // to go beyond the bounds of the window.
-    // TODO(csharp): allow the popup to still appear on the border of
-    // two screens.
-    widget->SetBounds(gfx::Rect(GetScreenSize()));
 
     // Setup an observer to check for when the browser moves or changes size,
     // since the popup should always be hidden in those cases.
@@ -150,8 +144,8 @@ void AutofillPopupViewViews::InvalidateRow(size_t row) {
 }
 
 void AutofillPopupViewViews::UpdateBoundsAndRedrawPopup() {
-  SetBoundsRect(controller_->popup_bounds());
-  SchedulePaintInRect(controller_->popup_bounds());
+  GetWidget()->SetBounds(controller_->popup_bounds());
+  SchedulePaint();
 }
 
 void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
