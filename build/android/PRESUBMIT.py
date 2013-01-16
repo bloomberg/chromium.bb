@@ -8,6 +8,26 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts for
 details on the presubmit API built into gcl.
 """
 
+_DELETIONS_ONLY_FILES = (
+    'build/android/findbugs_filter/findbugs_known_bugs.txt',
+)
+
+
+def _CheckDeletionsOnlyFiles(input_api, output_api):
+  """Check that a certain listed files only have deletions.
+  """
+  errors = []
+  for f in input_api.AffectedFiles():
+    if f.LocalPath() in _DELETIONS_ONLY_FILES:
+      if f.ChangedContents():
+        errors.append(f.LocalPath())
+  results = []
+  if errors:
+    results.append(output_api.PresubmitError(
+        'Following files should only contain deletions.', errors))
+  return results
+
+
 def CommonChecks(input_api, output_api):
   output = []
 
@@ -24,6 +44,7 @@ def CommonChecks(input_api, output_api):
 
   output.extend(input_api.canned_checks.RunUnitTestsInDirectory(
       input_api, output_api, J('buildbot', 'tests')))
+  output.extend(_CheckDeletionsOnlyFiles(input_api, output_api))
   return output
 
 
