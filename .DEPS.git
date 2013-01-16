@@ -84,7 +84,7 @@ deps = {
     'src/third_party/opus/src':
         Var('git_url') + '/chromium/deps/opus.git@79181daa729bbfd77c8bf51dbcac8aac1593ccba',
     'src/third_party/ots':
-        Var('git_url') + '/external/ots.git@54380c8e93060a771a2b4bf608e6d7160b3a71e4',
+        Var('git_url') + '/external/ots.git@0984f83cfc094b87967f456aa92d87e49df33a67',
     'src/third_party/pyftpdlib/src':
         Var('git_url') + '/external/pyftpdlib.git@2be6d65e31c7ee6320d059f581f05ae8d89d7e45',
     'src/third_party/pymox/src':
