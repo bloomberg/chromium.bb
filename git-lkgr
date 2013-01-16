@@ -6,6 +6,7 @@
 
 force_branch=no
 quiet=no
+svn_lkgr=
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -15,6 +16,10 @@ while [ $# -gt 0 ]; do
     -q|--quiet)
       quiet=yes
       ;;
+    -r|--revision)
+      svn_lkgr="$2"
+      shift
+      ;;
     *)
       echo "Unknown option: $1"
       ;;
@@ -22,10 +27,16 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-svn_lkgr=`curl -s http://chromium-status.appspot.com/lkgr`
-if [ $? != 0 -o -z "$svn_lkgr" ]; then
-  echo 'Could not get svn lkgr from chromium-status.appspot.com/lkgr'
-  exit 1
+if [ -z "$svn_lkgr" ]; then
+  svn_lkgr=`curl -s http://chromium-status.appspot.com/lkgr`
+  if [ $? != 0 -o -z "$svn_lkgr" ]; then
+    echo 'Could not get svn lkgr from chromium-status.appspot.com/lkgr'
+    exit 1
+  fi
+fi
+
+if [ "${svn_lkgr:0:1}" = "r" ]; then
+  svn_lkgr="${svn_lkgr:1}"
 fi
 
 # Run a trivial git-svn command to force it to update the revision cache
@@ -55,19 +66,16 @@ closest_commit=`git rev-list --ancestry-path \
     --grep='SVN changes up to revision [0-9]*' \
     ${git_lkgr}..refs/remotes/origin/master | tail -1`
 if [ $? != 0 -o -z "$closest_commit" ]; then
-  cat <<EOF 1>&2
-Could not find a blessed git commit (with accurate .DEPS.git and submodules)
-after svn lkgr revision $svn_lkgr.
+  closest_commit=
+  closest_svn_commit=
+else
+  closest_svn_commit=`git rev-list -n 1 ${closest_commit}^1`
+  if [ $? != 0 -o -z "$closest_svn_commit" ]; then
+    cat <<EOF 1>&2
+  I am thoroughly confused.  Please file a bug report at http://new.crbug.com.
 EOF
-  exit 1
-fi
-
-closest_svn_commit=`git rev-list -n 1 ${closest_commit}^1`
-if [ $? != 0 -o -z "$closest_svn_commit" ]; then
-  cat <<EOF 1>&2
-I am thoroughly confused.  Please file a bug report at http://new.crbug.com.
-EOF
-  exit 1
+    exit 1
+  fi
 fi
 
 # Pick a name for the new branch.  Use `git rev-parse` to make sure the branch
@@ -90,11 +98,11 @@ if [ "${closest_svn_commit}" = "${git_lkgr}" ]; then
 elif [ "${quiet}" = "yes" ]; then
   exit 1
 elif [ "${force_branch}" = "no" ]; then
-  cat <<EOF
-There is no master commit which corresponds exactly to lkgr.
-The closest commit is ${closest_commit}.
-EOF
-  read -n 1 -p 'Would you like to create a new branch based on lkgr? (y/N) '
+  echo "There is no master commit which corresponds exactly to svn revision ${svn_lkgr}."
+  if [ -n "$closest_commit" ]; then
+    echo "The closest commit is ${closest_commit}."
+  fi
+  read -n 1 -p "Would you like to create a new branch based on r${svn_lkgr}? (y/N) "
   echo
   if [ "x$REPLY" != "xy" -a "x$REPLY" != "xY" ]; then
     exit 0
@@ -135,7 +143,7 @@ The new branch "$lkgr_branch" was branched from this commit:
 
 $git_lkgr
 
-... which maps to the svn lkgr commit r${svn_lkgr}.  The new branch
+... which maps to the svn commit r${svn_lkgr}.  The new branch
 has one additional commit, to bring .DEPS.git, .gitmodules, and the
 invisible git submodule files up to date with DEPS.
 
