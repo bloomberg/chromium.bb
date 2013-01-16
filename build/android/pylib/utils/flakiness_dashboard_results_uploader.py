@@ -11,10 +11,19 @@ import subprocess
 import sys
 import tempfile
 
+# Include path when ran from a Chromium checkout.
 sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__ ),
+    os.path.abspath(os.path.join(os.path.dirname(__file__),
                                  os.pardir, os.pardir, os.pardir, os.pardir,
                                  'third_party', 'WebKit', 'Tools', 'Scripts')))
+
+# Include path when ran from a WebKit checkout.
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                 os.pardir, os.pardir, os.pardir, os.pardir,
+                                 os.pardir, os.pardir, os.pardir,
+                                 'Tools', 'Scripts')))
+
 from webkitpy.common.system import executive, filesystem
 from webkitpy.layout_tests.layout_package import json_results_generator
 
