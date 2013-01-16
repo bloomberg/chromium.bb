@@ -200,7 +200,7 @@ void PnaclTranslateThread::DoTranslate() {
     PLUGIN_PRINTF(("PnaclTranslateThread StreamEnd failed\n"));
     if (llc_subprocess_->srpc_client()->GetLastError() ==
         NACL_SRPC_RESULT_APP_ERROR) {
-      // The error string is only present if the error was sent back from llc
+      // The error string is only present if the error was sent back from llc.
       TranslateFailed(ERROR_PNACL_LLC_INTERNAL,
                       params.outs()[3]->arrays.str);
     } else {

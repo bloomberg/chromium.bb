@@ -349,24 +349,27 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
 void PnaclCoordinator::CachedNexeOpenedForWrite(int32_t pp_error) {
   if (pp_error != PP_OK) {
     if (pp_error == PP_ERROR_NOACCESS) {
-      ReportPpapiError(ERROR_PNACL_CACHE_FILEOPEN_NOACCESS,
-                       pp_error,
-                       "PNaCl translation cache failed to open file for write."
-                       "  No access.");
+      ReportPpapiError(
+          ERROR_PNACL_CACHE_FILEOPEN_NOACCESS,
+          pp_error,
+          "PNaCl translation cache failed to open file for write "
+          "(no access).");
       return;
     }
     if (pp_error == PP_ERROR_NOQUOTA) {
-      ReportPpapiError(ERROR_PNACL_CACHE_FILEOPEN_NOQUOTA,
-                       pp_error,
-                       "PNaCl translation cache failed to open file for write."
-                       "  No quota.");
+      ReportPpapiError(
+          ERROR_PNACL_CACHE_FILEOPEN_NOQUOTA,
+          pp_error,
+          "PNaCl translation cache failed to open file for write "
+          "(no quota).");
       return;
     }
     if (pp_error == PP_ERROR_NOSPACE) {
-      ReportPpapiError(ERROR_PNACL_CACHE_FILEOPEN_NOSPACE,
-                       pp_error,
-                       "PNaCl translation cache failed to open file for write."
-                       "  No space.");
+      ReportPpapiError(
+          ERROR_PNACL_CACHE_FILEOPEN_NOSPACE,
+          pp_error,
+          "PNaCl translation cache failed to open file for write "
+          "(no space).");
       return;
     }
     if (pp_error == PP_ERROR_NOTAFILE) {
@@ -474,13 +477,13 @@ void PnaclCoordinator::NexeWasCopiedToCache(int32_t pp_error) {
     if (pp_error == PP_ERROR_NOQUOTA) {
       ReportPpapiError(ERROR_PNACL_CACHE_FINALIZE_COPY_NOQUOTA,
                        pp_error,
-                       "Failed to copy translated nexe to cache.  No quota.");
+                       "Failed to copy translated nexe to cache (no quota).");
       return;
     }
     if (pp_error == PP_ERROR_NOSPACE) {
       ReportPpapiError(ERROR_PNACL_CACHE_FINALIZE_COPY_NOSPACE,
                        pp_error,
-                       "Failed to copy translated nexe to cache.  No space.");
+                       "Failed to copy translated nexe to cache (no space).");
       return;
     }
     ReportPpapiError(ERROR_PNACL_CACHE_FINALIZE_COPY_OTHER,
@@ -501,7 +504,7 @@ void PnaclCoordinator::NexeFileWasRenamed(int32_t pp_error) {
     if (pp_error == PP_ERROR_NOACCESS) {
       ReportPpapiError(ERROR_PNACL_CACHE_FINALIZE_RENAME_NOACCESS,
                        pp_error,
-                       "Failed to finalize cached translation.  No access.");
+                       "Failed to finalize cached translation (no access).");
       return;
     } else if (pp_error != PP_ERROR_FILEEXISTS) {
       ReportPpapiError(ERROR_PNACL_CACHE_FINALIZE_RENAME_OTHER,
@@ -540,13 +543,13 @@ void PnaclCoordinator::NexeReadDidOpen(int32_t pp_error) {
     if (pp_error == PP_ERROR_FILENOTFOUND) {
       ReportPpapiError(ERROR_PNACL_CACHE_FETCH_NOTFOUND,
                        pp_error,
-                       "Failed to open translated nexe.  Not found.");
+                       "Failed to open translated nexe (not found).");
       return;
     }
     if (pp_error == PP_ERROR_NOACCESS) {
       ReportPpapiError(ERROR_PNACL_CACHE_FETCH_NOACCESS,
                        pp_error,
-                       "Failed to open translated nexe.  No access.");
+                       "Failed to open translated nexe (no access).");
       return;
     }
     ReportPpapiError(ERROR_PNACL_CACHE_FETCH_OTHER,
@@ -588,8 +591,8 @@ void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error) {
         ReportPpapiError(
             ERROR_PNACL_CACHE_OPEN_INPROGRESS,
             pp_error,
-            "File system for PNaCl translation cache failed to open."
-            "  In progress.");
+            "File system for PNaCl translation cache failed to open "
+            "(in progress).");
         return;
       }
       ReportPpapiError(
@@ -608,24 +611,27 @@ void PnaclCoordinator::FileSystemDidOpen(int32_t pp_error) {
                  NACL_PRId32")\n", pp_error));
   if (pp_error != PP_OK) {
     if (pp_error == PP_ERROR_NOACCESS) {
-      ReportPpapiError(ERROR_PNACL_CACHE_OPEN_NOACCESS,
-                       pp_error,
-                       "File system for PNaCl translation cache failed to open."
-                       "  No access.");
+      ReportPpapiError(
+          ERROR_PNACL_CACHE_OPEN_NOACCESS,
+          pp_error,
+          "File system for PNaCl translation cache failed to open "
+          "(no access).");
       return;
     }
     if (pp_error == PP_ERROR_NOQUOTA) {
-      ReportPpapiError(ERROR_PNACL_CACHE_OPEN_NOQUOTA,
-                       pp_error,
-                       "File system for PNaCl translation cache failed to open."
-                       "  No quota.");
+      ReportPpapiError(
+          ERROR_PNACL_CACHE_OPEN_NOQUOTA,
+          pp_error,
+          "File system for PNaCl translation cache failed to open "
+          "(no quota).");
       return;
     }
     if (pp_error == PP_ERROR_NOSPACE) {
-      ReportPpapiError(ERROR_PNACL_CACHE_OPEN_NOSPACE,
-                       pp_error,
-                       "File system for PNaCl translation cache failed to open."
-                       "  No space.");
+      ReportPpapiError(
+          ERROR_PNACL_CACHE_OPEN_NOSPACE,
+          pp_error,
+          "File system for PNaCl translation cache failed to open "
+          "(no space).");
       return;
     }
     ReportPpapiError(ERROR_PNACL_CACHE_OPEN_OTHER,
@@ -648,8 +654,8 @@ void PnaclCoordinator::DirectoryWasCreated(int32_t pp_error) {
       ReportPpapiError(
           ERROR_PNACL_CACHE_DIRECTORY_CREATE,
           pp_error,
-          "PNaCl translation cache directory creation/check failed.  "
-          "No access.");
+          "PNaCl translation cache directory creation/check failed "
+          "(no access).");
       return;
     }
     ReportPpapiError(
@@ -703,9 +709,8 @@ void PnaclCoordinator::CachedFileDidOpen(int32_t pp_error) {
       callback_factory_.NewCallback(
           &PnaclCoordinator::BitcodeStreamDidFinish);
 
-  // TODO(dschuff): need to use url_util_->ResolveRelativeToURL?
   if (!streaming_downloader_->OpenStream(pexe_url_, cb, this)) {
-    ReportNonPpapiError(ERROR_PNACL_PEXE_FETCH,
+    ReportNonPpapiError(ERROR_PNACL_PEXE_FETCH_OTHER,
                         nacl::string("failed to open stream ") + pexe_url_);
   }
 }
@@ -717,15 +722,19 @@ void PnaclCoordinator::BitcodeStreamDidFinish(int32_t pp_error) {
     // Defer reporting the error and cleanup until after the translation
     // thread returns, because it may be accessing the coordinator's
     // objects or writing to the files.
-    // TODO(dschuff,jvoung): If this is a PP_ERROR_ABORTED, we probably
-    // want the UMA stat to show that the user aborted the action
-    // (vs a network error).
-    // We also want to track the total number of bytes of the pexe
-    // to know the typical application sizes.
     translate_finish_error_ = pp_error;
-    nacl::stringstream ss;
-    ss << "PnaclCoordinator: pexe load failed (pp_error=" << pp_error << ").";
-    error_info_.SetReport(ERROR_PNACL_PEXE_FETCH, ss.str());
+    if (pp_error == PP_ERROR_ABORTED) {
+      error_info_.SetReport(ERROR_PNACL_PEXE_FETCH_ABORTED,
+                            "PnaclCoordinator: pexe load failed (aborted).");
+    }
+    if (pp_error == PP_ERROR_NOACCESS) {
+      error_info_.SetReport(ERROR_PNACL_PEXE_FETCH_NOACCESS,
+                            "PnaclCoordinator: pexe load failed (no access).");
+    } else {
+      nacl::stringstream ss;
+      ss << "PnaclCoordinator: pexe load failed (pp_error=" << pp_error << ").";
+      error_info_.SetReport(ERROR_PNACL_PEXE_FETCH_OTHER, ss.str());
+    }
     translate_thread_->AbortSubprocesses();
   }
 }
