@@ -510,12 +510,6 @@ void NavigationControllerImpl::OnScreenshotTaken(
     int unique_id,
     skia::PlatformBitmap* bitmap,
     bool success) {
-  if (!success) {
-    LOG(ERROR) << "Taking snapshot was unsuccessful for "
-               << unique_id;
-    return;
-  }
-
   NavigationEntryImpl* entry = NULL;
   for (NavigationEntries::iterator i = entries_.begin();
        i != entries_.end();
@@ -531,9 +525,18 @@ void NavigationControllerImpl::OnScreenshotTaken(
     return;
   }
 
+  if (!success) {
+    LOG(ERROR) << "Taking snapshot was unsuccessful for "
+               << unique_id;
+    entry->SetScreenshotPNGData(std::vector<unsigned char>());
+    return;
+  }
+
   std::vector<unsigned char> data;
   if (gfx::PNGCodec::EncodeBGRASkBitmap(bitmap->GetBitmap(), true, &data))
     entry->SetScreenshotPNGData(data);
+  else
+    entry->SetScreenshotPNGData(std::vector<unsigned char>());
 }
 
 bool NavigationControllerImpl::CanGoBack() const {
