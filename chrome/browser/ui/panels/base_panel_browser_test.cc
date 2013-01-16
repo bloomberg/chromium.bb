@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel_collection.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
-#include "chrome/browser/ui/panels/stacked_panel_collection.h"
 #include "chrome/browser/ui/panels/test_panel_active_state_observer.h"
 #include "chrome/browser/ui/panels/test_panel_mouse_watcher.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -387,18 +386,6 @@ Panel* BasePanelBrowserTest::CreateDetachedPanel(const std::string& name,
   // origin in |bounds|. We need to reposition the panel after it becomes
   // detached.
   panel->SetPanelBounds(bounds);
-  WaitForBoundsAnimationFinished(panel);
-  return panel;
-}
-
-Panel* BasePanelBrowserTest::CreateStackedPanel(const std::string& name,
-                                                const gfx::Rect& bounds,
-                                                StackedPanelCollection* stack) {
-  Panel* panel = CreateDetachedPanel(name, bounds);
-  panel->manager()->MovePanelToCollection(panel,
-                                          stack,
-                                          PanelCollection::DEFAULT_POSITION);
-  EXPECT_EQ(PanelCollection::STACKED, panel->collection()->type());
   WaitForBoundsAnimationFinished(panel);
   return panel;
 }

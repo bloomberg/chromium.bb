@@ -29,17 +29,12 @@ class PanelCollection {
     DEFAULT_POSITION = 0x0,
     // The panel is being added based on its current known position.
     KNOWN_POSITION = 0x1,
-    // The panel is added and placed at top position (currently only used by
-    // stacked collection)
-    TOP_POSITION = 0x2,
     // Do not update panel bounds. Only valid with DEFAULT_POSIITON.
-    DO_NOT_UPDATE_BOUNDS = 0x4,
+    DO_NOT_UPDATE_BOUNDS = 0x2,
     // Wait for a brief delay before refreshing layout of the collection after
     // adding panel to the collection. If not set, the collection will refresh
     // its layout immediately.
-    DELAY_LAYOUT_REFRESH = 0x8,
-    // Do not refresh layout. Used by stacking.
-    NO_LAYOUT_REFRESH = 0x10
+    DELAY_LAYOUT_REFRESH = 0x4,
   };
 
   Type type() const { return type_; }
