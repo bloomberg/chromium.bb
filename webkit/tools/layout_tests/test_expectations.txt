@@ -31,9 +31,3 @@
 # Right?)
 #
 # EVERYTHING BELOW THIS LINE WILL BE DELETED AT EVERY WEBKIT DEPS ROLL
-
-# These were rebaselined in r139708, skipping until we roll past that
-BUG(dominicc) scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ Skip ]
-BUG(dominicc) scrollingcoordinator/non-fast-scrollable-region-transformed-iframe.html [ Skip ]
-
-webkit.org/b/106869 [ Lion Debug ] fast/mediastream/RTCPeerConnection-events.html [ Crash ]
