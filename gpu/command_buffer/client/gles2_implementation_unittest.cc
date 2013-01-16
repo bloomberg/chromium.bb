@@ -248,7 +248,6 @@ int MockTransferBuffer::GetResultOffset() {
 }
 
 void MockTransferBuffer::Free() {
-  GPU_NOTREACHED();
 }
 
 bool MockTransferBuffer::HaveBuffer() const {
@@ -1456,9 +1455,8 @@ TEST_F(GLES2ImplementationTest, MapUnmapBufferSubDataCHROMIUM) {
 
   uint32 offset = 0;
   Cmds expected;
-  expected.buf.Init(
-      kTarget, kOffset, kSize,
-      command_buffer()->GetNextFreeTransferBufferId(), offset);
+  int32 shm_id = command_buffer()->GetNextFreeTransferBufferId();
+  expected.buf.Init(kTarget, kOffset, kSize, shm_id, offset);
   expected.set_token.Init(GetNextToken());
 
   void* mem = gl_->MapBufferSubDataCHROMIUM(
@@ -1466,6 +1464,11 @@ TEST_F(GLES2ImplementationTest, MapUnmapBufferSubDataCHROMIUM) {
   ASSERT_TRUE(mem != NULL);
   gl_->UnmapBufferSubDataCHROMIUM(mem);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+
+  EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(shm_id))
+      .Times(1)
+      .RetiresOnSaturation();
+  gl_->FreeUnusedSharedMemory();
 }
 
 TEST_F(GLES2ImplementationTest, MapUnmapBufferSubDataCHROMIUMBadArgs) {
@@ -1520,10 +1523,10 @@ TEST_F(GLES2ImplementationTest, MapUnmapTexSubImage2DCHROMIUM) {
 
   uint32 offset = 0;
   Cmds expected;
+  int32 shm_id = command_buffer()->GetNextFreeTransferBufferId();
   expected.tex.Init(
       GL_TEXTURE_2D, kLevel, kXOffset, kYOffset, kWidth, kHeight, kFormat,
-      kType,
-      command_buffer()->GetNextFreeTransferBufferId(), offset, GL_FALSE);
+      kType, shm_id, offset, GL_FALSE);
   expected.set_token.Init(GetNextToken());
 
   void* mem = gl_->MapTexSubImage2DCHROMIUM(
@@ -1539,6 +1542,11 @@ TEST_F(GLES2ImplementationTest, MapUnmapTexSubImage2DCHROMIUM) {
   ASSERT_TRUE(mem != NULL);
   gl_->UnmapTexSubImage2DCHROMIUM(mem);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+
+  EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(shm_id))
+      .Times(1)
+      .RetiresOnSaturation();
+  gl_->FreeUnusedSharedMemory();
 }
 
 TEST_F(GLES2ImplementationTest, MapUnmapTexSubImage2DCHROMIUMBadArgs) {
@@ -2689,6 +2697,10 @@ TEST_F(GLES2ImplementationTest, BeginEndQueryEXT) {
   gl_->GetQueryObjectuivEXT(id1, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
   EXPECT_TRUE(NoCommandsWritten());
   EXPECT_EQ(0u, available);
+
+  EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
+      .Times(1)
+      .RetiresOnSaturation();
 }
 
 TEST_F(GLES2ImplementationTest, ErrorQuery) {
@@ -2743,6 +2755,10 @@ TEST_F(GLES2ImplementationTest, ErrorQuery) {
   gl_->GetQueryObjectuivEXT(id, GL_QUERY_RESULT_EXT, &result);
   EXPECT_TRUE(NoCommandsWritten());
   EXPECT_EQ(static_cast<GLuint>(GL_INVALID_ENUM), result);
+
+  EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
+      .Times(1)
+      .RetiresOnSaturation();
 }
 
 #if !defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
