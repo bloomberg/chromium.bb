@@ -28,21 +28,17 @@ import optparse
 import os
 import sys
 
-from pylib import findbugs
+from pylib import constants
+from pylib.utils import findbugs
 
 
 def main(argv):
-  if not findbugs.CheckEnvironment():
-    return 1
-
   parser = findbugs.GetCommonParser()
 
   options, _ = parser.parse_args()
 
-  chrome_src = os.getenv('CHROME_SRC')
-
   if not options.base_dir:
-    options.base_dir = os.path.join(chrome_src, 'build', 'android',
+    options.base_dir = os.path.join(constants.CHROME_DIR, 'build', 'android',
                                     'findbugs_filter')
   if not options.only_analyze:
     options.only_analyze = 'org.chromium.-'

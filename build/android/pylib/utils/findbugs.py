@@ -11,6 +11,8 @@ import shlex
 import subprocess
 import sys
 
+from pylib import constants
+
 
 def _PrintMessage(warnings, title, action, known_bugs_file):
   if warnings:
@@ -66,11 +68,10 @@ def _Rebaseline(current_warnings_set, known_bugs_file):
 
 
 def _GetChromeClasses(release_version):
-  chrome_src = os.getenv('CHROME_SRC')
   version = 'Debug'
   if release_version:
     version = 'Release'
-  path = os.path.join(chrome_src, 'out', version)
+  path = os.path.join(constants.CHROME_DIR, 'out', version)
   cmd = 'find %s -name "*.class"' % path
   proc = subprocess.Popen(shlex.split(cmd),
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -99,9 +100,9 @@ def _Run(exclude, known_bugs, classes_to_analyze, auxiliary_classes,
     findbug_args: addtional command line options needs pass to Findbugs.
   """
 
-  chrome_src = os.getenv('CHROME_SRC')
-  sdk_root = os.getenv('ANDROID_SDK_ROOT')
-  sdk_version = os.getenv('ANDROID_SDK_VERSION')
+  chrome_src = constants.CHROME_DIR
+  sdk_root = constants.ANDROID_SDK_ROOT
+  sdk_version = constants.ANDROID_SDK_VERSION
 
   system_classes = []
   system_classes.append(os.path.join(sdk_root, 'platforms',
@@ -222,19 +223,13 @@ def GetCommonParser():
 
   return parser
 
-def CheckEnvironment():
-  if not (os.getenv('CHROME_SRC') and os.getenv('ANDROID_SDK_ROOT') and
-          os.getenv('ANDROID_SDK_VERSION')):
-    print 'Your build environment is not set up correctly.'
-    print 'Please source build/android/envsetup.sh.'
-    return False
-  return True
 
 def main(argv):
   parser = GetCommonParser()
   options, _ = parser.parse_args()
 
   return Run(options)
+
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
