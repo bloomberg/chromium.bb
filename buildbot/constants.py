@@ -177,6 +177,7 @@ VERSION_FILE = os.path.join('src/third_party/chromiumos-overlay',
                             'chromeos/config/chromeos_version.sh')
 SDK_VERSION_FILE = os.path.join('src/third_party/chromiumos-overlay',
                                 'chromeos/binhost/host/sdk_version.conf')
+SDK_GS_BUCKET = 'chromiumos-sdk'
 
 BOTH_OVERLAYS = 'both'
 PUBLIC_OVERLAYS = 'public'

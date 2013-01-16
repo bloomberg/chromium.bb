@@ -41,6 +41,24 @@ def CanonicalizeURL(url, strict=False):
   return url
 
 
+def GetGsURL(bucket, for_gsutil=False, public=True, suburl=''):
+  """Construct a Google Storage URL
+
+  Args:
+    bucket: The Google Storage bucket to use
+    for_gsutil: Do you want a URL for passing to `gsutil`?
+    public: Do we want the public or private url
+    suburl: A url fragment to tack onto the end
+  Returns:
+    The fully constructed URL
+  """
+  if for_gsutil:
+    urlbase = BASE_GS_URL
+  else:
+    urlbase = PUBLIC_BASE_HTTPS_URL if public else PRIVATE_BASE_HTTPS_URL
+  return '%s%s/%s' % (urlbase, bucket, suburl)
+
+
 def FetchGSUtil(dest_dir):
   """Grabs GSUtil from a public location."""
   logging.info('Fetching gsutil.')

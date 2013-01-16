@@ -33,6 +33,7 @@ from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import toolchain
 
 # How many times to retry uploads.
 _RETRIES = 10
@@ -48,7 +49,6 @@ _HOST_ARCH = 'amd64'
 _BOARD_PATH = 'chroot/build/%(board)s'
 _REL_BOARD_PATH = 'board/%(target)s/%(version)s'
 _REL_HOST_PATH = 'host/%(host_arch)s/%(target)s/%(version)s'
-_SDK_GS_BUCKET = 'gs://chromiumos-sdk'
 # Private overlays to look at for builds to filter
 # relative to build path
 _PRIVATE_OVERLAY_DIR = 'src/private-overlays'
@@ -403,8 +403,8 @@ class PrebuiltUploader(object):
     assert prepackaged is not None
 
     version_str = version[len('chroot-'):]
-    remote_tarfile = \
-        '%s/cros-sdk-%s.tar.xz' % (_SDK_GS_BUCKET, version_str)
+    remote_tarfile = toolchain.GetSdkURL(
+        for_gsutil=True, suburl='cros-sdk-%s.tar.xz' % (version_str,))
     # For SDK, also upload the manifest which is guaranteed to exist
     # by the builderstage.
     _GsUpload(prepackaged + '.Manifest', remote_tarfile + '.Manifest',
@@ -415,7 +415,8 @@ class PrebuiltUploader(object):
     # scripts rely.
     with osutils.TempDirContextManager() as tmpdir:
       pointerfile = os.path.join(tmpdir, 'cros-sdk-latest.conf')
-      remote_pointerfile = '%s/cros-sdk-latest.conf' % _SDK_GS_BUCKET
+      remote_pointerfile = toolchain.GetSdkURL(for_gsutil=True,
+                                               suburl='cros-sdk-latest.conf')
       osutils.WriteFile(pointerfile, 'LATEST_SDK="%s"' % version_str)
       _GsUpload(pointerfile, remote_pointerfile, self._acl)
 
