@@ -561,6 +561,7 @@
         'launcher/launcher_tooltip_manager_unittest.cc',
         'launcher/launcher_unittest.cc',
         'launcher/launcher_view_unittest.cc',
+        'magnifier/magnification_controller_unittest.cc',
         'root_window_controller_unittest.cc',
         'screen_ash_unittest.cc',
         'screensaver/screensaver_view_unittest.cc',
