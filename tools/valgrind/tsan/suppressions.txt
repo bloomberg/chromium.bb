@@ -1000,3 +1000,10 @@
   fun:media::MockMediaSource::AppendAtTime
   fun:media::PipelineIntegrationTest_MediaSource_ConfigChange_WebM_Test::TestBody
 }
+{
+  bug_170245
+  ThreadSanitizer:Race
+  ...
+  fun:media::VirtualAudioInputStreamTest::*
+  fun:base::internal::RunnableAdapter::Run
+}
