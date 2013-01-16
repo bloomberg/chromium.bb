@@ -121,7 +121,7 @@
                 "name": "keys",
                 "choices": [
                   {"type": "string"},
-                  {"type": "array", "items": {"type": "string"}, "minItems": 1}
+                  {"type": "array", "items": {"type": "string"}}
                 ],
                 "description": "A single key or a list of keys for items to remove."
               },
