@@ -555,6 +555,9 @@
       <if expr="not context.startswith('default_')">
         <structure type="chrome_scaled_image" name="IDR_OTR_ICON_FULLSCREEN" file="otr_icon_fullscreen.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_OVERFLOW_INDICATOR_HOVER" file="common/overflow_indicator_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_OVERFLOW_INDICATOR_NORMAL" file="common/overflow_indicator_normal.png" />
+      <structure type="chrome_scaled_image" name="IDR_OVERFLOW_INDICATOR_PRESSED" file="common/overflow_indicator_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_PAGEINFO_BAD" file="pageinfo_bad.png" />
       <structure type="chrome_scaled_image" name="IDR_PAGEINFO_GOOD" file="pageinfo_good.png" />
       <structure type="chrome_scaled_image" name="IDR_PAGEINFO_INFO" file="pageinfo_info.png" />
