@@ -285,8 +285,10 @@ void AVCodecContextToAudioDecoderConfig(
                      codec_context->extradata_size,
                      false,  // Not encrypted.
                      true);
-  DCHECK_EQ(av_get_bytes_per_sample(codec_context->sample_fmt) * 8,
-            config->bits_per_channel());
+  if (codec != kCodecOpus) {
+    DCHECK_EQ(av_get_bytes_per_sample(codec_context->sample_fmt) * 8,
+              config->bits_per_channel());
+  }
 }
 
 void AudioDecoderConfigToAVCodecContext(const AudioDecoderConfig& config,

@@ -360,6 +360,7 @@ void OpusAudioDecoder::DoDecodeBuffer(
                << " ts " << input->GetTimestamp().InMicroseconds() << " us"
                << " diff " << diff.InMicroseconds() << " us";
       base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
+      return;
     }
 
     last_input_timestamp_ = input->GetTimestamp();
