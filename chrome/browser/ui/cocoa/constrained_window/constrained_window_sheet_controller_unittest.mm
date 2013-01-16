@@ -82,8 +82,8 @@ class ConstrainedWindowSheetControllerTest : public CocoaTest {
       scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:dummyRect]);
       [tab_views_ addObject:view];
     }
-    tab0_.reset([tab_views_ objectAtIndex:0], base::scoped_policy::RETAIN);
-    tab1_.reset([tab_views_ objectAtIndex:1], base::scoped_policy::RETAIN);
+    tab0_.reset([[tab_views_ objectAtIndex:0] retain]);
+    tab1_.reset([[tab_views_ objectAtIndex:1] retain]);
     ActivateTabView(tab0_);
 
     // Create a test sheet.

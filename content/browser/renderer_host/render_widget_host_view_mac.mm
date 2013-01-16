@@ -3424,7 +3424,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   if (currentCursor_ == cursor)
     return;
 
-  currentCursor_.reset(cursor, base::scoped_policy::RETAIN);
+  currentCursor_.reset([cursor retain]);
   [[self window] invalidateCursorRectsForView:self];
 }
 

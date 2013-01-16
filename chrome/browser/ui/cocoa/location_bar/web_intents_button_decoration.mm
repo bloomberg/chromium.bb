@@ -140,9 +140,9 @@ WebIntentsButtonDecoration::~WebIntentsButtonDecoration() {}
 void WebIntentsButtonDecoration::SetButtonImages(NSImage* left,
                                                  NSImage* center,
                                                  NSImage* right) {
-  left_image_.reset(left, base::scoped_policy::RETAIN);
-  center_image_.reset(center, base::scoped_policy::RETAIN);
-  right_image_.reset(right, base::scoped_policy::RETAIN);
+  left_image_.reset([left retain]);
+  center_image_.reset([center retain]);
+  right_image_.reset([right retain]);
 }
 
 bool WebIntentsButtonDecoration::AcceptsMousePress() {
