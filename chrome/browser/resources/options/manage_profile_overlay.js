@@ -140,7 +140,7 @@ cr.define('options', function() {
       this.profileInfo_ = profileInfo;
       $(mode + '-profile-name').value = profileInfo.name;
       $(mode + '-profile-icon-grid').selectedItem = profileInfo.iconURL;
-      $('managed-user-settings-button').hidden =
+      $('managed-user-settings-container').hidden =
           !loadTimeData.getBoolean('managedUsersEnabled') ||
           !profileInfo.isManaged;
     },
