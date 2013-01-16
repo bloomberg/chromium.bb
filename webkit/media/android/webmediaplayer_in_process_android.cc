@@ -9,10 +9,10 @@
 #include "base/utf_string_conversions.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_player_bridge_manager.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCookieJar.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCookieJar.h"
 #include "webkit/media/android/stream_texture_factory_android.h"
 #include "webkit/media/android/webmediaplayer_manager_android.h"
 
