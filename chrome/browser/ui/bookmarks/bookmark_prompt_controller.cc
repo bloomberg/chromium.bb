@@ -175,12 +175,14 @@ bool BookmarkPromptController::IsEnabled() {
   if (!manual_group_name.empty())
     return manual_group_name == "Experiment";
 
-  if (chrome::VersionInfo::GetChannel() != chrome::VersionInfo::CHANNEL_CANARY)
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel != chrome::VersionInfo::CHANNEL_BETA &&
+      channel != chrome::VersionInfo::CHANNEL_DEV)
     return false;
 
   const base::Time::Exploded kStartDate = {
-    2012, 11, 0, 20,  // Nov 20, 2012
-    0, 0, 0, 0        // 00:00:00.000
+    2013, 1, 0, 17,  // Jan 17, 2013
+    0, 0, 0, 0       // 00:00:00.000
   };
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial(
