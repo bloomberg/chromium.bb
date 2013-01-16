@@ -237,11 +237,11 @@ void ChromeBrowserFieldTrials::SetupUniformityFieldTrials(
   // and assign the IDs appropriately. So for example, the 1 percent experiments
   // should have a size of 100 (100/100 = 1).
   const chrome_variations::VariationID trial_base_ids[] = {
-      chrome_variations::kUniformity1PercentBase,
-      chrome_variations::kUniformity5PercentBase,
-      chrome_variations::kUniformity10PercentBase,
-      chrome_variations::kUniformity20PercentBase,
-      chrome_variations::kUniformity50PercentBase
+      chrome_variations::UNIFORMITY_1_PERCENT_BASE,
+      chrome_variations::UNIFORMITY_5_PERCENT_BASE,
+      chrome_variations::UNIFORMITY_10_PERCENT_BASE,
+      chrome_variations::UNIFORMITY_20_PERCENT_BASE,
+      chrome_variations::UNIFORMITY_50_PERCENT_BASE
   };
 
   const std::string kOneTimeRandomizedTrialName =
@@ -255,7 +255,7 @@ void ChromeBrowserFieldTrials::SetupUniformityFieldTrials(
   const std::string kSessionRandomizedTrialName =
       "UMA-Session-Randomized-Uniformity-Trial-%d-Percent";
   SetupSingleUniformityFieldTrial(false, kSessionRandomizedTrialName,
-      chrome_variations::kUniformitySessionRandomized5PercentBase, 20);
+      chrome_variations::UNIFORMITY_SESSION_RANDOMIZED_5_PERCENT_BASE, 20);
 
   SetupNewInstallUniformityTrial(install_date);
 }

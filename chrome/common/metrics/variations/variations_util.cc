@@ -46,7 +46,7 @@ class GroupMapAccessor {
     if (key == GOOGLE_WEB_PROPERTIES)
       other_key = GOOGLE_UPDATE_SERVICE;
     VariationID other_id = GetID(other_key, group_identifier);
-    DCHECK(other_id == kEmptyID || other_id == id);
+    DCHECK(other_id == EMPTY_ID || other_id == id);
 #endif
 
     base::AutoLock scoped_lock(lock_);
@@ -63,7 +63,7 @@ class GroupMapAccessor {
     GroupToIDMap* group_to_id_map = GetGroupToIDMap(key);
     GroupToIDMap::const_iterator it = group_to_id_map->find(group_identifier);
     if (it == group_to_id_map->end())
-      return kEmptyID;
+      return EMPTY_ID;
     return it->second;
   }
 

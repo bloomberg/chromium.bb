@@ -109,7 +109,7 @@ TEST_F(VariationsUtilTest, DisableImmediately) {
   trial->Disable();
 
   ASSERT_EQ(default_group_number, trial->group());
-  ASSERT_EQ(kEmptyID, GetIDForTrial(GOOGLE_WEB_PROPERTIES, trial.get()));
+  ASSERT_EQ(EMPTY_ID, GetIDForTrial(GOOGLE_WEB_PROPERTIES, trial.get()));
 }
 
 // Test that successfully associating the FieldTrial with some ID, and then
@@ -124,12 +124,12 @@ TEST_F(VariationsUtilTest, DisableAfterInitialization) {
                                                  next_year_, 12, 12, NULL));
   trial->AppendGroup(non_default_name, 100);
   AssociateGoogleVariationID(GOOGLE_WEB_PROPERTIES, trial->trial_name(),
-      default_name, kTestValueA);
+      default_name, TEST_VALUE_A);
   AssociateGoogleVariationID(GOOGLE_WEB_PROPERTIES, trial->trial_name(),
-      non_default_name, kTestValueB);
+      non_default_name, TEST_VALUE_B);
   trial->Disable();
   ASSERT_EQ(default_name, trial->group_name());
-  ASSERT_EQ(kTestValueA, GetIDForTrial(GOOGLE_WEB_PROPERTIES, trial.get()));
+  ASSERT_EQ(TEST_VALUE_A, GetIDForTrial(GOOGLE_WEB_PROPERTIES, trial.get()));
 }
 
 // Test various successful association cases.
@@ -143,13 +143,13 @@ TEST_F(VariationsUtilTest, AssociateGoogleVariationID) {
 
   // Set GoogleVariationIDs so we can verify that they were chosen correctly.
   AssociateGoogleVariationID(GOOGLE_WEB_PROPERTIES, trial_true->trial_name(),
-      default_name1, kTestValueA);
+      default_name1, TEST_VALUE_A);
   AssociateGoogleVariationID(GOOGLE_WEB_PROPERTIES, trial_true->trial_name(),
-      winner, kTestValueB);
+      winner, TEST_VALUE_B);
 
   EXPECT_EQ(winner_group, trial_true->group());
   EXPECT_EQ(winner, trial_true->group_name());
-  EXPECT_EQ(kTestValueB,
+  EXPECT_EQ(TEST_VALUE_B,
             GetIDForTrial(GOOGLE_WEB_PROPERTIES, trial_true.get()));
 
   const std::string default_name2 = "default2";
@@ -160,12 +160,12 @@ TEST_F(VariationsUtilTest, AssociateGoogleVariationID) {
   const int loser_group = trial_false->AppendGroup(loser, 0);
 
   AssociateGoogleVariationID(GOOGLE_WEB_PROPERTIES, trial_false->trial_name(),
-      default_name2, kTestValueA);
+      default_name2, TEST_VALUE_A);
   AssociateGoogleVariationID(GOOGLE_WEB_PROPERTIES, trial_false->trial_name(),
-      loser, kTestValueB);
+      loser, TEST_VALUE_B);
 
   EXPECT_NE(loser_group, trial_false->group());
-  EXPECT_EQ(kTestValueA,
+  EXPECT_EQ(TEST_VALUE_A,
             GetIDForTrial(GOOGLE_WEB_PROPERTIES, trial_false.get()));
 }
 
@@ -183,24 +183,24 @@ TEST_F(VariationsUtilTest, NoAssociation) {
   // have a valid VariationID associated with it.
   EXPECT_EQ(winner_group, no_id_trial->group());
   EXPECT_EQ(winner, no_id_trial->group_name());
-  EXPECT_EQ(kEmptyID, GetIDForTrial(GOOGLE_WEB_PROPERTIES, no_id_trial.get()));
+  EXPECT_EQ(EMPTY_ID, GetIDForTrial(GOOGLE_WEB_PROPERTIES, no_id_trial.get()));
 }
 
 // Ensure that the AssociateGoogleVariationIDForce works as expected.
 TEST_F(VariationsUtilTest, ForceAssociation) {
-  EXPECT_EQ(kEmptyID,
+  EXPECT_EQ(EMPTY_ID,
             GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, "trial", "group"));
   AssociateGoogleVariationID(GOOGLE_WEB_PROPERTIES, "trial", "group",
-                             kTestValueA);
-  EXPECT_EQ(kTestValueA,
+                             TEST_VALUE_A);
+  EXPECT_EQ(TEST_VALUE_A,
             GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, "trial", "group"));
   AssociateGoogleVariationID(GOOGLE_WEB_PROPERTIES, "trial", "group",
-                             kTestValueB);
-  EXPECT_EQ(kTestValueA,
+                             TEST_VALUE_B);
+  EXPECT_EQ(TEST_VALUE_A,
             GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, "trial", "group"));
   AssociateGoogleVariationIDForce(GOOGLE_WEB_PROPERTIES, "trial", "group",
-                                  kTestValueB);
-  EXPECT_EQ(kTestValueB,
+                                  TEST_VALUE_B);
+  EXPECT_EQ(TEST_VALUE_B,
             GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, "trial", "group"));
 }
 
@@ -269,23 +269,23 @@ TEST_F(VariationsUtilTest, CollectionsCoexist) {
   ASSERT_EQ(default_group_number, trial_true->group());
   ASSERT_EQ(default_name, trial_true->group_name());
 
-  EXPECT_EQ(kEmptyID,
+  EXPECT_EQ(EMPTY_ID,
             GetIDForTrial(GOOGLE_WEB_PROPERTIES, trial_true.get()));
-  EXPECT_EQ(kEmptyID,
+  EXPECT_EQ(EMPTY_ID,
             GetIDForTrial(GOOGLE_UPDATE_SERVICE, trial_true.get()));
 
   AssociateGoogleVariationID(GOOGLE_WEB_PROPERTIES, trial_true->trial_name(),
-      default_name, kTestValueA);
-  EXPECT_EQ(kTestValueA,
+      default_name, TEST_VALUE_A);
+  EXPECT_EQ(TEST_VALUE_A,
             GetIDForTrial(GOOGLE_WEB_PROPERTIES, trial_true.get()));
-  EXPECT_EQ(kEmptyID,
+  EXPECT_EQ(EMPTY_ID,
             GetIDForTrial(GOOGLE_UPDATE_SERVICE, trial_true.get()));
 
   AssociateGoogleVariationID(GOOGLE_UPDATE_SERVICE, trial_true->trial_name(),
-      default_name, kTestValueA);
-  EXPECT_EQ(kTestValueA,
+      default_name, TEST_VALUE_A);
+  EXPECT_EQ(TEST_VALUE_A,
             GetIDForTrial(GOOGLE_WEB_PROPERTIES, trial_true.get()));
-  EXPECT_EQ(kTestValueA,
+  EXPECT_EQ(TEST_VALUE_A,
             GetIDForTrial(GOOGLE_UPDATE_SERVICE, trial_true.get()));
 }
 

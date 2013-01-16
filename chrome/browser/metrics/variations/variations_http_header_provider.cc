@@ -74,7 +74,7 @@ void VariationsHttpHeaderProvider::OnFieldTrialGroupFinalized(
     const std::string& group_name) {
   VariationID new_id =
       GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, trial_name, group_name);
-  if (new_id == kEmptyID)
+  if (new_id == EMPTY_ID)
     return;
 
   base::AutoLock scoped_lock(lock_);
@@ -100,7 +100,7 @@ void VariationsHttpHeaderProvider::InitVariationIDsCacheIfNeeded() {
     const VariationID id =
         GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, it->trial_name,
                              it->group_name);
-    if (id != kEmptyID)
+    if (id != EMPTY_ID)
       variation_ids_set_.insert(id);
   }
   UpdateVariationIDsHeaderValue();

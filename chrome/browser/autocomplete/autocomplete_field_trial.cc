@@ -144,10 +144,10 @@ void AutocompleteFieldTrial::Activate() {
   chrome_variations::AssociateGoogleVariationID(
       chrome_variations::GOOGLE_WEB_PROPERTIES,
       kSuggestFieldTrialStarted2013Q1Name, "0",
-      chrome_variations::kSuggestTrialStarted2013Q1IDMin);
+      chrome_variations::SUGGEST_TRIAL_STARTED_2013_Q1_ID_MIN);
   DCHECK_EQ(kSuggestFieldTrialNumberOfGroups,
-      chrome_variations::kSuggestTrialStarted2013Q1IDMax -
-      chrome_variations::kSuggestTrialStarted2013Q1IDMin + 1);
+      chrome_variations::SUGGEST_TRIAL_STARTED_2013_Q1_ID_MAX -
+      chrome_variations::SUGGEST_TRIAL_STARTED_2013_Q1_ID_MIN + 1);
 
   // We've already created one group; now just need to create
   // kSuggestFieldTrialNumGroups - 1 more. Mark these groups in
@@ -159,7 +159,7 @@ void AutocompleteFieldTrial::Activate() {
         chrome_variations::GOOGLE_WEB_PROPERTIES,
         kSuggestFieldTrialStarted2013Q1Name, group_name,
         static_cast<chrome_variations::VariationID>(
-            chrome_variations::kSuggestTrialStarted2013Q1IDMin + i));
+            chrome_variations::SUGGEST_TRIAL_STARTED_2013_Q1_ID_MIN + i));
   }
 
   // Make sure that we participate in the suggest experiment by calling group()
