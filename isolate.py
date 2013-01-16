@@ -150,15 +150,19 @@ def expand_directory_and_symlink(indir, relfile, blacklist):
           '%s is not a directory but ends with "%s"' % (infile, os.path.sep))
 
     outfiles = []
-    for filename in os.listdir(infile):
-      inner_relfile = os.path.join(relfile, filename)
-      if blacklist(inner_relfile):
-        continue
-      if os.path.isdir(os.path.join(indir, inner_relfile)):
-        inner_relfile += os.path.sep
-      outfiles.extend(
-          expand_directory_and_symlink(indir, inner_relfile, blacklist))
-    return outfiles
+    try:
+      for filename in os.listdir(infile):
+        inner_relfile = os.path.join(relfile, filename)
+        if blacklist(inner_relfile):
+          continue
+        if os.path.isdir(os.path.join(indir, inner_relfile)):
+          inner_relfile += os.path.sep
+        outfiles.extend(
+            expand_directory_and_symlink(indir, inner_relfile, blacklist))
+      return outfiles
+    except OSError as e:
+      raise run_isolated.MappingError('Unable to iterate over directories.\n'
+                                      '%s' % e)
   else:
     # Always add individual files even if they were blacklisted.
     if os.path.isdir(infile):
