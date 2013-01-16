@@ -33,8 +33,8 @@
 #ifndef GL_GLEXT_PROTOTYPES
 #define GL_GLEXT_PROTOTYPES 1
 #endif
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 
 #if defined(USE_X11)
 #include "base/message_pump_aurax11.h"
