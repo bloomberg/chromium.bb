@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/policy/cloud_policy_store.h"
@@ -103,6 +104,11 @@ class VersionInfoUpdater : public policy::CloudPolicySubsystem::Observer,
   chromeos::CrosSettings* cros_settings_;
 
   Delegate* delegate_;
+
+  // Weak pointer factory so we can give our callbacks for invocation
+  // at a later time without worrying that they will actually try to
+  // happen after the lifetime of this object.
+  base::WeakPtrFactory<VersionInfoUpdater> weak_pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VersionInfoUpdater);
 };
