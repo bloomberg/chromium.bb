@@ -140,6 +140,7 @@
 #undef small
 
 using STL_NAMESPACE::max;
+using STL_NAMESPACE::min;
 using STL_NAMESPACE::numeric_limits;
 using STL_NAMESPACE::vector;
 
@@ -1247,7 +1248,9 @@ inline void* do_realloc_with_callback(
   //    . If we need to grow, grow to max(new_size, old_size * 1.X)
   //    . Don't shrink unless new_size < old_size * 0.Y
   // X and Y trade-off time for wasted space.  For now we do 1.25 and 0.5.
-  const size_t lower_bound_to_grow = old_size + old_size / 4;
+  const size_t min_growth = min(old_size / 4,
+      (std::numeric_limits<size_t>::max)() - old_size);  // Avoid overflow.
+  const size_t lower_bound_to_grow = old_size + min_growth;
   const size_t upper_bound_to_shrink = old_size / 2;
   if ((new_size > old_size) || (new_size < upper_bound_to_shrink)) {
     // Need to reallocate.
