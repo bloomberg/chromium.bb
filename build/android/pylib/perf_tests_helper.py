@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import re
+import sys
 
 import android_commands
 import json
@@ -123,6 +124,7 @@ def PrintPerfResult(measurement, trace, values, units, result_type='default',
     output += '\nSd  %s: %f%s' % (measurement, sd, units)
   if print_to_stdout:
     print output
+    sys.stdout.flush()
   return output
 
 
