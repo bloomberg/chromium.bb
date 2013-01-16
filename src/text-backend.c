@@ -248,6 +248,22 @@ text_model_set_content_type(struct wl_client *client,
 	}
 }
 
+static void
+text_model_invoke_action(struct wl_client *client,
+			 struct wl_resource *resource,
+			 uint32_t button,
+			 uint32_t index)
+{
+	struct text_model *text_model = resource->data;
+	struct input_method *input_method, *next;
+
+	wl_list_for_each_safe(input_method, next, &text_model->input_methods, link) {
+		if (!input_method->context)
+			continue;
+		input_method_context_send_invoke_action(&input_method->context->resource, button, index);
+	}
+}
+
 static const struct text_model_interface text_model_implementation = {
 	text_model_set_surrounding_text,
 	text_model_activate,
@@ -255,7 +271,8 @@ static const struct text_model_interface text_model_implementation = {
 	text_model_reset,
 	text_model_set_micro_focus,
 	text_model_set_preedit,
-	text_model_set_content_type
+	text_model_set_content_type,
+	text_model_invoke_action
 };
 
 static void text_model_factory_create_text_model(struct wl_client *client,

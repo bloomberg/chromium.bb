@@ -127,6 +127,10 @@
       <arg name="hint" type="uint"/>
       <arg name="purpose" type="uint"/>
     </event>
+    <event name="invoke_action">
+      <arg name="button" type="uint"/>
+      <arg name="index" type="uint"/>
+    </event>
   </interface>
 
   <interface name="input_method" version="1">

@@ -135,6 +135,10 @@
       <arg name="hint" type="uint"/>
       <arg name="purpose" type="uint"/>
     </request>
+    <request name="invoke_action">
+      <arg name="button" type="uint"/>
+      <arg name="index" type="uint"/>
+    </request>
     <event name="commit_string">
       <description summary="commit">
         Notify when text should be inserted into the editor widget. The text
