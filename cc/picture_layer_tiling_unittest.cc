@@ -119,5 +119,13 @@ TEST_F(PictureLayerTilingIteratorTest, IteratorCoversLayerBoundsBothScale) {
   VerifyTilesExactlyCoverRect(scale, gfx::Rect(2014, 1579, 867, 1033));
 }
 
+TEST_F(PictureLayerTilingIteratorTest, IteratorEmptyRect) {
+  Initialize(gfx::Size(100, 100), 1, gfx::Size(800, 600));
+
+  gfx::Rect empty;
+  PictureLayerTiling::Iterator iter(tiling_.get(), 1, empty);
+  EXPECT_FALSE(iter);
+}
+
 }  // namespace
 }  // namespace cc

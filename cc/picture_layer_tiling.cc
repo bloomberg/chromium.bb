@@ -140,8 +140,8 @@ PictureLayerTiling::Iterator::Iterator()
       tile_j_(0),
       left_(0),
       top_(0),
-      right_(0),
-      bottom_(0) {
+      right_(-1),
+      bottom_(-1) {
 }
 
 PictureLayerTiling::Iterator::Iterator(const PictureLayerTiling* tiling,
@@ -155,8 +155,8 @@ PictureLayerTiling::Iterator::Iterator(const PictureLayerTiling* tiling,
       tile_j_(0),
       left_(0),
       top_(0),
-      right_(0),
-      bottom_(0) {
+      right_(-1),
+      bottom_(-1) {
   DCHECK(tiling_);
   if (dest_rect_.IsEmpty())
     return;
