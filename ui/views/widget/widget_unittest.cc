@@ -1161,7 +1161,7 @@ TEST_F(WidgetTest, FocusChangesOnBubble) {
   contents_view->RequestFocus();
   EXPECT_TRUE(contents_view->HasFocus());
 
-  // Show a buble.
+  // Show a bubble.
   BubbleDelegateView* bubble_delegate_view =
       new BubbleDelegateView(contents_view, BubbleBorder::TOP_LEFT);
   bubble_delegate_view->set_focusable(true);
