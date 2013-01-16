@@ -8,6 +8,8 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
+#include <limits>
+
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -64,6 +66,19 @@ bool ShouldEnableSeccompLegacy(const std::string& process_type) {
   } else {
     return false;
   }
+}
+
+bool AddResourceLimit(int resource, rlim_t limit) {
+  struct rlimit old_rlimit;
+  if (getrlimit(resource, &old_rlimit))
+    return false;
+  // Make sure we don't raise the existing limit.
+  const struct rlimit new_rlimit = {
+      std::min(old_rlimit.rlim_cur, limit),
+      std::min(old_rlimit.rlim_max, limit)
+      };
+  int rc = setrlimit(resource, &new_rlimit);
+  return rc == 0;
 }
 
 }  // namespace
@@ -257,26 +272,35 @@ bool LinuxSandbox::seccomp_bpf_supported() const {
 
 bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
   (void) process_type;
-#if defined(__x86_64__) && !defined(ADDRESS_SANITIZER)
+#if !defined(ADDRESS_SANITIZER)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kNoSandbox)) {
     return false;
   }
-  // Limit the address space to 4GB.
-  const rlim_t kNewAddressSpaceMaxSize = 0x100000000L;
-  struct rlimit old_address_space_limit;
-  if (getrlimit(RLIMIT_AS, &old_address_space_limit))
-    return false;
-  // Make sure we don't raise the existing limit.
-  const struct rlimit new_address_space_limit = {
-      std::min(old_address_space_limit.rlim_cur, kNewAddressSpaceMaxSize),
-      std::min(old_address_space_limit.rlim_max, kNewAddressSpaceMaxSize)
-      };
-  int rc = setrlimit(RLIMIT_AS, &new_address_space_limit);
-  return (rc == 0);
+#if defined(__LP64__)
+  // On 64 bits, limit the address space to 16GB. This is in the hope of making
+  // some kernel exploits more complex and less reliable.  This limit has to be
+  // very high because V8 and possibly others will reserve memory ranges and
+  // rely on on-demand paging for allocation.  Unfortunately, even
+  // MADV_DONTNEED ranges  count towards RLIMIT_AS so this is not an option.
+  // See crbug.com/169327 for a discussion.
+  const rlim_t kNewAddressSpaceMaxSize = 1L << 34;
+#else
+  // On 32 bits, enforce the 4GB limit. On a 64 bits kernel, this could
+  // prevent far calling to 64 bits and abuse the memory allocator to exploit
+  // a kernel vulnerability.
+  const rlim_t kNewAddressSpaceMaxSize = std::numeric_limits<uint32_t>::max();
+#endif  // defined(__LP64__)
+  // On all platforms, add a limit to the brk() heap that would prevent
+  // allocations that can't be index by an int.
+  const rlim_t kNewDataSegmentMaxSize = std::numeric_limits<int>::max();
+
+  bool limited_as = AddResourceLimit(RLIMIT_AS, kNewAddressSpaceMaxSize);
+  bool limited_data = AddResourceLimit(RLIMIT_DATA, kNewDataSegmentMaxSize);
+  return limited_as && limited_data;
 #else
   return false;
-#endif  // __x86_64__ && !defined(ADDRESS_SANITIZER)
+#endif  // !defined(ADDRESS_SANITIZER)
 }
 
 }  // namespace content
