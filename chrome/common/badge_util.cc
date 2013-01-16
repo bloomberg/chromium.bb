@@ -145,7 +145,7 @@ void PaintBadge(gfx::Canvas* canvas,
                 const SkColor& text_color_in,
                 const SkColor& background_color_in,
                 int icon_width,
-                extensions::Extension::ActionInfo::Type action_type) {
+                extensions::ActionInfo::Type action_type) {
   if (text.empty())
     return;
 
@@ -180,7 +180,7 @@ void PaintBadge(gfx::Canvas* canvas,
   // right-aligned, but it can also be center-aligned if it is large.
   int rect_height = kBadgeHeight;
   int bottom_margin =
-      action_type == extensions::Extension::ActionInfo::TYPE_BROWSER ?
+      action_type == extensions::ActionInfo::TYPE_BROWSER ?
       kBottomMarginBrowserAction : kBottomMarginPageAction;
   int rect_y = bounds.bottom() - bottom_margin - kBadgeHeight;
   int rect_width = badge_width;

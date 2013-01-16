@@ -21,6 +21,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -180,26 +181,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
     std::string client_id;
     std::vector<std::string> scopes;
-  };
-
-  struct ActionInfo {
-    explicit ActionInfo();
-    ~ActionInfo();
-
-    // The types of extension actions.
-    enum Type {
-      TYPE_BROWSER,
-      TYPE_PAGE,
-      TYPE_SCRIPT_BADGE,
-      TYPE_SYSTEM_INDICATOR,
-    };
-
-    // Empty implies the key wasn't present.
-    ExtensionIconSet default_icon;
-    std::string default_title;
-    GURL default_popup_url;
-    // action id -- only used with legacy page actions API.
-    std::string id;
   };
 
   struct InstallWarning {
@@ -625,9 +606,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     return converted_from_user_script_;
   }
   const UserScriptList& content_scripts() const { return content_scripts_; }
-  const ActionInfo* script_badge_info() const {
-    return script_badge_info_.get();
-  }
   const ActionInfo* page_action_info() const { return page_action_info_.get(); }
   const ActionInfo* browser_action_info() const {
     return browser_action_info_.get();
@@ -685,7 +663,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const PermissionSet* required_permission_set() const {
     return required_permission_set_.get();
   }
-  // Appends |new_warnings| to install_warnings().
+  // Appends |new_warning[s]| to install_warnings_.
+  void AddInstallWarning(const InstallWarning& new_warning);
   void AddInstallWarnings(const InstallWarningVector& new_warnings);
   const InstallWarningVector& install_warnings() const {
     return install_warnings_;
@@ -857,7 +836,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadContentScripts(string16* error);
   bool LoadPageAction(string16* error);
   bool LoadBrowserAction(string16* error);
-  bool LoadScriptBadge(string16* error);
   bool LoadSystemIndicator(APIPermissionSet* api_permissions, string16* error);
   bool LoadTextToSpeechVoices(string16* error);
   bool LoadIncognitoMode(string16* error);
@@ -902,13 +880,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                        string16* error,
                        void(UserScript::*add_method)(const std::string& glob),
                        UserScript* instance);
-
-  // Helper method to load an ExtensionAction from the page_action or
-  // browser_action entries in the manifest.
-  scoped_ptr<ActionInfo> LoadExtensionActionInfoHelper(
-      const base::DictionaryValue* manifest_section,
-      ActionInfo::Type action_type,
-      string16* error);
 
   // Helper method that loads the OAuth2 info from the 'oauth2' manifest key.
   bool LoadOAuth2Info(string16* error);
@@ -1016,9 +987,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The extension's browser action, if any.
   scoped_ptr<ActionInfo> browser_action_info_;
-
-  // The extension's script badge.  Never NULL.
-  scoped_ptr<ActionInfo> script_badge_info_;
 
   // The extension's system indicator, if any.
   scoped_ptr<ActionInfo> system_indicator_info_;

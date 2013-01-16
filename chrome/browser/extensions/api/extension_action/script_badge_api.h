@@ -2,11 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_EXTENSION_SCRIPT_BADGE_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_EXTENSION_SCRIPT_BADGE_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_SCRIPT_BADGE_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_SCRIPT_BADGE_API_H_
 
 #include "chrome/browser/extensions/api/extension_action/extension_actions_api.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/extension_function.h"
+
+namespace extensions {
+
+class ScriptBadgeAPI : public ProfileKeyedAPI {
+ public:
+  explicit ScriptBadgeAPI(Profile* profile);
+  virtual ~ScriptBadgeAPI();
+
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<ScriptBadgeAPI>* GetFactoryInstance();
+
+ private:
+  friend class ProfileKeyedAPIFactory<ScriptBadgeAPI>;
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() { return "ScriptBadgeAPI"; }
+
+  DISALLOW_COPY_AND_ASSIGN(ScriptBadgeAPI);
+};
 
 //
 // scriptBadge.* aliases for supported scriptBadge APIs.
@@ -39,4 +59,6 @@ class ScriptBadgeGetAttentionFunction : public ExtensionActionFunction {
   virtual ~ScriptBadgeGetAttentionFunction();
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_EXTENSION_SCRIPT_BADGE_API_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_SCRIPT_BADGE_API_H_

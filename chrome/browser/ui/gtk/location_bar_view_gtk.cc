@@ -1549,7 +1549,7 @@ gboolean LocationBarViewGtk::OnScriptBubbleButtonExpose(GtkWidget* widget,
                          SK_ColorWHITE,
                          SkColorSetRGB(0, 170, 0),
                          allocation.width,
-                         Extension::ActionInfo::TYPE_PAGE);
+                         extensions::ActionInfo::TYPE_PAGE);
   return FALSE;
 }
 

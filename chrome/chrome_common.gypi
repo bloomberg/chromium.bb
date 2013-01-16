@@ -126,6 +126,10 @@
         'common/custom_handlers/protocol_handler.cc',
         'common/custom_handlers/protocol_handler.h',
         'common/descriptors_android.h',
+        'common/extensions/api/extension_action/script_badge_handler.cc',
+        'common/extensions/api/extension_action/script_badge_handler.h',
+        'common/extensions/api/extension_action/action_info.cc',
+        'common/extensions/api/extension_action/action_info.h',
         'common/extensions/api/extension_api.cc',
         'common/extensions/api/extension_api.h',
         'common/extensions/api/extension_api_stub.cc',
@@ -190,6 +194,8 @@
         'common/extensions/manifest.h',
         'common/extensions/manifest_handler.cc',
         'common/extensions/manifest_handler.h',
+        'common/extensions/manifest_handler_helpers.cc',
+        'common/extensions/manifest_handler_helpers.h',
         'common/extensions/manifest_url_handler.cc',
         'common/extensions/manifest_url_handler.h',
         'common/extensions/matcher/regex_set_matcher.cc',
@@ -464,6 +470,8 @@
           'sources/': [
             ['exclude', '^common/extensions/api/'],
             ['include', 'common/extensions/api/extension_api_stub.cc'],
+            ['include', 'common/extensions/api/extension_action/action_info.cc'],
+            ['include', 'common/extensions/api/extension_action/action_info.h'],
           ],
         }],
         ['remoting==1', {

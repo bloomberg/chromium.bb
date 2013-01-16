@@ -159,15 +159,15 @@ ExtensionAction::IconAnimation::ScopedObserver::~ScopedObserver() {
 
 ExtensionAction::ExtensionAction(
     const std::string& extension_id,
-    extensions::Extension::ActionInfo::Type action_type,
-    const extensions::Extension::ActionInfo& manifest_data)
+    extensions::ActionInfo::Type action_type,
+    const extensions::ActionInfo& manifest_data)
     : extension_id_(extension_id),
       action_type_(action_type),
       has_changed_(false) {
   // Page/script actions are hidden/disabled by default, and browser actions are
   // visible/enabled by default.
   SetAppearance(kDefaultTabId,
-                action_type == extensions::Extension::ActionInfo::TYPE_BROWSER ?
+                action_type == extensions::ActionInfo::TYPE_BROWSER ?
                 ExtensionAction::ACTIVE : ExtensionAction::INVISIBLE);
   SetTitle(kDefaultTabId, manifest_data.default_title);
   SetPopupUrl(kDefaultTabId, manifest_data.default_popup_url);
@@ -184,7 +184,7 @@ ExtensionAction::~ExtensionAction() {
 scoped_ptr<ExtensionAction> ExtensionAction::CopyForTest() const {
   scoped_ptr<ExtensionAction> copy(
       new ExtensionAction(extension_id_, action_type_,
-                          extensions::Extension::ActionInfo()));
+                          extensions::ActionInfo()));
   copy->popup_url_ = popup_url_;
   copy->title_ = title_;
   copy->icon_ = icon_;
@@ -203,15 +203,15 @@ scoped_ptr<ExtensionAction> ExtensionAction::CopyForTest() const {
 
 // static
 int ExtensionAction::GetIconSizeForType(
-    extensions::Extension::ActionInfo::Type type) {
+    extensions::ActionInfo::Type type) {
   switch (type) {
-    case extensions::Extension::ActionInfo::TYPE_BROWSER:
-    case extensions::Extension::ActionInfo::TYPE_PAGE:
-    case extensions::Extension::ActionInfo::TYPE_SYSTEM_INDICATOR:
+    case extensions::ActionInfo::TYPE_BROWSER:
+    case extensions::ActionInfo::TYPE_PAGE:
+    case extensions::ActionInfo::TYPE_SYSTEM_INDICATOR:
       // TODO(dewittj) Report the actual icon size of the system
       // indicator.
       return extension_misc::EXTENSION_ICON_ACTION;
-    case extensions::Extension::ActionInfo::TYPE_SCRIPT_BADGE:
+    case extensions::ActionInfo::TYPE_SCRIPT_BADGE:
       return extension_misc::EXTENSION_ICON_BITTY;
     default:
       NOTREACHED();
@@ -265,7 +265,7 @@ bool ExtensionAction::SetAppearance(int tab_id, Appearance new_appearance) {
   // When showing a script badge for the first time on a web page, fade it in.
   // Other transitions happen instantly.
   if (old_appearance == INVISIBLE && tab_id != kDefaultTabId &&
-      action_type_ == extensions::Extension::ActionInfo::TYPE_SCRIPT_BADGE) {
+      action_type_ == extensions::ActionInfo::TYPE_SCRIPT_BADGE) {
     RunIconAnimation(tab_id);
   }
 

@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/api/commands/commands.h"
 #include "chrome/browser/extensions/api/extension_action/extension_browser_actions_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api.h"
-#include "chrome/browser/extensions/api/extension_action/extension_script_badge_api.h"
 #include "chrome/browser/extensions/api/idle/idle_api.h"
 #include "chrome/browser/extensions/api/managed_mode/managed_mode_api.h"
 #include "chrome/browser/extensions/api/metrics/metrics.h"
@@ -83,11 +82,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<BrowserActionGetPopupFunction>();
   RegisterFunction<BrowserActionEnableFunction>();
   RegisterFunction<BrowserActionDisableFunction>();
-
-  // Script Badges.
-  RegisterFunction<ScriptBadgeGetAttentionFunction>();
-  RegisterFunction<ScriptBadgeGetPopupFunction>();
-  RegisterFunction<ScriptBadgeSetPopupFunction>();
 
   // Browsing Data.
   RegisterFunction<RemoveBrowsingDataFunction>();

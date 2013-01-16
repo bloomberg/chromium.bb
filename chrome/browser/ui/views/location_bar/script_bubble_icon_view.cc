@@ -7,6 +7,7 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/script_bubble_view.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/icon_with_badge_image_source.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -49,7 +50,7 @@ void ScriptBubbleIconView::SetScriptCount(size_t script_count) {
           base::IntToString(script_count_),
           SkColor(),
           SkColorSetRGB(0, 170, 0),
-          extensions::Extension::ActionInfo::TYPE_PAGE),
+          extensions::ActionInfo::TYPE_PAGE),
       requested_size);
 
   SetImage(image);

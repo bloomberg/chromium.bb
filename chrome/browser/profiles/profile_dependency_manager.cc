@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/api/cookies/cookies_api.h"
 #include "chrome/browser/extensions/api/dial/dial_api_factory.h"
 #include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
+#include "chrome/browser/extensions/api/extension_action/script_badge_api.h"
 #include "chrome/browser/extensions/api/file_handlers/file_handlers_api.h"
 #include "chrome/browser/extensions/api/font_settings/font_settings_api_factory.h"
 #include "chrome/browser/extensions/api/history/history_api_factory.h"
@@ -276,6 +277,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::PreferenceAPI::GetFactoryInstance();
   extensions::ProcessesAPI::GetFactoryInstance();
   extensions::PushMessagingAPI::GetFactoryInstance();
+  extensions::ScriptBadgeAPI::GetFactoryInstance();
 #if defined(ENABLE_INPUT_SPEECH)
   extensions::SpeechInputAPI::GetFactoryInstance();
 #endif

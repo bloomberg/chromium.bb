@@ -21,7 +21,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -320,11 +320,10 @@ bool ExtensionActionFunction::RunImpl() {
     }
   } else {
     // Only browser actions and system indicators have a default tabId.
-    typedef extensions::Extension::ActionInfo ActionInfo;
-    ActionInfo::Type action_type = extension_action_->action_type();
+    extensions::ActionInfo::Type action_type = extension_action_->action_type();
     EXTENSION_FUNCTION_VALIDATE(
-        action_type == ActionInfo::TYPE_BROWSER ||
-        action_type == ActionInfo::TYPE_SYSTEM_INDICATOR);
+        action_type == extensions::ActionInfo::TYPE_BROWSER ||
+        action_type == extensions::ActionInfo::TYPE_SYSTEM_INDICATOR);
   }
   return RunExtensionAction();
 }
@@ -378,8 +377,8 @@ bool ExtensionActionFunction::ExtractDataFromArguments() {
 
 void ExtensionActionFunction::NotifyChange() {
   switch (extension_action_->action_type()) {
-    case extensions::Extension::ActionInfo::TYPE_BROWSER:
-    case extensions::Extension::ActionInfo::TYPE_PAGE:
+    case extensions::ActionInfo::TYPE_BROWSER:
+    case extensions::ActionInfo::TYPE_PAGE:
       if (extensions::ExtensionActionManager::Get(profile_)->
           GetBrowserAction(*extension_)) {
         NotifyBrowserActionChange();
@@ -388,10 +387,10 @@ void ExtensionActionFunction::NotifyChange() {
         NotifyLocationBarChange();
       }
       return;
-    case extensions::Extension::ActionInfo::TYPE_SCRIPT_BADGE:
+    case extensions::ActionInfo::TYPE_SCRIPT_BADGE:
       NotifyLocationBarChange();
       return;
-    case extensions::Extension::ActionInfo::TYPE_SYSTEM_INDICATOR:
+    case extensions::ActionInfo::TYPE_SYSTEM_INDICATOR:
       NotifySystemIndicatorChange();
       return;
   }

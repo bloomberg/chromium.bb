@@ -13,6 +13,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -33,20 +34,12 @@
 #include "ui/gfx/codec/png_codec.h"
 
 using content::SocketPermissionRequest;
-using extensions::APIPermission;
-using extensions::APIPermissionSet;
-using extensions::ErrorUtils;
-using extensions::Extension;
-using extensions::Feature;
-using extensions::PermissionSet;
-using extensions::SocketPermission;
-using extensions::URLPatternSet;
-using extensions::UsbDevicePermission;
 
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
 namespace errors = extension_manifest_errors;
 
+namespace extensions {
 namespace {
 
 scoped_refptr<Extension> LoadManifestUnchecked(
@@ -101,18 +94,18 @@ static scoped_refptr<Extension> LoadManifestStrict(
   return LoadManifest(dir, test_file, Extension::NO_FLAGS);
 }
 
-static scoped_ptr<Extension::ActionInfo> LoadAction(
+static scoped_ptr<ActionInfo> LoadAction(
     const std::string& manifest) {
   scoped_refptr<Extension> extension = LoadManifest("page_action",
       manifest);
   EXPECT_TRUE(extension->page_action_info());
   if (extension->page_action_info()) {
-    return make_scoped_ptr(new Extension::ActionInfo(
+    return make_scoped_ptr(new ActionInfo(
         *extension->page_action_info()));
   }
   ADD_FAILURE() << "Expected manifest in " << manifest
                 << " to include a page_action section.";
-  return scoped_ptr<Extension::ActionInfo>();
+  return scoped_ptr<ActionInfo>();
 }
 
 static void LoadActionAndExpectError(const std::string& manifest,
@@ -214,7 +207,7 @@ TEST(ExtensionTest, GetAbsolutePathNoError) {
 }
 
 TEST(ExtensionTest, LoadPageActionHelper) {
-  scoped_ptr<Extension::ActionInfo> action;
+  scoped_ptr<ActionInfo> action;
 
   // First try with an empty dictionary.
   action = LoadAction("page_action_empty.json");
@@ -756,7 +749,7 @@ TEST(ExtensionTest, BrowserActionSynthesizesCommand) {
                            "manifest.json");
   // An extension with a browser action but no extension command specified
   // should get a command assigned to it.
-  const extensions::Command* command = extension->browser_action_command();
+  const Command* command = extension->browser_action_command();
   ASSERT_TRUE(command != NULL);
   ASSERT_EQ(ui::VKEY_UNKNOWN, command->accelerator().key_code());
 }
@@ -1294,3 +1287,5 @@ TEST(ExtensionTest, GetSyncTypeExtensionWithTwoPlugins) {
     EXPECT_EQ(extension->GetSyncType(), Extension::SYNC_TYPE_NONE);
 }
 #endif // !defined(OS_CHROMEOS)
+
+}  // namespace extensions

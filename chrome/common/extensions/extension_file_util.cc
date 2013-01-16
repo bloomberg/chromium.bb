@@ -19,6 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -328,7 +329,7 @@ bool ValidateExtension(const Extension* extension,
     }
   }
 
-  const Extension::ActionInfo* action = extension->page_action_info();
+  const extensions::ActionInfo* action = extension->page_action_info();
   if (action && !action->default_icon.empty() &&
       !ValidateExtensionIconSet(action->default_icon, extension,
           IDS_EXTENSION_LOAD_ICON_FOR_PAGE_ACTION_FAILED, error)) {

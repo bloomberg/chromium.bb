@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/string16.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class SkPaint;
@@ -41,7 +41,7 @@ void PaintBadge(gfx::Canvas* canvas,
                 const SkColor& text_color_in,
                 const SkColor& background_color_in,
                 int icon_width,
-                extensions::Extension::ActionInfo::Type action_type);
+                extensions::ActionInfo::Type action_type);
 
 }  // namespace badge_util;
 

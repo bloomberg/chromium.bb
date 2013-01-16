@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -26,7 +26,7 @@ class IconWithBadgeImageSource
       const std::string& text,
       const SkColor& text_color,
       const SkColor& background_color,
-      extensions::Extension::ActionInfo::Type action_type);
+      extensions::ActionInfo::Type action_type);
   virtual ~IconWithBadgeImageSource();
 
  private:
@@ -48,7 +48,7 @@ class IconWithBadgeImageSource
   SkColor background_color_;
 
   // Type of extension action this is for.
-  extensions::Extension::ActionInfo::Type action_type_;
+  extensions::ActionInfo::Type action_type_;
 
   DISALLOW_COPY_AND_ASSIGN(IconWithBadgeImageSource);
 };

@@ -15,7 +15,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/animation/linear_animation.h"
@@ -113,8 +113,8 @@ class ExtensionAction {
   };
 
   ExtensionAction(const std::string& extension_id,
-                  extensions::Extension::ActionInfo::Type action_type,
-                  const extensions::Extension::ActionInfo& manifest_data);
+                  extensions::ActionInfo::Type action_type,
+                  const extensions::ActionInfo& manifest_data);
   ~ExtensionAction();
 
   // Gets a copy of this, ownership passed to caller.
@@ -124,13 +124,13 @@ class ExtensionAction {
   // Given the extension action type, returns the size the extension action icon
   // should have. The icon should be square, so only one dimension is
   // returned.
-  static int GetIconSizeForType(extensions::Extension::ActionInfo::Type type);
+  static int GetIconSizeForType(extensions::ActionInfo::Type type);
 
   // extension id
   const std::string& extension_id() const { return extension_id_; }
 
   // What kind of action is this?
-  extensions::Extension::ActionInfo::Type action_type() const {
+  extensions::ActionInfo::Type action_type() const {
     return action_type_;
   }
 
@@ -287,7 +287,7 @@ class ExtensionAction {
   // extension manifest).
   const std::string extension_id_;
 
-  const extensions::Extension::ActionInfo::Type action_type_;
+  const extensions::ActionInfo::Type action_type_;
 
   // Each of these data items can have both a global state (stored with the key
   // kDefaultTabId), or tab-specific state (stored with the tab_id as the key).

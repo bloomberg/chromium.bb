@@ -12,6 +12,8 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/extensions/api/extension_action/script_badge_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "content/public/browser/notification_service.h"
@@ -99,8 +101,8 @@ namespace {
 ExtensionAction* GetOrCreateOrNull(
     std::map<std::string, linked_ptr<ExtensionAction> >* map,
     const std::string& extension_id,
-    Extension::ActionInfo::Type action_type,
-    const Extension::ActionInfo* action_info) {
+    ActionInfo::Type action_type,
+    const ActionInfo* action_info) {
   std::map<std::string, linked_ptr<ExtensionAction> >::const_iterator it =
       map->find(extension_id);
   if (it != map->end())
@@ -122,20 +124,20 @@ ExtensionAction* ExtensionActionManager::GetPageAction(
   if (FeatureSwitch::script_badges()->IsEnabled())
     return NULL;
   return GetOrCreateOrNull(&page_actions_, extension.id(),
-                           Extension::ActionInfo::TYPE_PAGE,
+                           ActionInfo::TYPE_PAGE,
                            extension.page_action_info());
 }
 
 ExtensionAction* ExtensionActionManager::GetBrowserAction(
     const extensions::Extension& extension) const {
-  const Extension::ActionInfo* action_info = extension.browser_action_info();
-  Extension::ActionInfo::Type action_type = Extension::ActionInfo::TYPE_BROWSER;
+  const ActionInfo* action_info = extension.browser_action_info();
+  ActionInfo::Type action_type = ActionInfo::TYPE_BROWSER;
   if (FeatureSwitch::script_badges()->IsEnabled() &&
       extension.page_action_info()) {
     // The action box changes the meaning of the page action area, so we
     // need to convert page actions into browser actions.
     action_info = extension.page_action_info();
-    action_type = Extension::ActionInfo::TYPE_PAGE;
+    action_type = ActionInfo::TYPE_PAGE;
   }
   return GetOrCreateOrNull(&browser_actions_, extension.id(),
                            action_type, action_info);
@@ -151,15 +153,15 @@ ExtensionAction* ExtensionActionManager::GetSystemIndicator(
     return NULL;
 
   return GetOrCreateOrNull(&system_indicators_, extension.id(),
-                           Extension::ActionInfo::TYPE_SYSTEM_INDICATOR,
+                           ActionInfo::TYPE_SYSTEM_INDICATOR,
                            extension.system_indicator_info());
 }
 
 ExtensionAction* ExtensionActionManager::GetScriptBadge(
     const extensions::Extension& extension) const {
   return GetOrCreateOrNull(&script_badges_, extension.id(),
-                           Extension::ActionInfo::TYPE_SCRIPT_BADGE,
-                           extension.script_badge_info());
+                           ActionInfo::TYPE_SCRIPT_BADGE,
+                           ActionInfo::GetScriptBadgeInfo(&extension));
 }
 
 }  // namespace extensions

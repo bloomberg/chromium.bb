@@ -26,6 +26,9 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+// TODO(rdevlin.cronin): Remove this once PageAction, BrowserAction, and
+// SystemIndicator have been moved out of Extension.
+#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/csp_validator.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -34,6 +37,7 @@
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
+#include "chrome/common/extensions/manifest_handler_helpers.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
@@ -125,51 +129,6 @@ static void ConvertHexadecimalToIDAlphabet(std::string* id) {
       (*id)[i] = 'a';
     }
   }
-}
-
-// Strips leading slashes from the file path. Returns true iff the final path is
-// non empty.
-bool NormalizeAndValidatePath(std::string* path) {
-  size_t first_non_slash = path->find_first_not_of('/');
-  if (first_non_slash == std::string::npos) {
-    *path = "";
-    return false;
-  }
-
-  *path = path->substr(first_non_slash);
-  return true;
-}
-
-// Loads icon paths defined in dictionary |icons_value| into ExtensionIconSet
-// |icons|. |icons_value| is a dictionary value {icon size -> icon path}. Icons
-// in |icons_value| whose size is not in |icon_sizes| will be ignored.
-// Returns success. If load fails, |error| will be set.
-bool LoadIconsFromDictionary(const DictionaryValue* icons_value,
-                             const int* icon_sizes,
-                             size_t num_icon_sizes,
-                             ExtensionIconSet* icons,
-                             string16* error) {
-  DCHECK(icons);
-  for (size_t i = 0; i < num_icon_sizes; ++i) {
-    std::string key = base::IntToString(icon_sizes[i]);
-    if (icons_value->HasKey(key)) {
-      std::string icon_path;
-      if (!icons_value->GetString(key, &icon_path)) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidIconPath, key);
-        return false;
-      }
-
-      if (!NormalizeAndValidatePath(&icon_path)) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidIconPath, key);
-        return false;
-      }
-
-      icons->Add(icon_sizes[i], icon_path);
-    }
-  }
-  return true;
 }
 
 // A singleton object containing global data needed by the extension objects.
@@ -305,6 +264,18 @@ bool ContainsManifestForbiddenPermission(const APIPermissionSet& apis,
   return false;
 }
 
+// Helper method to load an ExtensionAction from the page_action, script_badge,
+// browser_action, or system_indicator entries in the manifest.
+// TODO(rdevlin.cronin): Remove this once PageAction, BrowserAction, and
+// SystemIndicator have been moved out of Extension.
+scoped_ptr<ActionInfo> LoadExtensionActionInfoHelper(
+    const Extension* extension,
+    const DictionaryValue* extension_action,
+    string16* error) {
+  return manifest_handler_helpers::LoadActionInfo(
+      extension, extension_action, error);
+}
+
 }  // namespace
 
 const FilePath::CharType Extension::kManifestFilename[] =
@@ -343,9 +314,6 @@ Extension::Requirements::~Requirements() {}
 
 Extension::OAuth2Info::OAuth2Info() {}
 Extension::OAuth2Info::~OAuth2Info() {}
-
-Extension::ActionInfo::ActionInfo() {}
-Extension::ActionInfo::~ActionInfo() {}
 
 //
 // Extension
@@ -1281,6 +1249,10 @@ const std::string Extension::VersionString() const {
   return version()->GetString();
 }
 
+void Extension::AddInstallWarning(const InstallWarning& new_warning) {
+  install_warnings_.push_back(new_warning);
+}
+
 void Extension::AddInstallWarnings(
     const InstallWarningVector& new_warnings) {
   install_warnings_.insert(install_warnings_.end(),
@@ -2012,11 +1984,12 @@ bool Extension::LoadIcons(string16* error) {
     return false;
   }
 
-  return LoadIconsFromDictionary(icons_value,
-                                 extension_misc::kExtensionIconSizes,
-                                 extension_misc::kNumExtensionIconSizes,
-                                 &icons_,
-                                 error);
+  return manifest_handler_helpers::LoadIconsFromDictionary(
+      icons_value,
+      extension_misc::kExtensionIconSizes,
+      extension_misc::kNumExtensionIconSizes,
+      &icons_,
+      error);
 }
 
 bool Extension::LoadCommands(string16* error) {
@@ -2473,7 +2446,6 @@ bool Extension::LoadExtensionFeatures(APIPermissionSet* api_permissions,
       !LoadPageAction(error) ||
       !LoadBrowserAction(error) ||
       !LoadSystemIndicator(api_permissions, error) ||
-      !LoadScriptBadge(error) ||
       !LoadIncognitoMode(error) ||
       !LoadContentSecurityPolicy(error))
     return false;
@@ -2559,7 +2531,7 @@ bool Extension::LoadPageAction(string16* error) {
   // If page_action_value is not NULL, then there was a valid page action.
   if (page_action_value) {
     page_action_info_ = LoadExtensionActionInfoHelper(
-        page_action_value, Extension::ActionInfo::TYPE_PAGE, error);
+        this, page_action_value, error);
     if (!page_action_info_.get())
       return false;  // Failed to parse page action definition.
   }
@@ -2577,65 +2549,9 @@ bool Extension::LoadBrowserAction(string16* error) {
   }
 
   browser_action_info_ = LoadExtensionActionInfoHelper(
-      browser_action_value, Extension::ActionInfo::TYPE_BROWSER, error);
+      this, browser_action_value, error);
   if (!browser_action_info_.get())
     return false;  // Failed to parse browser action definition.
-  return true;
-}
-
-bool Extension::LoadScriptBadge(string16* error) {
-  if (manifest_->HasKey(keys::kScriptBadge)) {
-    if (!FeatureSwitch::script_badges()->IsEnabled()) {
-      // So as to not confuse developers if they specify a script badge section
-      // in the manifest, show a warning if the script badge declaration isn't
-      // going to have any effect.
-      install_warnings_.push_back(
-          InstallWarning(InstallWarning::FORMAT_TEXT,
-                         errors::kScriptBadgeRequiresFlag));
-    }
-
-    DictionaryValue* script_badge_value = NULL;
-    if (!manifest_->GetDictionary(keys::kScriptBadge, &script_badge_value)) {
-      *error = ASCIIToUTF16(errors::kInvalidScriptBadge);
-      return false;
-    }
-
-    script_badge_info_ = LoadExtensionActionInfoHelper(
-        script_badge_value, Extension::ActionInfo::TYPE_SCRIPT_BADGE, error);
-    if (!script_badge_info_.get())
-      return false;  // Failed to parse script badge definition.
-  } else {
-    script_badge_info_.reset(new ActionInfo());
-  }
-
-  // Script badges always use their extension's title and icon so users can rely
-  // on the visual appearance to know which extension is running.  This isn't
-  // bulletproof since an malicious extension could use a different 16x16 icon
-  // that matches the icon of a trusted extension, and users wouldn't be warned
-  // during installation.
-
-  if (!script_badge_info_->default_title.empty()) {
-    install_warnings_.push_back(
-        InstallWarning(InstallWarning::FORMAT_TEXT,
-                       errors::kScriptBadgeTitleIgnored));
-  }
-  script_badge_info_->default_title = name();
-
-  if (!script_badge_info_->default_icon.empty()) {
-    install_warnings_.push_back(
-        InstallWarning(InstallWarning::FORMAT_TEXT,
-                       errors::kScriptBadgeIconIgnored));
-  }
-
-  script_badge_info_->default_icon.Clear();
-  for (size_t i = 0; i < extension_misc::kNumScriptBadgeIconSizes; i++) {
-    std::string path = icons().Get(extension_misc::kScriptBadgeIconSizes[i],
-                                   ExtensionIconSet::MATCH_BIGGER);
-    if (!path.empty())
-      script_badge_info_->default_icon.Add(
-          extension_misc::kScriptBadgeIconSizes[i], path);
-  }
-
   return true;
 }
 
@@ -2654,9 +2570,7 @@ bool Extension::LoadSystemIndicator(APIPermissionSet* api_permissions,
   }
 
   system_indicator_info_ = LoadExtensionActionInfoHelper(
-      system_indicator_value,
-      Extension::ActionInfo::TYPE_SYSTEM_INDICATOR,
-      error);
+      this, system_indicator_value, error);
 
   if (!system_indicator_info_.get()) {
     return false;
@@ -3093,134 +3007,6 @@ bool Extension::LoadGlobsHelper(
   }
 
   return true;
-}
-
-scoped_ptr<Extension::ActionInfo> Extension::LoadExtensionActionInfoHelper(
-    const DictionaryValue* extension_action,
-    ActionInfo::Type action_type,
-    string16* error) {
-  scoped_ptr<ActionInfo> result(new ActionInfo());
-
-  if (manifest_version_ == 1) {
-    // kPageActionIcons is obsolete, and used by very few extensions. Continue
-    // loading it, but only take the first icon as the default_icon path.
-    const ListValue* icons = NULL;
-    if (extension_action->HasKey(keys::kPageActionIcons) &&
-        extension_action->GetList(keys::kPageActionIcons, &icons)) {
-      for (ListValue::const_iterator iter = icons->begin();
-           iter != icons->end(); ++iter) {
-        std::string path;
-        if (!(*iter)->GetAsString(&path) || !NormalizeAndValidatePath(&path)) {
-          *error = ASCIIToUTF16(errors::kInvalidPageActionIconPath);
-          return scoped_ptr<ActionInfo>();
-        }
-
-        result->default_icon.Add(extension_misc::EXTENSION_ICON_ACTION, path);
-        break;
-      }
-    }
-
-    std::string id;
-    if (extension_action->HasKey(keys::kPageActionId)) {
-      if (!extension_action->GetString(keys::kPageActionId, &id)) {
-        *error = ASCIIToUTF16(errors::kInvalidPageActionId);
-        return scoped_ptr<ActionInfo>();
-      }
-      result->id = id;
-    }
-  }
-
-  // Read the page action |default_icon| (optional).
-  // The |default_icon| value can be either dictionary {icon size -> icon path}
-  // or non empty string value.
-  if (extension_action->HasKey(keys::kPageActionDefaultIcon)) {
-    const DictionaryValue* icons_value = NULL;
-    std::string default_icon;
-    if (extension_action->GetDictionary(keys::kPageActionDefaultIcon,
-                                        &icons_value)) {
-      if (!LoadIconsFromDictionary(icons_value,
-                                   extension_misc::kExtensionActionIconSizes,
-                                   extension_misc::kNumExtensionActionIconSizes,
-                                   &result->default_icon,
-                                   error)) {
-        return scoped_ptr<ActionInfo>();
-      }
-    } else if (extension_action->GetString(keys::kPageActionDefaultIcon,
-                                           &default_icon) &&
-               NormalizeAndValidatePath(&default_icon)) {
-      result->default_icon.Add(extension_misc::EXTENSION_ICON_ACTION,
-                               default_icon);
-    } else {
-      *error = ASCIIToUTF16(errors::kInvalidPageActionIconPath);
-      return scoped_ptr<ActionInfo>();
-    }
-  }
-
-  // Read the page action title from |default_title| if present, |name| if not
-  // (both optional).
-  if (extension_action->HasKey(keys::kPageActionDefaultTitle)) {
-    if (!extension_action->GetString(keys::kPageActionDefaultTitle,
-                                     &result->default_title)) {
-      *error = ASCIIToUTF16(errors::kInvalidPageActionDefaultTitle);
-      return scoped_ptr<ActionInfo>();
-    }
-  } else if (manifest_version_ == 1 && extension_action->HasKey(keys::kName)) {
-    if (!extension_action->GetString(keys::kName, &result->default_title)) {
-      *error = ASCIIToUTF16(errors::kInvalidPageActionName);
-      return scoped_ptr<ActionInfo>();
-    }
-  }
-
-  // Read the action's |popup| (optional).
-  const char* popup_key = NULL;
-  if (extension_action->HasKey(keys::kPageActionDefaultPopup))
-    popup_key = keys::kPageActionDefaultPopup;
-
-  if (manifest_version_ == 1 &&
-      extension_action->HasKey(keys::kPageActionPopup)) {
-    if (popup_key) {
-      *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidPageActionOldAndNewKeys,
-          keys::kPageActionDefaultPopup,
-          keys::kPageActionPopup);
-      return scoped_ptr<ActionInfo>();
-    }
-    popup_key = keys::kPageActionPopup;
-  }
-
-  if (popup_key) {
-    const DictionaryValue* popup = NULL;
-    std::string url_str;
-
-    if (extension_action->GetString(popup_key, &url_str)) {
-      // On success, |url_str| is set.  Nothing else to do.
-    } else if (manifest_version_ == 1 &&
-               extension_action->GetDictionary(popup_key, &popup)) {
-      if (!popup->GetString(keys::kPageActionPopupPath, &url_str)) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidPageActionPopupPath, "<missing>");
-        return scoped_ptr<ActionInfo>();
-      }
-    } else {
-      *error = ASCIIToUTF16(errors::kInvalidPageActionPopup);
-      return scoped_ptr<ActionInfo>();
-    }
-
-    if (!url_str.empty()) {
-      // An empty string is treated as having no popup.
-      result->default_popup_url = GetResourceURL(url_str);
-      if (!result->default_popup_url.is_valid()) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidPageActionPopupPath, url_str);
-        return scoped_ptr<ActionInfo>();
-      }
-    } else {
-      DCHECK(result->default_popup_url.is_empty())
-          << "Shouldn't be possible for the popup to be set.";
-    }
-  }
-
-  return result.Pass();
 }
 
 bool Extension::LoadOAuth2Info(string16* error) {

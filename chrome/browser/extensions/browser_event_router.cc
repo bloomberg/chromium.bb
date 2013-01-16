@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
@@ -585,16 +585,16 @@ void BrowserEventRouter::ExtensionActionExecuted(
     WebContents* web_contents) {
   const char* event_name = NULL;
   switch (extension_action.action_type()) {
-    case Extension::ActionInfo::TYPE_BROWSER:
+    case ActionInfo::TYPE_BROWSER:
       event_name = "browserAction.onClicked";
       break;
-    case Extension::ActionInfo::TYPE_PAGE:
+    case ActionInfo::TYPE_PAGE:
       event_name = "pageAction.onClicked";
       break;
-    case Extension::ActionInfo::TYPE_SCRIPT_BADGE:
+    case ActionInfo::TYPE_SCRIPT_BADGE:
       event_name = "scriptBadge.onClicked";
       break;
-    case Extension::ActionInfo::TYPE_SYSTEM_INDICATOR:
+    case ActionInfo::TYPE_SYSTEM_INDICATOR:
       // The System Indicator handles its own clicks.
       break;
   }
