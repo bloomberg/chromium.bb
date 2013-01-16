@@ -47,14 +47,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   // Copies the state from |other| into this context.
   void CopyFrom(ChromeURLRequestContext* other);
 
-  bool is_incognito() const {
-    return is_incognito_;
-  }
-
-  void set_is_incognito(bool is_incognito) {
-    is_incognito_ = is_incognito;
-  }
-
  private:
   base::WeakPtrFactory<ChromeURLRequestContext> weak_factory_;
 
@@ -63,7 +55,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   // be added to CopyFrom.
   // ---------------------------------------------------------------------------
 
-  bool is_incognito_;
   chrome_browser_net::LoadTimeStats* load_time_stats_;
 
   // ---------------------------------------------------------------------------

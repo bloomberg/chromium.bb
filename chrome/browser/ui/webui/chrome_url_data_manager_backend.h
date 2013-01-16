@@ -39,9 +39,11 @@ class ChromeURLDataManagerBackend {
   ChromeURLDataManagerBackend();
   ~ChromeURLDataManagerBackend();
 
-  // Invoked to create the protocol handler for chrome://.
+  // Invoked to create the protocol handler for chrome://. |is_incognito| should
+  // be set for incognito profiles.
   static net::URLRequestJobFactory::ProtocolHandler* CreateProtocolHandler(
-      ChromeURLDataManagerBackend* backend);
+      ChromeURLDataManagerBackend* backend,
+      bool is_incognito);
 
   // Adds a DataSource to the collection of data sources.
   void AddDataSource(URLDataSourceImpl* source);
@@ -93,8 +95,11 @@ class ChromeURLDataManagerBackend {
   DISALLOW_COPY_AND_ASSIGN(ChromeURLDataManagerBackend);
 };
 
+// Creates protocol handler for chrome-devtools://. |is_incognito| should be
+// set for incognito profiles.
 net::URLRequestJobFactory::ProtocolHandler*
 CreateDevToolsProtocolHandler(ChromeURLDataManagerBackend* backend,
-                              net::NetworkDelegate* network_delegate);
+                              net::NetworkDelegate* network_delegate,
+                              bool is_incognito);
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROME_URL_DATA_MANAGER_BACKEND_H_

@@ -277,7 +277,6 @@ ChromeURLRequestContext::ChromeURLRequestContext(
     ContextType type,
     chrome_browser_net::LoadTimeStats* load_time_stats)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      is_incognito_(false),
       load_time_stats_(load_time_stats) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (load_time_stats_)
@@ -294,5 +293,4 @@ void ChromeURLRequestContext::CopyFrom(ChromeURLRequestContext* other) {
   URLRequestContext::CopyFrom(other);
 
   // Copy ChromeURLRequestContext parameters.
-  set_is_incognito(other->is_incognito());
 }

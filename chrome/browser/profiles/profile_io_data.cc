@@ -598,7 +598,6 @@ void ProfileIOData::LazyInitialize() const {
 
 void ProfileIOData::ApplyProfileParamsToContext(
     ChromeURLRequestContext* context) const {
-  context->set_is_incognito(is_incognito());
   context->set_http_user_agent_settings(
       chrome_http_user_agent_settings_.get());
   context->set_ssl_config_service(profile_params_->ssl_config_service);
@@ -620,7 +619,7 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
   set_protocol = job_factory->SetProtocolHandler(
       chrome::kChromeDevToolsScheme,
       CreateDevToolsProtocolHandler(chrome_url_data_manager_backend(),
-                                    network_delegate));
+                                    network_delegate, is_incognito()));
   DCHECK(set_protocol);
   set_protocol = job_factory->SetProtocolHandler(
       extensions::kExtensionScheme,
@@ -633,7 +632,8 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
   set_protocol = job_factory->SetProtocolHandler(
       chrome::kChromeUIScheme,
       ChromeURLDataManagerBackend::CreateProtocolHandler(
-          chrome_url_data_manager_backend_.get()));
+          chrome_url_data_manager_backend_.get(),
+          is_incognito()));
   DCHECK(set_protocol);
   set_protocol = job_factory->SetProtocolHandler(
       chrome::kDataScheme, new net::DataProtocolHandler());
