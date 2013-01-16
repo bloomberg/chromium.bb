@@ -23,6 +23,7 @@
  */
 
 #include "fcint.h"
+#include <limits.h>
 #include <string.h>
 
 /* MT-safe */
@@ -138,6 +139,15 @@ retry:
 	    }
 
 	    prgname = FcStrdup (p);
+	}
+#elif defined (HAVE_GETPROGNAME) && defined (HAVE_REALPATH)
+	const char *p = getprogname ();
+	char resolved_path[PATH_MAX + 1];
+
+	if (p)
+	{
+	    if (realpath (p, resolved_path) != NULL)
+		prgname = FcStrdup (resolved_path);
 	}
 #else
 	char buf[8192];
