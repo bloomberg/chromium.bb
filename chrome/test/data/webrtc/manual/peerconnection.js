@@ -54,25 +54,25 @@ function hangUpFromHere() {
 
 function toggleRemoteVideoFromHere() {
   toggleRemoteStream(function(remoteStream) {
-    return remoteStream.videoTracks[0];
+    return remoteStream.getVideoTracks()[0];
   }, 'video');
 }
 
 function toggleRemoteAudioFromHere() {
   toggleRemoteStream(function(remoteStream) {
-    return remoteStream.audioTracks[0];
+    return remoteStream.getAudioTracks()[0];
   }, 'audio');
 }
 
 function toggleLocalVideoFromHere() {
   toggleLocalStream(function(localStream) {
-    return localStream.videoTracks[0];
+    return localStream.getVideoTracks()[0];
   }, 'video');
 }
 
 function toggleLocalAudioFromHere() {
   toggleLocalStream(function(localStream) {
-    return localStream.audioTracks[0];
+    return localStream.getAudioTracks()[0];
   }, 'audio');
 }
 

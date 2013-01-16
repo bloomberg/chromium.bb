@@ -178,7 +178,8 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
 
     self._LoadPageInTwoTabs('webrtc_jsep01_test.html')
     self._SetupCall(request_video=True, request_audio=True)
-    select_video_function = 'function(local) { return local.videoTracks[0]; }'
+    select_video_function = \
+        'function(local) { return local.getVideoTracks()[0]; }'
     self.assertEquals('ok-video-toggled-to-false', self.ExecuteJavascript(
         'toggleLocalStream(' + select_video_function + ', "video")',
         tab_index=0))
