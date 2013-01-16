@@ -118,7 +118,7 @@ class RootWindowHostLinux : public RootWindowHost,
   // True if the window should be focused when the window is shown.
   bool focus_when_shown_;
 
-  scoped_array<XID> pointer_barriers_;
+  scoped_ptr<XID[]> pointer_barriers_;
 
   scoped_ptr<internal::TouchEventCalibrate> touch_calibrate_;
 

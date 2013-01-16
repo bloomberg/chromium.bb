@@ -1929,19 +1929,19 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
   ui::GestureConsumer* target;
   const int kNumWindows = 4;
 
-  scoped_array<GestureEventConsumeDelegate*> delegates(
+  scoped_ptr<GestureEventConsumeDelegate*[]> delegates(
       new GestureEventConsumeDelegate*[kNumWindows]);
 
   ui::GestureConfiguration::
       set_max_separation_for_gesture_touches_in_pixels(499);
 
-  scoped_array<gfx::Rect> window_bounds(new gfx::Rect[kNumWindows]);
+  scoped_ptr<gfx::Rect[]> window_bounds(new gfx::Rect[kNumWindows]);
   window_bounds[0] = gfx::Rect(0, 0, 1, 1);
   window_bounds[1] = gfx::Rect(500, 0, 1, 1);
   window_bounds[2] = gfx::Rect(0, 500, 1, 1);
   window_bounds[3] = gfx::Rect(500, 500, 1, 1);
 
-  scoped_array<aura::Window*> windows(new aura::Window*[kNumWindows]);
+  scoped_ptr<aura::Window*[]> windows(new aura::Window*[kNumWindows]);
 
   // Instantiate windows with |window_bounds| and touch each window at
   // its origin.

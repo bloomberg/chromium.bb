@@ -768,7 +768,7 @@ bool SelectFileDialogImpl::RunOpenMultiFileDialog(
   ofn.lStructSize = sizeof(ofn);
   ofn.hwndOwner = owner;
 
-  scoped_array<wchar_t> filename(new wchar_t[UNICODE_STRING_MAX_CHARS]);
+  scoped_ptr<wchar_t[]> filename(new wchar_t[UNICODE_STRING_MAX_CHARS]);
   filename[0] = 0;
 
   ofn.lpstrFile = filename.get();

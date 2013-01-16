@@ -137,7 +137,7 @@ class ClipboardData {
   std::vector<std::string> files_;
 
   // Bitmap images.
-  scoped_array<uint8_t> bitmap_data_;
+  scoped_ptr<uint8_t[]> bitmap_data_;
   gfx::Size bitmap_size_;
 
   // Data with custom format.

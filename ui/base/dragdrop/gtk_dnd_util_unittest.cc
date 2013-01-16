@@ -21,7 +21,7 @@ TEST(GtkDndUtilTest, ExtractNamedURLValid) {
   pickle.WriteString(kUrl);
 
   GtkSelectionData data;
-  scoped_array<guchar> test_data(new guchar[pickle.size()]);
+  scoped_ptr<guchar[]> test_data(new guchar[pickle.size()]);
   memcpy(test_data.get(), pickle.data(), pickle.size());
   data.data = test_data.get();
   data.length = pickle.size();
@@ -41,7 +41,7 @@ TEST(GtkDndUtilTest, ExtractNamedURLInvalidURL) {
   pickle.WriteString(kBadUrl);
 
   GtkSelectionData data;
-  scoped_array<guchar> test_data(new guchar[pickle.size()]);
+  scoped_ptr<guchar[]> test_data(new guchar[pickle.size()]);
   memcpy(test_data.get(), pickle.data(), pickle.size());
   data.data = test_data.get();
   data.length = pickle.size();
@@ -70,7 +70,7 @@ TEST(GtkDndUtilTest, ExtractNamedURLInvalidInput) {
   Pickle pickle;
   pickle.WriteString(kTitle);
 
-  scoped_array<guchar> test_data(new guchar[pickle.size()]);
+  scoped_ptr<guchar[]> test_data(new guchar[pickle.size()]);
   memcpy(test_data.get(), pickle.data(), pickle.size());
   data.data = test_data.get();
   data.length = pickle.size();

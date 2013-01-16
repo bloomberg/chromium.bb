@@ -29,7 +29,7 @@ bool GLSurfaceOSMesa::Resize(const gfx::Size& new_size) {
     current_context->ReleaseCurrent(this);
 
   // Preserve the old buffer.
-  scoped_array<int32> old_buffer(buffer_.release());
+  scoped_ptr<int32[]> old_buffer(buffer_.release());
 
   // Allocate a new one.
   buffer_.reset(new int32[new_size.GetArea()]);

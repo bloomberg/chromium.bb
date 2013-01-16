@@ -42,7 +42,7 @@ void GetCompositionTargetRange(HIMC imm_context, int* target_start,
   if (attribute_size > 0) {
     int start = 0;
     int end = 0;
-    scoped_array<char> attribute_data(new char[attribute_size]);
+    scoped_ptr<char[]> attribute_data(new char[attribute_size]);
     if (attribute_data.get()) {
       ::ImmGetCompositionString(imm_context, GCS_COMPATTR,
                                 attribute_data.get(), attribute_size);
@@ -77,7 +77,7 @@ void GetCompositionUnderlines(HIMC imm_context,
                                               NULL, 0);
   int clause_length = clause_size / sizeof(uint32);
   if (clause_length) {
-    scoped_array<uint32> clause_data(new uint32[clause_length]);
+    scoped_ptr<uint32[]> clause_data(new uint32[clause_length]);
     if (clause_data.get()) {
       ::ImmGetCompositionString(imm_context, GCS_COMPCLAUSE,
                                 clause_data.get(), clause_size);
@@ -515,7 +515,7 @@ bool ImeInput::IsRTLKeyboardLayoutInstalled() {
 
   // Retrieve the keyboard layouts in an array and check if there is an RTL
   // layout in it.
-  scoped_array<HKL> layouts(new HKL[size]);
+  scoped_ptr<HKL[]> layouts(new HKL[size]);
   ::GetKeyboardLayoutList(size, layouts.get());
   for (int i = 0; i < size; ++i) {
     if (IsRTLPrimaryLangID(PRIMARYLANGID(layouts[i]))) {

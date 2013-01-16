@@ -156,7 +156,7 @@ TEST(X11UtilTest, ParseOverscanFlag) {
 
 TEST(X11UtilTest, ParseBrokenOverscanData) {
   // Do not fill valid data here because it anyway fails to parse the data.
-  scoped_array<unsigned char> data(new unsigned char[126]);
+  scoped_ptr<unsigned char[]> data(new unsigned char[126]);
   bool flag = false;
   EXPECT_FALSE(ParseOutputOverscanFlag(data.get(), 0, &flag));
   EXPECT_FALSE(ParseOutputOverscanFlag(data.get(), 126, &flag));

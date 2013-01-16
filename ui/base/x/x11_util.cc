@@ -936,7 +936,7 @@ bool SetIntArrayProperty(XID window,
   Atom type_atom = GetAtom(type.c_str());
 
   // XChangeProperty() expects values of type 32 to be longs.
-  scoped_array<long> data(new long[value.size()]);
+  scoped_ptr<long[]> data(new long[value.size()]);
   for (size_t i = 0; i < value.size(); ++i)
     data[i] = value[i];
 

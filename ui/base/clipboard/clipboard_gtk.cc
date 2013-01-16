@@ -231,7 +231,7 @@ void Clipboard::WriteObjects(Buffer buffer, const ObjectMap& objects) {
 
 // Take ownership of the GTK clipboard and inform it of the targets we support.
 void Clipboard::SetGtkClipboard(Buffer buffer) {
-  scoped_array<GtkTargetEntry> targets(
+  scoped_ptr<GtkTargetEntry[]> targets(
       new GtkTargetEntry[clipboard_data_->size()]);
 
   int i = 0;

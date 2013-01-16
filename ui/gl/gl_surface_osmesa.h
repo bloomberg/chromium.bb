@@ -34,7 +34,7 @@ class GL_EXPORT GLSurfaceOSMesa : public GLSurface {
  private:
   unsigned format_;
   gfx::Size size_;
-  scoped_array<int32> buffer_;
+  scoped_ptr<int32[]> buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceOSMesa);
 };

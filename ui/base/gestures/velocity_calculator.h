@@ -32,7 +32,7 @@ class UI_EXPORT VelocityCalculator {
 
   void UpdateVelocity();
 
-  typedef scoped_array<Point> HistoryBuffer;
+  typedef scoped_ptr<Point[]> HistoryBuffer;
   HistoryBuffer buffer_;
 
   // index_ points directly after the last point added.

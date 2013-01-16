@@ -18,7 +18,7 @@ X11AtomCache::X11AtomCache(Display* xdisplay, const char** to_cache)
   for (const char** i = to_cache; *i != NULL; i++)
     cache_count++;
 
-  scoped_array< ::Atom> cached_atoms(new ::Atom[cache_count]);
+  scoped_ptr< ::Atom[]> cached_atoms(new ::Atom[cache_count]);
 
   // Grab all the atoms we need now to minimize roundtrips to the X11 server.
   XInternAtoms(xdisplay_,
