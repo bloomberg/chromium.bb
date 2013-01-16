@@ -1408,7 +1408,8 @@ TEST_F(URLRequestTest, DISABLED_DelayedCookieCallback) {
   }
 }
 
-TEST_F(URLRequestTest, DoNotSendCookies) {
+// crbug.com/170247
+TEST_F(URLRequestTest, DISABLED_DoNotSendCookies) {
   LocalHttpTestServer test_server;
   ASSERT_TRUE(test_server.Start());
 
