@@ -8,21 +8,30 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "base/callback.h"
 
-class ChromeURLDataManager;
-class ChromeURLDataManagerBackend;
-class ChromeWebUIDataSource;
 class MessageLoop;
-class URLDataSource;
+
+namespace base {
+class RefCountedMemory;
+}
 
 namespace content {
 
-// An interface implemented by a creator of URLDataSource to customize its
-// behavior.
-class CONTENT_EXPORT URLDataSourceDelegate {
+// A URLDataSource is an object that can answer requests for data
+// asynchronously. An implementation of URLDataSource should handle calls to
+// StartDataRequest() by starting its (implementation-specific) asynchronous
+// request for the data, then running the callback given in that method to
+// notify.
+class CONTENT_EXPORT URLDataSource {
  public:
-  URLDataSourceDelegate();
-  virtual ~URLDataSourceDelegate();
+  // Used by StartDataRequest. The string parameter is the path of the request.
+  // If the callee doesn't want to handle the data, false is returned. Otherwise
+  // true is returned and the GotDataCallback parameter is called either then or
+  // asynchronously with the response.
+  typedef base::Callback<void(base::RefCountedMemory*)> GotDataCallback;
+
+  virtual ~URLDataSource() {}
 
   // The name of this source.
   // E.g., for favicons, this could be "favicon", which results in paths for
@@ -30,11 +39,11 @@ class CONTENT_EXPORT URLDataSourceDelegate {
   virtual std::string GetSource() = 0;
 
   // Called by URLDataSource to request data at |path|.  The delegate should
-  // call URLDataSource::SendResponse() when the data is available or if the
-  // request could not be satisfied.
+  // run |callback| when the data is available or if the request could not be
+  // satisfied.
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
-                                int request_id) = 0;
+                                const GotDataCallback& callback) = 0;
 
   // Return the mimetype that should be sent with this response, or empty
   // string to specify no mime type.
@@ -60,19 +69,6 @@ class CONTENT_EXPORT URLDataSourceDelegate {
 
   // Returns true if responses from this URLDataSource can be cached.
   virtual bool AllowCaching() const;
-
-  void set_url_data_source_for_testing(URLDataSource* url_data_source) {
-    url_data_source_ = url_data_source;
-  }
-
- protected:
-  URLDataSource* url_data_source() { return url_data_source_; }
-
- private:
-  friend class ::ChromeURLDataManager;
-  friend class ::ChromeURLDataManagerBackend;
-  friend class ::ChromeWebUIDataSource;
-  URLDataSource* url_data_source_;
 };
 
 }  // namespace content

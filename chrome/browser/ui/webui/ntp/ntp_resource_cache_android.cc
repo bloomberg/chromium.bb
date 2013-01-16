@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "content/public/browser/browser_thread.h"
@@ -102,7 +102,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetString("bookmarkstitle",
       l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS));
 
-  URLDataSource::SetFontAndTextDirection(&localized_strings);
+  web_ui_util::SetFontAndTextDirection(&localized_strings);
 
   base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
                                  GetRawDataResource(IDR_NEW_TAB_ANDROID_HTML));

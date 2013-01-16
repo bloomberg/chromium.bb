@@ -9,7 +9,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -105,7 +105,7 @@ std::string ManagedModeInterstitial::GetHTMLContents() {
   strings.SetString(
       "contentPacksSectionButton",
       l10n_util::GetStringUTF16(IDS_CONTENT_PACKS_SECTION_BUTTON));
-  URLDataSource::SetFontAndTextDirection(&strings);
+  web_ui_util::SetFontAndTextDirection(&strings);
 
   base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(

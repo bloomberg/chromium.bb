@@ -40,7 +40,7 @@ LocalOmniboxPopupUI::LocalOmniboxPopupUI(content::WebUI* web_ui)
   source->set_default_resource(IDR_LOCAL_OMNIBOX_POPUP_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, source);
+  ChromeURLDataManager::AddDataSourceImpl(profile, source);
 }
 
 LocalOmniboxPopupUI::~LocalOmniboxPopupUI() {

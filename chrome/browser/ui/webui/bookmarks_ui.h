@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "content/public/browser/url_data_source_delegate.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "ui/base/layout.h"
 
@@ -17,15 +17,16 @@ class RefCountedMemory;
 }
 
 // This class provides the source for chrome://bookmarks/
-class BookmarksUIHTMLSource : public content::URLDataSourceDelegate {
+class BookmarksUIHTMLSource : public content::URLDataSource {
  public:
   BookmarksUIHTMLSource();
 
-  // content::URLDataSourceDelegate implementation.
+  // content::URLDataSource implementation.
   virtual std::string GetSource() OVERRIDE;
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id) OVERRIDE;
+  virtual void StartDataRequest(
+      const std::string& path,
+      bool is_incognito,
+      const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
 
  private:

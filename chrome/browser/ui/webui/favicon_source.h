@@ -12,14 +12,14 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/common/cancelable_task_tracker.h"
-#include "content/public/browser/url_data_source_delegate.h"
+#include "content/public/browser/url_data_source.h"
 #include "ui/gfx/favicon_size.h"
 
 class Profile;
 
 // FaviconSource is the gateway between network-level chrome:
 // requests for favicons and the history backend that serves these.
-class FaviconSource : public content::URLDataSourceDelegate {
+class FaviconSource : public content::URLDataSource {
  public:
   // Defines the type of icon the FaviconSource will provide.
   enum IconType {
@@ -32,32 +32,25 @@ class FaviconSource : public content::URLDataSourceDelegate {
   // |type| is the type of icon this FaviconSource will provide.
   FaviconSource(Profile* profile, IconType type);
 
-  // content::URLDataSourceDelegate implementation.
+  // content::URLDataSource implementation.
   virtual std::string GetSource() OVERRIDE;
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id) OVERRIDE;
+  virtual void StartDataRequest(
+      const std::string& path,
+      bool is_incognito,
+      const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
   virtual std::string GetMimeType(const std::string&) const OVERRIDE;
   virtual bool ShouldReplaceExistingSource() const OVERRIDE;
 
  protected:
   struct IconRequest {
-    IconRequest()
-      : request_id(0),
-        request_path(""),
-        size_in_dip(gfx::kFaviconSize),
-        scale_factor(ui::SCALE_FACTOR_NONE) {
-    }
-    IconRequest(int id,
+    IconRequest();
+    IconRequest(const content::URLDataSource::GotDataCallback& cb,
                 const std::string& path,
                 int size,
-                ui::ScaleFactor scale)
-      : request_id(id),
-        request_path(path),
-        size_in_dip(size),
-        scale_factor(scale) {
-    }
-    int request_id;
+                ui::ScaleFactor scale);
+    ~IconRequest();
+
+    content::URLDataSource::GotDataCallback callback;
     std::string request_path;
     int size_in_dip;
     ui::ScaleFactor scale_factor;

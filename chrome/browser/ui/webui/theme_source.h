@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "content/public/browser/url_data_source_delegate.h"
+#include "content/public/browser/url_data_source.h"
 #include "ui/base/layout.h"
 
 class Profile;
@@ -18,28 +18,28 @@ namespace base {
 class RefCountedMemory;
 }
 
-class ThemeSource : public content::URLDataSourceDelegate {
+class ThemeSource : public content::URLDataSource {
  public:
   explicit ThemeSource(Profile* profile);
+  virtual ~ThemeSource();
 
-  // content::URLDataSourceDelegate implementation.
+  // content::URLDataSource implementation.
   virtual std::string GetSource() OVERRIDE;
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id) OVERRIDE;
+  virtual void StartDataRequest(
+      const std::string& path,
+      bool is_incognito,
+      const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
   virtual MessageLoop* MessageLoopForRequestPath(
       const std::string& path) const OVERRIDE;
   virtual bool ShouldReplaceExistingSource() const OVERRIDE;
 
- protected:
-  virtual ~ThemeSource();
-
  private:
   // Fetch and send the theme bitmap.
-  void SendThemeBitmap(int request_id,
-                       int resource_id,
-                       ui::ScaleFactor scale_factor);
+  void SendThemeBitmap(
+      const content::URLDataSource::GotDataCallback& callback,
+      int resource_id,
+      ui::ScaleFactor scale_factor);
 
   // The original profile (never an OTR profile).
   Profile* profile_;

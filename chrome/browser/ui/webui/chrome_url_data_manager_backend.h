@@ -44,7 +44,7 @@ class ChromeURLDataManagerBackend {
       ChromeURLDataManagerBackend* backend);
 
   // Adds a DataSource to the collection of data sources.
-  void AddDataSource(URLDataSource* source);
+  void AddDataSource(URLDataSourceImpl* source);
 
   // DataSource invokes this. Sends the data to the URLRequest.
   void DataAvailable(RequestID request_id, base::RefCountedMemory* bytes);
@@ -56,7 +56,7 @@ class ChromeURLDataManagerBackend {
   friend class URLRequestChromeJob;
 
   typedef std::map<std::string,
-      scoped_refptr<URLDataSource> > DataSourceMap;
+      scoped_refptr<URLDataSourceImpl> > DataSourceMap;
   typedef std::map<RequestID, URLRequestChromeJob*> PendingRequestMap;
 
   // Called by the job when it's starting up.
@@ -66,7 +66,7 @@ class ChromeURLDataManagerBackend {
   // Helper function to call StartDataRequest on |source|'s delegate. This is
   // needed because while we want to call URLDataSourceDelegate's method, we
   // need to add a refcount on the source.
-  static void CallStartRequest(scoped_refptr<URLDataSource> source,
+  static void CallStartRequest(scoped_refptr<URLDataSourceImpl> source,
                                const std::string& path,
                                bool is_incognito,
                                int request_id);

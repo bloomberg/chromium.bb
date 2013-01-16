@@ -9,7 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -47,9 +47,10 @@ std::string CloudPrintSetupSource::GetSource() {
   return chrome::kChromeUICloudPrintSetupHost;
 }
 
-void CloudPrintSetupSource::StartDataRequest(const std::string& path_raw,
-                                             bool is_incognito,
-                                             int request_id) {
+void CloudPrintSetupSource::StartDataRequest(
+    const std::string& path_raw,
+    bool is_incognito,
+    const content::URLDataSource::GotDataCallback& callback) {
   const char kCloudPrintSetupPath[] = "cloudprintsetup";
   const char kCloudPrintGaiaLoginPath[] = "gaialogin";
   const char kCloudPrintSetupFlowPath[] = "setupflow";
@@ -73,7 +74,7 @@ void CloudPrintSetupSource::StartDataRequest(const std::string& path_raw,
 
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_CLOUD_PRINT_SETUP_LOGIN_HTML));
-    URLDataSource::SetFontAndTextDirection(dict);
+    web_ui_util::SetFontAndTextDirection(dict);
     response = jstemplate_builder::GetI18nTemplateHtml(html, dict);
   } else if (path_raw == kCloudPrintGaiaLoginPath) {
     // Start by setting the per-locale URLs we show on the setup wizard.
@@ -109,7 +110,7 @@ void CloudPrintSetupSource::StartDataRequest(const std::string& path_raw,
 
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_GAIA_LOGIN_HTML));
-    URLDataSource::SetFontAndTextDirection(dict);
+    web_ui_util::SetFontAndTextDirection(dict);
     response = jstemplate_builder::GetI18nTemplateHtml(html, dict);
   } else if (path_raw == kCloudPrintSetupDonePath) {
     AddString(dict, "testpage", IDS_CLOUD_PRINT_SETUP_TEST_PAGE);
@@ -117,7 +118,7 @@ void CloudPrintSetupSource::StartDataRequest(const std::string& path_raw,
     AddString(dict, "okay", IDS_SYNC_SETUP_OK_BUTTON_LABEL);
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_CLOUD_PRINT_SETUP_DONE_HTML));
-    URLDataSource::SetFontAndTextDirection(dict);
+    web_ui_util::SetFontAndTextDirection(dict);
     response = jstemplate_builder::GetI18nTemplateHtml(html, dict);
   } else if (path_raw == kCloudPrintSetupFlowPath) {
     static const base::StringPiece html(
@@ -126,8 +127,7 @@ void CloudPrintSetupSource::StartDataRequest(const std::string& path_raw,
     response = html.as_string();
   }
 
-  url_data_source()->SendResponse(
-      request_id, base::RefCountedString::TakeString(&response));
+  callback.Run(base::RefCountedString::TakeString(&response));
 }
 
 std::string CloudPrintSetupSource::GetMimeType(const std::string& path) const {

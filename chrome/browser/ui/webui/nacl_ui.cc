@@ -277,5 +277,5 @@ NaClUI::NaClUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the about:nacl source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, CreateNaClUIHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(profile, CreateNaClUIHTMLSource());
 }

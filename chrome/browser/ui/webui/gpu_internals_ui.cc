@@ -674,5 +674,5 @@ GpuInternalsUI::GpuInternalsUI(content::WebUI* web_ui)
 
   // Set up the chrome://gpu-internals/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, CreateGpuHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(profile, CreateGpuHTMLSource());
 }

@@ -390,11 +390,11 @@ namespace {
 // After that, notifies |job| that mime type is available. This method
 // should be called on the UI thread, but notification is performed on
 // the IO thread.
-void GetMimeTypeOnUI(URLDataSource* source,
+void GetMimeTypeOnUI(URLDataSourceImpl* source,
                      const std::string& path,
                      const base::WeakPtr<URLRequestChromeJob>& job) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::string mime_type = source->delegate()->GetMimeType(path);
+  std::string mime_type = source->source()->GetMimeType(path);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&URLRequestChromeJob::MimeTypeAvailable, job, mime_type));
@@ -439,11 +439,10 @@ net::URLRequestJob* ChromeProtocolHandler::MaybeCreateJob(
 
 ChromeURLDataManagerBackend::ChromeURLDataManagerBackend()
     : next_request_id_(0) {
-  content::URLDataSourceDelegate* shared_source =
-      new SharedResourcesDataSource();
-  shared_source->url_data_source_ =
-      new URLDataSource(shared_source->GetSource(), shared_source);
-  AddDataSource(shared_source->url_data_source_);
+  content::URLDataSource* shared_source = new SharedResourcesDataSource();
+  URLDataSourceImpl* source_impl =
+      new URLDataSourceImpl(shared_source->GetSource(), shared_source);
+  AddDataSource(source_impl);
 }
 
 ChromeURLDataManagerBackend::~ChromeURLDataManagerBackend() {
@@ -463,11 +462,11 @@ ChromeURLDataManagerBackend::CreateProtocolHandler(
 }
 
 void ChromeURLDataManagerBackend::AddDataSource(
-    URLDataSource* source) {
+    URLDataSourceImpl* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DataSourceMap::iterator i = data_sources_.find(source->source_name());
   if (i != data_sources_.end()) {
-    if (!source->delegate()->ShouldReplaceExistingSource())
+    if (!source->source()->ShouldReplaceExistingSource())
       return;
     i->second->backend_ = NULL;
   }
@@ -497,28 +496,29 @@ bool ChromeURLDataManagerBackend::StartRequest(const GURL& url,
   if (i == data_sources_.end())
     return false;
 
-  URLDataSource* source = i->second;
+  URLDataSourceImpl* source = i->second;
 
   // Save this request so we know where to send the data.
   RequestID request_id = next_request_id_++;
   pending_requests_.insert(std::make_pair(request_id, job));
 
-  job->set_allow_caching(source->delegate()->AllowCaching());
+  job->set_allow_caching(source->source()->AllowCaching());
 
   const ChromeURLRequestContext* context =
       static_cast<const ChromeURLRequestContext*>(job->request()->context());
 
   // Forward along the request to the data source.
   MessageLoop* target_message_loop =
-      source->delegate()->MessageLoopForRequestPath(path);
+      source->source()->MessageLoopForRequestPath(path);
   if (!target_message_loop) {
-    job->MimeTypeAvailable(source->delegate()->GetMimeType(path));
+    job->MimeTypeAvailable(source->source()->GetMimeType(path));
 
     // The DataSource is agnostic to which thread StartDataRequest is called
     // on for this path.  Call directly into it from this thread, the IO
     // thread.
-    source->delegate()->StartDataRequest(
-        path, context->is_incognito(), request_id);
+    source->source()->StartDataRequest(
+        path, context->is_incognito(),
+        base::Bind(&URLDataSourceImpl::SendResponse, source, request_id));
   } else {
     // URLRequestChromeJob should receive mime type before data. This
     // is guaranteed because request for mime type is placed in the
@@ -527,7 +527,7 @@ bool ChromeURLDataManagerBackend::StartRequest(const GURL& url,
     target_message_loop->PostTask(
         FROM_HERE,
         base::Bind(&GetMimeTypeOnUI,
-                   scoped_refptr<URLDataSource>(source),
+                   scoped_refptr<URLDataSourceImpl>(source),
                    path, job->AsWeakPtr()));
 
     // The DataSource wants StartDataRequest to be called on a specific thread,
@@ -542,11 +542,14 @@ bool ChromeURLDataManagerBackend::StartRequest(const GURL& url,
 }
 
 void ChromeURLDataManagerBackend::CallStartRequest(
-    scoped_refptr<URLDataSource> source,
+    scoped_refptr<URLDataSourceImpl> source,
     const std::string& path,
     bool is_incognito,
     int request_id) {
-  source->delegate()->StartDataRequest(path, is_incognito, request_id);
+  source->source()->StartDataRequest(
+      path,
+      is_incognito,
+      base::Bind(&URLDataSourceImpl::SendResponse, source, request_id));
 }
 
 void ChromeURLDataManagerBackend::RemoveRequest(URLRequestChromeJob* job) {

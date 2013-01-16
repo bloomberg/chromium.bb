@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -50,7 +51,7 @@ TabModalConfirmDialogWebUI::TabModalConfirmDialogWebUI(
   ChromeWebUIDataSource* data_source =
       new ChromeWebUIDataSource(chrome::kChromeUITabModalConfirmDialogHost);
   data_source->set_default_resource(IDR_TAB_MODAL_CONFIRM_DIALOG_HTML);
-  ChromeURLDataManager::AddDataSource(profile, data_source);
+  ChromeURLDataManager::AddDataSourceImpl(profile, data_source);
 
   constrained_web_dialog_delegate_ =
       CreateConstrainedWebDialog(profile, this, NULL, web_contents);
@@ -81,7 +82,7 @@ std::string TabModalConfirmDialogWebUI::GetDialogArgs() const {
   dict.SetString("message", delegate_->GetMessage());
   dict.SetString("accept", delegate_->GetAcceptButtonTitle());
   dict.SetString("cancel", delegate_->GetCancelButtonTitle());
-  ChromeWebUIDataSource::SetFontAndTextDirection(&dict);
+  web_ui_util::SetFontAndTextDirection(&dict);
   std::string json;
   base::JSONWriter::Write(&dict, &json);
   return json;

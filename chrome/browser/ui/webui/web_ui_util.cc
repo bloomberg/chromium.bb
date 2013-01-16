@@ -7,17 +7,27 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/debug/trace_event.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/values.h"
 #include "chrome/browser/disposition_utils.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
+#include "grit/platform_locale_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/base/l10n/l10n_util.h"
 
-#include "base/debug/trace_event.h"
+#if defined (TOOLKIT_GTK)
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/font.h"
+#endif
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 namespace {
 
@@ -119,6 +129,34 @@ void ParsePathAndScale(const GURL& url,
     if (scale_factor)
       *scale_factor = factor;
   }
+}
+
+// static
+void SetFontAndTextDirection(DictionaryValue* localized_strings) {
+  int web_font_family_id = IDS_WEB_FONT_FAMILY;
+  int web_font_size_id = IDS_WEB_FONT_SIZE;
+#if defined(OS_WIN)
+  // Vary font settings for Windows XP.
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+    web_font_family_id = IDS_WEB_FONT_FAMILY_XP;
+    web_font_size_id = IDS_WEB_FONT_SIZE_XP;
+  }
+#endif
+
+  std::string font_family = l10n_util::GetStringUTF8(web_font_family_id);
+
+#if defined(TOOLKIT_GTK)
+  // Use the system font on Linux/GTK. Keep the hard-coded font families as
+  // backup in case for some crazy reason this one isn't available.
+  font_family = ui::ResourceBundle::GetSharedInstance().GetFont(
+      ui::ResourceBundle::BaseFont).GetFontName() + ", " + font_family;
+#endif
+
+  localized_strings->SetString("fontfamily", font_family);
+  localized_strings->SetString("fontsize",
+      l10n_util::GetStringUTF8(web_font_size_id));
+  localized_strings->SetString("textdirection",
+      base::i18n::IsRTL() ? "rtl" : "ltr");
 }
 
 }  // namespace web_ui_util

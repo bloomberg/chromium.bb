@@ -362,7 +362,7 @@ InspectUI::InspectUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(new InspectMessageHandler());
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, CreateInspectUIHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(profile, CreateInspectUIHTMLSource());
 
   registrar_.Add(this,
                  content::NOTIFICATION_WEB_CONTENTS_CONNECTED,

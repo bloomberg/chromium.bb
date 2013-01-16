@@ -30,7 +30,8 @@ CryptohomeUI::CryptohomeUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new CryptohomeWebUIHandler());
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, CreateCryptohomeUIHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(profile,
+                                          CreateCryptohomeUIHTMLSource());
 }
 
 }  // namespace chromeos

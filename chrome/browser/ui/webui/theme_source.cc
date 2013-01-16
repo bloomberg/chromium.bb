@@ -11,7 +11,6 @@
 #include "chrome/browser/resources_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
@@ -53,9 +52,10 @@ std::string ThemeSource::GetSource() {
   return chrome::kChromeUIThemePath;
 }
 
-void ThemeSource::StartDataRequest(const std::string& path,
-                                   bool is_incognito,
-                                   int request_id) {
+void ThemeSource::StartDataRequest(
+    const std::string& path,
+    bool is_incognito,
+    const content::URLDataSource::GotDataCallback& callback) {
   // Default scale factor if not specified.
   ui::ScaleFactor scale_factor;
   std::string uncached_path;
@@ -69,19 +69,19 @@ void ThemeSource::StartDataRequest(const std::string& path,
     DCHECK((uncached_path == kNewTabCSSPath && !is_incognito) ||
            (uncached_path == kNewIncognitoTabCSSPath && is_incognito));
 
-    url_data_source()->SendResponse(request_id, css_bytes_);
+    callback.Run(css_bytes_);
     return;
   }
 
 
   int resource_id = ResourcesUtil::GetThemeResourceId(uncached_path);
   if (resource_id != -1) {
-    SendThemeBitmap(request_id, resource_id, scale_factor);
+    SendThemeBitmap(callback, resource_id, scale_factor);
     return;
   }
 
   // We don't have any data to send back.
-  url_data_source()->SendResponse(request_id, NULL);
+  callback.Run(NULL);
 }
 
 std::string ThemeSource::GetMimeType(const std::string& path) const {
@@ -115,7 +115,7 @@ MessageLoop* ThemeSource::MessageLoopForRequestPath(
   if (!ThemeService::IsThemeableImage(resource_id))
     return NULL;
 
-  return content::URLDataSourceDelegate::MessageLoopForRequestPath(path);
+  return content::URLDataSource::MessageLoopForRequestPath(path);
 }
 
 bool ThemeSource::ShouldReplaceExistingSource() const {
@@ -127,9 +127,10 @@ bool ThemeSource::ShouldReplaceExistingSource() const {
 ////////////////////////////////////////////////////////////////////////////////
 // ThemeSource, private:
 
-void ThemeSource::SendThemeBitmap(int request_id,
-                                  int resource_id,
-                                  ui::ScaleFactor scale_factor) {
+void ThemeSource::SendThemeBitmap(
+    const content::URLDataSource::GotDataCallback& callback,
+    int resource_id,
+    ui::ScaleFactor scale_factor) {
   if (ThemeService::IsThemeableImage(resource_id)) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
@@ -137,12 +138,10 @@ void ThemeSource::SendThemeBitmap(int request_id,
 
     scoped_refptr<base::RefCountedMemory> image_data(tp->GetRawData(
         resource_id, scale_factor));
-    url_data_source()->SendResponse(request_id, image_data);
+    callback.Run(image_data);
   } else {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    url_data_source()->SendResponse(
-        request_id,
-        rb.LoadDataResourceBytesForScale(resource_id, scale_factor));
+    callback.Run(rb.LoadDataResourceBytesForScale(resource_id, scale_factor));
   }
 }

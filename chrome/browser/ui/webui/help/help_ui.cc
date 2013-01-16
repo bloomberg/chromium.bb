@@ -33,7 +33,7 @@ HelpUI::HelpUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   ChromeWebUIDataSource* source = CreateAboutPageHTMLSource();
-  ChromeURLDataManager::AddDataSource(profile, source);
+  ChromeURLDataManager::AddDataSourceImpl(profile, source);
   ChromeURLDataManager::AddDataSource(profile, new SharedResourcesDataSource());
 
   HelpHandler* handler = new HelpHandler();

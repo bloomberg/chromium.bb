@@ -19,15 +19,14 @@ class MessageLoop;
 class Profile;
 
 namespace base {
-class DictionaryValue;
 class RefCountedMemory;
 }
 
 namespace content {
-class URLDataSourceDelegate;
+class URLDataSource;
 }
 
-class URLDataSource;
+class URLDataSourceImpl;
 
 // To serve dynamic data off of chrome: URLs, implement the
 // ChromeURLDataManager::DataSource interface and register your handler
@@ -50,30 +49,35 @@ class ChromeURLDataManager : public ProfileKeyedService {
   // thread. This is necessary as some |DataSource|s notably |FileIconSource|
   // and |FaviconSource|, have members that will DCHECK if they are not
   // destructed in the same thread as they are constructed (the UI thread).
-  void AddDataSource(URLDataSource* source);
+  void AddDataSource(URLDataSourceImpl* source);
 
   // Deletes any data sources no longer referenced. This is normally invoked
   // for you, but can be invoked to force deletion (such as during shutdown).
   static void DeleteDataSources();
 
   // Convenience wrapper function to add |source| to |profile|'s
-  // |ChromeURLDataManager|.
+  // |ChromeURLDataManager|. Creates a URLDataSourceImpl to wrap the given
+  // source.
   static void AddDataSource(Profile* profile,
-                            content::URLDataSourceDelegate* delegate);
+                            content::URLDataSource* source);
+
+  // Like above, but takes a URLDataSourceImpl directly.
+  static void AddDataSourceImpl(Profile* profile,
+                                URLDataSourceImpl* source);
 
  private:
-  friend class URLDataSource;
+  friend class URLDataSourceImpl;
   friend struct DeleteURLDataSource;
-  typedef std::vector<const URLDataSource*> URLDataSources;
+  typedef std::vector<const URLDataSourceImpl*> URLDataSources;
 
   // If invoked on the UI thread the DataSource is deleted immediatlye,
   // otherwise it is added to |data_sources_| and a task is scheduled to handle
   // deletion on the UI thread. See note abouve DeleteDataSource for more info.
-  static void DeleteDataSource(const URLDataSource* data_source);
+  static void DeleteDataSource(const URLDataSourceImpl* data_source);
 
   // Returns true if |data_source| is scheduled for deletion (|DeleteDataSource|
   // was invoked).
-  static bool IsScheduledForDeletion(const URLDataSource* data_source);
+  static bool IsScheduledForDeletion(const URLDataSourceImpl* data_source);
 
   // A callback that returns the ChromeURLDataManagerBackend. Only accessible on
   // the IO thread. This is necessary because ChromeURLDataManager is created on
@@ -102,7 +106,7 @@ class ChromeURLDataManager : public ProfileKeyedService {
 // handle the actual deletion. During shutdown |DeleteDataSources| is invoked so
 // that all pending URLDataSources are properly deleted.
 struct DeleteURLDataSource {
-  static void Destruct(const URLDataSource* data_source) {
+  static void Destruct(const URLDataSourceImpl* data_source) {
     ChromeURLDataManager::DeleteDataSource(data_source);
   }
 };
@@ -112,17 +116,13 @@ struct DeleteURLDataSource {
 // pointers and should never be deleted on the IO thread, since their calls
 // are handled almost always on the UI thread and there's a possibility of a
 // data race.  The |DeleteDataSource| trait above is used to enforce this.
-//
-// A delegate of URLDataSource should handle calls to StartDataRequest() by
-// starting its (implementation-specific) asynchronous request for the data,
-// then call SendResponse() to notify.
-class URLDataSource : public base::RefCountedThreadSafe<
-    URLDataSource, DeleteURLDataSource> {
+class URLDataSourceImpl : public base::RefCountedThreadSafe<
+    URLDataSourceImpl, DeleteURLDataSource> {
  public:
   // See source_name_ below for docs on that parameter. Takes ownership of
-  // |delegate|.
-  URLDataSource(const std::string& source_name,
-                content::URLDataSourceDelegate* delegate);
+  // |source|.
+  URLDataSourceImpl(const std::string& source_name,
+                    content::URLDataSource* source);
 
   // Report that a request has resulted in the data |bytes|.
   // If the request can't be satisfied, pass NULL for |bytes| to indicate
@@ -130,22 +130,15 @@ class URLDataSource : public base::RefCountedThreadSafe<
   virtual void SendResponse(int request_id, base::RefCountedMemory* bytes);
 
   const std::string& source_name() const { return source_name_; }
-  content::URLDataSourceDelegate* delegate() const { return delegate_.get(); }
-
-  static void SetFontAndTextDirection(
-      base::DictionaryValue* localized_strings);
+  content::URLDataSource* source() const { return source_.get(); }
 
  protected:
-  virtual ~URLDataSource();
-
-  content::URLDataSourceDelegate* release_delegate() {
-    return delegate_.release();
-  }
+  virtual ~URLDataSourceImpl();
 
  private:
   friend class ChromeURLDataManagerBackend;
   friend class ChromeURLDataManager;
-  friend class base::DeleteHelper<URLDataSource>;
+  friend class base::DeleteHelper<URLDataSourceImpl>;
 
   // SendResponse invokes this on the IO thread. Notifies the backend to
   // handle the actual work of sending the data.
@@ -167,7 +160,7 @@ class URLDataSource : public base::RefCountedThreadSafe<
   // between the backend and data source.
   ChromeURLDataManagerBackend* backend_;
 
-  scoped_ptr<content::URLDataSourceDelegate> delegate_;
+  scoped_ptr<content::URLDataSource> source_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROME_URL_DATA_MANAGER_H_

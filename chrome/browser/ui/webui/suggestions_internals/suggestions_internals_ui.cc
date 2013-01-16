@@ -25,9 +25,9 @@ SuggestionsInternalsUI::SuggestionsInternalsUI(content::WebUI* web_ui)
   html_source->set_default_resource(IDR_SUGGESTIONS_INTERNALS_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, html_source);
-  ChromeURLDataManager::AddDataSource(profile,
-      new FaviconSource(profile, FaviconSource::FAVICON));
+  ChromeURLDataManager::AddDataSourceImpl(profile, html_source);
+  ChromeURLDataManager::AddDataSource(
+      profile, new FaviconSource(profile, FaviconSource::FAVICON));
 
   // AddMessageHandler takes ownership of SuggestionsInternalsUIHandler
   web_ui->AddMessageHandler(new SuggestionsInternalsUIHandler(profile));

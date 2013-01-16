@@ -9,7 +9,6 @@
 #include "base/string_split.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_parse.h"
@@ -86,17 +85,16 @@ std::string UserImageSource::GetSource() {
   return chrome::kChromeUIUserImageHost;
 }
 
-void UserImageSource::StartDataRequest(const std::string& path,
-                                       bool is_incognito,
-                                       int request_id) {
+void UserImageSource::StartDataRequest(
+    const std::string& path,
+    bool is_incognito,
+    const content::URLDataSource::GotDataCallback& callback) {
   std::string email;
   bool is_image_animated = false;
   ui::ScaleFactor scale_factor;
   GURL url(chrome::kChromeUIUserImageURL + path);
   ParseRequest(url, &email, &is_image_animated, &scale_factor);
-  url_data_source()->SendResponse(
-      request_id,
-      GetUserImage(email, is_image_animated, scale_factor));
+  callback.Run(GetUserImage(email, is_image_animated, scale_factor));
 }
 
 std::string UserImageSource::GetMimeType(const std::string& path) const {

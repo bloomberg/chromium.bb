@@ -20,7 +20,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -144,9 +143,11 @@ std::string ScreenshotSource::GetSource() {
   return chrome::kChromeUIScreenshotPath;
 }
 
-void ScreenshotSource::StartDataRequest(const std::string& path, bool,
-                                        int request_id) {
-  SendScreenshot(path, request_id);
+void ScreenshotSource::StartDataRequest(
+  const std::string& path,
+  bool is_incognito,
+  const content::URLDataSource::GotDataCallback& callback) {
+  SendScreenshot(path, callback);
 }
 
 std::string ScreenshotSource::GetMimeType(const std::string&) const {
@@ -167,14 +168,15 @@ ScreenshotDataPtr ScreenshotSource::GetCachedScreenshot(
   }
 }
 
-void ScreenshotSource::SendScreenshot(const std::string& screenshot_path,
-                                      int request_id) {
+void ScreenshotSource::SendScreenshot(
+    const std::string& screenshot_path,
+    const content::URLDataSource::GotDataCallback& callback) {
   // Strip the query param value - we only use it as a hack to ensure our
   // image gets reloaded instead of being pulled from the browser cache
   std::string path = screenshot_path.substr(
       0, screenshot_path.find_first_of("?"));
   if (path == ScreenshotSource::kScreenshotCurrent) {
-    CacheAndSendScreenshot(path, request_id, current_screenshot_);
+    CacheAndSendScreenshot(path, callback, current_screenshot_);
 #if defined(OS_CHROMEOS)
   } else if (path.compare(0, strlen(ScreenshotSource::kScreenshotSaved),
              ScreenshotSource::kScreenshotSaved) == 0) {
@@ -199,7 +201,7 @@ void ScreenshotSource::SendScreenshot(const std::string& screenshot_path,
       file_system->GetFileByResourceId(
           decoded_filename,
           base::Bind(&ScreenshotSource::GetSavedScreenshotCallback,
-                     base::Unretained(this), screenshot_path, request_id),
+                     base::Unretained(this), screenshot_path, callback),
           google_apis::GetContentCallback());
     } else {
       BrowserThread::PostTask(
@@ -207,25 +209,25 @@ void ScreenshotSource::SendScreenshot(const std::string& screenshot_path,
           base::Bind(&ScreenshotSource::SendSavedScreenshot,
                      base::Unretained(this),
                      screenshot_path,
-                     request_id, download_path.Append(decoded_filename)));
+                     callback, download_path.Append(decoded_filename)));
     }
 #endif
   } else {
     CacheAndSendScreenshot(
-        path, request_id, ScreenshotDataPtr(new ScreenshotData()));
+        path, callback, ScreenshotDataPtr(new ScreenshotData()));
   }
 }
 
 #if defined(OS_CHROMEOS)
 void ScreenshotSource::SendSavedScreenshot(
     const std::string& screenshot_path,
-    int request_id,
+    const content::URLDataSource::GotDataCallback& callback,
     const FilePath& file) {
   ScreenshotDataPtr read_bytes(new ScreenshotData);
   int64 file_size = 0;
 
   if (!file_util::GetFileSize(file, &file_size)) {
-    CacheAndSendScreenshot(screenshot_path, request_id, read_bytes);
+    CacheAndSendScreenshot(screenshot_path, callback, read_bytes);
     return;
   }
 
@@ -234,37 +236,36 @@ void ScreenshotSource::SendSavedScreenshot(
                            static_cast<int>(file_size)))
     read_bytes->clear();
 
-  CacheAndSendScreenshot(screenshot_path, request_id, read_bytes);
+  CacheAndSendScreenshot(screenshot_path, callback, read_bytes);
 }
 
 void ScreenshotSource::GetSavedScreenshotCallback(
     const std::string& screenshot_path,
-    int request_id,
+    const content::URLDataSource::GotDataCallback& callback,
     drive::DriveFileError error,
     const FilePath& file,
     const std::string& unused_mime_type,
     drive::DriveFileType file_type) {
   if (error != drive::DRIVE_FILE_OK || file_type != drive::REGULAR_FILE) {
     ScreenshotDataPtr read_bytes(new ScreenshotData);
-    CacheAndSendScreenshot(screenshot_path, request_id, read_bytes);
+    CacheAndSendScreenshot(screenshot_path, callback, read_bytes);
     return;
   }
 
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&ScreenshotSource::SendSavedScreenshot,
-                 base::Unretained(this), screenshot_path, request_id, file));
+                 base::Unretained(this), screenshot_path, callback, file));
 }
 #endif
 
 void ScreenshotSource::CacheAndSendScreenshot(
     const std::string& screenshot_path,
-    int request_id,
+    const content::URLDataSource::GotDataCallback& callback,
     ScreenshotDataPtr bytes) {
   // Strip the query from the screenshot path.
   std::string path = screenshot_path.substr(
       0, screenshot_path.find_first_of("?"));
   cached_screenshots_[path] = bytes;
-  url_data_source()->SendResponse(
-      request_id, new base::RefCountedBytes(*bytes));
+  callback.Run(new base::RefCountedBytes(*bytes));
 }

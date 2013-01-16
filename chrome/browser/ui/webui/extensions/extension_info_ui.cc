@@ -39,7 +39,7 @@ ExtensionInfoUI::ExtensionInfoUI(content::WebUI* web_ui, const GURL& url)
   source_->set_default_resource(IDR_EXTENSION_INFO_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, source_);
+  ChromeURLDataManager::AddDataSourceImpl(profile, source_);
 }
 
 ExtensionInfoUI::~ExtensionInfoUI() {

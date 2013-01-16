@@ -40,6 +40,6 @@ QuotaInternalsUI::QuotaInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new quota_internals::QuotaInternalsHandler);
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile,
-      CreateQuotaInternalsHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(profile,
+                                          CreateQuotaInternalsHTMLSource());
 }

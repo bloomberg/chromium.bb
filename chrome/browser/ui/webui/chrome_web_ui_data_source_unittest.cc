@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
@@ -9,35 +10,32 @@
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// A mock data source (so we can override SendResponse to get at its data).
 class MockChromeWebUIDataSource : public ChromeWebUIDataSource {
  public:
   MockChromeWebUIDataSource()
       : ChromeWebUIDataSource("host"),
-        result_request_id_(-1),
         result_data_(NULL) {
   }
 
-  // Subvert protected methods.
-  virtual void StartDataRequest(
-      const std::string& path, bool is_incognito, int request_id) OVERRIDE {
-    ChromeWebUIDataSource::StartDataRequest(path, is_incognito, request_id);
+  void StartDataRequest(const std::string& path) {
+    ChromeWebUIDataSource::StartDataRequest(
+        path,
+        false,
+        base::Bind(&MockChromeWebUIDataSource::SendResult, this));
   }
 
-  virtual std::string GetMimeType(const std::string& path) const OVERRIDE {
+  std::string GetMimeType(const std::string& path) const {
     return ChromeWebUIDataSource::GetMimeType(path);
   }
 
-  // Store response for later comparisons.
-  virtual void SendResponse(int request_id, base::RefCountedMemory* data) {
-    result_request_id_ = request_id;
-    result_data_ = data;
-  }
-
-  int result_request_id_;
   scoped_refptr<base::RefCountedMemory> result_data_;
 
  private:
+  // Store response for later comparisons.
+  void SendResult(base::RefCountedMemory* data) {
+    result_data_ = data;
+  }
+
   virtual ~MockChromeWebUIDataSource() {}
 };
 
@@ -60,8 +58,7 @@ class ChromeWebUIDataSourceTest : public testing::Test {
 
 TEST_F(ChromeWebUIDataSourceTest, EmptyStrings) {
   source()->set_json_path("strings.js");
-  source()->StartDataRequest("strings.js" , false, 1);
-  EXPECT_EQ(source()->result_request_id_, 1);
+  source()->StartDataRequest("strings.js");
   std::string result(reinterpret_cast<const char*>(
       source()->result_data_->front()), source()->result_data_->size());
   EXPECT_NE(result.find("var templateData = {"), std::string::npos);
@@ -72,8 +69,7 @@ TEST_F(ChromeWebUIDataSourceTest, SomeStrings) {
   source()->set_json_path("strings.js");
   source()->AddString("planet", ASCIIToUTF16("pluto"));
   source()->AddLocalizedString("button", IDS_OK);
-  source()->StartDataRequest("strings.js" , false, 2);
-  EXPECT_EQ(source()->result_request_id_, 2);
+  source()->StartDataRequest("strings.js");
   std::string result(reinterpret_cast<const char*>(
       source()->result_data_->front()), source()->result_data_->size());
   EXPECT_NE(result.find("\"planet\":\"pluto\""), std::string::npos);
@@ -82,14 +78,12 @@ TEST_F(ChromeWebUIDataSourceTest, SomeStrings) {
 
 TEST_F(ChromeWebUIDataSourceTest, DefaultResource) {
   source()->set_default_resource(IDR_I18N_PROCESS_JS);
-  source()->StartDataRequest("foobar" , false, 3);
-  EXPECT_EQ(source()->result_request_id_, 3);
+  source()->StartDataRequest("foobar" );
   std::string result(
       reinterpret_cast<const char*>(source()->result_data_->front()),
       source()->result_data_->size());
   EXPECT_NE(result.find("i18nTemplate.process"), std::string::npos);
-  source()->StartDataRequest("strings.js" , false, 4);
-  EXPECT_EQ(source()->result_request_id_, 4);
+  source()->StartDataRequest("strings.js");
   result = std::string(
       reinterpret_cast<const char*>(source()->result_data_->front()),
       source()->result_data_->size());
@@ -99,14 +93,12 @@ TEST_F(ChromeWebUIDataSourceTest, DefaultResource) {
 TEST_F(ChromeWebUIDataSourceTest, NamedResource) {
   source()->set_default_resource(IDR_I18N_PROCESS_JS);
   source()->add_resource_path("foobar", IDR_I18N_TEMPLATE_JS);
-  source()->StartDataRequest("foobar" , false, 5);
-  EXPECT_EQ(source()->result_request_id_, 5);
+  source()->StartDataRequest("foobar");
   std::string result(
       reinterpret_cast<const char*>(source()->result_data_->front()),
       source()->result_data_->size());
   EXPECT_NE(result.find("var i18nTemplate"), std::string::npos);
-  source()->StartDataRequest("strings.js" , false, 4);
-  EXPECT_EQ(source()->result_request_id_, 4);
+  source()->StartDataRequest("strings.js");
   result = std::string(
       reinterpret_cast<const char*>(source()->result_data_->front()),
       source()->result_data_->size());

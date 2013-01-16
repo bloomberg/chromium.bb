@@ -79,7 +79,7 @@ PerformanceMonitorUI::PerformanceMonitorUI(content::WebUI* web_ui)
   html_source->set_use_json_js_format_v2();
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, html_source);
+  ChromeURLDataManager::AddDataSourceImpl(profile, html_source);
 }
 
 }  // namespace performance_monitor

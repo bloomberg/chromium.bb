@@ -15,16 +15,16 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_util.h"
 #include "base/tracked_objects.h"
 #include "base/values.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_profiler/task_profiler_data_serializer.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/url_data_source_delegate.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -47,13 +47,13 @@ namespace {
 
 #ifdef USE_SOURCE_FILES_DIRECTLY
 
-class ProfilerWebUIDataSource : public content::URLDataSourceDelegate {
+class ProfilerWebUIDataSource : public content::URLDataSource {
  public:
   ProfilerWebUIDataSource() {
   }
 
  protected:
-  // content::URLDataSourceDelegate implementation.
+  // content::URLDataSource implementation.
   virtual std::string GetSource() OVERRIDE {
     return chrome::kChromeUIProfilerHost;
   }
@@ -64,9 +64,10 @@ class ProfilerWebUIDataSource : public content::URLDataSourceDelegate {
     return "text/html";
   }
 
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id) OVERRIDE {
+  virtual void StartDataRequest(
+      const std::string& path,
+      bool is_incognito,
+      const content::URLDataSource::GotDataCallback& callback) OVERRIDE {
     FilePath base_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &base_path);
     base_path = base_path.AppendASCII("chrome");
@@ -88,16 +89,12 @@ class ProfilerWebUIDataSource : public content::URLDataSourceDelegate {
     scoped_refptr<base::RefCountedString> response =
         new base::RefCountedString();
     response->data() = file_contents;
-    url_data_source()->SendResponse(request_id, response);
+    callback.Run(response);
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProfilerWebUIDataSource);
 };
-
-ChromeURLDataManager::DataSource* CreateProfilerHTMLSource() {
-  return new ProfilerWebUIDataSource();
-}
 
 #else  // USE_SOURCE_FILES_DIRECTLY
 
@@ -159,7 +156,11 @@ ProfilerUI::ProfilerUI(content::WebUI* web_ui)
 
   // Set up the chrome://profiler/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, CreateProfilerHTMLSource());
+#if defined(USE_SOURCE_FILES_DIRECTLY)
+  ChromeURLDataManager::AddDataSource(profile, new ProfilerWebUIDataSource);
+#else
+  ChromeURLDataManager::AddDataSourceImpl(profile, CreateProfilerHTMLSource());
+#endif
 }
 
 ProfilerUI::~ProfilerUI() {

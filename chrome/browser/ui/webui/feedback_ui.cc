@@ -385,11 +385,8 @@ void FeedbackHandler::ClobberScreenshotsSource() {
 
 void FeedbackHandler::SetupScreenshotsSource() {
   Profile* profile = Profile::FromBrowserContext(tab_->GetBrowserContext());
-  // If we don't already have a screenshot source object created, create one.
-  if (!screenshot_source_) {
-    screenshot_source_ =
-        new ScreenshotSource(FeedbackUtil::GetScreenshotPng(), profile);
-  }
+  screenshot_source_ =
+      new ScreenshotSource(FeedbackUtil::GetScreenshotPng(), profile);
   // Add the source to the data manager.
   ChromeURLDataManager::AddDataSource(profile, screenshot_source_);
 }
@@ -475,8 +472,6 @@ bool FeedbackHandler::Init() {
 }
 
 void FeedbackHandler::RegisterMessages() {
-  SetupScreenshotsSource();
-
   web_ui()->RegisterMessageCallback("getDialogDefaults",
       base::Bind(&FeedbackHandler::HandleGetDialogDefaults,
                  base::Unretained(this)));
@@ -730,7 +725,7 @@ FeedbackUI::FeedbackUI(content::WebUI* web_ui)
 
   // Set up the chrome://feedback/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, html_source);
+  ChromeURLDataManager::AddDataSourceImpl(profile, html_source);
 }
 
 #if defined(OS_CHROMEOS)

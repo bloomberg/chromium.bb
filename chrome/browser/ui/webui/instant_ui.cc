@@ -98,7 +98,7 @@ InstantUI::InstantUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the chrome://instant/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, CreateInstantHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(profile, CreateInstantHTMLSource());
 }
 
 // static

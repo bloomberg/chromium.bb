@@ -126,7 +126,7 @@ ChromeWebUIDataSource* CreateUberFrameHTMLSource(Profile* profile) {
 
 UberUI::UberUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, CreateUberHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(profile, CreateUberHTMLSource());
 
   RegisterSubpage(chrome::kChromeUIExtensionsFrameURL);
   RegisterSubpage(chrome::kChromeUIHelpFrameURL);
@@ -184,8 +184,8 @@ bool UberUI::OverrideHandleWebUIMessage(const GURL& source_url,
 
 UberFrameUI::UberFrameUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile,
-      CreateUberFrameHTMLSource(profile));
+  ChromeURLDataManager::AddDataSourceImpl(
+      profile, CreateUberFrameHTMLSource(profile));
 
   // Register as an observer for when extensions are loaded and unloaded.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,

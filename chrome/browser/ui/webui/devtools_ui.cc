@@ -11,13 +11,12 @@
 #include "base/string_util.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/url_data_source_delegate.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -34,15 +33,16 @@ std::string PathWithoutParams(const std::string& path) {
 
 }  // namespace
 
-class DevToolsDataSource : public content::URLDataSourceDelegate {
+class DevToolsDataSource : public content::URLDataSource {
  public:
   DevToolsDataSource();
 
-  // content::URLDataSourceDelegate implementation.
+  // content::URLDataSource implementation.
   virtual std::string GetSource() OVERRIDE;
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id) OVERRIDE;
+  virtual void StartDataRequest(
+      const std::string& path,
+      bool is_incognito,
+      const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
 
  private:
@@ -58,11 +58,11 @@ std::string DevToolsDataSource::GetSource() {
   return chrome::kChromeUIDevToolsHost;
 }
 
-void DevToolsDataSource::StartDataRequest(const std::string& path,
-                                          bool is_incognito,
-                                          int request_id) {
+void DevToolsDataSource::StartDataRequest(
+    const std::string& path,
+    bool is_incognito,
+    const content::URLDataSource::GotDataCallback& callback) {
   std::string filename = PathWithoutParams(path);
-
 
   int resource_id =
       content::DevToolsHttpHandler::GetFrontendResourceId(filename);
@@ -73,7 +73,7 @@ void DevToolsDataSource::StartDataRequest(const std::string& path,
   const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   scoped_refptr<base::RefCountedStaticMemory> bytes(rb.LoadDataResourceBytes(
       resource_id));
-  url_data_source()->SendResponse(request_id, bytes);
+  callback.Run(bytes);
 }
 
 std::string DevToolsDataSource::GetMimeType(const std::string& path) const {

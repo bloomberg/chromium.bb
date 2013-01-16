@@ -10,7 +10,6 @@
 #include "chrome/browser/thumbnails/thumbnail_service.h"
 #include "chrome/browser/thumbnails/thumbnail_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
@@ -28,15 +27,16 @@ std::string ThumbnailSource::GetSource() {
   return chrome::kChromeUIThumbnailHost;
 }
 
-void ThumbnailSource::StartDataRequest(const std::string& path,
-                                       bool is_incognito,
-                                       int request_id) {
+void ThumbnailSource::StartDataRequest(
+    const std::string& path,
+    bool is_incognito,
+    const content::URLDataSource::GotDataCallback& callback) {
   scoped_refptr<base::RefCountedMemory> data;
   if (thumbnail_service_->GetPageThumbnail(GURL(path), &data)) {
     // We have the thumbnail.
-    url_data_source()->SendResponse(request_id, data.get());
+    callback.Run(data.get());
   } else {
-    SendDefaultThumbnail(request_id);
+    callback.Run(default_thumbnail_);
   }
 }
 
@@ -50,9 +50,5 @@ MessageLoop* ThumbnailSource::MessageLoopForRequestPath(
     const std::string& path) const {
   // TopSites can be accessed from the IO thread.
   return thumbnail_service_.get() ?
-      NULL : content::URLDataSourceDelegate::MessageLoopForRequestPath(path);
-}
-
-void ThumbnailSource::SendDefaultThumbnail(int request_id) {
-  url_data_source()->SendResponse(request_id, default_thumbnail_);
+      NULL : content::URLDataSource::MessageLoopForRequestPath(path);
 }

@@ -34,8 +34,8 @@ ChromeWebUIDataSource* CreateSignInInternalsHTMLSource() {
 SignInInternalsUI::SignInInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile,
-                                      CreateSignInInternalsHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(
+      profile, CreateSignInInternalsHTMLSource());
   if (profile) {
     AboutSigninInternals* about_signin_internals =
         AboutSigninInternalsFactory::GetForProfile(profile);

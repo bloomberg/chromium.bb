@@ -367,6 +367,6 @@ KeyboardOverlayUI::KeyboardOverlayUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(handler);
 
   // Set up the chrome://keyboardoverlay/ source.
-  ChromeURLDataManager::AddDataSource(profile,
-      CreateKeyboardOverlayUIHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(
+      profile, CreateKeyboardOverlayUIHTMLSource());
 }

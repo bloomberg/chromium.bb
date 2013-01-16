@@ -163,7 +163,7 @@ FlagsUI::FlagsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the about:flags source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, CreateFlagsUIHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(profile, CreateFlagsUIHTMLSource());
 }
 
 // static

@@ -37,7 +37,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/render_messages.h"
@@ -115,10 +115,9 @@ std::string GetAboutMemoryRedirectResponse(Profile* profile) {
 // its |StartFetch()| method.
 class AboutMemoryHandler : public MemoryDetails {
  public:
-  AboutMemoryHandler(const base::WeakPtr<AboutUIHTMLSource>& source,
-                     int request_id)
-      : source_(source),
-        request_id_(request_id) {
+  explicit AboutMemoryHandler(
+      const content::URLDataSource::GotDataCallback& callback)
+      : callback_(callback) {
   }
 
   virtual void OnDetailsAvailable() OVERRIDE;
@@ -130,8 +129,7 @@ class AboutMemoryHandler : public MemoryDetails {
                           ProcessMemoryInformation* info);
   void AppendProcess(ListValue* child_data, ProcessMemoryInformation* info);
 
-  base::WeakPtr<AboutUIHTMLSource> source_;
-  int request_id_;
+  content::URLDataSource::GotDataCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AboutMemoryHandler);
 };
@@ -140,23 +138,20 @@ class AboutMemoryHandler : public MemoryDetails {
 class ChromeOSTermsHandler
     : public base::RefCountedThreadSafe<ChromeOSTermsHandler> {
  public:
-  static void Start(const base::WeakPtr<AboutUIHTMLSource>& source,
-                    const std::string& path,
-                    int request_id) {
+  static void Start(const std::string& path,
+                    const content::URLDataSource::GotDataCallback& callback) {
     scoped_refptr<ChromeOSTermsHandler> handler(
-        new ChromeOSTermsHandler(source, path, request_id));
+        new ChromeOSTermsHandler(path, callback));
     handler->StartOnUIThread();
   }
 
  private:
   friend class base::RefCountedThreadSafe<ChromeOSTermsHandler>;
 
-  ChromeOSTermsHandler(const base::WeakPtr<AboutUIHTMLSource>& source,
-                       const std::string& path,
-                       int request_id)
-    : source_(source),
-      path_(path),
-      request_id_(request_id),
+  ChromeOSTermsHandler(const std::string& path,
+                       const content::URLDataSource::GotDataCallback& callback)
+    : path_(path),
+      callback_(callback),
       // Previously we were using "initial locale" http://crbug.com/145142
       locale_(g_browser_process->GetApplicationLocale()) {
   }
@@ -204,24 +199,18 @@ class ChromeOSTermsHandler
 
   void ResponseOnUIThread() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (!source_)
-      return;
-
     // If we fail to load Chrome OS EULA from disk, load it from resources.
     // Do nothing if OEM EULA load failed.
     if (contents_.empty() && path_ != chrome::kOemEulaURLPath)
       contents_ = l10n_util::GetStringUTF8(IDS_TERMS_HTML);
-    source_->FinishDataRequest(contents_, request_id_);
+    callback_.Run(base::RefCountedString::TakeString(&contents_));
   }
-
-  // Where the results are fed to.
-  base::WeakPtr<AboutUIHTMLSource> source_;
 
   // Path in the URL.
   std::string path_;
 
-  // ID identifying the request.
-  int request_id_;
+  // Callback to run with the response.
+  content::URLDataSource::GotDataCallback callback_;
 
   // Locale of the EULA.
   std::string locale_;
@@ -503,20 +492,20 @@ std::string AboutTransparency(const std::string& path) {
 // the DNS information.
 class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
  public:
-  static void Start(const base::WeakPtr<AboutUIHTMLSource>& source,
-                    int request_id) {
+  static void Start(Profile* profile,
+                    const content::URLDataSource::GotDataCallback& callback) {
     scoped_refptr<AboutDnsHandler> handler(
-        new AboutDnsHandler(source, request_id));
+        new AboutDnsHandler(profile, callback));
     handler->StartOnUIThread();
   }
 
  private:
   friend class base::RefCountedThreadSafe<AboutDnsHandler>;
 
-  AboutDnsHandler(const base::WeakPtr<AboutUIHTMLSource>& source,
-                  int request_id)
-      : source_(source),
-        request_id_(request_id) {
+  AboutDnsHandler(Profile* profile,
+                  const content::URLDataSource::GotDataCallback& callback)
+      : profile_(profile),
+        callback_(callback) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
@@ -525,8 +514,7 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
   // Calls FinishOnUIThread() on completion.
   void StartOnUIThread() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    chrome_browser_net::Predictor* predictor =
-        source_->profile()->GetNetworkPredictor();
+    chrome_browser_net::Predictor* predictor = profile_->GetNetworkPredictor();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&AboutDnsHandler::StartOnIOThread, this, predictor));
@@ -548,34 +536,32 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
 
   void FinishOnUIThread(const std::string& data) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (source_)
-      source_->FinishDataRequest(data, request_id_);
+    std::string data_copy(data);
+    callback_.Run(base::RefCountedString::TakeString(&data_copy));
   }
 
-  // Where the results are fed to.
-  base::WeakPtr<AboutUIHTMLSource> source_;
+  Profile* profile_;
 
-  // ID identifying the request.
-  int request_id_;
+  // Callback to run with the response.
+  content::URLDataSource::GotDataCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AboutDnsHandler);
 };
 
-void FinishMemoryDataRequest(const std::string& path,
-                             AboutUIHTMLSource* source,
-                             int request_id) {
+void FinishMemoryDataRequest(
+    const std::string& path,
+    const content::URLDataSource::GotDataCallback& callback) {
   if (path == kStringsJsPath) {
     // The AboutMemoryHandler cleans itself up, but |StartFetch()| will want
     // the refcount to be greater than 0.
-    scoped_refptr<AboutMemoryHandler>
-        handler(new AboutMemoryHandler(source->AsWeakPtr(), request_id));
+    scoped_refptr<AboutMemoryHandler> handler(new AboutMemoryHandler(callback));
     // TODO(jamescook): Maybe this shouldn't update UMA?
     handler->StartFetch(MemoryDetails::UPDATE_USER_METRICS);
   } else {
-    source->FinishDataRequest(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-            path == kMemoryJsPath ? IDR_ABOUT_MEMORY_JS :
-            IDR_ABOUT_MEMORY_HTML).as_string(), request_id);
+    std::string result = ResourceBundle::GetSharedInstance().GetRawDataResource(
+        path == kMemoryJsPath ? IDR_ABOUT_MEMORY_JS : IDR_ABOUT_MEMORY_HTML).
+            as_string();
+    callback.Run(base::RefCountedString::TakeString(&result));
   }
 }
 
@@ -870,9 +856,6 @@ void AboutMemoryHandler::AppendProcess(ListValue* child_data,
 }
 
 void AboutMemoryHandler::OnDetailsAvailable() {
-  if (!source_)
-    return;
-
   // the root of the JSON hierarchy for about:memory jstemplate
   scoped_ptr<DictionaryValue> root(new DictionaryValue);
   ListValue* browsers = new ListValue();
@@ -947,13 +930,13 @@ void AboutMemoryHandler::OnDetailsAvailable() {
   load_time_data.SetString(
       "summary_desc",
       l10n_util::GetStringUTF16(IDS_MEMORY_USAGE_SUMMARY_DESC));
-  URLDataSource::SetFontAndTextDirection(&load_time_data);
+  web_ui_util::SetFontAndTextDirection(&load_time_data);
   load_time_data.Set("jstemplateData", root.release());
 
   jstemplate_builder::UseVersion2 version2;
   std::string data;
   jstemplate_builder::AppendJsonJS(&load_time_data, &data);
-  source_->FinishDataRequest(data, request_id_);
+  callback_.Run(base::RefCountedString::TakeString(&data));
 }
 
 }  // namespace
@@ -971,9 +954,10 @@ std::string AboutUIHTMLSource::GetSource() {
   return source_name_;
 }
 
-void AboutUIHTMLSource::StartDataRequest(const std::string& path,
-                                         bool is_incognito,
-                                         int request_id) {
+void AboutUIHTMLSource::StartDataRequest(
+    const std::string& path,
+    bool is_incognito,
+    const content::URLDataSource::GotDataCallback& callback) {
   std::string response;
   // Add your data source here, in alphabetical order.
   if (source_name_ == chrome::kChromeUIChromeURLsHost) {
@@ -991,7 +975,7 @@ void AboutUIHTMLSource::StartDataRequest(const std::string& path,
     response = AboutTransparency(path);
 #endif
   } else if (source_name_ == chrome::kChromeUIDNSHost) {
-    AboutDnsHandler::Start(AsWeakPtr(), request_id);
+    AboutDnsHandler::Start(profile(), callback);
     return;
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   } else if (source_name_ == chrome::kChromeUILinuxProxyConfigHost) {
@@ -1000,7 +984,7 @@ void AboutUIHTMLSource::StartDataRequest(const std::string& path,
   } else if (source_name_ == chrome::kChromeUIMemoryHost) {
     response = GetAboutMemoryRedirectResponse(profile());
   } else if (source_name_ == chrome::kChromeUIMemoryRedirectHost) {
-    FinishMemoryDataRequest(path, this, request_id);
+    FinishMemoryDataRequest(path, callback);
     return;
 #if defined(OS_CHROMEOS)
   } else if (source_name_ == chrome::kChromeUINetworkHost) {
@@ -1017,21 +1001,21 @@ void AboutUIHTMLSource::StartDataRequest(const std::string& path,
     response = AboutStats(path);
   } else if (source_name_ == chrome::kChromeUITermsHost) {
 #if defined(OS_CHROMEOS)
-    ChromeOSTermsHandler::Start(AsWeakPtr(), path, request_id);
+    ChromeOSTermsHandler::Start(path, callback);
     return;
 #else
     response = l10n_util::GetStringUTF8(IDS_TERMS_HTML);
 #endif
   }
 
-  FinishDataRequest(response, request_id);
+  FinishDataRequest(response, callback);
 }
 
-void AboutUIHTMLSource::FinishDataRequest(const std::string& html,
-                                          int request_id) {
+void AboutUIHTMLSource::FinishDataRequest(
+    const std::string& html,
+    const content::URLDataSource::GotDataCallback& callback) {
   std::string html_copy(html);
-  url_data_source()->SendResponse(
-      request_id, base::RefCountedString::TakeString(&html_copy));
+  callback.Run(base::RefCountedString::TakeString(&html_copy));
 }
 
 std::string AboutUIHTMLSource::GetMimeType(const std::string& path) const {
@@ -1054,6 +1038,6 @@ AboutUI::AboutUI(content::WebUI* web_ui, const std::string& name)
   ChromeURLDataManager::AddDataSource(profile, theme);
 #endif
 
-  content::URLDataSourceDelegate* source = new AboutUIHTMLSource(name, profile);
-  ChromeURLDataManager::AddDataSource(profile, source);
+  ChromeURLDataManager::AddDataSource(
+      profile, new AboutUIHTMLSource(name, profile));
 }

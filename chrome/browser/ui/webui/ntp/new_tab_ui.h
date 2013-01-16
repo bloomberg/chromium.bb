@@ -13,7 +13,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
-#include "content/public/browser/url_data_source_delegate.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -67,15 +67,16 @@ class NewTabUI : public content::WebUIController,
   bool showing_sync_bubble() { return showing_sync_bubble_; }
   void set_showing_sync_bubble(bool showing) { showing_sync_bubble_ = showing; }
 
-  class NewTabHTMLSource : public content::URLDataSourceDelegate {
+  class NewTabHTMLSource : public content::URLDataSource {
    public:
     explicit NewTabHTMLSource(Profile* profile);
 
-    // content::URLDataSourceDelegate implementation.
+    // content::URLDataSource implementation.
     virtual std::string GetSource() OVERRIDE;
-    virtual void StartDataRequest(const std::string& path,
-                                  bool is_incognito,
-                                  int request_id) OVERRIDE;
+    virtual void StartDataRequest(
+        const std::string& path,
+        bool is_incognito,
+        const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
     virtual std::string GetMimeType(const std::string&) const OVERRIDE;
     virtual bool ShouldReplaceExistingSource() const OVERRIDE;
 

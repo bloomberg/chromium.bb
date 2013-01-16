@@ -641,7 +641,7 @@ PolicyUI::PolicyUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the chrome://policy/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, CreatePolicyUIHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(profile, CreatePolicyUIHTMLSource());
 }
 
 PolicyUI::~PolicyUI() {

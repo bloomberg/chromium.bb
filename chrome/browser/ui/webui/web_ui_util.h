@@ -48,6 +48,10 @@ void ParsePathAndScale(const GURL& url,
                        std::string* path,
                        ui::ScaleFactor* scale_factor);
 
+// Helper function to set the font family, size, and text direction into the
+// given dictionary.
+void SetFontAndTextDirection(base::DictionaryValue* localized_strings);
+
 }  // namespace web_ui_util
 
 #endif  // CHROME_BROWSER_UI_WEBUI_WEB_UI_UTIL_H_

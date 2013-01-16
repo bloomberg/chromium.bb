@@ -43,6 +43,6 @@ MediaInternalsUI::MediaInternalsUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(new MediaInternalsMessageHandler());
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile,
-      CreateMediaInternalsHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(
+      profile, CreateMediaInternalsHTMLSource());
 }

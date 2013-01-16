@@ -10,7 +10,7 @@
 #include "base/file_path.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/common/cancelable_task_tracker.h"
-#include "content/public/browser/url_data_source_delegate.h"
+#include "content/public/browser/url_data_source.h"
 #include "ui/base/layout.h"
 
 namespace gfx {
@@ -19,15 +19,16 @@ class Image;
 
 // FileIconSource is the gateway between network-level chrome:
 // requests for favicons and the history backend that serves these.
-class FileIconSource : public content::URLDataSourceDelegate {
+class FileIconSource : public content::URLDataSource {
  public:
   explicit FileIconSource();
 
-  // content::URLDataSourceDelegate implementation.
+  // content::URLDataSource implementation.
   virtual std::string GetSource() OVERRIDE;
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id) OVERRIDE;
+  virtual void StartDataRequest(
+      const std::string& path,
+      bool is_incognito,
+      const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
   virtual std::string GetMimeType(const std::string&) const OVERRIDE;
 
  protected:
@@ -36,16 +37,20 @@ class FileIconSource : public content::URLDataSourceDelegate {
   // Once the |path| and |icon_size| has been determined from the request, this
   // function is called to perform the actual fetch. Declared as virtual for
   // testing.
-  virtual void FetchFileIcon(const FilePath& path,
-                             ui::ScaleFactor scale_factor,
-                             IconLoader::IconSize icon_size,
-                             int request_id);
+  virtual void FetchFileIcon(
+      const FilePath& path,
+      ui::ScaleFactor scale_factor,
+      IconLoader::IconSize icon_size,
+      const content::URLDataSource::GotDataCallback& callback);
 
  private:
   // Contains the necessary information for completing an icon fetch request.
   struct IconRequestDetails {
-    // The request id corresponding to these details.
-    int request_id;
+    IconRequestDetails();
+    ~IconRequestDetails();
+
+    // The callback to run with the response.
+    content::URLDataSource::GotDataCallback callback;
 
     // The requested scale factor to respond with.
     ui::ScaleFactor scale_factor;

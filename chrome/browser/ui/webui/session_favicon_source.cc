@@ -52,7 +52,7 @@ bool SessionFaviconSource::HandleMissingResource(const IconRequest& request) {
     scoped_refptr<base::RefCountedString> response =
         new base::RefCountedString();
     response->data() = favicon_data;
-    url_data_source()->SendResponse(request.request_id, response);
+    request.callback.Run(response);
     return true;
   }
   return false;

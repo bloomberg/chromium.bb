@@ -82,7 +82,8 @@ SyncInternalsUI::SyncInternalsUI(content::WebUI* web_ui)
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // TODO(akalin): Fix.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, CreateSyncInternalsHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(profile,
+                                          CreateSyncInternalsHTMLSource());
   ProfileSyncService* sync_service = GetProfileSyncService(profile);
   if (sync_service) {
     js_controller_ = sync_service->GetJsController();

@@ -388,7 +388,7 @@ FlashUI::FlashUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the about:flash source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, CreateFlashUIHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(profile, CreateFlashUIHTMLSource());
 }
 
 // static

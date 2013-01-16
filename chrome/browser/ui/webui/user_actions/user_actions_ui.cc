@@ -23,7 +23,7 @@ UserActionsUI::UserActionsUI(content::WebUI* web_ui)
   html_source->add_resource_path("user_actions.js", IDR_USER_ACTIONS_JS);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, html_source);
+  ChromeURLDataManager::AddDataSourceImpl(profile, html_source);
 
   // AddMessageHandler takes ownership of UserActionsUIHandler.
   web_ui->AddMessageHandler(new UserActionsUIHandler());

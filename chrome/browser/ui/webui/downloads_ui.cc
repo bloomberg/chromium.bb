@@ -75,6 +75,7 @@ ChromeWebUIDataSource* CreateDownloadsUIHTMLSource() {
   source->add_resource_path("downloads.css", IDR_DOWNLOADS_CSS);
   source->add_resource_path("downloads.js", IDR_DOWNLOADS_JS);
   source->set_default_resource(IDR_DOWNLOADS_HTML);
+  source->set_use_json_js_format_v2();
 
   return source;
 }
@@ -96,8 +97,7 @@ DownloadsUI::DownloadsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the chrome://downloads/ source.
   ChromeWebUIDataSource* source = CreateDownloadsUIHTMLSource();
-  source->set_use_json_js_format_v2();
-  ChromeURLDataManager::AddDataSource(profile, source);
+  ChromeURLDataManager::AddDataSourceImpl(profile, source);
 #if defined(ENABLE_THEMES)
   ThemeSource* theme = new ThemeSource(profile);
   ChromeURLDataManager::AddDataSource(profile, theme);

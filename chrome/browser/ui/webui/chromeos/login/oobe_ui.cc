@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/about_ui.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enterprise_oauth_enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
@@ -34,10 +33,11 @@
 #include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/url_data_source_delegate.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
@@ -57,15 +57,16 @@ const char kEnterpriseEnrollmentGaiaLoginPath[] = "gaialogin";
 
 namespace chromeos {
 
-class OobeUIHTMLSource : public content::URLDataSourceDelegate {
+class OobeUIHTMLSource : public content::URLDataSource {
  public:
   explicit OobeUIHTMLSource(DictionaryValue* localized_strings);
 
-  // content::URLDataSourceDelegate implementation.
+  // content::URLDataSource implementation.
   virtual std::string GetSource() OVERRIDE;
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id);
+  virtual void StartDataRequest(
+      const std::string& path,
+      bool is_incognito,
+      const content::URLDataSource::GotDataCallback& callback);
   virtual std::string GetMimeType(const std::string&) const {
     return "text/html";
   }
@@ -89,15 +90,16 @@ std::string OobeUIHTMLSource::GetSource() {
   return chrome::kChromeUIOobeHost;
 }
 
-void OobeUIHTMLSource::StartDataRequest(const std::string& path,
-                                        bool is_incognito,
-                                        int request_id) {
+void OobeUIHTMLSource::StartDataRequest(
+    const std::string& path,
+    bool is_incognito,
+    const content::URLDataSource::GotDataCallback& callback) {
   if (UserManager::Get()->IsUserLoggedIn() &&
       !UserManager::Get()->IsLoggedInAsStub() &&
       !ScreenLocker::default_screen_locker()) {
     scoped_refptr<base::RefCountedBytes> empty_bytes =
         new base::RefCountedBytes();
-    url_data_source()->SendResponse(request_id, empty_bytes);
+    callback.Run(empty_bytes);
     return;
   }
 
@@ -111,8 +113,7 @@ void OobeUIHTMLSource::StartDataRequest(const std::string& path,
   else if (path == kEnterpriseEnrollmentGaiaLoginPath)
     response = GetDataResource(IDR_GAIA_LOGIN_HTML);
 
-  url_data_source()->SendResponse(
-      request_id, base::RefCountedString::TakeString(&response));
+  callback.Run(base::RefCountedString::TakeString(&response));
 }
 
 std::string OobeUIHTMLSource::GetDataResource(int resource_id) const {
@@ -271,7 +272,7 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   // Note, handlers_[0] is a GenericHandler used by the WebUI.
   for (size_t i = 0; i < handlers_.size(); ++i)
     handlers_[i]->GetLocalizedStrings(localized_strings);
-  URLDataSource::SetFontAndTextDirection(localized_strings);
+  web_ui_util::SetFontAndTextDirection(localized_strings);
 
 #if defined(GOOGLE_CHROME_BUILD)
   localized_strings->SetString("buildType", "chrome");

@@ -27,12 +27,12 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
 #include "chrome/browser/ui/search/search.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/sync_setup_handler.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/browser/web_resource/notification_promo.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -298,7 +298,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
       prefs::kShowBookmarkBar);
   localized_strings.SetBoolean("bookmarkbarattached", bookmark_bar_attached);
 
-  URLDataSource::SetFontAndTextDirection(&localized_strings);
+  web_ui_util::SetFontAndTextDirection(&localized_strings);
 
   static const base::StringPiece incognito_tab_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -415,7 +415,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   NewTabPageHandler::GetLocalizedValues(profile_, &load_time_data);
   NTPLoginHandler::GetLocalizedValues(profile_, &load_time_data);
 
-  URLDataSource::SetFontAndTextDirection(&load_time_data);
+  web_ui_util::SetFontAndTextDirection(&load_time_data);
 
   // Control fade and resize animations.
   load_time_data.SetBoolean("anim", ui::Animation::ShouldRenderRichAnimation());

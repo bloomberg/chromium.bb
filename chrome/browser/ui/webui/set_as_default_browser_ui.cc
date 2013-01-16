@@ -388,8 +388,8 @@ void SetAsDefaultBrowserDialogImpl::
 
 SetAsDefaultBrowserUI::SetAsDefaultBrowserUI(content::WebUI* web_ui)
     : ui::WebDialogUI(web_ui) {
-  ChromeURLDataManager::AddDataSource(Profile::FromWebUI(web_ui),
-                                      CreateSetAsDefaultBrowserUIHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(
+      Profile::FromWebUI(web_ui), CreateSetAsDefaultBrowserUIHTMLSource());
 }
 
 // static

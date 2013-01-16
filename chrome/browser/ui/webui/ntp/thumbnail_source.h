@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "content/public/browser/url_data_source_delegate.h"
+#include "content/public/browser/url_data_source.h"
 
 class Profile;
 
@@ -23,24 +23,22 @@ class ThumbnailService;
 
 // ThumbnailSource is the gateway between network-level chrome: requests for
 // thumbnails and the history/top-sites backend that serves these.
-class ThumbnailSource : public content::URLDataSourceDelegate {
+class ThumbnailSource : public content::URLDataSource {
  public:
   explicit ThumbnailSource(Profile* profile);
 
-  // content::URLDataSourceDelegate implementation.
+  // content::URLDataSource implementation.
   virtual std::string GetSource() OVERRIDE;
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id) OVERRIDE;
+  virtual void StartDataRequest(
+      const std::string& path,
+      bool is_incognito,
+      const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
   virtual MessageLoop* MessageLoopForRequestPath(
       const std::string& path) const OVERRIDE;
 
  private:
   virtual ~ThumbnailSource();
-
-  // Send the default thumbnail when we are missing a real one.
-  void SendDefaultThumbnail(int request_id);
 
   // Raw PNG representation of the thumbnail to show when the thumbnail
   // database doesn't have a thumbnail for a webpage.

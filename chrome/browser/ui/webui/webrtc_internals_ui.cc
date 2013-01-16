@@ -36,6 +36,6 @@ ChromeWebUIDataSource* CreateWebRTCInternalsHTMLSource() {
 WebRTCInternalsUI::WebRTCInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile,
-      CreateWebRTCInternalsHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(profile,
+                                          CreateWebRTCInternalsHTMLSource());
 }

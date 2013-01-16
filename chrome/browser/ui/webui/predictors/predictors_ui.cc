@@ -27,5 +27,6 @@ ChromeWebUIDataSource* CreatePredictorsUIHTMLSource() {
 PredictorsUI::PredictorsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   web_ui->AddMessageHandler(new PredictorsHandler(profile));
-  ChromeURLDataManager::AddDataSource(profile, CreatePredictorsUIHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(profile,
+                                          CreatePredictorsUIHTMLSource());
 }

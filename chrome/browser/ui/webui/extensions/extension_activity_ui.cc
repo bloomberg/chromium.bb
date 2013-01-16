@@ -43,7 +43,7 @@ ExtensionActivityUI::ExtensionActivityUI(content::WebUI* web_ui)
   source->set_default_resource(IDR_EXTENSION_ACTIVITY_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, source);
+  ChromeURLDataManager::AddDataSourceImpl(profile, source);
   ChromeURLDataManager::AddDataSource(profile, new SharedResourcesDataSource());
 
   // Callback handlers.

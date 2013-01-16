@@ -10,7 +10,6 @@
 #include "base/memory/singleton.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/shared_resources.h"
@@ -51,16 +50,17 @@ std::string SharedResourcesDataSource::GetSource() {
   return chrome::kChromeUIResourcesHost;
 }
 
-void SharedResourcesDataSource::StartDataRequest(const std::string& path,
-                                                 bool is_incognito,
-                                                 int request_id) {
+void SharedResourcesDataSource::StartDataRequest(
+    const std::string& path,
+    bool is_incognito,
+    const content::URLDataSource::GotDataCallback& callback) {
   int idr = PathToIDR(path);
   DCHECK_NE(-1, idr) << " path: " << path;
   const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   scoped_refptr<base::RefCountedStaticMemory> bytes(
       rb.LoadDataResourceBytes(idr));
 
-  url_data_source()->SendResponse(request_id, bytes);
+  callback.Run(bytes);
 }
 
 std::string SharedResourcesDataSource::GetMimeType(

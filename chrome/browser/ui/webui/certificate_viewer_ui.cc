@@ -59,7 +59,7 @@ CertificateViewerUI::CertificateViewerUI(content::WebUI* web_ui)
   html_source->set_default_resource(IDR_CERTIFICATE_VIEWER_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, html_source);
+  ChromeURLDataManager::AddDataSourceImpl(profile, html_source);
 }
 
 CertificateViewerUI::~CertificateViewerUI() {

@@ -142,8 +142,8 @@ VersionUI::VersionUI(content::WebUI* web_ui)
   ChromeURLDataManager::AddDataSource(profile, theme);
 #endif
 
-  ChromeURLDataManager::AddDataSource(profile,
-                                      CreateVersionUIDataSource(profile));
+  ChromeURLDataManager::AddDataSourceImpl(profile,
+                                          CreateVersionUIDataSource(profile));
 }
 
 VersionUI::~VersionUI() {

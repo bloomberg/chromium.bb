@@ -13,7 +13,6 @@
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/time_format.h"
 #include "googleurl/src/gurl.h"
@@ -91,14 +90,21 @@ void ParseQueryParams(const std::string& query,
 
 }  // namespace
 
+FileIconSource::IconRequestDetails::IconRequestDetails() {
+}
+
+FileIconSource::IconRequestDetails::~IconRequestDetails() {
+}
+
 FileIconSource::FileIconSource() {}
 
 FileIconSource::~FileIconSource() {}
 
-void FileIconSource::FetchFileIcon(const FilePath& path,
-                                   ui::ScaleFactor scale_factor,
-                                   IconLoader::IconSize icon_size,
-                                   int request_id) {
+void FileIconSource::FetchFileIcon(
+    const FilePath& path,
+    ui::ScaleFactor scale_factor,
+    IconLoader::IconSize icon_size,
+    const content::URLDataSource::GotDataCallback& callback) {
   IconManager* im = g_browser_process->icon_manager();
   gfx::Image* icon = im->LookupIcon(path, icon_size);
 
@@ -108,11 +114,11 @@ void FileIconSource::FetchFileIcon(const FilePath& path,
         icon->ToImageSkia()->GetRepresentation(scale_factor).sk_bitmap(),
         false, &icon_data->data());
 
-    url_data_source()->SendResponse(request_id, icon_data);
+    callback.Run(icon_data);
   } else {
     // Attach the ChromeURLDataManager request ID to the history request.
     IconRequestDetails details;
-    details.request_id = request_id;
+    details.callback = callback;
     details.scale_factor = scale_factor;
 
     // Icon was not in cache, go fetch it slowly.
@@ -128,16 +134,17 @@ std::string FileIconSource::GetSource() {
   return kFileIconPath;
 }
 
-void FileIconSource::StartDataRequest(const std::string& url_path,
-                                      bool is_incognito,
-                                      int request_id) {
+void FileIconSource::StartDataRequest(
+    const std::string& url_path,
+    bool is_incognito,
+    const content::URLDataSource::GotDataCallback& callback) {
   std::string query;
   FilePath file_path;
   ui::ScaleFactor scale_factor;
   IconLoader::IconSize icon_size;
   GetFilePathAndQuery(url_path, &file_path, &query);
   ParseQueryParams(query, &scale_factor, &icon_size);
-  FetchFileIcon(file_path, scale_factor, icon_size, request_id);
+  FetchFileIcon(file_path, scale_factor, icon_size, callback);
 }
 
 std::string FileIconSource::GetMimeType(const std::string&) const {
@@ -155,9 +162,9 @@ void FileIconSource::OnFileIconDataAvailable(const IconRequestDetails& details,
         false,
         &icon_data->data());
 
-    url_data_source()->SendResponse(details.request_id, icon_data);
+    details.callback.Run(icon_data);
   } else {
     // TODO(glen): send a dummy icon.
-    url_data_source()->SendResponse(details.request_id, NULL);
+    details.callback.Run(NULL);
   }
 }

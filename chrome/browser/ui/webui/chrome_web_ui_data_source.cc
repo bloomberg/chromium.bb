@@ -9,23 +9,50 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/string_util.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+// Internal class to hide the fact that ChromeWebUIDataSource implements
+// content::URLDataSource.
+class ChromeWebUIDataSource::InternalDataSource
+    : public content::URLDataSource {
+ public:
+  InternalDataSource(ChromeWebUIDataSource* parent) : parent_(parent) {
+  }
+
+  ~InternalDataSource() {
+  }
+
+  // content::URLDataSource implementation.
+  virtual std::string GetSource() OVERRIDE {
+    return parent_->GetSource();
+  }
+  virtual std::string GetMimeType(const std::string& path) const OVERRIDE {
+    return parent_->GetMimeType(path);
+  }
+  virtual void StartDataRequest(
+      const std::string& path,
+      bool is_incognito,
+      const content::URLDataSource::GotDataCallback& callback) OVERRIDE {
+    return parent_->StartDataRequest(path, is_incognito, callback);
+  }
+
+ private:
+  ChromeWebUIDataSource* parent_;
+};
+
 ChromeWebUIDataSource::ChromeWebUIDataSource(const std::string& source_name)
-    : URLDataSource(source_name, this),
+    : URLDataSourceImpl(
+          source_name,
+          new InternalDataSource(ALLOW_THIS_IN_INITIALIZER_LIST(this))),
       source_name_(source_name),
       default_resource_(-1),
       json_js_format_v2_(false) {
-  url_data_source_ = this;
 }
 
 ChromeWebUIDataSource::~ChromeWebUIDataSource() {
-  // TODO(jam): since temporarily ChromeWebUIDataSource is a URLDataSource and a
-  // content::URLDataSourceDelegate, NULL the delegate pointer out to avoid a
-  // double delete.
-  release_delegate();
 }
 
 void ChromeWebUIDataSource::AddString(const std::string& name,
@@ -70,18 +97,17 @@ std::string ChromeWebUIDataSource::GetMimeType(const std::string& path) const {
   return "text/html";
 }
 
-void ChromeWebUIDataSource::StartDataRequest(const std::string& path,
-                                             bool is_incognito,
-                                             int request_id) {
+void ChromeWebUIDataSource::StartDataRequest(
+    const std::string& path,
+    bool is_incognito,
+    const content::URLDataSource::GotDataCallback& callback) {
   if (!filter_callback_.is_null() &&
-      filter_callback_.Run(
-          path,
-          base::Bind(&URLDataSource::SendResponse, this, request_id))) {
+      filter_callback_.Run(path, callback)) {
     return;
   }
 
   if (!json_path_.empty() && path == json_path_) {
-    SendLocalizedStringsAsJSON(request_id);
+    SendLocalizedStringsAsJSON(callback);
     return;
   }
 
@@ -91,24 +117,26 @@ void ChromeWebUIDataSource::StartDataRequest(const std::string& path,
   if (result != path_to_idr_map_.end())
     resource_id = result->second;
   DCHECK_NE(resource_id, -1);
-  SendFromResourceBundle(request_id, resource_id);
+  SendFromResourceBundle(callback, resource_id);
 }
 
-void ChromeWebUIDataSource::SendLocalizedStringsAsJSON(int request_id) {
+void ChromeWebUIDataSource::SendLocalizedStringsAsJSON(
+    const content::URLDataSource::GotDataCallback& callback) {
   std::string template_data;
-  URLDataSource::SetFontAndTextDirection(&localized_strings_);
+  web_ui_util::SetFontAndTextDirection(&localized_strings_);
 
   scoped_ptr<jstemplate_builder::UseVersion2> version2;
   if (json_js_format_v2_)
     version2.reset(new jstemplate_builder::UseVersion2);
 
   jstemplate_builder::AppendJsonJS(&localized_strings_, &template_data);
-  SendResponse(request_id, base::RefCountedString::TakeString(&template_data));
+  callback.Run(base::RefCountedString::TakeString(&template_data));
 }
 
-void ChromeWebUIDataSource::SendFromResourceBundle(int request_id, int idr) {
+void ChromeWebUIDataSource::SendFromResourceBundle(
+    const content::URLDataSource::GotDataCallback& callback, int idr) {
   scoped_refptr<base::RefCountedStaticMemory> response(
       ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
           idr));
-  SendResponse(request_id, response);
+  callback.Run(response);
 }

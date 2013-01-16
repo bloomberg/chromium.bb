@@ -329,6 +329,6 @@ ImageBurnUI::ImageBurnUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(handler);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile,
-      chromeos::imageburner::CreateImageburnerUIHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(
+      profile, chromeos::imageburner::CreateImageburnerUIHTMLSource());
 }

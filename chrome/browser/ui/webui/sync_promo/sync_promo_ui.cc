@@ -103,7 +103,8 @@ SyncPromoUI::SyncPromoUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   ChromeURLDataManager::AddDataSource(profile, theme);
 
   // Set up the sync promo source.
-  ChromeURLDataManager::AddDataSource(profile, CreateSyncUIHTMLSource(web_ui));
+  ChromeURLDataManager::AddDataSourceImpl(profile,
+                                          CreateSyncUIHTMLSource(web_ui));
 
   sync_promo_trial::RecordUserShownPromo(web_ui);
 }

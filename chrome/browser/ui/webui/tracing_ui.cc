@@ -510,5 +510,5 @@ TracingUI::TracingUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the chrome://tracing/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, CreateTracingHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(profile, CreateTracingHTMLSource());
 }

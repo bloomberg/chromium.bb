@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
-#include "content/public/browser/url_data_source_delegate.h"
+#include "content/public/browser/url_data_source.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
@@ -28,14 +28,13 @@ class Profile;
 
 // ScreenshotSource is the data source that serves screenshots (saved
 // or current) to the bug report html ui.
-class ScreenshotSource : public content::URLDataSourceDelegate {
+class ScreenshotSource : public content::URLDataSource {
  public:
   explicit ScreenshotSource(
       std::vector<unsigned char>* current_screenshot,
       Profile* profile);
 
 #if defined(USE_ASH)
-
   // Queries the browser process to determine if screenshots are disabled.
   static bool AreScreenshotsDisabled();
 
@@ -47,11 +46,12 @@ class ScreenshotSource : public content::URLDataSourceDelegate {
   // Get the basefilename for screenshots
   static std::string GetScreenshotBaseFilename();
 
-  // content::URLDataSourceDelegate implementation.
+  // content::URLDataSource implementation.
   virtual std::string GetSource() OVERRIDE;
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id) OVERRIDE;
+  virtual void StartDataRequest(
+      const std::string& path,
+      bool is_incognito,
+      const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
   virtual std::string GetMimeType(const std::string&) const OVERRIDE;
 
   // Get the screenshot specified by the given relative path that we've cached
@@ -81,28 +81,32 @@ class ScreenshotSource : public content::URLDataSourceDelegate {
   // This is the ancestor for SendSavedScreenshot and CacheAndSendScreenshot.
   // All calls to send a screenshot should only call this method.
   // Note: This method strips the query string from the given path.
-  void SendScreenshot(const std::string& screenshot_path, int request_id);
+  void SendScreenshot(const std::string& screenshot_path,
+                      const content::URLDataSource::GotDataCallback& callback);
 #if defined(OS_CHROMEOS)
   // Send a saved screenshot image file specified by the given screenshot path
   // to the requestor.
-  void SendSavedScreenshot(const std::string& screenshot_path,
-                           int request_id,
-                           const FilePath& file);
+  void SendSavedScreenshot(
+      const std::string& screenshot_path,
+      const content::URLDataSource::GotDataCallback& callback,
+      const FilePath& file);
 
   // The callback for Drive's getting file method.
-  void GetSavedScreenshotCallback(const std::string& screenshot_path,
-                                  int request_id,
-                                  drive::DriveFileError error,
-                                  const FilePath& file,
-                                  const std::string& unused_mime_type,
-                                  drive::DriveFileType file_type);
+  void GetSavedScreenshotCallback(
+      const std::string& screenshot_path,
+      const content::URLDataSource::GotDataCallback& callback,
+      drive::DriveFileError error,
+      const FilePath& file,
+      const std::string& unused_mime_type,
+      drive::DriveFileType file_type);
 
 #endif
   // Sends the screenshot data to the requestor while caching it locally to the
   // class instance, indexed by path.
-  void CacheAndSendScreenshot(const std::string& screenshot_path,
-                              int request_id,
-                              ScreenshotDataPtr bytes);
+  void CacheAndSendScreenshot(
+      const std::string& screenshot_path,
+      const content::URLDataSource::GotDataCallback& callback,
+      ScreenshotDataPtr bytes);
 
   // Pointer to the screenshot data for the current screenshot.
   ScreenshotDataPtr current_screenshot_;

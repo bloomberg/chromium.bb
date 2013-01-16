@@ -216,8 +216,8 @@ ChooseMobileNetworkUI::ChooseMobileNetworkUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(handler);
   // Set up the "chrome://choose-mobile-network" source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile,
-      CreateChooseMobileNetworkUIHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(
+      profile, CreateChooseMobileNetworkUIHTMLSource());
 }
 
 }  // namespace chromeos

@@ -347,7 +347,8 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
       dialog_closed_(false) {
   // Set up the chrome://print/ data source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, CreatePrintPreviewUISource());
+  ChromeURLDataManager::AddDataSourceImpl(profile,
+                                          CreatePrintPreviewUISource());
 
   // Set up the chrome://theme/ source.
   ChromeURLDataManager::AddDataSource(profile, new ThemeSource(profile));

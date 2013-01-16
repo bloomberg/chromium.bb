@@ -165,7 +165,7 @@ CrashesUI::CrashesUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the chrome://crashes/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSource(profile, CreateCrashesUIHTMLSource());
+  ChromeURLDataManager::AddDataSourceImpl(profile, CreateCrashesUIHTMLSource());
 }
 
 // static

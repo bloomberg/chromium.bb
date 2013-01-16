@@ -13,13 +13,12 @@
 #include "base/compiler_specific.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "content/public/browser/url_data_source_delegate.h"
+#include "content/public/browser/url_data_source.h"
 
 // A data source that can help with implementing the common operations
 // needed by the chrome WEBUI settings/history/downloads pages.
 // DO NOT DERIVE FROM THIS CLASS! http://crbug.com/169170
-class ChromeWebUIDataSource : public URLDataSource,
-                              public content::URLDataSourceDelegate {
+class ChromeWebUIDataSource : public URLDataSourceImpl {
  public:
   // Used as a parameter to GotDataCallback. The caller has to run this callback
   // with the result for the path that they filtered, passing ownership of the
@@ -77,19 +76,27 @@ class ChromeWebUIDataSource : public URLDataSource,
   virtual ~ChromeWebUIDataSource();
 
   // Completes a request by sending our dictionary of localized strings.
-  void SendLocalizedStringsAsJSON(int request_id);
+  void SendLocalizedStringsAsJSON(
+      const content::URLDataSource::GotDataCallback& callback);
 
   // Completes a request by sending the file specified by |idr|.
-  void SendFromResourceBundle(int request_id, int idr);
-
-  // content::URLDataSourceDelegate implementation.
-  virtual std::string GetSource() OVERRIDE;
-  virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
-                                int request_id) OVERRIDE;
+  void SendFromResourceBundle(
+      const content::URLDataSource::GotDataCallback& callback, int idr);
 
  private:
+  class InternalDataSource;
+  friend class InternalDataSource;
+  friend class MockChromeWebUIDataSource;
+
+  // Methods that match content::URLDataSource which are called by
+  // InternalDataSource.
+  std::string GetSource();
+  std::string GetMimeType(const std::string& path) const;
+  void StartDataRequest(
+      const std::string& path,
+      bool is_incognito,
+      const content::URLDataSource::GotDataCallback& callback);
+
   // The name of this source.
   // E.g., for favicons, this could be "favicon", which results in paths for
   // specific resources like "favicon/34" getting sent to this source.

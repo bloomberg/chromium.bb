@@ -20,10 +20,11 @@ class TestFileIconSource : public FileIconSource {
  public:
   explicit TestFileIconSource() {}
 
-  MOCK_METHOD4(FetchFileIcon, void(const FilePath& path,
-                                   ui::ScaleFactor scale_factor,
-                                   IconLoader::IconSize icon_size,
-                                   int request_id));
+  MOCK_METHOD4(FetchFileIcon,
+               void(const FilePath& path,
+                    ui::ScaleFactor scale_factor,
+                    IconLoader::IconSize icon_size,
+                    const content::URLDataSource::GotDataCallback& callback));
 
   virtual ~TestFileIconSource() {}
 };
@@ -109,15 +110,22 @@ const struct FetchFileIconExpectation {
 #endif
 };
 
+// Test that the callback is NULL.
+MATCHER(CallbackIsNull, "") {
+  return arg.is_null();
+}
+
 }  // namespace
 
 TEST_F(FileIconSourceTest, FileIconSource_Parse) {
   for (unsigned i = 0; i < arraysize(kBasicExpectations); i++) {
     scoped_ptr<TestFileIconSource> source(CreateFileIconSource());
+    content::URLDataSource::GotDataCallback callback;
     EXPECT_CALL(*source.get(),
                 FetchFileIcon(FilePath(kBasicExpectations[i].unescaped_path),
                               kBasicExpectations[i].scale_factor,
-                              kBasicExpectations[i].size, i));
-    source->StartDataRequest(kBasicExpectations[i].request_path, false, i);
+                              kBasicExpectations[i].size, CallbackIsNull()));
+    source->StartDataRequest(kBasicExpectations[i].request_path, false,
+                             callback);
   }
 }
