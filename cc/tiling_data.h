@@ -8,10 +8,10 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "cc/cc_export.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
 namespace gfx {
-class Rect;
 class Vector2d;
 }
 
@@ -19,8 +19,14 @@ namespace cc {
 
 class CC_EXPORT TilingData {
  public:
-  TilingData(gfx::Size max_texture_size, gfx::Size total_size, bool has_border_texels);
-  ~TilingData();
+  TilingData(
+      gfx::Size max_texture_size,
+      gfx::Size total_size,
+      bool has_border_texels);
+  TilingData(
+      gfx::Size max_texture_size,
+      gfx::Size total_size,
+      int border_texels);
 
   gfx::Size total_size() const { return total_size_; }
   void SetTotalSize(const gfx::Size total_size);
@@ -30,12 +36,17 @@ class CC_EXPORT TilingData {
 
   int border_texels() const { return border_texels_; }
   void SetHasBorderTexels(bool has_border_texels);
+  void SetBorderTexels(int border_texels);
 
   bool has_empty_bounds() const { return !num_tiles_x_ || !num_tiles_y_; }
   int num_tiles_x() const { return num_tiles_x_; }
   int num_tiles_y() const { return num_tiles_y_; }
+  // Return the tile coordinate whose non-border texels include src_position.
   int TileXIndexFromSrcCoord(int src_position) const;
   int TileYIndexFromSrcCoord(int src_position) const;
+  // Return the lowest tile coordinate whose border texels include src_position.
+  int BorderTileXIndexFromSrcCoord(int src_position) const;
+  int BorderTileYIndexFromSrcCoord(int src_position) const;
 
   gfx::Rect TileBounds(int i, int j) const;
   gfx::Rect TileBoundsWithBorder(int i, int j) const;
@@ -46,6 +57,25 @@ class CC_EXPORT TilingData {
 
   // Difference between TileBound's and TileBoundWithBorder's origin().
   gfx::Vector2d TextureOffset(int x_index, int y_index) const;
+
+  // Iterate through all indices whose bounds + border intersect with this rect.
+  class CC_EXPORT Iterator {
+   public:
+    Iterator(const TilingData* tiling_data, gfx::Rect rect);
+    Iterator& operator++();
+    operator bool() const;
+
+    int index_x() const { return index_x_; }
+    int index_y() const { return index_y_; }
+
+   private:
+    void done();
+
+    const TilingData* tiling_data_;
+    gfx::Rect rect_;
+    int index_x_;
+    int index_y_;
+  };
 
  private:
   void AssertTile(int i, int j) const {
@@ -59,7 +89,6 @@ class CC_EXPORT TilingData {
 
   gfx::Size max_texture_size_;
   gfx::Size total_size_;
-  // This value is always 0 or 1.
   int border_texels_;
 
   // These are computed values.
