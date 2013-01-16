@@ -4,6 +4,7 @@ bin_PROGRAMS =					\
 
 noinst_PROGRAMS =				\
 	$(clients_programs)			\
+	$(pango_programs)			\
 	$(poppler_programs)			\
 	$(simple_clients_programs)		\
 	$(simple_egl_clients_programs)
@@ -61,7 +62,6 @@ clients_programs =				\
 	resizor					\
 	eventdemo				\
 	clickdot				\
-	editor					\
 	transformed				\
 	calibrator				\
 	$(full_gl_client_programs)
@@ -129,11 +129,15 @@ transformed_LDADD = libtoytoolkit.la
 calibrator_SOURCES = calibrator.c ../shared/matrix.c ../shared/matrix.h
 calibrator_LDADD = libtoytoolkit.la
 
+if HAVE_PANGO
+pango_programs = editor
 editor_SOURCES = 				\
 	editor.c				\
 	text-protocol.c				\
 	text-client-protocol.h
-editor_LDADD = libtoytoolkit.la
+editor_LDADD = libtoytoolkit.la $(PANGO_LIBS)
+editor_CPPFLAGS = $(AM_CPPFLAGS) $(PANGO_CFLAGS)
+endif
 
 keyboard = weston-keyboard
 weston_keyboard_SOURCES = 			\

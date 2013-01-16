@@ -21,6 +21,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "config.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,20 +31,10 @@
 #include <linux/input.h>
 #include <cairo.h>
 
+#include <pango/pangocairo.h>
+
 #include "window.h"
 #include "text-client-protocol.h"
-
-static const char *font_name = "sans-serif";
-static int font_size = 14;
-
-struct text_layout {
-	cairo_glyph_t *glyphs;
-	int num_glyphs;
-	cairo_text_cluster_t *clusters;
-	int num_clusters;
-	cairo_text_cluster_flags_t cluster_flags;
-	cairo_scaled_font_t *font;
-};
 
 struct text_entry {
 	struct widget *widget;
@@ -55,12 +47,14 @@ struct text_entry {
 		char *text;
 		int32_t cursor;
 		char *commit;
+		PangoAttrList *attr_list;
 	} preedit;
 	struct {
+		PangoAttrList *attr_list;
 		int32_t cursor;
 	} preedit_info;
 	struct text_model *model;
-	struct text_layout *layout;
+	PangoLayout *layout;
 	struct {
 		xkb_mod_mask_t shift_mask;
 	} keysym;
@@ -111,180 +105,6 @@ utf8_next_char(const char *p)
 	return NULL;
 }
 
-static struct text_layout *
-text_layout_create(void)
-{
-	struct text_layout *layout;
-	cairo_surface_t *surface;
-	cairo_t *cr;
-
-	layout = malloc(sizeof *layout);
-	if (!layout)
-		return NULL;
-
-	layout->glyphs = NULL;
-	layout->num_glyphs = 0;
-
-	layout->clusters = NULL;
-	layout->num_clusters = 0;
-
-	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
-	cr = cairo_create(surface);
-	cairo_set_font_size(cr, font_size);
-	cairo_select_font_face(cr, font_name, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-	layout->font = cairo_get_scaled_font(cr);
-	cairo_scaled_font_reference(layout->font);
-
-	cairo_destroy(cr);
-	cairo_surface_destroy(surface);
-
-	return layout;
-}
-
-static void
-text_layout_destroy(struct text_layout *layout)
-{
-	if (layout->glyphs)
-		cairo_glyph_free(layout->glyphs);
-
-	if (layout->clusters)
-		cairo_text_cluster_free(layout->clusters);
-
-	cairo_scaled_font_destroy(layout->font);
-
-	free(layout);
-}
-
-static void
-text_layout_set_text(struct text_layout *layout,
-		     const char *text)
-{
-	if (layout->glyphs)
-		cairo_glyph_free(layout->glyphs);
-
-	if (layout->clusters)
-		cairo_text_cluster_free(layout->clusters);
-
-	layout->glyphs = NULL;
-	layout->num_glyphs = 0;
-	layout->clusters = NULL;
-	layout->num_clusters = 0;
-
-	cairo_scaled_font_text_to_glyphs(layout->font, 0, 0, text, -1,
-					 &layout->glyphs, &layout->num_glyphs,
-					 &layout->clusters, &layout->num_clusters,
-					 &layout->cluster_flags);
-}
-
-static void
-text_layout_draw(struct text_layout *layout, cairo_t *cr)
-{
-	cairo_save(cr);
-	cairo_set_scaled_font(cr, layout->font);
-	cairo_show_glyphs(cr, layout->glyphs, layout->num_glyphs);
-	cairo_restore(cr);
-}
-
-static void
-text_layout_extents(struct text_layout *layout, cairo_text_extents_t *extents)
-{
-	cairo_scaled_font_glyph_extents(layout->font,
-					layout->glyphs, layout->num_glyphs,
-					extents);
-}
-
-static uint32_t
-bytes_from_glyphs(struct text_layout *layout, uint32_t index)
-{
-	int i;
-	uint32_t glyphs = 0, bytes = 0; 
-
-	for (i = 0; i < layout->num_clusters && glyphs < index; i++) {
-		bytes += layout->clusters[i].num_bytes;
-		glyphs += layout->clusters[i].num_glyphs;
-	}
-
-	return bytes;
-}
-
-static uint32_t
-glyphs_from_bytes(struct text_layout *layout, uint32_t index)
-{
-	int i;
-	uint32_t glyphs = 0, bytes = 0; 
-
-	for (i = 0; i < layout->num_clusters && bytes < index; i++) {
-		bytes += layout->clusters[i].num_bytes;
-		glyphs += layout->clusters[i].num_glyphs;
-	}
-
-	return glyphs;
-}
-
-static int
-text_layout_xy_to_index(struct text_layout *layout, double x, double y)
-{
-	cairo_text_extents_t extents;
-	int i;
-	double d;
-
-	if (layout->num_glyphs == 0)
-		return 0;
-
-	cairo_scaled_font_glyph_extents(layout->font,
-					layout->glyphs, layout->num_glyphs,
-					&extents);
-
-	if (x < 0)
-		return 0;
-
-	for (i = 0; i < layout->num_glyphs - 1; ++i) {
-		d = layout->glyphs[i + 1].x - layout->glyphs[i].x;
-		if (x < layout->glyphs[i].x + d/2)
-			return bytes_from_glyphs(layout, i);
-	}
-
-	d = extents.width - layout->glyphs[layout->num_glyphs - 1].x;
-	if (x < layout->glyphs[layout->num_glyphs - 1].x + d/2)
-		return bytes_from_glyphs(layout, layout->num_glyphs - 1);
-
-	return bytes_from_glyphs(layout, layout->num_glyphs);
-}
-
-static void
-text_layout_index_to_pos(struct text_layout *layout, uint32_t index, cairo_rectangle_t *pos)
-{
-	cairo_text_extents_t extents;
-	int glyph_index = glyphs_from_bytes(layout, index);
-
-	if (!pos)
-		return;
-
-	cairo_scaled_font_glyph_extents(layout->font,
-					layout->glyphs, layout->num_glyphs,
-					&extents);
-
-	if (glyph_index >= layout->num_glyphs) {
-		pos->x = extents.x_advance;
-		pos->y = layout->num_glyphs ? layout->glyphs[layout->num_glyphs - 1].y : 0;
-		pos->width = 1;
-		pos->height = extents.height;
-		return;
-	}
-
-	pos->x = layout->glyphs[glyph_index].x;
-	pos->y = layout->glyphs[glyph_index].y;
-	pos->width = glyph_index < layout->num_glyphs - 1 ? layout->glyphs[glyph_index + 1].x : extents.x_advance - pos->x;
-	pos->height = extents.height;
-}
-
-static void
-text_layout_get_cursor_pos(struct text_layout *layout, int index, cairo_rectangle_t *pos)
-{
-	text_layout_index_to_pos(layout, index, pos);
-	pos->width = 1;
-}
-
 static void text_entry_redraw_handler(struct widget *widget, void *data);
 static void text_entry_button_handler(struct widget *widget,
 				      struct input *input, uint32_t time,
@@ -332,8 +152,10 @@ text_model_preedit_string(void *data,
 	text_entry_delete_selected_text(entry);
 	text_entry_set_preedit(entry, text, entry->preedit_info.cursor);
 	entry->preedit.commit = strdup(commit);
+	entry->preedit.attr_list = entry->preedit_info.attr_list;
 
 	entry->preedit_info.cursor = 0;
+	entry->preedit_info.attr_list = NULL;
 
 	widget_schedule_redraw(entry->widget);
 }
@@ -378,6 +200,48 @@ text_model_preedit_styling(void *data,
 			   uint32_t length,
 			   uint32_t style)
 {
+	struct text_entry *entry = data;
+	PangoAttribute *attr1 = NULL;
+	PangoAttribute *attr2 = NULL;
+
+	if (!entry->preedit_info.attr_list)
+		entry->preedit_info.attr_list = pango_attr_list_new();
+
+	switch (style) {
+		case TEXT_MODEL_PREEDIT_STYLE_DEFAULT:
+		case TEXT_MODEL_PREEDIT_STYLE_UNDERLINE:
+			attr1 = pango_attr_underline_new(PANGO_UNDERLINE_SINGLE);
+			break;
+		case TEXT_MODEL_PREEDIT_STYLE_INCORRECT:
+			attr1 = pango_attr_underline_new(PANGO_UNDERLINE_ERROR);
+			attr2 = pango_attr_underline_color_new(65535, 0, 0);
+			break;
+		case TEXT_MODEL_PREEDIT_STYLE_SELECTION:
+			attr1 = pango_attr_background_new(0.3 * 65535, 0.3 * 65535, 65535);
+			attr2 = pango_attr_foreground_new(65535, 65535, 65535);
+			break;
+		case TEXT_MODEL_PREEDIT_STYLE_HIGHLIGHT:
+		case TEXT_MODEL_PREEDIT_STYLE_ACTIVE:
+			attr1 = pango_attr_underline_new(PANGO_UNDERLINE_SINGLE);
+			attr2 = pango_attr_weight_new(PANGO_WEIGHT_BOLD);
+			break;
+		case TEXT_MODEL_PREEDIT_STYLE_INACTIVE:
+			attr1 = pango_attr_underline_new(PANGO_UNDERLINE_SINGLE);
+			attr2 = pango_attr_foreground_new(0.3 * 65535, 0.3 * 65535, 0.3 * 65535);
+			break;
+	}
+
+	if (attr1) {
+		attr1->start_index = entry->cursor + index;
+		attr1->end_index = entry->cursor + index + length;
+		pango_attr_list_insert(entry->preedit_info.attr_list, attr1);
+	}
+
+	if (attr2) {
+		attr2->start_index = entry->cursor + index;
+		attr2->end_index = entry->cursor + index + length;
+		pango_attr_list_insert(entry->preedit_info.attr_list, attr2);
+	}
 }
 
 static void
@@ -529,9 +393,6 @@ text_entry_create(struct editor *editor, const char *text)
 	entry->model = text_model_factory_create_text_model(editor->text_model_factory);
 	text_model_add_listener(entry->model, &text_model_listener, entry);
 
-	entry->layout = text_layout_create();
-	text_layout_set_text(entry->layout, entry->text);
-
 	widget_set_redraw_handler(entry->widget, text_entry_redraw_handler);
 	widget_set_button_handler(entry->widget, text_entry_button_handler);
 
@@ -543,7 +404,7 @@ text_entry_destroy(struct text_entry *entry)
 {
 	widget_destroy(entry->widget);
 	text_model_destroy(entry->model);
-	text_layout_destroy(entry->layout);
+	g_clear_object(&entry->layout);
 	free(entry->text);
 	free(entry);
 }
@@ -629,30 +490,63 @@ static void
 text_entry_update_layout(struct text_entry *entry)
 {
 	char *text;
+	PangoAttrList *attr_list;
 
 	assert(((unsigned int)entry->cursor) <= strlen(entry->text) +
 	       (entry->preedit.text ? strlen(entry->preedit.text) : 0));
 
-	if (!entry->preedit.text) {
-		text_layout_set_text(entry->layout, entry->text);
-		return;
+	if (entry->preedit.text) {
+		text = malloc(strlen(entry->text) + strlen(entry->preedit.text) + 1);
+		strncpy(text, entry->text, entry->cursor);
+		strcpy(text + entry->cursor, entry->preedit.text);
+		strcpy(text + entry->cursor + strlen(entry->preedit.text),
+		       entry->text + entry->cursor);
+	} else {
+		text = strdup(entry->text);
 	}
 
-	text = malloc(strlen(entry->text) + strlen(entry->preedit.text) + 1);
-	strncpy(text, entry->text, entry->cursor);
-	strcpy(text + entry->cursor, entry->preedit.text);
-	strcpy(text + entry->cursor + strlen(entry->preedit.text),
-	       entry->text + entry->cursor);
+	if (entry->cursor != entry->anchor) {
+		int start_index = MIN(entry->cursor, entry->anchor);
+		int end_index = MAX(entry->cursor, entry->anchor);
+		PangoAttribute *attr;
 
-	text_layout_set_text(entry->layout, text);
+		attr_list = pango_attr_list_copy(entry->preedit.attr_list);
+
+		if (!attr_list)
+			attr_list = pango_attr_list_new();
+
+		attr = pango_attr_background_new(0.3 * 65535, 0.3 * 65535, 65535);
+		attr->start_index = start_index;
+		attr->end_index = end_index;
+		pango_attr_list_insert(attr_list, attr);
+
+		attr = pango_attr_foreground_new(65535, 65535, 65535);
+		attr->start_index = start_index;
+		attr->end_index = end_index;
+		pango_attr_list_insert(attr_list, attr);
+	} else {
+		attr_list = pango_attr_list_ref(entry->preedit.attr_list);
+	}
+
+	if (entry->preedit.text && !entry->preedit.attr_list) {
+		PangoAttribute *attr;
+
+		if (!attr_list)
+			attr_list = pango_attr_list_new();
+
+		attr = pango_attr_underline_new(PANGO_UNDERLINE_SINGLE);
+		attr->start_index = entry->cursor;
+		attr->end_index = entry->cursor + strlen(entry->preedit.text);
+		pango_attr_list_insert(attr_list, attr);
+	}
+
+	if (entry->layout) {
+		pango_layout_set_text(entry->layout, text, -1);
+		pango_layout_set_attributes(entry->layout, attr_list);
+	}
+
 	free(text);
-
-	widget_schedule_redraw(entry->widget);
-
-	text_model_set_surrounding_text(entry->model,
-					entry->text,
-					entry->cursor,
-					entry->anchor);
+	pango_attr_list_unref(attr_list);
 }
 
 static void
@@ -671,6 +565,13 @@ text_entry_insert_at_cursor(struct text_entry *entry, const char *text)
 	entry->anchor += strlen(text);
 
 	text_entry_update_layout(entry);
+
+	widget_schedule_redraw(entry->widget);
+
+	text_model_set_surrounding_text(entry->model,
+					entry->text,
+					entry->cursor,
+					entry->anchor);
 }
 
 static void
@@ -683,6 +584,9 @@ text_entry_reset_preedit(struct text_entry *entry)
 
 	free(entry->preedit.commit);
 	entry->preedit.commit = NULL;
+
+	pango_attr_list_unref(entry->preedit.attr_list);
+	entry->preedit.attr_list = NULL;
 }
 
 static void
@@ -714,15 +618,22 @@ text_entry_set_preedit(struct text_entry *entry,
 	entry->preedit.cursor = preedit_cursor;
 
 	text_entry_update_layout(entry);
+
+	widget_schedule_redraw(entry->widget);
 }
 
 static void
 text_entry_set_cursor_position(struct text_entry *entry,
 			       int32_t x, int32_t y)
 {
+	int index, trailing;
+
 	text_entry_commit_and_reset(entry);
 
-	entry->cursor = text_layout_xy_to_index(entry->layout, x, y);
+	pango_layout_xy_to_index(entry->layout,
+				 x * PANGO_SCALE, y * PANGO_SCALE,
+				 &index, &trailing);
+	entry->cursor = index + trailing;
 
 	entry->serial++;
 
@@ -736,15 +647,32 @@ text_entry_set_cursor_position(struct text_entry *entry,
 	text_entry_update_layout(entry);
 
 	widget_schedule_redraw(entry->widget);
+
+	text_model_set_surrounding_text(entry->model,
+					entry->text,
+					entry->cursor,
+					entry->anchor);
 }
 
 static void
 text_entry_set_anchor_position(struct text_entry *entry,
 			       int32_t x, int32_t y)
 {
-	entry->anchor = text_layout_xy_to_index(entry->layout, x, y);
+	int index, trailing;
+
+	pango_layout_xy_to_index(entry->layout,
+				 x * PANGO_SCALE, y * PANGO_SCALE,
+				 &index, &trailing);
+	entry->anchor = index + trailing;
+
+	text_entry_update_layout(entry);
 
 	widget_schedule_redraw(entry->widget);
+
+	text_model_set_surrounding_text(entry->model,
+					entry->text,
+					entry->cursor,
+					entry->anchor);
 }
 
 static void
@@ -762,6 +690,11 @@ text_entry_delete_text(struct text_entry *entry,
 	text_entry_update_layout(entry);
 
 	widget_schedule_redraw(entry->widget);
+
+	text_model_set_surrounding_text(entry->model,
+					entry->text,
+					entry->cursor,
+					entry->anchor);
 }
 
 static void
@@ -779,86 +712,23 @@ text_entry_delete_selected_text(struct text_entry *entry)
 }
 
 static void
-text_entry_draw_selection(struct text_entry *entry, cairo_t *cr)
-{
-	cairo_text_extents_t extents;
-	uint32_t start_index = entry->anchor < entry->cursor ? entry->anchor : entry->cursor;
-	uint32_t end_index = entry->anchor < entry->cursor ? entry->cursor : entry->anchor;
-	cairo_rectangle_t start;
-	cairo_rectangle_t end;
-
-	if (entry->anchor == entry->cursor)
-		return;
-
-	text_layout_extents(entry->layout, &extents);
-
-	text_layout_index_to_pos(entry->layout, start_index, &start);
-	text_layout_index_to_pos(entry->layout, end_index, &end);
-
-	cairo_save (cr);
-
-	cairo_set_source_rgba(cr, 0.3, 0.3, 1.0, 0.5);
-	cairo_rectangle(cr,
-			start.x, extents.y_bearing + extents.height + 2,
-			end.x - start.x, -extents.height - 4);
-	cairo_fill(cr);
-
-	cairo_rectangle(cr,
-			start.x, extents.y_bearing + extents.height,
-			end.x - start.x, -extents.height);
-	cairo_clip(cr);
-	cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
-	text_layout_draw(entry->layout, cr);
-
-	cairo_restore (cr);
-}
-
-static void
 text_entry_draw_cursor(struct text_entry *entry, cairo_t *cr)
 {
-	cairo_text_extents_t extents;
-	cairo_rectangle_t cursor_pos;
+	PangoRectangle extents;
+	PangoRectangle cursor_pos;
 
 	if (entry->preedit.text && entry->preedit.cursor < 0)
 		return;
 
-	text_layout_extents(entry->layout, &extents);
-	text_layout_get_cursor_pos(entry->layout,
-				   entry->cursor + entry->preedit.cursor,
-				   &cursor_pos);
+	pango_layout_get_extents(entry->layout, &extents, NULL);
+	pango_layout_get_cursor_pos(entry->layout,
+				    entry->cursor + entry->preedit.cursor,
+				    &cursor_pos, NULL);
 
 	cairo_set_line_width(cr, 1.0);
-	cairo_move_to(cr, cursor_pos.x, extents.y_bearing + extents.height + 2);
-	cairo_line_to(cr, cursor_pos.x, extents.y_bearing - 2);
+	cairo_move_to(cr, PANGO_PIXELS(cursor_pos.x), PANGO_PIXELS(extents.height) + 2);
+	cairo_line_to(cr, PANGO_PIXELS(cursor_pos.x), - 2);
 	cairo_stroke(cr);
-}
-
-static void
-text_entry_draw_preedit(struct text_entry *entry, cairo_t *cr)
-{
-	cairo_text_extents_t extents;
-	cairo_rectangle_t start;
-	cairo_rectangle_t end;
-
-	if (!entry->preedit.text)
-		return;
-
-	text_layout_extents(entry->layout, &extents);
-
-	text_layout_index_to_pos(entry->layout, entry->cursor, &start);
-	text_layout_index_to_pos(entry->layout,
-				 entry->cursor + strlen(entry->preedit.text),
-				 &end);
-
-	cairo_save (cr);
-
-	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0);
-	cairo_rectangle(cr,
-			start.x, 0,
-			end.x - start.x, 1);
-	cairo_fill(cr);
-
-	cairo_restore (cr);
 }
 
 static const int text_offset_left = 10;
@@ -899,13 +769,17 @@ text_entry_redraw_handler(struct widget *widget, void *data)
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
 
 	cairo_translate(cr, text_offset_left, allocation.height / 2);
-	text_layout_draw(entry->layout, cr);
 
-	text_entry_draw_selection(entry, cr);
+	if (!entry->layout)
+		entry->layout = pango_cairo_create_layout(cr);
+	else
+		pango_cairo_update_layout(cr, entry->layout);
+
+	text_entry_update_layout(entry);
+
+	pango_cairo_show_layout(cr, entry->layout);
 
 	text_entry_draw_cursor(entry, cr);
-
-	text_entry_draw_preedit(entry, cr);
 
 	cairo_pop_group_to_source(cr);
 	cairo_paint(cr);
@@ -1094,6 +968,10 @@ main(int argc, char *argv[])
 	struct editor editor;
 
 	memset(&editor, 0, sizeof editor);
+
+#ifdef HAVE_PANGO
+	g_type_init();
+#endif
 
 	editor.display = display_create(argc, argv);
 	if (editor.display == NULL) {

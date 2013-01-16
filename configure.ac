@@ -218,6 +218,7 @@ if test x$enable_clients = xyes; then
   AS_IF([test "x$have_cairo_egl" = "xyes"],
         [AC_DEFINE([HAVE_CAIRO_EGL], [1], [Have cairo-egl])],
         [AC_MSG_WARN([clients will use cairo image, cairo-egl not used because $CAIRO_EGL_PKG_ERRORS])])
+  PKG_CHECK_MODULES(PANGO, [pangocairo], [have_pango=yes], [have_pango=no])
 fi
 
 AC_ARG_ENABLE(weston-launch, [  --enable-weston-launch],, enable_weston_launch=yes)
@@ -243,6 +244,8 @@ AM_CONDITIONAL(HAVE_GLU, test "x$have_glu" = "xyes")
 
 
 AM_CONDITIONAL(HAVE_POPPLER, test "x$have_poppler" = "xyes")
+
+AM_CONDITIONAL(HAVE_PANGO, test "x$have_pango" = "xyes")
 
 AM_CONDITIONAL(BUILD_FULL_GL_CLIENTS,
 	       test x$cairo_modules = "xcairo-gl" -a "x$have_cairo_egl" = "xyes" -a "x$enable_egl" = "xyes")
