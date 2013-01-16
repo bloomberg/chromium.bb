@@ -50,9 +50,13 @@ void CommandExecutorImpl::Init() {
   command_map_.Set("getTitle", base::Bind(execute_session_command,
       base::Bind(&ExecuteGetTitle)));
   command_map_.Set("findElement", base::Bind(execute_session_command,
-      base::Bind(&ExecuteFindElement)));
+      base::Bind(&ExecuteFindElement, 50)));
   command_map_.Set("findElements", base::Bind(execute_session_command,
-      base::Bind(&ExecuteFindElements)));
+      base::Bind(&ExecuteFindElements, 50)));
+  command_map_.Set("findChildElement", base::Bind(execute_session_command,
+      base::Bind(&ExecuteFindChildElement, 50)));
+  command_map_.Set("findChildElements", base::Bind(execute_session_command,
+      base::Bind(&ExecuteFindChildElements, 50)));
   command_map_.Set("setTimeout", base::Bind(execute_session_command,
       base::Bind(&ExecuteSetTimeout)));
   command_map_.Set("getCurrentUrl", base::Bind(execute_session_command,

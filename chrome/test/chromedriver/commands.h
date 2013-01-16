@@ -72,12 +72,28 @@ Status ExecuteGetTitle(
 
 // Search for an element on the page, starting from the document root.
 Status ExecuteFindElement(
+    int interval_ms,
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
 // Search for multiple elements on the page, starting from the document root.
 Status ExecuteFindElements(
+    int interval_ms,
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Search for an element on the page, starting from the given element.
+Status ExecuteFindChildElement(
+    int interval_ms,
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Search for multiple elements on the page, starting from the given element.
+Status ExecuteFindChildElements(
+    int interval_ms,
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);

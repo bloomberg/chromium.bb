@@ -21,7 +21,9 @@
 namespace {
 
 Status FindElementByJs(
+    int interval_ms,
     bool only_one,
+    bool has_root_element,
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
@@ -31,17 +33,9 @@ Status FindElementByJs(
   std::string target;
   if (!params.GetString("value", &target))
     return Status(kUnknownError, "'value' must be a string");
-
-  if (strategy == "class name")
-    strategy = "className";
-  else if (strategy == "css selector")
-    strategy = "css";
-  else if (strategy == "link text")
-    strategy = "linkText";
-  else if (strategy == "partial link text")
-    strategy = "partialLinkText";
-  else if (strategy == "tag name")
-    strategy = "tagName";
+  std::string root_element;
+  if (has_root_element && !params.GetString("id", &root_element))
+    return Status(kUnknownError, "'id' of root element must be a string");
 
   std::string script;
   if (only_one)
@@ -52,6 +46,11 @@ Status FindElementByJs(
   locator->SetString(strategy, target);
   base::ListValue arguments;
   arguments.Append(locator.release());
+  if (has_root_element) {
+    scoped_ptr<base::DictionaryValue> id(new base::DictionaryValue());
+    id->SetString("ELEMENT", root_element);
+    arguments.Append(id.release());
+  }
 
   base::Time start_time = base::Time::Now();
   while (true) {
@@ -86,7 +85,7 @@ Status FindElementByJs(
         return Status(kOk);
       }
     }
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(interval_ms));
   }
 
   return Status(kUnknownError);
@@ -244,17 +243,35 @@ Status ExecuteGetTitle(
 }
 
 Status ExecuteFindElement(
+    int interval_ms,
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  return FindElementByJs(true, session, params, value);
+  return FindElementByJs(interval_ms, true, false, session, params, value);
 }
 
 Status ExecuteFindElements(
+    int interval_ms,
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  return FindElementByJs(false, session, params, value);
+  return FindElementByJs(interval_ms, false, false, session, params, value);
+}
+
+Status ExecuteFindChildElement(
+    int interval_ms,
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  return FindElementByJs(interval_ms, true, true, session, params, value);
+}
+
+Status ExecuteFindChildElements(
+    int interval_ms,
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  return FindElementByJs(interval_ms, false, true, session, params, value);
 }
 
 Status ExecuteSetTimeout(

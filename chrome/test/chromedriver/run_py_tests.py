@@ -13,6 +13,7 @@ import unittest
 
 import chromedriver
 import webserver
+from webelement import WebElement
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'pylib'))
@@ -86,17 +87,39 @@ class ChromeDriverTest(unittest.TestCase):
   def testGetTitle(self):
     script = 'document.title = "title"; return 1;'
     self.assertEquals(1, self._driver.ExecuteScript(script))
-    self.assertEqual('title', self._driver.GetTitle())
+    self.assertEquals('title', self._driver.GetTitle())
 
   def testFindElement(self):
     self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>a</div><div>b</div>";')
-    self.assertEqual(1, len(self._driver.FindElement('tag name', 'div')))
+    self.assertTrue(
+        isinstance(self._driver.FindElement('tag name', 'div'), WebElement))
 
   def testFindElements(self):
     self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>a</div><div>b</div>";')
-    self.assertEqual(2, len(self._driver.FindElements('tag name', 'div')))
+    result = self._driver.FindElements('tag name', 'div')
+    self.assertTrue(isinstance(result, list))
+    self.assertEquals(2, len(result))
+    for item in result:
+      self.assertTrue(isinstance(item, WebElement))
+
+  def testFindChildElement(self):
+    self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div><br><br></div><div><a></a></div>";')
+    element = self._driver.FindElement('tag name', 'div')
+    self.assertTrue(
+        isinstance(element.FindElement('tag name', 'br'), WebElement))
+
+  def testFindChildElements(self):
+    self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div><br><br></div><div><br></div>";')
+    element = self._driver.FindElement('tag name', 'div')
+    result = element.FindElements('tag name', 'br')
+    self.assertTrue(isinstance(result, list))
+    self.assertEquals(2, len(result))
+    for item in result:
+      self.assertTrue(isinstance(item, WebElement))
 
   def testGetCurrentUrl(self):
     self.assertEqual('about:blank', self._driver.GetCurrentUrl())

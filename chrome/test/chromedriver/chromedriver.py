@@ -5,11 +5,15 @@
 import ctypes
 import json
 
+from webelement import WebElement
+
 class ChromeDriverException(Exception):
   pass
 class NoSuchElement(ChromeDriverException):
   pass
 class UnknownCommand(ChromeDriverException):
+  pass
+class StaleElementReference(ChromeDriverException):
   pass
 class UnknownError(ChromeDriverException):
   pass
@@ -26,6 +30,7 @@ def _ExceptionForResponse(response):
   exception_class_map = {
     7: NoSuchElement,
     9: UnknownCommand,
+    10: StaleElementReference,
     13: UnknownError,
     19: XPathLookupError,
     32: InvalidSelector,
@@ -53,6 +58,36 @@ class ChromeDriver(object):
       }
     self._session_id = self._ExecuteCommand('newSession', params)['sessionId']
 
+  def _WrapValue(self, value):
+    """Wrap value from client side for chromedriver side."""
+    if isinstance(value, dict):
+      converted = {}
+      for key, val in value.items():
+        converted[key] = self._WrapValue(val)
+      return converted
+    elif isinstance(value, WebElement):
+      return {'ELEMENT': value._id}
+    elif isinstance(value, list):
+      return list(self._WrapValue(item) for item in value)
+    else:
+      return value
+
+  def _UnwrapValue(self, value):
+    """Unwrap value from chromedriver side for client side."""
+    if isinstance(value, dict):
+      if (len(value) == 1 and 'ELEMENT' in value
+          and isinstance(value['ELEMENT'], basestring)):
+        return WebElement(self, value['ELEMENT'])
+      else:
+        unwraped = {}
+        for key, val in value.items():
+          unwraped[key] = self._UnwrapValue(val)
+        return unwraped
+    elif isinstance(value, list):
+      return list(self._UnwrapValue(item) for item in value)
+    else:
+      return value
+
   def _ExecuteCommand(self, name, params={}, session_id=''):
     cmd = {
       'name': name,
@@ -74,18 +109,21 @@ class ChromeDriver(object):
       raise _ExceptionForResponse(response)
     return response
 
-  def _ExecuteSessionCommand(self, name, params={}):
-    return self._ExecuteCommand(name, params, self._session_id)['value']
+  def ExecuteSessionCommand(self, name, params={}):
+    params = self._WrapValue(params)
+    return self._UnwrapValue(
+        self._ExecuteCommand(name, params, self._session_id)['value'])
 
   def Load(self, url):
-    self._ExecuteSessionCommand('get', {'url': url})
+    self.ExecuteSessionCommand('get', {'url': url})
 
   def ExecuteScript(self, script, *args):
-    return self._ExecuteSessionCommand(
-         'executeScript', {'script': script, 'args': args})
+    converted_args = list(args)
+    return self.ExecuteSessionCommand(
+        'executeScript', {'script': script, 'args': converted_args})
 
   def SwitchToFrame(self, id_or_name):
-    self._ExecuteSessionCommand('switchToFrame', {'id': id_or_name})
+    self.ExecuteSessionCommand('switchToFrame', {'id': id_or_name})
 
   def SwitchToFrameByIndex(self, index):
     self.SwitchToFrame(index)
@@ -94,32 +132,32 @@ class ChromeDriver(object):
     self.SwitchToFrame(None)
 
   def GetTitle(self):
-    return self._ExecuteSessionCommand('getTitle')
+    return self.ExecuteSessionCommand('getTitle')
 
   def FindElement(self, strategy, target):
-    return self._ExecuteSessionCommand(
-         'findElement', {'using': strategy, 'value': target})
+    return self.ExecuteSessionCommand(
+        'findElement', {'using': strategy, 'value': target})
 
   def FindElements(self, strategy, target):
-    return self._ExecuteSessionCommand(
-         'findElements', {'using': strategy, 'value': target})
+    return self.ExecuteSessionCommand(
+        'findElements', {'using': strategy, 'value': target})
 
   def SetTimeout(self, type, timeout):
-    return self._ExecuteSessionCommand(
-         'setTimeout', {'type' : type, 'ms': timeout})
+    return self.ExecuteSessionCommand(
+        'setTimeout', {'type' : type, 'ms': timeout})
 
   def GetCurrentUrl(self):
-    return self._ExecuteSessionCommand('getCurrentUrl')
+    return self.ExecuteSessionCommand('getCurrentUrl')
 
   def GoBack(self):
-    return self._ExecuteSessionCommand('goBack')
+    return self.ExecuteSessionCommand('goBack')
 
   def GoForward(self):
-    return self._ExecuteSessionCommand('goForward')
+    return self.ExecuteSessionCommand('goForward')
 
   def Refresh(self):
-    return self._ExecuteSessionCommand('refresh')
+    return self.ExecuteSessionCommand('refresh')
 
   def Quit(self):
     """Quits the browser and ends the session."""
-    self._ExecuteSessionCommand('quit')
+    self.ExecuteSessionCommand('quit')

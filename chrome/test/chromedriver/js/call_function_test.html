@@ -63,7 +63,7 @@ function testCacheWrap() {
 
   var arr = [1, new Array(1, new Object({a: 1, b: {a: 1, b: {}, c: 3}}), 3)];
   var originalJson = JSON.stringify(arr);
-  arr[1][1].b.b[ELEMENT_KEY] = cache.nextId_;
+  arr[1][1].b.b[ELEMENT_KEY] = cache.nextId_.toString();
   var wrappedJson = JSON.stringify(arr);
   arr[1][1].b.b = document;
   assertEquals(wrappedJson, JSON.stringify(cache.wrap(arr)));
@@ -83,7 +83,7 @@ function testCacheUnwrapThrows() {
   try {
     var cache = new Cache();
     var wrapped = {};
-    wrapped[ELEMENT_KEY] = 1;
+    wrapped[ELEMENT_KEY] = '1';
     cache.unwrap(wrapped);
   } catch (e) {
     return;

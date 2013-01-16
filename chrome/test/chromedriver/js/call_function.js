@@ -50,8 +50,10 @@ Cache.prototype = {
       if (item == this.cache_[i])
         return i;
     }
-    this.cache_[this.nextId_] = item;
-    return this.nextId_++;
+    var id = this.nextId_.toString();
+    this.cache_[id] = item;
+    this.nextId_++;
+    return id;
   },
 
   /**

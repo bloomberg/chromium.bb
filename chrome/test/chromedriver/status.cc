@@ -15,6 +15,8 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
       return "no such element";
     case kUnknownCommand:
       return "unknown command";
+    case kStaleElementReference:
+      return "stale element reference";
     case kUnknownError:
       return "unknown error";
     case kXPathLookupError:

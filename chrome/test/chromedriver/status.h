@@ -12,6 +12,7 @@ enum StatusCode {
   kOk = 0,
   kNoSuchElement = 7,
   kUnknownCommand = 9,
+  kStaleElementReference = 10,
   kUnknownError = 13,
   kXPathLookupError = 19,
   kInvalidSelector = 32,
