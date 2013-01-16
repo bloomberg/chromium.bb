@@ -99,6 +99,8 @@ bool BaseScrollBarThumb::OnMouseDragged(const ui::MouseEvent& event) {
   }
   if (scroll_bar_->IsHorizontal()) {
     int thumb_x = event.x() - mouse_offset_;
+    if (base::i18n::IsRTL())
+      thumb_x *= -1;
     scroll_bar_->ScrollToThumbPosition(GetPosition() + thumb_x, false);
   } else {
     int thumb_y = event.y() - mouse_offset_;

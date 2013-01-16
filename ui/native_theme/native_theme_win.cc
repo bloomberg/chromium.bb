@@ -1627,12 +1627,10 @@ int NativeThemeWin::GetWindowsPart(Part part,
       part_id = SBP_ARROWBTN;
       break;
     case kScrollbarHorizontalThumb:
-      part_id = extra.scrollbar_track.is_upper ? SBP_UPPERTRACKHORZ :
-                                                 SBP_LOWERTRACKHORZ;
+      part_id = SBP_THUMBBTNHORZ;
       break;
     case kScrollbarVerticalThumb:
-      part_id = extra.scrollbar_track.is_upper ? SBP_UPPERTRACKVERT :
-                                                 SBP_LOWERTRACKVERT;
+      part_id = SBP_THUMBBTNVERT;
       break;
     default:
       NOTREACHED() << "Invalid part: " << part;

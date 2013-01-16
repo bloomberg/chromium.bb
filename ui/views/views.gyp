@@ -181,8 +181,6 @@
         'controls/scrollbar/bitmap_scroll_bar.h',
         'controls/scrollbar/native_scroll_bar_views.cc',
         'controls/scrollbar/native_scroll_bar_views.h',
-        'controls/scrollbar/native_scroll_bar_win.cc',
-        'controls/scrollbar/native_scroll_bar_win.h',
         'controls/scrollbar/native_scroll_bar_wrapper.h',
         'controls/scrollbar/native_scroll_bar.cc',
         'controls/scrollbar/native_scroll_bar.h',

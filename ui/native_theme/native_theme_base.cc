@@ -210,7 +210,8 @@ void NativeThemeBase::Paint(SkCanvas* canvas,
       break;
     case kScrollbarHorizontalGripper:
     case kScrollbarVerticalGripper:
-      NOTIMPLEMENTED();
+      // Invoked by views scrollbar code, don't care about for non-win
+      // implementations, so no NOTIMPLEMENTED.
       break;
     case kSliderTrack:
       PaintSliderTrack(canvas, state, rect, extra.slider);

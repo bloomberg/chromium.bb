@@ -413,9 +413,9 @@ void BaseScrollBar::ProcessPressEvent(const ui::LocatedEvent& event) {
   SetThumbTrackState(CustomButton::STATE_PRESSED);
   gfx::Rect thumb_bounds = thumb_->bounds();
   if (IsHorizontal()) {
-    if (event.x() < thumb_bounds.x()) {
+    if (GetMirroredXInView(event.x()) < thumb_bounds.x()) {
       last_scroll_amount_ = SCROLL_PREV_PAGE;
-    } else if (event.x() > thumb_bounds.right()) {
+    } else if (GetMirroredXInView(event.x()) > thumb_bounds.right()) {
       last_scroll_amount_ = SCROLL_NEXT_PAGE;
     }
   } else {
