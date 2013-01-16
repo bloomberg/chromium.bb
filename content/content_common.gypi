@@ -490,6 +490,8 @@
         '../media/media.gyp:media',
       ],
       'sources': [
+        'common/gpu/media/exynos_video_decode_accelerator.cc',
+        'common/gpu/media/exynos_video_decode_accelerator.h',
         'common/gpu/media/gles2_texture_to_egl_image_translator.cc',
         'common/gpu/media/gles2_texture_to_egl_image_translator.h',
         'common/gpu/media/omx_video_decode_accelerator.cc',

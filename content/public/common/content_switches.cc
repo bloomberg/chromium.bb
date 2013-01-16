@@ -761,6 +761,9 @@ const char kDefaultTileHeight[]             = "default-tile-height";
 const char kMaxUntiledLayerWidth[]          = "max-untiled-layer-width";
 const char kMaxUntiledLayerHeight[]         = "max-untiled-layer-height";
 
+// Use ExynosVideoDecodeAccelerator for video decode (instead of SECOMX)
+const char kUseExynosVda[]                  = "use-exynos-vda";
+
 const char kEnableFixedPositionCreatesStackingContext[]
     = "enable-fixed-position-creates-stacking-context";
 const char kDisableFixedPositionCreatesStackingContext[]

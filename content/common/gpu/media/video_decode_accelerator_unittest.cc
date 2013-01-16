@@ -40,18 +40,22 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "content/common/gpu/media/rendering_helper.h"
+#include "content/public/common/content_switches.h"
 
 #if defined(OS_WIN)
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
 #elif defined(OS_MACOSX)
 #include "content/common/gpu/media/mac_video_decode_accelerator.h"
+#elif defined(OS_CHROMEOS)
+#if defined(ARCH_CPU_ARMEL)
+#include "content/common/gpu/media/exynos_video_decode_accelerator.h"
+#include "content/common/gpu/media/omx_video_decode_accelerator.h"
 #elif defined(ARCH_CPU_X86_FAMILY)
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
-#elif defined(ARCH_CPU_ARMEL)
-#include "content/common/gpu/media/omx_video_decode_accelerator.h"
+#endif  // ARCH_CPU_ARMEL
 #else
 #error The VideoAccelerator tests are not supported on this platform.
-#endif  // defined(OS_WIN)
+#endif  // OS_WIN
 
 using media::VideoDecodeAccelerator;
 
@@ -332,18 +336,27 @@ void GLRenderingVDAClient::CreateDecoder() {
 #elif defined(OS_MACOSX)
   decoder_.reset(new MacVideoDecodeAccelerator(
       static_cast<CGLContextObj>(rendering_helper_->GetGLContext()), this));
-#elif defined(ARCH_CPU_ARMEL)
-  decoder_.reset(
-      new OmxVideoDecodeAccelerator(
-          static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
-          static_cast<EGLContext>(rendering_helper_->GetGLContext()),
-          this,
-          base::Bind(&DoNothingReturnTrue)));
+#elif defined(OS_CHROMEOS)
+#if defined(ARCH_CPU_ARMEL)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseExynosVda)) {
+    decoder_.reset(
+        new ExynosVideoDecodeAccelerator(
+            static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
+            static_cast<EGLContext>(rendering_helper_->GetGLContext()),
+            this, base::Bind(&DoNothingReturnTrue)));
+  } else {
+    decoder_.reset(
+        new OmxVideoDecodeAccelerator(
+            static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
+            static_cast<EGLContext>(rendering_helper_->GetGLContext()),
+            this, base::Bind(&DoNothingReturnTrue)));
+  }
 #elif defined(ARCH_CPU_X86_FAMILY)
   decoder_.reset(new VaapiVideoDecodeAccelerator(
       static_cast<Display*>(rendering_helper_->GetGLDisplay()),
       static_cast<GLXContext>(rendering_helper_->GetGLContext()),
       this, base::Bind(&DoNothingReturnTrue)));
+#endif  // ARCH_CPU_ARMEL
 #endif  // OS_WIN
   CHECK(decoder_.get());
   SetState(CS_DECODER_SET);
@@ -924,6 +937,10 @@ int main(int argc, char **argv) {
     }
     if (it->first == "v" || it->first == "vmodule")
       continue;
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+    if (it->first == switches::kUseExynosVda)
+      continue;
+#endif
     LOG(FATAL) << "Unexpected switch: " << it->first << ":" << it->second;
   }
 
@@ -936,11 +953,16 @@ int main(int argc, char **argv) {
       base::Bind(&base::WaitableEvent::Signal,
                  base::Unretained(&event)));
   event.Wait();
-#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
-  content::OmxVideoDecodeAccelerator::PreSandboxInitialization();
-#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+#elif defined(OS_CHROMEOS)
+#if defined(ARCH_CPU_ARMEL)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseExynosVda))
+    content::ExynosVideoDecodeAccelerator::PreSandboxInitialization();
+  else
+    content::OmxVideoDecodeAccelerator::PreSandboxInitialization();
+#elif defined(ARCH_CPU_X86_FAMILY)
   content::VaapiVideoDecodeAccelerator::PreSandboxInitialization();
-#endif
+#endif  // ARCH_CPU_ARMEL
+#endif  // OS_CHROMEOS
 
   return RUN_ALL_TESTS();
 }

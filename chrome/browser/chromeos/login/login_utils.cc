@@ -744,6 +744,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
 #endif
       ::switches::kUseGL,
       ::switches::kUserDataDir,
+      ::switches::kUseExynosVda,
       ash::switches::kAshTouchHud,
       ash::switches::kAuraLegacyPowerButton,
       ash::switches::kAuraNoShadows,

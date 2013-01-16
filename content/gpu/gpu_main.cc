@@ -35,6 +35,7 @@
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
 #include "sandbox/win/src/sandbox.h"
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+#include "content/common/gpu/media/exynos_video_decode_accelerator.h"
 #include "content/common/gpu/media/omx_video_decode_accelerator.h"
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
@@ -338,7 +339,10 @@ void WarmUpSandbox(const GPUInfo& gpu_info,
   }
 
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
-  OmxVideoDecodeAccelerator::PreSandboxInitialization();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseExynosVda))
+    ExynosVideoDecodeAccelerator::PreSandboxInitialization();
+  else
+    OmxVideoDecodeAccelerator::PreSandboxInitialization();
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   VaapiVideoDecodeAccelerator::PreSandboxInitialization();
 #endif
