@@ -124,9 +124,27 @@ input_method_context_reset(void *data,
 	keyboard->serial = serial;
 }
 
+static void
+input_method_context_content_type(void *data,
+				  struct input_method_context *context,
+				  uint32_t hint,
+				  uint32_t purpose)
+{
+}
+
+static void
+input_method_context_invoke_action(void *data,
+				   struct input_method_context *context,
+				   uint32_t button,
+				   uint32_t index)
+{
+}
+
 static const struct input_method_context_listener input_method_context_listener = {
 	input_method_context_surrounding_text,
-	input_method_context_reset
+	input_method_context_reset,
+	input_method_context_content_type,
+	input_method_context_invoke_action
 };
 
 static void
