@@ -633,6 +633,36 @@ text_entry_set_preedit(struct text_entry *entry,
 	widget_schedule_redraw(entry->widget);
 }
 
+static uint32_t
+text_entry_try_invoke_preedit_action(struct text_entry *entry,
+				     int32_t x, int32_t y,
+				     uint32_t button,
+				     enum wl_pointer_button_state state)
+{
+	int index, trailing;
+	uint32_t cursor;
+
+	if (!entry->preedit.text)
+		return 0;
+
+	pango_layout_xy_to_index(entry->layout,
+				 x * PANGO_SCALE, y * PANGO_SCALE,
+				 &index, &trailing);
+	cursor = index + trailing;
+
+	if (cursor < entry->cursor ||
+	    cursor > entry->cursor + strlen(entry->preedit.text)) {
+		return 0;
+	}
+
+	if (state == WL_POINTER_BUTTON_STATE_RELEASED)
+		text_model_invoke_action(entry->model,
+					 button,
+					 cursor - entry->cursor);
+
+	return 1;
+}
+
 static void
 text_entry_set_cursor_position(struct text_entry *entry,
 			       int32_t x, int32_t y)
@@ -649,11 +679,6 @@ text_entry_set_cursor_position(struct text_entry *entry,
 	entry->serial++;
 
 	text_model_reset(entry->model, entry->serial);
-
-	if (entry->preedit.cursor > 0 &&
-	    entry->cursor >= (uint32_t)entry->preedit.cursor) {
-		entry->cursor -= entry->preedit.cursor;
-	}
 
 	text_entry_update_layout(entry);
 
@@ -817,19 +842,26 @@ text_entry_button_handler(struct widget *widget,
 	struct rectangle allocation;
 	struct editor *editor;
 	int32_t x, y;
+	uint32_t result;
 
 	widget_get_allocation(entry->widget, &allocation);
 	input_get_position(input, &x, &y);
 
+	x -= allocation.x + text_offset_left;
+	y -= allocation.y + text_offset_left;
+
 	editor = window_get_user_data(entry->window);
+
+	result = text_entry_try_invoke_preedit_action(entry, x, y, button, state);
+
+	if (result)
+		return;
 
 	if (button != BTN_LEFT) {
 		return;
 	}
 
-	text_entry_set_cursor_position(entry,
-				       x - allocation.x - text_offset_left,
-				       y - allocation.y - text_offset_left);
+	text_entry_set_cursor_position(entry, x, y);
 
 	if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
 		struct wl_seat *seat = input_get_seat(input);
@@ -837,9 +869,7 @@ text_entry_button_handler(struct widget *widget,
 		text_entry_activate(entry, seat);
 		editor->active_entry = entry;
 
-		text_entry_set_anchor_position(entry,
-					       x - allocation.x - text_offset_left,
-					       y - allocation.y - text_offset_left);
+		text_entry_set_anchor_position(entry, x, y);
 
 		widget_set_motion_handler(entry->widget, text_entry_motion_handler);
 	} else {
