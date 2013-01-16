@@ -49,8 +49,8 @@ class ShellUtil {
   enum ShortcutOperation {
     // Create a new shortcut (overwriting if necessary).
     SHELL_SHORTCUT_CREATE_ALWAYS,
-    // Create the per-user shortcut only if its system-level equivalent is not
-    // present.
+    // Create the per-user shortcut only if its system-level equivalent (with
+    // the same name) is not present.
     SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL,
     // Overwrite an existing shortcut (fail if the shortcut doesn't exist).
     // If the arguments are not specified on the new shortcut, keep the old

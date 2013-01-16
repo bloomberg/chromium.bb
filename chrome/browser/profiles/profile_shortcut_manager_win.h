@@ -62,9 +62,6 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
   virtual void OnProfileAvatarChanged(const FilePath& profile_path) OVERRIDE;
 
  private:
-  void StartProfileShortcutNameChange(const FilePath& profile_path,
-                                      const string16& old_profile_name);
-
   // Gives the profile path of an alternate profile than |profile_path|.
   // Must only be called when the number profiles is 2.
   FilePath GetOtherProfilePath(const FilePath& profile_path);
