@@ -129,14 +129,15 @@ def PrintPerfResult(measurement, trace, values, units, result_type='default',
 class PerfTestSetup(object):
   """Provides methods for setting up a device for perf testing."""
   _DROP_CACHES = '/proc/sys/vm/drop_caches'
-  _SCALING_GOVERNOR = '/sys/devices/system/cpu/cpu%d/cpufreq/scaling_governor'
+  _SCALING_GOVERNOR_FMT = (
+      '/sys/devices/system/cpu/cpu%d/cpufreq/scaling_governor')
 
   def __init__(self, adb):
     self._adb = adb
-    num_cpus = self._adb.GetFileContents('/sys/devices/system/cpu/online',
+    kernel_max = self._adb.GetFileContents('/sys/devices/system/cpu/kernel_max',
                                          log_result=False)
-    assert num_cpus, 'Unable to find /sys/devices/system/cpu/online'
-    self._num_cpus = int(num_cpus[0].split('-')[-1])
+    assert kernel_max, 'Unable to find /sys/devices/system/cpu/kernel_max'
+    self._kernel_max = int(kernel_max[0])
     self._original_scaling_governor = None
 
   def DropRamCaches(self):
@@ -150,7 +151,7 @@ class PerfTestSetup(object):
     """Sets up performance tests."""
     if not self._original_scaling_governor:
       self._original_scaling_governor = self._adb.GetFileContents(
-          PerfTestSetup._SCALING_GOVERNOR % 0,
+          PerfTestSetup._SCALING_GOVERNOR_FMT % 0,
           log_result=False)[0]
       self._SetScalingGovernorInternal('performance')
     self.DropRamCaches()
@@ -162,6 +163,8 @@ class PerfTestSetup(object):
     self._original_scaling_governor = None
 
   def _SetScalingGovernorInternal(self, value):
-    for cpu in range(self._num_cpus):
-      self._adb.RunShellCommand(
-          ('echo %s > ' + PerfTestSetup._SCALING_GOVERNOR) % (value, cpu))
+    for cpu in range(self._kernel_max + 1):
+      scaling_governor_file = PerfTestSetup._SCALING_GOVERNOR_FMT % cpu
+      if self._adb.Adb().DoesFileExist(scaling_governor_file):
+        self._adb.RunShellCommand(
+            ('echo %s > ' + scaling_governor_file) % value)
