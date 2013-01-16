@@ -90,6 +90,8 @@ SlideMode.prototype.initDom_ = function() {
       this.document_.querySelector('.content'), 'image-container');
   this.imageContainer_.addEventListener('click', this.onClick_.bind(this));
 
+  this.document_.addEventListener('click', this.onDocumentClick_.bind(this));
+
   // Overwrite options and info bubble.
   this.options_ = util.createChild(
       this.toolbar_.querySelector('.filename-spacer'), 'options');
@@ -184,9 +186,9 @@ SlideMode.prototype.initDom_ = function() {
 
   // Editor.
 
-  var editButton_ = util.createChild(this.toolbar_, 'button edit', 'button');
-  editButton_.title = this.displayStringFunction_('edit');
-  editButton_.addEventListener('click', this.toggleEditor.bind(this));
+  this.editButton_ = util.createChild(this.toolbar_, 'button edit', 'button');
+  this.editButton_.title = this.displayStringFunction_('edit');
+  this.editButton_.addEventListener('click', this.toggleEditor.bind(this));
 
   this.editBar_ = util.createChild(this.toolbar_, 'edit-bar');
   this.editBarMain_ = util.createChild(this.editBar_, 'edit-main');
@@ -742,12 +744,28 @@ SlideMode.prototype.onBeforeUnload = function() {
 };
 
 /**
- * Click handler.
+ * Click handler for the image container.
  * @private
  */
 SlideMode.prototype.onClick_ = function() {
   if (this.isShowingVideo_())
     this.mediaControls_.togglePlayStateWithFeedback();
+};
+
+/**
+ * Click handler for the entire document.
+ * @param {Event} e Mouse click event.
+ * @private
+ */
+SlideMode.prototype.onDocumentClick_ = function(e) {
+  // Close the bubble if clicked outside of it and if it is visible.
+  if (!this.bubble_.contains(e.target) &&
+      !this.editButton_.contains(e.target) &&
+      !this.arrowLeft_.contains(e.target) &&
+      !this.arrowRight_.contains(e.target) &&
+      !this.bubble_.hidden) {
+    this.bubble_.hidden = true;
+  }
 };
 
 /**
