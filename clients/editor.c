@@ -297,6 +297,8 @@ static void text_entry_set_preedit(struct text_entry *entry,
 static void text_entry_delete_text(struct text_entry *entry,
 				   uint32_t index, uint32_t length);
 static void text_entry_delete_selected_text(struct text_entry *entry);
+static void text_entry_reset_preedit(struct text_entry *entry);
+static void text_entry_commit_and_reset(struct text_entry *entry);
 
 static void
 text_model_commit_string(void *data,
@@ -309,6 +311,8 @@ text_model_commit_string(void *data,
 
 	if (index > strlen(text))
 		fprintf(stderr, "Invalid cursor index %d\n", index);
+
+	text_entry_reset_preedit(entry);
 
 	text_entry_delete_selected_text(entry);
 	text_entry_insert_at_cursor(entry, text);
@@ -327,6 +331,9 @@ text_model_preedit_string(void *data,
 
 	text_entry_delete_selected_text(entry);
 	text_entry_set_preedit(entry, text, entry->preedit_info.cursor);
+	entry->preedit.commit = strdup(commit);
+
+	entry->preedit_info.cursor = 0;
 
 	widget_schedule_redraw(entry->widget);
 }
@@ -483,6 +490,8 @@ text_model_leave(void *data,
 		 struct text_model *text_model)
 {
 	struct text_entry *entry = data;
+
+	text_entry_commit_and_reset(entry);
 
 	entry->active = 0;
 
@@ -665,15 +674,38 @@ text_entry_insert_at_cursor(struct text_entry *entry, const char *text)
 }
 
 static void
+text_entry_reset_preedit(struct text_entry *entry)
+{
+	entry->preedit.cursor = 0;
+
+	free(entry->preedit.text);
+	entry->preedit.text = NULL;
+
+	free(entry->preedit.commit);
+	entry->preedit.commit = NULL;
+}
+
+static void
+text_entry_commit_and_reset(struct text_entry *entry)
+{
+	char *commit = NULL;
+
+	if (entry->preedit.commit)
+		commit = strdup(entry->preedit.commit);
+
+	text_entry_reset_preedit(entry);
+	if (commit) {
+		text_entry_insert_at_cursor(entry, commit);
+		free(commit);
+	}
+}
+
+static void
 text_entry_set_preedit(struct text_entry *entry,
 		       const char *preedit_text,
 		       int preedit_cursor)
 {
-	if (entry->preedit.text) {
-		free(entry->preedit.text);
-		entry->preedit.text = NULL;
-		entry->preedit.cursor = 0;
-	}
+	text_entry_reset_preedit(entry);
 
 	if (!preedit_text)
 		return;
@@ -688,6 +720,8 @@ static void
 text_entry_set_cursor_position(struct text_entry *entry,
 			       int32_t x, int32_t y)
 {
+	text_entry_commit_and_reset(entry);
+
 	entry->cursor = text_layout_xy_to_index(entry->layout, x, y);
 
 	entry->serial++;
@@ -979,6 +1013,8 @@ key_handler(struct window *window,
 
 	switch (sym) {
 		case XKB_KEY_BackSpace:
+			text_entry_commit_and_reset(entry);
+
 			start = utf8_prev_char(entry->text, entry->text + entry->cursor);
 
 			if (start == NULL)
@@ -990,6 +1026,8 @@ key_handler(struct window *window,
 					       end - start);
 			break;
 		case XKB_KEY_Delete:
+			text_entry_commit_and_reset(entry);
+
 			start = utf8_start_char(entry->text, entry->text + entry->cursor);
 
 			if (start == NULL)
@@ -1005,6 +1043,8 @@ key_handler(struct window *window,
 					       end - start);
 			break;
 		case XKB_KEY_Left:
+			text_entry_commit_and_reset(entry);
+
 			new_char = utf8_prev_char(entry->text, entry->text + entry->cursor);
 			if (new_char != NULL) {
 				entry->cursor = new_char - entry->text;
@@ -1013,6 +1053,8 @@ key_handler(struct window *window,
 			}
 			break;
 		case XKB_KEY_Right:
+			text_entry_commit_and_reset(entry);
+
 			new_char = utf8_next_char(entry->text + entry->cursor);
 			if (new_char != NULL) {
 				entry->cursor = new_char - entry->text;
@@ -1023,6 +1065,8 @@ key_handler(struct window *window,
 		default:
 			if (xkb_keysym_to_utf8(sym, text, sizeof(text)) <= 0)
 				break;
+
+			text_entry_commit_and_reset(entry);
 
 			text_entry_insert_at_cursor(entry, text);
 			break;
