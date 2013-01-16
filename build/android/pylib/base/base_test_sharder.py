@@ -3,13 +3,12 @@
 # found in the LICENSE file.
 
 
-import android_commands
 import logging
 import multiprocessing
 
-from android_commands import errors
-from forwarder import Forwarder
-from test_result import TestResults
+from pylib import android_commands
+from pylib.base.test_result import TestResults
+from pylib.forwarder import Forwarder
 
 
 def _ShardedTestRunnable(test):
@@ -102,7 +101,7 @@ class BaseTestSharder(object):
           logging.warning('*' * 80)
           test_runner = self.CreateShardedTestRunner(device, index)
           test_runners += [test_runner]
-      except errors.DeviceUnresponsiveError as e:
+      except android_commands.errors.DeviceUnresponsiveError as e:
         logging.critical('****Failed to create a shard: [%s]', e)
         self.attached_devices.remove(device)
         continue
@@ -116,7 +115,7 @@ class BaseTestSharder(object):
       async_results = pool.map_async(_ShardedTestRunnable, test_runners)
       try:
         results_lists = async_results.get(999999)
-      except errors.DeviceUnresponsiveError as e:
+      except android_commands.errors.DeviceUnresponsiveError as e:
         logging.critical('****Failed to run test: [%s]', e)
         self.attached_devices = android_commands.GetAttachedDevices()
         continue

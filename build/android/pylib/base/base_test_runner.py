@@ -9,15 +9,15 @@ import os
 import tempfile
 import time
 
-import android_commands
-import constants
-from chrome_test_server_spawner import SpawningServer
-import constants
-from flag_changer import FlagChanger
-from forwarder import Forwarder
+from pylib import android_commands
+from pylib import constants
+from pylib import ports
+from pylib.chrome_test_server_spawner import SpawningServer
+from pylib.flag_changer import FlagChanger
+from pylib.forwarder import Forwarder
+from pylib.valgrind_tools import CreateTool
+# TODO(frankf): Move this to pylib/utils
 import lighttpd_server
-import ports
-from valgrind_tools import CreateTool
 
 
 # A file on device to store ports of net test server. The format of the file is

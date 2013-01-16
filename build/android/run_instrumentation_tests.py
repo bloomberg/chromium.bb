@@ -14,10 +14,10 @@ import time
 from pylib import buildbot_report
 from pylib import constants
 from pylib import ports
+from pylib.base.test_result import TestResults
 from pylib.host_driven import run_python_tests
 from pylib.instrumentation import apk_info
 from pylib.instrumentation import run_java_tests
-from pylib.test_result import TestResults
 from pylib.utils import run_tests_helper
 from pylib.utils import test_options_parser
 

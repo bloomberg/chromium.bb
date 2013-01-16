@@ -10,8 +10,8 @@ import os
 from pylib import constants
 from pylib import pexpect
 from pylib.android_commands import errors
+from pylib.base.test_result import BaseTestResult, TestResults
 from pylib.perf_tests_helper import PrintPerfResult
-from pylib.test_result import BaseTestResult, TestResults
 
 
 class TestPackage(object):

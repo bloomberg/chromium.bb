@@ -11,10 +11,10 @@ import types
 
 from pylib import android_commands
 from pylib import constants
+from pylib.base.test_result import TestResults
 from pylib.instrumentation import apk_info
 from pylib.instrumentation import run_java_tests
 from pylib.instrumentation.run_java_tests import FatalTestException
-from pylib.test_result import TestResults
 
 import python_test_base
 from python_test_caller import CallPythonTest

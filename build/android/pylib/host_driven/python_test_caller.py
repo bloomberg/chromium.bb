@@ -9,7 +9,7 @@ import logging
 import sys
 import time
 
-from pylib.test_result import TestResults
+from pylib.base.test_result import TestResults
 
 
 def CallPythonTest(test, options):

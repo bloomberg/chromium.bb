@@ -10,8 +10,8 @@ import re
 import time
 import traceback
 
-import buildbot_report
-import constants
+from pylib import buildbot_report
+from pylib import constants
 from pylib.utils import flakiness_dashboard_results_uploader
 
 

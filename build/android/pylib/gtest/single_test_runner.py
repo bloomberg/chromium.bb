@@ -11,8 +11,8 @@ from pylib import android_commands
 from pylib import constants
 from pylib import perf_tests_helper
 from pylib.android_commands import errors
-from pylib.base_test_runner import BaseTestRunner
-from pylib.test_result import BaseTestResult, TestResults
+from pylib.base.base_test_runner import BaseTestRunner
+from pylib.base.test_result import BaseTestResult, TestResults
 from pylib.utils import run_tests_helper
 
 import debug_info

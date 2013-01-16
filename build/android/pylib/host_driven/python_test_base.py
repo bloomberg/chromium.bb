@@ -24,9 +24,9 @@ import os
 import time
 
 from pylib import android_commands
+from pylib.base.test_result import SingleTestResult, TestResults
 from pylib.instrumentation import apk_info
 from pylib.instrumentation.run_java_tests import TestRunner
-from pylib.test_result import SingleTestResult, TestResults
 
 
 # aka the parent of com.google.android

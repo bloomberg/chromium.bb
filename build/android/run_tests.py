@@ -48,7 +48,7 @@ import time
 from pylib import android_commands
 from pylib import cmd_helper
 from pylib import ports
-from pylib.base_test_sharder import BaseTestSharder
+from pylib.base.base_test_sharder import BaseTestSharder
 from pylib.gtest import debug_info
 from pylib.gtest import gtest_config
 from pylib.gtest.single_test_runner import SingleTestRunner

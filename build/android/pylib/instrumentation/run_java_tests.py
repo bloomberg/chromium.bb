@@ -15,15 +15,15 @@ import time
 from pylib import android_commands
 from pylib import cmd_helper
 from pylib import constants
-from pylib import sharded_tests_queue
 from pylib import valgrind_tools
 from pylib.android_commands import errors
-from pylib.base_test_runner import BaseTestRunner
-from pylib.base_test_sharder import BaseTestSharder, SetTestsContainer
+from pylib.base import sharded_tests_queue
+from pylib.base.base_test_runner import BaseTestRunner
+from pylib.base.base_test_sharder import BaseTestSharder, SetTestsContainer
+from pylib.base.test_result import SingleTestResult, TestResults
 from pylib.forwarder import Forwarder
 from pylib.json_perf_parser import GetAverageRunInfoFromJSONString
 from pylib.perf_tests_helper import PrintPerfResult
-from pylib.test_result import SingleTestResult, TestResults
 
 import apk_info
 
