@@ -47,6 +47,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/page_transition_types.h"
 #include "grit/generated_resources.h"
 
@@ -96,6 +97,8 @@ void DevToolsWindow::RegisterUserPrefs(PrefServiceSyncable* prefs) {
                             kDockSideBottom,
                             PrefServiceSyncable::UNSYNCABLE_PREF);
   prefs->RegisterDictionaryPref(prefs::kDevToolsEditedFiles,
+                                PrefServiceSyncable::UNSYNCABLE_PREF);
+  prefs->RegisterDictionaryPref(prefs::kDevToolsFileSystemPaths,
                                 PrefServiceSyncable::UNSYNCABLE_PREF);
 }
 
@@ -211,12 +214,12 @@ DevToolsWindow::DevToolsWindow(WebContents* web_contents,
       dock_side_(dock_side),
       is_loaded_(false),
       action_on_load_(DEVTOOLS_TOGGLE_ACTION_SHOW),
-      weak_factory_(this),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       width_(-1),
       height_(-1) {
   frontend_host_ = DevToolsClientHost::CreateDevToolsFrontendHost(web_contents,
                                                                   this);
-  file_helper_.reset(new DevToolsFileHelper(profile));
+  file_helper_.reset(new DevToolsFileHelper(web_contents, profile));
 
   g_instances.Get().push_back(this);
   // Wipe out page icon so that the default application icon is used.
@@ -508,13 +511,19 @@ WebContents* DevToolsWindow::OpenURLFromTab(WebContents* source,
 }
 
 void DevToolsWindow::CallClientFunction(const std::string& function_name,
-                                        const Value* arg) {
-  std::string json;
-  if (arg)
-    base::JSONWriter::Write(arg, &json);
-
-  string16 javascript =
-      ASCIIToUTF16(function_name + "(" + json + ");");
+                                        const Value* arg1,
+                                        const Value* arg2) {
+  std::string params;
+  if (arg1) {
+    std::string json;
+    base::JSONWriter::Write(arg1, &json);
+    params.append(json);
+    if (arg2) {
+      base::JSONWriter::Write(arg2, &json);
+      params.append(", " + json);
+    }
+  }
+  string16 javascript = ASCIIToUTF16(function_name + "(" + params + ");");
   web_contents_->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(string16(), javascript);
 }
@@ -827,6 +836,39 @@ void DevToolsWindow::AppendToFile(const std::string& url,
                                           url));
 }
 
+namespace {
+
+DictionaryValue* CreateFileSystemValue(
+    DevToolsFileHelper::FileSystem file_system) {
+  DictionaryValue* file_system_value = new DictionaryValue();
+  file_system_value->SetString("fileSystemName", file_system.file_system_name);
+  file_system_value->SetString("rootURL", file_system.root_url);
+  file_system_value->SetString("fileSystemPath", file_system.file_system_path);
+  return file_system_value;
+}
+
+} // namespace
+
+void DevToolsWindow::RequestFileSystems() {
+  CHECK(content::GetContentClient()->HasWebUIScheme(web_contents_->GetURL()));
+  file_helper_->RequestFileSystems(
+      Bind(&DevToolsWindow::FileSystemsLoaded, weak_factory_.GetWeakPtr()));
+}
+
+void DevToolsWindow::AddFileSystem() {
+  CHECK(content::GetContentClient()->HasWebUIScheme(web_contents_->GetURL()));
+  file_helper_->AddFileSystem(
+      Bind(&DevToolsWindow::FileSystemAdded, weak_factory_.GetWeakPtr()));
+}
+
+void DevToolsWindow::RemoveFileSystem(const std::string& file_system_path) {
+  CHECK(content::GetContentClient()->HasWebUIScheme(web_contents_->GetURL()));
+  file_helper_->RemoveFileSystem(file_system_path);
+  StringValue file_system_path_value(file_system_path);
+  CallClientFunction("InspectorFrontendAPI.fileSystemRemoved",
+                     &file_system_path_value);
+}
+
 void DevToolsWindow::FileSavedAs(const std::string& url) {
   StringValue url_value(url);
   CallClientFunction("InspectorFrontendAPI.savedURL", &url_value);
@@ -835,6 +877,30 @@ void DevToolsWindow::FileSavedAs(const std::string& url) {
 void DevToolsWindow::AppendedTo(const std::string& url) {
   StringValue url_value(url);
   CallClientFunction("InspectorFrontendAPI.appendedToURL", &url_value);
+}
+
+void DevToolsWindow::FileSystemsLoaded(
+    const std::vector<DevToolsFileHelper::FileSystem>& file_systems) {
+  ListValue file_systems_value;
+  for (size_t i = 0; i < file_systems.size(); ++i) {
+    file_systems_value.Append(CreateFileSystemValue(file_systems[i]));
+  }
+  CallClientFunction("InspectorFrontendAPI.fileSystemsLoaded",
+                     &file_systems_value);
+}
+
+void DevToolsWindow::FileSystemAdded(
+    std::string error_string,
+    const DevToolsFileHelper::FileSystem& file_system) {
+  StringValue error_string_value(error_string);
+  DictionaryValue* file_system_value = NULL;
+  if (!file_system.file_system_path.empty())
+    file_system_value = CreateFileSystemValue(file_system);
+  CallClientFunction("InspectorFrontendAPI.fileSystemAdded",
+                     &error_string_value,
+                     file_system_value);
+  if (file_system_value)
+    delete file_system_value;
 }
 
 content::JavaScriptDialogCreator* DevToolsWindow::GetJavaScriptDialogCreator() {

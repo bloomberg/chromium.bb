@@ -571,6 +571,7 @@ extern const char kNtpAppPageNames[];
 extern const char kDevToolsDisabled[];
 extern const char kDevToolsDockSide[];
 extern const char kDevToolsEditedFiles[];
+extern const char kDevToolsFileSystemPaths[];
 extern const char kDevToolsHSplitLocation[];
 extern const char kDevToolsOpenDocked[];
 #if defined(OS_ANDROID)

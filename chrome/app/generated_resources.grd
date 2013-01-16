@@ -4184,6 +4184,11 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         "<ph name="CLIENT_NAME">$1<ex>Extension Foo</ex></ph>" is debugging this tab.
       </message>
 
+      <!-- DevTools file system access -->
+      <message name="IDS_DEV_TOOLS_MAGIC_FILE_NOT_EXISTS_MESSAGE" desc="Message that is shown in DevTools when user selects file system folder without security file while adding file system to DevTools.">
+        The selected folder should contain an empty file with the following name: "$1".
+      </message>
+
       <!-- Advanced reload button menu -->
       <message name="IDS_RELOAD_MENU_NORMAL_RELOAD_ITEM" desc="Menu item displayed in the Reload dropdown menu when in dev mode">
         Normal Reload

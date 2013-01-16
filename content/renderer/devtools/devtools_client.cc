@@ -89,6 +89,20 @@ void DevToolsClient::append(const WebKit::WebString& url,
                                   content.utf8()));
 }
 
+void DevToolsClient::requestFileSystems() {
+  Send(new DevToolsHostMsg_RequestFileSystems(routing_id()));
+}
+
+void DevToolsClient::addFileSystem() {
+  Send(new DevToolsHostMsg_AddFileSystem(routing_id()));
+}
+
+void DevToolsClient::removeFileSystem(const WebString& fileSystemPath) {
+  Send(new DevToolsHostMsg_RemoveFileSystem(routing_id(),
+                                            fileSystemPath.utf8()));
+}
+
+
 void DevToolsClient::OnDispatchOnInspectorFrontend(const std::string& message) {
   web_tools_frontend_->dispatchOnInspectorFrontend(
       WebString::fromUTF8(message));

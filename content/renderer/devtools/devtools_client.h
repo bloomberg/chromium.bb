@@ -51,6 +51,11 @@ class DevToolsClient : public RenderViewObserver,
   virtual void append(const WebKit::WebString& url,
                       const WebKit::WebString& content) OVERRIDE;
 
+  virtual void requestFileSystems() OVERRIDE;
+  virtual void addFileSystem() OVERRIDE;
+  virtual void removeFileSystem(
+      const WebKit::WebString& fileSystemPath) OVERRIDE;
+
   void OnDispatchOnInspectorFrontend(const std::string& message);
 
   scoped_ptr<WebKit::WebDevToolsFrontend> web_tools_frontend_;

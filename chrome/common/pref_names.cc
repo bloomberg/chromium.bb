@@ -1645,6 +1645,9 @@ const char kDevToolsDockSide[] = "devtools.dock_side";
 // Maps of files edited locally using DevTools.
 const char kDevToolsEditedFiles[] = "devtools.edited_files";
 
+// List of file system paths added in DevTools.
+const char kDevToolsFileSystemPaths[] = "devtools.file_system_paths";
+
 // Integer location of the horizontal split bar in the browser view.
 const char kDevToolsHSplitLocation[] = "devtools.split_location";
 

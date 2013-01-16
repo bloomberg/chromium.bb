@@ -142,7 +142,8 @@ class DevToolsWindow : private content::NotificationObserver,
   void UpdateTheme();
   void AddDevToolsExtensionsToClient();
   void CallClientFunction(const std::string& function_name,
-                          const base::Value* arg);
+                          const base::Value* arg1 = NULL,
+                          const base::Value* arg2 = NULL);
   // Overridden from content::WebContentsDelegate.
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
@@ -182,10 +183,17 @@ class DevToolsWindow : private content::NotificationObserver,
                           bool save_as) OVERRIDE;
   virtual void AppendToFile(const std::string& url,
                             const std::string& content) OVERRIDE;
+  virtual void RequestFileSystems() OVERRIDE;
+  virtual void AddFileSystem() OVERRIDE;
+  virtual void RemoveFileSystem(const std::string& file_system_path) OVERRIDE;
 
   // DevToolsFileHelper callbacks.
   void FileSavedAs(const std::string& url);
   void AppendedTo(const std::string& url);
+  void FileSystemsLoaded(
+      const std::vector<DevToolsFileHelper::FileSystem>& file_systems);
+  void FileSystemAdded(std::string error_string,
+                       const DevToolsFileHelper::FileSystem& file_system);
 
   void UpdateBrowserToolbar();
   bool IsDocked();

@@ -70,6 +70,10 @@ bool DevToolsFrontendHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_OpenInNewTab, OnOpenInNewTab)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_Save, OnSave)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_Append, OnAppend)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestFileSystems,
+                        OnRequestFileSystems)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_AddFileSystem, OnAddFileSystem)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_RemoveFileSystem, OnRemoveFileSystem)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -108,6 +112,19 @@ void DevToolsFrontendHost::OnAppend(
     const std::string& url,
     const std::string& content) {
   delegate_->AppendToFile(url, content);
+}
+
+void DevToolsFrontendHost::OnRequestFileSystems() {
+  delegate_->RequestFileSystems();
+}
+
+void DevToolsFrontendHost::OnAddFileSystem() {
+  delegate_->AddFileSystem();
+}
+
+void DevToolsFrontendHost::OnRemoveFileSystem(
+    const std::string& file_system_path) {
+  delegate_->RemoveFileSystem(file_system_path);
 }
 
 void DevToolsFrontendHost::OnRequestSetDockSide(const std::string& side) {

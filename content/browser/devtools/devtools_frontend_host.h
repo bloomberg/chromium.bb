@@ -46,6 +46,9 @@ class DevToolsFrontendHost : public DevToolsClientHost,
   void OnOpenInNewTab(const std::string& url);
   void OnSave(const std::string& url, const std::string& content, bool save_as);
   void OnAppend(const std::string& url, const std::string& content);
+  void OnRequestFileSystems();
+  void OnAddFileSystem();
+  void OnRemoveFileSystem(const std::string& file_system_path);
 
   WebContentsImpl* web_contents_;
   DevToolsFrontendHostDelegate* delegate_;

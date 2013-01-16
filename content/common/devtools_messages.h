@@ -138,6 +138,16 @@ IPC_MESSAGE_ROUTED2(DevToolsHostMsg_Append,
                     std::string /* url */,
                     std::string /* content */)
 
+// Requests the list of filesystems previously added for devtools.
+IPC_MESSAGE_ROUTED0(DevToolsHostMsg_RequestFileSystems)
+
+// Shows a dialog to select a folder to which an isolated filesystem is added.
+IPC_MESSAGE_ROUTED0(DevToolsHostMsg_AddFileSystem)
+
+// Removes a previously added devtools filesystem given by |file_system_path|.
+IPC_MESSAGE_ROUTED1(DevToolsHostMsg_RemoveFileSystem,
+                    std::string /* file_system_path */)
+
 // Updates agent runtime state stored in devtools manager in order to support
 // cross-navigation instrumentation.
 IPC_MESSAGE_ROUTED1(DevToolsHostMsg_SaveAgentRuntimeState,

@@ -42,6 +42,15 @@ class DevToolsFrontendHostDelegate {
   virtual void AppendToFile(const std::string& url,
                             const std::string& content) = 0;
 
+  // Requests the list of filesystems previously added for devtools.
+  virtual void RequestFileSystems() = 0;
+
+  // Shows a dialog to select a folder to which an isolated filesystem is added.
+  virtual void AddFileSystem() = 0;
+
+  // Removes a previously added devtools filesystem given by |file_system_path|.
+  virtual void RemoveFileSystem(const std::string& file_system_path) = 0;
+
   // This method is called when the contents inspected by this devtools frontend
   // is closing.
   virtual void InspectedContentsClosing() = 0;
