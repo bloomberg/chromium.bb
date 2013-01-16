@@ -375,6 +375,13 @@ mouse is.</p>
 <h3><a name="bugfix-unifiedTextChecking">bugfix/unifiedTextChecking</a> (Edward Christie)</h3>
 <p>TODO</p>
 
+<h3><a name="bugfix-initializeMessageProcessedHandler">bugfix/initializeMessageProcessedHandler</a> (Imran Haider)</h3>
+<p>Make sure the all_messages_processed_handler is initialized to NULL. This will
+prevent us from calling it if the pointer has garbage value.
+
+To reproduce the crash, launch the Chromium test_shell and then start the inspector.</p>
+
+
 <h3><a name="feature-after_copycut">feature/after_copycut</a> (James McIlhargey)</h3>
 <p>This is a feature we needed in our product, so it is unlikely that we will
 send this upstream.</p>
