@@ -381,20 +381,25 @@ public:
         rootLayer->setBounds(gfx::Size(100, 100));
 
         delegatedRendererLayer->setPosition(gfx::Point(20, 20));
-        delegatedRendererLayer->setBounds(gfx::Size(20, 20));
-        delegatedRendererLayer->setContentBounds(gfx::Size(20, 20));
+        delegatedRendererLayer->setBounds(gfx::Size(30, 30)); 
+        delegatedRendererLayer->setContentBounds(gfx::Size(30, 30));
         delegatedRendererLayer->setDrawsContent(true);
         gfx::Transform transform;
-        transform.Translate(10, 10);
+        transform.Scale(2.0, 2.0);
+        transform.Translate(8.0, 8.0);
         delegatedRendererLayer->setTransform(transform);
 
         ScopedPtrVector<RenderPass> delegatedRenderPasses;
         gfx::Rect passRect(0, 0, 50, 50);
+        gfx::Transform passTransform;
+        passTransform.Scale(1.5, 1.5);
+        passTransform.Translate(7.0, 7.0);
+
         TestRenderPass* pass = addRenderPass(delegatedRenderPasses, RenderPass::Id(9, 6), passRect, gfx::Transform());
         MockQuadCuller quadSink(pass->quad_list, pass->shared_quad_state_list);
         AppendQuadsData data(pass->id);
         SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::Create());
-        sharedState->SetAll(gfx::Transform(), passRect, passRect, passRect, false, 1);
+        sharedState->SetAll(passTransform, passRect, passRect, passRect, false, 1);
         scoped_ptr<SolidColorDrawQuad> colorQuad;
 
         colorQuad = SolidColorDrawQuad::Create();
@@ -450,10 +455,17 @@ TEST_F(DelegatedRendererLayerImplTestSharedData, SharedData)
     EXPECT_EQ(sharedState, quadList[3]->shared_quad_state);
 
     // The state should be transformed only once.
-    EXPECT_RECT_EQ(gfx::Rect(30, 30, 50, 50), sharedState->clipped_rect_in_target);
-    EXPECT_RECT_EQ(gfx::Rect(30, 30, 50, 50), sharedState->clip_rect);
+    // The x/y values are: position (20) + transform (8 * 2) = 36
+    // 36 - (width / 2) = 36 - 30 / 2 = 21
+    EXPECT_RECT_EQ(gfx::Rect(21, 21, 100, 100), sharedState->clipped_rect_in_target);
+    EXPECT_RECT_EQ(gfx::Rect(21, 21, 100, 100), sharedState->clip_rect);
     gfx::Transform expected;
-    expected.Translate(30, 30);
+    // The position (20) - the width / scale (30 / 2) = 20 - 15 = 5
+    expected.Translate(5.0, 5.0);
+    expected.Scale(2.0, 2.0);
+    expected.Translate(8.0, 8.0);
+    expected.Scale(1.5, 1.5);
+    expected.Translate(7.0, 7.0);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected, sharedState->content_to_target_transform);
 
     m_hostImpl->drawLayers(frame);

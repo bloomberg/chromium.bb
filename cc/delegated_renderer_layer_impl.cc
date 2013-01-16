@@ -145,7 +145,7 @@ void DelegatedRendererLayerImpl::appendRenderPassQuads(QuadSink& quadSink, Appen
               // This layer must be drawing to a renderTarget other than itself.
               DCHECK(renderTarget() != this);
 
-              copiedSharedQuadState->content_to_target_transform = copiedSharedQuadState->content_to_target_transform * drawTransform();
+              copiedSharedQuadState->content_to_target_transform = drawTransform() * copiedSharedQuadState->content_to_target_transform;
               copiedSharedQuadState->clipped_rect_in_target = MathUtil::mapClippedRect(drawTransform(), copiedSharedQuadState->clipped_rect_in_target);
               copiedSharedQuadState->clip_rect = MathUtil::mapClippedRect(drawTransform(), copiedSharedQuadState->clip_rect);
               copiedSharedQuadState->opacity *= drawOpacity();
