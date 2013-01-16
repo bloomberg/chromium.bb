@@ -52,6 +52,7 @@ libkms.pc
 libtool
 ltmain.sh
 mach64.kld
+man/.man_fixup
 mga.kld
 missing
 mkinstalldirs

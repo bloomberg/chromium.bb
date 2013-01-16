@@ -18,37 +18,45 @@ MANPAGES_ALIASES = \
 
 XML_FILES = \
 	${patsubst %.1,%.xml,${patsubst %.3,%.xml,${patsubst %.5,%.xml,${patsubs %.7,%.xml,$(MANPAGES)}}}}
-CLEANFILES =
-EXTRA_DIST =
+EXTRA_DIST = $(XML_FILES)
+CLEANFILES = $(MANPAGES) $(MANPAGES_ALIASES) .man_fixup
 man_MANS =
 
-if HAVE_XSLTPROC
+if BUILD_MANPAGES
+if HAVE_MANPAGES_STYLESHEET
 
-CLEANFILES += $(MANPAGES) $(MANPAGES_ALIASES)
-EXTRA_DIST += $(MANPAGES) $(MANPAGES_ALIASES) $(XML_FILES)
 man_MANS += $(MANPAGES) $(MANPAGES_ALIASES)
 
 XSLTPROC_FLAGS = \
 	--stringparam man.authors.section.enabled 0 \
 	--stringparam man.copyright.section.enabled 0 \
 	--stringparam funcsynopsis.style ansi \
-	--stringparam man.output.quietly 1
+	--stringparam man.output.quietly 1 \
+	--nonet
 
 XSLTPROC_PROCESS_MAN = \
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && \
-	$(XSLTPROC) -o $@ $(XSLTPROC_FLAGS) http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $< && \
-	$(SED) -i -e 's/^\.so \(.*\)\.\(.\)$$/\.so man\2\/\1\.\2/' $(MANPAGES_ALIASES)
+	$(XSLTPROC) -o "$@" $(XSLTPROC_FLAGS) $(MANPAGES_STYLESHEET) "$<" && \
+	touch .man_fixup
 
-%.1: %.xml
+# Force .man_fixup if $(MANPAGES) are not built
+.man_fixup: | $(MANPAGES)
+	@touch .man_fixup
+
+$(MANPAGES_ALIASES): $(MANPAGES) .man_fixup
+	$(AM_V_GEN)if test -n "$@" ; then $(SED) -i -e 's/^\.so \([a-z_]\+\)\.\([0-9]\)$$/\.so man\2\/\1\.\2/' "$@" ; fi
+
+%.1: $(top_srcdir)/man/%.xml
 	$(XSLTPROC_PROCESS_MAN)
 
-%.3: %.xml
+%.3: $(top_srcdir)/man/%.xml
 	$(XSLTPROC_PROCESS_MAN)
 
-%.5: %.xml
+%.5: $(top_srcdir)/man/%.xml
 	$(XSLTPROC_PROCESS_MAN)
 
-%.7: %.xml
+%.7: $(top_srcdir)/man/%.xml
 	$(XSLTPROC_PROCESS_MAN)
 
-endif # HAVE_XSLTPROC
+endif # HAVE_MANPAGES_STYLESHEET
+endif # BUILD_MANPAGES

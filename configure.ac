@@ -226,8 +226,26 @@ if test "x$HAVE_LIBUDEV" = xyes; then
 fi
 AM_CONDITIONAL(HAVE_LIBUDEV, [test "x$HAVE_LIBUDEV" = xyes])
 
+# xsltproc for docbook manpages
+AC_ARG_ENABLE([manpages],
+              AS_HELP_STRING([--disable-manpages], [disable manpages @<:@default=enabled@:>@]),
+              [MANS=$enableval], [MANS=auto])
 AC_PATH_PROG(XSLTPROC, xsltproc)
-AM_CONDITIONAL([HAVE_XSLTPROC], [test "x$XSLTPROC" != "x"])
+AM_CONDITIONAL([BUILD_MANPAGES], [test "x$XSLTPROC" != "x" -a "x$MANS" != "xno"])
+
+# check for offline man-pages stylesheet
+AC_MSG_CHECKING([for docbook manpages stylesheet])
+MANPAGES_STYLESHEET="http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl"
+AC_PATH_PROGS_FEATURE_CHECK([XSLTPROC_TMP], [xsltproc],
+                            AS_IF([`"$ac_path_XSLTPROC_TMP" --nonet "$MANPAGES_STYLESHEET" > /dev/null 2>&1`],
+                                  [HAVE_MANPAGES_STYLESHEET=yes]))
+if test "x$HAVE_MANPAGES_STYLESHEET" = "xyes"; then
+        AC_SUBST(MANPAGES_STYLESHEET)
+        AC_MSG_RESULT([yes])
+else
+        AC_MSG_RESULT([no])
+fi
+AM_CONDITIONAL([HAVE_MANPAGES_STYLESHEET], [test "x$HAVE_MANPAGES_STYLESHEET" = "xyes"])
 
 if test "x$INTEL" != "xno" -o "x$RADEON" != "xno" -o "x$NOUVEAU" != "xno" -o "x$OMAP" != "xno"; then
     # Check for atomic intrinsics
