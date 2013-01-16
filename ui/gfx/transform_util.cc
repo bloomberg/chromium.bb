@@ -166,7 +166,7 @@ bool DecomposeTransform(DecomposedTransform* decomp,
 
     // Solve the equation by inverting perspectiveMatrix and multiplying
     // rhs by the inverse.
-    SkMatrix44 inversePerspectiveMatrix;
+    SkMatrix44 inversePerspectiveMatrix(SkMatrix44::kUninitialized_Constructor);
     if (!perspectiveMatrix.invert(&inversePerspectiveMatrix))
       return false;
 
@@ -258,35 +258,33 @@ bool DecomposeTransform(DecomposedTransform* decomp,
 
 // Taken from http://www.w3.org/TR/css3-transforms/.
 Transform ComposeTransform(const DecomposedTransform& decomp) {
-  SkMatrix44 matrix;
+  SkMatrix44 matrix(SkMatrix44::kIdentity_Constructor);
   for (int i = 0; i < 4; i++)
     matrix.setDouble(3, i, decomp.perspective[i]);
 
-  SkMatrix44 tempTranslation;
-  tempTranslation.setTranslate(SkDoubleToMScalar(decomp.translate[0]),
-                               SkDoubleToMScalar(decomp.translate[1]),
-                               SkDoubleToMScalar(decomp.translate[2]));
-  matrix.preConcat(tempTranslation);
+  matrix.preTranslate(SkDoubleToMScalar(decomp.translate[0]),
+                      SkDoubleToMScalar(decomp.translate[1]),
+                      SkDoubleToMScalar(decomp.translate[2]));
 
   double x = decomp.quaternion[0];
   double y = decomp.quaternion[1];
   double z = decomp.quaternion[2];
   double w = decomp.quaternion[3];
 
-  SkMatrix44 rotation_matrix;
-  rotation_matrix.setDouble(0, 0, 1.0 - 2.0 * (y * y + z * z));
-  rotation_matrix.setDouble(0, 1, 2.0 * (x * y - z * w));
-  rotation_matrix.setDouble(0, 2, 2.0 * (x * z + y * w));
-  rotation_matrix.setDouble(1, 0, 2.0 * (x * y + z * w));
-  rotation_matrix.setDouble(1, 1, 1.0 - 2.0 * (x * x + z * z));
-  rotation_matrix.setDouble(1, 2, 2.0 * (y * z - x * w));
-  rotation_matrix.setDouble(2, 0, 2.0 * (x * z - y * w));
-  rotation_matrix.setDouble(2, 1, 2.0 * (y * z + x * w));
-  rotation_matrix.setDouble(2, 2, 1.0 - 2.0 * (x * x + y * y));
+  SkMatrix44 rotation_matrix(SkMatrix44::kUninitialized_Constructor);
+  rotation_matrix.set3x3(1.0 - 2.0 * (y * y + z * z),
+                         2.0 * (x * y + z * w),
+                         2.0 * (x * z - y * w),
+                         2.0 * (x * y - z * w),
+                         1.0 - 2.0 * (x * x + z * z),
+                         2.0 * (y * z + x * w),
+                         2.0 * (x * z + y * w),
+                         2.0 * (y * z - x * w),
+                         1.0 - 2.0 * (x * x + y * y));
 
   matrix.preConcat(rotation_matrix);
 
-  SkMatrix44 temp;
+  SkMatrix44 temp(SkMatrix44::kIdentity_Constructor);
   if (decomp.skew[2]) {
     temp.setDouble(1, 2, decomp.skew[2]);
     matrix.preConcat(temp);
@@ -304,11 +302,9 @@ Transform ComposeTransform(const DecomposedTransform& decomp) {
     matrix.preConcat(temp);
   }
 
-  SkMatrix44 tempScale;
-  tempScale.setScale(SkDoubleToMScalar(decomp.scale[0]),
-                     SkDoubleToMScalar(decomp.scale[1]),
-                     SkDoubleToMScalar(decomp.scale[2]));
-  matrix.preConcat(tempScale);
+  matrix.preScale(SkDoubleToMScalar(decomp.scale[0]),
+                  SkDoubleToMScalar(decomp.scale[1]),
+                  SkDoubleToMScalar(decomp.scale[2]));
 
   Transform to_return;
   to_return.matrix() = matrix;

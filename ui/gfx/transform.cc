@@ -83,7 +83,7 @@ void Transform::RotateAboutXAxis(double degrees) {
                      0, cosTheta, sinTheta,
                      0, -sinTheta, cosTheta);
   } else {
-    SkMatrix44 rot;
+    SkMatrix44 rot(SkMatrix44::kUninitialized_Constructor);
     rot.set3x3(1, 0, 0,
                0, cosTheta, sinTheta,
                0, -sinTheta, cosTheta);
@@ -102,7 +102,7 @@ void Transform::RotateAboutYAxis(double degrees) {
                      0, 1, 0,
                      sinTheta, 0, cosTheta);
   } else {
-    SkMatrix44 rot;
+    SkMatrix44 rot(SkMatrix44::kUninitialized_Constructor);
     rot.set3x3(cosTheta, 0, -sinTheta,
                0, 1, 0,
                sinTheta, 0, cosTheta);
@@ -119,7 +119,7 @@ void Transform::RotateAboutZAxis(double degrees) {
                      -sinTheta, cosTheta, 0,
                      0, 0, 1);
   } else {
-    SkMatrix44 rot;
+    SkMatrix44 rot(SkMatrix44::kUninitialized_Constructor);
     rot.set3x3(cosTheta, sinTheta, 0,
                -sinTheta, cosTheta, 0,
                0, 0, 1);
@@ -134,7 +134,7 @@ void Transform::RotateAbout(const Vector3dF& axis, double degrees) {
                                   SkDoubleToMScalar(axis.z()),
                                   SkDoubleToMScalar(degrees));
   } else {
-    SkMatrix44 rot;
+    SkMatrix44 rot(SkMatrix44::kUninitialized_Constructor);
     rot.setRotateDegreesAbout(SkDoubleToMScalar(axis.x()),
                               SkDoubleToMScalar(axis.y()),
                               SkDoubleToMScalar(axis.z()),
@@ -167,7 +167,7 @@ void Transform::SkewX(double angle_x) {
   if (matrix_.isIdentity())
     matrix_.setDouble(0, 1, TanDegrees(angle_x));
   else {
-    SkMatrix44 skew;
+    SkMatrix44 skew(SkMatrix44::kIdentity_Constructor);
     skew.setDouble(0, 1, TanDegrees(angle_x));
     matrix_.preConcat(skew);
   }
@@ -177,7 +177,7 @@ void Transform::SkewY(double angle_y) {
   if (matrix_.isIdentity())
     matrix_.setDouble(1, 0, TanDegrees(angle_y));
   else {
-    SkMatrix44 skew;
+    SkMatrix44 skew(SkMatrix44::kIdentity_Constructor);
     skew.setDouble(1, 0, TanDegrees(angle_y));
     matrix_.preConcat(skew);
   }
@@ -189,7 +189,7 @@ void Transform::ApplyPerspectiveDepth(double depth) {
   if (matrix_.isIdentity())
     matrix_.setDouble(3, 2, -1.0 / depth);
   else {
-    SkMatrix44 m;
+    SkMatrix44 m(SkMatrix44::kIdentity_Constructor);
     m.setDouble(3, 2, -1.0 / depth);
     matrix_.preConcat(m);
   }
@@ -321,7 +321,7 @@ void Transform::TransformPoint(Point3F& point) const {
 
 bool Transform::TransformPointReverse(Point& point) const {
   // TODO(sad): Try to avoid trying to invert the matrix.
-  SkMatrix44 inverse;
+  SkMatrix44 inverse(SkMatrix44::kUninitialized_Constructor);
   if (!matrix_.invert(&inverse))
     return false;
 
@@ -331,7 +331,7 @@ bool Transform::TransformPointReverse(Point& point) const {
 
 bool Transform::TransformPointReverse(Point3F& point) const {
   // TODO(sad): Try to avoid trying to invert the matrix.
-  SkMatrix44 inverse;
+  SkMatrix44 inverse(SkMatrix44::kUninitialized_Constructor);
   if (!matrix_.invert(&inverse))
     return false;
 
@@ -353,7 +353,7 @@ bool Transform::TransformRectReverse(RectF* rect) const {
   if (matrix_.isIdentity())
     return true;
 
-  SkMatrix44 inverse;
+  SkMatrix44 inverse(SkMatrix44::kUninitialized_Constructor);
   if (!matrix_.invert(&inverse))
     return false;
 
