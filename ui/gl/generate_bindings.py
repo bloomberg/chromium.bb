@@ -1152,11 +1152,16 @@ FUNCTION_SETS = [
       'GL/glext.h',
       'GLES2/gl2ext.h',
       # Files below are Chromium-specific and shipped with Chromium sources.
+      'GL/glextchromium.h',
       'GLES2/gl2chromium.h',
       'GLES2/gl2extchromium.h'
   ], []],
   [OSMESA_FUNCTIONS, 'osmesa', [], []],
-  [EGL_FUNCTIONS, 'egl', ['EGL/eglext.h'],
+  [EGL_FUNCTIONS, 'egl', [
+      'EGL/eglext.h',
+      # Files below are Chromium-specific and shipped with Chromium sources.
+      'EGL/eglextchromium.h',
+    ],
     [
       'EGL_ANGLE_d3d_share_handle_client_buffer',
       'EGL_ANGLE_surface_d3d_texture_2d_share_handle',
@@ -1593,7 +1598,8 @@ def ParseExtensionFunctionsFromHeader(header_file):
   Returns:
     Map of extension name => functions.
   """
-  extension_start = re.compile(r'#define ([A-Z]+_[A-Z]+_[a-zA-Z]\w+) 1')
+  extension_start = re.compile(
+      r'#ifndef ((?:GL|EGL|WGL|GLX)_[A-Z]+_[a-zA-Z]\w+)')
   extension_function = re.compile(r'.+\s+([a-z]+\w+)\s*\(')
   typedef = re.compile(r'typedef .*')
   macro_start = re.compile(r'^#(if|ifdef|ifndef).*')

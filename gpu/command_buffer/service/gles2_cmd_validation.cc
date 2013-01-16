@@ -8,6 +8,7 @@
 #define GLES2_GPU_SERVICE 1
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/GLES2/gl2chromium_constants.h"
 
 namespace gpu {
 namespace gles2 {

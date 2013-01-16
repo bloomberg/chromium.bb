@@ -56,16 +56,13 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
+#include "gpu/GLES2/gl2chromium_constants.h"
 #include "ui/gl/async_pixel_transfer_delegate.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #if defined(OS_MACOSX)
 #include "ui/surface/io_surface_support_mac.h"
-#endif
-
-#if !defined(GL_DEPTH24_STENCIL8)
-#define GL_DEPTH24_STENCIL8 0x88F0
 #endif
 
 // TODO(zmo): we can't include "City.h" due to type def conflicts.
