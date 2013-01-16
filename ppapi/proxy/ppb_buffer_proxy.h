@@ -8,7 +8,6 @@
 #include "base/shared_memory.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
-#include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_buffer_api.h"
 
@@ -17,6 +16,8 @@ namespace ppapi {
 class HostResource;
 
 namespace proxy {
+
+class SerializedHandle;
 
 class Buffer : public thunk::PPB_Buffer_API, public Resource {
  public:

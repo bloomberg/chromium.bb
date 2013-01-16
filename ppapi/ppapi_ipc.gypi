@@ -12,6 +12,8 @@
       # This part is shared between the targets defined below.
       ['ppapi_ipc_target==1', {
         'sources': [
+          'proxy/handle_converter.cc',
+          'proxy/handle_converter.h',
           'proxy/ppapi_messages.cc',
           'proxy/ppapi_messages.h',
           'proxy/ppapi_param_traits.cc',
@@ -20,6 +22,8 @@
           'proxy/resource_message_params.h',
           'proxy/serialized_flash_menu.cc',
           'proxy/serialized_flash_menu.h',
+          'proxy/serialized_handle.cc',
+          'proxy/serialized_handle.h',
           'proxy/serialized_structs.cc',
           'proxy/serialized_structs.h',
           'proxy/serialized_var.cc',

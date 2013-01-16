@@ -17,7 +17,6 @@
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_completion_callback_factory.h"
-#include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 namespace ppapi {
@@ -25,6 +24,8 @@ namespace ppapi {
 class HostResource;
 
 namespace proxy {
+
+class SerializedHandle;
 
 class PPB_Audio_Proxy : public InterfaceProxy {
  public:

@@ -45,6 +45,7 @@
 #include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/proxy/serialized_flash_menu.h"
+#include "ppapi/proxy/serialized_handle.h"
 #include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/dir_contents.h"

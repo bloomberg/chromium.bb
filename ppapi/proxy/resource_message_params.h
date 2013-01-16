@@ -11,7 +11,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
-#include "ppapi/proxy/serialized_structs.h"
+#include "ppapi/proxy/serialized_handle.h"
 
 namespace ppapi {
 namespace proxy {

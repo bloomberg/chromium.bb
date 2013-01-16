@@ -13,7 +13,6 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/proxy_completion_callback_factory.h"
-#include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/shared_impl/ppb_graphics_3d_shared.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/utility/completion_callback_factory.h"
@@ -23,6 +22,8 @@ namespace ppapi {
 class HostResource;
 
 namespace proxy {
+
+class SerializedHandle;
 
 class Graphics3D : public PPB_Graphics3D_Shared {
  public:

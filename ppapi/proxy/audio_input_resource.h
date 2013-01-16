@@ -21,7 +21,6 @@ namespace ppapi {
 namespace proxy {
 
 class ResourceMessageReplyParams;
-class SerializedHandle;
 
 class AudioInputResource : public PluginResource,
                            public thunk::PPB_AudioInput_API,

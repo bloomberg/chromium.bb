@@ -12,7 +12,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
-#include "ppapi/proxy/serialized_structs.h"
+#include "ppapi/proxy/serialized_handle.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/tracked_callback.h"
