@@ -43,7 +43,7 @@ extern const bool kShowImportOnBookmarkBar;
 extern const bool kShowExitMenuItem;
 extern const bool kShowFeedbackMenuItem;
 extern const bool kShowHelpMenuItemIcon;
-extern const bool kShowSyncSetupMenuItem;
+extern const bool kShowSigninMenuItem;
 extern const bool kShowUpgradeMenuItem;
 
 // Does the OS support other browsers? If not, operations such as default

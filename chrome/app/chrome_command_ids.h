@@ -182,9 +182,12 @@
 #define IDC_SHOW_KEYBOARD_OVERLAY       40027
 #define IDC_PROFILING_ENABLED           40028
 #define IDC_BOOKMARKS_MENU              40029
+// TODO(atwilson): Remove IDC_SHOW_SYNC_SETUP when we officially allow signin
+// when sync is disabled.
 #define IDC_SHOW_SYNC_SETUP             40030
+#define IDC_SHOW_SIGNIN                 40030
 #define IDC_EXTENSION_ERRORS            40031
-#define IDC_SHOW_SYNC_ERROR             40032
+#define IDC_SHOW_SIGNIN_ERROR           40032
 #define IDC_SHOW_SETTINGS_CHANGE_FIRST  40033
 #define IDC_SHOW_SETTINGS_CHANGE_LAST   40133
 #define IDC_SHOW_AVATAR_MENU            40134

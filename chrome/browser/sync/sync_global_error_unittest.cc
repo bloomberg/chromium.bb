@@ -113,8 +113,7 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
   // If there is an error then a wrench button badge, menu item, and bubble view
   // should be shown.
   EXPECT_EQ(error->HasBadge(), is_error);
-  EXPECT_EQ(error->HasMenuItem() || error->HasCustomizedSyncMenuItem(),
-            is_error);
+  EXPECT_EQ(error->HasMenuItem() || error->HasBadge(), is_error);
   EXPECT_EQ(error->HasBubbleView(), is_error);
 
   // If there is an error then labels should not be empty.
@@ -181,48 +180,4 @@ TEST_F(SyncGlobalErrorTest, PassphraseGlobalError) {
   VerifySyncGlobalErrorResult(
       &service, login_ui_service, browser(), &error,
       GoogleServiceAuthError::NONE, true, true);
-}
-
-// Test that SyncGlobalError shows an error for conditions that can be resolved
-// by the user and suppresses errors for conditions that  cannot be resolved by
-// the user.
-TEST_F(SyncGlobalErrorTest, AuthStateGlobalError) {
-  scoped_ptr<Profile> profile(
-      ProfileSyncServiceMock::MakeSignedInTestingProfile());
-  NiceMock<ProfileSyncServiceMock> service(profile.get());
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile.get());
-  FakeLoginUIService* login_ui_service = static_cast<FakeLoginUIService*>(
-      LoginUIServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile.get(), BuildMockLoginUIService));
-  FakeLoginUI login_ui;
-  login_ui_service->SetLoginUI(&login_ui);
-  SyncGlobalError error(&service, signin);
-
-  browser_sync::SyncBackendHost::Status status;
-  EXPECT_CALL(service, QueryDetailedSyncStatus(_))
-              .WillRepeatedly(Return(false));
-
-  struct {
-    GoogleServiceAuthError::State error_state;
-    bool is_error;
-  } table[] = {
-    { GoogleServiceAuthError::NONE, false },
-    { GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS, true },
-    { GoogleServiceAuthError::USER_NOT_SIGNED_UP, true },
-    { GoogleServiceAuthError::CONNECTION_FAILED, false },
-    { GoogleServiceAuthError::CAPTCHA_REQUIRED, true },
-    { GoogleServiceAuthError::ACCOUNT_DELETED, true },
-    { GoogleServiceAuthError::ACCOUNT_DISABLED, true },
-    { GoogleServiceAuthError::SERVICE_UNAVAILABLE, true },
-    { GoogleServiceAuthError::TWO_FACTOR, true },
-    { GoogleServiceAuthError::REQUEST_CANCELED, true },
-    { GoogleServiceAuthError::HOSTED_NOT_ALLOWED, true },
-  };
-
-  for (size_t i = 0; i < sizeof(table)/sizeof(*table); ++i) {
-    VerifySyncGlobalErrorResult(&service, login_ui_service, browser(), &error,
-                                table[i].error_state, true, table[i].is_error);
-    VerifySyncGlobalErrorResult(&service, login_ui_service, browser(), &error,
-                                table[i].error_state, false, false);
-  }
 }
