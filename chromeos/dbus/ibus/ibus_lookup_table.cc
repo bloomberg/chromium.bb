@@ -184,11 +184,43 @@ IBusLookupTable::IBusLookupTable()
     : page_size_(kDefaultPageSize),
       cursor_position_(0),
       is_cursor_visible_(true),
-      orientation_(IBUS_LOOKUP_TABLE_ORIENTATION_HORIZONTAL),
+      orientation_(HORIZONTAL),
       show_window_at_composition_(false) {
 }
 
 IBusLookupTable::~IBusLookupTable() {
+}
+
+bool IBusLookupTable::IsEqual(const IBusLookupTable& table) const {
+  if (page_size_ != table.page_size_ ||
+      cursor_position_ != table.cursor_position_ ||
+      is_cursor_visible_ != table.is_cursor_visible_ ||
+      orientation_ != table.orientation_ ||
+      show_window_at_composition_ != table.show_window_at_composition_ ||
+      candidates_.size() != table.candidates_.size())
+    return false;
+
+  for (size_t i = 0; i < candidates_.size(); ++i) {
+    const Entry& left = candidates_[i];
+    const Entry& right = table.candidates_[i];
+    if (left.value != right.value ||
+        left.label != right.label ||
+        left.annotation != right.annotation ||
+        left.description_title != right.description_title ||
+        left.description_body != right.description_body)
+      return false;
+  }
+  return true;
+}
+
+void IBusLookupTable::CopyFrom(const IBusLookupTable& table) {
+  page_size_ = table.page_size_;
+  cursor_position_ = table.cursor_position_;
+  is_cursor_visible_ = table.is_cursor_visible_;
+  orientation_ = table.orientation_;
+  show_window_at_composition_ = table.show_window_at_composition_;
+  candidates_.clear();
+  candidates_ = table.candidates_;
 }
 
 IBusLookupTable::Entry::Entry() {

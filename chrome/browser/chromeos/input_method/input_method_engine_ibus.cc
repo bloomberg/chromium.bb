@@ -222,9 +222,8 @@ void InputMethodEngineIBus::SetCandidateWindowCursorVisible(bool visible) {
 }
 
 void InputMethodEngineIBus::SetCandidateWindowVertical(bool vertical) {
-  table_->set_orientation(
-      vertical ? ibus::IBusLookupTable::IBUS_LOOKUP_TABLE_ORIENTATION_VERTICAL :
-      ibus::IBusLookupTable::IBUS_LOOKUP_TABLE_ORIENTATION_HORIZONTAL);
+  table_->set_orientation(vertical ? ibus::IBusLookupTable::VERTICAL :
+                          ibus::IBusLookupTable::HORIZONTAL);
   if (active_)
     GetCurrentService()->UpdateLookupTable(*table_.get(), window_visible_);
 }

@@ -204,8 +204,7 @@ void IBusUiController::UpdateLookupTable(const ibus::IBusLookupTable& table,
   lookup_table.visible = visible;
 
   // Copy the orientation information.
-  if (table.orientation() ==
-      ibus::IBusLookupTable::IBUS_LOOKUP_TABLE_ORIENTATION_VERTICAL) {
+  if (table.orientation() == ibus::IBusLookupTable::VERTICAL) {
     lookup_table.orientation = InputMethodLookupTable::kVertical;
   } else {
     lookup_table.orientation = InputMethodLookupTable::kHorizontal;
