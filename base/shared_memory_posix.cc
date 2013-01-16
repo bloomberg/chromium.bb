@@ -219,7 +219,7 @@ bool SharedMemory::Open(const std::string& name, bool read_only) {
 
 #endif  // !defined(OS_ANDROID)
 
-bool SharedMemory::Map(size_t bytes) {
+bool SharedMemory::MapAt(off_t offset, size_t bytes) {
   if (mapped_file_ == -1)
     return false;
 
@@ -234,16 +234,16 @@ bool SharedMemory::Map(size_t bytes) {
 
     DCHECK_GE(static_cast<uint32>(ashmem_bytes), bytes);
     // The caller wants to determine the map region size from ashmem.
-    bytes = ashmem_bytes;
+    bytes = ashmem_bytes - offset;
     // TODO(port): we set the created size here so that it is available in
     // transport_dib_android.cc. We should use ashmem_get_size_region()
     // in transport_dib_android.cc.
-    created_size_ = bytes;
+    created_size_ = ashmem_bytes;
   }
 #endif
 
   memory_ = mmap(NULL, bytes, PROT_READ | (read_only_ ? 0 : PROT_WRITE),
-                 MAP_SHARED, mapped_file_, 0);
+                 MAP_SHARED, mapped_file_, offset);
 
   bool mmap_succeeded = memory_ != (void*)-1 && memory_ != NULL;
   if (mmap_succeeded) {

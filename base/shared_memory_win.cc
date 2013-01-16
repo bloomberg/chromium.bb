@@ -134,7 +134,7 @@ bool SharedMemory::Open(const std::string& name, bool read_only) {
   return false;
 }
 
-bool SharedMemory::Map(size_t bytes) {
+bool SharedMemory::MapAt(off_t offset, size_t bytes) {
   if (mapped_file_ == NULL)
     return false;
 
@@ -142,7 +142,10 @@ bool SharedMemory::Map(size_t bytes) {
     return false;
 
   memory_ = MapViewOfFile(mapped_file_,
-      read_only_ ? FILE_MAP_READ : FILE_MAP_ALL_ACCESS, 0, 0, bytes);
+                          read_only_ ? FILE_MAP_READ : FILE_MAP_ALL_ACCESS,
+                          static_cast<uint64>(offset) >> 32,
+                          static_cast<DWORD>(offset),
+                          bytes);
   if (memory_ != NULL) {
     DCHECK_EQ(0U, reinterpret_cast<uintptr_t>(memory_) &
         (SharedMemory::MAP_MINIMUM_ALIGNMENT - 1));

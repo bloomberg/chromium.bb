@@ -84,7 +84,7 @@ bool SharedMemory::Open(const std::string& name, bool read_only) {
   return false;
 }
 
-bool SharedMemory::Map(size_t bytes) {
+bool SharedMemory::MapAt(off_t offset, size_t bytes) {
   if (mapped_file_ == -1)
     return false;
 
@@ -92,7 +92,7 @@ bool SharedMemory::Map(size_t bytes) {
     return false;
 
   memory_ = mmap(NULL, bytes, PROT_READ | (read_only_ ? 0 : PROT_WRITE),
-                 MAP_SHARED, mapped_file_, 0);
+                 MAP_SHARED, mapped_file_, offset);
 
   bool mmap_succeeded = memory_ != MAP_FAILED && memory_ != NULL;
   if (mmap_succeeded) {

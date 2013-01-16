@@ -144,7 +144,14 @@ class BASE_EXPORT SharedMemory {
   // Returns true on success, false otherwise.  The memory address
   // is accessed via the memory() accessor.  The mapped address is guaranteed to
   // have an alignment of at least MAP_MINIMUM_ALIGNMENT.
-  bool Map(size_t bytes);
+  bool Map(size_t bytes) {
+    return MapAt(0, bytes);
+  }
+
+  // Same as above, but with |offset| to specify from begining of the shared
+  // memory block to map.
+  // |offset| must be alignent to value of |SysInfo::VMAllocationGranularity()|.
+  bool MapAt(off_t offset, size_t bytes);
   enum { MAP_MINIMUM_ALIGNMENT = 32 };
 
   // Unmaps the shared memory from the caller's address space.
