@@ -171,12 +171,26 @@ void MapperSmartJoyPLUS(
   mapped->axesLength = kNumAxes;
 }
 
+void MapperDragonRiseGeneric(
+    const WebKit::WebGamepad& input,
+    WebKit::WebGamepad* mapped) {
+  *mapped = input;
+  DpadFromAxis(mapped, input.axes[9]);
+  mapped->axes[kAxisLeftStickX] = input.axes[0];
+  mapped->axes[kAxisLeftStickY] = input.axes[1];
+  mapped->axes[kAxisRightStickX] = input.axes[2];
+  mapped->axes[kAxisRightStickY] = input.axes[5];
+  mapped->buttonsLength = kNumButtons - 1; /* no meta */
+  mapped->axesLength = kNumAxes;
+}
+
 struct MappingData {
   const char* const vendor_id;
   const char* const product_id;
   GamepadStandardMappingFunction function;
 } AvailableMappings[] = {
   // http://www.linux-usb.org/usb.ids
+  { "0079", "0006", MapperDragonRiseGeneric },  // DragonRise Generic USB
   { "045e", "028e", MapperXbox360Gamepad },     // Xbox 360 Controller
   { "045e", "028f", MapperXbox360Gamepad },     // Xbox 360 Wireless Controller
   { "046d", "c216", MapperDirectInputStyle },   // Logitech F310, D mode
