@@ -7,8 +7,11 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_task_manager_win.h"
 
 namespace device {
 
@@ -16,7 +19,8 @@ class BluetoothAdapterFactory;
 class BluetoothAdapterWinTest;
 class BluetoothDevice;
 
-class BluetoothAdapterWin : public BluetoothAdapter {
+class BluetoothAdapterWin : public BluetoothAdapter,
+                            public BluetoothTaskManagerWin::Observer {
  public:
   // BluetoothAdapter override
   virtual void AddObserver(BluetoothAdapter::Observer* observer) OVERRIDE;
@@ -40,25 +44,26 @@ class BluetoothAdapterWin : public BluetoothAdapter {
       const BluetoothOutOfBandPairingDataCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE;
 
+  // BluetoothTaskManagerWin::Observer override
+  virtual void AdapterStateChanged(
+      const BluetoothTaskManagerWin::AdapterState& state) OVERRIDE;
+
  protected:
+  friend class BluetoothAdapterWinTest;
+
   BluetoothAdapterWin();
   virtual ~BluetoothAdapterWin();
 
-  virtual void UpdateAdapterState();
-
  private:
   friend class BluetoothAdapterFactory;
-  friend class BluetoothAdapterWinTest;
 
-  // Obtains the default adapter info (the first bluetooth radio info found on
-  // the system) and tracks future changes to it.
   void TrackDefaultAdapter();
 
-  void PollAdapterState();
-
-  static const int kPollIntervalMs;
-
   bool powered_;
+
+  scoped_refptr<BluetoothTaskManagerWin> task_manager_;
+
+  base::ThreadChecker thread_checker_;
 
   // NOTE: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
