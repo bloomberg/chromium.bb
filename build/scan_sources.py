@@ -59,6 +59,11 @@ class PathConverter(object):
     ospath = os.path.realpath(ospath)
     return self.ToPosixPath(ospath)
 
+  def dirname(self, pathname):
+    ospath = self.ToNativePath(pathname)
+    ospath = os.path.dirname(ospath)
+    return self.ToPosixPath(ospath)
+
 
 class Resolver(object):
   """Resolver finds and generates relative paths for include files.
@@ -83,6 +88,14 @@ class Resolver(object):
       else:
         sys.stderr.write('Not a directory: %s\n' % pathname)
         return False
+    return True
+
+  def RemoveOneDirectory(self, pathname):
+    """Remove an include search path."""
+    pathname = self.pathobj.realpath(pathname)
+    DebugPrint('Removing DIR: %s' % pathname)
+    if pathname in self.search_dirs:
+      self.search_dirs.remove(pathname)
     return True
 
   def AddDirectories(self, pathlist):
@@ -198,8 +211,13 @@ class WorkQueue(object):
     scan_name = self.PopIfAvail()
     while scan_name:
       includes = self.scanner.ScanFile(scan_name)
+      # Add the directory of the current scanned file for resolving includes
+      # while processing includes for this file.
+      scan_dir = PathConverter().dirname(scan_name)
+      self.resolver.AddOneDirectory(scan_dir)
       for include_file in includes:
         self.PushIfNew(include_file)
+      self.resolver.RemoveOneDirectory(scan_dir)
       scan_name = self.PopIfAvail()
     return sorted(self.added_set)
 
