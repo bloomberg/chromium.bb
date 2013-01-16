@@ -380,13 +380,6 @@ void ChromotingHost::DisconnectAllClients() {
   }
 }
 
-void ChromotingHost::SetUiStrings(const UiStrings& ui_strings) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, kInitial);
-
-  ui_strings_ = ui_strings;
-}
-
 void ChromotingHost::ShutdownFinish() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kStopping);

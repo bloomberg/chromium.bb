@@ -25,8 +25,9 @@ namespace remoting {
 
 It2MeHostUserInterface::It2MeHostUserInterface(
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
-    : HostUserInterface(network_task_runner, ui_task_runner),
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    const UiStrings& ui_strings)
+    : HostUserInterface(network_task_runner, ui_task_runner, ui_strings),
       ALLOW_THIS_IN_INITIALIZER_LIST(timer_weak_factory_(this)) {
   DCHECK(ui_task_runner->BelongsToCurrentThread());
 }
@@ -41,7 +42,7 @@ void It2MeHostUserInterface::Init() {
   DCHECK(ui_task_runner()->BelongsToCurrentThread());
 
   HostUserInterface::Init();
-  continue_window_ = ContinueWindow::Create();
+  continue_window_ = ContinueWindow::Create(&ui_strings());
 }
 
 void It2MeHostUserInterface::ProcessOnClientAuthenticated(
@@ -97,7 +98,7 @@ void It2MeHostUserInterface::ShowContinueWindow(bool show) {
   DCHECK(ui_task_runner()->BelongsToCurrentThread());
 
   if (show) {
-    continue_window_->Show(get_host(), base::Bind(
+    continue_window_->Show(base::Bind(
         &It2MeHostUserInterface::ContinueSession, base::Unretained(this)));
   } else {
     continue_window_->Hide();

@@ -9,7 +9,7 @@
 
 namespace remoting {
 
-class ChromotingHost;
+struct UiStrings;
 
 class ContinueWindow {
  public:
@@ -23,13 +23,12 @@ class ContinueWindow {
 
   // Show the continuation window requesting that the user approve continuing
   // the session.
-  virtual void Show(ChromotingHost* host,
-                    const ContinueSessionCallback& callback) = 0;
+  virtual void Show(const ContinueSessionCallback& callback) = 0;
 
   // Hide the continuation window if it is visible.
   virtual void Hide() = 0;
 
-  static scoped_ptr<ContinueWindow> Create();
+  static scoped_ptr<ContinueWindow> Create(const UiStrings* ui_strings);
 };
 
 }  // namespace remoting

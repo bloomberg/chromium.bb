@@ -62,6 +62,7 @@
 #include "remoting/host/resizing_host_observer.h"
 #include "remoting/host/session_manager_factory.h"
 #include "remoting/host/signaling_connector.h"
+#include "remoting/host/ui_strings.h"
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
@@ -602,9 +603,10 @@ void HostProcess::StartOnUiThread() {
 #endif  // OS_MACOSX
 
   if (want_user_interface) {
+    UiStrings ui_strings;
     host_user_interface_.reset(
         new HostUserInterface(context_->network_task_runner(),
-                              context_->ui_task_runner()));
+                              context_->ui_task_runner(), ui_strings));
     host_user_interface_->Init();
   }
 

@@ -82,7 +82,7 @@ class MockIt2MeHostUserInterface : public It2MeHostUserInterface {
 MockIt2MeHostUserInterface::MockIt2MeHostUserInterface(
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
-    : It2MeHostUserInterface(network_task_runner, ui_task_runner) {
+    : It2MeHostUserInterface(network_task_runner, ui_task_runner, UiStrings()) {
 }
 
 void MockIt2MeHostUserInterface::InitFrom(

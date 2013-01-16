@@ -21,36 +21,38 @@ namespace remoting {
 
 class DisconnectWindowMac : public remoting::DisconnectWindow {
  public:
-  DisconnectWindowMac();
+  explicit DisconnectWindowMac(const UiStrings* ui_strings);
   virtual ~DisconnectWindowMac();
 
-  virtual bool Show(const UiStrings& ui_strings,
-                    const base::Closure& disconnect_callback,
+  virtual bool Show(const base::Closure& disconnect_callback,
                     const std::string& username) OVERRIDE;
   virtual void Hide() OVERRIDE;
 
  private:
   DisconnectWindowController* window_controller_;
 
+  // Points to the localized strings.
+  const UiStrings* ui_strings_;
+
   DISALLOW_COPY_AND_ASSIGN(DisconnectWindowMac);
 };
 
-DisconnectWindowMac::DisconnectWindowMac()
-    : window_controller_(nil) {
+DisconnectWindowMac::DisconnectWindowMac(const UiStrings* ui_strings)
+    : window_controller_(nil),
+      ui_strings_(ui_strings) {
 }
 
 DisconnectWindowMac::~DisconnectWindowMac() {
   Hide();
 }
 
-bool DisconnectWindowMac::Show(const UiStrings& ui_strings,
-                               const base::Closure& disconnect_callback,
+bool DisconnectWindowMac::Show(const base::Closure& disconnect_callback,
                                const std::string& username) {
   DCHECK(!disconnect_callback.is_null());
   DCHECK(window_controller_ == nil);
 
   window_controller_ =
-      [[DisconnectWindowController alloc] initWithUiStrings:ui_strings
+      [[DisconnectWindowController alloc] initWithUiStrings:ui_strings_
                                                    callback:disconnect_callback
                                                    username:username];
   [window_controller_ showWindow:nil];
@@ -64,21 +66,20 @@ void DisconnectWindowMac::Hide() {
   window_controller_ = nil;
 }
 
-scoped_ptr<DisconnectWindow> DisconnectWindow::Create() {
-  return scoped_ptr<DisconnectWindow>(new DisconnectWindowMac());
+scoped_ptr<DisconnectWindow> DisconnectWindow::Create(
+    const UiStrings* ui_strings) {
+  return scoped_ptr<DisconnectWindow>(new DisconnectWindowMac(ui_strings));
 }
 
 }  // namespace remoting
 
 @implementation DisconnectWindowController
-- (id)initWithUiStrings:(const remoting::UiStrings&)ui_strings
+- (id)initWithUiStrings:(const remoting::UiStrings*)ui_strings
                callback:(const base::Closure&)disconnect_callback
                username:(const std::string&)username {
   self = [super initWithWindowNibName:@"disconnect_window"];
   if (self) {
-    rtl_ = (ui_strings.direction == remoting::UiStrings::RTL);
-    disconnect_message_ = ui_strings.disconnect_message;
-    disconnect_button_text_ = ui_strings.disconnect_button_text;
+    ui_strings_ = ui_strings;
     disconnect_callback_ = disconnect_callback;
     username_ = UTF8ToUTF16(username);
   }
@@ -96,7 +97,7 @@ scoped_ptr<DisconnectWindow> DisconnectWindow::Create() {
 }
 
 - (BOOL)isRToL {
-  return rtl_;
+  return ui_strings_->direction == remoting::UiStrings::RTL;
 }
 
 - (void)Hide {
@@ -105,12 +106,12 @@ scoped_ptr<DisconnectWindow> DisconnectWindow::Create() {
 }
 
 - (void)windowDidLoad {
-  string16 text = ReplaceStringPlaceholders(disconnect_message_, username_,
-                                            NULL);
+  string16 text = ReplaceStringPlaceholders(ui_strings_->disconnect_message,
+                                            username_, NULL);
   [connectedToField_ setStringValue:base::SysUTF16ToNSString(text)];
 
   [disconnectButton_ setTitle:base::SysUTF16ToNSString(
-      disconnect_button_text_)];
+      ui_strings_->disconnect_button_text)];
 
   // Resize the window dynamically based on the content.
   CGFloat oldConnectedWidth = NSWidth([connectedToField_ bounds]);

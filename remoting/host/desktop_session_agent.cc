@@ -195,9 +195,9 @@ void DesktopSessionAgent::OnStartSessionAgent(
       base::Bind(&DesktopSessionAgent::DisconnectSession, this);
 
   // Create the disconnect window.
-  disconnect_window_ = DisconnectWindow::Create();
+  disconnect_window_ = DisconnectWindow::Create(&ui_strings_);
   disconnect_window_->Show(
-      ui_strings_, disconnect_session,
+      disconnect_session,
       authenticated_jid.substr(0, authenticated_jid.find('/')));
 
   // Start monitoring local input.

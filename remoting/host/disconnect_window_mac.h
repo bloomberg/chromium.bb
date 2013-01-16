@@ -19,16 +19,14 @@ struct UiStrings;
 // quickly disconnect a session.
 @interface DisconnectWindowController : NSWindowController {
  @private
-  bool rtl_;
-  string16 disconnect_message_;
-  string16 disconnect_button_text_;
+  const remoting::UiStrings* ui_strings_;
   base::Closure disconnect_callback_;
   string16 username_;
   IBOutlet NSTextField* connectedToField_;
   IBOutlet NSButton* disconnectButton_;
 }
 
-- (id)initWithUiStrings:(const remoting::UiStrings&)ui_strings
+- (id)initWithUiStrings:(const remoting::UiStrings*)ui_strings
                callback:(const base::Closure&)disconnect_callback
                username:(const std::string&)username;
 - (IBAction)stopSharing:(id)sender;

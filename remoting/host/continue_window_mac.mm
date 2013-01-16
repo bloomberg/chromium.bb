@@ -11,7 +11,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
-#include "remoting/host/chromoting_host.h"
+#include "remoting/host/ui_strings.h"
 
 typedef remoting::ContinueWindow::ContinueSessionCallback
     ContinueSessionCallback;
@@ -21,12 +21,12 @@ typedef remoting::ContinueWindow::ContinueSessionCallback
  @private
   scoped_nsobject<NSMutableArray> shades_;
   scoped_nsobject<NSAlert> continue_alert_;
-  remoting::ChromotingHost* host_;
   ContinueSessionCallback callback_;
+  const remoting::UiStrings* ui_strings_;
 }
 
-- (id)initWithHost:(remoting::ChromotingHost*)host
-          callback:(const ContinueSessionCallback&)callback;
+- (id)initWithUiStrings:(const remoting::UiStrings*)ui_strings
+               callback:(const ContinueSessionCallback&)callback;
 - (void)show;
 - (void)hide;
 - (void)onCancel:(id)sender;
@@ -39,26 +39,33 @@ namespace remoting {
 // Everything important occurs in ContinueWindowMacController.
 class ContinueWindowMac : public remoting::ContinueWindow {
  public:
-  ContinueWindowMac() {}
-  virtual ~ContinueWindowMac() {}
+  explicit ContinueWindowMac(const UiStrings* ui_strings);
+  virtual ~ContinueWindowMac();
 
-  virtual void Show(remoting::ChromotingHost* host,
-                    const ContinueSessionCallback& callback) OVERRIDE;
+  virtual void Show(const ContinueSessionCallback& callback) OVERRIDE;
   virtual void Hide() OVERRIDE;
 
  private:
   scoped_nsobject<ContinueWindowMacController> controller_;
   ContinueSessionCallback callback_;
 
+  // Points to the localized strings.
+  const UiStrings* ui_strings_;
+
   DISALLOW_COPY_AND_ASSIGN(ContinueWindowMac);
 };
 
-void ContinueWindowMac::Show(remoting::ChromotingHost* host,
-                             const ContinueSessionCallback& callback) {
+ContinueWindowMac::ContinueWindowMac(const UiStrings* ui_strings)
+    : ui_strings_(ui_strings) {
+}
+
+ContinueWindowMac::~ContinueWindowMac() {}
+
+void ContinueWindowMac::Show(const ContinueSessionCallback& callback) {
   base::mac::ScopedNSAutoreleasePool pool;
   controller_.reset(
-      [[ContinueWindowMacController alloc] initWithHost:host
-                                               callback:callback]);
+      [[ContinueWindowMacController alloc] initWithUiStrings:ui_strings_
+                                                    callback:callback]);
   [controller_ show];
 }
 
@@ -67,19 +74,19 @@ void ContinueWindowMac::Hide() {
   [controller_ hide];
 }
 
-scoped_ptr<ContinueWindow> ContinueWindow::Create() {
-  return scoped_ptr<ContinueWindow>(new ContinueWindowMac());
+scoped_ptr<ContinueWindow> ContinueWindow::Create(const UiStrings* ui_strings) {
+  return scoped_ptr<ContinueWindow>(new ContinueWindowMac(ui_strings));
 }
 
 }  // namespace remoting
 
 @implementation ContinueWindowMacController
 
-- (id)initWithHost:(remoting::ChromotingHost*)host
-          callback:(const ContinueSessionCallback&)callback {
+- (id)initWithUiStrings:(const remoting::UiStrings*)ui_strings
+               callback:(const ContinueSessionCallback&)callback {
   if ((self = [super init])) {
-    host_ = host;
     callback_ = callback;
+    ui_strings_ = ui_strings;
   }
   return self;
 }
@@ -108,12 +115,11 @@ scoped_ptr<ContinueWindow> ContinueWindow::Create() {
   }
 
   // Create alert.
-  const remoting::UiStrings& strings = host_->ui_strings();
-  NSString* message = base::SysUTF16ToNSString(strings.continue_prompt);
+  NSString* message = base::SysUTF16ToNSString(ui_strings_->continue_prompt);
   NSString* continue_button_string = base::SysUTF16ToNSString(
-      strings.continue_button_text);
+      ui_strings_->continue_button_text);
   NSString* cancel_button_string = base::SysUTF16ToNSString(
-      strings.stop_sharing_button_text);
+      ui_strings_->stop_sharing_button_text);
   continue_alert_.reset([[NSAlert alloc] init]);
   [continue_alert_ setMessageText:message];
 
@@ -155,13 +161,11 @@ scoped_ptr<ContinueWindow> ContinueWindow::Create() {
 - (void)onCancel:(id)sender {
   [self hide];
   callback_.Run(false);
-  host_ = nil;
 }
 
 - (void)onContinue:(id)sender {
   [self hide];
   callback_.Run(true);
-  host_ = nil;
 }
 
 @end

@@ -13,11 +13,13 @@ namespace remoting {
 
 HostUserInterface::HostUserInterface(
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    const UiStrings& ui_strings)
     : host_(NULL),
       network_task_runner_(network_task_runner),
       ui_task_runner_(ui_task_runner),
       is_monitoring_local_inputs_(false),
+      ui_strings_(ui_strings),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       weak_ptr_(weak_factory_.GetWeakPtr()) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
@@ -33,7 +35,7 @@ HostUserInterface::~HostUserInterface() {
 void HostUserInterface::Init() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
-  disconnect_window_ = DisconnectWindow::Create();
+  disconnect_window_ = DisconnectWindow::Create(&ui_strings());
   local_input_monitor_ = LocalInputMonitor::Create();
 }
 
@@ -107,7 +109,6 @@ void HostUserInterface::ProcessOnClientAuthenticated(
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   if (!disconnect_window_->Show(
-          host_->ui_strings(),
           base::Bind(&HostUserInterface::OnDisconnectCallback, weak_ptr_),
           username)) {
     LOG(ERROR) << "Failed to show the disconnect window.";

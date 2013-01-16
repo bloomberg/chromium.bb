@@ -9,8 +9,8 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "remoting/host/chromoting_host.h"
 #include "remoting/host/host_ui_resource.h"
+#include "remoting/host/ui_strings.h"
 
 // TODO(garykac): Lots of duplicated code in this file and
 // disconnect_window_win.cc. These global floating windows are temporary so
@@ -27,11 +27,10 @@ namespace remoting {
 
 class ContinueWindowWin : public ContinueWindow {
  public:
-  ContinueWindowWin();
+  explicit ContinueWindowWin(const UiStrings* ui_strings);
   virtual ~ContinueWindowWin();
 
-  virtual void Show(remoting::ChromotingHost* host,
-                    const ContinueSessionCallback& callback) OVERRIDE;
+  virtual void Show(const ContinueSessionCallback& callback) OVERRIDE;
   virtual void Hide() OVERRIDE;
 
  private:
@@ -41,18 +40,20 @@ class ContinueWindowWin : public ContinueWindow {
   BOOL OnDialogMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
   void EndDialog();
-  void SetStrings(const UiStrings& strings);
+  void SetStrings();
 
-  remoting::ChromotingHost* host_;
   ContinueSessionCallback callback_;
   HWND hwnd_;
+
+  // Points to the localized strings.
+  const UiStrings* ui_strings_;
 
   DISALLOW_COPY_AND_ASSIGN(ContinueWindowWin);
 };
 
-ContinueWindowWin::ContinueWindowWin()
-    : host_(NULL),
-      hwnd_(NULL) {
+ContinueWindowWin::ContinueWindowWin(const UiStrings* ui_strings)
+    : hwnd_(NULL),
+      ui_strings_(ui_strings) {
 }
 
 ContinueWindowWin::~ContinueWindowWin() {
@@ -102,9 +103,7 @@ BOOL ContinueWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
   return FALSE;
 }
 
-void ContinueWindowWin::Show(ChromotingHost* host,
-                             const ContinueSessionCallback& callback) {
-  host_ = host;
+void ContinueWindowWin::Show(const ContinueSessionCallback& callback) {
   callback_ = callback;
 
   CHECK(!hwnd_);
@@ -115,7 +114,7 @@ void ContinueWindowWin::Show(ChromotingHost* host,
     return;
   }
 
-  SetStrings(host->ui_strings());
+  SetStrings();
   ShowWindow(hwnd_, SW_SHOW);
 }
 
@@ -130,24 +129,24 @@ void ContinueWindowWin::EndDialog() {
   }
 }
 
-void ContinueWindowWin::SetStrings(const UiStrings& strings) {
-  SetWindowText(hwnd_, strings.product_name.c_str());
+void ContinueWindowWin::SetStrings() {
+  SetWindowText(hwnd_, ui_strings_->product_name.c_str());
 
   HWND hwndMessage = GetDlgItem(hwnd_, IDC_CONTINUE_MESSAGE);
   CHECK(hwndMessage);
-  SetWindowText(hwndMessage, strings.continue_prompt.c_str());
+  SetWindowText(hwndMessage, ui_strings_->continue_prompt.c_str());
 
   HWND hwndDefault = GetDlgItem(hwnd_, IDC_CONTINUE_DEFAULT);
   CHECK(hwndDefault);
-  SetWindowText(hwndDefault, strings.continue_button_text.c_str());
+  SetWindowText(hwndDefault, ui_strings_->continue_button_text.c_str());
 
   HWND hwndCancel = GetDlgItem(hwnd_, IDC_CONTINUE_CANCEL);
   CHECK(hwndCancel);
-  SetWindowText(hwndCancel, strings.stop_sharing_button_text.c_str());
+  SetWindowText(hwndCancel, ui_strings_->stop_sharing_button_text.c_str());
 }
 
-scoped_ptr<ContinueWindow> ContinueWindow::Create() {
-  return scoped_ptr<ContinueWindow>(new ContinueWindowWin());
+scoped_ptr<ContinueWindow> ContinueWindow::Create(const UiStrings* ui_strings) {
+  return scoped_ptr<ContinueWindow>(new ContinueWindowWin(ui_strings));
 }
 
 }  // namespace remoting

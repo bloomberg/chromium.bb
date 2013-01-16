@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/host/host_status_observer.h"
+#include "remoting/host/ui_strings.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -29,7 +30,8 @@ class HostUserInterface : public HostStatusObserver {
  public:
   HostUserInterface(
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      const UiStrings& ui_strings);
   virtual ~HostUserInterface();
 
   // Initialize the OS-specific UI objects.
@@ -55,6 +57,8 @@ class HostUserInterface : public HostStatusObserver {
     return authenticated_jid_;
   }
   ChromotingHost* get_host() const { return host_; }
+
+  const UiStrings& ui_strings() const { return ui_strings_; }
 
   base::SingleThreadTaskRunner* network_task_runner() const;
   base::SingleThreadTaskRunner* ui_task_runner() const;
@@ -96,6 +100,9 @@ class HostUserInterface : public HostStatusObserver {
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   bool is_monitoring_local_inputs_;
+
+  // TODO(alexeypa): move |ui_strings_| to DesktopEnvironmentFactory.
+  UiStrings ui_strings_;
 
   // WeakPtr used to avoid tasks accessing the client after it is deleted.
   base::WeakPtrFactory<HostUserInterface> weak_factory_;

@@ -64,7 +64,8 @@ MockDisconnectWindow::MockDisconnectWindow() {}
 
 MockDisconnectWindow::~MockDisconnectWindow() {}
 
-scoped_ptr<DisconnectWindow> DisconnectWindow::Create() {
+scoped_ptr<DisconnectWindow> DisconnectWindow::Create(
+    const UiStrings* ui_strings) {
   return scoped_ptr<DisconnectWindow>(new MockDisconnectWindow());
 }
 
@@ -72,7 +73,7 @@ MockContinueWindow::MockContinueWindow() {}
 
 MockContinueWindow::~MockContinueWindow() {}
 
-scoped_ptr<ContinueWindow> ContinueWindow::Create() {
+scoped_ptr<ContinueWindow> ContinueWindow::Create(const UiStrings* ui_strings) {
   return scoped_ptr<ContinueWindow>(new MockContinueWindow());
 }
 

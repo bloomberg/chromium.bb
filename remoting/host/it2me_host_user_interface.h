@@ -26,7 +26,8 @@ class It2MeHostUserInterface : public HostUserInterface {
  public:
   It2MeHostUserInterface(
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      const UiStrings& ui_strings);
   virtual ~It2MeHostUserInterface();
 
   // HostUserInterface overrides.

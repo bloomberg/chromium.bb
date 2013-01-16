@@ -17,7 +17,6 @@
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/mouse_move_observer.h"
-#include "remoting/host/ui_strings.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/session_manager.h"
 #include "remoting/protocol/connection_to_client.h"
@@ -151,11 +150,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // clients that were not connected when this method is called.
   void DisconnectAllClients();
 
-  const UiStrings& ui_strings() { return ui_strings_; }
-
-  // Set localized strings. Must be called before host is started.
-  void SetUiStrings(const UiStrings& ui_strings);
-
  private:
   friend class base::RefCountedThreadSafe<ChromotingHost>;
   friend class ChromotingHostTest;
@@ -212,10 +206,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // Stores list of tasks that should be executed when we finish
   // shutdown. Used only while |state_| is set to kStopping.
   std::vector<base::Closure> shutdown_tasks_;
-
-  // TODO(sergeyu): The following members do not belong to
-  // ChromotingHost and should be moved elsewhere.
-  UiStrings ui_strings_;
 
   // The maximum duration of any session.
   base::TimeDelta max_session_duration_;

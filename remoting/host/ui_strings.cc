@@ -29,6 +29,6 @@ UiStrings::UiStrings() :
     stop_sharing_button_text(ASCIIToUTF16("Stop Sharing")) {
 }
 
-UiStrings::~UiStrings() { }
+UiStrings::~UiStrings() {}
 
-}
+}  // namespace remoting
