@@ -19,11 +19,16 @@ extern "C" {
 #include <libevdev/libevdev.h>
 }
 
+#include <base/threading/platform_thread.h>
 #include <gflags/gflags.h>
 
 using std::list;
 using std::string;
 using std::stringstream;
+
+using base::PlatformThread;
+using base::PlatformThreadHandle;
+using base::kNullThreadHandle;
 
 DEFINE_string(dev_name, "", "Name of the the device to be monitored.");
 DEFINE_bool(foreground, false, "Don't daemon()ize; run in foreground.");
@@ -37,6 +42,10 @@ DEFINE_int32(report_min_interval_sec, 3600 * 4,
              "Two reports must be apart by this interval");
 DEFINE_string(crash_cmd, "/sbin/crash_reporter --udev=SUBSYSTEM=TouchNoise",
               "Script to run when noise pattern detected");
+DEFINE_int32(periodic_cmd_interval, 1200, "Interval to run periodic_cmd");
+DEFINE_string(periodic_cmd, "/usr/sbin/get_touch_noise_log.sh > /var/log/touch_event.log; \
+                             /sbin/crash_reporter --udev=SUBSYSTEM=TouchEvent",
+              "Script to run periodically to collect touch event log");
 
 struct TouchRecord {
   int track_id;
@@ -298,6 +307,25 @@ int OpenDevFd(const string& dev_name, struct udev* udev,
   return fd;
 }
 
+class PeriodicLogCollectingTask : public PlatformThread::Delegate {
+ public:
+  virtual void ThreadMain() {
+    while (true) {
+      sleep(FLAGS_periodic_cmd_interval);
+      RunCommandASync(FLAGS_periodic_cmd.c_str());
+    }
+  }
+};
+
+bool SetupPeriodicLogCollectingThread(PlatformThreadHandle* task_thread,
+                                      PeriodicLogCollectingTask* task) {
+  if (!PlatformThread::Create(0, task, task_thread)) {
+    printf("Unable to create PeriodicLogCollectingThread\n");
+    return false;
+  }
+  return true;
+}
+
 int main(int argc, char** argv) {
   google::ParseCommandLineFlags(&argc, &argv, true);
   if (!FLAGS_foreground && daemon(0, 0) < 0) {
@@ -329,6 +357,14 @@ int main(int argc, char** argv) {
   int saved_flags = fcntl(udev_fd, F_GETFL);
   // We want to block at receiving udev events.
   fcntl(udev_fd, F_SETFL, saved_flags & ~O_NONBLOCK);
+
+  PlatformThreadHandle task_thread(kNullThreadHandle);
+  PeriodicLogCollectingTask task;
+
+  if (!SetupPeriodicLogCollectingThread(&task_thread, &task)) {
+    printf("Can't start thread for periodic touch log collecting\n");
+    return -1;
+  }
 
   // We only do udev scan once to see if we find the dev node is already there.
   int fd = OpenDevFdScan(FLAGS_dev_name, udev, udev_mon);
