@@ -1,0 +1,140 @@
+diff --git a/remoting/webapp/event_handlers.js b/remoting/webapp/event_handlers.js
+index 5659a77..fd727d1 100644
+--- a/event_handlers.js
++++ b/event_handlers.js
+@@ -62,7 +62,6 @@ function onLoad() {
+         fn: remoting.sendCtrlAltDel },
+       { event: 'click', id: 'send-print-screen',
+         fn: remoting.sendPrintScreen },
+-      { event: 'click', id: 'auth-button', fn: doAuthRedirect },
+       { event: 'click', id: 'share-button', fn: remoting.tryShare },
+       { event: 'click', id: 'access-mode-button', fn: goEnterAccessCode },
+       { event: 'click', id: 'cancel-share-button', fn: remoting.cancelShare },
+@@ -124,6 +123,4 @@ function onBeforeUnload() {
+ }
+ 
+ window.addEventListener('load', onLoad, false);
+-window.addEventListener('beforeunload', onBeforeUnload, false);
+ window.addEventListener('resize', remoting.onResize, false);
+-window.addEventListener('unload', remoting.disconnect, false);
+diff --git a/remoting/webapp/host_controller.js b/remoting/webapp/host_controller.js
+index 5f04bce..517696d 100644
+--- a/host_controller.js
++++ b/host_controller.js
+@@ -310,7 +310,7 @@ remoting.HostController.prototype.getLocalHostStateAndId = function(onDone) {
+     onDone(state, that.localHostId_);
+   };
+   try {
+-    this.plugin_.getDaemonConfig(onConfig);
++    onConfig('{}');
+   } catch (err) {
+     onDone(remoting.HostController.State.NOT_IMPLEMENTED, null);
+   }
+diff --git a/remoting/webapp/host_table_entry.js b/remoting/webapp/host_table_entry.js
+index 7c7fb11..4255d88 100644
+--- a/host_table_entry.js
++++ b/host_table_entry.js
+@@ -191,9 +191,7 @@ remoting.HostTableEntry.prototype.updateStatus = function(opt_forEdit) {
+       /** @type {string} */
+       var encodedHostId = encodeURIComponent(this.host.hostId)
+       this.onConnectReference_ = function() {
+-        var hostUrl = chrome.extension.getURL('main.html') +
+-            '?mode=me2me&hostId=' + encodedHostId;
+-        window.location.assign(hostUrl);
++	remoting.connectMe2Me(encodedHostId, true);
+       };
+       this.tableRow.addEventListener('click', this.onConnectReference_, false);
+     }
+diff --git a/remoting/webapp/main.html b/remoting/webapp/main.html
+index 26fa487..d69f54e 100644
+--- a/main.html
++++ b/main.html
+@@ -31,6 +31,7 @@ found in the LICENSE file.
+     <script src="host_screen.js"></script>
+     <script src="host_session.js"></script>
+     <script src="host_table_entry.js"></script>
++    <script src="identity.js"></script>
+     <script src="l10n.js"></script>
+     <script src="log_to_server.js"></script>
+     <script src="menu_button.js"></script>
+diff --git a/remoting/webapp/manifest.json b/remoting/webapp/manifest.json
+index a52b1da..fdae490 100644
+--- a/manifest.json
++++ b/manifest.json
+@@ -2,25 +2,19 @@
+   "description": "__MSG_PRODUCT_DESCRIPTION__",
+   "default_locale": "en",
+-  "app": {
+-    "launch": {
+-      "local_path": "main.html"
++  "app" : {
++    "background": {
++      "scripts": ["background.js"]
+     }
+   },
++  "key": "chromotingappsv2",
+   "icons": {
+     "128": "chromoting128.png",
+     "48": "chromoting48.png",
+     "16": "chromoting16.png"
+   },
+-  "content_scripts": [
+-    {
+-      "matches": [
+-        "OAUTH2_REDIRECT_URL"
+-      ],
+-      "js": [ "cs_oauth2_trampoline.js" ]
+-    }
+-  ],
+-  "content_security_policy": "default-src 'self'; script-src 'self' https://*.talkgadget.google.com; style-src 'self' https://fonts.googleapis.com; img-src 'self' https://*.talkgadget.google.com; font-src *; connect-src 'self' https://accounts.google.com https://www.googleapis.com https://*.talkgadget.google.com https://relay.google.com",
+   "permissions": [
++    "experimental",
++    "storage",
+     "https://accounts.google.com/*",
+     "https://www.googleapis.com/chromoting/*",
+     "https://*.talkgadget.google.com/talkgadget/*",
+@@ -31,12 +25,12 @@
+     "clipboardRead",
+     "clipboardWrite"
+   ],
+-  "plugins": [
+-    { "path": "remoting_host_plugin.dll", "public": false },
+-    { "path": "libremoting_host_plugin.ia32.so", "public": false },
+-    { "path": "libremoting_host_plugin.x64.so", "public": false },
+-    { "path": "remoting_host_plugin.plugin", "public": false }
+-  ],
++  "oauth2": {
++    "client_id": "45833509441.apps.googleusercontent.com",
++    "scopes": [
++      "https://www.googleapis.com/auth/chromoting https://www.googleapis.com/auth/googletalk https://www.googleapis.com/auth/userinfo#email"
++    ]
++  },
+   "requirements": {
+     "plugins": {
+       "npapi": false
+diff --git a/remoting/webapp/remoting.js b/remoting/webapp/remoting.js
+index a8ab35b..9c6df35 100644
+--- a/remoting.js
++++ b/remoting.js
+@@ -39,10 +47,7 @@ remoting.init = function() {
+   l10n.localize();
+   // Create global objects.
+   remoting.oauth2 = new remoting.OAuth2();
+-  // TODO(jamiewalch): Reinstate this when we migrate to apps v2
+-  // (http://crbug.com/ 134213).
+-  // remoting.identity = new remoting.Identity(consentRequired_);
+-  remoting.identity = remoting.oauth2;
++  remoting.identity = new remoting.Identity(consentRequired_);
+   remoting.stats = new remoting.ConnectionStats(
+       document.getElementById('statistics'));
+   remoting.formatIq = new remoting.FormatIq();
+@@ -119,9 +126,6 @@ remoting.initDaemonUi = function () {
+   document.getElementById('share-button').disabled =
+       !remoting.hostController.isPluginSupported();
+   remoting.setMode(remoting.AppMode.HOME);
+-  if (!remoting.oauth2.isAuthenticated()) {
+-    document.getElementById('auth-dialog').hidden = false;
+-  }
+   remoting.hostSetupDialog =
+       new remoting.HostSetupDialog(remoting.hostController);
+   // Display the cached host list, then asynchronously update and re-display it.

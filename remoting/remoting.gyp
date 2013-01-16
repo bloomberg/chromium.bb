@@ -20,6 +20,7 @@
     },
 
     'remoting_multi_process%': '<(remoting_multi_process)',
+    'remoting_use_apps_v2%': 0,
 
     # The |major|, |build| and |patch| versions are inherited from Chrome.
     # Since Chrome's |minor| version is always '0', we replace it with a
@@ -1696,8 +1697,10 @@
         'webapp/build-webapp.py',
         '<(remoting_version_path)',
         '<(chrome_version_path)',
+        '<@(remoting_webapp_patch_files)',
         '<@(remoting_webapp_files)',
         '<@(remoting_webapp_js_files)',
+        '<@(remoting_webapp_apps_v2_js_files)',
         '<@(remoting_webapp_locale_files)',
       ],
 
@@ -1713,6 +1716,22 @@
           'dependencies!': [
             'remoting_host_plugin',
           ],
+        }],
+        ['remoting_use_apps_v2==1', {
+          'variables': {
+            'remoting_webapp_patch_files': [
+              'webapp/appsv2.patch',
+            ],
+            'remoting_webapp_apps_v2_js_files': [
+              'webapp/background.js',
+              'webapp/identity.js',
+            ],
+          },
+        }, {
+          'variables': {
+            'remoting_webapp_patch_files': [],
+            'remoting_webapp_apps_v2_js_files': [],
+          },
         }],
       ],
 
@@ -1731,8 +1750,10 @@
             'webapp/build-webapp.py',
             '<(remoting_version_path)',
             '<(chrome_version_path)',
+            '<@(remoting_webapp_patch_files)',
             '<@(remoting_webapp_files)',
             '<@(remoting_webapp_js_files)',
+            '<@(remoting_webapp_apps_v2_js_files)',
             '<@(remoting_webapp_locale_files)',
           ],
           'conditions': [
@@ -1756,8 +1777,11 @@
             '<(plugin_path)',
             '<@(remoting_webapp_files)',
             '<@(remoting_webapp_js_files)',
+            '<@(remoting_webapp_apps_v2_js_files)',
             '--locales',
             '<@(remoting_webapp_locale_files)',
+            '--patches',
+            '<@(remoting_webapp_patch_files)',
           ],
           'msvs_cygwin_shell': 1,
         },

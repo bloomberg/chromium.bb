@@ -56,7 +56,7 @@ def createZip(zip_path, directory):
 
 
 def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
-                files, locales):
+                files, locales, patches):
   """Does the main work of building the webapp directory and zipfile.
 
   Args:
@@ -71,6 +71,11 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
            in this webapp.
     locales: An array of strings listing locales, which are copied, along
              with their directory structure from the _locales directory down.
+    patches: An array of strings listing patch files to be applied to the
+             webapp directory. Paths in the patch file should be relative to
+             the remoting/webapp directory, for example a/main.html. Since
+             'git diff -p' works relative to the src/ directory, patches
+             obtained this way will need to be edited.
   """
   # Ensure a fresh directory.
   try:
@@ -159,6 +164,15 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
   if ((platform.system() == 'Linux') and (buildtype == 'Official')):
     subprocess.call(["strip", newPluginPath])
 
+  # Patch the files, if necessary. Do this before updating any placeholders
+  # in case any of the diff contexts refer to the placeholders.
+  for patch in patches:
+    patchfile = os.path.join(os.getcwd(), patch)
+    if subprocess.call(['patch', '-d', destination, '-i', patchfile,
+                        '-p1']) != 0:
+      print 'Patch ' + patch + ' failed to apply.'
+      return 1
+
   # Set the version number in the manifest version.
   findAndReplace(os.path.join(destination, 'manifest.json'),
                  'FULL_APP_VERSION',
@@ -202,28 +216,33 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
   # Make the zipfile.
   createZip(zip_path, destination)
 
+  return 0
+
 
 def main():
   if len(sys.argv) < 7:
     print ('Usage: build-webapp.py '
            '<build-type> <version> <mime-type> <dst> <zip-path> <plugin> '
-           '<other files...> --locales <locales...>')
+           '<other files...> [--patches <patches...>] '
+           '[--locales <locales...>]')
     return 1
 
-  reading_locales = False
+  arg_type = ''
   files = []
   locales = []
+  patches = []
   for arg in sys.argv[7:]:
-    if arg == "--locales":
-      reading_locales = True;
-    elif reading_locales:
+    if arg == '--locales' or arg == '--patches':
+      arg_type = arg
+    elif arg_type == '--locales':
       locales.append(arg)
+    elif arg_type == '--patches':
+      patches.append(arg)
     else:
       files.append(arg)
 
-  buildWebApp(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5],
-              sys.argv[6], files, locales)
-  return 0
+  return buildWebApp(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4],
+                     sys.argv[5], sys.argv[6], files, locales, patches)
 
 
 if __name__ == '__main__':
