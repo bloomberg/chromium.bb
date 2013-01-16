@@ -1163,7 +1163,7 @@ body {
     top + bottom + border-top-width + border-bottom-width AND
     left + right + border-left-width + border-right-width */
 .mosaic-tile .img-border {
-  border: 1px solid transparent;  /* Space between the outline and the image. */
+  border: 1px solid black;  /* Space between the outline and the image. */
   bottom: 4px;
   left: 4px;
   outline: 2px solid transparent;
@@ -1180,6 +1180,7 @@ body {
 
 .mosaic[visible='normal'].hover-visible .mosaic-tile:hover {
   -webkit-transform: scale(1.05);
+  z-index: 50;
 }
 
 .mosaic[visible='normal'].hover-visible
