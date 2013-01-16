@@ -222,6 +222,28 @@ class TestCommands(SdkToolsTestCase):
     output = self._Run(['update', 'foobar'])
     self.assertTrue('unknown bundle' in output)
 
+  def testUpdateRecommended(self):
+    """The update command should update only recommended bundles when run
+    without args.
+    """
+    bundle = self._AddDummyBundle(self.manifest, 'pepper_26')
+    bundle.recommended = 'yes'
+    self._WriteManifest()
+    output = self._Run(['update'])
+    self.assertTrue(os.path.exists(
+        os.path.join(self.basedir, 'nacl_sdk', 'pepper_26', 'dummy.txt')))
+
+  def testUpdateCanary(self):
+    """The update command should create the correct directory name for repath'd
+    bundles.
+    """
+    bundle = self._AddDummyBundle(self.manifest, 'pepper_26')
+    bundle.name = 'pepper_canary'
+    self._WriteManifest()
+    output = self._Run(['update'])
+    self.assertTrue(os.path.exists(
+        os.path.join(self.basedir, 'nacl_sdk', 'pepper_canary', 'dummy.txt')))
+
 
 if __name__ == '__main__':
-  sys.exit(unittest.main())
+  unittest.main()

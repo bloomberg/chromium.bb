@@ -131,8 +131,8 @@ class RealUpdateDelegate(UpdateDelegate):
 
 def Update(delegate, remote_manifest, local_manifest, bundle_names, force):
   valid_bundles = set([bundle.name for bundle in remote_manifest.GetBundles()])
-  requested_bundles = _GetRequestedBundlesFromArgs(remote_manifest,
-                                                   bundle_names)
+  requested_bundles = _GetRequestedBundleNamesFromArgs(remote_manifest,
+                                                       bundle_names)
   invalid_bundles = requested_bundles - valid_bundles
   if invalid_bundles:
     logging.warn('Ignoring unknown bundle(s): %s' % (
@@ -175,17 +175,17 @@ def UpdateBundleIfNeeded(delegate, remote_manifest, local_manifest,
     logging.error('Bundle %s does not exist.' % (bundle_name,))
 
 
-def _GetRequestedBundlesFromArgs(remote_manifest, requested_bundles):
+def _GetRequestedBundleNamesFromArgs(remote_manifest, requested_bundles):
   requested_bundles = set(requested_bundles)
   if RECOMMENDED in requested_bundles:
     requested_bundles.discard(RECOMMENDED)
-    requested_bundles |= set(_GetRecommendedBundles(remote_manifest))
+    requested_bundles |= set(_GetRecommendedBundleNames(remote_manifest))
 
   return requested_bundles
 
 
-def _GetRecommendedBundles(remote_manifest):
-  return [bundle for bundle in remote_manifest.GetBundles() if
+def _GetRecommendedBundleNames(remote_manifest):
+  return [bundle.name for bundle in remote_manifest.GetBundles() if
       bundle.recommended]
 
 
@@ -217,15 +217,15 @@ def _UpdateBundle(delegate, bundle, local_manifest):
   if repath_dir:
     # If repath is specified:
     # The files are extracted to nacl_sdk/<bundle.name>_update/<repath>/...
-    # The destination directory is nacl_sdk/<repath>/...
+    # The destination directory is nacl_sdk/<bundle.name>/...
     rename_from_dir = os.path.join(extract_dir, repath_dir)
-    rename_to_dir = repath_dir
   else:
     # If no repath is specified:
     # The files are extracted to nacl_sdk/<bundle.name>_update/...
     # The destination directory is nacl_sdk/<bundle.name>/...
     rename_from_dir = extract_dir
-    rename_to_dir = bundle.name
+
+  rename_to_dir = bundle.name
 
   delegate.ExtractArchive(dest_filename, extract_dir, rename_from_dir,
                           rename_to_dir)
