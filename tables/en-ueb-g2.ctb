@@ -76,7 +76,7 @@ always and 12346
 always andar 12346-345 standard
 midendword anda 12346-1 panda
 midword angh = Shanghai
-always anterior 1-1345-2345-23456-24-135-1235
+always anterior 1-1345-2345-12456-24-135-1235
 always ar 345
 word aright 1-5-1235
 word as 1356
@@ -95,7 +95,7 @@ always beu = Beulah
 always bear 12-15-345
 begword beatif 23-1-2345-24-124
 begword beatit 23-1-2345-24-2345
-begword beatr 12-2-2345-1235 Beatrice
+begword beatr 23-1-2345-1235 Beatrice
 always beck 12-15-14-13
 always bed 12-1246
 begword beda 23-145-1 bedazzle
@@ -315,7 +315,7 @@ word heretofore 5-125-2345-135-123456-15
 word herself 125-12456-124
 word him 125-134
 word His 6-236
-word hm 125-3-134
+word hm 56-125-134
 sufword hmm =
 word himself 125-134-124
 contraction hmf
@@ -366,7 +366,7 @@ always know 5-13
 word knowledge 13
 
 # the letter l
-always \s-\shis 36-36-125-24-234
+always \s-\shis 6-36-125-24-234
 always \s-\swas 36-36-2456-1-234
 word housed 125-1256-234-1246
 midendword less 46-234
@@ -438,7 +438,7 @@ midendword oence 135-26-14-15 electroencephalogram
 always of 12356
 midendword ofar 135-124-345 insofar
 midword ofor 135-123456
-midendword onea = Hasmonean
+midword onea 135-1345-2 Hasmonean
 always onesi =
 midendword oness 135-56-234
 midendword oneer 135-1345-15-12456
@@ -536,7 +536,7 @@ contraction sd
 syllable screw = screwhole
 always sent 234-26-2345 sentimental
 always sever 234-15-1236-12456 perseverance 
-always several 234-5-15-1-123 severally
+sufword several 234-5-15-1-123 severally
 word shall 146
 word sh =
 always sh 146
@@ -550,7 +550,7 @@ midendword stion 234-56-1345
 word so 234
 always some 5-234
 midendword somed 234-135-134-1246 ransomed
-always somer 234-135-134-12456 somersault 
+begword somer 234-135-134-12456 somersault 
 always spirit 456-234
 partword st 34
 always sth 234-1456
@@ -570,7 +570,7 @@ always th 1456
 word that 2345
 word this 1456
 word thyself 1456-13456-124
-word tiddledywinks 2345-24-256-123-15-145-13456-2456-35-13-234
+word tiddledywinks 2345-24-145-145-123-15-145-13456-2456-35-13-234
 always tnam =
 word today 2345-145
 contraction td
@@ -579,8 +579,8 @@ contraction tm
 word tonight 2345-1345
 contraction tn
 always turtledove =
-always thead 2345-125-2-145
-always theast 1456-15-1-34
+midendword thead 2345-125-2-145
+always theast 1456-2-34
 always the 2346
 always thea 2346-1 theater
 word themselves 2346-134-1236-234
@@ -745,12 +745,12 @@ word conidium =
 endword zione =
 word cony =
 sufword deaconess 145-2-14-135-56-234
-begword denation 145-15-1345-6-1345
+begword denation 145-15-1345-1-56-1345
 syllable natur =
 always derogate 145-12456-135-1245-1-2345-15
 always donee =
 word donegal =
-midendword thereally 2346-1235-15-6-13456 ethereally
+midendword thereally 2346-1235-2-123-123-13456 ethereally
 midendword enook =
 always eversion 15-1236-12456-46-1345
 sufword falconet =
@@ -821,7 +821,8 @@ begword reappor = reapportion
 begword reavow  1235-15-1-1236-246
 always redingote 1235-1246-346-135-2345-15
 always renegad 1235-26-15-1245-1-145
-begword resth = restharrow
+begword resth 1235-15-34-125 restharrow
+word restharrow 1235-15-34-125-1-1235-1235-246
 begword roped = ropedance
 always roustabout 1235-1256-34-1-12
 word sadowa =

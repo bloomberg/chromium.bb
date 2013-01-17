@@ -7,7 +7,10 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
     - Korean grade 1 and grade 2 thanks to Joseph Lee
 
 ** Braille Table Improvements
-   - Remove unneeded entries from en-ueb-g2.ctb, thanks to Joseph Lee
+   - Corrections to Unified English Braille Code (Grade 2), thanks to
+     Joseph Lee
+   - Corrections to apostrophes in the Computer Spanish 8 dots Braille
+     table (Es-Es-G0.utb). Thanks to Juan C. Buno.
 
 ** Bug Fixes
 
