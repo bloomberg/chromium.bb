@@ -18,7 +18,7 @@ class WebrtcTestBase(pyauto.PyUITest):
 
   def ExtraChromeFlags(self):
     """Adds flags to the Chrome command line."""
-    extra_flags = ['--enable-media-stream', '--enable-peer-connection']
+    extra_flags = ['--enable-data-channels', '--enable-dcheck']
     return pyauto.PyUITest.ExtraChromeFlags(self) + extra_flags
 
   def GetUserMedia(self, tab_index, action='accept',
