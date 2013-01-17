@@ -673,6 +673,16 @@ class RenderWidgetHostTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostTest);
 };
 
+#if GTEST_HAS_PARAM_TEST
+// RenderWidgetHostWithSourceTest ----------------------------------------------
+
+// This is for tests that are to be run for all source devices.
+class RenderWidgetHostWithSourceTest
+    : public RenderWidgetHostTest,
+      public testing::WithParamInterface<WebGestureEvent::SourceDevice> {
+};
+#endif  // GTEST_HAS_PARAM_TEST
+
 }  // namespace
 
 // -----------------------------------------------------------------------------
@@ -1214,24 +1224,25 @@ TEST_F(RenderWidgetHostTest, CoalescesGesturesEvents) {
   EXPECT_EQ(0U, process_->sink().message_count());
 }
 
-TEST_F(RenderWidgetHostTest, GestureFlingCancelsFiltered) {
+#if GTEST_HAS_PARAM_TEST
+TEST_P(RenderWidgetHostWithSourceTest, GestureFlingCancelsFiltered) {
+  WebGestureEvent::SourceDevice source_device = GetParam();
+
   // Turn off debounce handling for test isolation.
   host_->set_debounce_interval_time_ms(0);
   process_->sink().ClearMessages();
   // GFC without previous GFS is dropped.
-  SimulateGestureEvent(WebInputEvent::GestureFlingCancel,
-                       WebGestureEvent::Touchscreen);
+  SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
   EXPECT_EQ(0U, process_->sink().message_count());
   EXPECT_EQ(0U, host_->GestureEventLastQueueEventSize());
 
   // GFC after previous GFS is dispatched and acked.
   process_->sink().ClearMessages();
-  SimulateGestureFlingStartEvent(0, -10, WebGestureEvent::Touchscreen);
+  SimulateGestureFlingStartEvent(0, -10, source_device);
   EXPECT_TRUE(host_->FlingInProgress());
   SendInputEventACK(WebInputEvent::GestureFlingStart, true);
   MessageLoop::current()->RunUntilIdle();
-  SimulateGestureEvent(WebInputEvent::GestureFlingCancel,
-                       WebGestureEvent::Touchscreen);
+  SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
   EXPECT_FALSE(host_->FlingInProgress());
   EXPECT_EQ(2U, process_->sink().message_count());
   SendInputEventACK(WebInputEvent::GestureFlingCancel, true);
@@ -1240,10 +1251,9 @@ TEST_F(RenderWidgetHostTest, GestureFlingCancelsFiltered) {
 
   // GFC before previous GFS is acked.
   process_->sink().ClearMessages();
-  SimulateGestureFlingStartEvent(0, -10, WebGestureEvent::Touchscreen);
+  SimulateGestureFlingStartEvent(0, -10, source_device);
   EXPECT_TRUE(host_->FlingInProgress());
-  SimulateGestureEvent(WebInputEvent::GestureFlingCancel,
-                       WebGestureEvent::Touchscreen);
+  SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
   EXPECT_FALSE(host_->FlingInProgress());
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_EQ(2U, host_->GestureEventLastQueueEventSize());
@@ -1258,7 +1268,7 @@ TEST_F(RenderWidgetHostTest, GestureFlingCancelsFiltered) {
   // GFS is added to the queue if another event is pending
   process_->sink().ClearMessages();
   SimulateGestureScrollUpdateEvent(8, -7, 0);
-  SimulateGestureFlingStartEvent(0, -10, WebGestureEvent::Touchscreen);
+  SimulateGestureFlingStartEvent(0, -10, source_device);
   EXPECT_EQ(2U, host_->GestureEventLastQueueEventSize());
   EXPECT_EQ(1U, process_->sink().message_count());
   WebGestureEvent merged_event = host_->GestureEventLastQueueEvent();
@@ -1267,42 +1277,44 @@ TEST_F(RenderWidgetHostTest, GestureFlingCancelsFiltered) {
   EXPECT_EQ(2U, host_->GestureEventLastQueueEventSize());
 
   // GFS in queue means that a GFC is added to the queue
-  SimulateGestureEvent(WebInputEvent::GestureFlingCancel,
-                       WebGestureEvent::Touchscreen);
+  SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
   merged_event =host_->GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureFlingCancel, merged_event.type);
   EXPECT_FALSE(host_->FlingInProgress());
   EXPECT_EQ(3U, host_->GestureEventLastQueueEventSize());
 
   // Adding a second GFC is dropped.
-  SimulateGestureEvent(WebInputEvent::GestureFlingCancel,
-                       WebGestureEvent::Touchscreen);
+  SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
   EXPECT_FALSE(host_->FlingInProgress());
   EXPECT_EQ(3U, host_->GestureEventLastQueueEventSize());
 
   // Adding another GFS will add it to the queue.
-  SimulateGestureFlingStartEvent(0, -10, WebGestureEvent::Touchscreen);
+  SimulateGestureFlingStartEvent(0, -10, source_device);
   merged_event = host_->GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureFlingStart, merged_event.type);
   EXPECT_TRUE(host_->FlingInProgress());
   EXPECT_EQ(4U, host_->GestureEventLastQueueEventSize());
 
   // GFS in queue means that a GFC is added to the queue
-  SimulateGestureEvent(WebInputEvent::GestureFlingCancel,
-                       WebGestureEvent::Touchscreen);
+  SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
   merged_event = host_->GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureFlingCancel, merged_event.type);
   EXPECT_FALSE(host_->FlingInProgress());
   EXPECT_EQ(5U, host_->GestureEventLastQueueEventSize());
 
   // Adding another GFC with a GFC already there is dropped.
-  SimulateGestureEvent(WebInputEvent::GestureFlingCancel,
-                       WebGestureEvent::Touchscreen);
+  SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
   merged_event = host_->GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureFlingCancel, merged_event.type);
   EXPECT_FALSE(host_->FlingInProgress());
   EXPECT_EQ(5U, host_->GestureEventLastQueueEventSize());
 }
+
+INSTANTIATE_TEST_CASE_P(AllSources,
+                        RenderWidgetHostWithSourceTest,
+                        testing::Values(WebGestureEvent::Touchscreen,
+                                        WebGestureEvent::Touchpad));
+#endif  // GTEST_HAS_PARAM_TEST
 
 // Test that GestureTapDown events are deferred.
 TEST_F(RenderWidgetHostTest, DeferredGestureTapDown) {
