@@ -63,6 +63,11 @@ After running configure run "make" and then "make install". You must
 have root privileges for the installation step.
 
 ** How to debug
+First you have to build liblouis with debugging info enabled.
+
+  $ ./configure CFLAGS='-g -O0 -Wall -Wextra'
+  $ make
+
 Starting the programs under the tools directory within gdb is a little
 tricky as they are linked with libtool. See the info page of libtool
 for more information. To start lou_checktable for table wiskunde.ctb
