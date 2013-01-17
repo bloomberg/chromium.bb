@@ -46,6 +46,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/memory/low_memory_observer.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
+#include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "chrome/browser/chromeos/net/cros_network_change_notifier_factory.h"
 #include "chrome/browser/chromeos/net/network_change_notifier_network_library.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
@@ -315,6 +316,7 @@ class DBusServices {
     if (cros_initialized_ && CrosLibrary::Get())
       CrosLibrary::Shutdown();
 
+    chromeos::ConnectivityStateHelper::Shutdown();
     if (network_handlers_initialized_) {
       if (CommandLine::ForCurrentProcess()->HasSwitch(
               chromeos::switches::kEnableNewNetworkHandlers)) {
@@ -438,6 +440,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   // Must be called after about_flags settings are applied (see note above).
   dbus_services_->InitializeNetworkHandlers();
+  chromeos::ConnectivityStateHelper::Initialize();
 
   AudioHandler::Initialize();
   imageburner::BurnManager::Initialize();

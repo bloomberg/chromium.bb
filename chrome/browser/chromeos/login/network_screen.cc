@@ -153,7 +153,7 @@ void NetworkScreen::UpdateStatus(NetworkLibrary* network) {
   if (network->Connected())
     actor_->ClearErrors();
 
-  string16 network_name = GetCurrentNetworkName(network);
+  string16 network_name = GetCurrentNetworkName();
   if (network->Connected()) {
     StopWaitingForConnection(network_name);
   } else if (network->Connecting()) {

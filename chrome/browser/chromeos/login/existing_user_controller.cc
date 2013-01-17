@@ -381,7 +381,7 @@ void ExistingUserController::CompleteLoginInternal(
 }
 
 string16 ExistingUserController::GetConnectedNetworkName() {
-  return GetCurrentNetworkName(CrosLibrary::Get()->GetNetworkLibrary());
+  return GetCurrentNetworkName();
 }
 
 void ExistingUserController::Login(const std::string& username,

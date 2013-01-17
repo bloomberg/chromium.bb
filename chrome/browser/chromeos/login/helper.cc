@@ -8,11 +8,12 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "chrome/browser/google/google_util.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -81,26 +82,26 @@ GURL GetAccountRecoveryHelpUrl() {
   return google_util::AppendGoogleLocaleParam(GURL(kAccountRecoveryHelpUrl));
 }
 
-string16 GetCurrentNetworkName(NetworkLibrary* network_library) {
-  if (!network_library)
-    return string16();
+string16 GetCurrentNetworkName() {
+  ConnectivityStateHelper* csh =
+      ConnectivityStateHelper::Get();
 
-  if (network_library->ethernet_connected()) {
+  if (csh->IsConnectedType(flimflam::kTypeEthernet)) {
     return l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
-  } else if (network_library->wifi_connected()) {
-    return UTF8ToUTF16(network_library->wifi_network()->name());
-  } else if (network_library->cellular_connected()) {
-    return UTF8ToUTF16(network_library->cellular_network()->name());
-  } else if (network_library->wimax_connected()) {
-    return UTF8ToUTF16(network_library->wimax_network()->name());
-  } else if (network_library->ethernet_connecting()) {
+  } else if (csh->IsConnectedType(flimflam::kTypeWifi)) {
+    return UTF8ToUTF16(csh->NetworkNameForType(flimflam::kTypeWifi));
+  } else if (csh->IsConnectedType(flimflam::kTypeCellular)) {
+    return UTF8ToUTF16(csh->NetworkNameForType(flimflam::kTypeCellular));
+  } else if (csh->IsConnectedType(flimflam::kTypeWimax)) {
+    return UTF8ToUTF16(csh->NetworkNameForType(flimflam::kTypeWimax));
+  } else if (csh->IsConnectingType(flimflam::kTypeEthernet)) {
     return l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
-  } else if (network_library->wifi_connecting()) {
-    return UTF8ToUTF16(network_library->wifi_network()->name());
-  } else if (network_library->cellular_connecting()) {
-    return UTF8ToUTF16(network_library->cellular_network()->name());
-  } else if (network_library->wimax_connecting()) {
-    return UTF8ToUTF16(network_library->wimax_network()->name());
+  } else if (csh->IsConnectingType(flimflam::kTypeWifi)) {
+    return UTF8ToUTF16(csh->NetworkNameForType(flimflam::kTypeWifi));
+  } else if (csh->IsConnectingType(flimflam::kTypeCellular)) {
+    return UTF8ToUTF16(csh->NetworkNameForType(flimflam::kTypeCellular));
+  } else if (csh->IsConnectingType(flimflam::kTypeWimax)) {
+    return UTF8ToUTF16(csh->NetworkNameForType(flimflam::kTypeWimax));
   } else {
     return string16();
   }

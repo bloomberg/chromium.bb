@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Cellular) {
       .WillOnce((Return(true)));
   scoped_ptr<CellularNetwork> cellular(new CellularNetwork("cellular"));
   EXPECT_CALL(*mock_network_library_, cellular_network())
-      .WillOnce(Return(cellular.get()));
+      .WillRepeatedly(Return(cellular.get()));
   // EXPECT_FALSE(actor_->IsContinueEnabled());
   network_screen_->OnNetworkManagerChanged(mock_network_library_);
 
@@ -264,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Timeout) {
       .WillOnce((Return(true)));
   scoped_ptr<WifiNetwork> wifi(new WifiNetwork("wifi"));
   EXPECT_CALL(*mock_network_library_, wifi_network())
-      .WillOnce(Return(wifi.get()));
+      .WillRepeatedly(Return(wifi.get()));
   // EXPECT_FALSE(actor_->IsContinueEnabled());
   network_screen_->OnNetworkManagerChanged(mock_network_library_);
 

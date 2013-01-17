@@ -514,6 +514,8 @@
         'browser/chromeos/mobile/mobile_activator.h',
         'browser/chromeos/mobile_config.cc',
         'browser/chromeos/mobile_config.h',
+        'browser/chromeos/net/connectivity_state_helper.cc',
+        'browser/chromeos/net/connectivity_state_helper.h',
         'browser/chromeos/net/cros_network_change_notifier_factory.cc',
         'browser/chromeos/net/cros_network_change_notifier_factory.h',
         'browser/chromeos/net/network_change_notifier_network_library.cc',

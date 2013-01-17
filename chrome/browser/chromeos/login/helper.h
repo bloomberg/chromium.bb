@@ -28,8 +28,6 @@ class Throbber;
 
 namespace chromeos {
 
-class NetworkLibrary;
-
 // Creates default smoothed throbber for time consuming operations on login.
 views::SmoothedThrobber* CreateDefaultSmoothedThrobber();
 
@@ -55,7 +53,7 @@ GURL GetAccountRecoveryHelpUrl();
 // that is in the "connecting" state. Otherwise empty string is returned.
 // If there are multiple connected networks, network priority:
 // Ethernet > WiFi > Cellular. Same for connecting network.
-string16 GetCurrentNetworkName(NetworkLibrary* network_library);
+string16 GetCurrentNetworkName();
 
 // Returns the size of user image required for proper display under current DPI.
 int GetCurrentUserImageSize();

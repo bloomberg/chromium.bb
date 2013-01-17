@@ -12,8 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -206,7 +204,7 @@ void WebUIScreenLocker::CompleteLogin(const std::string& username,
 }
 
 string16 WebUIScreenLocker::GetConnectedNetworkName() {
-  return GetCurrentNetworkName(CrosLibrary::Get()->GetNetworkLibrary());
+  return GetCurrentNetworkName();
 }
 
 void WebUIScreenLocker::Login(const std::string& username,
