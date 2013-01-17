@@ -109,6 +109,9 @@ PAGE_TRANSITION(FROM_ADDRESS_BAR, 0x02000000)
 // User is navigating to the home page.
 PAGE_TRANSITION(HOME_PAGE, 0x04000000)
 
+// The transition originated from an incoming intent. (Android only)
+PAGE_TRANSITION(FROM_INTENT, 0x08000000)
+
 // The beginning of a navigation chain.
 PAGE_TRANSITION(CHAIN_START, 0x10000000)
 
