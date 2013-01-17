@@ -605,16 +605,18 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
 
   prefs.is_online = !net::NetworkChangeNotifier::IsOffline();
 
-  // Force accelerated compositing and 2d canvas off for chrome:, about: and
-  // chrome-devtools: pages (unless it's specifically allowed).
-  if ((url.SchemeIs(chrome::kChromeDevToolsScheme) ||
-      url.SchemeIs(chrome::kChromeUIScheme) ||
+  // Force accelerated compositing and 2d canvas off for chrome: and about:
+  // pages (unless it's specifically allowed).
+  if ((url.SchemeIs(chrome::kChromeUIScheme) ||
       (url.SchemeIs(chrome::kAboutScheme) &&
        url.spec() != chrome::kAboutBlankURL)) &&
       !command_line.HasSwitch(switches::kAllowWebUICompositing)) {
     prefs.accelerated_compositing_enabled = false;
     prefs.accelerated_2d_canvas_enabled = false;
   }
+
+  if (url.SchemeIs(chrome::kChromeDevToolsScheme))
+    prefs.show_fps_counter = false;
 
   if (command_line.HasSwitch(switches::kDefaultTileWidth))
     prefs.default_tile_width =
