@@ -42,7 +42,7 @@ var testing = {};
    * mimic the gtest's class names.
    * @constructor
    */
-  function Test() {}
+  function Test() {};
 
   Test.prototype = {
     /**
@@ -125,7 +125,13 @@ var testing = {};
      * Whether to run the accessibility checks.
      * @type {boolean}
      */
-    runAccessibilityChecks : true,
+    runAccessibilityChecks: true,
+
+    /**
+     * Configuration for the accessibility audit.
+     * @type {axs.AuditConfiguration}
+     */
+    accessibilityAuditConfig: new axs.AuditConfiguration(),
 
     /**
      * Whether to treat accessibility issues (errors or warnings) as test
@@ -245,7 +251,8 @@ var testing = {};
       if (!this.runAccessibilityChecks || typeof document === 'undefined')
         return;
 
-      if (!runAccessibilityAudit(this.a11yErrors_, this.a11yWarnings_)) {
+      if (!runAccessibilityAudit(this.a11yErrors_, this.a11yWarnings_,
+                                 this.accessibilityAuditConfig)) {
         var report = accessibilityAuditReport(this.a11yErrors_,
                                               this.a11yWarnings_);
         if (this.accessibilityIssuesAreErrors)
@@ -883,11 +890,14 @@ var testing = {};
   /**
    * Run an accessibility audit on the current page state.
    * @type {Function}
+   * @param {Array} a11yErrors
+   * @param {Array} a11yWarnings
+   * @param {axs.AuditConfigutarion=} opt_config
    * @return {boolean} Whether there were any errors or warnings
    * @private
    */
-  function runAccessibilityAudit(a11yErrors, a11yWarnings) {
-    var auditResults = axs.Audit.run();
+  function runAccessibilityAudit(a11yErrors, a11yWarnings, opt_config) {
+    var auditResults = axs.Audit.run(opt_config);
     for (var i = 0; i < auditResults.length; i++) {
       var auditResult = auditResults[i];
       if (auditResult.result == axs.constants.AuditResult.FAIL) {
@@ -975,12 +985,15 @@ var testing = {};
 
   /**
    * Asserts that the current page state passes the accessibility audit.
+   * @param {Array=} opt_errors Array to fill with errors, if desired.
+   * @param {Array=} opt_warnings Array to fill with warnings, if desired.
    */
-  function assertAccessibilityOk() {
+  function assertAccessibilityOk(opt_errors, opt_warnings) {
     helper.registerCall();
-    var a11yErrors = [];
-    var a11yWarnings = [];
-    if (!runAccessibilityAudit(a11yErrors, a11yWarnings))
+    var a11yErrors = opt_errors || [];
+    var a11yWarnings = opt_warnings || [];
+    var auditConfig = currentTestCase.fixture.accessibilityAuditConfig;
+    if (!runAccessibilityAudit(a11yErrors, a11yWarnings, auditConfig))
       throw new Error(accessibilityAuditReport(a11yErrors, a11yWarnings));
   }
 

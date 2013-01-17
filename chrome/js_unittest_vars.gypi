@@ -8,5 +8,6 @@
     'js2gtest': '<(DEPTH)/chrome/test/base/js2gtest.js',
     'mock_js': '<(DEPTH)/chrome/third_party/mock4js/mock4js.js',
     'test_api_js': '<(DEPTH)/chrome/test/data/webui/test_api.js',
+    'accessibility_audit_js': '<(DEPTH)/third_party/accessibility-developer-tools/gen/axs_testing.js',
   },
 }

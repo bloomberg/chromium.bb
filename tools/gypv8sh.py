@@ -22,20 +22,20 @@ import shutil
 def main ():
   parser = optparse.OptionParser()
   parser.set_usage(
-      "%prog v8_shell mock.js test_api.js js2webui.js "
+      "%prog v8_shell mock.js axs_testing.js test_api.js js2webui.js "
       "testtype inputfile inputrelfile cxxoutfile jsoutfile")
   parser.add_option('-v', '--verbose', action='store_true')
   parser.add_option('-n', '--impotent', action='store_true',
                     help="don't execute; just print (as if verbose)")
   (opts, args) = parser.parse_args()
 
-  if len(args) != 9:
+  if len(args) != 10:
     parser.error('all arguments are required.')
-  (v8_shell, mock_js, test_api, js2webui, test_type,
+  (v8_shell, mock_js, axs_testing_js, test_api, js2webui, test_type,
       inputfile, inputrelfile, cxxoutfile, jsoutfile) = args
   arguments = [js2webui, inputfile, inputrelfile, cxxoutfile, test_type]
   cmd = [v8_shell, '-e', "arguments=" + json.dumps(arguments), mock_js,
-         test_api, js2webui]
+         axs_testing_js, test_api, js2webui]
   if opts.verbose or opts.impotent:
     print cmd
   if not opts.impotent:

@@ -14,7 +14,7 @@
 #  ],
 #
 # Then include this rule file in each of your unittest targets:
-# 
+#
 #    {
 #      'target_name': 'my_unittests',
 #      ...
@@ -56,6 +56,7 @@
         '<(gypv8sh)',
         '<(PRODUCT_DIR)/v8_shell<(EXECUTABLE_SUFFIX)',
         '<(mock_js)',
+        '<(accessibility_audit_js)',
         '<(test_api_js)',
         '<(js2gtest)',
       ],
