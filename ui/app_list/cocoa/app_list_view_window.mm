@@ -4,21 +4,27 @@
 
 #import "ui/app_list/cocoa/app_list_view_window.h"
 
+#import "ui/base/cocoa/window_size_constants.h"
+
 @implementation AppListViewWindow;
 
 - (id)initAsBubble {
-  const int kWindowWidth = 200;
-  const int kWindowHeight = 200;
-  NSRect frame = NSMakeRect(0, 0, kWindowWidth, kWindowHeight);
-  if ((self = [super initWithContentRect:frame
+  if ((self = [super initWithContentRect:ui::kWindowSizeDeterminedLater
                                styleMask:NSBorderlessWindowMask
                                  backing:NSBackingStoreBuffered
                                    defer:NO])) {
     [self setReleasedWhenClosed:NO];
-    [self setBackgroundColor:[NSColor grayColor]];
+    [self setBackgroundColor:[NSColor clearColor]];
+    [self setOpaque:NO];
+    [self setHasShadow:NO];
   }
 
   return self;
+}
+
+- (void)setAppListView:(NSView*)view {
+  [self setContentSize:[view frame].size];
+  [self setContentView:view];
 }
 
 @end

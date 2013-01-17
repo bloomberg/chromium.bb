@@ -9,6 +9,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
+#include "ui/app_list/cocoa/app_list_view.h"
 #include "ui/app_list/cocoa/app_list_view_window.h"
 
 namespace {
@@ -35,6 +36,10 @@ base::LazyInstance<AppListController>::Leaky g_app_list_controller =
 
 void AppListController::CreateAppList() {
   current_window_.reset([[AppListViewWindow alloc] initAsBubble]);
+  scoped_nsobject<AppListView> contentView(
+      [[AppListView alloc] initWithViewDelegate:NULL]);
+
+  [current_window_ setAppListView:contentView];
 }
 
 void AppListController::ShowAppList() {

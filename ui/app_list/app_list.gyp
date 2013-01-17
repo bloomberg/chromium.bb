@@ -34,6 +34,8 @@
         'app_list_switches.h',
         'app_list_view_delegate.h',
         'apps_grid_view_delegate.h',
+        'cocoa/app_list_view.h',
+        'cocoa/app_list_view.mm',
         'cocoa/app_list_view_window.h',
         'cocoa/app_list_view_window.mm',
         'pagination_model.cc',
@@ -83,7 +85,14 @@
             ['exclude', 'views/'],
           ],
         }],
-        ['OS!="mac"', {
+        ['OS=="mac"', {
+          'dependencies': [
+            '../ui.gyp:ui_cocoa_third_party_toolkits',
+          ],
+          'include_dirs': [
+            '../../third_party/GTM',
+          ],
+        }, {  # OS!="mac"
           'sources/': [
             ['exclude', 'cocoa/'],
           ],
@@ -107,6 +116,7 @@
         'test/app_list_test_suite.cc',
         'test/app_list_test_suite.h',
         'test/run_all_unittests.cc',
+        'cocoa/app_list_view_unittest.mm',
         'cocoa/app_list_view_window_unittest.mm',
         'views/apps_grid_view_unittest.cc',
         'views/test/apps_grid_view_test_api.cc',

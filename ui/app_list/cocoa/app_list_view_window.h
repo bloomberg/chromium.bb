@@ -9,4 +9,6 @@
 
 - (id)initAsBubble;
 
+- (void)setAppListView:(NSView*)view;
+
 @end
