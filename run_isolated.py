@@ -308,47 +308,28 @@ def fix_python_path(cmd):
   return out
 
 
-class WorkerThread(threading.Thread):
-  """Keeps the results of each task in a thread-local outputs variable."""
-  def __init__(self, tasks, *args, **kwargs):
-    super(WorkerThread, self).__init__(*args, **kwargs)
-    self._tasks = tasks
-    self.outputs = []
-    self.exceptions = []
-
-    self.daemon = True
-    self.start()
-
-  def run(self):
-    """Runs until a None task is queued."""
-    while True:
-      task = self._tasks.get()
-      if task is None:
-        # We're done.
-        return
-      try:
-        func, args, kwargs = task
-        self.outputs.append(func(*args, **kwargs))
-      except Exception, e:
-        logging.error('Caught exception! %s' % e)
-        self.exceptions.append(sys.exc_info())
-      finally:
-        self._tasks.task_done()
-
-
 class ThreadPool(object):
   """Implements a multithreaded worker pool oriented for mapping jobs with
   thread-local result storage.
   """
-  QUEUE_CLASS = Queue.Queue
+  QUEUE_CLASS = Queue.PriorityQueue
 
   def __init__(self, num_threads, queue_size=0):
     logging.debug('Creating ThreadPool')
     self.tasks = self.QUEUE_CLASS(queue_size)
     self._workers = [
-      WorkerThread(self.tasks, name='worker-%d' % i)
+      threading.Thread(target=self._run, name='worker-%d' % i)
       for i in range(num_threads)
     ]
+
+    self._lock = threading.Lock()
+    self._num_of_added_tasks = 0
+    self._outputs = []
+    self._exceptions = []
+
+    for w in self._workers:
+      w.daemon = True
+      w.start()
 
   def add_task(self, func, *args, **kwargs):
     """Adds a task, a function to be executed by a worker.
@@ -356,18 +337,44 @@ class ThreadPool(object):
     The function's return value will be stored in the the worker's thread local
     outputs list.
     """
-    self.tasks.put((func, args, kwargs))
+    with self._lock:
+      self._num_of_added_tasks += 1
+      index = self._num_of_added_tasks
+    self.tasks.put((index, func, args, kwargs))
+
+  def _run(self):
+    """Runs until a None task is queued."""
+    while True:
+      task = self.tasks.get()
+      if task is None:
+        # We're done.
+        return
+      try:
+        # The first item is the index.
+        _, func, args, kwargs = task
+        out = func(*args, **kwargs)
+        with self._lock:
+          self._outputs.append(out)
+      except Exception as e:
+        logging.error('Caught exception! %s' % e)
+        exc_info = sys.exc_info()
+        with self._lock:
+          self._exceptions.append(exc_info)
+      finally:
+        self.tasks.task_done()
 
   def join(self):
-    """Extracts all the results from each threads unordered."""
+    """Extracts all the results from each threads unordered.
+
+    Call repeatedly to extract all the exceptions if desired.
+    """
+    # TODO(maruel): Stop waiting as soon as an exception is caught.
     self.tasks.join()
-    out = []
-    # Look for exceptions.
-    for w in self._workers:
-      if w.exceptions:
-        raise w.exceptions[0][0], w.exceptions[0][1], w.exceptions[0][2]
-      out.extend(w.outputs)
-      w.outputs = []
+    if self._exceptions:
+      e = self._exceptions.pop(0)
+      raise e[0], e[1], e[2]
+    out = self._outputs
+    self._outputs = []
     return out
 
   def close(self):

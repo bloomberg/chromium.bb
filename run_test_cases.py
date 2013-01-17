@@ -215,10 +215,10 @@ def call_with_timeout(cmd, timeout, **kwargs):
   return output, proc.returncode
 
 
-class QueueWithProgress(Queue.Queue):
+class QueueWithProgress(Queue.PriorityQueue):
   """Implements progress support in join()."""
   def __init__(self, maxsize, *args, **kwargs):
-    Queue.Queue.__init__(self, *args, **kwargs)
+    Queue.PriorityQueue.__init__(self, *args, **kwargs)
     self.progress = Progress(maxsize)
 
   def task_done(self):
