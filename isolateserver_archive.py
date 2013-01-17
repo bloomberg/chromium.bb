@@ -234,6 +234,23 @@ def zip_and_trigger_upload(infile, metadata, upload_function):
   hash_data.close()
 
 
+def process_items(contains_hash_url, infiles, zip_and_upload):
+  """Generates the list of files that need to be uploaded and send them to
+  zip_and_upload.
+
+  Some may already be on the server.
+  """
+  next_queries = []
+  items = ((k, v) for k, v in infiles.iteritems() if 'size' in v)
+  for relfile, metadata in sorted(items, key=lambda x: -x[1]['size']):
+    next_queries.append((relfile, metadata))
+    if len(next_queries) == ITEMS_PER_CONTAINS_QUERY:
+      update_files_to_upload(contains_hash_url, next_queries, zip_and_upload)
+      next_queries = []
+  if next_queries:
+    update_files_to_upload(contains_hash_url, next_queries, zip_and_upload)
+
+
 def upload_sha1_tree(base_url, indir, infiles, namespace):
   """Uploads the given tree to the given url.
 
@@ -264,23 +281,9 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
                           remote_uploader.add_item)
     uploaded.append(query)
 
-  # Generate the list of files that need to be uploaded (since some may already
-  # be on the server).
-  base_url = base_url.rstrip('/')
-  contains_hash_url = base_url + '/content/contains/' + namespace
-  next_queries = []
-  for relfile, metadata in infiles.iteritems():
-    if 'l' in metadata:
-      # Skip links when uploading.
-      continue
-
-    next_queries.append((relfile, metadata))
-    if len(next_queries) == ITEMS_PER_CONTAINS_QUERY:
-      update_files_to_upload(contains_hash_url, next_queries, zip_and_upload)
-      next_queries = []
-
-  if next_queries:
-    update_files_to_upload(contains_hash_url, next_queries, zip_and_upload)
+  contains_hash_url = '%s/content/contains/%s' % (
+      base_url.rstrip('/'), namespace)
+  process_items(contains_hash_url, infiles, zip_and_upload)
 
   logging.info('Waiting for all files to finish zipping')
   zipping_pool.join()
