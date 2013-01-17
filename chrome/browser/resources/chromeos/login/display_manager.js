@@ -572,7 +572,7 @@ cr.define('cr.ui.login', function() {
     error.appendChild(messageDiv);
 
     if (link) {
-      messageDiv.classList.add('error-message-padding');
+      messageDiv.classList.add('error-message-bubble-padding');
 
       var helpLink = document.createElement('a');
       helpLink.href = '#';
