@@ -132,12 +132,13 @@ class AndroidMkWriter(object):
   def __init__(self, android_top_dir):
     self.android_top_dir = android_top_dir
 
-  def Write(self, qualified_target, base_path, output_filename, spec, configs,
-            part_of_all):
+  def Write(self, qualified_target, relative_target, base_path, output_filename,
+            spec, configs, part_of_all):
     """The main entry point: writes a .mk file for a single target.
 
     Arguments:
       qualified_target: target we're generating
+      relative_target: qualified target name relative to the root
       base_path: path relative to source root we're building in, used to resolve
                  target-relative paths
       output_filename: output .mk file name to write
@@ -151,6 +152,7 @@ class AndroidMkWriter(object):
     self.fp.write(header)
 
     self.qualified_target = qualified_target
+    self.relative_target = relative_target
     self.path = base_path
     self.target = spec['target_name']
     self.type = spec['type']
@@ -249,7 +251,7 @@ class AndroidMkWriter(object):
                    actions)
     """
     for action in actions:
-      name = make.StringToMakefileVariable('%s_%s' % (self.qualified_target,
+      name = make.StringToMakefileVariable('%s_%s' % (self.relative_target,
                                                       action['action_name']))
       self.WriteLn('### Rules for action "%s":' % action['action_name'])
       inputs = action['inputs']
@@ -335,7 +337,7 @@ class AndroidMkWriter(object):
       if len(rule.get('rule_sources', [])) == 0:
         continue
       did_write_rule = True
-      name = make.StringToMakefileVariable('%s_%s' % (self.qualified_target,
+      name = make.StringToMakefileVariable('%s_%s' % (self.relative_target,
                                                       rule['rule_name']))
       self.WriteLn('\n### Generated for rule "%s":' % name)
       self.WriteLn('# "%s":' % rule)
@@ -416,7 +418,7 @@ class AndroidMkWriter(object):
     """
     self.WriteLn('### Generated for copy rule.')
 
-    variable = make.StringToMakefileVariable(self.qualified_target + '_copies')
+    variable = make.StringToMakefileVariable(self.relative_target + '_copies')
     outputs = []
     for copy in copies:
       for path in copy['files']:
@@ -1017,7 +1019,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
   for qualified_target in target_list:
     build_file, target, toolset = gyp.common.ParseQualifiedTarget(
         qualified_target)
-    build_files.add(gyp.common.RelativePath(build_file, options.toplevel_dir))
+    relative_build_file = gyp.common.RelativePath(build_file,
+                                                  options.toplevel_dir)
+    build_files.add(relative_build_file)
     included_files = data[build_file]['included_files']
     for included_file in included_files:
       # The included_files entries are relative to the dir of the build file
@@ -1045,9 +1049,13 @@ def GenerateOutput(target_list, target_dicts, data, params):
                    not int(spec.get('suppress_wildcard', False)))
     if limit_to_target_all and not part_of_all:
       continue
+
+    relative_target = gyp.common.QualifiedTarget(relative_build_file, target,
+                                                 toolset)
     writer = AndroidMkWriter(android_top_dir)
-    android_module = writer.Write(qualified_target, base_path, output_file,
-                                  spec, configs, part_of_all=part_of_all)
+    android_module = writer.Write(qualified_target, relative_target, base_path,
+                                  output_file, spec, configs,
+                                  part_of_all=part_of_all)
     if android_module in android_modules:
       print ('ERROR: Android module names must be unique. The following '
              'targets both generate Android module name %s.\n  %s\n  %s' %
