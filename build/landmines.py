@@ -168,7 +168,7 @@ def get_target_build_dir(build_tool, target, is_iphone=False):
   elif build_tool == 'scons':
     ret = os.path.join(SRC_DIR, 'sconsbuild', target)
   else:
-    raise NotImplementedError()
+    raise NotImplementedError('Unexpected GYP_GENERATORS (%s)' % build_tool)
   return os.path.abspath(ret)
 
 
