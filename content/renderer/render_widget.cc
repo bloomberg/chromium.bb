@@ -733,9 +733,6 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
   const bool kEnableGpuBenchmarking =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGpuBenchmarking);
-  base::TimeTicks rasterize_begin_ticks;
-  if (kEnableGpuBenchmarking)
-    rasterize_begin_ticks = base::TimeTicks::HighResNow();
   canvas->save();
 
   // Bring the canvas into the coordinate system of the paint rect.
@@ -830,10 +827,6 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
   canvas->restore();
 
   if (kEnableGpuBenchmarking) {
-    base::TimeDelta rasterize_time =
-        base::TimeTicks::HighResNow() - rasterize_begin_ticks;
-    software_stats_.totalRasterizeTime += rasterize_time;
-
     int64 num_pixels_processed = rect.width() * rect.height();
     software_stats_.totalPixelsPainted += num_pixels_processed;
     software_stats_.totalPixelsRasterized += num_pixels_processed;
