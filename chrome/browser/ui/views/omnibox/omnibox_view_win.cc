@@ -509,6 +509,12 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
   SetReadOnly(popup_window_mode_);
   SetFont(font_.GetNativeFont());
 
+  // Disable auto font changing. Otherwise, characters come from
+  // auto-completion and characters come from keyboard may be rendered with
+  // different fonts. See http://crbug.com/168480 for details.
+  const LRESULT lang_option = SendMessage(m_hWnd, EM_GETLANGOPTIONS, 0, 0);
+  SendMessage(m_hWnd, EM_SETLANGOPTIONS, 0, lang_option & ~IMF_AUTOFONT);
+
   // NOTE: Do not use SetWordBreakProcEx() here, that is no longer supported as
   // of Rich Edit 2.0 onward.
   SendMessage(m_hWnd, EM_SETWORDBREAKPROC, 0,
