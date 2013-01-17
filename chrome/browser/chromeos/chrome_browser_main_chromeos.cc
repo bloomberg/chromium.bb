@@ -585,6 +585,13 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   if (parsed_command_line().HasSwitch(::switches::kTestType))
     WizardController::SetZeroDelays();
 
+  // Start loading the machine statistics. Note: if we start loading machine
+  // statistics early in PreEarlyInitialization() then the crossystem tool
+  // sometimes hangs for unknown reasons, see http://crbug.com/167671.
+  // Also we must start loading no later than this point, because login manager
+  // may call GetMachineStatistic() during startup, see crbug.com/170635.
+  system::StatisticsProvider::GetInstance()->StartLoadingMachineStatistics();
+
   // Tests should be able to tune login manager before showing it.
   // Thus only show login manager in normal (non-testing) mode.
   if (!parameters().ui_task)
@@ -648,11 +655,6 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 }
 
 void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
-  // Start loading the machine statistics. Note: if we start loading machine
-  // statistics early in PreEarlyInitialization() then the crossystem tool
-  // sometimes hangs for unknown reasons, see http://crbug.com/167671.
-  system::StatisticsProvider::GetInstance()->StartLoadingMachineStatistics();
-
   // These are dependent on the ash::Shell singleton already having been
   // initialized.
   power_button_observer_.reset(new PowerButtonObserver);
