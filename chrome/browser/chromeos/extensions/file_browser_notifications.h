@@ -25,10 +25,10 @@ class FileBrowserNotifications
     DEVICE_FAIL,
     DEVICE_HARD_UNPLUG,
     DEVICE_EXTERNAL_STORAGE_DISABLED,
-    FORMAT_SUCCESS,
-    FORMAT_FAIL,
     FORMAT_START,
     FORMAT_START_FAIL,
+    FORMAT_SUCCESS,
+    FORMAT_FAIL,
   };
 
   explicit FileBrowserNotifications(Profile* profile);

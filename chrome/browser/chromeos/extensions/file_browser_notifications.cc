@@ -64,32 +64,32 @@ const NotificationTypeInfo kNotificationTypes[] = {
       IDS_EXTERNAL_STORAGE_DISABLED_MESSAGE  // message_id
     },
     {
-      FileBrowserNotifications::FORMAT_SUCCESS,  // type
-      "FormatComplete_",  // notification_id_prefix
-      IDR_FILES_APP_ICON,  // icon_id
-      IDS_REMOVABLE_DEVICE_DETECTION_TITLE,  // title_id
-      IDS_FORMATTING_FINISHED_SUCCESS_MESSAGE  // message_id
-    },
-    {
-      FileBrowserNotifications::FORMAT_FAIL,  // type
-      "FormatComplete_",  // notifications_id_prefix
-      IDR_FILES_APP_ICON,  // icon_id
-      IDS_FORMATTING_OF_DEVICE_FINISHED_TITLE,  // title_id
-      IDS_FORMATTING_FINISHED_FAILURE_MESSAGE  // message_id
-    },
-    {
       FileBrowserNotifications::FORMAT_START,  // type
       "FormatStart_",  // notification_id_prefix
       IDR_FILES_APP_ICON,  // icon_id
-      IDS_FORMATTING_OF_DEVICE_FINISHED_TITLE,  // title_id
+      IDS_FORMATTING_OF_DEVICE_PENDING_TITLE,  // title_id
       IDS_FORMATTING_OF_DEVICE_PENDING_MESSAGE  // message_id
     },
     {
       FileBrowserNotifications::FORMAT_START_FAIL,  // type
       "FormatComplete_",  // notification_id_prefix
       IDR_FILES_APP_ICON,  // icon_id
-      IDS_FORMATTING_OF_DEVICE_FINISHED_TITLE,  // title_id
+      IDS_FORMATTING_OF_DEVICE_FAILED_TITLE,  // title_id
       IDS_FORMATTING_STARTED_FAILURE_MESSAGE  // message_id
+    },
+    {
+      FileBrowserNotifications::FORMAT_SUCCESS,  // type
+      "FormatComplete_",  // notification_id_prefix
+      IDR_FILES_APP_ICON,  // icon_id
+      IDS_FORMATTING_OF_DEVICE_FINISHED_TITLE,  // title_id
+      IDS_FORMATTING_FINISHED_SUCCESS_MESSAGE  // message_id
+    },
+    {
+      FileBrowserNotifications::FORMAT_FAIL,  // type
+      "FormatComplete_",  // notifications_id_prefix
+      IDR_FILES_APP_ICON,  // icon_id
+      IDS_FORMATTING_OF_DEVICE_FAILED_TITLE,  // title_id
+      IDS_FORMATTING_FINISHED_FAILURE_MESSAGE  // message_id
     },
 };
 

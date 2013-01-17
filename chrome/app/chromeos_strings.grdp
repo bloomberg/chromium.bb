@@ -2392,13 +2392,16 @@ Battery full
   </message>
 
   <!-- Formatting device notifications -->
-  <message name="IDS_FORMATTING_OF_DEVICE_PENDING_TITLE" desc="Text of notification message which is shown when formatting process of some device is pending">
-    Formatting pending
+  <message name="IDS_FORMATTING_OF_DEVICE_PENDING_TITLE" desc="Title of notification message which is shown when formatting process of some device is in progress">
+    Formatting...
   </message>
-  <message name="IDS_FORMATTING_OF_DEVICE_FINISHED_TITLE" desc="Text of notification message which is shown when formatting process finshes">
+  <message name="IDS_FORMATTING_OF_DEVICE_FINISHED_TITLE" desc="Title of notification message which is shown when formatting process finshes">
     Formatting finished
   </message>
-  <message name="IDS_FORMATTING_OF_DEVICE_PENDING_MESSAGE" desc="Text of notification message which is shown when formatting process of some device is pending">
+  <message name="IDS_FORMATTING_OF_DEVICE_FAILED_TITLE" desc="Title of notification message which is shown when formatting process fails">
+    Formatting failed
+  </message>
+  <message name="IDS_FORMATTING_OF_DEVICE_PENDING_MESSAGE" desc="Text of notification message which is shown when formatting process of some device is in progress">
     The formatting process can take a couple of seconds. Please wait.
   </message>
   <message name="IDS_FORMATTING_STARTED_FAILURE_MESSAGE" desc="Text of notification message which is shown when formatting process can not be started.">
