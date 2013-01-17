@@ -441,7 +441,8 @@ DirectoryContentsGDataSearch.prototype.__proto__ = DirectoryContents.prototype;
  */
 DirectoryContentsGDataSearch.prototype.clone = function() {
   return new DirectoryContentsGDataSearch(
-      this.context_, this.directoryEntry_, this.query_);
+      this.context_, this.directoryEntry_,
+      this.previousDirectoryEntry_, this.query_);
 };
 
 /**
