@@ -319,10 +319,6 @@ const char kUseFakeDeviceForMediaStream[] = "use-fake-device-for-media-stream";
 // assumed to be sRGB.
 const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 
-// Enables UI releasing handle to front surface for background tabs on platforms
-// that support it.
-const char kEnableUIReleaseFrontSurface[] = "enable-ui-release-front-surface";
-
 // Enables compositor-accelerated touch-screen pinch gestures.
 const char kEnablePinch[]                   = "enable-pinch";
 

@@ -171,13 +171,6 @@ bool ShouldSendPinchGesture() {
   return pinch_allowed;
 }
 
-bool ShouldReleaseFrontSurface() {
-  static bool release_front_surface_allowed =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableUIReleaseFrontSurface);
-  return release_front_surface_allowed;
-}
-
 bool PointerEventActivates(const ui::Event& event) {
   if (event.type() == ui::ET_MOUSE_PRESSED)
     return true;
@@ -978,7 +971,7 @@ bool RenderWidgetHostViewAura::HasAcceleratedSurface(
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceRelease() {
   // This really tells us to release the frontbuffer.
-  if (current_surface_ && ShouldReleaseFrontSurface()) {
+  if (current_surface_) {
     ui::Compositor* compositor = GetCompositor();
     if (compositor) {
       // We need to wait for a commit to clear to guarantee that all we

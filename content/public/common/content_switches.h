@@ -111,7 +111,6 @@ extern const char kDisableMediaSource[];
 extern const char kDisableWebMediaPlayerMS[];
 CONTENT_EXPORT extern const char kUseFakeDeviceForMediaStream[];
 extern const char kEnableMonitorProfile[];
-extern const char kEnableUIReleaseFrontSurface[];
 extern const char kEnablePinch[];
 extern const char kEnableCssTransformPinch[];
 extern const char kEnablePreparsedJsCaching[];

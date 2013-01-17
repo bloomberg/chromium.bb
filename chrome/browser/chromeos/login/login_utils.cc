@@ -735,7 +735,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kEnableCompositingForFixedPosition,
       ::switches::kEnableEncryptedMedia,
       ::switches::kEnableLogging,
-      ::switches::kEnableUIReleaseFrontSurface,
       ::switches::kEnablePinch,
       ::switches::kEnableGestureTapHighlight,
       ::switches::kEnableSmoothScrolling,
