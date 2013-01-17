@@ -127,26 +127,26 @@ def UpdateLocalFile(filename, value, key='PORTAGE_BINHOST'):
   osutils.WriteFile(filename, '\n'.join(file_lines) + '\n')
 
 
-def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST', dryrun=False):
+def RevGitFile(filename, data, retries=5, dryrun=False):
   """Update and push the git file.
 
-    Args:
-      filename: file to modify that is in a git repo already
-      value: string representing the version of the prebuilt that has been
-        uploaded.
-      retries: The number of times to retry before giving up, default: 5
-      key: The variable key to update in the git file.
-        (Default: PORTAGE_BINHOST)
+  Args:
+    filename: file to modify that is in a git repo already
+    data: A dict of key/values to update in |filename|
+    retries: The number of times to retry before giving up, default: 5
   """
   prebuilt_branch = 'prebuilt_branch'
   cwd = os.path.abspath(os.path.dirname(filename))
   commit = git.RunGit(cwd, ['rev-parse', 'HEAD']).output.rstrip()
-  description = '%s: updating %s' % (os.path.basename(filename), key)
-  print description
+  description = '%s: updating %s' % (os.path.basename(filename),
+                                     ', '.join(data.keys()))
+  # UpdateLocalFile will print out the keys/values for us.
+  print 'Revving git file %s' % filename
 
   try:
     git.CreatePushBranch(prebuilt_branch, cwd)
-    UpdateLocalFile(filename, value, key)
+    for key, value in data.iteritems():
+      UpdateLocalFile(filename, value, key)
     git.RunGit(cwd, ['add', filename])
     git.RunGit(cwd, ['commit', '-m', description])
     git.PushWithRetry(prebuilt_branch, cwd, dryrun=dryrun, retries=retries)
@@ -471,7 +471,7 @@ class PrebuiltUploader(object):
     if git_sync:
       git_file = os.path.join(self._build_path,
           _PREBUILT_MAKE_CONF[_HOST_ARCH])
-      RevGitFile(git_file, binhost, key=key, dryrun=self._debug)
+      RevGitFile(git_file, {key: binhost}, dryrun=self._debug)
     if sync_binhost_conf:
       binhost_conf = os.path.join(self._build_path, self._binhost_conf_dir,
           'host', '%s-%s.conf' % (_HOST_ARCH, key))
@@ -518,9 +518,11 @@ class PrebuiltUploader(object):
           # TODO(zbehan): This should be done cleaner.
           if target.board == constants.CHROOT_BUILDER_BOARD:
             sdk_conf = os.path.join(self._build_path, self._binhost_conf_dir,
-                                  'host/sdk_version.conf')
-            RevGitFile(sdk_conf, version[len('chroot-'):],
-                       key='SDK_LATEST_VERSION', dryrun=self._debug)
+                                    'host/sdk_version.conf')
+            sdk_settings = {
+                'SDK_LATEST_VERSION': version[len('chroot-'):],
+            }
+            RevGitFile(sdk_conf, sdk_settings, dryrun=self._debug)
 
       # Record URL where prebuilts were uploaded.
       url_value = '%s/%s/' % (self._binhost_base_url.rstrip('/'),
@@ -528,7 +530,7 @@ class PrebuiltUploader(object):
 
       if git_sync:
         git_file = DeterminePrebuiltConfFile(self._build_path, target)
-        RevGitFile(git_file, url_value, key=key, dryrun=self._debug)
+        RevGitFile(git_file, {key: url_value}, dryrun=self._debug)
       if sync_binhost_conf:
         binhost_conf = os.path.join(self._build_path, self._binhost_conf_dir,
             'target', '%s-%s.conf' % (target, key))

@@ -317,7 +317,7 @@ class TestSyncPrebuilts(cros_test_lib.MoxTestCase):
                             packages_url_suffix.rstrip('/'))
     urls = [url_value.replace('foo', 'bar'), url_value]
     binhost = ' '.join(urls)
-    prebuilt.RevGitFile(mox.IgnoreArg(), binhost, key=self.key, dryrun=False)
+    prebuilt.RevGitFile(mox.IgnoreArg(), {self.key: binhost}, dryrun=False)
     prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, binhost)
     self.mox.ReplayAll()
     uploader = prebuilt.PrebuiltUploader(
@@ -351,10 +351,10 @@ class TestSyncPrebuilts(cros_test_lib.MoxTestCase):
     bar_binhost = url_value.replace('foo', 'bar')
     prebuilt.DeterminePrebuiltConfFile(self.build_path,
         slave_targets[0]).AndReturn('bar')
-    prebuilt.RevGitFile('bar', bar_binhost, key=self.key, dryrun=False)
+    prebuilt.RevGitFile('bar', {self.key: bar_binhost}, dryrun=False)
     prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, bar_binhost)
     prebuilt.DeterminePrebuiltConfFile(self.build_path, target).AndReturn('foo')
-    prebuilt.RevGitFile('foo', url_value, key=self.key, dryrun=False)
+    prebuilt.RevGitFile('foo', {self.key: url_value}, dryrun=False)
     prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, url_value)
     self.mox.ReplayAll()
     uploader = prebuilt.PrebuiltUploader(
