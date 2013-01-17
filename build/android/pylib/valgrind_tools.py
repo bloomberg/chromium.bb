@@ -35,7 +35,7 @@ def SetChromeTimeoutScale(adb, scale):
     # Delete if scale is None/0.0/1.0 since the default timeout scale is 1.0
     adb.RunShellCommand('rm %s' % path)
   else:
-    adb.SetFileContents(path, '%f' % scale)
+    adb.SetProtectedFileContents(path, '%f' % scale)
 
 
 class BaseTool(object):

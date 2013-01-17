@@ -38,7 +38,7 @@ class DeviceStatsMonitor(object):
 
   def Start(self):
     """Starts device stats monitor on the device."""
-    self._adb.SetFileContents(DeviceStatsMonitor.PROFILE_PATH, '')
+    self._adb.SetProtectedFileContents(DeviceStatsMonitor.PROFILE_PATH, '')
     self._process = subprocess.Popen(
         ['adb', 'shell', '%s --hz=%d %s' % (
             DeviceStatsMonitor.DEVICE_PATH, self._hz,

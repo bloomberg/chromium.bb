@@ -150,7 +150,7 @@ def _GetFilesFromRecursiveLsOutput(path, ls_output, re_file, utc_offset=None):
     if file_match:
       filename = os.path.join(current_dir, file_match.group('filename'))
       if filename.startswith(path_dir):
-        filename = filename[len(path_dir)+1:]
+        filename = filename[len(path_dir) + 1:]
       lastmod = datetime.datetime.strptime(
           file_match.group('date') + ' ' + file_match.group('time')[:5],
           '%Y-%m-%d %H:%M')
@@ -226,12 +226,16 @@ class AndroidCommands(object):
       True: if output from executing adb root was as expected.
       False: otherwise.
     """
-    return_value = self._adb.EnableAdbRoot()
-    # EnableAdbRoot inserts a call for wait-for-device only when adb logcat
-    # output matches what is expected. Just to be safe add a call to
-    # wait-for-device.
-    self._adb.SendCommand('wait-for-device')
-    return return_value
+    if self.GetBuildType() == 'user':
+      logging.warning("Can't enable root in production builds with type user")
+      return False
+    else:
+      return_value = self._adb.EnableAdbRoot()
+      # EnableAdbRoot inserts a call for wait-for-device only when adb logcat
+      # output matches what is expected. Just to be safe add a call to
+      # wait-for-device.
+      self._adb.SendCommand('wait-for-device')
+      return return_value
 
   def GetDeviceYear(self):
     """Returns the year information of the date on device."""
@@ -328,7 +332,9 @@ class AndroidCommands(object):
     install_cmd = ' '.join(install_cmd)
 
     logging.info('>>> $' + install_cmd)
-    return self._adb.SendCommand(install_cmd, timeout_time=2*60, retry_count=0)
+    return self._adb.SendCommand(install_cmd,
+                                 timeout_time=2 * 60,
+                                 retry_count=0)
 
   def ManagedInstall(self, apk_path, keep_data=False, package_name=None,
                      reboots_on_failure=2):
@@ -636,14 +642,14 @@ class AndroidCommands(object):
 
     # They don't match, so remove everything first and then create it.
     if os.path.isdir(local_path):
-      self.RunShellCommand('rm -r %s' % device_path, timeout_time=2*60)
+      self.RunShellCommand('rm -r %s' % device_path, timeout_time=2 * 60)
       self.RunShellCommand('mkdir -p %s' % device_path)
 
     # NOTE: We can't use adb_interface.Push() because it hardcodes a timeout of
     # 60 seconds which isn't sufficient for a lot of users of this method.
     push_command = 'push %s %s' % (local_path, device_path)
     logging.info('>>> $' + push_command)
-    output = self._adb.SendCommand(push_command, timeout_time=30*60)
+    output = self._adb.SendCommand(push_command, timeout_time=30 * 60)
     assert _HasAdbPushSucceeded(output)
 
 
@@ -659,10 +665,40 @@ class AndroidCommands(object):
       f.flush()
       self._adb.Push(f.name, filename)
 
+  _TEMP_FILE_BASE_FMT = 'temp_file_%d'
+  _TEMP_SCRIPT_FILE_BASE_FMT = 'temp_script_file_%d.sh'
+
+  def _GetDeviceTempFileName(self, base_name):
+    i = 0
+    while self.FileExistsOnDevice(
+        self.GetExternalStorage() + '/' + base_name % i):
+      i += 1
+    return self.GetExternalStorage() + '/' + base_name % i
+
+  def SetProtectedFileContents(self, filename, contents):
+    """Writes |contents| to the protected file specified by |filename|.
+
+    This is less efficient than SetFileContents, but will work for protected
+    files and device files.
+    """
+    temp_file = self._GetDeviceTempFileName(AndroidCommands._TEMP_FILE_BASE_FMT)
+    temp_script = self._GetDeviceTempFileName(
+        AndroidCommands._TEMP_SCRIPT_FILE_BASE_FMT)
+
+    # Put the contents in a temporary file
+    self.SetFileContents(temp_file, contents)
+    # Create a script to copy the file contents to its final destination
+    self.SetFileContents(temp_script, 'cat %s > %s' % (temp_file, filename))
+    # Run the script as root
+    self.RunShellCommand('su -c sh %s' % temp_script)
+    # And remove the temporary files
+    self.RunShellCommand('rm ' + temp_file)
+    self.RunShellCommand('rm ' + temp_script)
+
   def RemovePushedFiles(self):
     """Removes all files pushed with PushIfNeeded() from the device."""
     for p in self._pushed_files:
-      self.RunShellCommand('rm -r %s' % p, timeout_time=2*60)
+      self.RunShellCommand('rm -r %s' % p, timeout_time=2 * 60)
 
   def ListPathContents(self, path):
     """Lists files in all subdirectories of |path|.
@@ -778,7 +814,7 @@ class AndroidCommands(object):
       self.StartMonitoringLogcat(clear=False)
     return self._logcat
 
-  def WaitForLogMatch(self, success_re, error_re, clear=False):
+  def WaitForLogMatch(self, success_re, error_re, clear=False, timeout=10):
     """Blocks until a matching line is logged or a timeout occurs.
 
     Args:
@@ -799,7 +835,7 @@ class AndroidCommands(object):
     t0 = time.time()
     while True:
       if not self._logcat:
-        self.StartMonitoringLogcat(clear)
+        self.StartMonitoringLogcat(clear, timeout=timeout)
       try:
         while True:
           # Note this will block for upto the timeout _per log line_, so we need

@@ -144,10 +144,8 @@ class PerfTestSetup(object):
 
   def DropRamCaches(self):
     """Drops the filesystem ram caches for performance testing."""
-    if not self._adb.IsRootEnabled():
-      self._adb.EnableAdbRoot()
-    self._adb.RunShellCommand('sync')
-    self._adb.RunShellCommand('echo 3 > ' + PerfTestSetup._DROP_CACHES)
+    self._adb.RunShellCommand('su -c sync')
+    self._adb.SetProtectedFileContents(PerfTestSetup._DROP_CACHES, '3')
 
   def SetUp(self):
     """Sets up performance tests."""
@@ -167,6 +165,5 @@ class PerfTestSetup(object):
   def _SetScalingGovernorInternal(self, value):
     for cpu in range(self._kernel_max + 1):
       scaling_governor_file = PerfTestSetup._SCALING_GOVERNOR_FMT % cpu
-      if self._adb.Adb().DoesFileExist(scaling_governor_file):
-        self._adb.RunShellCommand(
-            ('echo %s > ' + scaling_governor_file) % value)
+      if self._adb.FileExistsOnDevice(scaling_governor_file):
+        self._adb.SetProtectedFileContents(scaling_governor_file, value)

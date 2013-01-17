@@ -89,11 +89,11 @@ class FlagChanger(object):
     print "Current flags: ", self._current_flags
 
     if self._current_flags:
-      self._android_cmd.SetFileContents(CHROME_COMMAND_FILE,
+      self._android_cmd.SetProtectedFileContents(CHROME_COMMAND_FILE,
                                         'chrome ' +
                                         ' '.join(self._current_flags))
     else:
-      self._android_cmd.RunShellCommand('rm ' + CHROME_COMMAND_FILE)
+      self._android_cmd.RunShellCommand('su -c rm ' + CHROME_COMMAND_FILE)
 
   def _TokenizeFlags(self, line):
     """Changes the string containing the command line into a list of flags.
