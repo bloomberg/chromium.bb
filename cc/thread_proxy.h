@@ -178,6 +178,9 @@ private:
     // Set when the main thread is waiting on a commit to complete.
     CompletionEvent* m_commitCompletionEventOnImplThread;
 
+    // Set when the main thread is waiting on a pending tree activation.
+    CompletionEvent* m_completionEventForCommitHeldOnTreeActivation;
+
     // Set when the main thread is waiting on layers to be drawn.
     CompletionEvent* m_textureAcquisitionCompletionEventOnImplThread;
 

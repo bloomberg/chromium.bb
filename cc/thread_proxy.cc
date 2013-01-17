@@ -49,6 +49,7 @@ ThreadProxy::ThreadProxy(LayerTreeHost* layerTreeHost, scoped_ptr<Thread> implTh
     , m_beginFrameCompletionEventOnImplThread(0)
     , m_readbackRequestOnImplThread(0)
     , m_commitCompletionEventOnImplThread(0)
+    , m_completionEventForCommitHeldOnTreeActivation(0)
     , m_textureAcquisitionCompletionEventOnImplThread(0)
     , m_nextFrameIsNewlyCommittedFrameOnImplThread(false)
     , m_renderVSyncEnabled(layerTreeHost->settings().renderVSyncEnabled)
@@ -725,6 +726,8 @@ void ThreadProxy::scheduledActionCommit()
         // For some layer types in impl-side painting, the commit is held until
         // the pending tree is activated.
         TRACE_EVENT_INSTANT0("cc", "HoldCommit");
+        m_completionEventForCommitHeldOnTreeActivation = m_commitCompletionEventOnImplThread;
+        m_commitCompletionEventOnImplThread = 0;
     }
     else
     {
@@ -790,12 +793,12 @@ ScheduledActionDrawAndSwapResult ThreadProxy::scheduledActionDrawAndSwapInternal
     m_layerTreeHostImpl->didDrawAllLayers(frame);
 
     // Check for tree activation.
-    if (m_commitCompletionEventOnImplThread && !m_layerTreeHostImpl->pendingTree())
+    if (m_completionEventForCommitHeldOnTreeActivation && !m_layerTreeHostImpl->pendingTree())
     {
         TRACE_EVENT_INSTANT0("cc", "ReleaseCommitbyActivation");
         DCHECK(m_layerTreeHostImpl->settings().implSidePainting);
-        m_commitCompletionEventOnImplThread->signal();
-        m_commitCompletionEventOnImplThread = 0;
+        m_completionEventForCommitHeldOnTreeActivation->signal();
+        m_completionEventForCommitHeldOnTreeActivation = 0;
     }
 
     // Check for a pending compositeAndReadback.
