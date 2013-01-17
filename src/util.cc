@@ -19,17 +19,18 @@ int CombineGesturePriority(const Gesture* gesture) {
   // we get a compiler warning here.
   // Least important at top
   switch (gesture->type) {
-    case kGestureTypeNull: priority++;  // falthrough
-    case kGestureTypeContactInitiated: priority++;  // falthrough
+    case kGestureTypeNull: priority++;  // fallthrough
+    case kGestureTypeContactInitiated: priority++;  // fallthrough
 
     // Midrange, equal priority
-    case kGestureTypePinch:  // falthrough
-    case kGestureTypeSwipe:  // falthrough
-    case kGestureTypeMove:  // falthrough
-    case kGestureTypeScroll: priority++;  // falthrough
+    case kGestureTypePinch:  // fallthrough
+    case kGestureTypeSwipe:  // fallthrough
+    case kGestureTypeMove:  // fallthrough
+    case kGestureTypeScroll: priority++;  // fallthrough
 
-    case kGestureTypeFling: priority++;  // falthrough
-    case kGestureTypeButtonsChange: priority++;  // falthrough
+    case kGestureTypeFling: priority++;  // fallthrough
+    case kGestureTypeSwipeLift: priority++;  // fallthrough
+    case kGestureTypeButtonsChange: priority++;  // fallthrough
   }
   // Most important at bottom
 
@@ -53,6 +54,7 @@ void CombineGestures(Gesture* gesture, const Gesture* addend) {
       case kGestureTypeNull:  // fallthrough
       case kGestureTypeContactInitiated:  // fallthrough
       case kGestureTypeFling:
+      case kGestureTypeSwipeLift:
         break;
       case kGestureTypeButtonsChange:
         CombineButtonsGestures(gesture, addend);

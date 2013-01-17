@@ -223,6 +223,9 @@ string Gesture::String() const {
     case kGestureTypeSwipe:
       return StringPrintf("(Gesture type: swipe start: %f stop: %f "
                           "dx: %f)", start_time, end_time, details.swipe.dx);
+    case kGestureTypeSwipeLift:
+      return StringPrintf("(Gesture type: swipeLift start: %f stop: %f)",
+                          start_time, end_time);
   }
   return "(Gesture type: unknown)";
 }
@@ -262,6 +265,9 @@ bool Gesture::operator==(const Gesture& that) const {
       return gestures::DoubleEq(start_time, that.start_time) &&
           gestures::DoubleEq(end_time, that.end_time) &&
           gestures::FloatEq(details.swipe.dx, that.details.swipe.dx);
+    case kGestureTypeSwipeLift:
+      return gestures::DoubleEq(start_time, that.start_time) &&
+          gestures::DoubleEq(end_time, that.end_time);
   }
   return true;
 }

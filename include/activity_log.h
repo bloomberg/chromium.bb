@@ -121,6 +121,7 @@ class ActivityLog {
   static const char kValueGestureTypeButtonsChange[];
   static const char kValueGestureTypeFling[];
   static const char kValueGestureTypeSwipe[];
+  static const char kValueGestureTypeSwipeLift[];
   static const char kKeyGestureStartTime[];
   static const char kKeyGestureEndTime[];
   static const char kKeyGestureMoveDX[];

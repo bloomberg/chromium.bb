@@ -176,6 +176,10 @@ typedef struct {
 } GestureSwipe;
 
 typedef struct {
+  // Currently no members
+} GestureSwipeLift;
+
+typedef struct {
   // Relative pinch factor starting with 1.0 = no pinch
   // <1.0 for outwards pinch
   // >1.0 for inwards pinch
@@ -192,7 +196,8 @@ enum GestureType {
   kGestureTypeButtonsChange,
   kGestureTypeFling,
   kGestureTypeSwipe,
-  kGestureTypePinch
+  kGestureTypePinch,
+  kGestureTypeSwipeLift,
 };
 
 #ifdef __cplusplus
@@ -203,6 +208,7 @@ extern const GestureButtonsChange kGestureButtonsChange;
 extern const GestureFling kGestureFling;
 extern const GestureSwipe kGestureSwipe;
 extern const GesturePinch kGesturePinch;
+extern const GestureSwipeLift kGestureSwipeLift;
 #endif  // __cplusplus
 
 struct Gesture {
@@ -254,6 +260,10 @@ struct Gesture {
         type(kGestureTypePinch) {
     details.pinch.dz = dz;
   }
+  Gesture(const GestureSwipeLift&, stime_t start, stime_t end)
+      : start_time(start),
+        end_time(end),
+        type(kGestureTypeSwipeLift) {}
 #endif  // __cplusplus
 
   stime_t start_time, end_time;
@@ -265,6 +275,7 @@ struct Gesture {
     GestureFling fling;
     GestureSwipe swipe;
     GesturePinch pinch;
+    GestureSwipeLift swipe_lift;
   } details;
 };
 

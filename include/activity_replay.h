@@ -49,6 +49,7 @@ class ActivityReplay {
   bool ParseGestureMove(DictionaryValue* entry, Gesture* out_gs);
   bool ParseGestureScroll(DictionaryValue* entry, Gesture* out_gs);
   bool ParseGestureSwipe(DictionaryValue* entry, Gesture* out_gs);
+  bool ParseGestureSwipeLift(DictionaryValue* entry, Gesture* out_gs);
   bool ParseGesturePinch(DictionaryValue* entry, Gesture* out_gs);
   bool ParseGestureButtonsChange(DictionaryValue* entry, Gesture* out_gs);
   bool ParseGestureFling(DictionaryValue* entry, Gesture* out_gs);

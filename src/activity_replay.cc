@@ -343,6 +343,9 @@ bool ActivityReplay::ParseGesture(DictionaryValue* entry) {
   } else if (gesture_type == ActivityLog::kValueGestureTypeSwipe) {
     if (!ParseGestureSwipe(entry, &gs))
       return false;
+  } else if (gesture_type == ActivityLog::kValueGestureTypeSwipeLift) {
+    if (!ParseGestureSwipeLift(entry, &gs))
+      return false;
   } else if (gesture_type == ActivityLog::kValueGestureTypePinch) {
     if (!ParseGesturePinch(entry, &gs))
       return false;
@@ -406,6 +409,12 @@ bool ActivityReplay::ParseGestureSwipe(DictionaryValue* entry,
     return false;
   }
   out_gs->details.swipe.dy = dbl;
+  return true;
+}
+
+bool ActivityReplay::ParseGestureSwipeLift(DictionaryValue* entry,
+                                           Gesture* out_gs) {
+  out_gs->type = kGestureTypeSwipeLift;
   return true;
 }
 

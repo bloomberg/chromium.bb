@@ -662,6 +662,7 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
       }
       // fallthrough
     case kGestureTypeSwipe:
+    case kGestureTypeSwipeLift:
     case kGestureTypeFling:
     case kGestureTypeMove:
     case kGestureTypeNull:

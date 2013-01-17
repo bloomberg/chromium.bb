@@ -260,6 +260,11 @@ const char kSubSubEntryPadding[] = "      ";
       ret->Set(kKeyGestureSwipeDY,
                new FundamentalValue(gesture.details.swipe.dy));
       break;
+    case kGestureTypeSwipeLift:
+      handled = true;
+      ret->Set(kKeyGestureType,
+               new StringValue(kValueGestureTypeSwipeLift));
+      break;
   }
   if (!handled)
     ret->Set(kKeyGestureType,
@@ -398,6 +403,7 @@ const char ActivityLog::kValueGestureTypePinch[] = "pinch";
 const char ActivityLog::kValueGestureTypeButtonsChange[] = "buttonsChange";
 const char ActivityLog::kValueGestureTypeFling[] = "fling";
 const char ActivityLog::kValueGestureTypeSwipe[] = "swipe";
+const char ActivityLog::kValueGestureTypeSwipeLift[] = "swipeLift";
 const char ActivityLog::kKeyGestureStartTime[] = "startTime";
 const char ActivityLog::kKeyGestureEndTime[] = "endTime";
 const char ActivityLog::kKeyGestureMoveDX[] = "dx";
