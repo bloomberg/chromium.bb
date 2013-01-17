@@ -5,7 +5,6 @@
 #include "cc/texture_draw_quad.h"
 
 #include "base/logging.h"
-#include "ui/gfx/vector2d_f.h"
 
 namespace cc {
 
@@ -22,8 +21,7 @@ scoped_ptr<TextureDrawQuad> TextureDrawQuad::Create() {
 void TextureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                              gfx::Rect rect, gfx::Rect opaque_rect,
                              unsigned resource_id, bool premultiplied_alpha,
-                             gfx::PointF uv_top_left,
-                             gfx::PointF uv_bottom_right,
+                             const gfx::RectF& uv_rect,
                              const float vertex_opacity[4], bool flipped) {
   gfx::Rect visible_rect = rect;
   bool needs_blending = vertex_opacity[0] != 1.0f || vertex_opacity[1] != 1.0f
@@ -32,8 +30,7 @@ void TextureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                    opaque_rect, visible_rect, needs_blending);
   this->resource_id = resource_id;
   this->premultiplied_alpha = premultiplied_alpha;
-  this->uv_top_left = uv_top_left;
-  this->uv_bottom_right = uv_bottom_right;
+  this->uv_rect = uv_rect;
   this->vertex_opacity[0] = vertex_opacity[0];
   this->vertex_opacity[1] = vertex_opacity[1];
   this->vertex_opacity[2] = vertex_opacity[2];
@@ -45,15 +42,13 @@ void TextureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                              gfx::Rect rect, gfx::Rect opaque_rect,
                              gfx::Rect visible_rect, bool needs_blending,
                              unsigned resource_id, bool premultiplied_alpha,
-                             gfx::PointF uv_top_left,
-                             gfx::PointF uv_bottom_right,
+                             const gfx::RectF& uv_rect,
                              const float vertex_opacity[4], bool flipped) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::TEXTURE_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
   this->resource_id = resource_id;
   this->premultiplied_alpha = premultiplied_alpha;
-  this->uv_top_left = uv_top_left;
-  this->uv_bottom_right = uv_bottom_right;
+  this->uv_rect = uv_rect;
   this->vertex_opacity[0] = vertex_opacity[0];
   this->vertex_opacity[1] = vertex_opacity[1];
   this->vertex_opacity[2] = vertex_opacity[2];
@@ -95,24 +90,18 @@ bool TextureDrawQuad::PerformClipping() {
   gfx::RectF clippedRect = IntersectRects(rectF, clipRect());
   if (clippedRect.IsEmpty()) {
     rect = gfx::Rect();
-    uv_top_left = gfx::PointF();
-    uv_bottom_right = gfx::PointF();
+    uv_rect = gfx::RectF();
     return true;
   }
 
   // Create a new uv-rect by clipping the old one to the new bounds.
-  gfx::Vector2dF uv_scale(uv_bottom_right - uv_top_left);
-  uv_scale.Scale(1.f / rectF.width(), 1.f / rectF.height());
-  uv_bottom_right = uv_top_left +
-      gfx::ScaleVector2d(
-          clippedRect.bottom_right() - rectF.origin(),
-          uv_scale.x(),
-          uv_scale.y());
-  uv_top_left = uv_top_left +
-      gfx::ScaleVector2d(
-          clippedRect.origin() - rectF.origin(),
-          uv_scale.x(),
-          uv_scale.y());
+  uv_rect = gfx::RectF(
+      uv_rect.x()
+          + uv_rect.width() / rectF.width() * (clippedRect.x() - rectF.x()),
+      uv_rect.y()
+          + uv_rect.height() / rectF.height() * (clippedRect.y() - rectF.y()),
+      uv_rect.width() / rectF.width() * clippedRect.width(),
+      uv_rect.height() / rectF.height() * clippedRect.height());
 
   // Indexing according to the quad vertex generation:
   // 1--2

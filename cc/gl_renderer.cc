@@ -1087,9 +1087,8 @@ void GLRenderer::enqueueTextureQuad(const DrawingFrame& frame, const TextureDraw
     }
 
     // Generate the uv-transform
-    const gfx::PointF& uv0 = quad->uv_top_left;
-    const gfx::PointF& uv1 = quad->uv_bottom_right;
-    Float4 uv = {uv0.x(), uv0.y(), uv1.x() - uv0.x(), uv1.y() - uv0.y()};
+    const gfx::RectF& uvRect = quad->uv_rect;
+    Float4 uv = {uvRect.x(), uvRect.y(), uvRect.width(), uvRect.height()};
     m_drawCache.uv_xform_data.push_back(uv);
 
     // Generate the vertex opacity
@@ -1118,9 +1117,8 @@ void GLRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQua
         binding.set(textureProgram(), context());
     setUseProgram(binding.programId);
     GLC(context(), context()->uniform1i(binding.samplerLocation, 0));
-    const gfx::PointF& uv0 = quad->uv_top_left;
-    const gfx::PointF& uv1 = quad->uv_bottom_right;
-    GLC(context(), context()->uniform4f(binding.texTransformLocation, uv0.x(), uv0.y(), uv1.x() - uv0.x(), uv1.y() - uv0.y()));
+    const gfx::RectF& uvRect = quad->uv_rect;
+    GLC(context(), context()->uniform4f(binding.texTransformLocation, uvRect.x(), uvRect.y(), uvRect.width(), uvRect.height()));
 
     GLC(context(), context()->uniform1fv(binding.vertexOpacityLocation, 4, quad->vertex_opacity));
 

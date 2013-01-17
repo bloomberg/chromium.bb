@@ -49,7 +49,7 @@ void WebExternalTextureLayerImpl::setFlipped(bool flipped)
 
 void WebExternalTextureLayerImpl::setUVRect(const WebFloatRect& rect)
 {
-    static_cast<TextureLayer*>(m_layer->layer())->setUV(gfx::PointF(rect.x, rect.y), gfx::PointF(rect.x + rect.width, rect.y + rect.height));
+    static_cast<TextureLayer*>(m_layer->layer())->setUVRect(rect);
 }
 
 void WebExternalTextureLayerImpl::setOpaque(bool opaque)

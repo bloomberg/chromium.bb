@@ -39,8 +39,8 @@ public:
     // Sets whether this texture should be Y-flipped at draw time. Defaults to true.
     void setFlipped(bool);
 
-    // Sets a UV transform to be used at draw time. Defaults to (0, 0) and (1, 1).
-    void setUV(gfx::PointF topLeft, gfx::PointF bottomRight);
+    // Sets a UV transform to be used at draw time. Defaults to (0, 0, 1, 1).
+    void setUVRect(const gfx::RectF&);
 
     // Sets an opacity value per vertex. It will be multiplied by the layer opacity value.
     void setVertexOpacity(float bottomLeft, float topLeft, float topRight, float bottomRight);
@@ -81,8 +81,7 @@ private:
     MailboxCallback m_mailboxReleaseCallback;
 
     bool m_flipped;
-    gfx::PointF m_uvTopLeft;
-    gfx::PointF m_uvBottomRight;
+    gfx::RectF m_uvRect;
     // [bottom left, top left, top right, bottom right]
     float m_vertexOpacity[4];
     bool m_premultipliedAlpha;

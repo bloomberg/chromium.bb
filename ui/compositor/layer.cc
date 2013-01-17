@@ -786,11 +786,12 @@ void Layer::RecomputeDrawsContentAndUVRect() {
 
     gfx::Size size(std::min(bounds().width(), texture_size.width()),
                    std::min(bounds().height(), texture_size.height()));
-    gfx::PointF uv_top_left(0.f, 0.f);
-    gfx::PointF uv_bottom_right(
+    gfx::RectF rect(
+        0,
+        0,
         static_cast<float>(size.width())/texture_size.width(),
         static_cast<float>(size.height())/texture_size.height());
-    texture_layer_->setUV(uv_top_left, uv_bottom_right);
+    texture_layer_->setUVRect(rect);
 
     cc_layer_->setBounds(ConvertSizeToPixel(this, size));
   }

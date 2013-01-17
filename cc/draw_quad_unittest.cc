@@ -362,98 +362,27 @@ TEST(DrawQuadTest, copyTextureDrawQuad)
     gfx::Rect opaqueRect(3, 7, 10, 12);
     unsigned resourceId = 82;
     bool premultipliedAlpha = true;
-    gfx::PointF uvTopLeft(0.5f, 224.f);
-    gfx::PointF uvBottomRight(51.5f, 260.f);
+    gfx::RectF uvRect(0.5f, 224.f, 51.f, 36.f);
     const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
     bool flipped = true;
     CREATE_SHARED_STATE();
 
-    CREATE_QUAD_7_NEW(TextureDrawQuad, opaqueRect, resourceId, premultipliedAlpha, uvTopLeft, uvBottomRight, vertex_opacity, flipped);
+    CREATE_QUAD_6_NEW(TextureDrawQuad, opaqueRect, resourceId, premultipliedAlpha, uvRect, vertex_opacity, flipped);
     EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, copyQuad->material);
     EXPECT_RECT_EQ(opaqueRect, copyQuad->opaque_rect);
     EXPECT_EQ(resourceId, copyQuad->resource_id);
     EXPECT_EQ(premultipliedAlpha, copyQuad->premultiplied_alpha);
-    EXPECT_EQ(uvTopLeft, copyQuad->uv_top_left);
-    EXPECT_EQ(uvBottomRight, copyQuad->uv_bottom_right);
+    EXPECT_FLOAT_RECT_EQ(uvRect, copyQuad->uv_rect);
     EXPECT_FLOAT_ARRAY_EQ(vertex_opacity, copyQuad->vertex_opacity, 4);
     EXPECT_EQ(flipped, copyQuad->flipped);
 
-    CREATE_QUAD_6_ALL(TextureDrawQuad, resourceId, premultipliedAlpha, uvTopLeft, uvBottomRight, vertex_opacity, flipped);
+    CREATE_QUAD_5_ALL(TextureDrawQuad, resourceId, premultipliedAlpha, uvRect, vertex_opacity, flipped);
     EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, copyQuad->material);
     EXPECT_EQ(resourceId, copyQuad->resource_id);
     EXPECT_EQ(premultipliedAlpha, copyQuad->premultiplied_alpha);
-    EXPECT_EQ(uvTopLeft, copyQuad->uv_top_left);
-    EXPECT_EQ(uvBottomRight, copyQuad->uv_bottom_right);
+    EXPECT_FLOAT_RECT_EQ(uvRect, copyQuad->uv_rect);
     EXPECT_FLOAT_ARRAY_EQ(vertex_opacity, copyQuad->vertex_opacity, 4);
     EXPECT_EQ(flipped, copyQuad->flipped);
-}
-
-TEST(DrawQuadTest, clipTextureDrawQuad)
-{
-    gfx::Rect opaqueRect(3, 7, 10, 12);
-    unsigned resourceId = 82;
-    bool premultipliedAlpha = true;
-    bool flipped = true;
-    CREATE_SHARED_STATE();
-    // The original quad position is (30, 40) its size is 50*60.
-    sharedState->content_to_target_transform = gfx::Transform(1.f, 0.f, 0.f, 1.f, 10.f, 20.f);
-    // After transformation, the quad position is (40, 60) its size is 50*60.
-    sharedState->clip_rect = gfx::Rect(50, 70, 30, 20);
-
-    // The original quad is 'ABCD', the clipped quad is 'abcd':
-    //40 50       90
-    // B--:-------C 60
-    // |  b----c -|-70
-    // |  |    |  |
-    // |  a----d -|-90
-    // |          |
-    // A----------D 120
-    // UV and vertex opacity are stored per vertex on the parent rectangle 'ABCD'.
-
-    // This is the UV value for vertex 'B'.
-    gfx::PointF uvTopLeft(0.1f, 0.2f);
-    // This is the UV value for vertex 'D'.
-    gfx::PointF uvBottomRight(0.9f, 0.8f);
-    // This the vertex opacity for the vertices 'ABCD'.
-    const float vertexOpacity[] = {0.3f, 0.4f, 0.7f, 0.8f};
-
-    {
-      CREATE_QUAD_7_NEW(TextureDrawQuad, opaqueRect, resourceId, premultipliedAlpha, uvTopLeft, uvBottomRight, vertexOpacity, flipped);
-      CREATE_QUAD_6_ALL(TextureDrawQuad, resourceId, premultipliedAlpha, uvTopLeft, uvBottomRight, vertexOpacity, flipped);
-      EXPECT_TRUE(quadAll->PerformClipping());
-
-      // This is the expected UV value for vertex 'b'.
-      // uv(b) = uv(B) + (Bb / BD) * (uv(D) - uv(B))
-      // 0.3 = 0.2 + (10 / 60) * (0.8 - 0.2)
-      gfx::PointF uvTopLeftClipped(0.26f, 0.3f);
-      // This is the expected UV value for vertex 'd'.
-      // uv(d) = uv(B) + (Bd / BD) * (uv(D) - uv(B))
-      gfx::PointF uvBottomRightClipped(0.74f, 0.5f);
-      // This the expected vertex opacity for the vertices 'abcd'.
-      // They are computed with a bilinear interpolation of the corner values.
-      const float vertexOpacityClipped[] = {0.43f, 0.45f, 0.65f, 0.67f};
-
-      EXPECT_EQ(uvTopLeftClipped, quadAll->uv_top_left);
-      EXPECT_EQ(uvBottomRightClipped, quadAll->uv_bottom_right);
-      EXPECT_FLOAT_ARRAY_EQ(vertexOpacityClipped, quadAll->vertex_opacity, 4);
-    }
-
-    uvTopLeft = gfx::PointF(0.8f, 0.7f);
-    uvBottomRight = gfx::PointF(0.2f, 0.1f);
-
-    {
-      CREATE_QUAD_7_NEW(TextureDrawQuad, opaqueRect, resourceId, premultipliedAlpha, uvTopLeft, uvBottomRight, vertexOpacity, flipped);
-      CREATE_QUAD_6_ALL(TextureDrawQuad, resourceId, premultipliedAlpha, uvTopLeft, uvBottomRight, vertexOpacity, flipped);
-      EXPECT_TRUE(quadAll->PerformClipping());
-
-      // This is the expected UV value for vertex 'b'.
-      gfx::PointF uvTopLeftClipped(0.68f, 0.6f);
-      // This is the expected UV value for vertex 'd'.
-      gfx::PointF uvBottomRightClipped(0.32f, 0.4f);
-
-      EXPECT_EQ(uvTopLeftClipped, quadAll->uv_top_left);
-      EXPECT_EQ(uvBottomRightClipped, quadAll->uv_bottom_right);
-    }
 }
 
 TEST(DrawQuadTest, copyTileDrawQuad)

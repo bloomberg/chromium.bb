@@ -158,8 +158,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                        opaque_rect,
                        resource1,
                        false,
-                       gfx::PointF(0.f, 0.f),
-                       gfx::PointF(1.f, 1.f),
+                       rect,
                        vertex_opacity,
                        false);
   AppendQuad(texture_quad.PassAs<DrawQuad>());

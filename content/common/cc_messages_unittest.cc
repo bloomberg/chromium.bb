@@ -144,8 +144,7 @@ class CCMessagesTest : public testing::Test {
   void Compare(const TextureDrawQuad* a, const TextureDrawQuad* b) {
     EXPECT_EQ(a->resource_id, b->resource_id);
     EXPECT_EQ(a->premultiplied_alpha, b->premultiplied_alpha);
-    EXPECT_EQ(a->uv_top_left, b->uv_top_left);
-    EXPECT_EQ(a->uv_bottom_right, b->uv_bottom_right);
+    EXPECT_EQ(a->uv_rect, b->uv_rect);
     EXPECT_EQ(a->flipped, b->flipped);
   }
 

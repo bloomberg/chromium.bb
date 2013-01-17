@@ -33,8 +33,7 @@ public:
     void setTextureId(unsigned id) { m_textureId = id; }
     void setPremultipliedAlpha(bool premultipliedAlpha) { m_premultipliedAlpha = premultipliedAlpha; }
     void setFlipped(bool flipped) { m_flipped = flipped; }
-    void setUVTopLeft(gfx::PointF topLeft) { m_uvTopLeft = topLeft; }
-    void setUVBottomRight(gfx::PointF bottomRight) { m_uvBottomRight = bottomRight; }
+    void setUVRect(const gfx::RectF& rect) { m_uvRect = rect; }
 
     // 1--2
     // |  |
@@ -53,8 +52,7 @@ private:
     ResourceProvider::ResourceId m_externalTextureResource;
     bool m_premultipliedAlpha;
     bool m_flipped;
-    gfx::PointF m_uvTopLeft;
-    gfx::PointF m_uvBottomRight;
+    gfx::RectF m_uvRect;
     float m_vertexOpacity[4];
 
     bool m_hasPendingMailbox;
