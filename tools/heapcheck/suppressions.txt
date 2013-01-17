@@ -1752,4 +1752,16 @@
    fun:PasswordStore::GetLogins
    fun:PasswordStoreTest_IgnoreOldWwwGoogleLogins_Test::TestBody
 }
+{
+   bug_170602
+   Heapcheck:Leak
+   fun:v8::internal::SlotsBufferAllocator::AllocateBuffer
+   fun:v8::internal::SlotsBuffer::AddTo
+   fun:v8::internal::MarkCompactCollector::RecordRelocSlot
+   fun:v8::internal::StaticMarkingVisitor::VisitEmbeddedPointer
+   fun:v8::internal::RelocInfo::Visit
+   ...
+   fun:EventUnittest
+   fun:EventUnittest_AddingFilterWithUrlFieldNotAListThrowsException_Test
+}
 

@@ -6504,4 +6504,40 @@
    fun:_ZN7WebCore14DocumentWriter3endEv
    fun:_ZN7WebCore14DocumentLoader15finishedLoadingEv
 }
+{
+   bug_170623
+   Memcheck:Unaddressable
+   fun:_ZN12_GLOBAL__N_114chromiumDeleteEP11sqlite3_vfsPKci
+   fun:sqlite3OsDelete
+   fun:pager_end_transaction
+   fun:sqlite3PagerCommitPhaseTwo
+   fun:sqlite3BtreeCommitPhaseTwo
+   fun:vdbeCommit
+   fun:sqlite3VdbeHalt
+   fun:sqlite3VdbeExec
+   fun:sqlite3Step
+   fun:sqlite3_step
+   fun:_ZN7WebCore15SQLiteStatement4stepEv
+   fun:_ZN7WebCore15SQLiteStatement14executeCommandEv
+   fun:_ZN7WebCore14SQLiteDatabase14executeCommandERKN3WTF6StringE
+   fun:_ZN7WebCore17SQLiteTransaction6commitEv
+   fun:_ZN7WebCore14SQLTransaction19postflightAndCommitEv
+   fun:_ZN7WebCore14SQLTransaction13runStatementsEv
+}
+{
+   bug_170626
+   Memcheck:Unaddressable
+   fun:_ZN8remoting18VideoSchedulerTest26GenerateOnCaptureCompletedEv
+   fun:_ZNK7testing8internal29InvokeMethodWithoutArgsActionIN8remoting36VideoSchedulerTest_StartAndStop_TestEMNS2_18VideoSchedulerTestEFvvEE7PerformIvNSt3tr15tupleIIEEEEET_RKT0_
+   fun:_ZN7testing17PolymorphicActionINS_8internal29InvokeMethodWithoutArgsActionIN8remoting36VideoSchedulerTest_StartAndStop_TestEMNS3_18VideoSchedulerTestEFvvEEEE15MonomorphicImplIFvvEE7PerformERKNSt3tr15tupleIIEEE
+   fun:_ZNK7testing6ActionIFvvEE7PerformERKNSt3tr15tupleIIEEE
+   fun:_ZN7testing8internal18ActionResultHolderIvE13PerformActionIFvvEEEPS2_RKNS_6ActionIT_EERKNS0_8FunctionIS7_E13ArgumentTupleE
+   fun:_ZNK7testing8internal18FunctionMockerBaseIFvvEE20UntypedPerformActionEPKvS5_
+   fun:_ZN7testing8internal25UntypedFunctionMockerBase17UntypedInvokeWithEPKv
+   fun:_ZN7testing8internal18FunctionMockerBaseIFvvEE10InvokeWithERKNSt3tr15tupleIIEEE
+   fun:_ZN7testing8internal14FunctionMockerIFvvEE6InvokeEv
+   fun:_ZN8remoting22MockVideoFrameCapturer12CaptureFrameEv
+   fun:_ZN8remoting14VideoScheduler16CaptureNextFrameEv
+   fun:_ZN8remoting14VideoScheduler21FrameCaptureCompletedEv
+}
 
