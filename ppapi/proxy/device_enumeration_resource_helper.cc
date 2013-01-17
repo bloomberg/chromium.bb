@@ -30,7 +30,6 @@ DeviceEnumerationResourceHelper::DeviceEnumerationResourceHelper(
     : owner_(owner),
       pending_enumerate_devices_(false),
       monitor_callback_id_(0),
-      monitor_callback_(NULL),
       monitor_user_data_(NULL) {
 }
 
@@ -90,14 +89,19 @@ int32_t DeviceEnumerationResourceHelper::MonitorDeviceChange(
     PP_MonitorDeviceChangeCallback callback,
     void* user_data) {
   monitor_callback_id_++;
-  monitor_callback_ = callback;
   monitor_user_data_ = user_data;
-
   if (callback) {
+    monitor_callback_.reset(
+        ThreadAwareCallback<PP_MonitorDeviceChangeCallback>::Create(callback));
+    if (!monitor_callback_.get())
+      return PP_ERROR_NO_MESSAGE_LOOP;
+
     owner_->Post(PluginResource::RENDERER,
                  PpapiHostMsg_DeviceEnumeration_MonitorDeviceChange(
                      monitor_callback_id_));
   } else {
+    monitor_callback_.reset(NULL);
+
     owner_->Post(PluginResource::RENDERER,
                  PpapiHostMsg_DeviceEnumeration_StopMonitoringDeviceChange());
   }
@@ -120,7 +124,7 @@ bool DeviceEnumerationResourceHelper::HandleReply(
 void DeviceEnumerationResourceHelper::LastPluginRefWasDeleted() {
   // Make sure that no further notifications are sent to the plugin.
   monitor_callback_id_++;
-  monitor_callback_ = NULL;
+  monitor_callback_.reset(NULL);
   monitor_user_data_ = NULL;
 
   // There is no need to do anything with pending callback of
@@ -178,7 +182,7 @@ void DeviceEnumerationResourceHelper::OnPluginMsgNotifyDeviceChange(
     return;
   }
 
-  CHECK(monitor_callback_);
+  CHECK(monitor_callback_.get());
 
   scoped_array<PP_Resource> elements;
   uint32_t size = devices.size();
@@ -191,10 +195,8 @@ void DeviceEnumerationResourceHelper::OnPluginMsgNotifyDeviceChange(
     }
   }
 
-  // TODO(yzshen): make sure |monitor_callback_| is called on the same thread as
-  // the one on which MonitorDeviceChange() is called.
-  CallWhileUnlocked(base::Bind(monitor_callback_, monitor_user_data_, size,
-                               elements.get()));
+  monitor_callback_->RunOnTargetThread(monitor_user_data_, size,
+                                       elements.get());
   for (size_t index = 0; index < size; ++index)
     PpapiGlobals::Get()->GetResourceTracker()->ReleaseResource(elements[index]);
 }

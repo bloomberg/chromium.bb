@@ -22,7 +22,7 @@ class PluginModule;
 class HostGlobals : public ::ppapi::PpapiGlobals {
  public:
   HostGlobals();
-  HostGlobals(::ppapi::PpapiGlobals::ForTest);
+  explicit HostGlobals(::ppapi::PpapiGlobals::PerThreadForTest);
   virtual ~HostGlobals();
 
   // Getter for the global singleton. Generally, you should use

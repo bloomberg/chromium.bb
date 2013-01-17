@@ -30,7 +30,7 @@ class PluginProxyDelegate;
 class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
  public:
   PluginGlobals();
-  PluginGlobals(PpapiGlobals::ForTest);
+  explicit PluginGlobals(PpapiGlobals::PerThreadForTest);
   virtual ~PluginGlobals();
 
   // Getter for the global singleton. Generally, you should use

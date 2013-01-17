@@ -29,7 +29,7 @@ class TestVarTracker : public VarTracker {
 class TestGlobals : public PpapiGlobals {
  public:
   TestGlobals();
-  TestGlobals(PpapiGlobals::ForTest);
+  explicit TestGlobals(PpapiGlobals::PerThreadForTest);
   virtual ~TestGlobals();
 
   // PpapiGlobals implementation.

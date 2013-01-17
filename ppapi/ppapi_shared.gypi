@@ -95,6 +95,8 @@
           'shared_impl/scoped_pp_resource.h',
           'shared_impl/scoped_pp_var.cc',
           'shared_impl/scoped_pp_var.h',
+          'shared_impl/thread_aware_callback.cc',
+          'shared_impl/thread_aware_callback.h',
           'shared_impl/time_conversion.cc',
           'shared_impl/time_conversion.h',
           'shared_impl/tracked_callback.cc',

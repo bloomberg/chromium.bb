@@ -5,9 +5,12 @@
 #include <map>
 #include <string>
 
-#include "base/message_loop.h"
+#include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/host_dispatcher.h"
@@ -20,13 +23,25 @@
 #include "ppapi/shared_impl/test_globals.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace base {
+class MessageLoopProxy;
+class RunLoop;
+}
+
 namespace ppapi {
 namespace proxy {
+
+class MessageLoopResource;
 
 // Base class for plugin and host test harnesses. Tests will not use this
 // directly. Instead, use the PluginProxyTest, HostProxyTest, or TwoWayTest.
 class ProxyTestHarnessBase {
  public:
+  enum GlobalsConfiguration {
+    PER_THREAD_GLOBALS,
+    SINGLETON_GLOBALS
+  };
+
   ProxyTestHarnessBase();
   virtual ~ProxyTestHarnessBase();
 
@@ -78,7 +93,7 @@ class ProxyTestHarnessBase {
 // Test harness for the plugin side of the proxy.
 class PluginProxyTestHarness : public ProxyTestHarnessBase {
  public:
-  PluginProxyTestHarness();
+  explicit PluginProxyTestHarness(GlobalsConfiguration globals_config);
   virtual ~PluginProxyTestHarness();
 
   PluginDispatcher* plugin_dispatcher() { return plugin_dispatcher_.get(); }
@@ -144,6 +159,9 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
   };
 
  private:
+  void CreatePluginGlobals();
+
+  GlobalsConfiguration globals_config_;
   scoped_ptr<PluginGlobals> plugin_globals_;
 
   scoped_ptr<PluginDispatcher> plugin_dispatcher_;
@@ -162,9 +180,58 @@ class PluginProxyTest : public PluginProxyTestHarness, public testing::Test {
   MessageLoop message_loop_;
 };
 
+// This class provides support for multi-thread testing. A secondary thread is
+// created with a Pepper message loop.
+// Subclasses need to implement the two SetUpTestOn*Thread() methods to do the
+// actual testing work; and call both PostQuitFor*Thread() when testing is
+// done.
+class PluginProxyMultiThreadTest
+    : public PluginProxyTest,
+      public base::DelegateSimpleThread::Delegate {
+ public:
+  PluginProxyMultiThreadTest();
+  virtual ~PluginProxyMultiThreadTest();
+
+  // Called before the secondary thread is started, but after all the member
+  // variables, including |secondary_thread_| and
+  // |secondary_thread_message_loop_|, are initialized.
+  virtual void SetUpTestOnMainThread() = 0;
+
+  virtual void SetUpTestOnSecondaryThread() = 0;
+
+  // TEST_F() should call this method.
+  void RunTest();
+
+  enum ThreadType {
+    MAIN_THREAD,
+    SECONDARY_THREAD
+  };
+  void CheckOnThread(ThreadType thread_type);
+
+  // These can be called on any thread.
+  void PostQuitForMainThread();
+  void PostQuitForSecondaryThread();
+
+ protected:
+  scoped_refptr<MessageLoopResource> secondary_thread_message_loop_;
+  scoped_refptr<base::MessageLoopProxy> main_thread_message_loop_proxy_;
+
+ private:
+  // base::DelegateSimpleThread::Delegate implementation.
+  virtual void Run() OVERRIDE;
+
+  void QuitNestedLoop();
+
+  static void InternalSetUpTestOnSecondaryThread(void* user_data,
+                                                 int32_t result);
+
+  scoped_ptr<base::DelegateSimpleThread> secondary_thread_;
+  scoped_ptr<base::RunLoop> nested_main_thread_message_loop_;
+};
+
 class HostProxyTestHarness : public ProxyTestHarnessBase {
  public:
-  HostProxyTestHarness();
+  explicit HostProxyTestHarness(GlobalsConfiguration globals_config);
   virtual ~HostProxyTestHarness();
 
   HostDispatcher* host_dispatcher() { return host_dispatcher_.get(); }
@@ -215,6 +282,9 @@ class HostProxyTestHarness : public ProxyTestHarnessBase {
  private:
   class MockSyncMessageStatusReceiver;
 
+  void CreateHostGlobals();
+
+  GlobalsConfiguration globals_config_;
   scoped_ptr<ppapi::TestGlobals> host_globals_;
   scoped_ptr<HostDispatcher> host_dispatcher_;
   DelegateMock delegate_mock_;

@@ -62,8 +62,8 @@ PluginGlobals::PluginGlobals()
   plugin_globals_ = this;
 }
 
-PluginGlobals::PluginGlobals(ForTest for_test)
-    : ppapi::PpapiGlobals(for_test),
+PluginGlobals::PluginGlobals(PerThreadForTest per_thread_for_test)
+    : ppapi::PpapiGlobals(per_thread_for_test),
       plugin_proxy_delegate_(NULL),
       callback_tracker_(new CallbackTracker) {
 #if defined(ENABLE_PEPPER_THREADING)

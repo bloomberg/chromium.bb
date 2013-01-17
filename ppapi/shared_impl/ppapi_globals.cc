@@ -26,7 +26,7 @@ PpapiGlobals::PpapiGlobals() {
   main_loop_proxy_ = base::MessageLoopProxy::current();
 }
 
-PpapiGlobals::PpapiGlobals(ForTest) {
+PpapiGlobals::PpapiGlobals(PerThreadForTest) {
   DCHECK(!ppapi_globals_);
   main_loop_proxy_ = base::MessageLoopProxy::current();
 }

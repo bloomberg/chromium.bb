@@ -43,8 +43,8 @@ TEST(ComponentInstallerTest, PepperFlashCheck) {
   MessageLoop message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
 
-  ppapi::PpapiGlobals::ForTest for_test;
-  ppapi::TestGlobals test_globals(for_test);
+  ppapi::PpapiGlobals::PerThreadForTest per_thread_for_test;
+  ppapi::TestGlobals test_globals(per_thread_for_test);
   ppapi::PpapiGlobals::SetPpapiGlobalsOnThreadForTest(&test_globals);
 
   // The test directory is chrome/test/data/components/flapper.

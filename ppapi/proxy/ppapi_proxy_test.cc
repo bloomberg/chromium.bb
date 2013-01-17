@@ -7,14 +7,17 @@
 #include <sstream>
 
 #include "base/bind.h"
-#include "base/compiler_specific.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop_proxy.h"
 #include "base/observer_list.h"
 #include "base/process_util.h"
+#include "base/run_loop.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/ppb_message_loop_proxy.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 
 namespace ppapi {
 namespace proxy {
@@ -149,7 +152,9 @@ bool ProxyTestHarnessBase::SupportsInterface(const char* name) {
 
 // PluginProxyTestHarness ------------------------------------------------------
 
-PluginProxyTestHarness::PluginProxyTestHarness() {
+PluginProxyTestHarness::PluginProxyTestHarness(
+    GlobalsConfiguration globals_config)
+    : globals_config_(globals_config) {
 }
 
 PluginProxyTestHarness::~PluginProxyTestHarness() {
@@ -164,10 +169,9 @@ Dispatcher* PluginProxyTestHarness::GetDispatcher() {
 }
 
 void PluginProxyTestHarness::SetUpHarness() {
-  plugin_globals_.reset(new PluginGlobals(PpapiGlobals::ForTest()));
-
   // These must be first since the dispatcher set-up uses them.
-  PpapiGlobals::SetPpapiGlobalsOnThreadForTest(GetGlobals());
+  CreatePluginGlobals();
+
   resource_tracker().DidCreateInstance(pp_instance());
 
   plugin_dispatcher_.reset(new PluginDispatcher(
@@ -190,10 +194,9 @@ void PluginProxyTestHarness::SetUpHarnessWithChannel(
     base::MessageLoopProxy* ipc_message_loop,
     base::WaitableEvent* shutdown_event,
     bool is_client) {
-  plugin_globals_.reset(new PluginGlobals(PpapiGlobals::ForTest()));
-
   // These must be first since the dispatcher set-up uses them.
-  PpapiGlobals::SetPpapiGlobalsOnThreadForTest(GetGlobals());
+  CreatePluginGlobals();
+
   resource_tracker().DidCreateInstance(pp_instance());
   plugin_delegate_mock_.Init(ipc_message_loop, shutdown_event);
 
@@ -216,6 +219,15 @@ void PluginProxyTestHarness::TearDownHarness() {
 
   resource_tracker().DidDeleteInstance(pp_instance());
   plugin_globals_.reset();
+}
+
+void PluginProxyTestHarness::CreatePluginGlobals() {
+  if (globals_config_ == PER_THREAD_GLOBALS) {
+    plugin_globals_.reset(new PluginGlobals(PpapiGlobals::PerThreadForTest()));
+    PpapiGlobals::SetPpapiGlobalsOnThreadForTest(GetGlobals());
+  } else {
+    plugin_globals_.reset(new PluginGlobals());
+  }
 }
 
 base::MessageLoopProxy*
@@ -270,7 +282,7 @@ void PluginProxyTestHarness::PluginDelegateMock::SetActiveURL(
 
 // PluginProxyTest -------------------------------------------------------------
 
-PluginProxyTest::PluginProxyTest() {
+PluginProxyTest::PluginProxyTest() : PluginProxyTestHarness(SINGLETON_GLOBALS) {
 }
 
 PluginProxyTest::~PluginProxyTest() {
@@ -284,6 +296,102 @@ void PluginProxyTest::TearDown() {
   TearDownHarness();
 }
 
+// PluginProxyMultiThreadTest --------------------------------------------------
+
+PluginProxyMultiThreadTest::PluginProxyMultiThreadTest() {
+}
+
+PluginProxyMultiThreadTest::~PluginProxyMultiThreadTest() {
+}
+
+void PluginProxyMultiThreadTest::RunTest() {
+  main_thread_message_loop_proxy_ =
+      PpapiGlobals::Get()->GetMainThreadMessageLoop();
+  ASSERT_EQ(main_thread_message_loop_proxy_.get(),
+            base::MessageLoopProxy::current());
+  nested_main_thread_message_loop_.reset(new base::RunLoop());
+
+  secondary_thread_.reset(new base::DelegateSimpleThread(
+      this, "PluginProxyMultiThreadTest"));
+
+  {
+    ProxyAutoLock auto_lock;
+
+    // MessageLoopResource assumes that the proxy lock has been acquired.
+    secondary_thread_message_loop_ = new MessageLoopResource(pp_instance());
+
+    // TODO(yzshen): The comment of PPB_MessageLoop says that it would return
+    // PP_OK_COMPLETIONPENDING. Either fix the comment or the implementation.
+    ASSERT_EQ(PP_OK,
+        secondary_thread_message_loop_->PostWork(
+            PP_MakeCompletionCallback(
+                &PluginProxyMultiThreadTest::InternalSetUpTestOnSecondaryThread,
+                this),
+            0));
+  }
+
+  SetUpTestOnMainThread();
+
+  secondary_thread_->Start();
+  nested_main_thread_message_loop_->Run();
+  secondary_thread_->Join();
+
+  {
+    ProxyAutoLock auto_lock;
+
+    // The destruction requires a valid PpapiGlobals instance, so we should
+    // explicitly release it.
+    secondary_thread_message_loop_ = NULL;
+  }
+
+  secondary_thread_.reset(NULL);
+  nested_main_thread_message_loop_.reset(NULL);
+  main_thread_message_loop_proxy_ = NULL;
+}
+
+void PluginProxyMultiThreadTest::CheckOnThread(ThreadType thread_type) {
+  ProxyAutoLock auto_lock;
+  if (thread_type == MAIN_THREAD) {
+    ASSERT_TRUE(MessageLoopResource::GetCurrent()->is_main_thread_loop());
+  } else {
+    ASSERT_EQ(secondary_thread_message_loop_.get(),
+              MessageLoopResource::GetCurrent());
+  }
+}
+
+void PluginProxyMultiThreadTest::PostQuitForMainThread() {
+  main_thread_message_loop_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(&PluginProxyMultiThreadTest::QuitNestedLoop,
+                 base::Unretained(this)));
+}
+
+void PluginProxyMultiThreadTest::PostQuitForSecondaryThread() {
+  ProxyAutoLock auto_lock;
+  secondary_thread_message_loop_->PostQuit(PP_TRUE);
+}
+
+void PluginProxyMultiThreadTest::Run() {
+  ProxyAutoLock auto_lock;
+  ASSERT_EQ(PP_OK, secondary_thread_message_loop_->AttachToCurrentThread());
+  ASSERT_EQ(PP_OK, secondary_thread_message_loop_->Run());
+}
+
+void PluginProxyMultiThreadTest::QuitNestedLoop() {
+  nested_main_thread_message_loop_->Quit();
+}
+
+// static
+void PluginProxyMultiThreadTest::InternalSetUpTestOnSecondaryThread(
+    void* user_data,
+    int32_t result) {
+  EXPECT_EQ(PP_OK, result);
+  PluginProxyMultiThreadTest* thiz =
+      static_cast<PluginProxyMultiThreadTest*>(user_data);
+  thiz->CheckOnThread(SECONDARY_THREAD);
+  thiz->SetUpTestOnSecondaryThread();
+}
+
 // HostProxyTestHarness --------------------------------------------------------
 
 class HostProxyTestHarness::MockSyncMessageStatusReceiver
@@ -293,8 +401,9 @@ class HostProxyTestHarness::MockSyncMessageStatusReceiver
   virtual void EndBlockOnSyncMessage() OVERRIDE {}
 };
 
-HostProxyTestHarness::HostProxyTestHarness()
-    : status_receiver_(new MockSyncMessageStatusReceiver) {
+HostProxyTestHarness::HostProxyTestHarness(GlobalsConfiguration globals_config)
+    : globals_config_(globals_config),
+      status_receiver_(new MockSyncMessageStatusReceiver) {
 }
 
 HostProxyTestHarness::~HostProxyTestHarness() {
@@ -309,10 +418,9 @@ Dispatcher* HostProxyTestHarness::GetDispatcher() {
 }
 
 void HostProxyTestHarness::SetUpHarness() {
-  host_globals_.reset(new ppapi::TestGlobals(PpapiGlobals::ForTest()));
-
   // These must be first since the dispatcher set-up uses them.
-  PpapiGlobals::SetPpapiGlobalsOnThreadForTest(GetGlobals());
+  CreateHostGlobals();
+
   host_dispatcher_.reset(new HostDispatcher(
       pp_module(),
       &MockGetInterface,
@@ -327,10 +435,9 @@ void HostProxyTestHarness::SetUpHarnessWithChannel(
     base::MessageLoopProxy* ipc_message_loop,
     base::WaitableEvent* shutdown_event,
     bool is_client) {
-  host_globals_.reset(new ppapi::TestGlobals(PpapiGlobals::ForTest()));
-
   // These must be first since the dispatcher set-up uses them.
-  PpapiGlobals::SetPpapiGlobalsOnThreadForTest(GetGlobals());
+  CreateHostGlobals();
+
   delegate_mock_.Init(ipc_message_loop, shutdown_event);
 
   host_dispatcher_.reset(new HostDispatcher(
@@ -349,6 +456,15 @@ void HostProxyTestHarness::TearDownHarness() {
   HostDispatcher::RemoveForInstance(pp_instance());
   host_dispatcher_.reset();
   host_globals_.reset();
+}
+
+void HostProxyTestHarness::CreateHostGlobals() {
+  if (globals_config_ == PER_THREAD_GLOBALS) {
+    host_globals_.reset(new TestGlobals(PpapiGlobals::PerThreadForTest()));
+    PpapiGlobals::SetPpapiGlobalsOnThreadForTest(GetGlobals());
+  } else {
+    host_globals_.reset(new TestGlobals());
+  }
 }
 
 base::MessageLoopProxy*
@@ -373,7 +489,7 @@ HostProxyTestHarness::DelegateMock::ShareHandleWithRemote(
 
 // HostProxyTest ---------------------------------------------------------------
 
-HostProxyTest::HostProxyTest() {
+HostProxyTest::HostProxyTest() : HostProxyTestHarness(SINGLETON_GLOBALS) {
 }
 
 HostProxyTest::~HostProxyTest() {
@@ -391,6 +507,8 @@ void HostProxyTest::TearDown() {
 
 TwoWayTest::TwoWayTest(TwoWayTest::TwoWayTestMode test_mode)
     : test_mode_(test_mode),
+      host_(ProxyTestHarnessBase::PER_THREAD_GLOBALS),
+      plugin_(ProxyTestHarnessBase::PER_THREAD_GLOBALS),
       io_thread_("TwoWayTest_IOThread"),
       plugin_thread_("TwoWayTest_PluginThread"),
       remote_harness_(NULL),

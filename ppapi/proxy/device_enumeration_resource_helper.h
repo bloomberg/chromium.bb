@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ppapi/c/dev/ppb_device_ref_dev.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
+#include "ppapi/shared_impl/thread_aware_callback.h"
 
 namespace IPC {
 class Message;
@@ -74,7 +75,8 @@ class PPAPI_PROXY_EXPORT DeviceEnumerationResourceHelper
   bool pending_enumerate_devices_;
 
   uint32_t monitor_callback_id_;
-  PP_MonitorDeviceChangeCallback monitor_callback_;
+  scoped_ptr<ThreadAwareCallback<PP_MonitorDeviceChangeCallback> >
+      monitor_callback_;
   void* monitor_user_data_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceEnumerationResourceHelper);

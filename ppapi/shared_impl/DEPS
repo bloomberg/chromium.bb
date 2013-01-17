@@ -14,4 +14,7 @@ include_rules = [
 
   "-ppapi/cpp",
   "-ppapi/proxy",
+
+  # For testing purpose.
+  "+ppapi/proxy/ppapi_proxy_test.h",
 ]

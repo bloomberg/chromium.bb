@@ -43,8 +43,8 @@ class PPAPI_SHARED_EXPORT PpapiGlobals {
   // purposes. This avoids setting the global static ppapi_globals_. For unit
   // tests that use this feature, the "test" PpapiGlobals should be constructed
   // using this method. See SetPpapiGlobalsOnThreadForTest for more information.
-  struct ForTest {};
-  explicit PpapiGlobals(ForTest);
+  struct PerThreadForTest {};
+  explicit PpapiGlobals(PerThreadForTest);
 
   virtual ~PpapiGlobals();
 
@@ -64,7 +64,7 @@ class PPAPI_SHARED_EXPORT PpapiGlobals {
   // the same process, e.g. for having 1 thread emulate the "host" and 1 thread
   // emulate the "plugin".
   //
-  // PpapiGlobals object must have been constructed using the "ForTest"
+  // PpapiGlobals object must have been constructed using the "PerThreadForTest"
   // parameter.
   static void SetPpapiGlobalsOnThreadForTest(PpapiGlobals* ptr);
 

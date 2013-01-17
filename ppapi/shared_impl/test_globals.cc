@@ -11,8 +11,8 @@ TestGlobals::TestGlobals()
       callback_tracker_(new CallbackTracker) {
 }
 
-TestGlobals::TestGlobals(PpapiGlobals::ForTest for_test)
-    : ppapi::PpapiGlobals(for_test),
+TestGlobals::TestGlobals(PpapiGlobals::PerThreadForTest per_thread_for_test)
+    : ppapi::PpapiGlobals(per_thread_for_test),
       callback_tracker_(new CallbackTracker) {
 }
 
