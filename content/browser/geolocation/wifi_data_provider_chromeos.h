@@ -2,46 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_CHROMEOS_H_
-#define CHROME_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_CHROMEOS_H_
+#ifndef CONTENT_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_CHROMEOS_H_
+#define CONTENT_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_CHROMEOS_H_
 
 #include "base/compiler_specific.h"
 #include "content/browser/geolocation/wifi_data_provider_common.h"
 
-namespace chromeos {
-class NetworkLibrary;
-}
+namespace content {
 
-class WifiDataProviderChromeOs : public content::WifiDataProviderImplBase {
+class CONTENT_EXPORT WifiDataProviderChromeOs
+    : public WifiDataProviderImplBase {
  public:
   WifiDataProviderChromeOs();
 
   // WifiDataProviderImplBase
   virtual bool StartDataProvider() OVERRIDE;
   virtual void StopDataProvider() OVERRIDE;
-  virtual bool GetData(content::WifiData* data) OVERRIDE;
-
-  // Allows injection of |lib| for testing.
-  static content::WifiDataProviderCommon::WlanApiInterface* NewWlanApi(
-      chromeos::NetworkLibrary* lib);
+  virtual bool GetData(WifiData* data) OVERRIDE;
 
  private:
+  friend class GeolocationChromeOsWifiDataProviderTest;
   virtual ~WifiDataProviderChromeOs();
 
   // UI thread
   void DoWifiScanTaskOnUIThread();  // The polling task
   void DoStartTaskOnUIThread();
-  void DoStopTaskOnUIThread();
 
   // Client thread
   void DidWifiScanTaskNoResults();
-  void DidWifiScanTask(const content::WifiData& new_data);
+  void DidWifiScanTask(const WifiData& new_data);
   void MaybeNotifyListeners(bool update_available);
-  void DidStartFailed();
-
-  // WifiDataProviderCommon
-  virtual content::WifiDataProviderCommon::WlanApiInterface* NewWlanApi();
-  virtual content::PollingPolicyInterface* NewPollingPolicy();
 
   // Will schedule a scan; i.e. enqueue DoWifiScanTask deferred task.
   void ScheduleNextScan(int interval);
@@ -52,14 +42,17 @@ class WifiDataProviderChromeOs : public content::WifiDataProviderImplBase {
   // Will schedule stopping of the scanning process.
   void ScheduleStop();
 
+  // Get access point data from chromeos.
+  bool GetAccessPointData(WifiData::AccessPointDataSet* data);
+
   // Underlying OS wifi API. (UI thread)
-  scoped_ptr<content::WifiDataProviderCommon::WlanApiInterface> wlan_api_;
+  scoped_ptr<WifiDataProviderCommon::WlanApiInterface> wlan_api_;
 
   // Controls the polling update interval. (client thread)
-  scoped_ptr<content::PollingPolicyInterface> polling_policy_;
+  scoped_ptr<PollingPolicyInterface> polling_policy_;
 
   // The latest wifi data. (client thread)
-  content::WifiData wifi_data_;
+  WifiData wifi_data_;
 
   // Whether we have strated the data provider. (client thread)
   bool started_;
@@ -70,4 +63,6 @@ class WifiDataProviderChromeOs : public content::WifiDataProviderImplBase {
   DISALLOW_COPY_AND_ASSIGN(WifiDataProviderChromeOs);
 };
 
-#endif  // CHROME_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_CHROMEOS_H_
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_CHROMEOS_H_

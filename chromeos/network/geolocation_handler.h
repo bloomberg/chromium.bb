@@ -20,7 +20,7 @@ namespace chromeos {
 // This class provices Shill Wifi Access Point data. It currently relies on
 // polling because that is the usage model in content::WifiDataProvider. This
 // class requests data asynchronously, returning the most recent available data.
-// A typical usage pattern, assuming a wifi device is enabeld, is:
+// A typical usage pattern, assuming a wifi device is enabled, is:
 //   Initialize();  // Makes an initial request
 //   GetWifiAccessPoints();  // returns true + inital data, requests update
 //   (Delay some amount of time, ~10s)
@@ -68,7 +68,7 @@ class CHROMEOS_EXPORT GeolocationHandler : public ShillPropertyChangedObserver {
   void GeolocationCallback(DBusMethodCallStatus call_status,
                            const base::DictionaryValue& properties);
 
-  // Wimax enabled state
+  // Wifi enabled state
   bool wifi_enabled_;
 
   // Cached wifi access points and update time

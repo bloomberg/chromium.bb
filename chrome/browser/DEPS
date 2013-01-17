@@ -66,11 +66,6 @@ include_rules = [
   "+webkit/glue/window_open_disposition.h",
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 
-  # TODO(jam): Need to remove all these and use only content/public. BUG=98716
-  # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
-  "!content/browser/geolocation/wifi_data_provider_common.h",
-  # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
-
   "-chrome/browser/ui/views",
   # TODO(tfarina): Remove all these. crbug.com/125846.
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!

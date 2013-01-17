@@ -15,7 +15,8 @@ include_rules = [
   "+third_party/speex",
 
   # Allow non-browser Chrome OS code to be used.
-  "+chromeos/power",
+  "+chromeos",
+  "+third_party/cros_system_api",
 
   # DO NOT ADD ANY CHROME INCLUDES HERE!!!
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module

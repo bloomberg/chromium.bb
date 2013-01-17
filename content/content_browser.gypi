@@ -434,6 +434,8 @@
     'browser/geolocation/network_location_request.cc',
     'browser/geolocation/network_location_request.h',
     'browser/geolocation/osx_wifi.h',
+    'browser/geolocation/wifi_data_provider_chromeos.cc',
+    'browser/geolocation/wifi_data_provider_chromeos.h',
     'browser/geolocation/wifi_data_provider_common.cc',
     'browser/geolocation/wifi_data_provider_common.h',
     'browser/geolocation/wifi_data_provider_common_win.cc',
@@ -1076,6 +1078,7 @@
         '../build/linux/system.gyp:dbus',
       ],
       'sources!': [
+        'browser/geolocation/wifi_data_provider_linux.cc',
         'browser/power_save_blocker_linux.cc',
         'browser/renderer_host/gtk_key_bindings_handler.cc',
         'browser/renderer_host/gtk_key_bindings_handler.h',

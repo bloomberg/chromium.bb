@@ -277,6 +277,7 @@
         'browser/geolocation/gps_location_provider_unittest_linux.cc',
         'browser/geolocation/location_arbitrator_impl_unittest.cc',
         'browser/geolocation/network_location_provider_unittest.cc',
+        'browser/geolocation/wifi_data_provider_chromeos_unittest.cc',
         'browser/geolocation/wifi_data_provider_common_unittest.cc',
         'browser/geolocation/wifi_data_provider_linux_unittest.cc',
         'browser/geolocation/wifi_data_provider_unittest_win.cc',
@@ -597,6 +598,7 @@
         ['chromeos==1', {
           'sources/': [
             ['exclude', '^browser/renderer_host/gtk_key_bindings_handler_unittest.cc'],
+            ['exclude', '^browser/geolocation/wifi_data_provider_linux_unittest.cc'],
           ],
         }],
         ['use_aura==1', {
@@ -612,6 +614,7 @@
             'browser/geolocation/device_data_provider_unittest.cc',
             'browser/geolocation/gps_location_provider_unittest_linux.cc',
             'browser/geolocation/network_location_provider_unittest.cc',
+            'browser/geolocation/wifi_data_provider_chromeos_unittest.cc',
             'browser/geolocation/wifi_data_provider_common_unittest.cc',
             'browser/geolocation/wifi_data_provider_linux_unittest.cc',
           ],

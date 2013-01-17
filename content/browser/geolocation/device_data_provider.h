@@ -125,9 +125,7 @@ class DeviceDataProviderImplBase : public DeviceDataProviderImplBaseHack {
   }
 
  protected:
-  virtual ~DeviceDataProviderImplBase() {
-    DCHECK(CalledOnClientThread());
-  }
+  virtual ~DeviceDataProviderImplBase() {}
 
   // Calls DeviceDataUpdateAvailable() on all registered listeners.
   typedef std::set<ListenerInterface*> ListenersSet;
