@@ -287,7 +287,8 @@ void WebContentsViewGtk::GotFocus() {
 void WebContentsViewGtk::TakeFocus(bool reverse) {
   if (!web_contents_->GetDelegate())
     return;
-  if (!web_contents_->GetDelegate()->TakeFocus(web_contents_, reverse)) {
+  if (!web_contents_->GetDelegate()->TakeFocus(web_contents_, reverse) &&
+      GetTopLevelNativeWindow()) {
     gtk_widget_child_focus(GTK_WIDGET(GetTopLevelNativeWindow()),
         reverse ? GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD);
   }
