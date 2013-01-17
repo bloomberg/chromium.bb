@@ -16,7 +16,6 @@ found in the LICENSE file.
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="menu_button.css">
     <link rel="stylesheet" href="toolbar.css">
-    <script src="host_setup_dialog.js"></script>
     <script src="client_plugin.js"></script>
     <script src="client_plugin_async.js"></script>
     <script src="client_screen.js"></script>
@@ -30,6 +29,8 @@ found in the LICENSE file.
     <script src="host_list.js"></script>
     <script src="host_screen.js"></script>
     <script src="host_session.js"></script>
+    <script src="host_settings.js"></script>
+    <script src="host_setup_dialog.js"></script>
     <script src="host_table_entry.js"></script>
     <script src="l10n.js"></script>
     <script src="log_to_server.js"></script>
@@ -624,8 +625,9 @@ found in the LICENSE file.
                    class="kd-disclosureindicator">
             </button>
             <ul>
-              <li id="enable-shrink-to-fit" i18n-content="SHRINK_TO_FIT"></li>
-              <li id="disable-shrink-to-fit" i18n-content="ORIGINAL_SIZE"></li>
+              <li id="screen-resize-to-client"
+                  i18n-content="RESIZE_TO_CLIENT"></li>
+              <li id="screen-shrink-to-fit" i18n-content="SHRINK_TO_FIT"></li>
               <li class="menu-separator"></li>
               <li id="toggle-full-screen" i18n-content="FULL_SCREEN"></li>
             </ul>

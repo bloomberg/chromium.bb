@@ -179,6 +179,7 @@
       'webapp/host_list.js',
       'webapp/host_screen.js',
       'webapp/host_session.js',
+      'webapp/host_settings.js',
       'webapp/host_setup_dialog.js',
       'webapp/host_table_entry.js',
       'webapp/l10n.js',

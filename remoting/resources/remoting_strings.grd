@@ -447,9 +447,6 @@
       <message desc="Modified version of the host name shown for hosts that are not currently accessible." name="IDR_OFFLINE">
         <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (offline)
       </message>
-      <message desc="Menu option for disabling shrink-to-fit. When clicked, the remote desktop will be displayed at 1:1 scale." name="IDR_ORIGINAL_SIZE">
-        Original size
-      </message>
       <message desc="In the connection history dialog, clicking this button shows only recent connections from this computer." name="IDR_OUTGOING_CONNECTIONS">
         From this computer
       </message>
@@ -467,6 +464,9 @@
       </message>
       <message desc="Label for button to reconnect to the previous Me2Me host. This button appears on the 'session-finished' page." name="IDR_RECONNECT">
         Reconnect
+      </message>
+      <message desc="Button for enabling or disabling the 'resize-to-client' functionality, whereby the host desktop is resized to match the client size as closely as possible." name="IDR_RESIZE_TO_CLIENT">
+        Resize desktop to fit
       </message>
       <message desc="Label for button to retry connecting to a Me2Me host, after failing to connect to that host. This button appears on the 'session-finished' page." name="IDR_RETRY">
         Retry

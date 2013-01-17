@@ -30,8 +30,8 @@ var remoting = remoting || {};
  *     for Me2Me.
  * @param {string} authenticationMethods Comma-separated list of
  *     authentication methods the client should attempt to use.
- * @param {string} authenticationTag A host-specific tag to mix into
- *     authentication hashes.
+ * @param {string} hostId The host identifier for Me2Me, or empty for IT2Me.
+ *     Mixed into authentication hashes for some authentication methods.
  * @param {remoting.ClientSession.Mode} mode The mode of this connection.
  * @param {function(remoting.ClientSession.State,
                     remoting.ClientSession.State):void} onStateChange
@@ -39,7 +39,7 @@ var remoting = remoting || {};
  * @constructor
  */
 remoting.ClientSession = function(hostJid, hostPublicKey, sharedSecret,
-                                  authenticationMethods, authenticationTag,
+                                  authenticationMethods, hostId,
                                   mode, onStateChange) {
   this.state = remoting.ClientSession.State.CREATED;
 
@@ -47,30 +47,43 @@ remoting.ClientSession = function(hostJid, hostPublicKey, sharedSecret,
   this.hostPublicKey = hostPublicKey;
   this.sharedSecret = sharedSecret;
   this.authenticationMethods = authenticationMethods;
-  this.authenticationTag = authenticationTag;
+  this.hostId = hostId;
   this.mode = mode;
   this.clientJid = '';
   this.sessionId = '';
   /** @type {remoting.ClientPlugin} */
   this.plugin = null;
-  this.scaleToFit = false;
+  /** @private */
+  this.shrinkToFit_ = true;
+  /** @private */
+  this.resizeToClient_ = false;
+  /** @private */
   this.hasReceivedFrame_ = false;
   this.logToServer = new remoting.LogToServer();
   this.onStateChange = onStateChange;
 
   /** @type {number?} @private */
   this.notifyClientDimensionsTimer_ = null;
+  /** @type {number?} @private */
+  this.bumpScrollTimer_ = null;
+
+  /**
+   * Allow error reporting to be suppressed in situations where it would not
+   * be useful, for example, when the device is offline.
+   *
+   * @type {boolean} @private
+   */
+  this.logErrors_ = true;
 
   /** @private */
   this.callPluginLostFocus_ = this.pluginLostFocus_.bind(this);
   /** @private */
   this.callPluginGotFocus_ = this.pluginGotFocus_.bind(this);
   /** @private */
-  this.callEnableShrink_ = this.setScaleToFit.bind(this, true);
-  /** @private */
-  this.callDisableShrink_ = this.setScaleToFit.bind(this, false);
+  this.callSetScreenMode_ = this.onSetScreenMode_.bind(this);
   /** @private */
   this.callToggleFullScreen_ = this.toggleFullScreen_.bind(this);
+
   /** @private */
   this.screenOptionsMenu_ = new remoting.MenuButton(
       document.getElementById('screen-options-menu'),
@@ -81,24 +94,26 @@ remoting.ClientSession = function(hostJid, hostPublicKey, sharedSecret,
   );
 
   /** @type {HTMLElement} @private */
-  this.shrinkToFit_ = document.getElementById('enable-shrink-to-fit');
+  this.resizeToClientButton_ =
+      document.getElementById('screen-resize-to-client');
   /** @type {HTMLElement} @private */
-  this.originalSize_ = document.getElementById('disable-shrink-to-fit');
+  this.shrinkToFitButton_ = document.getElementById('screen-shrink-to-fit');
   /** @type {HTMLElement} @private */
-  this.fullScreen_ = document.getElementById('toggle-full-screen');
+  this.fullScreenButton_ = document.getElementById('toggle-full-screen');
 
-  this.shrinkToFit_.addEventListener('click', this.callEnableShrink_, false);
-  this.originalSize_.addEventListener('click', this.callDisableShrink_, false);
-  this.fullScreen_.addEventListener('click', this.callToggleFullScreen_, false);
-  /** @type {number?} @private */
-  this.bumpScrollTimer_ = null;
-  /**
-   * Allow error reporting to be suppressed in situations where it would not
-   * be useful, for example, when the device is offline.
-   *
-   * @type {boolean} @private
-   */
-  this.logErrors_ = true;
+  if (this.mode == remoting.ClientSession.Mode.IT2ME) {
+    // Resize-to-client is not supported for IT2Me hosts.
+    this.resizeToClientButton_.parentNode.removeChild(
+        this.resizeToClientButton_);
+  } else {
+    this.resizeToClientButton_.addEventListener(
+        'click', this.callSetScreenMode_, false);
+  }
+
+  this.shrinkToFitButton_.addEventListener(
+      'click', this.callSetScreenMode_, false);
+  this.fullScreenButton_.addEventListener(
+      'click', this.callToggleFullScreen_, false);
 };
 
 // Note that the positive values in both of these enums are copied directly
@@ -165,6 +180,10 @@ remoting.ClientSession.STATS_KEY_ENCODE_LATENCY = 'encodeLatency';
 remoting.ClientSession.STATS_KEY_DECODE_LATENCY = 'decodeLatency';
 remoting.ClientSession.STATS_KEY_RENDER_LATENCY = 'renderLatency';
 remoting.ClientSession.STATS_KEY_ROUNDTRIP_LATENCY = 'roundtripLatency';
+
+// Keys for per-host settings.
+remoting.ClientSession.KEY_RESIZE_TO_CLIENT = 'resizeToClient';
+remoting.ClientSession.KEY_SHRINK_TO_FIT = 'shrinkToFit';
 
 /**
  * The current state of the session.
@@ -245,6 +264,28 @@ remoting.ClientSession.prototype.pluginLostFocus_ = function() {
 remoting.ClientSession.prototype.createPluginAndConnect =
     function(container) {
   this.plugin = this.createClientPlugin_(container, this.PLUGIN_ID);
+  remoting.HostSettings.load(this.hostId,
+                             this.onHostSettingsLoaded_.bind(this));
+};
+
+/**
+ * @param {Object.<string>} options The current options for the host, or {}
+ *     if this client has no saved settings for the host.
+ * @private
+ */
+remoting.ClientSession.prototype.onHostSettingsLoaded_ = function(options) {
+  if (remoting.ClientSession.KEY_RESIZE_TO_CLIENT in options &&
+      typeof(options[remoting.ClientSession.KEY_RESIZE_TO_CLIENT]) ==
+          'boolean') {
+    this.resizeToClient_ = /** @type {boolean} */
+        options[remoting.ClientSession.KEY_RESIZE_TO_CLIENT];
+  }
+  if (remoting.ClientSession.KEY_SHRINK_TO_FIT in options &&
+      typeof(options[remoting.ClientSession.KEY_SHRINK_TO_FIT]) ==
+          'boolean') {
+    this.shrinkToFit_ = /** @type {boolean} */
+        options[remoting.ClientSession.KEY_SHRINK_TO_FIT];
+  }
 
   this.plugin.element().focus();
 
@@ -292,11 +333,6 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
     this.plugin.remapKey(0x0700e4, 0x0700e7);
   }
 
-  // Enable scale-to-fit if and only if the plugin is new enough for
-  // high-quality scaling.
-  this.setScaleToFit(this.plugin.hasFeature(
-      remoting.ClientPlugin.Feature.HIGH_QUALITY_SCALING));
-
   /** @param {string} msg The IQ stanza to send. */
   this.plugin.onOutgoingIqHandler = this.sendIq_.bind(this);
   /** @param {string} msg The message to log. */
@@ -330,11 +366,12 @@ remoting.ClientSession.prototype.removePlugin = function() {
     this.plugin.cleanup();
     this.plugin = null;
   }
-  this.shrinkToFit_.removeEventListener('click', this.callEnableShrink_, false);
-  this.originalSize_.removeEventListener('click', this.callDisableShrink_,
-                                         false);
-  this.fullScreen_.removeEventListener('click', this.callToggleFullScreen_,
-                                       false);
+  this.resizeToClientButton_.removeEventListener(
+      'click', this.callSetScreenMode_, false);
+  this.shrinkToFitButton_.removeEventListener(
+      'click', this.callSetScreenMode_, false);
+  this.fullScreenButton_.removeEventListener(
+      'click', this.callToggleFullScreen_, false);
 };
 
 /**
@@ -404,27 +441,63 @@ remoting.ClientSession.prototype.sendPrintScreen = function() {
 }
 
 /**
- * Enables or disables the client's scale-to-fit feature.
+ * Callback for the two "screen mode" related menu items: Resize desktop to
+ * fit and Shrink to fit.
  *
- * @param {boolean} scaleToFit True to enable scale-to-fit, false otherwise.
+ * @param {Event} event The click event indicating which mode was selected.
  * @return {void} Nothing.
+ * @private
  */
-remoting.ClientSession.prototype.setScaleToFit = function(scaleToFit) {
-  this.scaleToFit = scaleToFit;
-  this.updateDimensions();
-  // If enabling scaling, reset bump-scroll offsets.
-  if (scaleToFit) {
-    this.scroll_(0, 0);
+remoting.ClientSession.prototype.onSetScreenMode_ = function(event) {
+  var shrinkToFit = this.shrinkToFit_;
+  var resizeToClient = this.resizeToClient_;
+  if (event.target == this.shrinkToFitButton_) {
+    shrinkToFit = !shrinkToFit;
   }
-}
+  if (event.target == this.resizeToClientButton_) {
+    resizeToClient = !resizeToClient;
+  }
+  this.setScreenMode_(shrinkToFit, resizeToClient);
+};
 
 /**
- * Returns whether the client is currently scaling the host to fit the tab.
+ * Set the shrink-to-fit and resize-to-client flags and save them if this is
+ * a Me2Me connection.
  *
- * @return {boolean} The current scale-to-fit setting.
+ * @param {boolean} shrinkToFit True if the remote desktop should be scaled
+ *     down if it is larger than the client window; false if scroll-bars
+ *     should be added in this case.
+ * @param {boolean} resizeToClient True if window resizes should cause the
+ *     host to attempt to resize its desktop to match the client window size;
+ *     false to disable this behaviour for subsequent window resizes--the
+ *     current host desktop size is not restored in this case.
+ * @return {void} Nothing.
+ * @private
  */
-remoting.ClientSession.prototype.getScaleToFit = function() {
-  return this.scaleToFit;
+remoting.ClientSession.prototype.setScreenMode_ =
+    function(shrinkToFit, resizeToClient) {
+
+  if (resizeToClient && !this.resizeToClient_) {
+    this.plugin.notifyClientDimensions(window.innerWidth, window.innerHeight);
+  }
+
+  // If enabling shrink, reset bump-scroll offsets.
+  var needsScrollReset = shrinkToFit && !this.shrinkToFit_;
+
+  this.shrinkToFit_ = shrinkToFit;
+  this.resizeToClient_ = resizeToClient;
+
+  if (this.hostId != '') {
+    var options = {};
+    options[remoting.ClientSession.KEY_SHRINK_TO_FIT] = this.shrinkToFit_;
+    options[remoting.ClientSession.KEY_RESIZE_TO_CLIENT] = this.resizeToClient_;
+    remoting.HostSettings.save(this.hostId, options);
+  }
+
+  this.updateDimensions();
+  if (needsScrollReset) {
+    this.scroll_(0, 0);
+  }
 }
 
 /**
@@ -495,7 +568,7 @@ remoting.ClientSession.prototype.connectPluginToWcs_ = function() {
   remoting.wcs.setOnIq(onIncomingIq);
   this.plugin.connect(this.hostJid, this.hostPublicKey, this.clientJid,
                       this.sharedSecret, this.authenticationMethods,
-                      this.authenticationTag);
+                      this.hostId);
 };
 
 /**
@@ -510,7 +583,9 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
     function(status, error) {
   if (status == remoting.ClientSession.State.CONNECTED) {
     this.onDesktopSizeChanged_();
-    this.plugin.notifyClientDimensions(window.innerWidth, window.innerHeight)
+    if (this.resizeToClient_) {
+      this.plugin.notifyClientDimensions(window.innerWidth, window.innerHeight);
+    }
   } else if (status == remoting.ClientSession.State.FAILED) {
     this.error = /** @type {remoting.ClientSession.ConnectionError} */ (error);
   }
@@ -573,11 +648,13 @@ remoting.ClientSession.prototype.onResize = function() {
 
   // Defer notifying the host of the change until the window stops resizing, to
   // avoid overloading the control channel with notifications.
-  this.notifyClientDimensionsTimer_ = window.setTimeout(
-      this.plugin.notifyClientDimensions.bind(this.plugin,
-                                              window.innerWidth,
-                                              window.innerHeight),
-      1000);
+  if (this.resizeToClient_) {
+    this.notifyClientDimensionsTimer_ = window.setTimeout(
+        this.plugin.notifyClientDimensions.bind(this.plugin,
+                                                window.innerWidth,
+                                                window.innerHeight),
+        1000);
+  }
 
   // If bump-scrolling is enabled, adjust the plugin margins to fully utilize
   // the new window area.
@@ -642,7 +719,7 @@ remoting.ClientSession.prototype.updateDimensions = function() {
   var desktopHeight = this.plugin.desktopHeight;
   var scale = 1.0;
 
-  if (this.getScaleToFit()) {
+  if (this.shrinkToFit_) {
     // Scale to fit the entire desktop in the client window.
     var scaleFitWidth = Math.min(1.0, 1.0 * windowWidth / desktopWidth);
     var scaleFitHeight = Math.min(1.0, 1.0 * windowHeight / desktopHeight);
@@ -754,9 +831,10 @@ remoting.ClientSession.prototype.toggleFullScreen_ = function() {
  * @private
  */
 remoting.ClientSession.prototype.onShowOptionsMenu_ = function() {
-  remoting.MenuButton.select(this.shrinkToFit_, this.scaleToFit);
-  remoting.MenuButton.select(this.originalSize_, !this.scaleToFit);
-  remoting.MenuButton.select(this.fullScreen_, document.webkitIsFullScreen);
+  remoting.MenuButton.select(this.resizeToClientButton_, this.resizeToClient_);
+  remoting.MenuButton.select(this.shrinkToFitButton_, this.shrinkToFit_);
+  remoting.MenuButton.select(this.fullScreenButton_,
+      document.webkitIsFullScreen);
 };
 
 /**

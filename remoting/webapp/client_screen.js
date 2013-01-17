@@ -94,15 +94,6 @@ remoting.cancelConnect = function() {
 */
 
 /**
- * Toggle the scale-to-fit feature for the current client session.
- *
- * @return {void} Nothing.
- */
-remoting.toggleScaleToFit = function() {
-  remoting.clientSession.setScaleToFit(!remoting.clientSession.getScaleToFit());
-};
-
-/**
  * Update the remoting client layout in response to a resize event.
  *
  * @return {void} Nothing.

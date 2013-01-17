@@ -53,7 +53,6 @@ remoting.ClientPlugin.prototype.isSupportedVersion = function() {};
  * @enum {string}
  */
 remoting.ClientPlugin.Feature = {
-  HIGH_QUALITY_SCALING: 'highQualityScaling',
   INJECT_KEY_EVENT: 'injectKeyEvent',
   NOTIFY_CLIENT_DIMENSIONS: 'notifyClientDimensions',
   PAUSE_VIDEO: 'pauseVideo',
