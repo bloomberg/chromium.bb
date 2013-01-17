@@ -7,7 +7,7 @@
  * @param {FileManager} fileManager FileManager instance.
  * @param {Array.<number>} indexes Selected indexes.
  */
-function Selection(fileManager, indexes) {
+function FileSelection(fileManager, indexes) {
   this.fileManager_ = fileManager;
   this.indexes = indexes;
   this.entries = [];
@@ -54,7 +54,7 @@ function Selection(fileManager, indexes) {
  * Computes data required to get file tasks and requests the tasks.
  * @param {function} callback The callback.
  */
-Selection.prototype.createTasks = function(callback) {
+FileSelection.prototype.createTasks = function(callback) {
   if (!this.fileManager_.isOnGData()) {
     this.tasks.init(this.urls);
     callback();
@@ -79,7 +79,7 @@ Selection.prototype.createTasks = function(callback) {
  * Computes the total size of selected files.
  * @param {function} callback The callback.
  */
-Selection.prototype.computeBytes = function(callback) {
+FileSelection.prototype.computeBytes = function(callback) {
   if (this.entries.length == 0) {
     this.bytesKnown = true;
     this.bytes = 0;
@@ -125,7 +125,7 @@ Selection.prototype.computeBytes = function(callback) {
  * Cancels any async computation.
  * @private
  */
-Selection.prototype.cancelComputing_ = function() {
+FileSelection.prototype.cancelComputing_ = function() {
   this.cancelled_ = true;
 };
 
@@ -133,7 +133,7 @@ Selection.prototype.cancelComputing_ = function() {
  * This object encapsulates everything related to current selection.
  * @param {FileManager} fileManager File manager instance.
  */
-function SelectionHandler(fileManager) {
+function FileSelectionHandler(fileManager) {
   this.fileManager_ = fileManager;
   // TODO(dgozman): create a shared object with most of UI elements.
   this.okButton_ = fileManager.okButton_;
@@ -157,24 +157,25 @@ function SelectionHandler(fileManager) {
 /**
  * Maximum amount of thumbnails in the preview pane.
  */
-SelectionHandler.MAX_PREVIEW_THUMBNAIL_COUNT = 4;
+FileSelectionHandler.MAX_PREVIEW_THUMBNAIL_COUNT = 4;
 
 /**
  * Maximum width or height of an image what pops up when the mouse hovers
  * thumbnail in the bottom panel (in pixels).
  */
-SelectionHandler.IMAGE_HOVER_PREVIEW_SIZE = 200;
+FileSelectionHandler.IMAGE_HOVER_PREVIEW_SIZE = 200;
 
 /**
  * Update the UI when the selection model changes.
  *
  * @param {cr.Event} event The change event.
  */
-SelectionHandler.prototype.onSelectionChanged = function(event) {
+FileSelectionHandler.prototype.onFileSelectionChanged = function(event) {
   var indexes =
       this.fileManager_.getCurrentList().selectionModel.selectedIndexes;
   if (this.selection) this.selection.cancelComputing_();
-  var selection = this.selection = new Selection(this.fileManager_, indexes);
+  var selection = new FileSelection(this.fileManager_, indexes);
+  this.selection = selection;
 
   if (this.fileManager_.dialogType == DialogType.SELECT_SAVEAS_FILE) {
     // If this is a save-as dialog, copy the selected file into the filename
@@ -208,23 +209,23 @@ SelectionHandler.prototype.onSelectionChanged = function(event) {
 
   var updateDelay = 200;
   var now = Date.now();
-  if (now > (this.lastSelectionTime_ || 0) + updateDelay) {
+  if (now > (this.lastFileSelectionTime_ || 0) + updateDelay) {
     // The previous selection change happened a while ago. Update the UI soon.
     updateDelay = 0;
   }
-  this.lastSelectionTime_ = now;
+  this.lastFileSelectionTime_ = now;
 
   this.selectionUpdateTimer_ = setTimeout(function() {
     this.selectionUpdateTimer_ = null;
     if (this.selection == selection)
-      this.updateSelectionAsync(selection);
+      this.updateFileSelectionAsync(selection);
   }.bind(this), updateDelay);
 };
 
 /**
  * Clears the primary UI selection elements.
  */
-SelectionHandler.prototype.clearUI = function() {
+FileSelectionHandler.prototype.clearUI = function() {
   this.previewThumbnails_.textContent = '';
   this.previewText_.textContent = '';
   this.hideCalculating_();
@@ -236,7 +237,7 @@ SelectionHandler.prototype.clearUI = function() {
  * Updates the Ok button enabled state.
  * @return {boolean} Whether button is enabled.
  */
-SelectionHandler.prototype.updateOkButton = function() {
+FileSelectionHandler.prototype.updateOkButton = function() {
   var selectable;
   var dialogType = this.fileManager_.dialogType;
 
@@ -246,11 +247,11 @@ SelectionHandler.prototype.updateOkButton = function() {
     selectable = this.selection.directoryCount <= 1 &&
         this.selection.fileCount == 0;
   } else if (dialogType == DialogType.SELECT_OPEN_FILE) {
-    selectable = (this.isSelectionAvailable() &&
+    selectable = (this.isFileSelectionAvailable() &&
                   this.selection.directoryCount == 0 &&
                   this.selection.fileCount == 1);
   } else if (dialogType == DialogType.SELECT_OPEN_MULTI_FILE) {
-    selectable = (this.isSelectionAvailable() &&
+    selectable = (this.isFileSelectionAvailable() &&
                   this.selection.directoryCount == 0 &&
                   this.selection.fileCount >= 1);
   } else if (dialogType == DialogType.SELECT_SAVEAS_FILE) {
@@ -277,7 +278,7 @@ SelectionHandler.prototype.updateOkButton = function() {
   * @return {boolean} True if all files in the current selection are
   *                   available.
   */
-SelectionHandler.prototype.isSelectionAvailable = function() {
+FileSelectionHandler.prototype.isFileSelectionAvailable = function() {
   return !this.fileManager_.isOnGData() ||
       !this.fileManager_.isOffline() ||
       this.selection.allGDataFilesPresent;
@@ -287,7 +288,7 @@ SelectionHandler.prototype.isSelectionAvailable = function() {
  * Animates preview panel show/hide transitions.
  * @private
  */
-SelectionHandler.prototype.updatePreviewPanelVisibility_ = function() {
+FileSelectionHandler.prototype.updatePreviewPanelVisibility_ = function() {
   var panel = this.previewPanel_;
   var state = panel.getAttribute('visibility');
   var mustBeVisible = (this.selection.totalCount > 0);
@@ -340,7 +341,7 @@ SelectionHandler.prototype.updatePreviewPanelVisibility_ = function() {
  * @return {boolean} True if space reserverd for the preview panel.
  * @private
  */
-SelectionHandler.prototype.isPreviewPanelVisibile_ = function() {
+FileSelectionHandler.prototype.isPreviewPanelVisibile_ = function() {
   return this.previewPanel_.getAttribute('visibility') != 'hidden';
 };
 
@@ -348,7 +349,7 @@ SelectionHandler.prototype.isPreviewPanelVisibile_ = function() {
  * Update the selection summary in preview panel.
  * @private
  */
-SelectionHandler.prototype.updatePreviewPanelText_ = function() {
+FileSelectionHandler.prototype.updatePreviewPanelText_ = function() {
   var selection = this.selection;
   if (selection.totalCount == 0) {
     // We dont want to change the string during preview panel animating away.
@@ -383,7 +384,7 @@ SelectionHandler.prototype.updatePreviewPanelText_ = function() {
  * Displays the 'calculating size' label.
  * @private
  */
-SelectionHandler.prototype.showCalculating_ = function() {
+FileSelectionHandler.prototype.showCalculating_ = function() {
   if (this.animationTimeout_) {
     clearTimeout(this.animationTimeout_);
     this.animationTimeout_ = null;
@@ -416,7 +417,7 @@ SelectionHandler.prototype.showCalculating_ = function() {
  * Hides the 'calculating size' label.
  * @private
  */
-SelectionHandler.prototype.hideCalculating_ = function() {
+FileSelectionHandler.prototype.hideCalculating_ = function() {
   if (this.animationTimeout_) {
     clearTimeout(this.animationTimeout_);
     this.animationTimeout_ = null;
@@ -426,9 +427,9 @@ SelectionHandler.prototype.hideCalculating_ = function() {
 
 /**
  * Calculates async selection stats and updates secondary UI elements.
- * @param {Selection} selection The selection object.
+ * @param {FileSelection} selection The selection object.
  */
-SelectionHandler.prototype.updateSelectionAsync = function(selection) {
+FileSelectionHandler.prototype.updateFileSelectionAsync = function(selection) {
   if (this.selection != selection) return;
 
   // Update the file tasks.
@@ -477,10 +478,10 @@ SelectionHandler.prototype.updateSelectionAsync = function(selection) {
 
 /**
  * Renders preview thumbnails in preview panel.
- * @param {Selection} selection The selection object.
+ * @param {FileSelection} selection The selection object.
  * @private
  */
-SelectionHandler.prototype.showPreviewThumbnails_ = function(selection) {
+FileSelectionHandler.prototype.showPreviewThumbnails_ = function(selection) {
   var thumbnails = [];
   var thumbnailCount = 0;
   var thumbnailLoaded = -1;
@@ -504,7 +505,7 @@ SelectionHandler.prototype.showPreviewThumbnails_ = function(selection) {
     clearTimeout(forcedShowTimeout);
     forcedShowTimeout = null;
 
-    // Selection could change while images are loading.
+    // FileSelection could change while images are loading.
     if (self.selection == selection) {
       self.previewThumbnails_.textContent = '';
       for (var i = 0; i < thumbnails.length; i++)
@@ -527,7 +528,7 @@ SelectionHandler.prototype.showPreviewThumbnails_ = function(selection) {
   for (var i = 0; i < selection.entries.length; i++) {
     var entry = selection.entries[i];
 
-    if (thumbnailCount < SelectionHandler.MAX_PREVIEW_THUMBNAIL_COUNT) {
+    if (thumbnailCount < FileSelectionHandler.MAX_PREVIEW_THUMBNAIL_COUNT) {
       var box = doc.createElement('div');
       box.className = 'thumbnail';
       if (thumbnailCount == 0) {
@@ -548,7 +549,8 @@ SelectionHandler.prototype.showPreviewThumbnails_ = function(selection) {
       }
       thumbnailCount++;
       box.appendChild(thumbnail);
-      box.style.zIndex = SelectionHandler.MAX_PREVIEW_THUMBNAIL_COUNT + 1 - i;
+      box.style.zIndex =
+          FileSelectionHandler.MAX_PREVIEW_THUMBNAIL_COUNT + 1 - i;
       box.addEventListener('click', thumbnailClickHandler);
 
       thumbnails.push(box);
@@ -567,7 +569,7 @@ SelectionHandler.prototype.showPreviewThumbnails_ = function(selection) {
  * @return {HTMLDivElement} Created element.
  * @private
  */
-SelectionHandler.prototype.renderThumbnail_ = function(entry, callback) {
+FileSelectionHandler.prototype.renderThumbnail_ = function(entry, callback) {
   var thumbnail = this.fileManager_.document_.createElement('div');
   FileGrid.decorateThumbnailBox(thumbnail, entry,
       this.fileManager_.metadataCache_, true, callback);
@@ -578,7 +580,7 @@ SelectionHandler.prototype.renderThumbnail_ = function(entry, callback) {
  * Updates the search breadcrumbs.
  * @private
  */
-SelectionHandler.prototype.updateSearchBreadcrumbs_ = function() {
+FileSelectionHandler.prototype.updateSearchBreadcrumbs_ = function() {
   var selectedIndexes =
       this.fileManager_.getCurrentList().selectionModel.selectedIndexes;
   if (selectedIndexes.length !== 1 ||
@@ -604,7 +606,7 @@ SelectionHandler.prototype.updateSearchBreadcrumbs_ = function() {
  * @return {boolean} True if zoomed image is present.
  * @private
  */
-SelectionHandler.prototype.decorateThumbnailZoom_ = function(
+FileSelectionHandler.prototype.decorateThumbnailZoom_ = function(
     largeImageBox, img, transform) {
   var width = img.width;
   var height = img.height;
@@ -613,7 +615,7 @@ SelectionHandler.prototype.decorateThumbnailZoom_ = function(
     return false;
 
   var scale = Math.min(1,
-      SelectionHandler.IMAGE_HOVER_PREVIEW_SIZE / Math.max(width, height));
+      FileSelectionHandler.IMAGE_HOVER_PREVIEW_SIZE / Math.max(width, height));
 
   var imageWidth = Math.round(width * scale);
   var imageHeight = Math.round(height * scale);

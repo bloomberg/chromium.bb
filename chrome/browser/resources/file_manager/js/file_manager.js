@@ -440,7 +440,7 @@ DialogType.isModal = function(type) {
 
     this.updateFileTypeFilter_();
 
-    this.selectionHandler_.onSelectionChanged();
+    this.selectionHandler_.onFileSelectionChanged();
 
     this.setupCurrentDirectory_(true /* page loading */);
 
@@ -789,7 +789,7 @@ DialogType.isModal = function(type) {
 
     this.directoryModel_.start();
 
-    this.selectionHandler_ = new SelectionHandler(this);
+    this.selectionHandler_ = new FileSelectionHandler(this);
 
     this.fileWatcher_ = new FileManager.MetadataFileWatcher(this);
     this.fileWatcher_.start();
@@ -802,7 +802,7 @@ DialogType.isModal = function(type) {
                                this.updateStartupPrefs_.bind(this));
 
     this.directoryModel_.getFileListSelection().addEventListener('change',
-        this.selectionHandler_.onSelectionChanged.bind(
+        this.selectionHandler_.onFileSelectionChanged.bind(
             this.selectionHandler_));
 
     this.initList_(this.grid_);
@@ -1618,7 +1618,7 @@ DialogType.isModal = function(type) {
     selection.tasks.init(selection.urls, selection.mimeTypes);
     selection.tasks.display(this.taskItems_);
     this.refreshCurrentDirectoryMetadata_();
-    this.selectionHandler_.onSelectionChanged();
+    this.selectionHandler_.onFileSelectionChanged();
   };
 
   FileManager.prototype.updateNetworkStateAndPreferences_ = function(
@@ -1918,7 +1918,7 @@ DialogType.isModal = function(type) {
    * @param {cr.Event} event The directory-changed event.
    */
   FileManager.prototype.onDirectoryChanged_ = function(event) {
-    this.selectionHandler_.onSelectionChanged();
+    this.selectionHandler_.onFileSelectionChanged();
     this.updateSearchBoxOnDirChange_();
     if (this.dialogType == DialogType.FULL_PAGE)
       this.table_.showOfflineColumn(this.isOnGData());
@@ -2850,7 +2850,7 @@ DialogType.isModal = function(type) {
   };
 
   /**
-   * @return {Selection} Selection object.
+   * @return {FileSelection} Selection object.
    */
   FileManager.prototype.getSelection = function() {
     return this.selectionHandler_.selection;
