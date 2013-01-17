@@ -14,6 +14,19 @@
 using base::TimeTicks;
 using content::RenderThread;
 
+namespace {
+  // Maximum length of words we actually check.
+  // 64 is the observed limits for OSX system checker.
+  const size_t kMaxCheckedLen = 64;
+
+  // Maximum length of words we provide suggestions for.
+  // 24 is the observed limits for OSX system checker.
+  const size_t kMaxSuggestLen = 24;
+
+  COMPILE_ASSERT(kMaxCheckedLen <= size_t(MAXWORDLEN), MaxCheckedLen_too_long);
+  COMPILE_ASSERT(kMaxSuggestLen <= kMaxCheckedLen, MaxSuggestLen_too_long);
+}
+
 #if !defined(OS_MACOSX)
 SpellingEngine* CreateNativeSpellingEngine() {
   return new HunspellEngine();
@@ -81,7 +94,7 @@ bool HunspellEngine::CheckSpelling(const string16& word_to_check, int tag) {
   bool word_correct = false;
   std::string word_to_check_utf8(UTF16ToUTF8(word_to_check));
   // Hunspell shouldn't let us exceed its max, but check just in case
-  if (word_to_check_utf8.length() < MAXWORDLEN) {
+  if (word_to_check_utf8.length() < kMaxCheckedLen) {
     if (hunspell_.get()) {
       // |hunspell_->spell| returns 0 if the word is spelled correctly and
       // non-zero otherwsie.
@@ -99,15 +112,19 @@ bool HunspellEngine::CheckSpelling(const string16& word_to_check, int tag) {
 void HunspellEngine::FillSuggestionList(
     const string16& wrong_word,
     std::vector<string16>* optional_suggestions) {
+  std::string wrong_word_utf8(UTF16ToUTF8(wrong_word));
+  if (wrong_word_utf8.length() > kMaxSuggestLen)
+    return;
+
   // If |hunspell_| is NULL here, an error has occurred, but it's better
   // to check rather than crash.
   // TODO(groby): Technically, it's not. We should track down the issue.
   if (!hunspell_.get())
     return;
 
-  char** suggestions;
+  char** suggestions = NULL;
   int number_of_suggestions =
-      hunspell_->suggest(&suggestions, UTF16ToUTF8(wrong_word).c_str());
+      hunspell_->suggest(&suggestions, wrong_word_utf8.c_str());
 
   // Populate the vector of WideStrings.
   for (int i = 0; i < number_of_suggestions; ++i) {
