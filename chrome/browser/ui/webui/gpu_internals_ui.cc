@@ -321,7 +321,8 @@ Value* GetFeatureStatus() {
       },
       {
           "force_compositing_mode",
-          flags & content::GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE,
+          (flags & content::GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE) &&
+          !content::IsForceCompositingModeEnabled(),
           !content::IsForceCompositingModeEnabled() &&
           !(flags & content::GPU_FEATURE_TYPE_FORCE_COMPOSITING_MODE),
           "Force compositing mode is off, either disabled at the command"
