@@ -136,36 +136,23 @@ EXTRA_ENV = {
 
   # slower translation == faster code
   'LLC_FLAGS_SLOW':
-  # TODO(robertm): consider activating '-O3'
   # Due to a quadratic algorithm used for tail merging
   # capping it at 50 helps speed up translation
                      '-tail-merge-threshold=50',
 
   # faster translation == slower code
-  # TODO(robertm): these need to be evaluated for how effective they
-  #                are and how much they hurt performance
   'LLC_FLAGS_FAST' : '${LLC_FLAGS_FAST_%ARCH%}',
 
   'LLC_FLAGS_FAST_X8632':
-  # -O0 causes us to run out of space when translating llc.pexe
-  # -O1 reduces translation time by approx 10% but breaks the nexe
-  # -O2 is the default
-  #                        '-O1 ' +
-                          '-fast-isel ' +
-  # This does not result in working nexes,
-  #                   '-pre-RA-sched=fast
-  # This does not result in working nexes,',
-  #                   '-regalloc=fast ' +
+                          '-O0 ' +
   # This, surprisingly, makes a measurable difference
                           '-tail-merge-threshold=20',
   'LLC_FLAGS_FAST_X8664':
-                           '-O1 ' +
-                          '-fast-isel ' +
+                          '-O0 ' +
                           '-tail-merge-threshold=20',
   'LLC_FLAGS_FAST_ARM':
   # due to slow turn around times ARM settings have not been explored in depth
-  #                       '-O2 ' +
-                          '-fast-isel ' +
+                          '-O0 ' +
                           '-tail-merge-threshold=20',
   'LLC_FLAGS_FAST_MIPS32': '-fast-isel -tail-merge-threshold=20',
 
