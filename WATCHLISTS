@@ -264,6 +264,12 @@
     'locale_settings': {
       'filepath': 'chrome/app/resources/locale_settings',
     },
+    'managed_users': {
+      'filepath': 'chrome/browser/managed_mode'\
+                  '|chrome/browser/extensions/api/managed_mode'\
+                  '|chrome/browser/resources/options/manage'\
+                  '|chrome/browser/ui/webui/options/manage',
+        },
     'mac': {
       'filepath': 'cocoa|\.mm$|(_mac|_posix)\.(cc|h)$',
     },
@@ -584,7 +590,7 @@
     'gfx_geometry': ['cc-bugs@chromium.org'],
     'gfx_image': ['rsesek+watch@chromium.org'],
     'gpu': ['apatrick@chromium.org'],
-    'history_ui': ['dubroy@chromium.org'],
+    'history_ui': ['dubroy@chromium.org', 'pam+watch@chromium.org'],
     'i18n': ['jshin+watch@chromium.org'],
     'imageburner': ['achuith+watch@chromium.org', 'tbarzic+watch@chromium.org'],
     'importer': ['tfarina@chromium.org'],
@@ -599,6 +605,7 @@
     'linux-seccomp-bpf': ['jln+watch@chromium.org'],
     'locale_settings': ['finnur+watch@chromium.org'],
     'mac': ['sail+watch@chromium.org'],
+    'managed_users': ['pam+watch@chromium.org'],
     'media': ['feature-media-reviews@chromium.org'],
     'message_loop': ['sadrul@chromium.org'],
     'metrics': ['jar@chromium.org',
@@ -665,7 +672,6 @@
                   'suzhe@chromium.org',
                   'yusukes+watch@chromium.org'],
     'textinput_chromeos': ['yusukes+watch@chromium.org'],
-    'tools': ['pam+watch@chromium.org'],
     'tools_emacs': ['fischman+watch@chromium.org',
                     'dhollowa+watch@chromium.org'],
     'ui_compositor': ['cc-bugs@chromium.org'],
