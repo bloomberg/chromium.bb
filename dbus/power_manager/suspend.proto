@@ -8,7 +8,7 @@ option optimize_for = LITE_RUNTIME;
 
 package power_manager;
 
-// Included in powerm's SuspendStateChanged signal, sent when the system is
+// Included in powerd's SuspendStateChanged signal, sent when the system is
 // suspending or has just resumed.  The SUSPEND_TO_MEMORY notification may
 // arrive after the subsequent resume.
 message SuspendState {

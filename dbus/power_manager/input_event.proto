@@ -8,7 +8,7 @@ option optimize_for = LITE_RUNTIME;
 
 package power_manager;
 
-// Included in powerm's InputEvent signals.
+// Included in powerd's InputEvent signals.
 message InputEvent {
   // Next ID to use: 3
 

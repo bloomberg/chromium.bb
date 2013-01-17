@@ -193,10 +193,6 @@ namespace power_manager {
 const char kPowerManagerInterface[] = "org.chromium.PowerManager";
 const char kPowerManagerServicePath[] = "/org/chromium/PowerManager";
 const char kPowerManagerServiceName[] = "org.chromium.PowerManager";
-// powerm
-const char kRootPowerManagerInterface[] = "org.chromium.RootPowerManager";
-const char kRootPowerManagerServicePath[] = "/org/chromium/RootPowerManager";
-const char kRootPowerManagerServiceName[] = "org.chromium.RootPowerManager";
 // powerd methods
 const char kDecreaseScreenBrightness[] = "DecreaseScreenBrightness";
 const char kIncreaseScreenBrightness[] = "IncreaseScreenBrightness";
@@ -226,31 +222,18 @@ const char kActiveNotifySignal[] = "ActiveNotify";
 const char kKeyboardBrightnessChangedSignal[] = "KeyboardBrightnessChanged";
 const char kPowerStateChangedSignal[] = "PowerStateChanged";
 const char kPowerSupplyPollSignal[] = "PowerSupplyPoll";
-const char kButtonEventSignal[] = "ButtonEvent";
 const char kStateOverrideCancel[] = "StateOverrideCancel";
 const char kSoftwareScreenDimmingRequestedSignal[] =
     "SoftwareScreenDimmingRequested";
 const char kSetScreenPowerSignal[] = "SetScreenPowerSignal";
 const char kSuspendImminentSignal[] = "SuspendImminent";
-// Signals emitted by powerm.
 const char kInputEventSignal[] = "InputEvent";
 const char kSuspendStateChangedSignal[] = "SuspendStateChanged";
 // Values
-const char kPowerButtonName[] = "power";
-const char kLockButtonName[] = "lock";
 const int  kBrightnessTransitionGradual = 1;
 const int  kBrightnessTransitionInstant = 2;
 const int  kSoftwareScreenDimmingNone = 1;
 const int  kSoftwareScreenDimmingIdle = 2;
-// DEPRECATED
-const char kRegisterSuspendDelay[] = "RegisterSuspendDelay";
-const char kUnregisterSuspendDelay[] = "UnregisterSuspendDelay";
-const char kSuspendDelay[] = "SuspendDelay";
-const char kSuspendReady[] = "SuspendReady";
-const char kRequestLockScreenSignal[] = "RequestLockScreen";
-const char kRequestRestartSignal[] = "RequestRestart";
-const char kRequestShutdownSignal[] = "RequestShutdown";
-const char kRequestUnlockScreenSignal[] = "RequestUnlockScreen";
 }  // namespace power_manager
 
 namespace chromeos {
