@@ -302,25 +302,37 @@ const gfx::ImageSkia* BadgeForNetworkTechnology(const NetworkState* network,
   } else if (network->technology() == flimflam::kNetworkTechnology1Xrtt) {
     id = IDR_AURA_UBER_TRAY_NETWORK_1X;
   } else if (network->technology() == flimflam::kNetworkTechnologyGprs) {
-    id = IDR_AURA_UBER_TRAY_NETWORK_GPRS;
+    id = (color == COLOR_DARK) ?
+        IDR_AURA_UBER_TRAY_NETWORK_GPRS_DARK :
+        IDR_AURA_UBER_TRAY_NETWORK_GPRS_LIGHT;
   } else if (network->technology() == flimflam::kNetworkTechnologyEdge) {
     id = (color == COLOR_DARK) ?
         IDR_AURA_UBER_TRAY_NETWORK_EDGE_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_EDGE_LIGHT;
   } else if (network->technology() == flimflam::kNetworkTechnologyUmts) {
-    id =  (color == COLOR_DARK) ?
+    id = (color == COLOR_DARK) ?
         IDR_AURA_UBER_TRAY_NETWORK_3G_DARK :
         IDR_AURA_UBER_TRAY_NETWORK_3G_LIGHT;
   } else if (network->technology() == flimflam::kNetworkTechnologyHspa) {
-    id = IDR_AURA_UBER_TRAY_NETWORK_HSPA;
+    id = (color == COLOR_DARK) ?
+        IDR_AURA_UBER_TRAY_NETWORK_HSPA_DARK :
+        IDR_AURA_UBER_TRAY_NETWORK_HSPA_LIGHT;
   } else if (network->technology() == flimflam::kNetworkTechnologyHspaPlus) {
-    id = IDR_AURA_UBER_TRAY_NETWORK_HSPA_PLUS;
+    id = (color == COLOR_DARK) ?
+        IDR_AURA_UBER_TRAY_NETWORK_HSPA_PLUS_DARK :
+        IDR_AURA_UBER_TRAY_NETWORK_HSPA_PLUS_LIGHT;
   } else if (network->technology() == flimflam::kNetworkTechnologyLte) {
-    id = IDR_AURA_UBER_TRAY_NETWORK_LTE;
+    id = (color == COLOR_DARK) ?
+        IDR_AURA_UBER_TRAY_NETWORK_LTE_DARK :
+        IDR_AURA_UBER_TRAY_NETWORK_LTE_LIGHT;
   } else if (network->technology() == flimflam::kNetworkTechnologyLteAdvanced) {
-    id = IDR_AURA_UBER_TRAY_NETWORK_LTE_ADVANCED;
+    id = (color == COLOR_DARK) ?
+        IDR_AURA_UBER_TRAY_NETWORK_LTE_ADVANCED_DARK :
+        IDR_AURA_UBER_TRAY_NETWORK_LTE_ADVANCED_LIGHT;
   } else if (network->technology() == flimflam::kNetworkTechnologyGsm) {
-    id = IDR_AURA_UBER_TRAY_NETWORK_GPRS;
+    id = (color == COLOR_DARK) ?
+        IDR_AURA_UBER_TRAY_NETWORK_GPRS_DARK :
+        IDR_AURA_UBER_TRAY_NETWORK_GPRS_LIGHT;
   }
   if (id == kUnknownBadgeType)
     return NULL;
