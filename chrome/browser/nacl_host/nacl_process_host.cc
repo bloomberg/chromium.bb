@@ -102,7 +102,7 @@ bool ShareHandleToSelLdr(
                        0,  // Unused given DUPLICATE_SAME_ACCESS.
                        FALSE,
                        flags)) {
-    DLOG(ERROR) << "DuplicateHandle() failed";
+    LOG(ERROR) << "DuplicateHandle() failed";
     return false;
   }
   handles_for_sel_ldr->push_back(
@@ -270,7 +270,8 @@ void NaClProcessHost::Launch(
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
   nacl_browser->EnsureAllResourcesAvailable();
   if (!nacl_browser->IsOk()) {
-    DLOG(ERROR) << "Cannot launch NaCl process";
+    LOG(ERROR) << "NaCl process launch failed: could not find all the "
+        "resources needed to launch the process";
     delete this;
     return;
   }
@@ -287,6 +288,7 @@ void NaClProcessHost::Launch(
   nacl::Handle pair[2];
   // Create a connected socket
   if (nacl::SocketPair(pair) == -1) {
+    LOG(ERROR) << "NaCl process launch failed: could not create a socket pair";
     delete this;
     return;
   }
@@ -321,7 +323,7 @@ void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
         return;
       }
     } else {
-      DLOG(ERROR) << "Failed to get process handle";
+      LOG(ERROR) << "Failed to get process handle";
     }
   }
 }
@@ -490,8 +492,10 @@ FilePath NaClProcessHost::GetManifestPath() {
 
 bool NaClProcessHost::LaunchSelLdr() {
   std::string channel_id = process_->GetHost()->CreateChannel();
-  if (channel_id.empty())
+  if (channel_id.empty()) {
+    LOG(ERROR) << "NaCl process launch failed: could not create channel";
     return false;
+  }
 
   CommandLine::StringType nacl_loader_prefix;
 #if defined(OS_POSIX)
@@ -524,8 +528,10 @@ bool NaClProcessHost::LaunchSelLdr() {
   // On Windows 64-bit NaCl loader is called nacl64.exe instead of chrome.exe
   if (RunningOnWOW64()) {
     FilePath module_path;
-    if (!PathService::Get(base::FILE_MODULE, &module_path))
+    if (!PathService::Get(base::FILE_MODULE, &module_path)) {
+      LOG(ERROR) << "NaCl process launch failed: could not resolve module";
       return false;
+    }
     exe_path = module_path.DirName().Append(chrome::kNaClAppName);
   }
 #endif
@@ -566,8 +572,12 @@ bool NaClProcessHost::LaunchSelLdr() {
   // On Windows we might need to start the broker process to launch a new loader
 #if defined(OS_WIN)
   if (RunningOnWOW64()) {
-    return NaClBrokerService::GetInstance()->LaunchLoader(
-        weak_factory_.GetWeakPtr(), channel_id);
+    if (!NaClBrokerService::GetInstance()->LaunchLoader(
+            weak_factory_.GetWeakPtr(), channel_id)) {
+      LOG(ERROR) << "NaCl process launch failed: broker service did not launch "
+          "process";
+      return false;
+    }
   } else {
     process_->Launch(FilePath(), cmd_line.release());
   }
@@ -606,8 +616,11 @@ void NaClProcessHost::OnProcessLaunched() {
 // Called when the NaClBrowser singleton has been fully initialized.
 void NaClProcessHost::OnResourcesReady() {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
-  if (!nacl_browser->IsReady() || !SendStart()) {
-    DLOG(ERROR) << "Cannot launch NaCl process";
+  if (!nacl_browser->IsReady()) {
+    LOG(ERROR) << "NaCl process launch failed: could not acquire shared "
+        "resources needed by NaCl";
+    delete this;
+  } else if (!SendStart()) {
     delete this;
   }
 }
@@ -626,7 +639,7 @@ bool NaClProcessHost::ReplyToRenderer(
                        0,  // Unused given DUPLICATE_SAME_ACCESS.
                        FALSE,
                        DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-    DLOG(ERROR) << "DuplicateHandle() failed";
+    LOG(ERROR) << "DuplicateHandle() failed";
     return false;
   }
   handle_for_renderer = reinterpret_cast<nacl::FileDescriptor>(
@@ -648,7 +661,7 @@ bool NaClProcessHost::ReplyToRenderer(
   // BrokerDuplicateHandle().
   if (RunningOnWOW64()) {
     if (!content::BrokerAddTargetPeer(process_->GetData().handle)) {
-      DLOG(ERROR) << "Failed to add NaCl process PID";
+      LOG(ERROR) << "Failed to add NaCl process PID";
       return false;
     }
   }
@@ -852,6 +865,8 @@ bool NaClProcessHost::StartWithLaunchedProcess() {
                    weak_factory_.GetWeakPtr()));
     return true;
   } else {
+    LOG(ERROR) << "NaCl process failed to launch: previously failed to acquire "
+        "shared resources";
     return false;
   }
 }
