@@ -63,13 +63,9 @@ void BrowserPluginManagerImpl::OnPluginAtPositionRequest(
   int instance_id = -1;
   IDMap<BrowserPlugin>::iterator it(&instances_);
   gfx::Point local_position = position;
-  int source_routing_id = message.routing_id();
   while (!it.IsAtEnd()) {
     const BrowserPlugin* plugin = it.GetCurrentValue();
-    // We need to check the plugin's routing id too since BrowserPluginManager
-    // can manage plugins from other embedder (in the same process).
     if (plugin->InBounds(position)) {
-      source_routing_id = plugin->render_view_routing_id();
       instance_id = plugin->instance_id();
       local_position = plugin->ToLocalCoordinates(position);
       break;
@@ -78,10 +74,7 @@ void BrowserPluginManagerImpl::OnPluginAtPositionRequest(
   }
 
   Send(new BrowserPluginHostMsg_PluginAtPositionResponse(
-       source_routing_id,
-       instance_id,
-       request_id,
-       local_position));
+       message.routing_id(), instance_id, request_id, local_position));
 }
 
 // static
