@@ -52,7 +52,7 @@ class CONTENT_EXPORT BrowserPluginManager
   void AddBrowserPlugin(int instance_id, BrowserPlugin* browser_plugin);
   void RemoveBrowserPlugin(int instance_id);
   BrowserPlugin* GetBrowserPlugin(int instance_id) const;
-  void SetEmbedderFocus(const RenderViewImpl* embedder, bool focused);
+  void UpdateFocusState();
   RenderViewImpl* render_view() const { return render_view_; }
 
   // RenderViewObserver implementation.

@@ -89,8 +89,6 @@ class CONTENT_EXPORT BrowserPlugin :
   bool SetPartitionAttribute(const std::string& partition_id,
                              std::string* error_message);
 
-  // Inform the BrowserPlugin of the focus state of the embedder RenderView.
-  void SetEmbedderFocus(bool focused);
   // Informs the guest of an updated focus state.
   void UpdateGuestFocusState();
   // Indicates whether the guest should be focused.
@@ -306,7 +304,6 @@ class CONTENT_EXPORT BrowserPlugin :
   bool valid_partition_id_;
   int content_window_routing_id_;
   bool plugin_focused_;
-  bool embedder_focused_;
   // Tracks the visibility of the browser plugin regardless of the whole
   // embedder RenderView's visibility.
   bool visible_;

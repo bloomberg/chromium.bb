@@ -128,7 +128,6 @@ BrowserPlugin::BrowserPlugin(
       valid_partition_id_(true),
       content_window_routing_id_(MSG_ROUTING_NONE),
       plugin_focused_(false),
-      embedder_focused_(false),
       visible_(true),
       size_changed_in_flight_(false),
       browser_plugin_manager_(render_view->browser_plugin_manager()),
@@ -777,17 +776,6 @@ void BrowserPlugin::Reload() {
                                       instance_id_));
 }
 
-void BrowserPlugin::SetEmbedderFocus(bool focused) {
-  if (embedder_focused_ == focused)
-    return;
-
-  bool old_guest_focus_state = ShouldGuestBeFocused();
-  embedder_focused_ = focused;
-
-  if (ShouldGuestBeFocused() != old_guest_focus_state)
-    UpdateGuestFocusState();
-}
-
 void BrowserPlugin::UpdateGuestFocusState() {
   if (!navigate_src_sent_)
     return;
@@ -799,7 +787,10 @@ void BrowserPlugin::UpdateGuestFocusState() {
 }
 
 bool BrowserPlugin::ShouldGuestBeFocused() const {
-  return plugin_focused_ && embedder_focused_;
+  bool embedder_focused = false;
+  if (render_view_)
+    embedder_focused = render_view_->has_focus();
+  return plugin_focused_ && embedder_focused;
 }
 
 WebKit::WebPluginContainer* BrowserPlugin::container() const {
