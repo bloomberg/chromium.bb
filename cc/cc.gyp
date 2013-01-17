@@ -220,7 +220,6 @@
       'scoped_ptr_vector.h',
       'scoped_resource.cc',
       'scoped_resource.h',
-      'scrollbar_animation_controller.cc',
       'scrollbar_animation_controller.h',
       'scrollbar_animation_controller_linear_fade.cc',
       'scrollbar_animation_controller_linear_fade.h',

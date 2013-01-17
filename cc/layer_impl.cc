@@ -18,6 +18,7 @@
 #include "cc/quad_sink.h"
 #include "cc/scrollbar_animation_controller.h"
 #include "cc/scrollbar_animation_controller_linear_fade.h"
+#include "cc/scrollbar_layer_impl.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect_conversions.h"
 
@@ -52,6 +53,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* treeImpl, int id)
 #ifndef NDEBUG
     , m_betweenWillDrawAndDidDraw(false)
 #endif
+    , m_horizontalScrollbarLayer(0)
+    , m_verticalScrollbarLayer(0)
 {
     DCHECK(m_layerId > 0);
     DCHECK(m_layerTreeImpl);
@@ -741,6 +744,34 @@ void LayerImpl::calculateContentsScale(
     *contentBounds = this->contentBounds();
 }
 
+void LayerImpl::updateScrollbarPositions()
+{
+    gfx::Vector2dF currentOffset = m_scrollOffset + m_scrollDelta;
+
+    if (m_horizontalScrollbarLayer) {
+        m_horizontalScrollbarLayer->setCurrentPos(currentOffset.x());
+        m_horizontalScrollbarLayer->setTotalSize(m_bounds.width());
+        m_horizontalScrollbarLayer->setMaximum(m_maxScrollOffset.x());
+    }
+    if (m_verticalScrollbarLayer) {
+        m_verticalScrollbarLayer->setCurrentPos(currentOffset.y());
+        m_verticalScrollbarLayer->setTotalSize(m_bounds.height());
+        m_verticalScrollbarLayer->setMaximum(m_maxScrollOffset.y());
+    }
+
+    if (currentOffset == m_lastScrollOffset)
+        return;
+    m_lastScrollOffset = currentOffset;
+
+    if (m_scrollbarAnimationController)
+        m_scrollbarAnimationController->didUpdateScrollOffset(base::TimeTicks::Now());
+
+    // Get the m_currentOffset.y() value for a sanity-check on scrolling
+    // benchmark metrics. Specifically, we want to make sure
+    // BasicMouseWheelSmoothScrollGesture has proper scroll curves.
+    TRACE_COUNTER_ID1("gpu", "scroll_offset_y", this, currentOffset.y());
+}
+
 void LayerImpl::setScrollOffset(gfx::Vector2d scrollOffset)
 {
     if (m_scrollOffset == scrollOffset)
@@ -748,9 +779,7 @@ void LayerImpl::setScrollOffset(gfx::Vector2d scrollOffset)
 
     m_scrollOffset = scrollOffset;
     noteLayerPropertyChangedForSubtree();
-
-    if (m_scrollbarAnimationController)
-        m_scrollbarAnimationController->updateScrollOffset(this);
+    updateScrollbarPositions();
 }
 
 void LayerImpl::setScrollDelta(const gfx::Vector2dF& scrollDelta)
@@ -775,8 +804,7 @@ void LayerImpl::setScrollDelta(const gfx::Vector2dF& scrollDelta)
     m_scrollDelta = scrollDelta;
     noteLayerPropertyChangedForSubtree();
 
-    if (m_scrollbarAnimationController)
-        m_scrollbarAnimationController->updateScrollOffset(this);
+    updateScrollbarPositions();
 }
 
 void LayerImpl::setImplTransform(const gfx::Transform& transform)
@@ -815,19 +843,15 @@ void LayerImpl::setMaxScrollOffset(gfx::Vector2d maxScrollOffset)
     m_maxScrollOffset = maxScrollOffset;
 
     layerTreeImpl()->SetNeedsUpdateDrawProperties();
-
-    if (m_scrollbarAnimationController)
-        m_scrollbarAnimationController->updateScrollOffset(this);
+    updateScrollbarPositions();
 }
 
-ScrollbarLayerImpl* LayerImpl::horizontalScrollbarLayer()
+void LayerImpl::setScrollbarOpacity(float opacity)
 {
-    return m_scrollbarAnimationController ? m_scrollbarAnimationController->horizontalScrollbarLayer() : 0;
-}
-
-const ScrollbarLayerImpl* LayerImpl::horizontalScrollbarLayer() const
-{
-    return m_scrollbarAnimationController ? m_scrollbarAnimationController->horizontalScrollbarLayer() : 0;
+    if (m_horizontalScrollbarLayer)
+        m_horizontalScrollbarLayer->setOpacity(opacity);
+    if (m_verticalScrollbarLayer)
+        m_verticalScrollbarLayer->setOpacity(opacity);
 }
 
 inline scoped_ptr<ScrollbarAnimationController> createScrollbarAnimationControllerWithFade(LayerImpl* layer)
@@ -837,36 +861,28 @@ inline scoped_ptr<ScrollbarAnimationController> createScrollbarAnimationControll
     return ScrollbarAnimationControllerLinearFade::create(layer, fadeoutDelay, fadeoutLength).PassAs<ScrollbarAnimationController>();
 }
 
+void LayerImpl::didBecomeActive()
+{
+    if (!m_layerTreeImpl->settings().useLinearFadeScrollbarAnimator)
+        return;
+
+    bool needScrollbarAnimationController = m_horizontalScrollbarLayer || m_verticalScrollbarLayer;
+    if (needScrollbarAnimationController) {
+        if (!m_scrollbarAnimationController)
+            m_scrollbarAnimationController = createScrollbarAnimationControllerWithFade(this);
+    } else {
+        m_scrollbarAnimationController.reset();
+    }
+
+}
 void LayerImpl::setHorizontalScrollbarLayer(ScrollbarLayerImpl* scrollbarLayer)
 {
-    if (!m_scrollbarAnimationController) {
-        if (m_layerTreeImpl->settings().useLinearFadeScrollbarAnimator)
-            m_scrollbarAnimationController = createScrollbarAnimationControllerWithFade(this);
-        else
-            m_scrollbarAnimationController = ScrollbarAnimationController::create(this);
-    }
-    m_scrollbarAnimationController->setHorizontalScrollbarLayer(scrollbarLayer);
-}
-
-ScrollbarLayerImpl* LayerImpl::verticalScrollbarLayer()
-{
-    return m_scrollbarAnimationController ? m_scrollbarAnimationController->verticalScrollbarLayer() : 0;
-}
-
-const ScrollbarLayerImpl* LayerImpl::verticalScrollbarLayer() const
-{
-    return m_scrollbarAnimationController ? m_scrollbarAnimationController->verticalScrollbarLayer() : 0;
+    m_horizontalScrollbarLayer = scrollbarLayer;
 }
 
 void LayerImpl::setVerticalScrollbarLayer(ScrollbarLayerImpl* scrollbarLayer)
 {
-    if (!m_scrollbarAnimationController) {
-        if (m_layerTreeImpl->settings().useLinearFadeScrollbarAnimator)
-            m_scrollbarAnimationController = createScrollbarAnimationControllerWithFade(this);
-        else
-            m_scrollbarAnimationController = ScrollbarAnimationController::create(this);
-    }
-    m_scrollbarAnimationController->setVerticalScrollbarLayer(scrollbarLayer);
+    m_verticalScrollbarLayer = scrollbarLayer;
 }
 
 }  // namespace cc

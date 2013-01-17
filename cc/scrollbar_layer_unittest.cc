@@ -49,7 +49,6 @@ TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
         LayerImpl* ccChild1 = layerImplTreeRoot->children()[0];
         ScrollbarLayerImpl* ccChild2 = static_cast<ScrollbarLayerImpl*>(layerImplTreeRoot->children()[1]);
 
-        EXPECT_TRUE(ccChild1->scrollbarAnimationController());
         EXPECT_EQ(ccChild1->horizontalScrollbarLayer(), ccChild2);
     }
 
@@ -60,7 +59,6 @@ TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
         ScrollbarLayerImpl* ccChild1 = static_cast<ScrollbarLayerImpl*>(layerImplTreeRoot->children()[0]);
         LayerImpl* ccChild2 = layerImplTreeRoot->children()[1];
 
-        EXPECT_TRUE(ccChild2->scrollbarAnimationController());
         EXPECT_EQ(ccChild2->horizontalScrollbarLayer(), ccChild1);
     }
 }

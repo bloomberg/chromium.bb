@@ -294,6 +294,12 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     syncTree->set_background_color(m_backgroundColor);
     syncTree->set_has_transparent_background(m_hasTransparentBackground);
 
+    if (!m_settings.implSidePainting) {
+        // If we're not in impl-side painting, the tree is immediately
+        // considered active.
+        syncTree->DidBecomeActive();
+    }
+
     hostImpl->setViewportSize(layoutViewportSize(), deviceViewportSize());
     hostImpl->setDeviceScaleFactor(deviceScaleFactor());
     hostImpl->setPageScaleFactorAndLimits(m_pageScaleFactor, m_minPageScaleFactor, m_maxPageScaleFactor);

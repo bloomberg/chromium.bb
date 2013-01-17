@@ -271,7 +271,7 @@ public:
     virtual Region visibleContentOpaqueRegion() const;
 
     virtual void didUpdateTransforms() { }
-    virtual void didBecomeActive() { }
+    virtual void didBecomeActive();
 
     // Indicates that the surface previously used to render this layer
     // was lost and that a new one has been created. Won't be called
@@ -280,13 +280,13 @@ public:
 
     ScrollbarAnimationController* scrollbarAnimationController() const { return m_scrollbarAnimationController.get(); }
 
+    void setScrollbarOpacity(float opacity);
+
     void setHorizontalScrollbarLayer(ScrollbarLayerImpl*);
-    ScrollbarLayerImpl* horizontalScrollbarLayer();
-    const ScrollbarLayerImpl* horizontalScrollbarLayer() const;
+    ScrollbarLayerImpl* horizontalScrollbarLayer() { return m_horizontalScrollbarLayer; }
 
     void setVerticalScrollbarLayer(ScrollbarLayerImpl*);
-    ScrollbarLayerImpl* verticalScrollbarLayer();
-    const ScrollbarLayerImpl* verticalScrollbarLayer() const;
+    ScrollbarLayerImpl* verticalScrollbarLayer() { return m_verticalScrollbarLayer; }
 
     gfx::Rect layerRectToContentRect(const gfx::RectF& layerRect) const;
 
@@ -314,6 +314,8 @@ private:
     void setParent(LayerImpl* parent) { m_parent = parent; }
     friend class TreeSynchronizer;
     void clearChildList(); // Warning: This does not preserve tree structure invariants and so is only exposed to the tree synchronizer.
+
+    void updateScrollbarPositions();
 
     void noteLayerSurfacePropertyChanged();
     void noteLayerPropertyChanged();
@@ -383,6 +385,7 @@ private:
     gfx::Vector2d m_sentScrollDelta;
     gfx::Vector2d m_maxScrollOffset;
     gfx::Transform m_implTransform;
+    gfx::Vector2dF m_lastScrollOffset;
 
     // The global depth value of the center of the layer. This value is used
     // to sort layers from back to front.
@@ -409,6 +412,11 @@ private:
 
     // Manages scrollbars for this layer
     scoped_ptr<ScrollbarAnimationController> m_scrollbarAnimationController;
+
+    // Weak pointers to this layer's scrollbars, if it has them. Updated during
+    // tree synchronization.
+    ScrollbarLayerImpl* m_horizontalScrollbarLayer;
+    ScrollbarLayerImpl* m_verticalScrollbarLayer;
 
     // Group of properties that need to be computed based on the layer tree
     // hierarchy before layers can be drawn.

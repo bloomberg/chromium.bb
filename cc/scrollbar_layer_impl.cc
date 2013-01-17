@@ -25,12 +25,14 @@ ScrollbarLayerImpl::ScrollbarLayerImpl(LayerTreeImpl* treeImpl, int id)
     , m_backTrackResourceId(0)
     , m_foreTrackResourceId(0)
     , m_thumbResourceId(0)
+    , m_currentPos(0)
+    , m_totalSize(0)
+    , m_maximum(0)
     , m_scrollbarOverlayStyle(WebScrollbar::ScrollbarOverlayStyleDefault)
     , m_orientation(WebScrollbar::Horizontal)
     , m_controlSize(WebScrollbar::RegularScrollbar)
     , m_pressedPart(WebScrollbar::NoPart)
     , m_hoveredPart(WebScrollbar::NoPart)
-    , m_animationController(0)
     , m_isScrollableAreaActive(false)
     , m_isScrollViewScrollbar(false)
     , m_enabled(false)
@@ -66,33 +68,19 @@ void ScrollbarLayerImpl::setScrollbarData(WebScrollbar* scrollbar)
     m_geometry->update(scrollbar);
 }
 
-void ScrollbarLayerImpl::setAnimationController(ScrollbarAnimationController* controller)
-{
-    m_animationController = controller;
-}
-
 float ScrollbarLayerImpl::currentPos() const
 {
-    if (m_orientation == WebKit::WebScrollbar::Horizontal)
-        return m_animationController->currentOffset().x();
-    else
-        return m_animationController->currentOffset().y();
+    return m_currentPos;
 }
 
 int ScrollbarLayerImpl::totalSize() const
 {
-    if (m_orientation == WebKit::WebScrollbar::Horizontal)
-        return m_animationController->totalSize().width();
-    else
-        return m_animationController->totalSize().height();
+    return m_totalSize;
 }
 
 int ScrollbarLayerImpl::maximum() const
 {
-    if (m_orientation == WebKit::WebScrollbar::Horizontal)
-        return m_animationController->maximum().x();
-    else
-        return m_animationController->maximum().y();
+    return m_maximum;
 }
 
 WebKit::WebScrollbar::Orientation ScrollbarLayerImpl::orientation() const

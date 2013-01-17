@@ -32,6 +32,8 @@ public:
     int scrollLayerId() const { return m_scrollLayerId; }
     void setScrollLayerId(int id);
 
+    WebKit::WebScrollbar::Orientation orientation() const;
+
     // Layer interface
     virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
     virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;

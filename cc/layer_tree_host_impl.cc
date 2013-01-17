@@ -1330,9 +1330,6 @@ void LayerTreeHostImpl::pinchGestureBegin()
 {
     m_pinchGestureActive = true;
     m_previousPinchAnchor = gfx::Point();
-
-    if (rootScrollLayer() && rootScrollLayer()->scrollbarAnimationController())
-        rootScrollLayer()->scrollbarAnimationController()->didPinchGestureBegin();
 }
 
 void LayerTreeHostImpl::pinchGestureUpdate(float magnifyDelta, gfx::Point anchor)
@@ -1362,7 +1359,7 @@ void LayerTreeHostImpl::pinchGestureUpdate(float magnifyDelta, gfx::Point anchor
     rootScrollLayer()->scrollBy(scrollOverflow);
 
     if (rootScrollLayer()->scrollbarAnimationController())
-        rootScrollLayer()->scrollbarAnimationController()->didPinchGestureUpdate();
+        rootScrollLayer()->scrollbarAnimationController()->didPinchGestureUpdate(base::TimeTicks::Now());
 
     m_client->setNeedsCommitOnImplThread();
     m_client->setNeedsRedrawOnImplThread();
@@ -1374,7 +1371,7 @@ void LayerTreeHostImpl::pinchGestureEnd()
     m_pinchGestureActive = false;
 
     if (rootScrollLayer() && rootScrollLayer()->scrollbarAnimationController())
-        rootScrollLayer()->scrollbarAnimationController()->didPinchGestureEnd();
+        rootScrollLayer()->scrollbarAnimationController()->didPinchGestureEnd(base::TimeTicks::Now());
 
     m_client->setNeedsCommitOnImplThread();
 }
@@ -1645,8 +1642,7 @@ void LayerTreeHostImpl::animateScrollbarsRecursive(LayerImpl* layer, base::TimeT
         return;
 
     ScrollbarAnimationController* scrollbarController = layer->scrollbarAnimationController();
-    double monotonicTime = (time - base::TimeTicks()).InSecondsF();
-    if (scrollbarController && scrollbarController->animate(monotonicTime))
+    if (scrollbarController && scrollbarController->animate(time))
         m_client->setNeedsRedrawOnImplThread();
 
     for (size_t i = 0; i < layer->children().size(); ++i)

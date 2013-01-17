@@ -59,6 +59,11 @@ void ScrollbarLayer::setScrollLayerId(int id)
     setNeedsFullTreeSync();
 }
 
+WebKit::WebScrollbar::Orientation ScrollbarLayer::orientation() const
+{
+    return m_scrollbar->orientation();
+}
+
 int ScrollbarLayer::maxTextureSize() {
     DCHECK(layerTreeHost());
     return layerTreeHost()->rendererCapabilities().maxTextureSize;

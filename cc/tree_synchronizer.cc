@@ -74,10 +74,8 @@ scoped_ptr<LayerImpl> TreeSynchronizer::synchronizeTreeRecursive(RawPtrLayerImpl
     layerImpl->setReplicaLayer(synchronizeTreeRecursive(newLayers, oldLayers, layer->replicaLayer(), treeImpl));
 
     // Remove all dangling pointers. The pointers will be setup later in updateScrollbarLayerPointersRecursive phase
-    if (ScrollbarAnimationController* scrollbarController = layerImpl->scrollbarAnimationController()) {
-        scrollbarController->setHorizontalScrollbarLayer(0);
-        scrollbarController->setVerticalScrollbarLayer(0);
-    }
+    layerImpl->setHorizontalScrollbarLayer(0);
+    layerImpl->setVerticalScrollbarLayer(0);
 
     return layerImpl.Pass();
 }
@@ -103,7 +101,7 @@ void TreeSynchronizer::updateScrollbarLayerPointersRecursive(const RawPtrLayerIm
     DCHECK(scrollbarLayerImpl);
     DCHECK(scrollLayerImpl);
 
-    if (scrollbarLayerImpl->orientation() == WebKit::WebScrollbar::Horizontal)
+    if (scrollbarLayer->orientation() == WebKit::WebScrollbar::Horizontal)
         scrollLayerImpl->setHorizontalScrollbarLayer(scrollbarLayerImpl);
     else
         scrollLayerImpl->setVerticalScrollbarLayer(scrollbarLayerImpl);

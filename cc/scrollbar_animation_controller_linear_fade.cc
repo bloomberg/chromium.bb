@@ -4,7 +4,8 @@
 
 #include "cc/scrollbar_animation_controller_linear_fade.h"
 
-#include "cc/scrollbar_layer_impl.h"
+#include "base/time.h"
+#include "cc/layer_impl.h"
 
 namespace cc {
 
@@ -14,11 +15,12 @@ scoped_ptr<ScrollbarAnimationControllerLinearFade> ScrollbarAnimationControllerL
 }
 
 ScrollbarAnimationControllerLinearFade::ScrollbarAnimationControllerLinearFade(LayerImpl* scrollLayer, double fadeoutDelay, double fadeoutLength)
-    : ScrollbarAnimationController(scrollLayer)
-    , m_lastAwakenTime(-100000000) // arbitrary invalid timestamp
+    : ScrollbarAnimationController()
+    , m_scrollLayer(scrollLayer)
     , m_pinchGestureInEffect(false)
     , m_fadeoutDelay(fadeoutDelay)
     , m_fadeoutLength(fadeoutLength)
+    , m_currentTimeForTesting(0)
 {
 }
 
@@ -26,44 +28,38 @@ ScrollbarAnimationControllerLinearFade::~ScrollbarAnimationControllerLinearFade(
 {
 }
 
-bool ScrollbarAnimationControllerLinearFade::animate(double monotonicTime)
+bool ScrollbarAnimationControllerLinearFade::animate(base::TimeTicks now)
 {
-    float opacity = opacityAtTime(monotonicTime);
-    if (horizontalScrollbarLayer())
-        horizontalScrollbarLayer()->setOpacity(opacity);
-    if (verticalScrollbarLayer())
-        verticalScrollbarLayer()->setOpacity(opacity);
+    float opacity = opacityAtTime(now);
+    m_scrollLayer->setScrollbarOpacity(opacity);
     return opacity;
 }
 
-void ScrollbarAnimationControllerLinearFade::didPinchGestureUpdateAtTime(double)
+void ScrollbarAnimationControllerLinearFade::didPinchGestureUpdate(base::TimeTicks now)
 {
     m_pinchGestureInEffect = true;
 }
 
-void ScrollbarAnimationControllerLinearFade::didPinchGestureEndAtTime(double monotonicTime)
+void ScrollbarAnimationControllerLinearFade::didPinchGestureEnd(base::TimeTicks now)
 {
     m_pinchGestureInEffect = false;
-    m_lastAwakenTime = monotonicTime;
+    m_lastAwakenTime = now;
 }
 
-void ScrollbarAnimationControllerLinearFade::updateScrollOffsetAtTime(LayerImpl* scrollLayer, double monotonicTime)
+void ScrollbarAnimationControllerLinearFade::didUpdateScrollOffset(base::TimeTicks now)
 {
-    gfx::Vector2dF previousPos = currentOffset();
-    ScrollbarAnimationController::updateScrollOffsetAtTime(scrollLayer, monotonicTime);
-
-    if (previousPos == currentOffset())
-        return;
-
-    m_lastAwakenTime = monotonicTime;
+    m_lastAwakenTime = now;
 }
 
-float ScrollbarAnimationControllerLinearFade::opacityAtTime(double monotonicTime)
+float ScrollbarAnimationControllerLinearFade::opacityAtTime(base::TimeTicks now)
 {
     if (m_pinchGestureInEffect)
         return 1;
 
-    double delta = monotonicTime - m_lastAwakenTime;
+    if (m_lastAwakenTime.is_null())
+        return 0;
+
+    double delta = (now - m_lastAwakenTime).InSecondsF();
 
     if (delta <= m_fadeoutDelay)
         return 1;
