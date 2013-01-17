@@ -117,7 +117,8 @@ void ScrollbarLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& append
 {
     bool premultipledAlpha = false;
     bool flipped = false;
-    gfx::RectF uvRect(0, 0, 1, 1);
+    gfx::PointF uvTopLeft(0.f, 0.f);
+    gfx::PointF uvBottomRight(1.f, 1.f);
     gfx::Rect boundsRect(gfx::Point(), bounds());
     gfx::Rect contentBoundsRect(gfx::Point(), contentBounds());
 
@@ -134,7 +135,7 @@ void ScrollbarLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& append
         gfx::Rect opaqueRect;
         const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
         scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
-        quad->SetNew(sharedQuadState, quadRect, opaqueRect, m_thumbResourceId, premultipledAlpha, uvRect, opacity, flipped);
+        quad->SetNew(sharedQuadState, quadRect, opaqueRect, m_thumbResourceId, premultipledAlpha, uvTopLeft, uvBottomRight, opacity, flipped);
         quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
     }
 
@@ -145,9 +146,10 @@ void ScrollbarLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& append
     if (m_foreTrackResourceId && !foreTrackRect.isEmpty()) {
         gfx::Rect quadRect(scrollbarLayerRectToContentRect(foreTrackRect));
         gfx::Rect opaqueRect(contentsOpaque() ? quadRect : gfx::Rect());
+        gfx::RectF uvRect(toUVRect(foreTrackRect, boundsRect));
         const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
         scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
-        quad->SetNew(sharedQuadState, quadRect, opaqueRect, m_foreTrackResourceId, premultipledAlpha, toUVRect(foreTrackRect, boundsRect), opacity, flipped);
+        quad->SetNew(sharedQuadState, quadRect, opaqueRect, m_foreTrackResourceId, premultipledAlpha, uvRect.origin(), uvRect.bottom_right(), opacity, flipped);
         quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
     }
 
@@ -158,7 +160,7 @@ void ScrollbarLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& append
         gfx::Rect opaqueRect(contentsOpaque() ? quadRect : gfx::Rect());
         const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
         scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
-        quad->SetNew(sharedQuadState, quadRect, opaqueRect, m_backTrackResourceId, premultipledAlpha, uvRect, opacity, flipped);
+        quad->SetNew(sharedQuadState, quadRect, opaqueRect, m_backTrackResourceId, premultipledAlpha, uvTopLeft, uvBottomRight, opacity, flipped);
         quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
     }
 }

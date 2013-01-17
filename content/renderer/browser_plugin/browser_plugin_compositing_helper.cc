@@ -94,7 +94,7 @@ void BrowserPluginCompositingHelper::UpdateUVRect() {
     uv_rect.set_height(static_cast<float>(container_size_.height()) /
                        static_cast<float>(buffer_size_.height()));
   }
-  texture_layer_->setUVRect(uv_rect);
+  texture_layer_->setUV(uv_rect.origin(), uv_rect.bottom_right());
 }
 
 }  // namespace content

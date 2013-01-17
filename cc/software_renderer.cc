@@ -259,7 +259,9 @@ void SoftwareRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureD
     // FIXME: Add support for non-premultiplied alpha.
     ResourceProvider::ScopedReadLockSoftware lock(m_resourceProvider, quad->resource_id);
     const SkBitmap* bitmap = lock.skBitmap();
-    gfx::RectF uvRect = gfx::ScaleRect(quad->uv_rect, bitmap->width(), bitmap->height());
+    gfx::RectF uvRect = gfx::ScaleRect(gfx::BoundingRect(quad->uv_top_left, quad->uv_bottom_right),
+                                       bitmap->width(),
+                                       bitmap->height());
     SkRect skUvRect = gfx::RectFToSkRect(uvRect);
     if (quad->flipped)
         m_skCurrentCanvas->scale(1, -1);

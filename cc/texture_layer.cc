@@ -37,7 +37,8 @@ TextureLayer::TextureLayer(TextureLayerClient* client, bool usesMailbox)
     , m_client(client)
     , m_usesMailbox(usesMailbox)
     , m_flipped(true)
-    , m_uvRect(0, 0, 1, 1)
+    , m_uvTopLeft(0.f, 0.f)
+    , m_uvBottomRight(1.f, 1.f)
     , m_premultipliedAlpha(true)
     , m_rateLimitContext(false)
     , m_contextLost(false)
@@ -73,9 +74,10 @@ void TextureLayer::setFlipped(bool flipped)
     setNeedsCommit();
 }
 
-void TextureLayer::setUVRect(const gfx::RectF& rect)
+void TextureLayer::setUV(gfx::PointF topLeft, gfx::PointF bottomRight)
 {
-    m_uvRect = rect;
+    m_uvTopLeft = topLeft;
+    m_uvBottomRight = bottomRight;
     setNeedsCommit();
 }
 
@@ -178,7 +180,8 @@ void TextureLayer::pushPropertiesTo(LayerImpl* layer)
 
     TextureLayerImpl* textureLayer = static_cast<TextureLayerImpl*>(layer);
     textureLayer->setFlipped(m_flipped);
-    textureLayer->setUVRect(m_uvRect);
+    textureLayer->setUVTopLeft(m_uvTopLeft);
+    textureLayer->setUVBottomRight(m_uvBottomRight);
     textureLayer->setVertexOpacity(m_vertexOpacity);
     textureLayer->setPremultipliedAlpha(m_premultipliedAlpha);
     if (m_usesMailbox) {

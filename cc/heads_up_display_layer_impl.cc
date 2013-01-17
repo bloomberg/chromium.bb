@@ -98,11 +98,12 @@ void HeadsUpDisplayLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& a
     gfx::Rect quadRect(gfx::Point(), bounds());
     gfx::Rect opaqueRect(contentsOpaque() ? quadRect : gfx::Rect());
     bool premultipliedAlpha = true;
-    gfx::RectF uvRect(0, 0, 1, 1);
-    const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    gfx::PointF uv_top_left(0.f, 0.f);
+    gfx::PointF uv_bottom_right(1.f, 1.f);
+    const float vertex_opacity[] = {1.f, 1.f, 1.f, 1.f};
     bool flipped = false;
     scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
-    quad->SetNew(sharedQuadState, quadRect, opaqueRect, m_hudTexture->id(), premultipliedAlpha, uvRect, vertex_opacity, flipped);
+    quad->SetNew(sharedQuadState, quadRect, opaqueRect, m_hudTexture->id(), premultipliedAlpha, uv_top_left, uv_bottom_right, vertex_opacity, flipped);
     quadSink.append(quad.PassAs<DrawQuad>(), appendQuadsData);
 }
 
