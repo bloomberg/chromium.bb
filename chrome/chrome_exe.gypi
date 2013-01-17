@@ -504,6 +504,7 @@
               ],
               'action': ['cp', '-f', '<@(_inputs)', '<@(_outputs)'],
               'message': 'Copy first run complete sentinel file',
+              'msvs_cygwin_shell': 1,
             },
           ],
         }, {  # 'OS!="win"
