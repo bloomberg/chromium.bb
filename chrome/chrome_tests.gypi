@@ -1231,7 +1231,6 @@
         'browser/ui/gtk/location_bar_view_gtk_browsertest.cc',
         'browser/ui/gtk/one_click_signin_bubble_gtk_browsertest.cc',
         'browser/ui/gtk/view_id_util_browsertest.cc',
-        'browser/ui/intents/web_intent_picker_browsertest.cc',
         'browser/ui/intents/web_intent_picker_controller_browsertest.cc',
         'browser/ui/intents/web_intent_picker_delegate_mock.cc',
         'browser/ui/intents/web_intent_picker_delegate_mock.h',

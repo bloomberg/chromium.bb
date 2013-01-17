@@ -142,7 +142,6 @@ class WebIntentPickerController
   explicit WebIntentPickerController(content::WebContents* web_contents);
   friend class content::WebContentsUserData<WebIntentPickerController>;
 
-  friend class WebIntentPickerBrowserTest;
   friend class WebIntentPickerControllerTest;
   friend class WebIntentPickerControllerBrowserTest;
   friend class WebIntentPickerControllerIncognitoBrowserTest;
