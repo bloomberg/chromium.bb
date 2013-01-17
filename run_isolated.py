@@ -155,7 +155,7 @@ def _set_write_bit(path, read_only):
 
 def make_writable(root, read_only):
   """Toggle the writable bit on a directory tree."""
-  assert os.path.isabs(root)
+  assert os.path.isabs(root), root
   for dirpath, dirnames, filenames in os.walk(root, topdown=True):
     for filename in filenames:
       _set_write_bit(os.path.join(dirpath, filename), read_only)

@@ -391,7 +391,7 @@ def process_variables(cwd, variables, relative_base_dir):
     variable = variables[i].replace('/', os.path.sep)
     if os.path.isabs(variable):
       raise ExecutionError(
-          'Variable can\'t absolute: %s: %s' % (i, variables[i]))
+          'Variable can\'t be absolute: %s: %s' % (i, variables[i]))
 
     variable = os.path.join(cwd, variable)
     variable = os.path.normpath(variable)
