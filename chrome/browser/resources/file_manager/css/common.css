@@ -366,3 +366,23 @@ input[type='submit'][disabled]:hover {
   border-color: #aaa;
   color: #888;
 }
+
+/* Blue progress bar. */
+.progress-bar {
+  background-color: #e6e6e6;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  box-sizing: border-box;
+  margin: 2px 0;
+  padding: 1px;
+}
+
+.progress-track {
+  background-image: -webkit-linear-gradient(
+      rgb(110, 188, 249) 1px, rgb(86, 167, 247) 2px,
+      rgb(76, 148, 245) 11px, rgb(41, 112, 211) 12px);
+  border: 1px solid rgb(65, 137, 237);
+  border-radius: 2px;
+  height: 10px;
+  margin: -1px;
+}

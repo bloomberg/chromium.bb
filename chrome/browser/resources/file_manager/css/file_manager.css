@@ -127,31 +127,8 @@ body.loaded {
   white-space: nowrap;
 }
 
-.progress-bar {
-  border: 1px solid #999;
-  margin-bottom: 2px;
-  margin-top: 3px;
-  padding: 1px;
-}
-
-.progress-track {
-  -webkit-animation-duration: 800ms;
-  -webkit-animation-iteration-count: infinite;
-  -webkit-animation-name: bg;
-  -webkit-animation-timing-function: linear;
-  background-color: #ccc;
-  background-image: -webkit-linear-gradient(315deg, transparent,
-      transparent 33%, rgba(0, 0, 0, 0.12) 33%, rgba(0, 0, 0, 0.12) 66%,
-      transparent 66%, transparent);
-  background-position: 0 0;
-  background-repeat: repeat-x;
-  background-size: 16px 8px;
+#butter-bar .progress-track {
   height: 5px;
-}
-
-@-webkit-keyframes bg {
-  0% { background-position: 0 0; }
-  100% { background-position: -16px 0; }
 }
 
 /* The top title of the dialog. */

@@ -225,23 +225,6 @@ button.import {
   right: 10px;
 }
 
-.progress-bar {
+.importing-dialog .progress-bar {
   -webkit-box-flex: 1;
-  background-color: #e6e6e6;
-  border: 1px solid #ddd;
-  border-radius: 2px;
-  box-sizing: border-box;
-  height: 11px;
-}
-
-.progress-track {
-  background-image: -webkit-linear-gradient(
-    rgb(110, 188, 249) 1px, rgb(86, 167, 247) 2px,
-    rgb(76, 148, 245) 11px, rgb(41, 112, 211) 12px);
-  background-position: 0 0;
-  background-repeat: repeat-x;
-  border: 1px solid rgb(65, 137, 237);
-  border-radius: 2px;
-  height: 9px;
-  margin: -1px 0 0 -1px;
 }
