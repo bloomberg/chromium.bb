@@ -40,7 +40,7 @@ deps = {
     'src/third_party/WebKit':
         Var('webkit_url') + Var('webkit_rev'),
     'src/third_party/accessibility-developer-tools':
-        Var('git_url') + '/external/accessibility-developer-tools.git@d694593cc87d18ccb7e2cb94d447354f5fc6c059',
+        Var('git_url') + '/external/accessibility-developer-tools.git@e2a7557c79da617d0c06d6e96ada803b8b4b3ece',
     'src/third_party/angle':
         Var('git_url') + '/external/angleproject.git@b67eefcdc16faf155667a86563ef6df05abb5214',
     'src/third_party/bidichecker':
