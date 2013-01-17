@@ -31,8 +31,7 @@ using content::BrowserThread;
 class ProfileShortcutManagerTest : public testing::Test {
  protected:
   ProfileShortcutManagerTest()
-      : distribution_(NULL),
-        ui_thread_(BrowserThread::UI, &message_loop_),
+      : ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
         profile_shortcut_manager_(NULL),
         profile_info_cache_(NULL),
@@ -42,8 +41,6 @@ class ProfileShortcutManagerTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     CoInitialize(NULL);
-    distribution_ = BrowserDistribution::GetDistribution();
-    ASSERT_TRUE(distribution_ != NULL);
 
     TestingBrowserProcess* browser_process =
         TestingBrowserProcess::GetGlobal();
@@ -52,16 +49,6 @@ class ProfileShortcutManagerTest : public testing::Test {
     profile_info_cache_ = profile_manager_->profile_info_cache();
     profile_shortcut_manager_.reset(
         ProfileShortcutManager::Create(profile_manager_->profile_manager()));
-
-    ASSERT_TRUE(PathService::Get(base::FILE_EXE, &exe_path_));
-    ASSERT_TRUE(ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
-                                           distribution_,
-                                           ShellUtil::CURRENT_USER,
-                                           &shortcuts_directory_));
-    ASSERT_TRUE(ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
-                                           distribution_,
-                                           ShellUtil::SYSTEM_LEVEL,
-                                           &system_shortcuts_directory_));
     profile_1_name_ = L"My profile";
     profile_1_path_ = CreateProfileDirectory(profile_1_name_);
     profile_2_name_ = L"My profile 2";
@@ -127,9 +114,9 @@ class ProfileShortcutManagerTest : public testing::Test {
 
   // Returns the default shortcut path for this profile.
   FilePath GetDefaultShortcutPathForProfile(const string16& profile_name) {
-    return shortcuts_directory_.Append(
+    return GetUserShortcutsDirectory().Append(
         profiles::internal::GetShortcutFilenameForProfile(profile_name,
-                                                          distribution_));
+                                                          GetDistribution()));
   }
 
   // Returns true if the shortcut for this profile exists.
@@ -151,8 +138,8 @@ class ProfileShortcutManagerTest : public testing::Test {
     EXPECT_TRUE(file_util::PathExists(icon_path)) << location.ToString();
 
     base::win::ShortcutProperties expected_properties;
-    expected_properties.set_target(exe_path_);
-    expected_properties.set_description(distribution_->GetAppDescription());
+    expected_properties.set_target(GetExePath());
+    expected_properties.set_description(GetDistribution()->GetAppDescription());
     expected_properties.set_dual_mode(false);
     expected_properties.set_arguments(
         profiles::internal::CreateProfileShortcutFlags(profile_path));
@@ -175,10 +162,10 @@ class ProfileShortcutManagerTest : public testing::Test {
     EXPECT_TRUE(file_util::PathExists(shortcut_path)) << location.ToString();
 
     base::win::ShortcutProperties expected_properties;
-    expected_properties.set_target(exe_path_);
+    expected_properties.set_target(GetExePath());
     expected_properties.set_arguments(string16());
-    expected_properties.set_icon(exe_path_, 0);
-    expected_properties.set_description(distribution_->GetAppDescription());
+    expected_properties.set_icon(GetExePath(), 0);
+    expected_properties.set_description(GetDistribution()->GetAppDescription());
     expected_properties.set_dual_mode(false);
     base::win::ValidateShortcut(shortcut_path, expected_properties);
   }
@@ -206,15 +193,15 @@ class ProfileShortcutManagerTest : public testing::Test {
       const tracked_objects::Location& location,
       const string16& shortcut_name) {
     const FilePath shortcut_path =
-        shortcuts_directory_.Append(shortcut_name + installer::kLnkExt);
+        GetUserShortcutsDirectory().Append(shortcut_name + installer::kLnkExt);
     EXPECT_FALSE(file_util::PathExists(shortcut_path)) << location.ToString();
 
-    installer::Product product(distribution_);
+    installer::Product product(GetDistribution());
     ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
-    product.AddDefaultShortcutProperties(exe_path_, &properties);
+    product.AddDefaultShortcutProperties(GetExePath(), &properties);
     properties.set_shortcut_name(shortcut_name);
     EXPECT_TRUE(ShellUtil::CreateOrUpdateShortcut(
-        ShellUtil::SHORTCUT_LOCATION_DESKTOP, distribution_, properties,
+        ShellUtil::SHORTCUT_LOCATION_DESKTOP, GetDistribution(), properties,
         ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS)) << location.ToString();
     EXPECT_TRUE(file_util::PathExists(shortcut_path)) << location.ToString();
 
@@ -223,15 +210,16 @@ class ProfileShortcutManagerTest : public testing::Test {
 
   FilePath CreateRegularSystemLevelShortcut(
       const tracked_objects::Location& location) {
-    installer::Product product(distribution_);
+    BrowserDistribution* distribution = GetDistribution();
+    installer::Product product(distribution);
     ShellUtil::ShortcutProperties properties(ShellUtil::SYSTEM_LEVEL);
-    product.AddDefaultShortcutProperties(exe_path_, &properties);
+    product.AddDefaultShortcutProperties(GetExePath(), &properties);
     EXPECT_TRUE(ShellUtil::CreateOrUpdateShortcut(
-        ShellUtil::SHORTCUT_LOCATION_DESKTOP, distribution_, properties,
+        ShellUtil::SHORTCUT_LOCATION_DESKTOP, distribution, properties,
         ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS)) << location.ToString();
     const FilePath system_level_shortcut_path =
-        system_shortcuts_directory_.Append(distribution_->GetAppShortCutName() +
-                                           installer::kLnkExt);
+        GetSystemShortcutsDirectory().Append(
+            distribution->GetAppShortCutName() + installer::kLnkExt);
     EXPECT_TRUE(file_util::PathExists(system_level_shortcut_path))
         << location.ToString();
     return system_level_shortcut_path;
@@ -250,18 +238,42 @@ class ProfileShortcutManagerTest : public testing::Test {
     RunPendingTasks();
   }
 
-  BrowserDistribution* distribution_;
+  BrowserDistribution* GetDistribution() {
+    return BrowserDistribution::GetDistribution();
+  }
+
+  FilePath GetExePath() {
+    FilePath exe_path;
+    EXPECT_TRUE(PathService::Get(base::FILE_EXE, &exe_path));
+    return exe_path;
+  }
+
+  FilePath GetUserShortcutsDirectory() {
+    FilePath user_shortcuts_directory;
+    EXPECT_TRUE(ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
+                                           GetDistribution(),
+                                           ShellUtil::CURRENT_USER,
+                                           &user_shortcuts_directory));
+    return user_shortcuts_directory;
+  }
+
+  FilePath GetSystemShortcutsDirectory() {
+    FilePath system_shortcuts_directory;
+    EXPECT_TRUE(ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
+                                           GetDistribution(),
+                                           ShellUtil::SYSTEM_LEVEL,
+                                           &system_shortcuts_directory));
+    return system_shortcuts_directory;
+  }
+
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   scoped_ptr<TestingProfileManager> profile_manager_;
   scoped_ptr<ProfileShortcutManager> profile_shortcut_manager_;
   ProfileInfoCache* profile_info_cache_;
-  FilePath exe_path_;
   base::ScopedPathOverride fake_user_desktop_;
-  FilePath shortcuts_directory_;
   base::ScopedPathOverride fake_system_desktop_;
-  FilePath system_shortcuts_directory_;
   string16 profile_1_name_;
   FilePath profile_1_path_;
   string16 profile_2_name_;
@@ -272,37 +284,40 @@ class ProfileShortcutManagerTest : public testing::Test {
 
 TEST_F(ProfileShortcutManagerTest, ShortcutFilename) {
   const string16 kProfileName = L"Harry";
+  BrowserDistribution* distribution = GetDistribution();
   const string16 expected_name = kProfileName + L" - " +
-      distribution_->GetAppShortCutName() + installer::kLnkExt;
+      distribution->GetAppShortCutName() + installer::kLnkExt;
   EXPECT_EQ(expected_name,
             profiles::internal::GetShortcutFilenameForProfile(kProfileName,
-                                                              distribution_));
+                                                              distribution));
 }
 
 TEST_F(ProfileShortcutManagerTest, ShortcutLongFilenameIsTrimmed) {
   const string16 kLongProfileName = L"Harry Harry Harry Harry Harry Harry Harry"
       L"Harry Harry Harry Harry Harry Harry Harry Harry Harry Harry Harry"
       L"Harry Harry Harry Harry Harry Harry Harry Harry Harry Harry Harry";
-  string16 file_name =
-      profiles::internal::GetShortcutFilenameForProfile(
-          kLongProfileName, distribution_);
+  const string16 file_name =
+      profiles::internal::GetShortcutFilenameForProfile(kLongProfileName,
+                                                        GetDistribution());
   EXPECT_LT(file_name.size(), kLongProfileName.size());
 }
 
 TEST_F(ProfileShortcutManagerTest, ShortcutFilenameStripsReservedCharacters) {
   const string16 kProfileName = L"<Harry/>";
   const string16 kSanitizedProfileName = L"Harry";
+  BrowserDistribution* distribution = GetDistribution();
   const string16 expected_name = kSanitizedProfileName + L" - " +
-    distribution_->GetAppShortCutName() + installer::kLnkExt;
+      distribution->GetAppShortCutName() + installer::kLnkExt;
   EXPECT_EQ(expected_name,
-    profiles::internal::GetShortcutFilenameForProfile(kProfileName,
-    distribution_));
+            profiles::internal::GetShortcutFilenameForProfile(kProfileName,
+                                                              distribution));
 }
 
 TEST_F(ProfileShortcutManagerTest, UnbadgedShortcutFilename) {
-  EXPECT_EQ(distribution_->GetAppShortCutName() + installer::kLnkExt,
+  BrowserDistribution* distribution = GetDistribution();
+  EXPECT_EQ(distribution->GetAppShortCutName() + installer::kLnkExt,
             profiles::internal::GetShortcutFilenameForProfile(string16(),
-                                                              distribution_));
+                                                              distribution));
 }
 
 TEST_F(ProfileShortcutManagerTest, ShortcutFlags) {
@@ -473,7 +488,7 @@ TEST_F(ProfileShortcutManagerTest, RenamedDesktopShortcuts) {
   const FilePath profile_2_shortcut_path_1 =
       GetDefaultShortcutPathForProfile(profile_2_name_);
   const FilePath profile_2_shortcut_path_2 =
-      shortcuts_directory_.Append(L"MyChrome.lnk");
+      GetUserShortcutsDirectory().Append(L"MyChrome.lnk");
   ASSERT_TRUE(file_util::Move(profile_2_shortcut_path_1,
                               profile_2_shortcut_path_2));
 
@@ -498,7 +513,7 @@ TEST_F(ProfileShortcutManagerTest, RenamedDesktopShortcutsGetDeleted) {
   const FilePath profile_2_shortcut_path_1 =
       GetDefaultShortcutPathForProfile(profile_2_name_);
   const FilePath profile_2_shortcut_path_2 =
-      shortcuts_directory_.Append(L"MyChrome.lnk");
+      GetUserShortcutsDirectory().Append(L"MyChrome.lnk");
   // Make a copy of the shortcut.
   ASSERT_TRUE(file_util::CopyFile(profile_2_shortcut_path_1,
                                   profile_2_shortcut_path_2));
@@ -509,7 +524,7 @@ TEST_F(ProfileShortcutManagerTest, RenamedDesktopShortcutsGetDeleted) {
 
   // Also, copy the shortcut for the first user and ensure it gets preserved.
   const FilePath preserved_profile_1_shortcut_path =
-      shortcuts_directory_.Append(L"Preserved.lnk");
+      GetUserShortcutsDirectory().Append(L"Preserved.lnk");
   ASSERT_TRUE(file_util::CopyFile(
       GetDefaultShortcutPathForProfile(profile_1_name_),
       preserved_profile_1_shortcut_path));
@@ -530,7 +545,7 @@ TEST_F(ProfileShortcutManagerTest, RenamedDesktopShortcutsAfterProfileRename) {
   const FilePath profile_2_shortcut_path_1 =
       GetDefaultShortcutPathForProfile(profile_2_name_);
   const FilePath profile_2_shortcut_path_2 =
-      shortcuts_directory_.Append(L"MyChrome.lnk");
+      GetUserShortcutsDirectory().Append(L"MyChrome.lnk");
   // Make a copy of the shortcut.
   ASSERT_TRUE(file_util::CopyFile(profile_2_shortcut_path_1,
                                   profile_2_shortcut_path_2));
@@ -560,7 +575,7 @@ TEST_F(ProfileShortcutManagerTest, UpdateShortcutWithNoFlags) {
                                 false));
   const FilePath regular_shortcut_path =
       CreateRegularShortcutWithName(FROM_HERE,
-                                    distribution_->GetAppShortCutName());
+                                    GetDistribution()->GetAppShortCutName());
 
   // Add another profile and check that the shortcut was replaced with
   // a badged shortcut with the right command line for the profile
@@ -578,7 +593,7 @@ TEST_F(ProfileShortcutManagerTest, UpdateTwoShortcutsWithNoFlags) {
                                 false));
   const FilePath regular_shortcut_path =
       CreateRegularShortcutWithName(FROM_HERE,
-                                    distribution_->GetAppShortCutName());
+                                    GetDistribution()->GetAppShortCutName());
   const FilePath customized_regular_shortcut_path =
       CreateRegularShortcutWithName(FROM_HERE, L"MyChrome");
 
@@ -602,9 +617,9 @@ TEST_F(ProfileShortcutManagerTest, RemoveProfileShortcuts) {
 
   // Make copies of the shortcuts for both profiles.
   const FilePath profile_1_shortcut_path_2 =
-      shortcuts_directory_.Append(L"Copied1.lnk");
+      GetUserShortcutsDirectory().Append(L"Copied1.lnk");
   const FilePath profile_2_shortcut_path_2 =
-      shortcuts_directory_.Append(L"Copied2.lnk");
+      GetUserShortcutsDirectory().Append(L"Copied2.lnk");
   ASSERT_TRUE(file_util::CopyFile(profile_1_shortcut_path_1,
                                   profile_1_shortcut_path_2));
   ASSERT_TRUE(file_util::CopyFile(profile_2_shortcut_path_1,
