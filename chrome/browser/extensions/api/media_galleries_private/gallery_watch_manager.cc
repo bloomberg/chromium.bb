@@ -15,6 +15,7 @@
 #include "base/files/file_path_watcher.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "base/time.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_event_router.h"
 #include "content/public/browser/browser_thread.h"
@@ -84,18 +85,10 @@ class GalleryWatchManager::GalleryFilePathWatcher
  private:
   friend class base::RefCounted<GalleryFilePathWatcher>;
 
-  // Keeps track of extension watch details.
-  struct ExtensionWatchInfo {
-    ExtensionWatchInfo();
-
-    // Number of watches in this extension, e.g "3"
-    int watch_count;
-
-    // Used to manage the gallery changed events.
-    base::Time last_gallery_changed_event;
-  };
-
-  typedef std::map<std::string, ExtensionWatchInfo> ExtensionWatchInfoMap;
+  // Key: Extension identifier, e.g "qoueruoweuroiwueroiwujkshdf".
+  // Value: Time at which the last gallery changed event is dispatched.
+  //        Initialized to null Time value.
+  typedef std::map<std::string, base::Time> ExtensionWatchInfoMap;
 
   // Private because GalleryFilePathWatcher is ref-counted.
   virtual ~GalleryFilePathWatcher();
@@ -123,8 +116,6 @@ class GalleryWatchManager::GalleryFilePathWatcher
   base::Closure on_destroyed_callback_;
 
   // Map to keep track of the extension and its corresponding watch count.
-  // Key: Extension identifier, e.g "qoueruoweuroiwueroiwujkshdf".
-  // Value: Watch information.
   ExtensionWatchInfoMap extension_watch_info_map_;
 
   // Used to provide a weak pointer to FilePathWatcher callback.
@@ -151,22 +142,17 @@ GalleryWatchManager::GalleryFilePathWatcher::GalleryFilePathWatcher(
 void GalleryWatchManager::GalleryFilePathWatcher::AddExtension(
     const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  extension_watch_info_map_[extension_id].watch_count++;
+  if (ContainsKey(extension_watch_info_map_, extension_id))
+    return;
+  extension_watch_info_map_[extension_id] = base::Time();
   AddRef();
 }
 
 void GalleryWatchManager::GalleryFilePathWatcher::RemoveExtension(
     const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  ExtensionWatchInfoMap::iterator it =
-      extension_watch_info_map_.find(extension_id);
-  if (it == extension_watch_info_map_.end())
-    return;
-  // If entry found - decrease it's count and remove if necessary
-  it->second.watch_count--;
-  if (0 == it->second.watch_count)
-    extension_watch_info_map_.erase(it);
-  Release();
+  if (extension_watch_info_map_.erase(extension_id) == 1)
+    Release();
 }
 
 void GalleryWatchManager::GalleryFilePathWatcher::OnExtensionDestroyed(
@@ -200,11 +186,6 @@ GalleryWatchManager::GalleryFilePathWatcher::~GalleryFilePathWatcher() {
   on_destroyed_callback_.Run();
 }
 
-GalleryWatchManager::GalleryFilePathWatcher::ExtensionWatchInfo::
-ExtensionWatchInfo()
-    : watch_count(0) {
-}
-
 void GalleryWatchManager::GalleryFilePathWatcher::OnFilePathChanged(
     const FilePath& path,
     bool error) {
@@ -215,19 +196,18 @@ void GalleryWatchManager::GalleryFilePathWatcher::OnFilePathChanged(
   std::set<std::string> extension_ids;
   for (ExtensionWatchInfoMap::iterator iter = extension_watch_info_map_.begin();
        iter != extension_watch_info_map_.end(); ++iter) {
-    if (!iter->second.last_gallery_changed_event.is_null()) {
+    if (!iter->second.is_null()) {
       // Ignore gallery change event if it is received too frequently.
       // For example, when an user copies/deletes 1000 media files from a
       // gallery, this callback is called 1000 times within a span of 10ms.
       // GalleryWatchManager should not send 1000 gallery changed events to
       // the watching extension.
       const int kMinSecondsToIgnoreGalleryChangedEvent = 3;
-      base::TimeDelta diff =
-          base::Time::Now() - iter->second.last_gallery_changed_event;
+      base::TimeDelta diff = base::Time::Now() - iter->second;
       if (diff.InSeconds() < kMinSecondsToIgnoreGalleryChangedEvent)
         continue;
     }
-    iter->second.last_gallery_changed_event = base::Time::Now();
+    iter->second = base::Time::Now();
     extension_ids.insert(iter->first);
   }
   if (!extension_ids.empty()) {
@@ -245,10 +225,8 @@ void GalleryWatchManager::GalleryFilePathWatcher::RemoveExtensionReferences(
       extension_watch_info_map_.find(extension_id);
   if (it == extension_watch_info_map_.end())
     return;
-  int watch_count = it->second.watch_count;
   extension_watch_info_map_.erase(it);
-  for (int i = 0; i < watch_count; ++i)
-    Release();
+  Release();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
