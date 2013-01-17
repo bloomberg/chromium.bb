@@ -10,8 +10,11 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURLResponse.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
+#include "webkit/support/webkit_support.h"
 #include "webkit/support/weburl_loader_mock.h"
 
+using WebKit::WebCache;
 using WebKit::WebData;
 using WebKit::WebString;
 using WebKit::WebURL;
@@ -73,6 +76,7 @@ void WebURLLoaderMockFactory::UnregisterURL(const WebKit::WebURL& url) {
 void WebURLLoaderMockFactory::UnregisterAllURLs() {
   url_to_reponse_info_.clear();
   url_to_error_info_.clear();
+  WebCache::clear();
 }
 
 void WebURLLoaderMockFactory::ServeAsynchronousRequests() {
@@ -103,6 +107,7 @@ void WebURLLoaderMockFactory::ServeAsynchronousRequests() {
     // The loader might have already been removed.
     pending_loaders_.erase(loader);
   }
+  webkit_support::RunAllPendingMessages();
 }
 
 WebKit::WebURLRequest
