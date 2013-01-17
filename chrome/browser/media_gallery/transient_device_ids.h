@@ -27,7 +27,7 @@ class TransientDeviceIds {
   // |device_id| must be for a removable device.
   // If |device_id| has never been seen before, a new, unique transient id will
   // be assigned.
-  std::string GetTransientIdForDeviceId(const std::string& device_id);
+  uint64 GetTransientIdForDeviceId(const std::string& device_id);
 
  private:
   typedef std::map<std::string, uint64> DeviceIdToTransientIdMap;

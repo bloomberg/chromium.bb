@@ -84,6 +84,14 @@ IN_PROC_BROWSER_TEST_F(PlatformAppMediaGalleriesBrowserTest,
   RunSecondTestPhase(media_directories.num_galleries());
 }
 
+IN_PROC_BROWSER_TEST_F(PlatformAppMediaGalleriesBrowserTest,
+                       GetFilesystemMetadata) {
+  chrome::EnsureMediaDirectoriesExists media_directories;
+  ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/metadata"))
+      << message_;
+}
+
+
 IN_PROC_BROWSER_TEST_F(ExperimentalMediaGalleriesApiTest,
                        ExperimentalMediaGalleries) {
   ASSERT_TRUE(RunExtensionTest("media_galleries/experimental")) << message_;

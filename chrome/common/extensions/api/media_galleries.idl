@@ -24,13 +24,36 @@ namespace mediaGalleries {
   };
 
   callback MediaFileSystemsCallback =
-      void ([instanceOf=LocalFileSystem] optional object[] mediaFileSystems);
+      void ([instanceOf=DOMFileSystem] optional object[] mediaFileSystems);
+
+  [inline_doc] dictionary MediaFileSystemMetadata {
+    // The name of the file system.
+    DOMString name;
+
+    // A unique and persistent id for the media gallery.
+    long galleryId;
+
+    // If the media gallery is on a removable device, a unique id for the
+    // device.
+    long? deviceId;
+
+    // True if the media gallery is on a removable device.
+    boolean isRemovable;
+
+    // True if the device the media gallery is on was detected as a media
+    // device.  i.e. a PTP or MTP device, or a DCIM directory is present.
+    boolean isMediaDevice;
+  };
 
   interface Functions {
     // Get the media galleries configured in this user agent. If none are
     // configured or available, the callback will receive an empty array.
     static void getMediaFileSystems(optional MediaFileSystemsDetails details,
                                     MediaFileSystemsCallback callback);
+
+    // Get metadata about a specific media file system.
+    [nocompile] static MediaFileSystemMetadata getMediaFileSystemMetadata(
+        [instanceOf=DOMFileSystem] object mediaFileSystem);
   };
 
 };

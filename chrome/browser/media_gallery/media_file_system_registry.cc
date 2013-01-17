@@ -15,6 +15,7 @@
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/media_gallery/media_file_system_context.h"
-#include "chrome/browser/media_gallery/media_galleries_preferences.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences_factory.h"
 #include "chrome/browser/media_gallery/scoped_mtp_device_map_entry.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -66,10 +66,18 @@ struct InvalidatedGalleriesInfo {
 
 MediaFileSystemInfo::MediaFileSystemInfo(const std::string& fs_name,
                                          const FilePath& fs_path,
-                                         const std::string& filesystem_id)
+                                         const std::string& filesystem_id,
+                                         MediaGalleryPrefId pref_id,
+                                         uint64 transient_device_id,
+                                         bool removable,
+                                         bool media_device)
     : name(fs_name),
       path(fs_path),
-      fsid(filesystem_id) {
+      fsid(filesystem_id),
+      pref_id(pref_id),
+      transient_device_id(transient_device_id),
+      removable(removable),
+      media_device(media_device) {
 }
 
 MediaFileSystemInfo::MediaFileSystemInfo() {}
@@ -280,7 +288,11 @@ class ExtensionGalleriesHost
       MediaFileSystemInfo new_entry(
           MakeJSONFileSystemName(gallery_info.display_name, pref_id, device_id),
           path,
-          fsid);
+          fsid,
+          pref_id,
+          GetTransientIdForRemovableDeviceId(device_id),
+          MediaStorageUtil::IsRemovableDevice(device_id),
+          MediaStorageUtil::IsMediaDevice(device_id));
       result.push_back(new_entry);
       new_galleries.insert(pref_id);
       pref_id_map_[pref_id] = new_entry;
@@ -296,14 +308,15 @@ class ExtensionGalleriesHost
     callback.Run(result);
   }
 
-  std::string GetTransientIdForRemovableDeviceId(const std::string& device_id) {
+  uint64 GetTransientIdForRemovableDeviceId(const std::string& device_id) {
     if (!MediaStorageUtil::IsRemovableDevice(device_id))
-      return std::string();
+      return 0;
     MediaFileSystemRegistry* registry =
         file_system_context_->GetMediaFileSystemRegistry();
     return registry->GetTransientIdForDeviceId(device_id);
   }
 
+  // This code is deprecated and should be removed. See http://crbug.com/170138
   // Make a JSON string out of |name|, |pref_id| and |device_id|. The IDs makes
   // the combined name unique. The JSON string should not contain any slashes.
   std::string MakeJSONFileSystemName(const string16& name,
@@ -328,11 +341,12 @@ class ExtensionGalleriesHost
         MediaFileSystemRegistry::kGalleryIdKey, pref_id);
 
     // |device_id| can be empty, in which case, just omit it.
-    std::string transient_device_id =
+    uint64 transient_device_id =
         GetTransientIdForRemovableDeviceId(device_id);
-    if (!transient_device_id.empty()) {
+    if (transient_device_id) {
       dict_value.SetStringWithoutPathExpansion(
-          MediaFileSystemRegistry::kDeviceIdKey, transient_device_id);
+          MediaFileSystemRegistry::kDeviceIdKey,
+          base::Uint64ToString(transient_device_id));
     }
 
     std::string json_string;
@@ -563,7 +577,7 @@ size_t MediaFileSystemRegistry::GetExtensionHostCountForTests() const {
   return extension_hosts_map_.size();
 }
 
-std::string MediaFileSystemRegistry::GetTransientIdForDeviceId(
+uint64 MediaFileSystemRegistry::GetTransientIdForDeviceId(
     const std::string& device_id) {
   return transient_device_ids_.GetTransientIdForDeviceId(device_id);
 }

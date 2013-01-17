@@ -1,0 +1,11 @@
+{
+  "name": "chrome.mediaGalleries.metadata",
+  "version": "0.1",
+  "description": "test chrome.mediaGalleries.getMediaFileSystemMetadata",
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  },
+  "permissions": [{"mediaGalleries": ["read", "allAutoDetected"]}]
+}

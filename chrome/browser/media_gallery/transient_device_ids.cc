@@ -7,16 +7,15 @@
 #include "chrome/browser/media_gallery/transient_device_ids.h"
 
 #include "base/logging.h"
-#include "base/string_number_conversions.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
 
 namespace chrome {
 
-TransientDeviceIds::TransientDeviceIds() : next_transient_id_(0) {}
+TransientDeviceIds::TransientDeviceIds() : next_transient_id_(1) {}
 
 TransientDeviceIds::~TransientDeviceIds() {}
 
-std::string TransientDeviceIds::GetTransientIdForDeviceId(
+uint64 TransientDeviceIds::GetTransientIdForDeviceId(
     const std::string& device_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(MediaStorageUtil::IsRemovableDevice(device_id));
@@ -27,7 +26,7 @@ std::string TransientDeviceIds::GetTransientIdForDeviceId(
     // Inserted a device that has never been seen before.
     ++next_transient_id_;
   }
-  return base::Uint64ToString(id_map_[device_id]);
+  return id_map_[device_id];
 }
 
 }  // namespace chrome

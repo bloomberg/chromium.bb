@@ -52,6 +52,9 @@ const char kDisallowedByPolicy[] =
     "Media Galleries API is disallowed by policy: ";
 const char kInvalidInteractive[] = "Unknown value for interactive.";
 
+const char kIsRemovableKey[] = "isRemovable";
+const char kIsMediaDeviceKey[] = "isMediaDevice";
+
 // Checks whether the MediaGalleries API is currently accessible (it may be
 // disallowed even if an extension has the requisite permission).
 bool ApiIsAccessible(std::string* error) {
@@ -158,7 +161,18 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
     }
     file_system_names.insert(filesystems[i].name);
     file_system_dict_value->SetStringWithoutPathExpansion(
-        "name", filesystems[i].name);
+        MediaFileSystemRegistry::kNameKey, filesystems[i].name);
+    file_system_dict_value->SetIntegerWithoutPathExpansion(
+        MediaFileSystemRegistry::kGalleryIdKey, filesystems[i].pref_id);
+    if (filesystems[i].transient_device_id) {
+      file_system_dict_value->SetIntegerWithoutPathExpansion(
+          MediaFileSystemRegistry::kDeviceIdKey,
+          filesystems[i].transient_device_id);
+    }
+    file_system_dict_value->SetBooleanWithoutPathExpansion(
+        kIsRemovableKey, filesystems[i].removable);
+    file_system_dict_value->SetBooleanWithoutPathExpansion(
+        kIsMediaDeviceKey, filesystems[i].media_device);
 
     list->Append(file_system_dict_value.release());
 

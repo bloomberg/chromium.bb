@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/prefs/public/pref_change_registrar.h"
 #include "base/system_monitor/system_monitor.h"
+#include "chrome/browser/media_gallery/media_galleries_preferences.h"
 #include "chrome/browser/media_gallery/transient_device_ids.h"
 #include "webkit/fileapi/media/mtp_device_file_system_config.h"
 
@@ -49,12 +50,20 @@ class ScopedMTPDeviceMapEntry;
 struct MediaFileSystemInfo {
   MediaFileSystemInfo(const std::string& fs_name,
                       const FilePath& fs_path,
-                      const std::string& filesystem_id);
+                      const std::string& filesystem_id,
+                      MediaGalleryPrefId pref_id,
+                      uint64 transient_device_id,
+                      bool removable,
+                      bool media_device);
   MediaFileSystemInfo();
 
   std::string name;  // JSON string, must not contain slashes.
   FilePath path;
   std::string fsid;
+  MediaGalleryPrefId pref_id;
+  uint64 transient_device_id;
+  bool removable;
+  bool media_device;
 };
 
 typedef base::Callback<void(const std::vector<MediaFileSystemInfo>&)>
@@ -90,9 +99,9 @@ class MediaFileSystemRegistry
   size_t GetExtensionHostCountForTests() const;
 
   // See TransientDeviceIds::GetTransientIdForDeviceId().
-  std::string GetTransientIdForDeviceId(const std::string& device_id);
+  uint64 GetTransientIdForDeviceId(const std::string& device_id);
 
-  // Keys used in gallery names, which are JSON strings.
+  // Keys for metadata about a media gallery file system.
   static const char kDeviceIdKey[];
   static const char kGalleryIdKey[];
   static const char kNameKey[];
