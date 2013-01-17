@@ -298,6 +298,7 @@ void LayerTreeHost::finishCommitOnImplThread(LayerTreeHostImpl* hostImpl)
     hostImpl->setDeviceScaleFactor(deviceScaleFactor());
     hostImpl->setPageScaleFactorAndLimits(m_pageScaleFactor, m_minPageScaleFactor, m_maxPageScaleFactor);
     hostImpl->setDebugState(m_debugState);
+    hostImpl->savePaintTime(m_renderingStats.totalPaintTime);
 
     m_commitNumber++;
 }

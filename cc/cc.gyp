@@ -138,6 +138,8 @@
       'overdraw_metrics.h',
       'page_scale_animation.cc',
       'page_scale_animation.h',
+      'paint_time_counter.cc',
+      'paint_time_counter.h',
       'picture.cc',
       'picture.h',
       'picture_image_layer.cc',

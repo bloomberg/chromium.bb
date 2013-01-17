@@ -26,6 +26,7 @@
 #include "cc/math_util.h"
 #include "cc/overdraw_metrics.h"
 #include "cc/page_scale_animation.h"
+#include "cc/paint_time_counter.h"
 #include "cc/prioritized_resource_manager.h"
 #include "cc/quad_culler.h"
 #include "cc/render_pass_draw_quad.h"
@@ -143,6 +144,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
     , m_needsUpdateDrawProperties(false)
     , m_pinchGestureActive(false)
     , m_fpsCounter(FrameRateCounter::create(m_proxy->hasImplThread()))
+    , m_paintTimeCounter(PaintTimeCounter::create())
     , m_debugRectHistory(DebugRectHistory::create())
     , m_numImplThreadScrolls(0)
     , m_numMainThreadScrolls(0)
@@ -1675,6 +1677,11 @@ skia::RefPtr<SkPicture> LayerTreeHostImpl::capturePicture()
     LayerTreeImpl* tree = pendingTree() ? pendingTree() : activeTree();
     LayerImpl* layer = getNonCompositedContentLayerRecursive(tree->RootLayer());
     return layer ? layer->getPicture() : skia::RefPtr<SkPicture>();
+}
+
+void LayerTreeHostImpl::savePaintTime(const base::TimeDelta& totalPaintTime)
+{
+    m_paintTimeCounter->SavePaintTime(totalPaintTime);
 }
 
 }  // namespace cc

@@ -34,6 +34,7 @@ class LayerImpl;
 class LayerTreeHostImplTimeSourceAdapter;
 class LayerTreeImpl;
 class PageScaleAnimation;
+class PaintTimeCounter;
 class RenderPassDrawQuad;
 class ResourceProvider;
 class TopControlsManager;
@@ -204,6 +205,7 @@ public:
        size_t memoryUseBytes);
 
     FrameRateCounter* fpsCounter() const { return m_fpsCounter.get(); }
+    PaintTimeCounter* paintTimeCounter() const { return m_paintTimeCounter.get(); }
     DebugRectHistory* debugRectHistory() const { return m_debugRectHistory.get(); }
     ResourceProvider* resourceProvider() const { return m_resourceProvider.get(); }
     TopControlsManager* topControlsManager() const { return m_topControlsManager.get(); }
@@ -214,6 +216,8 @@ public:
 
     void setDebugState(const LayerTreeDebugState& debugState) { m_debugState = debugState; }
     const LayerTreeDebugState& debugState() const { return m_debugState; }
+
+    void savePaintTime(const base::TimeDelta& totalPaintTime);
 
     class CC_EXPORT CullRenderPassesWithCachedTextures {
     public:
@@ -333,6 +337,7 @@ private:
     PinchZoomViewport m_pinchZoomViewport;
 
     scoped_ptr<FrameRateCounter> m_fpsCounter;
+    scoped_ptr<PaintTimeCounter> m_paintTimeCounter;
     scoped_ptr<DebugRectHistory> m_debugRectHistory;
 
     int64 m_numImplThreadScrolls;
