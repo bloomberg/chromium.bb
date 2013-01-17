@@ -56,6 +56,13 @@ class Code(object):
 
     return self
 
+  def Cblock(self, code):
+    """Concatenates another Code object |code| onto this one followed by a
+    blank line, if |code| is non-empty."""
+    if not code.IsEmpty():
+      self.Concat(code).Append()
+    return self
+
   def Sblock(self, line=''):
     """Starts a code block.
 

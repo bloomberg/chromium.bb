@@ -204,7 +204,7 @@ bool ContentSettingsSetFunction::RunImpl() {
 
   std::string setting_str;
   EXTENSION_FUNCTION_VALIDATE(
-      params->details.setting.value().GetAsString(&setting_str));
+      params->details.setting->GetAsString(&setting_str));
   ContentSetting setting;
   EXTENSION_FUNCTION_VALIDATE(
       helpers::StringToContentSetting(setting_str, &setting));

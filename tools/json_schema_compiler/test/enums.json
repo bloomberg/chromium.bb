@@ -4,6 +4,7 @@
     "types": [
       {
         "id": "Enumeration",
+        "type": "string",
         "enum": ["one", "two", "three"]
       },
       {

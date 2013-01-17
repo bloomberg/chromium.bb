@@ -120,13 +120,13 @@ bool SocketCreateFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   switch (params_->type) {
-    case extensions::api::socket::SOCKET_SOCKET_TYPE_TCP:
+    case extensions::api::socket::SOCKET_TYPE_TCP:
       socket_type_ = kSocketTypeTCP;
       break;
-    case extensions::api::socket::SOCKET_SOCKET_TYPE_UDP:
+    case extensions::api::socket::SOCKET_TYPE_UDP:
       socket_type_ = kSocketTypeUDP;
       break;
-    case extensions::api::socket::SOCKET_SOCKET_TYPE_NONE:
+    case extensions::api::socket::SOCKET_TYPE_NONE:
       NOTREACHED();
       break;
   }
@@ -605,9 +605,9 @@ void SocketGetInfoFunction::Work() {
     // This represents what we know about the socket, and does not call through
     // to the system.
     if (socket->GetSocketType() == Socket::TYPE_TCP)
-      info.socket_type = extensions::api::socket::SOCKET_SOCKET_TYPE_TCP;
+      info.socket_type = extensions::api::socket::SOCKET_TYPE_TCP;
     else
-      info.socket_type = extensions::api::socket::SOCKET_SOCKET_TYPE_UDP;
+      info.socket_type = extensions::api::socket::SOCKET_TYPE_UDP;
     info.connected = socket->IsConnected();
 
     // Grab the peer address as known by the OS. This and the call below will

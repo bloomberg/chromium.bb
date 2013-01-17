@@ -178,22 +178,15 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   URLMatcher matcher;
 
   WebRequestConditionSet::AnyVector conditions;
-
-  linked_ptr<json_schema_compiler::any::Any> condition1 = make_linked_ptr(
-      new json_schema_compiler::any::Any);
-  condition1->Init(*base::test::ParseJson(
+  conditions.push_back(linked_ptr<base::Value>(base::test::ParseJson(
       "{ \n"
       "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
       "  \"url\": { \n"
       "    \"hostSuffix\": \"example.com\", \n"
       "    \"schemes\": [\"http\"], \n"
       "  }, \n"
-      "}"));
-  conditions.push_back(condition1);
-
-  linked_ptr<json_schema_compiler::any::Any> condition2 = make_linked_ptr(
-      new json_schema_compiler::any::Any);
-  condition2->Init(*base::test::ParseJson(
+      "}").release()));
+  conditions.push_back(linked_ptr<base::Value>(base::test::ParseJson(
       "{ \n"
       "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
       "  \"url\": { \n"
@@ -201,8 +194,7 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
       "    \"hostPrefix\": \"www\", \n"
       "    \"schemes\": [\"https\"], \n"
       "  }, \n"
-      "}"));
-  conditions.push_back(condition2);
+      "}").release()));
 
   // Test insertion
   std::string error;
@@ -257,18 +249,15 @@ TEST(WebRequestConditionTest, TestPortFilter) {
   MessageLoop message_loop(MessageLoop::TYPE_IO);
   URLMatcher matcher;
 
-  linked_ptr<json_schema_compiler::any::Any> any_condition =
-      make_linked_ptr(new json_schema_compiler::any::Any);
-  any_condition->Init(*base::test::ParseJson(
+  WebRequestConditionSet::AnyVector conditions;
+  conditions.push_back(linked_ptr<base::Value>(base::test::ParseJson(
       "{ \n"
       "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
       "  \"url\": { \n"
       "    \"ports\": [80, [1000, 1010]], \n"  // Allow 80;1000-1010.
       "    \"hostSuffix\": \"example.com\", \n"
       "  }, \n"
-      "}"));
-  WebRequestConditionSet::AnyVector conditions;
-  conditions.push_back(any_condition);
+      "}").release()));
 
   // Test insertion
   std::string error;

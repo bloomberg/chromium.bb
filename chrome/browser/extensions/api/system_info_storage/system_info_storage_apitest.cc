@@ -29,8 +29,8 @@ class MockStorageInfoProvider : public StorageInfoProvider {
 
     linked_ptr<StorageUnitInfo> unit(new StorageUnitInfo());
     unit->id = "0xbeaf";
-    unit->type = api::experimental_system_info_storage::
-        EXPERIMENTAL_SYSTEM_INFO_STORAGE_STORAGE_UNIT_TYPE_UNKNOWN;
+    unit->type =
+        api::experimental_system_info_storage::STORAGE_UNIT_TYPE_UNKNOWN;
     unit->capacity = 4098;
     unit->available_capacity = 1024;
 

@@ -52,37 +52,37 @@ extensions::MenuItem::ContextList GetContexts(
   extensions::MenuItem::ContextList contexts;
   for (size_t i = 0; i < property.contexts->size(); ++i) {
     switch (property.contexts->at(i)) {
-      case PropertyWithEnumT::CONTEXTS_ELEMENT_ALL:
+      case PropertyWithEnumT::CONTEXTS_TYPE_ALL:
         contexts.Add(extensions::MenuItem::ALL);
         break;
-      case PropertyWithEnumT::CONTEXTS_ELEMENT_PAGE:
+      case PropertyWithEnumT::CONTEXTS_TYPE_PAGE:
         contexts.Add(extensions::MenuItem::PAGE);
         break;
-      case PropertyWithEnumT::CONTEXTS_ELEMENT_SELECTION:
+      case PropertyWithEnumT::CONTEXTS_TYPE_SELECTION:
         contexts.Add(extensions::MenuItem::SELECTION);
         break;
-      case PropertyWithEnumT::CONTEXTS_ELEMENT_LINK:
+      case PropertyWithEnumT::CONTEXTS_TYPE_LINK:
         contexts.Add(extensions::MenuItem::LINK);
         break;
-      case PropertyWithEnumT::CONTEXTS_ELEMENT_EDITABLE:
+      case PropertyWithEnumT::CONTEXTS_TYPE_EDITABLE:
         contexts.Add(extensions::MenuItem::EDITABLE);
         break;
-      case PropertyWithEnumT::CONTEXTS_ELEMENT_IMAGE:
+      case PropertyWithEnumT::CONTEXTS_TYPE_IMAGE:
         contexts.Add(extensions::MenuItem::IMAGE);
         break;
-      case PropertyWithEnumT::CONTEXTS_ELEMENT_VIDEO:
+      case PropertyWithEnumT::CONTEXTS_TYPE_VIDEO:
         contexts.Add(extensions::MenuItem::VIDEO);
         break;
-      case PropertyWithEnumT::CONTEXTS_ELEMENT_AUDIO:
+      case PropertyWithEnumT::CONTEXTS_TYPE_AUDIO:
         contexts.Add(extensions::MenuItem::AUDIO);
         break;
-      case PropertyWithEnumT::CONTEXTS_ELEMENT_FRAME:
+      case PropertyWithEnumT::CONTEXTS_TYPE_FRAME:
         contexts.Add(extensions::MenuItem::FRAME);
         break;
-      case PropertyWithEnumT::CONTEXTS_ELEMENT_LAUNCHER:
+      case PropertyWithEnumT::CONTEXTS_TYPE_LAUNCHER:
         contexts.Add(extensions::MenuItem::LAUNCHER);
         break;
-      case PropertyWithEnumT::CONTEXTS_ELEMENT_NONE:
+      case PropertyWithEnumT::CONTEXTS_TYPE_NONE:
         NOTREACHED();
     }
   }
@@ -110,18 +110,17 @@ scoped_ptr<extensions::MenuItem::Id> GetParentId(
     const PropertyWithEnumT& property,
     bool is_off_the_record,
     std::string extension_id) {
+  if (!property.parent_id)
+    return scoped_ptr<extensions::MenuItem::Id>();
+
   scoped_ptr<extensions::MenuItem::Id> parent_id(
       new extensions::MenuItem::Id(is_off_the_record, extension_id));
-  switch (property.parent_id_type) {
-    case PropertyWithEnumT::PARENT_ID_NONE:
-      return scoped_ptr<extensions::MenuItem::Id>().Pass();
-    case PropertyWithEnumT::PARENT_ID_INTEGER:
-      parent_id->uid = *property.parent_id_integer;
-      break;
-    case PropertyWithEnumT::PARENT_ID_STRING:
-      parent_id->string_uid = *property.parent_id_string;
-      break;
-  }
+  if (property.parent_id->as_integer)
+    parent_id->uid = *property.parent_id->as_integer;
+  else if (property.parent_id->as_string)
+    parent_id->string_uid = *property.parent_id->as_string;
+  else
+    NOTREACHED();
   return parent_id.Pass();
 }
 
@@ -251,16 +250,12 @@ bool ContextMenusUpdateFunction::RunImpl() {
   scoped_ptr<Update::Params> params(Update::Params::Create(*args_));
 
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  switch (params->id_type) {
-    case Update::Params::ID_STRING:
-      item_id.string_uid = *params->id_string;
-      break;
-    case Update::Params::ID_INTEGER:
-      item_id.uid = *params->id_integer;
-      break;
-    case Update::Params::ID_NONE:
-      NOTREACHED();
-  }
+  if (params->id.as_string)
+    item_id.string_uid = *params->id.as_string;
+  else if (params->id.as_integer)
+    item_id.uid = *params->id.as_integer;
+  else
+    NOTREACHED();
 
   ExtensionService* service = profile()->GetExtensionService();
   MenuManager* manager = service->menu_manager();
@@ -362,16 +357,12 @@ bool ContextMenusRemoveFunction::RunImpl() {
   MenuManager* manager = service->menu_manager();
 
   MenuItem::Id id(profile()->IsOffTheRecord(), extension_id());
-  switch (params->menu_item_id_type) {
-    case Remove::Params::MENU_ITEM_ID_STRING:
-      id.string_uid = *params->menu_item_id_string;
-      break;
-    case Remove::Params::MENU_ITEM_ID_INTEGER:
-      id.uid = *params->menu_item_id_integer;
-      break;
-    case Remove::Params::MENU_ITEM_ID_NONE:
-      NOTREACHED();
-  }
+  if (params->menu_item_id.as_string)
+    id.string_uid = *params->menu_item_id.as_string;
+  else if (params->menu_item_id.as_integer)
+    id.uid = *params->menu_item_id.as_integer;
+  else
+    NOTREACHED();
 
   MenuItem* item = manager->GetItemById(id);
   // Ensure one extension can't remove another's menu items.

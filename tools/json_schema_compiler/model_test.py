@@ -32,41 +32,45 @@ class ModelTest(unittest.TestCase):
         sorted(self.permissions.functions.keys()))
 
   def testHasTypes(self):
-    self.assertEquals(['tabs.Tab'], self.tabs.types.keys())
-    self.assertEquals(['permissions.Permissions'],
-        self.permissions.types.keys())
-    self.assertEquals(['windows.Window'], self.windows.types.keys())
+    self.assertEquals(['Tab'], self.tabs.types.keys())
+    self.assertEquals(['Permissions'], self.permissions.types.keys())
+    self.assertEquals(['Window'], self.windows.types.keys())
 
   def testHasProperties(self):
     self.assertEquals(["active", "favIconUrl", "highlighted", "id",
         "incognito", "index", "pinned", "selected", "status", "title", "url",
         "windowId"],
-        sorted(self.tabs.types['tabs.Tab'].properties.keys()))
+        sorted(self.tabs.types['Tab'].properties.keys()))
 
   def testProperties(self):
-    string_prop = self.tabs.types['tabs.Tab'].properties['status']
-    self.assertEquals(model.PropertyType.STRING, string_prop.type_)
-    integer_prop = self.tabs.types['tabs.Tab'].properties['id']
-    self.assertEquals(model.PropertyType.INTEGER, integer_prop.type_)
-    array_prop = self.windows.types['windows.Window'].properties['tabs']
-    self.assertEquals(model.PropertyType.ARRAY, array_prop.type_)
-    self.assertEquals(model.PropertyType.REF, array_prop.item_type.type_)
-    self.assertEquals('tabs.Tab', array_prop.item_type.ref_type)
+    string_prop = self.tabs.types['Tab'].properties['status']
+    self.assertEquals(model.PropertyType.STRING,
+                      string_prop.type_.property_type)
+    integer_prop = self.tabs.types['Tab'].properties['id']
+    self.assertEquals(model.PropertyType.INTEGER,
+                      integer_prop.type_.property_type)
+    array_prop = self.windows.types['Window'].properties['tabs']
+    self.assertEquals(model.PropertyType.ARRAY,
+                      array_prop.type_.property_type)
+    self.assertEquals(model.PropertyType.REF,
+                      array_prop.type_.item_type.property_type)
+    self.assertEquals('tabs.Tab', array_prop.type_.item_type.ref_type)
     object_prop = self.tabs.functions['query'].params[0]
-    self.assertEquals(model.PropertyType.OBJECT, object_prop.type_)
+    self.assertEquals(model.PropertyType.OBJECT,
+                      object_prop.type_.property_type)
     self.assertEquals(
         ["active", "highlighted", "pinned", "status", "title", "url",
          "windowId", "windowType"],
-        sorted(object_prop.properties.keys()))
+        sorted(object_prop.type_.properties.keys()))
 
   def testChoices(self):
     self.assertEquals(model.PropertyType.CHOICES,
-        self.tabs.functions['move'].params[0].type_)
+                      self.tabs.functions['move'].params[0].type_.property_type)
 
   def testPropertyNotImplemented(self):
     (self.permissions_json[0]['types'][0]
         ['properties']['permissions']['type']) = 'something'
-    self.assertRaises(NotImplementedError, self.model.AddNamespace,
+    self.assertRaises(model.ParseException, self.model.AddNamespace,
         self.permissions_json[0], 'path/to/something.json')
 
   def testDescription(self):
@@ -78,12 +82,6 @@ class ModelTest(unittest.TestCase):
   def testPropertyUnixName(self):
     param = self.tabs.functions['move'].params[0]
     self.assertEquals('tab_ids', param.unix_name)
-    param.choices[model.PropertyType.INTEGER].unix_name = 'asdf'
-    param.choices[model.PropertyType.INTEGER].unix_name = 'tab_ids_integer'
-    self.assertEquals('tab_ids_integer',
-        param.choices[model.PropertyType.INTEGER].unix_name)
-    self.assertRaises(AttributeError,
-        param.choices[model.PropertyType.INTEGER].SetUnixName, 'breakage')
 
   def testUnixName(self):
     expectations = {

@@ -80,7 +80,7 @@
             "description": "Creates a result node that may be used as the <code>details</code> parameters to the <code>addResult()</code> method.",
             "parameters": [
               {
-                "name": "content ...",
+                "name": "content",
                 "choices": [
                   { "type": "string" },
                   { "$ref": "FormattedValue" }
@@ -149,7 +149,7 @@
             "description": "Adds a child node to this node.",
             "parameters": [
               {
-                "name": "content ...",
+                "name": "content",
                 "choices": [
                   { "type": "string" },
                   { "$ref": "FormattedValue" }

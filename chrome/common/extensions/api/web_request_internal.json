@@ -5,6 +5,7 @@
 [
   {
     "namespace": "webRequestInternal",
+    "dependencies": ["webRequest"],
     "nodoc": true,
     "internal": true,
     "functions": [

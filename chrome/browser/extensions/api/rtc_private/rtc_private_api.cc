@@ -46,15 +46,15 @@ api::rtc_private::ActionType GetLaunchAction(
     RtcPrivateEventRouter::LaunchAction action) {
   switch (action) {
     case RtcPrivateEventRouter::LAUNCH_ACTIVATE:
-      return api::rtc_private::RTC_PRIVATE_ACTION_TYPE_NONE;
+      return api::rtc_private::ACTION_TYPE_NONE;
     case RtcPrivateEventRouter::LAUNCH_CHAT:
-      return api::rtc_private::RTC_PRIVATE_ACTION_TYPE_CHAT;
+      return api::rtc_private::ACTION_TYPE_CHAT;
     case RtcPrivateEventRouter::LAUNCH_VOICE:
-      return api::rtc_private::RTC_PRIVATE_ACTION_TYPE_VOICE;
+      return api::rtc_private::ACTION_TYPE_VOICE;
     case RtcPrivateEventRouter::LAUNCH_VIDEO:
-      return api::rtc_private::RTC_PRIVATE_ACTION_TYPE_VIDEO;
+      return api::rtc_private::ACTION_TYPE_VIDEO;
   }
-  return api::rtc_private::RTC_PRIVATE_ACTION_TYPE_NONE;
+  return api::rtc_private::ACTION_TYPE_NONE;
 }
 
 // Creates JSON payload string for contact web intent data.

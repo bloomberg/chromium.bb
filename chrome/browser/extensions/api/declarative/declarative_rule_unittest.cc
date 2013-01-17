@@ -13,8 +13,16 @@
 
 namespace extensions {
 
-using json_schema_compiler::any::Any;
 using base::test::ParseJson;
+
+namespace {
+
+template<typename T>
+linked_ptr<T> ScopedToLinkedPtr(scoped_ptr<T> ptr) {
+  return linked_ptr<T>(ptr.release());
+}
+
+}  // namespace
 
 struct RecordingCondition {
   typedef int MatchData;
@@ -52,8 +60,8 @@ typedef DeclarativeConditionSet<RecordingCondition> RecordingConditionSet;
 TEST(DeclarativeConditionTest, ErrorConditionSet) {
   URLMatcher matcher;
   RecordingConditionSet::AnyVector conditions;
-  conditions.push_back(make_linked_ptr(new Any(ParseJson("{\"key\": 1}"))));
-  conditions.push_back(make_linked_ptr(new Any(ParseJson("{\"bad_key\": 2}"))));
+  conditions.push_back(ScopedToLinkedPtr(ParseJson("{\"key\": 1}")));
+  conditions.push_back(ScopedToLinkedPtr(ParseJson("{\"bad_key\": 2}")));
 
   std::string error;
   scoped_ptr<RecordingConditionSet> result =
@@ -66,8 +74,8 @@ TEST(DeclarativeConditionTest, ErrorConditionSet) {
 TEST(DeclarativeConditionTest, CreateConditionSet) {
   URLMatcher matcher;
   RecordingConditionSet::AnyVector conditions;
-  conditions.push_back(make_linked_ptr(new Any(ParseJson("{\"key\": 1}"))));
-  conditions.push_back(make_linked_ptr(new Any(ParseJson("[\"val1\", 2]"))));
+  conditions.push_back(ScopedToLinkedPtr(ParseJson("{\"key\": 1}")));
+  conditions.push_back(ScopedToLinkedPtr(ParseJson("[\"val1\", 2]")));
 
   // Test insertion
   std::string error;
@@ -141,14 +149,14 @@ struct FulfillableCondition {
 TEST(DeclarativeConditionTest, FulfillConditionSet) {
   typedef DeclarativeConditionSet<FulfillableCondition> FulfillableConditionSet;
   FulfillableConditionSet::AnyVector conditions;
-  conditions.push_back(make_linked_ptr(new Any(ParseJson(
-      "{\"url_id\": 1, \"max\": 3}"))));
-  conditions.push_back(make_linked_ptr(new Any(ParseJson(
-      "{\"url_id\": 2, \"max\": 5}"))));
-  conditions.push_back(make_linked_ptr(new Any(ParseJson(
-      "{\"url_id\": 3, \"max\": 1}"))));
-  conditions.push_back(make_linked_ptr(new Any(ParseJson(
-      "{\"max\": -5}"))));  // No url.
+  conditions.push_back(ScopedToLinkedPtr(ParseJson(
+      "{\"url_id\": 1, \"max\": 3}")));
+  conditions.push_back(ScopedToLinkedPtr(ParseJson(
+      "{\"url_id\": 2, \"max\": 5}")));
+  conditions.push_back(ScopedToLinkedPtr(ParseJson(
+      "{\"url_id\": 3, \"max\": 1}")));
+  conditions.push_back(ScopedToLinkedPtr(ParseJson(
+      "{\"max\": -5}")));  // No url.
 
   // Test insertion
   std::string error;
@@ -230,9 +238,8 @@ typedef DeclarativeActionSet<SummingAction> SummingActionSet;
 
 TEST(DeclarativeActionTest, ErrorActionSet) {
   SummingActionSet::AnyVector actions;
-  actions.push_back(make_linked_ptr(new Any(ParseJson("{\"value\": 1}"))));
-  actions.push_back(make_linked_ptr(new Any(ParseJson(
-      "{\"error\": \"the error\"}"))));
+  actions.push_back(ScopedToLinkedPtr(ParseJson("{\"value\": 1}")));
+  actions.push_back(ScopedToLinkedPtr(ParseJson("{\"error\": \"the error\"}")));
 
   std::string error;
   bool bad = false;
@@ -243,8 +250,8 @@ TEST(DeclarativeActionTest, ErrorActionSet) {
   EXPECT_FALSE(result);
 
   actions.clear();
-  actions.push_back(make_linked_ptr(new Any(ParseJson("{\"value\": 1}"))));
-  actions.push_back(make_linked_ptr(new Any(ParseJson("{\"bad\": 3}"))));
+  actions.push_back(ScopedToLinkedPtr(ParseJson("{\"value\": 1}")));
+  actions.push_back(ScopedToLinkedPtr(ParseJson("{\"bad\": 3}")));
   result = SummingActionSet::Create(actions, &error, &bad);
   EXPECT_EQ("", error);
   EXPECT_TRUE(bad);
@@ -253,10 +260,10 @@ TEST(DeclarativeActionTest, ErrorActionSet) {
 
 TEST(DeclarativeActionTest, ApplyActionSet) {
   SummingActionSet::AnyVector actions;
-  actions.push_back(make_linked_ptr(new Any(ParseJson(
+  actions.push_back(ScopedToLinkedPtr(ParseJson(
       "{\"value\": 1,"
-      " \"priority\": 5}"))));
-  actions.push_back(make_linked_ptr(new Any(ParseJson("{\"value\": 2}"))));
+      " \"priority\": 5}")));
+  actions.push_back(ScopedToLinkedPtr(ParseJson("{\"value\": 2}")));
 
   // Test insertion
   std::string error;

@@ -60,76 +60,129 @@ class Namespace(object):
     self.source_file_dir, self.source_file_filename = os.path.split(source_file)
     self.parent = None
     self.platforms = _GetPlatforms(json)
-    _AddTypes(self, json, self)
-    _AddFunctions(self, json, self)
-    _AddEvents(self, json, self)
-    _AddProperties(self, json, self)
+    toplevel_origin = Origin(from_client=True, from_json=True)
+    self.types = _GetTypes(self, json, self, toplevel_origin)
+    self.functions = _GetFunctions(self, json, self)
+    self.events = _GetEvents(self, json, self)
+    self.properties = _GetProperties(self, json, self, toplevel_origin)
     if include_compiler_options:
       self.compiler_options = json.get('compiler_options', {})
+
+class Origin(object):
+  """Stores the possible origin of model object as a pair of bools. These are:
+
+  |from_client| indicating that instances can originate from users of
+                generated code (for example, function results), or
+  |from_json|   indicating that instances can originate from the JSON (for
+                example, function parameters)
+
+  It is possible for model objects to originate from both the client and json,
+  for example Types defined in the top-level schema, in which case both
+  |from_client| and |from_json| would be True.
+  """
+  def __init__(self, from_client=False, from_json=False):
+    if not from_client and not from_json:
+      raise ValueError('One of from_client or from_json must be true')
+    self.from_client = from_client
+    self.from_json = from_json
 
 class Type(object):
   """A Type defined in the json.
 
   Properties:
   - |name| the type name
+  - |namespace| the Type's namespace
   - |description| the description of the type (if provided)
   - |properties| a map of property unix_names to their model.Property
   - |functions| a map of function names to their model.Function
   - |events| a map of event names to their model.Event
-  - |from_client| indicates that instances of the Type can originate from the
-    users of generated code, such as top-level types and function results
-  - |from_json| indicates that instances of the Type can originate from the
-    JSON (as described by the schema), such as top-level types and function
-    parameters
-  - |type_| the PropertyType of this Type
+  - |origin| the Origin of the type
+  - |property_type| the PropertyType of this Type
   - |item_type| if this is an array, the type of items in the array
   - |simple_name| the name of this Type without a namespace
+  - |additional_properties| the type of the additional properties, if any is
+                            specified
   """
-  def __init__(self, parent, name, json, namespace):
-    if json.get('type') == 'array':
-      self.type_ = PropertyType.ARRAY
-      self.item_type = Property(self,
-                                name + "Element",
-                                json['items'],
-                                namespace,
-                                from_json=True,
-                                from_client=True)
-    elif 'enum' in json:
-      self.enum_values = []
-      for value in json['enum']:
-        self.enum_values.append(value)
-      self.type_ = PropertyType.ENUM
-    elif json.get('type') == 'string':
-      self.type_ = PropertyType.STRING
-    else:
+  def __init__(self,
+               parent,
+               name,
+               json,
+               namespace,
+               origin):
+    self.name = name
+    self.namespace = namespace
+    self.simple_name = _StripNamespace(self.name, namespace)
+    self.unix_name = UnixName(self.name)
+    self.description = json.get('description', None)
+    self.origin = origin
+    self.parent = parent
+    self.instance_of = json.get('isInstanceOf', None)
+
+    # TODO(kalman): Only objects need functions/events/properties, but callers
+    # assume that all types have them. Fix this.
+    self.functions = _GetFunctions(self, json, namespace)
+    self.events = _GetEvents(self, json, namespace)
+    self.properties = _GetProperties(self, json, namespace, origin)
+
+    json_type = json.get('type', None)
+    if json_type == 'array':
+      self.property_type = PropertyType.ARRAY
+      self.item_type = Type(
+          self, '%sType' % name, json['items'], namespace, origin)
+    elif '$ref' in json:
+      self.property_type = PropertyType.REF
+      self.ref_type = json['$ref']
+    elif 'enum' in json and json_type == 'string':
+      self.property_type = PropertyType.ENUM
+      self.enum_values = [value for value in json['enum']]
+    elif json_type == 'any':
+      self.property_type = PropertyType.ANY
+    elif json_type == 'binary':
+      self.property_type = PropertyType.BINARY
+    elif json_type == 'boolean':
+      self.property_type = PropertyType.BOOLEAN
+    elif json_type == 'integer':
+      self.property_type = PropertyType.INTEGER
+    elif (json_type == 'double' or
+          json_type == 'number'):
+      self.property_type = PropertyType.DOUBLE
+    elif json_type == 'string':
+      self.property_type = PropertyType.STRING
+    elif 'choices' in json:
+      self.property_type = PropertyType.CHOICES
+      self.choices = [Type(self,
+                           # The name of the choice type - there had better be
+                           # either a type or a $ref specified for the choice.
+                           json.get('type', json.get('$ref')),
+                           json,
+                           namespace,
+                           origin)
+                      for json in json['choices']]
+    elif json_type == 'object':
       if not (
           'properties' in json or
           'additionalProperties' in json or
           'functions' in json or
           'events' in json):
         raise ParseException(self, name + " has no properties or functions")
-      self.type_ = PropertyType.OBJECT
-    self.name = name
-    self.simple_name = _StripNamespace(self.name, namespace)
-    self.unix_name = UnixName(self.name)
-    self.description = json.get('description')
-    self.from_json = True
-    self.from_client = True
-    self.parent = parent
-    self.instance_of = json.get('isInstanceOf', None)
-    _AddFunctions(self, json, namespace)
-    _AddEvents(self, json, namespace)
-    _AddProperties(self, json, namespace, from_json=True, from_client=True)
-
-    additional_properties_key = 'additionalProperties'
-    additional_properties = json.get(additional_properties_key)
-    if additional_properties:
-      self.properties[additional_properties_key] = Property(
-          self,
-          additional_properties_key,
-          additional_properties,
-          namespace,
-          is_additional_properties=True)
+      self.property_type = PropertyType.OBJECT
+      additional_properties_json = json.get('additionalProperties', None)
+      if additional_properties_json is not None:
+        self.additional_properties = Type(self,
+                                          'additionalProperties',
+                                          additional_properties_json,
+                                          namespace,
+                                          origin)
+      else:
+        self.additional_properties = None
+    elif json_type == 'function':
+      self.property_type = PropertyType.FUNCTION
+      # Sometimes we might have an unnamed function, e.g. if it's a property
+      # of an object. Use the name of the property in that case.
+      function_name = json.get('name', name)
+      self.function = Function(self, function_name, json, namespace, origin)
+    else:
+      raise ParseException(self, 'Unsupported JSON type %s' % json_type)
 
 class Function(object):
   """A Function defined in the API.
@@ -149,11 +202,11 @@ class Function(object):
   """
   def __init__(self,
                parent,
+               name,
                json,
                namespace,
-               from_json=False,
-               from_client=False):
-    self.name = json['name']
+               origin):
+    self.name = name
     self.simple_name = _StripNamespace(self.name, namespace)
     self.platforms = _GetPlatforms(json)
     self.params = []
@@ -167,18 +220,14 @@ class Function(object):
     self.actions = options.get('actions', [])
     self.supports_listeners = options.get('supportsListeners', True)
     self.supports_rules = options.get('supportsRules', False)
+
     def GeneratePropertyFromParam(p):
-      return Property(self,
-                      p['name'], p,
-                      namespace,
-                      from_json=from_json,
-                      from_client=from_client)
+      return Property.FromJSON(self, p['name'], p, namespace, origin)
 
     self.filters = [GeneratePropertyFromParam(filter)
                     for filter in json.get('filters', [])]
     callback_param = None
     for param in json.get('parameters', []):
-
       if param.get('type') == 'function':
         if callback_param:
           # No ParseException because the webstore has this.
@@ -190,153 +239,97 @@ class Function(object):
 
     if callback_param:
       self.callback = Function(self,
+                               callback_param['name'],
                                callback_param,
                                namespace,
-                               from_client=True)
+                               Origin(from_client=True))
 
     self.returns = None
     if 'returns' in json:
-      self.returns = Property(self, 'return', json['returns'], namespace)
+      self.returns = Property.FromJSON(
+          self, 'return', json['returns'], namespace, origin)
 
 class Property(object):
   """A property of a type OR a parameter to a function.
-
   Properties:
   - |name| name of the property as in the json. This shouldn't change since
     it is the key used to access DictionaryValues
   - |unix_name| the unix_style_name of the property. Used as variable name
   - |optional| a boolean representing whether the property is optional
   - |description| a description of the property (if provided)
-  - |type_| the model.PropertyType of this property
-  - |compiled_type| the model.PropertyType that this property should be
-    compiled to from the JSON. Defaults to |type_|.
-  - |ref_type| the type that the REF property is referencing. Can be used to
-    map to its model.Type
-  - |item_type| a model.Property representing the type of each element in an
-    ARRAY
-  - |properties| the properties of an OBJECT parameter
-  - |from_client| indicates that instances of the Type can originate from the
-    users of generated code, such as top-level types and function results
-  - |from_json| indicates that instances of the Type can originate from the
-    JSON (as described by the schema), such as top-level types and function
-    parameters
+  - |type_| the model.Type of this property
   - |simple_name| the name of this Property without a namespace
   """
+
+  @staticmethod
+  def FromJSON(parent, name, json, namespace, origin):
+    """Creates a Property from JSON.
+    """
+    opt_args = {}
+    if 'description' in json:
+      opt_args['description'] = json['description']
+    if 'optional' in json:
+      opt_args['optional'] = json.get('optional')
+    if 'isInstanceOf' in json:
+      opt_args['instance_of'] = json.get('isInstanceOf')
+
+    # HACK: only support very specific value types.
+    is_allowed_value = (
+        '$ref' not in json and
+        ('type' not in json or json['type'] == 'integer'
+                            or json['type'] == 'string'))
+
+    if 'value' in json and is_allowed_value:
+      value = json['value']
+      opt_args['value'] = value
+      if 'type' not in json:
+        # Sometimes the type of the value is left out, and we need to figure
+        # it out for ourselves.
+        if isinstance(value, int):
+          json['type'] = 'integer'
+        elif isinstance(value, basestring):
+          json['type'] = 'string'
+        else:
+          # TODO(kalman): support more types as necessary.
+          raise ParseException(
+              parent, '"%s" is not a supported type for "value"' % type(value))
+
+    type_ = Type(parent, name, json, namespace, origin)
+    return Property(parent,
+                    name,
+                    namespace,
+                    type_,
+                    origin,
+                    **opt_args);
 
   def __init__(self,
                parent,
                name,
-               json,
                namespace,
-               is_additional_properties=False,
-               from_json=False,
-               from_client=False):
+               type_,
+               origin,
+               description=None,
+               optional=False,
+               returns=None,
+               instance_of=None,
+               value=None):
+    """Directly initializes the fields of the Property.
+    """
     self.name = name
     self.simple_name = _StripNamespace(self.name, namespace)
     self._unix_name = UnixName(self.name)
     self._unix_name_used = False
-    self.optional = json.get('optional', False)
-    self.functions = OrderedDict()
-    self.has_value = False
-    self.description = json.get('description')
+    self.optional = optional
+    self.description = description
     self.parent = parent
-    self.from_json = from_json
-    self.from_client = from_client
-    self.instance_of = json.get('isInstanceOf', None)
-    self.params = []
-    self.returns = None
-    _AddProperties(self, json, namespace)
-    if is_additional_properties:
-      self.type_ = PropertyType.ADDITIONAL_PROPERTIES
-    elif '$ref' in json:
-      self.ref_type = json['$ref']
-      self.type_ = PropertyType.REF
-    elif 'enum' in json and json.get('type') == 'string':
-      # Non-string enums (as in the case of [legalValues=(1,2)]) should fall
-      # through to the next elif.
-      self.enum_values = []
-      for value in json['enum']:
-        self.enum_values.append(value)
-      self.type_ = PropertyType.ENUM
-    elif 'type' in json:
-      self.type_ = self._JsonTypeToPropertyType(json['type'])
-      if self.type_ == PropertyType.ARRAY:
-        self.item_type = Property(self,
-                                  name + "Element",
-                                  json['items'],
-                                  namespace,
-                                  from_json=from_json,
-                                  from_client=from_client)
-      elif self.type_ == PropertyType.OBJECT:
-        # These members are read when this OBJECT Property is used as a Type
-        type_ = Type(self, self.name, json, namespace)
-        # self.properties will already have some value from |_AddProperties|.
-        self.properties.update(type_.properties)
-        self.functions = type_.functions
-      elif self.type_ == PropertyType.FUNCTION:
-        for p in json.get('parameters', []):
-          self.params.append(Property(self,
-                                      p['name'],
-                                      p,
-                                      namespace,
-                                      from_json=from_json,
-                                      from_client=from_client))
-        if 'returns' in json:
-          self.returns = Property(self, 'return', json['returns'], namespace)
-    elif 'choices' in json:
-      if not json['choices'] or len(json['choices']) == 0:
-        raise ParseException(self, 'Choices has no choices')
-      self.choices = {}
-      self.type_ = PropertyType.CHOICES
-      self.compiled_type = self.type_
-      for choice_json in json['choices']:
-        choice = Property(self,
-                          self.name,
-                          choice_json,
-                          namespace,
-                          from_json=from_json,
-                          from_client=from_client)
-        choice.unix_name = UnixName(self.name + choice.type_.name)
-        # The existence of any single choice is optional
-        choice.optional = True
-        self.choices[choice.type_] = choice
-    elif 'value' in json:
-      self.has_value = True
-      self.value = json['value']
-      if type(self.value) == int:
-        self.type_ = PropertyType.INTEGER
-        self.compiled_type = self.type_
-      else:
-        # TODO(kalman): support more types as necessary.
-        raise ParseException(
-            self, '"%s" is not a supported type' % type(self.value))
-    else:
-      raise ParseException(
-          self, 'Property has no type, $ref, choices, or value')
-    if 'compiled_type' in json:
-      if 'type' in json:
-        self.compiled_type = self._JsonTypeToPropertyType(json['compiled_type'])
-      else:
-        raise ParseException(self, 'Property has compiled_type but no type')
-    else:
-      self.compiled_type = self.type_
-
-  def _JsonTypeToPropertyType(self, json_type):
-    try:
-      return {
-        'any': PropertyType.ANY,
-        'array': PropertyType.ARRAY,
-        'binary': PropertyType.BINARY,
-        'boolean': PropertyType.BOOLEAN,
-        'integer': PropertyType.INTEGER,
-        'int64': PropertyType.INT64,
-        'function': PropertyType.FUNCTION,
-        'number': PropertyType.DOUBLE,
-        'object': PropertyType.OBJECT,
-        'string': PropertyType.STRING,
-      }[json_type]
-    except KeyError:
-      raise NotImplementedError('Type %s not recognized' % json_type)
+    self.origin = origin
+    if not isinstance(type_, Type):
+      raise ValueError("not Type: %s" % type_)
+    self.type_ = type_
+    self.returns = returns
+    if instance_of is not None:
+      self.instance_of = instance_of
+    self.value = value
 
   def GetUnixName(self):
     """Gets the property's unix_name. Raises AttributeError if not set.
@@ -358,14 +351,6 @@ class Property(object):
           'it is already used elsewhere as %s' %
           (self.name, self._unix_name))
     self._unix_name = unix_name
-
-  def Copy(self):
-    """Makes a copy of this model.Property object and allow the unix_name to be
-    set again.
-    """
-    property_copy = copy.copy(self)
-    property_copy._unix_name_used = False
-    return property_copy
 
   unix_name = property(GetUnixName, SetUnixName)
 
@@ -403,20 +388,19 @@ class _PropertyTypeInfo(_Enum):
 class PropertyType(object):
   """Enum of different types of properties/parameters.
   """
-  INTEGER = _PropertyTypeInfo(True, "INTEGER")
-  INT64 = _PropertyTypeInfo(True, "INT64")
-  DOUBLE = _PropertyTypeInfo(True, "DOUBLE")
-  BOOLEAN = _PropertyTypeInfo(True, "BOOLEAN")
-  STRING = _PropertyTypeInfo(True, "STRING")
-  ENUM = _PropertyTypeInfo(False, "ENUM")
-  ARRAY = _PropertyTypeInfo(False, "ARRAY")
-  REF = _PropertyTypeInfo(False, "REF")
-  CHOICES = _PropertyTypeInfo(False, "CHOICES")
-  OBJECT = _PropertyTypeInfo(False, "OBJECT")
-  FUNCTION = _PropertyTypeInfo(False, "FUNCTION")
-  BINARY = _PropertyTypeInfo(False, "BINARY")
-  ANY = _PropertyTypeInfo(False, "ANY")
-  ADDITIONAL_PROPERTIES = _PropertyTypeInfo(False, "ADDITIONAL_PROPERTIES")
+  INTEGER = _PropertyTypeInfo(True, "integer")
+  INT64 = _PropertyTypeInfo(True, "int64")
+  DOUBLE = _PropertyTypeInfo(True, "double")
+  BOOLEAN = _PropertyTypeInfo(True, "boolean")
+  STRING = _PropertyTypeInfo(True, "string")
+  ENUM = _PropertyTypeInfo(False, "enum")
+  ARRAY = _PropertyTypeInfo(False, "array")
+  REF = _PropertyTypeInfo(False, "ref")
+  CHOICES = _PropertyTypeInfo(False, "choices")
+  OBJECT = _PropertyTypeInfo(False, "object")
+  FUNCTION = _PropertyTypeInfo(False, "function")
+  BINARY = _PropertyTypeInfo(False, "binary")
+  ANY = _PropertyTypeInfo(False, "any")
 
 def UnixName(name):
   """Returns the unix_style name for a given lowerCamelCase string.
@@ -436,57 +420,57 @@ def _StripNamespace(name, namespace):
 def _GetModelHierarchy(entity):
   """Returns the hierarchy of the given model entity."""
   hierarchy = []
-  while entity:
-    try:
-      hierarchy.append(entity.name)
-    except AttributeError:
-      hierarchy.append(repr(entity))
-    entity = entity.parent
+  while entity is not None:
+    hierarchy.append(getattr(entity, 'name', repr(entity)))
+    if isinstance(entity, Namespace):
+      hierarchy.insert(0, '  in %s' % entity.source_file)
+    entity = getattr(entity, 'parent', None)
   hierarchy.reverse()
   return hierarchy
 
-def _AddTypes(model, json, namespace):
-  """Adds Type objects to |model| contained in the 'types' field of |json|.
+def _GetTypes(parent, json, namespace, origin):
+  """Creates Type objects extracted from |json|.
   """
-  model.types = OrderedDict()
+  types = OrderedDict()
   for type_json in json.get('types', []):
-    type_ = Type(model, type_json['id'], type_json, namespace)
-    model.types[type_.name] = type_
+    type_ = Type(parent, type_json['id'], type_json, namespace, origin)
+    types[type_.name] = type_
+  return types
 
-def _AddFunctions(model, json, namespace):
-  """Adds Function objects to |model| contained in the 'functions' field of
-  |json|.
+def _GetFunctions(parent, json, namespace):
+  """Creates Function objects extracted from |json|.
   """
-  model.functions = OrderedDict()
+  functions = OrderedDict()
   for function_json in json.get('functions', []):
-    function = Function(model, function_json, namespace, from_json=True)
-    model.functions[function.name] = function
+    function = Function(parent,
+                        function_json['name'],
+                        function_json,
+                        namespace,
+                        Origin(from_json=True))
+    functions[function.name] = function
+  return functions
 
-def _AddEvents(model, json, namespace):
-  """Adds Function objects to |model| contained in the 'events' field of |json|.
+def _GetEvents(parent, json, namespace):
+  """Creates Function objects generated from the events in |json|.
   """
-  model.events = OrderedDict()
+  events = OrderedDict()
   for event_json in json.get('events', []):
-    event = Function(model, event_json, namespace, from_client=True)
-    model.events[event.name] = event
+    event = Function(parent,
+                     event_json['name'],
+                     event_json,
+                     namespace,
+                     Origin(from_client=True))
+    events[event.name] = event
+  return events
 
-def _AddProperties(model,
-                   json,
-                   namespace,
-                   from_json=False,
-                   from_client=False):
-  """Adds model.Property objects to |model| contained in the 'properties' field
-  of |json|.
+def _GetProperties(parent, json, namespace, origin):
+  """Generates Property objects extracted from |json|.
   """
-  model.properties = OrderedDict()
+  properties = OrderedDict()
   for name, property_json in json.get('properties', {}).items():
-    model.properties[name] = Property(
-        model,
-        name,
-        property_json,
-        namespace,
-        from_json=from_json,
-        from_client=from_client)
+    properties[name] = Property.FromJSON(
+        parent, name, property_json, namespace, origin)
+  return properties
 
 class _PlatformInfo(_Enum):
   def __init__(self, name):

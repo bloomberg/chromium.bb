@@ -14,7 +14,7 @@
 
 namespace extensions {
 
-using api::experimental_system_info_storage::FromStorageUnitTypeString;
+using api::experimental_system_info_storage::ParseStorageUnitType;
 using api::experimental_system_info_storage::StorageUnitInfo;
 using api::experimental_system_info_storage::StorageUnitType;
 using content::BrowserThread;
@@ -149,7 +149,7 @@ bool TestStorageInfoProvider::QueryUnitInfo(
   for (size_t i = 0; i < testing_data_.size(); ++i) {
     if (testing_data_[i].id == id) {
       info->id = testing_data_[i].id;
-      info->type = FromStorageUnitTypeString(testing_data_[i].type);
+      info->type = ParseStorageUnitType(testing_data_[i].type);
       info->capacity = testing_data_[i].capacity;
       info->available_capacity = testing_data_[i].available_capacity;
       // Increase the available capacity with a fixed change step.

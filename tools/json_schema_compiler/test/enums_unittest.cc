@@ -33,10 +33,10 @@ TEST(JsonSchemaCompilerEnumsTest, EnumsAsTypes) {
     scoped_ptr<TakesEnumAsType::Params> params(
         TakesEnumAsType::Params::Create(args));
     ASSERT_TRUE(params.get());
-    EXPECT_EQ(ENUMS_ENUMERATION_ONE, params->enumeration);
+    EXPECT_EQ(ENUMERATION_ONE, params->enumeration);
 
     EXPECT_TRUE(args.Equals(ReturnsEnumAsType::Results::Create(
-        ENUMS_ENUMERATION_ONE).get()));
+        ENUMERATION_ONE).get()));
   }
   {
     HasEnumeration enumeration;
@@ -56,7 +56,8 @@ TEST(JsonSchemaCompilerEnumsTest, EnumsAsTypes) {
 TEST(JsonSchemaCompilerEnumsTest, ReturnsEnumCreate) {
   {
     ReturnsEnum::Results::State state = ReturnsEnum::Results::STATE_FOO;
-    scoped_ptr<Value> result = ReturnsEnum::Results::CreateEnumValue(state);
+    scoped_ptr<Value> result(
+        new base::StringValue(ReturnsEnum::Results::ToString(state)));
     scoped_ptr<Value> expected(Value::CreateStringValue("foo"));
     EXPECT_TRUE(result->Equals(expected.get()));
   }
@@ -189,7 +190,8 @@ TEST(JsonSchemaCompilerEnumsTest, TakesMultipleOptionalEnumsParamsCreate) {
 TEST(JsonSchemaCompilerEnumsTest, OnEnumFiredCreate) {
   {
     OnEnumFired::SomeEnum some_enum = OnEnumFired::SOME_ENUM_FOO;
-    scoped_ptr<Value> result(OnEnumFired::CreateEnumValue(some_enum));
+    scoped_ptr<Value> result(
+        new base::StringValue(OnEnumFired::ToString(some_enum)));
     scoped_ptr<Value> expected(Value::CreateStringValue("foo"));
     EXPECT_TRUE(result->Equals(expected.get()));
   }

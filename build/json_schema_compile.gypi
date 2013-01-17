@@ -18,9 +18,6 @@
       'msvs_external_rule': 1,
       'extension': 'json',
       'inputs': [
-        '<(api_gen_dir)/any.cc',
-        '<(api_gen_dir)/any.h',
-        '<(api_gen_dir)/any_helper.py',
         '<(api_gen_dir)/cc_generator.py',
         '<(api_gen_dir)/code.py',
         '<(api_gen_dir)/compiler.py',
@@ -57,9 +54,6 @@
       'msvs_external_rule': 1,
       'extension': 'idl',
       'inputs': [
-        '<(api_gen_dir)/any.cc',
-        '<(api_gen_dir)/any.h',
-        '<(api_gen_dir)/any_helper.py',
         '<(api_gen_dir)/cc_generator.py',
         '<(api_gen_dir)/code.py',
         '<(api_gen_dir)/compiler.py',

@@ -64,17 +64,17 @@ scoped_ptr<developer::ItemInfo> DeveloperPrivateAPI::CreateItemInfo(
 
   if (item.is_app()) {
     if (item.is_legacy_packaged_app())
-      info->type = developer::DEVELOPER_PRIVATE_ITEM_TYPE_LEGACY_PACKAGED_APP;
+      info->type = developer::ITEM_TYPE_LEGACY_PACKAGED_APP;
     else if (item.is_hosted_app())
-      info->type = developer::DEVELOPER_PRIVATE_ITEM_TYPE_HOSTED_APP;
+      info->type = developer::ITEM_TYPE_HOSTED_APP;
     else if (item.is_platform_app())
-      info->type = developer::DEVELOPER_PRIVATE_ITEM_TYPE_PACKAGED_APP;
+      info->type = developer::ITEM_TYPE_PACKAGED_APP;
     else
       NOTREACHED();
   } else if (item.is_theme()) {
-    info->type = developer::DEVELOPER_PRIVATE_ITEM_TYPE_THEME;
+    info->type = developer::ITEM_TYPE_THEME;
   } else if (item.is_extension()) {
-    info->type = developer::DEVELOPER_PRIVATE_ITEM_TYPE_EXTENSION;
+    info->type = developer::ITEM_TYPE_EXTENSION;
   } else {
     NOTREACHED();
   }

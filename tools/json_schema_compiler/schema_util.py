@@ -19,32 +19,6 @@ def StripSchemaNamespace(s):
     return s[last_dot + 1:]
   return s
 
-def PrefixSchemasWithNamespace(schemas):
-  for s in schemas:
-    _PrefixWithNamespace(s.get("namespace"), s)
-
-def _MaybePrefixFieldWithNamespace(namespace, schema, key):
-  if json_parse.IsDict(schema) and key in schema:
-    old_value = schema[key]
-    if not "." in old_value:
-      schema[key] = namespace + "." + old_value
-
-def _PrefixTypesWithNamespace(namespace, types):
-  for t in types:
-    _MaybePrefixFieldWithNamespace(namespace, t, "id")
-    _MaybePrefixFieldWithNamespace(namespace, t, "customBindings")
-
-def _PrefixWithNamespace(namespace, schema):
-  if json_parse.IsDict(schema):
-    if "types" in schema:
-      _PrefixTypesWithNamespace(namespace, schema.get("types"))
-    _MaybePrefixFieldWithNamespace(namespace, schema, "$ref")
-    for s in schema:
-      _PrefixWithNamespace(namespace, schema[s])
-  elif type(schema) == list:
-    for s in schema:
-      _PrefixWithNamespace(namespace, s)
-
 def JsFunctionNameToClassName(namespace_name, function_name):
   """Transform a fully qualified function name like foo.bar.baz into FooBarBaz
 

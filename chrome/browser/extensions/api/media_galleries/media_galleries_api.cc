@@ -77,19 +77,17 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
       GetMediaFileSystems::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   MediaGalleries::GetMediaFileSystemsInteractivity interactive =
-      MediaGalleries::MEDIA_GALLERIES_GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NO;
+      MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NO;
   if (params->details.get() && params->details->interactive != MediaGalleries::
-         MEDIA_GALLERIES_GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NONE) {
+         GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NONE) {
     interactive = params->details->interactive;
   }
 
   switch (interactive) {
-    case MediaGalleries::
-        MEDIA_GALLERIES_GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_YES:
+    case MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_YES:
       ShowDialog();
       return true;
-    case MediaGalleries::
-        MEDIA_GALLERIES_GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_IF_NEEDED: {
+    case MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_IF_NEEDED: {
       MediaFileSystemRegistry* registry =
           g_browser_process->media_file_system_registry();
       registry->GetMediaFileSystemsForExtension(
@@ -99,12 +97,10 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
               this));
       return true;
     }
-    case MediaGalleries::
-        MEDIA_GALLERIES_GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NO:
+    case MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NO:
       GetAndReturnGalleries();
       return true;
-    case MediaGalleries::
-        MEDIA_GALLERIES_GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NONE:
+    case MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NONE:
       NOTREACHED();
   }
   error_ = kInvalidInteractive;

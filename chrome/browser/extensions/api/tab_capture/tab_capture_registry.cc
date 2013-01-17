@@ -60,30 +60,29 @@ void TabCaptureRegistry::HandleRequestUpdateOnUIThread(
     return;
   }
 
-  tab_capture::TabCaptureState state =
-      tab_capture::TAB_CAPTURE_TAB_CAPTURE_STATE_NONE;
+  tab_capture::TabCaptureState state = tab_capture::TAB_CAPTURE_STATE_NONE;
   switch (new_state) {
     case content::MEDIA_REQUEST_STATE_REQUESTED:
-      state = tab_capture::TAB_CAPTURE_TAB_CAPTURE_STATE_REQUESTED;
+      state = tab_capture::TAB_CAPTURE_STATE_REQUESTED;
       break;
     case content::MEDIA_REQUEST_STATE_PENDING_APPROVAL:
-      state = tab_capture::TAB_CAPTURE_TAB_CAPTURE_STATE_PENDING;
+      state = tab_capture::TAB_CAPTURE_STATE_PENDING;
       break;
     case content::MEDIA_REQUEST_STATE_DONE:
-      state = tab_capture::TAB_CAPTURE_TAB_CAPTURE_STATE_ACTIVE;
+      state = tab_capture::TAB_CAPTURE_STATE_ACTIVE;
       break;
     case content::MEDIA_REQUEST_STATE_CLOSING:
-      state = tab_capture::TAB_CAPTURE_TAB_CAPTURE_STATE_STOPPED;
+      state = tab_capture::TAB_CAPTURE_STATE_STOPPED;
       break;
     case content::MEDIA_REQUEST_STATE_ERROR:
-      state = tab_capture::TAB_CAPTURE_TAB_CAPTURE_STATE_ERROR;
+      state = tab_capture::TAB_CAPTURE_STATE_ERROR;
       break;
     default:
       // TODO(justinlin): Implement muted state notification.
       break;
   }
 
-  if (state == tab_capture::TAB_CAPTURE_TAB_CAPTURE_STATE_NONE) {
+  if (state == tab_capture::TAB_CAPTURE_STATE_NONE) {
     // This is a state we don't handle.
     return;
   }
@@ -144,8 +143,8 @@ bool TabCaptureRegistry::AddRequest(const std::pair<int, int> key,
   DeviceCaptureRequestMap::iterator it = requests_.find(key);
   if (it != requests_.end()) {
     const tab_capture::TabCaptureState state = it->second.status;
-    if (state != tab_capture::TAB_CAPTURE_TAB_CAPTURE_STATE_STOPPED &&
-        state != tab_capture::TAB_CAPTURE_TAB_CAPTURE_STATE_ERROR)
+    if (state != tab_capture::TAB_CAPTURE_STATE_STOPPED &&
+        state != tab_capture::TAB_CAPTURE_STATE_ERROR)
       return false;
   }
   requests_.insert(std::make_pair(key, request));

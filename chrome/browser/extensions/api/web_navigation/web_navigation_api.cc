@@ -745,7 +745,7 @@ bool WebNavigationGetAllFramesFunction::RunImpl() {
   const FrameNavigationState& navigation_state =
       observer->frame_navigation_state();
 
-  std::vector<linked_ptr<GetAllFrames::Results::DetailsElement> > result_list;
+  std::vector<linked_ptr<GetAllFrames::Results::DetailsType> > result_list;
   for (FrameNavigationState::const_iterator it = navigation_state.begin();
        it != navigation_state.end(); ++it) {
     FrameNavigationState::FrameID frame_id = *it;
@@ -754,8 +754,8 @@ bool WebNavigationGetAllFramesFunction::RunImpl() {
     GURL frame_url = navigation_state.GetUrl(frame_id);
     if (!navigation_state.IsValidUrl(frame_url))
       continue;
-    linked_ptr<GetAllFrames::Results::DetailsElement> frame(
-        new GetAllFrames::Results::DetailsElement());
+    linked_ptr<GetAllFrames::Results::DetailsType> frame(
+        new GetAllFrames::Results::DetailsType());
     frame->url = frame_url.spec();
     frame->frame_id = helpers::GetFrameId(
         navigation_state.IsMainFrame(frame_id), frame_id.frame_num);

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "tools/json_schema_compiler/any.h"
 #include "tools/json_schema_compiler/util.h"
 
 #include "base/values.h"
@@ -26,14 +25,13 @@ bool GetItemFromList(const ListValue& from, int index, std::string* out) {
   return from.GetString(index, out);
 }
 
-bool GetItemFromList(const ListValue& from, int index,
-    linked_ptr<any::Any>* out) {
-  const Value* value = NULL;
+bool GetItemFromList(const ListValue& from,
+                     int index,
+                     linked_ptr<base::Value>* out) {
+  const base::Value* value = NULL;
   if (!from.Get(index, &value))
     return false;
-  scoped_ptr<any::Any> any_object(new any::Any());
-  any_object->Init(*value);
-  *out = linked_ptr<any::Any>(any_object.release());
+  *out = make_linked_ptr(value->DeepCopy());
   return true;
 }
 
@@ -42,29 +40,34 @@ bool GetItemFromList(const ListValue& from, int index,
   const DictionaryValue* dict = NULL;
   if (!from.GetDictionary(index, &dict))
     return false;
-  *out = linked_ptr<DictionaryValue>(dict->DeepCopy());
+  *out = make_linked_ptr(dict->DeepCopy());
   return true;
 }
 
 void AddItemToList(const int from, base::ListValue* out) {
   out->Append(base::Value::CreateIntegerValue(from));
 }
+
 void AddItemToList(const bool from, base::ListValue* out) {
   out->Append(base::Value::CreateBooleanValue(from));
 }
+
 void AddItemToList(const double from, base::ListValue* out) {
   out->Append(base::Value::CreateDoubleValue(from));
 }
+
 void AddItemToList(const std::string& from, base::ListValue* out) {
   out->Append(base::Value::CreateStringValue(from));
 }
-void AddItemToList(const linked_ptr<base::DictionaryValue>& from,
-    base::ListValue* out) {
-  out->Append(static_cast<Value*>(from->DeepCopy()));
+
+void AddItemToList(const linked_ptr<base::Value>& from,
+                   base::ListValue* out) {
+  out->Append(from->DeepCopy());
 }
-void AddItemToList(const linked_ptr<any::Any>& from,
-    base::ListValue* out) {
-  out->Append(from->value().DeepCopy());
+
+void AddItemToList(const linked_ptr<base::DictionaryValue>& from,
+                   base::ListValue* out) {
+  out->Append(static_cast<Value*>(from->DeepCopy()));
 }
 
 }  // namespace api_util

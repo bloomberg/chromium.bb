@@ -249,7 +249,7 @@ updateEverything();
     except (TypeError, KeyError, AttributeError,
         AssertionError, NotImplementedError) as error:
       body.Append('<pre>')
-      body.Append('compiler error: ' + str(error))
+      body.Append('compiler error: %s' % error)
       body.Append('Check server log for more details')
       body.Append('</pre>')
       raise

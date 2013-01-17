@@ -117,7 +117,7 @@ bool TabCaptureCaptureFunction::RunImpl() {
           std::make_pair(render_process_id, routing_id),
           TabCaptureRegistry::TabCaptureRequest(
               GetExtension()->id(), tab_id,
-              tab_capture::TAB_CAPTURE_TAB_CAPTURE_STATE_NONE))) {
+              tab_capture::TAB_CAPTURE_STATE_NONE))) {
     error_ = kCapturingSameTab;
     return false;
   }

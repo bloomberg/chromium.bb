@@ -24,18 +24,18 @@ api::sync_file_system::SyncStateStatus SyncServiceStateEnumToExtensionEnum(
     SyncEventObserver::SyncServiceState state) {
   switch (state) {
     case SyncEventObserver::SYNC_SERVICE_RUNNING:
-      return api::sync_file_system::SYNC_FILE_SYSTEM_SYNC_STATE_STATUS_RUNNING;
+      return api::sync_file_system::SYNC_STATE_STATUS_RUNNING;
     case SyncEventObserver::SYNC_SERVICE_AUTHENTICATION_REQUIRED:
       return api::sync_file_system::
-          SYNC_FILE_SYSTEM_SYNC_STATE_STATUS_AUTHENTICATION_REQUIRED;
+          SYNC_STATE_STATUS_AUTHENTICATION_REQUIRED;
     case SyncEventObserver::SYNC_SERVICE_TEMPORARY_UNAVAILABLE:
       return api::sync_file_system::
-          SYNC_FILE_SYSTEM_SYNC_STATE_STATUS_TEMPORARY_UNAVAILABLE;
+          SYNC_STATE_STATUS_TEMPORARY_UNAVAILABLE;
     case SyncEventObserver::SYNC_SERVICE_DISABLED:
-      return api::sync_file_system::SYNC_FILE_SYSTEM_SYNC_STATE_STATUS_DISABLED;
+      return api::sync_file_system::SYNC_STATE_STATUS_DISABLED;
   }
   NOTREACHED();
-  return api::sync_file_system::SYNC_FILE_SYSTEM_SYNC_STATE_STATUS_NONE;
+  return api::sync_file_system::SYNC_STATE_STATUS_NONE;
 }
 
 api::sync_file_system::SyncOperationResult SyncOperationResultToExtensionEnum(
@@ -43,22 +43,22 @@ api::sync_file_system::SyncOperationResult SyncOperationResultToExtensionEnum(
   switch (operation_result) {
     case fileapi::SYNC_OPERATION_NONE:
       return api::sync_file_system::
-          SYNC_FILE_SYSTEM_SYNC_OPERATION_RESULT_NONE;
+          SYNC_OPERATION_RESULT_NONE;
     case fileapi::SYNC_OPERATION_ADDED:
       return api::sync_file_system::
-          SYNC_FILE_SYSTEM_SYNC_OPERATION_RESULT_ADDED;
+          SYNC_OPERATION_RESULT_ADDED;
     case fileapi::SYNC_OPERATION_UPDATED:
       return api::sync_file_system::
-          SYNC_FILE_SYSTEM_SYNC_OPERATION_RESULT_UPDATED;
+          SYNC_OPERATION_RESULT_UPDATED;
     case fileapi::SYNC_OPERATION_DELETED:
       return api::sync_file_system::
-          SYNC_FILE_SYSTEM_SYNC_OPERATION_RESULT_DELETED;
+          SYNC_OPERATION_RESULT_DELETED;
     case fileapi::SYNC_OPERATION_CONFLICTED:
       return api::sync_file_system::
-          SYNC_FILE_SYSTEM_SYNC_OPERATION_RESULT_CONFLICTED;
+          SYNC_OPERATION_RESULT_CONFLICTED;
   }
   NOTREACHED();
-  return api::sync_file_system::SYNC_FILE_SYSTEM_SYNC_OPERATION_RESULT_NONE;
+  return api::sync_file_system::SYNC_OPERATION_RESULT_NONE;
 }
 
 }  // namespace

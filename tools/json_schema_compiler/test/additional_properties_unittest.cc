@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "tools/json_schema_compiler/test/additional_properties.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
+#include "tools/json_schema_compiler/test/additional_properties.h"
 
 using namespace test::api::additional_properties;
 
@@ -19,9 +18,7 @@ TEST(JsonSchemaCompilerAdditionalPropertiesTest,
     type_value->SetInteger("other", 9);
     type_value->Set("another", list_value.release());
     scoped_ptr<AdditionalPropertiesType> type(new AdditionalPropertiesType());
-    EXPECT_TRUE(AdditionalPropertiesType::Populate(*type_value, type.get()));
-    EXPECT_EQ("value", type->string);
-    EXPECT_TRUE(type_value->Remove("string", NULL));
+    ASSERT_TRUE(AdditionalPropertiesType::Populate(*type_value, type.get()));
     EXPECT_TRUE(type->additional_properties.Equals(type_value.get()));
   }
   {
@@ -48,22 +45,19 @@ TEST(JsonSchemaCompilerAdditionalPropertiesTest,
 
 TEST(JsonSchemaCompilerAdditionalPropertiesTest,
     ReturnAdditionalPropertiesResultCreate) {
-  DictionaryValue additional;
-  additional.SetString("key", "value");
   ReturnAdditionalProperties::Results::ResultObject result_object;
   result_object.integer = 5;
-  result_object.additional_properties.MergeDictionary(&additional);
-  scoped_ptr<ListValue> results =
-      ReturnAdditionalProperties::Results::Create(result_object);
-  DictionaryValue* result_dict = NULL;
-  EXPECT_TRUE(results->GetDictionary(0, &result_dict));
+  result_object.additional_properties["key"] = "value";
 
-  Value* int_temp_value_out = NULL;
-  int int_temp = 0;
-  EXPECT_TRUE(result_dict->Remove("integer", &int_temp_value_out));
-  scoped_ptr<Value> int_temp_value(int_temp_value_out);
-  EXPECT_TRUE(int_temp_value->GetAsInteger(&int_temp));
-  EXPECT_EQ(5, int_temp);
+  ListValue expected;
+  {
+    DictionaryValue* dict = new DictionaryValue();
+    dict->SetInteger("integer", 5);
+    dict->SetString("key", "value");
+    expected.Append(dict);
+  }
 
-  EXPECT_TRUE(result_dict->Equals(&additional));
+  EXPECT_TRUE(Value::Equals(
+      ReturnAdditionalProperties::Results::Create(result_object).get(),
+      &expected));
 }

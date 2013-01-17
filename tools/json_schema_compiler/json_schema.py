@@ -31,7 +31,6 @@ def DeleteNocompileNodes(item):
 def Load(filename):
   with open(filename, 'r') as handle:
     schemas = json_parse.Parse(handle.read())
-  schema_util.PrefixSchemasWithNamespace(schemas)
   return schemas
 
 # A dictionary mapping |filename| to the object resulting from loading the JSON

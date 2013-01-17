@@ -14,7 +14,7 @@
 
 namespace extensions {
 
-using api::experimental_system_info_storage::FromStorageUnitTypeString;
+using api::experimental_system_info_storage::ParseStorageUnitType;
 using api::experimental_system_info_storage::StorageUnitInfo;
 using api::experimental_system_info_storage::ToString;
 
@@ -69,7 +69,7 @@ class StorageInfoProviderLinuxWrapper : public StorageInfoProviderLinux {
     if (!QueryStorageType(mount_path, &type))
       return false;
     info->id = mount_path;
-    info->type = FromStorageUnitTypeString(type);
+    info->type = ParseStorageUnitType(type);
     info->capacity = mount_entry_map_[mount_path].capacity;
     info->available_capacity = mount_entry_map_[mount_path].available_capacity;
     return true;

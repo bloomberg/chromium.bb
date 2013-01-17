@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "tools/json_schema_compiler/test/functions_on_types.h"
-
+#include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "tools/json_schema_compiler/test/functions_on_types.h"
 
 using namespace test::api::functions_on_types;
 
@@ -13,24 +13,24 @@ TEST(JsonSchemaCompilerFunctionsOnTypesTest, StorageAreaGetParamsCreate) {
     scoped_ptr<ListValue> params_value(new ListValue());
     scoped_ptr<StorageArea::Get::Params> params(
         StorageArea::Get::Params::Create(*params_value));
-    EXPECT_TRUE(params.get());
-    EXPECT_EQ(StorageArea::Get::Params::KEYS_NONE, params->keys_type);
+    ASSERT_TRUE(params);
+    EXPECT_FALSE(params->keys);
   }
   {
     scoped_ptr<ListValue> params_value(new ListValue());
     params_value->Append(Value::CreateIntegerValue(9));
     scoped_ptr<StorageArea::Get::Params> params(
         StorageArea::Get::Params::Create(*params_value));
-    EXPECT_FALSE(params.get());
+    EXPECT_FALSE(params);
   }
   {
     scoped_ptr<ListValue> params_value(new ListValue());
     params_value->Append(Value::CreateStringValue("test"));
     scoped_ptr<StorageArea::Get::Params> params(
         StorageArea::Get::Params::Create(*params_value));
-    EXPECT_TRUE(params.get());
-    EXPECT_EQ(StorageArea::Get::Params::KEYS_STRING, params->keys_type);
-    EXPECT_EQ("test", *params->keys_string);
+    ASSERT_TRUE(params);
+    ASSERT_TRUE(params->keys);
+    EXPECT_EQ("test", *params->keys->as_string);
   }
   {
     scoped_ptr<DictionaryValue> keys_object_value(new DictionaryValue());
@@ -40,10 +40,10 @@ TEST(JsonSchemaCompilerFunctionsOnTypesTest, StorageAreaGetParamsCreate) {
     params_value->Append(keys_object_value->DeepCopy());
     scoped_ptr<StorageArea::Get::Params> params(
         StorageArea::Get::Params::Create(*params_value));
-    EXPECT_TRUE(params.get());
-    EXPECT_EQ(StorageArea::Get::Params::KEYS_OBJECT, params->keys_type);
-    EXPECT_TRUE(
-        keys_object_value->Equals(&params->keys_object->additional_properties));
+    ASSERT_TRUE(params);
+    ASSERT_TRUE(params->keys);
+    EXPECT_TRUE(keys_object_value->Equals(
+        &params->keys->as_object->additional_properties));
   }
 }
 
@@ -53,7 +53,7 @@ TEST(JsonSchemaCompilerFunctionsOnTypesTest, StorageAreaGetResultCreate) {
   items.additional_properties.SetString("sdfg", "zxcv");
   scoped_ptr<ListValue> results = StorageArea::Get::Results::Create(items);
   DictionaryValue* item_result = NULL;
-  results->GetDictionary(0, &item_result);
+  ASSERT_TRUE(results->GetDictionary(0, &item_result));
   EXPECT_TRUE(item_result->Equals(&items.additional_properties));
 }
 

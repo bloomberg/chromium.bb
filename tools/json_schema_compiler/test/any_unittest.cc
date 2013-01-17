@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "tools/json_schema_compiler/test/any.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
+#include "tools/json_schema_compiler/test/any.h"
 
 using namespace test::api::any;
 
@@ -41,9 +40,9 @@ TEST(JsonSchemaCompilerAnyTest, OptionalAnyParamsCreate) {
     params_value->Append(param->DeepCopy());
     scoped_ptr<OptionalAny::Params> params(
         OptionalAny::Params::Create(*params_value));
-    EXPECT_TRUE(params.get());
-    EXPECT_TRUE(params->any_name.get());
-    EXPECT_TRUE(params->any_name->value().Equals(param.get()));
+    ASSERT_TRUE(params);
+    ASSERT_TRUE(params->any_name);
+    EXPECT_TRUE(params->any_name->Equals(param.get()));
   }
   {
     scoped_ptr<ListValue> params_value(new ListValue());
@@ -51,9 +50,8 @@ TEST(JsonSchemaCompilerAnyTest, OptionalAnyParamsCreate) {
     params_value->Append(param->DeepCopy());
     scoped_ptr<OptionalAny::Params> params(
         OptionalAny::Params::Create(*params_value));
-    EXPECT_TRUE(params.get());
-    EXPECT_TRUE(params->any_name.get());
-    EXPECT_TRUE(params->any_name.get());
-    EXPECT_TRUE(params->any_name->value().Equals(param.get()));
+    ASSERT_TRUE(params);
+    ASSERT_TRUE(params->any_name);
+    EXPECT_TRUE(params->any_name->Equals(param.get()));
   }
 }

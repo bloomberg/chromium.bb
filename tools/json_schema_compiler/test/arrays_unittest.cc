@@ -46,45 +46,47 @@ TEST(JsonSchemaCompilerArrayTest, BasicArrayType) {
   {
     scoped_ptr<DictionaryValue> value = CreateBasicArrayTypeDictionary();
     scoped_ptr<BasicArrayType> basic_array_type(new BasicArrayType());
-    EXPECT_TRUE(BasicArrayType::Populate(*value, basic_array_type.get()));
+    ASSERT_TRUE(BasicArrayType::Populate(*value, basic_array_type.get()));
     EXPECT_TRUE(value->Equals(basic_array_type->ToValue().get()));
   }
 }
 
 TEST(JsonSchemaCompilerArrayTest, EnumArrayType) {
-  std::vector<EnumArrayType::TypesElement> enums;
-  enums.push_back(EnumArrayType::TYPES_ELEMENT_ONE);
-  enums.push_back(EnumArrayType::TYPES_ELEMENT_TWO);
-  enums.push_back(EnumArrayType::TYPES_ELEMENT_THREE);
+  std::vector<EnumArrayType::TypesType> enums;
+  enums.push_back(EnumArrayType::TYPES_TYPE_ONE);
+  enums.push_back(EnumArrayType::TYPES_TYPE_TWO);
+  enums.push_back(EnumArrayType::TYPES_TYPE_THREE);
 
   scoped_ptr<ListValue> types(new ListValue());
   for (size_t i = 0; i < enums.size(); ++i)
-    types->Append(EnumArrayType::CreateEnumValue(enums[i]).release());
+    types->Append(new base::StringValue(EnumArrayType::ToString(enums[i])));
 
   DictionaryValue value;
   value.Set("types", types.release());
 
   EnumArrayType enum_array_type;
-  EXPECT_TRUE(EnumArrayType::Populate(value, &enum_array_type));
+  ASSERT_TRUE(EnumArrayType::Populate(value, &enum_array_type));
   EXPECT_EQ(enums, enum_array_type.types);
 }
 
 TEST(JsonSchemaCompilerArrayTest, OptionalEnumArrayType) {
   {
-    std::vector<OptionalEnumArrayType::TypesElement> enums;
-    enums.push_back(OptionalEnumArrayType::TYPES_ELEMENT_ONE);
-    enums.push_back(OptionalEnumArrayType::TYPES_ELEMENT_TWO);
-    enums.push_back(OptionalEnumArrayType::TYPES_ELEMENT_THREE);
+    std::vector<OptionalEnumArrayType::TypesType> enums;
+    enums.push_back(OptionalEnumArrayType::TYPES_TYPE_ONE);
+    enums.push_back(OptionalEnumArrayType::TYPES_TYPE_TWO);
+    enums.push_back(OptionalEnumArrayType::TYPES_TYPE_THREE);
 
     scoped_ptr<ListValue> types(new ListValue());
-    for (size_t i = 0; i < enums.size(); ++i)
-      types->Append(OptionalEnumArrayType::CreateEnumValue(enums[i]).release());
+    for (size_t i = 0; i < enums.size(); ++i) {
+      types->Append(new base::StringValue(
+          OptionalEnumArrayType::ToString(enums[i])));
+    }
 
     DictionaryValue value;
     value.Set("types", types.release());
 
     OptionalEnumArrayType enum_array_type;
-    EXPECT_TRUE(OptionalEnumArrayType::Populate(value, &enum_array_type));
+    ASSERT_TRUE(OptionalEnumArrayType::Populate(value, &enum_array_type));
     EXPECT_EQ(enums, *enum_array_type.types);
   }
   {
@@ -94,7 +96,7 @@ TEST(JsonSchemaCompilerArrayTest, OptionalEnumArrayType) {
 
     value.Set("types", enum_array.release());
     OptionalEnumArrayType enum_array_type;
-    EXPECT_FALSE(OptionalEnumArrayType::Populate(value, &enum_array_type));
+    ASSERT_FALSE(OptionalEnumArrayType::Populate(value, &enum_array_type));
     EXPECT_TRUE(enum_array_type.types->empty());
   }
 }
@@ -153,7 +155,7 @@ TEST(JsonSchemaCompilerArrayTest, AnyArrayParamsCreate) {
   EXPECT_TRUE(params.get());
   ASSERT_EQ(3u, params->anys.size());
   int int_temp = 0;
-  EXPECT_TRUE(params->anys[0]->value().GetAsInteger(&int_temp));
+  EXPECT_TRUE(params->anys[0]->GetAsInteger(&int_temp));
   EXPECT_EQ(1, int_temp);
 }
 
@@ -167,13 +169,8 @@ TEST(JsonSchemaCompilerArrayTest, ObjectArrayParamsCreate) {
       ObjectArray::Params::Create(*params_value));
   EXPECT_TRUE(params.get());
   ASSERT_EQ(2u, params->objects.size());
-  int object_val = 0;
-  EXPECT_TRUE(params->objects[0]->additional_properties.GetInteger(
-      "val", &object_val));
-  EXPECT_EQ(1, object_val);
-  EXPECT_TRUE(params->objects[1]->additional_properties.GetInteger(
-      "val", &object_val));
-  EXPECT_EQ(2, object_val);
+  EXPECT_EQ(1, params->objects[0]->additional_properties["val"]);
+  EXPECT_EQ(2, params->objects[1]->additional_properties["val"]);
 }
 
 TEST(JsonSchemaCompilerArrayTest, RefArrayParamsCreate) {

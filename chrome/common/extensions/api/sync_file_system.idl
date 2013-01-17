@@ -4,17 +4,6 @@
 
 namespace syncFileSystem {
 
-  dictionary StorageInfo {
-    long usage_bytes;
-    long quota_bytes;
-  };
-
-  dictionary SyncState {
-    DOMString service_name;  // i.e. ‘drive’
-    SyncStateStatus state;
-    DOMString description;
-  };
-
   enum SyncOperationResult {
     added, updated, deleted, conflicted
   };
@@ -54,6 +43,17 @@ namespace syncFileSystem {
 
     // File conflicts with remote version and must be resolved manually.
     conflicting
+  };
+
+  dictionary StorageInfo {
+    long usage_bytes;
+    long quota_bytes;
+  };
+
+  dictionary SyncState {
+    DOMString service_name;  // i.e. ‘drive’
+    SyncStateStatus state;
+    DOMString description;
   };
 
   // [nodoc] A callback type for requestFileSystem.

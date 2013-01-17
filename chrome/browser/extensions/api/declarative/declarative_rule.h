@@ -20,6 +20,7 @@
 
 namespace base {
 class Time;
+class Value;
 }
 
 namespace extensions {
@@ -53,7 +54,7 @@ namespace extensions {
 template<typename ConditionT>
 class DeclarativeConditionSet {
  public:
-  typedef std::vector<linked_ptr<json_schema_compiler::any::Any> > AnyVector;
+  typedef std::vector<linked_ptr<base::Value> > AnyVector;
   typedef std::vector<linked_ptr<const ConditionT> > Conditions;
   typedef typename Conditions::const_iterator const_iterator;
 
@@ -147,7 +148,7 @@ class DeclarativeConditionSet {
 template<typename ActionT>
 class DeclarativeActionSet {
  public:
-  typedef std::vector<linked_ptr<json_schema_compiler::any::Any> > AnyVector;
+  typedef std::vector<linked_ptr<base::Value> > AnyVector;
   typedef std::vector<linked_ptr<const ActionT> > Actions;
 
   explicit DeclarativeActionSet(const Actions& actions);
@@ -307,8 +308,7 @@ DeclarativeConditionSet<ConditionT>::Create(
        i != conditions.end(); ++i) {
     CHECK(i->get());
     scoped_ptr<ConditionT> condition =
-        ConditionT::Create(url_matcher_condition_factory,
-                           (*i)->value(), error);
+        ConditionT::Create(url_matcher_condition_factory, **i, error);
     if (!error->empty())
       return scoped_ptr<DeclarativeConditionSet>(NULL);
     result.push_back(make_linked_ptr(condition.release()));
@@ -367,8 +367,7 @@ DeclarativeActionSet<ActionT>::Create(
   for (AnyVector::const_iterator i = actions.begin();
        i != actions.end(); ++i) {
     CHECK(i->get());
-    scoped_ptr<ActionT> action =
-        ActionT::Create((*i)->value(), error, bad_message);
+    scoped_ptr<ActionT> action = ActionT::Create(**i, error, bad_message);
     if (!error->empty() || *bad_message)
       return scoped_ptr<DeclarativeActionSet>(NULL);
     result.push_back(make_linked_ptr(action.release()));

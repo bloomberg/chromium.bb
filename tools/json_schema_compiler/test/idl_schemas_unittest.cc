@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/values.h"
-#include "tools/json_schema_compiler/any.h"
 #include "tools/json_schema_compiler/test/idl_basics.h"
 #include "tools/json_schema_compiler/test/idl_object_types.h"
 
@@ -167,13 +166,12 @@ TEST(IdlCompiler, ObjectTypes) {
 
   // Test the BarType type.
   BarType b1;
-  base::FundamentalValue seven(7);
-  b1.x.Init(seven);
+  b1.x.reset(new base::FundamentalValue(7));
   scoped_ptr<DictionaryValue> serialized_bar = b1.ToValue();
   BarType b2;
   EXPECT_TRUE(BarType::Populate(*serialized_bar.get(), &b2));
   int tmp_int = 0;
-  EXPECT_TRUE(b2.x.value().GetAsInteger(&tmp_int));
+  EXPECT_TRUE(b2.x->GetAsInteger(&tmp_int));
   EXPECT_EQ(7, tmp_int);
 
   // Test the params to the ObjectFunction1 function.

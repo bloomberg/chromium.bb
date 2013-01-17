@@ -47,17 +47,17 @@ api::sync_file_system::FileSyncStatus FileSyncStatusEnumToExtensionEnum(
     const fileapi::SyncFileStatus state) {
   switch (state) {
     case fileapi::SYNC_FILE_STATUS_UNKNOWN:
-      return api::sync_file_system::SYNC_FILE_SYSTEM_FILE_SYNC_STATUS_NONE;
+      return api::sync_file_system::FILE_SYNC_STATUS_NONE;
     case fileapi::SYNC_FILE_STATUS_SYNCED:
-      return api::sync_file_system::SYNC_FILE_SYSTEM_FILE_SYNC_STATUS_SYNCED;
+      return api::sync_file_system::FILE_SYNC_STATUS_SYNCED;
     case fileapi::SYNC_FILE_STATUS_HAS_PENDING_CHANGES:
-      return api::sync_file_system::SYNC_FILE_SYSTEM_FILE_SYNC_STATUS_PENDING;
+      return api::sync_file_system::FILE_SYNC_STATUS_PENDING;
     case fileapi::SYNC_FILE_STATUS_CONFLICTING:
       return api::sync_file_system::
-          SYNC_FILE_SYSTEM_FILE_SYNC_STATUS_CONFLICTING;
+          FILE_SYNC_STATUS_CONFLICTING;
   }
   NOTREACHED();
-  return api::sync_file_system::SYNC_FILE_SYSTEM_FILE_SYNC_STATUS_NONE;
+  return api::sync_file_system::FILE_SYNC_STATUS_NONE;
 }
 
 sync_file_system::SyncFileSystemService* GetSyncFileSystemService(

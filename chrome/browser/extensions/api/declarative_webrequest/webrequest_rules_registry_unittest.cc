@@ -112,27 +112,17 @@ class WebRequestRulesRegistryTest : public testing::Test {
     https_condition_url_filter.SetString(keys::kInstanceTypeKey,
                                          keys::kRequestMatcherType);
 
-    linked_ptr<json_schema_compiler::any::Any> condition1(
-        new json_schema_compiler::any::Any);
-    condition1->Init(http_condition_url_filter);
-
-    linked_ptr<json_schema_compiler::any::Any> condition2(
-        new json_schema_compiler::any::Any);
-    condition2->Init(https_condition_url_filter);
-
     DictionaryValue action_dict;
     action_dict.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
-
-    linked_ptr<json_schema_compiler::any::Any> action1(
-        new json_schema_compiler::any::Any);
-    action1->Init(action_dict);
 
     linked_ptr<RulesRegistry::Rule> rule(new RulesRegistry::Rule);
     rule->id.reset(new std::string(kRuleId1));
     rule->priority.reset(new int(100));
-    rule->actions.push_back(action1);
-    rule->conditions.push_back(condition1);
-    rule->conditions.push_back(condition2);
+    rule->actions.push_back(linked_ptr<base::Value>(action_dict.DeepCopy()));
+    rule->conditions.push_back(
+        linked_ptr<base::Value>(http_condition_url_filter.DeepCopy()));
+    rule->conditions.push_back(
+        linked_ptr<base::Value>(https_condition_url_filter.DeepCopy()));
     return rule;
   }
 
@@ -141,22 +131,15 @@ class WebRequestRulesRegistryTest : public testing::Test {
     DictionaryValue condition_dict;
     condition_dict.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
 
-    linked_ptr<json_schema_compiler::any::Any> condition(
-        new json_schema_compiler::any::Any);
-    condition->Init(condition_dict);
-
     DictionaryValue action_dict;
     action_dict.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
-
-    linked_ptr<json_schema_compiler::any::Any> action(
-        new json_schema_compiler::any::Any);
-    action->Init(action_dict);
 
     linked_ptr<RulesRegistry::Rule> rule(new RulesRegistry::Rule);
     rule->id.reset(new std::string(kRuleId2));
     rule->priority.reset(new int(100));
-    rule->actions.push_back(action);
-    rule->conditions.push_back(condition);
+    rule->actions.push_back(linked_ptr<base::Value>(action_dict.DeepCopy()));
+    rule->conditions.push_back(
+        linked_ptr<base::Value>(condition_dict.DeepCopy()));
     return rule;
   }
 
@@ -165,60 +148,45 @@ class WebRequestRulesRegistryTest : public testing::Test {
     DictionaryValue condition_dict;
     condition_dict.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
 
-    linked_ptr<json_schema_compiler::any::Any> condition(
-        new json_schema_compiler::any::Any);
-    condition->Init(condition_dict);
-
     DictionaryValue action_dict;
     action_dict.SetString(keys::kInstanceTypeKey, keys::kRedirectRequestType);
     action_dict.SetString(keys::kRedirectUrlKey, destination);
 
-    linked_ptr<json_schema_compiler::any::Any> action(
-        new json_schema_compiler::any::Any);
-    action->Init(action_dict);
-
     linked_ptr<RulesRegistry::Rule> rule(new RulesRegistry::Rule);
     rule->id.reset(new std::string(kRuleId3));
     rule->priority.reset(new int(100));
-    rule->actions.push_back(action);
-    rule->conditions.push_back(condition);
+    rule->actions.push_back(linked_ptr<base::Value>(action_dict.DeepCopy()));
+    rule->conditions.push_back(
+        linked_ptr<base::Value>(condition_dict.DeepCopy()));
     return rule;
   }
 
   // Create a rule to ignore all other rules for a destination that
   // contains index.html.
   linked_ptr<RulesRegistry::Rule> CreateIgnoreRule() {
-    linked_ptr<json_schema_compiler::any::Any> condition(
-        new json_schema_compiler::any::Any);
     DictionaryValue condition_dict;
     DictionaryValue* http_condition_dict = new DictionaryValue();
     http_condition_dict->SetString(keys2::kPathContainsKey, "index.html");
     condition_dict.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
     condition_dict.Set(keys::kUrlKey, http_condition_dict);
-    condition->Init(condition_dict);
 
     DictionaryValue action_dict;
     action_dict.SetString(keys::kInstanceTypeKey, keys::kIgnoreRulesType);
     action_dict.SetInteger(keys::kLowerPriorityThanKey, 150);
-    linked_ptr<json_schema_compiler::any::Any> action(
-        new json_schema_compiler::any::Any);
-    action->Init(action_dict);
 
     linked_ptr<RulesRegistry::Rule> rule(new RulesRegistry::Rule);
     rule->id.reset(new std::string(kRuleId4));
     rule->priority.reset(new int(200));
-    rule->actions.push_back(action);
-    rule->conditions.push_back(condition);
+    rule->actions.push_back(linked_ptr<base::Value>(action_dict.DeepCopy()));
+    rule->conditions.push_back(
+        linked_ptr<base::Value>(condition_dict.DeepCopy()));
     return rule;
   }
 
   // Create a condition with the attributes specified. An example value of a
   // string from |attributes| is: "\"resourceType\": [\"stylesheet\"], \n".
-  linked_ptr<json_schema_compiler::any::Any> CreateCondition(
+  linked_ptr<base::Value> CreateCondition(
       const std::vector<const char *>& attributes) {
-    linked_ptr<json_schema_compiler::any::Any> condition(
-        new json_schema_compiler::any::Any);
-
     // Starting boilerplate.
     std::string json_description =
         "{ \n"
@@ -228,9 +196,9 @@ class WebRequestRulesRegistryTest : public testing::Test {
     }
     // Ending boilerplate.
     json_description += "}";
-    condition->Init(*base::test::ParseJson(json_description));
 
-    return condition;
+    return linked_ptr<base::Value>(
+        base::test::ParseJson(json_description).release());
   }
 
   // Create a rule with the ID |rule_id| and with a single condition and a
@@ -247,20 +215,14 @@ class WebRequestRulesRegistryTest : public testing::Test {
     // The following attribute never matches in this unit test.
     attributes.push_back("\"resourceType\": [\"stylesheet\"], \n");
 
-    linked_ptr<json_schema_compiler::any::Any> condition =
-        CreateCondition(attributes);
-
     DictionaryValue action_dict;
     action_dict.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
-    linked_ptr<json_schema_compiler::any::Any> action(
-        new json_schema_compiler::any::Any);
-    action->Init(action_dict);
 
     linked_ptr<RulesRegistry::Rule> rule(new RulesRegistry::Rule);
     rule->id.reset(new std::string(rule_id));
     rule->priority.reset(new int(1));
-    rule->actions.push_back(action);
-    rule->conditions.push_back(condition);
+    rule->actions.push_back(linked_ptr<base::Value>(action_dict.DeepCopy()));
+    rule->conditions.push_back(CreateCondition(attributes));
     return rule;
   }
 
@@ -269,29 +231,22 @@ class WebRequestRulesRegistryTest : public testing::Test {
   // and the other one a URL attribute matching any URL.
   linked_ptr<RulesRegistry::Rule> CreateRuleWithTwoConditions(
       const char* rule_id) {
-    std::vector<const char*> attributes;
-    attributes.push_back("\"url\": { \"pathContains\": \"\" }, \n");
-    linked_ptr<json_schema_compiler::any::Any> url_condition =
-        CreateCondition(attributes);
+    std::vector<const char*> url_attributes;
+    url_attributes.push_back("\"url\": { \"pathContains\": \"\" }, \n");
 
-    attributes.clear();
     // The following attribute never matches in this unit test.
-    attributes.push_back("\"resourceType\": [\"stylesheet\"], \n");
-    linked_ptr<json_schema_compiler::any::Any> non_matching_condition =
-        CreateCondition(attributes);
+    std::vector<const char*> non_matching_attributes;
+    non_matching_attributes.push_back("\"resourceType\": [\"stylesheet\"], \n");
 
     DictionaryValue action_dict;
     action_dict.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);
-    linked_ptr<json_schema_compiler::any::Any> action(
-        new json_schema_compiler::any::Any);
-    action->Init(action_dict);
 
     linked_ptr<RulesRegistry::Rule> rule(new RulesRegistry::Rule);
     rule->id.reset(new std::string(rule_id));
     rule->priority.reset(new int(1));
-    rule->actions.push_back(action);
-    rule->conditions.push_back(url_condition);
-    rule->conditions.push_back(non_matching_condition);
+    rule->actions.push_back(linked_ptr<base::Value>(action_dict.DeepCopy()));
+    rule->conditions.push_back(CreateCondition(url_attributes));
+    rule->conditions.push_back(CreateCondition(non_matching_attributes));
     return rule;
   }
 

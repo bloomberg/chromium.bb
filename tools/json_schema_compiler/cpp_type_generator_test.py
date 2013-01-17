@@ -71,33 +71,6 @@ class CppTypeGeneratorTest(unittest.TestCase):
     self.assertEquals('#include "base/string_number_conversions.h"',
                       manager.GenerateIncludes().Render())
 
-
-  def testGenerateIncludesAndForwardDeclarationsMultipleTypes(self):
-    m = model.Model()
-    self.tabs_json[0]['types'].append(self.permissions_json[0]['types'][0])
-    self.windows_json[0]['functions'].append(
-        self.permissions_json[0]['functions'][1])
-    # Insert 'windows' before 'tabs' in order to test that they are sorted
-    # properly.
-    windows = m.AddNamespace(self.windows_json[0],
-                             'path/to/windows.json')
-    tabs_namespace = m.AddNamespace(self.tabs_json[0],
-                                    'path/to/tabs.json')
-    manager = CppTypeGenerator('', windows, self.windows.unix_name)
-    manager.AddNamespace(tabs_namespace, self.tabs.unix_name)
-    self.assertEquals('#include "path/to/tabs.h"\n'
-                      '#include "base/string_number_conversions.h"\n'
-                      '#include "base/json/json_writer.h"',
-                      manager.GenerateIncludes().Render())
-    self.assertEquals('namespace tabs {\n'
-                      'struct Permissions;\n'
-                      'struct Tab;\n'
-                      '}\n'
-                      'namespace windows {\n'
-                      'struct Window;\n'
-                      '}  // windows',
-                      manager.GenerateForwardDeclarations().Render())
-
   def testGenerateIncludesAndForwardDeclarationsDependencies(self):
     m = model.Model()
     # Insert 'font_settings' before 'browser_action' in order to test that
@@ -117,98 +90,79 @@ class CppTypeGeneratorTest(unittest.TestCase):
                       '#include "base/string_number_conversions.h"',
                       manager.GenerateIncludes().Render())
     self.assertEquals('namespace browserAction {\n'
-                      'typedef std::vector<int> ColorArray;\n'
                       '}\n'
                       'namespace fontSettings {\n'
-                      'typedef std::string FakeStringType;\n'
                       '}\n'
                       'namespace dependency_tester {\n'
                       '}  // dependency_tester',
                       manager.GenerateForwardDeclarations().Render())
 
-  def testChoicesEnum(self):
-    manager = CppTypeGenerator('', self.tabs, self.tabs.unix_name)
-    prop = self.tabs.functions['move'].params[0]
-    self.assertEquals('TAB_IDS_ARRAY',
-                      manager.GetEnumValue(prop, model.PropertyType.ARRAY.name))
-    self.assertEquals(
-        'TAB_IDS_INTEGER',
-        manager.GetEnumValue(prop, model.PropertyType.INTEGER.name))
-    self.assertEquals('TabIdsType',
-                      manager.GetChoicesEnumType(prop))
-
-  def testGetTypeSimple(self):
+  def testGetCppTypeSimple(self):
     manager = CppTypeGenerator('', self.tabs, self.tabs.unix_name)
     self.assertEquals(
         'int',
-        manager.GetType(self.tabs.types['tabs.Tab'].properties['id']))
+        manager.GetCppType(self.tabs.types['Tab'].properties['id'].type_))
     self.assertEquals(
         'std::string',
-        manager.GetType(self.tabs.types['tabs.Tab'].properties['status']))
+        manager.GetCppType(self.tabs.types['Tab'].properties['status'].type_))
     self.assertEquals(
         'bool',
-        manager.GetType(self.tabs.types['tabs.Tab'].properties['selected']))
+        manager.GetCppType(self.tabs.types['Tab'].properties['selected'].type_))
 
   def testStringAsType(self):
     manager = CppTypeGenerator('', self.font_settings,
                                self.font_settings.unix_name)
     self.assertEquals(
         'std::string',
-        manager.GetType(
-            self.font_settings.types['fontSettings.FakeStringType']))
+        manager.GetCppType(self.font_settings.types['FakeStringType']))
 
   def testArrayAsType(self):
     manager = CppTypeGenerator('', self.browser_action,
                                self.browser_action.unix_name)
     self.assertEquals(
         'std::vector<int>',
-        manager.GetType(self.browser_action.types['browserAction.ColorArray']))
+        manager.GetCppType(self.browser_action.types['ColorArray']))
 
-  def testGetTypeArray(self):
+  def testGetCppTypeArray(self):
     manager = CppTypeGenerator('', self.windows, self.windows.unix_name)
     self.assertEquals(
         'std::vector<linked_ptr<Window> >',
-        manager.GetType(self.windows.functions['getAll'].callback.params[0]))
+        manager.GetCppType(
+            self.windows.functions['getAll'].callback.params[0].type_))
     manager = CppTypeGenerator('', self.permissions, self.permissions.unix_name)
-    self.assertEquals('std::vector<std::string>', manager.GetType(
-      self.permissions.types['permissions.Permissions'].properties['origins']))
+    self.assertEquals(
+        'std::vector<std::string>',
+        manager.GetCppType(
+            self.permissions.types['Permissions'].properties['origins'].type_))
 
-  def testGetTypeLocalRef(self):
+  def testGetCppTypeLocalRef(self):
     manager = CppTypeGenerator('', self.tabs, self.tabs.unix_name)
     self.assertEquals(
         'Tab',
-        manager.GetType(self.tabs.functions['get'].callback.params[0]))
+        manager.GetCppType(self.tabs.functions['get'].callback.params[0].type_))
 
-  def testGetTypeIncludedRef(self):
+  def testGetCppTypeIncludedRef(self):
     manager = CppTypeGenerator('', self.windows, self.windows.unix_name)
     manager.AddNamespace(self.tabs, self.tabs.unix_name)
     self.assertEquals(
         'std::vector<linked_ptr<tabs::Tab> >',
-        manager.GetType(
-            self.windows.types['windows.Window'].properties['tabs']))
+        manager.GetCppType(
+            self.windows.types['Window'].properties['tabs'].type_))
 
-  def testGetTypeNotfound(self):
-    prop = self.windows.types['windows.Window'].properties['tabs'].item_type
-    prop.ref_type = 'Something'
-    manager = CppTypeGenerator('', self.windows, self.windows.unix_name)
-    self.assertRaises(KeyError, manager.GetType, prop)
-
-  def testGetTypeNotimplemented(self):
-    prop = self.windows.types['windows.Window'].properties['tabs'].item_type
-    prop.type_ = 10
-    manager = CppTypeGenerator('', self.windows, self.windows.unix_name)
-    self.assertRaises(NotImplementedError, manager.GetType, prop)
-
-  def testGetTypeWithPadForGeneric(self):
+  def testGetCppTypeWithPadForGeneric(self):
     manager = CppTypeGenerator('', self.permissions, self.permissions.unix_name)
-    self.assertEquals('std::vector<std::string> ',
-        manager.GetType(
-        self.permissions.types['permissions.Permissions'].properties['origins'],
-        pad_for_generics=True))
+    self.assertEquals('std::vector<std::string>',
+        manager.GetCppType(
+            self.permissions.types['Permissions'].properties['origins'].type_,
+            is_in_container=False))
+    self.assertEquals('linked_ptr<std::vector<std::string> >',
+        manager.GetCppType(
+            self.permissions.types['Permissions'].properties['origins'].type_,
+            is_in_container=True))
     self.assertEquals('bool',
-        manager.GetType(
-            self.permissions.functions['contains'].callback.params[0],
-        pad_for_generics=True))
+        manager.GetCppType(
+            self.permissions.functions['contains'].callback.params[0].type_,
+        is_in_container=True))
 
   def testNamespaceDeclaration(self):
     manager = CppTypeGenerator('extensions', self.permissions,
@@ -230,34 +184,6 @@ class CppTypeGeneratorTest(unittest.TestCase):
                       '}  // gen\n'
                       '}  // extensions',
                       manager.GetRootNamespaceEnd().Render())
-
-  def testExpandParams(self):
-    manager = CppTypeGenerator('extensions', self.tabs,
-                               self.tabs.unix_name)
-    props = self.tabs.functions['move'].params
-    self.assertEquals(2, len(props))
-    self.assertEquals(['move_properties', 'tab_ids_array', 'tab_ids_integer'],
-        sorted([x.unix_name for x in manager.ExpandParams(props)])
-    )
-
-  def testGetAllPossibleParameterLists(self):
-    manager = CppTypeGenerator('extensions', self.tabs,
-                               self.tabs.unix_name)
-    props = self.forbidden.functions['forbiddenParameters'].params
-    self.assertEquals(4, len(props))
-    param_lists = manager.GetAllPossibleParameterLists(props)
-    expected_lists = [
-        ['first_choice_array', 'first_string',
-         'second_choice_array', 'second_string'],
-        ['first_choice_array', 'first_string',
-         'second_choice_integer', 'second_string'],
-        ['first_choice_integer', 'first_string',
-         'second_choice_array', 'second_string'],
-        ['first_choice_integer', 'first_string',
-         'second_choice_integer', 'second_string']]
-    result_lists = sorted([[param.unix_name for param in param_list]
-                           for param_list in param_lists])
-    self.assertEquals(expected_lists, result_lists)
 
 if __name__ == '__main__':
   unittest.main()

@@ -310,9 +310,8 @@ bool BookmarksGetTreeFunction::RunImpl() {
 
   std::vector<linked_ptr<BookmarkTreeNode> > nodes;
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
-  if (params->id_or_id_list_type ==
-      bookmarks::Get::Params::ID_OR_ID_LIST_ARRAY) {
-    std::vector<std::string>* ids = params->id_or_id_list_array.get();
+  if (params->id_or_id_list.as_array) {
+    std::vector<std::string>* ids = params->id_or_id_list.as_array.get();
     size_t count = ids->size();
     EXTENSION_FUNCTION_VALIDATE(count > 0);
     for (size_t i = 0; i < count; ++i) {
@@ -329,7 +328,7 @@ bool BookmarksGetTreeFunction::RunImpl() {
     }
   } else {
     int64 id;
-    if (!GetBookmarkIdAsInt64(*params->id_or_id_list_string, &id))
+    if (!GetBookmarkIdAsInt64(*params->id_or_id_list.as_string, &id))
       return false;
     const BookmarkNode* node = model->GetNodeByID(id);
     if (!node) {

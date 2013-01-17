@@ -25,7 +25,7 @@ class UtilCCHelper(object):
         'dst': dst,
     }
 
-    sub['type'] = self._type_manager.GetType(prop)
+    sub['type'] = self._type_manager.GetCppType(prop),
     if array_prop.optional:
       val = ('%(namespace)s::PopulateOptionalArrayFromDictionary'
           '(*%(src)s, "%(name)s", &%(dst)s)')
@@ -46,7 +46,7 @@ class UtilCCHelper(object):
         'namespace': API_UTIL_NAMESPACE,
         'src': src,
         'dst': dst,
-        'type': self._type_manager.GetType(prop),
+        'type': self._type_manager.GetCppType(prop),
     }
 
     if optional:
@@ -65,7 +65,7 @@ class UtilCCHelper(object):
     sub = {
         'namespace': API_UTIL_NAMESPACE,
         'src': src,
-        'type': self._type_manager.GetType(prop),
+        'type': self._type_manager.GetCppType(prop),
     }
 
     if optional:

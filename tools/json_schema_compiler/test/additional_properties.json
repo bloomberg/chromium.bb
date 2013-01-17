@@ -44,7 +44,7 @@
                 "properties": {
                   "integer": {"type": "integer"}
                 },
-                "additionalProperties": {"type": "any"}
+                "additionalProperties": {"type": "string"}
               }
             ]
           }

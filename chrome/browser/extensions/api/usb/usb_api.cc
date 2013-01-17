@@ -68,10 +68,10 @@ static UsbDevice* device_for_test_ = NULL;
 static bool ConvertDirection(const Direction& input,
                              UsbDevice::TransferDirection* output) {
   switch (input) {
-    case usb::USB_DIRECTION_IN:
+    case usb::DIRECTION_IN:
       *output = UsbDevice::INBOUND;
       return true;
-    case usb::USB_DIRECTION_OUT:
+    case usb::DIRECTION_OUT:
       *output = UsbDevice::OUTBOUND;
       return true;
     default:
@@ -84,16 +84,16 @@ static bool ConvertDirection(const Direction& input,
 static bool ConvertRequestType(const RequestType& input,
                                UsbDevice::TransferRequestType* output) {
   switch (input) {
-    case usb::USB_REQUEST_TYPE_STANDARD:
+    case usb::REQUEST_TYPE_STANDARD:
       *output = UsbDevice::STANDARD;
       return true;
-    case usb::USB_REQUEST_TYPE_CLASS:
+    case usb::REQUEST_TYPE_CLASS:
       *output = UsbDevice::CLASS;
       return true;
-    case usb::USB_REQUEST_TYPE_VENDOR:
+    case usb::REQUEST_TYPE_VENDOR:
       *output = UsbDevice::VENDOR;
       return true;
-    case usb::USB_REQUEST_TYPE_RESERVED:
+    case usb::REQUEST_TYPE_RESERVED:
       *output = UsbDevice::RESERVED;
       return true;
     default:
@@ -106,16 +106,16 @@ static bool ConvertRequestType(const RequestType& input,
 static bool ConvertRecipient(const Recipient& input,
                              UsbDevice::TransferRecipient* output) {
   switch (input) {
-    case usb::USB_RECIPIENT_DEVICE:
+    case usb::RECIPIENT_DEVICE:
       *output = UsbDevice::DEVICE;
       return true;
-    case usb::USB_RECIPIENT_INTERFACE:
+    case usb::RECIPIENT_INTERFACE:
       *output = UsbDevice::INTERFACE;
       return true;
-    case usb::USB_RECIPIENT_ENDPOINT:
+    case usb::RECIPIENT_ENDPOINT:
       *output = UsbDevice::ENDPOINT;
       return true;
-    case usb::USB_RECIPIENT_OTHER:
+    case usb::RECIPIENT_OTHER:
       *output = UsbDevice::OTHER;
       return true;
     default:
@@ -127,13 +127,13 @@ static bool ConvertRecipient(const Recipient& input,
 
 template<class T>
 static bool GetTransferSize(const T& input, size_t* output) {
-  if (input.direction == usb::USB_DIRECTION_IN) {
+  if (input.direction == usb::DIRECTION_IN) {
     const int* length = input.length.get();
     if (length) {
       *output = *length;
       return true;
     }
-  } else if (input.direction == usb::USB_DIRECTION_OUT) {
+  } else if (input.direction == usb::DIRECTION_OUT) {
     if (input.data.get()) {
       *output = input.data->size();
       return true;

@@ -10,7 +10,7 @@
 namespace extensions {
 
 using api::experimental_system_info_storage::StorageUnitInfo;
-using api::experimental_system_info_storage::FromStorageUnitTypeString;
+using api::experimental_system_info_storage::ParseStorageUnitType;
 using chrome::ScopedUdevDeviceObject;
 
 namespace {
@@ -65,7 +65,7 @@ bool StorageInfoProviderLinux::QueryUnitInfo(const std::string& mount_path,
   }
   // Currently the mount path is used as the identifier of a storage unit.
   info->id = mount_path;
-  info->type = FromStorageUnitTypeString(type);
+  info->type = ParseStorageUnitType(type);
   info->capacity = static_cast<double>(fs_info.f_blocks) * fs_info.f_bsize;
   info->available_capacity =
     static_cast<double>(fs_info.f_bavail) * fs_info.f_bsize;

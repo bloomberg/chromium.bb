@@ -352,7 +352,6 @@ class IDLSchema(object):
           continue
       else:
         sys.exit('Did not process %s %s' % (node.cls, node))
-    schema_util.PrefixSchemasWithNamespace(namespaces)
     return namespaces
 
 def Load(filename):
