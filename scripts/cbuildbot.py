@@ -358,7 +358,6 @@ class SimpleBuilder(Builder):
     configs = self.build_config['board_specific_configs']
     config = configs.get(board, self.build_config)
     stage_list = [[stages.VMTestStage, board, archive_stage],
-                  [stages.ChromeTestStage, board, archive_stage],
                   [stages.SignerTestStage, board, archive_stage],
                   [stages.UnitTestStage, board],
                   [stages.UploadPrebuiltsStage, board, archive_stage],

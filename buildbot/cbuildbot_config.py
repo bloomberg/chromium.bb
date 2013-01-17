@@ -244,9 +244,6 @@ _settings = dict(
 # chrome_rev -- Uprev Chrome, values of 'tot', 'stable_release', or None.
   chrome_rev=None,
 
-# chrome_tests -- Runs chrome testing binaries in a vm.
-  chrome_tests=False,
-
 # signer_tests -- Runs the tests that the signer would run.
   signer_tests=False,
 
@@ -494,7 +491,6 @@ arm = _config(
   arm=True,
   # VM/tests are broken on arm.
   unittests=False,
-  chrome_tests=False,
   vm_tests=None,
 )
 
@@ -777,7 +773,6 @@ cpfq_arm.add_config('daisy-tot-chrome-pfq-informational',
 chromium_info.add_config('amd64-generic-tot-chrome-pfq-informational',
   amd64,
   boards=['amd64-generic'],
-  chrome_tests=True,
 )
 
 chromium_info.add_config('x32-generic-tot-chrome-pfq-informational',

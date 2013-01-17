@@ -1166,49 +1166,6 @@ class BuildTargetStage(BoardSpecificBuilderStage):
     return super(BuildTargetStage, self)._HandleStageException(exception)
 
 
-class ChromeTestStage(BoardSpecificBuilderStage):
-  """Run chrome tests in a virtual machine."""
-
-  option_name = 'tests'
-  config_name = 'chrome_tests'
-
-  # If the chrome tests take longer than an hour to run, abort. They
-  # usually take about 30 minutes to run.
-  CHROME_TEST_TIMEOUT = 3600
-
-  def __init__(self, options, build_config, board, archive_stage):
-    super(ChromeTestStage, self).__init__(options, build_config, board)
-    self._archive_stage = archive_stage
-
-  def _PerformStage(self):
-    try:
-      test_results_dir = None
-      test_results_dir = commands.CreateTestRoot(self._build_root)
-      with cros_build_lib.SubCommandTimeout(self.CHROME_TEST_TIMEOUT):
-        commands.RunChromeSuite(self._build_root,
-                                self._current_board,
-                                self.GetImageDirSymlink(),
-                                os.path.join(test_results_dir,
-                                             'chrome_results'))
-    except cros_build_lib.TimeoutError as exception:
-      return self._HandleExceptionAsWarning(exception)
-    finally:
-      test_tarball = None
-      if test_results_dir:
-        test_tarball = commands.ArchiveTestResults(self._build_root,
-                                                   test_results_dir,
-                                                   prefix='chrome_')
-
-      self._archive_stage.TestResultsReady(test_tarball)
-
-  def _HandleStageException(self, exception):
-    cros_build_lib.Error(_VM_TEST_ERROR_MSG)
-    return super(ChromeTestStage, self)._HandleStageException(exception)
-
-  def HandleSkip(self):
-    self._archive_stage.TestResultsReady(None)
-
-
 class SignerTestStage(BoardSpecificBuilderStage):
   """Run signer related tests."""
 
@@ -1685,15 +1642,14 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
   def _GetTestResults(self):
     """Get the path to the test results tarball."""
-    for _ in range(2):
-      cros_build_lib.Info('Waiting for test results dir...')
-      test_tarball = self._test_results_queue.get()
-      if test_tarball:
-        cros_build_lib.Info('Found test results tarball at %s...'
-                            % test_tarball)
-        yield test_tarball
-      else:
-        cros_build_lib.Info('No test results.')
+    cros_build_lib.Info('Waiting for test results dir...')
+    test_tarball = self._test_results_queue.get()
+    if test_tarball:
+      cros_build_lib.Info('Found test results tarball at %s...'
+                          % test_tarball)
+      yield test_tarball
+    else:
+      cros_build_lib.Info('No test results.')
 
   def _SetupArchivePath(self):
     """Create a fresh directory for archiving a build."""

@@ -370,28 +370,6 @@ def RunUnitTests(buildroot, board, full, nowithdebug):
   _RunBuildScript(buildroot, cmd, enter_chroot=True)
 
 
-def RunChromeSuite(buildroot, board, image_dir, results_dir):
-  results_dir_in_chroot = os.path.join(buildroot, 'chroot',
-                                       results_dir.lstrip('/'))
-  if os.path.exists(results_dir_in_chroot):
-    shutil.rmtree(results_dir_in_chroot)
-
-  image_path = os.path.join(image_dir, 'chromiumos_qemu_image.bin')
-
-  cwd = os.path.join(buildroot, 'src', 'scripts')
-  # TODO(cmasone): make this look for ALL desktopui_BrowserTest control files.
-  cmd = ['bin/cros_run_parallel_vm_tests',
-         '--board=%s' % board,
-         '--quiet',
-         '--image_path=%s' % image_path,
-         '--results_dir_root=%s' % results_dir,
-         'desktopui_BrowserTest.control$',
-         'desktopui_BrowserTest.control.one',
-         'desktopui_BrowserTest.control.two',
-         'desktopui_BrowserTest.control.three']
-  cros_build_lib.RunCommand(cmd, cwd=cwd, error_code_ok=True)
-
-
 def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
                  whitelist_chrome_crashes, archive_dir):
   """Runs the test harness suite."""
