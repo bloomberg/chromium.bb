@@ -102,6 +102,10 @@
 #include "webkit/plugins/npapi/mock_plugin_list.h"
 #include "webkit/quota/quota_manager.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/extensions/install_limiter.h"
+#endif
+
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DOMStorageContext;
@@ -461,6 +465,10 @@ void ExtensionServiceTestBase::InitializeExtensionService(
   // interfere with the tests. Those tests that need an external provider
   // will register one specifically.
   service_->ClearProvidersForTesting();
+
+#if defined(OS_CHROMEOS)
+  extensions::InstallLimiter::Get(profile_.get())->DisableForTest();
+#endif
 
   expected_extensions_count_ = 0;
 }

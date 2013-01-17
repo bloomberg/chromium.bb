@@ -111,9 +111,7 @@
 #include "webkit/database/database_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/input_method/input_method_manager.h"
-#include "content/public/browser/storage_partition.h"
+#include "chrome/browser/chromeos/extensions/install_limiter.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #endif
@@ -2606,7 +2604,11 @@ bool ExtensionService::OnExternalExtensionFileFound(
   installer->set_expected_version(*version);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_EXTERNAL_FILE);
   installer->set_creation_flags(creation_flags);
+#if defined(OS_CHROMEOS)
+  extensions::InstallLimiter::Get(profile_)->Add(installer, path);
+#else
   installer->InstallCrx(path);
+#endif
 
   // Depending on the source, a new external extension might not need a user
   // notification on installation. For such extensions, mark them acknowledged
