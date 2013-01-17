@@ -342,7 +342,7 @@ chrome.fileBrowserPrivate = {
       });
     }
 
-    webkitResolveLocalFileSystemURL(sourceUrl, function(entry) {
+    window.webkitResolveLocalFileSystemURL(sourceUrl, function(entry) {
       util.removeFileOrDirectory(
           entry,
           util.flog('Deleted a mock mount at ' + entry.fullPath,

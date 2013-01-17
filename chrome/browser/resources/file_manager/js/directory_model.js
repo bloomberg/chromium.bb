@@ -832,7 +832,7 @@ DirectoryModel.prototype.createDirectoryChangeTracker = function() {
       if (this.active_) {
         this.dm_.removeEventListener('directory-changed',
                                      this.onDirectoryChange_);
-        active_ = false;
+        this.active_ = false;
       }
     },
 

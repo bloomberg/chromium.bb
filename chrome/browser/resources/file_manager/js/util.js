@@ -746,9 +746,9 @@ util.updateAppState = function(replace, path, opt_param) {
   //TODO(kaznacheev): Fix replaceState for component extensions. Currently it
   //does not replace the content of the address bar.
   if (replace)
-    history.replaceState(undefined, path, newLocation);
+    window.history.replaceState(undefined, path, newLocation);
   else
-    history.pushState(undefined, path, newLocation);
+    window.history.pushState(undefined, path, newLocation);
 };
 
 /**
@@ -965,11 +965,11 @@ util.__defineGetter__('storage', function() {
   StorageArea.prototype.set = function(items, opt_callback) {
     var changes = {};
     for (var i in items) {
-      changes[i] = {oldValue: localStorage[i], newValue: items[i]};
-      localStorage[i] = items[i];
+      changes[i] = {oldValue: window.localStorage[i], newValue: items[i]};
+      window.localStorage[i] = items[i];
     }
     if (opt_callback)
-      callback();
+      opt_callback();
     for (var i = 0; i < listeners.length; i++) {
       listeners[i](changes, this.type_);
     }
@@ -978,7 +978,7 @@ util.__defineGetter__('storage', function() {
   StorageArea.prototype.get = function(keys, callback) {
     if (!callback) {
       // Since key is optionsl it's the callback.
-      keys(localStorage);
+      keys(window.localStorage);
       return;
     }
     if (typeof(keys) == 'string')
@@ -986,7 +986,7 @@ util.__defineGetter__('storage', function() {
     var result = {};
     for (var i = 0; i < keys.length; i++) {
       var key = keys[i];
-      result[key] = localStorage[key];
+      result[key] = window.localStorage[key];
     }
     callback(result);
   };

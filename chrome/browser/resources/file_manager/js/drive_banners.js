@@ -293,7 +293,7 @@ FileListBannerController.prototype.showLowGDriveSpaceWarning_ =
     close.className = 'cr-dialog-close';
     box.appendChild(close);
     close.addEventListener('click', function(total) {
-      localStorage[WARNING_DISMISSED_KEY] = total;
+      window.localStorage[WARNING_DISMISSED_KEY] = total;
       box.hidden = true;
       this.requestRelayout_(100);
     }.bind(this, sizeStats.totalSizeKB));

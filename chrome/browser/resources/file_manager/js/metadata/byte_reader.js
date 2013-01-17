@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-ByteReader = function(arrayBuffer, opt_offset, opt_length) {
+function ByteReader(arrayBuffer, opt_offset, opt_length) {
   opt_offset = opt_offset || 0;
   opt_length = opt_length || (arrayBuffer.byteLength - opt_offset);
   this.view_ = new DataView(arrayBuffer, opt_offset, opt_length);
   this.pos_ = 0;
   this.seekStack_ = [];
   this.setByteOrder(ByteReader.BIG_ENDIAN);
-};
+}
 
 // Static const and methods.
 
@@ -328,7 +328,7 @@ ByteReader.prototype.readNullTerminatedStringUTF16 =
  */
 ByteReader.prototype.readSlice = function(size, opt_end,
                                           opt_arrayConstructor) {
-  this.validateRead(width, opt_end);
+  this.validateRead(size, opt_end);
 
   var arrayConstructor = opt_arrayConstructor || Uint8Array;
   var slice = new arrayConstructor(

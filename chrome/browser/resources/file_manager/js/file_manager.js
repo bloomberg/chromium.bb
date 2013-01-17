@@ -295,7 +295,7 @@ DialogType.isModal = function(type) {
   FileManager.prototype.show_ = function() {
     if (this.showDelayTimeout_) {
       clearTimeout(this.showDelayTimeout_);
-      showDelayTimeout_ = null;
+      this.showDelayTimeout_ = null;
     }
     this.dialogDom_.classList.add('loaded');
   };
@@ -1027,7 +1027,7 @@ DialogType.isModal = function(type) {
       return dirPath == currentPath;
     }
     for (var i = 0; i < event.affectedEntries.length; i++) {
-      entry = event.affectedEntries[i];
+      var entry = event.affectedEntries[i];
       if (inCurrentDirectory(entry))
         this.directoryModel_.onEntryChanged(entry.name);
     }

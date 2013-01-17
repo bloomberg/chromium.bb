@@ -96,7 +96,7 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
     set: function(value) {
       var sm = this.selectionModel;
       if (sm)
-        sm = removeEventListener('change', handleSelectionChange);
+        sm.removeEventListener('change', handleSelectionChange);
 
       util.callInheritedSetter(this, 'selectionModel', value);
       sm = value;

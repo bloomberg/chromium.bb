@@ -652,7 +652,7 @@ FilesystemProvider.prototype.fetch = function(url, type, callback, opt_entry) {
   if (opt_entry)
     onEntry(opt_entry);
   else
-    webkitResolveLocalFileSystemURL(url, onEntry, onError);
+    window.webkitResolveLocalFileSystemURL(url, onEntry, onError);
 };
 
 /**

@@ -407,7 +407,7 @@ FileTasks.prototype.openGallery = function(urls) {
       util.saveAppState();
       document.title = savedTitle;
     } else {
-      history.back(1);  // This will restore document.title.
+      window.history.back(1);  // This will restore document.title.
     }
   }
 
