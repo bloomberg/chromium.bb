@@ -118,9 +118,9 @@
 # relative_offset: Defines the constant offset used in a direct
 #       relative branch.
 # safety: How safety is defined for the class (missing implies true).
-# sets_Z_if_clear_bits: Defines the register that is tested if bits
-#       have been cleared. Corresponds to defining virtual
-#       sets_Z_if_clear_bits.
+# sets_Z_if_clear_bits: True implies that it sets the Z (condition)
+#       bit if mask bits are cleared. (defaults to false).
+#       Corresponds to defining virtual sets_Z_if_clear_bits.
 # target: The register use to compute an indirect branch,
 #       if defined (defaults to None).
 # uses: The set of registers  used. (missing implies {})
@@ -536,7 +536,7 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
    uses := {Rn};
 *TEST_MASK *TEST
    baseline := MaskedBinaryRegisterImmediateTest;
-   sets_Z_if_clear_bits := Rn;
+   sets_Z_if_bits_clear := true;
 *U1R_PC
    { cond(31:28), Rd(15:12), imm12(11:0) }
    baseline := Unary1RegisterImmediateOpPc;

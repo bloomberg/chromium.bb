@@ -3249,7 +3249,8 @@ uses(Instruction inst) const {
 //    imm32: AMRExpandImm_C(imm12),
 //    pattern: cccc00110001nnnn0000iiiiiiiiiiii,
 //    rule: TST_immediate,
-//    sets_Z_if_clear_bits: Rn,
+//    sets_Z_if_bits_clear: true,
+//    true: true,
 //    uses: {Rn}}
 RegisterList TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0::
 defs(Instruction inst) const {
@@ -3266,25 +3267,6 @@ safety(Instruction inst) const {
   return MAY_BE_SAFE;
 }
 
-
-bool TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0::
-sets_Z_if_bits_clear(
-      Instruction inst, Register r, uint32_t mask) const {
-  // Check that base register matches, and instruction
-  // sets the conditions flags.
-  if (!(Register(((inst.Bits() & 0x000F0000) >> 16)).Equals(r) &&
-        defs(inst).Contains(Register::Conditions())))
-    return false;
-
-  // Verify that the rotated value matches the wanted mask.
-  // This rotation encoding (ARMExpandImm_C) is described in Section A5.2.4.
-  int rotation = inst.Bits(11, 8) * 2;
-  uint32_t value = inst.Bits(7, 0);
-  if (rotation != 0) {
-    value = (value >> rotation) | (value << (32 - rotation));
-  }
-  return (value & mask) == mask;
-}
 
 RegisterList TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0::
 uses(Instruction inst) const {

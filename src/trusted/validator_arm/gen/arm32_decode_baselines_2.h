@@ -1715,7 +1715,8 @@ class TEQ_register_shifted_register_cccc00010011nnnn0000ssss0tt1mmmm_case_0
 //    imm32: AMRExpandImm_C(imm12),
 //    pattern: cccc00110001nnnn0000iiiiiiiiiiii,
 //    rule: TST_immediate,
-//    sets_Z_if_clear_bits: Rn,
+//    sets_Z_if_bits_clear: true,
+//    true: true,
 //    uses: {Rn}}
 class TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0
      : public ClassDecoder {
@@ -1724,9 +1725,6 @@ class TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_0
      : ClassDecoder() {}
   virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
-  virtual bool sets_Z_if_bits_clear(Instruction i,
-                                    Register r,
-                                    uint32_t mask) const;
   virtual RegisterList uses(Instruction i) const;
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(

@@ -159,34 +159,25 @@ def _DefineBase(out, base, values):
 
 _METHODS_MAP['base'] = [_DeclareBase, _DefineBase]
 
-DECODER_CLEARS_BITS_HEADER="""
+DECODER_CLEAR_BITS_HEADER="""
   virtual bool clears_bits(Instruction i, uint32_t mask) const;"""
 
-DECODER_CLEARS_BITS_DEF="""
+DECODER_CLEAR_BITS_DEF="""
 bool %(decoder_name)s::
 clears_bits(Instruction inst, uint32_t mask) const {
-  // Verify that the rotated value matches the wanted mask.
-  // This rotation encoding (ARMExpandImm) is described
-  // in Section A5.2.4.
-  int rotation = inst.Bits(11, 8) * 2;
-  uint32_t value = inst.Bits(7, 0);
-  if (rotation != 0) {
-    value = (value >> rotation) | (value << (32 - rotation));
-  }
-  return (value & mask) == mask;
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // %(neutral_rep)s
+  return %(method_exp)s;
 }
 """
 
-def _DeclareClearsBits(out, values):
-  out.write(DECODER_CLEARS_BITS_HEADER % values)
+def _DeclareClearBits(out, values):
+  out.write(DECODER_CLEAR_BITS_HEADER % values)
 
-def _DefineClearsBits(out, clear_bits, values):
-  if clear_bits.to_bool() == 'true':
-    _DefineMethod(out, DECODER_CLEARS_BITS_DEF, values, clear_bits.to_bool())
-  else:
-    raise Exception("Method clears_bits can only be set to true.")
+def _DefineClearBits(out, clear_bits, values):
+  _DefineMethod(out, DECODER_CLEAR_BITS_DEF, values, clear_bits.to_bool())
 
-_METHODS_MAP['clears_bits'] = [_DeclareClearsBits, _DefineClearsBits]
+_METHODS_MAP['clear_bits'] = [_DeclareClearBits, _DefineClearBits]
 
 DECODER_DEFS_HEADER="""
   virtual RegisterList defs(Instruction inst) const;"""
@@ -396,20 +387,9 @@ DECODER_SETS_Z_IF_CLEAR_DEF="""
 bool %(decoder_name)s::
 sets_Z_if_bits_clear(
       Instruction inst, Register r, uint32_t mask) const {
-  // Check that base register matches, and instruction
-  // sets the conditions flags.
-  if (!(%(method_exp)s.Equals(r) &&
-        defs(inst).Contains(Register::Conditions())))
-    return false;
-
-  // Verify that the rotated value matches the wanted mask.
-  // This rotation encoding (ARMExpandImm_C) is described in Section A5.2.4.
-  int rotation = inst.Bits(11, 8) * 2;
-  uint32_t value = inst.Bits(7, 0);
-  if (rotation != 0) {
-    value = (value >> rotation) | (value << (32 - rotation));
-  }
-  return (value & mask) == mask;
+  UNREFERENCED_PARAMETER(inst);  // To silence compiler.
+  // %(neutral_rep)s
+  return %(method_exp)s;
 }
 """
 
@@ -417,7 +397,7 @@ def _DeclareSetsZIfClearBits(out, values):
   out.write(DECODER_SETS_Z_IF_CLEAR_HEADER)
 
 def _DefineSetsZIfClearBits(out, sets_z, values):
-  _DefineMethod(out, DECODER_SETS_Z_IF_CLEAR_DEF, values, sets_z.to_register())
+  _DefineMethod(out, DECODER_SETS_Z_IF_CLEAR_DEF, values, sets_z.to_bool())
 
 _METHODS_MAP['sets_Z_if_clear_bits'] = [
     _DeclareSetsZIfClearBits, _DefineSetsZIfClearBits]
