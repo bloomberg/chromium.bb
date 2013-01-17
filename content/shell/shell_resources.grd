@@ -10,8 +10,11 @@
   <translations />
   <release seq="1">
     <includes>
-      <include name="IDR_CONTENT_SHELL_DEVTOOLS_DISCOVERY_PAGE" file="shell_devtools_discovery_page.html" type="BINDATA" />
-      <include name="IDR_CONTENT_SHELL_WEBKIT_TEST_RUNNER_JS" file="webkit_test_runner.js" type="BINDATA" />
+      <include name="IDR_CONTENT_SHELL_DEVTOOLS_DISCOVERY_PAGE" file="resources/shell_devtools_discovery_page.html" type="BINDATA" />
+      <include name="IDR_CONTENT_SHELL_WEBKIT_TEST_RUNNER_JS" file="resources/webkit_test_runner.js" type="BINDATA" />
+      <include name="IDR_CONTENT_SHELL_MISSING_IMAGE_GIF" file="resources/missingImage.gif" type="BINDATA" />
+      <include name="IDR_CONTENT_SHELL_MISSING_IMAGE_PNG" file="resources/missingImage.png" type="BINDATA" />
+      <include name="IDR_CONTENT_SHELL_TEXT_AREA_RESIZE_CORNER_PNG" file="resources/textAreaResizeCorner.png" type="BINDATA" />
     </includes>
   </release>
 </grit>

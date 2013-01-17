@@ -7,6 +7,9 @@
 #include "base/command_line.h"
 #include "base/string_piece.h"
 #include "content/public/common/content_switches.h"
+#include "content/shell/shell_switches.h"
+#include "grit/shell_resources.h"
+#include "grit/webkit_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/user_agent/user_agent_util.h"
@@ -31,6 +34,21 @@ string16 ShellContentClient::GetLocalizedString(int message_id) const {
 base::StringPiece ShellContentClient::GetDataResource(
     int resource_id,
     ui::ScaleFactor scale_factor) const {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
+    switch (resource_id) {
+      case IDR_BROKENIMAGE:
+#if defined(OS_MACOSX)
+        resource_id = IDR_CONTENT_SHELL_MISSING_IMAGE_PNG;
+#else
+        resource_id = IDR_CONTENT_SHELL_MISSING_IMAGE_GIF;
+#endif
+        break;
+
+      case IDR_TEXTAREA_RESIZER:
+        resource_id = IDR_CONTENT_SHELL_TEXT_AREA_RESIZE_CORNER_PNG;
+        break;
+    }
+  }
   return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }
