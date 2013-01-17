@@ -8,7 +8,9 @@
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_view.h"
 #include "ui/message_center/message_view_factory.h"
@@ -30,23 +32,57 @@ namespace {
 const int kMessageBubbleBaseMinHeight = 80;
 const int kMarginBetweenItems = 10;
 const int kItemShadowHeight = 4;
+const int kFooterMargin = 16;
+const int kFooterHeight = 24;
 const SkColor kMessageCenterBackgroundColor = SkColorSetRGB(0xe5, 0xe5, 0xe5);
 const SkColor kBorderDarkColor = SkColorSetRGB(0xaa, 0xaa, 0xaa);
 const SkColor kMessageItemShadowColorBase = SkColorSetARGB(0.3 * 255, 0, 0, 0);
 const SkColor kTransparentColor = SkColorSetARGB(0, 0, 0, 0);
+const SkColor kFooterDelimiterColor = SkColorSetRGB(0xcc, 0xcc, 0xcc);
+const SkColor kFooterTextColor = SkColorSetRGB(0x80, 0x80, 0x80);
+const SkColor kButtonTextHighlightColor = SkColorSetRGB(0x32, 0x32, 0x32);
+const SkColor kButtonTextHoverColor = SkColorSetRGB(0x32, 0x32, 0x32);
+// The focus color and focus-border logic is copied from ash tray.
+// TODO(mukai): unite those implementations.
+const SkColor kFocusBorderColor = SkColorSetRGB(0x40, 0x80, 0xfa);
 
 bool UseNewDesign() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableNewMessageCenterBubble);
 }
 
+class WebNotificationButtonViewBase : public views::View {
+ public:
+  WebNotificationButtonViewBase(NotificationList::Delegate* list_delegate)
+      : list_delegate_(list_delegate),
+        close_all_button_(NULL) {}
+
+  void SetCloseAllVisible(bool visible) {
+    if (close_all_button_)
+      close_all_button_->SetVisible(visible);
+  }
+
+  void set_close_all_button(views::Button* button) {
+    close_all_button_ = button;
+  }
+
+ protected:
+  NotificationList::Delegate* list_delegate() { return list_delegate_; }
+  views::Button* close_all_button() { return close_all_button_; }
+
+ private:
+  NotificationList::Delegate* list_delegate_;
+  views::Button* close_all_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebNotificationButtonViewBase);
+};
+
 // The view for the buttons at the bottom of the web notification tray.
-class WebNotificationButtonView : public views::View,
+class WebNotificationButtonView : public WebNotificationButtonViewBase,
                                   public views::ButtonListener {
  public:
   explicit WebNotificationButtonView(NotificationList::Delegate* list_delegate)
-      : list_delegate_(list_delegate),
-        close_all_button_(NULL) {
+      : WebNotificationButtonViewBase(list_delegate) {
     set_background(views::Background::CreateBackgroundPainter(
         true,
         views::Painter::CreateVerticalGradient(
@@ -65,35 +101,126 @@ class WebNotificationButtonView : public views::View,
     columns->AddPaddingColumn(0, 4);
 
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    close_all_button_ = new views::TextButton(
+    views::TextButton* close_all_button = new views::TextButton(
         this, rb.GetLocalizedString(IDS_MESSAGE_CENTER_CLEAR_ALL));
-    close_all_button_->set_alignment(views::TextButton::ALIGN_CENTER);
-    close_all_button_->set_focusable(true);
-    close_all_button_->set_request_focus_on_press(false);
+    close_all_button->set_alignment(views::TextButton::ALIGN_CENTER);
+    close_all_button->set_focusable(true);
+    close_all_button->set_request_focus_on_press(false);
 
     layout->AddPaddingRow(0, 4);
     layout->StartRow(0, 0);
-    layout->AddView(close_all_button_);
+    layout->AddView(close_all_button);
+    set_close_all_button(close_all_button);
   }
 
   virtual ~WebNotificationButtonView() {}
 
-  void SetCloseAllVisible(bool visible) {
-    close_all_button_->SetVisible(visible);
-  }
-
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
-    if (sender == close_all_button_)
-      list_delegate_->SendRemoveAllNotifications();
+    if (sender == close_all_button())
+      list_delegate()->SendRemoveAllNotifications();
   }
 
  private:
-  NotificationList::Delegate* list_delegate_;
-  views::TextButton* close_all_button_;
-
   DISALLOW_COPY_AND_ASSIGN(WebNotificationButtonView);
+};
+
+class WebNotificationButton : public views::TextButton {
+ public:
+  WebNotificationButton(views::ButtonListener* listener, const string16& text)
+      : views::TextButton(listener, text) {
+    set_border(views::Border::CreateEmptyBorder(0, 16, 0, 16));
+    set_min_height(kFooterHeight);
+    SetEnabledColor(kFooterTextColor);
+    SetHighlightColor(kButtonTextHighlightColor);
+    SetHoverColor(kButtonTextHoverColor);
+  }
+
+ protected:
+  // views::View overrides:
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
+    // Returns an empty size when invisible, to trim its space in the parent's
+    // GridLayout.
+    if (!visible())
+      return gfx::Size();
+    return views::TextButton::GetPreferredSize();
+  }
+
+  virtual void OnPaintBorder(gfx::Canvas* canvas) OVERRIDE {
+    // Just paint the left border.
+    canvas->DrawLine(gfx::Point(0, 0), gfx::Point(0, height()),
+                     kFooterDelimiterColor);
+  }
+
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE {
+    if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
+      canvas->DrawRect(gfx::Rect(2, 1, width() - 4, height() - 3),
+                       kFocusBorderColor);
+    }
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(WebNotificationButton);
+};
+
+// TODO(mukai): remove the trailing '2' when the kEnableNewMessageCenterBubble
+// flag disappears.
+class WebNotificationButtonView2 : public WebNotificationButtonViewBase,
+                                   public views::ButtonListener {
+ public:
+  explicit WebNotificationButtonView2(NotificationList::Delegate* list_delegate)
+      : WebNotificationButtonViewBase(list_delegate) {
+    set_background(views::Background::CreateSolidBackground(
+        kMessageCenterBackgroundColor));
+
+    notification_label_ = new views::Label(l10n_util::GetStringUTF16(
+        IDS_MESSAGE_CENTER_FOOTER_TITLE));
+    notification_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    notification_label_->SetElideBehavior(views::Label::ELIDE_AT_END);
+    notification_label_->SetEnabledColor(kFooterTextColor);
+    AddChildView(notification_label_);
+    settings_button_ = new WebNotificationButton(
+        this, l10n_util::GetStringUTF16(
+            IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL));
+    AddChildView(settings_button_);
+    WebNotificationButton* close_all_button = new WebNotificationButton(
+        this, l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_CLEAR_ALL));
+    AddChildView(close_all_button);
+
+    views::GridLayout* layout = new views::GridLayout(this);
+    SetLayoutManager(layout);
+    layout->SetInsets(0, kFooterMargin, kMarginBetweenItems, 0);
+    views::ColumnSet* column = layout->AddColumnSet(0);
+    column->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                      1.0f, views::GridLayout::USE_PREF, 0, 0);
+    column->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
+                      0, views::GridLayout::FIXED,
+                      settings_button_->GetPreferredSize().width(), 0);
+    column->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
+                      0, views::GridLayout::USE_PREF, 0, 0);
+    layout->StartRow(0, 0);
+    layout->AddView(notification_label_);
+    layout->AddView(settings_button_);
+    layout->AddView(close_all_button);
+    set_close_all_button(close_all_button);
+  }
+
+ private:
+  // views::ButtonListener overrides:
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE {
+    if (sender == close_all_button())
+      list_delegate()->SendRemoveAllNotifications();
+    else if (sender == settings_button_)
+      list_delegate()->ShowNotificationSettings("");
+    else
+      NOTREACHED();
+  }
+
+  views::Label* notification_label_;
+  views::Button* settings_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebNotificationButtonView2);
 };
 
 // A custom scroll-view that has a specified size.
@@ -242,7 +369,10 @@ class MessageCenterContentsView : public views::View {
     scroller_->SetFillsBoundsOpaquely(false);
     scroller_->layer()->SetMasksToBounds(true);
 
-    button_view_ = new WebNotificationButtonView(list_delegate);
+    if (UseNewDesign())
+      button_view_ = new WebNotificationButtonView2(list_delegate);
+    else
+      button_view_ = new WebNotificationButtonView(list_delegate);
     AddChildView(button_view_);
   }
 
@@ -321,7 +451,7 @@ class MessageCenterContentsView : public views::View {
   NotificationList::Delegate* list_delegate_;
   FixedSizedScrollView* scroller_;
   ScrollContentView* scroll_content_;
-  WebNotificationButtonView* button_view_;
+  WebNotificationButtonViewBase* button_view_;
   MessageCenterBubble* bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterContentsView);

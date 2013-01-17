@@ -437,6 +437,12 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_SITE_DISABLE" desc="The menu entry for disabling notification from a site.">
         Disable notifications from <ph name="site">$1<ex>mail.google.com</ex></ph>
       </message>
+      <message name="IDS_MESSAGE_CENTER_FOOTER_TITLE" desc="The label in the footer of the message center">
+	Notifications
+      </message>
+      <message name="IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL" desc="The button label for visiting the appropriate settings page in the footer of the message center.">
+        Settings
+      </message>
       <message name="IDS_MESSAGE_CENTER_SETTINGS" desc="The menu entry or button for visiting the appropriate settings page.">
         Settings...
       </message>
