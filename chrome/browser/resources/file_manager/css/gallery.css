@@ -576,6 +576,7 @@ body {
     url('../images/gallery/2x/icon_autofix.png') 2x);
 }
 
+.gallery > .toolbar button.autofix:active,
 .gallery > .toolbar button.autofix[pressed] {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_autofix_selected.png') 1x,
@@ -588,6 +589,7 @@ body {
     url('../images/gallery/2x/icon_crop.png') 2x);
 }
 
+.gallery > .toolbar button.crop:active,
 .gallery > .toolbar button.crop[pressed] {
   background-image:  -webkit-image-set(
     url('../images/gallery/icon_crop_selected.png') 1x,
@@ -600,6 +602,7 @@ body {
     url('../images/gallery/2x/icon_brightness.png') 2x);
 }
 
+.gallery > .toolbar button.exposure:active,
 .gallery > .toolbar button.exposure[pressed] {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_brightness_selected.png') 1x,
@@ -612,6 +615,7 @@ body {
     url('../images/gallery/2x/icon_rotate.png') 2x);
 }
 
+.gallery > .toolbar button.rotate_right:active,
 .gallery > .toolbar button.rotate_right[pressed] {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_rotate_selected.png') 1x,
@@ -624,6 +628,7 @@ body {
     url('../images/gallery/2x/icon_rotate_left.png') 2x);
 }
 
+.gallery > .toolbar button.rotate_left:active,
 .gallery > .toolbar button.rotate_left[pressed] {
   background-image: -webkit-image-set(
     url('../images/gallery/icon_rotate_left_selected.png') 1x,
