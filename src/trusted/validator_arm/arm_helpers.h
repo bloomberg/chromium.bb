@@ -41,6 +41,28 @@ inline RegisterList Union(RegisterList r1, RegisterList r2) {
   return r1.Union(r2);
 }
 
+// Function returning the register index of a register.
+inline Register::Number RegIndex(Register r) {
+  return r.number();
+}
+
+// Function that expands an immediate value, corresponding
+// to ARMExpandImm, as described in section A5.2.4 of the manual.
+inline uint32_t ARMExpandImm(uint32_t imm12) {
+  int rotation = (imm12 & 0xF00) * 2;
+  uint32_t value = imm12 & 0x0FF;
+  if (rotation != 0) {
+    value = (value >> rotation) | (value << (32 - rotation));
+  }
+  return value;
+}
+
+// Funcdtion ARMExpandImm_C, less the carry, as described in
+// section A5.2.4 of the manual.
+inline uint32_t ARMExpandImm_C(uint32_t imm12) {
+  return ARMExpandImm(imm12);
+}
+
 }  // namespace nacl_arm_dec
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_V2_ARM_HELPERS_H

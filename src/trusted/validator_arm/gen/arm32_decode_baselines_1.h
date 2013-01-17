@@ -588,7 +588,9 @@ class BFI_cccc0111110mmmmmddddlllll001nnnn_case_0
 //    Rn: Rn(19:16),
 //    S: S(20),
 //    baseline: MaskedBinary2RegisterImmediateOp,
-//    clears_bits: true,
+//    clears_bits: (imm32 &&
+//         clears_mask())  ==
+//            clears_mask(),
 //    cond: cond(31:28),
 //    constraints: ,
 //    defs: {Rd, NZCV
@@ -603,13 +605,13 @@ class BFI_cccc0111110mmmmmddddlllll001nnnn_case_0
 //         S(20)=1) => DECODER_ERROR,
 //      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
 //    setflags: S(20)=1,
-//    true: true,
 //    uses: {Rn}}
 class BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_0
      : public ClassDecoder {
  public:
   BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_0()
      : ClassDecoder() {}
+  virtual bool clears_bits(Instruction i, uint32_t clears_mask) const;
   virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;
@@ -899,7 +901,7 @@ class CLZ_cccc000101101111dddd11110001mmmm_case_0
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
-//    imm32: AMRExpandImm_C(imm12),
+//    imm32: ARMExpandImm_C(imm12),
 //    pattern: cccc00110111nnnn0000iiiiiiiiiiii,
 //    rule: CMN_immediate,
 //    uses: {Rn}}
@@ -995,7 +997,7 @@ class CMN_register_shifted_register_cccc00010111nnnn0000ssss0tt1mmmm_case_0
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
-//    imm32: AMRExpandImm_C(imm12),
+//    imm32: ARMExpandImm_C(imm12),
 //    pattern: cccc00110101nnnn0000iiiiiiiiiiii,
 //    rule: CMP_immediate,
 //    uses: {Rn}}
