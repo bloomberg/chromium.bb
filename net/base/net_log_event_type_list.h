@@ -1573,7 +1573,6 @@ EVENT_TYPE(DOWNLOAD_URL_REQUEST)
 //                     |suggested_filename_|
 //                     the filename specified in the final URL>,
 //     "danger_type": <NOT,FILE,URL,CONTENT,MAYBE_CONTENT>,
-//     "safety_state": <SAFE, DANGEROUS, DANGEROUS_BUT_VALIDATED>,
 //     "start_offset": <Where to start writing (defaults to 0)>,
 //   }
 // The END event will occur when the download is interrupted, canceled or
@@ -1582,11 +1581,10 @@ EVENT_TYPE(DOWNLOAD_URL_REQUEST)
 // one of these events.
 EVENT_TYPE(DOWNLOAD_ITEM_ACTIVE)
 
-// This event is created when a download item has been checked by the
-// safe browsing system.
+// This event is created when a download item's danger type
+// has been modified.
 //   {
-//     "danger_type": <NOT,FILE,URL,CONTENT,MAYBE_CONTENT>,
-//     "safety_state": <SAFE, DANGEROUS, DANGEROUS_BUT_VALIDATED>,
+//     "danger_type": <NOT,FILE,URL,CONTENT,MAYBE_CONTENT,USER_VALIDATED>,
 //   }
 EVENT_TYPE(DOWNLOAD_ITEM_SAFETY_STATE_UPDATED)
 

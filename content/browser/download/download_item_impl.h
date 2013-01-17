@@ -128,7 +128,6 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual const std::string& GetHash() const OVERRIDE;
   virtual const std::string& GetHashState() const OVERRIDE;
   virtual bool GetFileExternallyRemoved() const OVERRIDE;
-  virtual SafetyState GetSafetyState() const OVERRIDE;
   virtual bool IsDangerous() const OVERRIDE;
   virtual DownloadDangerType GetDangerType() const OVERRIDE;
   virtual bool TimeRemaining(base::TimeDelta* remaining) const OVERRIDE;
@@ -449,10 +448,6 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // A flag for indicating if the downloaded file is externally removed.
   bool file_externally_removed_;
-
-  // Indicates if the download is considered potentially safe or dangerous
-  // (executable files are typically considered dangerous).
-  SafetyState safety_state_;
 
   // True if the download was auto-opened. We set this rather than using
   // an observer as it's frequently possible for the download to be auto opened

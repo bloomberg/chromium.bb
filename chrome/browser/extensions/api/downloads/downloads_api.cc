@@ -92,6 +92,7 @@ const char kDangerFile[] = "file";
 const char kDangerKey[] = "danger";
 const char kDangerSafe[] = "safe";
 const char kDangerUncommon[] = "uncommon";
+const char kDangerAccepted[] = "accepted";
 const char kDangerUrl[] = "url";
 const char kEndTimeKey[] = "endTime";
 const char kEndedAfterKey[] = "endedAfter";
@@ -128,6 +129,7 @@ const char* kDangerStrings[] = {
   kDangerContent,
   kDangerSafe,
   kDangerUncommon,
+  kDangerAccepted,
 };
 COMPILE_ASSERT(arraysize(kDangerStrings) == content::DOWNLOAD_DANGER_TYPE_MAX,
                download_danger_type_enum_changed);
@@ -211,8 +213,8 @@ scoped_ptr<base::DictionaryValue> DownloadItemToJSON(
   if (download_item->GetDangerType() !=
       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)
     json->SetBoolean(kDangerAcceptedKey,
-        download_item->GetSafetyState() ==
-        DownloadItem::DANGEROUS_BUT_VALIDATED);
+                     download_item->GetDangerType() ==
+                     content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED);
   json->SetString(kStateKey, StateString(download_item->GetState()));
   json->SetBoolean(kPausedKey, download_item->IsPaused());
   json->SetString(kMimeKey, download_item->GetMimeType());

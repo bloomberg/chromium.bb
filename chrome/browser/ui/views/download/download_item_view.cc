@@ -24,6 +24,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/views/download/download_shelf_context_menu_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
+#include "content/public/browser/download_danger_type.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/icu/public/common/unicode/uchar.h"
@@ -997,7 +998,8 @@ void DownloadItemView::SetState(State new_body_state, State new_drop_state) {
 }
 
 void DownloadItemView::ClearWarningDialog() {
-  DCHECK(download()->GetSafetyState() == DownloadItem::DANGEROUS_BUT_VALIDATED);
+  DCHECK(download()->GetDangerType() ==
+         content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED);
   DCHECK(mode_ == DANGEROUS_MODE || mode_ == MALICIOUS_MODE);
 
   mode_ = NORMAL_MODE;

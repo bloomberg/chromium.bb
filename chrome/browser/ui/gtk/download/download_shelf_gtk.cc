@@ -229,8 +229,7 @@ void DownloadShelfGtk::Closed() {
     bool is_transfer_done = download->IsComplete() ||
                             download->IsCancelled() ||
                             download->IsInterrupted();
-    if (is_transfer_done &&
-        download->GetSafetyState() != DownloadItem::DANGEROUS) {
+    if (is_transfer_done && !download->IsDangerous()) {
       RemoveDownloadItem(download_items_[i]);
     } else {
       // We set all remaining items as "opened", so that the shelf will auto-

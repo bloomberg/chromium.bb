@@ -22,25 +22,18 @@ static const char* download_type_names[] = {
   "HISTORY_IMPORT",
   "SAVE_PAGE_AS"
 };
-static const char* download_safety_names[] = {
-  "SAFE",
-  "DANGEROUS",
-  "DANGEROUS_BUT_VALIDATED"
-};
 static const char* download_danger_names[] = {
   "NOT_DANGEROUS",
   "DANGEROUS_FILE",
   "DANGEROUS_URL",
   "DANGEROUS_CONTENT",
   "MAYBE_DANGEROUS_CONTENT",
-  "UNCOMMON_CONTENT"
+  "UNCOMMON_CONTENT",
+  "USER_VALIDATED"
 };
 
 COMPILE_ASSERT(ARRAYSIZE_UNSAFE(download_type_names) == SRC_SAVE_PAGE_AS + 1,
                download_type_enum_has_changed);
-COMPILE_ASSERT(ARRAYSIZE_UNSAFE(download_safety_names) ==
-                  DownloadItem::DANGEROUS_BUT_VALIDATED + 1,
-               downloaditem_safety_state_enum_has_changed);
 COMPILE_ASSERT(ARRAYSIZE_UNSAFE(download_danger_names) ==
                   DOWNLOAD_DANGER_TYPE_MAX,
                download_danger_enum_has_changed);
@@ -61,8 +54,6 @@ base::Value* ItemActivatedNetLogCallback(
   dict->SetString("file_name", *file_name);
   dict->SetString("danger_type",
                   download_danger_names[download_item->GetDangerType()]);
-  dict->SetString("safety_state",
-                  download_safety_names[download_item->GetSafetyState()]);
   dict->SetString("start_offset",
                   base::Int64ToString(download_item->GetReceivedBytes()));
 
@@ -71,12 +62,10 @@ base::Value* ItemActivatedNetLogCallback(
 
 base::Value* ItemCheckedNetLogCallback(
     DownloadDangerType danger_type,
-    DownloadItem::SafetyState safety_state,
     net::NetLog::LogLevel log_level) {
   DictionaryValue* dict = new DictionaryValue();
 
   dict->SetString("danger_type", download_danger_names[danger_type]);
-  dict->SetString("safety_state", download_safety_names[safety_state]);
 
   return dict;
 }

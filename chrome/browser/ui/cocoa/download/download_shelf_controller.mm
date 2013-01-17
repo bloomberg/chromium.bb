@@ -363,8 +363,7 @@ const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
     bool isTransferDone = download->IsComplete() ||
                           download->IsCancelled() ||
                           download->IsInterrupted();
-    if (isTransferDone &&
-        download->GetSafetyState() != DownloadItem::DANGEROUS) {
+    if (isTransferDone && !download->IsDangerous()) {
       [self remove:itemController];
     } else {
       // Treat the item as opened when we close. This way if we get shown again

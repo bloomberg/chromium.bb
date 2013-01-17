@@ -429,8 +429,7 @@ void DownloadShelfView::Closed() {
     bool is_transfer_done = download->IsComplete() ||
                             download->IsCancelled() ||
                             download->IsInterrupted();
-    if (is_transfer_done &&
-        download->GetSafetyState() != DownloadItem::DANGEROUS) {
+    if (is_transfer_done && !download->IsDangerous()) {
       RemoveDownloadView(download_views_[i]);
     } else {
       // Treat the item as opened when we close. This way if we get shown again

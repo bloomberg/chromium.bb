@@ -92,7 +92,6 @@ enum DownloadSource {
   DOWNLOAD_SOURCE_LAST_ENTRY
 };
 
-
 // Increment one of the above counts.
 void RecordDownloadCount(DownloadCountTypes type);
 

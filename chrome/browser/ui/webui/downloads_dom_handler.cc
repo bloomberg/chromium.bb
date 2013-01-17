@@ -141,7 +141,7 @@ DictionaryValue* CreateDownloadItemValue(
                          download_item->GetFileExternallyRemoved());
 
   if (download_item->IsInProgress()) {
-    if (download_item->GetSafetyState() == content::DownloadItem::DANGEROUS) {
+    if (download_item->IsDangerous()) {
       file_value->SetString("state", "DANGEROUS");
       // These are the only danger states that the UI is equipped to handle.
       DCHECK(download_item->GetDangerType() ==
@@ -183,10 +183,8 @@ DictionaryValue* CreateDownloadItemValue(
   } else if (download_item->IsCancelled()) {
     file_value->SetString("state", "CANCELLED");
   } else if (download_item->IsComplete()) {
-    if (download_item->GetSafetyState() == content::DownloadItem::DANGEROUS)
-      file_value->SetString("state", "DANGEROUS");
-    else
-      file_value->SetString("state", "COMPLETE");
+    DCHECK(!download_item->IsDangerous());
+    file_value->SetString("state", "COMPLETE");
   } else {
     NOTREACHED() << "state undefined";
   }

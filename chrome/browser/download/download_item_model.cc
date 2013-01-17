@@ -315,6 +315,7 @@ string16 DownloadItemModel::GetWarningText(const gfx::Font& font,
 
     case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
+    case content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
     case content::DOWNLOAD_DANGER_TYPE_MAX:
       NOTREACHED();
   }
@@ -350,7 +351,7 @@ int DownloadItemModel::PercentComplete() const {
 }
 
 bool DownloadItemModel::IsDangerous() const {
-  return download_->GetSafetyState() == DownloadItem::DANGEROUS;
+  return download_->IsDangerous();
 }
 
 bool DownloadItemModel::IsMalicious() const {
@@ -364,6 +365,7 @@ bool DownloadItemModel::IsMalicious() const {
 
     case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
+    case content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
     case content::DOWNLOAD_DANGER_TYPE_MAX:
       // We shouldn't get any of these due to the IsDangerous() test above.
       NOTREACHED();

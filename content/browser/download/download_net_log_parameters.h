@@ -32,7 +32,6 @@ base::Value* ItemActivatedNetLogCallback(
 // Returns NetLog parameters when a DownloadItem is checked for danger.
 base::Value* ItemCheckedNetLogCallback(
     DownloadDangerType danger_type,
-    DownloadItem::SafetyState safety_state,
     net::NetLog::LogLevel log_level);
 
 // Returns NetLog parameters when a DownloadItem is renamed.

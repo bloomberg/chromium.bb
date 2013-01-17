@@ -404,12 +404,12 @@ TEST_F(DownloadItemModelTest, ShouldRemoveFromShelfWhenComplete) {
         .WillRepeatedly(Return(test_case.state == DownloadItem::IN_PROGRESS));
     EXPECT_CALL(item(), IsInterrupted())
         .WillRepeatedly(Return(test_case.state == DownloadItem::INTERRUPTED));
-    EXPECT_CALL(item(), GetSafetyState())
-        .WillRepeatedly(Return(test_case.is_dangerous ? DownloadItem::DANGEROUS
-                                                      : DownloadItem::SAFE));
+    EXPECT_CALL(item(), IsDangerous())
+        .WillRepeatedly(Return(test_case.is_dangerous));
 
     EXPECT_EQ(test_case.expected_result,
-              model().ShouldRemoveFromShelfWhenComplete());
+              model().ShouldRemoveFromShelfWhenComplete())
+        << "Test case: " << i;
     Mock::VerifyAndClearExpectations(&item());
     Mock::VerifyAndClearExpectations(&model());
   }

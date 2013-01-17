@@ -158,7 +158,7 @@ void DownloadTestObserver::OnDownloadDestroyed(DownloadItem* download) {
 
 void DownloadTestObserver::OnDownloadUpdated(DownloadItem* download) {
   // Real UI code gets the user's response after returning from the observer.
-  if (download->GetSafetyState() == DownloadItem::DANGEROUS &&
+  if (download->IsDangerous() &&
       !ContainsKey(dangerous_downloads_seen_, download->GetId())) {
     dangerous_downloads_seen_.insert(download->GetId());
 

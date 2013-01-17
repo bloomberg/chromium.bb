@@ -317,20 +317,20 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_SortBytesReceived) {
 
 TEST_F(DownloadQueryTest, DownloadQueryTest_FilterDangerAccepted) {
   CreateMocks(2);
-  EXPECT_CALL(mock(0), GetSafetyState()).WillRepeatedly(Return(
-      DownloadItem::DANGEROUS_BUT_VALIDATED));
-  EXPECT_CALL(mock(1), GetSafetyState()).WillRepeatedly(Return(
-      DownloadItem::DANGEROUS));
+  EXPECT_CALL(mock(0), GetDangerType()).WillRepeatedly(Return(
+      content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED));
+  EXPECT_CALL(mock(1), GetDangerType()).WillRepeatedly(Return(
+      content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE));
   AddFilter(DownloadQuery::FILTER_DANGER_ACCEPTED, true);
   ExpectStandardFilterResults();
 }
 
 TEST_F(DownloadQueryTest, DownloadQueryTest_SortDangerAccepted) {
   CreateMocks(2);
-  EXPECT_CALL(mock(0), GetSafetyState()).WillRepeatedly(Return(
-      DownloadItem::DANGEROUS_BUT_VALIDATED));
-  EXPECT_CALL(mock(1), GetSafetyState()).WillRepeatedly(Return(
-      DownloadItem::DANGEROUS));
+  EXPECT_CALL(mock(0), GetDangerType()).WillRepeatedly(Return(
+      content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED));
+  EXPECT_CALL(mock(1), GetDangerType()).WillRepeatedly(Return(
+      content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE));
   query()->AddSorter(DownloadQuery::SORT_DANGER_ACCEPTED,
                      DownloadQuery::ASCENDING);
   ExpectSortInverted();

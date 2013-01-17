@@ -46,6 +46,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/common/content_switches.h"
@@ -62,20 +63,6 @@ void DeleteDownloadedFile(const FilePath& path) {
   // Make sure we only delete files.
   if (!file_util::DirectoryExists(path))
     file_util::Delete(path, false);
-}
-
-const char* DebugSafetyStateString(DownloadItem::SafetyState state) {
-  switch (state) {
-    case DownloadItem::SAFE:
-      return "SAFE";
-    case DownloadItem::DANGEROUS:
-      return "DANGEROUS";
-    case DownloadItem::DANGEROUS_BUT_VALIDATED:
-      return "DANGEROUS_BUT_VALIDATED";
-    default:
-      NOTREACHED() << "Unknown safety state " << state;
-      return "unknown";
-  };
 }
 
 // Classes to null out request handle calls (for SavePage DownloadItems, which
@@ -158,7 +145,6 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       auto_resume_count_(0),
       open_when_complete_(false),
       file_externally_removed_(false),
-      safety_state_(SAFE),
       auto_opened_(false),
       is_temporary_(false),
       all_data_saved_(false),
@@ -208,7 +194,6 @@ DownloadItemImpl::DownloadItemImpl(
       auto_resume_count_(0),
       open_when_complete_(false),
       file_externally_removed_(false),
-      safety_state_(SAFE),
       auto_opened_(false),
       is_temporary_(!info.save_info->file_path.empty()),
       all_data_saved_(false),
@@ -262,7 +247,6 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       auto_resume_count_(0),
       open_when_complete_(false),
       file_externally_removed_(false),
-      safety_state_(SAFE),
       auto_opened_(false),
       is_temporary_(false),
       all_data_saved_(false),
@@ -308,7 +292,7 @@ void DownloadItemImpl::UpdateObservers() {
 void DownloadItemImpl::DangerousDownloadValidated() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(IN_PROGRESS, GetState());
-  DCHECK_EQ(DANGEROUS, GetSafetyState());
+  DCHECK(IsDangerous());
 
   VLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
 
@@ -319,12 +303,11 @@ void DownloadItemImpl::DangerousDownloadValidated() {
                             GetDangerType(),
                             DOWNLOAD_DANGER_TYPE_MAX);
 
-  safety_state_ = DANGEROUS_BUT_VALIDATED;
+  danger_type_ = DOWNLOAD_DANGER_TYPE_USER_VALIDATED;
 
   bound_net_log_.AddEvent(
       net::NetLog::TYPE_DOWNLOAD_ITEM_SAFETY_STATE_UPDATED,
-      base::Bind(&ItemCheckedNetLogCallback,
-                 GetDangerType(), GetSafetyState()));
+      base::Bind(&ItemCheckedNetLogCallback, GetDangerType()));
 
   UpdateObservers();
 
@@ -590,9 +573,11 @@ const FilePath& DownloadItemImpl::GetForcedFilePath() const {
   return forced_file_path_;
 }
 
+// TODO(asanka): Get rid of GetUserVerifiedFilePath().  http://crbug.com/134237.
 FilePath DownloadItemImpl::GetUserVerifiedFilePath() const {
-  return (safety_state_ == DownloadItem::SAFE) ?
-      GetTargetFilePath() : GetFullPath();
+  return (IsDangerous() ||
+          danger_type_ == DOWNLOAD_DANGER_TYPE_USER_VALIDATED) ?
+      GetFullPath() : GetTargetFilePath();
 }
 
 FilePath DownloadItemImpl::GetFileNameToReportUser() const {
@@ -615,11 +600,6 @@ const std::string& DownloadItemImpl::GetHashState() const {
 
 bool DownloadItemImpl::GetFileExternallyRemoved() const {
   return file_externally_removed_;
-}
-
-// TODO(asanka): Unify GetSafetyState() and IsDangerous().
-DownloadItem::SafetyState DownloadItemImpl::GetSafetyState() const {
-  return safety_state_;
 }
 
 bool DownloadItemImpl::IsDangerous() const {
@@ -786,7 +766,7 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
         " paused = %c"
         " resume_mode = %s"
         " auto_resume_count = %d"
-        " safety = %s"
+        " danger = %d"
         " all_data_saved = %c"
         " last_modified = '%s'"
         " etag = '%s'"
@@ -800,7 +780,7 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
         IsPaused() ? 'T' : 'F',
         DebugResumeModeString(GetResumeMode()),
         auto_resume_count_,
-        DebugSafetyStateString(GetSafetyState()),
+        GetDangerType(),
         AllDataSaved() ? 'T' : 'F',
         GetLastModifiedTime().c_str(),
         GetETag().c_str(),
@@ -1263,7 +1243,7 @@ void DownloadItemImpl::MaybeCompleteDownload() {
   // Confirm we're in the proper set of states to be here;
   // have all data, have a history handle, (validated or safe).
   DCHECK_EQ(IN_PROGRESS_INTERNAL, state_);
-  DCHECK_NE(DownloadItem::DANGEROUS, GetSafetyState());
+  DCHECK(!IsDangerous());
   DCHECK(all_data_saved_);
 
   OnDownloadCompleting();
@@ -1280,7 +1260,7 @@ void DownloadItemImpl::OnDownloadCompleting() {
   VLOG(20) << __FUNCTION__ << "()"
            << " " << DebugString(true);
   DCHECK(!GetTargetFilePath().empty());
-  DCHECK_NE(DANGEROUS, GetSafetyState());
+  DCHECK(!IsDangerous());
 
   // TODO(rdsmith/benjhayden): Remove as part of SavePackage integration.
   if (is_save_package_download_) {
@@ -1456,7 +1436,7 @@ bool DownloadItemImpl::IsDownloadReadyForCompletion(
 
   // If the download is dangerous, but not yet validated, it's not ready for
   // completion.
-  if (GetSafetyState() == DownloadItem::DANGEROUS)
+  if (IsDangerous())
     return false;
 
   // If the download isn't active (e.g. has been cancelled) it's not
@@ -1553,18 +1533,12 @@ void DownloadItemImpl::TransitionTo(DownloadInternalState new_state) {
 }
 
 void DownloadItemImpl::SetDangerType(DownloadDangerType danger_type) {
-  danger_type_ = danger_type;
-  // Notify observers if the safety state has changed as a result of the new
-  // danger type.
-  SafetyState updated_value = IsDangerous() ?
-      DownloadItem::DANGEROUS : DownloadItem::SAFE;
-  if (updated_value != safety_state_) {
-    safety_state_ = updated_value;
+  if (danger_type != danger_type_) {
     bound_net_log_.AddEvent(
         net::NetLog::TYPE_DOWNLOAD_ITEM_SAFETY_STATE_UPDATED,
-        base::Bind(&ItemCheckedNetLogCallback, GetDangerType(),
-                   GetSafetyState()));
+        base::Bind(&ItemCheckedNetLogCallback, danger_type));
   }
+  danger_type_ = danger_type;
 }
 
 void DownloadItemImpl::SetFullPath(const FilePath& new_path) {

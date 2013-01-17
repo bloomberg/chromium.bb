@@ -316,8 +316,7 @@ void DownloadManagerImpl::Shutdown() {
     // associative containers such as sets.
     it++;
 
-    if (download->GetSafetyState() == DownloadItem::DANGEROUS &&
-        download->IsPartialDownload()) {
+    if (download->IsDangerous() && download->IsPartialDownload()) {
       // The user hasn't accepted it, so we need to remove it
       // from the disk.  This may or may not result in it being
       // removed from the DownloadManager queues and deleted

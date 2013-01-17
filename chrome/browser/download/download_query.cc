@@ -106,7 +106,8 @@ static std::string GetEndTime(const DownloadItem& item) {
 }
 
 static bool GetDangerAccepted(const DownloadItem& item) {
-  return (item.GetSafetyState() == DownloadItem::DANGEROUS_BUT_VALIDATED);
+  return (item.GetDangerType() ==
+          content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED);
 }
 
 static bool GetExists(const DownloadItem& item) {

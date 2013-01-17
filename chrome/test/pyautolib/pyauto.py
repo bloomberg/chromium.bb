@@ -2399,8 +2399,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         u'is_temporary': False,
         u'open_when_complete': False,
         u'referrer_url': u'',
-        u'safety_state': u'SAFE',
         u'state': u'COMPLETE',
+        u'danger_type': u'DANGEROUS_FILE',
         u'url':  u'file://url/to/file.txt'
       }
     """

@@ -53,8 +53,6 @@ DownloadShelfTest::DownloadShelfTest()
   ON_CALL(*download_item_, GetAutoOpened()).WillByDefault(Return(false));
   ON_CALL(*download_item_, GetMimeType()).WillByDefault(Return("text/plain"));
   ON_CALL(*download_item_, GetOpenWhenComplete()).WillByDefault(Return(false));
-  ON_CALL(*download_item_, GetSafetyState())
-      .WillByDefault(Return(DownloadItem::SAFE));
   ON_CALL(*download_item_, GetTargetDisposition())
       .WillByDefault(Return(DownloadItem::TARGET_DISPOSITION_OVERWRITE));
   ON_CALL(*download_item_, GetURL())

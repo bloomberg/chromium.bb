@@ -67,12 +67,6 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
     MAX_DOWNLOAD_STATE
   };
 
-  enum SafetyState {
-    SAFE = 0,
-    DANGEROUS,
-    DANGEROUS_BUT_VALIDATED  // Dangerous but the user confirmed the download.
-  };
-
   // Reason for deleting the download.  Passed to Delete().
   enum DeleteReason {
     DELETE_DUE_TO_BROWSER_SHUTDOWN = 0,
@@ -242,13 +236,9 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // external action.
   virtual bool GetFileExternallyRemoved() const = 0;
 
-  // The safety state of the download.  |GetSafetyState() == DANGEROUS|
-  // may represent a potentially dangerous download, and may occur even
-  // if |IsDangerous() == false|.
-  virtual SafetyState GetSafetyState() const = 0;
-
   // True if the file that will be written by the download is dangerous
-  // and we will require user intervention to complete the download.
+  // and we will require a call to DangerousDownloadValidated() to complete.
+  // False if the download is safe or that function has been called.
   virtual bool IsDangerous() const = 0;
 
   // Why |safety_state_| is not SAFE.

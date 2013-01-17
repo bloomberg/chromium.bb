@@ -629,7 +629,9 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
           << " verdict = " << result;
   // We only mark the content as being dangerous if the download's safety state
   // has not been set to DANGEROUS yet.  We don't want to show two warnings.
-  if (item->GetSafetyState() == DownloadItem::SAFE) {
+  if (item->GetDangerType() == content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS ||
+      item->GetDangerType() ==
+      content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT) {
     switch (result) {
       case DownloadProtectionService::SAFE:
         // Do nothing.

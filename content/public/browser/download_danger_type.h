@@ -32,6 +32,10 @@ enum DownloadDangerType {
   // didn't have enough data to determine whether it was malicious.
   DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT,
 
+  // The download was evaluated to be one of the above types of danger,
+  // but the user told us to go ahead anyway.
+  DOWNLOAD_DANGER_TYPE_USER_VALIDATED,
+
   // Memory space for histograms is determined by the max.
   // ALWAYS ADD NEW VALUES BEFORE THIS ONE.
   DOWNLOAD_DANGER_TYPE_MAX

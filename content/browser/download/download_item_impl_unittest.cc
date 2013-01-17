@@ -1005,7 +1005,7 @@ TEST_F(DownloadItemTest, CompleteDelegate_SetDanger) {
   EXPECT_TRUE(item->IsDangerous());
 
   item->DangerousDownloadValidated();
-  EXPECT_EQ(DownloadItem::DANGEROUS_BUT_VALIDATED, item->GetSafetyState());
+  EXPECT_EQ(DOWNLOAD_DANGER_TYPE_USER_VALIDATED, item->GetDangerType());
   RunAllPendingInMessageLoops();
   EXPECT_EQ(DownloadItem::COMPLETE, item->GetState());
 }

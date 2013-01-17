@@ -146,7 +146,6 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_CONST_METHOD0(GetOpenWhenComplete, bool());
   MOCK_METHOD1(SetOpenWhenComplete, void(bool));
   MOCK_CONST_METHOD0(GetFileExternallyRemoved, bool());
-  MOCK_CONST_METHOD0(GetSafetyState, SafetyState());
   MOCK_CONST_METHOD0(GetDangerType, DownloadDangerType());
   MOCK_CONST_METHOD0(IsDangerous, bool());
   MOCK_METHOD0(GetAutoOpened, bool());
@@ -464,8 +463,8 @@ class DownloadManagerTest : public testing::Test {
   virtual void TearDown() {
     while (MockDownloadItemImpl*
            item = mock_download_item_factory_->PopItem()) {
-      EXPECT_CALL(*item, GetSafetyState())
-          .WillOnce(Return(DownloadItem::SAFE));
+      EXPECT_CALL(*item, IsDangerous())
+          .WillOnce(Return(false));
       EXPECT_CALL(*item, IsPartialDownload())
           .WillOnce(Return(false));
     }
