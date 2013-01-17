@@ -203,7 +203,7 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
   def testJSONDumpLoadable(self):
     """Make sure config export functionality works."""
     cwd = os.path.dirname(os.path.abspath(__file__))
-    output = subprocess.Popen(['./cbuildbot_config.py', '--dump'],
+    output = subprocess.Popen(['./cbuildbot_config', '--dump'],
                               stdout=subprocess.PIPE, cwd=cwd).communicate()[0]
     configs = json.loads(output)
     self.assertFalse(not configs)
@@ -212,7 +212,7 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
   def testJSONBuildbotDumpHasOrder(self):
     """Make sure config export functionality works."""
     cwd = os.path.dirname(os.path.abspath(__file__))
-    output = subprocess.Popen(['./cbuildbot_config.py', '--dump',
+    output = subprocess.Popen(['./cbuildbot_config', '--dump',
                                '--for-buildbot'],
                               stdout=subprocess.PIPE, cwd=cwd).communicate()[0]
     configs = json.loads(output)
