@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
-#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
@@ -18,7 +17,6 @@ class ExtensionViewGtk;
 class MenuGtk;
 
 class ExtensionInfoBarGtk : public InfoBarGtk,
-                            public ImageLoadingTracker::Observer,
                             public MenuGtk::Delegate {
  public:
   ExtensionInfoBarGtk(InfoBarService* owner,
@@ -34,17 +32,14 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
   virtual void GetBottomColor(InfoBarDelegate::Type type,
                               double* r, double* g, double* b) OVERRIDE;
 
-  // Overridden from ImageLoadingTracker::Observer:
-  virtual void OnImageLoaded(const gfx::Image& image,
-                             const std::string& extension_id,
-                             int index) OVERRIDE;
-
   // Overridden from MenuGtk::Delegate:
   virtual void StoppedShowing() OVERRIDE;
 
  private:
   // Build the widgets of the Infobar.
   void BuildWidgets();
+
+  void OnImageLoaded(const gfx::Image& image);
 
   // Looks at the window the infobar is in and gets the browser. Can return
   // NULL if we aren't attached.
@@ -63,8 +58,6 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
   CHROMEGTK_CALLBACK_1(ExtensionInfoBarGtk, gboolean, OnExpose,
                        GdkEventExpose*);
 
-  ImageLoadingTracker tracker_;
-
   ExtensionInfoBarDelegate* delegate_;
 
   ExtensionViewGtk* view_;
@@ -80,6 +73,8 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
   // to reattach the view since the alignment_ will have the |hbox_| packing
   // child properties. Reparenting becomes easier too.
   GtkWidget* alignment_;
+
+  base::WeakPtrFactory<ExtensionInfoBarGtk> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInfoBarGtk);
 };

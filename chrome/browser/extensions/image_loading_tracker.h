@@ -132,7 +132,6 @@ class ImageLoadingTracker : public content::NotificationObserver {
   // should be removed.
   friend class CreateChromeApplicationShortcutView;
   friend class ExtensionInfoBar;
-  friend class ExtensionInfoBarGtk;
   friend class Panel;
   friend class ShellWindow;
   friend class extensions::IconImage;
