@@ -42,6 +42,14 @@ class GDataWapiUrlGenerator {
 
   // Generates a URL for getting the resource list feed.
   //
+  // The parameters other than |search_string| are mutually exclusive.
+  // If |override_url| is non-empty, other parameters are ignored. Or if
+  // |override_url| is empty and |shared_with_me| is true, others are not used.
+  // Besides, |search_string| cannot be set together with |start_changestamp|.
+  //
+  // TODO(kinaba,haruki): http://crbug.com/160932
+  // This is really hard to follow. We should split to multiple functions.
+  //
   // override_url:
   //   By default, a hard-coded base URL of the WAPI server is used.
   //   The base URL can be overridden by |override_url|.

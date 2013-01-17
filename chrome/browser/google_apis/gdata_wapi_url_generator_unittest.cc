@@ -143,6 +143,21 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
                                              false, // shared_with_me,
                                              "XXX"  // directory resource ID
                                              ).spec());
+
+  // With a non-empty override_url provided, the base URL is changed, but
+  // the default parameters remain. Note that start-index should not be
+  // overridden.
+  EXPECT_EQ(
+      "http://example.com/"
+      "?start-index=123&v=3&alt=json&showfolders=true&max-results=500"
+      "&include-installed-apps=true",
+      url_generator_.GenerateResourceListUrl(
+          GURL("http://example.com/?start-index=123"),  // override_url,
+          100,  // start_changestamp,
+          "",  // search_string,
+          false, // shared_with_me,
+          "XXX"  // directory resource ID
+          ).spec());
 }
 
 TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceEntryUrl) {

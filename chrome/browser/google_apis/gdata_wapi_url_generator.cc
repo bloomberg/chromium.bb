@@ -123,6 +123,10 @@ GURL GDataWapiUrlGenerator::GenerateResourceListUrl(
                                          kMaxDocumentsPerSearchFeed;
   GURL url;
   if (!override_url.is_empty()) {
+    // |override_url| specifies the URL of the continuation feed when the feed
+    // is broken up to multiple chunks. In this case we must not add the
+    // |start_changestamp| that provides the original start point.
+    start_changestamp = 0;
     url = override_url;
   } else if (shared_with_me) {
     url = base_url_.Resolve(kGetResourceListURLForSharedWithMe);
