@@ -21,11 +21,6 @@ class FileSystemURL;
 // FileSystemFileUtilProxy.  The method should be called on FILE thread.
 class WEBKIT_STORAGE_EXPORT_PRIVATE FileUtilHelper {
  public:
-  static bool PathExists(
-      FileSystemOperationContext* context,
-      FileSystemFileUtil* file_util,
-      const FileSystemURL& url);
-
   static bool DirectoryExists(
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,

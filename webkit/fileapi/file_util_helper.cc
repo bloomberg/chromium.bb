@@ -30,6 +30,13 @@ class ScopedFileDeleter {
   FilePath path_;
 };
 
+bool IsInRoot(const FileSystemURL& url) {
+  // If path is in the root, path.DirName() will be ".",
+  // since we use paths with no leading '/'.
+  FilePath parent = url.path().DirName();
+  return parent.empty() || parent == FilePath(FILE_PATH_LITERAL("."));
+}
+
 // A helper class for cross-FileUtil Copy/Move operations.
 class CrossFileUtilHelper {
  public:
@@ -52,9 +59,6 @@ class CrossFileUtilHelper {
   // Performs common pre-operation check and preparation.
   // This may delete the destination directory if it's empty.
   base::PlatformFileError PerformErrorCheckAndPreparation();
-
-  // This assumes that the root exists.
-  bool ParentExists(const FileSystemURL& url, FileSystemFileUtil* file_util);
 
   // Performs recursive copy or move by calling CopyOrMoveFile for individual
   // files. Operations for recursive traversal are encapsulated in this method.
@@ -96,6 +100,8 @@ CrossFileUtilHelper::CrossFileUtilHelper(
       src_root_url_(src_url),
       dest_root_url_(dest_url),
       operation_(operation) {
+  DCHECK(src_util_);
+  DCHECK(dest_util_);
   same_file_system_ =
       src_root_url_.origin() == dest_root_url_.origin() &&
       src_root_url_.type() == dest_root_url_.type();
@@ -113,12 +119,33 @@ base::PlatformFileError CrossFileUtilHelper::DoWork() {
 }
 
 PlatformFileError CrossFileUtilHelper::PerformErrorCheckAndPreparation() {
-  // Exits earlier if the source path does not exist.
-  if (!FileUtilHelper::PathExists(context_, src_util_, src_root_url_))
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  FilePath platform_path;
+  base::PlatformFileInfo src_root_info;
+  base::PlatformFileInfo dest_root_info;
+
+  PlatformFileError error = src_util_->GetFileInfo(
+      context_, src_root_url_, &src_root_info, &platform_path);
+
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+
+  error = dest_util_->GetFileInfo(
+      context_, dest_root_url_, &dest_root_info, &platform_path);
+  bool dest_root_exists = (error == base::PLATFORM_FILE_OK);
+  bool dest_parent_exists = dest_root_exists || IsInRoot(dest_root_url_);
+
+  if (!dest_parent_exists) {
+    base::PlatformFileInfo file_info;
+    FileSystemURL parent_url = dest_root_url_.WithPath(
+        dest_root_url_.path().DirName());
+    error = dest_util_->GetFileInfo(
+        context_, parent_url, &file_info, &platform_path);
+    dest_parent_exists = (error == base::PLATFORM_FILE_OK &&
+                          file_info.is_directory);
+  }
 
   // The parent of the |dest_root_url_| does not exist.
-  if (!ParentExists(dest_root_url_, dest_util_))
+  if (!dest_parent_exists)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
   // It is an error to try to copy/move an entry into its child.
@@ -126,15 +153,13 @@ PlatformFileError CrossFileUtilHelper::PerformErrorCheckAndPreparation() {
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
 
   // Now it is ok to return if the |dest_root_url_| does not exist.
-  if (!FileUtilHelper::PathExists(context_, dest_util_, dest_root_url_))
+  if (!dest_root_exists)
     return base::PLATFORM_FILE_OK;
 
   // |src_root_url_| exists and is a directory.
   // |dest_root_url_| exists and is a file.
-  bool src_is_directory =
-      FileUtilHelper::DirectoryExists(context_, src_util_, src_root_url_);
-  bool dest_is_directory =
-      FileUtilHelper::DirectoryExists(context_, dest_util_, dest_root_url_);
+  bool src_is_directory = src_root_info.is_directory;
+  bool dest_is_directory = dest_root_info.is_directory;
 
   // Either one of |src_root_url_| or |dest_root_url_| is directory,
   // while the other is not.
@@ -159,17 +184,6 @@ PlatformFileError CrossFileUtilHelper::PerformErrorCheckAndPreparation() {
     }
   }
   return base::PLATFORM_FILE_OK;
-}
-
-bool CrossFileUtilHelper::ParentExists(
-    const FileSystemURL& url, FileSystemFileUtil* file_util) {
-  // If path is in the root, path.DirName() will be ".",
-  // since we use paths with no leading '/'.
-  FilePath parent = url.path().DirName();
-  if (parent == FilePath(FILE_PATH_LITERAL(".")))
-    return true;
-  return FileUtilHelper::DirectoryExists(context_, file_util,
-                                         url.WithPath(parent));
 }
 
 PlatformFileError CrossFileUtilHelper::CopyOrMoveDirectory(
@@ -269,6 +283,9 @@ PlatformFileError CrossFileUtilHelper::CopyOrMoveFile(
   if (error != base::PLATFORM_FILE_OK)
     return error;
 
+  // For now we don't support non-snapshot file case.
+  DCHECK(!platform_file_path.empty());
+
   scoped_ptr<ScopedFileDeleter> file_deleter;
   if (snapshot_policy == FileSystemFileUtil::kSnapshotFileTemporary)
     file_deleter.reset(new ScopedFileDeleter(platform_file_path));
@@ -284,17 +301,6 @@ PlatformFileError CrossFileUtilHelper::CopyOrMoveFile(
 }
 
 }  // anonymous namespace
-
-// static
-bool FileUtilHelper::PathExists(FileSystemOperationContext* context,
-                                FileSystemFileUtil* file_util,
-                                const FileSystemURL& url) {
-  base::PlatformFileInfo file_info;
-  FilePath platform_path;
-  PlatformFileError error = file_util->GetFileInfo(
-      context, url, &file_info, &platform_path);
-  return error == base::PLATFORM_FILE_OK;
-}
 
 // static
 bool FileUtilHelper::DirectoryExists(FileSystemOperationContext* context,

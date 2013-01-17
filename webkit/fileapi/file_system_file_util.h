@@ -70,6 +70,8 @@ class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
   // If PLATFORM_FILE_CREATE is set in |file_flags| it always tries to create
   // a new file at the given |url| and calls back with
   // PLATFORM_FILE_ERROR_FILE_EXISTS if the |url| already exists.
+  //
+  // This is used only for Pepper/NaCL File API.
   virtual base::PlatformFileError CreateOrOpen(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
@@ -78,6 +80,8 @@ class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
       bool* created) = 0;
 
   // Closes the given file handle.
+  //
+  // This is used only for Pepper/NaCL File API.
   virtual base::PlatformFileError Close(
       FileSystemOperationContext* context,
       base::PlatformFile file) = 0;

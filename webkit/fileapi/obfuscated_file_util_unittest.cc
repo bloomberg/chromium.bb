@@ -236,7 +236,11 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
   bool PathExists(const FileSystemURL& url) {
     scoped_ptr<FileSystemOperationContext> context(NewContext(NULL));
-    return FileUtilHelper::PathExists(context.get(), ofu(), url);
+    base::PlatformFileInfo file_info;
+    FilePath platform_path;
+    base::PlatformFileError error = ofu()->GetFileInfo(
+        context.get(), url, &file_info, &platform_path);
+    return error == base::PLATFORM_FILE_OK;
   }
 
   bool DirectoryExists(const FileSystemURL& url) {

@@ -101,9 +101,13 @@ class LocalFileSystemQuotaTest
   }
 
   bool FileExists(const FilePath& virtual_path) {
-    FileSystemURL path = test_helper_.CreateURL(virtual_path);
+    FileSystemURL url = test_helper_.CreateURL(virtual_path);
+    base::PlatformFileInfo file_info;
+    FilePath platform_path;
     scoped_ptr<FileSystemOperationContext> context(NewContext());
-    return FileUtilHelper::PathExists(context.get(), file_util(), path);
+    base::PlatformFileError error = file_util()->GetFileInfo(
+        context.get(), url, &file_info, &platform_path);
+    return error == base::PLATFORM_FILE_OK;
   }
 
   bool DirectoryExists(const FilePath& virtual_path) {
