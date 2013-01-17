@@ -39,6 +39,9 @@ const int kWriteFilePermissions =
     base::PLATFORM_FILE_ASYNC |
     base::PLATFORM_FILE_WRITE_ATTRIBUTES;
 
+const int kCreateFilePermissions =
+    base::PLATFORM_FILE_CREATE;
+
 const int kEnumerateDirectoryPermissions =
     kReadFilePermissions |
     base::PLATFORM_FILE_ENUMERATE;
@@ -102,7 +105,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     if (filesystem_permissions_.find(filesystem_id) ==
         filesystem_permissions_.end())
       fileapi::IsolatedContext::GetInstance()->AddReference(filesystem_id);
-    filesystem_permissions_[filesystem_id] = permissions;
+    filesystem_permissions_[filesystem_id] |= permissions;
   }
 
   bool HasPermissionsForFileSystem(const std::string& filesystem_id,
@@ -446,11 +449,15 @@ void ChildProcessSecurityPolicyImpl::GrantReadFileSystem(
   GrantPermissionsForFileSystem(child_id, filesystem_id, kReadFilePermissions);
 }
 
-void ChildProcessSecurityPolicyImpl::GrantReadWriteFileSystem(
+void ChildProcessSecurityPolicyImpl::GrantWriteFileSystem(
+    int child_id, const std::string& filesystem_id) {
+  GrantPermissionsForFileSystem(child_id, filesystem_id, kWriteFilePermissions);
+}
+
+void ChildProcessSecurityPolicyImpl::GrantCreateFileForFileSystem(
     int child_id, const std::string& filesystem_id) {
   GrantPermissionsForFileSystem(child_id, filesystem_id,
-                                kReadFilePermissions |
-                                kWriteFilePermissions);
+                                kCreateFilePermissions);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantScheme(int child_id,
@@ -527,7 +534,7 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
     return false;  // Can't request invalid URLs.
 
   if (IsDisabledScheme(url.scheme()))
-    return false; // The scheme is disabled by policy.
+    return false;  // The scheme is disabled by policy.
 
   if (IsWebSafeScheme(url.scheme()))
     return true;  // The scheme has been white-listed for every child process.

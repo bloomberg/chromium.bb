@@ -1514,6 +1514,7 @@
         'common/extensions/message_bundle_unittest.cc',
         'common/extensions/permissions/api_permission_set_unittest.cc',
         'common/extensions/permissions/permission_set_unittest.cc',
+        'common/extensions/permissions/media_galleries_permission_unittest.cc',
         'common/extensions/permissions/socket_permission_unittest.cc',
         'common/extensions/unpacker_unittest.cc',
         'common/extensions/update_manifest_unittest.cc',

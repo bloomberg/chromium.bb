@@ -43,7 +43,10 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   virtual void GrantReadFileSystem(
       int child_id,
       const std::string& filesystem_id) OVERRIDE;
-  virtual void GrantReadWriteFileSystem(
+  virtual void GrantWriteFileSystem(
+      int child_id,
+      const std::string& filesystem_id) OVERRIDE;
+  virtual void GrantCreateFileForFileSystem(
       int child_id,
       const std::string& filesystem_id) OVERRIDE;
   virtual void GrantScheme(int child_id, const std::string& scheme) OVERRIDE;

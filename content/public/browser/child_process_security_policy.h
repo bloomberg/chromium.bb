@@ -87,10 +87,20 @@ class ChildProcessSecurityPolicy {
   // to individual file paths.
   //
   // This must be called with a great care as this gives write permission
-  // to all files/directories included in the file system.  Especially this
-  // should NOT be called if the file system contains directories.
-  virtual void GrantReadWriteFileSystem(int child_id,
-                                        const std::string& filesystem_id) = 0;
+  // to all files/directories included in the file system.
+  virtual void GrantWriteFileSystem(int child_id,
+                                    const std::string& filesystem_id) = 0;
+
+  // Grant create file permission to the given isolated file system identified
+  // by |filesystem_id|.
+  // See comments for GrantReadFileSystem for more details.  For creating you
+  // do NOT need to give direct permission to individual file paths.
+  //
+  // This must be called with a great care as this gives create permission
+  // within all directories included in the file system.
+  virtual void GrantCreateFileForFileSystem(
+      int child_id,
+      const std::string& filesystem_id) = 0;
 
   // Grants the child process the capability to access URLs of the provided
   // scheme.

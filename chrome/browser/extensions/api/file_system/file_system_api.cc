@@ -205,8 +205,8 @@ bool GetFileTypesFromAcceptOption(
         continue;
 
       if (valid_type)
-        description_id = 0; // We already have an accept type with label; if
-                            // we find another, give up and use the default.
+        description_id = 0;  // We already have an accept type with label; if
+                             // we find another, give up and use the default.
       else if (accept_type == "image/*")
         description_id = IDS_IMAGE_FILES;
       else if (accept_type == "audio/*")
@@ -301,10 +301,9 @@ void FileSystemEntryFunction::RegisterFileSystemAndSendResponse(
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
   int renderer_id = render_view_host_->GetProcess()->GetID();
+  policy->GrantReadFileSystem(renderer_id, filesystem_id);
   if (entry_type == WRITABLE)
-    policy->GrantReadWriteFileSystem(renderer_id, filesystem_id);
-  else
-    policy->GrantReadFileSystem(renderer_id, filesystem_id);
+    policy->GrantWriteFileSystem(renderer_id, filesystem_id);
 
   // We only need file level access for reading FileEntries. Saving FileEntries
   // just needs the file system to have read/write access, which is granted

@@ -46,7 +46,7 @@ class PermissionMessage {
     kVideoCapture,
     kDownloads,
     kFileSystemWrite,
-    kMediaGalleriesAllGalleries,
+    kMediaGalleriesAllGalleriesRead,
     kSerial,
     kSocketAnyHost,
     kSocketDomainHosts,
@@ -56,6 +56,7 @@ class PermissionMessage {
     kSystemIndicator,
     kBluetoothDevice,
     kUsbDevice,
+    kMediaGalleriesAllGalleriesWrite,
     kEnumBoundary
   };
 

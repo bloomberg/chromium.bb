@@ -5055,8 +5055,11 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE" desc="Permission string for write access to the file system.">
         Write to files that you have opened in the application
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_ALL_GALLERIES" desc="Permission string for access to all of the user's media galleries.">
-        Access photos, music, and other media from your computer
+      <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_ALL_GALLERIES" desc="Permission string for read access to all of the user's media galleries.">
+        Access photos, music, and other media from your computer (Read)
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE_ALL_GALLERIES" desc="Permission string for read and write access to all of the user's media galleries.">
+        Access photos, music, and other media to your computer (Read, write, and delete)
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_SERIAL" desc="Permission string for access to serial devices.">
         Use serial devices attached to your computer
@@ -15495,7 +15498,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Media access settings for <ph name="EXTENSION">$1<ex>PhotoEditr</ex></ph>
     </message>
     <message name="IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT" desc="Explanatory text for the media gallery access permission.">
-      Which media (folders and collections of folders) can <ph name="EXTENSION">$1<ex>PhotoEditr</ex></ph> read and write?
+      Which media (folders and collections of folders) can <ph name="EXTENSION">$1<ex>PhotoEditor</ex></ph> read and write?
     </message>
     <if expr="pp_ifdef('use_titlecase')">
       <message name="IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY" desc="In title case: Button for adding a new gallery by choosing a folder.">

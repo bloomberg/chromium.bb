@@ -25,6 +25,7 @@
 #include "chrome/common/extensions/api/experimental_media_galleries.h"
 #include "chrome/common/extensions/api/media_galleries.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
+#include "chrome/common/extensions/permissions/media_galleries_permission.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
@@ -133,6 +134,15 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
     SendResponse(false);
     return;
   }
+  MediaGalleriesPermission::CheckParam read_param(
+      MediaGalleriesPermission::kReadPermission);
+  bool has_read_permission = GetExtension()->CheckAPIPermissionWithParam(
+      APIPermission::kMediaGalleries, &read_param);
+  MediaGalleriesPermission::CheckParam write_param(
+      MediaGalleriesPermission::kWritePermission);
+  bool has_write_permission = GetExtension()->CheckAPIPermissionWithParam(
+      APIPermission::kMediaGalleries, &write_param);
+
   const int child_id = rvh->GetProcess()->GetID();
   std::set<std::string> file_system_names;
   base::ListValue* list = new base::ListValue();
@@ -142,8 +152,8 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
 
     // Send the file system id so the renderer can create a valid FileSystem
     // object.
-    file_system_dict_value->SetWithoutPathExpansion(
-        "fsid", Value::CreateStringValue(filesystems[i].fsid));
+    file_system_dict_value->SetStringWithoutPathExpansion(
+        "fsid", filesystems[i].fsid);
 
     // The name must be unique according to the HTML5 File System API spec.
     if (ContainsKey(file_system_names, filesystems[i].name)) {
@@ -151,20 +161,25 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
       continue;
     }
     file_system_names.insert(filesystems[i].name);
-    file_system_dict_value->SetWithoutPathExpansion(
-        "name", Value::CreateStringValue(filesystems[i].name));
+    file_system_dict_value->SetStringWithoutPathExpansion(
+        "name", filesystems[i].name);
 
     list->Append(file_system_dict_value.release());
 
-    if (!filesystems[i].path.empty() &&
-        GetExtension()->HasAPIPermission(APIPermission::kMediaGalleriesRead)) {
+    if (filesystems[i].path.empty())
+      continue;
+
+    if (has_read_permission || has_write_permission) {
       content::ChildProcessSecurityPolicy* policy =
           ChildProcessSecurityPolicy::GetInstance();
       if (!policy->CanReadFile(child_id, filesystems[i].path))
         policy->GrantReadFile(child_id, filesystems[i].path);
       policy->GrantReadFileSystem(child_id, filesystems[i].fsid);
+      if (has_write_permission) {
+        policy->GrantWriteFileSystem(child_id, filesystems[i].fsid);
+        policy->GrantCreateFileForFileSystem(child_id, filesystems[i].fsid);
+      }
     }
-    // TODO(vandebo) Handle write permission.
   }
 
   SetResult(list);
@@ -206,7 +221,7 @@ bool MediaGalleriesAssembleMediaFileFunction::RunImpl() {
     return false;
 
   // TODO(vandebo) Update the metadata and return the new file.
-  SetResult(Value::CreateNullValue());
+  SetResult(base::Value::CreateNullValue());
   return true;
 }
 

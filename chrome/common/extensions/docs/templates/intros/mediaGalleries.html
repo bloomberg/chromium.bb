@@ -11,12 +11,13 @@
   </tr>
   <tr>
     <td><strong>Availability:</strong></td>
-    <td>Google Chrome 23</td>
+    <td>Google Chrome 23 (read permission)<br>
+    Google Chrome 26 (write permission)</td>
   </tr>
   <tr>
     <td><strong>Permissions:</strong></td>
-    <td><code>"mediaGalleries": ["read"]</code>,
-    <code>"mediaGalleries": ["read", "allAutoDetected"]</code><br>
+    <td><code>"mediaGalleries": ["accessType"]</code>,
+    <code>"mediaGalleries": ["accessType", "allAutoDetected"]</code><br>
     See <a href="#manifest">Manifest</a> below
     for more information.</td>
   </tr>
@@ -65,11 +66,16 @@ runtime by using the media gallery management dialog. For example:</p>
   ...
 }</pre>
 
-<p>This permission will trigger an install time permission prompt
+<p>The above permission will trigger an install time permission prompt
 and let the extension read from all auto-detected media galleries on the
 user's computer. The user may add or remove galleries using the
 media gallery management dialog, after which the extension will be able
 to read all the media files from galleries that the user has selected.</p>
 
-<p>Currently "read" is the only access type supported by
-this API. Read-write and add-file access with be implemented soon.</p>
+<p>Another possible access type is "write", which can be put in place of
+"read". Specifying "write" allows read and write access to the accessible
+media galleries.
+</p>
+
+<p>Currently "read" and "write" access types are supported by
+this API. Add-file access with be implemented soon.</p>

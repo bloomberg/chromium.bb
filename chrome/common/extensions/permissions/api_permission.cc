@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/permissions/api_permission.h"
 
 #include "chrome/common/extensions/permissions/bluetooth_device_permission.h"
+#include "chrome/common/extensions/permissions/media_galleries_permission.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "chrome/common/extensions/permissions/usb_device_permission.h"
@@ -324,12 +325,14 @@ void APIPermissionInfo::RegisterAllPermissions(
     { APIPermission::kFileSystemWrite, "fileSystem.write", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE,
       PermissionMessage::kFileSystemWrite },
-    { APIPermission::kMediaGalleries, "mediaGalleries" },
-    { APIPermission::kMediaGalleriesRead, "mediaGalleries.read" },
-    { APIPermission::kMediaGalleriesAllAutoDetected,
-      "mediaGalleries.allAutoDetected", kFlagNone,
-      IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_ALL_GALLERIES,
-      PermissionMessage::kMediaGalleriesAllGalleries },
+    // Because warning messages for the "mediaGalleries" permission vary based
+    // on the permissions parameters, no message ID or message text is
+    // specified here.
+    // The message ID and text used will be determined at run-time in the
+    // |MediaGalleriesPermission| class.
+    { APIPermission::kMediaGalleries, "mediaGalleries", kFlagNone, 0,
+      PermissionMessage::kNone,
+      &::CreateAPIPermission<MediaGalleriesPermission> },
     { APIPermission::kPushMessaging, "pushMessaging", kFlagCannotBeOptional },
     { APIPermission::kBluetooth, "bluetooth", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH,

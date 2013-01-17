@@ -141,7 +141,8 @@ std::string RegisterFileSystem(WebContents* web_contents,
       content::ChildProcessSecurityPolicy::GetInstance();
   RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
   int renderer_id = render_view_host->GetProcess()->GetID();
-  policy->GrantReadWriteFileSystem(renderer_id, file_system_id);
+  policy->GrantReadFileSystem(renderer_id, file_system_id);
+  policy->GrantWriteFileSystem(renderer_id, file_system_id);
 
   // We only need file level access for reading FileEntries. Saving FileEntries
   // just needs the file system to have read/write access, which is granted

@@ -82,8 +82,6 @@ class APIPermission {
     kManagedModePrivate,
     kManagement,
     kMediaGalleries,
-    kMediaGalleriesRead,
-    kMediaGalleriesAllAutoDetected,
     kMediaGalleriesPrivate,
     kMediaPlayerPrivate,
     kMetricsPrivate,

@@ -1,0 +1,11 @@
+{
+  "name": "chrome.mediaGalleries.write_access",
+  "version": "0.1",
+  "description": "test write access for chrome.mediaGalleries.getMediaFileSystems",
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  },
+  "permissions": [{"mediaGalleries": ["write", "allAutoDetected"]}]
+}

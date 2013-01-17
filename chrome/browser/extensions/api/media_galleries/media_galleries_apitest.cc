@@ -48,9 +48,23 @@ class PlatformAppMediaGalleriesBrowserTest : public PlatformAppBrowserTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(PlatformAppMediaGalleriesBrowserTest, NoGalleries) {
+IN_PROC_BROWSER_TEST_F(PlatformAppMediaGalleriesBrowserTest,
+                       MediaGalleriesNoAccess) {
+  chrome::EnsureMediaDirectoriesExists media_directories;
+  ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/no_access"))
+      << message_;
+  RunSecondTestPhase(media_directories.num_galleries());
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformAppMediaGalleriesBrowserTest, NoGalleriesRead) {
   chrome::EnsureMediaDirectoriesExists media_directories;
   ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/no_galleries"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformAppMediaGalleriesBrowserTest, NoGalleriesWrite) {
+  chrome::EnsureMediaDirectoriesExists media_directories;
+  ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/no_galleries_write"))
       << message_;
 }
 
@@ -63,9 +77,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppMediaGalleriesBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppMediaGalleriesBrowserTest,
-                       MediaGalleriesNoAccess) {
+                       MediaGalleriesWrite) {
   chrome::EnsureMediaDirectoriesExists media_directories;
-  ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/no_access"))
+  ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/write_access"))
       << message_;
   RunSecondTestPhase(media_directories.num_galleries());
 }
