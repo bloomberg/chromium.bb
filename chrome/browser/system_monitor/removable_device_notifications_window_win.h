@@ -30,13 +30,15 @@ class RemovableDeviceNotificationsWindowWin
   // Must be called after the file thread is created.
   void Init();
 
-  // Finds the device that contains |path| and populates |device_info|.
-  // Returns false if unable to find the device.
+  // RemovableStorageNotifications:
   virtual bool GetDeviceInfoForPath(
       const FilePath& path,
       base::SystemMonitor::RemovableStorageInfo* device_info) const OVERRIDE;
-
   virtual uint64 GetStorageSize(const std::string& location) const OVERRIDE;
+  virtual bool GetMTPStorageInfoFromDeviceId(
+      const std::string& storage_device_id,
+      string16* device_location,
+      string16* storage_object_id) const OVERRIDE;
 
  private:
   class PortableDeviceNotifications;

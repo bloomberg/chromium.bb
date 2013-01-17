@@ -823,7 +823,13 @@ TEST_F(MediaFileSystemRegistryTest, GalleryNameDefault) {
   }
 }
 
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM) && !defined(OS_WIN)
+// TODO(kmadhusu) : On Windows, this test depends on
+// RemovableDeviceNotificationsWindowWin to get the attached MTP device
+// storage details. Enable this test after refactoring
+// removable_device_notifications_window_win_unittest.cc to share the
+// mock classes (TestRemovableDeviceNotificationsWindowWin,
+// TestPortableDeviceWatcherWin and TestVolumeMountWatcherWin).
 TEST_F(MediaFileSystemRegistryTest, GalleryNameMTP) {
   FSInfoMap galleries_info;
   InitForGalleriesInfoTest(&galleries_info);

@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
@@ -30,6 +31,7 @@
 #include "chrome/browser/system_monitor/media_storage_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/extension.h"
@@ -61,6 +63,19 @@ struct InvalidatedGalleriesInfo {
   std::set<ExtensionGalleriesHost*> extension_hosts;
   std::set<MediaGalleryPrefId> pref_ids;
 };
+
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
+// Returns true if the media transfer protocol (MTP) device operations are
+// allowed for this platform.
+// TODO(kmadhusu): Remove this function after fixing crbug.com/154835.
+bool IsMTPDeviceMediaOperationsEnabled() {
+#if defined(OS_WIN)
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableMediaTransferProtocolDeviceOperations);
+#endif
+  return true;
+}
+#endif
 
 }  // namespace
 
@@ -150,10 +165,12 @@ class ExtensionGalleriesHost
     pref_id_map_.erase(gallery);
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-    MediaDeviceEntryReferencesMap::iterator mtp_device_host =
-        media_device_map_references_.find(id);
-    if (mtp_device_host != media_device_map_references_.end())
-      media_device_map_references_.erase(mtp_device_host);
+    if (IsMTPDeviceMediaOperationsEnabled()) {
+      MediaDeviceEntryReferencesMap::iterator mtp_device_host =
+          media_device_map_references_.find(id);
+      if (mtp_device_host != media_device_map_references_.end())
+        media_device_map_references_.erase(mtp_device_host);
+    }
 #endif
 
     if (pref_id_map_.empty()) {
@@ -273,6 +290,9 @@ class ExtensionGalleriesHost
             device_id, path);
       } else {
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
+        if (!IsMTPDeviceMediaOperationsEnabled())
+          continue;
+
         scoped_refptr<ScopedMTPDeviceMapEntry> mtp_device_host;
         fsid = file_system_context_->RegisterFileSystemForMTPDevice(
             device_id, path, &mtp_device_host);

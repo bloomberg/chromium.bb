@@ -516,6 +516,35 @@ void PortableDeviceWatcherWin::OnWindowMessage(UINT event_type, LPARAM data) {
     HandleDeviceDetachEvent(device_id);
 }
 
+bool PortableDeviceWatcherWin::GetMTPStorageInfoFromDeviceId(
+    const std::string& storage_device_id,
+    string16* device_location,
+    string16* storage_object_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(device_location);
+  DCHECK(storage_object_id);
+  MTPStorageMap::const_iterator storage_map_iter =
+      storage_map_.find(storage_device_id);
+  if (storage_map_iter == storage_map_.end())
+    return false;
+
+  MTPDeviceMap::const_iterator device_iter =
+      device_map_.find(storage_map_iter->second.location);
+  if (device_iter == device_map_.end())
+    return false;
+  const StorageObjects& storage_objects = device_iter->second;
+  for (StorageObjects::const_iterator storage_object_iter =
+       storage_objects.begin(); storage_object_iter != storage_objects.end();
+       ++storage_object_iter) {
+    if (storage_device_id == storage_object_iter->object_persistent_id) {
+      *device_location = storage_map_iter->second.location;
+      *storage_object_id = storage_object_iter->object_temporary_id;
+      return true;
+    }
+  }
+  return false;
+}
+
 void PortableDeviceWatcherWin::EnumerateAttachedDevices() {
   DCHECK(media_task_runner_.get());
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));

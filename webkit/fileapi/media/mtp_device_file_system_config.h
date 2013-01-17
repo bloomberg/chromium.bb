@@ -7,7 +7,9 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_LINUX)  // Implies defined(OS_CHROMEOS)
+// Support MTP device file system for Windows, Linux and ChromeOS. Note that
+// OS_LINUX implies OS_CHROMEOS.
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define SUPPORT_MTP_DEVICE_FILESYSTEM
 #endif
 

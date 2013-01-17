@@ -132,6 +132,17 @@ uint64 RemovableDeviceNotificationsWindowWin::GetStorageSize(
   return 0ULL;
 }
 
+bool RemovableDeviceNotificationsWindowWin::GetMTPStorageInfoFromDeviceId(
+    const std::string& storage_device_id,
+    string16* device_location,
+    string16* storage_object_id) const {
+  MediaStorageUtil::Type type;
+  MediaStorageUtil::CrackDeviceId(storage_device_id, &type, NULL);
+  return ((type == MediaStorageUtil::MTP_OR_PTP) &&
+      portable_device_watcher_->GetMTPStorageInfoFromDeviceId(
+          storage_device_id, device_location, storage_object_id));
+}
+
 // static
 LRESULT CALLBACK RemovableDeviceNotificationsWindowWin::WndProcThunk(
     HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {

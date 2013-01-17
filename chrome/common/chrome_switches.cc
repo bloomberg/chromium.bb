@@ -1577,6 +1577,12 @@ const char kUseMockKeychain[]               = "use-mock-keychain";
 #endif
 
 #if defined(OS_WIN)
+// Enables media transfer protocol device media support for
+// mediaGalleries extension API.
+// TODO(kmadhusu): Remove this switch after fixing crbug.com/154835.
+const char kEnableMediaTransferProtocolDeviceOperations[] =
+    "enable-media-transfer-protocol-device-operations";
+
 // For the DelegateExecute verb handler to launch Chrome in metro mode on
 // Windows 8 and higher.  Used when relaunching metro Chrome.
 const char kForceImmersive[]                 = "force-immersive";

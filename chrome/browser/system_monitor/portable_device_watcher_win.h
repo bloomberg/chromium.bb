@@ -38,7 +38,10 @@ class PortableDeviceWatcherWin {
     DeviceStorageObject(const string16& temporary_id,
                         const std::string& persistent_id);
 
-    // Storage object temporary identifier, e.g. "s10001".
+    // Storage object temporary identifier, e.g. "s10001". This string ID
+    // uniquely identifies the object on the device. This ID need not be
+    // persistent across sessions. This ID is obtained from WPD_OBJECT_ID
+    // property.
     string16 object_temporary_id;
 
     // Storage object persistent identifier,
@@ -70,6 +73,14 @@ class PortableDeviceWatcherWin {
   // Processes DEV_BROADCAST_DEVICEINTERFACE messages and triggers a
   // SystemMonitor notification if appropriate.
   void OnWindowMessage(UINT event_type, LPARAM data);
+
+  // Gets the information of the MTP storage specified by |storage_device_id|.
+  // On success, returns true and fills in |device_location| with device
+  // interface details and |storage_object_id| with storage object temporary
+  // identifier.
+  bool GetMTPStorageInfoFromDeviceId(const std::string& storage_device_id,
+                                     string16* device_location,
+                                     string16* storage_object_id);
 
  private:
   friend class TestPortableDeviceWatcherWin;

@@ -53,6 +53,18 @@ class RemovableStorageNotifications {
   // device information is unavailable, returns zero.
   virtual uint64 GetStorageSize(const std::string& location) const = 0;
 
+#if defined(OS_WIN)
+  // Gets the MTP device storage information specified by |storage_device_id|.
+  // On success, returns true and fills in |device_location| with device
+  // interface details and |storage_object_id| with the string ID that
+  // uniquely identifies the object on the device. This ID need not be
+  // persistent across sessions.
+  virtual bool GetMTPStorageInfoFromDeviceId(
+      const std::string& storage_device_id,
+      string16* device_location,
+      string16* storage_object_id) const = 0;
+#endif
+
   // Returns information for attached removable storage.
   std::vector<StorageInfo> GetAttachedStorage() const;
 

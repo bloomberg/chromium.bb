@@ -326,13 +326,22 @@ class RemovableDeviceNotificationsWindowWinTest : public testing::Test {
   // |test_attach|) and tests that the appropriate handler is called.
   void DoMTPDeviceTest(const string16& pnp_device_id, bool test_attach);
 
+  // Gets the MTP details of the storage specified by the |storage_device_id|.
+  // On success, returns true and fills in |pnp_device_id| and
+  // |storage_object_id|.
+  bool GetMTPStorageInfo(const std::string& storage_device_id,
+                         string16* pnp_device_id,
+                         string16* storage_object_id);
+
+  scoped_ptr<TestRemovableDeviceNotificationsWindowWin> window_;
+
+ private:
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 
   base::SystemMonitor system_monitor_;
   base::MockDevicesChangedObserver observer_;
-  scoped_ptr<TestRemovableDeviceNotificationsWindowWin> window_;
   scoped_refptr<TestVolumeMountWatcherWin> volume_mount_watcher_;
 };
 
@@ -491,6 +500,15 @@ void RemovableDeviceNotificationsWindowWinTest::DoMTPDeviceTest(
   RunUntilIdle();
 }
 
+bool RemovableDeviceNotificationsWindowWinTest::GetMTPStorageInfo(
+    const std::string& storage_device_id,
+    string16* pnp_device_id,
+    string16* storage_object_id) {
+  return window_->GetMTPStorageInfoFromDeviceId(storage_device_id,
+                                                pnp_device_id,
+                                                storage_object_id);
+}
+
 TEST_F(RemovableDeviceNotificationsWindowWinTest, RandomMessage) {
   window_->InjectDeviceChange(DBT_DEVICEQUERYREMOVE, NULL);
   RunUntilIdle();
@@ -640,6 +658,27 @@ TEST_F(RemovableDeviceNotificationsWindowWinTest,
        MTPDeviceWithMultipleStorageObjects) {
   DoMTPDeviceTest(kMTPDeviceWithMultipleStorageObjects, true);
   DoMTPDeviceTest(kMTPDeviceWithMultipleStorageObjects, false);
+}
+
+// Given a MTP storage persistent id, GetMTPStorageInfo() should fetch the
+// device interface path and local storage object identifier.
+TEST_F(RemovableDeviceNotificationsWindowWinTest,
+       GetMTPStorageInfoFromDeviceId) {
+  DoMTPDeviceTest(kMTPDeviceWithValidInfo, true);
+  PortableDeviceWatcherWin::StorageObjects storage_objects =
+      GetDeviceStorageObjects(kMTPDeviceWithValidInfo);
+  for (PortableDeviceWatcherWin::StorageObjects::const_iterator it =
+       storage_objects.begin(); it != storage_objects.end(); ++it) {
+    string16 pnp_device_id;
+    string16 storage_object_id;
+    ASSERT_TRUE(GetMTPStorageInfo(it->object_persistent_id, &pnp_device_id,
+                                  &storage_object_id));
+    EXPECT_EQ(kMTPDeviceWithValidInfo, pnp_device_id);
+    EXPECT_EQ(it->object_persistent_id,
+              GetMTPStorageUniqueId(pnp_device_id, storage_object_id));
+  }
+
+  DoMTPDeviceTest(kMTPDeviceWithValidInfo, false);
 }
 
 }  // namespace chrome

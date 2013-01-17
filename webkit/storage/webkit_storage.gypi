@@ -58,7 +58,7 @@
             '<@(webkit_fileapi_chromeos_sources)',
           ],
         }],
-        ['OS=="linux" or chromeos==1', {
+        ['OS=="linux" or chromeos==1 or OS=="win"', {
           'sources': [
             '<@(webkit_fileapi_media_sources)',
           ],

@@ -27,6 +27,15 @@ class TestStorageNotifications : public RemovableStorageNotifications {
     return 0;
   }
 
+#if defined(OS_WIN)
+  virtual bool GetMTPStorageInfoFromDeviceId(
+      const std::string& storage_device_id,
+      string16* device_location,
+      string16* storage_object_id) const OVERRIDE {
+    return false;
+  }
+#endif
+
   void ProcessAttach(const std::string& id,
                      const string16& name,
                      const FilePath::StringType& location) {

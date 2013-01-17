@@ -31,7 +31,7 @@ class FileSystemOperationContext;
 class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
  public:
   // It will be implemented by each subclass such as FileSystemFileEnumerator.
-  class AbstractFileEnumerator {
+  class WEBKIT_STORAGE_EXPORT AbstractFileEnumerator {
    public:
     virtual ~AbstractFileEnumerator() {}
 
@@ -57,7 +57,8 @@ class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
     kSnapshotFileTemporary,
   };
 
-  class EmptyFileEnumerator : public AbstractFileEnumerator {
+  class WEBKIT_STORAGE_EXPORT EmptyFileEnumerator
+      : public AbstractFileEnumerator {
     virtual FilePath Next() OVERRIDE;
     virtual int64 Size() OVERRIDE;
     virtual base::Time LastModifiedTime() OVERRIDE;
