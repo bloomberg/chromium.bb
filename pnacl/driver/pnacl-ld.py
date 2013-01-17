@@ -96,12 +96,12 @@ EXTRA_ENV = {
 
   'LD_GOLD_OFORMAT'        : '${LD_GOLD_OFORMAT_%ARCH%}',
   'LD_GOLD_OFORMAT_ARM'    : 'elf32-littlearm',
-  'LD_GOLD_OFORMAT_X8632'  : 'elf32-i386-nacl',
-  'LD_GOLD_OFORMAT_X8664'  : 'elf64-x86-64-nacl',
+  'LD_GOLD_OFORMAT_X8632'  : 'elf32-nacl',
+  'LD_GOLD_OFORMAT_X8664'  : 'elf64-nacl',
   'LD_GOLD_OFORMAT_MIPS32' : 'elf32-tradlittlemips',
 
   'BCLD'      : '${LD_GOLD}',
-  'BCLD_FLAGS': '--oformat ${LD_GOLD_OFORMAT} -Ttext=0x20000 ' +
+  'BCLD_FLAGS': '--native-client --oformat ${LD_GOLD_OFORMAT} -Ttext=0x20000 ' +
                 '${!SHARED && !RELOCATABLE ? --undef-sym-check} ' +
                 '${GOLD_PLUGIN_ARGS} ${LD_FLAGS}',
   'RUN_BCLD': ('${BCLD} ${BCLD_FLAGS} ${inputs} -o ${output}'),

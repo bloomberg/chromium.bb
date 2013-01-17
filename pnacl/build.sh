@@ -84,11 +84,11 @@ readonly THIRD_PARTY="${NACL_ROOT}"/../third_party
 
 # The location of Mercurial sources (absolute)
 readonly TC_SRC="${PNACL_ROOT}/src"
+readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
 readonly TC_SRC_GOLD="${TC_SRC}/gold"
 
 # Git sources
 readonly PNACL_GIT_ROOT="${PNACL_ROOT}/git"
-readonly TC_SRC_BINUTILS="${PNACL_GIT_ROOT}/binutils"
 readonly TC_SRC_LLVM="${PNACL_GIT_ROOT}/llvm"
 readonly TC_SRC_GCC="${PNACL_GIT_ROOT}/gcc"
 readonly TC_SRC_GLIBC="${PNACL_GIT_ROOT}/glibc"
@@ -96,6 +96,10 @@ readonly TC_SRC_NEWLIB="${PNACL_GIT_ROOT}/nacl-newlib"
 readonly TC_SRC_LIBSTDCPP="${TC_SRC_GCC}/libstdc++-v3"
 readonly TC_SRC_COMPILER_RT="${PNACL_GIT_ROOT}/compiler-rt"
 readonly TC_SRC_CLANG="${PNACL_GIT_ROOT}/clang"
+
+# Unfortunately, binutils/configure generates this untracked file
+# in the binutils source directory
+readonly BINUTILS_MESS="${TC_SRC_BINUTILS}/binutils-2.20/opcodes/i386-tbl.h"
 
 readonly SERVICE_RUNTIME_SRC="${NACL_ROOT}/src/trusted/service_runtime"
 readonly EXPORT_HEADER_SCRIPT="${SERVICE_RUNTIME_SRC}/export_header.py"
@@ -106,7 +110,7 @@ readonly NEWLIB_INCLUDE_DIR="${TC_SRC_NEWLIB}/newlib/libc/include"
 # The location of each project. These should be absolute paths.
 readonly TC_BUILD="${PNACL_ROOT}/build"
 readonly TC_BUILD_LLVM="${TC_BUILD}/llvm_${HOST_ARCH}"
-readonly TC_BUILD_BINUTILS="${TC_BUILD}/binutils_${HOST_ARCH}"
+readonly TC_BUILD_BINUTILS="${TC_BUILD}/binutils${HOST_ARCH}"
 readonly TC_BUILD_GOLD="${TC_BUILD}/gold${HOST_ARCH}"
 readonly TC_BUILD_BINUTILS_LIBERTY="${TC_BUILD}/binutils-liberty"
 TC_BUILD_NEWLIB="${TC_BUILD}/newlib"
@@ -251,9 +255,11 @@ SBTC_ARCHES_LLVM=$(get-sbtc-llvm-arches)
 
 
 # Current milestones in each repo
+readonly BINUTILS_REV=95a4e0cd6450
 readonly GOLD_REV=437fca1a82f2
 
 # Repositories
+readonly REPO_BINUTILS="nacl-llvm-branches.binutils"
 # NOTE: this is essentially another binutils repo but a much more
 #       recent revision to pull in all the latest gold changes
 # TODO(robertm): merge the two repos -- ideally when we migrate to git
@@ -373,10 +379,12 @@ setup-newlib-env() {
 hg-info-all() {
   hg-pull-all
 
+  hg-info "${TC_SRC_BINUTILS}"   ${BINUTILS_REV}
   hg-info "${TC_SRC_GOLD}"       ${GOLD_REV}
 }
 
 update-all() {
+  hg-update-binutils
   hg-update-gold
 }
 
@@ -485,6 +493,15 @@ hg-update-common() {
   fi
 }
 
+#@ hg-update-binutils    - Update BINUTILS to the stable revision
+hg-update-binutils() {
+  # Clean the binutils generated file first, so that sanity checks
+  # inside hg-update-common do not see any local modifications.
+  binutils-mess-hide
+  hg-update-common "binutils" ${BINUTILS_REV} "${TC_SRC_BINUTILS}"
+  binutils-mess-unhide
+}
+
 #@ hg-update-gold    - Update GOLD to the stable revision
 hg-update-gold() {
   hg-update-common "gold" ${GOLD_REV} "${TC_SRC_GOLD}"
@@ -495,7 +512,12 @@ hg-update-gold() {
 #@                         (REPO can be llvm, binutils)
 hg-pull-all() {
   StepBanner "HG-PULL" "Running 'hg pull' in all repos..."
+  hg-pull-binutils
   hg-pull-gold
+}
+
+hg-pull-binutils() {
+  hg-pull "${TC_SRC_BINUTILS}"
 }
 
 hg-pull-gold() {
@@ -507,10 +529,15 @@ hg-pull-gold() {
 #@                          (skips repos which are already checked out)
 checkout-all() {
   StepBanner "CHECKOUT-ALL"
+  hg-checkout-binutils
   hg-checkout-gold
   llvm-unlink-clang # TODO(dschuff): check if this is still necessary
   git-sync
   llvm-link-clang
+}
+
+hg-checkout-binutils() {
+  hg-checkout ${REPO_BINUTILS} "${TC_SRC_BINUTILS}" ${BINUTILS_REV}
 }
 
 hg-checkout-gold() {
@@ -1119,6 +1146,20 @@ fast-clean() {
   fi
 }
 
+binutils-mess-hide() {
+  local messtmp="${TC_SRC}/binutils.tmp"
+  if [ -f "${BINUTILS_MESS}" ] ; then
+    mv "${BINUTILS_MESS}" "${messtmp}"
+  fi
+}
+
+binutils-mess-unhide() {
+  local messtmp="${TC_SRC}/binutils.tmp"
+  if [ -f "${messtmp}" ] ; then
+    mv "${messtmp}" "${BINUTILS_MESS}"
+  fi
+}
+
 #+ clean-scons           - Clean scons-out directory
 clean-scons() {
   rm -rf "${SCONS_OUT}"
@@ -1295,7 +1336,7 @@ llvm-configure() {
   llvm-link-clang
   # The --with-binutils-include is to allow llvm to build the gold plugin
   # re: --enable-targets  "x86" brings in both i686 and x86_64.
-  local binutils_include="${TC_SRC_BINUTILS}/include"
+  local binutils_include="${TC_SRC_BINUTILS}/binutils-2.20/include"
   RunWithLog "llvm.configure" \
       env -i PATH=/usr/bin/:/bin \
              MAKE_OPTS=${MAKE_OPTS} \
@@ -1899,7 +1940,7 @@ binutils-configure() {
       CC="${CC}" \
       CXX="${CXX}" \
       LDFLAGS="${flags}" \
-      ${srcdir}/configure \
+      ${srcdir}/binutils-2.20/configure \
           --prefix="${BINUTILS_INSTALL_DIR}" \
           --target=${BINUTILS_TARGET} \
           --enable-targets=${targ} \
@@ -1930,13 +1971,16 @@ binutils-needs-make() {
   local srcdir="${TC_SRC_BINUTILS}"
   local objdir="${TC_BUILD_BINUTILS}"
   local ret=1
+  binutils-mess-hide
   ts-modified "$srcdir" "$objdir" && ret=0
+  binutils-mess-unhide
   return ${ret}
 }
 
 #+ binutils-make     - Make binutils for ARM
 binutils-make() {
   StepBanner "BINUTILS" "Make"
+  local srcdir="${TC_SRC_BINUTILS}"
   local objdir="${TC_BUILD_BINUTILS}"
   spushd "${objdir}"
 
@@ -2053,7 +2097,7 @@ binutils-liberty-configure() {
       PATH="/usr/bin:/bin" \
       CC="${CC}" \
       CXX="${CXX}" \
-      ${srcdir}/configure
+      ${srcdir}/binutils-2.20/configure
   spopd
 }
 
