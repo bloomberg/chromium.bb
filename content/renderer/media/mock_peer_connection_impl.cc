@@ -118,7 +118,7 @@ MockPeerConnectionImpl::MockPeerConnectionImpl(
       hint_audio_(false),
       hint_video_(false),
       sdp_mline_index_(-1),
-      signaling_state_(kNew),
+      signaling_state_(kStable),
       ice_state_(kIceNew) {
 }
 

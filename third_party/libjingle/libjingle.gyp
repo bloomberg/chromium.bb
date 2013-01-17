@@ -154,8 +154,7 @@
           'SSL_USE_NSS_RNG',
         ],
         'conditions': [
-          ['os_posix == 1 and OS != "mac" and OS != "ios" and '
-           'OS != "android"', {
+          ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
             'dependencies': [
               '<(DEPTH)/build/linux/system.gyp:ssl',
             ],

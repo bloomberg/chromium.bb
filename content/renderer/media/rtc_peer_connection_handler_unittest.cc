@@ -374,7 +374,7 @@ TEST_F(RTCPeerConnectionHandlerTest, OnStateChange) {
   EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ReadyStateOpening,
             mock_client_->ready_state());
   mock_peer_connection_->SetReadyState(
-      webrtc::PeerConnectionInterface::kActive);
+      webrtc::PeerConnectionInterface::kStable);
   pc_handler_->OnStateChange(state);
   EXPECT_EQ(WebKit::WebRTCPeerConnectionHandlerClient::ReadyStateActive,
             mock_client_->ready_state());
