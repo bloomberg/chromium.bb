@@ -21,12 +21,12 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
-#include "chrome/browser/tab_contents/web_drag_bookmark_handler_aura.h"
+#include "chrome/browser/ui/aura/tab_contents/web_drag_bookmark_handler_aura.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #else
-#include "chrome/browser/tab_contents/web_drag_bookmark_handler_win.h"
+#include "chrome/browser/ui/views/tab_contents/web_drag_bookmark_handler_win.h"
 #endif
 
 ChromeWebContentsViewDelegateViews::ChromeWebContentsViewDelegateViews(

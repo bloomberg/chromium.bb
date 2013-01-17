@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/web_drag_bookmark_handler_aura.h"
+#include "chrome/browser/ui/aura/tab_contents/web_drag_bookmark_handler_aura.h"
 
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/ui/browser.h"

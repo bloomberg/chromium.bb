@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_BOOKMARK_HANDLER_MAC_H_
-#define CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_BOOKMARK_HANDLER_MAC_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_WEB_DRAG_BOOKMARK_HANDLER_WIN_H_
+#define CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_WEB_DRAG_BOOKMARK_HANDLER_WIN_H_
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
@@ -17,17 +17,19 @@ class WebContents;
 
 // Chrome needs to intercept content drag events so it can dispatch them to the
 // bookmarks and extensions system.
-class WebDragBookmarkHandlerMac : public content::WebDragDestDelegate {
+class WebDragBookmarkHandlerWin : public content::WebDragDestDelegate {
  public:
-  WebDragBookmarkHandlerMac();
-  virtual ~WebDragBookmarkHandlerMac();
+  WebDragBookmarkHandlerWin();
+  virtual ~WebDragBookmarkHandlerWin();
 
   // Overridden from content::WebDragDestDelegate:
   virtual void DragInitialize(content::WebContents* contents) OVERRIDE;
-  virtual void OnDragOver() OVERRIDE;
-  virtual void OnDragEnter() OVERRIDE;
-  virtual void OnDrop() OVERRIDE;
-  virtual void OnDragLeave() OVERRIDE;
+  virtual void OnDragOver(IDataObject* data_object) OVERRIDE;
+  virtual void OnDragEnter(IDataObject* data_object) OVERRIDE;
+  virtual void OnDrop(IDataObject* data_object) OVERRIDE;
+  virtual void OnDragLeave(IDataObject* data_object) OVERRIDE;
+  virtual bool AddDragData(const WebDropData& drop_data,
+                           ui::OSExchangeData* data) OVERRIDE;
 
  private:
   // The BookmarkTabHelper.
@@ -37,11 +39,7 @@ class WebDragBookmarkHandlerMac : public content::WebDragDestDelegate {
 
   content::WebContents* web_contents_;
 
-  // The bookmark data for the current tab. This will be empty if there is not
-  // a native bookmark drag.
-  BookmarkNodeData bookmark_drag_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebDragBookmarkHandlerMac);
+  DISALLOW_COPY_AND_ASSIGN(WebDragBookmarkHandlerWin);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_BOOKMARK_HANDLER_MAC_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_WEB_DRAG_BOOKMARK_HANDLER_WIN_H_
