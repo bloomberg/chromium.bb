@@ -46,5 +46,20 @@
         'util/win8_util.h',
       ],
     },
+    {
+      'target_name': 'test_support_win8',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'test/open_with_dialog_async.cc',
+        'test/open_with_dialog_async.h',
+        'test/open_with_dialog_controller.cc',
+        'test/open_with_dialog_controller.h',
+        'test/ui_automation_client.cc',
+        'test/ui_automation_client.h',
+      ],
+    },
   ],
 }
