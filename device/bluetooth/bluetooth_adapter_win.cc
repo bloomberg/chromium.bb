@@ -28,11 +28,13 @@ BluetoothAdapterWin::~BluetoothAdapterWin() {
 }
 
 void BluetoothAdapterWin::AddObserver(BluetoothAdapter::Observer* observer) {
-  NOTIMPLEMENTED();
+  DCHECK(observer);
+  observers_.AddObserver(observer);
 }
 
 void BluetoothAdapterWin::RemoveObserver(BluetoothAdapter::Observer* observer) {
-  NOTIMPLEMENTED();
+  DCHECK(observer);
+  observers_.RemoveObserver(observer);
 }
 
 // TODO(youngki): Return true when |task_manager_| initializes the adapter
@@ -53,7 +55,7 @@ void BluetoothAdapterWin::SetPowered(
     bool powered,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  NOTIMPLEMENTED();
+  task_manager_->PostSetPoweredBluetoothTask(powered, callback, error_callback);
 }
 
 bool BluetoothAdapterWin::IsDiscovering() const {

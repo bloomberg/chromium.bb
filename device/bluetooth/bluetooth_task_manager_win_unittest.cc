@@ -50,7 +50,6 @@ class BluetoothTaskManagerWinTest : public testing::Test {
 
   virtual void SetUp() {
     task_manager_->AddObserver(&observer_);
-    task_manager_->Initialize();
   }
 
   virtual void TearDown() {
@@ -70,12 +69,14 @@ class BluetoothTaskManagerWinTest : public testing::Test {
 };
 
 TEST_F(BluetoothTaskManagerWinTest, StartPolling) {
+  task_manager_->Initialize();
   const std::deque<base::TestPendingTask>& pending_tasks =
       bluetooth_task_runner_->GetPendingTasks();
   EXPECT_EQ(1, bluetooth_task_runner_->GetPendingTasks().size());
 }
 
 TEST_F(BluetoothTaskManagerWinTest, PollAdapterIfBluetoothStackIsAvailable) {
+  task_manager_->Initialize();
   bluetooth_task_runner_->RunPendingTasks();
   int num_expected_pending_tasks = has_bluetooth_stack_ ? 1 : 0;
   EXPECT_EQ(num_expected_pending_tasks,
@@ -83,10 +84,10 @@ TEST_F(BluetoothTaskManagerWinTest, PollAdapterIfBluetoothStackIsAvailable) {
 }
 
 TEST_F(BluetoothTaskManagerWinTest, Polling) {
-  if (!has_bluetooth_stack_) {
+  if (!has_bluetooth_stack_)
     return;
-  }
 
+  task_manager_->Initialize();
   int expected_num_updates = 5;
 
   for (int i = 0; i < expected_num_updates; i++) {
@@ -96,6 +97,18 @@ TEST_F(BluetoothTaskManagerWinTest, Polling) {
   EXPECT_EQ(expected_num_updates, ui_task_runner_->GetPendingTasks().size());
   ui_task_runner_->RunPendingTasks();
   EXPECT_EQ(expected_num_updates, observer_.num_updates());
+}
+
+TEST_F(BluetoothTaskManagerWinTest, SetPowered) {
+  if (!has_bluetooth_stack_)
+    return;
+
+  base::Closure closure;
+  task_manager_->PostSetPoweredBluetoothTask(true, closure, closure);
+
+  EXPECT_EQ(1, bluetooth_task_runner_->GetPendingTasks().size());
+  bluetooth_task_runner_->RunPendingTasks();
+  EXPECT_TRUE(ui_task_runner_->GetPendingTasks().size() >= 1);
 }
 
 }  // namespace device

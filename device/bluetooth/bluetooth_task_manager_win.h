@@ -9,6 +9,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/win/scoped_handle.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 
 class MessageLoop;
 
@@ -54,6 +56,11 @@ class BluetoothTaskManagerWin
   void Initialize();
   void Shutdown();
 
+  void PostSetPoweredBluetoothTask(
+      bool powered,
+      const base::Closure& callback,
+      const BluetoothAdapter::ErrorCallback& error_callback);
+
  private:
   friend class base::RefCountedThreadSafe<BluetoothTaskManagerWin>;
   friend class BluetoothTaskManagerWinTest;
@@ -80,6 +87,9 @@ class BluetoothTaskManagerWin
   // Called on BluetoothTaskRunner.
   void StartPolling();
   void PollAdapter();
+  void SetPowered(bool powered,
+                  const base::Closure& callback,
+                  const BluetoothAdapter::ErrorCallback& error_callback);
 
   // UI task runner reference.
   const scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
@@ -89,6 +99,9 @@ class BluetoothTaskManagerWin
 
   // List of observers interested in event notifications.
   ObserverList<Observer> observers_;
+
+  // Adapter handle owned by bluetooth task runner.
+  base::win::ScopedHandle adapter_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothTaskManagerWin);
 };

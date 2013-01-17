@@ -66,6 +66,9 @@ class BluetoothAdapterWin : public BluetoothAdapter,
 
   base::ThreadChecker thread_checker_;
 
+  // List of observers interested in event notifications from us.
+  ObserverList<BluetoothAdapter::Observer> observers_;
+
   // NOTE: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothAdapterWin> weak_ptr_factory_;

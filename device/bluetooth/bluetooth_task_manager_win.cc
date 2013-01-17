@@ -113,11 +113,13 @@ BluetoothTaskManagerWin::~BluetoothTaskManagerWin() {
 
 void BluetoothTaskManagerWin::AddObserver(Observer* observer) {
   DCHECK(observer);
+  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   observers_.AddObserver(observer);
 }
 
 void BluetoothTaskManagerWin::RemoveObserver(Observer* observer) {
   DCHECK(observer);
+  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   observers_.RemoveObserver(observer);
 }
 
@@ -143,6 +145,20 @@ void BluetoothTaskManagerWin::Shutdown() {
   worker_pool_->Shutdown();
 }
 
+void BluetoothTaskManagerWin::PostSetPoweredBluetoothTask(
+    bool powered,
+    const base::Closure& callback,
+    const BluetoothAdapter::ErrorCallback& error_callback) {
+  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  bluetooth_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&BluetoothTaskManagerWin::SetPowered,
+                 this,
+                 powered,
+                 callback,
+                 error_callback));
+}
+
 void BluetoothTaskManagerWin::OnAdapterStateChanged(const AdapterState* state) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
   FOR_EACH_OBSERVER(BluetoothTaskManagerWin::Observer, observers_,
@@ -152,17 +168,18 @@ void BluetoothTaskManagerWin::OnAdapterStateChanged(const AdapterState* state) {
 void BluetoothTaskManagerWin::PollAdapter() {
   DCHECK(bluetooth_task_runner_->RunsTasksOnCurrentThread());
 
-  base::win::ScopedHandle adapter_handle;
   const BLUETOOTH_FIND_RADIO_PARAMS adapter_param =
       { sizeof(BLUETOOTH_FIND_RADIO_PARAMS) };
+  if (adapter_handle_)
+    adapter_handle_.Close();
   HBLUETOOTH_RADIO_FIND handle = BluetoothFindFirstRadio(
-      &adapter_param, adapter_handle.Receive());
+      &adapter_param, adapter_handle_.Receive());
 
   if (handle)
     BluetoothFindRadioClose(handle);
 
   AdapterState* state = new AdapterState();
-  GetAdapterState(adapter_handle, state);
+  GetAdapterState(adapter_handle_, state);
 
   // Notify the UI thread of the Bluetooth Adapter state.
   ui_task_runner_->PostTask(
@@ -177,6 +194,32 @@ void BluetoothTaskManagerWin::PollAdapter() {
       base::Bind(&BluetoothTaskManagerWin::PollAdapter,
                  this),
       base::TimeDelta::FromMilliseconds(kPollIntervalMs));
+}
+
+void BluetoothTaskManagerWin::SetPowered(
+    bool powered,
+    const base::Closure& callback,
+    const BluetoothAdapter::ErrorCallback& error_callback) {
+  DCHECK(bluetooth_task_runner_->RunsTasksOnCurrentThread());
+  bool success = false;
+  if (adapter_handle_) {
+    if (!powered)
+      BluetoothEnableDiscovery(adapter_handle_, false);
+    success = !!BluetoothEnableIncomingConnections(adapter_handle_, powered);
+  }
+
+  if (success) {
+    AdapterState* state = new AdapterState();
+    GetAdapterState(adapter_handle_, state);
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&BluetoothTaskManagerWin::OnAdapterStateChanged,
+                   this,
+                   base::Owned(state)));
+    ui_task_runner_->PostTask(FROM_HERE, callback);
+  } else {
+    ui_task_runner_->PostTask(FROM_HERE, error_callback);
+  }
 }
 
 }  // namespace device
