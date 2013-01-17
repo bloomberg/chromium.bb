@@ -158,7 +158,6 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   EXPECT_EQ(1, observer.CountAndReset());  // resize and add
   EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("-300,500 400x400", GetSecondaryDisplay().bounds().ToString());
-
 }
 
 TEST_F(DisplayControllerTest, BoundsUpdated) {
@@ -180,13 +179,15 @@ TEST_F(DisplayControllerTest, BoundsUpdated) {
   EXPECT_EQ(2, observer.CountAndReset());  // two resizes
   EXPECT_EQ("0,0 400x400", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("0,400 200x200", GetSecondaryDisplay().bounds().ToString());
-  EXPECT_EQ("5,405 190x190", GetSecondaryDisplay().work_area().ToString());
+  if (!ash::Shell::IsLauncherPerDisplayEnabled())
+    EXPECT_EQ("5,405 190x190", GetSecondaryDisplay().work_area().ToString());
 
   UpdateDisplay("400x400,300x300");
   EXPECT_EQ(1, observer.CountAndReset());
   EXPECT_EQ("0,0 400x400", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("0,400 300x300", GetSecondaryDisplay().bounds().ToString());
-  EXPECT_EQ("5,405 290x290", GetSecondaryDisplay().work_area().ToString());
+  if (!ash::Shell::IsLauncherPerDisplayEnabled())
+    EXPECT_EQ("5,405 290x290", GetSecondaryDisplay().work_area().ToString());
 
   UpdateDisplay("400x400");
   EXPECT_EQ(1, observer.CountAndReset());
@@ -261,7 +262,10 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
   EXPECT_EQ("0,0 200x200", primary_display.bounds().ToString());
   EXPECT_EQ("0,0 200x152", primary_display.work_area().ToString());
   EXPECT_EQ("200,0 300x300", secondary_display.bounds().ToString());
-  EXPECT_EQ("200,0 300x300", secondary_display.work_area().ToString());
+  if (ash::Shell::IsLauncherPerDisplayEnabled())
+    EXPECT_EQ("200,0 300x252", secondary_display.work_area().ToString());
+  else
+    EXPECT_EQ("200,0 300x300", secondary_display.work_area().ToString());
 
   // Switch primary and secondary
   display_controller->SetPrimaryDisplay(secondary_display);
@@ -289,7 +293,11 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
   EXPECT_EQ("0,0 300x300", swapped_primary.bounds().ToString());
   EXPECT_EQ("0,0 300x252", swapped_primary.work_area().ToString());
   EXPECT_EQ("-200,-50 200x200", swapped_secondary.bounds().ToString());
-  EXPECT_EQ("-200,-50 200x200", swapped_secondary.work_area().ToString());
+
+  if (ash::Shell::IsLauncherPerDisplayEnabled())
+    EXPECT_EQ("-200,-50 200x152", swapped_secondary.work_area().ToString());
+  else
+    EXPECT_EQ("-200,-50 200x200", swapped_secondary.work_area().ToString());
 
   const DisplayLayout& inverted_layout =
       display_controller->GetLayoutForDisplay(primary_display);

@@ -396,7 +396,7 @@ std::vector<aura::Window*> Shell::GetContainersFromAllRootWindows(
 // static
 bool Shell::IsLauncherPerDisplayEnabled() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kAshLauncherPerDisplay);
+  return !command_line->HasSwitch(switches::kAshDisableLauncherPerDisplay);
 }
 
 void Shell::Init() {

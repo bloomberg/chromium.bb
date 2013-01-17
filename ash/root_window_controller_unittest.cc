@@ -133,10 +133,15 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   views::Widget* maximized = CreateTestWidget(gfx::Rect(700, 10, 100, 100));
   maximized->Maximize();
   EXPECT_EQ(root_windows[1], maximized->GetNativeView()->GetRootWindow());
-
-  EXPECT_EQ("600,0 500x500", maximized->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("0,0 500x500",
-            maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
+  if (Shell::IsLauncherPerDisplayEnabled()) {
+    EXPECT_EQ("600,0 500x452", maximized->GetWindowBoundsInScreen().ToString());
+    EXPECT_EQ("0,0 500x452",
+              maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
+  } else {
+    EXPECT_EQ("600,0 500x500", maximized->GetWindowBoundsInScreen().ToString());
+    EXPECT_EQ("0,0 500x500",
+              maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
+  }
 
   views::Widget* minimized = CreateTestWidget(gfx::Rect(800, 10, 100, 100));
   minimized->Minimize();

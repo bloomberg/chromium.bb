@@ -28,6 +28,7 @@ ASH_EXPORT extern const char kAshDisableDisplayChangeLimiter[];
 ASH_EXPORT extern const char kAshDisablePanelFitting[];
 ASH_EXPORT extern const char kAshDisableBootAnimation2[];
 ASH_EXPORT extern const char kAshDisableNewLockAnimations[];
+ASH_EXPORT extern const char kAshDisableLauncherPerDisplay[];
 ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
 ASH_EXPORT extern const char kAshEnableBrightnessControl[];
 #if defined(OS_LINUX)
@@ -38,7 +39,6 @@ ASH_EXPORT extern const char kAshEnableOak[];
 ASH_EXPORT extern const char kAshEnableTrayDragging[];
 ASH_EXPORT extern const char kAshEnableWorkspaceScrubbing[];
 ASH_EXPORT extern const char kAshImmersiveHideTabIndicators[];
-ASH_EXPORT extern const char kAshLauncherPerDisplay[];
 ASH_EXPORT extern const char kAshSecondaryDisplayLayout[];
 ASH_EXPORT extern const char kAshTouchHud[];
 ASH_EXPORT extern const char kAuraLegacyPowerButton[];

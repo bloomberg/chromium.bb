@@ -6959,11 +6959,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ASH_NEW_LOCK_ANIMATIONS_DESCRIPTION" desc="Description for the flag to switch lock animations.">
           Disables new lock animations.
         </message>
-        <message name="IDS_FLAGS_ENABLE_LAUNCHER_PER_DISPLAY_NAME" desc="Name for the flag to enable launchers on all displays.">
-          Enables launcher on all displays.
+        <message name="IDS_FLAGS_DISABLE_LAUNCHER_PER_DISPLAY_NAME" desc="Name for the flag to disable a launcher on secondary display.">
+          Disable a launcher on secondary display.
         </message>
-        <message name="IDS_FLAGS_ENABLE_LAUNCHER_PER_DISPLAY_DESCRIPTION" desc="Description for the flag to enable launchers on all displaysj.">
-          All displays will have a launcher when enabled.
+        <message name="IDS_FLAGS_DISABLE_LAUNCHER_PER_DISPLAY_DESCRIPTION" desc="Description for the flag to disable a launcher on secondary display.">
+          Diables showing the launcher on the second display.
         </message>
         <message name="IDS_FLAGS_FORCE_OAUTH1_DISPLAY_NAME" desc="Name for the flag to force legacy authentication mode.">
            Legacy user authentication.

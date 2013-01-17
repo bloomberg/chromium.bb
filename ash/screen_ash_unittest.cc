@@ -36,9 +36,15 @@ TEST_F(ScreenAshTest, Bounds) {
   EXPECT_EQ("0,0 600x597",
             ScreenAsh::GetMaximizedWindowBoundsInParent(
                 primary->GetNativeView()).ToString());
-  EXPECT_EQ("0,0 500x500",
-            ScreenAsh::GetMaximizedWindowBoundsInParent(
-                secondary->GetNativeView()).ToString());
+  if (Shell::IsLauncherPerDisplayEnabled()) {
+    EXPECT_EQ("0,0 500x452",
+              ScreenAsh::GetMaximizedWindowBoundsInParent(
+                  secondary->GetNativeView()).ToString());
+  } else {
+    EXPECT_EQ("0,0 500x500",
+              ScreenAsh::GetMaximizedWindowBoundsInParent(
+                  secondary->GetNativeView()).ToString());
+  }
 
   // Display bounds
   EXPECT_EQ("0,0 600x600",
@@ -52,9 +58,15 @@ TEST_F(ScreenAshTest, Bounds) {
   EXPECT_EQ("0,0 600x597",
             ScreenAsh::GetDisplayWorkAreaBoundsInParent(
                 primary->GetNativeView()).ToString());
-  EXPECT_EQ("0,0 500x500",
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(
-                secondary->GetNativeView()).ToString());
+  if (Shell::IsLauncherPerDisplayEnabled()) {
+    EXPECT_EQ("0,0 500x452",
+              ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+                  secondary->GetNativeView()).ToString());
+  } else {
+    EXPECT_EQ("0,0 500x500",
+              ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+                  secondary->GetNativeView()).ToString());
+  }
 }
 
 TEST_F(ScreenAshTest, ConvertRect) {

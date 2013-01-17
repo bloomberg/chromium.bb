@@ -20,7 +20,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "base/auto_reset.h"
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "grit/ash_strings.h"
 #include "grit/ash_resources.h"
@@ -963,8 +962,7 @@ void LauncherView::LauncherItemChanged(int model_index,
       break;
     }
     case TYPE_BROWSER_SHORTCUT:
-      if (!CommandLine::ForCurrentProcess()->HasSwitch(
-              ash::switches::kAshEnablePerAppLauncher))
+      if (!Shell::IsLauncherPerDisplayEnabled())
         break;
       // Fallthrough for the new Launcher since it needs to show the activation
       // change as well.

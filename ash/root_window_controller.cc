@@ -451,6 +451,10 @@ void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {
   // be re-focused below.
   aura::client::GetFocusClient(dst)->FocusWindow(NULL);
 
+  // Forget the shelf early so that shelf don't update itself using wrong
+  // display info.
+  workspace_controller_->SetShelf(NULL);
+
   ReparentAllWindows(root_window_.get(), dst);
 
   // Restore focused or active window if it's still alive.

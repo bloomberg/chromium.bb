@@ -992,11 +992,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kFileManagerPackaged),
   },
   {
-    "enable-launcher-per-display",
-    IDS_FLAGS_ENABLE_LAUNCHER_PER_DISPLAY_NAME,
-    IDS_FLAGS_ENABLE_LAUNCHER_PER_DISPLAY_DESCRIPTION,
+    "disable-launcher-per-display",
+    IDS_FLAGS_DISABLE_LAUNCHER_PER_DISPLAY_NAME,
+    IDS_FLAGS_DISABLE_LAUNCHER_PER_DISPLAY_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAshLauncherPerDisplay),
+    SINGLE_VALUE_TYPE(ash::switches::kAshDisableLauncherPerDisplay),
   },
 #endif  // defined(OS_CHROMEOS)
   {

@@ -76,8 +76,8 @@ const char kAshEnableTrayDragging[] = "ash-enable-tray-dragging";
 const char kAshImmersiveHideTabIndicators[] =
     "ash-immersive-hide-tab-indicators";
 
-// Enables creating a launcher per display.
-const char kAshLauncherPerDisplay[] = "ash-launcher-per-display";
+// Disables creating a launcher per display.
+const char kAshDisableLauncherPerDisplay[] = "ash-disable-launcher-per-display";
 
 // If present new lock animations are enabled.
 const char kAshDisableNewLockAnimations[] = "ash-disable-new-lock-animations";
