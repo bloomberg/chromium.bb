@@ -136,7 +136,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(const LayerTreeSettings& settings, LayerTre
     , m_debugState(settings.initialDebugState)
     , m_deviceScaleFactor(1)
     , m_visible(true)
-    , m_contentsTexturesPurged(false)
     , m_managedMemoryPolicy(PrioritizedResourceManager::defaultMemoryAllocationLimit(),
                             ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING,
                             0,
@@ -219,7 +218,7 @@ bool LayerTreeHostImpl::canDraw()
         TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::canDraw no renderer");
         return false;
     }
-    if (m_contentsTexturesPurged) {
+    if (m_activeTree->ContentsTexturesPurged()) {
         TRACE_EVENT_INSTANT0("cc", "LayerTreeHostImpl::canDraw contents textures purged");
         return false;
     }
@@ -698,7 +697,9 @@ void LayerTreeHostImpl::enforceManagedMemoryPolicy(const ManagedMemoryPolicy& po
         ManagedMemoryPolicy::priorityCutoffToValue(
             m_visible ? policy.priorityCutoffWhenVisible : policy.priorityCutoffWhenNotVisible));
     if (evictedResources) {
-        setContentsTexturesPurged();
+        activeTree()->SetContentsTexturesPurged();
+        if (pendingTree())
+            pendingTree()->SetContentsTexturesPurged();
         m_client->setNeedsCommitOnImplThread();
         m_client->onCanDrawStateChanged(canDraw());
     }
@@ -1026,18 +1027,6 @@ bool LayerTreeHostImpl::initializeRenderer(scoped_ptr<OutputSurface> outputSurfa
     m_client->onCanDrawStateChanged(canDraw());
 
     return true;
-}
-
-void LayerTreeHostImpl::setContentsTexturesPurged()
-{
-    m_contentsTexturesPurged = true;
-    m_client->onCanDrawStateChanged(canDraw());
-}
-
-void LayerTreeHostImpl::resetContentsTexturesPurged()
-{
-    m_contentsTexturesPurged = false;
-    m_client->onCanDrawStateChanged(canDraw());
 }
 
 void LayerTreeHostImpl::setViewportSize(const gfx::Size& layoutViewportSize, const gfx::Size& deviceViewportSize)

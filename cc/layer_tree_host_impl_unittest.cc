@@ -283,7 +283,7 @@ TEST_P(LayerTreeHostImplTest, notifyIfCanDrawChanged)
     EXPECT_TRUE(m_onCanDrawStateChangedCalled);
     m_onCanDrawStateChangedCalled = false;
 
-    m_hostImpl->resetContentsTexturesPurged();
+    m_hostImpl->activeTree()->ResetContentsTexturesPurged();
     EXPECT_TRUE(m_hostImpl->canDraw());
     EXPECT_TRUE(m_onCanDrawStateChangedCalled);
     m_onCanDrawStateChangedCalled = false;

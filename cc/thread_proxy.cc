@@ -704,19 +704,9 @@ void ThreadProxy::scheduledActionCommit()
     m_currentResourceUpdateControllerOnImplThread->finalize();
     m_currentResourceUpdateControllerOnImplThread.reset();
 
-    // If there are linked evicted backings, these backings' resources may be put into the
-    // impl tree, so we can't draw yet. Determine this before clearing all evicted backings.
-    bool newImplTreeHasNoEvictedResources = !m_layerTreeHost->contentsTextureManager()->linkedEvictedBackingsExist();
-
     m_layerTreeHostImpl->beginCommit();
     m_layerTreeHost->beginCommitOnImplThread(m_layerTreeHostImpl.get());
     m_layerTreeHost->finishCommitOnImplThread(m_layerTreeHostImpl.get());
-
-    if (newImplTreeHasNoEvictedResources) {
-        if (m_layerTreeHostImpl->contentsTexturesPurged())
-            m_layerTreeHostImpl->resetContentsTexturesPurged();
-    }
-
     m_layerTreeHostImpl->commitComplete();
 
     m_nextFrameIsNewlyCommittedFrameOnImplThread = true;

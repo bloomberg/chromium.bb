@@ -137,6 +137,10 @@ class CC_EXPORT LayerTreeImpl {
 
   void DidBecomeActive();
 
+  bool ContentsTexturesPurged() const;
+  void SetContentsTexturesPurged();
+  void ResetContentsTexturesPurged();
+
 protected:
   LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
 
@@ -158,6 +162,8 @@ protected:
   // List of visible layers for the most recently prepared frame. Used for
   // rendering and input event hit testing.
   LayerList render_surface_layer_list_;
+
+  bool contents_textures_purged_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeImpl);
 };

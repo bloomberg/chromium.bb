@@ -174,9 +174,6 @@ public:
     bool visible() const { return m_visible; }
     void setVisible(bool);
 
-    bool contentsTexturesPurged() const { return m_contentsTexturesPurged; }
-    void setContentsTexturesPurged();
-    void resetContentsTexturesPurged();
     size_t memoryAllocationLimitBytes() const { return m_managedMemoryPolicy.bytesLimitWhenVisible; }
 
     void setViewportSize(const gfx::Size& layoutViewportSize, const gfx::Size& deviceViewportSize);
@@ -320,7 +317,6 @@ private:
     gfx::Size m_deviceViewportSize;
     float m_deviceScaleFactor;
     bool m_visible;
-    bool m_contentsTexturesPurged;
     ManagedMemoryPolicy m_managedMemoryPolicy;
 
     bool m_needsUpdateDrawProperties;

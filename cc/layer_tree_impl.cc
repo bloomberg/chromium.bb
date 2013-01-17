@@ -19,7 +19,8 @@ LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
     , currently_scrolling_layer_(0)
     , background_color_(0)
     , has_transparent_background_(false)
-    , scrolling_layer_id_from_previous_tree_(0) {
+    , scrolling_layer_id_from_previous_tree_(0)
+    , contents_textures_purged_(false) {
 }
 
 LayerTreeImpl::~LayerTreeImpl() {
@@ -213,6 +214,20 @@ static void DidBecomeActiveRecursive(LayerImpl* layer) {
 void LayerTreeImpl::DidBecomeActive() {
   if (RootLayer())
     DidBecomeActiveRecursive(RootLayer());
+}
+
+bool LayerTreeImpl::ContentsTexturesPurged() const {
+  return contents_textures_purged_;
+}
+
+void LayerTreeImpl::SetContentsTexturesPurged() {
+  contents_textures_purged_ = true;
+  layer_tree_host_impl_->OnCanDrawStateChangedForTree(this);
+}
+
+void LayerTreeImpl::ResetContentsTexturesPurged() {
+  contents_textures_purged_ = false;
+  layer_tree_host_impl_->OnCanDrawStateChangedForTree(this);
 }
 
 const LayerTreeSettings& LayerTreeImpl::settings() const {

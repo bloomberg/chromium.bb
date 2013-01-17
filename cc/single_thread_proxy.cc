@@ -7,6 +7,7 @@
 #include "base/debug/trace_event.h"
 #include "cc/draw_quad.h"
 #include "cc/layer_tree_host.h"
+#include "cc/layer_tree_impl.h"
 #include "cc/output_surface.h"
 #include "cc/prioritized_resource_manager.h"
 #include "cc/resource_update_controller.h"
@@ -257,7 +258,7 @@ void SingleThreadProxy::stop()
         DebugScopedSetMainThreadBlocked mainThreadBlocked(this);
         DebugScopedSetImplThread impl(this);
 
-        if (!m_layerTreeHostImpl->contentsTexturesPurged())
+        if (!m_layerTreeHostImpl->activeTree()->ContentsTexturesPurged())
             m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
         m_layerTreeHostImpl.reset();
     }
@@ -343,9 +344,6 @@ bool SingleThreadProxy::commitAndComposite()
 
     scoped_ptr<ResourceUpdateQueue> queue = make_scoped_ptr(new ResourceUpdateQueue);
     m_layerTreeHost->updateLayers(*(queue.get()), m_layerTreeHostImpl->memoryAllocationLimitBytes());
-
-    if (m_layerTreeHostImpl->contentsTexturesPurged())
-        m_layerTreeHostImpl->resetContentsTexturesPurged();
 
     m_layerTreeHost->willCommit();
     doCommit(queue.Pass());
