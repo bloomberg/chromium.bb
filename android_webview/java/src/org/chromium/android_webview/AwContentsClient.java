@@ -35,39 +35,15 @@ public abstract class AwContentsClient extends ContentViewClient {
     private final WebContentsDelegateAdapter mWebContentsDelegateAdapter =
             new WebContentsDelegateAdapter();
 
+    private final AwContentsClientCallbackHelper mCallbackHelper =
+        new AwContentsClientCallbackHelper(this);
+
     private AwWebContentsObserver mWebContentsObserver;
 
     //--------------------------------------------------------------------------------------------
     //                        Adapter for WebContentsDelegate methods.
     //--------------------------------------------------------------------------------------------
-
-    // TODO(mkosiba): Merge with handler in AwContents.
     class WebContentsDelegateAdapter extends AwWebContentsDelegate {
-
-        // The message ids.
-        public final static int CONTINUE_PENDING_RELOAD = 1;
-        public final static int CANCEL_PENDING_RELOAD = 2;
-
-        // Handler associated with this adapter.
-        // TODO(sgurun) Remember the URL to cancel the resend behavior
-        // if it is different than the most recent NavigationController entry.
-        private final Handler mHandler = new Handler(Looper.getMainLooper()) {
-
-            @Override
-            public void handleMessage(Message msg) {
-                switch (msg.what) {
-                    case CONTINUE_PENDING_RELOAD:
-                        ((ContentViewCore) msg.obj).continuePendingReload();
-                        break;
-                    case CANCEL_PENDING_RELOAD:
-                        ((ContentViewCore) msg.obj).cancelPendingReload();
-                        break;
-                    default:
-                        Log.w(TAG, "Unknown message " + msg.what);
-                        break;
-                }
-            }
-        };
 
         @Override
         public void onLoadProgressChanged(int progress) {
@@ -128,9 +104,38 @@ public abstract class AwContentsClient extends ContentViewClient {
         }
 
         @Override
-        public void showRepostFormWarningDialog(ContentViewCore contentViewCore) {
-            Message dontResend = mHandler.obtainMessage(CANCEL_PENDING_RELOAD, contentViewCore);
-            Message resend = mHandler.obtainMessage(CONTINUE_PENDING_RELOAD, contentViewCore);
+        public void showRepostFormWarningDialog(final ContentViewCore contentViewCore) {
+            // This is intentionally not part of mCallbackHelper as that class is intended for
+            // callbacks going the other way (to the embedder, not from the embedder).
+            // TODO(mkosiba) We should be using something akin to the JsResultReceiver as the
+            // callback parameter (instead of ContentViewCore) and implement a way of converting
+            // that to a pair of messages.
+            final int MSG_CONTINUE_PENDING_RELOAD = 1;
+            final int MSG_CANCEL_PENDING_RELOAD = 2;
+
+            // TODO(sgurun) Remember the URL to cancel the reload behavior
+            // if it is different than the most recent NavigationController entry.
+            final Handler handler = new Handler(Looper.getMainLooper()) {
+                @Override
+                public void handleMessage(Message msg) {
+                    switch(msg.what) {
+                        case MSG_CONTINUE_PENDING_RELOAD: {
+                            contentViewCore.continuePendingReload();
+                            break;
+                        }
+                        case MSG_CANCEL_PENDING_RELOAD: {
+                            contentViewCore.cancelPendingReload();
+                            break;
+                        }
+                        default:
+                            throw new IllegalStateException(
+                                    "WebContentsDelegateAdapter: unhandled message " + msg.what);
+                    }
+                }
+            };
+
+            Message resend = handler.obtainMessage(MSG_CONTINUE_PENDING_RELOAD);
+            Message dontResend = handler.obtainMessage(MSG_CANCEL_PENDING_RELOAD);
             AwContentsClient.this.onFormResubmission(dontResend, resend);
         }
 
@@ -189,8 +194,12 @@ public abstract class AwContentsClient extends ContentViewClient {
         mWebContentsObserver = new AwWebContentsObserver(contentViewCore);
     }
 
-    final AwWebContentsDelegate getWebContentsDelegate()  {
+    final AwWebContentsDelegate getWebContentsDelegate() {
         return mWebContentsDelegateAdapter;
+    }
+
+    final AwContentsClientCallbackHelper getCallbackHelper() {
+        return mCallbackHelper;
     }
 
     //--------------------------------------------------------------------------------------------

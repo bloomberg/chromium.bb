@@ -13,8 +13,6 @@ import android.net.http.SslCertificate;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
@@ -98,7 +96,6 @@ public class AwContents {
     private final AwLayoutSizer mLayoutSizer;
     // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
-    private final ClientCallbackHandler mClientCallbackHandler;
     private boolean mIsPaused;
 
     // Must call nativeUpdateLastHitTestData first to update this before use.
@@ -117,64 +114,6 @@ public class AwContents {
 
     private CleanupReference mCleanupReference;
 
-    private static class DownloadInfo {
-        final String mUrl;
-        final String mUserAgent;
-        final String mContentDisposition;
-        final String mMimeType;
-        final long mContentLength;
-
-        DownloadInfo(String url,
-                     String userAgent,
-                     String contentDisposition,
-                     String mimeType,
-                     long contentLength) {
-            mUrl = url;
-            mUserAgent = userAgent;
-            mContentDisposition = contentDisposition;
-            mMimeType = mimeType;
-            mContentLength = contentLength;
-        }
-    }
-
-    // This class is responsible for calling certain client callbacks on the UI thread. Most
-    // callbacks do no go through here, but get forwarded to AwContentsClient directly.
-    // The messages processed here may originate from the IO or UI thread.
-    // TODO(mkosiba): merge the handler in AwContentsClient.WebContentsDelegateAdapter into this.
-    private class ClientCallbackHandler extends Handler {
-        public static final int MSG_ON_LOAD_RESOURCE = 1;
-        public static final int MSG_ON_PAGE_STARTED = 2;
-        public static final int MSG_ON_DOWNLOAD_START = 3;
-
-        @Override
-        public void handleMessage(Message msg) {
-            switch(msg.what) {
-                case MSG_ON_LOAD_RESOURCE: {
-                    final String url = (String) msg.obj;
-                    AwContents.this.mContentsClient.onLoadResource(url);
-                    break;
-                }
-                case MSG_ON_PAGE_STARTED: {
-                    final String url = (String) msg.obj;
-                    AwContents.this.mContentsClient.onPageStarted(url);
-                    break;
-                }
-                case MSG_ON_DOWNLOAD_START: {
-                    DownloadInfo info = (DownloadInfo)msg.obj;
-                    AwContents.this.mContentsClient.onDownloadStart(info.mUrl,
-                                                                    info.mUserAgent,
-                                                                    info.mContentDisposition,
-                                                                    info.mMimeType,
-                                                                    info.mContentLength);
-                    break;
-                }
-                default:
-                    throw new IllegalStateException(
-                            "IoThreadClientHandler: unhandled message " + msg.what);
-            }
-        }
-    }
-
     private class IoThreadClientImpl implements AwContentsIoThreadClient {
         // All methods are called on the IO thread.
 
@@ -188,10 +127,7 @@ public class AwContents {
             InterceptedRequestData interceptedRequestData =
                 AwContents.this.mContentsClient.shouldInterceptRequest(url);
             if (interceptedRequestData == null) {
-                mClientCallbackHandler.sendMessage(
-                        mClientCallbackHandler.obtainMessage(
-                            ClientCallbackHandler.MSG_ON_LOAD_RESOURCE,
-                            url));
+                mContentsClient.getCallbackHelper().postOnLoadResource(url);
             }
             return interceptedRequestData;
         }
@@ -217,15 +153,8 @@ public class AwContents {
                                     String contentDisposition,
                                     String mimeType,
                                     long contentLength) {
-            DownloadInfo info = new DownloadInfo(url,
-                                                 userAgent,
-                                                 contentDisposition,
-                                                 mimeType,
-                                                 contentLength);
-            mClientCallbackHandler.sendMessage(
-                    mClientCallbackHandler.obtainMessage(
-                          ClientCallbackHandler.MSG_ON_DOWNLOAD_START,
-                          info));
+            mContentsClient.getCallbackHelper().postOnDownloadStart(url, userAgent,
+                    contentDisposition, mimeType, contentLength);
         }
     }
 
@@ -266,10 +195,7 @@ public class AwContents {
                 // The shouldIgnoreNavigation call might have resulted in posting messages to the
                 // UI thread. Using sendMessage here (instead of calling onPageStarted directly)
                 // will allow those to run.
-                mClientCallbackHandler.sendMessage(
-                        mClientCallbackHandler.obtainMessage(
-                            ClientCallbackHandler.MSG_ON_PAGE_STARTED,
-                            url));
+                mContentsClient.getCallbackHelper().postOnPageStarted(url);
             }
 
             return ignoreNavigation;
@@ -319,7 +245,6 @@ public class AwContents {
         mNativeAwContents = nativeInit(contentsClient.getWebContentsDelegate());
         mContentsClient = contentsClient;
         mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
-        mClientCallbackHandler = new ClientCallbackHandler();
 
         mContentViewCore.initialize(containerView, internalAccessAdapter,
                 nativeGetWebContents(mNativeAwContents),
