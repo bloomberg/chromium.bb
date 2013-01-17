@@ -204,7 +204,7 @@ void BookmarkNodeData::WriteToClipboard(Profile* profile) const {
   bookmark_pasteboard_helper_mac::WriteToPasteboard(
       bookmark_pasteboard_helper_mac::kCopyPastePasteboard,
       elements,
-      profile_path_.value());
+      profile_path_);
 }
 
 bool BookmarkNodeData::ReadFromClipboard() {

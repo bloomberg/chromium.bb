@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_PASTEBOARD_HELPER_MAC_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_PASTEBOARD_HELPER_MAC_H_
 
-#include "base/file_path.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 
 #if defined(__OBJC__)
 @class NSString;
 #endif  // __OBJC__
+
+class FilePath;
 
 // This set of functions lets C++ code interact with the cocoa pasteboard
 // and dragging methods.
@@ -24,7 +25,7 @@ enum PasteboardType {
 // Writes a set of bookmark elements from a profile to the specified pasteboard.
 void WriteToPasteboard(PasteboardType type,
                        const std::vector<BookmarkNodeData::Element>& elements,
-                       FilePath::StringType profile_path);
+                       const FilePath& profile_path);
 
 // Reads a set of bookmark elements from the specified pasteboard.
 bool ReadFromPasteboard(PasteboardType type,
