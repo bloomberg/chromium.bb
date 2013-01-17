@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/dialogs/select_file_dialog_win.h"
+#include "ui/shell_dialogs/select_file_dialog_win.h"
 
 #include <windows.h>
 #include <commdlg.h>
@@ -26,9 +26,14 @@
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "grit/ui_strings.h"
-#include "ui/base/dialogs/base_shell_dialog_win.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/shell_dialogs/base_shell_dialog_win.h"
+
+#if defined(USE_AURA)
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
+#endif
 
 namespace {
 
@@ -407,7 +412,7 @@ class SelectFileDialogImpl : public ui::SelectFileDialog,
                                 ui::SelectFilePolicy* policy);
 
   // BaseShellDialog implementation:
-  virtual bool IsRunning(HWND owning_hwnd) const OVERRIDE;
+  virtual bool IsRunning(gfx::NativeWindow owning_hwnd) const OVERRIDE;
   virtual void ListenerDestroyed() OVERRIDE;
 
  protected:
@@ -532,10 +537,15 @@ void SelectFileDialogImpl::SelectFileImpl(
     void* params) {
   has_multiple_file_type_choices_ =
       file_types ? file_types->extensions.size() > 1 : true;
+#if defined(USE_AURA)
+  HWND owner = owning_window->GetRootWindow()->GetAcceleratedWidget();
+#else
+  HWND owner = owning_window;
+#endif
   ExecuteSelectParams execute_params(type, UTF16ToWide(title), default_path,
                                      file_types, file_type_index,
-                                     default_extension, BeginRun(owning_window),
-                                     owning_window, params);
+                                     default_extension, BeginRun(owner),
+                                     owner, params);
   execute_params.run_state.dialog_thread->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&SelectFileDialogImpl::ExecuteSelectFile, this,
@@ -546,8 +556,13 @@ bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
   return has_multiple_file_type_choices_;
 }
 
-bool SelectFileDialogImpl::IsRunning(HWND owning_hwnd) const {
-  return listener_ && IsRunningDialogForOwner(owning_hwnd);
+bool SelectFileDialogImpl::IsRunning(gfx::NativeWindow owning_hwnd) const {
+#if defined(USE_AURA)
+  HWND owner = owning_hwnd->GetRootWindow()->GetAcceleratedWidget();
+#else
+  HWND owner = owning_hwnd;
+#endif
+  return listener_ && IsRunningDialogForOwner(owner);
 }
 
 void SelectFileDialogImpl::ListenerDestroyed() {

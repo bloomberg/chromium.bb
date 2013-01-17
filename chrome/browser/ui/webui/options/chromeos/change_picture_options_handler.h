@@ -9,9 +9,9 @@
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace base {
 class DictionaryValue;

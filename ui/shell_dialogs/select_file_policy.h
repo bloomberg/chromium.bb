@@ -1,17 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_DIALOGS_SELECT_FILE_POLICY_H_
-#define UI_BASE_DIALOGS_SELECT_FILE_POLICY_H_
+#ifndef UI_SHELL_DIALOGS_SELECT_FILE_POLICY_H_
+#define UI_SHELL_DIALOGS_SELECT_FILE_POLICY_H_
 
-#include "ui/base/ui_export.h"
+#include "ui/shell_dialogs/shell_dialogs_export.h"
 
 namespace ui {
 
 // An optional policy class that provides decisions on whether to allow showing
 // a native file dialog. Some ports need this.
-class UI_EXPORT SelectFilePolicy {
+class SHELL_DIALOGS_EXPORT SelectFilePolicy {
  public:
   virtual ~SelectFilePolicy();
 
@@ -24,4 +24,5 @@ class UI_EXPORT SelectFilePolicy {
 
 }  // namespace ui
 
-#endif  // UI_BASE_DIALOGS_SELECT_FILE_POLICY_H_
+#endif  // UI_SHELL_DIALOGS_SELECT_FILE_POLICY_H_
+

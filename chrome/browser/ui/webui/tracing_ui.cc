@@ -34,8 +34,8 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_channel.h"
-#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"

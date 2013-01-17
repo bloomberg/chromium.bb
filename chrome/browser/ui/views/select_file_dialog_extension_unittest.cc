@@ -6,7 +6,7 @@
 
 #include "base/file_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/dialogs/selected_file_info.h"
+#include "ui/shell_dialogs/selected_file_info.h"
 
 class SelectFileDialogExtensionTest : public testing::Test {
  public:

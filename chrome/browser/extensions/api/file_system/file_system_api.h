@@ -7,7 +7,7 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/api/file_system.h"
-#include "ui/base/dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace extensions {
 

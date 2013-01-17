@@ -25,7 +25,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/dialogs/select_file_dialog_factory.h"
+#include "ui/shell_dialogs/select_file_dialog_factory.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 #include "webkit/glue/web_intent_service_data.h"

@@ -661,6 +661,7 @@
             '../testing/gtest.gyp:gtest',
             '../third_party/mesa/mesa.gyp:osmesa',
             '../ui/gl/gl.gyp:gl',
+            '../ui/ui.gyp:shell_dialogs',
             '../ui/ui.gyp:ui',
             '../webkit/support/webkit_support.gyp:clearkeycdmplugin',
             '../webkit/support/webkit_support.gyp:glue',

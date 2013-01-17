@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_DIALOGS_SELECT_FILE_DIALOG_FACTORY_H_
-#define UI_BASE_DIALOGS_SELECT_FILE_DIALOG_FACTORY_H_
+#ifndef UI_SHELL_DIALOGS_SELECT_FILE_DIALOG_FACTORY_H_
+#define UI_SHELL_DIALOGS_SELECT_FILE_DIALOG_FACTORY_H_
 
-#include "ui/base/dialogs/select_file_dialog.h"
-#include "ui/base/ui_export.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/shell_dialogs_export.h"
 
 namespace ui {
 class SelectFilePolicy;
@@ -16,7 +16,7 @@ class SelectFilePolicy;
 // live in chrome/ due to the extension dependency.)
 //
 // They can implement a factory which creates their SelectFileDialog.
-class UI_EXPORT SelectFileDialogFactory {
+class SHELL_DIALOGS_EXPORT SelectFileDialogFactory {
  public:
   virtual ~SelectFileDialogFactory();
 
@@ -26,4 +26,5 @@ class UI_EXPORT SelectFileDialogFactory {
 
 }  // namespace ui
 
-#endif  // UI_BASE_DIALOGS_SELECT_FILE_DIALOG_FACTORY_H_
+#endif  // UI_SHELL_DIALOGS_SELECT_FILE_DIALOG_FACTORY_H_
+

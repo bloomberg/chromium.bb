@@ -15,7 +15,7 @@
 #include "chrome/browser/printing/print_view_manager_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "printing/print_job_constants.h"
-#include "ui/base/dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 class FilePath;
 class PrintSystemTaskProxy;

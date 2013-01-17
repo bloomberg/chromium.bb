@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "net/base/nss_cert_database.h"
-#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/cryptohome_client.h"

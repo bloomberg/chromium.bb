@@ -28,7 +28,7 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"

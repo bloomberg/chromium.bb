@@ -16,8 +16,8 @@
 #include "chrome/common/net/x509_certificate_model.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
-#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 using content::BrowserThread;
 using content::WebContents;

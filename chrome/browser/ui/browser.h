@@ -42,9 +42,9 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/page_zoom.h"
-#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 class BrowserContentSettingBubbleModelDelegate;
 class BrowserSyncedWindowDelegate;

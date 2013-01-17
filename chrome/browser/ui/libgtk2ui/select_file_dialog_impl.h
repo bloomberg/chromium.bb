@@ -11,9 +11,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/nix/xdg_util.h"
-#include "ui/base/dialogs/select_file_dialog.h"
-#include "ui/base/dialogs/select_file_policy.h"
 #include "ui/aura/window.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/select_file_policy.h"
 
 namespace libgtk2ui {
 

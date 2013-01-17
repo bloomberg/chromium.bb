@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "ui/base/dialogs/select_file_policy.h"
+#include "ui/shell_dialogs/select_file_policy.h"
 
 namespace content {
 class WebContents;

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/libgtk2ui/libgtk2ui_export.h"
 #include "chrome/browser/ui/libgtk2ui/owned_widget_gtk2.h"
-#include "ui/base/linux_ui.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/shell_dialogs/linux_ui_shell_dialog.h"
 
 typedef struct _GdkColor GdkColor;
 typedef struct _GtkStyle GtkStyle;
@@ -28,7 +28,7 @@ namespace libgtk2ui {
 
 // Interface to GTK2 desktop features.
 //
-class Gtk2UI : public ui::LinuxUI {
+class Gtk2UI : public ui::LinuxUIShellDialog {
  public:
   Gtk2UI();
   virtual ~Gtk2UI();
@@ -37,6 +37,8 @@ class Gtk2UI : public ui::LinuxUI {
   virtual bool UseNativeTheme() const OVERRIDE;
   virtual gfx::Image* GetThemeImageNamed(int id) const OVERRIDE;
   virtual bool GetColor(int id, SkColor* color) const OVERRIDE;
+
+  // ui::LinuxUIShellDialog:
   virtual ui::SelectFileDialog* CreateSelectFileDialog(
       ui::SelectFileDialog::Listener* listener,
       ui::SelectFilePolicy* policy) const OVERRIDE;

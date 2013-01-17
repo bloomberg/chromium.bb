@@ -1,15 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_DIALOGS_BASE_SHELL_DIALOG_WIN_H_
-#define UI_BASE_DIALOGS_BASE_SHELL_DIALOG_WIN_H_
+#ifndef UI_SHELL_DIALOGS_BASE_SHELL_DIALOG_WIN_H_
+#define UI_SHELL_DIALOGS_BASE_SHELL_DIALOG_WIN_H_
 
 #include <shlobj.h>
 #include <set>
 
-#include "ui/base/ui_export.h"
-#include "ui/base/dialogs/base_shell_dialog.h"
+#include "ui/shell_dialogs/base_shell_dialog.h"
+#include "ui/shell_dialogs/shell_dialogs_export.h"
 
 namespace base {
 class Thread;
@@ -20,14 +20,14 @@ namespace ui {
 ///////////////////////////////////////////////////////////////////////////////
 // A base class for all shell dialog implementations that handles showing a
 // shell dialog modally on its own thread.
-class UI_EXPORT BaseShellDialogImpl {
+class SHELL_DIALOGS_EXPORT BaseShellDialogImpl {
  public:
   BaseShellDialogImpl();
   virtual ~BaseShellDialogImpl();
 
  protected:
   // Represents a run of a dialog.
-  struct UI_EXPORT RunState {
+  struct RunState {
     // Owning HWND, may be null.
     HWND owner;
 
@@ -94,4 +94,5 @@ class UI_EXPORT BaseShellDialogImpl {
 
 }  // namespace ui
 
-#endif  // UI_BASE_DIALOGS_BASE_SHELL_DIALOG_WIN_H_
+#endif  // UI_SHELL_DIALOGS_BASE_SHELL_DIALOG_WIN_H_
+

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_DIALOGS_SELECT_FILE_DIALOG_H_
-#define UI_BASE_DIALOGS_SELECT_FILE_DIALOG_H_
+#ifndef UI_SHELL_DIALOGS_SELECT_FILE_DIALOG_H_
+#define UI_SHELL_DIALOGS_SELECT_FILE_DIALOG_H_
 
 #include <string>
 #include <vector>
@@ -14,9 +14,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "ui/base/dialogs/base_shell_dialog.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/linux_ui.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/shell_dialogs/base_shell_dialog.h"
+#include "ui/shell_dialogs/shell_dialogs_export.h"
 
 namespace ui {
 class SelectFileDialogFactory;
@@ -24,7 +25,7 @@ class SelectFilePolicy;
 struct SelectedFileInfo;
 
 // Shows a dialog box for selecting a file or a folder.
-class UI_EXPORT SelectFileDialog
+class SHELL_DIALOGS_EXPORT SelectFileDialog
     : public base::RefCountedThreadSafe<SelectFileDialog>,
       public ui::BaseShellDialog {
  public:
@@ -39,7 +40,7 @@ class UI_EXPORT SelectFileDialog
   // An interface implemented by a Listener object wishing to know about the
   // the result of the Select File/Folder action. These callbacks must be
   // re-entrant.
-  class UI_EXPORT Listener {
+  class SHELL_DIALOGS_EXPORT Listener {
    public:
     // Notifies the Listener that a file/folder selection has been made. The
     // file/folder path is in |path|. |params| is contextual passed to
@@ -94,7 +95,7 @@ class UI_EXPORT SelectFileDialog
                                   ui::SelectFilePolicy* policy);
 
   // Holds information about allowed extensions on a file save dialog.
-  struct UI_EXPORT FileTypeInfo {
+  struct SHELL_DIALOGS_EXPORT FileTypeInfo {
     FileTypeInfo();
     ~FileTypeInfo();
 
@@ -198,4 +199,5 @@ class UI_EXPORT SelectFileDialog
 
 }  // namespace ui
 
-#endif  // UI_BASE_DIALOGS_SELECT_FILE_DIALOG_H_
+#endif  // UI_SHELL_DIALOGS_SELECT_FILE_DIALOG_H_
+

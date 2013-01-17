@@ -1,17 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_DIALOGS_BASE_SHELL_DIALOG_H_
-#define UI_BASE_DIALOGS_BASE_SHELL_DIALOG_H_
+#ifndef UI_SHELL_DIALOGS_BASE_SHELL_DIALOG_H_
+#define UI_SHELL_DIALOGS_BASE_SHELL_DIALOG_H_
 
-#include "ui/base/ui_export.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/shell_dialogs/shell_dialogs_export.h"
 
 namespace ui {
 
 // A base class for shell dialogs.
-class UI_EXPORT BaseShellDialog {
+class SHELL_DIALOGS_EXPORT BaseShellDialog {
  public:
   // Returns true if a shell dialog box is currently being shown modally
   // to the specified owner.
@@ -27,4 +27,5 @@ class UI_EXPORT BaseShellDialog {
 
 }  // namespace ui
 
-#endif  // UI_BASE_DIALOGS_BASE_SHELL_DIALOG_H_
+#endif  // UI_SHELL_DIALOGS_BASE_SHELL_DIALOG_H_
+

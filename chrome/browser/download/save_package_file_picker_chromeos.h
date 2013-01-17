@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "ui/base/dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace ui {
 struct SelectedFileInfo;

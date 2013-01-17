@@ -2,26 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "build/build_config.h"
-#include "ui/base/dialogs/selected_file_info.h"
-#include "ui/base/dialogs/select_file_dialog_factory.h"
-#include "ui/base/dialogs/select_file_policy.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/linux_ui.h"
+#include "ui/shell_dialogs/select_file_dialog_factory.h"
+#include "ui/shell_dialogs/select_file_policy.h"
+#include "ui/shell_dialogs/selected_file_info.h"
 
 #if defined(OS_WIN)
-#include "ui/base/dialogs/select_file_dialog_win.h"
+#include "ui/shell_dialogs/select_file_dialog_win.h"
 #elif defined(OS_MACOSX)
-#include "ui/base/dialogs/select_file_dialog_mac.h"
+#include "ui/shell_dialogs/select_file_dialog_mac.h"
 #elif defined(TOOLKIT_GTK)
-#include "ui/base/dialogs/gtk/select_file_dialog_impl.h"
+#include "ui/shell_dialogs/gtk/select_file_dialog_impl.h"
 #elif defined(OS_ANDROID)
-#include "ui/base/dialogs/select_file_dialog_android.h"
+#include "ui/shell_dialogs/select_file_dialog_android.h"
+#elif defined(USE_AURA) && !defined(USE_ASH) && defined(OS_LINUX)
+#include "ui/shell_dialogs/linux_ui_shell_dialog.h"
 #endif
 
 namespace {
@@ -73,13 +74,15 @@ SelectFileDialog* SelectFileDialog::Create(Listener* listener,
   }
 
 #if defined(USE_AURA) && !defined(USE_ASH) && defined(OS_LINUX)
-  const ui::LinuxUI* linux_ui = ui::LinuxUI::instance();
+  const ui::LinuxUIShellDialog* linux_ui =
+      static_cast<const ui::LinuxUIShellDialog*>(ui::LinuxUI::instance());
   if (linux_ui)
     return linux_ui->CreateSelectFileDialog(listener, policy);
 #endif
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // TODO(port): The windows people need this to work in aura, too.
+#if defined(OS_WIN)
+  // TODO(ananta)
+  // Fix this for Chrome ASH on Windows.
   return CreateWinSelectFileDialog(listener, policy);
 #elif defined(OS_MACOSX) && !defined(USE_AURA)
   return CreateMacSelectFileDialog(listener, policy);

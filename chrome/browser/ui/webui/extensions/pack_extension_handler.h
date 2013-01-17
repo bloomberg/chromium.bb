@@ -11,7 +11,7 @@
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/plugins/plugin_data_remover_helper.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "ui/base/dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 // Clear browser data handler page UI handler.
 class PackExtensionHandler : public content::WebUIMessageHandler,

@@ -26,8 +26,8 @@
 #include "grit/ui_strings.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace {
 

@@ -6,8 +6,8 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
-#include "ui/base/dialogs/select_file_dialog_android.h"
 #include "ui/gfx/android/window_android.h"
+#include "ui/shell_dialogs/select_file_dialog_android.h"
 
 namespace ui {
 

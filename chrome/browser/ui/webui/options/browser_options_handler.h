@@ -15,8 +15,8 @@
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/base/models/table_model_observer.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/system/pointer_device_observer.h"

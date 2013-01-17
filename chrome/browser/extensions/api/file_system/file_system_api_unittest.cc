@@ -8,7 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 using extensions::FileSystemChooseEntryFunction;
 using extensions::api::file_system::AcceptOption;

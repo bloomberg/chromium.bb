@@ -1,20 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_DIALOGS_SELECTED_FILE_INFO_H_
-#define UI_BASE_DIALOGS_SELECTED_FILE_INFO_H_
+#ifndef UI_SHELL_DIALOGS_SELECTED_FILE_INFO_H_
+#define UI_SHELL_DIALOGS_SELECTED_FILE_INFO_H_
 
 #include <vector>
 
 #include "base/file_path.h"
 #include "base/string16.h"
-#include "ui/base/ui_export.h"
+#include "ui/shell_dialogs/shell_dialogs_export.h"
 
 namespace ui {
 
 // Struct used for passing selected file info to WebKit.
-struct UI_EXPORT SelectedFileInfo {
+struct SHELL_DIALOGS_EXPORT SelectedFileInfo {
   // Selected file's user friendly path as seen in the UI.
   FilePath file_path;
 
@@ -40,4 +40,5 @@ struct UI_EXPORT SelectedFileInfo {
 
 }  // namespace ui
 
-#endif  // UI_BASE_DIALOGS_SELECTED_FILE_INFO_H_
+#endif  // UI_SHELL_DIALOGS_SELECTED_FILE_INFO_H_
+

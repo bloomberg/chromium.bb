@@ -22,7 +22,7 @@
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/test_globals.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/dialogs/selected_file_info.h"
+#include "ui/shell_dialogs/selected_file_info.h"
 
 namespace content {
 

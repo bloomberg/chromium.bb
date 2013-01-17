@@ -13,8 +13,8 @@
 #include "base/string16.h"
 #include "base/system_monitor/system_monitor.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
-#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace content {
 class WebContents;

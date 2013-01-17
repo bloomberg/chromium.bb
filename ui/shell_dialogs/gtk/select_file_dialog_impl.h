@@ -1,17 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 // This file implements common select dialog functionality between GTK and KDE.
 
-#ifndef UI_BASE_DIALOGS_GTK_SELECT_FILE_DIALOG_IMPL_H_
-#define UI_BASE_DIALOGS_GTK_SELECT_FILE_DIALOG_IMPL_H_
+#ifndef UI_SHELL_DIALOGS_GTK_SELECT_FILE_DIALOG_IMPL_H_
+#define UI_SHELL_DIALOGS_GTK_SELECT_FILE_DIALOG_IMPL_H_
 
 #include <set>
 
 #include "base/compiler_specific.h"
 #include "base/nix/xdg_util.h"
-#include "ui/base/dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace ui {
 
@@ -85,4 +85,4 @@ SelectFileDialog* CreateLinuxSelectFileDialog(
 
 }  // namespace ui
 
-#endif  // UI_BASE_DIALOGS_GTK_SELECT_FILE_DIALOG_IMPL_H_
+#endif  // UI_SHELL_DIALOGS_GTK_SELECT_FILE_DIALOG_IMPL_H_

@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
-#include "ui/base/dialogs/selected_file_info.h"
+#include "ui/shell_dialogs/selected_file_info.h"
 
 using content::DownloadItem;
 using content::DownloadManager;

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,8 @@
 #include "base/threading/worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ui_strings.h"
-#include "ui/base/dialogs/gtk/select_file_dialog_impl.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/shell_dialogs/gtk/select_file_dialog_impl.h"
 
 // These conflict with base/tracked_objects.h, so need to come last.
 #include <gdk/gdkx.h>

@@ -38,6 +38,7 @@
         '../sync/sync.gyp:sync_api',
         '../sync/sync.gyp:sync_internal_api',
         '../sync/sync.gyp:sync_notifier',
+        '../ui/ui.gyp:shell_dialogs',
         '../third_party/bzip2/bzip2.gyp:bzip2',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',

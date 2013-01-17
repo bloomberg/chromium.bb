@@ -32,7 +32,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/base/dialogs/selected_file_info.h"
+#include "ui/shell_dialogs/selected_file_info.h"
 
 using content::BrowserThread;
 

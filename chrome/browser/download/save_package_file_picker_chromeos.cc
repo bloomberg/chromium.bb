@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/base/dialogs/selected_file_info.h"
+#include "ui/shell_dialogs/selected_file_info.h"
 
 namespace {
 

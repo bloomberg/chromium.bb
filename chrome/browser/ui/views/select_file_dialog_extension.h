@@ -10,8 +10,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
-#include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 class ExtensionDialog;
 class Profile;

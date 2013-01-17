@@ -11,6 +11,7 @@
     '../net/net.gyp:net',
     '../skia/skia.gyp:skia',
     '../third_party/icu/icu.gyp:icuuc',
+    '../ui/ui.gyp:shell_dialogs',
     '../ui/ui.gyp:ui',
     '../webkit/support/webkit_support.gyp:user_agent',
   ],

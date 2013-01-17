@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_CERTIFICATE_DIALOGS_H_
 
 #include "net/base/x509_certificate.h"
-#include "ui/base/dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace content {
 class WebContents;
