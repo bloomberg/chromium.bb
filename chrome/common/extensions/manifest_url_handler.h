@@ -31,6 +31,9 @@ struct ManifestURL : public Extension::ManifestData {
 
   // Returns the Options Page for this extension.
   static const GURL& GetOptionsPage(const Extension* extension);
+
+  // Returns the webstore page URL for this extension.
+  static const GURL GetDetailsURL(const Extension* extension);
 };
 
 // A structure to hold the chrome URL overrides that may be specified

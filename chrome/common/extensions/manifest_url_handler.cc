@@ -58,6 +58,13 @@ const GURL& ManifestURL::GetOptionsPage(const Extension* extension) {
   return GetManifestURL(extension, keys::kOptionsPage);
 }
 
+// static
+const GURL ManifestURL::GetDetailsURL(const Extension* extension) {
+  return extension->from_webstore() ?
+      GURL(extension_urls::GetWebstoreItemDetailURLPrefix() + extension->id()) :
+      GURL::EmptyGURL();
+}
+
 URLOverrides::URLOverrides() {
 }
 

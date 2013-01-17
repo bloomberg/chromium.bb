@@ -656,7 +656,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool has_lazy_background_page() const {
     return has_background_page() && !background_page_is_persistent_;
   }
-  const GURL& details_url() const { return details_url_;}
   const PermissionSet* optional_permission_set() const {
     return optional_permission_set_.get();
   }
@@ -1029,9 +1028,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // False if such pages are not permitted to script the background page,
   // allowing them to run in different processes.
   bool allow_background_js_access_;
-
-  // URL to the webstore page of the extension.
-  GURL details_url_;
 
   // The public key used to sign the contents of the crx package.
   std::string public_key_;

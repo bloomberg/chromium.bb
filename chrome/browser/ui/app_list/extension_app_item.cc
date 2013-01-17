@@ -317,9 +317,10 @@ void ExtensionAppItem::ShowExtensionDetails() {
   if (!extension)
     return;
 
-  chrome::NavigateParams params(profile_,
-                                extension->details_url(),
-                                content::PAGE_TRANSITION_LINK);
+  chrome::NavigateParams params(
+      profile_,
+      extensions::ManifestURL::GetDetailsURL(extension),
+      content::PAGE_TRANSITION_LINK);
   chrome::Navigate(&params);
 }
 
