@@ -135,11 +135,9 @@ DialogType.isModal = function(type) {
 
   /**
    * Location of Files App specific help.
-   * TODO(haruki): Replace this with a proper smart link to let the server
-   * choose better page language.
    */
   FileManager.FILES_APP_HELP =
-      'http://support.google.com/chromeos/bin/answer.py?answer=1056323';
+      'https://support.google.com/chromeos/?p=gsg_files_app';
 
   /**
    * Number of milliseconds in a day.
