@@ -436,7 +436,10 @@ class ChromiumEnv : public Env, public UMALogger {
 
   virtual Status RenameFile(const std::string& src, const std::string& dst) {
     Status result;
-    if (!::file_util::ReplaceFile(CreateFilePath(src), CreateFilePath(dst))) {
+    FilePath src_file_path = CreateFilePath(src);
+    if (!::file_util::PathExists(src_file_path))
+      return result;
+    if (!::file_util::ReplaceFile(src_file_path, CreateFilePath(dst))) {
       result = Status::IOError(src, "Could not rename file.");
       RecordErrorAt(kRenamefile);
     } else {
