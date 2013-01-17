@@ -431,6 +431,7 @@ class TemplateURL {
 
   const std::string& sync_guid() const { return data_.sync_guid; }
 
+  // TODO(beaudoin): Rename this when renaming HasSearchTermsReplacementKey().
   const std::string& search_terms_replacement_key() const {
     return data_.search_terms_replacement_key;
   }
@@ -486,6 +487,8 @@ class TemplateURL {
   // key in either the query or the ref. This method does not verify anything
   // else about the URL. In particular, it does not check that the domain
   // matches that of this TemplateURL.
+  // TODO(beaudoin): Rename this to reflect that it really checks for an
+  // InstantExtended capable URL.
   bool HasSearchTermsReplacementKey(const GURL& url) const;
 
  private:

@@ -77,6 +77,7 @@ class InstantTest : public InProcessBrowserTest {
     TemplateURLData data;
     data.SetURL("http://does/not/exist?q={searchTerms}");
     data.instant_url = instant_url_.spec();
+    data.safe_for_autoreplace = true;
 
     TemplateURL* template_url = new TemplateURL(browser()->profile(), data);
     service->Add(template_url);  // Takes ownership of |template_url|.

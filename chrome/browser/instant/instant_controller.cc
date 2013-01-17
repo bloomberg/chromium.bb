@@ -1190,6 +1190,17 @@ bool InstantController::GetInstantURL(const TemplateURL* template_url,
   if (!template_url)
     return false;
 
+  // If the user has edited the TemplateURL, the instant_url may no longer be
+  // correct since we won't have migrated it.
+  if (!template_url->safe_for_autoreplace())
+    return false;
+
+  // Extended mode won't work properly unless the TemplateURL supports the
+  // param to enable it on the server.
+  if (extended_enabled_ &&
+      template_url->search_terms_replacement_key().empty())
+    return false;
+
   const TemplateURLRef& instant_url_ref = template_url->instant_url_ref();
   if (!instant_url_ref.IsValid())
     return false;
