@@ -142,9 +142,9 @@ int TilingData::TilePositionX(int x_index) const {
   DCHECK_GE(x_index, 0);
   DCHECK_LT(x_index, num_tiles_x_);
 
-  int pos = 0;
-  for (int i = 0; i < x_index; i++)
-    pos += TileSizeX(i);
+  int pos = (max_texture_size_.width() - 2 * border_texels_) * x_index;
+  if (x_index != 0)
+    pos += border_texels_;
 
   return pos;
 }
@@ -153,9 +153,9 @@ int TilingData::TilePositionY(int y_index) const {
   DCHECK_GE(y_index, 0);
   DCHECK_LT(y_index, num_tiles_y_);
 
-  int pos = 0;
-  for (int i = 0; i < y_index; i++)
-    pos += TileSizeY(i);
+  int pos = (max_texture_size_.height() - 2 * border_texels_) * y_index;
+  if (y_index != 0)
+    pos += border_texels_;
 
   return pos;
 }
