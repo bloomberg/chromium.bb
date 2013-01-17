@@ -23,7 +23,6 @@
         'common',
         'common/extensions/api/api.gyp:api',
         'common_net',
-        'contacts_proto',
         'debugger',
         'in_memory_url_index_cache_proto',
         'installer_util',
@@ -752,6 +751,7 @@
             '../build/linux/system.gyp:dbus',
             '../third_party/libevent/libevent.gyp:libevent',
             'browser/chromeos/input_method/input_method.gyp:gencode',
+            'contacts_proto',
           ],
           'sources!': [
             'browser/extensions/default_apps.cc',
@@ -923,17 +923,6 @@
         }],
       ],
     },
-    {
-      # Protobuf compiler / generator for contacts-related protocol buffers.
-      'target_name': 'contacts_proto',
-      'type': 'static_library',
-      'sources': [ 'browser/chromeos/contacts/contact.proto' ],
-      'variables': {
-        'proto_in_dir': 'browser/chromeos/contacts',
-        'proto_out_dir': 'chrome/browser/chromeos/contacts',
-      },
-      'includes': [ '../build/protoc.gypi' ]
-    },
   ],
   'conditions': [
     ['OS=="win"', {
@@ -972,6 +961,21 @@
           },
         },
       ],
-    }, ],  # 'OS=="win"'
+    },],  # 'OS=="win"'
+    ['chromeos==1', {
+      'targets': [
+        {
+          # Protobuf compiler / generator for contacts-related protocol buffers.
+          'target_name': 'contacts_proto',
+          'type': 'static_library',
+          'sources': [ 'browser/chromeos/contacts/contact.proto' ],
+          'variables': {
+            'proto_in_dir': 'browser/chromeos/contacts',
+            'proto_out_dir': 'chrome/browser/chromeos/contacts',
+          },
+          'includes': [ '../build/protoc.gypi' ]
+        },
+      ],
+    },],  # 'chromeos=1'
   ],  # 'conditions'
 }

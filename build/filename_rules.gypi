@@ -48,7 +48,10 @@
       ],
     }],
     ['<(chromeos)!=1 or >(nacl_untrusted_build)==1', {
-      'sources/': [ ['exclude', '_chromeos(_unittest)?\\.(h|cc)$'] ]
+      'sources/': [
+        ['exclude', '_chromeos(_unittest)?\\.(h|cc)$'],
+        ['exclude', '(^|/)chromeos/'],
+      ],
     }],
     ['>(nacl_untrusted_build)==0', {
       'sources/': [
