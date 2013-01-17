@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/login/user_image_loader.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "chromeos/dbus/root_power_manager_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/icu/public/i18n/unicode/timezone.h"
@@ -59,7 +58,6 @@ extern const char kLargeWallpaperSuffix[];
 // OS device.
 class WallpaperManager: public system::TimezoneSettings::Observer,
                         public chromeos::PowerManagerClient::Observer,
-                        public chromeos::RootPowerManagerObserver,
                         public content::NotificationObserver {
  public:
   static WallpaperManager* Get();
@@ -253,10 +251,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
 
   // Overridden from chromeos::PowerManagerObserver.
   virtual void SystemResumed(const base::TimeDelta& sleep_duration) OVERRIDE;
-
-  // Overridden from chromeos::RootPowerManagerObserver.
-  // TODO(derat): Remove this once notifications are sent by powerd.
-  virtual void OnResume(const base::TimeDelta& sleep_duration) OVERRIDE;
 
   // Overridden from system::TimezoneSettings::Observer.
   virtual void TimezoneChanged(const icu::TimeZone& timezone) OVERRIDE;

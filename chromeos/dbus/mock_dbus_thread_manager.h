@@ -40,7 +40,6 @@ class MockIntrospectableClient;
 class MockModemMessagingClient;
 class MockPermissionBrokerClient;
 class MockPowerManagerClient;
-class MockRootPowerManagerClient;
 class MockSessionManagerClient;
 class MockSMSClient;
 class MockSpeechSynthesizerClient;
@@ -79,7 +78,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   MOCK_METHOD0(GetModemMessagingClient, ModemMessagingClient*(void));
   MOCK_METHOD0(GetPermissionBrokerClient, PermissionBrokerClient*(void));
   MOCK_METHOD0(GetPowerManagerClient, PowerManagerClient*(void));
-  MOCK_METHOD0(GetRootPowerManagerClient, RootPowerManagerClient*(void));
   MOCK_METHOD0(GetSessionManagerClient, SessionManagerClient*(void));
   MOCK_METHOD0(GetSMSClient, SMSClient*(void));
   MOCK_METHOD0(GetSpeechSynthesizerClient, SpeechSynthesizerClient*(void));
@@ -154,9 +152,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockPowerManagerClient* mock_power_manager_client() {
     return mock_power_manager_client_.get();
   }
-  MockRootPowerManagerClient* mock_root_power_manager_client() {
-    return mock_root_power_manager_client_.get();
-  }
   MockSessionManagerClient* mock_session_manager_client() {
     return mock_session_manager_client_.get();
   }
@@ -191,7 +186,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<MockModemMessagingClient> mock_modem_messaging_client_;
   scoped_ptr<MockPermissionBrokerClient> mock_permission_broker_client_;
   scoped_ptr<MockPowerManagerClient> mock_power_manager_client_;
-  scoped_ptr<MockRootPowerManagerClient> mock_root_power_manager_client_;
   scoped_ptr<MockSessionManagerClient> mock_session_manager_client_;
   scoped_ptr<MockSMSClient> mock_sms_client_;
   scoped_ptr<MockSpeechSynthesizerClient> mock_speech_synthesizer_client_;

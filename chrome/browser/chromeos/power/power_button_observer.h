@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "chromeos/dbus/root_power_manager_observer.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -19,7 +18,6 @@ namespace chromeos {
 // the Aura shell's PowerButtonController class.
 class PowerButtonObserver : public content::NotificationObserver,
                             public PowerManagerClient::Observer,
-                            public RootPowerManagerObserver,
                             public SessionManagerClient::Observer {
  public:
   // This class registers/unregisters itself as an observer in ctor/dtor.
@@ -34,11 +32,6 @@ class PowerButtonObserver : public content::NotificationObserver,
 
   // PowerManagerObserver implementation:
   virtual void PowerButtonEventReceived(
-      bool down, const base::TimeTicks& timestamp) OVERRIDE;
-
-  // RootPowerManagerObserver implementation:
-  // TODO(derat): Remove this once notifications are sent by powerd.
-  virtual void OnPowerButtonEvent(
       bool down, const base::TimeTicks& timestamp) OVERRIDE;
 
   // SessionManagerClient::Observer implementation:

@@ -39,7 +39,6 @@
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "chromeos/dbus/root_power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/sms_client.h"
 #include "chromeos/dbus/speech_synthesizer_client.h"
@@ -117,8 +116,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
         PermissionBrokerClient::Create(client_type, system_bus_.get()));
     power_manager_client_.reset(
         PowerManagerClient::Create(client_type_maybe_stub, system_bus_.get()));
-    root_power_manager_client_.reset(RootPowerManagerClient::Create(
-        client_type_maybe_stub, system_bus_.get()));
     session_manager_client_.reset(
         SessionManagerClient::Create(client_type, system_bus_.get()));
     sms_client_.reset(
@@ -282,10 +279,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return power_manager_client_.get();
   }
 
-  virtual RootPowerManagerClient* GetRootPowerManagerClient() OVERRIDE {
-    return root_power_manager_client_.get();
-  }
-
   virtual SessionManagerClient* GetSessionManagerClient() OVERRIDE {
     return session_manager_client_.get();
   }
@@ -370,7 +363,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<ModemMessagingClient> modem_messaging_client_;
   scoped_ptr<PermissionBrokerClient> permission_broker_client_;
   scoped_ptr<PowerManagerClient> power_manager_client_;
-  scoped_ptr<RootPowerManagerClient> root_power_manager_client_;
   scoped_ptr<SessionManagerClient> session_manager_client_;
   scoped_ptr<SMSClient> sms_client_;
   scoped_ptr<SpeechSynthesizerClient> speech_synthesizer_client_;

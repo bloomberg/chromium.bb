@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/root_power_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/dns/dns_config_service_posix.h"
 
@@ -72,7 +71,6 @@ void NetworkChangeNotifierNetworkLibrary::Init() {
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   network_library->AddNetworkManagerObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
-  DBusThreadManager::Get()->GetRootPowerManagerClient()->AddObserver(this);
 
   dns_config_service_.reset(new DnsConfigServiceChromeos());
   dns_config_service_->WatchConfig(
@@ -94,7 +92,6 @@ void NetworkChangeNotifierNetworkLibrary::Shutdown() {
   lib->RemoveNetworkManagerObserver(this);
   lib->RemoveObserverForAllNetworks(this);
 
-  DBusThreadManager::Get()->GetRootPowerManagerClient()->RemoveObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
 }
 
@@ -106,12 +103,6 @@ void NetworkChangeNotifierNetworkLibrary::SystemResumed(
       base::Bind(
           &NetworkChangeNotifier::NotifyObserversOfIPAddressChange));
 }
-
-void NetworkChangeNotifierNetworkLibrary::OnResume(
-    const base::TimeDelta& sleep_duration) {
-  SystemResumed(sleep_duration);
-}
-
 
 void NetworkChangeNotifierNetworkLibrary::OnNetworkManagerChanged(
     chromeos::NetworkLibrary* cros) {

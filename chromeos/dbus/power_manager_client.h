@@ -68,23 +68,14 @@ class CHROMEOS_EXPORT PowerManagerClient {
     virtual void ScreenDimmingRequested(ScreenDimmingState state) {}
 
     // Called when the power button is pressed or released.
-    // Note: Implement both this method and
-    // RootPowerManagerObserver::OnPowerButtonEvent() until this has been moved
-    // to powerd: http://crosbug.com/36804
     virtual void PowerButtonEventReceived(bool down,
                                           const base::TimeTicks& timestamp) {}
 
     // Called when the device's lid is opened or closed.
-    // Note: Implement both this method and
-    // RootPowerManagerObserver::OnLidEvent() until this has been moved
-    // to powerd: http://crosbug.com/36804
     virtual void LidEventReceived(bool open,
                                   const base::TimeTicks& timestamp) {}
 
     // Called when the system resumes from sleep.
-    // Note: Implement both this method and
-    // RootPowerManagerObserver::OnResume() until this has been moved
-    // to powerd: http://crosbug.com/36804
     virtual void SystemResumed(const base::TimeDelta& sleep_duration) {}
   };
 

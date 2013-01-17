@@ -31,7 +31,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/root_power_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -131,8 +130,6 @@ void WallpaperManager::RegisterPrefs(PrefServiceSimple* local_state) {
 
 void WallpaperManager::AddObservers() {
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
-  if (!DBusThreadManager::Get()->GetRootPowerManagerClient()->HasObserver(this))
-    DBusThreadManager::Get()->GetRootPowerManagerClient()->AddObserver(this);
   system::TimezoneSettings::GetInstance()->AddObserver(this);
 }
 
@@ -558,7 +555,6 @@ void WallpaperManager::UpdateWallpaper() {
 
 WallpaperManager::~WallpaperManager() {
   ClearObsoleteWallpaperPrefs();
-  DBusThreadManager::Get()->GetRootPowerManagerClient()->RemoveObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
   system::TimezoneSettings::GetInstance()->RemoveObserver(this);
   weak_factory_.InvalidateWeakPtrs();
@@ -899,10 +895,6 @@ void WallpaperManager::StartLoad(const std::string& email,
 
 void WallpaperManager::SystemResumed(const base::TimeDelta& sleep_duration) {
   BatchUpdateWallpaper();
-}
-
-void WallpaperManager::OnResume(const base::TimeDelta& sleep_duration) {
-  SystemResumed(sleep_duration);
 }
 
 void WallpaperManager::TimezoneChanged(const icu::TimeZone& timezone) {
