@@ -32,6 +32,7 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gs
+from chromite.lib import toolchain
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
@@ -1456,6 +1457,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
   _BUILDBOT_ARCHIVE = 'buildbot_archive'
   _TRYBOT_ARCHIVE = 'trybot_archive'
   _IMAGE_SCRIPTS_TAR = 'image_scripts.tar.xz'
+  _METADATA_JSON = 'metadata.json'
 
   @classmethod
   def GetArchiveRoot(cls, buildroot, trybot=False):
@@ -1478,6 +1480,11 @@ class ArchiveStage(BoardSpecificBuilderStage):
     self._breakpad_symbols_queue = multiprocessing.Queue()
     self._hw_test_uploads_status_queue = multiprocessing.Queue()
     self._recovery_image_status_queue = multiprocessing.Queue()
+
+    self._release_upload_queue = multiprocessing.Queue()
+    self._upload_queue = multiprocessing.Queue()
+    self._upload_symbols_queue = multiprocessing.Queue()
+    self._hw_test_upload_queue = multiprocessing.Queue()
 
     # Queues that are populated by other stages.
     self._version_queue = multiprocessing.Queue()
@@ -1683,6 +1690,35 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
     return archive_path
 
+  def ArchiveMetadataJson(self):
+    """Create a JSON of various metadata describing this build."""
+    config = self._build_config
+    archive_path = self._GetArchivePath()
+
+    target = os.path.join(archive_path, self._METADATA_JSON)
+    sdk_verinfo = cros_build_lib.LoadKeyValueFile(
+        os.path.join(constants.SOURCE_ROOT, constants.SDK_VERSION_FILE),
+        ignore_missing=True)
+    json_input = {
+        # Version of the metadata format.
+        'metadata-version': '1',
+        # Data for this build.
+        'bot-config': config['name'],
+        'bot-hostname': cros_build_lib.GetHostName(fully_qualified=True),
+        'boards': config['boards'],
+        'cros-version': self.GetVersion(),
+        # Data for the toolchain used.
+        'sdk-version': sdk_verinfo.get('SDK_LATEST_VERSION', '<unknown>'),
+        'toolchain-url': sdk_verinfo.get('TC_PATH', '<unknown>'),
+    }
+    if len(config['boards']) == 1:
+      toolchains = toolchain.GetToolchainsForBoard(config['boards'][0])
+      json_input['toolchain-tuple'] = (
+          toolchain.FilterToolchains(toolchains, 'default', True).keys() +
+          toolchain.FilterToolchains(toolchains, 'default', False).keys())
+    osutils.WriteFile(target, json.dumps(json_input))
+    self._upload_queue.put([self._METADATA_JSON])
+
   def _PerformStage(self):
     if self._options.remote_trybot:
       debug = self._options.debug_forced
@@ -1695,10 +1731,10 @@ class ArchiveStage(BoardSpecificBuilderStage):
     upload_url = self.GetGSUploadLocation()
     archive_path = self._SetupArchivePath()
     image_dir = self.GetImageDirSymlink()
-    release_upload_queue = multiprocessing.Queue()
-    upload_queue = multiprocessing.Queue()
-    upload_symbols_queue = multiprocessing.Queue()
-    hw_test_upload_queue = multiprocessing.Queue()
+    release_upload_queue = self._release_upload_queue
+    upload_queue = self._upload_queue
+    upload_symbols_queue = self._upload_symbols_queue
+    hw_test_upload_queue = self._hw_test_upload_queue
     bg_task_runner = parallel.BackgroundTaskRunner
 
     extra_env = {}
@@ -1715,6 +1751,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     #       \- ArchiveAutotestTarballs
     #       \- ArchivePayloads
     #    \- ArchiveImageScripts
+    #    \- ArchiveMetadataJson
     #    \- ArchiveReleaseArtifacts
     #       \- ArchiveDebugSymbols
     #       \- ArchiveFirmwareImages
@@ -1982,7 +2019,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     def BuildAndArchiveArtifacts(num_upload_processes=10):
       # Run archiving steps in parallel.
       steps = [ArchiveReleaseArtifacts, ArchiveArtifactsForHWTesting,
-               ArchiveTestResults]
+               ArchiveTestResults, self.ArchiveMetadataJson]
       if config['images']:
         steps.extend([ArchiveStrippedChrome, BuildAndArchiveChromeSysroot,
                       ArchiveImageScripts])

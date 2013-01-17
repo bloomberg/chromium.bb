@@ -1170,6 +1170,38 @@ class ArchiveStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     # pylint: disable=E1101
     self.assertEquals(commands.PushImages.call_count, 0)
 
+  def testArchiveMetadataJson(self):
+    """Test that the json metadata is built correctly"""
+    # First run the code.
+    stage = self.ConstructStage()
+    archive_path = stage._SetupArchivePath()
+    stage.ArchiveMetadataJson()
+
+    # Now check the results.
+    json_file = stage._upload_queue.get()
+    self.assertEquals(json_file, [stage._METADATA_JSON])
+    json_file = os.path.join(archive_path, json_file[0])
+    json_data = json.loads(osutils.ReadFile(json_file))
+
+    important_keys = (
+        'boards',
+        'bot-config',
+        'cros-version',
+        'metadata-version',
+        'sdk-version',
+        'toolchain-tuple',
+        'toolchain-url',
+    )
+    for key in important_keys:
+      self.assertTrue(key in json_data)
+
+    self.assertEquals(json_data['boards'], ['x86-generic'])
+    self.assertEquals(json_data['bot-config'], 'x86-generic-paladin')
+    self.assertEquals(json_data['cros-version'], self.archive_mock.VERSION)
+    self.assertEquals(json_data['metadata-version'], '1')
+    self.assertEquals(json_data['toolchain-tuple'], ['i686-pc-linux-gnu',
+                                                     'arm-none-eabi'])
+
 
 class UploadPrebuiltsStageTest(AbstractStageTest):
   def setUp(self):
