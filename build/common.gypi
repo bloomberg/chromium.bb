@@ -404,9 +404,8 @@
       # be done while the builders are being reconfigured to check out test data
       # files.
       'test_isolation_mode%': 'noop',
-      # It must not be '<(PRODUCT_DIR)' alone, the '/' is necessary otherwise
-      # gyp will remove duplicate flags, causing isolate.py to be confused.
-      'test_isolation_outdir%': '<(PRODUCT_DIR)/isolate',
+      # If no directory is specified then a temporary directory will be used.
+      'test_isolation_outdir%': '',
 
       'sas_dll_path%': '<(DEPTH)/third_party/platformsdk_win7/files/redist/x86',
       'wix_path%': '<(DEPTH)/third_party/wix',
