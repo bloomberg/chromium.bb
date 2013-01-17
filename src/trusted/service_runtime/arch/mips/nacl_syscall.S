@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/trusted/service_runtime/arch/mips/sel_ldr_mips.h"
 #include "native_client/src/trusted/service_runtime/arch/mips/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
@@ -134,5 +135,5 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
    * by the following instruction.
    */
 
-  NACL_HALT
+  .word NACL_HALT_WORD
 

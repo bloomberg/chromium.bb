@@ -4,6 +4,7 @@
  * be found in the LICENSE file.
  */
 
+#include "native_client/src/trusted/service_runtime/arch/mips/sel_ldr_mips.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 .text
@@ -42,7 +43,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_code):
   jalr  $t5, $t9
   nop
 
-  NACL_HALT
+  .word NACL_HALT_WORD
   .set reorder
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_end):

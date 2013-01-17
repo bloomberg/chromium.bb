@@ -215,12 +215,6 @@
 
 # define NACL_BLOCK_SHIFT         (4)
 
-# if defined(NACL_TARGET_ARM_THUMB2_MODE)
-#  define NACL_HALT         bkpt
-# else
-#  define NACL_HALT         mov pc, #0
-# endif  /* defined(NACL_TARGET_ARM_THUMB2_MODE) */
-
 /* 16-byte bundles, 1G address space */
 # define NACL_CONTROL_FLOW_MASK      0xC000000F
 
@@ -279,7 +273,6 @@
 # define NACL_STACK_GETS_ARG        (0)
 # define NACL_STACK_PAD_BELOW_ALIGN (0)
 # define NACL_STACK_RED_ZONE        (0)
-# define NACL_HALT                  break
 /* 16 byte bundles */
 
 #else /* NACL_ARCH(NACL_BUILD_ARCH) */
