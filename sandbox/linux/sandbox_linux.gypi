@@ -10,7 +10,7 @@
       }, {
         'compile_suid_client': 0,
       }],
-      ['((OS=="linux" or (OS=="android" and target_arch=="arm")) and '
+      ['((OS=="linux" or OS=="android") and '
              '(target_arch=="ia32" or target_arch=="x64" or '
               'target_arch=="arm"))', {
         'compile_seccomp_bpf': 1,

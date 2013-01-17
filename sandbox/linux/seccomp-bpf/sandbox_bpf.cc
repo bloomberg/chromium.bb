@@ -18,8 +18,8 @@
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 
 // Android's signal.h doesn't define ucontext etc.
-#if defined(OS_ANDROID) && defined(__arm__)
-#include "sandbox/linux/services/android_arm_ucontext.h"
+#if defined(OS_ANDROID)
+#include "sandbox/linux/services/android_ucontext.h"
 #endif
 
 namespace {
