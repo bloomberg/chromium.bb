@@ -120,11 +120,13 @@ class Archive(dict):
     for key, value in src.items():
       self[key] = value
 
-  def Validate(self):
+  def Validate(self, error_on_unknown_keys=False):
     """Validate the content of the archive object. Raise an Error if
        an invalid or missing field is found.
 
-    Returns: True if self is a valid bundle.
+    Args:
+      error_on_unknown_keys: If True, raise an Error when unknown keys are
+      found in the archive.
     """
     host_os = self.get('host_os', None)
     if host_os and host_os not in HOST_OS_LITERALS:
@@ -144,9 +146,11 @@ class Archive(dict):
     elif not len(checksum):
       raise Error('Archive "%s" has an empty checksum dict' % host_os)
     # Verify that all key names are valid.
-    for key in self:
-      if key not in VALID_ARCHIVE_KEYS:
-        raise Error('Archive "%s" has invalid attribute "%s"' % (host_os, key))
+    if error_on_unknown_keys:
+      for key in self:
+        if key not in VALID_ARCHIVE_KEYS:
+          raise Error('Archive "%s" has invalid attribute "%s"' % (
+              host_os, key))
 
   def UpdateVitals(self, revision):
     """Update the size and checksum information for this archive
@@ -171,7 +175,7 @@ class Archive(dict):
       name: the name of the key, 'bar' in the example above.
     Returns:
       The value associated with that key."""
-    if name not in VALID_ARCHIVE_KEYS:
+    if name not in self:
       raise AttributeError(name)
     # special case, self.checksum returns the sha1, not the checksum dict.
     if name == 'checksum':
@@ -186,8 +190,6 @@ class Archive(dict):
     Args:
       name: The name of the key, 'bar' in the example above.
       value: The value to associate with that key."""
-    if name not in VALID_ARCHIVE_KEYS:
-      raise AttributeError(name)
     # special case, self.checksum returns the sha1, not the checksum dict.
     if name == 'checksum':
       self.setdefault('checksum', {})['sha1'] = value
@@ -264,9 +266,14 @@ class Bundle(dict):
       else:
         self[key] = value
 
-  def Validate(self, add_missing_info=False):
+  def Validate(self, add_missing_info=False, error_on_unknown_keys=False):
     """Validate the content of the bundle. Raise an Error if an invalid or
-       missing field is found. """
+       missing field is found.
+
+    Args:
+      error_on_unknown_keys: If True, raise an Error when unknown keys are
+      found in the bundle.
+    """
     # Check required fields.
     if not self.get(NAME_KEY):
       raise Error('Bundle has no name')
@@ -290,15 +297,16 @@ class Bundle(dict):
           'Bundle "%s" has invalid recommended field: "%s"' %
           (self[NAME_KEY], self['recommended']))
     # Verify that all key names are valid.
-    for key in self:
-      if key not in VALID_BUNDLES_KEYS:
-        raise Error('Bundle "%s" has invalid attribute "%s"' %
-                    (self[NAME_KEY], key))
+    if error_on_unknown_keys:
+      for key in self:
+        if key not in VALID_BUNDLES_KEYS:
+          raise Error('Bundle "%s" has invalid attribute "%s"' %
+                      (self[NAME_KEY], key))
     # Validate the archives
     for archive in self[ARCHIVES_KEY]:
       if add_missing_info and 'size' not in archive:
         archive.UpdateVitals(self[REVISION_KEY])
-      archive.Validate()
+      archive.Validate(error_on_unknown_keys)
 
   def GetArchive(self, host_os_name):
     """Retrieve the archive for the given host os.
@@ -343,7 +351,7 @@ class Bundle(dict):
       name: the name of the key, 'bar' in the example above.
     Returns:
       The value associated with that key."""
-    if name not in VALID_BUNDLES_KEYS:
+    if name not in self:
       raise AttributeError(name)
     return self.__getitem__(name)
 
@@ -355,8 +363,6 @@ class Bundle(dict):
     Args:
       name: The name of the key, 'bar' in the example above.
       value: The value to associate with that key."""
-    if name not in VALID_BUNDLES_KEYS:
-      raise AttributeError(name)
     self.__setitem__(name, value)
 
   def __eq__(self, bundle):
