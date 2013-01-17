@@ -215,6 +215,8 @@ void CandidateWindowControllerImpl::OnUpdateLookupTable(
   if (!visible) {
     candidate_window_->HideLookupTable();
     infolist_window_->Hide();
+    // TODO(nona): Introduce unittests for crbug.com/170036.
+    latest_infolist_entries_.clear();
     return;
   }
 
