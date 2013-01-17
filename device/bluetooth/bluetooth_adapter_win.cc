@@ -35,6 +35,12 @@ void BluetoothAdapterWin::RemoveObserver(BluetoothAdapter::Observer* observer) {
   NOTIMPLEMENTED();
 }
 
+// TODO(youngki): Return true when |task_manager_| initializes the adapter
+// state.
+bool BluetoothAdapterWin::IsInitialized() const {
+  return true;
+}
+
 bool BluetoothAdapterWin::IsPresent() const {
   return !address_.empty();
 }

@@ -25,7 +25,7 @@ bool IsBluetoothSupported(Profile* profile) {
 }
 
 void RunCallbackOnAdapterReady(
-    const device::BluetoothAdapterFactory::AdapterCallback callback,
+    const device::BluetoothAdapter::AdapterCallback callback,
     Profile* profile) {
   GetEventRouter(profile)->RunCallbackOnAdapterReady(callback);
 }

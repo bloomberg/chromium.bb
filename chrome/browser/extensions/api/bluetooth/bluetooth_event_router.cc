@@ -48,7 +48,7 @@ bool ExtensionBluetoothEventRouter::IsBluetoothSupported() const {
 }
 
 void ExtensionBluetoothEventRouter::RunCallbackOnAdapterReady(
-    const device::BluetoothAdapterFactory::AdapterCallback& callback) {
+    const device::BluetoothAdapter::AdapterCallback& callback) {
   if (adapter_) {
     callback.Run(scoped_refptr<device::BluetoothAdapter>(adapter_));
     return;

@@ -40,7 +40,7 @@ bool BluetoothAdapterFactory::IsBluetoothAdapterAvailable() {
 
 // static
 void BluetoothAdapterFactory::RunCallbackOnAdapterReady(
-    const AdapterCallback& callback) {
+    const BluetoothAdapter::AdapterCallback& callback) {
   if (!default_adapter.Get().get()) {
 #if defined(OS_CHROMEOS)
     chromeos::BluetoothAdapterChromeOs* new_adapter =
@@ -54,7 +54,11 @@ void BluetoothAdapterFactory::RunCallbackOnAdapterReady(
 #endif
   }
 
-  callback.Run(scoped_refptr<BluetoothAdapter>(default_adapter.Get()));
+  if (default_adapter.Get()->IsInitialized()) {
+    callback.Run(scoped_refptr<BluetoothAdapter>(default_adapter.Get()));
+  } else {
+    default_adapter.Get()->QueueAdapterCallback(callback);
+  }
 }
 
 // static

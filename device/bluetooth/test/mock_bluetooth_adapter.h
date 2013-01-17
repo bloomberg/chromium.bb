@@ -33,6 +33,7 @@ class MockBluetoothAdapter : public BluetoothAdapter {
 
   MOCK_METHOD1(AddObserver, void(BluetoothAdapter::Observer*));
   MOCK_METHOD1(RemoveObserver, void(BluetoothAdapter::Observer*));
+  MOCK_CONST_METHOD0(IsInitialized, bool());
   MOCK_CONST_METHOD0(IsPresent, bool());
   MOCK_CONST_METHOD0(IsPowered, bool());
   MOCK_METHOD3(SetPowered,

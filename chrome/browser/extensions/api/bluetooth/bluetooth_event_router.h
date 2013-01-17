@@ -30,7 +30,7 @@ class ExtensionBluetoothEventRouter
   bool IsBluetoothSupported() const;
 
   void RunCallbackOnAdapterReady(
-      const device::BluetoothAdapterFactory::AdapterCallback& callback);
+      const device::BluetoothAdapter::AdapterCallback& callback);
 
   // Called when a bluetooth event listener is added.
   void OnListenerAdded();

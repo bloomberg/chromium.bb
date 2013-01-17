@@ -42,6 +42,7 @@ class BluetoothAdapterChromeOs
       device::BluetoothAdapter::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(
       device::BluetoothAdapter::Observer* observer) OVERRIDE;
+  virtual bool IsInitialized() const OVERRIDE;
   virtual bool IsPresent() const OVERRIDE;
   virtual bool IsPowered() const OVERRIDE;
   virtual void SetPowered(

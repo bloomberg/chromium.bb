@@ -61,6 +61,12 @@ void BluetoothAdapterChromeOs::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+// TODO(youngki) Return true when object path and properties of the adapter are
+// initialized.
+bool BluetoothAdapterChromeOs::IsInitialized() const {
+  return true;
+}
+
 bool BluetoothAdapterChromeOs::IsPresent() const {
   return !object_path_.value().empty() && !address_.empty();
 }
