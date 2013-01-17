@@ -500,7 +500,6 @@ void MediaFileSystemRegistry::OnRemovableStorageAttached(
     const std::string& id, const string16& name,
     const FilePath::StringType& location) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  transient_device_ids_.DeviceAttached(id);
 
   if (!MediaStorageUtil::IsMediaDevice(id))
     return;
@@ -565,7 +564,7 @@ size_t MediaFileSystemRegistry::GetExtensionHostCountForTests() const {
 }
 
 std::string MediaFileSystemRegistry::GetTransientIdForDeviceId(
-    const std::string& device_id) const {
+    const std::string& device_id) {
   return transient_device_ids_.GetTransientIdForDeviceId(device_id);
 }
 
@@ -638,16 +637,8 @@ MediaFileSystemRegistry::MediaFileSystemRegistry()
     : file_system_context_(new MediaFileSystemContextImpl(this)) {
   // SystemMonitor may be NULL in unit tests.
   SystemMonitor* system_monitor = SystemMonitor::Get();
-  if (system_monitor) {
+  if (system_monitor)
     system_monitor->AddDevicesChangedObserver(this);
-
-    // Add the devices that were already present before MediaFileSystemRegistry
-    // creation.
-    std::vector<base::SystemMonitor::RemovableStorageInfo> storage_info =
-        system_monitor->GetAttachedRemovableStorage();
-    for (size_t i = 0; i < storage_info.size(); ++i)
-      transient_device_ids_.DeviceAttached(storage_info[i].device_id);
-  }
 }
 
 MediaFileSystemRegistry::~MediaFileSystemRegistry() {

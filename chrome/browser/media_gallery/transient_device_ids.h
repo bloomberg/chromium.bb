@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 // TransientDeviceIds keep track of transient IDs for removable devices, so
-// persistent device IDs are not exposed to renderers.
+// persistent device IDs are not exposed to renderers. Once a removable device
+// gets mapped to a transient ID, the mapping remains valid for the duration of
+// TransientDeviceIds' lifetime.
 
 #ifndef CHROME_BROWSER_MEDIA_GALLERY_TRANSIENT_DEVICE_IDS_H_
 #define CHROME_BROWSER_MEDIA_GALLERY_TRANSIENT_DEVICE_IDS_H_
@@ -21,12 +23,11 @@ class TransientDeviceIds {
   TransientDeviceIds();
   ~TransientDeviceIds();
 
-  // Returns the transient for a given |device_id|.
-  // Returns an empty string on error.
-  std::string GetTransientIdForDeviceId(const std::string& device_id) const;
-
-  // Called when a device gets attached.
-  void DeviceAttached(const std::string& device_id);
+  // Returns the transient ID for a given |device_id|.
+  // |device_id| must be for a removable device.
+  // If |device_id| has never been seen before, a new, unique transient id will
+  // be assigned.
+  std::string GetTransientIdForDeviceId(const std::string& device_id);
 
  private:
   typedef std::map<std::string, uint64> DeviceIdToTransientIdMap;
