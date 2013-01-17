@@ -93,6 +93,9 @@ class GpuVideoDecodeAccelerator
   // Returns false if failed.
   base::Callback<bool(void)> make_context_current_;
 
+  // The texture target as requested by ProvidePictureBuffers().
+  uint32 texture_target_;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(GpuVideoDecodeAccelerator);
 };
 

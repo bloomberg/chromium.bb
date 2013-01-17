@@ -389,7 +389,7 @@ void TextureManager::TextureInfo::SetLevelInfo(
 }
 
 bool TextureManager::TextureInfo::ValidForTexture(
-    GLint face,
+    GLint target,
     GLint level,
     GLint xoffset,
     GLint yoffset,
@@ -397,10 +397,10 @@ bool TextureManager::TextureInfo::ValidForTexture(
     GLsizei height,
     GLenum format,
     GLenum type) const {
-  size_t face_index = GLTargetToFaceIndex(face);
+  size_t face_index = GLTargetToFaceIndex(target);
   if (level >= 0 && face_index < level_infos_.size() &&
       static_cast<size_t>(level) < level_infos_[face_index].size()) {
-    const LevelInfo& info = level_infos_[GLTargetToFaceIndex(face)][level];
+    const LevelInfo& info = level_infos_[GLTargetToFaceIndex(target)][level];
     int32 right;
     int32 top;
     return SafeAddInt32(xoffset, width, &right) &&
@@ -416,13 +416,13 @@ bool TextureManager::TextureInfo::ValidForTexture(
 }
 
 bool TextureManager::TextureInfo::GetLevelSize(
-    GLint face, GLint level, GLsizei* width, GLsizei* height) const {
+    GLint target, GLint level, GLsizei* width, GLsizei* height) const {
   DCHECK(width);
   DCHECK(height);
-  size_t face_index = GLTargetToFaceIndex(face);
+  size_t face_index = GLTargetToFaceIndex(target);
   if (level >= 0 && face_index < level_infos_.size() &&
       static_cast<size_t>(level) < level_infos_[face_index].size()) {
-    const LevelInfo& info = level_infos_[GLTargetToFaceIndex(face)][level];
+    const LevelInfo& info = level_infos_[GLTargetToFaceIndex(target)][level];
     if (info.target != 0) {
       *width = info.width;
       *height = info.height;
@@ -433,13 +433,13 @@ bool TextureManager::TextureInfo::GetLevelSize(
 }
 
 bool TextureManager::TextureInfo::GetLevelType(
-    GLint face, GLint level, GLenum* type, GLenum* internal_format) const {
+    GLint target, GLint level, GLenum* type, GLenum* internal_format) const {
   DCHECK(type);
   DCHECK(internal_format);
-  size_t face_index = GLTargetToFaceIndex(face);
+  size_t face_index = GLTargetToFaceIndex(target);
   if (level >= 0 && face_index < level_infos_.size() &&
       static_cast<size_t>(level) < level_infos_[face_index].size()) {
-    const LevelInfo& info = level_infos_[GLTargetToFaceIndex(face)][level];
+    const LevelInfo& info = level_infos_[GLTargetToFaceIndex(target)][level];
     if (info.target != 0) {
       *type = info.type;
       *internal_format = info.internal_format;
@@ -688,11 +688,11 @@ void TextureManager::TextureInfo::SetLevelImage(
 }
 
 gfx::GLImage* TextureManager::TextureInfo::GetLevelImage(
-  GLint face, GLint level) const {
-  size_t face_index = GLTargetToFaceIndex(face);
+  GLint target, GLint level) const {
+  size_t face_index = GLTargetToFaceIndex(target);
   if (level >= 0 && face_index < level_infos_.size() &&
       static_cast<size_t>(level) < level_infos_[face_index].size()) {
-    const LevelInfo& info = level_infos_[GLTargetToFaceIndex(face)][level];
+    const LevelInfo& info = level_infos_[GLTargetToFaceIndex(target)][level];
     if (info.target != 0) {
       return info.image;
     }

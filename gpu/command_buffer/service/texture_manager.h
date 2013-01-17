@@ -125,15 +125,15 @@ class GPU_EXPORT TextureManager {
     // Get the width and height for a particular level. Returns false if level
     // does not exist.
     bool GetLevelSize(
-        GLint face, GLint level, GLsizei* width, GLsizei* height) const;
+        GLint target, GLint level, GLsizei* width, GLsizei* height) const;
 
     // Get the type of a level. Returns false if level does not exist.
     bool GetLevelType(
-        GLint face, GLint level, GLenum* type, GLenum* internal_format) const;
+        GLint target, GLint level, GLenum* type, GLenum* internal_format) const;
 
     // Get the image bound to a particular level. Returns NULL if level
     // does not exist.
-    gfx::GLImage* GetLevelImage(GLint face, GLint level) const;
+    gfx::GLImage* GetLevelImage(GLint target, GLint level) const;
 
     bool IsDeleted() const {
       return deleted_;
@@ -142,7 +142,7 @@ class GPU_EXPORT TextureManager {
     // Returns true of the given dimensions are inside the dimensions of the
     // level and if the format and type match the level.
     bool ValidForTexture(
-        GLint face,
+        GLint target,
         GLint level,
         GLint xoffset,
         GLint yoffset,
