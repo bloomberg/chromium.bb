@@ -37,7 +37,7 @@ namespace nacl_arm_test {
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=000100
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -74,7 +74,7 @@ bool UnsafeCondDecoderTesterCase0
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=000101
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -111,7 +111,7 @@ bool UnsafeCondDecoderTesterCase1
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=10xxx0 & op(4)=1
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -151,7 +151,7 @@ bool UnsafeCondDecoderTesterCase2
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=10xxx1 & op(4)=1
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -191,7 +191,7 @@ bool UnsafeCondDecoderTesterCase3
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=0xxxx0 & op1_repeated(25:20)=~000x00
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -231,7 +231,7 @@ bool UnsafeCondDecoderTesterCase4
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=~1111 & op1_repeated(25:20)=~000x01
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -274,7 +274,7 @@ bool UnsafeCondDecoderTesterCase5
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=0xxxx1 & Rn(19:16)=1111 & op1_repeated(25:20)=~000x01
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -317,7 +317,7 @@ bool UnsafeCondDecoderTesterCase6
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // coproc(11:8)=~101x & op1(25:20)=10xxxx & op(4)=0
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -357,7 +357,7 @@ bool UnsafeCondDecoderTesterCase7
 //    = {baseline: 'UndefinedCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(25:20)=00000x
 //    = {baseline: UndefinedCondDecoder,
 //       constraints: }
@@ -391,7 +391,7 @@ bool UnsafeCondDecoderTesterCase8
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(25:20)=11xxxx
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }

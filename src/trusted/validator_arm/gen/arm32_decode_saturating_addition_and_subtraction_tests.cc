@@ -44,7 +44,7 @@ namespace nacl_arm_test {
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(22:21)=00 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -115,7 +115,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase0
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(22:21)=01 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -186,7 +186,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase1
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(22:21)=10 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -257,7 +257,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase2
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(22:21)=11 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -481,7 +481,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(22:21)=00 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -516,7 +516,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(22:21)=01 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -551,7 +551,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(22:21)=10 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -586,7 +586,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(22:21)=11 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),

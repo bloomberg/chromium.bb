@@ -44,7 +44,7 @@ namespace nacl_arm_test {
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=01 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -118,7 +118,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase0
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=01 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -192,7 +192,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase1
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=01 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -266,7 +266,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase2
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=01 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -340,7 +340,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase3
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=01 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -414,7 +414,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase4
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=01 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -488,7 +488,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase5
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=10 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -562,7 +562,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase6
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=10 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -636,7 +636,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase7
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=10 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -710,7 +710,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase8
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=10 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -784,7 +784,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase9
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=10 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -858,7 +858,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase10
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=10 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -932,7 +932,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase11
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=11 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -1006,7 +1006,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase12
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=11 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -1080,7 +1080,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase13
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=11 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -1154,7 +1154,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase14
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=11 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -1228,7 +1228,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase15
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=11 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -1302,7 +1302,7 @@ bool Binary3RegisterOpAltBNoCondUpdatesTesterCase16
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=11 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -2005,7 +2005,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=01 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -2040,7 +2040,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=01 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -2075,7 +2075,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=01 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -2110,7 +2110,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=01 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -2145,7 +2145,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=01 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -2180,7 +2180,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=01 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -2215,7 +2215,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=10 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -2250,7 +2250,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=10 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -2285,7 +2285,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=10 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -2320,7 +2320,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=10 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -2355,7 +2355,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=10 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -2390,7 +2390,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=10 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -2425,7 +2425,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=11 & op2(7:5)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -2460,7 +2460,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=11 & op2(7:5)=001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -2495,7 +2495,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=11 & op2(7:5)=010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -2530,7 +2530,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=11 & op2(7:5)=011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -2565,7 +2565,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=11 & op2(7:5)=100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -2600,7 +2600,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(21:20)=11 & op2(7:5)=111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),

@@ -48,7 +48,7 @@ namespace nacl_arm_test {
 //            SmallestGPR(RegisterList(inst(15:0)))  !=
 //               inst(19:16) => UNKNOWN]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0000x0
 //    = {None: 32,
 //       Pc: 15,
@@ -147,7 +147,7 @@ bool LoadStoreRegisterListTesterCase0
 //         inst(21)=1 &&
 //            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0000x1
 //    = {None: 32,
 //       Pc: 15,
@@ -246,7 +246,7 @@ bool LoadStoreRegisterListTesterCase1
 //            SmallestGPR(RegisterList(inst(15:0)))  !=
 //               inst(19:16) => UNKNOWN]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0010x0
 //    = {None: 32,
 //       Pc: 15,
@@ -345,7 +345,7 @@ bool LoadStoreRegisterListTesterCase2
 //         inst(21)=1 &&
 //            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0010x1
 //    = {None: 32,
 //       Pc: 15,
@@ -444,7 +444,7 @@ bool LoadStoreRegisterListTesterCase3
 //            SmallestGPR(RegisterList(inst(15:0)))  !=
 //               inst(19:16) => UNKNOWN]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0100x0
 //    = {None: 32,
 //       Pc: 15,
@@ -543,7 +543,7 @@ bool LoadStoreRegisterListTesterCase4
 //         inst(21)=1 &&
 //            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0100x1
 //    = {None: 32,
 //       Pc: 15,
@@ -642,7 +642,7 @@ bool LoadStoreRegisterListTesterCase5
 //            SmallestGPR(RegisterList(inst(15:0)))  !=
 //               inst(19:16) => UNKNOWN]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0110x0
 //    = {None: 32,
 //       Pc: 15,
@@ -741,7 +741,7 @@ bool LoadStoreRegisterListTesterCase6
 //         inst(21)=1 &&
 //            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0110x1
 //    = {None: 32,
 //       Pc: 15,
@@ -829,7 +829,7 @@ bool LoadStoreRegisterListTesterCase7
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0xx1x0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -866,7 +866,7 @@ bool UnsafeCondDecoderTesterCase8
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0xx1x1 & R(15)=0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -906,7 +906,7 @@ bool UnsafeCondDecoderTesterCase9
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0xx1x1 & R(15)=1
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -945,7 +945,7 @@ bool UnsafeCondDecoderTesterCase10
 //       defs: {15},
 //       safety: [true => MAY_BE_SAFE]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=10xxxx
 //    = {Pc: 15,
 //       baseline: BranchImmediate24,
@@ -1003,7 +1003,7 @@ bool BranchImmediate24TesterCase11
 //       defs: {15, 14},
 //       safety: [true => MAY_BE_SAFE]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=11xxxx
 //    = {Lr: 14,
 //       Pc: 15,
@@ -1594,7 +1594,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //            SmallestGPR(RegisterList(inst(15:0)))  !=
 //               inst(19:16) => UNKNOWN]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0000x0
 //    = {None: 32,
 //       Pc: 15,
@@ -1644,7 +1644,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(21)=1 &&
 //            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0000x1
 //    = {None: 32,
 //       Pc: 15,
@@ -1694,7 +1694,7 @@ TEST_F(Arm32DecoderStateTests,
 //            SmallestGPR(RegisterList(inst(15:0)))  !=
 //               inst(19:16) => UNKNOWN]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0010x0
 //    = {None: 32,
 //       Pc: 15,
@@ -1744,7 +1744,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(21)=1 &&
 //            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0010x1
 //    = {None: 32,
 //       Pc: 15,
@@ -1794,7 +1794,7 @@ TEST_F(Arm32DecoderStateTests,
 //            SmallestGPR(RegisterList(inst(15:0)))  !=
 //               inst(19:16) => UNKNOWN]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0100x0
 //    = {None: 32,
 //       Pc: 15,
@@ -1844,7 +1844,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(21)=1 &&
 //            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0100x1
 //    = {None: 32,
 //       Pc: 15,
@@ -1894,7 +1894,7 @@ TEST_F(Arm32DecoderStateTests,
 //            SmallestGPR(RegisterList(inst(15:0)))  !=
 //               inst(19:16) => UNKNOWN]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0110x0
 //    = {None: 32,
 //       Pc: 15,
@@ -1944,7 +1944,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(21)=1 &&
 //            Contains(RegisterList(inst(15:0)), inst(19:16)) => UNKNOWN]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0110x1
 //    = {None: 32,
 //       Pc: 15,
@@ -1983,7 +1983,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc100pu100nnnnrrrrrrrrrrrrrrrr',
 //       rule: 'STM_User_registers'}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0xx1x0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
@@ -2004,7 +2004,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc100pu101nnnn0rrrrrrrrrrrrrrr',
 //       rule: 'LDM_User_registers'}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0xx1x1 & R(15)=0 & $pattern(31:0)=xxxxxxxxxx0xxxxxxxxxxxxxxxxxxxxx
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
@@ -2025,7 +2025,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc100pu1w1nnnn1rrrrrrrrrrrrrrr',
 //       rule: 'LDM_exception_return'}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=0xx1x1 & R(15)=1
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
@@ -2048,7 +2048,7 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: 'B',
 //       safety: [true => MAY_BE_SAFE]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=10xxxx
 //    = {Pc: 15,
 //       actual: BranchImmediate24,
@@ -2075,7 +2075,7 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: 'BL_BLX_immediate',
 //       safety: [true => MAY_BE_SAFE]}
 //
-// Representaive case:
+// Representative case:
 // op(25:20)=11xxxx
 //    = {Lr: 14,
 //       Pc: 15,

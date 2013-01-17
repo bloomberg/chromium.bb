@@ -41,7 +41,7 @@ namespace nacl_arm_test {
 //            inst(3:0)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0100 & U(24)=0
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
@@ -120,7 +120,7 @@ bool VectorBinary3RegisterDifferentLengthTesterCase0
 //            inst(3:0)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0100 & U(24)=1
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
@@ -198,7 +198,7 @@ bool VectorBinary3RegisterDifferentLengthTesterCase1
 //       safety: [inst(15:12)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0101
 //    = {Vd: Vd(15:12),
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
@@ -268,7 +268,7 @@ bool VectorBinary3RegisterDifferentLengthTesterCase2
 //            inst(3:0)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0110 & U(24)=0
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
@@ -347,7 +347,7 @@ bool VectorBinary3RegisterDifferentLengthTesterCase3
 //            inst(3:0)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0110 & U(24)=1
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
@@ -425,7 +425,7 @@ bool VectorBinary3RegisterDifferentLengthTesterCase4
 //       safety: [inst(15:12)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0111
 //    = {Vd: Vd(15:12),
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
@@ -494,7 +494,7 @@ bool VectorBinary3RegisterDifferentLengthTesterCase5
 //       safety: [inst(15:12)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1100
 //    = {Vd: Vd(15:12),
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
@@ -564,7 +564,7 @@ bool VectorBinary3RegisterDifferentLengthTesterCase6
 //            inst(15:12)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1101 & U(24)=0
 //    = {Vd: Vd(15:12),
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32L,
@@ -643,7 +643,7 @@ bool VectorBinary3RegisterDifferentLengthTesterCase7
 //         inst(24)=1 ||
 //            inst(21:20)=~00 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1110
 //    = {U: U(24),
 //       Vd: Vd(15:12),
@@ -723,7 +723,7 @@ bool VectorBinary3RegisterDifferentLengthTesterCase8
 //       safety: [inst(15:12)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=10x0
 //    = {Vd: Vd(15:12),
 //       baseline: VectorBinary3RegisterDifferentLength_I8_16_32L,
@@ -793,7 +793,7 @@ bool VectorBinary3RegisterDifferentLengthTesterCase9
 //            inst(15:12)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=10x1 & U(24)=0
 //    = {Vd: Vd(15:12),
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32L,
@@ -872,7 +872,7 @@ bool VectorBinary3RegisterDifferentLengthTesterCase10
 //            inst(19:16)(0)=1) => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=000x
 //    = {Vd: Vd(15:12),
 //       Vn: Vn(19:16),
@@ -954,7 +954,7 @@ bool VectorBinary3RegisterDifferentLengthTesterCase11
 //            inst(19:16)(0)=1) => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=001x
 //    = {Vd: Vd(15:12),
 //       Vn: Vn(19:16),
@@ -1458,7 +1458,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //            inst(3:0)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0100 & U(24)=0
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
@@ -1491,7 +1491,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(3:0)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0100 & U(24)=1
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
@@ -1523,7 +1523,7 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [inst(15:12)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0101
 //    = {Vd: Vd(15:12),
 //       actual: VectorBinary3RegisterDifferentLength_I8_16_32L,
@@ -1553,7 +1553,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(3:0)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0110 & U(24)=0
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
@@ -1586,7 +1586,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(3:0)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0110 & U(24)=1
 //    = {Vm: Vm(3:0),
 //       Vn: Vn(19:16),
@@ -1618,7 +1618,7 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [inst(15:12)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0111
 //    = {Vd: Vd(15:12),
 //       actual: VectorBinary3RegisterDifferentLength_I8_16_32L,
@@ -1647,7 +1647,7 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [inst(15:12)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1100
 //    = {Vd: Vd(15:12),
 //       actual: VectorBinary3RegisterDifferentLength_I8_16_32L,
@@ -1677,7 +1677,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(15:12)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1101 & U(24)=0
 //    = {Vd: Vd(15:12),
 //       actual: VectorBinary3RegisterDifferentLength_I16_32L,
@@ -1710,7 +1710,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(24)=1 ||
 //            inst(21:20)=~00 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1110
 //    = {U: U(24),
 //       Vd: Vd(15:12),
@@ -1743,7 +1743,7 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [inst(15:12)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=10x0
 //    = {Vd: Vd(15:12),
 //       actual: VectorBinary3RegisterDifferentLength_I8_16_32L,
@@ -1773,7 +1773,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(15:12)(0)=1 => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=10x1 & U(24)=0
 //    = {Vd: Vd(15:12),
 //       actual: VectorBinary3RegisterDifferentLength_I16_32L,
@@ -1806,7 +1806,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1) => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=000x
 //    = {Vd: Vd(15:12),
 //       Vn: Vn(19:16),
@@ -1842,7 +1842,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1) => UNDEFINED,
 //         inst(21:20)=11 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=001x
 //    = {Vd: Vd(15:12),
 //       Vn: Vn(19:16),

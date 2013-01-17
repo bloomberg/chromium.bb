@@ -37,7 +37,7 @@ namespace nacl_arm_test {
 //    = {baseline: 'VectorBinary3RegisterImmOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // U(24)=0 & A(23:19)=1x11x & C(7:4)=xxx0
 //    = {baseline: VectorBinary3RegisterImmOp,
 //       constraints: }
@@ -77,7 +77,7 @@ bool VectorBinary3RegisterImmOpTesterCase0
 //    = {baseline: 'VectorUnary2RegisterDup',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=1100 & C(7:4)=0xx0
 //    = {baseline: VectorUnary2RegisterDup,
 //       constraints: }
@@ -120,7 +120,7 @@ bool VectorUnary2RegisterDupTesterCase1
 //    = {baseline: 'VectorBinary3RegisterLookupOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=10xx & C(7:4)=xxx0
 //    = {baseline: VectorBinary3RegisterLookupOp,
 //       constraints: }
@@ -240,7 +240,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       pattern: '111100101d11nnnnddddiiiinqm0mmmm',
 //       rule: 'Vext_Rule_305_A1_P598'}
 //
-// Representaive case:
+// Representative case:
 // U(24)=0 & A(23:19)=1x11x & C(7:4)=xxx0
 //    = {actual: VectorBinary3RegisterImmOp,
 //       baseline: VectorBinary3RegisterImmOp,
@@ -261,7 +261,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: '111100111d11iiiidddd11000qm0mmmm',
 //       rule: 'Vdup_Rule_302_A1_P592'}
 //
-// Representaive case:
+// Representative case:
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=1100 & C(7:4)=0xx0
 //    = {actual: VectorUnary2RegisterDup,
 //       baseline: VectorUnary2RegisterDup,
@@ -282,7 +282,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: '111100111d11nnnndddd10ccnpm0mmmm',
 //       rule: 'Vtbl_Vtbx_Rule_406_A1_P798'}
 //
-// Representaive case:
+// Representative case:
 // U(24)=1 & A(23:19)=1x11x & B(11:8)=10xx & C(7:4)=xxx0
 //    = {actual: VectorBinary3RegisterLookupOp,
 //       baseline: VectorBinary3RegisterLookupOp,

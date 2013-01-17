@@ -43,7 +43,7 @@ namespace nacl_arm_test {
 //               inst(3:0) => UNPREDICTABLE,
 //         inst(19:18)=00 => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=000 & B(9)=0 & op(22:21)=01 & op1(19:16)=xx00 & $pattern(31:0)=xxxxxxxxxxxxxxxx111100x0xxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -130,7 +130,7 @@ bool Unary1RegisterUseTesterCase0
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=000 & B(9)=0 & op(22:21)=01 & op1(19:16)=xx01 & $pattern(31:0)=xxxxxxxxxxxxxxxx111100x0xxxxxxxx
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -176,7 +176,7 @@ bool UnsafeCondDecoderTesterCase1
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=000 & B(9)=0 & op(22:21)=01 & op1(19:16)=xx1x & $pattern(31:0)=xxxxxxxxxxxxxxxx111100x0xxxxxxxx
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -222,7 +222,7 @@ bool UnsafeCondDecoderTesterCase2
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=000 & B(9)=0 & op(22:21)=11 & $pattern(31:0)=xxxxxxxxxxxxxxxx111100x0xxxxxxxx
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -268,7 +268,7 @@ bool UnsafeCondDecoderTesterCase3
 //       safety: [inst(15:12)=1111 => UNPREDICTABLE,
 //         inst(22)=1 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=000 & B(9)=0 & op(22:21)=x0 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx00x0xxxx0000
 //    = {R: R(22),
 //       Rd: Rd(15:12),
@@ -340,7 +340,7 @@ bool Unary1RegisterSetTesterCase4
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=000 & B(9)=1 & op(22:21)=x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx00xxxxxx0000
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -383,7 +383,7 @@ bool UnsafeCondDecoderTesterCase5
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=000 & B(9)=1 & op(22:21)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxx111100xxxxxxxxxx
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -428,7 +428,7 @@ bool UnsafeCondDecoderTesterCase6
 //       defs: {15},
 //       safety: [inst(3:0)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=001 & op(22:21)=01 & $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx
 //    = {Pc: 15,
 //       Rm: Rm(3:0),
@@ -497,7 +497,7 @@ bool BranchToRegisterTesterCase7
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=001 & op(22:21)=11 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -562,7 +562,7 @@ bool Unary2RegisterOpNotRmIsPcTesterCase8
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=010 & op(22:21)=01 & $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -604,7 +604,7 @@ bool UnsafeCondDecoderTesterCase9
 //       defs: {15, 14},
 //       safety: [inst(3:0)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=011 & op(22:21)=01 & $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx
 //    = {Lr: 14,
 //       Pc: 15,
@@ -670,7 +670,7 @@ bool BranchToRegisterTesterCase10
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=110 & op(22:21)=11 & $pattern(31:0)=xxxxxxxxxxxx000000000000xxxx1110
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -713,7 +713,7 @@ bool UnsafeCondDecoderTesterCase11
 //       safety: [inst(31:28)=~1110 => UNPREDICTABLE,
 //         not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=111 & op(22:21)=01
 //    = {baseline: BreakPointAndConstantPoolHead,
 //       cond: cond(31:28),
@@ -777,7 +777,7 @@ bool Immediate16UseTesterCase12
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=111 & op(22:21)=10
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -814,7 +814,7 @@ bool UnsafeCondDecoderTesterCase13
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=111 & op(22:21)=11 & $pattern(31:0)=xxxxxxxxxxxx000000000000xxxxxxxx
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -1240,7 +1240,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //               inst(3:0) => UNPREDICTABLE,
 //         inst(19:18)=00 => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=000 & B(9)=0 & op(22:21)=01 & op1(19:16)=xx00 & $pattern(31:0)=xxxxxxxxxxxxxxxx111100x0xxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -1346,7 +1346,7 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [inst(15:12)=1111 => UNPREDICTABLE,
 //         inst(22)=1 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=000 & B(9)=0 & op(22:21)=x0 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx00x0xxxx0000
 //    = {R: R(22),
 //       Rd: Rd(15:12),
@@ -1421,7 +1421,7 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: 'Bx',
 //       safety: [inst(3:0)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=001 & op(22:21)=01 & $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx
 //    = {Pc: 15,
 //       Rm: Rm(3:0),
@@ -1452,7 +1452,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=001 & op(22:21)=11 & $pattern(31:0)=xxxxxxxxxxxx1111xxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -1504,7 +1504,7 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: 'BLX_register',
 //       safety: [inst(3:0)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=011 & op(22:21)=01 & $pattern(31:0)=xxxxxxxxxxxx111111111111xxxxxxxx
 //    = {Lr: 14,
 //       Pc: 15,
@@ -1557,7 +1557,7 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [inst(31:28)=~1110 => UNPREDICTABLE,
 //         not IsBreakPointAndConstantPoolHead(inst) => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op2(6:4)=111 & op(22:21)=01
 //    = {actual: BreakPointAndConstantPoolHead,
 //       baseline: BreakPointAndConstantPoolHead,

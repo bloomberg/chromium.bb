@@ -48,7 +48,7 @@ namespace nacl_arm_test {
 //         inst(15:12)  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=0100
 //    = {Pc: 15,
 //       RdHi: RdHi(19:16),
@@ -118,7 +118,7 @@ bool Binary4RegisterDualResultTesterCase0
 //    = {baseline: 'UndefinedCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=0101
 //    = {baseline: UndefinedCondDecoder,
 //       constraints: }
@@ -161,7 +161,7 @@ bool UnsafeCondDecoderTesterCase1
 //            15  ==
 //               inst(15:12) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=0110
 //    = {Pc: 15,
 //       Ra: Ra(15:12),
@@ -224,7 +224,7 @@ bool Binary4RegisterDualOpTesterCase2
 //    = {baseline: 'UndefinedCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=0111
 //    = {baseline: UndefinedCondDecoder,
 //       constraints: }
@@ -271,7 +271,7 @@ bool UnsafeCondDecoderTesterCase3
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=000x & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -373,7 +373,7 @@ bool Binary3RegisterOpAltATesterCase4
 //            15  ==
 //               inst(15:12) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=001x
 //    = {NZCV: 16,
 //       None: 32,
@@ -478,7 +478,7 @@ bool Binary4RegisterDualOpTesterCase5
 //         inst(15:12)  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=100x
 //    = {NZCV: 16,
 //       None: 32,
@@ -595,7 +595,7 @@ bool Binary4RegisterDualResultTesterCase6
 //         inst(15:12)  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=101x
 //    = {NZCV: 16,
 //       None: 32,
@@ -712,7 +712,7 @@ bool Binary4RegisterDualResultTesterCase7
 //         inst(15:12)  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=110x
 //    = {NZCV: 16,
 //       None: 32,
@@ -829,7 +829,7 @@ bool Binary4RegisterDualResultTesterCase8
 //         inst(15:12)  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=111x
 //    = {NZCV: 16,
 //       None: 32,
@@ -1416,7 +1416,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //         inst(15:12)  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=0100
 //    = {Pc: 15,
 //       RdHi: RdHi(19:16),
@@ -1477,7 +1477,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(15:12) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=0110
 //    = {Pc: 15,
 //       Ra: Ra(15:12),
@@ -1540,7 +1540,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=000x & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -1593,7 +1593,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(15:12) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=001x
 //    = {NZCV: 16,
 //       None: 32,
@@ -1651,7 +1651,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(15:12)  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=100x
 //    = {NZCV: 16,
 //       None: 32,
@@ -1713,7 +1713,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(15:12)  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=101x
 //    = {NZCV: 16,
 //       None: 32,
@@ -1775,7 +1775,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(15:12)  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=110x
 //    = {NZCV: 16,
 //       None: 32,
@@ -1837,7 +1837,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(15:12)  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=111x
 //    = {NZCV: 16,
 //       None: 32,

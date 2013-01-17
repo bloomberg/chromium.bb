@@ -37,7 +37,7 @@ namespace nacl_arm_test {
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=0x010
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -74,7 +74,7 @@ bool UnsafeCondDecoderTesterCase0
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=0x011
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -111,7 +111,7 @@ bool UnsafeCondDecoderTesterCase1
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=0x110
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -148,7 +148,7 @@ bool UnsafeCondDecoderTesterCase2
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=0x111
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -197,7 +197,7 @@ bool UnsafeCondDecoderTesterCase3
 //            inst(15:12)  ==
 //               inst(19:16)) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=xx0x0 & op1_repeated(24:20)=~0x010
 //    = {None: 32,
 //       P: P(24),
@@ -312,7 +312,7 @@ bool LoadStore2RegisterImm12OpTesterCase4
 //            inst(15:12)  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x011
 //    = {None: 32,
 //       P: P(24),
@@ -425,7 +425,7 @@ bool LoadStore2RegisterImm12OpTesterCase5
 //       constraints: ,
 //       defs: {inst(15:12)}}
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=1111 & op1_repeated(24:20)=~0x011 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = {Rt: Rt(15:12),
 //       baseline: Load2RegisterImm12Op,
@@ -503,7 +503,7 @@ bool LoadStore2RegisterImm12OpTesterCase6
 //            inst(15:12)  ==
 //               inst(19:16)) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=xx1x0 & op1_repeated(24:20)=~0x110
 //    = {None: 32,
 //       P: P(24),
@@ -624,7 +624,7 @@ bool LoadStore2RegisterImm12OpTesterCase7
 //            inst(15:12)  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=xx1x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x111
 //    = {None: 32,
 //       P: P(24),
@@ -739,7 +739,7 @@ bool LoadStore2RegisterImm12OpTesterCase8
 //       safety: [15  ==
 //               inst(15:12) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & op1_repeated(24:20)=~0x111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
@@ -810,7 +810,7 @@ bool LoadStore2RegisterImm12OpTesterCase9
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // A(25)=1 & op1(24:20)=0x010 & B(4)=0
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -850,7 +850,7 @@ bool UnsafeCondDecoderTesterCase10
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // A(25)=1 & op1(24:20)=0x011 & B(4)=0
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -890,7 +890,7 @@ bool UnsafeCondDecoderTesterCase11
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // A(25)=1 & op1(24:20)=0x110 & B(4)=0
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -930,7 +930,7 @@ bool UnsafeCondDecoderTesterCase12
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // A(25)=1 & op1(24:20)=0x111 & B(4)=0
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -991,7 +991,7 @@ bool UnsafeCondDecoderTesterCase13
 //               inst(19:16)) => UNPREDICTABLE,
 //         inst(24)=1 => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // A(25)=1 & op1(24:20)=xx0x0 & B(4)=0 & op1_repeated(24:20)=~0x010
 //    = {None: 32,
 //       P: P(24),
@@ -1148,7 +1148,7 @@ bool LoadStore3RegisterImm5OpTesterCase14
 //               inst(19:16)) => UNPREDICTABLE,
 //         inst(24)=1 => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // A(25)=1 & op1(24:20)=xx0x1 & B(4)=0 & op1_repeated(24:20)=~0x011
 //    = {None: 32,
 //       P: P(24),
@@ -1310,7 +1310,7 @@ bool LoadStore3RegisterImm5OpTesterCase15
 //               inst(19:16)) => UNPREDICTABLE,
 //         inst(24)=1 => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // A(25)=1 & op1(24:20)=xx1x0 & B(4)=0 & op1_repeated(24:20)=~0x110
 //    = {None: 32,
 //       P: P(24),
@@ -1467,7 +1467,7 @@ bool LoadStore3RegisterImm5OpTesterCase16
 //               inst(19:16)) => UNPREDICTABLE,
 //         inst(24)=1 => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // A(25)=1 & op1(24:20)=xx1x1 & B(4)=0 & op1_repeated(24:20)=~0x111
 //    = {None: 32,
 //       P: P(24),
@@ -2340,7 +2340,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       pattern: 'cccc0100u010nnnnttttiiiiiiiiiiii',
 //       rule: 'STRT_A1'}
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=0x010
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
@@ -2361,7 +2361,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc0100u011nnnnttttiiiiiiiiiiii',
 //       rule: 'LDRT_A1'}
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=0x011
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
@@ -2382,7 +2382,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc0100u110nnnnttttiiiiiiiiiiii',
 //       rule: 'STRBT_A1'}
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=0x110
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
@@ -2403,7 +2403,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc0100u111nnnnttttiiiiiiiiiiii',
 //       rule: 'LDRBT_A1'}
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=0x111
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
@@ -2436,7 +2436,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(15:12)  ==
 //               inst(19:16)) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=xx0x0 & op1_repeated(24:20)=~0x010
 //    = {None: 32,
 //       P: P(24),
@@ -2491,7 +2491,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(15:12)  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x011
 //    = {None: 32,
 //       P: P(24),
@@ -2535,7 +2535,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc0101u0011111ttttiiiiiiiiiiii',
 //       rule: 'LDR_literal'}
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=xx0x1 & Rn(19:16)=1111 & op1_repeated(24:20)=~0x011 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = {Rt: Rt(15:12),
 //       actual: Load2RegisterImm12Op,
@@ -2573,7 +2573,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(15:12)  ==
 //               inst(19:16)) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=xx1x0 & op1_repeated(24:20)=~0x110
 //    = {None: 32,
 //       P: P(24),
@@ -2630,7 +2630,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(15:12)  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=xx1x1 & Rn(19:16)=~1111 & op1_repeated(24:20)=~0x111
 //    = {None: 32,
 //       P: P(24),
@@ -2676,7 +2676,7 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [15  ==
 //               inst(15:12) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // A(25)=0 & op1(24:20)=xx1x1 & Rn(19:16)=1111 & op1_repeated(24:20)=~0x111 & $pattern(31:0)=xxxxxxx1xx0xxxxxxxxxxxxxxxxxxxxx
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
@@ -2703,7 +2703,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc0110u010nnnnttttiiiiitt0mmmm',
 //       rule: 'STRT_A2'}
 //
-// Representaive case:
+// Representative case:
 // A(25)=1 & op1(24:20)=0x010 & B(4)=0
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
@@ -2724,7 +2724,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc0110u011nnnnttttiiiiitt0mmmm',
 //       rule: 'LDRT_A2'}
 //
-// Representaive case:
+// Representative case:
 // A(25)=1 & op1(24:20)=0x011 & B(4)=0
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
@@ -2745,7 +2745,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc0110u110nnnnttttiiiiitt0mmmm',
 //       rule: 'STRBT_A2'}
 //
-// Representaive case:
+// Representative case:
 // A(25)=1 & op1(24:20)=0x110 & B(4)=0
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
@@ -2766,7 +2766,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc0110u111nnnnttttiiiiitt0mmmm',
 //       rule: 'LDRBT_A2'}
 //
-// Representaive case:
+// Representative case:
 // A(25)=1 & op1(24:20)=0x111 & B(4)=0
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
@@ -2808,7 +2808,7 @@ TEST_F(Arm32DecoderStateTests,
 //               inst(19:16)) => UNPREDICTABLE,
 //         inst(24)=1 => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // A(25)=1 & op1(24:20)=xx0x0 & B(4)=0 & op1_repeated(24:20)=~0x010
 //    = {None: 32,
 //       P: P(24),
@@ -2882,7 +2882,7 @@ TEST_F(Arm32DecoderStateTests,
 //               inst(19:16)) => UNPREDICTABLE,
 //         inst(24)=1 => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // A(25)=1 & op1(24:20)=xx0x1 & B(4)=0 & op1_repeated(24:20)=~0x011
 //    = {None: 32,
 //       P: P(24),
@@ -2956,7 +2956,7 @@ TEST_F(Arm32DecoderStateTests,
 //               inst(19:16)) => UNPREDICTABLE,
 //         inst(24)=1 => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // A(25)=1 & op1(24:20)=xx1x0 & B(4)=0 & op1_repeated(24:20)=~0x110
 //    = {None: 32,
 //       P: P(24),
@@ -3030,7 +3030,7 @@ TEST_F(Arm32DecoderStateTests,
 //               inst(19:16)) => UNPREDICTABLE,
 //         inst(24)=1 => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // A(25)=1 & op1(24:20)=xx1x1 & B(4)=0 & op1_repeated(24:20)=~0x111
 //    = {None: 32,
 //       P: P(24),

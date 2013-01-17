@@ -42,7 +42,7 @@ namespace nacl_arm_test {
 //       safety: [15  ==
 //               inst(15:12) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // L(20)=0 & C(8)=0 & A(23:21)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx00x0000
 //    = {None: 32,
 //       Pc: 15,
@@ -124,7 +124,7 @@ bool MoveVfpRegisterOpTesterCase0
 //       safety: [15  ==
 //               inst(15:12) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // L(20)=0 & C(8)=0 & A(23:21)=111 & $pattern(31:0)=xxxxxxxxxxxx0001xxxxxxxx000x0000
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
@@ -196,7 +196,7 @@ bool VfpUsesRegOpTesterCase1
 //               inst(15:12) => UNPREDICTABLE,
 //         inst(22:21):inst(6:5)(3:0)=0x10 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // L(20)=0 & C(8)=1 & A(23:21)=0xx & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
@@ -277,7 +277,7 @@ bool MoveVfpRegisterOpWithTypeSelTesterCase2
 //            inst(19:16)(0)=1 => UNDEFINED,
 //         inst(22):inst(5)(1:0)=11 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // L(20)=0 & C(8)=1 & A(23:21)=1xx & B(6:5)=0x & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000
 //    = {B: B(22),
 //       E: E(5),
@@ -371,7 +371,7 @@ bool DuplicateToAdvSIMDRegistersTesterCase3
 //       safety: [15  ==
 //               inst(15:12) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // L(20)=1 & C(8)=0 & A(23:21)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx00x0000
 //    = {None: 32,
 //       Pc: 15,
@@ -454,7 +454,7 @@ bool MoveVfpRegisterOpTesterCase4
 //               inst(15:12)
 //            else inst(15:12)}}
 //
-// Representaive case:
+// Representative case:
 // L(20)=1 & C(8)=0 & A(23:21)=111 & $pattern(31:0)=xxxxxxxxxxxx0001xxxxxxxx000x0000
 //    = {NZCV: 16,
 //       Pc: 15,
@@ -531,7 +531,7 @@ bool VfpMrsOpTesterCase5
 //         inst(23):inst(22:21):inst(6:5)(4:0)=10x00 ||
 //            inst(23):inst(22:21):inst(6:5)(4:0)=x0x10 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // L(20)=1 & C(8)=1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
@@ -878,7 +878,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       safety: [15  ==
 //               inst(15:12) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // L(20)=0 & C(8)=0 & A(23:21)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx00x0000
 //    = {None: 32,
 //       Pc: 15,
@@ -914,7 +914,7 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [15  ==
 //               inst(15:12) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // L(20)=0 & C(8)=0 & A(23:21)=111 & $pattern(31:0)=xxxxxxxxxxxx0001xxxxxxxx000x0000
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
@@ -946,7 +946,7 @@ TEST_F(Arm32DecoderStateTests,
 //               inst(15:12) => UNPREDICTABLE,
 //         inst(22:21):inst(6:5)(3:0)=0x10 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // L(20)=0 & C(8)=1 & A(23:21)=0xx & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
@@ -983,7 +983,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 => UNDEFINED,
 //         inst(22):inst(5)(1:0)=11 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // L(20)=0 & C(8)=1 & A(23:21)=1xx & B(6:5)=0x & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000
 //    = {B: B(22),
 //       E: E(5),
@@ -1023,7 +1023,7 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [15  ==
 //               inst(15:12) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // L(20)=1 & C(8)=0 & A(23:21)=000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx00x0000
 //    = {None: 32,
 //       Pc: 15,
@@ -1060,7 +1060,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc111011110001tttt101000010000',
 //       rule: 'VMRS'}
 //
-// Representaive case:
+// Representative case:
 // L(20)=1 & C(8)=0 & A(23:21)=111 & $pattern(31:0)=xxxxxxxxxxxx0001xxxxxxxx000x0000
 //    = {NZCV: 16,
 //       Pc: 15,
@@ -1095,7 +1095,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(23):inst(22:21):inst(6:5)(4:0)=10x00 ||
 //            inst(23):inst(22:21):inst(6:5)(4:0)=x0x10 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // L(20)=1 & C(8)=1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxx0000
 //    = {Pc: 15,
 //       Rt: Rt(15:12),

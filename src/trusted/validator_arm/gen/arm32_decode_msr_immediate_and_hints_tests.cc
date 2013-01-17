@@ -38,7 +38,7 @@ namespace nacl_arm_test {
 //       constraints: ,
 //       defs: {}}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000000 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {baseline: CondDecoder,
 //       constraints: ,
@@ -97,7 +97,7 @@ bool CondDecoderTesterCase0
 //       constraints: ,
 //       defs: {}}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000001 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {baseline: CondDecoder,
 //       constraints: ,
@@ -157,7 +157,7 @@ bool CondDecoderTesterCase1
 //       defs: {},
 //       safety: [true => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000010 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {baseline: Forbidden,
 //       constraints: ,
@@ -222,7 +222,7 @@ bool UnsafeCondDecoderTesterCase2
 //       defs: {},
 //       safety: [true => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000011 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {baseline: Forbidden,
 //       constraints: ,
@@ -287,7 +287,7 @@ bool UnsafeCondDecoderTesterCase3
 //       defs: {},
 //       safety: [true => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000100 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {baseline: Forbidden,
 //       constraints: ,
@@ -352,7 +352,7 @@ bool UnsafeCondDecoderTesterCase4
 //       defs: {},
 //       safety: [true => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=1111xxxx & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {baseline: Forbidden,
 //       constraints: ,
@@ -419,7 +419,7 @@ bool UnsafeCondDecoderTesterCase5
 //            else 32},
 //       safety: [inst(19:18)=00 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=0100 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -496,7 +496,7 @@ bool MoveImmediate12ToApsrTesterCase6
 //            else 32},
 //       safety: [inst(19:18)=00 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=1x00 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -571,7 +571,7 @@ bool MoveImmediate12ToApsrTesterCase7
 //       defs: {},
 //       safety: [true => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=xx01 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {baseline: Forbidden,
 //       constraints: ,
@@ -633,7 +633,7 @@ bool UnsafeCondDecoderTesterCase8
 //       defs: {},
 //       safety: [true => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=xx1x & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {baseline: Forbidden,
 //       constraints: ,
@@ -695,7 +695,7 @@ bool UnsafeCondDecoderTesterCase9
 //       defs: {},
 //       safety: [true => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // op(22)=1 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {baseline: Forbidden,
 //       constraints: ,
@@ -1055,7 +1055,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       pattern: 'cccc0011001000001111000000000000',
 //       rule: 'NOP'}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000000 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: CondDecoder,
 //       baseline: CondDecoder,
@@ -1078,7 +1078,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc0011001000001111000000000001',
 //       rule: 'YIELD'}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000001 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: CondDecoder,
 //       baseline: CondDecoder,
@@ -1102,7 +1102,7 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: 'WFE',
 //       safety: [true => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000010 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Forbidden,
 //       baseline: Forbidden,
@@ -1128,7 +1128,7 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: 'WFI',
 //       safety: [true => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000011 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Forbidden,
 //       baseline: Forbidden,
@@ -1154,7 +1154,7 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: 'SEV',
 //       safety: [true => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=00000100 & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Forbidden,
 //       baseline: Forbidden,
@@ -1180,7 +1180,7 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: 'DBG',
 //       safety: [true => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=0000 & op2(7:0)=1111xxxx & $pattern(31:0)=xxxxxxxxxxxxxxxx11110000xxxxxxxx
 //    = {actual: Forbidden,
 //       baseline: Forbidden,
@@ -1208,7 +1208,7 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: 'MSR_immediate',
 //       safety: [inst(19:18)=00 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=0100 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -1242,7 +1242,7 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: 'MSR_immediate',
 //       safety: [inst(19:18)=00 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=1x00 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -1274,7 +1274,7 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: 'MSR_immediate',
 //       safety: [true => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=xx01 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: Forbidden,
 //       baseline: Forbidden,
@@ -1300,7 +1300,7 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: 'MSR_immediate',
 //       safety: [true => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // op(22)=0 & op1(19:16)=xx1x & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: Forbidden,
 //       baseline: Forbidden,
@@ -1326,7 +1326,7 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: 'MSR_immediate',
 //       safety: [true => FORBIDDEN]}
 //
-// Representaive case:
+// Representative case:
 // op(22)=1 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: Forbidden,
 //       baseline: Forbidden,

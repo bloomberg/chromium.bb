@@ -43,7 +43,7 @@ namespace nacl_arm_test {
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0000 & B(4)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -127,7 +127,7 @@ bool VectorBinary3RegisterSameLengthTesterCase0
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0000 & B(4)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -206,7 +206,7 @@ bool VectorBinary3RegisterSameLengthTesterCase1
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0001 & B(4)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -290,7 +290,7 @@ bool VectorBinary3RegisterSameLengthTesterCase2
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0001 & B(4)=1 & U(24)=0 & C(21:20)=00
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -374,7 +374,7 @@ bool VectorBinary3RegisterSameLengthTesterCase3
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0001 & B(4)=1 & U(24)=0 & C(21:20)=01
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -458,7 +458,7 @@ bool VectorBinary3RegisterSameLengthTesterCase4
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0001 & B(4)=1 & U(24)=0 & C(21:20)=10
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -542,7 +542,7 @@ bool VectorBinary3RegisterSameLengthTesterCase5
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0001 & B(4)=1 & U(24)=0 & C(21:20)=11
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -626,7 +626,7 @@ bool VectorBinary3RegisterSameLengthTesterCase6
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0001 & B(4)=1 & U(24)=1 & C(21:20)=00
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -710,7 +710,7 @@ bool VectorBinary3RegisterSameLengthTesterCase7
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0001 & B(4)=1 & U(24)=1 & C(21:20)=01
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -794,7 +794,7 @@ bool VectorBinary3RegisterSameLengthTesterCase8
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0001 & B(4)=1 & U(24)=1 & C(21:20)=10
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -878,7 +878,7 @@ bool VectorBinary3RegisterSameLengthTesterCase9
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0001 & B(4)=1 & U(24)=1 & C(21:20)=11
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -963,7 +963,7 @@ bool VectorBinary3RegisterSameLengthTesterCase10
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0010 & B(4)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1047,7 +1047,7 @@ bool VectorBinary3RegisterSameLengthTesterCase11
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0010 & B(4)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1126,7 +1126,7 @@ bool VectorBinary3RegisterSameLengthTesterCase12
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0011 & B(4)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1211,7 +1211,7 @@ bool VectorBinary3RegisterSameLengthTesterCase13
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0011 & B(4)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1295,7 +1295,7 @@ bool VectorBinary3RegisterSameLengthTesterCase14
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0100 & B(4)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1373,7 +1373,7 @@ bool VectorBinary3RegisterSameLengthTesterCase15
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0100 & B(4)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1451,7 +1451,7 @@ bool VectorBinary3RegisterSameLengthTesterCase16
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0101 & B(4)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1529,7 +1529,7 @@ bool VectorBinary3RegisterSameLengthTesterCase17
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0101 & B(4)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1608,7 +1608,7 @@ bool VectorBinary3RegisterSameLengthTesterCase18
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0110 & B(4)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1693,7 +1693,7 @@ bool VectorBinary3RegisterSameLengthTesterCase19
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0110 & B(4)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1778,7 +1778,7 @@ bool VectorBinary3RegisterSameLengthTesterCase20
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0111 & B(4)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1863,7 +1863,7 @@ bool VectorBinary3RegisterSameLengthTesterCase21
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0111 & B(4)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1947,7 +1947,7 @@ bool VectorBinary3RegisterSameLengthTesterCase22
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1000 & B(4)=0 & U(24)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -2028,7 +2028,7 @@ bool VectorBinary3RegisterSameLengthTesterCase23
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1000 & B(4)=0 & U(24)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -2110,7 +2110,7 @@ bool VectorBinary3RegisterSameLengthTesterCase24
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1000 & B(4)=1 & U(24)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -2198,7 +2198,7 @@ bool VectorBinary3RegisterSameLengthTesterCase25
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1000 & B(4)=1 & U(24)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -2286,7 +2286,7 @@ bool VectorBinary3RegisterSameLengthTesterCase26
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1001 & B(4)=0 & U(24)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -2374,7 +2374,7 @@ bool VectorBinary3RegisterSameLengthTesterCase27
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1001 & B(4)=0 & U(24)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -2462,7 +2462,7 @@ bool VectorBinary3RegisterSameLengthTesterCase28
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1001 & B(4)=1 & U(24)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -2550,7 +2550,7 @@ bool VectorBinary3RegisterSameLengthTesterCase29
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1001 & B(4)=1 & U(24)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -2635,7 +2635,7 @@ bool VectorBinary3RegisterSameLengthTesterCase30
 //       safety: [inst(21:20)=11 => UNDEFINED,
 //         inst(6)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1010 & B(4)=0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx0xxxxxx
 //    = {Q: Q(6),
 //       baseline: VectorBinary3RegisterSameLengthDI,
@@ -2705,7 +2705,7 @@ bool VectorBinary3RegisterSameLengthTesterCase31
 //       safety: [inst(21:20)=11 => UNDEFINED,
 //         inst(6)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1010 & B(4)=1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx0xxxxxx
 //    = {Q: Q(6),
 //       baseline: VectorBinary3RegisterSameLengthDI,
@@ -2779,7 +2779,7 @@ bool VectorBinary3RegisterSameLengthTesterCase32
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1011 & B(4)=0 & U(24)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -2872,7 +2872,7 @@ bool VectorBinary3RegisterSameLengthTesterCase33
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1011 & B(4)=0 & U(24)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -2961,7 +2961,7 @@ bool VectorBinary3RegisterSameLengthTesterCase34
 //       safety: [inst(21:20)=11 => UNDEFINED,
 //         inst(6)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1011 & B(4)=1 & U(24)=0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx0xxxxxx
 //    = {Q: Q(6),
 //       baseline: VectorBinary3RegisterSameLengthDI,
@@ -3037,7 +3037,7 @@ bool VectorBinary3RegisterSameLengthTesterCase35
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1100 & B(4)=1 & U(24)=0 & C(21:20)=0x & $pattern(31:0)=xxxxxxxxxxx0xxxxxxxxxxxxxxxxxxxx
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -3131,7 +3131,7 @@ bool VectorBinary3RegisterSameLengthTesterCase36
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1100 & B(4)=1 & U(24)=0 & C(21:20)=1x & $pattern(31:0)=xxxxxxxxxxx0xxxxxxxxxxxxxxxxxxxx
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -3225,7 +3225,7 @@ bool VectorBinary3RegisterSameLengthTesterCase37
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1101 & B(4)=0 & U(24)=0 & C(21:20)=0x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -3316,7 +3316,7 @@ bool VectorBinary3RegisterSameLengthTesterCase38
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1101 & B(4)=0 & U(24)=0 & C(21:20)=1x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -3404,7 +3404,7 @@ bool VectorBinary3RegisterSameLengthTesterCase39
 //       safety: [inst(21:20)(0)=1 ||
 //            inst(6)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1101 & B(4)=0 & U(24)=1 & C(21:20)=0x
 //    = {Q: Q(6),
 //       baseline: VectorBinary3RegisterSameLength32P,
@@ -3480,7 +3480,7 @@ bool VectorBinary3RegisterSameLengthTesterCase40
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1101 & B(4)=0 & U(24)=1 & C(21:20)=1x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -3571,7 +3571,7 @@ bool VectorBinary3RegisterSameLengthTesterCase41
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1101 & B(4)=1 & U(24)=0 & C(21:20)=0x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -3662,7 +3662,7 @@ bool VectorBinary3RegisterSameLengthTesterCase42
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1101 & B(4)=1 & U(24)=0 & C(21:20)=1x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -3753,7 +3753,7 @@ bool VectorBinary3RegisterSameLengthTesterCase43
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1101 & B(4)=1 & U(24)=1 & C(21:20)=0x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -3844,7 +3844,7 @@ bool VectorBinary3RegisterSameLengthTesterCase44
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1110 & B(4)=0 & U(24)=0 & C(21:20)=0x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -3935,7 +3935,7 @@ bool VectorBinary3RegisterSameLengthTesterCase45
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1110 & B(4)=0 & U(24)=1 & C(21:20)=0x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -4026,7 +4026,7 @@ bool VectorBinary3RegisterSameLengthTesterCase46
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1110 & B(4)=0 & U(24)=1 & C(21:20)=1x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -4117,7 +4117,7 @@ bool VectorBinary3RegisterSameLengthTesterCase47
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1110 & B(4)=1 & U(24)=1 & C(21:20)=0x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -4208,7 +4208,7 @@ bool VectorBinary3RegisterSameLengthTesterCase48
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1110 & B(4)=1 & U(24)=1 & C(21:20)=1x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -4299,7 +4299,7 @@ bool VectorBinary3RegisterSameLengthTesterCase49
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1111 & B(4)=0 & U(24)=0 & C(21:20)=0x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -4390,7 +4390,7 @@ bool VectorBinary3RegisterSameLengthTesterCase50
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1111 & B(4)=0 & U(24)=0 & C(21:20)=1x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -4478,7 +4478,7 @@ bool VectorBinary3RegisterSameLengthTesterCase51
 //       safety: [inst(21:20)(0)=1 ||
 //            inst(6)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1111 & B(4)=0 & U(24)=1 & C(21:20)=0x
 //    = {Q: Q(6),
 //       baseline: VectorBinary3RegisterSameLength32P,
@@ -4551,7 +4551,7 @@ bool VectorBinary3RegisterSameLengthTesterCase52
 //       safety: [inst(21:20)(0)=1 ||
 //            inst(6)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1111 & B(4)=0 & U(24)=1 & C(21:20)=1x
 //    = {Q: Q(6),
 //       baseline: VectorBinary3RegisterSameLength32P,
@@ -4627,7 +4627,7 @@ bool VectorBinary3RegisterSameLengthTesterCase53
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1111 & B(4)=1 & U(24)=0 & C(21:20)=0x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -4718,7 +4718,7 @@ bool VectorBinary3RegisterSameLengthTesterCase54
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1111 & B(4)=1 & U(24)=0 & C(21:20)=1x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -6803,7 +6803,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0000 & B(4)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -6840,7 +6840,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0000 & B(4)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -6876,7 +6876,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0001 & B(4)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -6913,7 +6913,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0001 & B(4)=1 & U(24)=0 & C(21:20)=00
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -6948,7 +6948,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0001 & B(4)=1 & U(24)=0 & C(21:20)=01
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -6983,7 +6983,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0001 & B(4)=1 & U(24)=0 & C(21:20)=10
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7018,7 +7018,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0001 & B(4)=1 & U(24)=0 & C(21:20)=11
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7053,7 +7053,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0001 & B(4)=1 & U(24)=1 & C(21:20)=00
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7088,7 +7088,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0001 & B(4)=1 & U(24)=1 & C(21:20)=01
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7123,7 +7123,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0001 & B(4)=1 & U(24)=1 & C(21:20)=10
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7158,7 +7158,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0001 & B(4)=1 & U(24)=1 & C(21:20)=11
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7194,7 +7194,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0010 & B(4)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7231,7 +7231,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0010 & B(4)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7267,7 +7267,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0011 & B(4)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7305,7 +7305,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0011 & B(4)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7342,7 +7342,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0100 & B(4)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7377,7 +7377,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0100 & B(4)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7412,7 +7412,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0101 & B(4)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7447,7 +7447,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0101 & B(4)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7483,7 +7483,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0110 & B(4)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7521,7 +7521,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0110 & B(4)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7559,7 +7559,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0111 & B(4)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7597,7 +7597,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=0111 & B(4)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7634,7 +7634,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1000 & B(4)=0 & U(24)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7669,7 +7669,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1000 & B(4)=0 & U(24)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7705,7 +7705,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1000 & B(4)=1 & U(24)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7743,7 +7743,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1000 & B(4)=1 & U(24)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7781,7 +7781,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1001 & B(4)=0 & U(24)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7819,7 +7819,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1001 & B(4)=0 & U(24)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7857,7 +7857,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1001 & B(4)=1 & U(24)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7895,7 +7895,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1001 & B(4)=1 & U(24)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -7930,7 +7930,7 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [inst(21:20)=11 => UNDEFINED,
 //         inst(6)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1010 & B(4)=0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx0xxxxxx
 //    = {Q: Q(6),
 //       actual: VectorBinary3RegisterSameLengthDI,
@@ -7959,7 +7959,7 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [inst(21:20)=11 => UNDEFINED,
 //         inst(6)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1010 & B(4)=1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx0xxxxxx
 //    = {Q: Q(6),
 //       actual: VectorBinary3RegisterSameLengthDI,
@@ -7992,7 +7992,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1011 & B(4)=0 & U(24)=0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -8032,7 +8032,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1011 & B(4)=0 & U(24)=1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -8068,7 +8068,7 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [inst(21:20)=11 => UNDEFINED,
 //         inst(6)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1011 & B(4)=1 & U(24)=0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx0xxxxxx
 //    = {Q: Q(6),
 //       actual: VectorBinary3RegisterSameLengthDI,
@@ -8100,7 +8100,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1100 & B(4)=1 & U(24)=0 & C(21:20)=0x & $pattern(31:0)=xxxxxxxxxxx0xxxxxxxxxxxxxxxxxxxx
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -8138,7 +8138,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1100 & B(4)=1 & U(24)=0 & C(21:20)=1x & $pattern(31:0)=xxxxxxxxxxx0xxxxxxxxxxxxxxxxxxxx
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -8176,7 +8176,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1101 & B(4)=0 & U(24)=0 & C(21:20)=0x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -8214,7 +8214,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1101 & B(4)=0 & U(24)=0 & C(21:20)=1x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -8249,7 +8249,7 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [inst(21:20)(0)=1 ||
 //            inst(6)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1101 & B(4)=0 & U(24)=1 & C(21:20)=0x
 //    = {Q: Q(6),
 //       actual: VectorBinary3RegisterSameLength32P,
@@ -8282,7 +8282,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1101 & B(4)=0 & U(24)=1 & C(21:20)=1x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -8320,7 +8320,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1101 & B(4)=1 & U(24)=0 & C(21:20)=0x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -8358,7 +8358,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1101 & B(4)=1 & U(24)=0 & C(21:20)=1x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -8396,7 +8396,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1101 & B(4)=1 & U(24)=1 & C(21:20)=0x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -8434,7 +8434,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1110 & B(4)=0 & U(24)=0 & C(21:20)=0x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -8472,7 +8472,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1110 & B(4)=0 & U(24)=1 & C(21:20)=0x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -8510,7 +8510,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1110 & B(4)=0 & U(24)=1 & C(21:20)=1x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -8548,7 +8548,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1110 & B(4)=1 & U(24)=1 & C(21:20)=0x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -8586,7 +8586,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1110 & B(4)=1 & U(24)=1 & C(21:20)=1x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -8624,7 +8624,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1111 & B(4)=0 & U(24)=0 & C(21:20)=0x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -8662,7 +8662,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1111 & B(4)=0 & U(24)=0 & C(21:20)=1x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -8697,7 +8697,7 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [inst(21:20)(0)=1 ||
 //            inst(6)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1111 & B(4)=0 & U(24)=1 & C(21:20)=0x
 //    = {Q: Q(6),
 //       actual: VectorBinary3RegisterSameLength32P,
@@ -8727,7 +8727,7 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [inst(21:20)(0)=1 ||
 //            inst(6)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1111 & B(4)=0 & U(24)=1 & C(21:20)=1x
 //    = {Q: Q(6),
 //       actual: VectorBinary3RegisterSameLength32P,
@@ -8760,7 +8760,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1111 & B(4)=1 & U(24)=0 & C(21:20)=0x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -8798,7 +8798,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(19:16)(0)=1 ||
 //            inst(15:12)(0)=1) => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // A(11:8)=1111 & B(4)=1 & U(24)=0 & C(21:20)=1x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),

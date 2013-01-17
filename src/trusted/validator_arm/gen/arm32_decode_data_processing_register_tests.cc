@@ -40,7 +40,7 @@ namespace nacl_arm_test {
 //            if inst(20)
 //            else 32}}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=10001 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -106,7 +106,7 @@ bool Binary2RegisterImmedShiftedTestTesterCase0
 //            if inst(20)
 //            else 32}}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=10011 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -172,7 +172,7 @@ bool Binary2RegisterImmedShiftedTestTesterCase1
 //            if inst(20)
 //            else 32}}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=10101 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -238,7 +238,7 @@ bool Binary2RegisterImmedShiftedTestTesterCase2
 //            if inst(20)
 //            else 32}}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=10111 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -307,7 +307,7 @@ bool Binary2RegisterImmedShiftedTestTesterCase3
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=0000x
 //    = {NZCV: 16,
 //       None: 32,
@@ -389,7 +389,7 @@ bool Binary3RegisterShiftedOpTesterCase4
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=0001x
 //    = {NZCV: 16,
 //       None: 32,
@@ -471,7 +471,7 @@ bool Binary3RegisterShiftedOpTesterCase5
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=0010x
 //    = {NZCV: 16,
 //       None: 32,
@@ -553,7 +553,7 @@ bool Binary3RegisterShiftedOpTesterCase6
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=0011x
 //    = {NZCV: 16,
 //       None: 32,
@@ -635,7 +635,7 @@ bool Binary3RegisterShiftedOpTesterCase7
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=0100x
 //    = {NZCV: 16,
 //       None: 32,
@@ -717,7 +717,7 @@ bool Binary3RegisterShiftedOpTesterCase8
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=0101x
 //    = {NZCV: 16,
 //       None: 32,
@@ -799,7 +799,7 @@ bool Binary3RegisterShiftedOpTesterCase9
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=0110x
 //    = {NZCV: 16,
 //       None: 32,
@@ -881,7 +881,7 @@ bool Binary3RegisterShiftedOpTesterCase10
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=0111x
 //    = {NZCV: 16,
 //       None: 32,
@@ -963,7 +963,7 @@ bool Binary3RegisterShiftedOpTesterCase11
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1100x
 //    = {NZCV: 16,
 //       None: 32,
@@ -1046,7 +1046,7 @@ bool Binary3RegisterShiftedOpTesterCase12
 //         inst(11:7)=00000 => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -1144,7 +1144,7 @@ bool Unary2RegisterShiftedOpTesterCase13
 //         inst(11:7)=00000 => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1101x & op2(11:7)=~00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -1241,7 +1241,7 @@ bool Unary2RegisterShiftedOpTesterCase14
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -1332,7 +1332,7 @@ bool Unary2RegisterOpTesterCase15
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1101x & op2(11:7)=00000 & op3(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -1423,7 +1423,7 @@ bool Unary2RegisterOpTesterCase16
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1101x & op3(6:5)=01 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -1511,7 +1511,7 @@ bool Unary2RegisterShiftedOpTesterCase17
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1101x & op3(6:5)=10 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -1599,7 +1599,7 @@ bool Unary2RegisterShiftedOpTesterCase18
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1110x
 //    = {NZCV: 16,
 //       None: 32,
@@ -1681,7 +1681,7 @@ bool Binary3RegisterShiftedOpTesterCase19
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,

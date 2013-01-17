@@ -37,7 +37,7 @@ namespace nacl_arm_test {
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc2(19:16)=0000 & opc3(7:6)=01
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -74,7 +74,7 @@ bool CondVfpOpTesterCase0
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc2(19:16)=0000 & opc3(7:6)=11
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -111,7 +111,7 @@ bool CondVfpOpTesterCase1
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc2(19:16)=0001 & opc3(7:6)=01
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -148,7 +148,7 @@ bool CondVfpOpTesterCase2
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc2(19:16)=0001 & opc3(7:6)=11
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -185,7 +185,7 @@ bool CondVfpOpTesterCase3
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc2(19:16)=0100 & opc3(7:6)=x1
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -222,7 +222,7 @@ bool CondVfpOpTesterCase4
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc2(19:16)=0101 & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxx0x0000
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -262,7 +262,7 @@ bool CondVfpOpTesterCase5
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc2(19:16)=0111 & opc3(7:6)=11
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -299,7 +299,7 @@ bool CondVfpOpTesterCase6
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc2(19:16)=1000 & opc3(7:6)=x1
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -336,7 +336,7 @@ bool CondVfpOpTesterCase7
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc2(19:16)=001x & opc3(7:6)=x1 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxx0xxxxxxxx
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -376,7 +376,7 @@ bool CondVfpOpTesterCase8
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc2(19:16)=101x & opc3(7:6)=x1
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -413,7 +413,7 @@ bool CondVfpOpTesterCase9
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc2(19:16)=110x & opc3(7:6)=x1
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -450,7 +450,7 @@ bool CondVfpOpTesterCase10
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc2(19:16)=111x & opc3(7:6)=x1
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -487,7 +487,7 @@ bool CondVfpOpTesterCase11
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc3(7:6)=x0 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxx0x0xxxxx
 //    = {baseline: CondVfpOp,
 //       constraints: }

@@ -44,7 +44,7 @@ namespace nacl_arm_test {
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=0 & cmode(11:8)=10x0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -132,7 +132,7 @@ bool Vector1RegisterImmediateTesterCase0
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=0 & cmode(11:8)=10x1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -209,7 +209,7 @@ bool Vector1RegisterImmediateTesterCase1
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=0 & cmode(11:8)=0xx0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -297,7 +297,7 @@ bool Vector1RegisterImmediateTesterCase2
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=0 & cmode(11:8)=0xx1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -374,7 +374,7 @@ bool Vector1RegisterImmediateTesterCase3
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=0 & cmode(11:8)=11xx
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -465,7 +465,7 @@ bool Vector1RegisterImmediateTesterCase4
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=1 & cmode(11:8)=1110
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -554,7 +554,7 @@ bool Vector1RegisterImmediateTesterCase5
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=1 & cmode(11:8)=10x0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -632,7 +632,7 @@ bool Vector1RegisterImmediateTesterCase6
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=1 & cmode(11:8)=10x1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -707,7 +707,7 @@ bool Vector1RegisterImmediateTesterCase7
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=1 & cmode(11:8)=110x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -786,7 +786,7 @@ bool Vector1RegisterImmediateTesterCase8
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=1 & cmode(11:8)=0xx0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -864,7 +864,7 @@ bool Vector1RegisterImmediateTesterCase9
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=1 & cmode(11:8)=0xx1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1344,7 +1344,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=0 & cmode(11:8)=10x0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1381,7 +1381,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=0 & cmode(11:8)=10x1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1417,7 +1417,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=0 & cmode(11:8)=0xx0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1454,7 +1454,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=0 & cmode(11:8)=0xx1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1490,7 +1490,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=0 & cmode(11:8)=11xx
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1530,7 +1530,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=1 & cmode(11:8)=1110
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1568,7 +1568,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=1 & cmode(11:8)=10x0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1602,7 +1602,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=1 & cmode(11:8)=10x1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1636,7 +1636,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=1 & cmode(11:8)=110x
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1671,7 +1671,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=1 & cmode(11:8)=0xx0
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),
@@ -1705,7 +1705,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(6)=1 &&
 //            inst(15:12)(0)=1 => UNDEFINED]}
 //
-// Representaive case:
+// Representative case:
 // op(5)=1 & cmode(11:8)=0xx1
 //    = {Q: Q(6),
 //       Vd: Vd(15:12),

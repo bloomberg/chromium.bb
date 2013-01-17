@@ -38,7 +38,7 @@ namespace nacl_arm_test {
 //       constraints: ,
 //       defs: {16}}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=10001 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       baseline: MaskedBinaryRegisterImmediateTest,
@@ -93,7 +93,7 @@ bool BinaryRegisterImmediateTestTesterCase0
 //       constraints: ,
 //       defs: {16}}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=10011 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       baseline: BinaryRegisterImmediateTest,
@@ -148,7 +148,7 @@ bool BinaryRegisterImmediateTestTesterCase1
 //       constraints: ,
 //       defs: {16}}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=10101 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       baseline: BinaryRegisterImmediateTest,
@@ -203,7 +203,7 @@ bool BinaryRegisterImmediateTestTesterCase2
 //       constraints: ,
 //       defs: {16}}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=10111 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       baseline: BinaryRegisterImmediateTest,
@@ -263,7 +263,7 @@ bool BinaryRegisterImmediateTestTesterCase3
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0000x
 //    = {NZCV: 16,
 //       None: 32,
@@ -347,7 +347,7 @@ bool Binary2RegisterImmediateOpTesterCase4
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0001x
 //    = {NZCV: 16,
 //       None: 32,
@@ -433,7 +433,7 @@ bool Binary2RegisterImmediateOpTesterCase5
 //            inst(20)=0) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0010x & Rn(19:16)=~1111
 //    = {NZCV: 16,
 //       None: 32,
@@ -526,7 +526,7 @@ bool Binary2RegisterImmediateOpTesterCase6
 //       defs: {inst(15:12)},
 //       safety: [inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0010x & Rn(19:16)=1111
 //    = {Rd: Rd(15:12),
 //       baseline: Unary1RegisterImmediateOpPc,
@@ -592,7 +592,7 @@ bool Unary1RegisterImmediateOpPcTesterCase7
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0011x
 //    = {NZCV: 16,
 //       None: 32,
@@ -678,7 +678,7 @@ bool Binary2RegisterImmediateOpTesterCase8
 //            inst(20)=0) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0100x & Rn(19:16)=~1111
 //    = {NZCV: 16,
 //       None: 32,
@@ -771,7 +771,7 @@ bool Binary2RegisterImmediateOpTesterCase9
 //       defs: {inst(15:12)},
 //       safety: [inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0100x & Rn(19:16)=1111
 //    = {Rd: Rd(15:12),
 //       baseline: Unary1RegisterImmediateOpPc,
@@ -837,7 +837,7 @@ bool Unary1RegisterImmediateOpPcTesterCase10
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0101x
 //    = {NZCV: 16,
 //       None: 32,
@@ -921,7 +921,7 @@ bool Binary2RegisterImmediateOpTesterCase11
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0110x
 //    = {NZCV: 16,
 //       None: 32,
@@ -1005,7 +1005,7 @@ bool Binary2RegisterImmediateOpTesterCase12
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0111x
 //    = {NZCV: 16,
 //       None: 32,
@@ -1089,7 +1089,7 @@ bool Binary2RegisterImmediateOpTesterCase13
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=1100x
 //    = {NZCV: 16,
 //       None: 32,
@@ -1173,7 +1173,7 @@ bool Binary2RegisterImmediateOpTesterCase14
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=1101x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -1260,7 +1260,7 @@ bool Unary1RegisterImmediateOp12TesterCase15
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=1110x
 //    = {NZCV: 16,
 //       None: 32,
@@ -1344,7 +1344,7 @@ bool Binary2RegisterImmediateOpTesterCase16
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -2053,7 +2053,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       pattern: 'cccc00110001nnnn0000iiiiiiiiiiii',
 //       rule: 'TST_immediate'}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=10001 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       actual: MaskedBinaryRegisterImmediateTest,
@@ -2077,7 +2077,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc00110011nnnn0000iiiiiiiiiiii',
 //       rule: 'TEQ_immediate'}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=10011 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       actual: BinaryRegisterImmediateTest,
@@ -2101,7 +2101,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc00110101nnnn0000iiiiiiiiiiii',
 //       rule: 'CMP_immediate'}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=10101 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       actual: BinaryRegisterImmediateTest,
@@ -2125,7 +2125,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc00110111nnnn0000iiiiiiiiiiii',
 //       rule: 'CMN_immediate'}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=10111 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       actual: BinaryRegisterImmediateTest,
@@ -2154,7 +2154,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0000x
 //    = {NZCV: 16,
 //       None: 32,
@@ -2193,7 +2193,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0001x
 //    = {NZCV: 16,
 //       None: 32,
@@ -2234,7 +2234,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(20)=0) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0010x & Rn(19:16)=~1111
 //    = {NZCV: 16,
 //       None: 32,
@@ -2272,7 +2272,7 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: 'ADR_A2',
 //       safety: [inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0010x & Rn(19:16)=1111
 //    = {Rd: Rd(15:12),
 //       actual: Unary1RegisterImmediateOpPc,
@@ -2303,7 +2303,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0011x
 //    = {NZCV: 16,
 //       None: 32,
@@ -2344,7 +2344,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(20)=0) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0100x & Rn(19:16)=~1111
 //    = {NZCV: 16,
 //       None: 32,
@@ -2382,7 +2382,7 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: 'ADR_A1',
 //       safety: [inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0100x & Rn(19:16)=1111
 //    = {Rd: Rd(15:12),
 //       actual: Unary1RegisterImmediateOpPc,
@@ -2413,7 +2413,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0101x
 //    = {NZCV: 16,
 //       None: 32,
@@ -2452,7 +2452,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0110x
 //    = {NZCV: 16,
 //       None: 32,
@@ -2491,7 +2491,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=0111x
 //    = {NZCV: 16,
 //       None: 32,
@@ -2530,7 +2530,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=1100x
 //    = {NZCV: 16,
 //       None: 32,
@@ -2569,7 +2569,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=1101x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -2608,7 +2608,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=1110x
 //    = {NZCV: 16,
 //       None: 32,
@@ -2647,7 +2647,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(20)=1) => DECODER_ERROR,
 //         inst(15:12)=1111 => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // op(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,

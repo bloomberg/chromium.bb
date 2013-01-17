@@ -37,7 +37,7 @@ namespace nacl_arm_test {
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc1(23:20)=0x00
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -71,7 +71,7 @@ bool CondVfpOpTesterCase0
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc1(23:20)=0x01
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -105,7 +105,7 @@ bool CondVfpOpTesterCase1
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc1(23:20)=0x10 & opc3(7:6)=x0
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -142,7 +142,7 @@ bool CondVfpOpTesterCase2
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc1(23:20)=0x10 & opc3(7:6)=x1
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -179,7 +179,7 @@ bool CondVfpOpTesterCase3
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc1(23:20)=0x11 & opc3(7:6)=x0
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -216,7 +216,7 @@ bool CondVfpOpTesterCase4
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc1(23:20)=0x11 & opc3(7:6)=x1
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -253,7 +253,7 @@ bool CondVfpOpTesterCase5
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc1(23:20)=1x00 & opc3(7:6)=x0
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -290,7 +290,7 @@ bool CondVfpOpTesterCase6
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc1(23:20)=1x01
 //    = {baseline: CondVfpOp,
 //       constraints: }
@@ -324,7 +324,7 @@ bool CondVfpOpTesterCase7
 //    = {baseline: 'CondVfpOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // opc1(23:20)=1x10
 //    = {baseline: CondVfpOp,
 //       constraints: }

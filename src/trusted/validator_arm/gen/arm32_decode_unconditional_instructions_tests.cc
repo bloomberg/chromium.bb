@@ -37,7 +37,7 @@ namespace nacl_arm_test {
 //    = {baseline: 'ForbiddenUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(27:20)=11000100
 //    = {baseline: ForbiddenUncondDecoder,
 //       constraints: }
@@ -71,7 +71,7 @@ bool UnsafeUncondDecoderTesterCase0
 //    = {baseline: 'ForbiddenUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(27:20)=11000101
 //    = {baseline: ForbiddenUncondDecoder,
 //       constraints: }
@@ -105,7 +105,7 @@ bool UnsafeUncondDecoderTesterCase1
 //    = {baseline: 'ForbiddenUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(27:20)=100xx0x1 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000101000000000
 //    = {baseline: ForbiddenUncondDecoder,
 //       constraints: }
@@ -142,7 +142,7 @@ bool UnsafeUncondDecoderTesterCase2
 //    = {baseline: 'ForbiddenUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(27:20)=100xx1x0 & $pattern(31:0)=xxxxxxxxxxxx110100000101000xxxxx
 //    = {baseline: ForbiddenUncondDecoder,
 //       constraints: }
@@ -179,7 +179,7 @@ bool UnsafeUncondDecoderTesterCase3
 //    = {baseline: 'ForbiddenUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(27:20)=1110xxx0 & op(4)=1
 //    = {baseline: ForbiddenUncondDecoder,
 //       constraints: }
@@ -216,7 +216,7 @@ bool UnsafeUncondDecoderTesterCase4
 //    = {baseline: 'ForbiddenUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(27:20)=1110xxx1 & op(4)=1
 //    = {baseline: ForbiddenUncondDecoder,
 //       constraints: }
@@ -253,7 +253,7 @@ bool UnsafeUncondDecoderTesterCase5
 //    = {baseline: 'ForbiddenUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(27:20)=110xxxx0 & op1_repeated(27:20)=~11000x00
 //    = {baseline: ForbiddenUncondDecoder,
 //       constraints: }
@@ -290,7 +290,7 @@ bool UnsafeUncondDecoderTesterCase6
 //    = {baseline: 'ForbiddenUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(27:20)=110xxxx1 & Rn(19:16)=~1111 & op1_repeated(27:20)=~11000x01
 //    = {baseline: ForbiddenUncondDecoder,
 //       constraints: }
@@ -330,7 +330,7 @@ bool UnsafeUncondDecoderTesterCase7
 //    = {baseline: 'ForbiddenUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(27:20)=110xxxx1 & Rn(19:16)=1111 & op1_repeated(27:20)=~11000x01
 //    = {baseline: ForbiddenUncondDecoder,
 //       constraints: }
@@ -370,7 +370,7 @@ bool UnsafeUncondDecoderTesterCase8
 //    = {baseline: 'ForbiddenUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(27:20)=1110xxxx & op(4)=0
 //    = {baseline: ForbiddenUncondDecoder,
 //       constraints: }
@@ -407,7 +407,7 @@ bool UnsafeUncondDecoderTesterCase9
 //    = {baseline: 'ForbiddenUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(27:20)=101xxxxx
 //    = {baseline: ForbiddenUncondDecoder,
 //       constraints: }

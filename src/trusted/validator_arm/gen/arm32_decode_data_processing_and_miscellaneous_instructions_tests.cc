@@ -37,7 +37,7 @@ namespace nacl_arm_test {
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=1011
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -77,7 +77,7 @@ bool UnsafeCondDecoderTesterCase0
 //    = {baseline: 'ForbiddenCondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=11x1
 //    = {baseline: ForbiddenCondDecoder,
 //       constraints: }
@@ -121,7 +121,7 @@ bool UnsafeCondDecoderTesterCase1
 //            else 32},
 //       safety: [inst(15:12)=1111 => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(25)=1 & op1(24:20)=10000
 //    = {NZCV: 16,
 //       None: 32,
@@ -195,7 +195,7 @@ bool Unary1RegisterImmediateOpTesterCase2
 //            else 32},
 //       safety: [inst(15:12)=1111 => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(25)=1 & op1(24:20)=10100
 //    = {NZCV: 16,
 //       None: 32,
@@ -388,7 +388,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       pattern: 'cccc0000xx1xxxxxxxxxxxxx1xx1xxxx',
 //       rule: 'extra_load_store_instructions_unpriviledged'}
 //
-// Representaive case:
+// Representative case:
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=1011
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
@@ -409,7 +409,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc0000xx1xxxxxxxxxxxxx1xx1xxxx',
 //       rule: 'extra_load_store_instructions_unpriviledged'}
 //
-// Representaive case:
+// Representative case:
 // op(25)=0 & op1(24:20)=0xx1x & op2(7:4)=11x1
 //    = {actual: ForbiddenCondDecoder,
 //       baseline: ForbiddenCondDecoder,
@@ -434,7 +434,7 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: 'MOVW',
 //       safety: [inst(15:12)=1111 => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(25)=1 & op1(24:20)=10000
 //    = {NZCV: 16,
 //       None: 32,
@@ -468,7 +468,7 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: 'MOVT',
 //       safety: [inst(15:12)=1111 => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(25)=1 & op1(24:20)=10100
 //    = {NZCV: 16,
 //       None: 32,

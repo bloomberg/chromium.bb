@@ -688,7 +688,7 @@ CONSTRAINT_TESTER_CLASS_HEADER="""
 // Neutral case:
 // %(row_comment)s
 //
-// Representaive case:
+// Representative case:
 // %(row_rep_comment)s
 class %(base_tester)s
     : public %(base_base_tester)s {
@@ -811,7 +811,7 @@ TEST_FUNCTION_BASELINE="""
 // Neutral case:
 // %(row_comment)s
 //
-// Representaive case:
+// Representative case:
 // %(row_rep_comment)s
 TEST_F(%(decoder_name)sTests,
        %(decoder_tester)s_Test%(test_pattern)s) {

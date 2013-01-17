@@ -37,7 +37,7 @@ namespace nacl_arm_test {
 //    = {baseline: 'ForbiddenUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=0010000 & op2(7:4)=0000 & Rn(19:16)=xxx1 & $pattern(31:0)=xxxxxxxxxxxx000x000000x0xxxx0000
 //    = {baseline: ForbiddenUncondDecoder,
 //       constraints: }
@@ -80,7 +80,7 @@ bool UnsafeUncondDecoderTesterCase0
 //    = {baseline: 'ForbiddenUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=0010000 & op2(7:4)=xx0x & Rn(19:16)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000000xxxxxxxxx
 //    = {baseline: ForbiddenUncondDecoder,
 //       constraints: }
@@ -123,7 +123,7 @@ bool UnsafeUncondDecoderTesterCase1
 //    = {baseline: 'UnpredictableUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=1010011
 //    = {baseline: UnpredictableUncondDecoder,
 //       constraints: }
@@ -157,7 +157,7 @@ bool UnsafeUncondDecoderTesterCase2
 //    = {baseline: 'UnpredictableUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0000
 //    = {baseline: UnpredictableUncondDecoder,
 //       constraints: }
@@ -194,7 +194,7 @@ bool UnsafeUncondDecoderTesterCase3
 //    = {baseline: 'ForbiddenUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0001 & $pattern(31:0)=xxxxxxxxxxxx111111110000xxxx1111
 //    = {baseline: ForbiddenUncondDecoder,
 //       constraints: }
@@ -234,7 +234,7 @@ bool UnsafeUncondDecoderTesterCase4
 //    = {baseline: 'DataBarrier',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0100 & $pattern(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
 //    = {baseline: DataBarrier,
 //       constraints: }
@@ -274,7 +274,7 @@ bool DataBarrierTesterCase5
 //    = {baseline: 'DataBarrier',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0101 & $pattern(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
 //    = {baseline: DataBarrier,
 //       constraints: }
@@ -314,7 +314,7 @@ bool DataBarrierTesterCase6
 //    = {baseline: 'InstructionBarrier',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0110 & $pattern(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
 //    = {baseline: InstructionBarrier,
 //       constraints: }
@@ -354,7 +354,7 @@ bool InstructionBarrierTesterCase7
 //    = {baseline: 'UnpredictableUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0111
 //    = {baseline: UnpredictableUncondDecoder,
 //       constraints: }
@@ -391,7 +391,7 @@ bool UnsafeUncondDecoderTesterCase8
 //    = {baseline: 'UnpredictableUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=001x
 //    = {baseline: UnpredictableUncondDecoder,
 //       constraints: }
@@ -428,7 +428,7 @@ bool UnsafeUncondDecoderTesterCase9
 //    = {baseline: 'UnpredictableUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=1xxx
 //    = {baseline: UnpredictableUncondDecoder,
 //       constraints: }
@@ -465,7 +465,7 @@ bool UnsafeUncondDecoderTesterCase10
 //    = {baseline: 'ForbiddenUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=100x001
 //    = {baseline: ForbiddenUncondDecoder,
 //       constraints: }
@@ -499,7 +499,7 @@ bool UnsafeUncondDecoderTesterCase11
 //    = {baseline: 'PreloadRegisterImm12Op',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=100x101 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {baseline: PreloadRegisterImm12Op,
 //       constraints: }
@@ -536,7 +536,7 @@ bool PreloadRegisterImm12OpTesterCase12
 //    = {baseline: 'PreloadRegisterImm12Op',
 //       constraints: & inst(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=101x001 & Rn(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {baseline: PreloadRegisterImm12Op,
 //       constraints: & constraint(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx }
@@ -581,7 +581,7 @@ bool PreloadRegisterImm12OpTesterCase13
 //    = {baseline: 'UnpredictableUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=101x001 & Rn(19:16)=1111
 //    = {baseline: UnpredictableUncondDecoder,
 //       constraints: }
@@ -618,7 +618,7 @@ bool UnsafeUncondDecoderTesterCase14
 //    = {baseline: 'PreloadRegisterImm12Op',
 //       constraints: & inst(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=101x101 & Rn(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {baseline: PreloadRegisterImm12Op,
 //       constraints: & constraint(31:0)=~xxxxxxxxxxxx1111xxxxxxxxxxxxxxxx }
@@ -663,7 +663,7 @@ bool PreloadRegisterImm12OpTesterCase15
 //    = {baseline: 'PreloadRegisterImm12Op',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=101x101 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {baseline: PreloadRegisterImm12Op,
 //       constraints: }
@@ -703,7 +703,7 @@ bool PreloadRegisterImm12OpTesterCase16
 //    = {baseline: 'ForbiddenUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=110x001 & op2(7:4)=xxx0
 //    = {baseline: ForbiddenUncondDecoder,
 //       constraints: }
@@ -740,7 +740,7 @@ bool UnsafeUncondDecoderTesterCase17
 //    = {baseline: 'PreloadRegisterPairOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=110x101 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {baseline: PreloadRegisterPairOp,
 //       constraints: }
@@ -780,7 +780,7 @@ bool PreloadRegisterPairOpTesterCase18
 //    = {baseline: 'PreloadRegisterPairOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=111x001 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {baseline: PreloadRegisterPairOp,
 //       constraints: }
@@ -820,7 +820,7 @@ bool PreloadRegisterPairOpTesterCase19
 //    = {baseline: 'PreloadRegisterPairOp',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=111x101 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {baseline: PreloadRegisterPairOp,
 //       constraints: }
@@ -860,7 +860,7 @@ bool PreloadRegisterPairOpTesterCase20
 //    = {baseline: 'UnpredictableUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=1011x11
 //    = {baseline: UnpredictableUncondDecoder,
 //       constraints: }
@@ -894,7 +894,7 @@ bool UnsafeUncondDecoderTesterCase21
 //    = {baseline: 'UnpredictableUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=100xx11
 //    = {baseline: UnpredictableUncondDecoder,
 //       constraints: }
@@ -928,7 +928,7 @@ bool UnsafeUncondDecoderTesterCase22
 //    = {baseline: 'UnpredictableUncondDecoder',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=11xxx11 & op2(7:4)=xxx0
 //    = {baseline: UnpredictableUncondDecoder,
 //       constraints: }
@@ -1577,7 +1577,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: '1111010101111111111100000100xxxx',
 //       rule: 'Dsb_Rule_42_A1_P92'}
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0100 & $pattern(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
 //    = {actual: DataBarrier,
 //       baseline: DataBarrier,
@@ -1598,7 +1598,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: '1111010101111111111100000101xxxx',
 //       rule: 'Dmb_Rule_41_A1_P90'}
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0101 & $pattern(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
 //    = {actual: DataBarrier,
 //       baseline: DataBarrier,
@@ -1619,7 +1619,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: '1111010101111111111100000110xxxx',
 //       rule: 'Isb_Rule_49_A1_P102'}
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=1010111 & op2(7:4)=0110 & $pattern(31:0)=xxxxxxxxxxxx111111110000xxxxxxxx
 //    = {actual: InstructionBarrier,
 //       baseline: InstructionBarrier,
@@ -1732,7 +1732,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: '11110100u101nnnn1111iiiiiiiiiiii',
 //       rule: 'Pli_Rule_120_A1_P242'}
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=100x101 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: PreloadRegisterImm12Op,
 //       baseline: PreloadRegisterImm12Op,
@@ -1753,7 +1753,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: '11110101u001nnnn1111iiiiiiiiiiii',
 //       rule: 'Pldw_Rule_117_A1_P236'}
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=101x001 & Rn(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: PreloadRegisterImm12Op,
 //       baseline: PreloadRegisterImm12Op,
@@ -1797,7 +1797,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: '11110101u101nnnn1111iiiiiiiiiiii',
 //       rule: 'Pld_Rule_117_A1_P236'}
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=101x101 & Rn(19:16)=~1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: PreloadRegisterImm12Op,
 //       baseline: PreloadRegisterImm12Op,
@@ -1818,7 +1818,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: '11110101u10111111111iiiiiiiiiiii',
 //       rule: 'Pld_Rule_118_A1_P238'}
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=101x101 & Rn(19:16)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: PreloadRegisterImm12Op,
 //       baseline: PreloadRegisterImm12Op,
@@ -1862,7 +1862,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: '11110110u101nnnn1111iiiiitt0mmmm',
 //       rule: 'Pli_Rule_121_A1_P244'}
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=110x101 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: PreloadRegisterPairOp,
 //       baseline: PreloadRegisterPairOp,
@@ -1883,7 +1883,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: '11110111u001nnnn1111iiiiitt0mmmm',
 //       rule: 'Pldw_Rule_119_A1_P240'}
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=111x001 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: PreloadRegisterPairOp,
 //       baseline: PreloadRegisterPairOp,
@@ -1904,7 +1904,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: '11110111u101nnnn1111iiiiitt0mmmm',
 //       rule: 'Pld_Rule_119_A1_P240'}
 //
-// Representaive case:
+// Representative case:
 // op1(26:20)=111x101 & op2(7:4)=xxx0 & $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx
 //    = {actual: PreloadRegisterPairOp,
 //       baseline: PreloadRegisterPairOp,

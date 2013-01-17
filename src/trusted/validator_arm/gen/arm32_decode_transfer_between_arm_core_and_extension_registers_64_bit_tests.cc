@@ -49,7 +49,7 @@ namespace nacl_arm_test {
 //            inst(15:12)  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // C(8)=0 & op(7:4)=00x1
 //    = {M: M(5),
 //       Pc: 15,
@@ -151,7 +151,7 @@ bool MoveDoubleVfpRegisterOpTesterCase0
 //            inst(15:12)  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // C(8)=1 & op(7:4)=00x1
 //    = {Pc: 15,
 //       Rt: Rt(15:12),
@@ -361,7 +361,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //            inst(15:12)  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // C(8)=0 & op(7:4)=00x1
 //    = {M: M(5),
 //       Pc: 15,
@@ -412,7 +412,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(15:12)  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // C(8)=1 & op(7:4)=00x1
 //    = {Pc: 15,
 //       Rt: Rt(15:12),

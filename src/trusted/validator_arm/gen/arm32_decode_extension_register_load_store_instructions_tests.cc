@@ -60,7 +60,7 @@ namespace nacl_arm_test {
 //            13  ==
 //               inst(19:16) => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x00 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -240,7 +240,7 @@ bool StoreVectorRegisterListTesterCase0
 //            13  ==
 //               inst(19:16) => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x00 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -429,7 +429,7 @@ bool StoreVectorRegisterListTesterCase1
 //         inst(24)=1 &&
 //            inst(21)=0 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x01 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -609,7 +609,7 @@ bool LoadStoreVectorRegisterListTesterCase2
 //         inst(24)=1 &&
 //            inst(21)=0 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x01 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -798,7 +798,7 @@ bool LoadStoreVectorRegisterListTesterCase3
 //            13  ==
 //               inst(19:16) => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x10 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -978,7 +978,7 @@ bool StoreVectorRegisterListTesterCase4
 //            13  ==
 //               inst(19:16) => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x10 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -1167,7 +1167,7 @@ bool StoreVectorRegisterListTesterCase5
 //         inst(24)=1 &&
 //            inst(21)=0 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=~1101 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -1350,7 +1350,7 @@ bool LoadStoreVectorRegisterListTesterCase6
 //         inst(24)=1 &&
 //            inst(21)=0 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=~1101 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -1524,7 +1524,7 @@ bool LoadStoreVectorRegisterListTesterCase7
 //            32  <=
 //               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=1101 & S(8)=0
 //    = {D: D(22),
 //       Sp: 13,
@@ -1608,7 +1608,7 @@ bool LoadStoreVectorRegisterListTesterCase8
 //            16  <=
 //               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=1101 & S(8)=1
 //    = {D: D(22),
 //       Sp: 13,
@@ -1719,7 +1719,7 @@ bool LoadStoreVectorRegisterListTesterCase9
 //            13  ==
 //               inst(19:16) => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=~1101 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -1902,7 +1902,7 @@ bool StoreVectorRegisterListTesterCase10
 //            13  ==
 //               inst(19:16) => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=~1101 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -2076,7 +2076,7 @@ bool StoreVectorRegisterListTesterCase11
 //            32  <=
 //               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=1101 & S(8)=0
 //    = {D: D(22),
 //       Sp: 13,
@@ -2160,7 +2160,7 @@ bool StoreVectorRegisterListTesterCase12
 //            16  <=
 //               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=1101 & S(8)=1
 //    = {D: D(22),
 //       Sp: 13,
@@ -2271,7 +2271,7 @@ bool StoreVectorRegisterListTesterCase13
 //         inst(24)=1 &&
 //            inst(21)=0 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=10x11 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -2451,7 +2451,7 @@ bool LoadStoreVectorRegisterListTesterCase14
 //         inst(24)=1 &&
 //            inst(21)=0 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=10x11 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -2620,7 +2620,7 @@ bool LoadStoreVectorRegisterListTesterCase15
 //       safety: [15  ==
 //               inst(19:16) => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=1xx00 & S(8)=0
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
@@ -2685,7 +2685,7 @@ bool StoreVectorRegisterTesterCase16
 //       safety: [15  ==
 //               inst(19:16) => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=1xx00 & S(8)=1
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
@@ -2748,7 +2748,7 @@ bool StoreVectorRegisterTesterCase17
 //       constraints: ,
 //       defs: {}}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=1xx01 & S(8)=0
 //    = {baseline: LoadVectorRegister,
 //       constraints: ,
@@ -2801,7 +2801,7 @@ bool LoadStoreVectorOpTesterCase18
 //       constraints: ,
 //       defs: {}}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=1xx01 & S(8)=1
 //    = {baseline: LoadVectorRegister,
 //       constraints: ,
@@ -4269,7 +4269,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //            13  ==
 //               inst(19:16) => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x00 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -4362,7 +4362,7 @@ TEST_F(Arm32DecoderStateTests,
 //            13  ==
 //               inst(19:16) => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x00 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -4455,7 +4455,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(24)=1 &&
 //            inst(21)=0 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x01 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -4548,7 +4548,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(24)=1 &&
 //            inst(21)=0 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x01 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -4641,7 +4641,7 @@ TEST_F(Arm32DecoderStateTests,
 //            13  ==
 //               inst(19:16) => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x10 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -4734,7 +4734,7 @@ TEST_F(Arm32DecoderStateTests,
 //            13  ==
 //               inst(19:16) => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x10 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -4827,7 +4827,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(24)=1 &&
 //            inst(21)=0 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=~1101 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -4920,7 +4920,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(24)=1 &&
 //            inst(21)=0 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=~1101 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -4995,7 +4995,7 @@ TEST_F(Arm32DecoderStateTests,
 //            32  <=
 //               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=1101 & S(8)=0
 //    = {D: D(22),
 //       Sp: 13,
@@ -5038,7 +5038,7 @@ TEST_F(Arm32DecoderStateTests,
 //            16  <=
 //               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=01x11 & Rn(19:16)=1101 & S(8)=1
 //    = {D: D(22),
 //       Sp: 13,
@@ -5099,7 +5099,7 @@ TEST_F(Arm32DecoderStateTests,
 //            13  ==
 //               inst(19:16) => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=~1101 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -5192,7 +5192,7 @@ TEST_F(Arm32DecoderStateTests,
 //            13  ==
 //               inst(19:16) => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=~1101 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -5267,7 +5267,7 @@ TEST_F(Arm32DecoderStateTests,
 //            32  <=
 //               inst(15:12):inst(22) + inst(7:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=1101 & S(8)=0
 //    = {D: D(22),
 //       Sp: 13,
@@ -5310,7 +5310,7 @@ TEST_F(Arm32DecoderStateTests,
 //            16  <=
 //               inst(22):inst(15:12) + inst(7:0) / 2 => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=10x10 & Rn(19:16)=1101 & S(8)=1
 //    = {D: D(22),
 //       Sp: 13,
@@ -5371,7 +5371,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(24)=1 &&
 //            inst(21)=0 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=10x11 & S(8)=0
 //    = {D: D(22),
 //       None: 32,
@@ -5464,7 +5464,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(24)=1 &&
 //            inst(21)=0 => DECODER_ERROR]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=10x11 & S(8)=1
 //    = {D: D(22),
 //       None: 32,
@@ -5537,7 +5537,7 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [15  ==
 //               inst(19:16) => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=1xx00 & S(8)=0
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
@@ -5568,7 +5568,7 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [15  ==
 //               inst(19:16) => FORBIDDEN_OPERANDS]}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=1xx00 & S(8)=1
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
@@ -5597,7 +5597,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc1101ud01nnnndddd1010iiiiiiii',
 //       rule: 'VLDR'}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=1xx01 & S(8)=0
 //    = {actual: LoadVectorRegister,
 //       baseline: LoadVectorRegister,
@@ -5620,7 +5620,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc1101ud01nnnndddd1011iiiiiiii',
 //       rule: 'VLDR'}
 //
-// Representaive case:
+// Representative case:
 // opcode(24:20)=1xx01 & S(8)=1
 //    = {actual: LoadVectorRegister,
 //       baseline: LoadVectorRegister,

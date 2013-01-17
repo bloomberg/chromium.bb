@@ -44,7 +44,7 @@ namespace nacl_arm_test {
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=10001 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       Pc: 15,
@@ -116,7 +116,7 @@ bool Binary3RegisterShiftedTestTesterCase0
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=10011 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       Pc: 15,
@@ -188,7 +188,7 @@ bool Binary3RegisterShiftedTestTesterCase1
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=10101 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       Pc: 15,
@@ -260,7 +260,7 @@ bool Binary3RegisterShiftedTestTesterCase2
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=10111 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
 //       Pc: 15,
@@ -336,7 +336,7 @@ bool Binary3RegisterShiftedTestTesterCase3
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=0000x
 //    = {NZCV: 16,
 //       None: 32,
@@ -422,7 +422,7 @@ bool Binary4RegisterShiftedOpTesterCase4
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=0001x
 //    = {NZCV: 16,
 //       None: 32,
@@ -508,7 +508,7 @@ bool Binary4RegisterShiftedOpTesterCase5
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=0010x
 //    = {NZCV: 16,
 //       None: 32,
@@ -594,7 +594,7 @@ bool Binary4RegisterShiftedOpTesterCase6
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=0011x
 //    = {NZCV: 16,
 //       None: 32,
@@ -680,7 +680,7 @@ bool Binary4RegisterShiftedOpTesterCase7
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=0100x
 //    = {NZCV: 16,
 //       None: 32,
@@ -766,7 +766,7 @@ bool Binary4RegisterShiftedOpTesterCase8
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=0101x
 //    = {NZCV: 16,
 //       None: 32,
@@ -852,7 +852,7 @@ bool Binary4RegisterShiftedOpTesterCase9
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=0110x
 //    = {NZCV: 16,
 //       None: 32,
@@ -938,7 +938,7 @@ bool Binary4RegisterShiftedOpTesterCase10
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=0111x
 //    = {NZCV: 16,
 //       None: 32,
@@ -1024,7 +1024,7 @@ bool Binary4RegisterShiftedOpTesterCase11
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1100x
 //    = {NZCV: 16,
 //       None: 32,
@@ -1108,7 +1108,7 @@ bool Binary4RegisterShiftedOpTesterCase12
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1101x & op2(6:5)=00 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -1196,7 +1196,7 @@ bool Binary3RegisterOpTesterCase13
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1101x & op2(6:5)=01 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -1284,7 +1284,7 @@ bool Binary3RegisterOpTesterCase14
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1101x & op2(6:5)=10 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -1372,7 +1372,7 @@ bool Binary3RegisterOpTesterCase15
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1101x & op2(6:5)=11 & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,
@@ -1462,7 +1462,7 @@ bool Binary3RegisterOpTesterCase16
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1110x
 //    = {NZCV: 16,
 //       None: 32,
@@ -1546,7 +1546,7 @@ bool Binary4RegisterShiftedOpTesterCase17
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1111x & $pattern(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
 //    = {NZCV: 16,
 //       None: 32,

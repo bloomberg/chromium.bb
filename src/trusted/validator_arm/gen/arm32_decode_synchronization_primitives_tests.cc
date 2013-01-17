@@ -48,7 +48,7 @@ namespace nacl_arm_test {
 //            inst(15:12)  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=1000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -122,7 +122,7 @@ bool StoreExclusive3RegisterOpTesterCase0
 //            15  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=1001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
@@ -198,7 +198,7 @@ bool LoadExclusive2RegisterOpTesterCase1
 //            inst(15:12)  ==
 //               inst(3:0) + 1 => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=1010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Lr: 14,
 //       Pc: 15,
@@ -284,7 +284,7 @@ bool StoreExclusive3RegisterDoubleOpTesterCase2
 //            15  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=1011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
 //    = {Lr: 14,
 //       Pc: 15,
@@ -370,7 +370,7 @@ bool LoadExclusive2RegisterDoubleOpTesterCase3
 //            inst(15:12)  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=1100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -444,7 +444,7 @@ bool StoreExclusive3RegisterOpTesterCase4
 //            15  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=1101 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
@@ -517,7 +517,7 @@ bool LoadExclusive2RegisterOpTesterCase5
 //            inst(15:12)  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=1110 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -591,7 +591,7 @@ bool StoreExclusive3RegisterOpTesterCase6
 //            15  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
@@ -653,7 +653,7 @@ bool LoadExclusive2RegisterOpTesterCase7
 //    = {baseline: 'Deprecated',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=0x00 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {baseline: Deprecated,
 //       constraints: }
@@ -1033,7 +1033,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //            inst(15:12)  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=1000 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -1067,7 +1067,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=1001 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
@@ -1108,7 +1108,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(15:12)  ==
 //               inst(3:0) + 1 => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=1010 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Lr: 14,
 //       Pc: 15,
@@ -1148,7 +1148,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=1011 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
 //    = {Lr: 14,
 //       Pc: 15,
@@ -1192,7 +1192,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(15:12)  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=1100 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -1226,7 +1226,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=1101 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
@@ -1264,7 +1264,7 @@ TEST_F(Arm32DecoderStateTests,
 //            inst(15:12)  ==
 //               inst(3:0) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=1110 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -1298,7 +1298,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(19:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=1111 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx1111xxxx1111
 //    = {Pc: 15,
 //       Rn: Rn(19:16),
@@ -1325,7 +1325,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc00010b00nnnntttt00001001tttt',
 //       rule: 'SWP_SWPB'}
 //
-// Representaive case:
+// Representative case:
 // op(23:20)=0x00 & $pattern(31:0)=xxxxxxxxxxxxxxxxxxxx0000xxxxxxxx
 //    = {actual: Deprecated,
 //       baseline: Deprecated,

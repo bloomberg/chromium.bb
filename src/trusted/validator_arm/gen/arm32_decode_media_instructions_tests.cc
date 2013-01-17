@@ -46,7 +46,7 @@ namespace nacl_arm_test {
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=11000 & op2(7:5)=000 & Rd(15:12)=~1111
 //    = {Pc: 15,
 //       Ra: Ra(15:12),
@@ -127,7 +127,7 @@ bool Binary4RegisterDualOpTesterCase0
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=11000 & op2(7:5)=000 & Rd(15:12)=1111
 //    = {Pc: 15,
 //       Rd: Rd(19:16),
@@ -194,7 +194,7 @@ bool Binary3RegisterOpAltATesterCase1
 //    = {baseline: 'PermanentlyUndefined',
 //       constraints: }
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=11111 & op2(7:5)=111
 //    = {baseline: PermanentlyUndefined,
 //       constraints: }
@@ -238,7 +238,7 @@ bool PermanentlyUndefinedTesterCase2
 //         31  <=
 //               inst(11:7) + inst(20:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1101x & op2(7:5)=x10
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -315,7 +315,7 @@ bool Binary2RegisterBitRangeNotRnIsPcBitfieldExtractTesterCase3
 //         inst(20:16)  <
 //               inst(11:7) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=~1111
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -400,7 +400,7 @@ bool Binary2RegisterBitRangeMsbGeLsbTesterCase4
 //         inst(20:16)  <
 //               inst(11:7) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=1111
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -480,7 +480,7 @@ bool Unary1RegisterBitRangeMsbGeLsbTesterCase5
 //         31  <=
 //               inst(11:7) + inst(20:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1111x & op2(7:5)=x10
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -818,7 +818,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=11000 & op2(7:5)=000 & Rd(15:12)=~1111
 //    = {Pc: 15,
 //       Ra: Ra(15:12),
@@ -856,7 +856,7 @@ TEST_F(Arm32DecoderStateTests,
 //            15  ==
 //               inst(11:8) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=11000 & op2(7:5)=000 & Rd(15:12)=1111
 //    = {Pc: 15,
 //       Rd: Rd(19:16),
@@ -884,7 +884,7 @@ TEST_F(Arm32DecoderStateTests,
 //       pattern: 'cccc01111111iiiiiiiiiiii1111iiii',
 //       rule: 'UDF'}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=11111 & op2(7:5)=111
 //    = {actual: PermanentlyUndefined,
 //       baseline: PermanentlyUndefined,
@@ -912,7 +912,7 @@ TEST_F(Arm32DecoderStateTests,
 //         31  <=
 //               inst(11:7) + inst(20:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1101x & op2(7:5)=x10
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -950,7 +950,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(20:16)  <
 //               inst(11:7) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=~1111
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -989,7 +989,7 @@ TEST_F(Arm32DecoderStateTests,
 //         inst(20:16)  <
 //               inst(11:7) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1110x & op2(7:5)=x00 & Rn(3:0)=1111
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
@@ -1027,7 +1027,7 @@ TEST_F(Arm32DecoderStateTests,
 //         31  <=
 //               inst(11:7) + inst(20:16) => UNPREDICTABLE]}
 //
-// Representaive case:
+// Representative case:
 // op1(24:20)=1111x & op2(7:5)=x10
 //    = {Pc: 15,
 //       Rd: Rd(15:12),
