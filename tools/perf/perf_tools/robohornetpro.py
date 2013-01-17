@@ -11,12 +11,12 @@ class RobohornetPro(multi_page_benchmark.MultiPageBenchmark):
     options.wpr_make_javascript_deterministic = False
 
   def MeasurePage(self, _, tab, results):
-    tab.runtime.Execute('ToggleRoboHornet()')
+    tab.ExecuteJavaScript('ToggleRoboHornet()')
 
     done = 'document.getElementById("results").innerHTML.indexOf("Total") != -1'
     def _IsDone():
-      return tab.runtime.Evaluate(done)
+      return tab.EvaluateJavaScript(done)
     util.WaitFor(_IsDone, 60)
 
-    result = int(tab.runtime.Evaluate('stopTime - startTime'))
+    result = int(tab.EvaluateJavaScript('stopTime - startTime'))
     results.Add('Total', 'ms', result)

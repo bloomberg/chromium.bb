@@ -21,5 +21,5 @@ class SkPicturePrinter(multi_page_benchmark.MultiPageBenchmark):
     outpath = os.path.abspath(outpath)
     # Replace win32 path separator char '\' with '\\'.
     js = _JS.format(outpath.replace('\\', '\\\\'))
-    tab.runtime.Evaluate(js)
+    tab.EvaluateJavaScript(js)
     results.Add('output_path', 'path', outpath)

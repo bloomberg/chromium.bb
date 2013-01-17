@@ -10,7 +10,7 @@ class Octane(multi_page_benchmark.MultiPageBenchmark):
     js_is_done = """
 completed && !document.getElementById("progress-bar-container")"""
     def _IsDone():
-      return bool(tab.runtime.Evaluate(js_is_done))
+      return bool(tab.EvaluateJavaScript(js_is_done))
     util.WaitFor(_IsDone, 300, poll_interval=5)
 
     js_get_results = """
@@ -26,7 +26,7 @@ var octane_score = main_banner.substr(main_banner.lastIndexOf(':') + 2);
 results['score'] = octane_score;
 JSON.stringify(results);
 """
-    result_dict = eval(tab.runtime.Evaluate(js_get_results))
+    result_dict = eval(tab.EvaluateJavaScript(js_get_results))
     for key, value in result_dict.iteritems():
       if value == '...':
         continue

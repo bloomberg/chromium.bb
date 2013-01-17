@@ -30,7 +30,7 @@ class MemoryBenchmark(multi_page_benchmark.MultiPageBenchmark):
   def MeasurePage(self, page, tab, results):
     for histogram in MEMORY_HISTOGRAMS:
       name = histogram['name']
-      data = tab.runtime.Evaluate(
+      data = tab.EvaluateJavaScript(
           'window.domAutomationController.getHistogram ? '
           'window.domAutomationController.getHistogram("%s") : ""' % name)
       if data:

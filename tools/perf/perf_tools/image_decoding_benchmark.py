@@ -12,7 +12,7 @@ class ImageDecoding(multi_page_benchmark.MultiPageBenchmark):
   def MeasurePage(self, page, tab, results):
     tab.StopTimelineRecording()
     def _IsDone():
-      return tab.runtime.Evaluate('isDone')
+      return tab.EvaluateJavaScript('isDone')
 
     decode_image_events = \
         tab.timeline_model.GetAllOfName('DecodeImage')
@@ -23,7 +23,7 @@ class ImageDecoding(multi_page_benchmark.MultiPageBenchmark):
                 'image_decoding_benchmark_limit_results_to_min_iterations') and
         page.image_decoding_benchmark_limit_results_to_min_iterations):
       assert _IsDone()
-      min_iterations = tab.runtime.Evaluate('minIterations')
+      min_iterations = tab.EvaluateJavaScript('minIterations')
       decode_image_events = decode_image_events[-min_iterations:]
 
     durations = [d.duration_ms for d in decode_image_events]

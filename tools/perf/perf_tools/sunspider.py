@@ -14,11 +14,11 @@ class SunSpiderBenchark(multi_page_benchmark.MultiPageBenchmark):
     js_is_done = """
 window.location.pathname.indexOf('sunspider-results') >= 0"""
     def _IsDone():
-      return tab.runtime.Evaluate(js_is_done)
+      return tab.EvaluateJavaScript(js_is_done)
     util.WaitFor(_IsDone, 300, poll_interval=5)
 
     js_get_results = 'JSON.stringify(output);'
-    js_results = json.loads(tab.runtime.Evaluate(js_get_results))
+    js_results = json.loads(tab.EvaluateJavaScript(js_get_results))
     r = collections.defaultdict(list)
     totals = []
     # js_results is: [{'foo': v1, 'bar': v2},

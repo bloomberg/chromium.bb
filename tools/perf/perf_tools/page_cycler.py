@@ -17,22 +17,22 @@ class PageCycler(multi_page_benchmark.MultiPageBenchmark):
 
   def MeasurePage(self, _, tab, results):
     def _IsDone():
-      return tab.page.GetCookieByName('__pc_done') == '1'
+      return tab.GetCookieByName('__pc_done') == '1'
     util.WaitFor(_IsDone, 1200, poll_interval=5)
-    print 'Pages: [%s]' % tab.page.GetCookieByName('__pc_pages')
+    print 'Pages: [%s]' % tab.GetCookieByName('__pc_pages')
 
     # TODO(tonyg): Get IO and memory statistics.
 
     for histogram in MEMORY_HISTOGRAMS:
       name = histogram['name']
-      data = tab.runtime.Evaluate(
+      data = tab.EvaluateJavaScript(
           'window.domAutomationController.getHistogram("%s")' % name)
       results.Add(name, histogram['units'], data, data_type='histogram')
 
     def _IsNavigatedToReport():
-      return tab.page.GetCookieByName('__navigated_to_report') == '1'
+      return tab.GetCookieByName('__navigated_to_report') == '1'
     util.WaitFor(_IsNavigatedToReport, 60, poll_interval=5)
-    timings = tab.runtime.Evaluate('__get_timings()').split(',')
+    timings = tab.EvaluateJavaScript('__get_timings()').split(',')
     results.Add('t', 'ms', [int(t) for t in timings], chart_name='times')
 
 # TODO(tonyg): Add version that runs with extension profile.

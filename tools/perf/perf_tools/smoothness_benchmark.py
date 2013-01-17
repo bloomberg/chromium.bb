@@ -101,15 +101,15 @@ def CalcFirstPaintTimeResults(results, tab):
     results.Add('first_paint', 'ms', 'unsupported')
     return
 
-  tab.runtime.Execute("""
+  tab.ExecuteJavaScript("""
       window.__rafFired = false;
       window.webkitRequestAnimationFrame(function() {
           window.__rafFired  = true;
       });
   """)
-  util.WaitFor(lambda: tab.runtime.Evaluate('window.__rafFired'), 60)
+  util.WaitFor(lambda: tab.EvaluateJavaScript('window.__rafFired'), 60)
 
-  first_paint_secs = tab.runtime.Evaluate(
+  first_paint_secs = tab.EvaluateJavaScript(
       'window.chrome.loadTimes().firstPaintTime - ' +
       'window.chrome.loadTimes().startLoadTime')
 

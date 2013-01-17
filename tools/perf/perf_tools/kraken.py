@@ -14,14 +14,14 @@ class Kraken(multi_page_benchmark.MultiPageBenchmark):
 document.title.indexOf("Results") != -1 && document.readyState == "complete"
 """
     def _IsDone():
-      return bool(tab.runtime.Evaluate(js_is_done))
+      return bool(tab.EvaluateJavaScript(js_is_done))
     util.WaitFor(_IsDone, 500, poll_interval=5)
 
     js_get_results = """
 var formElement = document.getElementsByTagName("input")[0];
 decodeURIComponent(formElement.value.split("?")[1]);
 """
-    result_dict = eval(tab.runtime.Evaluate(js_get_results))
+    result_dict = eval(tab.EvaluateJavaScript(js_get_results))
     total = 0
     for key in result_dict:
       if key == 'v':
