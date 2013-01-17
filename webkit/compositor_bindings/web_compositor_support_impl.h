@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSupport.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformOperations.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -58,6 +59,10 @@ class WebCompositorSupportImpl : public WebKit::WebCompositorSupport {
     createFloatAnimationCurve();
   virtual WebKit::WebTransformAnimationCurve*
     createTransformAnimationCurve();
+#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
+  virtual WebKit::WebTransformOperations*
+    createTransformOperations();
+#endif
 
  private:
   scoped_refptr<base::MessageLoopProxy> impl_thread_message_loop_proxy_;

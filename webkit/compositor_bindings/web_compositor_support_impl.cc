@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "cc/thread_impl.h"
+#include "cc/transform_operations.h"
 #include "webkit/compositor_bindings/web_animation_impl.h"
 #include "webkit/compositor_bindings/web_compositor_support_output_surface.h"
 #include "webkit/compositor_bindings/web_compositor_support_software_output_device.h"
@@ -20,6 +21,7 @@
 #include "webkit/compositor_bindings/web_scrollbar_layer_impl.h"
 #include "webkit/compositor_bindings/web_solid_color_layer_impl.h"
 #include "webkit/compositor_bindings/web_transform_animation_curve_impl.h"
+#include "webkit/compositor_bindings/web_transform_operations_impl.h"
 #include "webkit/compositor_bindings/web_video_layer_impl.h"
 #include "webkit/glue/webthread_impl.h"
 #include "webkit/support/webkit_support.h"
@@ -43,6 +45,7 @@ using WebKit::WebScrollbarThemeGeometry;
 using WebKit::WebScrollbarThemePainter;
 using WebKit::WebSolidColorLayer;
 using WebKit::WebTransformAnimationCurve;
+using WebKit::WebTransformOperations;
 using WebKit::WebVideoFrameProvider;
 using WebKit::WebVideoLayer;
 
@@ -163,5 +166,11 @@ WebTransformAnimationCurve*
     WebCompositorSupportImpl::createTransformAnimationCurve() {
   return new WebKit::WebTransformAnimationCurveImpl();
 }
+
+#if WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
+WebTransformOperations* WebCompositorSupportImpl::createTransformOperations() {
+  return new WebTransformOperationsImpl();
+}
+#endif
 
 }  // namespace webkit

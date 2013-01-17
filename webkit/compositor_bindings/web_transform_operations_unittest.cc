@@ -10,6 +10,8 @@
 
 using namespace WebKit;
 
+#ifndef WEB_TRANSFORM_OPERATIONS_IS_VIRTUAL
+
 TEST(WebTransformOperationTest, transformTypesAreUnique)
 {
     ScopedVector<WebTransformOperations> transforms;
@@ -608,3 +610,5 @@ TEST(WebTransformOperationTest, blendPerspectiveToIdentity)
         EXPECT_TRANSFORMATION_MATRIX_EQ(expected, identityOperations[i]->blend(operations, progress));
     }
 }
+
+#endif

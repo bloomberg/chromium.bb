@@ -63,6 +63,7 @@
       'tiled_layer_unittest.cc',
       'tiling_data_unittest.cc',
       'top_controls_manager_unittest.cc',
+      'transform_operations_unittest.cc',
       'tree_synchronizer_unittest.cc',
       'timing_function_unittest.cc',
       'test/fake_web_graphics_context_3d_unittest.cc',
