@@ -6,8 +6,8 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
-#include "grit/common_resources.h"
 #include "grit/generated_resources.h"
+#include "grit/webui_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class MockChromeWebUIDataSource : public ChromeWebUIDataSource {
