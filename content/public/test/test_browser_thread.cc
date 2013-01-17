@@ -11,7 +11,6 @@
 
 namespace content {
 
-// This gives access to set_message_loop().
 class TestBrowserThreadImpl : public BrowserThreadImpl {
  public:
   explicit TestBrowserThreadImpl(BrowserThread::ID identifier)
@@ -29,10 +28,6 @@ class TestBrowserThreadImpl : public BrowserThreadImpl {
     Stop();
   }
 
-  void set_message_loop(MessageLoop* loop) {
-    Thread::set_message_loop(loop);
-  }
-
   virtual void Init() OVERRIDE {
     notification_service_ = new NotificationServiceImpl;
     BrowserThreadImpl::Init();
@@ -46,6 +41,7 @@ class TestBrowserThreadImpl : public BrowserThreadImpl {
 
  private:
   NotificationService* notification_service_;
+
   DISALLOW_COPY_AND_ASSIGN(TestBrowserThreadImpl);
 };
 
@@ -82,10 +78,6 @@ bool TestBrowserThread::IsRunning() {
 
 base::Thread* TestBrowserThread::DeprecatedGetThreadObject() {
   return impl_.get();
-}
-
-void TestBrowserThread::DeprecatedSetMessageLoop(MessageLoop* loop) {
-  impl_->set_message_loop(loop);
 }
 
 }  // namespace content

@@ -48,10 +48,6 @@ class TestBrowserThread {
   // in new tests.
   base::Thread* DeprecatedGetThreadObject();
 
-  // Sets the message loop to use for the thread. This should not be
-  // used in new tests.
-  void DeprecatedSetMessageLoop(MessageLoop* loop);
-
  private:
   scoped_ptr<TestBrowserThreadImpl> impl_;
 

@@ -11,8 +11,8 @@
 
 namespace content {
 
-class CONTENT_EXPORT BrowserThreadImpl
-    : public BrowserThread, public base::Thread {
+class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
+                                         public base::Thread {
  public:
   // Construct a BrowserThreadImpl with the supplied identifier.  It is an error
   // to construct a BrowserThreadImpl that already exists.
