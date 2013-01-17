@@ -58,7 +58,9 @@ class WebRtcAudioCapturer
   // provide their own captured audio data. Client is responsible for calling
   // Start() on its own source to have the ball rolling.
   void SetCapturerSource(
-      const scoped_refptr<media::AudioCapturerSource>& source);
+      const scoped_refptr<media::AudioCapturerSource>& source,
+      media::ChannelLayout channel_layout,
+      float sample_rate);
 
   // The |on_device_stopped_cb| callback will be called in OnDeviceStopped().
   void SetStopCallback(const base::Closure& on_device_stopped_cb);

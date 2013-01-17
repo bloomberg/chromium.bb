@@ -100,7 +100,9 @@ void WebRtcAudioCapturer::RemoveCapturerSink(WebRtcAudioCapturerSink* sink) {
 }
 
 void WebRtcAudioCapturer::SetCapturerSource(
-    const scoped_refptr<media::AudioCapturerSource>& source) {
+    const scoped_refptr<media::AudioCapturerSource>& source,
+    media::ChannelLayout channel_layout,
+    float sample_rate) {
   DVLOG(1) <<  "SetCapturerSource()";
   scoped_refptr<media::AudioCapturerSource> old_source;
   {
@@ -113,8 +115,32 @@ void WebRtcAudioCapturer::SetCapturerSource(
   }
 
   // Detach the old source from normal recording.
-  if (old_source)
+  if (old_source) {
     old_source->Stop();
+
+    // Dispatch the new parameters both to the sink(s) and to the new source.
+    // The idea is to get rid of any dependency of the microphone parameters
+    // which would normally be used by default.
+
+    int buffer_size = GetBufferSizeForSampleRate(sample_rate);
+    if (!buffer_size) {
+      DLOG(ERROR) << "Unsupported sample-rate: " << sample_rate;
+      return;
+    }
+
+    params_.Reset(params_.format(),
+                  channel_layout,
+                  sample_rate,
+                  16,  // ignored since the audio stack uses float32.
+                  buffer_size);
+
+    buffer_.reset(new int16[params_.frames_per_buffer() * params_.channels()]);
+
+    for (SinkList::const_iterator it = sinks_.begin();
+         it != sinks_.end(); ++it) {
+      (*it)->SetCaptureFormat(params_);
+    }
+  }
 
   if (source)
     source->Initialize(params_, this, this);
@@ -212,7 +238,8 @@ bool WebRtcAudioCapturer::Initialize() {
   // Create and configure the default audio capturing source. The |source_|
   // will be overwritten if the client call the source calls
   // SetCapturerSource().
-  SetCapturerSource(AudioDeviceFactory::NewInputDevice());
+  SetCapturerSource(
+      AudioDeviceFactory::NewInputDevice(), channel_layout, sample_rate);
 
   UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioInputChannelLayout",
                             channel_layout, media::CHANNEL_LAYOUT_MAX);

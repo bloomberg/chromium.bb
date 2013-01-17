@@ -151,6 +151,8 @@
     'renderer/media/video_capture_impl_manager.h',
     'renderer/media/video_capture_message_filter.cc',
     'renderer/media/video_capture_message_filter.h',
+    'renderer/media/webaudio_capturer_source.cc',
+    'renderer/media/webaudio_capturer_source.h',
     'renderer/media/webmediaplayer_proxy_impl_android.cc',
     'renderer/media/webmediaplayer_proxy_impl_android.h',
     'renderer/mhtml_generator.cc',

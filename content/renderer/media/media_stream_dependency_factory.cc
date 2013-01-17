@@ -228,35 +228,77 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
 
 void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
     WebKit::WebMediaStreamDescriptor* description) {
-  DCHECK(PeerConnectionFactoryCreated());
+  if (!EnsurePeerConnectionFactory()) {
+      DVLOG(1) << "EnsurePeerConnectionFactory() failed!";
+      return;
+  }
 
   std::string label = UTF16ToUTF8(description->label());
   scoped_refptr<webrtc::LocalMediaStreamInterface> native_stream =
       CreateLocalMediaStream(label);
 
+  WebRtcAudioCapturer* capturer =
+      GetWebRtcAudioDevice() ? GetWebRtcAudioDevice()->capturer() : 0;
+  if (!capturer)
+      DVLOG(1) << "CreateNativeLocalMediaStream: missing WebRtcAudioCapturer.";
+
   // Add audio tracks.
   WebKit::WebVector<WebKit::WebMediaStreamComponent> audio_components;
   description->audioSources(audio_components);
+
   for (size_t i = 0; i < audio_components.size(); ++i) {
-    const WebKit::WebMediaStreamSource& source = audio_components[i].source();
-    MediaStreamSourceExtraData* source_data =
-        static_cast<MediaStreamSourceExtraData*>(source.extraData());
-    if (!source_data) {
-      // TODO(perkj): Implement support for sources from remote MediaStreams.
-      NOTIMPLEMENTED();
-      continue;
+    WebKit::WebMediaStreamSource source = audio_components[i].source();
+
+    // See if we're adding a WebAudio MediaStream.
+    if (source.requiresAudioConsumer()) {
+      if (!webaudio_capturer_source_.get() && capturer) {
+        DCHECK(GetWebRtcAudioDevice());
+
+        // TODO(crogers, xians): In reality we should be able to send a unique
+        // audio stream to each PeerConnection separately.  But currently WebRTC
+        // is only able to handle a global audio stream sent to ALL peers.
+
+        // For lifetime, we're relying on the fact that
+        // |webaudio_capturer_source_| will live longer than any
+        // MediaStreamSource, since we're never calling removeAudioConsumer().
+        webaudio_capturer_source_ = new WebAudioCapturerSource(capturer);
+        source.addAudioConsumer(webaudio_capturer_source_.get());
+
+        scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
+            CreateLocalAudioTrack(label + "a0", NULL));
+        native_stream->AddTrack(audio_track);
+        audio_track->set_enabled(audio_components[i].isEnabled());
+      } else {
+        // TODO(crogers): this is very likely to be less important, but
+        // in theory we should be able to "connect" multiple WebAudio
+        // MediaStreams to a single peer, mixing their results.
+        // Instead we just ignore additional ones after the first.
+        LOG(WARNING)
+            << "Multiple MediaStreamAudioDestinationNodes not yet supported!";
+      }
+    } else {
+        MediaStreamSourceExtraData* source_data =
+            static_cast<MediaStreamSourceExtraData*>(source.extraData());
+
+        if (!source_data) {
+          // TODO(perkj): Implement support for sources from
+          // remote MediaStreams.
+          NOTIMPLEMENTED();
+          continue;
+        }
+
+        // TODO(perkj): Refactor the creation of audio tracks to use a proper
+        // interface for receiving audio input data. Currently NULL is passed
+        // since the |audio_device| is the wrong class and is unused.
+        scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
+            CreateLocalAudioTrack(UTF16ToUTF8(source.id()), NULL));
+        native_stream->AddTrack(audio_track);
+        audio_track->set_enabled(audio_components[i].isEnabled());
+        // TODO(xians): This set the source of all audio tracks to the same
+        // microphone. Implement support for setting the source per audio track
+        // instead.
+        SetAudioDeviceSessionId(source_data->device_info().session_id);
     }
-    // TODO(perkj): Refactor the creation of audio tracks to use a proper
-    // interface for receiving audio input data. Currently NULL is passed since
-    // the |audio_device| is the wrong class and is unused.
-    scoped_refptr<webrtc::LocalAudioTrackInterface> audio_track(
-        CreateLocalAudioTrack(UTF16ToUTF8(source.id()), NULL));
-    native_stream->AddTrack(audio_track);
-    audio_track->set_enabled(audio_components[i].isEnabled());
-    // TODO(xians): This set the source of all audio tracks to the same
-    // microphone. Implement support for setting the source per audio track
-    // instead.
-    SetAudioDeviceSessionId(source_data->device_info().session_id);
   }
 
   // Add video tracks.

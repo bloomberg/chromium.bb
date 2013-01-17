@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_AUDIO_CAPTURER_SOURCE_H_
 #define MEDIA_BASE_AUDIO_CAPTURER_SOURCE_H_
 
+#include <string>
 #include <vector>
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
