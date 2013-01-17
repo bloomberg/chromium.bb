@@ -57,9 +57,5 @@ void GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
 
 MessageType GetStatus(ProfileSyncService* service, const SigninManager& signin);
 
-// Returns a string with the synchronization status.
-string16 GetSyncMenuLabel(ProfileSyncService* service,
-                          const SigninManager& signin);
-
 }  // namespace sync_ui_util
 #endif  // CHROME_BROWSER_SYNC_SYNC_UI_UTIL_H_

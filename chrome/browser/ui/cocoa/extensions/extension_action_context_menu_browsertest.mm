@@ -88,7 +88,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuTest, BasicTest) {
 // Test that browser action context menus work. Browser actions have their
 // menus created during browser initialization, when there is no tab. This
 // test simulates that and checks the menu is operational.
-IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuTest, BrowserAction) {
+// TODO(atwilson): Re-enable this test with a change to free the browser
+// properly in a way that does not leave dangling references in the
+// ToolbarController.
+IN_PROC_BROWSER_TEST_F(ExtensionActionContextMenuTest, DISABLED_BrowserAction) {
   extension_ = InstallExtension(
       test_data_dir_.AppendASCII("browsertest")
                     .AppendASCII("browser_action_popup"),

@@ -92,7 +92,7 @@ TEST(SyncUIUtilTest, PassphraseGlobalError) {
 }
 
 // Test that GetStatusLabelsForSyncGlobalError returns an error if a
-// passphrase is required.
+// passphrase is required and not for auth errors.
 TEST(SyncUIUtilTest, AuthAndPassphraseGlobalError) {
   MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
@@ -117,14 +117,14 @@ TEST(SyncUIUtilTest, AuthAndPassphraseGlobalError) {
   string16 menu_label, label2, label3;
   sync_ui_util::GetStatusLabelsForSyncGlobalError(
       &service, signin, &menu_label, &label2, &label3);
-  // Make sure we aren't displaying the passphrase error badge.
-  EXPECT_NE(menu_label, l10n_util::GetStringUTF16(
+  // Make sure we are still displaying the passphrase error badge (don't show
+  // auth errors through SyncUIUtil).
+  EXPECT_EQ(menu_label, l10n_util::GetStringUTF16(
       IDS_SYNC_PASSPHRASE_ERROR_WRENCH_MENU_ITEM));
 }
 
-// Test that GetStatusLabelsForSyncGlobalError indicates errors for conditions
-// that can be resolved by the user and suppresses errors for conditions that
-// cannot be resolved by the user.
+// Test that GetStatusLabelsForSyncGlobalError does not indicate errors for
+// auth errors (these are reported through SigninGlobalError).
 TEST(SyncUIUtilTest, AuthStateGlobalError) {
   MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
@@ -136,29 +136,24 @@ TEST(SyncUIUtilTest, AuthStateGlobalError) {
   EXPECT_CALL(service, QueryDetailedSyncStatus(_))
               .WillRepeatedly(Return(false));
 
-  struct {
-    GoogleServiceAuthError::State error_state;
-    bool is_error;
-  } table[] = {
-    { GoogleServiceAuthError::NONE, false },
-    { GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS, true },
-    { GoogleServiceAuthError::USER_NOT_SIGNED_UP, true },
-    { GoogleServiceAuthError::CONNECTION_FAILED, false },
-    { GoogleServiceAuthError::CAPTCHA_REQUIRED, true },
-    { GoogleServiceAuthError::ACCOUNT_DELETED, true },
-    { GoogleServiceAuthError::ACCOUNT_DISABLED, true },
-    { GoogleServiceAuthError::SERVICE_UNAVAILABLE, true },
-    { GoogleServiceAuthError::TWO_FACTOR, true },
-    { GoogleServiceAuthError::REQUEST_CANCELED, true },
-    { GoogleServiceAuthError::HOSTED_NOT_ALLOWED, true },
+  GoogleServiceAuthError::State table[] = {
+    GoogleServiceAuthError::NONE,
+    GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
+    GoogleServiceAuthError::USER_NOT_SIGNED_UP,
+    GoogleServiceAuthError::CONNECTION_FAILED,
+    GoogleServiceAuthError::CAPTCHA_REQUIRED,
+    GoogleServiceAuthError::ACCOUNT_DELETED,
+    GoogleServiceAuthError::ACCOUNT_DISABLED,
+    GoogleServiceAuthError::SERVICE_UNAVAILABLE,
+    GoogleServiceAuthError::TWO_FACTOR,
+    GoogleServiceAuthError::REQUEST_CANCELED,
+    GoogleServiceAuthError::HOSTED_NOT_ALLOWED
   };
 
   FakeSigninManager signin(profile.get());
-  for (size_t i = 0; i < sizeof(table)/sizeof(*table); ++i) {
-    VerifySyncGlobalErrorResult(
-        &service, signin, table[i].error_state, true, table[i].is_error);
-    VerifySyncGlobalErrorResult(
-        &service, signin, table[i].error_state, false, false);
+  for (size_t i = 0; i < arraysize(table); ++i) {
+    VerifySyncGlobalErrorResult(&service, signin, table[i], true, false);
+    VerifySyncGlobalErrorResult(&service, signin, table[i], false, false);
   }
 }
 // Loads a ProfileSyncServiceMock to emulate one of a number of distinct cases

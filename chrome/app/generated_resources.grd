@@ -13969,6 +13969,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <!-- Sync sign in global error message-->
+      <message name="IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the signin error bubble view.">
+        Signin Error
+      </message>
       <message name="IDS_SYNC_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the sync error bubble view.">
         Sync Error
       </message>

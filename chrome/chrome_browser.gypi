@@ -1815,6 +1815,8 @@
         'browser/signin/oauth2_token_service_factory.h',
         'browser/signin/oauth2_token_service_request.cc',
         'browser/signin/oauth2_token_service_request.h',
+        'browser/signin/signin_global_error.cc',
+        'browser/signin/signin_global_error.h',
         'browser/signin/signin_internals_util.cc',
         'browser/signin/signin_internals_util.h',
         'browser/signin/signin_manager.cc',

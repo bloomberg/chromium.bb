@@ -44,10 +44,7 @@ namespace {
 void GetStatusLabelsForAuthError(const AuthError& auth_error,
                                  const ProfileSyncService& service,
                                  string16* status_label,
-                                 string16* link_label,
-                                 string16* global_error_menu_label,
-                                 string16* global_error_bubble_message,
-                                 string16* global_error_bubble_accept_label) {
+                                 string16* link_label) {
   string16 username = UTF8ToUTF16(service.profile()->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername));
   string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
@@ -70,18 +67,6 @@ void GetStatusLabelsForAuthError(const AuthError& auth_error,
           status_label->assign(
               l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_INFO_OUT_OF_DATE));
         }
-        if (global_error_menu_label) {
-          global_error_menu_label->assign(l10n_util::GetStringUTF16(
-              IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM));
-        }
-        if (global_error_bubble_message) {
-          global_error_bubble_message->assign(l10n_util::GetStringFUTF16(
-              IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE, product_name));
-        }
-        if (global_error_bubble_accept_label) {
-          global_error_bubble_accept_label->assign(l10n_util::GetStringUTF16(
-              IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT));
-        }
       }
       break;
     case AuthError::SERVICE_UNAVAILABLE:
@@ -91,18 +76,6 @@ void GetStatusLabelsForAuthError(const AuthError& auth_error,
       }
       if (link_label)
         link_label->clear();
-      if (global_error_menu_label) {
-        global_error_menu_label->assign(l10n_util::GetStringUTF16(
-            IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM));
-      }
-      if (global_error_bubble_message) {
-        global_error_bubble_message->assign(l10n_util::GetStringFUTF16(
-            IDS_SYNC_UNAVAILABLE_ERROR_BUBBLE_VIEW_MESSAGE, product_name));
-      }
-      if (global_error_bubble_accept_label) {
-        global_error_bubble_accept_label->assign(l10n_util::GetStringUTF16(
-            IDS_SYNC_UNAVAILABLE_ERROR_BUBBLE_VIEW_ACCEPT));
-      }
       break;
     case AuthError::CONNECTION_FAILED:
       // Note that there is little the user can do if the server is not
@@ -118,18 +91,6 @@ void GetStatusLabelsForAuthError(const AuthError& auth_error,
       if (status_label) {
         status_label->assign(l10n_util::GetStringUTF16(
             IDS_SYNC_ERROR_SIGNING_IN));
-      }
-      if (global_error_menu_label) {
-        global_error_menu_label->assign(l10n_util::GetStringUTF16(
-            IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM));
-      }
-      if (global_error_bubble_message) {
-        global_error_bubble_message->assign(l10n_util::GetStringFUTF16(
-            IDS_SYNC_OTHER_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE, product_name));
-      }
-      if (global_error_bubble_accept_label) {
-        global_error_bubble_accept_label->assign(l10n_util::GetStringUTF16(
-            IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT));
       }
       break;
   }
@@ -236,8 +197,8 @@ MessageType GetStatusInfo(ProfileSyncService* service,
     // No auth in progress check for an auth error.
     if (auth_error.state() != AuthError::NONE) {
       if (status_label && link_label) {
-        GetStatusLabelsForAuthError(auth_error, *service,
-                                    status_label, link_label, NULL, NULL, NULL);
+        GetStatusLabelsForAuthError(
+            auth_error, *service, status_label, link_label);
       }
       return SYNC_ERROR;
     }
@@ -293,8 +254,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
                  auth_error.state() != AuthError::TWO_FACTOR) {
         if (status_label) {
           status_label->clear();
-          GetStatusLabelsForAuthError(auth_error, *service, status_label, NULL,
-                                      NULL, NULL, NULL);
+          GetStatusLabelsForAuthError(auth_error, *service, status_label, NULL);
         }
         result_type = SYNC_ERROR;
       }
@@ -388,22 +348,11 @@ void GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
   *bubble_message = string16();
   *bubble_accept_label = string16();
 
+  // Only display an error if we've completed sync setup.
   if (!service->HasSyncSetupCompleted())
     return;
 
-  MessageType status = GetStatus(service, signin);
-  if (status == SYNC_ERROR) {
-    const AuthError& auth_error = service->GetAuthError();
-    if (auth_error.state() != AuthError::NONE) {
-      GetStatusLabelsForAuthError(auth_error, *service, NULL, NULL,
-          menu_label, bubble_message, bubble_accept_label);
-      // If we have an actionable auth error, display it.
-      if (!menu_label->empty())
-        return;
-    }
-  }
-
-  // No actionable auth error - display the passphrase error.
+  // Display a passphrase error if we have one.
   if (service->IsPassphraseRequired() &&
       service->IsPassphraseRequiredForDecryption()) {
     // This is not the first machine so ask user to enter passphrase.
@@ -423,18 +372,6 @@ MessageType GetStatus(
   return sync_ui_util::GetStatusInfo(service, signin, WITH_HTML, NULL, NULL);
 }
 
-string16 GetSyncMenuLabel(
-    ProfileSyncService* service, const SigninManager& signin) {
-  MessageType type = GetStatus(service, signin);
-
-  if (type == sync_ui_util::SYNCED)
-    return l10n_util::GetStringUTF16(IDS_SYNC_MENU_SYNCED_LABEL);
-  else if (type == sync_ui_util::SYNC_ERROR)
-    return l10n_util::GetStringUTF16(IDS_SYNC_MENU_SYNC_ERROR_LABEL);
-  else
-    return l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL);
-}
-
 string16 ConstructTime(int64 time_in_int) {
   base::Time time = base::Time::FromInternalValue(time_in_int);
 
@@ -442,23 +379,6 @@ string16 ConstructTime(int64 time_in_int) {
   if (time.is_null())
     return string16();
   return base::TimeFormatFriendlyDateAndTime(time);
-}
-
-std::string MakeSyncAuthErrorText(
-    const GoogleServiceAuthError::State& state) {
-  switch (state) {
-    case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
-    case GoogleServiceAuthError::ACCOUNT_DELETED:
-    case GoogleServiceAuthError::ACCOUNT_DISABLED:
-    case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
-      return "INVALID_GAIA_CREDENTIALS";
-    case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
-      return "USER_NOT_SIGNED_UP";
-    case GoogleServiceAuthError::CONNECTION_FAILED:
-      return "CONNECTION_FAILED";
-    default:
-      return std::string();
-  }
 }
 
 }  // namespace sync_ui_util

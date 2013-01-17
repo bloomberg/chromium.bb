@@ -18,10 +18,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/about_signin_internals.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
+#include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_internals_util.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/ui/global_error/global_error_service.h"
+#include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -99,12 +102,18 @@ SigninManager::SigninManager()
       type_(SIGNIN_TYPE_NONE) {
 }
 
-SigninManager::~SigninManager() {}
+SigninManager::~SigninManager() {
+  DCHECK(!signin_global_error_.get()) <<
+      "SigninManager::Initialize called but not SigninManager::Shutdown";
+}
 
 void SigninManager::Initialize(Profile* profile) {
   // Should never call Initialize() twice.
   DCHECK(!IsInitialized());
   profile_ = profile;
+  signin_global_error_.reset(new SigninGlobalError(profile));
+  GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
+      signin_global_error_.get());
   PrefService* local_state = g_browser_process->local_state();
   // local_state can be null during unit tests.
   if (local_state) {
@@ -602,6 +611,14 @@ void SigninManager::Observe(int type,
 #endif
     default:
       NOTREACHED();
+  }
+}
+
+void SigninManager::Shutdown() {
+  if (signin_global_error_.get()) {
+    GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(
+        signin_global_error_.get());
+    signin_global_error_.reset();
   }
 }
 

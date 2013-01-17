@@ -18,12 +18,12 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_global_error.h"
-#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -57,6 +57,8 @@
 #include "ui/base/layout.h"
 #include "ui/base/models/button_menu_item_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/text/text_elider.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -75,6 +77,12 @@
 using content::HostZoomMap;
 using content::UserMetricsAction;
 using content::WebContents;
+
+namespace {
+// Maximum width of a username - we trim emails that are wider than this so
+// the wrench menu doesn't get ridiculously wide.
+const int kUsernameMaxWidth = 200;
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // EncodingMenuModel
@@ -249,7 +257,7 @@ bool WrenchMenuModel::IsItemForCommandIdDynamic(int command_id) const {
 #endif
          command_id == IDC_VIEW_BACKGROUND_PAGES ||
          command_id == IDC_UPGRADE_DIALOG ||
-         command_id == IDC_SHOW_SYNC_SETUP;
+         command_id == IDC_SHOW_SIGNIN;
 }
 
 string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
@@ -284,19 +292,28 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
     }
     case IDC_UPGRADE_DIALOG:
       return l10n_util::GetStringUTF16(IDS_UPDATE_NOW);
-    case IDC_SHOW_SYNC_SETUP: {
-      ProfileSyncService* service =
-          ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-              browser_->profile()->GetOriginalProfile());
-      SyncGlobalError* error = service->sync_global_error();
-      if (error && error->HasCustomizedSyncMenuItem())
+    case IDC_SHOW_SIGNIN: {
+      GlobalError* error = GetActiveSignedInServiceError();
+      if (error)
         return error->MenuItemLabel();
-      if (service->HasSyncSetupCompleted()) {
-        std::string username = browser_->profile()->GetPrefs()->GetString(
-            prefs::kGoogleServicesUsername);
-        if (!username.empty()) {
+
+      // No errors, so just display the signed in user, if any.
+      Profile* profile = browser_->profile()->GetOriginalProfile();
+      ProfileSyncService* service = profile->IsSyncAccessible() ?
+          ProfileSyncServiceFactory::GetForProfile(profile) : NULL;
+
+      // Even if the user is signed in, don't display the "signed in as..."
+      // label if we're still setting up sync.
+      if (!service || service->HasSyncSetupCompleted()) {
+        SigninManager* signin_manager =
+            SigninManagerFactory::GetForProfile(profile);
+        std::string username = signin_manager->GetAuthenticatedUsername();
+        if (!username.empty() && !signin_manager->AuthInProgress()) {
+          string16 elided_username = ui::ElideEmail(UTF8ToUTF16(username),
+                                                    gfx::Font(),
+                                                    kUsernameMaxWidth);
           return l10n_util::GetStringFUTF16(IDS_SYNC_MENU_SYNCED_LABEL,
-                                            UTF8ToUTF16(username));
+                                            elided_username);
         }
       }
       return l10n_util::GetStringFUTF16(IDS_SYNC_MENU_PRE_SYNCED_LABEL,
@@ -321,12 +338,9 @@ bool WrenchMenuModel::GetIconForCommandId(int command_id,
       }
       return false;
     }
-    case IDC_SHOW_SYNC_SETUP: {
-      ProfileSyncService* service =
-          ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-              browser_->profile()->GetOriginalProfile());
-      SyncGlobalError* error = service->sync_global_error();
-      if (error && error->HasCustomizedSyncMenuItem()) {
+    case IDC_SHOW_SIGNIN: {
+      GlobalError* error = GetActiveSignedInServiceError();
+      if (error) {
         int icon_id = error->MenuItemIconResourceID();
         if (icon_id) {
           *icon = rb.GetNativeImageNamed(icon_id);
@@ -349,12 +363,10 @@ void WrenchMenuModel::ExecuteCommand(int command_id) {
     return;
   }
 
-  if (command_id == IDC_SHOW_SYNC_SETUP) {
-    ProfileSyncService* service =
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-            browser_->profile()->GetOriginalProfile());
-    SyncGlobalError* error = service->sync_global_error();
-    if (error && error->HasCustomizedSyncMenuItem()) {
+  if (command_id == IDC_SHOW_SIGNIN) {
+    // If a custom error message is being shown, display it.
+    GlobalError* error = GetActiveSignedInServiceError();
+    if (error) {
       error->ExecuteMenuItem(browser_);
       return;
     }
@@ -556,7 +568,9 @@ void WrenchMenuModel::Build(bool is_new_menu, bool supports_new_separators) {
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
   AddSeparator(ui::NORMAL_SEPARATOR);
 
-  if (browser_defaults::kShowSyncSetupMenuItem &&
+  // TODO(atwilson): Remove call to IsSyncAccessible() once we fully support
+  // signin while sync is disabled.
+  if (browser_defaults::kShowSigninMenuItem &&
       browser_->profile()->GetOriginalProfile()->IsSyncAccessible()) {
     const string16 short_product_name =
         l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
@@ -719,9 +733,24 @@ void WrenchMenuModel::UpdateZoomControls() {
       IDS_ZOOM_PERCENT, base::IntToString16(zoom_percent));
 }
 
-string16 WrenchMenuModel::GetSyncMenuLabel() const {
+GlobalError* WrenchMenuModel::GetActiveSignedInServiceError() const {
   Profile* profile = browser_->profile()->GetOriginalProfile();
-  return sync_ui_util::GetSyncMenuLabel(
-      ProfileSyncServiceFactory::GetForProfile(profile),
-      *SigninManagerFactory::GetForProfile(profile));
+  // Auth errors have the highest priority - after that, individual service
+  // errors.
+  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
+  SigninGlobalError* signin_error = signin_manager->signin_global_error();
+  if (signin_error && signin_error->HasBadge())
+    return signin_error;
+
+  // No auth error - now try other services. Currently the list is just hard-
+  // coded but in the future if we add more we can create some kind of
+  // registration framework.
+  if (profile->IsSyncAccessible()) {
+    ProfileSyncService* service =
+        ProfileSyncServiceFactory::GetForProfile(profile);
+    SyncGlobalError* error = service->sync_global_error();
+    if (error && error->HasBadge())
+      return error;
+  }
+  return NULL;
 }
