@@ -610,6 +610,7 @@ class BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_0
  public:
   BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_0()
      : ClassDecoder() {}
+  virtual bool clears_bits(Instruction i, uint32_t mask) const;
   virtual RegisterList defs(Instruction inst) const;
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList uses(Instruction i) const;

@@ -1027,6 +1027,19 @@ uses(Instruction inst) const {
 //    setflags: S(20)=1,
 //    true: true,
 //    uses: {Rn}}
+bool BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_0::
+clears_bits(Instruction inst, uint32_t mask) const {
+  // Verify that the rotated value matches the wanted mask.
+  // This rotation encoding (ARMExpandImm) is described
+  // in Section A5.2.4.
+  int rotation = inst.Bits(11, 8) * 2;
+  uint32_t value = inst.Bits(7, 0);
+  if (rotation != 0) {
+    value = (value >> rotation) | (value << (32 - rotation));
+  }
+  return (value & mask) == mask;
+}
+
 RegisterList BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_0::
 defs(Instruction inst) const {
   UNREFERENCED_PARAMETER(inst);  // To silence compiler.
