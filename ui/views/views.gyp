@@ -357,8 +357,6 @@
         'widget/desktop_aura/desktop_drag_drop_client_win.h',
         'widget/desktop_aura/desktop_drop_target_win.cc',
         'widget/desktop_aura/desktop_drop_target_win.h',
-        'widget/desktop_aura/desktop_focus_rules.cc',
-        'widget/desktop_aura/desktop_focus_rules.h',
         'widget/desktop_aura/desktop_layout_manager.cc',
         'widget/desktop_aura/desktop_layout_manager.h',
         'widget/desktop_aura/desktop_native_widget_aura.cc',

@@ -433,7 +433,7 @@ void DesktopNativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
 
 void DesktopNativeWidgetAura::ClearNativeFocus() {
   desktop_root_window_host_->ClearNativeFocus();
-  aura::client::GetFocusClient(window_)->ResetFocusWithinActiveWindow(window_);
+  aura::client::GetFocusClient(window_)->FocusWindow(window_);
 }
 
 gfx::Rect DesktopNativeWidgetAura::GetWorkAreaBoundsInScreen() const {
@@ -628,10 +628,23 @@ void DesktopNativeWidgetAura::OnWindowActivated(aura::Window* gained_active,
     restore_focus_on_activate_ = false;
     GetWidget()->GetFocusManager()->RestoreFocusedView();
   } else if (lost_active == window_ && GetWidget()->HasFocusManager()) {
-    DCHECK(!restore_focus_on_activate_);
-    restore_focus_on_activate_ = true;
-    // Pass in false so that ClearNativeFocus() isn't invoked.
-    GetWidget()->GetFocusManager()->StoreFocusedView(false);
+    // If we're losing focus to a window that is a top level (such as a bubble)
+    // store the focus. Such a window shares the same RootWindowHost, so that
+    // such a change won't trigger an activation change (which calls
+    // StoreFocusedView()). Without this the focused view is never told it lost
+    // focus.
+    aura::Window* focused_window =
+        aura::client::GetFocusClient(window_)->GetFocusedWindow();
+    if (focused_window && focused_window != window_) {
+      Widget* focused_widget = Widget::GetWidgetForNativeWindow(focused_window);
+      if (focused_widget && focused_widget != GetWidget() &&
+          focused_widget->is_top_level()) {
+        DCHECK(!restore_focus_on_activate_);
+        restore_focus_on_activate_ = true;
+        // Pass in false so that ClearNativeFocus() isn't invoked.
+        GetWidget()->GetFocusManager()->StoreFocusedView(false);
+      }
+    }
   }
 }
 
