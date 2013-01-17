@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_types.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -152,8 +153,11 @@ class TabRestoreService : public ProfileKeyedService {
 
   // Restores the most recently closed entry. Does nothing if there are no
   // entries to restore. If the most recently restored entry is a tab, it is
-  // added to |delegate|.
-  virtual void RestoreMostRecentEntry(TabRestoreServiceDelegate* delegate) = 0;
+  // added to |delegate|. If a new browser needs to be created for this entry,
+  // it will be created on the desktop specified by |host_desktop_type|.
+  virtual void RestoreMostRecentEntry(
+      TabRestoreServiceDelegate* delegate,
+      chrome::HostDesktopType host_desktop_type) = 0;
 
   // Removes the Tab with id |id| from the list and returns it; ownership is
   // passed to the caller.
@@ -163,9 +167,11 @@ class TabRestoreService : public ProfileKeyedService {
   // this does nothing. If |delegate| is NULL, this creates a new window for the
   // entry. |disposition| is respected, but the attributes (tabstrip index,
   // browser window) of the tab when it was closed will be respected if
-  // disposition is UNKNOWN.
+  // disposition is UNKNOWN. If a new browser needs to be created for this
+  // entry, it will be created on the desktop specified by |host_desktop_type|.
   virtual void RestoreEntryById(TabRestoreServiceDelegate* delegate,
                                 SessionID::id_type id,
+                                chrome::HostDesktopType host_desktop_type,
                                 WindowOpenDisposition disposition) = 0;
 
   // Loads the tabs and previous session. This does nothing if the tabs

@@ -937,8 +937,9 @@ const TabRestoreService::Entries& PersistentTabRestoreService::entries() const {
 }
 
 void PersistentTabRestoreService::RestoreMostRecentEntry(
-    TabRestoreServiceDelegate* delegate) {
-  helper_.RestoreMostRecentEntry(delegate);
+    TabRestoreServiceDelegate* delegate,
+    chrome::HostDesktopType host_desktop_type) {
+  helper_.RestoreMostRecentEntry(delegate, host_desktop_type);
 }
 
 TabRestoreService::Tab* PersistentTabRestoreService::RemoveTabEntryById(
@@ -949,8 +950,9 @@ TabRestoreService::Tab* PersistentTabRestoreService::RemoveTabEntryById(
 void PersistentTabRestoreService::RestoreEntryById(
     TabRestoreServiceDelegate* delegate,
     SessionID::id_type id,
+    chrome::HostDesktopType host_desktop_type,
     WindowOpenDisposition disposition) {
-  helper_.RestoreEntryById(delegate, id, disposition);
+  helper_.RestoreEntryById(delegate, id, host_desktop_type, disposition);
 }
 
 bool PersistentTabRestoreService::IsLoaded() const {

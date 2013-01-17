@@ -165,11 +165,12 @@ const TabRestoreService::Entries& TabRestoreServiceHelper::entries() const {
 }
 
 void TabRestoreServiceHelper::RestoreMostRecentEntry(
-    TabRestoreServiceDelegate* delegate) {
+    TabRestoreServiceDelegate* delegate,
+    chrome::HostDesktopType host_desktop_type) {
   if (entries_.empty())
     return;
 
-  RestoreEntryById(delegate, entries_.front()->id, UNKNOWN);
+  RestoreEntryById(delegate, entries_.front()->id, host_desktop_type, UNKNOWN);
 }
 
 TabRestoreService::Tab* TabRestoreServiceHelper::RemoveTabEntryById(
@@ -190,6 +191,7 @@ TabRestoreService::Tab* TabRestoreServiceHelper::RemoveTabEntryById(
 void TabRestoreServiceHelper::RestoreEntryById(
     TabRestoreServiceDelegate* delegate,
     SessionID::id_type id,
+    chrome::HostDesktopType host_desktop_type,
     WindowOpenDisposition disposition) {
   Entries::iterator entry_iterator = GetEntryIteratorById(id);
   if (entry_iterator == entries_.end())
@@ -215,7 +217,7 @@ void TabRestoreServiceHelper::RestoreEntryById(
   // new browser into which we restore the tabs.
   if (entry->type == TabRestoreService::TAB) {
     Tab* tab = static_cast<Tab*>(entry);
-    delegate = RestoreTab(*tab, delegate, disposition);
+    delegate = RestoreTab(*tab, delegate, host_desktop_type, disposition);
     delegate->ShowBrowserWindow();
   } else if (entry->type == TabRestoreService::WINDOW) {
     TabRestoreServiceDelegate* current_delegate = delegate;
@@ -225,7 +227,8 @@ void TabRestoreServiceHelper::RestoreEntryById(
     // single tab within it. If the entry's ID matches the one to restore, then
     // the entire window will be restored.
     if (!restoring_tab_in_window) {
-      delegate = TabRestoreServiceDelegate::Create(profile_, window->app_name);
+      delegate = TabRestoreServiceDelegate::Create(profile_, host_desktop_type,
+                                                   window->app_name);
       for (size_t tab_i = 0; tab_i < window->tabs.size(); ++tab_i) {
         const Tab& tab = window->tabs[tab_i];
         WebContents* restored_tab =
@@ -254,7 +257,7 @@ void TabRestoreServiceHelper::RestoreEntryById(
            tab_i != window->tabs.end(); ++tab_i) {
         const Tab& tab = *tab_i;
         if (tab.id == id) {
-          delegate = RestoreTab(tab, delegate, disposition);
+          delegate = RestoreTab(tab, delegate, host_desktop_type, disposition);
           window->tabs.erase(tab_i);
           // If restoring the tab leaves the window with nothing else, delete it
           // as well.
@@ -421,6 +424,7 @@ void TabRestoreServiceHelper::PopulateTab(
 TabRestoreServiceDelegate* TabRestoreServiceHelper::RestoreTab(
     const Tab& tab,
     TabRestoreServiceDelegate* delegate,
+    chrome::HostDesktopType host_desktop_type,
     WindowOpenDisposition disposition) {
   if (disposition == CURRENT_TAB && delegate) {
     delegate->ReplaceRestoredTab(tab.navigations,
@@ -442,7 +446,8 @@ TabRestoreServiceDelegate* TabRestoreServiceHelper::RestoreTab(
     if (delegate && disposition != NEW_WINDOW) {
       tab_index = tab.tabstrip_index;
     } else {
-      delegate = TabRestoreServiceDelegate::Create(profile_, std::string());
+      delegate = TabRestoreServiceDelegate::Create(profile_, host_desktop_type,
+                                                   std::string());
       if (tab.has_browser())
         UpdateTabBrowserIDs(tab.browser_id, delegate->GetSessionID().id());
     }

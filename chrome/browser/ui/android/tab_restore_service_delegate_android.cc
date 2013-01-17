@@ -11,6 +11,7 @@
 // static
 TabRestoreServiceDelegate* TabRestoreServiceDelegate::Create(
     Profile* profile,
+    chrome::HostDesktopType host_desktop_type,
     const std::string& app_name) {
   return NULL;
 }

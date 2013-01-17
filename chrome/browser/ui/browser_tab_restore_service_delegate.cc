@@ -86,10 +86,11 @@ void BrowserTabRestoreServiceDelegate::CloseTab() {
 // static
 TabRestoreServiceDelegate* TabRestoreServiceDelegate::Create(
     Profile* profile,
+    chrome::HostDesktopType host_desktop_type,
     const std::string& app_name) {
   Browser* browser;
   if (app_name.empty()) {
-    browser = new Browser(Browser::CreateParams(profile));
+    browser = new Browser(Browser::CreateParams(profile, host_desktop_type));
   } else {
     browser = new Browser(
         Browser::CreateParams::CreateForApp(

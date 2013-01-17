@@ -32,10 +32,12 @@ class PersistentTabRestoreService : public TabRestoreService {
   virtual void ClearEntries() OVERRIDE;
   virtual const Entries& entries() const OVERRIDE;
   virtual void RestoreMostRecentEntry(
-      TabRestoreServiceDelegate* delegate) OVERRIDE;
+      TabRestoreServiceDelegate* delegate,
+      chrome::HostDesktopType host_desktop_type) OVERRIDE;
   virtual Tab* RemoveTabEntryById(SessionID::id_type id) OVERRIDE;
   virtual void RestoreEntryById(TabRestoreServiceDelegate* delegate,
                                 SessionID::id_type id,
+                                chrome::HostDesktopType host_desktop_type,
                                 WindowOpenDisposition disposition) OVERRIDE;
   virtual void LoadTabsFromLastSession() OVERRIDE;
   virtual bool IsLoaded() const OVERRIDE;

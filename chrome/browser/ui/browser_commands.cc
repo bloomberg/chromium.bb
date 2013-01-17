@@ -310,10 +310,11 @@ Browser* OpenEmptyWindow(Profile* profile) {
   return OpenEmptyWindow(profile, HOST_DESKTOP_TYPE_NATIVE);
 }
 
-void OpenWindowWithRestoredTabs(Profile* profile) {
+void OpenWindowWithRestoredTabs(Profile* profile,
+                                HostDesktopType host_desktop_type) {
   TabRestoreService* service = TabRestoreServiceFactory::GetForProfile(profile);
   if (service)
-    service->RestoreMostRecentEntry(NULL);
+    service->RestoreMostRecentEntry(NULL, host_desktop_type);
 }
 
 void OpenURLOffTheRecord(Profile* profile,
@@ -494,7 +495,8 @@ void RestoreTab(Browser* browser) {
   TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(browser->profile());
   if (service)
-    service->RestoreMostRecentEntry(browser->tab_restore_service_delegate());
+    service->RestoreMostRecentEntry(browser->tab_restore_service_delegate(),
+                                    browser->host_desktop_type());
 }
 
 bool CanRestoreTab(const Browser* browser) {

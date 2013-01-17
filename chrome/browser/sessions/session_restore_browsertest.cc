@@ -288,6 +288,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
       TabRestoreServiceFactory::GetForProfile(browser()->profile());
   service->ClearEntries();
 
+  chrome::HostDesktopType host_desktop_type = browser()->host_desktop_type();
+
   browser()->window()->Close();
 
   // Expect a window with three tabs.
@@ -306,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
     // If this tab held url2, then restore this single tab.
     if (tab.navigations[0].virtual_url() == url2) {
       timestamp = SessionTypesTestHelper::GetTimestamp(tab.navigations[0]);
-      service->RestoreEntryById(NULL, tab.id, UNKNOWN);
+      service->RestoreEntryById(NULL, tab.id, host_desktop_type, UNKNOWN);
       break;
     }
   }
@@ -342,6 +344,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, WindowWithOneTab) {
   service->ClearEntries();
   EXPECT_EQ(0U, service->entries().size());
 
+  chrome::HostDesktopType host_desktop_type = browser()->host_desktop_type();
+
   // Close the window.
   browser()->window()->Close();
 
@@ -352,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, WindowWithOneTab) {
       static_cast<TabRestoreService::Tab*>(service->entries().front());
 
   // Restore the tab.
-  service->RestoreEntryById(NULL, tab->id, UNKNOWN);
+  service->RestoreEntryById(NULL, tab->id, host_desktop_type, UNKNOWN);
 
   // Make sure the restore was successful.
   EXPECT_EQ(0U, service->entries().size());

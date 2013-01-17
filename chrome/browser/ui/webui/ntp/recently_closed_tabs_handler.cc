@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/url_constants.h"
@@ -103,10 +104,14 @@ void RecentlyClosedTabsHandler::HandleReopenTab(const ListValue* args) {
           web_ui()->GetWebContents());
   if (!delegate)
     return;
+  chrome::HostDesktopType host_desktop_type =
+      chrome::GetHostDesktopTypeForNativeView(
+          web_ui()->GetWebContents()->GetNativeView());
   WindowOpenDisposition disposition =
       web_ui_util::GetDispositionFromClick(args, 2);
   tab_restore_service_->RestoreEntryById(delegate,
                                          static_cast<int>(session_to_restore),
+                                         host_desktop_type,
                                          disposition);
   // The current tab has been nuked at this point; don't touch any member
   // variables.

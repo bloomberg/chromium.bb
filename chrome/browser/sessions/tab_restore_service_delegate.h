@@ -8,7 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "chrome/browser/ui/host_desktop.h"
 
 class Profile;
 class TabNavigation;
@@ -63,8 +65,10 @@ class TabRestoreServiceDelegate {
   virtual void CloseTab() = 0;
 
   // see Browser::Create
-  static TabRestoreServiceDelegate* Create(Profile* profile,
-                                           const std::string& app_name);
+  static TabRestoreServiceDelegate* Create(
+      Profile* profile,
+      chrome::HostDesktopType host_desktop_type,
+      const std::string& app_name);
 
   // see browser::FindBrowserForWebContents
   static TabRestoreServiceDelegate* FindDelegateForWebContents(

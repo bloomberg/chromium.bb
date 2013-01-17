@@ -48,7 +48,8 @@ Browser* OpenEmptyWindow(Profile* profile);
 Browser* OpenEmptyWindow(Profile* profile, HostDesktopType desktop_type);
 
 // Opens a new window with the tabs from |profile|'s TabRestoreService.
-void OpenWindowWithRestoredTabs(Profile* profile);
+void OpenWindowWithRestoredTabs(Profile* profile,
+                                HostDesktopType host_desktop_type);
 
 // Opens the specified URL in a new browser window in an incognito session on
 // the desktop specified by |desktop_type|. If there is already an existing

@@ -218,7 +218,8 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
             chrome::GetActiveWebContents(browser_));
     if (!delegate)
       return;
-    service->RestoreEntryById(delegate, item.tab_id, disposition);
+    service->RestoreEntryById(delegate, item.tab_id,
+                              browser_->host_desktop_type(), disposition);
   } else {  // Restore tab of foreign session.
     browser_sync::SessionModelAssociator* associator = GetModelAssociator();
     if (!associator)

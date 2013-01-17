@@ -50,8 +50,9 @@ using content::Referrer;
   TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(bridge_->profile());
   if (node->session_id && service) {
-    service->RestoreEntryById(browser->tab_restore_service_delegate(),
-        node->session_id, UNKNOWN);
+    service->RestoreEntryById(
+        browser->tab_restore_service_delegate(), node->session_id,
+        browser->host_desktop_type(), UNKNOWN);
   } else {
     DCHECK(node->url.is_valid());
     OpenURLParams params(
