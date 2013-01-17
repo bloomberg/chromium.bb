@@ -263,19 +263,16 @@ bool PasteBookmarkManagerFunction::RunImpl() {
   if (!can_paste)
     return false;
 
-  // We want to use the highest index of the selected nodes as a destination.
   std::vector<const BookmarkNode*> nodes;
   // No need to test return value, if we got an empty list, we insert at end.
   GetNodesFromArguments(model, args_.get(), 1, &nodes);
-  int highest_index = -1;  // -1 means insert at end of list.
-  for (size_t node = 0; node < nodes.size(); ++node) {
-    // + 1 so that we insert after the selection.
-    int this_node_index = parent_node->GetIndexOf(nodes[node]) + 1;
-    if (this_node_index > highest_index)
-      highest_index = this_node_index;
-  }
+  int index;
+  const BookmarkNode* paste_target =
+      bookmark_utils::GetParentForNewNodes(parent_node, nodes, &index);
+  if (!paste_target)
+    return false;
 
-  bookmark_utils::PasteFromClipboard(model, parent_node, highest_index);
+  bookmark_utils::PasteFromClipboard(model, paste_target, index);
   return true;
 }
 
