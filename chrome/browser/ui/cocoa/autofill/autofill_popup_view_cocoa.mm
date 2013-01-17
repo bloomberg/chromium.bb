@@ -19,15 +19,7 @@
 namespace {
 
 NSColor* BorderColor() {
-  // TODO(isherman): This color does not match the other platforms, but it
-  // matches what the existing UI on Mac has as the color.  The other platforms
-  // have a strange color: the RGB values are almost, but not quite, identical
-  // to each other.
-  // TODO(isherman): Maybe use a system color for this?
-  return [NSColor colorWithCalibratedRed:127 / 255.0
-                                   green:157 / 255.0
-                                    blue:185 / 255.0
-                                   alpha:1.0];
+  return [NSColor colorForControlTint:[NSColor currentControlTint]];
 }
 
 NSColor* SeparatorColor() {
@@ -35,7 +27,7 @@ NSColor* SeparatorColor() {
 }
 
 NSColor* HighlightColor() {
-  return [NSColor colorWithCalibratedWhite:205 / 255.0 alpha:1];
+  return [NSColor selectedControlColor];
 }
 
 }  // anonymous namespace
@@ -119,11 +111,6 @@ NSColor* HighlightColor() {
   [[NSColor whiteColor] set];
   [border fill];
 
-  // TODO(isherman): This color does not match the other platforms, but it
-  // matches what the existing UI on Mac has as the color.  The other platforms
-  // have a strange color: the RGB values are almost, but not quite, identical
-  // to each other.
-  // TODO(isherman): Maybe use a system color for this?
   [BorderColor() set];
   [border stroke];
 
@@ -214,9 +201,6 @@ NSColor* HighlightColor() {
                      canDelete:(BOOL)canDelete {
   // If this row is selected, highlight it.
   if (isSelected) {
-    // TODO(isherman): The highlight color should match the system highlight
-    // color.  Maybe use controlHighlightColor or selectedTextBackgroundColor
-    // for this?
     [HighlightColor() set];
     [NSBezierPath fillRect:bounds];
   }
