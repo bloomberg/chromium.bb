@@ -5279,9 +5279,6 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_EXTENSION_BUNDLE_ERROR_HEADING" desc="Text displayed in the extension bundle installed bubble when some extensions or apps failed to install. Instructs which extensions did not install.">
         We were unable to install:
       </message>
-      <message name="IDS_EXTENSION_INSTALLED_APP_INFO" desc="Text displayed inside a link when an app is installed. Clicking this link opens up the New Tab Page to show the app's icon.">
-        Show me
-      </message>
       <message name="IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO" desc="Text displayed in the InfoBubble which explains that the UI of this extension is a Page Action icon which may appear for some pages.">
         This icon will be visible when the extension can act on the current page.
       </message>
@@ -5306,6 +5303,12 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       </message>
       <message name="IDS_EXTENSION_INSTALLED_MANAGE_SHORTCUTS" desc="Text for the link in the InfoBubble that opens the chrome://extensions page with the Configure Commands UI visible.">
         Manage shortcuts
+      </message>
+      <message name="IDS_EXTENSION_INSTALLED_SIGNIN_PROMO_LINK" desc="The first part of the sign-in promo paragraph. This part will be converted to a link and will get more text appended to it (see IDS_EXTENSION_INSTALLED_SIGNIN_PROMO). Keep this text short.">
+        Sign in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_INSTALLED_SIGNIN_PROMO" desc="The remaining text of the sign-in promo paragraph. Will be appended as a label to the string above.">
+        to get this extension, your history, and other Chrome settings on all your devices.
       </message>
       <message name="IDS_ACCNAME_INFOBAR_CONTAINER" desc="The accessible name for the infobar container.">
         Infobar Container

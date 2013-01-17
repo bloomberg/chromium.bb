@@ -19,6 +19,10 @@ enum {
   UMA_NTP_LINK_SIGNED_IN,
   UMA_MENU_SHOWN,
   UMA_MENU_SIGNED_IN,
+  UMA_SETTINGS_SHOWN,
+  UMA_SETTINGS_SIGNED_IN,
+  UMA_EXTENSION_INSTALL_BUBBLE_SHOWN,
+  UMA_EXTENSION_INSTALL_BUBBLE_SIGNED_IN,
   UMA_UNKNOWN_SHOWN,
   UMA_UNKNOWN_SIGNED_IN,
   UMA_MAX,
@@ -42,10 +46,21 @@ void RecordUserShownPromo(content::WebUI* web_ui) {
     case SyncPromoUI::SOURCE_MENU:
       uma = UMA_MENU_SHOWN;
       break;
+    case SyncPromoUI::SOURCE_SETTINGS:
+      uma = UMA_SETTINGS_SHOWN;
+      break;
+    case SyncPromoUI::SOURCE_EXTENSION_INSTALL_BUBBLE:
+      uma = UMA_EXTENSION_INSTALL_BUBBLE_SHOWN;
+      break;
     case SyncPromoUI::SOURCE_UNKNOWN:
       uma = UMA_UNKNOWN_SHOWN;
       break;
     default:
+      // If this assert hits, then the SyncPromoUI::Source enum has changed and
+      // the UMA enum above, this switch statement and histograms.xml all need
+      // to be updated to reflect that.
+      COMPILE_ASSERT(SyncPromoUI::SOURCE_UNKNOWN == 5,
+                     kSourceEnumHasChangedButNotThisSwitchStatement);
       NOTREACHED();
       break;
   }
@@ -66,10 +81,19 @@ void RecordUserSignedIn(content::WebUI* web_ui) {
     case SyncPromoUI::SOURCE_MENU:
       uma = UMA_MENU_SIGNED_IN;
       break;
+    case SyncPromoUI::SOURCE_SETTINGS:
+      uma = UMA_SETTINGS_SIGNED_IN;
+      break;
+    case SyncPromoUI::SOURCE_EXTENSION_INSTALL_BUBBLE:
+      uma = UMA_EXTENSION_INSTALL_BUBBLE_SIGNED_IN;
+      break;
     case SyncPromoUI::SOURCE_UNKNOWN:
       uma = UMA_UNKNOWN_SIGNED_IN;
       break;
     default:
+      // This switch statement needs to be updated when the enum Source changes.
+      COMPILE_ASSERT(SyncPromoUI::SOURCE_UNKNOWN == 5,
+                     kSourceEnumHasChangedButNotThisSwitchStatement);
       NOTREACHED();
       break;
   }

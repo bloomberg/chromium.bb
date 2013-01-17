@@ -23,7 +23,6 @@ class Extension;
 //    BROWSER_ACTION -> The browserAction icon in the toolbar.
 //    PAGE_ACTION    -> A preview of the pageAction icon in the location
 //                      bar which is shown while the Bubble is shown.
-//    APP            -> The plus button in the tabstrip (for the New Tab Page).
 //    GENERIC        -> The wrench menu. This case includes pageActions that
 //                      don't specify a default icon.
 class ExtensionInstalledBubble
@@ -32,11 +31,10 @@ class ExtensionInstalledBubble
  public:
   // The behavior and content of this Bubble comes in these varieties:
   enum BubbleType {
-    OMNIBOX_KEYWORD,
+    OMNIBOX_KEYWORD = 0,
     BROWSER_ACTION,
     PAGE_ACTION,
-    APP,
-    GENERIC
+    GENERIC,
   };
 
   // Creates the ExtensionInstalledBubble and schedules it to be shown once
