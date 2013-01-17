@@ -15,9 +15,6 @@
 
 namespace google_apis {
 namespace util {
-#if defined(OS_CHROMEOS)
-// TODO(yoshiki): Find platform independent way to get/set local timezone.
-// (http://crbug.com/147524).
 namespace {
 
 std::string FormatTime(const base::Time& time) {
@@ -26,7 +23,9 @@ std::string FormatTime(const base::Time& time) {
 
 }  // namespace
 
-TEST(TimeUtilTest, GetTimeFromStringLocalTimezone) {
+#if defined(OS_CHROMEOS)
+// ChromeOS can test utilities using ICU library.
+TEST(TimeUtilTest, GetTimeFromStringLocalTimezoneForChromeOs) {
   // Creates time object GMT.
   base::Time::Exploded exploded = {2012, 7, 0, 14, 1, 3, 21, 151};
   base::Time target_time = base::Time::FromUTCExploded(exploded);
@@ -45,12 +44,22 @@ TEST(TimeUtilTest, GetTimeFromStringLocalTimezone) {
 
   EXPECT_EQ((target_time - test_time).InMilliseconds(), offset);
 }
+#endif  // OS_CHROMEOS
+
+TEST(TimeUtilTest, GetTimeFromStringLocalTimezone) {
+  // Creates local time objects from exploded structure.
+  base::Time::Exploded exploded = {2013, 1, 0, 15, 17, 11, 35, 374};
+  base::Time local_time = base::Time::FromLocalExploded(exploded);
+
+  // Creates local time object, parsing time string.
+  base::Time test_time;
+  ASSERT_TRUE(GetTimeFromString("2013-01-15T17:11:35.374", &test_time));
+
+  // Compare the time objects.
+  EXPECT_EQ(local_time, test_time);
+}
 
 TEST(TimeUtilTest, GetTimeFromStringTimezone) {
-  // Sets the current timezone to GMT.
-  chromeos::system::TimezoneSettings::GetInstance()->
-      SetTimezone(*icu::TimeZone::getGMT());
-
   base::Time target_time;
   base::Time test_time;
   // Creates the target time.
@@ -70,10 +79,6 @@ TEST(TimeUtilTest, GetTimeFromStringTimezone) {
 }
 
 TEST(TimeUtilTest, GetTimeFromString) {
-  // Sets the current timezone to GMT.
-  chromeos::system::TimezoneSettings::GetInstance()->
-      SetTimezone(*icu::TimeZone::getGMT());
-
   base::Time test_time;
 
   base::Time::Exploded target_time1 = {2005, 1, 0, 7, 8, 2, 0, 0};
@@ -91,7 +96,6 @@ TEST(TimeUtilTest, GetTimeFromString) {
   EXPECT_EQ(FormatTime(base::Time::FromUTCExploded(target_time3)),
             FormatTime(test_time));
 }
-#endif  // OS_CHROMEOS
 
 TEST(TimeUtilTest, FormatTimeAsString) {
   base::Time::Exploded exploded_time = {2012, 7, 0, 19, 15, 59, 13, 123};
