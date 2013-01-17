@@ -12,16 +12,16 @@ class LoadingBenchmark(multi_page_benchmark.MultiPageBenchmark):
     return False
 
   def WillNavigateToPage(self, page, tab):
-    tab.timeline.Start()
+    tab.StartTimelineRecording()
 
   def MeasurePage(self, page, tab, results):
     # In current telemetry tests, all tests wait for DocumentComplete state.
     #
     # TODO(nduca): when crbug.com/168431 is fixed, modify the page sets to
     # recognize loading as a toplevel action.
-    tab.timeline.Stop()
+    tab.StopTimelineRecording()
 
-    events = tab.timeline.timeline_model.GetAllEvents()
+    events = tab.timeline_model.GetAllEvents()
 
     events_by_name = collections.defaultdict(list)
     for e in events:

@@ -7,15 +7,15 @@ from telemetry import multi_page_benchmark
 
 class ImageDecoding(multi_page_benchmark.MultiPageBenchmark):
   def WillNavigateToPage(self, page, tab):
-    tab.timeline.Start()
+    tab.StartTimelineRecording()
 
   def MeasurePage(self, page, tab, results):
-    tab.timeline.Stop()
+    tab.StopTimelineRecording()
     def _IsDone():
       return tab.runtime.Evaluate('isDone')
 
     decode_image_events = \
-        tab.timeline.timeline_model.GetAllOfName('DecodeImage')
+        tab.timeline_model.GetAllOfName('DecodeImage')
 
     # If it is a real image benchmark, then store only the last-minIterations
     # decode tasks.
