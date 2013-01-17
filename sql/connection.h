@@ -370,8 +370,9 @@ class SQL_EXPORT Connection {
     // When true, the statement can be used.
     bool is_valid() const { return !!stmt_; }
 
-    // If we've not been linked to a connection, this will be NULL. Guaranteed
-    // non-NULL when is_valid().
+    // If we've not been linked to a connection, this will be NULL.
+    // TODO(shess): connection_ can be NULL in case of GetUntrackedStatement(),
+    // which prevents Statement::OnError() from forwarding errors.
     Connection* connection() const { return connection_; }
 
     // Returns the sqlite statement if any. If the statement is not active,

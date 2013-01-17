@@ -306,7 +306,7 @@ bool Statement::CheckOk(int err) const {
 int Statement::CheckError(int err) {
   // Please don't add DCHECKs here, OnSqliteError() already has them.
   succeeded_ = (err == SQLITE_OK || err == SQLITE_ROW || err == SQLITE_DONE);
-  if (!succeeded_ && is_valid())
+  if (!succeeded_ && is_valid() && ref_->connection())
     return ref_->connection()->OnSqliteError(err, this);
   return err;
 }
