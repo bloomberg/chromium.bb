@@ -4,6 +4,7 @@
 
 #include "managed_memory_policy.h"
 
+#include "base/logging.h"
 #include "priority_calculator.h"
 
 namespace cc {

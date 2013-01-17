@@ -4,10 +4,12 @@
 
 #include "base/debug/trace_event.h"
 #include "cc/picture_pile_impl.h"
+#include "cc/region.h"
 #include "cc/rendering_stats.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSize.h"
 #include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/skia_util.h"
 
 namespace cc {
 
@@ -15,8 +17,7 @@ scoped_refptr<PicturePileImpl> PicturePileImpl::Create() {
   return make_scoped_refptr(new PicturePileImpl());
 }
 
-PicturePileImpl::PicturePileImpl()
-    : min_contents_scale_(1) {
+PicturePileImpl::PicturePileImpl() {
 }
 
 PicturePileImpl::~PicturePileImpl() {
@@ -38,8 +39,7 @@ PicturePileImpl* PicturePileImpl::GetCloneForDrawingOnThread(
 scoped_refptr<PicturePileImpl> PicturePileImpl::CloneForDrawing() const {
   TRACE_EVENT0("cc", "PicturePileImpl::CloneForDrawing");
   scoped_refptr<PicturePileImpl> clone = Create();
-  for (PicturePile::Pile::const_iterator i = pile_.begin();
-       i != pile_.end(); ++i)
+  for (Pile::const_iterator i = pile_.begin(); i != pile_.end(); ++i)
     clone->pile_.push_back((*i)->Clone());
   clone->min_contents_scale_ = min_contents_scale_;
 
@@ -66,8 +66,7 @@ void PicturePileImpl::Raster(
   // Raster through the pile top down, using clips to make sure that
   // pictures on top are not overdrawn by pictures on the bottom.
   Region unclipped(content_rect);
-  for (PicturePile::Pile::reverse_iterator i = pile_.rbegin();
-       i != pile_.rend(); ++i) {
+  for (Pile::reverse_iterator i = pile_.rbegin(); i != pile_.rend(); ++i) {
     // This is intentionally *enclosed* rect, so that the clip is aligned on
     // integral post-scale content pixels and does not extend past the edges of
     // the picture's layer rect.  The min_contents_scale enforces that enough
@@ -94,8 +93,7 @@ void PicturePileImpl::Raster(
 void PicturePileImpl::GatherPixelRefs(
     const gfx::Rect& rect, std::list<skia::LazyPixelRef*>& pixel_refs) {
   std::list<skia::LazyPixelRef*> result;
-  for (PicturePile::Pile::const_iterator i = pile_.begin();
-      i != pile_.end(); ++i) {
+  for (Pile::const_iterator i = pile_.begin(); i != pile_.end(); ++i) {
     (*i)->GatherPixelRefs(rect, result);
     pixel_refs.splice(pixel_refs.end(), result);
   }
@@ -105,8 +103,7 @@ skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
   TRACE_EVENT0("cc", "PicturePileImpl::GetFlattenedPicture");
 
   gfx::Rect layer_rect;
-  for (PicturePile::Pile::const_iterator i = pile_.begin();
-      i != pile_.end(); ++i) {
+  for (Pile::const_iterator i = pile_.begin(); i != pile_.end(); ++i) {
     layer_rect.Union((*i)->LayerRect());
   }
 

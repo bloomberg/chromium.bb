@@ -152,6 +152,8 @@
       'picture_layer_tiling_set.h',
       'picture_pile.cc',
       'picture_pile.h',
+      'picture_pile_base.cc',
+      'picture_pile_base.h',
       'picture_pile_impl.cc',
       'picture_pile_impl.h',
       'pinch_zoom_viewport.cc',

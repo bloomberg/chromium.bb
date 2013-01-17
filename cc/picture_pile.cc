@@ -6,6 +6,7 @@
 
 #include "cc/picture_pile.h"
 #include "cc/picture_pile_impl.h"
+#include "cc/region.h"
 
 namespace {
 // Maximum number of pictures that can overlap before we collapse them into
@@ -18,43 +19,7 @@ const float kResetThreshold = 0.7f;
 
 namespace cc {
 
-PicturePile::PicturePile()
-    : min_contents_scale_(0),
-      buffer_pixels_(0) {
-  SetMinContentsScale(1);
-}
-
-PicturePile::~PicturePile() {
-}
-
-void PicturePile::Resize(gfx::Size size) {
-  if (size_ == size)
-    return;
-
-  pile_.clear();
-  size_ = size;
-}
-
-void PicturePile::SetMinContentsScale(float min_contents_scale) {
-  DCHECK(min_contents_scale);
-  if (min_contents_scale_ == min_contents_scale)
-    return;
-
-  pile_.clear();
-  min_contents_scale_ = min_contents_scale;
-
-  // Picture contents are played back scaled. When the final contents scale is
-  // less than 1 (i.e. low res), then multiple recorded pixels will be used
-  // to raster one final pixel.  To avoid splitting a final pixel across
-  // pictures (which would result in incorrect rasterization due to blending), a
-  // buffer margin is added so that any picture can be snapped to integral
-  // final pixels.
-  //
-  // For example, if a 1/4 contents scale is used, then that would be 3 buffer
-  // pixels, since that's the minimum number of pixels to add so that resulting
-  // content can be snapped to a four pixel aligned grid.
-  buffer_pixels_ = static_cast<int>(ceil(1 / min_contents_scale_) - 1);
-  buffer_pixels_ = std::max(0, buffer_pixels_);
+PicturePile::PicturePile() {
 }
 
 void PicturePile::Update(
@@ -132,8 +97,8 @@ void PicturePile::ResetPile(ContentLayerClient* painter,
 }
 
 void PicturePile::PushPropertiesTo(PicturePileImpl* other) {
-  other->pile_ = pile_;
-  other->min_contents_scale_ = min_contents_scale_;
+  PicturePileBase::PushPropertiesTo(other);
+
   // Remove all old clones.
   other->clones_.clear();
 }
