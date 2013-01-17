@@ -172,4 +172,13 @@ class LongPressDetector {
         }
         return mMoveConfirmed;
     }
+
+    /**
+     * This is for testing only.
+     * Sends a LongPress gesture. This should always be called after a down event.
+     */
+    void sendLongPressGestureForTest() {
+        if (mCurrentDownEvent == null) return;
+        dispatchLongPress();
+    }
 }

@@ -731,4 +731,83 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         assertEquals(0, extraParams.getInt(ContentViewGestureHandler.DISTANCE_X));
         assertEquals(deltaY / 2, extraParams.getInt(ContentViewGestureHandler.DISTANCE_Y));
     }
+
+    /**
+     * Verify that the timer of LONG_PRESS will be cancelled when scrolling begins so
+     * LONG_PRESS and LONG_TAP won't be triggered.
+     *
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testLongPressAndTapCancelWhenScrollBegins() throws Exception {
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+
+        GestureRecordingMotionEventDelegate mockDelegate =
+                new GestureRecordingMotionEventDelegate();
+        mGestureHandler = new ContentViewGestureHandler(
+                getInstrumentation().getTargetContext(), mockDelegate,
+                new MockZoomManager(getInstrumentation().getTargetContext(), null));
+        mLongPressDetector = mGestureHandler.getLongPressDetector();
+
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertNotNull(mockDelegate.getMostRecentGestureEvent());
+        assertTrue("Should have a pending LONG_PRESS", mLongPressDetector.hasPendingMessage());
+        event = MotionEvent.obtain(
+                downTime, eventTime + 5, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X * 5, FAKE_COORD_Y * 5, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        event = MotionEvent.obtain(
+                downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X * 10, FAKE_COORD_Y * 10, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertTrue("Should not have a pending LONG_PRESS", !mLongPressDetector.hasPendingMessage());
+
+        // No LONG_TAP because LONG_PRESS timer is cancelled.
+        assertFalse("No LONG_PRESS should be sent",
+                mockDelegate.mGestureTypeList.contains(
+                        ContentViewGestureHandler.GESTURE_LONG_PRESS));
+        assertFalse("No LONG_TAP should be sent",
+                mockDelegate.mGestureTypeList.contains(
+                        ContentViewGestureHandler.GESTURE_LONG_TAP));
+    }
+
+    /**
+     * Verify that LONG_TAP is triggered after LongPress followed by an UP.
+     *
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testGestureLongTap() throws Exception {
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+
+        GestureRecordingMotionEventDelegate mockDelegate =
+                new GestureRecordingMotionEventDelegate();
+        mGestureHandler = new ContentViewGestureHandler(
+                getInstrumentation().getTargetContext(), mockDelegate,
+                new MockZoomManager(getInstrumentation().getTargetContext(), null));
+        mLongPressDetector = mGestureHandler.getLongPressDetector();
+
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertNotNull(mockDelegate.getMostRecentGestureEvent());
+        assertTrue("Should have a pending LONG_PRESS", mLongPressDetector.hasPendingMessage());
+
+        mLongPressDetector.sendLongPressGestureForTest();
+
+        assertEquals("A LONG_PRESS gesture should have been sent",
+                ContentViewGestureHandler.GESTURE_LONG_PRESS,
+                        mockDelegate.mMostRecentGestureEvent.mType);
+
+        event = motionEvent(MotionEvent.ACTION_UP, downTime, eventTime + 1000);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals("A LONG_TAP gesture should have been sent",
+                ContentViewGestureHandler.GESTURE_LONG_TAP,
+                        mockDelegate.mMostRecentGestureEvent.mType);
+    }
+
 }

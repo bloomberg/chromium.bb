@@ -132,6 +132,12 @@ class ContentViewCoreImpl : public ContentViewCore,
                  jint x,
                  jint y,
                  jboolean disambiguation_popup_tap);
+  void LongTap(JNIEnv* env,
+               jobject obj,
+               jlong time_ms,
+               jint x,
+               jint y,
+               jboolean disambiguation_popup_tap);
   void PinchBegin(JNIEnv* env, jobject obj, jlong time_ms, jint x, jint y);
   void PinchEnd(JNIEnv* env, jobject obj, jlong time_ms);
   void PinchBy(JNIEnv* env,
@@ -287,6 +293,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   void UpdateVSyncFlagOnInputEvent(WebKit::WebInputEvent* event) const;
 
   void DeleteScaledSnapshotTexture();
+
+  void SendGestureEvent(const WebKit::WebGestureEvent& event);
 
   struct JavaObject;
   JavaObject* java_object_;

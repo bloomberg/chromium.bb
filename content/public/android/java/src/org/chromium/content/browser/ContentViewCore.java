@@ -73,6 +73,10 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     // produce little visible difference.
     private static final float ZOOM_CONTROLS_EPSILON = 0.007f;
 
+    // Used to represent gestures for long press and long tap.
+    private static final int IS_LONG_PRESS = 1;
+    private static final int IS_LONG_TAP = 2;
+
     // To avoid checkerboard, we clamp the fling velocity based on the maximum number of tiles
     // should be allowed to upload per 100ms.
     private final int mMaxNumUploadTiles;
@@ -612,6 +616,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 });
             }
         });
+        // TODO(yongsheng): LONG_TAP is not enabled in PopupZoomer. So need to dispatch a LONG_TAP
+        // gesture if a user completes a tap on PopupZoomer UI after a LONG_PRESS gesture.
         PopupZoomer.OnTapListener listener = new PopupZoomer.OnTapListener() {
             @Override
             public boolean onSingleTap(View v, MotionEvent e) {
@@ -1053,11 +1059,14 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 nativeSingleTap(mNativeContentViewCore, timeMs, x, y, false);
                 return true;
             case ContentViewGestureHandler.GESTURE_SINGLE_TAP_CONFIRMED:
-                handleTapOrPress(timeMs, x, y, false,
+                handleTapOrPress(timeMs, x, y, 0,
                         b.getBoolean(ContentViewGestureHandler.SHOW_PRESS, false));
                 return true;
             case ContentViewGestureHandler.GESTURE_LONG_PRESS:
-                handleTapOrPress(timeMs, x, y, true, false);
+                handleTapOrPress(timeMs, x, y, IS_LONG_PRESS, false);
+                return true;
+            case ContentViewGestureHandler.GESTURE_LONG_TAP:
+                handleTapOrPress(timeMs, x, y, IS_LONG_TAP, false);
                 return true;
             case ContentViewGestureHandler.GESTURE_SCROLL_START:
                 nativeScrollBegin(mNativeContentViewCore, timeMs, x, y);
@@ -1583,16 +1592,22 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     }
 
     private void handleTapOrPress(
-            long timeMs, int x, int y, boolean isLongPress, boolean showPress) {
+            long timeMs, int x, int y, int isLongPressOrTap, boolean showPress) {
         if (!mContainerView.isFocused()) mContainerView.requestFocus();
 
         if (!mPopupZoomer.isShowing()) mPopupZoomer.setLastTouch(x, y);
 
-        if (isLongPress) {
+        if (isLongPressOrTap == IS_LONG_PRESS) {
             getInsertionHandleController().allowAutomaticShowing();
             getSelectionHandleController().allowAutomaticShowing();
             if (mNativeContentViewCore != 0) {
                 nativeLongPress(mNativeContentViewCore, timeMs, x, y, false);
+            }
+        } else if (isLongPressOrTap == IS_LONG_TAP) {
+            getInsertionHandleController().allowAutomaticShowing();
+            getSelectionHandleController().allowAutomaticShowing();
+            if (mNativeContentViewCore != 0) {
+                nativeLongTap(mNativeContentViewCore, timeMs, x, y, false);
             }
         } else {
             if (!showPress && mNativeContentViewCore != 0) {
@@ -2523,6 +2538,9 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private native void nativeDoubleTap(int nativeContentViewCoreImpl, long timeMs, int x, int y);
 
     private native void nativeLongPress(int nativeContentViewCoreImpl, long timeMs, int x, int y,
+            boolean linkPreviewTap);
+
+    private native void nativeLongTap(int nativeContentViewCoreImpl, long timeMs, int x, int y,
             boolean linkPreviewTap);
 
     private native void nativePinchBegin(int nativeContentViewCoreImpl, long timeMs, int x, int y);

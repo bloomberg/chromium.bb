@@ -841,19 +841,24 @@ void ContentViewCoreImpl::UpdateVSyncFlagOnInputEvent(
     event->modifiers |= WebInputEvent::IsLastInputEventForCurrentVSync;
 }
 
+void ContentViewCoreImpl::SendGestureEvent(
+    const WebKit::WebGestureEvent& event) {
+  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
+  if (rwhv)
+    rwhv->SendGestureEvent(event);
+}
+
 void ContentViewCoreImpl::ScrollBegin(JNIEnv* env, jobject obj, jlong time_ms,
                                       jint x, jint y) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureScrollBegin, time_ms, x, y);
-  if (GetRenderWidgetHostViewAndroid())
-    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
+  SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::ScrollEnd(JNIEnv* env, jobject obj, jlong time_ms) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureScrollEnd, time_ms, 0, 0);
-  if (GetRenderWidgetHostViewAndroid())
-    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
+  SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::ScrollBy(JNIEnv* env, jobject obj, jlong time_ms,
@@ -864,8 +869,7 @@ void ContentViewCoreImpl::ScrollBy(JNIEnv* env, jobject obj, jlong time_ms,
   event.data.scrollUpdate.deltaX = -dx / DpiScale();
   event.data.scrollUpdate.deltaY = -dy / DpiScale();
 
-  if (GetRenderWidgetHostViewAndroid())
-    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
+  SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::FlingStart(JNIEnv* env, jobject obj, jlong time_ms,
@@ -875,15 +879,13 @@ void ContentViewCoreImpl::FlingStart(JNIEnv* env, jobject obj, jlong time_ms,
   event.data.flingStart.velocityX = vx / DpiScale();
   event.data.flingStart.velocityY = vy / DpiScale();
 
-  if (GetRenderWidgetHostViewAndroid())
-    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
+  SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::FlingCancel(JNIEnv* env, jobject obj, jlong time_ms) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureFlingCancel, time_ms, 0, 0);
-  if (GetRenderWidgetHostViewAndroid())
-    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
+  SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::SingleTap(JNIEnv* env, jobject obj, jlong time_ms,
@@ -899,8 +901,7 @@ void ContentViewCoreImpl::SingleTap(JNIEnv* env, jobject obj, jlong time_ms,
     event.data.tap.height = touchPadding / DpiScale();
   }
 
-  if (GetRenderWidgetHostViewAndroid())
-    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
+  SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::ShowPressState(JNIEnv* env, jobject obj,
@@ -908,8 +909,7 @@ void ContentViewCoreImpl::ShowPressState(JNIEnv* env, jobject obj,
                                          jint x, jint y) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureTapDown, time_ms, x, y);
-  if (GetRenderWidgetHostViewAndroid())
-    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
+  SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::ShowPressCancel(JNIEnv* env,
@@ -919,16 +919,14 @@ void ContentViewCoreImpl::ShowPressCancel(JNIEnv* env,
                                           jint y) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureTapCancel, time_ms, x, y);
-  if (GetRenderWidgetHostViewAndroid())
-    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
+  SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::DoubleTap(JNIEnv* env, jobject obj, jlong time_ms,
                                     jint x, jint y) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureDoubleTap, time_ms, x, y);
-  if (GetRenderWidgetHostViewAndroid())
-    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
+  SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::LongPress(JNIEnv* env, jobject obj, jlong time_ms,
@@ -939,27 +937,39 @@ void ContentViewCoreImpl::LongPress(JNIEnv* env, jobject obj, jlong time_ms,
 
   if (!disambiguation_popup_tap) {
     int touchPadding = GetTouchPadding();
-    event.data.longPress.width = touchPadding / DpiScale();
-    event.data.longPress.height = touchPadding / DpiScale();
+    event.data.longPress.width = event.data.longPress.height =
+        touchPadding / DpiScale();
   }
 
-  if (GetRenderWidgetHostViewAndroid())
-    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
+  SendGestureEvent(event);
+}
+
+void ContentViewCoreImpl::LongTap(JNIEnv* env, jobject obj, jlong time_ms,
+                                  jint x, jint y,
+                                  jboolean disambiguation_popup_tap) {
+  WebGestureEvent event = MakeGestureEvent(
+      WebInputEvent::GestureLongTap, time_ms, x, y);
+
+  if (!disambiguation_popup_tap) {
+    int touchPadding = GetTouchPadding();
+    event.data.longPress.width = event.data.longPress.height =
+        touchPadding / DpiScale();
+  }
+
+  SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::PinchBegin(JNIEnv* env, jobject obj, jlong time_ms,
                                      jint x, jint y) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GesturePinchBegin, time_ms, x, y);
-  if (GetRenderWidgetHostViewAndroid())
-    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
+  SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::PinchEnd(JNIEnv* env, jobject obj, jlong time_ms) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GesturePinchEnd, time_ms, 0, 0);
-  if (GetRenderWidgetHostViewAndroid())
-    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
+  SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::PinchBy(JNIEnv* env, jobject obj, jlong time_ms,
@@ -968,8 +978,7 @@ void ContentViewCoreImpl::PinchBy(JNIEnv* env, jobject obj, jlong time_ms,
       WebInputEvent::GesturePinchUpdate, time_ms, anchor_x, anchor_y);
   event.data.pinchUpdate.scale = delta;
 
-  if (GetRenderWidgetHostViewAndroid())
-    GetRenderWidgetHostViewAndroid()->SendGestureEvent(event);
+  SendGestureEvent(event);
 }
 
 void ContentViewCoreImpl::SelectBetweenCoordinates(JNIEnv* env, jobject obj,
