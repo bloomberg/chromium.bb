@@ -22,6 +22,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/shell/shell_browser_main_parts.h"
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_devtools_delegate.h"
@@ -89,6 +90,12 @@ Shell* Shell::CreateShell(WebContents* web_contents) {
   shell->PlatformSetContents();
 
   shell->PlatformResizeSubViews();
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
+    web_contents->GetMutableRendererPrefs()->use_custom_colors = false;
+    web_contents->GetRenderViewHost()->SyncRendererPrefs();
+  }
+
   return shell;
 }
 

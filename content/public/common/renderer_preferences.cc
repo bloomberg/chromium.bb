@@ -28,6 +28,7 @@ RendererPreferences::RendererPreferences()
       browser_handles_non_local_top_level_requests(false),
       browser_handles_all_top_level_requests(false),
       caret_blink_interval(0),
+      use_custom_colors(true),
       enable_referrers(true),
       enable_do_not_track(false),
       default_zoom_level(0),

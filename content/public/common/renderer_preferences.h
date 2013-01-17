@@ -92,6 +92,9 @@ struct CONTENT_EXPORT RendererPreferences {
   // from GtkSettings.
   double caret_blink_interval;
 
+  // Whether or not to set custom colors at all.
+  bool use_custom_colors;
+
   // Set to false to not send referrers.
   bool enable_referrers;
 
