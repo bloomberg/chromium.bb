@@ -86,6 +86,8 @@ class AutofillDialogViews : public AutofillDialogView,
                                const string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const ui::KeyEvent& key_event) OVERRIDE;
+  virtual bool HandleMouseEvent(views::Textfield* sender,
+                                const ui::MouseEvent& key_event) OVERRIDE;
 
   // views::FocusChangeListener implementation.
   virtual void OnWillChangeFocus(views::View* focused_before,
@@ -225,6 +227,12 @@ class AutofillDialogViews : public AutofillDialogView,
   // Checks all manual inputs in the form for validity. Decorates the invalid
   // ones and returns true if all were valid.
   bool ValidateForm();
+
+  // When an input textfield is edited (its contents change) or activated
+  // (clicked while focused), this function will inform the controller that it's
+  // time to show a suggestion popup and possibly reset the validity state of
+  // the input.
+  void TextfieldEditedOrActivated(views::Textfield* textfield, bool was_edit);
 
   // The controller that drives this view. Weak pointer, always non-NULL.
   AutofillDialogController* const controller_;

@@ -424,17 +424,27 @@ void AutofillDialogController::EndSignInFlow() {
   view_->HideSignIn();
 }
 
-void AutofillDialogController::UserEditedInput(
+void AutofillDialogController::UserEditedOrActivatedInput(
     const DetailInput* input,
     DialogSection section,
-    gfx::NativeView view,
+    gfx::NativeView parent_view,
     const gfx::Rect& content_bounds,
-    const string16& field_contents) {
+    const string16& field_contents,
+    bool was_edit) {
+  // If the field is edited down to empty, don't show a popup.
+  if (was_edit && field_contents.empty()) {
+    HidePopup();
+    return;
+  }
+
+  // If the user clicks while the popup is already showing, be sure to hide
+  // it.
+  if (!was_edit && popup_controller_) {
+    HidePopup();
+    return;
+  }
+
   std::vector<string16> popup_values, popup_labels, popup_icons;
-
-  // TODO(estade): add field types from email section?
-  const DetailInputs& inputs = RequestedFieldsForSection(section);
-
   if (section == SECTION_CC) {
     GetManager()->GetCreditCardSuggestions(input->type,
                                            field_contents,
@@ -443,6 +453,8 @@ void AutofillDialogController::UserEditedInput(
                                            &popup_icons,
                                            &popup_guids_);
   } else {
+    // TODO(estade): add field types from email section?
+    const DetailInputs& inputs = RequestedFieldsForSection(section);
     std::vector<AutofillFieldType> field_types;
     field_types.reserve(inputs.size());
     for (DetailInputs::const_iterator iter = inputs.begin();
@@ -470,7 +482,7 @@ void AutofillDialogController::UserEditedInput(
   }
 
   popup_controller_ = AutofillPopupControllerImpl::GetOrCreate(
-      popup_controller_, this, view, content_bounds);
+      popup_controller_, this, parent_view, content_bounds);
   popup_controller_->Show(popup_values,
                           popup_labels,
                           popup_icons,
@@ -479,10 +491,7 @@ void AutofillDialogController::UserEditedInput(
 }
 
 void AutofillDialogController::FocusMoved() {
-  if (popup_controller_) {
-    popup_controller_->Hide();
-    ControllerDestroyed();
-  }
+  HidePopup();
 }
 
 void AutofillDialogController::DidSelectSuggestion(int identifier) {
@@ -508,8 +517,7 @@ void AutofillDialogController::DidAcceptSuggestion(const string16& value,
   view_->UpdateSection(section_showing_popup_);
 
   // TODO(estade): not sure why it's necessary to do this explicitly.
-  popup_controller_->Hide();
-  ControllerDestroyed();
+  HidePopup();
 }
 
 void AutofillDialogController::RemoveSuggestion(const string16& value,
@@ -708,6 +716,13 @@ PersonalDataManager* AutofillDialogController::GetManager() {
 DetailInputs* AutofillDialogController::MutableRequestedFieldsForSection(
     DialogSection section) {
   return const_cast<DetailInputs*>(&RequestedFieldsForSection(section));
+}
+
+void AutofillDialogController::HidePopup() {
+  if (popup_controller_) {
+    popup_controller_->Hide();
+    ControllerDestroyed();
+  }
 }
 
 }  // namespace autofill

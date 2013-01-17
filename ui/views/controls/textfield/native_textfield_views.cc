@@ -94,10 +94,15 @@ NativeTextfieldViews::~NativeTextfieldViews() {
 bool NativeTextfieldViews::OnMousePressed(const ui::MouseEvent& event) {
   OnBeforeUserAction();
   TrackMouseClicks(event);
-  // TODO: Remove once NativeTextfield implementations are consolidated to
-  // Textfield.
-  if (!textfield_->OnMousePressed(event))
+
+  TextfieldController* controller = textfield_->GetController();
+  if (!(controller && controller->HandleMouseEvent(textfield_, event)) ||
+      // TODO: Remove once NativeTextfield implementations are consolidated to
+      // Textfield.
+      !textfield_->OnMousePressed(event)) {
     HandleMousePressEvent(event);
+  }
+
   OnAfterUserAction();
   return true;
 }

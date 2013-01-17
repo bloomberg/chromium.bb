@@ -385,39 +385,7 @@ void AutofillDialogViews::ButtonPressed(views::Button* sender,
 
 void AutofillDialogViews::ContentsChanged(views::Textfield* sender,
                                           const string16& new_contents) {
-  views::View* ancestor =
-      sender->GetAncestorWithClassName(kDecoratedTextfieldClassName);
-  DetailsGroup* group = NULL;
-  for (DetailGroupMap::iterator iter = detail_groups_.begin();
-       iter != detail_groups_.end(); ++iter) {
-    if (ancestor->parent() == iter->second.manual_input) {
-      group = &iter->second;
-      break;
-    }
-  }
-  DCHECK(group);
-
-  for (TextfieldMap::const_iterator iter = group->textfields.begin();
-       iter != group->textfields.end();
-       ++iter) {
-    DecoratedTextfield* decorated = iter->second;
-    if (decorated == ancestor) {
-      controller_->UserEditedInput(iter->first,
-                                   group->section,
-                                   GetWidget()->GetNativeView(),
-                                   sender->GetBoundsInScreen(),
-                                   new_contents);
-
-      // If the field is marked as invalid, check if the text is now valid.
-      if (decorated->invalid()) {
-        decorated->SetInvalid(
-            !controller_->InputIsValid(iter->first,
-                                       decorated->textfield()->text()));
-      }
-
-      break;
-    }
-  }
+  TextfieldEditedOrActivated(sender, true);
 }
 
 bool AutofillDialogViews::HandleKeyEvent(views::Textfield* sender,
@@ -429,6 +397,13 @@ bool AutofillDialogViews::HandleKeyEvent(views::Textfield* sender,
   content::NativeWebKeyboardEvent event(copy.get());
 #endif
   return controller_->HandleKeyPressEvent(event);
+}
+
+bool AutofillDialogViews::HandleMouseEvent(views::Textfield* sender,
+                                           const ui::MouseEvent& mouse_event) {
+  if (mouse_event.IsLeftMouseButton() && sender->HasFocus())
+    TextfieldEditedOrActivated(sender, false);
+  return false;
 }
 
 void AutofillDialogViews::OnWillChangeFocus(
@@ -717,6 +692,44 @@ bool AutofillDialogViews::ValidateForm() {
     }
   }
   return all_valid;
+}
+
+void AutofillDialogViews::TextfieldEditedOrActivated(
+    views::Textfield* textfield,
+    bool was_edit) {
+  views::View* ancestor =
+      textfield->GetAncestorWithClassName(kDecoratedTextfieldClassName);
+  DetailsGroup* group = NULL;
+  for (DetailGroupMap::iterator iter = detail_groups_.begin();
+       iter != detail_groups_.end(); ++iter) {
+    if (ancestor->parent() == iter->second.manual_input) {
+      group = &iter->second;
+      break;
+    }
+  }
+  DCHECK(group);
+
+  for (TextfieldMap::const_iterator iter = group->textfields.begin();
+       iter != group->textfields.end();
+       ++iter) {
+    DecoratedTextfield* decorated = iter->second;
+    if (decorated == ancestor) {
+      controller_->UserEditedOrActivatedInput(iter->first,
+                                              group->section,
+                                              GetWidget()->GetNativeView(),
+                                              textfield->GetBoundsInScreen(),
+                                              textfield->text(),
+                                              was_edit);
+
+      // If the field is marked as invalid, check if the text is now valid.
+      if (decorated->invalid() && was_edit) {
+        decorated->SetInvalid(
+            !controller_->InputIsValid(iter->first, textfield->text()));
+      }
+
+      break;
+    }
+  }
 }
 
 AutofillDialogViews::DetailsGroup* AutofillDialogViews::GroupForSection(

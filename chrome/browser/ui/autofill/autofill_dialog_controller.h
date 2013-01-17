@@ -81,6 +81,17 @@ class AutofillDialogController : public AutofillPopupDelegate,
   string16 SuggestionTextForSection(DialogSection section);
   bool InputIsValid(const DetailInput* input, const string16& value);
 
+  // Called by the view when the user changes the contents of a text field
+  // or activates it (by focusing and then clicking it). |was_edit| is true
+  // when the function was called in response to the user editing the text
+  // field.
+  void UserEditedOrActivatedInput(const DetailInput* input,
+                                  DialogSection section,
+                                  gfx::NativeView parent_view,
+                                  const gfx::Rect& content_bounds,
+                                  const string16& field_contents,
+                                  bool was_edit);
+
   // Begins the flow to sign into Wallet.
   void StartSignInFlow();
 
@@ -194,6 +205,9 @@ class AutofillDialogController : public AutofillPopupDelegate,
 
   // Like RequestedFieldsForSection, but returns a pointer.
   DetailInputs* MutableRequestedFieldsForSection(DialogSection section);
+
+  // Hides |popup_controller_|'s popup view, if it exists.
+  void HidePopup();
 
   // The |profile| for |contents_|.
   Profile* const profile_;

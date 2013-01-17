@@ -13,6 +13,7 @@
 
 namespace ui {
 class KeyEvent;
+class MouseEvent;
 class SimpleMenuModel;
 }  // namespace ui
 
@@ -35,6 +36,12 @@ class VIEWS_EXPORT TextfieldController {
   // further. If it returns false the processing continues.
   virtual bool HandleKeyEvent(Textfield* sender,
                               const ui::KeyEvent& key_event) = 0;
+
+  // This method is called to get notified about mouse events in the edit.
+  // Returns true if the message was handled and should not be processed
+  // further. Currently, only mouse down events are sent here.
+  virtual bool HandleMouseEvent(Textfield* sender,
+                                const ui::MouseEvent& mouse_event);
 
   // Called before performing a user action that may change the textfield.
   // It's currently only supported by Views implementation.
