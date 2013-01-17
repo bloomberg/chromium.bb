@@ -73,8 +73,16 @@ void ShowInfobar(int render_process_id, int render_view_id,
         PP_NACL_MANIFEST_MISSING_ARCH);
   RenderViewHost* rvh = RenderViewHost::FromID(render_process_id,
                                                render_view_id);
+  if (!rvh)
+    return;
+
   WebContents* wc = WebContents::FromRenderViewHost(rvh);
-  NaClInfoBarDelegate::Create(InfoBarService::FromWebContents(wc), wc);
+  if (!wc)
+    return;
+
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(wc);
+  if (infobar_service)
+    NaClInfoBarDelegate::Create(infobar_service, wc);
 }
 
 }  // namespace
