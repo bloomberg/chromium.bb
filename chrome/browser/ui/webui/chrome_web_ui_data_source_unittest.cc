@@ -77,7 +77,7 @@ TEST_F(ChromeWebUIDataSourceTest, SomeStrings) {
 }
 
 TEST_F(ChromeWebUIDataSourceTest, DefaultResource) {
-  source()->set_default_resource(IDR_WEBUI_I18N_PROCESS_JS);
+  source()->set_default_resource(IDR_I18N_PROCESS_JS);
   source()->StartDataRequest("foobar" );
   std::string result(
       reinterpret_cast<const char*>(source()->result_data_->front()),
