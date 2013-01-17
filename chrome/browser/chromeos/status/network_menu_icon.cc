@@ -91,7 +91,9 @@ const gfx::ImageSkia* BadgeForNetworkTechnology(
       id = IDR_AURA_UBER_TRAY_NETWORK_1X;
       break;
     case NETWORK_TECHNOLOGY_GPRS:
-      id = IDR_AURA_UBER_TRAY_NETWORK_GPRS;
+      id = (color == NetworkMenuIcon::COLOR_DARK) ?
+          IDR_AURA_UBER_TRAY_NETWORK_GPRS_DARK :
+          IDR_AURA_UBER_TRAY_NETWORK_GPRS_LIGHT;
       break;
     case NETWORK_TECHNOLOGY_EDGE:
       id = (color == NetworkMenuIcon::COLOR_DARK) ?
@@ -99,24 +101,34 @@ const gfx::ImageSkia* BadgeForNetworkTechnology(
           IDR_AURA_UBER_TRAY_NETWORK_EDGE_LIGHT;
       break;
     case NETWORK_TECHNOLOGY_UMTS:
-      id =  (color == NetworkMenuIcon::COLOR_DARK) ?
+      id = (color == NetworkMenuIcon::COLOR_DARK) ?
           IDR_AURA_UBER_TRAY_NETWORK_3G_DARK :
           IDR_AURA_UBER_TRAY_NETWORK_3G_LIGHT;
       break;
     case NETWORK_TECHNOLOGY_HSPA:
-      id = IDR_AURA_UBER_TRAY_NETWORK_HSPA;
+      id = (color == NetworkMenuIcon::COLOR_DARK) ?
+          IDR_AURA_UBER_TRAY_NETWORK_HSPA_DARK :
+          IDR_AURA_UBER_TRAY_NETWORK_HSPA_LIGHT;
       break;
     case NETWORK_TECHNOLOGY_HSPA_PLUS:
-      id = IDR_AURA_UBER_TRAY_NETWORK_HSPA_PLUS;
+      id = (color == NetworkMenuIcon::COLOR_DARK) ?
+          IDR_AURA_UBER_TRAY_NETWORK_HSPA_PLUS_DARK :
+          IDR_AURA_UBER_TRAY_NETWORK_HSPA_PLUS_LIGHT;
       break;
     case NETWORK_TECHNOLOGY_LTE:
-      id = IDR_AURA_UBER_TRAY_NETWORK_LTE;
+      id = (color == NetworkMenuIcon::COLOR_DARK) ?
+          IDR_AURA_UBER_TRAY_NETWORK_LTE_DARK :
+          IDR_AURA_UBER_TRAY_NETWORK_LTE_LIGHT;
       break;
     case NETWORK_TECHNOLOGY_LTE_ADVANCED:
-      id = IDR_AURA_UBER_TRAY_NETWORK_LTE_ADVANCED;
+      id = (color == NetworkMenuIcon::COLOR_DARK) ?
+          IDR_AURA_UBER_TRAY_NETWORK_LTE_ADVANCED_DARK :
+          IDR_AURA_UBER_TRAY_NETWORK_LTE_ADVANCED_LIGHT;
       break;
     case NETWORK_TECHNOLOGY_GSM:
-      id = IDR_AURA_UBER_TRAY_NETWORK_GPRS;
+      id = (color == NetworkMenuIcon::COLOR_DARK) ?
+          IDR_AURA_UBER_TRAY_NETWORK_GPRS_DARK :
+          IDR_AURA_UBER_TRAY_NETWORK_GPRS_LIGHT;
       break;
     case NETWORK_TECHNOLOGY_UNKNOWN:
       break;
