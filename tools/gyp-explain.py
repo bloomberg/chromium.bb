@@ -16,7 +16,7 @@ from collections import deque
 def usage():
   print """\
 Usage:
-  tools/gyp-explain.py chrome_dll gtest#
+  tools/gyp-explain.py chrome_dll# gtest#
 """
 
 
@@ -52,11 +52,6 @@ def MatchNode(graph, substring):
 
 
 def Main(argv):
-  if sys.platform in ['win32', 'cygwin']:
-    print 'The dump_dependency_json gyp generator required for gyp-explain.py'
-    print 'does not support Windows.'
-    sys.exit(1)
-
   # Check that dump.json exists and that it's not too old.
   dump_json_dirty = False
   try:
