@@ -18,6 +18,7 @@
     'public/android/java/src/org/chromium/content/browser/ContentViewCore.java',
     'public/android/java/src/org/chromium/content/browser/ContentViewRenderView.java',
     'public/android/java/src/org/chromium/content/browser/ContentViewStatics.java',
+    'public/android/java/src/org/chromium/content/browser/DateTimeChooserAndroid.java',
     'public/android/java/src/org/chromium/content/browser/DeviceOrientation.java',
     'public/android/java/src/org/chromium/content/browser/DownloadController.java',
     'public/android/java/src/org/chromium/content/browser/ImeAdapter.java',

@@ -12,6 +12,7 @@
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/content_view_render_view.h"
 #include "content/browser/android/content_view_statics.h"
+#include "content/browser/android/date_time_chooser_android.h"
 #include "content/browser/android/download_controller_android_impl.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/load_url_params.h"
@@ -38,6 +39,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     content::ContentViewRenderView::RegisterContentViewRenderView },
   { "ContentVideoView", content::ContentVideoView::RegisterContentVideoView },
   { "ContentViewCore", content::RegisterContentViewCore },
+  { "DateTimePickerAndroid", content::RegisterDateTimeChooserAndroid},
   { "DownloadControllerAndroidImpl",
     content::DownloadControllerAndroidImpl::RegisterDownloadController },
   { "InterstitialPageDelegateAndroid",

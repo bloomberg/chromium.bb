@@ -1985,6 +1985,11 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_EnumerateDirectory,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_TakeFocus,
                     bool /* reverse */)
 
+// Required for opening a date/time dialog
+IPC_MESSAGE_ROUTED2(ViewHostMsg_OpenDateTimeDialog,
+                    int /* type */,
+                    std::string /* value */)
+
 // Required for updating text input state.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_TextInputStateChanged,
                     ViewHostMsg_TextInputState_Params /* input state params */)

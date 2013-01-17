@@ -43,6 +43,7 @@ namespace content {
 class BrowserPluginEmbedder;
 class BrowserPluginGuest;
 class ColorChooser;
+class DateTimeChooserAndroid;
 class DownloadItem;
 class InterstitialPageImpl;
 class JavaScriptDialogCreator;
@@ -547,6 +548,8 @@ class CONTENT_EXPORT WebContentsImpl
   void OnFindMatchRectsReply(int version,
                              const std::vector<gfx::RectF>& rects,
                              const gfx::RectF& active_rect);
+
+  void OnOpenDateTimeDialog(int type, const std::string& value);
 #endif
   void OnCrashedPlugin(const FilePath& plugin_path, base::ProcessId plugin_pid);
   void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
@@ -828,6 +831,12 @@ class CONTENT_EXPORT WebContentsImpl
   // Content restrictions, used to disable print/copy etc based on content's
   // (full-page plugins for now only) permissions.
   int content_restrictions_;
+
+#if defined(OS_ANDROID)
+  // Date time chooser opened by this tab.
+  // Only used in Android since all other platforms use a multi field UI.
+  scoped_ptr<DateTimeChooserAndroid> date_time_chooser_;
+#endif
 
   // Color chooser that was opened by this tab.
   ColorChooser* color_chooser_;

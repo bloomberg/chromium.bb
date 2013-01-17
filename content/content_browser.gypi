@@ -215,6 +215,8 @@
     'browser/android/content_view_statics.h',
     'browser/android/cookie_getter_impl.cc',
     'browser/android/cookie_getter_impl.h',
+    'browser/android/date_time_chooser_android.cc',
+    'browser/android/date_time_chooser_android.h',
     'browser/android/download_controller_android_impl.cc',
     'browser/android/download_controller_android_impl.h',
     'browser/android/devtools_auth.cc',

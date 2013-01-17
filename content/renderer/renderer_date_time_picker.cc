@@ -4,6 +4,7 @@
 
 #include "content/renderer/renderer_date_time_picker.h"
 
+#include "base/string_util.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view_impl.h"
 
@@ -46,11 +47,9 @@ static ui::TextInputType ExtractType(
 }
 
 bool RendererDateTimePicker::Open() {
-  ViewHostMsg_TextInputState_Params p;
-  p.type = ExtractType(chooser_params_);
-  p.value = chooser_params_.currentValue.utf8();
-  p.show_ime_if_needed = true;
-  Send(new ViewHostMsg_TextInputStateChanged(routing_id(), p));
+  Send(new ViewHostMsg_OpenDateTimeDialog(
+      routing_id(), ExtractType(chooser_params_),
+      chooser_params_.currentValue.utf8()));
   return true;
 }
 

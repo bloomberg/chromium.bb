@@ -85,6 +85,10 @@
 #include "webkit/glue/web_intent_service_data.h"
 #include "webkit/glue/webpreferences.h"
 
+#if defined(OS_ANDROID)
+#include "content/browser/android/date_time_chooser_android.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
 #include "ui/surface/io_surface_support_mac.h"
@@ -727,10 +731,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterProtocolHandler,
                         OnRegisterProtocolHandler)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
-#if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FindMatchRects_Reply,
-                        OnFindMatchRectsReply)
-#endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_CrashedPlugin, OnCrashedPlugin)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenColorChooser, OnOpenColorChooser)
@@ -745,6 +745,12 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnBrowserPluginCreateGuest)
     IPC_MESSAGE_HANDLER(IconHostMsg_DidDownloadFavicon, OnDidDownloadFavicon)
     IPC_MESSAGE_HANDLER(IconHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
+#if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FindMatchRects_Reply,
+                        OnFindMatchRectsReply)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenDateTimeDialog,
+                        OnOpenDateTimeDialog)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   message_source_ = NULL;
@@ -1185,6 +1191,10 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
 #if defined(ENABLE_JAVA_BRIDGE)
   java_bridge_dispatcher_host_manager_.reset(
       new JavaBridgeDispatcherHostManager(this));
+#endif
+
+#if defined(OS_ANDROID)
+  date_time_chooser_.reset(new DateTimeChooserAndroid());
 #endif
 }
 
@@ -2273,6 +2283,12 @@ void WebContentsImpl::OnFindMatchRectsReply(
   if (delegate_)
     delegate_->FindMatchRectsReply(this, version, rects, active_rect);
 }
+
+void WebContentsImpl::OnOpenDateTimeDialog(int type, const std::string& value) {
+  date_time_chooser_->ShowDialog(
+      GetContentNativeView(), GetRenderViewHost(), type, value);
+}
+
 #endif
 
 void WebContentsImpl::OnCrashedPlugin(const FilePath& plugin_path,

@@ -21,34 +21,36 @@ import android.view.inputmethod.InputMethodManager;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
-// We have to adapt and plumb android IME service and chrome text input API.
-// ImeAdapter provides an interface in both ways native <-> java:
-// 1. InputConnectionAdapter notifies native code of text composition state and
-//    dispatch key events from java -> WebKit.
-// 2. Native ImeAdapter notifies java side to clear composition text.
-//
-// The basic flow is:
-// 1. Intercept dispatchKeyEventPreIme() to record the current key event, but do
-//    nothing else.
-// 2. When InputConnectionAdapter gets called with composition or result text:
-//    a) If a key event has been recorded in dispatchKeyEventPreIme() and we
-//       receive a result text with single character, then we probably need to
-//       send the result text as a Char event rather than a ConfirmComposition
-//       event. So we need to dispatch the recorded key event followed by a
-//       synthetic Char event.
-//    b) If we receive a composition text or a result text with more than one
-//       characters, then no matter if we recorded a key event or not in
-//       dispatchKeyEventPreIme(), we just need to dispatch a synthetic key
-//       event with special keycode 229, and then dispatch the composition or
-//       result text.
-// 3. Intercept dispatchKeyEvent() method for key events not handled by IME, we
-//    need to dispatch them to webkit and check webkit's reply. Then inject a
-//    new key event for further processing if webkit didn't handle it.
+/**
+ We have to adapt and plumb android IME service and chrome text input API.
+ ImeAdapter provides an interface in both ways native <-> java:
+ 1. InputConnectionAdapter notifies native code of text composition state and
+    dispatch key events from java -> WebKit.
+ 2. Native ImeAdapter notifies java side to clear composition text.
+
+ The basic flow is:
+ 1. Intercept dispatchKeyEventPreIme() to record the current key event, but do
+    nothing else.
+ 2. When InputConnectionAdapter gets called with composition or result text:
+    a) If a key event has been recorded in dispatchKeyEventPreIme() and we
+       receive a result text with single character, then we probably need to
+       send the result text as a Char event rather than a ConfirmComposition
+       event. So we need to dispatch the recorded key event followed by a
+       synthetic Char event.
+    b) If we receive a composition text or a result text with more than one
+       characters, then no matter if we recorded a key event or not in
+       dispatchKeyEventPreIme(), we just need to dispatch a synthetic key
+       event with special keycode 229, and then dispatch the composition or
+       result text.
+ 3. Intercept dispatchKeyEvent() method for key events not handled by IME, we
+    need to dispatch them to WebKit and check webkit's reply. Then inject a
+    new key event for further processing if WebKit didn't handle it.
+*/
 @JNINamespace("content")
 class ImeAdapter {
     interface ViewEmbedder {
         /**
-         * @param isFinish whether the event is occuring because input is finished.
+         * @param isFinish whether the event is occurring because input is finished.
          */
         public void onImeEvent(boolean isFinish);
         public void onSetFieldValue();
@@ -111,8 +113,6 @@ class ImeAdapter {
         sTextInputTypeNumber = textInputTypeNumber;
         sTextInputTypeWeek = textInputTypeWeek;
         sTextInputTypeContentEditable = textInputTypeContentEditable;
-        InputDialogContainer.initializeInputTypes(textInputTypeDate, textInputTypeDateTime,
-                textInputTypeDateTimeLocal, textInputTypeMonth, textInputTypeTime);
     }
 
     private int mNativeImeAdapterAndroid;
@@ -125,7 +125,6 @@ class ImeAdapter {
     private AdapterInputConnection mInputConnection;
     private ViewEmbedder mViewEmbedder;
     private Handler mHandler;
-    private InputDialogContainer mInputDialogContainer;
 
     private class DelayedDismissInput implements Runnable {
         private int mNativeImeAdapter;
@@ -158,20 +157,6 @@ class ImeAdapter {
         mInsertionHandleController = insertionHandleController;
         mViewEmbedder = embedder;
         mHandler = new Handler();
-        mInputDialogContainer = new InputDialogContainer(context,
-                new InputDialogContainer.InputActionDelegate() {
-
-                    @Override
-                    public void replaceDateTime(String text) {
-                        mViewEmbedder.onSetFieldValue();
-                        nativeReplaceDateTime(mNativeImeAdapterAndroid, text);
-                    }
-
-                    @Override
-                    public void cancelDateTimeDialog() {
-                        nativeCancelDialog(mNativeImeAdapterAndroid);
-                    }
-                });
     }
 
     boolean isFor(int nativeImeAdapter, int textInputType) {
@@ -204,30 +189,12 @@ class ImeAdapter {
             InputMethodManager manager = (InputMethodManager)
                     mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
 
-            if (hasTextInputType()) {
-                manager.restartInput(mViewEmbedder.getAttachedView());
-                // If type has changed from dialog to text, show even if showIfNeeded is not true.
-                if (showIfNeeded || mInputDialogContainer.isDialogShowing()) {
-                    showKeyboard();
-                }
-            } else if (hasDialogInputType()) {
-                // If type has changed from text to dialog, show even if showIfNeeded is not true.
-                if (showIfNeeded || isTextInputType(previousType)) {
-                    // Make sure the keyboard is dismissed before displaying the dialog.
-                    dismissInput(false);
-                    mInsertionHandleController.hideAndDisallowAutomaticShowing();
-                    mInputDialogContainer.showDialog(text, textInputType);
-                }
+            manager.restartInput(mViewEmbedder.getAttachedView());
+            if (showIfNeeded) {
+                showKeyboard();
             }
         } else if (hasInputType()) {
-            if (!mInputDialogContainer.isDialogShowing() && showIfNeeded) {
-                if (hasDialogInputType()) {
-                    mInsertionHandleController.hideAndDisallowAutomaticShowing();
-                    mInputDialogContainer.showDialog(text, textInputType);
-                } else {
-                    showKeyboard();
-                }
-            }
+            showKeyboard();
         }
     }
 
@@ -258,7 +225,6 @@ class ImeAdapter {
     }
 
     private void showKeyboard() {
-        mInputDialogContainer.dismissDialog();
         InputMethodManager manager = (InputMethodManager)
                 mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
         manager.showSoftInput(mViewEmbedder.getAttachedView(), 0,
@@ -296,10 +262,6 @@ class ImeAdapter {
 
     boolean hasTextInputType() {
         return isTextInputType(mTextInputType);
-    }
-
-    boolean hasDialogInputType() {
-        return InputDialogContainer.isDialogInputType(mTextInputType);
     }
 
     void dispatchKeyEventPreIme(KeyEvent event) {
@@ -777,10 +739,6 @@ class ImeAdapter {
     private native void nativeCommitText(int nativeImeAdapterAndroid, String text);
 
     private native void nativeAttachImeAdapter(int nativeImeAdapterAndroid);
-
-    private native void nativeReplaceDateTime(int nativeImeAdapterAndroid, String text);
-
-    private native void nativeCancelDialog(int nativeImeAdapterAndroid);
 
     private native void nativeSetEditableSelectionOffsets(int nativeImeAdapterAndroid,
             int start, int end);
