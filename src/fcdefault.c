@@ -140,33 +140,34 @@ retry:
 
 	    prgname = FcStrdup (p);
 	}
-#elif defined (HAVE_GETPROGNAME) && defined (HAVE_REALPATH)
-	const char *p = getprogname ();
-	char resolved_path[PATH_MAX + 1];
-
-	if (p)
-	{
-	    if (realpath (p, resolved_path) != NULL)
-		prgname = FcStrdup (resolved_path);
-	}
 #else
-	char buf[8192];
+	char buf[PATH_MAX + 1];
 	unsigned int len;
+	char *p = NULL;
 
+#if defined (HAVE_GETPROGNAME) && defined (HAVE_REALPATH)
+	const char *q = getprogname ();
+	if (q)
+	    p = realpath (q, buf);
+#else
 	len = readlink ("/proc/self/exe", buf, sizeof (buf) - 1);
 	if (len > 0)
 	{
-	    char *p;
-
-	    p = strrchr (buf, '/');
-	    if (p)
-		p++;
-	    else
-		p = buf;
-
-	    prgname = FcStrdup (p);
+	    buf[len] = '\0';
+	    p = buf;
 	}
 #endif
+
+	if (p)
+	{
+	    char *r = strrchr (p, '/');
+	    if (r)
+		r++;
+	    else
+		r = p;
+
+	    prgname = FcStrdup (r);
+	}
 
 	if (!prgname)
 	    prgname = FcStrdup ("");
@@ -175,6 +176,7 @@ retry:
 	    free (prgname);
 	    goto retry;
 	}
+#endif
     }
 
     if (prgname && !prgname[0])
