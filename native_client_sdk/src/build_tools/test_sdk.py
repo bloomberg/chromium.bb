@@ -36,12 +36,6 @@ TEST_LIBRARY_LIST = [
 ]
 
 
-def BuildStepBuildToolsTests():
-  buildbot_common.BuildStep('Run build_tools tests')
-  test_all_py = os.path.join(SDK_SRC_DIR, 'build_tools', 'tests', 'test_all.py')
-  buildbot_common.Run([sys.executable, test_all_py])
-
-
 def BuildStepBuildExamples(pepperdir, platform):
   build_sdk.BuildStepMakeAll(pepperdir, platform, 'examples', 'Build Examples')
 
@@ -118,7 +112,6 @@ def main(args):
   pepperdir = os.path.join(OUT_DIR, 'pepper_' + pepper_ver)
   toolchains = ['newlib', 'glibc', 'pnacl', 'host']
 
-  BuildStepBuildToolsTests()
   BuildStepBuildExamples(pepperdir, platform)
   BuildStepCopyTests(pepperdir, toolchains, options.experimental, True)
   BuildStepBuildTests(pepperdir, platform)

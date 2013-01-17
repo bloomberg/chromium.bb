@@ -782,7 +782,13 @@ def BuildStepTarBundle(pepper_ver, tarfile):
        'pepper_' + pepper_ver], cwd=NACL_DIR)
 
 
-def BuildStepRunTests():
+def BuildStepRunUnittests():
+  buildbot_common.BuildStep('Run unittests')
+  test_all_py = os.path.join(SDK_SRC_DIR, 'build_tools', 'tests', 'test_all.py')
+  buildbot_common.Run([sys.executable, test_all_py])
+
+
+def BuildStepTestSDK():
   args = []
   if options.build_experimental:
     args.append('--experimental')
@@ -913,6 +919,9 @@ def main(args):
     # of the build.
     del os.environ['NACL_SDK_ROOT']
 
+  if options.run_tests:
+    BuildStepRunUnittests()
+
   BuildStepCleanPepperDirs(pepperdir, pepperdir_old)
   BuildStepMakePepperDirs(pepperdir, ['include', 'toolchain', 'tools'])
 
@@ -934,7 +943,7 @@ def main(args):
     BuildStepTarBundle(pepper_ver, tarfile)
 
   if options.run_tests:
-    BuildStepRunTests()
+    BuildStepTestSDK()
 
   # Archive on non-trybots.
   if options.archive:
