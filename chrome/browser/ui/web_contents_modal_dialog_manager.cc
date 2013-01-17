@@ -25,7 +25,7 @@ void WebContentsModalDialogManager::AddDialog(
     WebContentsModalDialog* dialog) {
   child_dialogs_.push_back(dialog);
 
-  if (child_dialogs_.size() == 1 && dialog->CanShowWebContentsModalDialog()) {
+  if (child_dialogs_.size() == 1) {
     dialog->ShowWebContentsModalDialog();
     BlockWebContentsInteraction(true);
   }

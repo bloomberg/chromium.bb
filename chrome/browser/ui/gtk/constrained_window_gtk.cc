@@ -110,22 +110,13 @@ void ConstrainedWindowGtk::FocusWebContentsModalDialog() {
 
   // The user may have focused another tab. In this case do not grab focus
   // until this tab is refocused.
-  WebContentsModalDialogManager* manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents_);
-  if ((!manager->delegate() ||
-       manager->delegate()->ShouldFocusWebContentsModalDialog()) &&
-      gtk_util::IsWidgetAncestryVisible(focus_widget)) {
+  if (gtk_util::IsWidgetAncestryVisible(focus_widget))
     gtk_widget_grab_focus(focus_widget);
-  } else {
+  else
     ContainingView()->focus_store()->SetWidget(focus_widget);
-  }
 }
 
 void ConstrainedWindowGtk::PulseWebContentsModalDialog() {
-}
-
-bool ConstrainedWindowGtk::CanShowWebContentsModalDialog() {
-  return true;
 }
 
 gfx::NativeWindow ConstrainedWindowGtk::GetNativeWindow() {

@@ -71,7 +71,6 @@ class ConstrainedWindowViews : public views::Widget,
   virtual void CloseWebContentsModalDialog() OVERRIDE;
   virtual void FocusWebContentsModalDialog() OVERRIDE;
   virtual void PulseWebContentsModalDialog() OVERRIDE;
-  virtual bool CanShowWebContentsModalDialog() OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
 
   // Default insets for the dialog:

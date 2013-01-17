@@ -1535,10 +1535,6 @@ gfx::Rect BrowserView::GetInstantBounds() {
   return contents_->GetPreviewBounds();
 }
 
-bool BrowserView::IsInstantTabShowing() {
-  return preview_controller_->preview() != NULL;
-}
-
 WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
 #if defined(OS_WIN)

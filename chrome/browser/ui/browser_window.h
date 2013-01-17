@@ -318,9 +318,6 @@ class BrowserWindow : public BaseWindow {
   // placed at.
   virtual gfx::Rect GetInstantBounds() = 0;
 
-  // Checks if an Instant's tab contents is being shown.
-  virtual bool IsInstantTabShowing() = 0;
-
   // Return the correct disposition for a popup window based on |bounds|.
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) = 0;

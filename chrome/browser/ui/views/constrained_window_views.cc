@@ -616,14 +616,8 @@ void ConstrainedWindowViews::CloseWebContentsModalDialog() {
 }
 
 void ConstrainedWindowViews::FocusWebContentsModalDialog() {
-  WebContentsModalDialogManager* manager =
-      WebContentsModalDialogManager::FromWebContents(web_contents_);
-  if ((!manager->delegate() ||
-       manager->delegate()->ShouldFocusWebContentsModalDialog()) &&
-      widget_delegate() &&
-      widget_delegate()->GetInitiallyFocusedView()) {
+  if (widget_delegate() && widget_delegate()->GetInitiallyFocusedView())
     widget_delegate()->GetInitiallyFocusedView()->RequestFocus();
-  }
 #if defined(USE_ASH)
   // We don't necessarily have a RootWindow yet.
   if (GetNativeView()->GetRootWindow())
@@ -632,10 +626,6 @@ void ConstrainedWindowViews::FocusWebContentsModalDialog() {
 }
 
 void ConstrainedWindowViews::PulseWebContentsModalDialog() {
-}
-
-bool ConstrainedWindowViews::CanShowWebContentsModalDialog() {
-  return true;
 }
 
 gfx::NativeWindow ConstrainedWindowViews::GetNativeWindow() {

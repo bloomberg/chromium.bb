@@ -6,11 +6,6 @@
 
 #include <string.h>
 
-bool WebContentsModalDialogManagerDelegate::ShouldFocusWebContentsModalDialog(
-) {
-  return true;
-}
-
 void WebContentsModalDialogManagerDelegate::SetWebContentsBlocked(
     content::WebContents* web_contents, bool blocked) {
 }

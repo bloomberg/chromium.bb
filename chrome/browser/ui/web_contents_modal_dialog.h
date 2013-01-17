@@ -29,9 +29,6 @@ class WebContentsModalDialog {
   // Runs a pulse animation for the web contents modal dialog.
   virtual void PulseWebContentsModalDialog() = 0;
 
-  // Checks if the web contents modal dialog can be shown.
-  virtual bool CanShowWebContentsModalDialog() = 0;
-
   // Returns the native window of the web contents modal dialog.
   virtual gfx::NativeWindow GetNativeWindow() = 0;
 

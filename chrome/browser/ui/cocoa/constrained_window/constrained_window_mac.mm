@@ -81,13 +81,6 @@ gfx::NativeWindow ConstrainedWindowMac::GetNativeWindow() {
   return nil;
 }
 
-bool ConstrainedWindowMac::CanShowWebContentsModalDialog() {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  if (!browser)
-    return true;
-  return !browser->window()->IsInstantTabShowing();
-}
-
 void ConstrainedWindowMac::Observe(
     int type,
     const content::NotificationSource& source,

@@ -75,9 +75,6 @@ class WebContents;
 // if it's the preview being activated (and adjust internal state accordingly).
 - (void)onActivateTabWithContents:(content::WebContents*)contents;
 
-// Returns YES if the preview contents is currently showing.
-- (BOOL)isShowingPreview;
-
 - (InstantPreviewControllerMac*)instantPreviewController;
 
 @end

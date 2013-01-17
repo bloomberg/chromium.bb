@@ -313,7 +313,6 @@ class WebContents;
 
 // Shows or hides the Instant preview contents.
 - (void)commitInstant;
-- (BOOL)isInstantTabShowing;
 
 // Returns the frame, in Cocoa (unflipped) screen coordinates, of the area where
 // Instant results are.  If Instant is not showing, returns the frame of where

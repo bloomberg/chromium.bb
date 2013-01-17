@@ -42,9 +42,6 @@ class WebContentsModalDialogCloseTest : public WebContentsModalDialog {
   }
   virtual void FocusWebContentsModalDialog() {}
   virtual void PulseWebContentsModalDialog() {}
-  virtual bool CanShowWebContentsModalDialog() {
-    return true;
-  }
   virtual gfx::NativeWindow GetNativeWindow() {
     NOTREACHED();
     return NULL;

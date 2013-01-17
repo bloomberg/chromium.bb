@@ -1897,11 +1897,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
     controller->instant()->CommitIfPossible(INSTANT_COMMIT_FOCUS_LOST);
 }
 
-- (BOOL)isInstantTabShowing {
-  return previewableContentsController_ &&
-      [previewableContentsController_ isShowingPreview];
-}
-
 - (NSRect)instantFrame {
   // The view's bounds are in its own coordinate system.  Convert that to the
   // window base coordinate system, then translate it into the screen's

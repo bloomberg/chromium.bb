@@ -616,10 +616,6 @@ gfx::Rect BrowserWindowCocoa::GetInstantBounds() {
   return bounds;
 }
 
-bool BrowserWindowCocoa::IsInstantTabShowing()  {
-  return [controller_ isInstantTabShowing];
-}
-
 WindowOpenDisposition BrowserWindowCocoa::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
   // In Lion fullscreen mode, convert popups into tabs.

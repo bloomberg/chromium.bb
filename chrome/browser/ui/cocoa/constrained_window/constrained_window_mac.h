@@ -44,7 +44,6 @@ class ConstrainedWindowMac : public WebContentsModalDialog,
   virtual void FocusWebContentsModalDialog() OVERRIDE;
   virtual void PulseWebContentsModalDialog() OVERRIDE;
   virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
-  virtual bool CanShowWebContentsModalDialog() OVERRIDE;
 
   // content::NotificationObserver:
   virtual void Observe(int type,

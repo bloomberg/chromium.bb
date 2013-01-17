@@ -14,8 +14,6 @@
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
-#include "chrome/browser/ui/web_contents_modal_dialog_manager.h"
-#include "chrome/browser/ui/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -46,16 +44,12 @@ class InstantLoaderUserData : public base::SupportsUserData::Data {
 // WebContentsDelegateImpl -----------------------------------------------------
 
 class InstantLoader::WebContentsDelegateImpl
-    : public WebContentsModalDialogManagerDelegate,
-      public CoreTabHelperDelegate,
+    : public CoreTabHelperDelegate,
       public content::WebContentsDelegate {
  public:
   explicit WebContentsDelegateImpl(InstantLoader* loader);
 
  private:
-  // Overridden from WebContentsModalDialogManagerDelegate:
-  virtual bool ShouldFocusWebContentsModalDialog() OVERRIDE;
-
   // Overridden from CoreTabHelperDelegate:
   virtual void SwapTabContents(content::WebContents* old_contents,
                                content::WebContents* new_contents) OVERRIDE;
@@ -88,14 +82,6 @@ class InstantLoader::WebContentsDelegateImpl
 InstantLoader::WebContentsDelegateImpl::WebContentsDelegateImpl(
     InstantLoader* loader)
     : loader_(loader) {
-}
-
-bool InstantLoader::WebContentsDelegateImpl::ShouldFocusWebContentsModalDialog(
-) {
-  // Return false so that web contents modal dialogs are not initially
-  // focused. If we did otherwise the preview would prematurely get committed
-  // when focus goes to the dialog.
-  return false;
 }
 
 void InstantLoader::WebContentsDelegateImpl::SwapTabContents(
@@ -365,11 +351,6 @@ void InstantLoader::SetupPreviewContents() {
   TabSpecificContentSettings::FromWebContents(contents())->
       SetPopupsBlocked(true);
 
-  // A manager to control web contents modal dialogs.
-  WebContentsModalDialogManager::CreateForWebContents(contents());
-  WebContentsModalDialogManager::FromWebContents(contents())->
-      set_delegate(delegate_.get());
-
   // A tab helper to catch prerender content swapping shenanigans.
   CoreTabHelper::CreateForWebContents(contents());
   CoreTabHelper::FromWebContents(contents())->set_delegate(delegate_.get());
@@ -410,9 +391,6 @@ void InstantLoader::CleanupPreviewContents() {
       SetAllContentsBlocked(false);
   TabSpecificContentSettings::FromWebContents(contents())->
       SetPopupsBlocked(false);
-
-  WebContentsModalDialogManager::FromWebContents(contents())->
-      set_delegate(NULL);
 
   CoreTabHelper::FromWebContents(contents())->set_delegate(NULL);
 

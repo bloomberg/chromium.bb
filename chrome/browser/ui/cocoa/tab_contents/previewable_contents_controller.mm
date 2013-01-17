@@ -118,10 +118,6 @@
   }
 }
 
-- (BOOL)isShowingPreview {
-  return previewContents_ != nil;
-}
-
 - (InstantPreviewControllerMac*)instantPreviewController {
   return instantPreviewController_.get();
 }
