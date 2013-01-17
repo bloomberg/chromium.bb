@@ -1689,6 +1689,9 @@ IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, RunTest) {
   }
 }
 
+#if !defined(OS_WIN)
+// http://crbug.com/170779 Timing out regularly on XP waterfall.
+
 INSTANTIATE_TEST_CASE_P(
     RestoreOnStartupPolicyTestInstance,
     RestoreOnStartupPolicyTest,
@@ -1697,6 +1700,8 @@ INSTANTIATE_TEST_CASE_P(
                     &RestoreOnStartupPolicyTest::ListOfURLs,
                     &RestoreOnStartupPolicyTest::NTP,
                     &RestoreOnStartupPolicyTest::Last));
+
+#endif
 
 // Similar to PolicyTest but sets a couple of policies before the browser is
 // started.
