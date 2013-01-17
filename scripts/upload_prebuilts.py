@@ -141,7 +141,7 @@ def RevGitFile(filename, value, retries=5, key='PORTAGE_BINHOST', dryrun=False):
   prebuilt_branch = 'prebuilt_branch'
   cwd = os.path.abspath(os.path.dirname(filename))
   commit = git.RunGit(cwd, ['rev-parse', 'HEAD']).output.rstrip()
-  description = 'Update %s="%s" in %s' % (key, value, filename)
+  description = '%s: updating %s' % (os.path.basename(filename), key)
   print description
 
   try:
@@ -285,7 +285,7 @@ def UpdateBinhostConfFile(path, key, value):
   osutils.WriteFile(path, '', mode='a')
   UpdateLocalFile(path, value, key)
   cros_build_lib.RunCommand(['git', 'add', filename], cwd=cwd)
-  description = 'Update %s="%s" in %s' % (key, value, filename)
+  description = '%s: updating %s' % (os.path.basename(filename), key)
   cros_build_lib.RunCommand(['git', 'commit', '-m', description], cwd=cwd)
 
 
