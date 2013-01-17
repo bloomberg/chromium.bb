@@ -136,6 +136,17 @@ cr.define('cr.ui', function() {
     $('accessibility-menu').showForElement(e.target,
                                            cr.ui.Bubble.Attachment.BOTTOM,
                                            BUBBLE_OFFSET, BUBBLE_PADDING);
+    if (Oobe.getInstance().currentScreen &&
+        Oobe.getInstance().currentScreen.defaultControl) {
+      $('accessibility-menu').elementToFocusOnHide =
+          Oobe.getInstance().currentScreen.defaultControl;
+    } else {
+      // Update screen falls into this category. Since it doesn't have any
+      // controls other than a11y link we don't want that link to receive focus
+      // when screen is shown i.e. defaultControl is not defined.
+      // Focus a11y link instead.
+      $('accessibility-menu').elementToFocusOnHide = e.target;
+    }
     e.stopPropagation();
   };
 

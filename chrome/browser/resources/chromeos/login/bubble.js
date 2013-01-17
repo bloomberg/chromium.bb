@@ -32,6 +32,10 @@ cr.define('cr.ui', function() {
     // Anchor element for this bubble.
     anchor_: undefined,
 
+    // If defined, sets focus to this element once bubble is closed. Focus is
+    // set to this element only if there's no any other focused element.
+    elementToFocusOnHide_: undefined,
+
     // Whether to hide bubble when key is pressed.
     hideOnKeyPress_: true,
 
@@ -46,6 +50,14 @@ cr.define('cr.ui', function() {
       window.addEventListener('blur', this.handleWindowBlur_.bind(this));
       this.addEventListener('webkitTransitionEnd',
                             this.handleTransitionEnd_.bind(this));
+    },
+
+    /**
+     * Element that should be focused on hide.
+     * @type {HTMLElement}
+     */
+    set elementToFocusOnHide(value) {
+      this.elementToFocusOnHide_ = value;
     },
 
     /**
@@ -244,8 +256,15 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleTransitionEnd_: function(e) {
-      if (this.classList.contains('faded'))
+      if (this.classList.contains('faded')) {
         this.hidden = true;
+        if (this.elementToFocusOnHide_ &&
+            document.activeElement == document.body) {
+          // Restore focus to default element only if there's no other
+          // element that is focused.
+          this.elementToFocusOnHide_.focus();
+        }
+      }
     },
 
     /**
@@ -271,8 +290,11 @@ cr.define('cr.ui', function() {
         return;
       }
 
-      if (e.keyCode == 27 && !this.hidden)
+      if (e.keyCode == 27 && !this.hidden) {
+        if (this.elementToFocusOnHide_)
+          this.elementToFocusOnHide_.focus();
         this.hide();
+      }
     },
 
     /**
