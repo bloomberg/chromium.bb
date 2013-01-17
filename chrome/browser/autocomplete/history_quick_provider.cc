@@ -168,11 +168,17 @@ void HistoryQuickProvider::DoAutocomplete() {
   if (matches.empty())
     return;
 
-  if (reorder_for_inlining_) {
-    // If we're allowed to reorder results in order to get an
-    // inlineable result to appear first (and hence have a
-    // HistoryQuickProvider suggestion possibly appear first), find
-    // the first inlineable result and then swap it to the front.
+  // If we're allowed to reorder results in order to get an inlineable
+  // result to appear first (and hence have a HistoryQuickProvider
+  // suggestion possibly appear first), find the first inlineable
+  // result and then swap it to the front.  Obviously, don't do this
+  // if we're told to prevent inline autocompletion.  (If we're told
+  // we're going to prevent inline autocompletion, we're going to
+  // later demote the score of all results so none will be inlined.
+  // Hence there's no need to reorder the results so an inlineable one
+  // appears first.)
+  if (reorder_for_inlining_ &&
+      !PreventInlineAutocomplete(autocomplete_input_)) {
     for (ScoredHistoryMatches::iterator i(matches.begin());
          (i != matches.end()) &&
              (i->raw_score >= AutocompleteResult::kLowestDefaultScore);
