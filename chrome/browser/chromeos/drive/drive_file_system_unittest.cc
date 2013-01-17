@@ -205,8 +205,6 @@ class DriveFileSystemTest : public testing::Test {
 
     profile_.reset(new TestingProfile);
 
-    callback_helper_ = new CallbackHelper;
-
     // Allocate and keep a pointer to the mock, and inject it into the
     // DriveFileSystem object, which will own the mock object.
     fake_drive_service_ = new google_apis::FakeDriveService;
@@ -303,7 +301,7 @@ class DriveFileSystemTest : public testing::Test {
     directory_path.GetComponents(&dir_parts);
     entry_dict->SetString("title.$t", dir_parts[dir_parts.size() - 1]);
 
-    DriveFileError error;
+    DriveFileError error = DRIVE_FILE_ERROR_FAILED;
     DriveFileSystem::CreateDirectoryParams params(directory_path,
                                                   directory_path,
                                                   false,  // is_exclusive
@@ -318,7 +316,7 @@ class DriveFileSystemTest : public testing::Test {
   }
 
   bool RemoveEntry(const FilePath& file_path) {
-    DriveFileError error;
+    DriveFileError error = DRIVE_FILE_ERROR_FAILED;
     file_system_->Remove(
         file_path, false,
         base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
@@ -338,7 +336,7 @@ class DriveFileSystemTest : public testing::Test {
   // Gets entry info by path synchronously.
   scoped_ptr<DriveEntryProto> GetEntryInfoByPathSync(
       const FilePath& file_path) {
-    DriveFileError error;
+    DriveFileError error = DRIVE_FILE_ERROR_FAILED;
     scoped_ptr<DriveEntryProto> entry_proto;
     file_system_->GetEntryInfoByPath(
         file_path,
@@ -352,7 +350,7 @@ class DriveFileSystemTest : public testing::Test {
   // Gets directory info by path synchronously.
   scoped_ptr<DriveEntryProtoVector> ReadDirectoryByPathSync(
       const FilePath& file_path) {
-    DriveFileError error;
+    DriveFileError error = DRIVE_FILE_ERROR_FAILED;
     scoped_ptr<DriveEntryProtoVector> entries;
     file_system_->ReadDirectoryByPath(
         file_path,
@@ -711,37 +709,6 @@ class DriveFileSystemTest : public testing::Test {
     EXPECT_EQ(entry_proto.resource_id(), resource_id);
   }
 
-  // This is used as a helper for registering callbacks that need to be
-  // RefCountedThreadSafe, and a place where we can fetch results from various
-  // operations.
-  class CallbackHelper
-    : public base::RefCountedThreadSafe<CallbackHelper> {
-   public:
-    CallbackHelper()
-        : last_error_(DRIVE_FILE_OK) {}
-
-    virtual void OpenFileCallback(DriveFileError error,
-                                  const FilePath& file_path) {
-      last_error_ = error;
-      opened_file_path_ = file_path;
-      MessageLoop::current()->Quit();
-    }
-
-    virtual void CloseFileCallback(DriveFileError error) {
-      last_error_ = error;
-      MessageLoop::current()->Quit();
-    }
-
-    DriveFileError last_error_;
-    FilePath opened_file_path_;
-
-   protected:
-    virtual ~CallbackHelper() {}
-
-   private:
-    friend class base::RefCountedThreadSafe<CallbackHelper>;
-  };
-
   // Copy the result from FindFirstMissingParentDirectory().
   static void CopyResultFromFindFirstMissingParentDirectory(
       DriveFileSystem::FindFirstMissingParentDirectoryResult* out_result,
@@ -757,7 +724,6 @@ class DriveFileSystemTest : public testing::Test {
   content::TestBrowserThread io_thread_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_refptr<CallbackHelper> callback_helper_;
   DriveCache* cache_;
   scoped_ptr<FakeDriveUploader> fake_uploader_;
   DriveFileSystem* file_system_;
@@ -2327,13 +2293,6 @@ TEST_F(DriveFileSystemTest, RequestDirectoryRefresh) {
 TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
   ASSERT_TRUE(LoadRootFeedDocument("gdata/root_feed.json"));
 
-  OpenFileCallback callback =
-      base::Bind(&CallbackHelper::OpenFileCallback,
-                 callback_helper_.get());
-  FileOperationCallback close_file_callback =
-      base::Bind(&CallbackHelper::CloseFileCallback,
-                 callback_helper_.get());
-
   const FilePath kFileInRoot(FILE_PATH_LITERAL("drive/File 1.txt"));
   scoped_ptr<DriveEntryProto> entry_proto(GetEntryInfoByPathSync(kFileInRoot));
   FilePath downloaded_file = GetCachePathForFile(
@@ -2353,19 +2312,27 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
       file_size + kMinFreeSpace);
 
   // Open kFileInRoot ("drive/File 1.txt").
-  file_system_->OpenFile(kFileInRoot, callback);
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FilePath file_path;
+  file_system_->OpenFile(
+      kFileInRoot,
+      base::Bind(&test_util::CopyResultsFromOpenFileCallbackAndQuit,
+                 &error, &file_path));
   message_loop_.Run();
-  const FilePath opened_file_path = callback_helper_->opened_file_path_;
+  const FilePath opened_file_path = file_path;
 
   // Verify that the file was properly opened.
-  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, error);
 
   // Try to open the already opened file.
-  file_system_->OpenFile(kFileInRoot, callback);
+  file_system_->OpenFile(
+      kFileInRoot,
+      base::Bind(&test_util::CopyResultsFromOpenFileCallbackAndQuit,
+                 &error, &file_path));
   message_loop_.Run();
 
   // It must fail.
-  EXPECT_EQ(DRIVE_FILE_ERROR_IN_USE, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_ERROR_IN_USE, error);
 
   // Verify that the file contents match the expected contents.
   // The content is "x"s of the file size.
@@ -2381,11 +2348,14 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
                                 opened_file_path);
 
   // Close kFileInRoot ("drive/File 1.txt").
-  file_system_->CloseFile(kFileInRoot, close_file_callback);
+  file_system_->CloseFile(
+      kFileInRoot,
+      base::Bind(&test_util::CopyResultsFromCloseFileCallbackAndQuit,
+                 &error));
   message_loop_.Run();
 
   // Verify that the file was properly closed.
-  EXPECT_EQ(DRIVE_FILE_OK, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_OK, error);
 
   // Verify that the cache state was changed as expected.
   VerifyCacheStateAfterCloseFile(DRIVE_FILE_OK,
@@ -2393,11 +2363,14 @@ TEST_F(DriveFileSystemTest, OpenAndCloseFile) {
                                  file_md5);
 
   // Try to close the same file twice.
-  file_system_->CloseFile(kFileInRoot, close_file_callback);
+  file_system_->CloseFile(
+      kFileInRoot,
+      base::Bind(&test_util::CopyResultsFromCloseFileCallbackAndQuit,
+                 &error));
   message_loop_.Run();
 
   // It must fail.
-  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
+  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
 }
 
 // TODO(satorux): Testing if WebAppsRegistry is loaded here is awkward. We

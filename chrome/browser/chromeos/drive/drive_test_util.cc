@@ -8,6 +8,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/message_loop.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_feed_loader.h"
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
@@ -167,6 +168,21 @@ void CopyResultsFromGetAvailableSpaceCallback(DriveFileError* out_error,
   *out_error = error;
   *out_bytes_total = bytes_total;
   *out_bytes_used = bytes_used;
+}
+
+void CopyResultsFromOpenFileCallbackAndQuit(DriveFileError* out_error,
+                                            FilePath* out_file_path,
+                                            DriveFileError error,
+                                            const FilePath& file_path) {
+  *out_error = error;
+  *out_file_path = file_path;
+  MessageLoop::current()->Quit();
+}
+
+void CopyResultsFromCloseFileCallbackAndQuit(DriveFileError* out_error,
+                                             DriveFileError error) {
+  *out_error = error;
+  MessageLoop::current()->Quit();
 }
 
 bool LoadChangeFeed(const std::string& relative_path,

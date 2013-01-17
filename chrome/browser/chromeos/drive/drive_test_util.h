@@ -139,6 +139,20 @@ void CopyResultsFromGetAvailableSpaceCallback(DriveFileError* out_error,
                                               int64 bytes_total,
                                               int64 bytes_used);
 
+// Copies the results from DriveFileSystem methods and stops the message loop
+// of the current thread. Used to run asynchronous function that take
+// OpenFileCallback.
+void CopyResultsFromOpenFileCallbackAndQuit(DriveFileError* out_error,
+                                            FilePath* out_file_path,
+                                            DriveFileError error,
+                                            const FilePath& file_path);
+
+// Copies the results from DriveFileSystem methods and stops the message loop
+// of the current thread. Used to run asynchronous function that take
+// CloseFileCallback.
+void CopyResultsFromCloseFileCallbackAndQuit(DriveFileError* out_error,
+                                             DriveFileError error);
+
 // Loads a test json file as root ("/drive") element from a test file stored
 // under chrome/test/data/chromeos. Returns true on success.
 bool LoadChangeFeed(const std::string& relative_path,
