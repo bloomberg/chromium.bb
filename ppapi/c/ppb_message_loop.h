@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_message_loop.idl modified Tue Nov 20 08:49:26 2012. */
+/* From ppb_message_loop.idl modified Thu Jan 17 12:04:14 2013. */
 
 #ifndef PPAPI_C_PPB_MESSAGE_LOOP_H_
 #define PPAPI_C_PPB_MESSAGE_LOOP_H_
@@ -135,7 +135,7 @@
  *
  *   pp::CompletionCallback callback = factory_.NewOptionalCallback(...);
  *   int32_t result = message_loop.PostWork(callback);
- *   if (result != PP_OK_COMPLETIONPENDING)
+ *   if (result != PP_OK)
  *     callback.Run(result);
  *
  * This will run the callback with an error value, and assumes that the
@@ -244,9 +244,9 @@ struct PPB_MessageLoop_1_0 {
    * PP_FALSE. It will be queued until the next invocation of Run().
    *
    * @return
-   *   - PP_OK_COMPLETIONPENDING: The work was posted to the message loop's
-   *     queue. As described above, this does not mean that the work has been
-   *     or will be executed (if you never run the message loop after posting).
+   *   - PP_OK: The work was posted to the message loop's queue. As described
+   *     above, this does not mean that the work has been or will be executed
+   *     (if you never run the message loop after posting).
    *   - PP_ERROR_BADRESOURCE: The given message loop resource is invalid.
    *   - PP_ERROR_BADARGUMENT: The function pointer for the completion callback
    *     is null (this will be the case if you pass PP_BlockUntilComplete()).

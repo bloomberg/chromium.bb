@@ -320,8 +320,6 @@ void PluginProxyMultiThreadTest::RunTest() {
     // MessageLoopResource assumes that the proxy lock has been acquired.
     secondary_thread_message_loop_ = new MessageLoopResource(pp_instance());
 
-    // TODO(yzshen): The comment of PPB_MessageLoop says that it would return
-    // PP_OK_COMPLETIONPENDING. Either fix the comment or the implementation.
     ASSERT_EQ(PP_OK,
         secondary_thread_message_loop_->PostWork(
             PP_MakeCompletionCallback(
