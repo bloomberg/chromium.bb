@@ -120,6 +120,7 @@ ChromeWebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
   html_source->set_use_json_js_format_v2();
   html_source->set_json_path("strings.js");
   html_source->add_resource_path("version.js", IDR_ABOUT_VERSION_JS);
+  html_source->add_resource_path("about_version.css", IDR_ABOUT_VERSION_CSS);
   html_source->set_default_resource(IDR_ABOUT_VERSION_HTML);
   return html_source;
 }

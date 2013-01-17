@@ -56,7 +56,7 @@ div#header {
 }
 
 div#header h1 {
-  background: url('../images/gear.png') 12px 60% no-repeat;
+  background: url('chrome://resources/images/gear.png') 12px 60% no-repeat;
   color: white;
   display: inline;
   margin: 0;
@@ -258,7 +258,7 @@ table.list#browserComparison .name {
 }
 
 div.help {
-  background: url('../images/help.png') center bottom no-repeat;
+  background: url('chrome://resources/images/help.png') center bottom no-repeat;
   display: inline-block;
   height: 14px;
   margin: -1px 0;

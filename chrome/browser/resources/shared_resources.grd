@@ -21,8 +21,12 @@ without changes to the corresponding grd file. -->
                file="shared/images/checkbox_white.png" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_DISABLED_SELECT"
                file="shared/images/disabled_select.png" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_GEAR"
+               file="shared/images/gear.png" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_GOOGLE_TRANSPARENT"
                file="shared/images/google-transparent.png" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_HELP"
+               file="shared/images/help.png" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_SELECT"
                file="shared/images/select.png" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_SPINNER"
@@ -35,8 +39,6 @@ without changes to the corresponding grd file. -->
                file="shared/images/clouds.png" type="BINDATA" />
     </includes>
     <structures>
-      <structure name="IDR_SHARED_CSS_ABOUT"
-                 file="shared/css/about_memory.css" type="chrome_html" />
       <structure name="IDR_SHARED_CSS_ALERT_OVERLAY"
                  file="shared/css/alert_overlay.css" type="chrome_html" />
       <structure name="IDR_SHARED_CSS_BUBBLE"

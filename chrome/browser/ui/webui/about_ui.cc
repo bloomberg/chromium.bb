@@ -92,6 +92,7 @@ namespace {
 
 const char kCreditsJsPath[] = "credits.js";
 const char kMemoryJsPath[] = "memory.js";
+const char kMemoryCssPath[] = "about_memory.css";
 const char kStatsJsPath[] = "stats.js";
 const char kStringsJsPath[] = "strings.js";
 
@@ -558,9 +559,15 @@ void FinishMemoryDataRequest(
     // TODO(jamescook): Maybe this shouldn't update UMA?
     handler->StartFetch(MemoryDetails::UPDATE_USER_METRICS);
   } else {
-    std::string result = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        path == kMemoryJsPath ? IDR_ABOUT_MEMORY_JS : IDR_ABOUT_MEMORY_HTML).
-            as_string();
+    int id = IDR_ABOUT_MEMORY_HTML;
+    if (path == kMemoryJsPath) {
+      id = IDR_ABOUT_MEMORY_JS;
+    } else if (path == kMemoryCssPath) {
+      id = IDR_ABOUT_MEMORY_CSS;
+    }
+
+    std::string result =
+        ResourceBundle::GetSharedInstance().GetRawDataResource(id).as_string();
     callback.Run(base::RefCountedString::TakeString(&result));
   }
 }
