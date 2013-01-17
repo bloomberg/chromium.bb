@@ -718,13 +718,11 @@ body[type='full-page'] list .filename-label > :hover,
    dialogs have three nicely aligned columns of thumbnails. */
 .thumbnail-grid .thumbnail-item {
   border: 2px solid transparent;  /* Selection will make the border visible. */
-  height: 182px;
   margin-left: 8px;
   margin-top: 7px;
   padding: 0;
   position: relative;
   text-align: center;
-  width: 242px;
 }
 
 .thumbnail-grid .thumbnail-frame {
@@ -732,12 +730,11 @@ body[type='full-page'] list .filename-label > :hover,
     url('../images/files/ui/hashed_bg.gif') 1x,
     url('../images/files/ui/2x/hashed_bg.gif') 2x);
   border: 1px solid rgb(217, 217, 217);
-  bottom: 0;
-  left: 0;
+  height: 180px;
   overflow: hidden;
-  position: absolute;
-  right: 0;
-  top: 0;
+  padding-bottom: 30px;  /* .thumbnail-bottom height */
+  position: relative;
+  width: 240px;
 }
 
 .thumbnail-grid .thumbnail-item[selected] .thumbnail-frame,
@@ -773,10 +770,14 @@ body[type='full-page'] list .filename-label > :hover,
 /* In the full page mode we can afford to show thumbnails as large as 320x240
    with no downscaling. */
 body[type='full-page'] .thumbnail-grid .thumbnail-item {
-  height: 242px;
   margin-left: 21px;
   margin-top: 20px;
-  width: 322px;
+}
+
+body[type='full-page'] .thumbnail-grid .thumbnail-frame {
+  height: 240px;
+  padding-bottom: 34px;  /* .thumbnail-bottom height */
+  width: 320px;
 }
 
 body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
