@@ -21,6 +21,10 @@ QuicTime MockClock::Now() const {
   return now_;
 }
 
+QuicTime::Delta MockClock::NowAsDeltaSinceUnixEpoch() const {
+  return now_.Subtract(QuicTime());
+}
+
 base::TimeTicks MockClock::NowInTicks() const {
   base::TimeTicks ticks;
   return ticks + base::TimeDelta::FromMicroseconds(
