@@ -8,6 +8,7 @@
 #include "cc/rendering_stats.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkTileGridPicture.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -15,6 +16,8 @@
 namespace {
 // URI label for a lazily decoded SkPixelRef.
 const char labelLazyDecoded[] = "lazy";
+// Tile size in recording coordinates used by SkTileGridPicture
+const int tileGridSize = 256;
 }
 
 namespace cc {
@@ -53,14 +56,14 @@ void Picture::Record(ContentLayerClient* painter,
 
   // Record() should only be called once.
   DCHECK(!picture_);
-  picture_ = skia::AdoptRef(new SkPicture);
+  picture_ = skia::AdoptRef(new SkTileGridPicture(
+      tileGridSize, tileGridSize, layer_rect_.width(), layer_rect_.height()));
 
-  // TODO(enne): Use SkPicture::kOptimizeForClippedPlayback_RecordingFlag
-  // once http://code.google.com/p/skia/issues/detail?id=1014 is fixed.
   SkCanvas* canvas = picture_->beginRecording(
       layer_rect_.width(),
       layer_rect_.height(),
-      SkPicture::kUsePathBoundsForClip_RecordingFlag);
+      SkPicture::kUsePathBoundsForClip_RecordingFlag |
+      SkPicture::kOptimizeForClippedPlayback_RecordingFlag);
 
   canvas->save();
   canvas->translate(SkFloatToScalar(-layer_rect_.x()),
