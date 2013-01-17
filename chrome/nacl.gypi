@@ -81,7 +81,6 @@
             ['disable_nacl_untrusted==0', {
               'dependencies': [
                 '../ppapi/native_client/native_client.gyp:nacl_irt',
-                '../ppapi/native_client/native_client.gyp:nacl_irt_srpc',
                 '../ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:pnacl_irt_shim',
                 '../ppapi/native_client/src/untrusted/pnacl_support_extension/pnacl_support_extension.gyp:pnacl_support_extension',
               ],

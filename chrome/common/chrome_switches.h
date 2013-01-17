@@ -160,7 +160,6 @@ extern const char kEnableMetricsReportingForTesting[];
 extern const char kEnableNaCl[];
 extern const char kEnableNaClDebug[];
 extern const char kEnableNaClExceptionHandling[];
-extern const char kEnableNaClSRPCProxy[];
 extern const char kEnableNativeMessaging[];
 extern const char kEnableNewAutofillHeuristics[];
 extern const char kEnableNewAutofillUi[];

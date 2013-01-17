@@ -40,7 +40,6 @@ class SrpcClient {
   //  The destructor closes the connection to sel_ldr.
   ~SrpcClient();
 
-  bool StartJSObjectProxy(Plugin* plugin, ErrorInfo* error_info);
   //  Test whether the SRPC service has a given method.
   bool HasMethod(const nacl::string& method_name);
   //  Invoke an SRPC method.

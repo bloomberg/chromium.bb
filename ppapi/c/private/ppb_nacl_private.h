@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Thu Jan 10 16:07:40 2013. */
+/* From private/ppb_nacl_private.idl modified Thu Jan 10 15:59:03 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -38,9 +38,7 @@ typedef enum {
   /** Error creating the module */
   PP_NACL_ERROR_MODULE = 2,
   /** Error creating and initializing the instance */
-  PP_NACL_ERROR_INSTANCE = 3,
-  /** SRPC proxy should be used instead */
-  PP_NACL_USE_SRPC = 128
+  PP_NACL_ERROR_INSTANCE = 3
 } PP_NaClResult;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_NaClResult, 4);
 

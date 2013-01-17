@@ -40,10 +40,6 @@ bool NaClSubprocess::StartSrpcServices() {
   return NULL != srpc_client_.get();
 }
 
-bool NaClSubprocess::StartJSObjectProxy(Plugin* plugin, ErrorInfo* error_info) {
-  return srpc_client_->StartJSObjectProxy(plugin, error_info);
-}
-
 bool NaClSubprocess::InvokeSrpcMethod(const nacl::string& method_name,
                                       const nacl::string& input_signature,
                                       SrpcParams* params,

@@ -21,9 +21,7 @@ enum PP_NaClResult {
   /** Error creating the module */
   PP_NACL_ERROR_MODULE = 2,
   /** Error creating and initializing the instance */
-  PP_NACL_ERROR_INSTANCE = 3,
-  /** SRPC proxy should be used instead */
-  PP_NACL_USE_SRPC = 128
+  PP_NACL_ERROR_INSTANCE = 3
 };
 
 /** NaCl-specific errors that should be reported to the user */

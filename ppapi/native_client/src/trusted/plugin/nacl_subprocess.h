@@ -56,7 +56,6 @@ class NaClSubprocess {
 
   // Start up interfaces.
   bool StartSrpcServices();
-  bool StartJSObjectProxy(Plugin* plugin, ErrorInfo* error_info);
 
   // Invoke an Srpc Method.  |out_params| must be allocated and cleaned up
   // outside of this function, but it will be initialized by this function, and

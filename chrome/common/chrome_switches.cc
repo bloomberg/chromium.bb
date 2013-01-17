@@ -570,10 +570,6 @@ const char kEnableNaClDebug[]               = "enable-nacl-debug";
 // if manifest URL does not match any pattern.
 const char kNaClDebugMask[]                 = "nacl-debug-mask";
 
-// Enables the SRPC Proxy for NaCl. The default is the Chrome IPC based  proxy.
-// TODO(bbudge) remove this after we switch to IPC and remove SRPC.
-const char kEnableNaClSRPCProxy[]           = "enable-nacl-srpc-proxy";
-
 // Enables hardware exception handling via debugger process.
 const char kEnableNaClExceptionHandling[]   = "enable-nacl-exception-handling";
 

@@ -30,7 +30,6 @@
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/plugin/json_manifest.h"
@@ -66,8 +65,6 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/mouse_lock.h"
 #include "ppapi/cpp/rect.h"
-
-using ppapi_proxy::BrowserPpp;
 
 namespace plugin {
 
@@ -239,193 +236,6 @@ void HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code) {
 void HistogramEnumerateManifestIsDataURI(bool is_data_uri) {
   HistogramEnumerate("NaCl.Manifest.IsDataURI", is_data_uri, 2, -1);
 }
-
-// Derive a class from pp::Find_Dev to forward PPP_Find_Dev calls to
-// the plugin.
-class FindAdapter : public pp::Find_Dev {
- public:
-  explicit FindAdapter(Plugin* plugin)
-    : pp::Find_Dev(plugin),
-      plugin_(plugin) {
-    BrowserPpp* proxy = plugin_->ppapi_proxy();
-    CHECK(proxy != NULL);
-    ppp_find_ = static_cast<const PPP_Find_Dev*>(
-        proxy->GetPluginInterface(PPP_FIND_DEV_INTERFACE));
-  }
-
-  bool StartFind(const std::string& text, bool case_sensitive) {
-    if (ppp_find_ != NULL) {
-      PP_Bool pp_success =
-          ppp_find_->StartFind(plugin_->pp_instance(),
-                               text.c_str(),
-                               PP_FromBool(case_sensitive));
-      return pp_success == PP_TRUE;
-    }
-    return false;
-  }
-
-  void SelectFindResult(bool forward) {
-    if (ppp_find_ != NULL) {
-      ppp_find_->SelectFindResult(plugin_->pp_instance(),
-                                  PP_FromBool(forward));
-    }
-  }
-
-  void StopFind() {
-    if (ppp_find_ != NULL)
-      ppp_find_->StopFind(plugin_->pp_instance());
-  }
-
- private:
-  Plugin* plugin_;
-  const PPP_Find_Dev* ppp_find_;
-
-  NACL_DISALLOW_COPY_AND_ASSIGN(FindAdapter);
-};
-
-
-// Derive a class from pp::MouseLock to forward PPP_MouseLock calls to
-// the plugin.
-class MouseLockAdapter : public pp::MouseLock {
- public:
-  explicit MouseLockAdapter(Plugin* plugin)
-    : pp::MouseLock(plugin),
-      plugin_(plugin) {
-    BrowserPpp* proxy = plugin_->ppapi_proxy();
-    CHECK(proxy != NULL);
-    ppp_mouse_lock_ = static_cast<const PPP_MouseLock*>(
-        proxy->GetPluginInterface(PPP_MOUSELOCK_INTERFACE));
-  }
-
-  void MouseLockLost() {
-    if (ppp_mouse_lock_ != NULL)
-      ppp_mouse_lock_->MouseLockLost(plugin_->pp_instance());
-  }
-
- private:
-  Plugin* plugin_;
-  const PPP_MouseLock* ppp_mouse_lock_;
-
-  NACL_DISALLOW_COPY_AND_ASSIGN(MouseLockAdapter);
-};
-
-
-// Derive a class from pp::Printing_Dev to forward PPP_Printing_Dev calls to
-// the plugin.
-class PrintingAdapter : public pp::Printing_Dev {
- public:
-  explicit PrintingAdapter(Plugin* plugin)
-    : pp::Printing_Dev(plugin),
-      plugin_(plugin) {
-    BrowserPpp* proxy = plugin_->ppapi_proxy();
-    CHECK(proxy != NULL);
-    ppp_printing_ = static_cast<const PPP_Printing_Dev*>(
-        proxy->GetPluginInterface(PPP_PRINTING_DEV_INTERFACE));
-  }
-
-  uint32_t QuerySupportedPrintOutputFormats() {
-    if (ppp_printing_ != NULL) {
-      return ppp_printing_->QuerySupportedFormats(plugin_->pp_instance());
-    }
-    return 0;
-  }
-
-  int32_t PrintBegin(const PP_PrintSettings_Dev& print_settings) {
-    if (ppp_printing_ != NULL) {
-      return ppp_printing_->Begin(plugin_->pp_instance(), &print_settings);
-    }
-    return 0;
-  }
-
-  pp::Resource PrintPages(const PP_PrintPageNumberRange_Dev* page_ranges,
-                          uint32_t page_range_count) {
-    if (ppp_printing_ != NULL) {
-      PP_Resource image_data = ppp_printing_->PrintPages(plugin_->pp_instance(),
-                                                         page_ranges,
-                                                         page_range_count);
-      return pp::ImageData(pp::PASS_REF, image_data);
-    }
-    return pp::Resource();
-  }
-
-  void PrintEnd() {
-    if (ppp_printing_ != NULL)
-      ppp_printing_->End(plugin_->pp_instance());
-  }
-
-  bool IsPrintScalingDisabled() {
-    if (ppp_printing_ != NULL) {
-      PP_Bool result = ppp_printing_->IsScalingDisabled(plugin_->pp_instance());
-      return result == PP_TRUE;
-    }
-    return false;
-  }
-
- private:
-  Plugin* plugin_;
-  const PPP_Printing_Dev* ppp_printing_;
-
-  NACL_DISALLOW_COPY_AND_ASSIGN(PrintingAdapter);
-};
-
-
-// Derive a class from pp::Selection_Dev to forward PPP_Selection_Dev calls to
-// the plugin.
-class SelectionAdapter : public pp::Selection_Dev {
- public:
-  explicit SelectionAdapter(Plugin* plugin)
-    : pp::Selection_Dev(plugin),
-      plugin_(plugin) {
-    BrowserPpp* proxy = plugin_->ppapi_proxy();
-    CHECK(proxy != NULL);
-    ppp_selection_ = static_cast<const PPP_Selection_Dev*>(
-        proxy->GetPluginInterface(PPP_SELECTION_DEV_INTERFACE));
-  }
-
-  pp::Var GetSelectedText(bool html) {
-    if (ppp_selection_ != NULL) {
-      PP_Var var = ppp_selection_->GetSelectedText(plugin_->pp_instance(),
-                                                   PP_FromBool(html));
-      return pp::Var(pp::PASS_REF, var);
-    }
-    return pp::Var();
-  }
-
- private:
-  Plugin* plugin_;
-  const PPP_Selection_Dev* ppp_selection_;
-
-  NACL_DISALLOW_COPY_AND_ASSIGN(SelectionAdapter);
-};
-
-
-// Derive a class from pp::Zoom_Dev to forward PPP_Zoom_Dev calls to
-// the plugin.
-class ZoomAdapter : public pp::Zoom_Dev {
- public:
-  explicit ZoomAdapter(Plugin* plugin)
-    : pp::Zoom_Dev(plugin),
-      plugin_(plugin) {
-    BrowserPpp* proxy = plugin_->ppapi_proxy();
-    CHECK(proxy != NULL);
-    ppp_zoom_ = static_cast<const PPP_Zoom_Dev*>(
-        proxy->GetPluginInterface(PPP_ZOOM_DEV_INTERFACE));
-  }
-
-  void Zoom(double factor, bool text_only) {
-    if (ppp_zoom_ != NULL) {
-      ppp_zoom_->Zoom(plugin_->pp_instance(),
-                      factor,
-                      PP_FromBool(text_only));
-    }
-  }
-
- private:
-  Plugin* plugin_;
-  const PPP_Zoom_Dev* ppp_zoom_;
-
-  NACL_DISALLOW_COPY_AND_ASSIGN(ZoomAdapter);
-};
 
 }  // namespace
 
@@ -608,7 +418,6 @@ bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
                           "could not initialize module.");
     return false;
   }
-  // Try to start the Chrome IPC-based proxy first.
   PP_NaClResult ipc_result = nacl_interface_->StartPpapiProxy(pp_instance());
   if (ipc_result == PP_NACL_OK) {
     // Log the amound of time that has passed between the trusted plugin being
@@ -618,11 +427,6 @@ bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
         "NaCl.Perf.StartupTime.NaClOverhead",
         static_cast<float>(NaClGetTimeOfDayMicroseconds() - init_time_)
             / NACL_MICROS_PER_MILLI);
-  } else if (ipc_result == PP_NACL_USE_SRPC) {
-    // Start the old SRPC PPAPI proxy.
-    if (!main_subprocess_.StartJSObjectProxy(this, error_info)) {
-      return false;
-    }
   } else if (ipc_result == PP_NACL_ERROR_MODULE) {
     error_info->SetReport(ERROR_START_PROXY_MODULE,
                           "could not initialize module.");
@@ -856,7 +660,6 @@ Plugin::Plugin(PP_Instance pp_instance)
       nexe_error_reported_(false),
       wrapper_factory_(NULL),
       last_error_string_(""),
-      ppapi_proxy_(NULL),
       enable_dev_interfaces_(false),
       init_time_(0),
       ready_time_(0),
@@ -880,9 +683,8 @@ Plugin::~Plugin() {
                  static_cast<void*>(scriptable_plugin())));
   // Destroy the coordinator while the rest of the data is still there
   pnacl_coordinator_.reset(NULL);
-  // If the proxy has been shutdown before now, it's likely the plugin suffered
-  // an error while loading.
-  if (ppapi_proxy_ != NULL) {
+
+  if (!nexe_error_reported()) {
     HistogramTimeLarge(
         "NaCl.ModuleUptime.Normal",
         (shutdown_start - ready_time_) / NACL_MICROS_PER_MILLI);
@@ -890,7 +692,6 @@ Plugin::~Plugin() {
 
   url_downloaders_.erase(url_downloaders_.begin(), url_downloaders_.end());
 
-  ShutdownProxy();
   ScriptablePlugin* scriptable_plugin_ = scriptable_plugin();
   ScriptablePlugin::Unref(&scriptable_plugin_);
 
@@ -933,74 +734,13 @@ Plugin::~Plugin() {
                  static_cast<void*>(this)));
 }
 
-
-void Plugin::DidChangeView(const pp::View& view) {
-  PLUGIN_PRINTF(("Plugin::DidChangeView (this=%p)\n",
-                 static_cast<void*>(this)));
-
-  if (!BrowserPpp::is_valid(ppapi_proxy_)) {
-    // Store this event and replay it when the proxy becomes available.
-    view_to_replay_ = view;
-  } else {
-    ppapi_proxy_->ppp_instance_interface()->DidChangeView(
-        pp_instance(), view.pp_resource());
-  }
-}
-
-
-void Plugin::DidChangeFocus(bool has_focus) {
-  PLUGIN_PRINTF(("Plugin::DidChangeFocus (this=%p)\n",
-                 static_cast<void*>(this)));
-  if (BrowserPpp::is_valid(ppapi_proxy_)) {
-    ppapi_proxy_->ppp_instance_interface()->DidChangeFocus(
-        pp_instance(), PP_FromBool(has_focus));
-  }
-}
-
-
-bool Plugin::HandleInputEvent(const pp::InputEvent& event) {
-  PLUGIN_PRINTF(("Plugin::HandleInputEvent (this=%p)\n",
-                 static_cast<void*>(this)));
-  if (!BrowserPpp::is_valid(ppapi_proxy_) ||
-      ppapi_proxy_->ppp_input_event_interface() == NULL) {
-    return false;  // event is not handled here.
-  } else {
-    bool handled = PP_ToBool(
-        ppapi_proxy_->ppp_input_event_interface()->HandleInputEvent(
-            pp_instance(), event.pp_resource()));
-    PLUGIN_PRINTF(("Plugin::HandleInputEvent (handled=%d)\n", handled));
-    return handled;
-  }
-}
-
-
 bool Plugin::HandleDocumentLoad(const pp::URLLoader& url_loader) {
   PLUGIN_PRINTF(("Plugin::HandleDocumentLoad (this=%p)\n",
                  static_cast<void*>(this)));
-  if (!BrowserPpp::is_valid(ppapi_proxy_)) {
-    // Store this event and replay it when the proxy becomes available.
-    document_load_to_replay_ = url_loader;
-    // Return true so that the browser keeps servicing this loader so we can
-    // perform requests on it later.
-    return true;
-  } else {
-    return PP_ToBool(
-        ppapi_proxy_->ppp_instance_interface()->HandleDocumentLoad(
-            pp_instance(), url_loader.pp_resource()));
-  }
+  // We don't know if the plugin will handle the document load, but return
+  // true in order to give it a chance to respond once the proxy is started.
+  return true;
 }
-
-
-void Plugin::HandleMessage(const pp::Var& message) {
-  PLUGIN_PRINTF(("Plugin::HandleMessage (this=%p)\n",
-                 static_cast<void*>(this)));
-  if (BrowserPpp::is_valid(ppapi_proxy_) &&
-      ppapi_proxy_->ppp_messaging_interface() != NULL) {
-    ppapi_proxy_->ppp_messaging_interface()->HandleMessage(
-        pp_instance(), message.pp_var());
-  }
-}
-
 
 pp::Var Plugin::GetInstanceObject() {
   PLUGIN_PRINTF(("Plugin::GetInstanceObject (this=%p)\n",
@@ -1171,7 +911,7 @@ void Plugin::NexeDidCrash(int32_t pp_error) {
       ErrorInfo error_info;
       // The error is not quite right.  In particular, the crash
       // reported by this path could be due to NaCl application
-      // crashes that occur after the pepper proxy has started.
+      // crashes that occur after the PPAPI proxy has started.
       error_info.SetReport(ERROR_START_PROXY_CRASH,
                            "Nexe crashed during startup");
       ReportLoadError(error_info);
@@ -1230,103 +970,8 @@ void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
   }
 }
 
-bool Plugin::StartProxiedExecution(NaClSrpcChannel* srpc_channel,
-                                   ErrorInfo* error_info) {
-  PLUGIN_PRINTF(("Plugin::StartProxiedExecution (srpc_channel=%p)\n",
-                 static_cast<void*>(srpc_channel)));
-
-  // Log the amound of time that has passed between the trusted plugin being
-  // initialized and the untrusted plugin being initialized.  This is (roughly)
-  // the cost of using NaCl, in terms of startup time.
-  HistogramStartupTimeMedium(
-      "NaCl.Perf.StartupTime.NaClOverhead",
-      static_cast<float>(NaClGetTimeOfDayMicroseconds() - init_time_)
-          / NACL_MICROS_PER_MILLI);
-
-  // Check that the .nexe exports the PPAPI intialization method.
-  NaClSrpcService* client_service = srpc_channel->client;
-  if (NaClSrpcServiceMethodIndex(client_service,
-                                 "PPP_InitializeModule:ihs:i") ==
-      kNaClSrpcInvalidMethodIndex) {
-    error_info->SetReport(
-        ERROR_START_PROXY_CHECK_PPP,
-        "could not find PPP_InitializeModule() - toolchain version mismatch?");
-    PLUGIN_PRINTF(("Plugin::StartProxiedExecution (%s)\n",
-                   error_info->message().c_str()));
-    return false;
-  }
-  nacl::scoped_ptr<BrowserPpp> ppapi_proxy(new BrowserPpp(srpc_channel, this));
-  PLUGIN_PRINTF(("Plugin::StartProxiedExecution (ppapi_proxy=%p)\n",
-                 static_cast<void*>(ppapi_proxy.get())));
-  if (ppapi_proxy.get() == NULL) {
-    error_info->SetReport(ERROR_START_PROXY_ALLOC,
-                          "could not allocate proxy memory.");
-    return false;
-  }
-  pp::Module* module = pp::Module::Get();
-  PLUGIN_PRINTF(("Plugin::StartProxiedExecution (module=%p)\n",
-                 static_cast<void*>(module)));
-  CHECK(module != NULL);  // We could not have gotten past init stage otherwise.
-  int32_t pp_error =
-      ppapi_proxy->InitializeModule(module->pp_module(),
-                                    module->get_browser_interface());
-  PLUGIN_PRINTF(("Plugin::StartProxiedExecution (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
-  if (pp_error != PP_OK) {
-    error_info->SetReport(ERROR_START_PROXY_MODULE,
-                          "could not initialize module.");
-    return false;
-  }
-  const PPP_Instance* instance_interface =
-      ppapi_proxy->ppp_instance_interface();
-  PLUGIN_PRINTF(("Plugin::StartProxiedExecution (ppp_instance=%p)\n",
-                 static_cast<const void*>(instance_interface)));
-  CHECK(instance_interface != NULL);  // Verified on module initialization.
-  PP_Bool did_create = instance_interface->DidCreate(
-      pp_instance(),
-      argc(),
-      const_cast<const char**>(argn()),
-      const_cast<const char**>(argv()));
-  PLUGIN_PRINTF(("Plugin::StartProxiedExecution (did_create=%d)\n",
-                 did_create));
-  if (did_create == PP_FALSE) {
-    error_info->SetReport(ERROR_START_PROXY_INSTANCE,
-                          "could not create instance.");
-    return false;
-  }
-
-  ppapi_proxy_ = ppapi_proxy.release();
-
-  // Create PPP* interface adapters to forward calls to .nexe.
-  find_adapter_.reset(new FindAdapter(this));
-  mouse_lock_adapter_.reset(new MouseLockAdapter(this));
-  printing_adapter_.reset(new PrintingAdapter(this));
-  selection_adapter_.reset(new SelectionAdapter(this));
-  zoom_adapter_.reset(new ZoomAdapter(this));
-
-  // Replay missed events.
-  if (!view_to_replay_.is_null()) {
-    DidChangeView(view_to_replay_);
-    view_to_replay_ = pp::View();
-  }
-  if (!document_load_to_replay_.is_null()) {
-    HandleDocumentLoad(document_load_to_replay_);
-    document_load_to_replay_ = pp::URLLoader();
-  }
-  bool is_valid_proxy = BrowserPpp::is_valid(ppapi_proxy_);
-  PLUGIN_PRINTF(("Plugin::StartProxiedExecution (is_valid_proxy=%d)\n",
-                 is_valid_proxy));
-  if (!is_valid_proxy) {
-    error_info->SetReport(ERROR_START_PROXY_CRASH,
-                          "instance crashed after creation.");
-  }
-  return is_valid_proxy;
-}
-
 void Plugin::ReportDeadNexe() {
   PLUGIN_PRINTF(("Plugin::ReportDeadNexe\n"));
-  if (ppapi_proxy_ != NULL)
-    ppapi_proxy_->ReportDeadNexe();
 
   if (nacl_ready_state() == DONE && !nexe_error_reported()) {  // After loadEnd.
     int64_t crash_time = NaClGetTimeOfDayMicroseconds();
@@ -1342,28 +987,13 @@ void Plugin::ReportDeadNexe() {
 
     EnqueueProgressEvent(kProgressEventCrash);
     set_nexe_error_reported(true);
-    CHECK(ppapi_proxy_ == NULL || !ppapi_proxy_->is_valid());
-    ShutdownProxy();
   }
   // else ReportLoadError() and ReportAbortError() will be used by loading code
-  // to provide error handling and proxy shutdown.
+  // to provide error handling.
   //
   // NOTE: not all crashes during load will make it here.
   // Those in BrowserPpp::InitializeModule and creation of PPP interfaces
   // will just get reported back as PP_ERROR_FAILED.
-}
-
-void Plugin::ShutdownProxy() {
-  PLUGIN_PRINTF(("Plugin::ShutdownProxy (ppapi_proxy=%p)\n",
-                static_cast<void*>(ppapi_proxy_)));
-  // We do not call remote PPP_Instance::DidDestroy because the untrusted
-  // side can no longer take full advantage of mostly asynchronous Pepper
-  // per-Instance interfaces at this point.
-  if (ppapi_proxy_ != NULL) {
-    ppapi_proxy_->ShutdownModule();
-    delete ppapi_proxy_;
-    ppapi_proxy_ = NULL;
-  }
 }
 
 void Plugin::NaClManifestBufferReady(int32_t pp_error) {
@@ -1708,7 +1338,6 @@ void Plugin::ReportLoadError(const ErrorInfo& error_info) {
       error_info.message();
   set_last_error_string(message);
   AddToConsole(message);
-  ShutdownProxy();
   // Inform JavaScript that loading encountered an error and is complete.
   EnqueueProgressEvent(kProgressEventError);
   EnqueueProgressEvent(kProgressEventLoadEnd);
@@ -1727,7 +1356,6 @@ void Plugin::ReportLoadAbort() {
   nacl::string error_string("NaCl module load failed: user aborted");
   set_last_error_string(error_string);
   AddToConsole(error_string);
-  ShutdownProxy();
   // Inform JavaScript that loading was aborted and is complete.
   EnqueueProgressEvent(kProgressEventAbort);
   EnqueueProgressEvent(kProgressEventLoadEnd);

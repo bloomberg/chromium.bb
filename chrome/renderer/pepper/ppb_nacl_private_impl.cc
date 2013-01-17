@@ -128,10 +128,6 @@ PP_NaClResult LaunchSelLdr(PP_Instance instance,
 }
 
 PP_NaClResult StartPpapiProxy(PP_Instance instance) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNaClSRPCProxy))
-    return PP_NACL_USE_SRPC;
-
   InstanceInfoMap& map = g_instance_info.Get();
   InstanceInfoMap::iterator it = map.find(instance);
   if (it == map.end()) {

@@ -74,7 +74,6 @@
         '<(DEPTH)/native_client/src/trusted/simple_service/simple_service.gyp:simple_service',
         '<(DEPTH)/native_client/src/trusted/reverse_service/reverse_service.gyp:reverse_service',
         '<(DEPTH)/native_client/src/trusted/weak_ref/weak_ref.gyp:weak_ref',
-        '<(DEPTH)/ppapi/native_client/src/shared/ppapi_proxy/ppapi_proxy.gyp:nacl_ppapi_browser',
         '<(DEPTH)/ppapi/ppapi.gyp:ppapi_cpp',
         '<(DEPTH)/third_party/jsoncpp/jsoncpp.gyp:jsoncpp',
       ],

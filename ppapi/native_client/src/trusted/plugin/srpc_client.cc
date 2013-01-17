@@ -104,12 +104,6 @@ SrpcClient::~SrpcClient() {
   PLUGIN_PRINTF(("SrpcClient::~SrpcClient (return)\n"));
 }
 
-bool SrpcClient::StartJSObjectProxy(Plugin* plugin, ErrorInfo *error_info) {
-  // Start up PPAPI interaction if the plugin determines that the
-  // requisite methods are exported.
-  return plugin->StartProxiedExecution(&srpc_channel_, error_info);
-}
-
 void SrpcClient::GetMethods() {
   PLUGIN_PRINTF(("SrpcClient::GetMethods (this=%p)\n",
                  static_cast<void*>(this)));

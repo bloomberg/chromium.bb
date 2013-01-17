@@ -119,6 +119,9 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   void OnResourcesReady();
 
+  // Enable the PPAPI proxy only for NaCl processes corresponding to a renderer.
+  bool enable_ppapi_proxy() { return render_view_id_ != 0; }
+
   // Sends the reply message to the renderer who is waiting for the plugin
   // to load. Returns true on success.
   bool ReplyToRenderer(const IPC::ChannelHandle& channel_handle);
@@ -198,8 +201,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   bool uses_irt_;
 
   bool off_the_record_;
-
-  bool enable_ipc_proxy_;
 
   // Channel proxy to terminate the NaCl-Browser PPAPI channel.
   scoped_ptr<IPC::ChannelProxy> ipc_proxy_channel_;
