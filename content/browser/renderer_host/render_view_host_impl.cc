@@ -1091,7 +1091,14 @@ void RenderViewHostImpl::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params,
     SessionStorageNamespace* session_storage_namespace) {
-  delegate_->CreateNewWindow(route_id, params, session_storage_namespace);
+  ViewHostMsg_CreateWindow_Params validated_params(params);
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  // TODO(cevans): also validate opener_url, opener_security_origin.
+  FilterURL(policy, GetProcess(), false, &validated_params.target_url);
+
+  delegate_->CreateNewWindow(route_id, validated_params,
+                             session_storage_namespace);
 }
 
 void RenderViewHostImpl::CreateNewWidget(int route_id,
