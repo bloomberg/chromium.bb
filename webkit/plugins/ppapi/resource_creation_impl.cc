@@ -14,6 +14,7 @@
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
+#include "webkit/plugins/ppapi/ppb_file_io_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_message_loop_impl.h"
@@ -82,6 +83,10 @@ PP_Resource ResourceCreationImpl::CreateBuffer(PP_Instance instance,
 PP_Resource ResourceCreationImpl::CreateDirectoryReader(
     PP_Resource directory_ref) {
   return PPB_DirectoryReader_Impl::Create(directory_ref);
+}
+
+PP_Resource ResourceCreationImpl::CreateFileIO(PP_Instance instance) {
+  return (new PPB_FileIO_Impl(instance))->GetReference();
 }
 
 PP_Resource ResourceCreationImpl::CreateFileRef(PP_Resource file_system,

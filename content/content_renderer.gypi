@@ -174,8 +174,6 @@
     'renderer/pepper/pepper_device_enumeration_host_helper.h',
     'renderer/pepper/pepper_file_chooser_host.cc',
     'renderer/pepper/pepper_file_chooser_host.h',
-    'renderer/pepper/pepper_file_io_host.cc',
-    'renderer/pepper/pepper_file_io_host.h',
     'renderer/pepper/pepper_flash_clipboard_host.cc',
     'renderer/pepper/pepper_flash_clipboard_host.h',
     'renderer/pepper/pepper_graphics_2d_host.cc',
