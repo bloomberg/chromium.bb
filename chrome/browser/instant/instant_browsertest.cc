@@ -249,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OmniboxFocusLoadsInstant) {
 #define MAYBE_OnChangeEvent OnChangeEvent
 #endif
 // Test that the onchange event is dispatched upon typing in the omnibox.
-IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnChangeEvent) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
