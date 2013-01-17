@@ -80,10 +80,11 @@ def GetBotStepMap():
       # Main builders
       B('main-builder-dbg',
         ['bb_compile', 'bb_run_findbugs', 'bb_zip_build'], None, None),
-      B('main-builder-rel', compile_step, None, None),
+      B('main-builder-rel',
+        ['bb_compile', 'bb_zip_build'], None, None),
       B('main-clang-builder', compile_step, None, None),
       B('main-clobber', compile_step, None, None),
-      B('main-tests-dbg', std_test_steps, T(std_tests), None),
+      B('main-tests', std_test_steps, T(std_tests), None),
 
       # Other waterfalls
       B('asan-builder', std_build_steps, None, None),
@@ -113,9 +114,10 @@ def GetBotStepMap():
   # These bots have identical configuration to ones defined earlier.
   copy_map = [
       ('try-builder-dbg', 'main-builder-dbg'),
-      ('try-tests-dbg', 'main-tests-dbg'),
+      ('try-builder-rel', 'main-builder-rel'),
       ('try-clang-builder', 'main-clang-builder'),
       ('try-fyi-builder-dbg', 'fyi-builder-dbg'),
+      ('try-tests', 'main-tests'),
   ]
   for to_id, from_id in copy_map:
     assert to_id not in bot_map
