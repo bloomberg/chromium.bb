@@ -7,6 +7,8 @@
 
 #include <ppapi/c/pp_instance.h>
 #include <ppapi/c/ppb.h>
+
+#include "nacl_mounts/kernel_wrap.h"
 #include "utils/macros.h"
 
 EXTERN_C_BEGIN
@@ -86,7 +88,7 @@ void nacl_mounts_init_ppapi(PP_Instance instance,
  * @return 0 on success, -1 on failure (with errno set).
  */
 int mount(const char* source, const char* target, const char* filesystemtype,
-          unsigned long mountflags, const void *data);
+          unsigned long mountflags, const void *data) NOTHROW;
 
 EXTERN_C_END
 

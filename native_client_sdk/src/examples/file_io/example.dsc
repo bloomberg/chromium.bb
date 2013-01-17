@@ -8,7 +8,10 @@
       'LIBS' : ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
-  'DATA': ['example.js'],
+  'DATA': [
+    'Makefile',
+    'example.js',
+  ],
   'DEST': 'examples',
   'NAME': 'file_io',
   'TITLE': 'File I/O',

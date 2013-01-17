@@ -35,12 +35,12 @@ include $(NACL_SDK_ROOT)/tools/common.mk
 # The base name of the final NEXE, also the name of the NMF file containing
 # the mapping between architecture and actual NEXE.
 #
-TARGET=hello_world_gles
+TARGET=sine_synth
 
 #
 # List of sources to compile
 #
-SOURCES=hello_world.cc matrix.cc
+SOURCES=sine_synth.cc
 
 
 #
@@ -53,11 +53,11 @@ SOURCES=hello_world.cc matrix.cc
 # switches.
 #
 # We break this list down into two parts, the set we need to rebuild (DEPS)
-# and the set we do not. This  example does not have any additional library
+# and the set we do not.  This example does not havea any additional library
 # dependencies.
 #
 DEPS=
-LIBS=ppapi_gles2 ppapi pthread
+LIBS=$(DEPS) ppapi_cpp ppapi pthread
 
 
 #

@@ -12,7 +12,10 @@
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
-  'DATA': ['example.js'],
+  'DATA': [
+    'Makefile',
+    'example.js',
+  ],
   'DEST': 'examples',
   'NAME': 'pi_generator',
   'TITLE': 'Monte Carlo Estimate for Pi',

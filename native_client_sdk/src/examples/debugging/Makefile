@@ -16,7 +16,17 @@
 # to override this, specify TOOLCHAIN=newlib|glibc or CONFIG=Debug|Release on
 # the make command-line or in this file prior to including common.mk.  The
 # toolchain we use by default will be the first valid one listed
-VALID_TOOLCHAINS:=newlib glibc pnacl linux win
+VALID_TOOLCHAINS:=newlib
+
+
+#
+# Set Chrome Arguments and Environment Variables to support development
+# only feature.
+#
+CHROME_ARGS+=--no-sandbox
+CHROME_ENV:=NACL_DANGEROUS_ENABLE_FILE_ACCESS=1
+CHROME_ENV+=NACL_SECURITY_DISABLE=1
+CHROME_ENV+=NACL_UNTRUSTED_EXCEPTION_HANDLING=1
 
 
 #
@@ -35,12 +45,12 @@ include $(NACL_SDK_ROOT)/tools/common.mk
 # The base name of the final NEXE, also the name of the NMF file containing
 # the mapping between architecture and actual NEXE.
 #
-TARGET=hello_world_gles
+TARGET=debugging
 
 #
 # List of sources to compile
 #
-SOURCES=hello_world.cc matrix.cc
+SOURCES=hello_world.c string_stream.c untrusted_crash_dump.c
 
 
 #
@@ -53,11 +63,11 @@ SOURCES=hello_world.cc matrix.cc
 # switches.
 #
 # We break this list down into two parts, the set we need to rebuild (DEPS)
-# and the set we do not. This  example does not have any additional library
+# and the set we do not.  This example does not havea any additional library
 # dependencies.
 #
 DEPS=
-LIBS=ppapi_gles2 ppapi pthread
+LIBS=$(DEPS) ppapi_cpp ppapi pthread
 
 
 #
@@ -68,7 +78,7 @@ $(foreach dep,$(DEPS),$(eval $(call DEPEND_RULE,$(dep))))
 #
 # Use the compile macro for each source.
 #
-$(foreach src,$(SOURCES),$(eval $(call COMPILE_RULE,$(src))))
+$(foreach src,$(SOURCES),$(eval $(call COMPILE_RULE,$(src),-fno-omit-frame-pointer)))
 
 #
 # Use the link macro for this target on the list of sources.

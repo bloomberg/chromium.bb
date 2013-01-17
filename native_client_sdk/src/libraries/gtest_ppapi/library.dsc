@@ -28,6 +28,9 @@
       'DEST': 'include/gtest_ppapi',
     },
   ],
+  'DATA': [
+    'Makefile'
+  ],
   'DEST': 'testlibs',
   'NAME': 'gtest_ppapi',
 }

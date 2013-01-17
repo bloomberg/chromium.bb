@@ -17,6 +17,9 @@ import getos
 
 def main(args):
   parser = optparse.OptionParser()
+  parser.add_option('--copy',
+      help='Only copy the files, don\'t build.',
+      action='store_true' )
   parser.add_option('--clobber-examples',
       help='Don\'t examples directory before copying new files',
       action='store_true' )
@@ -48,13 +51,17 @@ def main(args):
 
   build_sdk.options = options
 
+  build_sdk.BuildStepCopyBuildHelpers(pepperdir, platform)
   build_sdk.BuildStepCopyExamples(pepperdir, toolchains, options.experimental,
                                   options.clobber_examples)
+  test_sdk.BuildStepCopyTests(pepperdir, toolchains, options.experimental,
+                              options.clobber_examples)
+  if options.copy:
+    return 0
+
   # False = don't clean after building the libraries directory.
   build_sdk.BuildStepBuildLibraries(pepperdir, platform, 'src', False)
   test_sdk.BuildStepBuildExamples(pepperdir, platform)
-  test_sdk.BuildStepCopyTests(pepperdir, toolchains, options.experimental,
-                              options.clobber_examples)
   test_sdk.BuildStepBuildTests(pepperdir, platform)
   if options.test_examples:
     test_sdk.BuildStepRunPyautoTests(pepperdir, platform, pepper_ver)

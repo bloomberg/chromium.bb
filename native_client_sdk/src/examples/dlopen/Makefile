@@ -12,11 +12,11 @@
 #
 # Default configuration
 #
-# By default we will build a Debug configuration using the GCC newlib toolcahin
+# By default we will build a Debug configuration using the GCC glibc toolcahin
 # to override this, specify TOOLCHAIN=newlib|glibc or CONFIG=Debug|Release on
 # the make command-line or in this file prior to including common.mk.  The
 # toolchain we use by default will be the first valid one listed
-VALID_TOOLCHAINS:=newlib glibc pnacl linux win
+VALID_TOOLCHAINS:=glibc
 
 
 #
@@ -35,12 +35,13 @@ include $(NACL_SDK_ROOT)/tools/common.mk
 # The base name of the final NEXE, also the name of the NMF file containing
 # the mapping between architecture and actual NEXE.
 #
-TARGET=hello_world_gles
+TARGET=dlopen
 
 #
 # List of sources to compile
 #
-SOURCES=hello_world.cc matrix.cc
+DLOPEN_SRCS=dlopen.cc
+EIGHTBALL_SRCS=eightball.cc
 
 
 #
@@ -53,11 +54,11 @@ SOURCES=hello_world.cc matrix.cc
 # switches.
 #
 # We break this list down into two parts, the set we need to rebuild (DEPS)
-# and the set we do not. This  example does not have any additional library
+# and the set we do not.  This example does not havea any additional library
 # dependencies.
 #
 DEPS=
-LIBS=ppapi_gles2 ppapi pthread
+LIBS=$(DEPS) dl ppapi_cpp ppapi pthread
 
 
 #
@@ -68,12 +69,15 @@ $(foreach dep,$(DEPS),$(eval $(call DEPEND_RULE,$(dep))))
 #
 # Use the compile macro for each source.
 #
-$(foreach src,$(SOURCES),$(eval $(call COMPILE_RULE,$(src))))
+$(foreach src,$(DLOPEN_SRCS),$(eval $(call COMPILE_RULE,$(src))))
+$(foreach src,$(EIGHTBALL_SRCS),$(eval $(call COMPILE_RULE,$(src),-fPIC)))
 
 #
 # Use the link macro for this target on the list of sources.
 #
-$(eval $(call LINK_RULE,$(TARGET),$(SOURCES),$(LIBS),$(DEPS)))
+$(eval $(call SO_RULE,libeightball,$(EIGHTBALL_SRCS)))
+$(eval $(call LINK_RULE,$(TARGET),$(DLOPEN_SRCS),$(LIBS),$(DEPS)))
+
 
 #
 # Specify the NMF to be created with no additional arugments.

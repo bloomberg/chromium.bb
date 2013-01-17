@@ -8,7 +8,10 @@
       'LIBS': ['ppapi_cpp', 'ppapi']
     }
   ],
-  'DATA': ['example.js'],
+  'DATA': [
+    'Makefile',
+    'example.js',
+  ],
   'DEST': 'examples',
   'NAME': 'websocket',
   'TITLE': 'Websocket',

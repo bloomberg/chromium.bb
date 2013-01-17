@@ -15,7 +15,24 @@
 # currently supported by x86 and ARM.  To switch to glibc, you would need
 # to drop support for ARM.
 #
-TOOLCHAIN?=newlib
+VALID_TOOLCHAINS?=newlib
+TOOLCHAIN?=$(word 1,$(VALID_TOOLCHAINS))
+
+
+#
+# Top Make file, which we want to trigger a rebuild on if it changes
+#
+TOP_MAKE:=$(word 1,$(MAKEFILE_LIST))
+
+
+#
+# Verify we selected a valid toolchain for this example
+#
+ifeq (,$(findstring $(TOOLCHAIN),$(VALID_TOOLCHAINS)))
+$(warning Availbile choices are: $(VALID_TOOLCHAINS))
+$(error Can not use TOOLCHAIN=$(TOOLCHAIN) on this example.)
+endif
+
 
 #
 # Build Configuration
@@ -25,6 +42,7 @@ TOOLCHAIN?=newlib
 # this will build a Debug configuration.
 #
 CONFIG?=Debug
+
 
 
 # Note for Windows:
@@ -38,55 +56,10 @@ CONFIG?=Debug
 # is used.  For Cygwin shells this can include automatic and incorrect expansion
 # of response files (files starting with '@').
 #
-
 # Disable DOS PATH warning when using Cygwin based NaCl tools on Windows.
 #
 CYGWIN?=nodosfilewarning
 export CYGWIN
-
-
-#
-# Get pepper directory for toolchain and includes.
-#
-# If NACL_SDK_ROOT is not set, then assume it can be found a two directories up,
-# from the default example directory location.
-#
-THIS_MAKEFILE:=$(abspath $(lastword $(MAKEFILE_LIST)))
-THIS_DIR:=$(abspath $(dir $(THIS_MAKEFILE)))
-NACL_SDK_ROOT?=$(abspath $(dir $(THIS_MAKEFILE))../..)
-
-
-#
-# Defaults build flags
-#
-# Convert warnings to errors, and build with no optimization.
-#
-NACL_WARNINGS:=-Wno-long-long -Werror
-OPT_FLAGS:=-g -O0
-CXX_FLAGS:=-pthread -I$(NACL_SDK_ROOT)/include
-LD_FLAGS:=-pthread
-
-
-#
-# Library Paths
-#
-# Libraries are stored in different directories for each achitecture as well
-# as different subdirectories for Debug vs Release configurations.  This make
-# only supports the Debug configuration for simplicity.
-#
-# By default for x86 32 bit this expands to:
-#   $(NACL_SDK_ROOT)/lib/newlib_x86_32/Debug
-#
-LD_X86_32:=-L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_32/$(CONFIG)
-LD_X86_64:=-L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_x86_64/$(CONFIG)
-LD_ARM:=-L$(NACL_SDK_ROOT)/lib/$(TOOLCHAIN)_arm/$(CONFIG)
-
-
-#
-# Compute path to requested NaCl Toolchain
-#
-OSNAME:=$(shell python $(NACL_SDK_ROOT)/tools/getos.py)
-TC_PATH:=$(abspath $(NACL_SDK_ROOT)/toolchain)
 
 
 #
@@ -96,6 +69,15 @@ CP:=python $(NACL_SDK_ROOT)/tools/oshelpers.py cp
 MKDIR:=python $(NACL_SDK_ROOT)/tools/oshelpers.py mkdir
 MV:=python $(NACL_SDK_ROOT)/tools/oshelpers.py mv
 RM:=python $(NACL_SDK_ROOT)/tools/oshelpers.py rm
+
+
+#
+# Compute path to requested NaCl Toolchain
+#
+OSNAME:=$(shell python $(NACL_SDK_ROOT)/tools/getos.py)
+TC_PATH:=$(abspath $(NACL_SDK_ROOT)/toolchain)
+
+
 
 
 #
@@ -109,27 +91,32 @@ all:
 
 
 #
+# Target a toolchain
+#
+# $1 = Toolchain Name
+#
+define TOOLCHAIN_RULE
+.PHONY: all_$(1)
+all_$(1):
+	+$(MAKE) TOOLCHAIN=$(1)
+TOOLCHAIN_LIST+=all_$(1)
+endef
+
+
+#
+# The target for all versions
+#
+USABLE_TOOLCHAINS=$(filter $(OSNAME) newlib glibc pnacl,$(VALID_TOOLCHAINS))
+$(foreach tool,$(USABLE_TOOLCHAINS),$(eval $(call TOOLCHAIN_RULE,$(tool),$(dep))))
+all_versions: $(TOOLCHAIN_LIST)
+
+#
 # Target to remove temporary files
 #
 .PHONY: clean
 clean:
 	$(RM) $(TARGET).nmf
 	$(RM) -fr $(TOOLCHAIN)
-
-#
-# Macros for TOOLS
-#
-# We use the C++ compiler for everything and then use the -Wl,-as-needed flag
-# in the linker to drop libc++ unless it's actually needed.
-#
-X86_CXX?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-g++
-X86_LINK?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/bin/i686-nacl-g++ -Wl,-as-needed
-
-ARM_CXX?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-g++
-ARM_LINK?=$(TC_PATH)/$(OSNAME)_arm_$(TOOLCHAIN)/bin/arm-nacl-g++ -Wl,-as-needed
-
-PNACL_CXX?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-clang++ -c
-PNACL_LINK?=$(TC_PATH)/$(OSNAME)_x86_$(TOOLCHAIN)/newlib/bin/pnacl-clang++
 
 
 #
@@ -147,6 +134,7 @@ $(TOOLCHAIN)/$(CONFIG): | $(TOOLCHAIN)
 	$(MKDIR) $(TOOLCHAIN)/$(CONFIG)
 
 OUTDIR:=$(TOOLCHAIN)/$(CONFIG)
+-include $(OUTDIR)/*.d
 
 
 #
@@ -157,116 +145,67 @@ OUTDIR:=$(TOOLCHAIN)/$(CONFIG)
 define DEPEND_RULE
 .PHONY: $(1)
 $(1):
+ifeq (,$(IGNORE_DEPS))
+	@echo "Checking library: $(1)"
 	+$(MAKE) -C $(NACL_SDK_ROOT)/src/$(1)
 DEPS_LIST+=$(1)
-endef
-
-#
-# Compile Macro
-#
-# $1 = Source Name
-#
-# By default, if $(1) = source.c, this rule expands to:
-#    newlib/Debug/source_x86_32.o : souce.c Makefile | newlib/Debug
-#
-# Which means if 'source.c' or Makefile are newer than the object
-# newlib/Debug/source_x86_32.o, then run the step:
-#      $(X86_CC) -o newlib/Debug/source_x86_32.o -c source.c ....
-#
-# We repeat this expansion for 64 bit X86 and conditionally for ARM if
-# TOOLCHAIN=newlib
-#
-define COMPILE_RULE
-$(OUTDIR)/$(basename $(1))_x86_32.o : $(1) $(THIS_MAKE) | $(OUTDIR)
-	$(X86_CXX) -o $$@ -c $$< -m32 $(OPT_FLAGS) $(CXX_FLAGS) $(NACL_WARNINGS)
-
-$(OUTDIR)/$(basename $(1))_x86_64.o : $(1) $(THIS_MAKE) | $(OUTDIR)
-	$(X86_CXX) -o $$@ -c $$< -m64 $(OPT_FLAGS) $(CXX_FLAGS) $(NACL_WARNINGS)
-
-$(OUTDIR)/$(basename $(1))_arm.o : $(1) $(THIS_MAKE) | $(OUTDIR)
-	$(ARM_CXX) -o $$@ -c $$< $(OPT_FLAGS) $(CXX_FLAGS) $(NACL_WARNINGS)
-
-$(OUTDIR)/$(basename $(1))_pnacl.o : $(1) $(THIS_MAKE) | $(OUTDIR)
-	$(PNACL_CXX) -o $$@ -c $$< $(OPT_FLAGS) $(CXX_FLAGS) $(NACL_WARNINGS)
-endef
-
-
-#
-# Link Macro
-#
-# $1 = Target Name
-# $2 = List of Sources
-#
-# By default, if $(1) = foo $(2) = A.c B.cc, this rule expands to:
-#   newlib/Debug/foo_x86_32.nexe : newlib/Debug/A_x86_32.o ...
-#
-# Which means if A_x86_32.o or sourceB_32.o is newer than the nexe then
-# run the build step:
-#   $(X86_LINK) -o newlib/Debug/foo_x86_32.nexe newlib/Debug/A_x86_32.o ...
-#
-# Note:
-#   We expand each library as '-l<name>' which will look for lib<name> in the
-# directory specified by $(LD_X86_32)
-#
-# We repeat this expansion for 64 bit X86 and conditionally for ARM if
-# TOOLCHAIN=newlib
-#
-define LINK_RULE
-NMF_TARGETS+=$(OUTDIR)/$(1)_x86_32.nexe
-$(OUTDIR)/$(1)_x86_32.nexe : $(foreach src,$(2),$(OUTDIR)/$(basename $(src))_x86_32.o)
-	$(X86_LINK) -o $$@ $$^ -m32 $(LD_X86_32) $(LD_FLAGS) $(foreach lib,$(LIBS),-l$(lib))
-
-NMF_TARGETS+=$(OUTDIR)/$(1)_x86_64.nexe
-$(OUTDIR)/$(1)_x86_64.nexe : $(foreach src,$(2),$(OUTDIR)/$(basename $(src))_x86_64.o)
-	$(X86_LINK) -o $$@ $$^ -m64 $(LD_X86_64) $(LD_FLAGS) $(foreach lib,$(LIBS),-l$(lib))
-
-NMF_TARGETS+=$(OUTDIR)/$(1)_arm.nexe
-$(OUTDIR)/$(1)_arm.nexe : $(foreach src,$(2),$(OUTDIR)/$(basename $(src))_arm.o)
-	$(ARM_LINK) -o $$@ $$^ $(LD_ARM) $(LD_FLAGS) $(foreach lib,$(LIBS),-l$(lib))
-
-NMF_TARGETS+=$(OUTDIR)/$(1).pexe
-$(OUTDIR)/$(1).pexe : $(foreach src,$(2),$(OUTDIR)/$(basename $(src))_pnacl.o)
-	$(PNACL_LINK) -o $$@ $$^ $(LD_PNACL) $(LD_FLAGS) $(foreach lib,$(LIBS),-l$(lib))
-endef
-
-
-
-#
-# Generate NMF_TARGETS
-#
-ARCHES=x86_32 x86_64
-ifeq "newlib" "$(TOOLCHAIN)"
-ARCHES+=arm
+else
+	@echo "Ignore DEPS: $(1)"
 endif
-NMF_ARCHES:=$(foreach arch,$(ARCHES),_$(arch).nexe)
+endef
 
-ifeq "pnacl" "$(TOOLCHAIN)"
-NMF_ARCHES:=.pexe
+
+ifeq ('win','$(TOOLCHAIN)')
+HOST_EXT=.dll
+else
+HOST_EXT=.so
 endif
 
 
 #
-# NMF Manifiest generation
+# Common Compile Options
 #
-# Use the python script create_nmf to scan the binaries for dependencies using
-# objdump.  Pass in the (-L) paths to the default library toolchains so that we
-# can find those libraries and have it automatically copy the files (-s) to
-# the target directory for us.
-#
-# $1 = Target Name (the basename of the nmf
-# $2 = Additional create_nmf.py arguments
-#
-NMF:=python $(NACL_SDK_ROOT)/tools/create_nmf.py
-GLIBC_DUMP:=$(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/bin/objdump
-GLIBC_PATHS:=-L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib32
-GLIBC_PATHS+=-L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib
+ifeq ('Release','$(CONFIG)')
+POSIX_OPT_FLAGS?=-g -O2 -pthread
+else
+POSIX_OPT_FLAGS?=-g -O0 -pthread
+endif
 
-define NMF_RULE
-$(OUTDIR)/$(1).nmf : $(foreach arch,$(NMF_ARCHES),$(OUTDIR)/$(1)$(arch))
-	$(NMF) -o $$@ $$^ -D $(GLIBC_DUMP) $(GLIBC_PATHS) -s $(OUTDIR) $(2)
+NACL_CFLAGS?=-Wno-long-long -Werror
+NACL_CXXFLAGS?=-Wno-long-long -Werror
 
-all : $(DEPS_LIST) $(OUTDIR)/$(1).nmf
-endef
+#
+# Default Paths
+#
+ifeq (,$(findstring $(TOOLCHAIN),linux mac win))
+INC_PATHS?=$(NACL_SDK_ROOT)/include $(EXTRA_INC_PATHS)
+else
+INC_PATHS?=$(NACL_SDK_ROOT)/include/$(OSNAME) $(NACL_SDK_ROOT)/include $(EXTRA_INC_PATHS)
+endif
+
+LIB_PATHS?=$(NACL_SDK_ROOT)/lib $(EXTRA_LIB_PATHS)
+
+
+#
+# If the requested toolchain is a NaCl or PNaCl toolchain, the use the
+# macros and targets defined in nacl.mk, otherwise use the host sepecific
+# macros and targets.
+#
+ifneq (,$(findstring $(TOOLCHAIN),linux mac))
+include $(NACL_SDK_ROOT)/tools/host_gcc.mk
+endif
+
+ifneq (,$(findstring $(TOOLCHAIN),win))
+include $(NACL_SDK_ROOT)/tools/host_vc.mk
+endif
+
+ifneq (,$(findstring $(TOOLCHAIN),glibc newlib))
+include $(NACL_SDK_ROOT)/tools/nacl_gcc.mk
+endif
+
+ifneq (,$(findstring $(TOOLCHAIN),pnacl))
+include $(NACL_SDK_ROOT)/tools/nacl_llvm.mk
+endif
 
 
 #
@@ -297,7 +236,13 @@ CHROME_ENV?=
 CHROME_ARGS+=--enable-nacl --enable-pnacl --incognito --ppapi-out-of-process
 
 
-CONFIG?=Debug
+# Paths to Debug and Release versions of the Host Pepper plugins
+PPAPI_DEBUG=$(abspath $(OSNAME)/Debug/$(TARGET)$(HOST_EXT));application/x-ppapi-debug
+PPAPI_RELEASE=$(abspath $(OSNAME)/Release/$(TARGET)$(HOST_EXT));application/x-ppapi-release
+
+info:
+	@echo "DEBUG=$(PPAPI_DEBUG)"
+
 PAGE?=index_$(TOOLCHAIN)_$(CONFIG).html
 
 RUN: LAUNCH
@@ -306,7 +251,7 @@ ifeq (,$(wildcard $(PAGE)))
 	$(warning No valid HTML page found at $(PAGE))
 	$(error Make sure TOOLCHAIN and CONFIG are properly set)
 endif
-	$(RUN_PY) -C $(THIS_DIR) -P $(PAGE) $(addprefix -E ,$(CHROME_ENV)) -- \
+	$(RUN_PY) -C $(CURDIR) -P $(PAGE) $(addprefix -E ,$(CHROME_ENV)) -- \
 	    $(CHROME_PATH) $(CHROME_ARGS) \
 	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
 

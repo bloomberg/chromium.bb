@@ -29,40 +29,21 @@ NACL_SDK_ROOT?=$(abspath $(CURDIR)/../..)
 include $(NACL_SDK_ROOT)/tools/common.mk
 
 
-#
+# Ignore warnings
+NACL_WARNINGS:=
+
+
 # Target Name
 #
-# The base name of the final NEXE, also the name of the NMF file containing
+# The base name of the final library, also the name of the NMF file containing
 # the mapping between architecture and actual NEXE.
 #
-TARGET=hello_world_interactive
+TARGET=ppapi_gles2
 
 #
 # List of sources to compile
 #
-SOURCES=hello_world.cc helper_functions.cc
-
-
-#
-# List of libraries to link against.  Unlike some tools, the GCC and LLVM
-# based tools require libraries to be specified in the correct order.  The
-# order should be symbol reference followed by symbol definition, with direct
-# sources to the link (object files) are left most.  In this case:
-#    hello_world -> ppapi_main -> ppapi_cpp -> ppapi -> pthread -> libc
-# Notice that libc is implied and come last through standard compiler/link
-# switches.
-#
-# We break this list down into two parts, the set we need to rebuild (DEPS)
-# and the set we do not.
-#
-DEPS=ppapi_cpp
-LIBS=$(DEPS) ppapi pthread
-
-
-#
-# Use the library dependency macro for each dependency
-#
-$(foreach dep,$(DEPS),$(eval $(call DEPEND_RULE,$(dep))))
+SOURCES:=gl2ext_ppapi.c gles2.c
 
 #
 # Use the compile macro for each source.
@@ -70,11 +51,6 @@ $(foreach dep,$(DEPS),$(eval $(call DEPEND_RULE,$(dep))))
 $(foreach src,$(SOURCES),$(eval $(call COMPILE_RULE,$(src))))
 
 #
-# Use the link macro for this target on the list of sources.
+# Use the lib macro for this target on the list of sources.
 #
-$(eval $(call LINK_RULE,$(TARGET),$(SOURCES),$(LIBS),$(DEPS)))
-
-#
-# Specify the NMF to be created with no additional arugments.
-#
-$(eval $(call NMF_RULE,$(TARGET),))
+$(eval $(call LIB_RULE,$(TARGET),$(SOURCES)))

@@ -1,10 +1,5 @@
 {
   'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
-  'SEARCH': [
-    '.',
-    '..',
-    '../../tools',
-  ],
   'TARGETS': [
     {
       'NAME' : 'hello_world_gles',
@@ -19,7 +14,6 @@
   ],
   'DATA': [
     'Makefile',
-    'common.mk',
     'fragment_shader_es2.frag',
     'hello.raw',
     'vertex_shader_es2.vert'

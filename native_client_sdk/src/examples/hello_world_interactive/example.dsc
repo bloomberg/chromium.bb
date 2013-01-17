@@ -1,10 +1,5 @@
 {
   'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
-  'SEARCH': [
-    '.',
-    '..',
-    '../../tools',
-  ],
   'TARGETS': [
     {
       'NAME' : 'hello_world_interactive',
@@ -20,7 +15,6 @@
   'DATA': [
     'example.js',
     'Makefile',
-    'common.mk',
   ],
   'DEST': 'examples',
   'NAME': 'hello_world_interactive',

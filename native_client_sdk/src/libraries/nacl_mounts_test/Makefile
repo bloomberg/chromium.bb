@@ -16,8 +16,8 @@
 # to override this, specify TOOLCHAIN=newlib|glibc or CONFIG=Debug|Release on
 # the make command-line or in this file prior to including common.mk.  The
 # toolchain we use by default will be the first valid one listed
-VALID_TOOLCHAINS:=newlib glibc pnacl linux win
-
+VALID_TOOLCHAINS:=newlib glibc win
+INCLUDES+=$(NACL_SDK_ROOT)/include/gtest/internal
 
 #
 # Get pepper directory for toolchain and includes.
@@ -30,20 +30,6 @@ include $(NACL_SDK_ROOT)/tools/common.mk
 
 
 #
-# Target Name
-#
-# The base name of the final NEXE, also the name of the NMF file containing
-# the mapping between architecture and actual NEXE.
-#
-TARGET=hello_world_gles
-
-#
-# List of sources to compile
-#
-SOURCES=hello_world.cc matrix.cc
-
-
-#
 # List of libraries to link against.  Unlike some tools, the GCC and LLVM
 # based tools require libraries to be specified in the correct order.  The
 # order should be symbol reference followed by symbol definition, with direct
@@ -53,12 +39,10 @@ SOURCES=hello_world.cc matrix.cc
 # switches.
 #
 # We break this list down into two parts, the set we need to rebuild (DEPS)
-# and the set we do not. This  example does not have any additional library
-# dependencies.
+# and the set we do not.
 #
-DEPS=
-LIBS=ppapi_gles2 ppapi pthread
-
+DEPS=nacl_mounts ppapi_cpp
+LIBS=gtest_ppapi gtest gmock $(DEPS) ppapi pthread
 
 #
 # Use the library dependency macro for each dependency
@@ -66,9 +50,25 @@ LIBS=ppapi_gles2 ppapi pthread
 $(foreach dep,$(DEPS),$(eval $(call DEPEND_RULE,$(dep))))
 
 #
+# Target Name
+#
+# The base name of the final NEXE, also the name of the NMF file containing
+# the mapping between architecture and actual NEXE.
+#
+TARGET=nacl_mount_test
+
+#
+# List of sources to compile
+#
+SOURCES:=kernel_object_test.cc kernel_proxy_mock.cc kernel_proxy_test.cc
+SOURCES+=kernel_wrap_test.cc module.cc mount_node_test.cc
+SOURCES+=mount_html5fs_test.cc mount_test.cc path_test.cc
+SOURCES+=pepper_interface_mock.cc
+
+#
 # Use the compile macro for each source.
 #
-$(foreach src,$(SOURCES),$(eval $(call COMPILE_RULE,$(src))))
+$(foreach src,$(SOURCES),$(eval $(call COMPILE_RULE,$(src),-Wno-switch-enum -Wno-variadic-macros)))
 
 #
 # Use the link macro for this target on the list of sources.
@@ -79,3 +79,6 @@ $(eval $(call LINK_RULE,$(TARGET),$(SOURCES),$(LIBS),$(DEPS)))
 # Specify the NMF to be created with no additional arugments.
 #
 $(eval $(call NMF_RULE,$(TARGET),))
+
+
+

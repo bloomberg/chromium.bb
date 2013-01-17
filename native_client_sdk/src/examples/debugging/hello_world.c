@@ -90,7 +90,8 @@ static struct PP_Var CStrToVar(const char* str) {
 
 
 static void PostCompletionCallback(void* user_data, int32_t result) {
-  ppb_messaging_interface->PostMessage(g_Instance, CStrToVar(user_data));
+  const char *str = (const char *) user_data;
+  ppb_messaging_interface->PostMessage(g_Instance, CStrToVar(str));
   free(user_data);
 }
 
@@ -229,7 +230,7 @@ static PP_Bool Instance_HandleDocumentLoad(PP_Instance instance,
 
 /**
  * Handles message from JavaScript.
- * 
+ *
  * Any message from JS is a request to cause the main thread to crash.
  */
 static void Messaging_HandleMessage(PP_Instance instance,

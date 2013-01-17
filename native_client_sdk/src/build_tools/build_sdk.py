@@ -586,6 +586,8 @@ def BuildStepCopyBuildHelpers(pepperdir, platform):
   buildbot_common.BuildStep('Copy build helpers')
   buildbot_common.CopyDir(os.path.join(SDK_SRC_DIR, 'tools', '*.py'),
       os.path.join(pepperdir, 'tools'))
+  buildbot_common.CopyDir(os.path.join(SDK_SRC_DIR, 'tools', '*.mk'),
+      os.path.join(pepperdir, 'tools'))
   if platform == 'win':
     buildbot_common.BuildStep('Add MAKE')
     http_download.HttpDownload(GSTORE + MAKE,
@@ -732,7 +734,8 @@ def GetWindowsEnvironment():
   return dict(line.split('=') for line in stdout.split('\r\n')[:-1])
 
 
-def BuildStepMakeAll(pepperdir, platform, directory, step_name, clean=False):
+def BuildStepMakeAll(pepperdir, platform, directory, step_name,
+					 clean=False, deps=True):
   buildbot_common.BuildStep(step_name)
   make_dir = os.path.join(pepperdir, directory)
   makefile = os.path.join(make_dir, 'Makefile')
@@ -746,11 +749,15 @@ def BuildStepMakeAll(pepperdir, platform, directory, step_name, clean=False):
       env = os.environ
       make = 'make'
 
-    buildbot_common.Run([make, '-j8'],
+    extra_args = []
+    if not deps:
+      extra_args += 'IGNORE_DEPS=1'
+
+    buildbot_common.Run([make, '-j8', 'all_versions'] + extra_args,
                         cwd=os.path.abspath(make_dir), env=env)
     if clean:
       # Clean to remove temporary files but keep the built libraries.
-      buildbot_common.Run([make, '-j8', 'clean'],
+      buildbot_common.Run([make, '-j8', 'clean'] + extra_args,
                           cwd=os.path.abspath(make_dir))
 
 

@@ -24,6 +24,11 @@ TARGET_LIST+=$(1)_TARGET
 $(1)_TARGET:
 	+$(MAKE) -C $(1)
 
+VERSIONS_LIST+=$(1)_VERSIONS
+.PHONY: $(1)_VERSIONS
+$(1)_VERSIONS:
+	+$(MAKE) -C $(1) all_versions
+
 CLEAN_LIST+=$(1)_CLEAN
 .PHONY: $(1)_CLEAN
 $(1)_CLEAN:
@@ -38,6 +43,9 @@ __DEPENDENCIES__
 
 all: $(TARGET_LIST)
 	echo "Done building targets."
+
+all_versions: $(VERSIONS_LIST)
+	echo "Done building all versions."
 
 clean: $(CLEAN_LIST)
 	echo "Done cleaning targets."

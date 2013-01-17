@@ -14,9 +14,19 @@
 #
 # By default we will build a Debug configuration using the GCC newlib toolcahin
 # to override this, specify TOOLCHAIN=newlib|glibc or CONFIG=Debug|Release on
-# the make command-line or in this file prior to including common.mk
+# the make command-line or in this file prior to including common.mk.  The
+# toolchain we use by default will be the first valid one listed
+VALID_TOOLCHAINS:=newlib glibc pnacl linux win
+
+
 #
-include common.mk
+# Get pepper directory for toolchain and includes.
+#
+# If NACL_SDK_ROOT is not set, then assume it can be found relative to
+# to this Makefile.
+#
+NACL_SDK_ROOT?=$(abspath $(CURDIR)/../..)
+include $(NACL_SDK_ROOT)/tools/common.mk
 
 
 #
@@ -63,7 +73,7 @@ $(foreach src,$(SOURCES),$(eval $(call COMPILE_RULE,$(src))))
 #
 # Use the link macro for this target on the list of sources.
 #
-$(eval $(call LINK_RULE,$(TARGET),$(SOURCES),$(LIBS)))
+$(eval $(call LINK_RULE,$(TARGET),$(SOURCES),$(LIBS),$(DEPS)))
 
 #
 # Specify the NMF to be created with no additional arugments.

@@ -28,19 +28,18 @@ VALID_TOOLCHAINS:=newlib glibc pnacl linux win
 NACL_SDK_ROOT?=$(abspath $(CURDIR)/../..)
 include $(NACL_SDK_ROOT)/tools/common.mk
 
-
 #
 # Target Name
 #
 # The base name of the final NEXE, also the name of the NMF file containing
 # the mapping between architecture and actual NEXE.
 #
-TARGET=hello_world_gles
+TARGET=geturl
 
 #
 # List of sources to compile
 #
-SOURCES=hello_world.cc matrix.cc
+SOURCES=geturl.cc geturl_handler.cc
 
 
 #
@@ -53,11 +52,11 @@ SOURCES=hello_world.cc matrix.cc
 # switches.
 #
 # We break this list down into two parts, the set we need to rebuild (DEPS)
-# and the set we do not. This  example does not have any additional library
+# and the set we do not.  This example does not havea any additional library
 # dependencies.
 #
 DEPS=
-LIBS=ppapi_gles2 ppapi pthread
+LIBS=$(DEPS) ppapi_cpp ppapi pthread
 
 
 #

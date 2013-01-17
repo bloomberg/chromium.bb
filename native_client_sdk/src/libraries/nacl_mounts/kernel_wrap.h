@@ -45,6 +45,7 @@ int _fstat64(int fd, struct _stat64* buf);
 int _fstat32i64(int fd, struct _stat32i64* buf);
 int _fstat64i32(int fd, struct _stat64i32* buf);
 #else
+struct stat;
 int fstat(int fd, struct stat* buf) NOTHROW;
 #endif
 int fsync(int fd);

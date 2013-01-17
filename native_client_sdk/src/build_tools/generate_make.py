@@ -174,7 +174,7 @@ def GenerateRules(desc, tools):
         rules += GenerateNMFRules(tc, executable, dlls, cfg, arches)
 
   rules += GenerateCleanRules(tools, configs)
-  rules += '\nall: $(ALL_TARGETS)\n'
+  rules += '\nall: $(ALL_TARGETS)\n\nall_versions: all\n'
 
   return '', rules
 

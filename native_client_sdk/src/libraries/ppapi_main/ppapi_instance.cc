@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "nacl_mounts/kernel_wrap.h"
 #include "nacl_mounts/nacl_mounts.h"
 
 #include "ppapi/cpp/input_event.h"

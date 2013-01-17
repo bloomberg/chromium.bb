@@ -1,7 +1,6 @@
 {
   # Disabled pnacl for now because it warns on using the language extension
   # typeof(...)
-  #'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
   'TOOLS': ['newlib', 'glibc', 'win'],
   'SEARCH': [
     '.',
@@ -77,6 +76,9 @@
       ],
       'DEST': 'include/utils',
     }
+  ],
+  'DATA': [
+    'Makefile',
   ],
   'DEST': 'src',
   'NAME': 'nacl_mounts',

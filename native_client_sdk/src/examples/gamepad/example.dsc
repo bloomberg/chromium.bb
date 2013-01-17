@@ -8,6 +8,9 @@
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
+  'DATA': [
+    'Makefile',
+  ],
   'DEST': 'examples',
   'NAME': 'gamepad',
   'TITLE': 'Gamepad Example.',

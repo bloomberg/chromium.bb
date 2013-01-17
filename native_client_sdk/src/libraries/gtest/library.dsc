@@ -82,6 +82,9 @@
       'DEST': 'include/gtest/internal/src',
     },
   ],
+  'DATA': [
+    'Makefile'
+  ],
   'DEST': 'testlibs',
   'NAME': 'gtest',
 }

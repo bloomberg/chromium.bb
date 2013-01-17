@@ -8,7 +8,9 @@
       'LIBS': ['ppapi_cpp', 'ppapi', 'pthread']
     }
   ],
-  'DATA': ['check_browser.js'],
+  'DATA': [
+    'Makefile',
+  ],
   'DEST': 'examples',
   'NAME': 'mouselock',
   'TITLE': 'Mouse Lock',

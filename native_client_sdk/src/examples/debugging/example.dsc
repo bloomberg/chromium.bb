@@ -1,12 +1,17 @@
 {
   'TOOLS': ['newlib'],
+  'SEARCH': [
+    '.',
+    '..',
+    '../../tools',
+  ],
   'TARGETS': [
     {
       'NAME' : 'debugging',
       'TYPE' : 'main',
       'SOURCES' : [
-        'hello_world.c', 
-        'string_stream.c', 
+        'hello_world.c',
+        'string_stream.c',
         'string_stream.h',
         'untrusted_crash_dump.c',
         'untrusted_crash_dump.h'
@@ -25,7 +30,11 @@ CHROME_ENV+=NACL_SECURITY_DISABLE=1
 CHROME_ENV+=NACL_UNTRUSTED_EXCEPTION_HANDLING=1
 """,
 
-  'DATA': ['handler.py', 'example.js'],
+  'DATA': [
+    'Makefile',
+    'example.js',
+    'handler.py'
+  ],
   'DEST': 'examples',
   'NAME': 'debugging',
   'TITLE': 'Debugging',

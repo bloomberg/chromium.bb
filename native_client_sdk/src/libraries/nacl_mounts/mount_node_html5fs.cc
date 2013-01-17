@@ -116,7 +116,7 @@ int MountNodeHtml5Fs::GetDents(size_t offs, struct dirent* pdir, size_t size) {
       continue;
 
     file_name_length = std::min(
-        file_name_length,
+        static_cast<size_t>(file_name_length),
         sizeof(static_cast<struct dirent*>(0)->d_name) - 1); // -1 for NULL.
 
     dirents.push_back(dirent());
