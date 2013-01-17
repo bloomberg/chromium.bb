@@ -53,6 +53,8 @@ class NET_EXPORT_PRIVATE QuicConnectionHelper
   virtual void SetTimeoutAlarm(QuicTime::Delta delay) OVERRIDE;
   virtual bool IsSendAlarmSet() OVERRIDE;
   virtual void UnregisterSendAlarmIfRegistered() OVERRIDE;
+  virtual void SetAckAlarm(QuicTime::Delta delay) OVERRIDE;
+  virtual void ClearAckAlarm() OVERRIDE;
 
   int Read(IOBuffer* buf, int buf_len, const CompletionCallback& callback);
   // TODO(wtc): these two methods should be able to report a failure.
@@ -86,6 +88,8 @@ class NET_EXPORT_PRIVATE QuicConnectionHelper
   bool timeout_alarm_registered_;
   bool resend_alarm_registered_;
   bool resend_alarm_running_;
+  bool ack_alarm_registered_;
+  QuicTime ack_alarm_time_;
   // Times that packets should be resent.
   std::map<QuicPacketSequenceNumber, QuicTime> resend_times_;
 

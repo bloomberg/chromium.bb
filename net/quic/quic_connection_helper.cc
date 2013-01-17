@@ -34,7 +34,9 @@ QuicConnectionHelper::QuicConnectionHelper(base::TaskRunner* task_runner,
       send_alarm_registered_(false),
       timeout_alarm_registered_(false),
       resend_alarm_registered_(false),
-      resend_alarm_running_(false) {
+      resend_alarm_running_(false),
+      ack_alarm_registered_(false),
+      ack_alarm_time_(QuicTime()) {
 }
 
 QuicConnectionHelper::~QuicConnectionHelper() {
@@ -89,6 +91,22 @@ void QuicConnectionHelper::SetResendAlarm(
         base::TimeDelta::FromMicroseconds(delay.ToMicroseconds()));
   }
   resend_times_[sequence_number] = clock_->Now().Add(delay);
+}
+
+void QuicConnectionHelper::SetAckAlarm(QuicTime::Delta delay) {
+  if (!ack_alarm_registered_) {
+    task_runner_->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&QuicConnectionHelper::OnAckAlarm,
+                   weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMicroseconds(delay.ToMicroseconds()));
+  }
+  ack_alarm_registered_ = true;
+  ack_alarm_time_ = clock_->Now().Add(delay);
+}
+
+void QuicConnectionHelper::ClearAckAlarm() {
+  ack_alarm_time_ = QuicTime();
 }
 
 void QuicConnectionHelper::SetSendAlarm(QuicTime::Delta delay) {
@@ -178,6 +196,23 @@ void QuicConnectionHelper::OnSendAlarm() {
 void QuicConnectionHelper::OnTimeoutAlarm() {
   timeout_alarm_registered_ = false;
   connection_->CheckForTimeout();
+}
+
+void QuicConnectionHelper::OnAckAlarm() {
+  ack_alarm_registered_ = false;
+  // Alarm may have been cleared.
+  if (!ack_alarm_time_.IsInitialized()) {
+    return;
+  }
+
+  // Alarm may have been reset to a later time.
+  if (clock_->Now() < ack_alarm_time_) {
+    SetAckAlarm(ack_alarm_time_.Subtract(clock_->Now()));
+    return;
+  }
+
+  ack_alarm_time_ = QuicTime();
+  connection_->SendAck();
 }
 
 void QuicConnectionHelper::OnWriteComplete(int result) {

@@ -38,12 +38,6 @@ const QuicPacketSequenceNumber kMaxUnackedPackets = 192u;
 // The amount of time we wait before resending a packet.
 const int64 kDefaultResendTimeMs = 500;
 
-// The maximum number of missing packets we'll resend to the peer before
-// sending an ack to update least_awaiting.
-// 10 is somewhat arbitrary: it's good to keep this in line with
-// kMaxResendPerAck
-const int kMaxResendsBeforeAck = 10;
-
 // We want to make sure if we get a large nack packet, we don't queue up too
 // many packets at once.  10 is arbitrary.
 const int kMaxResendPerAck = 10;
@@ -84,9 +78,9 @@ QuicConnection::QuicConnection(QuicGuid guid,
       time_of_last_packet_(clock_->Now()),
       collector_(new QuicReceiptMetricsCollector(clock_, kTCP)),
       scheduler_(new QuicSendScheduler(clock_, kTCP)),
-      packets_resent_since_last_ack_(0),
       connected_(true),
-      received_truncated_ack_(false) {
+      received_truncated_ack_(false),
+      send_ack_in_response_to_packet_(false) {
   options()->max_num_packets = kMaxPacketsToSerializeAtOnce;
   helper_->SetConnection(this);
   helper_->SetTimeoutAlarm(timeout_);
@@ -397,22 +391,26 @@ void QuicConnection::OnPacketComplete() {
                << " frames.";
   }
 
-  if (last_stream_frames_.size()) {
-    // If there's data, pass it to the visitor and send out an ack.
-    bool accepted = visitor_->OnPacket(self_address_, peer_address_,
-                                       last_header_, last_stream_frames_);
-    if (accepted) {
-      AckPacket(last_header_);
-    } else {
-      // Send an ack without changing our state.
-      SendAck();
-    }
-    last_stream_frames_.clear();
-  } else {
-    // If there was no data, still make sure we update our internal state.
-    // AckPacket will not send an ack on the wire in this case.
-    AckPacket(last_header_);
+  if (last_stream_frames_.empty() ||
+      visitor_->OnPacket(self_address_, peer_address_,
+                         last_header_, last_stream_frames_)) {
+    RecordPacketReceived(last_header_);
   }
+
+  MaybeSendAckInResponseToPacket();
+  last_stream_frames_.clear();
+}
+
+void QuicConnection::MaybeSendAckInResponseToPacket() {
+  if (send_ack_in_response_to_packet_) {
+    SendAck();
+  } else if (!last_stream_frames_.empty()) {
+    // TODO(alyssar) this case should really be "if the packet contained any
+    // non-ack frame", rather than "if the packet contained a stream frame"
+    helper_->SetAckAlarm(
+        QuicTime::Delta::FromMicroseconds(kDefaultResendTimeMs));
+  }
+  send_ack_in_response_to_packet_ = !send_ack_in_response_to_packet_;
 }
 
 QuicConsumedData QuicConnection::SendStreamData(
@@ -541,15 +539,10 @@ bool QuicConnection::WriteData() {
   return !write_blocked_;
 }
 
-void QuicConnection::AckPacket(const QuicPacketHeader& header) {
+void QuicConnection::RecordPacketReceived(const QuicPacketHeader& header) {
   QuicPacketSequenceNumber sequence_number = header.packet_sequence_number;
   DCHECK(outgoing_ack_.received_info.IsAwaitingPacket(sequence_number));
   outgoing_ack_.received_info.RecordReceived(sequence_number);
-
-  // TODO(alyssar) delay sending until we have data, or enough time has elapsed.
-  if (last_stream_frames_.size() > 0) {
-    SendAck();
-  }
 }
 
 bool QuicConnection::MaybeResendPacketForRTO(
@@ -573,7 +566,6 @@ void QuicConnection::MaybeResendPacket(
   UnackedPacketMap::iterator it = unacked_packets_.find(sequence_number);
 
   if (it != unacked_packets_.end()) {
-    ++packets_resent_since_last_ack_;
     QuicPacket* packet = it->second.packet;
     unacked_packets_.erase(it);
     // Re-frame the packet with a new sequence number for resend.
@@ -590,10 +582,6 @@ void QuicConnection::MaybeResendPacket(
     // outgoing ack.  If this wasn't the least unacked, this is a no-op.
     UpdateLeastUnacked(sequence_number);
     SendPacket(new_sequence_number, packet, true, false, true);
-
-    if (packets_resent_since_last_ack_ >= kMaxResendsBeforeAck) {
-      SendAck();
-    }
   } else {
     DVLOG(2) << "alarm fired for " << sequence_number
              << " but it has been acked";
@@ -684,7 +672,7 @@ bool QuicConnection::ShouldSimulateLostPacket() {
 }
 
 void QuicConnection::SendAck() {
-  packets_resent_since_last_ack_ = 0;
+  helper_->ClearAckAlarm();
 
   if (!ContainsKey(unacked_packets_, outgoing_ack_.sent_info.least_unacked)) {
     // At some point, all packets were acked, and we set least_unacked to a

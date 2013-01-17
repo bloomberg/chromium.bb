@@ -105,7 +105,7 @@ class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
   // handle the case where |this| is deleted before the alarm fires.
   virtual void SetSendAlarm(QuicTime::Delta delay) = 0;
 
-  // Sets An alarm which fires when the connection may have timed out.
+  // Sets an alarm which fires when the connection may have timed out.
   // Implementations must call CheckForTimeout() and then reregister the alarm
   // if the connection has not yet timed out.
   virtual void SetTimeoutAlarm(QuicTime::Delta delay) = 0;
@@ -116,6 +116,15 @@ class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
   // If a send alarm is currently set, this method unregisters it.  If
   // no send alarm is set, it does nothing.
   virtual void UnregisterSendAlarmIfRegistered() = 0;
+
+  // Sets an alarm which fires when an Ack may need to be sent.
+  // Implementations must call SendAck() when the alarm fires.
+  // If the alarm is already registered for a shorter timeout, this call is a
+  // no-op.
+  virtual void SetAckAlarm(QuicTime::Delta delay) = 0;
+
+  // Clears the ack alarm if it was set.  If it was not set, this is a no-op.
+  virtual void ClearAckAlarm() = 0;
 };
 
 class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
@@ -184,9 +193,8 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   const QuicClock* clock() const { return clock_; }
   QuicRandom* random_generator() const { return random_generator_; }
 
-  // Updates the internal state concerning which packets have been acked, and
-  // sends an ack if new data frames have been received.
-  void AckPacket(const QuicPacketHeader& header);
+  // Updates the internal state concerning which packets have been acked.
+  void RecordPacketReceived(const QuicPacketHeader& header);
 
   // Called by a ResendAlarm when the timer goes off.  If the peer appears to be
   // sending truncated acks, this returns false to indicate failure, otherwise
@@ -216,6 +224,9 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   // Returns true of the next packet to be sent should be "lost" by
   // not actually writing it to the wire.
   bool ShouldSimulateLostPacket();
+
+  // Sets up a packet with an QuicAckFrame and sends it out.
+  void SendAck();
 
  protected:
   // Send a packet to the peer.  If should_resend is true, this packet contains
@@ -299,12 +310,11 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   // blocked when this is called.
   bool WriteData();
 
-  // Sets up a packet with an QuicAckFrame and sends it out.
-  void SendAck();
-
   // If a packet can be revived from the current FEC group, then
   // revive and process the packet.
   void MaybeProcessRevivedPacket();
+
+  void MaybeSendAckInResponseToPacket();
 
   // Get the FEC group associate with the last processed packet.
   QuicFecGroup* GetFecGroup();
@@ -369,9 +379,6 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   // Scheduler which drives packet send rate.
   scoped_ptr<QuicSendScheduler> scheduler_;
 
-  // The number of packets we resent since sending the last ack.
-  uint8 packets_resent_since_last_ack_;
-
   // True by default.  False if we've received or sent an explicit connection
   // close.
   bool connected_;
@@ -379,6 +386,8 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   // True if the last ack received from the peer may have been truncated.  False
   // otherwise.
   bool received_truncated_ack_;
+
+  bool send_ack_in_response_to_packet_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };

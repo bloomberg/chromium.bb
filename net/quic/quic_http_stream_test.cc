@@ -368,7 +368,6 @@ TEST_F(QuicHttpStreamTest, SendPostRequest) {
   AddWrite(SYNCHRONOUS, ConstructDataPacket(2, kFin, strlen(kRequestData),
                                             kUploadData));
   AddWrite(SYNCHRONOUS, ConstructAckPacket(3, 2, 3));
-  AddWrite(SYNCHRONOUS, ConstructAckPacket(4, 3, 4));
 
   Initialize();
 

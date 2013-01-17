@@ -141,10 +141,12 @@ class MockHelper : public QuicConnectionHelperInterface {
                                       int* error));
   MOCK_METHOD2(SetResendAlarm, void(QuicPacketSequenceNumber sequence_number,
                                     QuicTime::Delta delay));
+  MOCK_METHOD1(SetAckAlarm, void(QuicTime::Delta delay));
   MOCK_METHOD1(SetSendAlarm, void(QuicTime::Delta delay));
   MOCK_METHOD1(SetTimeoutAlarm, void(QuicTime::Delta delay));
   MOCK_METHOD0(IsSendAlarmSet, bool());
   MOCK_METHOD0(UnregisterSendAlarmIfRegistered, void());
+  MOCK_METHOD0(ClearAckAlarm, void());
  private:
   const MockClock clock_;
   MockRandom random_generator_;

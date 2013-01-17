@@ -209,6 +209,70 @@ TEST_F(QuicConnectionHelperTest, UnregisterSendAlarmIfRegistered) {
   EXPECT_FALSE(helper_->IsSendAlarmSet());
 }
 
+TEST_F(QuicConnectionHelperTest, SetAckAlarm) {
+  AddWrite(SYNCHRONOUS, ConstructAckPacket(1));
+  Initialize();
+
+  // The timeout alarm task is always posted.
+  ASSERT_EQ(1u, runner_->GetPostedTasks().size());
+
+  QuicTime::Delta delta(QuicTime::Delta::FromMilliseconds(10));
+  helper_->SetAckAlarm(delta);
+
+  // Verify that the ack alarm task has been posted.
+  ASSERT_EQ(2u, runner_->GetPostedTasks().size());
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(delta.ToMicroseconds()),
+            runner_->GetPostedTasks()[1].delay);
+
+  EXPECT_CALL(*scheduler_, SentPacket(1, _, false));
+  runner_->RunNextTask();
+  EXPECT_EQ(QuicTime().Add(delta), clock_.Now());
+}
+
+TEST_F(QuicConnectionHelperTest, ClearAckAlarm) {
+  Initialize();
+
+  // Verify that the timeout alarm task has been posted.
+  ASSERT_EQ(1u, runner_->GetPostedTasks().size());
+
+  QuicTime::Delta delta(QuicTime::Delta::FromMilliseconds(10));
+  helper_->SetAckAlarm(delta);
+
+  helper_->ClearAckAlarm();
+
+  // When the AckAlarm actually fires, no ack will be sent.
+  runner_->RunNextTask();
+  EXPECT_EQ(QuicTime().Add(delta), clock_.Now());
+}
+
+TEST_F(QuicConnectionHelperTest, ResetAckAlarm) {
+  AddWrite(SYNCHRONOUS, ConstructAckPacket(1));
+  Initialize();
+
+  // Verify that the timeout alarm task has been posted.
+  ASSERT_EQ(1u, runner_->GetPostedTasks().size());
+
+  QuicTime::Delta delta1(QuicTime::Delta::FromMilliseconds(10));
+  QuicTime::Delta delta2(QuicTime::Delta::FromMilliseconds(20));
+  helper_->SetAckAlarm(delta1);
+  helper_->ClearAckAlarm();
+  helper_->SetAckAlarm(delta2);
+  // We should only have 1 ack alarm task posted.
+  ASSERT_EQ(2u, runner_->GetPostedTasks().size());
+
+  // The task will execute at delta1, but will not send and ack,
+  // but it will reschedule itself for delta2
+  runner_->RunNextTask();
+  EXPECT_EQ(QuicTime().Add(delta1), clock_.Now());
+
+  // Verify that the ack alarm task has been re-posted.
+  ASSERT_EQ(2u, runner_->GetPostedTasks().size());
+
+  EXPECT_CALL(*scheduler_, SentPacket(1, _, false));
+  runner_->RunNextTask();
+  EXPECT_EQ(QuicTime().Add(delta2), clock_.Now());
+}
+
 TEST_F(QuicConnectionHelperTest, TestResend) {
   AddWrite(SYNCHRONOUS, ConstructDataPacket(1));
   AddWrite(SYNCHRONOUS, ConstructDataPacket(2));
