@@ -4,14 +4,25 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-force_branch=no
+branch_name=""
+checkout_branch=no
+create_branch=no
 quiet=no
 svn_lkgr=
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --force-branch)
-      force_branch=yes
+    --checkout|--force-branch)
+      checkout_branch=yes
+      create_branch=yes
+      ;;
+    --create)
+      create_branch=yes
+      ;;
+    -n|--name)
+      branch_name=$2
+      create_branch=yes
+      shift
       ;;
     -q|--quiet)
       quiet=yes
@@ -22,6 +33,14 @@ while [ $# -gt 0 ]; do
       ;;
     *)
       echo "Unknown option: $1"
+      echo "Usage:"
+      echo "  --checkout         Create a branch and check it out."
+      echo "  --create           Create a branch."
+      echo "  -n, --name <name>  Specify the name of branch to create or reset."
+      echo "                       This will force the branch using 'git branch -f '."
+      echo "  -q, --quiet        Quiet."
+      echo "  -r, --revision <r> Svn revision number use instead of server provided lkgr."
+      exit 1
       ;;
   esac
   shift
@@ -56,7 +75,7 @@ git_lkgr=`git svn find-rev r${svn_lkgr}`
 if [ $? != 0 -o -z "$git_lkgr" ]; then
   cat <<EOF 1>&2
 Could not map svn revision ${svn_lkgr} to a git commit.
-You may need to `git fetch` and try again.
+You may need to 'git fetch' and try again.
 EOF
   exit 1
 fi
@@ -78,35 +97,50 @@ EOF
   fi
 fi
 
-# Pick a name for the new branch.  Use `git rev-parse` to make sure the branch
-# doesn't already exist; if it does, iterate an integer suffix to uniquify it.
-lkgr_branch="git_lkgr_r${svn_lkgr}"
-digit=1
-git rev-parse --verify -q "${lkgr_branch}" >/dev/null
-while [ $? -eq 0 ]; do
-  lkgr_branch="git_lkgr_r${svn_lkgr}_${digit}"
-  digit=`expr $digit + 1`
+# Determine lkgr_branch:
+if [ "${branch_name}" != "" ]; then
+  # Use the provided name for the branch.
+  lkgr_branch="${branch_name}"
+
+  # If the branch already exists, force the update to it.
+  git rev-parse --verify -q "${branch_name}" >/dev/null
+  if [ $? -eq 0 ]; then
+    old_branch_value=`git rev-parse "${branch_name}"`
+    echo "Will update branch ${lkgr_branch}, it previously was at ${old_branch_value}."
+    force_branch="--force"
+  fi
+else
+  # Pick a name for the new branch.  Use `git rev-parse` to make sure the branch
+  # doesn't already exist; if it does, iterate an integer suffix to uniquify it.
+  lkgr_branch="lkgr_r${svn_lkgr}"
+  digit=1
   git rev-parse --verify -q "${lkgr_branch}" >/dev/null
-done
+  while [ $? -eq 0 ]; do
+    lkgr_branch="lkgr_r${svn_lkgr}_${digit}"
+    digit=`expr $digit + 1`
+    git rev-parse --verify -q "${lkgr_branch}" >/dev/null
+  done
+fi
 
 if [ "${closest_svn_commit}" = "${git_lkgr}" ]; then
   echo "${closest_commit}"
-  if [ "$force_branch" = "yes" ]; then
-    git checkout -b "${lkgr_branch}" "${closest_commit}"
+  if [ "$create_branch" = "yes" ]; then
+    echo "Creating branch ${lkgr_branch}"
+    git branch ${force_branch} "${lkgr_branch}" "${closest_commit}" || exit 1
+  fi
+  if [ "$checkout_branch" = "yes" ]; then
+    git checkout "${lkgr_branch}"
   fi
   exit 0
 elif [ "${quiet}" = "yes" ]; then
   exit 1
-elif [ "${force_branch}" = "no" ]; then
+elif [ "${checkout_branch}" = "no" ]; then
   echo "There is no master commit which corresponds exactly to svn revision ${svn_lkgr}."
   if [ -n "$closest_commit" ]; then
     echo "The closest commit is ${closest_commit}."
   fi
-  read -n 1 -p "Would you like to create a new branch based on r${svn_lkgr}? (y/N) "
-  echo
-  if [ "x$REPLY" != "xy" -a "x$REPLY" != "xY" ]; then
-    exit 0
-  fi
+  echo "Call 'git lkgr --checkout' to create a branch with a commit to match ${svn_lkgr}."
+  exit 0
 fi
 
 current_head=`git branch | grep '^\*' | cut -c3-`
@@ -119,7 +153,7 @@ python tools/deps2git/deps2git.py -d DEPS -o .DEPS.git -w .. &&
 git add .DEPS.git &&
 python tools/deps2git/deps2submodules.py .DEPS.git &&
 git commit -m "SVN changes up to revision $svn_lkgr" &&
-git checkout -b "${lkgr_branch}" HEAD
+git branch ${force_branch} "${lkgr_branch}" HEAD
 
 if [ $? != 0 ]; then
   cat <<EOF
@@ -135,6 +169,8 @@ EOF
   git checkout --force $current_head
   exit 1
 fi
+
+git checkout "${lkgr_branch}"
 
 cat <<EOF
 
