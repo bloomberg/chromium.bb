@@ -39,6 +39,7 @@
 #include <utility>
 
 #include "breakpad_googletest_includes.h"
+#include "common/scoped_ptr.h"
 #include "common/using_std_string.h"
 #include "google_breakpad/processor/basic_source_line_resolver.h"
 #include "google_breakpad/processor/call_stack.h"
@@ -50,7 +51,6 @@
 #include "google_breakpad/processor/stack_frame.h"
 #include "google_breakpad/processor/symbol_supplier.h"
 #include "processor/logging.h"
-#include "processor/scoped_ptr.h"
 #include "processor/stackwalker_unittest_utils.h"
 
 using std::map;

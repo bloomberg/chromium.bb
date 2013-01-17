@@ -39,6 +39,7 @@
 #include <string>
 #include <vector>
 
+#include "common/scoped_ptr.h"
 #include "common/using_std_string.h"
 #include "google_breakpad/processor/basic_source_line_resolver.h"
 #include "google_breakpad/processor/call_stack.h"
@@ -50,7 +51,6 @@
 #include "google_breakpad/processor/stack_frame_cpu.h"
 #include "processor/logging.h"
 #include "processor/pathname_stripper.h"
-#include "processor/scoped_ptr.h"
 #include "processor/simple_symbol_supplier.h"
 
 namespace {

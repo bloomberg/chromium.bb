@@ -34,13 +34,13 @@
 // Author: Mark Mentovai, Ted Mielczarek
 
 
+#include "common/scoped_ptr.h"
 #include "google_breakpad/processor/call_stack.h"
 #include "google_breakpad/processor/memory_region.h"
 #include "google_breakpad/processor/source_line_resolver_interface.h"
 #include "google_breakpad/processor/stack_frame_cpu.h"
 #include "processor/cfi_frame_info.h"
 #include "processor/logging.h"
-#include "processor/scoped_ptr.h"
 #include "processor/stackwalker_amd64.h"
 
 namespace google_breakpad {

@@ -37,6 +37,7 @@
 
 #include <assert.h>
 
+#include "common/scoped_ptr.h"
 #include "google_breakpad/processor/call_stack.h"
 #include "google_breakpad/processor/code_module.h"
 #include "google_breakpad/processor/code_modules.h"
@@ -46,7 +47,6 @@
 #include "google_breakpad/processor/system_info.h"
 #include "processor/linked_ptr.h"
 #include "processor/logging.h"
-#include "processor/scoped_ptr.h"
 #include "processor/stackwalker_ppc.h"
 #include "processor/stackwalker_sparc.h"
 #include "processor/stackwalker_x86.h"

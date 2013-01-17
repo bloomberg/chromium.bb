@@ -46,11 +46,11 @@
 #include "common/linux/file_id.h"
 #include "common/linux/ignore_ret.h"
 #include "common/linux/safe_readlink.h"
+#include "common/scoped_ptr.h"
 #include "common/tests/auto_tempdir.h"
 #include "common/tests/file_utils.h"
 #include "common/using_std_string.h"
 #include "google_breakpad/processor/minidump.h"
-#include "processor/scoped_ptr.h"
 
 using namespace google_breakpad;
 

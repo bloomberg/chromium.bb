@@ -32,13 +32,13 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include "common/scoped_ptr.h"
 #include "google_breakpad/processor/call_stack.h"
 #include "google_breakpad/processor/minidump.h"
 #include "google_breakpad/processor/process_state.h"
 #include "google_breakpad/processor/exploitability.h"
 #include "google_breakpad/processor/stack_frame_symbolizer.h"
 #include "processor/logging.h"
-#include "processor/scoped_ptr.h"
 #include "processor/stackwalker_x86.h"
 
 namespace google_breakpad {

@@ -60,10 +60,11 @@ typedef SSIZE_T ssize_t;
 
 #include "processor/range_map-inl.h"
 
+#include "common/scoped_ptr.h"
 #include "processor/basic_code_module.h"
 #include "processor/basic_code_modules.h"
 #include "processor/logging.h"
-#include "processor/scoped_ptr.h"
+
 
 
 namespace google_breakpad {

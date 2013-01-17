@@ -35,6 +35,7 @@
 
 #include <string>
 
+#include "common/scoped_ptr.h"
 #include "google_breakpad/processor/call_stack.h"
 #include "google_breakpad/processor/code_modules.h"
 #include "google_breakpad/processor/memory_region.h"
@@ -42,7 +43,6 @@
 #include "google_breakpad/processor/stack_frame_cpu.h"
 #include "processor/logging.h"
 #include "processor/postfix_evaluator-inl.h"
-#include "processor/scoped_ptr.h"
 #include "processor/stackwalker_x86.h"
 #include "processor/windows_frame_info.h"
 #include "processor/cfi_frame_info.h"

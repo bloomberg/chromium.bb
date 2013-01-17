@@ -32,6 +32,7 @@
 #include <string>
 
 #include "breakpad_googletest_includes.h"
+#include "common/scoped_ptr.h"
 #include "common/using_std_string.h"
 #include "google_breakpad/processor/basic_source_line_resolver.h"
 #include "google_breakpad/processor/code_module.h"
@@ -39,7 +40,6 @@
 #include "google_breakpad/processor/memory_region.h"
 #include "processor/linked_ptr.h"
 #include "processor/logging.h"
-#include "processor/scoped_ptr.h"
 #include "processor/windows_frame_info.h"
 #include "processor/cfi_frame_info.h"
 

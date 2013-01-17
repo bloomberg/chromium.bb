@@ -36,6 +36,7 @@
 
 #include <assert.h>
 
+#include "common/scoped_ptr.h"
 #include "google_breakpad/processor/code_module.h"
 #include "google_breakpad/processor/code_modules.h"
 #include "google_breakpad/processor/source_line_resolver_interface.h"
@@ -44,7 +45,6 @@
 #include "google_breakpad/processor/system_info.h"
 #include "processor/linked_ptr.h"
 #include "processor/logging.h"
-#include "processor/scoped_ptr.h"
 
 namespace google_breakpad {
 
