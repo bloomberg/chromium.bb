@@ -76,7 +76,14 @@ TEST_F(ChromeWebUIDataSourceTest, SomeStrings) {
   EXPECT_NE(result.find("\"button\":\"OK\""), std::string::npos);
 }
 
-TEST_F(ChromeWebUIDataSourceTest, DefaultResource) {
+// TODO(jam): http://crbug.com/170702
+#if !defined(OS_ANDROID)
+#define MAYBE_DefaultResource DISABLED_DefaultResource
+#else
+#define MAYBE_DefaultResource DefaultResource
+#endif
+
+TEST_F(ChromeWebUIDataSourceTest, MAYBE_DefaultResource) {
   source()->set_default_resource(IDR_WEBUI_I18N_PROCESS_JS);
   source()->StartDataRequest("foobar" );
   std::string result(
