@@ -936,7 +936,10 @@ void ThreadProxy::initializeImplOnImplThread(CompletionEvent* completion, InputH
         frameRateController.reset(new FrameRateController(DelayBasedTimeSource::create(displayRefreshInterval, Proxy::implThread())));
     else
         frameRateController.reset(new FrameRateController(Proxy::implThread()));
-    m_schedulerOnImplThread = Scheduler::create(this, frameRateController.Pass());
+    SchedulerSettings schedulerSettings;
+    schedulerSettings.implSidePainting = m_layerTreeHost->settings().implSidePainting;
+    m_schedulerOnImplThread = Scheduler::create(this, frameRateController.Pass(),
+                                                schedulerSettings);
     m_schedulerOnImplThread->setVisible(m_layerTreeHostImpl->visible());
 
     m_inputHandlerOnImplThread = scoped_ptr<InputHandler>(handler);

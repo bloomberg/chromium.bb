@@ -537,6 +537,13 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
     return can_activate_;
   }
 
+  virtual void commitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    // We force a second draw here of the first commit before activating
+    // the second commit.
+    if (impl->activeTree()->source_frame_number() == 0)
+      impl->setNeedsRedraw();
+  }
+
   virtual void drawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     ImplSidePaintingScrollTest::drawLayersOnThread(impl);
 
@@ -558,6 +565,9 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
           EXPECT_VECTOR_EQ(root->scrollDelta(), impl_thread_scroll1_);
           EXPECT_VECTOR_EQ(root->sentScrollDelta(), gfx::Vector2d());
           postSetNeedsCommitToMainThread();
+
+          // commitCompleteOnThread will trigger this function again
+          // and cause us to take the else clause.
         } else {
           can_activate_ = true;
           ASSERT_TRUE(pending_root);

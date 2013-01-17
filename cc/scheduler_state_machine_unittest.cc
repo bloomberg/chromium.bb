@@ -4,9 +4,11 @@
 
 #include "cc/scheduler_state_machine.h"
 
+#include "cc/scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
+
 namespace {
 
 const SchedulerStateMachine::CommitState allCommitStates[] = {
@@ -19,6 +21,8 @@ const SchedulerStateMachine::CommitState allCommitStates[] = {
 // Exposes the protected state fields of the SchedulerStateMachine for testing
 class StateMachine : public SchedulerStateMachine {
 public:
+    StateMachine(const SchedulerSettings& schedulerSettings)
+      : SchedulerStateMachine(schedulerSettings) { }
     void setCommitState(CommitState cs) { m_commitState = cs; }
     CommitState commitState() const { return  m_commitState; }
 
@@ -37,9 +41,11 @@ public:
 
 TEST(SchedulerStateMachineTest, TestNextActionBeginsFrameIfNeeded)
 {
+    SchedulerSettings defaultSchedulerSettings;
+
     // If no commit needed, do nothing
-    {
-        StateMachine state;
+    {    
+        StateMachine state(defaultSchedulerSettings);
         state.setCommitState(SchedulerStateMachine::COMMIT_STATE_IDLE);
         state.setCanBeginFrame(true);
         state.setNeedsRedraw(false);
@@ -56,7 +62,7 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsFrameIfNeeded)
 
     // If commit requested but canBeginFrame is still false, do nothing.
     {
-        StateMachine state;
+        StateMachine state(defaultSchedulerSettings);
         state.setCommitState(SchedulerStateMachine::COMMIT_STATE_IDLE);
         state.setNeedsRedraw(false);
         state.setVisible(true);
@@ -73,7 +79,7 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsFrameIfNeeded)
 
     // If commit requested, begin a frame
     {
-        StateMachine state;
+        StateMachine state(defaultSchedulerSettings);
         state.setCommitState(SchedulerStateMachine::COMMIT_STATE_IDLE);
         state.setCanBeginFrame(true);
         state.setNeedsRedraw(false);
@@ -83,7 +89,7 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsFrameIfNeeded)
 
     // Begin the frame, make sure needsCommit and commitState update correctly.
     {
-        StateMachine state;
+        StateMachine state(defaultSchedulerSettings);
         state.setCanBeginFrame(true);
         state.setVisible(true);
         state.updateState(SchedulerStateMachine::ACTION_BEGIN_FRAME);
@@ -95,7 +101,8 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsFrameIfNeeded)
 
 TEST(SchedulerStateMachineTest, TestSetForcedRedrawDoesNotSetsNormalRedraw)
 {
-    SchedulerStateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    SchedulerStateMachine state(defaultSchedulerSettings);
     state.setCanDraw(true);
     state.setNeedsForcedRedraw();
     EXPECT_FALSE(state.redrawPending());
@@ -104,7 +111,8 @@ TEST(SchedulerStateMachineTest, TestSetForcedRedrawDoesNotSetsNormalRedraw)
 
 TEST(SchedulerStateMachineTest, TestFailedDrawSetsNeedsCommitAndDoesNotDrawAgain)
 {
-    SchedulerStateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    SchedulerStateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -130,7 +138,8 @@ TEST(SchedulerStateMachineTest, TestFailedDrawSetsNeedsCommitAndDoesNotDrawAgain
 
 TEST(SchedulerStateMachineTest, TestSetNeedsRedrawDuringFailedDrawDoesNotRemoveNeedsRedraw)
 {
-    SchedulerStateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    SchedulerStateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -159,7 +168,8 @@ TEST(SchedulerStateMachineTest, TestSetNeedsRedrawDuringFailedDrawDoesNotRemoveN
 
 TEST(SchedulerStateMachineTest, TestCommitAfterFailedDrawAllowsDrawInSameFrame)
 {
-    SchedulerStateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    SchedulerStateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -197,7 +207,8 @@ TEST(SchedulerStateMachineTest, TestCommitAfterFailedDrawAllowsDrawInSameFrame)
 
 TEST(SchedulerStateMachineTest, TestCommitAfterFailedAndSuccessfulDrawDoesNotAllowDrawInSameFrame)
 {
-    SchedulerStateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    SchedulerStateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -246,7 +257,8 @@ TEST(SchedulerStateMachineTest, TestCommitAfterFailedAndSuccessfulDrawDoesNotAll
 
 TEST(SchedulerStateMachineTest, TestFailedDrawsWillEventuallyForceADrawAfterTheNextCommit)
 {
-    SchedulerStateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    SchedulerStateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -286,7 +298,8 @@ TEST(SchedulerStateMachineTest, TestFailedDrawsWillEventuallyForceADrawAfterTheN
 
 TEST(SchedulerStateMachineTest, TestFailedDrawIsRetriedNextVSync)
 {
-    SchedulerStateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    SchedulerStateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -317,7 +330,8 @@ TEST(SchedulerStateMachineTest, TestFailedDrawIsRetriedNextVSync)
 
 TEST(SchedulerStateMachineTest, TestDoestDrawTwiceInSameFrame)
 {
-    SchedulerStateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    SchedulerStateMachine state(defaultSchedulerSettings);
     state.setVisible(true);
     state.setCanDraw(true);
     state.setNeedsRedraw();
@@ -345,11 +359,13 @@ TEST(SchedulerStateMachineTest, TestDoestDrawTwiceInSameFrame)
 
 TEST(SchedulerStateMachineTest, TestNextActionDrawsOnVSync)
 {
+    SchedulerSettings defaultSchedulerSettings;
+
     // When not on vsync, or on vsync but not visible, don't draw.
     size_t numCommitStates = sizeof(allCommitStates) / sizeof(SchedulerStateMachine::CommitState);
     for (size_t i = 0; i < numCommitStates; ++i) {
         for (unsigned j = 0; j < 2; ++j) {
-            StateMachine state;
+            StateMachine state(defaultSchedulerSettings);
             state.setCommitState(allCommitStates[i]);
             bool visible = j;
             if (!visible) {
@@ -370,7 +386,7 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnVSync)
     // When on vsync, or not on vsync but needsForcedRedraw set, should always draw except if you're ready to commit, in which case commit.
     for (size_t i = 0; i < numCommitStates; ++i) {
         for (unsigned j = 0; j < 2; ++j) {
-            StateMachine state;
+            StateMachine state(defaultSchedulerSettings);
             state.setCanDraw(true);
             state.setCommitState(allCommitStates[i]);
             bool forcedDraw = j;
@@ -401,11 +417,13 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnVSync)
 
 TEST(SchedulerStateMachineTest, TestNoCommitStatesRedrawWhenInvisible)
 {
+    SchedulerSettings defaultSchedulerSettings;
+
     size_t numCommitStates = sizeof(allCommitStates) / sizeof(SchedulerStateMachine::CommitState);
     for (size_t i = 0; i < numCommitStates; ++i) {
         // There shouldn't be any drawing regardless of vsync.
         for (unsigned j = 0; j < 2; ++j) {
-            StateMachine state;
+            StateMachine state(defaultSchedulerSettings);
             state.setCommitState(allCommitStates[i]);
             state.setVisible(false);
             state.setNeedsRedraw(true);
@@ -425,11 +443,13 @@ TEST(SchedulerStateMachineTest, TestNoCommitStatesRedrawWhenInvisible)
 
 TEST(SchedulerStateMachineTest, TestCanRedraw_StopsDraw)
 {
+    SchedulerSettings defaultSchedulerSettings;
+
     size_t numCommitStates = sizeof(allCommitStates) / sizeof(SchedulerStateMachine::CommitState);
     for (size_t i = 0; i < numCommitStates; ++i) {
         // There shouldn't be any drawing regardless of vsync.
         for (unsigned j = 0; j < 2; ++j) {
-            StateMachine state;
+            StateMachine state(defaultSchedulerSettings);
             state.setCommitState(allCommitStates[i]);
             state.setVisible(false);
             state.setNeedsRedraw(true);
@@ -445,7 +465,8 @@ TEST(SchedulerStateMachineTest, TestCanRedraw_StopsDraw)
 
 TEST(SchedulerStateMachineTest, TestCanRedrawWithWaitingForFirstDrawMakesProgress)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setCommitState(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW);
     state.setCanBeginFrame(true);
     state.setNeedsCommit();
@@ -457,7 +478,8 @@ TEST(SchedulerStateMachineTest, TestCanRedrawWithWaitingForFirstDrawMakesProgres
 
 TEST(SchedulerStateMachineTest, TestSetNeedsCommitIsNotLost)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setNeedsCommit();
     state.setVisible(true);
@@ -496,7 +518,8 @@ TEST(SchedulerStateMachineTest, TestSetNeedsCommitIsNotLost)
 
 TEST(SchedulerStateMachineTest, TestFullCycle)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -539,7 +562,8 @@ TEST(SchedulerStateMachineTest, TestFullCycle)
 
 TEST(SchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -586,14 +610,16 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween)
 
 TEST(SchedulerStateMachineTest, TestRequestCommitInvisible)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setNeedsCommit();
     EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
 }
 
 TEST(SchedulerStateMachineTest, TestGoesInvisibleBeforeBeginFrameCompletes)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -632,7 +658,8 @@ TEST(SchedulerStateMachineTest, TestGoesInvisibleBeforeBeginFrameCompletes)
 
 TEST(SchedulerStateMachineTest, TestContextLostWhenCompletelyIdle)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -655,7 +682,8 @@ TEST(SchedulerStateMachineTest, TestContextLostWhenCompletelyIdle)
 
 TEST(SchedulerStateMachineTest, TestContextLostWhenIdleAndCommitRequestedWhileRecreating)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -692,7 +720,8 @@ TEST(SchedulerStateMachineTest, TestContextLostWhenIdleAndCommitRequestedWhileRe
 
 TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -735,7 +764,8 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress)
 
 TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgressAndAnotherCommitRequested)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -780,7 +810,8 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgressAndAnotherCo
 
 TEST(SchedulerStateMachineTest, TestFinishAllRenderingWhileContextLost)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setVisible(true);
     state.setCanDraw(true);
 
@@ -809,7 +840,8 @@ TEST(SchedulerStateMachineTest, TestFinishAllRenderingWhileContextLost)
 
 TEST(SchedulerStateMachineTest, TestBeginFrameWhenInvisibleAndForceCommit)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(false);
     state.setNeedsCommit();
@@ -819,7 +851,8 @@ TEST(SchedulerStateMachineTest, TestBeginFrameWhenInvisibleAndForceCommit)
 
 TEST(SchedulerStateMachineTest, TestBeginFrameWhenCanBeginFrameFalseAndForceCommit)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setVisible(true);
     state.setCanDraw(true);
     state.setNeedsCommit();
@@ -829,7 +862,8 @@ TEST(SchedulerStateMachineTest, TestBeginFrameWhenCanBeginFrameFalseAndForceComm
 
 TEST(SchedulerStateMachineTest, TestBeginFrameWhenCommitInProgress)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(false);
     state.setCommitState(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS);
@@ -846,7 +880,8 @@ TEST(SchedulerStateMachineTest, TestBeginFrameWhenCommitInProgress)
 
 TEST(SchedulerStateMachineTest, TestBeginFrameWhenForcedCommitInProgress)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(false);
     state.setCommitState(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS);
@@ -865,7 +900,8 @@ TEST(SchedulerStateMachineTest, TestBeginFrameWhenForcedCommitInProgress)
 
 TEST(SchedulerStateMachineTest, TestBeginFrameWhenContextLost)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -877,7 +913,8 @@ TEST(SchedulerStateMachineTest, TestBeginFrameWhenContextLost)
 
 TEST(SchedulerStateMachineTest, TestImmediateBeginFrame)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -907,7 +944,8 @@ TEST(SchedulerStateMachineTest, TestImmediateBeginFrame)
 
 TEST(SchedulerStateMachineTest, TestImmediateBeginFrameDuringCommit)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -941,7 +979,8 @@ TEST(SchedulerStateMachineTest, TestImmediateBeginFrameDuringCommit)
 
 TEST(SchedulerStateMachineTest, ImmediateBeginFrameWhileInvisible)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -983,7 +1022,8 @@ TEST(SchedulerStateMachineTest, ImmediateBeginFrameWhileInvisible)
 
 TEST(SchedulerStateMachineTest, ImmediateBeginFrameWhileCantDraw)
 {
-    StateMachine state;
+    SchedulerSettings defaultSchedulerSettings;
+    StateMachine state(defaultSchedulerSettings);
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(false);

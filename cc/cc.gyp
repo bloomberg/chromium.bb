@@ -206,6 +206,8 @@
       'ring_buffer.h',
       'scheduler.cc',
       'scheduler.h',
+      'scheduler_settings.cc',
+      'scheduler_settings.h',
       'scheduler_state_machine.cc',
       'scheduler_state_machine.h',
       'scoped_ptr_algorithm.h',

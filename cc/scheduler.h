@@ -11,6 +11,7 @@
 #include "cc/cc_export.h"
 #include "cc/frame_rate_controller.h"
 #include "cc/layer_tree_host.h"
+#include "cc/scheduler_settings.h"
 #include "cc/scheduler_state_machine.h"
 
 namespace cc {
@@ -49,9 +50,11 @@ protected:
 
 class CC_EXPORT Scheduler : FrameRateControllerClient {
 public:
-    static scoped_ptr<Scheduler> create(SchedulerClient* client, scoped_ptr<FrameRateController> frameRateController)
+    static scoped_ptr<Scheduler> create(SchedulerClient* client,
+                                        scoped_ptr<FrameRateController> frameRateController,
+                                        const SchedulerSettings& schedulerSettings)
     {
-        return make_scoped_ptr(new Scheduler(client, frameRateController.Pass()));
+        return make_scoped_ptr(new Scheduler(client, frameRateController.Pass(), schedulerSettings));
     }
 
     virtual ~Scheduler();
@@ -97,10 +100,12 @@ public:
     virtual void vsyncTick(bool throttled) OVERRIDE;
 
 private:
-    Scheduler(SchedulerClient*, scoped_ptr<FrameRateController>);
+    Scheduler(SchedulerClient*, scoped_ptr<FrameRateController>,
+              const SchedulerSettings& schedulerSettings);
 
     void processScheduledActions();
 
+    const SchedulerSettings m_settings;
     SchedulerClient* m_client;
     scoped_ptr<FrameRateController> m_frameRateController;
     SchedulerStateMachine m_stateMachine;

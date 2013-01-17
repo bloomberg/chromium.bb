@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "cc/cc_export.h"
+#include "cc/scheduler_settings.h"
 
 namespace cc {
 
@@ -24,7 +25,8 @@ namespace cc {
 // make testing cleaner.
 class CC_EXPORT SchedulerStateMachine {
 public:
-    SchedulerStateMachine();
+    // settings must be valid for the lifetime of this class.
+    SchedulerStateMachine(const SchedulerSettings& settings);
 
     enum CommitState {
         COMMIT_STATE_IDLE,
@@ -148,6 +150,8 @@ protected:
     bool shouldAcquireLayerTexturesForMainThread() const;
     bool hasDrawnThisFrame() const;
     bool hasAttemptedTreeActivationThisFrame() const;
+
+    const SchedulerSettings m_settings;
 
     CommitState m_commitState;
 

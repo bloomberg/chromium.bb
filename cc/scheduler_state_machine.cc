@@ -9,8 +9,9 @@
 
 namespace cc {
 
-SchedulerStateMachine::SchedulerStateMachine()
-    : m_commitState(COMMIT_STATE_IDLE)
+SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
+    : m_settings(settings)
+    , m_commitState(COMMIT_STATE_IDLE)
     , m_currentFrameNumber(0)
     , m_lastFrameNumberWhereDrawWasCalled(-1)
     , m_lastFrameNumberWhereTreeActivationAttempted(-1)
@@ -209,7 +210,9 @@ void SchedulerStateMachine::updateState(Action action)
             m_commitState = COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW;
         else
             m_commitState = COMMIT_STATE_WAITING_FOR_FIRST_DRAW;
-        m_needsRedraw = true;
+        // When impl-side painting, we draw on activation instead of on commit.
+        if (!m_settings.implSidePainting)
+            m_needsRedraw = true;
         if (m_drawIfPossibleFailed)
             m_lastFrameNumberWhereDrawWasCalled = -1;
 

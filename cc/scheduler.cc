@@ -10,9 +10,13 @@
 
 namespace cc {
 
-Scheduler::Scheduler(SchedulerClient* client, scoped_ptr<FrameRateController> frameRateController)
-    : m_client(client)
+Scheduler::Scheduler(SchedulerClient* client,
+                     scoped_ptr<FrameRateController> frameRateController,
+                     const SchedulerSettings& schedulerSettings)
+    : m_settings(schedulerSettings)
+    , m_client(client)
     , m_frameRateController(frameRateController.Pass())
+    , m_stateMachine(schedulerSettings)
     , m_insideProcessScheduledActions(false)
 {
     DCHECK(m_client);
