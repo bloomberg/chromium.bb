@@ -224,19 +224,23 @@ void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQ
 
     gfx::RectF maskUVRect(0.0f, 0.0f, 1.0f, 1.0f);
     if (maskLayer) {
-        // Because the RenderSurface is sized base on the screen footprint,
-        // there can be a scale between the RenderSurface and the owning layer,
-        // as well as the mask. While the mask doesn't have a drawTransform, the
-        // owning layer has it (and should be pure scaling), so use that to
-        // scale the mask to the right size.
-        gfx::Vector2dF maskDrawScale = MathUtil::computeTransform2dScaleComponents(m_owningLayer->drawTransform(), 1.f);
-        float scaleX = contentRect().width() / maskLayer->contentsScaleX() / maskLayer->bounds().width() / maskDrawScale.x();
-        float scaleY = contentRect().height() / maskLayer->contentsScaleY() / maskLayer->bounds().height() / maskDrawScale.y();
+        gfx::Vector2dF owningLayerDrawScale = MathUtil::computeTransform2dScaleComponents(m_owningLayer->drawTransform(), 1.f);
+        gfx::SizeF unclippedSurfaceSize = gfx::ScaleSize(
+            m_owningLayer->contentBounds(),
+            owningLayerDrawScale.x(),
+            owningLayerDrawScale.y());
+        // This assumes that the owning layer clips its subtree when a mask is
+        // present.
+        DCHECK(gfx::RectF(unclippedSurfaceSize).Contains(contentRect()));
 
-        maskUVRect = gfx::RectF(static_cast<float>(contentRect().x()) / contentRect().width() * scaleX,
-                                static_cast<float>(contentRect().y()) / contentRect().height() * scaleY,
-                                scaleX,
-                                scaleY);
+        float uvScaleX = contentRect().width() / unclippedSurfaceSize.width();
+        float uvScaleY = contentRect().height() / unclippedSurfaceSize.height();
+
+        maskUVRect = gfx::RectF(
+            static_cast<float>(contentRect().x()) / contentRect().width() * uvScaleX,
+            static_cast<float>(contentRect().y()) / contentRect().height() * uvScaleY,
+            uvScaleX,
+            uvScaleY);
     }
 
     ResourceProvider::ResourceId maskResourceId = maskLayer ? maskLayer->contentsResourceId() : 0;
