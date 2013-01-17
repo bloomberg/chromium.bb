@@ -746,7 +746,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   browser_creator.Start(dummy, profile_manager->user_data_dir(), profile_home1,
                         last_opened_profiles, &return_code);
 
-
   while (SessionRestore::IsRestoring(default_profile) ||
          SessionRestore::IsRestoring(profile_home1) ||
          SessionRestore::IsRestoring(profile_home2) ||
@@ -785,6 +784,88 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   // profile_home2 was not launched since it would've only opened the home page.
   ASSERT_EQ(0u, chrome::GetBrowserCount(profile_home2));
 }
+
+// As mentioned in http://crbug.com/170439,
+// BrowserWindow::IsActive() always returns false in tests on MAC.
+// And this test is useless without that functionality.
+#if !defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, LastUsedProfileActivated) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  // Create 4 profiles.
+  FilePath dest_path1 = profile_manager->user_data_dir().Append(
+      FILE_PATH_LITERAL("New Profile 1"));
+  FilePath dest_path2 = profile_manager->user_data_dir().Append(
+      FILE_PATH_LITERAL("New Profile 2"));
+  FilePath dest_path3 = profile_manager->user_data_dir().Append(
+      FILE_PATH_LITERAL("New Profile 3"));
+  FilePath dest_path4 = profile_manager->user_data_dir().Append(
+      FILE_PATH_LITERAL("New Profile 4"));
+
+  Profile* profile_1 = profile_manager->GetProfile(dest_path1);
+  ASSERT_TRUE(profile_1);
+  Profile* profile_2 = profile_manager->GetProfile(dest_path2);
+  ASSERT_TRUE(profile_2);
+  Profile* profile_3 = profile_manager->GetProfile(dest_path3);
+  ASSERT_TRUE(profile_3);
+  Profile* profile_4 = profile_manager->GetProfile(dest_path4);
+  ASSERT_TRUE(profile_4);
+
+
+  std::vector<GURL> urls;
+  urls.push_back(ui_test_utils::GetTestUrl(
+      FilePath(FilePath::kCurrentDirectory),
+      FilePath(FILE_PATH_LITERAL("title1.html"))));
+
+  SessionStartupPref pref_urls(SessionStartupPref::URLS);
+  pref_urls.urls = urls;
+  SessionStartupPref::SetStartupPref(profile_1, pref_urls);
+  SessionStartupPref::SetStartupPref(profile_2, pref_urls);
+  SessionStartupPref::SetStartupPref(profile_3, pref_urls);
+  SessionStartupPref::SetStartupPref(profile_4, pref_urls);
+
+  // Do a simple non-process-startup browser launch.
+  CommandLine dummy(CommandLine::NO_PROGRAM);
+
+  int return_code;
+  StartupBrowserCreator browser_creator;
+  std::vector<Profile*> last_opened_profiles;
+  last_opened_profiles.push_back(profile_1);
+  last_opened_profiles.push_back(profile_2);
+  last_opened_profiles.push_back(profile_3);
+  last_opened_profiles.push_back(profile_4);
+  browser_creator.Start(dummy, profile_manager->user_data_dir(), profile_2,
+                        last_opened_profiles, &return_code);
+
+  while (!browser_creator.ActivatedProfile())
+    MessageLoop::current()->RunUntilIdle();
+
+  Browser* new_browser = NULL;
+
+  // The last used profile (the profile_2 in this case) must be active.
+  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_2));
+  new_browser = FindOneOtherBrowserForProfile(profile_2, NULL);
+  ASSERT_TRUE(new_browser);
+  EXPECT_TRUE(new_browser->window()->IsActive());
+
+  // All other profiles browser should not be active.
+  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_1));
+  new_browser = FindOneOtherBrowserForProfile(profile_1, NULL);
+  ASSERT_TRUE(new_browser);
+  EXPECT_FALSE(new_browser->window()->IsActive());
+
+  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_3));
+  new_browser = FindOneOtherBrowserForProfile(profile_3, NULL);
+  ASSERT_TRUE(new_browser);
+  EXPECT_FALSE(new_browser->window()->IsActive());
+
+  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_4));
+  new_browser = FindOneOtherBrowserForProfile(profile_4, NULL);
+  ASSERT_TRUE(new_browser);
+  EXPECT_FALSE(new_browser->window()->IsActive());
+
+}
+#endif  // !defined(OS_MACOSX)
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   // After an unclean exit, all profiles will be launched. However, they won't

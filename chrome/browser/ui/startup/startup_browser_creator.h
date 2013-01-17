@@ -110,6 +110,7 @@ class StartupBrowserCreator {
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest,
                            ReadingWasRestartedAfterRestart);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, UpdateWithTwoProfiles);
+  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, LastUsedProfileActivated);
 
   // Returns the list of URLs to open from the command line. The returned
   // vector is empty if the user didn't specify any URLs on the command line.
@@ -132,6 +133,10 @@ class StartupBrowserCreator {
       const FilePath& cur_dir,
       Profile* profile,
       Profile::CreateStatus status);
+
+  // Returns true once a profile was activated. Used by the
+  // StartupBrowserCreatorTest.LastUsedProfileActivated test.
+  static bool ActivatedProfile();
 
   // Additional tabs to open during first run.
   std::vector<GURL> first_run_tabs_;

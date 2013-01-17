@@ -51,6 +51,9 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -109,8 +112,12 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
 // Keeps track on which profiles have been launched.
 class ProfileLaunchObserver : public content::NotificationObserver {
  public:
-  ProfileLaunchObserver() {
+  ProfileLaunchObserver()
+      : profile_to_activate_(NULL),
+        activated_profile_(false) {
     registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                   content::NotificationService::AllSources());
+    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
                    content::NotificationService::AllSources());
   }
   virtual ~ProfileLaunchObserver() {}
@@ -121,7 +128,20 @@ class ProfileLaunchObserver : public content::NotificationObserver {
     switch (type) {
       case chrome::NOTIFICATION_PROFILE_DESTROYED: {
         Profile* profile = content::Source<Profile>(source).ptr();
-        launched_profiles.erase(profile);
+        launched_profiles_.erase(profile);
+        opened_profiles_.erase(profile);
+        if (profile == profile_to_activate_)
+          profile_to_activate_ = NULL;
+        // If this profile was the last launched one without an opened window,
+        // then we may be ready to activate |profile_to_activate_|.
+        MaybeActivateProfile();
+        break;
+      }
+      case chrome::NOTIFICATION_BROWSER_WINDOW_READY: {
+        Browser* browser = content::Source<Browser>(source).ptr();
+        DCHECK(browser);
+        opened_profiles_.insert(browser->profile());
+        MaybeActivateProfile();
         break;
       }
       default:
@@ -130,20 +150,91 @@ class ProfileLaunchObserver : public content::NotificationObserver {
   }
 
   bool HasBeenLaunched(const Profile* profile) const {
-    return launched_profiles.find(profile) != launched_profiles.end();
+    return launched_profiles_.find(profile) != launched_profiles_.end();
   }
 
-  void AddLaunched(const Profile* profile) {
-    launched_profiles.insert(profile);
+  void AddLaunched(Profile* profile) {
+    launched_profiles_.insert(profile);
+    // Since the startup code only executes for browsers launched in
+    // desktop mode, i.e., HOST_DESKTOP_TYPE_NATIVE. Ash should never get here.
+    if (chrome::FindBrowserWithProfile(profile,
+                                       chrome::HOST_DESKTOP_TYPE_NATIVE)) {
+      // A browser may get opened before we get initialized (e.g., in tests),
+      // so we never see the NOTIFICATION_BROWSER_WINDOW_READY for it.
+      opened_profiles_.insert(profile);
+    }
   }
 
   void Clear() {
-    launched_profiles.clear();
+    launched_profiles_.clear();
+    opened_profiles_.clear();
+  }
+
+  bool activated_profile() { return activated_profile_; }
+
+  void set_profile_to_activate(Profile* profile) {
+    profile_to_activate_ = profile;
+    MaybeActivateProfile();
   }
 
  private:
-  std::set<const Profile*> launched_profiles;
+  void MaybeActivateProfile() {
+    if (!profile_to_activate_)
+      return;
+    // Check that browsers have been opened for all the launched profiles.
+    // Note that browsers opened for profiles that were not added as launched
+    // profiles are simply ignored.
+    std::set<const Profile*>::const_iterator i = launched_profiles_.begin();
+    for (; i != launched_profiles_.end(); ++i) {
+      if (opened_profiles_.find(*i) == opened_profiles_.end())
+        return;
+    }
+    // Asynchronous post to give a chance to the last window to completely
+    // open and activate before trying to activate |profile_to_activate_|.
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&ProfileLaunchObserver::ActivateProfile,
+                   base::Unretained(this)));
+    // Stop reacting to new windows being opened to avoid posting more than
+    // once before ActivateProfile gets called and set |profile_to_activate_|
+    // to NULL.
+    registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+                      content::NotificationService::AllSources());
+  }
+
+  void ActivateProfile() {
+    // We need to test again, in case the profile got deleted in the mean time.
+    if (profile_to_activate_) {
+      Browser* browser = chrome::FindBrowserWithProfile(
+          profile_to_activate_, chrome::HOST_DESKTOP_TYPE_NATIVE);
+      // |profile| may never get launched, e.g., if it only had
+      // incognito Windows and one of them was used to exit Chrome.
+      // So it won't have a browser in that case.
+      if (browser)
+        browser->window()->Activate();
+      // No need try to activate this profile again.
+      profile_to_activate_ = NULL;
+    }
+    // Assign true here, even if no browser was actually activated, so that
+    // the test can stop waiting, and fail gracefully when needed.
+    activated_profile_ = true;
+  }
+
+  // These are the profiles that get launched by
+  // StartupBrowserCreator::LaunchBrowser.
+  std::set<const Profile*> launched_profiles_;
+  // These are the profiles for which at least one browser window has been
+  // opened. This is needed to know when it is safe to activate
+  // |profile_to_activate_|, otherwise, new browser windows being opened will
+  // be activated on top of it.
+  std::set<const Profile*> opened_profiles_;
   content::NotificationRegistrar registrar_;
+  // This is NULL until the profile to activate has been chosen. This value,
+  // should only be set once all profiles have been launched, otherwise,
+  // activation may not happen after the launch of newer profiles.
+  Profile* profile_to_activate_;
+  // Set once we attempted to activate a profile. We only get one shot at this.
+  bool activated_profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileLaunchObserver);
 };
@@ -546,6 +637,9 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
         // We've launched at least one browser.
         is_process_startup = chrome::startup::IS_NOT_PROCESS_STARTUP;
       }
+      // This must be done after all profiles have been launched so the observer
+      // knows about all profiles to wait for before activating this one.
+      profile_launch_observer.Get().set_profile_to_activate(last_used_profile);
     }
   }
   return true;
@@ -604,6 +698,11 @@ void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
     return;
   }
   ProcessCmdLineImpl(cmd_line, cur_dir, false, profile, Profiles(), NULL, NULL);
+}
+
+// static
+bool StartupBrowserCreator::ActivatedProfile() {
+  return profile_launch_observer.Get().activated_profile();
 }
 
 bool HasPendingUncleanExit(Profile* profile) {
