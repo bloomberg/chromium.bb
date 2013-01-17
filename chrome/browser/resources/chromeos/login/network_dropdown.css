@@ -11,7 +11,7 @@
   -webkit-padding-end: 20px;
   -webkit-padding-start: 1px;
   -webkit-user-select: none;
-  background-image: url('../../shared/images/select.png'),
+  background-image: url('../../../../../ui/webui/resources/images/select.png'),
       -webkit-gradient(linear, left top, left bottom,
                        color-stop(0, rgb(237, 237, 237)),
                        color-stop(0.38, rgb(237, 237, 237)),
@@ -43,7 +43,7 @@ html[dir=rtl] .dropdown-title {
 }
 
 .dropdown-title:enabled:hover {
-  background-image: url('../../shared/images/select.png'),
+  background-image: url('../../../../../ui/webui/resources/images/select.png'),
       -webkit-gradient(linear, left top, left bottom,
                        color-stop(0, rgb(237, 237, 237)),
                        color-stop(0.38, rgb(237, 237, 237)),
@@ -55,7 +55,7 @@ html[dir=rtl] .dropdown-title {
 }
 
 .dropdown-title:enabled:active {
-  background-image: url('../../shared/images/select.png'),
+  background-image: url('../../../../../ui/webui/resources/images/select.png'),
       -webkit-gradient(linear, left top, left bottom,
                        color-stop(0, rgb(231, 231, 231)),
                        color-stop(0.38, rgb(231, 231, 231)),

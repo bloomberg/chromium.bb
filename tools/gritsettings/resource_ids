@@ -27,7 +27,7 @@
   "chrome/browser/resources/net_internals_resources.grd": {
     "includes": [1500],
   },
-  "chrome/browser/resources/shared_resources.grd": {
+  "ui/webui/resources/webui_resources.grd": {
     "includes": [2000],
     "structures": [2200],
   },

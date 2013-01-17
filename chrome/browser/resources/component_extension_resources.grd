@@ -83,7 +83,7 @@
 
         <!-- Resources used for non-flattened HTML files. -->
         <include name="IDR_FILE_MANAGER_GDRIVE_WELCOME_STYLE" file="file_manager/css/gdrive_welcome.css" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMG_UI_GDRIVE_WELCOME_BACKGROUND" file="shared/images/clouds.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMG_UI_GDRIVE_WELCOME_BACKGROUND" file="../../../ui/webui/resources/images/clouds.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_UI_GDRIVE_WELCOME_LOGO" file="file_manager/images/files/ui/gdrive_logo.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_IMG_UI_2X_GDRIVE_WELCOME_LOGO" file="file_manager/images/files/ui/2x/gdrive_logo.png" type="BINDATA" />
 

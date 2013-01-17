@@ -24,7 +24,7 @@ CertificateManagerWebUIBaseTest.prototype = {
   /** @inheritDoc */
   preLoad: function() {
     // We can't check cr.isChromeOS in the preLoad since "cr" doesn't exist yet.
-    // This is copied from chrome/browser/resources/shared/js/cr.js, maybe
+    // This is copied from ui/webui/resources/js/cr.js, maybe
     // there's a better way to do this.
     this.isChromeOS = /CrOS/.test(navigator.userAgent);
 

@@ -18,6 +18,13 @@
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
+        {
+          'action_name': 'webui_resources',
+          'variables': {
+            'grit_grd_file': 'webui/resources/webui_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
       ],
       # gfx_resources.pak is used by DumpRenderTree.
       # TODO(oshima): Update DumpRenderTree.gyp to use new pak file and

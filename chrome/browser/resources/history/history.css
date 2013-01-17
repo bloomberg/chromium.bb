@@ -203,7 +203,7 @@ html[dir='rtl'] .entry .title {
 
 .entry .starred {
   -webkit-margin-start: 4px;
-  background: url('../shared/images/star_small.png') no-repeat;
+  background: url('../../../../ui/webui/resources/images/star_small.png') no-repeat;
   display: inline-block;
   height: 11px;
   width: 11px;

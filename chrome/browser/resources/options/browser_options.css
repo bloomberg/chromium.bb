@@ -286,7 +286,7 @@ list:not([disabled]) > .network-group[selected] {
 
 .network-selector {
   background: right center no-repeat;
-  background-image: url('../shared/images/select.png');
+  background-image: url('../../../../ui/webui/resources/images/select.png');
   padding-right: 20px;
 }
 

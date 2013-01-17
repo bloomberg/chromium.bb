@@ -115,14 +115,14 @@ html[dir=rtl] .tree-label {
 html[dir=rtl] .tree-label,
 html[dir=rtl] .tree-row[may-have-children] > .tree-label {
   background-image: -webkit-image-set(
-      url('../../../../../ui/resources/default_100_percent/common/folder_closed_rtl.png') 1x,
-      url('../../../../../ui/resources/default_200_percent/common/folder_closed_rtl.png') 2x);
+      url('../../../resources/default_100_percent/common/folder_closed_rtl.png') 1x,
+      url('../../../resources/default_200_percent/common/folder_closed_rtl.png') 2x);
 }
 
 html[dir=rtl] .tree-item[expanded] > .tree-row > .tree-label {
   background-image: -webkit-image-set(
-     url('../../../../../ui/resources/default_100_percent/common/folder_open_rtl.png') 1x,
-     url('../../../../../ui/resources/default_200_percent/common/folder_open_rtl.png') 2x);
+     url('../../../resources/default_100_percent/common/folder_open_rtl.png') 1x,
+     url('../../../resources/default_200_percent/common/folder_open_rtl.png') 2x);
 }
 
 tree[icon-visibility=hidden] .tree-label {
@@ -138,14 +138,14 @@ tree[icon-visibility=parent] .tree-row[has-children=false] > .tree-label {
 .tree-label,
 .tree-row[may-have-children] > .tree-label {
   background-image: -webkit-image-set(
-      url('../../../../../ui/resources/default_100_percent/common/folder_closed.png') 1x,
-      url('../../../../../ui/resources/default_200_percent/common/folder_closed.png') 2x);
+      url('../../../resources/default_100_percent/common/folder_closed.png') 1x,
+      url('../../../resources/default_200_percent/common/folder_closed.png') 2x);
 }
 
 .tree-item[expanded] > .tree-row > .tree-label {
   background-image: -webkit-image-set(
-      url('../../../../../ui/resources/default_100_percent/common/folder_open.png') 1x,
-      url('../../../../../ui/resources/default_200_percent/common/folder_open.png') 2x);
+      url('../../../resources/default_100_percent/common/folder_open.png') 1x,
+      url('../../../resources/default_200_percent/common/folder_open.png') 2x);
 }
 
 /* We need to ensure that even empty labels take up space */

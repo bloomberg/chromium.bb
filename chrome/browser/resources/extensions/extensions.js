@@ -125,7 +125,7 @@ cr.define('extensions', function() {
           this.showExtensionCommandsConfigUi_();
       }
 
-      preventDefaultOnPoundLinkClicks();  // From shared/js/util.js.
+      preventDefaultOnPoundLinkClicks();  // From webui/js/util.js.
     },
 
     /**

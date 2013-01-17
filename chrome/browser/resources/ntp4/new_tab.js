@@ -255,7 +255,7 @@ cr.define('ntp', function() {
       startTime = Date.now();
     });
 
-    preventDefaultOnPoundLinkClicks();  // From shared/js/util.js.
+    preventDefaultOnPoundLinkClicks();  // From webui/js/util.js.
   }
 
   /**

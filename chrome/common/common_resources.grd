@@ -11,10 +11,6 @@
     <includes>
       <include name="IDR_EXTENSION_MANIFEST_FEATURES" file="extensions\api\_manifest_features.json" type="BINDATA" />
       <include name="IDR_EXTENSION_PERMISSION_FEATURES" file="extensions\api\_permission_features.json" type="BINDATA" />
-      <include name="IDR_I18N_PROCESS_JS" file="..\browser\resources\shared\js\i18n_process.js" type="BINDATA" />
-      <include name="IDR_I18N_TEMPLATE_JS" file="..\browser\resources\shared\js\i18n_template.js" type="BINDATA" />
-      <include name="IDR_I18N_TEMPLATE2_JS" file="..\browser\resources\shared\js\i18n_template2.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_JSTEMPLATE_JS" file="..\browser\resources\shared\js\jstemplate_compiled.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_WEB_APP_SCHEMA" file="web_app_schema.json" type="BINDATA" />
       <if expr="is_macosx">
         <include name="IDR_NACL_SANDBOX_PROFILE" file="nacl_loader.sb" type="BINDATA" />

@@ -20,5 +20,5 @@ tr:nth-child(odd) {
 }
 
 .tree-item:not([may-have-children]) > .tree-row > .tree-label {
-  background-image: url('../shared/images/icon_file.png');
+  background-image: url('../../../../ui/webui/resources/images/icon_file.png');
 }

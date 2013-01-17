@@ -15,7 +15,7 @@ MeasurementSystemUnitTest.prototype = {
   __proto__: testing.Test.prototype,
 
   extraLibraries: [
-    '../../shared/js/cr.js',
+    '../../../../../ui/webui/resources/js/cr.js',
     '../print_preview_utils.js',
     'measurement_system.js'
   ]

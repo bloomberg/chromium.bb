@@ -29,7 +29,7 @@
 
 /* TODO(akalin): Find a better icon to use for leaf nodes. */
 #sync-node-tree .leaf .tree-label {
-  background-image: url('../shared/images/star_small.png');
+  background-image: url('../../../../ui/webui/resources/images/star_small.png');
 }
 
 #sync-node-splitter {
