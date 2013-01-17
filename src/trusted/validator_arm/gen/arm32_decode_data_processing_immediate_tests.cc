@@ -2046,7 +2046,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 
 // Neutral case:
 // inst(24:20)=10001 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = {actual: 'Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1',
+//    = {actual: 'MaskedBinaryRegisterImmediateTest',
 //       baseline: 'MaskedBinaryRegisterImmediateTest',
 //       constraints: ,
 //       defs: {16},
@@ -2056,7 +2056,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 // Representative case:
 // op(24:20)=10001 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
-//       actual: Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1,
+//       actual: MaskedBinaryRegisterImmediateTest,
 //       baseline: MaskedBinaryRegisterImmediateTest,
 //       constraints: ,
 //       defs: {NZCV},
@@ -2064,15 +2064,13 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       rule: TST_immediate}
 TEST_F(Arm32DecoderStateTests,
        MaskedBinaryRegisterImmediateTestTester_Case0_TestCase0) {
-  MaskedBinaryRegisterImmediateTestTester_Case0 baseline_tester;
-  NamedActual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1_TST_immediate actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc00110001nnnn0000iiiiiiiiiiii");
+  MaskedBinaryRegisterImmediateTestTester_Case0 tester;
+  tester.Test("cccc00110001nnnn0000iiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(24:20)=10011 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = {actual: 'Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1',
+//    = {actual: 'BinaryRegisterImmediateTest',
 //       baseline: 'BinaryRegisterImmediateTest',
 //       constraints: ,
 //       defs: {16},
@@ -2082,7 +2080,7 @@ TEST_F(Arm32DecoderStateTests,
 // Representative case:
 // op(24:20)=10011 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
-//       actual: Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1,
+//       actual: BinaryRegisterImmediateTest,
 //       baseline: BinaryRegisterImmediateTest,
 //       constraints: ,
 //       defs: {NZCV},
@@ -2090,15 +2088,13 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: TEQ_immediate}
 TEST_F(Arm32DecoderStateTests,
        BinaryRegisterImmediateTestTester_Case1_TestCase1) {
-  BinaryRegisterImmediateTestTester_Case1 baseline_tester;
-  NamedActual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1_TEQ_immediate actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc00110011nnnn0000iiiiiiiiiiii");
+  BinaryRegisterImmediateTestTester_Case1 tester;
+  tester.Test("cccc00110011nnnn0000iiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(24:20)=10101 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = {actual: 'Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1',
+//    = {actual: 'BinaryRegisterImmediateTest',
 //       baseline: 'BinaryRegisterImmediateTest',
 //       constraints: ,
 //       defs: {16},
@@ -2108,7 +2104,7 @@ TEST_F(Arm32DecoderStateTests,
 // Representative case:
 // op(24:20)=10101 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
-//       actual: Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1,
+//       actual: BinaryRegisterImmediateTest,
 //       baseline: BinaryRegisterImmediateTest,
 //       constraints: ,
 //       defs: {NZCV},
@@ -2116,15 +2112,13 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: CMP_immediate}
 TEST_F(Arm32DecoderStateTests,
        BinaryRegisterImmediateTestTester_Case2_TestCase2) {
-  BinaryRegisterImmediateTestTester_Case2 baseline_tester;
-  NamedActual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1_CMP_immediate actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc00110101nnnn0000iiiiiiiiiiii");
+  BinaryRegisterImmediateTestTester_Case2 tester;
+  tester.Test("cccc00110101nnnn0000iiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(24:20)=10111 & inst(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
-//    = {actual: 'Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1',
+//    = {actual: 'BinaryRegisterImmediateTest',
 //       baseline: 'BinaryRegisterImmediateTest',
 //       constraints: ,
 //       defs: {16},
@@ -2134,7 +2128,7 @@ TEST_F(Arm32DecoderStateTests,
 // Representative case:
 // op(24:20)=10111 & $pattern(31:0)=xxxxxxxxxxxxxxxx0000xxxxxxxxxxxx
 //    = {NZCV: 16,
-//       actual: Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1,
+//       actual: BinaryRegisterImmediateTest,
 //       baseline: BinaryRegisterImmediateTest,
 //       constraints: ,
 //       defs: {NZCV},
@@ -2142,15 +2136,13 @@ TEST_F(Arm32DecoderStateTests,
 //       rule: CMN_immediate}
 TEST_F(Arm32DecoderStateTests,
        BinaryRegisterImmediateTestTester_Case3_TestCase3) {
-  BinaryRegisterImmediateTestTester_Case3 baseline_tester;
-  NamedActual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1_CMN_immediate actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc00110111nnnn0000iiiiiiiiiiii");
+  BinaryRegisterImmediateTestTester_Case3 tester;
+  tester.Test("cccc00110111nnnn0000iiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(24:20)=0000x
-//    = {actual: 'Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1',
+//    = {actual: 'Binary2RegisterImmediateOp',
 //       baseline: 'Binary2RegisterImmediateOp',
 //       constraints: ,
 //       defs: {inst(15:12), 16
@@ -2168,7 +2160,7 @@ TEST_F(Arm32DecoderStateTests,
 //       None: 32,
 //       Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
+//       actual: Binary2RegisterImmediateOp,
 //       baseline: Binary2RegisterImmediateOp,
 //       constraints: ,
 //       defs: {Rd, NZCV
@@ -2183,15 +2175,13 @@ TEST_F(Arm32DecoderStateTests,
 //       setflags: S(20)=1}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterImmediateOpTester_Case4_TestCase4) {
-  Binary2RegisterImmediateOpTester_Case4 baseline_tester;
-  NamedActual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1_AND_immediate actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0010000snnnnddddiiiiiiiiiiii");
+  Binary2RegisterImmediateOpTester_Case4 tester;
+  tester.Test("cccc0010000snnnnddddiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(24:20)=0001x
-//    = {actual: 'Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1',
+//    = {actual: 'Binary2RegisterImmediateOp',
 //       baseline: 'Binary2RegisterImmediateOp',
 //       constraints: ,
 //       defs: {inst(15:12), 16
@@ -2209,7 +2199,7 @@ TEST_F(Arm32DecoderStateTests,
 //       None: 32,
 //       Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
+//       actual: Binary2RegisterImmediateOp,
 //       baseline: Binary2RegisterImmediateOp,
 //       constraints: ,
 //       defs: {Rd, NZCV
@@ -2224,15 +2214,13 @@ TEST_F(Arm32DecoderStateTests,
 //       setflags: S(20)=1}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterImmediateOpTester_Case5_TestCase5) {
-  Binary2RegisterImmediateOpTester_Case5 baseline_tester;
-  NamedActual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1_EOR_immediate actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0010001snnnnddddiiiiiiiiiiii");
+  Binary2RegisterImmediateOpTester_Case5 tester;
+  tester.Test("cccc0010001snnnnddddiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(24:20)=0010x & inst(19:16)=~1111
-//    = {actual: 'Actual_ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_1',
+//    = {actual: 'Binary2RegisterImmediateOpAddSub',
 //       baseline: 'Binary2RegisterImmediateOpAddSub',
 //       constraints: ,
 //       defs: {inst(15:12), 16
@@ -2253,7 +2241,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rn: Rn(19:16),
 //       S: S(20),
-//       actual: Actual_ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_1,
+//       actual: Binary2RegisterImmediateOpAddSub,
 //       baseline: Binary2RegisterImmediateOpAddSub,
 //       constraints: ,
 //       defs: {Rd, NZCV
@@ -2270,15 +2258,13 @@ TEST_F(Arm32DecoderStateTests,
 //       setflags: S(20)=1}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterImmediateOpAddSubTester_Case6_TestCase6) {
-  Binary2RegisterImmediateOpAddSubTester_Case6 baseline_tester;
-  NamedActual_ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_1_SUB_immediate actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0010010snnnnddddiiiiiiiiiiii");
+  Binary2RegisterImmediateOpAddSubTester_Case6 tester;
+  tester.Test("cccc0010010snnnnddddiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(24:20)=0010x & inst(19:16)=1111
-//    = {actual: 'Actual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1',
+//    = {actual: 'Unary1RegisterImmediateOpPc',
 //       baseline: 'Unary1RegisterImmediateOpPc',
 //       constraints: ,
 //       defs: {inst(15:12)},
@@ -2289,7 +2275,7 @@ TEST_F(Arm32DecoderStateTests,
 // Representative case:
 // op(24:20)=0010x & Rn(19:16)=1111
 //    = {Rd: Rd(15:12),
-//       actual: Actual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1,
+//       actual: Unary1RegisterImmediateOpPc,
 //       baseline: Unary1RegisterImmediateOpPc,
 //       constraints: ,
 //       defs: {Rd},
@@ -2299,15 +2285,13 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Unary1RegisterImmediateOpPcTester_Case7_TestCase7) {
-  Unary1RegisterImmediateOpPcTester_Case7 baseline_tester;
-  NamedActual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1_ADR_A2 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc001001001111ddddiiiiiiiiiiii");
+  Unary1RegisterImmediateOpPcTester_Case7 tester;
+  tester.Test("cccc001001001111ddddiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(24:20)=0011x
-//    = {actual: 'Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1',
+//    = {actual: 'Binary2RegisterImmediateOp',
 //       baseline: 'Binary2RegisterImmediateOp',
 //       constraints: ,
 //       defs: {inst(15:12), 16
@@ -2325,7 +2309,7 @@ TEST_F(Arm32DecoderStateTests,
 //       None: 32,
 //       Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
+//       actual: Binary2RegisterImmediateOp,
 //       baseline: Binary2RegisterImmediateOp,
 //       constraints: ,
 //       defs: {Rd, NZCV
@@ -2340,15 +2324,13 @@ TEST_F(Arm32DecoderStateTests,
 //       setflags: S(20)=1}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterImmediateOpTester_Case8_TestCase8) {
-  Binary2RegisterImmediateOpTester_Case8 baseline_tester;
-  NamedActual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1_RSB_immediate actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0010011snnnnddddiiiiiiiiiiii");
+  Binary2RegisterImmediateOpTester_Case8 tester;
+  tester.Test("cccc0010011snnnnddddiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(24:20)=0100x & inst(19:16)=~1111
-//    = {actual: 'Actual_ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_1',
+//    = {actual: 'Binary2RegisterImmediateOpAddSub',
 //       baseline: 'Binary2RegisterImmediateOpAddSub',
 //       constraints: ,
 //       defs: {inst(15:12), 16
@@ -2369,7 +2351,7 @@ TEST_F(Arm32DecoderStateTests,
 //       Rd: Rd(15:12),
 //       Rn: Rn(19:16),
 //       S: S(20),
-//       actual: Actual_ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_1,
+//       actual: Binary2RegisterImmediateOpAddSub,
 //       baseline: Binary2RegisterImmediateOpAddSub,
 //       constraints: ,
 //       defs: {Rd, NZCV
@@ -2386,15 +2368,13 @@ TEST_F(Arm32DecoderStateTests,
 //       setflags: S(20)=1}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterImmediateOpAddSubTester_Case9_TestCase9) {
-  Binary2RegisterImmediateOpAddSubTester_Case9 baseline_tester;
-  NamedActual_ADD_immediate_cccc0010100snnnnddddiiiiiiiiiiii_case_1_ADD_immediate actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0010100snnnnddddiiiiiiiiiiii");
+  Binary2RegisterImmediateOpAddSubTester_Case9 tester;
+  tester.Test("cccc0010100snnnnddddiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(24:20)=0100x & inst(19:16)=1111
-//    = {actual: 'Actual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1',
+//    = {actual: 'Unary1RegisterImmediateOpPc',
 //       baseline: 'Unary1RegisterImmediateOpPc',
 //       constraints: ,
 //       defs: {inst(15:12)},
@@ -2405,7 +2385,7 @@ TEST_F(Arm32DecoderStateTests,
 // Representative case:
 // op(24:20)=0100x & Rn(19:16)=1111
 //    = {Rd: Rd(15:12),
-//       actual: Actual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1,
+//       actual: Unary1RegisterImmediateOpPc,
 //       baseline: Unary1RegisterImmediateOpPc,
 //       constraints: ,
 //       defs: {Rd},
@@ -2415,15 +2395,13 @@ TEST_F(Arm32DecoderStateTests,
 //       safety: [Rd(15:12)=1111 => FORBIDDEN_OPERANDS]}
 TEST_F(Arm32DecoderStateTests,
        Unary1RegisterImmediateOpPcTester_Case10_TestCase10) {
-  Unary1RegisterImmediateOpPcTester_Case10 baseline_tester;
-  NamedActual_ADR_A1_cccc001010001111ddddiiiiiiiiiiii_case_1_ADR_A1 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc001010001111ddddiiiiiiiiiiii");
+  Unary1RegisterImmediateOpPcTester_Case10 tester;
+  tester.Test("cccc001010001111ddddiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(24:20)=0101x
-//    = {actual: 'Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1',
+//    = {actual: 'Binary2RegisterImmediateOp',
 //       baseline: 'Binary2RegisterImmediateOp',
 //       constraints: ,
 //       defs: {inst(15:12), 16
@@ -2441,7 +2419,7 @@ TEST_F(Arm32DecoderStateTests,
 //       None: 32,
 //       Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
+//       actual: Binary2RegisterImmediateOp,
 //       baseline: Binary2RegisterImmediateOp,
 //       constraints: ,
 //       defs: {Rd, NZCV
@@ -2456,15 +2434,13 @@ TEST_F(Arm32DecoderStateTests,
 //       setflags: S(20)=1}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterImmediateOpTester_Case11_TestCase11) {
-  Binary2RegisterImmediateOpTester_Case11 baseline_tester;
-  NamedActual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1_ADC_immediate actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0010101snnnnddddiiiiiiiiiiii");
+  Binary2RegisterImmediateOpTester_Case11 tester;
+  tester.Test("cccc0010101snnnnddddiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(24:20)=0110x
-//    = {actual: 'Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1',
+//    = {actual: 'Binary2RegisterImmediateOp',
 //       baseline: 'Binary2RegisterImmediateOp',
 //       constraints: ,
 //       defs: {inst(15:12), 16
@@ -2482,7 +2458,7 @@ TEST_F(Arm32DecoderStateTests,
 //       None: 32,
 //       Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
+//       actual: Binary2RegisterImmediateOp,
 //       baseline: Binary2RegisterImmediateOp,
 //       constraints: ,
 //       defs: {Rd, NZCV
@@ -2497,15 +2473,13 @@ TEST_F(Arm32DecoderStateTests,
 //       setflags: S(20)=1}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterImmediateOpTester_Case12_TestCase12) {
-  Binary2RegisterImmediateOpTester_Case12 baseline_tester;
-  NamedActual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1_SBC_immediate actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0010110snnnnddddiiiiiiiiiiii");
+  Binary2RegisterImmediateOpTester_Case12 tester;
+  tester.Test("cccc0010110snnnnddddiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(24:20)=0111x
-//    = {actual: 'Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1',
+//    = {actual: 'Binary2RegisterImmediateOp',
 //       baseline: 'Binary2RegisterImmediateOp',
 //       constraints: ,
 //       defs: {inst(15:12), 16
@@ -2523,7 +2497,7 @@ TEST_F(Arm32DecoderStateTests,
 //       None: 32,
 //       Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Actual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1,
+//       actual: Binary2RegisterImmediateOp,
 //       baseline: Binary2RegisterImmediateOp,
 //       constraints: ,
 //       defs: {Rd, NZCV
@@ -2538,15 +2512,13 @@ TEST_F(Arm32DecoderStateTests,
 //       setflags: S(20)=1}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterImmediateOpTester_Case13_TestCase13) {
-  Binary2RegisterImmediateOpTester_Case13 baseline_tester;
-  NamedActual_ADC_immediate_cccc0010101snnnnddddiiiiiiiiiiii_case_1_RSC_immediate actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0010111snnnnddddiiiiiiiiiiii");
+  Binary2RegisterImmediateOpTester_Case13 tester;
+  tester.Test("cccc0010111snnnnddddiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(24:20)=1100x
-//    = {actual: 'Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1',
+//    = {actual: 'Binary2RegisterImmediateOpDynCodeReplace',
 //       baseline: 'Binary2RegisterImmediateOpDynCodeReplace',
 //       constraints: ,
 //       defs: {inst(15:12), 16
@@ -2564,7 +2536,7 @@ TEST_F(Arm32DecoderStateTests,
 //       None: 32,
 //       Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Actual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1,
+//       actual: Binary2RegisterImmediateOpDynCodeReplace,
 //       baseline: Binary2RegisterImmediateOpDynCodeReplace,
 //       constraints: ,
 //       defs: {Rd, NZCV
@@ -2579,15 +2551,13 @@ TEST_F(Arm32DecoderStateTests,
 //       setflags: S(20)=1}
 TEST_F(Arm32DecoderStateTests,
        Binary2RegisterImmediateOpDynCodeReplaceTester_Case14_TestCase14) {
-  Binary2RegisterImmediateOpDynCodeReplaceTester_Case14 baseline_tester;
-  NamedActual_ORR_immediate_cccc0011100snnnnddddiiiiiiiiiiii_case_1_ORR_immediate actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0011100snnnnddddiiiiiiiiiiii");
+  Binary2RegisterImmediateOpDynCodeReplaceTester_Case14 tester;
+  tester.Test("cccc0011100snnnnddddiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(24:20)=1101x & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = {actual: 'Actual_MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_1',
+//    = {actual: 'Unary1RegisterImmediateOp12DynCodeReplace',
 //       baseline: 'Unary1RegisterImmediateOp12DynCodeReplace',
 //       constraints: ,
 //       defs: {inst(15:12), 16
@@ -2605,7 +2575,7 @@ TEST_F(Arm32DecoderStateTests,
 //       None: 32,
 //       Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Actual_MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_1,
+//       actual: Unary1RegisterImmediateOp12DynCodeReplace,
 //       baseline: Unary1RegisterImmediateOp12DynCodeReplace,
 //       constraints: ,
 //       defs: {Rd, NZCV
@@ -2620,15 +2590,13 @@ TEST_F(Arm32DecoderStateTests,
 //       setflags: S(20)=1}
 TEST_F(Arm32DecoderStateTests,
        Unary1RegisterImmediateOp12DynCodeReplaceTester_Case15_TestCase15) {
-  Unary1RegisterImmediateOp12DynCodeReplaceTester_Case15 baseline_tester;
-  NamedActual_MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_1_MOV_immediate_A1 actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0011101s0000ddddiiiiiiiiiiii");
+  Unary1RegisterImmediateOp12DynCodeReplaceTester_Case15 tester;
+  tester.Test("cccc0011101s0000ddddiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(24:20)=1110x
-//    = {actual: 'Actual_BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_1',
+//    = {actual: 'MaskedBinary2RegisterImmediateOp',
 //       baseline: 'MaskedBinary2RegisterImmediateOp',
 //       constraints: ,
 //       defs: {inst(15:12), 16
@@ -2646,7 +2614,7 @@ TEST_F(Arm32DecoderStateTests,
 //       None: 32,
 //       Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Actual_BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_1,
+//       actual: MaskedBinary2RegisterImmediateOp,
 //       baseline: MaskedBinary2RegisterImmediateOp,
 //       constraints: ,
 //       defs: {Rd, NZCV
@@ -2661,15 +2629,13 @@ TEST_F(Arm32DecoderStateTests,
 //       setflags: S(20)=1}
 TEST_F(Arm32DecoderStateTests,
        MaskedBinary2RegisterImmediateOpTester_Case16_TestCase16) {
-  MaskedBinary2RegisterImmediateOpTester_Case16 baseline_tester;
-  NamedActual_BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_1_BIC_immediate actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0011110snnnnddddiiiiiiiiiiii");
+  MaskedBinary2RegisterImmediateOpTester_Case16 tester;
+  tester.Test("cccc0011110snnnnddddiiiiiiiiiiii");
 }
 
 // Neutral case:
 // inst(24:20)=1111x & inst(31:0)=xxxxxxxxxxxx0000xxxxxxxxxxxxxxxx
-//    = {actual: 'Actual_MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_1',
+//    = {actual: 'Unary1RegisterImmediateOp12DynCodeReplace',
 //       baseline: 'Unary1RegisterImmediateOp12DynCodeReplace',
 //       constraints: ,
 //       defs: {inst(15:12), 16
@@ -2687,7 +2653,7 @@ TEST_F(Arm32DecoderStateTests,
 //       None: 32,
 //       Rd: Rd(15:12),
 //       S: S(20),
-//       actual: Actual_MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_1,
+//       actual: Unary1RegisterImmediateOp12DynCodeReplace,
 //       baseline: Unary1RegisterImmediateOp12DynCodeReplace,
 //       constraints: ,
 //       defs: {Rd, NZCV
@@ -2702,10 +2668,8 @@ TEST_F(Arm32DecoderStateTests,
 //       setflags: S(20)=1}
 TEST_F(Arm32DecoderStateTests,
        Unary1RegisterImmediateOp12DynCodeReplaceTester_Case17_TestCase17) {
-  Unary1RegisterImmediateOp12DynCodeReplaceTester_Case17 baseline_tester;
-  NamedActual_MOV_immediate_A1_cccc0011101s0000ddddiiiiiiiiiiii_case_1_MVN_immediate actual;
-  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc0011111s0000ddddiiiiiiiiiiii");
+  Unary1RegisterImmediateOp12DynCodeReplaceTester_Case17 tester;
+  tester.Test("cccc0011111s0000ddddiiiiiiiiiiii");
 }
 
 }  // namespace nacl_arm_test

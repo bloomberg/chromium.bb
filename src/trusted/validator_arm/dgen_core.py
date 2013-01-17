@@ -261,7 +261,7 @@ class AndExp(BitExpr):
     return value
 
   def to_uint32(self, options={}):
-    value = self._args[0].to_uint32(options)
+    value = self.args[0].to_uint32(options)
     for arg in self._args[1:]:
       value = '%s & %s' % (value, arg.to_uint32(options))
     return '(%s)' % value
@@ -681,19 +681,6 @@ class FunctionCall(BitExpr):
     return "%s(%s)" % (self._name,
                        ', '.join([neutral_repr(a) for a in self._args]))
 
-  def matches_signature(self, signature, return_type, options={}):
-    """Checks whether the function call matches the signature.
-       If so, returns the corresponding (translated) arguments
-       to use for the call. Otherwise returns None.
-       """
-    params, result = signature
-    if result != return_type: return None
-    if len(params) != len(self.args()): return None
-    args = []
-    for (type, arg) in zip(params, self.args()):
-      args.append(arg.to_type(type, options))
-    return args
-
   def _to_call(self, return_type, options={}):
     """Generates a call to the external function."""
     # Try (pseudo) translation functions.
@@ -713,9 +700,16 @@ class FunctionCall(BitExpr):
     else:
       good = False
       for signature in signatures:
-        args = self.matches_signature(signature, return_type, options)
-        if args != None:
-          good = True
+        params, result = signature
+        if result != return_type:
+          continue
+        if len(params) != len(self.args()):
+          continue
+        good = True
+        args = []
+        for (type, arg) in zip(params, self.args()):
+          args.append(arg.to_type(type, options))
+        break
       if not good:
         raise Exception("don't know how to translate to %s: %s" %
                         (return_type, self))
@@ -2294,42 +2288,9 @@ def _ExtractExtendArgs(exp, return_type):
   if i < len_x: return None
   return (i, x, len_x)
 
-# Holds the set of installed parameters. Map is from parameter name,
-# to the previous value defined in _FUNCTION_TRANSLATION_MAP.
-_INSTALLED_PARAMS_MAP = {}
-
-def InstallParameter(name, type):
-  """Installs parameter in as a preprocessing fuction of no arguments."""
-  global _INSTALLED_PARAMS_MAP
-  global _FUNCTION_TRANSLATION_MAP
-  installed = _FUNCTION_TRANSLATION_MAP.get(name)
-  _INSTALLED_PARAMS_MAP[name] = installed
-  if installed:
-    installed = list(installed)
-  else:
-    installed = []
-  installed.insert(0, _BuildParameter(name, type))
-  _FUNCTION_TRANSLATION_MAP[name] = installed
-
-def UninstallParameter(name):
-  """Restores the function translation map to its former state before
-     the previous call to InstallParameter with the given name.
-     """
-  global _INSTALLED_PARAMS_MAP
-  global _FUNCTION_TRANSLATION_MAP
-  _FUNCTION_TRANSLATION_MAP[name] = _INSTALLED_PARAMS_MAP[name]
-  _INSTALLED_PARAMS_MAP[name] = None
-
-def _BuildParameter(name, type):
-  """Builds a parameter translation function for the correspondin
-     parameter macro.
-     """
-  return (lambda exp, return_type, options:
-            (name if exp.matches_signature(([], type), return_type) != None
-             else None))
 
 """Defines special processing fuctions if the signature matches."""
 _FUNCTION_TRANSLATION_MAP = {
     'ZeroExtend': [_TranslateZeroExtend, _ToBitFieldExtend],
-    'SignExtend': [_TranslateSignExtend, _ToBitFieldExtend],
+    'SignExtend': [_TranslateSignExtend, _ToBitFieldExtend]
 }

@@ -86,7 +86,6 @@ GEN_TABLES = ["ARMv7",
 AUTO_GEN_TABLES = ["ARMv7",
                    "data_processing_register",
                    "data_processing_register_shifted_register",
-                   "data_processing_immediate",
                    ]
 
 # The separators to use for splitting up automatically generated baseline

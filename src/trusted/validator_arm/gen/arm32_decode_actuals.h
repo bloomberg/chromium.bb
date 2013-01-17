@@ -77,6 +77,31 @@ namespace nacl_arm_dec {
 //    Rd: Rd(15:12),
 //    Rn: Rn(19:16),
 //    S: S(20),
+//    baseline: MaskedBinary2RegisterImmediateOp,
+//    clears_bits: true,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {Rd, NZCV
+//         if setflags
+//         else None},
+//    fields: [cond(31:28), S(20), Rn(19:16), Rd(15:12), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: ARMExpandImm(imm12),
+//    pattern: cccc0011110snnnnddddiiiiiiiiiiii,
+//    rule: BIC_immediate,
+//    safety: [(Rd(15:12)=1111 &&
+//         S(20)=1) => DECODER_ERROR,
+//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
+//    setflags: S(20)=1,
+//    true: true,
+//    uses: {Rn}}
+//
+// Baseline:
+//   {NZCV: 16,
+//    None: 32,
+//    Rd: Rd(15:12),
+//    Rn: Rn(19:16),
+//    S: S(20),
 //    baseline: Binary2RegisterImmediateOp,
 //    cond: cond(31:28),
 //    constraints: ,
@@ -1322,59 +1347,6 @@ class Actual_BFI_cccc0111110mmmmmddddlllll001nnnn_case_1
       Actual_BFI_cccc0111110mmmmmddddlllll001nnnn_case_1);
 };
 
-// Actual_BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_1
-//
-// Actual:
-//   {clears_bits: (ARMExpandImm(inst(11:0)) &&
-//         clears_mask())  ==
-//            clears_mask(),
-//    defs: {inst(15:12), 16
-//         if inst(20)=1
-//         else 32},
-//    safety: [(inst(15:12)=1111 &&
-//         inst(20)=1) => DECODER_ERROR,
-//      inst(15:12)=1111 => FORBIDDEN_OPERANDS],
-//    uses: {inst(19:16)}}
-//
-// Baseline:
-//   {NZCV: 16,
-//    None: 32,
-//    Rd: Rd(15:12),
-//    Rn: Rn(19:16),
-//    S: S(20),
-//    baseline: MaskedBinary2RegisterImmediateOp,
-//    clears_bits: (imm32 &&
-//         clears_mask())  ==
-//            clears_mask(),
-//    cond: cond(31:28),
-//    constraints: ,
-//    defs: {Rd, NZCV
-//         if setflags
-//         else None},
-//    fields: [cond(31:28), S(20), Rn(19:16), Rd(15:12), imm12(11:0)],
-//    imm12: imm12(11:0),
-//    imm32: ARMExpandImm(imm12),
-//    pattern: cccc0011110snnnnddddiiiiiiiiiiii,
-//    rule: BIC_immediate,
-//    safety: [(Rd(15:12)=1111 &&
-//         S(20)=1) => DECODER_ERROR,
-//      Rd(15:12)=1111 => FORBIDDEN_OPERANDS],
-//    setflags: S(20)=1,
-//    uses: {Rn}}
-class Actual_BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_1
-     : public ClassDecoder {
- public:
-  Actual_BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_1()
-     : ClassDecoder() {}
-  virtual bool clears_bits(Instruction i, uint32_t clears_mask) const;
-  virtual RegisterList defs(Instruction inst) const;
-  virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList uses(Instruction i) const;
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(
-      Actual_BIC_immediate_cccc0011110snnnnddddiiiiiiiiiiii_case_1);
-};
-
 // Actual_BKPT_cccc00010010iiiiiiiiiiii0111iiii_case_1
 //
 // Actual:
@@ -1868,7 +1840,7 @@ class Actual_CLZ_cccc000101101111dddd11110001mmmm_case_1
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
-//    imm32: ARMExpandImm_C(imm12),
+//    imm32: AMRExpandImm_C(imm12),
 //    pattern: cccc00110111nnnn0000iiiiiiiiiiii,
 //    rule: CMN_immediate,
 //    uses: {Rn}}
@@ -1882,7 +1854,7 @@ class Actual_CLZ_cccc000101101111dddd11110001mmmm_case_1
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
-//    imm32: ARMExpandImm_C(imm12),
+//    imm32: AMRExpandImm_C(imm12),
 //    pattern: cccc00110101nnnn0000iiiiiiiiiiii,
 //    rule: CMP_immediate,
 //    uses: {Rn}}
@@ -1896,9 +1868,25 @@ class Actual_CLZ_cccc000101101111dddd11110001mmmm_case_1
 //    defs: {NZCV},
 //    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
 //    imm12: imm12(11:0),
-//    imm32: ARMExpandImm_C(imm12),
+//    imm32: AMRExpandImm_C(imm12),
 //    pattern: cccc00110011nnnn0000iiiiiiiiiiii,
 //    rule: TEQ_immediate,
+//    uses: {Rn}}
+//
+// Baseline:
+//   {NZCV: 16,
+//    Rn: Rn(19:16),
+//    baseline: MaskedBinaryRegisterImmediateTest,
+//    cond: cond(31:28),
+//    constraints: ,
+//    defs: {NZCV},
+//    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
+//    imm12: imm12(11:0),
+//    imm32: AMRExpandImm_C(imm12),
+//    pattern: cccc00110001nnnn0000iiiiiiiiiiii,
+//    rule: TST_immediate,
+//    sets_Z_if_bits_clear: true,
+//    true: true,
 //    uses: {Rn}}
 class Actual_CMN_immediate_cccc00110111nnnn0000iiiiiiiiiiii_case_1
      : public ClassDecoder {
@@ -6994,51 +6982,6 @@ class Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(
       Actual_SXTAB16_cccc01101000nnnnddddrr000111mmmm_case_1);
-};
-
-// Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1
-//
-// Actual:
-//   {defs: {16},
-//    sets_Z_if_clear_bits: RegIndex(test_register())  ==
-//            inst(19:16) &&
-//         (ARMExpandImm_C(inst(11:0)) &&
-//         clears_mask())  ==
-//            clears_mask(),
-//    uses: {inst(19:16)}}
-//
-// Baseline:
-//   {NZCV: 16,
-//    Rn: Rn(19:16),
-//    baseline: MaskedBinaryRegisterImmediateTest,
-//    cond: cond(31:28),
-//    constraints: ,
-//    defs: {NZCV},
-//    fields: [cond(31:28), Rn(19:16), imm12(11:0)],
-//    imm12: imm12(11:0),
-//    imm32: ARMExpandImm_C(imm12),
-//    pattern: cccc00110001nnnn0000iiiiiiiiiiii,
-//    rule: TST_immediate,
-//    sets_Z_if_clear_bits: Rn  ==
-//            RegIndex(test_register()) &&
-//         (imm32 &&
-//         clears_mask())  ==
-//            clears_mask(),
-//    uses: {Rn}}
-class Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1
-     : public ClassDecoder {
- public:
-  Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1()
-     : ClassDecoder() {}
-  virtual RegisterList defs(Instruction inst) const;
-  virtual SafetyLevel safety(Instruction i) const;
-  virtual bool sets_Z_if_bits_clear(Instruction i,
-                                    Register test_register,
-                                    uint32_t clears_mask) const;
-  virtual RegisterList uses(Instruction i) const;
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(
-      Actual_TST_immediate_cccc00110001nnnn0000iiiiiiiiiiii_case_1);
 };
 
 // Actual_VABAL_A2_1111001u1dssnnnndddd0101n0m0mmmm_case_1
