@@ -51,6 +51,7 @@ QuicPacket* QuicFramer::ConstructMaxFrameDataPacket(
     const QuicPacketHeader& header,
     const QuicFrames& frames,
     size_t* num_consumed) {
+  DCHECK(!frames.empty());
   // Compute the length of the packet.  We use "magic numbers" here because
   // sizeof(member_) is not necessarily the same as sizeof(member_wire_format).
   const size_t max_plaintext_size = GetMaxPlaintextSize(kMaxPacketSize);
@@ -89,7 +90,7 @@ QuicPacket* QuicFramer::ConstructMaxFrameDataPacket(
   }
 
   // frame count
-  if (frames.size() > 256u) {
+  if (*num_consumed > 256u) {
     return NULL;
   }
   if (!writer.WriteUInt8(*num_consumed)) {
@@ -606,18 +607,6 @@ bool QuicFramer::ProcessConnectionCloseFrame() {
 
   visitor_->OnConnectionCloseFrame(frame);
   return true;
-}
-
-void QuicFramer::WriteSequenceNumber(QuicPacketSequenceNumber sequence_number,
-                                     QuicPacket* packet) {
-  QuicDataWriter::WriteUint48ToBuffer(
-      sequence_number, packet->mutable_data() + kSequenceNumberOffset);
-}
-
-void QuicFramer::WriteFecGroup(QuicFecGroupNumber fec_group,
-                               QuicPacket* packet) {
-  QuicDataWriter::WriteUint8ToBuffer(
-      fec_group, packet->mutable_data() + kFecGroupOffset);
 }
 
 QuicEncryptedPacket* QuicFramer::EncryptPacket(const QuicPacket& packet) {

@@ -154,11 +154,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
   QuicPacket* ConstructFecPacket(const QuicPacketHeader& header,
                                  const QuicFecData& fec);
 
-  void WriteSequenceNumber(QuicPacketSequenceNumber sequence_number,
-                           QuicPacket* packet);
-
-  void WriteFecGroup(QuicFecGroupNumber fec_group, QuicPacket* packet);
-
   // Returns a new encrypted packet, owned by the caller.
   QuicEncryptedPacket* EncryptPacket(const QuicPacket& packet);
 

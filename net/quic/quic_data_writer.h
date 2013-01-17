@@ -53,13 +53,6 @@ class NET_EXPORT_PRIVATE QuicDataWriter {
   bool WriteUInt8ToOffset(uint8 value, size_t offset);
   bool WriteUInt48ToOffset(uint64 value, size_t offset);
 
-  static void WriteUint8ToBuffer(uint8 value, char* buffer);
-  static void WriteUint16ToBuffer(uint16 value, char* buffer);
-  static void WriteUint32ToBuffer(uint32 value, char* buffer);
-  static void WriteUint48ToBuffer(uint64 value, char* buffer);
-  static void WriteUint64ToBuffer(uint64 value, char* buffer);
-  static void WriteUint128ToBuffer(uint128 value, char* buffer);
-
   size_t capacity() const {
     return capacity_;
   }

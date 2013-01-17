@@ -150,7 +150,7 @@ enum QuicErrorCode {
 
   // Handshake message contained out of order tags.
   QUIC_CRYPTO_TAGS_OUT_OF_ORDER,
-  // Handshake message contained too many entires.
+  // Handshake message contained too many entries.
   QUIC_CRYPTO_TOO_MANY_ENTRIES,
   // Handshake message contained an invalid value length.
   QUIC_CRYPTO_INVALID_VALUE_LENGTH,
@@ -174,12 +174,12 @@ struct NET_EXPORT_PRIVATE QuicStreamFrame {
   QuicStreamFrame();
   QuicStreamFrame(QuicStreamId stream_id,
                   bool fin,
-                  uint64 offset,
+                  QuicStreamOffset offset,
                   base::StringPiece data);
 
   QuicStreamId stream_id;
   bool fin;
-  uint64 offset;
+  QuicStreamOffset offset;  // Location of this data in the stream.
   base::StringPiece data;
 };
 

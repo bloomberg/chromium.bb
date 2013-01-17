@@ -4,6 +4,7 @@
 
 #include "net/quic/test_tools/quic_test_utils.h"
 
+#include "base/stl_util.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_utils.h"
 
@@ -97,6 +98,7 @@ PacketSavingConnection::PacketSavingConnection(QuicGuid guid,
 }
 
 PacketSavingConnection::~PacketSavingConnection() {
+  STLDeleteElements(&packets_);
 }
 
 bool PacketSavingConnection::SendPacket(QuicPacketSequenceNumber number,

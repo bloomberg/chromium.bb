@@ -32,6 +32,9 @@ class QuicPacketCreatorTest : public ::testing::Test {
   }
   ~QuicPacketCreatorTest() {
     STLDeleteValues(&packets_);
+    for (QuicFrames::iterator it = frames_.begin(); it != frames_.end(); ++it) {
+      QuicConnection::DeleteEnclosedFrame(&(*it));
+    }
   }
 
   void ProcessPackets() {
@@ -43,6 +46,7 @@ class QuicPacketCreatorTest : public ::testing::Test {
   }
 
   vector<QuicPacketCreator::PacketPair> packets_;
+  QuicFrames frames_;
   QuicFramer framer_;
   testing::StrictMock<MockFramerVisitor> framer_visitor_;
   QuicStreamId id_;
@@ -53,7 +57,8 @@ class QuicPacketCreatorTest : public ::testing::Test {
 };
 
 TEST_F(QuicPacketCreatorTest, DataToStreamBasic) {
-  size_t bytes_consumed = utils_.DataToStream(id_, data_, 0, true, &packets_);
+  size_t bytes_consumed = utils_.DataToStream(
+      id_, data_, 0, true, &packets_, &frames_);
 
   ASSERT_EQ(1u, packets_.size());
   ASSERT_EQ(1u, utils_.sequence_number());
@@ -70,7 +75,8 @@ TEST_F(QuicPacketCreatorTest, DataToStreamBasic) {
 
 TEST_F(QuicPacketCreatorTest, DataToStreamFec) {
   utils_.options()->use_fec = true;
-  size_t bytes_consumed = utils_.DataToStream(id_, data_, 0, true, &packets_);
+  size_t bytes_consumed = utils_.DataToStream(
+      id_, data_, 0, true, &packets_, &frames_);
 
   ASSERT_EQ(2u, packets_.size());
   ASSERT_EQ(2u, utils_.sequence_number());
@@ -93,7 +99,8 @@ TEST_F(QuicPacketCreatorTest, DataToStreamFec) {
 
 TEST_F(QuicPacketCreatorTest, DataToStreamFecHandled) {
   utils_.options()->use_fec = true;
-  size_t bytes_consumed = utils_.DataToStream(id_, data_, 0, true, &packets_);
+  size_t bytes_consumed = utils_.DataToStream(
+      id_, data_, 0, true, &packets_, &frames_);
   ASSERT_EQ(data_.size(), bytes_consumed);
 
   ASSERT_EQ(2u, packets_.size());
@@ -131,7 +138,8 @@ TEST_F(QuicPacketCreatorTest, DataToStreamFecHandled) {
 }
 
 TEST_F(QuicPacketCreatorTest, DataToStreamSkipFin) {
-  size_t bytes_consumed = utils_.DataToStream(id_, data_, 0, false, &packets_);
+  size_t bytes_consumed = utils_.DataToStream(
+      id_, data_, 0, false, &packets_, &frames_);
   ASSERT_EQ(data_.size(), bytes_consumed);
 
   ASSERT_EQ(1u, packets_.size());
@@ -149,7 +157,8 @@ TEST_F(QuicPacketCreatorTest, DataToStreamSkipFin) {
 TEST_F(QuicPacketCreatorTest, NoData) {
   data_ = "";
 
-  size_t bytes_consumed = utils_.DataToStream(id_, data_, 0, true, &packets_);
+  size_t bytes_consumed = utils_.DataToStream(
+      id_, data_, 0, true, &packets_, &frames_);
   ASSERT_EQ(data_.size(), bytes_consumed);
 
   ASSERT_EQ(1u, packets_.size());
@@ -169,7 +178,8 @@ TEST_F(QuicPacketCreatorTest, MultiplePackets) {
   utils_.options()->max_packet_length =
       ciphertext_size + QuicUtils::StreamFramePacketOverhead(1);
 
-  size_t bytes_consumed = utils_.DataToStream(id_, data_, 0, true, &packets_);
+  size_t bytes_consumed = utils_.DataToStream(
+      id_, data_, 0, true, &packets_, &frames_);
   ASSERT_EQ(data_.size(), bytes_consumed);
 
   ASSERT_EQ(2u, packets_.size());
@@ -198,7 +208,8 @@ TEST_F(QuicPacketCreatorTest, MultiplePacketsWithLimits) {
       ciphertext_size + QuicUtils::StreamFramePacketOverhead(1);
   utils_.options()->max_num_packets = 1;
 
-  size_t bytes_consumed = utils_.DataToStream(id_, data_, 0, true, &packets_);
+  size_t bytes_consumed = utils_.DataToStream(
+      id_, data_, 0, true, &packets_, &frames_);
   ASSERT_EQ(kPayloadBytesPerPacket, bytes_consumed);
 
   ASSERT_EQ(1u, packets_.size());

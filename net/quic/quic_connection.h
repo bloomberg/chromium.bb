@@ -136,6 +136,7 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
                  QuicConnectionHelperInterface* helper);
   virtual ~QuicConnection();
 
+  static void DeleteEnclosedFrame(QuicFrame* frame);
 
   // Send the data payload to the peer.
   // Returns a pair with the number of bytes consumed from data, and a boolean
@@ -233,7 +234,8 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   // data, and contents will be resent with a new sequence number if we don't
   // get an ack.  If force is true, then the packet will be sent immediately and
   // the send scheduler will not be consulted.  If is_retransmit is true, this
-  // packet is being retransmitted with a new sequence number.
+  // packet is being retransmitted with a new sequence number.  Always takes
+  // ownership of packet.
   // TODO(wtc): none of the callers check the return value.
   virtual bool SendPacket(QuicPacketSequenceNumber number,
                           QuicPacket* packet,
@@ -285,23 +287,28 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   };
 
   struct UnackedPacket {
-    explicit UnackedPacket(QuicPacket* packet)
-        : packet(packet),
-          number_nacks(0) {
-    }
-    QuicPacket* packet;
+    explicit UnackedPacket(QuicFrames unacked_frames);
+    UnackedPacket(QuicFrames unacked_frames, std::string data);
+    ~UnackedPacket();
+
+    QuicFrames frames;
     uint8 number_nacks;
+    // Data referenced by the StringPiece of a QuicStreamFrame.
+    std::string data;
   };
 
   typedef std::list<QueuedPacket> QueuedPacketList;
   typedef base::hash_map<QuicPacketSequenceNumber,
-      UnackedPacket> UnackedPacketMap;
+      UnackedPacket*> UnackedPacketMap;
   typedef std::map<QuicFecGroupNumber, QuicFecGroup*> FecGroupMap;
 
   // The amount of time we wait before resending a packet.
   static const QuicTime::Delta DefaultResendTime() {
     return QuicTime::Delta::FromMilliseconds(500);
   }
+
+  static void DeleteUnackedPacket(UnackedPacket* unacked);
+  static bool ShouldResend(const QuicFrame& frame);
 
   // Checks if a packet can be written now, and sets the timer if necessary.
   bool CanWrite(bool is_retransmit);
@@ -350,14 +357,16 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   QuicPacketSequenceNumber peer_least_packet_awaiting_ack_;
 
   // When new packets are created which may be resent, they are added
-  // to this map, which contains owning pointers.
+  // to this map, which contains owning pointers to the contained frames.
   UnackedPacketMap unacked_packets_;
 
   // When packets could not be sent because the socket was not writable,
-  // they are added to this list.  For packets that are not resendable, this
-  // list contains owning pointers, since they are not added to
-  // unacked_packets_.
+  // they are added to this list.  All corresponding frames are in
+  // unacked_packets_ if they are to be resent.
   QueuedPacketList queued_packets_;
+
+  // Pending control frames, besides the ack and congestion control frames.
+  QuicFrames queued_control_frames_;
 
   // True when the socket becomes unwritable.
   bool write_blocked_;

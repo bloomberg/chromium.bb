@@ -58,6 +58,21 @@ bool Near(QuicPacketSequenceNumber a, QuicPacketSequenceNumber b) {
   return delta <= kMaxPacketGap;
 }
 
+QuicConnection::UnackedPacket::UnackedPacket(QuicFrames unacked_frames)
+    : frames(unacked_frames),
+      number_nacks(0) {
+}
+
+QuicConnection::UnackedPacket::UnackedPacket(QuicFrames unacked_frames,
+                                             std::string data)
+    : frames(unacked_frames),
+      number_nacks(0),
+      data(data) {
+}
+
+QuicConnection::UnackedPacket::~UnackedPacket() {
+}
+
 QuicConnection::QuicConnection(QuicGuid guid,
                                IPEndPoint address,
                                QuicConnectionHelperInterface* helper)
@@ -99,17 +114,51 @@ QuicConnection::QuicConnection(QuicGuid guid,
 }
 
 QuicConnection::~QuicConnection() {
-  for (UnackedPacketMap::iterator it = unacked_packets_.begin();
-       it != unacked_packets_.end(); ++it) {
-    delete it->second.packet;
+  for (UnackedPacketMap::iterator u = unacked_packets_.begin();
+       u != unacked_packets_.end(); ++u) {
+    DeleteUnackedPacket(u->second);
   }
+  STLDeleteValues(&unacked_packets_);
   STLDeleteValues(&group_map_);
-  // Queued packets that are not to be resent are owned
-  // by the packet queue.
   for (QueuedPacketList::iterator q = queued_packets_.begin();
        q != queued_packets_.end(); ++q) {
-    if (!q->resend) delete q->packet;
+    delete q->packet;
   }
+}
+
+void QuicConnection::DeleteEnclosedFrame(QuicFrame* frame) {
+  switch (frame->type) {
+    case STREAM_FRAME:
+      delete frame->stream_frame;
+      break;
+    case ACK_FRAME:
+      delete frame->ack_frame;
+      break;
+    case CONGESTION_FEEDBACK_FRAME:
+      delete frame->congestion_feedback_frame;
+      break;
+    case RST_STREAM_FRAME:
+      delete frame->rst_stream_frame;
+      break;
+    case CONNECTION_CLOSE_FRAME:
+      delete frame->connection_close_frame;
+      break;
+    case PDU_FRAME:  // Fall through.
+    case NUM_FRAME_TYPES:
+      DCHECK(false) << "Cannot delete type: " << frame->type;
+  }
+}
+
+void QuicConnection::DeleteUnackedPacket(UnackedPacket* unacked) {
+  for (QuicFrames::iterator it = unacked->frames.begin();
+       it != unacked->frames.end(); ++it) {
+    DCHECK(ShouldResend(*it));
+    DeleteEnclosedFrame(&(*it));
+  }
+}
+
+bool QuicConnection::ShouldResend(const QuicFrame& frame) {
+  return frame.type != ACK_FRAME && frame.type != CONGESTION_FEEDBACK_FRAME;
 }
 
 void QuicConnection::OnError(QuicFramer* framer) {
@@ -270,6 +319,10 @@ void QuicConnection::UpdatePacketInformationReceivedByPeer(
       // Packet was acked, so remove it from our unacked packet list.
       DVLOG(1) << "Got an ack for " << it->first;
       // TODO(rch): This is inefficient and should be sped up.
+      // TODO(ianswett): Ensure this inner loop is applicable now that we're
+      // always sending packets with new sequence numbers.  I believe it may
+      // only be relevant for the first crypto connect packet, which doesn't
+      // get a new packet sequence number.
       // The acked packet might be queued (if a resend had been attempted).
       for (QueuedPacketList::iterator q = queued_packets_.begin();
            q != queued_packets_.end(); ++q) {
@@ -279,7 +332,8 @@ void QuicConnection::UpdatePacketInformationReceivedByPeer(
         }
       }
       acked_packets.insert(it->first);
-      delete it->second.packet;
+      DeleteUnackedPacket(it->second);
+      delete it->second;
       UnackedPacketMap::iterator it_tmp = it;
       ++it;
       unacked_packets_.erase(it_tmp);
@@ -298,8 +352,8 @@ void QuicConnection::UpdatePacketInformationReceivedByPeer(
       if (it->first < peer_largest_observed_packet_) {
         // The peer got packets after this sequence number.  This is an explicit
         // nack.
-        ++(it->second.number_nacks);
-        if (it->second.number_nacks >= kNumberOfNacksBeforeResend &&
+        ++(it->second->number_nacks);
+        if (it->second->number_nacks >= kNumberOfNacksBeforeResend &&
             resent_packets < kMaxResendPerAck) {
           resend_number = it->first;
         }
@@ -424,8 +478,9 @@ QuicConsumedData QuicConnection::SendStreamData(
 
   while (queued_packets_.empty()) {
     vector<PacketPair> packets;
+    QuicFrames frames;
     size_t bytes_consumed =
-        packet_creator_.DataToStream(id, data, offset, fin, &packets);
+        packet_creator_.DataToStream(id, data, offset, fin, &packets, &frames);
     total_bytes_consumed += bytes_consumed;
     offset += bytes_consumed;
     fin_consumed = fin && bytes_consumed == data.size();
@@ -433,14 +488,24 @@ QuicConsumedData QuicConnection::SendStreamData(
     DCHECK_LT(0u, packets.size());
 
     for (size_t i = 0; i < packets.size(); ++i) {
+      // Resend is false for FEC packets.
+      bool should_resend = !packets[i].second->IsFecPacket();
       SendPacket(packets[i].first,
                  packets[i].second,
-                 // Resend is false for FEC packets.
-                 !packets[i].second->IsFecPacket(),
+                 should_resend,
                  false,
                  false);
-      unacked_packets_.insert(make_pair(packets[i].first,
-                                        UnackedPacket(packets[i].second)));
+      if (should_resend) {
+        QuicFrames unacked_frames;
+        unacked_frames.push_back(frames[i]);
+        UnackedPacket* unacked = new UnackedPacket(
+            unacked_frames, frames[i].stream_frame->data.as_string());
+        // Ensure the string piece points to the owned copy of the data.
+        unacked->frames[0].stream_frame->data = StringPiece(unacked->data);
+        unacked_packets_.insert(make_pair(packets[i].first, unacked));
+      } else {
+        DeleteEnclosedFrame(&frames[i]);
+      }
     }
 
     if (last_packet != NULL) {
@@ -459,13 +524,13 @@ QuicConsumedData QuicConnection::SendStreamData(
 void QuicConnection::SendRstStream(QuicStreamId id,
                                    QuicErrorCode error,
                                    QuicStreamOffset offset) {
-  // TODO(ianswett): Queue the frame and use WriteData instead of SendPacket
-  // once we support re-sending frames instead of packets.
-  PacketPair packetpair = packet_creator_.ResetStream(id, offset, error);
+  queued_control_frames_.push_back(QuicFrame(
+      new QuicRstStreamFrame(id, offset, error)));
 
-  SendPacket(packetpair.first, packetpair.second, true, false, false);
-  unacked_packets_.insert(make_pair(packetpair.first,
-                                    UnackedPacket(packetpair.second)));
+  // Try to write immediately if possible.
+  if (CanWrite(false)) {
+    WriteData();
+  }
 }
 
 void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
@@ -506,19 +571,33 @@ bool QuicConnection::OnCanWrite() {
 bool QuicConnection::WriteData() {
   DCHECK_EQ(false, write_blocked_);
   // Serialize the ack and congestion frames before draining the pending queue.
-  QuicFrames frames;
   if (should_send_ack_) {
-    frames.push_back(QuicFrame(&outgoing_ack_));
+    queued_control_frames_.push_back(QuicFrame(&outgoing_ack_));
   }
   if (should_send_congestion_feedback_) {
-    frames.push_back(QuicFrame(&outgoing_congestion_feedback_));
+    queued_control_frames_.push_back(QuicFrame(&outgoing_congestion_feedback_));
   }
-  while (!frames.empty()) {
+  while (!queued_control_frames_.empty()) {
     size_t num_serialized;
-    PacketPair pair = packet_creator_.SerializeFrames(frames, &num_serialized);
+    PacketPair pair = packet_creator_.SerializeFrames(
+        queued_control_frames_, &num_serialized);
+    // If any serialized frames need to be resent, add them to unacked_packets.
+    QuicFrames unacked_frames;
+    for (QuicFrames::const_iterator iter = queued_control_frames_.begin();
+         iter != queued_control_frames_.begin() + num_serialized; ++iter) {
+      if (ShouldResend(*iter)) {
+        unacked_frames.push_back(*iter);
+      }
+    }
+    if (!unacked_frames.empty()) {
+      unacked_packets_.insert(make_pair(pair.first,
+                                        new UnackedPacket(unacked_frames)));
+    }
     queued_packets_.push_back(QueuedPacket(
-        pair.first, pair.second, false, false));
-    frames.erase(frames.begin(), frames.begin() + num_serialized);
+        pair.first, pair.second, !unacked_frames.empty(), false));
+    queued_control_frames_.erase(
+        queued_control_frames_.begin(),
+        queued_control_frames_.begin() + num_serialized);
   }
   should_send_ack_ = false;
   should_send_congestion_feedback_ = false;
@@ -566,22 +645,20 @@ void QuicConnection::MaybeResendPacket(
   UnackedPacketMap::iterator it = unacked_packets_.find(sequence_number);
 
   if (it != unacked_packets_.end()) {
-    QuicPacket* packet = it->second.packet;
+    UnackedPacket* unacked = it->second;
+    // TODO(ianswett): Never change the sequence number of the connect packet.
     unacked_packets_.erase(it);
-    // Re-frame the packet with a new sequence number for resend.
-    QuicPacketSequenceNumber new_sequence_number  =
-        packet_creator_.SetNewSequenceNumber(packet);
+    // Re-packetize the frames with a new sequence number for resend.
+    // Resent data packets do not use FEC, even when it's enabled.
+    PacketPair packetpair = packet_creator_.SerializeAllFrames(unacked->frames);
     DVLOG(1) << "Resending unacked packet " << sequence_number << " as "
-             << new_sequence_number;
-    // Clear the FEC group.
-    framer_.WriteFecGroup(0u, packet);
-    unacked_packets_.insert(make_pair(new_sequence_number,
-                                      UnackedPacket(packet)));
+             << packetpair.first;
+    unacked_packets_.insert(make_pair(packetpair.first, unacked));
 
     // Make sure if this was our least unacked packet, that we update our
     // outgoing ack.  If this wasn't the least unacked, this is a no-op.
     UpdateLeastUnacked(sequence_number);
-    SendPacket(new_sequence_number, packet, true, false, true);
+    SendPacket(packetpair.first, packetpair.second, true, false, true);
   } else {
     DVLOG(2) << "alarm fired for " << sequence_number
              << " but it has been acked";
@@ -658,7 +735,7 @@ bool QuicConnection::SendPacket(QuicPacketSequenceNumber sequence_number,
   DVLOG(1) << "last packet: " << time_of_last_packet_.ToMicroseconds();
 
   scheduler_->SentPacket(sequence_number, packet->length(), is_retransmit);
-  if (!should_resend) delete packet;
+  delete packet;
   return true;
 }
 

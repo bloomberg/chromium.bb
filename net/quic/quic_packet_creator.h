@@ -52,29 +52,26 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
 
   typedef std::pair<QuicPacketSequenceNumber, QuicPacket*> PacketPair;
 
+  // Serializes all frames into a single packet.  All frames must fit into a
+  // single packet.
+  PacketPair SerializeAllFrames(const QuicFrames& frames);
+
   // Serializes as many non-fec frames as can fit into a single packet.
   // num_serialized is set to the number of frames serialized into the packet.
   PacketPair SerializeFrames(const QuicFrames& frames, size_t* num_serialized);
 
-  // Converts a raw payload to a series of QuicPackets.  Returns the number of
-  // bytes consumed from data.
+  // Converts a raw payload to a series of QuicPackets and matching frames in
+  // those packets.  Returns the number of bytes consumed from data.
   // If data is empty and fin is true, the expected behavior is to consume the
   // fin but return 0.
   size_t DataToStream(QuicStreamId id,
                       base::StringPiece data,
                       QuicStreamOffset offset,
                       bool fin,
-                      std::vector<PacketPair>* packets);
-
-  PacketPair ResetStream(QuicStreamId id,
-                         QuicStreamOffset offset,
-                         QuicErrorCode error);
+                      std::vector<PacketPair>* packets,
+                      QuicFrames* packetized_frames);
 
   PacketPair CloseConnection(QuicConnectionCloseFrame* close_frame);
-
-  // Increments the current sequence number in QuicPacketCreator and sets it
-  // into the packet and returns the new sequence number.
-  QuicPacketSequenceNumber SetNewSequenceNumber(QuicPacket* packet);
 
   QuicPacketSequenceNumber sequence_number() const {
     return sequence_number_;

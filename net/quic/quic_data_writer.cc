@@ -98,36 +98,6 @@ bool QuicDataWriter::WriteBytes(const void* data, size_t data_len) {
   return true;
 }
 
-void QuicDataWriter::WriteUint8ToBuffer(uint8 value, char* buffer) {
-  memcpy(buffer, &value, sizeof(value));
-}
-
-void QuicDataWriter::WriteUint16ToBuffer(uint16 value, char* buffer) {
-  memcpy(buffer, &value, sizeof(value));
-}
-
-void QuicDataWriter::WriteUint32ToBuffer(uint32 value, char* buffer) {
-  memcpy(buffer, &value, sizeof(value));
-}
-
-void QuicDataWriter::WriteUint48ToBuffer(uint64 value, char* buffer) {
-  uint16 hi = value >> 32;
-  uint32 lo = value & 0x00000000FFFFFFFF;
-  WriteUint32ToBuffer(lo, buffer);
-  WriteUint16ToBuffer(hi, buffer + sizeof(lo));
-}
-
-void QuicDataWriter::WriteUint64ToBuffer(uint64 value, char* buffer) {
-  memcpy(buffer, &value, sizeof(value));
-}
-
-void QuicDataWriter::WriteUint128ToBuffer(uint128 value, char* buffer) {
-  uint64 high = Uint128High64(value);
-  uint64 low = Uint128Low64(value);
-  WriteUint64ToBuffer(low, buffer);
-  WriteUint64ToBuffer(high, buffer + sizeof(low));
-}
-
 bool QuicDataWriter::WriteUInt8ToOffset(uint8 value, size_t offset) {
   DCHECK_LT(offset, capacity_);
   int latched_length = length_;

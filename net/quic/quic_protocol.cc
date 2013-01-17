@@ -16,7 +16,7 @@ QuicStreamFrame::QuicStreamFrame() {}
 
 QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
                                  bool fin,
-                                 uint64 offset,
+                                 QuicStreamOffset offset,
                                  StringPiece data)
     : stream_id(stream_id),
       fin(fin),

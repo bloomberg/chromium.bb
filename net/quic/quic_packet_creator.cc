@@ -34,7 +34,14 @@ void QuicPacketCreator::OnBuiltFecProtectedPayload(
   }
 }
 
-QuicPacketCreator::PacketPair QuicPacketCreator::SerializeFrames(
+PacketPair QuicPacketCreator::SerializeAllFrames(const QuicFrames& frames) {
+  size_t num_serialized;
+  PacketPair pair = SerializeFrames(frames, &num_serialized);
+  DCHECK_EQ(frames.size(), num_serialized);
+  return pair;
+}
+
+PacketPair QuicPacketCreator::SerializeFrames(
     const QuicFrames& frames, size_t* num_serialized) {
   QuicPacketHeader header;
   FillPacketHeader(0, PACKET_FLAGS_NONE, &header);
@@ -48,7 +55,8 @@ size_t QuicPacketCreator::DataToStream(QuicStreamId id,
                                        StringPiece data,
                                        QuicStreamOffset offset,
                                        bool fin,
-                                       vector<PacketPair>* packets) {
+                                       vector<PacketPair>* packets,
+                                       QuicFrames* packetized_frames) {
   DCHECK_GT(options_.max_packet_length,
             QuicUtils::StreamFramePacketOverhead(1));
   DCHECK_LT(0u, options_.max_num_packets);
@@ -89,8 +97,9 @@ size_t QuicPacketCreator::DataToStream(QuicStreamId id,
       StringPiece data_frame(data.data() + data.size() - unconsumed_bytes,
                                 frame_len);
 
-      QuicStreamFrame frame(id, set_fin, offset, data_frame);
-      frames.push_back(QuicFrame(&frame));
+      QuicStreamFrame* frame = new QuicStreamFrame(
+          id, set_fin, offset, data_frame);
+      frames.push_back(QuicFrame(frame));
       FillPacketHeader(current_fec_group, PACKET_FLAGS_NONE, &header);
       offset += frame_len;
       unconsumed_bytes -= frame_len;
@@ -100,6 +109,7 @@ size_t QuicPacketCreator::DataToStream(QuicStreamId id,
       DCHECK(packet);
       DCHECK_GE(options_.max_packet_length, packet->length());
       packets->push_back(make_pair(header.packet_sequence_number, packet));
+      packetized_frames->push_back(frames[0]);
       frames.clear();
     }
     // If we haven't finished serializing all the data, don't set any final fin.
@@ -111,11 +121,13 @@ size_t QuicPacketCreator::DataToStream(QuicStreamId id,
   // Create a new packet for the fin, if necessary.
   if (fin && data.size() == 0) {
     FillPacketHeader(current_fec_group, PACKET_FLAGS_NONE, &header);
-    QuicStreamFrame frame(id, true, offset, "");
-    frames.push_back(QuicFrame(&frame));
+    QuicStreamFrame* frame = new QuicStreamFrame(id, true, offset, "");
+    frames.push_back(QuicFrame(frame));
     packet = framer_->ConstructFrameDataPacket(header, frames);
     DCHECK(packet);
+    DCHECK_GE(options_.max_packet_length, packet->length());
     packets->push_back(make_pair(header.packet_sequence_number, packet));
+    packetized_frames->push_back(frames[0]);
     frames.clear();
   }
 
@@ -125,6 +137,7 @@ size_t QuicPacketCreator::DataToStream(QuicStreamId id,
     fec_data.redundancy = fec_group_->parity();
     QuicPacket* fec_packet = framer_->ConstructFecPacket(header, fec_data);
     DCHECK(fec_packet);
+    DCHECK_GE(options_.max_packet_length, packet->length());
     packets->push_back(make_pair(header.packet_sequence_number, fec_packet));
     ++fec_group_number_;
   }
@@ -150,22 +163,6 @@ size_t QuicPacketCreator::DataToStream(QuicStreamId id,
   return data.size() - unconsumed_bytes;
 }
 
-QuicPacketCreator::PacketPair QuicPacketCreator::ResetStream(
-    QuicStreamId id,
-    QuicStreamOffset offset,
-    QuicErrorCode error) {
-  QuicPacketHeader header;
-  FillPacketHeader(0, PACKET_FLAGS_NONE, &header);
-
-  QuicRstStreamFrame close_frame(id, offset, error);
-
-  QuicFrames frames;
-  frames.push_back(QuicFrame(&close_frame));
-  QuicPacket* packet = framer_->ConstructFrameDataPacket(header, frames);
-  DCHECK(packet);
-  return make_pair(header.packet_sequence_number, packet);
-}
-
 QuicPacketCreator::PacketPair QuicPacketCreator::CloseConnection(
     QuicConnectionCloseFrame* close_frame) {
 
@@ -177,13 +174,6 @@ QuicPacketCreator::PacketPair QuicPacketCreator::CloseConnection(
   QuicPacket* packet = framer_->ConstructFrameDataPacket(header, frames);
   DCHECK(packet);
   return make_pair(header.packet_sequence_number, packet);
-}
-
-QuicPacketSequenceNumber QuicPacketCreator::SetNewSequenceNumber(
-    QuicPacket* packet) {
-  ++sequence_number_;
-  framer_->WriteSequenceNumber(sequence_number_, packet);
-  return sequence_number_;
 }
 
 void QuicPacketCreator::FillPacketHeader(QuicFecGroupNumber fec_group,
