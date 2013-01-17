@@ -821,18 +821,18 @@ void PrintPreviewHandler::SendCloudPrintJob() {
       web_ui()->GetController());
   print_preview_ui->GetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
-  DCHECK(data.get() && data->size() > 0U && data->front());
+  if (data.get() && data->size() > 0U && data->front()) {
+    // BASE64 encode the job data.
+    std::string raw_data(reinterpret_cast<const char*>(data->front()),
+                         data->size());
+    std::string base64_data;
+    if (!base::Base64Encode(raw_data, &base64_data)) {
+      NOTREACHED() << "Base64 encoding PDF data.";
+    }
+    StringValue data_value(base64_data);
 
-  // BASE64 encode the job data.
-  std::string raw_data(reinterpret_cast<const char*>(data->front()),
-                       data->size());
-  std::string base64_data;
-  if (!base::Base64Encode(raw_data, &base64_data)) {
-    NOTREACHED() << "Base64 encoding PDF data.";
+    web_ui()->CallJavascriptFunction("printToCloud", data_value);
   }
-  StringValue data_value(base64_data);
-
-  web_ui()->CallJavascriptFunction("printToCloud", data_value);
 }
 
 WebContents* PrintPreviewHandler::GetInitiatorTab() const {
