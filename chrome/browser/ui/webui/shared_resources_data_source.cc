@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
@@ -59,6 +60,10 @@ void SharedResourcesDataSource::StartDataRequest(
 
 std::string SharedResourcesDataSource::GetMimeType(
     const std::string& path) const {
+  // Requests should not block on the disk!  On POSIX this goes to disk.
+  // http://code.google.com/p/chromium/issues/detail?id=59849
+
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   std::string mime_type;
   net::GetMimeTypeFromFile(FilePath().AppendASCII(path), &mime_type);
   return mime_type;
