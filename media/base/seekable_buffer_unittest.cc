@@ -225,7 +225,7 @@ TEST_F(SeekableBufferTest, SeekBackward) {
 TEST_F(SeekableBufferTest, GetCurrentChunk) {
   const int kSeekSize = kWriteSize / 3;
 
-  scoped_refptr<DataBuffer> buffer(new DataBuffer(data_, kWriteSize));
+  scoped_refptr<DataBuffer> buffer = DataBuffer::CopyFrom(data_, kWriteSize);
 
   const uint8* data;
   int size;
@@ -328,7 +328,7 @@ TEST_F(SeekableBufferTest, GetTime) {
   EXPECT_EQ(kNoTimestamp().ToInternalValue(),
             buffer_.current_time().ToInternalValue());
 
-  scoped_refptr<DataBuffer> buffer(new DataBuffer(data_, kWriteSize));
+  scoped_refptr<DataBuffer> buffer = DataBuffer::CopyFrom(data_, kWriteSize);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
     buffer->SetTimestamp(base::TimeDelta::FromMicroseconds(

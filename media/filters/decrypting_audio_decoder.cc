@@ -250,7 +250,7 @@ void DecryptingAudioDecoder::DoRead(const ReadCB& read_cb) {
 
   // Return empty (end-of-stream) frames if decoding has finished.
   if (state_ == kDecodeFinished) {
-    read_cb.Run(kOk, new DataBuffer(0));
+    read_cb.Run(kOk, DataBuffer::CreateEOSBuffer());
     return;
   }
 
@@ -421,7 +421,7 @@ void DecryptingAudioDecoder::DoDeliverFrame(
     DVLOG(2) << "DoDeliverFrame() - kNeedMoreData";
     if (scoped_pending_buffer_to_decode->IsEndOfStream()) {
       state_ = kDecodeFinished;
-      base::ResetAndReturn(&read_cb_).Run(kOk, (new DataBuffer(0)));
+      base::ResetAndReturn(&read_cb_).Run(kOk, DataBuffer::CreateEOSBuffer());
       return;
     }
 

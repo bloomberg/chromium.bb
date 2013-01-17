@@ -183,7 +183,9 @@ class AudioRendererImplTest : public ::testing::Test {
   //
   // There must be a pending read callback.
   void DeliverEndOfStream() {
-    FulfillPendingRead(0);
+    CHECK(!read_cb_.is_null());
+    base::ResetAndReturn(&read_cb_).Run(
+        AudioDecoder::kOk, DataBuffer::CreateEOSBuffer());
   }
 
   // Delivers bytes until |renderer_|'s internal buffer is full and no longer

@@ -19,19 +19,22 @@ namespace media {
 // default memory allocator (i.e., new uint8[]).
 class MEDIA_EXPORT DataBuffer : public base::RefCountedThreadSafe<DataBuffer> {
  public:
+  // Allocates buffer of size |buffer_size| >= 0.
+  explicit DataBuffer(int buffer_size);
+
   // Assumes valid data of size |buffer_size|.
   DataBuffer(scoped_array<uint8> buffer, int buffer_size);
 
-  // Allocates buffer of size |buffer_size|. If |buffer_size| is 0, |data_| is
-  // set to NULL and this becomes an end of stream buffer.
+  // Create a DataBuffer whose |data_| is copied from |data|.
   //
-  // TODO(scherkus): Enforce calling CreateEOSBuffer() instead of passing 0 and
-  // sprinkle DCHECK()s everywhere.
-  explicit DataBuffer(int buffer_size);
+  // |data| must not be null and |size| must be >= 0.
+  static scoped_refptr<DataBuffer> CopyFrom(const uint8* data, int size);
 
-  // Allocates buffer of size |data_size|, copies [data,data+data_size) to
-  // the allocated buffer and sets data size to |data_size|.
-  DataBuffer(const uint8* data, int data_size);
+  // Create a DataBuffer indicating we've reached end of stream.
+  //
+  // Calling any method other than IsEndOfStream() on the resulting buffer
+  // is disallowed.
+  static scoped_refptr<DataBuffer> CreateEOSBuffer();
 
   base::TimeDelta GetTimestamp() const;
   void SetTimestamp(const base::TimeDelta& timestamp);
@@ -42,25 +45,27 @@ class MEDIA_EXPORT DataBuffer : public base::RefCountedThreadSafe<DataBuffer> {
   const uint8* GetData() const;
   uint8* GetWritableData();
 
-  // The size of valid data in bytes, which must be less than or equal
-  // to GetBufferSize().
+  // The size of valid data in bytes.
+  //
+  // Setting this value beyond the buffer size is disallowed.
   int GetDataSize() const;
   void SetDataSize(int data_size);
-
-  // Returns the size of the underlying buffer.
-  int GetBufferSize() const;
 
   // If there's no data in this buffer, it represents end of stream.
   bool IsEndOfStream() const;
 
  protected:
   friend class base::RefCountedThreadSafe<DataBuffer>;
+
+  // Allocates buffer of size |data_size|, copies [data,data+data_size) to
+  // the allocated buffer and sets data size to |data_size|.
+  //
+  // If |data| is null an end of stream buffer is created.
+  DataBuffer(const uint8* data, int data_size);
+
   virtual ~DataBuffer();
 
  private:
-  // Constructor helper method for memory allocations.
-  void Initialize();
-
   base::TimeDelta timestamp_;
   base::TimeDelta duration_;
 

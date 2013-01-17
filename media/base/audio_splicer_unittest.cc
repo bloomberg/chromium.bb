@@ -115,7 +115,7 @@ TEST_F(AudioSplicerTest, Reset) {
 
 TEST_F(AudioSplicerTest, EndOfStream) {
   scoped_refptr<DataBuffer> input_1 = GetNextInputBuffer(1);
-  scoped_refptr<DataBuffer> input_2 = new DataBuffer(0);  // End of stream.
+  scoped_refptr<DataBuffer> input_2 = DataBuffer::CreateEOSBuffer();
   scoped_refptr<DataBuffer> input_3 = GetNextInputBuffer(2);
   EXPECT_TRUE(input_2->IsEndOfStream());
 

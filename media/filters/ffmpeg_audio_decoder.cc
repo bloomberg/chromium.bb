@@ -468,7 +468,7 @@ void FFmpegAudioDecoder::RunDecodeLoop(
             converter_bus_->frames(), bits_per_channel_ / 8,
             output->GetWritableData());
       } else {
-        output = new DataBuffer(
+        output = DataBuffer::CopyFrom(
             av_frame_->extended_data[0] + start_sample * bytes_per_frame_,
             decoded_audio_size);
       }
@@ -479,8 +479,7 @@ void FFmpegAudioDecoder::RunDecodeLoop(
     } else if (IsEndOfStream(result, decoded_audio_size, input) &&
                !skip_eos_append) {
       DCHECK_EQ(packet.size, 0);
-      // Create an end of stream output buffer.
-      output = new DataBuffer(0);
+      output = DataBuffer::CreateEOSBuffer();
     }
 
     if (output) {

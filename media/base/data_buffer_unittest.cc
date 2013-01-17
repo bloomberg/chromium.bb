@@ -8,24 +8,57 @@
 
 namespace media {
 
-TEST(DataBufferTest, Constructors) {
+TEST(DataBufferTest, Constructor_ZeroSize) {
+  // Zero-sized buffers are valid. In practice they aren't used very much but it
+  // eliminates clients from worrying about null data pointers.
+  scoped_refptr<DataBuffer> buffer = new DataBuffer(0);
+  EXPECT_TRUE(buffer->GetData());
+  EXPECT_TRUE(buffer->GetWritableData());
+  EXPECT_EQ(0, buffer->GetDataSize());
+  EXPECT_FALSE(buffer->IsEndOfStream());
+}
+
+TEST(DataBufferTest, Constructor_NonZeroSize) {
+  // Buffer size should be set.
+  scoped_refptr<DataBuffer> buffer = new DataBuffer(10);
+  EXPECT_TRUE(buffer->GetData());
+  EXPECT_TRUE(buffer->GetWritableData());
+  EXPECT_EQ(0, buffer->GetDataSize());
+  EXPECT_FALSE(buffer->IsEndOfStream());
+}
+
+TEST(DataBufferTest, Constructor_ScopedArray) {
+  // Data should be passed and both data and buffer size should be set.
+  const int kSize = 8;
+  scoped_array<uint8> data(new uint8[kSize]);
+  const uint8* kData = data.get();
+
+  scoped_refptr<DataBuffer> buffer = new DataBuffer(data.Pass(), kSize);
+  EXPECT_TRUE(buffer->GetData());
+  EXPECT_TRUE(buffer->GetWritableData());
+  EXPECT_EQ(kData, buffer->GetData());
+  EXPECT_EQ(kSize, buffer->GetDataSize());
+  EXPECT_FALSE(buffer->IsEndOfStream());
+}
+
+TEST(DataBufferTest, CopyFrom) {
   const uint8 kTestData[] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77 };
   const int kTestDataSize = arraysize(kTestData);
 
-  scoped_refptr<DataBuffer> buffer(new DataBuffer(0));
-  EXPECT_FALSE(buffer->GetData());
+  scoped_refptr<DataBuffer> buffer =
+      DataBuffer::CopyFrom(kTestData, kTestDataSize);
+  EXPECT_EQ(kTestDataSize, buffer->GetDataSize());
+  EXPECT_FALSE(buffer->IsEndOfStream());
 
-  scoped_refptr<DataBuffer> buffer2(new DataBuffer(kTestDataSize));
-  EXPECT_EQ(0, buffer2->GetDataSize());
-  EXPECT_EQ(kTestDataSize, buffer2->GetBufferSize());
-
-  scoped_refptr<DataBuffer> buffer3(new DataBuffer(kTestData, kTestDataSize));
-  EXPECT_EQ(kTestDataSize, buffer3->GetDataSize());
-  EXPECT_EQ(kTestDataSize, buffer3->GetBufferSize());
-  ASSERT_EQ(0, memcmp(buffer3->GetData(), kTestData, kTestDataSize));
   // Ensure we are copying the data, not just pointing to the original data.
-  buffer3->GetWritableData()[0] = 0xFF;
-  ASSERT_NE(0, memcmp(buffer3->GetData(), kTestData, kTestDataSize));
+  EXPECT_EQ(0, memcmp(buffer->GetData(), kTestData, kTestDataSize));
+  buffer->GetWritableData()[0] = 0xFF;
+  EXPECT_NE(0, memcmp(buffer->GetData(), kTestData, kTestDataSize));
+}
+
+TEST(DataBufferTest, CreateEOSBuffer) {
+  scoped_refptr<DataBuffer> buffer = DataBuffer::CreateEOSBuffer();
+  EXPECT_TRUE(buffer->IsEndOfStream());
 }
 
 TEST(DataBufferTest, Timestamp) {
@@ -58,17 +91,6 @@ TEST(DataBufferTest, Duration) {
   EXPECT_TRUE(buffer->GetDuration() == kDurationB);
 }
 
-TEST(DataBufferTest, IsEndOfStream) {
-  const uint8 kData[] = { 0x00, 0xFF };
-  const int kDataSize = arraysize(kData);
-
-  scoped_refptr<DataBuffer> buffer = new DataBuffer(0);
-  EXPECT_TRUE(buffer->IsEndOfStream());
-
-  buffer = new DataBuffer(kData, kDataSize);
-  EXPECT_FALSE(buffer->IsEndOfStream());
-}
-
 TEST(DataBufferTest, ReadingWriting) {
   const char kData[] = "hello";
   const int kDataSize = arraysize(kData);
@@ -81,7 +103,6 @@ TEST(DataBufferTest, ReadingWriting) {
 
   uint8* data = buffer->GetWritableData();
   ASSERT_TRUE(data);
-  ASSERT_EQ(kDataSize, buffer->GetBufferSize());
   memcpy(data, kData, kDataSize);
   buffer->SetDataSize(kDataSize);
   const uint8* read_only_data = buffer->GetData();
@@ -92,7 +113,6 @@ TEST(DataBufferTest, ReadingWriting) {
   scoped_refptr<DataBuffer> buffer2(new DataBuffer(kNewDataSize + 10));
   data = buffer2->GetWritableData();
   ASSERT_TRUE(data);
-  ASSERT_EQ(kNewDataSize + 10, buffer2->GetBufferSize());
   memcpy(data, kNewData, kNewDataSize);
   buffer2->SetDataSize(kNewDataSize);
   read_only_data = buffer2->GetData();

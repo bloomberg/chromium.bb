@@ -330,7 +330,7 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
             converter_bus_->frames(), bits_per_channel_ / 8,
             output->GetWritableData());
       } else {
-        output = new media::DataBuffer(
+        output = media::DataBuffer::CopyFrom(
             av_frame_->extended_data[0] + start_sample * bytes_per_frame_,
             decoded_audio_size);
       }

@@ -108,8 +108,6 @@ class FFmpegAudioDecoderTest : public testing::Test {
 
   void ExpectEndOfStream(size_t i) {
     EXPECT_LT(i, decoded_audio_.size());
-    EXPECT_EQ(0, decoded_audio_[i]->GetTimestamp().InMicroseconds());
-    EXPECT_EQ(0, decoded_audio_[i]->GetDuration().InMicroseconds());
     EXPECT_TRUE(decoded_audio_[i]->IsEndOfStream());
   }
 

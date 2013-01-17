@@ -81,7 +81,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
         demuxer_(new StrictMock<MockDemuxerStream>()),
         encrypted_buffer_(CreateFakeEncryptedBuffer()),
         decoded_frame_(NULL),
-        end_of_stream_frame_(new DataBuffer(0)),
+        end_of_stream_frame_(DataBuffer::CreateEOSBuffer()),
         decoded_frame_list_() {
     scoped_refptr<DataBuffer> data_buffer = new DataBuffer(kFakeAudioFrameSize);
     data_buffer->SetDataSize(kFakeAudioFrameSize);

@@ -34,13 +34,15 @@ void DecoderBuffer::Initialize() {
   memset(data_.get() + size_, 0, kPaddingSize);
 }
 
+// static
 scoped_refptr<DecoderBuffer> DecoderBuffer::CopyFrom(const uint8* data,
                                                      int data_size) {
-  // If you hit this checks you likely have a bug in a demuxer. Go fix it.
+  // If you hit this CHECK you likely have a bug in a demuxer. Go fix it.
   CHECK(data);
   return make_scoped_refptr(new DecoderBuffer(data, data_size));
 }
 
+// static
 scoped_refptr<DecoderBuffer> DecoderBuffer::CreateEOSBuffer() {
   return make_scoped_refptr(new DecoderBuffer(NULL, 0));
 }
