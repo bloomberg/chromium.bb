@@ -21,6 +21,10 @@
 
 using content::BrowserThread;
 
+// TODO(xians): Remove this when the Omnibar UI has been completed.
+// See http://crbug.com/167263 for more details.
+#define ALLOW_STICKY_DENY 0
+
 namespace {
 
 bool HasAnyAvailableDevice() {
@@ -150,8 +154,10 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
 }
 
 void MediaStreamDevicesController::Deny(bool update_content_setting) {
+#if ALLOW_STICKY_DENY
   if (update_content_setting)
     SetPermission(false);
+#endif
 
   callback_.Run(content::MediaStreamDevices());
 }
@@ -197,6 +203,7 @@ bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
 }
 
 bool MediaStreamDevicesController::IsRequestBlockedByDefault() const {
+#if ALLOW_STICKY_DENY
   if (has_audio_ &&
       profile_->GetHostContentSettingsMap()->GetContentSetting(
           request_.security_origin,
@@ -216,14 +223,21 @@ bool MediaStreamDevicesController::IsRequestBlockedByDefault() const {
   }
 
   return true;
+#else
+  return false;
+#endif
 }
 
 bool MediaStreamDevicesController::IsDefaultMediaAccessBlocked() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+#if ALLOW_STICKY_DENY
   ContentSetting current_setting =
       profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
           CONTENT_SETTINGS_TYPE_MEDIASTREAM, NULL);
   return (current_setting == CONTENT_SETTING_BLOCK);
+#else
+  return false;
+#endif
 }
 
 void MediaStreamDevicesController::HandleTapMediaRequest() {
