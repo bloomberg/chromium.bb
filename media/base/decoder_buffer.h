@@ -35,9 +35,9 @@ class MEDIA_EXPORT DecoderBuffer
 #endif
   };
 
-  // Allocates buffer of size |buffer_size| >= 0.  Buffer will be padded and
-  // aligned as necessary.
-  explicit DecoderBuffer(int buffer_size);
+  // Allocates buffer with |size| >= 0.  Buffer will be padded and aligned
+  // as necessary.
+  explicit DecoderBuffer(int size);
 
   // Create a DecoderBuffer whose |data_| is copied from |data|.  Buffer will be
   // padded and aligned as necessary.  |data| must not be NULL and |size| >= 0.
@@ -62,9 +62,6 @@ class MEDIA_EXPORT DecoderBuffer
   void SetDecryptConfig(scoped_ptr<DecryptConfig> decrypt_config);
 
   // If there's no data in this buffer, it represents end of stream.
-  //
-  // TODO(scherkus): Change to be an actual settable flag as opposed to being
-  // based on the value of |data_|, see http://crbug.com/169133
   bool IsEndOfStream() const;
 
  protected:
@@ -80,7 +77,7 @@ class MEDIA_EXPORT DecoderBuffer
   base::TimeDelta timestamp_;
   base::TimeDelta duration_;
 
-  int buffer_size_;
+  int size_;
   scoped_ptr<uint8, base::ScopedPtrAlignedFree> data_;
   scoped_ptr<DecryptConfig> decrypt_config_;
 

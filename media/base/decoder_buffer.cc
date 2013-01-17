@@ -9,35 +9,35 @@
 
 namespace media {
 
-DecoderBuffer::DecoderBuffer(int buffer_size)
-    : buffer_size_(buffer_size) {
+DecoderBuffer::DecoderBuffer(int size)
+    : size_(size) {
   Initialize();
 }
 
-DecoderBuffer::DecoderBuffer(const uint8* data, int buffer_size)
-    : buffer_size_(buffer_size) {
-  // Prevent invalid allocations.  Also used to create end of stream buffers.
-  if (!data || buffer_size <= 0) {
-    buffer_size_ = 0;
+DecoderBuffer::DecoderBuffer(const uint8* data, int size)
+    : size_(size) {
+  if (!data) {
+    CHECK_EQ(size_, 0);
     return;
   }
 
   Initialize();
-  memcpy(data_.get(), data, buffer_size_);
+  memcpy(data_.get(), data, size_);
 }
 
 DecoderBuffer::~DecoderBuffer() {}
 
 void DecoderBuffer::Initialize() {
-  DCHECK_GE(buffer_size_, 0);
+  CHECK_GE(size_, 0);
   data_.reset(reinterpret_cast<uint8*>(
-      base::AlignedAlloc(buffer_size_ + kPaddingSize, kAlignmentSize)));
-  memset(data_.get() + buffer_size_, 0, kPaddingSize);
+      base::AlignedAlloc(size_ + kPaddingSize, kAlignmentSize)));
+  memset(data_.get() + size_, 0, kPaddingSize);
 }
 
 scoped_refptr<DecoderBuffer> DecoderBuffer::CopyFrom(const uint8* data,
                                                      int data_size) {
-  DCHECK(data);
+  // If you hit this checks you likely have a bug in a demuxer. Go fix it.
+  CHECK(data);
   return make_scoped_refptr(new DecoderBuffer(data, data_size));
 }
 
@@ -70,7 +70,7 @@ uint8* DecoderBuffer::GetWritableData() const {
 }
 
 int DecoderBuffer::GetDataSize() const {
-  return buffer_size_;
+  return size_;
 }
 
 const DecryptConfig* DecoderBuffer::GetDecryptConfig() const {
