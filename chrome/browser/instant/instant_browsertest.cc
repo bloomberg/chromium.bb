@@ -242,6 +242,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OmniboxFocusLoadsInstant) {
   EXPECT_EQ(preview_tab, instant()->GetPreviewContents());
 }
 
+// Flakes on Windows: http://crbug.com/170677
+#if defined(OS_WIN)
+#define MAYBE_OnChangeEvent DISABLED_OnChangeEvent
+#else
+#define MAYBE_OnChangeEvent OnChangeEvent
+#endif
 // Test that the onchange event is dispatched upon typing in the omnibox.
 IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
@@ -968,8 +974,14 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreCaseInsensitive) {
   EXPECT_EQ(WideToUTF16(L"\u1e0b\u0323oh"), omnibox()->GetText());
 }
 
+// Flakes on Windows: http://crbug.com/170677
+#if defined(OS_WIN)
+#define MAYBE_CommitInNewTab DISABLED_CommitInNewTab
+#else
+#define MAYBE_CommitInNewTab CommitInNewTab
+#endif
 // Test that the preview can be committed onto a new tab.
-IN_PROC_BROWSER_TEST_F(InstantTest, CommitInNewTab) {
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_CommitInNewTab) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant());
   FocusOmniboxAndWaitForInstantSupport();
 
