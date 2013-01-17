@@ -315,7 +315,7 @@ void NetworkLibraryImplStub::CompleteCellularInit() {
   cellular1->set_activation_state(ACTIVATION_STATE_ACTIVATED);
   cellular1->set_payment_url(std::string("http://www.google.com"));
   cellular1->set_usage_url(std::string("http://www.google.com"));
-  cellular1->set_network_technology(NETWORK_TECHNOLOGY_LTE);
+  cellular1->set_network_technology(NETWORK_TECHNOLOGY_EVDO);
   AddStubNetwork(cellular1, PROFILE_NONE);
 
   CellularNetwork* cellular2 = new CellularNetwork("/cellular2");
