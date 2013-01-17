@@ -103,9 +103,11 @@ TabHelper::TabHelper(content::WebContents* web_contents)
         new ScriptBubbleController(web_contents, this));
   }
 
+
   // If more classes need to listen to global content script activity, then
   // a separate routing class with an observer interface should be written.
-  AddScriptExecutionObserver(ActivityLog::GetInstance());
+  profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  AddScriptExecutionObserver(ActivityLog::GetInstance(profile_));
 
   registrar_.Add(this,
                  content::NOTIFICATION_LOAD_STOP,
@@ -118,7 +120,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
 }
 
 TabHelper::~TabHelper() {
-  RemoveScriptExecutionObserver(ActivityLog::GetInstance());
+  RemoveScriptExecutionObserver(ActivityLog::GetInstance(profile_));
 }
 
 void TabHelper::CreateApplicationShortcuts() {

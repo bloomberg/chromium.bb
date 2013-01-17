@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_EXTENSIONS_EXTENSION_ACTIVITY_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_EXTENSIONS_EXTENSION_ACTIVITY_UI_H_
 
+#include <string>
+#include <vector>
 #include "chrome/browser/extensions/activity_log.h"
 #include "content/public/browser/web_ui_controller.h"
 
@@ -25,10 +27,11 @@ class ExtensionActivityUI : public content::WebUIController,
   virtual void OnExtensionActivity(
       const extensions::Extension* extension,
       extensions::ActivityLog::Activity activity,
-      const std::vector<std::string>& messages) OVERRIDE;
+      const std::string& message) OVERRIDE;
 
  private:
   const extensions::Extension* extension_;
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActivityUI);
 };

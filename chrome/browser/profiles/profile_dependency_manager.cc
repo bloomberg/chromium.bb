@@ -14,6 +14,7 @@
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/extensions/activity_log.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_factory.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmark_api_factory.h"
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
@@ -251,6 +252,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #endif
   DownloadServiceFactory::GetInstance();
 #if defined(ENABLE_EXTENSIONS)
+  extensions::ActivityLogFactory::GetInstance();
   extensions::AppRestoreServiceFactory::GetInstance();
   extensions::BookmarkAPIFactory::GetInstance();
   extensions::BluetoothAPIFactory::GetInstance();

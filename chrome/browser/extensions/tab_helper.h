@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_TAB_HELPER_H_
 #define CHROME_BROWSER_EXTENSIONS_TAB_HELPER_H_
 
+#include <map>
+#include <string>
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -264,6 +266,8 @@ class TabHelper : public content::WebContentsObserver,
   scoped_ptr<ActiveTabPermissionGranter> active_tab_permission_granter_;
 
   scoped_ptr<ScriptBubbleController> script_bubble_controller_;
+
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(TabHelper);
 };

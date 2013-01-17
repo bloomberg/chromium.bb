@@ -41,10 +41,10 @@ ExtensionActivityUI::ExtensionActivityUI(content::WebUI* web_ui)
   // Resources.
   source->add_resource_path("extension_activity.js", IDR_EXTENSION_ACTIVITY_JS);
   source->set_default_resource(IDR_EXTENSION_ACTIVITY_HTML);
-
-  Profile* profile = Profile::FromWebUI(web_ui);
-  ChromeURLDataManager::AddDataSourceImpl(profile, source);
-  ChromeURLDataManager::AddDataSource(profile, new SharedResourcesDataSource());
+  profile_ = Profile::FromWebUI(web_ui);
+  ChromeURLDataManager::AddDataSourceImpl(profile_, source);
+  ChromeURLDataManager::AddDataSource(
+      profile_, new SharedResourcesDataSource());
 
   // Callback handlers.
   web_ui->RegisterMessageCallback("requestExtensionData",
@@ -54,7 +54,8 @@ ExtensionActivityUI::ExtensionActivityUI(content::WebUI* web_ui)
 
 ExtensionActivityUI::~ExtensionActivityUI() {
   if (extension_)
-    extensions::ActivityLog::GetInstance()->RemoveObserver(extension_, this);
+    extensions::ActivityLog::GetInstance(profile_)->RemoveObserver(
+        extension_, this);
 }
 
 void ExtensionActivityUI::HandleRequestExtensionData(
@@ -65,8 +66,7 @@ void ExtensionActivityUI::HandleRequestExtensionData(
   if (!args->GetString(0, &extension_id))
     return;
 
-  ExtensionService* extension_service = Profile::FromWebUI(web_ui())->
-      GetExtensionService();
+  ExtensionService* extension_service = profile_->GetExtensionService();
   extension_ = extension_service->GetExtensionById(extension_id, false);
   if (!extension_)
     return;
@@ -90,15 +90,15 @@ void ExtensionActivityUI::HandleRequestExtensionData(
   web_ui()->CallJavascriptFunction("extension_activity.handleExtensionData",
                                    result);
 
-  extensions::ActivityLog::GetInstance()->AddObserver(extension_, this);
+  extensions::ActivityLog::GetInstance(profile_)->AddObserver(extension_, this);
 }
 
 void ExtensionActivityUI::OnExtensionActivity(
       const extensions::Extension* extension,
       extensions::ActivityLog::Activity activity,
-      const std::vector<std::string>& messages) {
+      const std::string& message) {
   scoped_ptr<ListValue> messages_list(new ListValue());
-  messages_list->AppendStrings(messages);
+  messages_list->AppendString(message);
 
   DictionaryValue result;
   result.SetInteger("activity", activity);
