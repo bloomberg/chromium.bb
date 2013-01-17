@@ -525,13 +525,16 @@ bool ChromeURLDataManagerBackend::StartRequest(const GURL& url,
   MessageLoop* target_message_loop =
       source->source()->MessageLoopForRequestPath(path);
   if (!target_message_loop) {
+    bool is_incognito = job->is_incognito();
     job->MimeTypeAvailable(source->source()->GetMimeType(path));
+    // Eliminate potentially dangling pointer to avoid future use.
+    job = NULL;
 
     // The DataSource is agnostic to which thread StartDataRequest is called
     // on for this path.  Call directly into it from this thread, the IO
     // thread.
     source->source()->StartDataRequest(
-        path, job->is_incognito(),
+        path, is_incognito,
         base::Bind(&URLDataSourceImpl::SendResponse, source, request_id));
   } else {
     // URLRequestChromeJob should receive mime type before data. This
