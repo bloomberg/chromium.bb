@@ -70,7 +70,7 @@ endef
 define LIB_RULE
 all:$(NACL_SDK_ROOT)/lib/$(OSNAME)_host/$(CONFIG)/$(1).lib
 $(NACL_SDK_ROOT)/lib/$(OSNAME)_host/$(CONFIG)/$(1).lib : $(foreach src,$(2),$(OUTDIR)/$(basename $(src)).o)
-	$(MKDIR) -p $(dir $$@)
+	$(MKDIR) -p $$(dir $$@)
 	$(HOST_LIB) $$@ $$^ $(WIN_LDFLAGS)
 endef
 
