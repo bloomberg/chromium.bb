@@ -28,6 +28,7 @@
 #include "ui/base/models/table_model_observer.h"
 #include "ui/views/background.h"
 #include "ui/views/context_menu_controller.h"
+#include "ui/views/controls/button/chrome_style.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
@@ -419,9 +420,13 @@ void TaskManagerView::Init() {
       switches::kPurgeMemoryButton)) {
     purge_memory_button_ = new views::NativeTextButton(this,
         l10n_util::GetStringUTF16(IDS_TASK_MANAGER_PURGE_MEMORY));
+    if (DialogDelegate::UseNewStyle())
+      views::ApplyChromeStyle(purge_memory_button_);
   }
   kill_button_ = new views::NativeTextButton(this,
       l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL));
+  if (DialogDelegate::UseNewStyle())
+    views::ApplyChromeStyle(kill_button_);
   about_memory_link_ = new views::Link(
       l10n_util::GetStringUTF16(IDS_TASK_MANAGER_ABOUT_MEMORY_LINK));
   about_memory_link_->set_listener(this);
@@ -547,7 +552,19 @@ void TaskManagerView::Show(bool highlight_background_resources,
     }
   }
   instance_ = new TaskManagerView(highlight_background_resources, desktop_type);
-  views::Widget::CreateWindow(instance_);
+
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params;
+  params.delegate = instance_;
+  if (DialogDelegate::UseNewStyle()) {
+    // TODO(msw): Use table_view_views or support dialog transparency and native
+    // controls (e.g. table_view_win) via a second dialog Widget (like bubbles).
+    // params.transparent = true;
+    params.remove_standard_frame = true;
+  }
+  params.top_level = true;
+  widget->Init(params);
+
   instance_->InitAlwaysOnTopState();
   instance_->model_->StartUpdating();
   instance_->GetWidget()->Show();

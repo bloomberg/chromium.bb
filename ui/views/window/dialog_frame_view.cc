@@ -114,10 +114,10 @@ void DialogFrameView::Layout() {
   gfx::Rect bounds = GetLocalBounds();
   bounds.Inset(border()->GetInsets());
   // Small additional insets yield the desired 10px visual close button insets.
-  bounds.Inset(0, 2, 1, 0);
-  close_->SetPosition(gfx::Point(bounds.right() - close_->width(), bounds.y()));
+  bounds.Inset(0, 2, close_->width() + 1, 0);
+  close_->SetPosition(gfx::Point(bounds.right(), bounds.y()));
   // Small additional insets yield the desired 20px visual title label insets.
-  bounds.Inset(2 * kSpacing - 1, kSpacing, close_->width(), 0);
+  bounds.Inset(2 * kSpacing - 1, kSpacing, 0, 0);
   bounds.set_height(title_->font().GetHeight());
   title_->SetBoundsRect(bounds);
 }
