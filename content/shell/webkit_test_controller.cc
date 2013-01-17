@@ -165,6 +165,8 @@ bool WebKitTestController::PrepareForLayoutTest(
   content::ShellBrowserContext* browser_context =
       static_cast<content::ShellContentBrowserClient*>(
           content::GetContentClient()->browser())->browser_context();
+  if (test_url.spec().find("compositing/") != std::string::npos)
+    is_compositing_test_ = true;
   gfx::Size initial_size;
   // The W3C SVG layout tests use a different size than the other layout tests.
   if (test_url.spec().find("W3C-SVG-1.1") != std::string::npos)
@@ -177,15 +179,12 @@ bool WebKitTestController::PrepareForLayoutTest(
       initial_size);
   WebContentsObserver::Observe(main_window_->web_contents());
   main_window_->LoadURL(test_url);
-  if (test_url.spec().find("/dumpAsText/") != std::string::npos ||
-      test_url.spec().find("\\dumpAsText\\") != std::string::npos) {
+  if (test_url.spec().find("/dumpAsText/") != std::string::npos) {
     dump_as_text_ = true;
     enable_pixel_dumping_ = false;
   }
-  if (test_url.spec().find("/inspector/") != std::string::npos ||
-      test_url.spec().find("\\inspector\\") != std::string::npos) {
+  if (test_url.spec().find("/inspector/") != std::string::npos)
     main_window_->ShowDevTools();
-  }
   main_window_->web_contents()->GetRenderViewHost()->Focus();
   main_window_->web_contents()->GetRenderViewHost()->SetActive(true);
   return true;
@@ -195,6 +194,7 @@ bool WebKitTestController::ResetAfterLayoutTest() {
   DCHECK(CalledOnValidThread());
   printer_->PrintTextFooter();
   printer_->PrintImageFooter();
+  is_compositing_test_ = false;
   enable_pixel_dumping_ = false;
   expected_pixel_hash_.clear();
   captured_dump_ = false;
@@ -229,10 +229,19 @@ void WebKitTestController::RendererUnresponsive() {
 
 void WebKitTestController::OverrideWebkitPrefs(
     webkit_glue::WebPreferences* prefs) {
-  if (should_override_prefs_)
+  if (should_override_prefs_) {
     *prefs = prefs_;
-  else
+  } else {
     ApplyLayoutTestDefaultPreferences(prefs);
+    if (is_compositing_test_) {
+      CommandLine& command_line = *CommandLine::ForCurrentProcess();
+      if (command_line.HasSwitch(switches::kEnableSoftwareCompositing))
+        prefs->accelerated_2d_canvas_enabled = true;
+      prefs->accelerated_compositing_for_video_enabled = true;
+      prefs->deferred_2d_canvas_enabled = true;
+      prefs->mock_scrollbars_enabled = true;
+    }
+  }
 }
 
 bool WebKitTestController::CanOpenWindows() const {

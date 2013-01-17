@@ -86,6 +86,7 @@ WebPreferences::WebPreferences()
       accelerated_compositing_for_overflow_scroll_enabled(false),
       accelerated_compositing_for_scrollable_frames_enabled(false),
       composited_scrolling_for_frames_enabled(false),
+      mock_scrollbars_enabled(false),
       show_paint_rects(false),
       render_vsync_enabled(true),
       asynchronous_spell_checking_enabled(true),
@@ -369,6 +370,9 @@ void WebPreferences::Apply(WebView* web_view) const {
   // Enables composited scrolling for frames if requested on command line.
   settings->setCompositedScrollingForFramesEnabled(
       composited_scrolling_for_frames_enabled);
+
+  // Uses the mock theme engine for scrollbars.
+  settings->setMockScrollbarsEnabled(mock_scrollbars_enabled);
 
   // Display the current compositor tree as overlay if requested on
   // the command line

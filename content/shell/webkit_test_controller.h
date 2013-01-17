@@ -147,6 +147,8 @@ class WebKitTestController : public base::NonThreadSafe,
 
   int current_pid_;
 
+  bool is_compositing_test_;
+
   bool enable_pixel_dumping_;
   std::string expected_pixel_hash_;
 
