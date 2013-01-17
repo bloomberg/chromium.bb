@@ -9,7 +9,6 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/history_quick_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -1317,6 +1316,10 @@ class OmniboxViewTest : public InProcessBrowserTest,
   }
 #endif  // defined(USE_AURA)
 
+  ViewID location_bar_focus_view_id() const {
+    return location_bar_focus_view_id_;
+  }
+
  private:
   ViewID location_bar_focus_view_id_;
 };
@@ -1697,8 +1700,13 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CopyURLToClipboard) {
   // Set permanent text thus making sure that omnibox treats 'google.com'
   // as URL (not as ordinary user input).
   OmniboxEditModel* edit_model = omnibox_view->model();
-  ASSERT_NE(edit_model, static_cast<OmniboxEditModel*>(NULL));
+  ASSERT_NE(static_cast<OmniboxEditModel*>(NULL), edit_model);
   edit_model->UpdatePermanentText(ASCIIToUTF16("http://www.google.com/"));
+
+  // Location bar must have focus to receive Ctrl-C.
+  chrome::FocusLocationBar(browser());
+  ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                           location_bar_focus_view_id()));
 
   // Select full URL and copy it to clipboard. General text and html should
   // be available.
