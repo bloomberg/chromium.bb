@@ -261,6 +261,7 @@
             }
         },
         {
+            "disabled": "Doesn't scroll",
             "url": "https://mail.google.com/mail/",
             "why": "productivity, top google properties",
             "credentials": "google",
@@ -271,6 +272,7 @@
             }
         },
         {
+            "disabled": "Doesn't scroll",
             "url": "https://www.google.com/calendar/",
             "why": "productivity, top google properties",
             "credentials": "google",
