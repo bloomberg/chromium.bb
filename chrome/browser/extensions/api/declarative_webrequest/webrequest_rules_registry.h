@@ -14,9 +14,11 @@
 #include "base/time.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/extensions/api/declarative/declarative_rule.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_with_cache.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_action.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/matcher/url_matcher.h"
 
@@ -34,6 +36,10 @@ class URLRequest;
 namespace extensions {
 
 class RulesRegistryService;
+
+typedef linked_ptr<extension_web_request_api_helpers::EventResponseDelta>
+    LinkedPtrEventResponseDelta;
+typedef DeclarativeRule<WebRequestCondition, WebRequestAction> WebRequestRule;
 
 // The WebRequestRulesRegistry is responsible for managing
 // the internal representation of rules for the Declarative Web Request API.
@@ -70,13 +76,13 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
   // TODO(battre): This will become an implementation detail, because we need
   // a way to also execute the actions of the rules.
   std::set<const WebRequestRule*> GetMatches(
-      const WebRequestRule::RequestData& request_data);
+      const DeclarativeWebRequestData& request_data);
 
   // Returns which modifications should be executed on the network request
   // according to the rules registered in this registry.
   std::list<LinkedPtrEventResponseDelta> CreateDeltas(
       const ExtensionInfoMap* extension_info_map,
-      const WebRequestRule::RequestData& request_data,
+      const DeclarativeWebRequestData& request_data,
       bool crosses_incognito);
 
   // Implementation of RulesRegistryWithCache:
@@ -107,6 +113,14 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
   }
 
  private:
+  // Checks whether the set of |conditions| and |actions| are consistent,
+  // meaning for example that we do not allow combining an |action| that needs
+  // to be executed before the |condition| can be fulfilled.
+  // Returns true in case of consistency and MUST set |error| otherwise.
+  static bool CheckConsistency(const WebRequestConditionSet* conditions,
+                               const WebRequestActionSet* actions,
+                               std::string* error);
+
   typedef std::map<URLMatcherConditionSet::ID, WebRequestRule*> RuleTriggers;
   typedef std::map<WebRequestRule::GlobalRuleId, linked_ptr<WebRequestRule> >
       RulesMap;

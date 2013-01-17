@@ -59,7 +59,7 @@ WebRequestCondition::~WebRequestCondition() {}
 
 bool WebRequestCondition::IsFulfilled(
     const std::set<URLMatcherConditionSet::ID>& url_matches,
-    const WebRequestRule::RequestData& request_data) const {
+    const DeclarativeWebRequestData& request_data) const {
   if (!(request_data.stage & applicable_request_stages_)) {
     // A condition that cannot be evaluated is considered as violated.
     return false;
@@ -147,91 +147,5 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
 
   return result.Pass();
 }
-
-//
-// WebRequestConditionSet
-//
-
-WebRequestConditionSet::~WebRequestConditionSet() {}
-
-bool WebRequestConditionSet::IsFulfilled(
-    URLMatcherConditionSet::ID url_match_trigger,
-    const std::set<URLMatcherConditionSet::ID>& url_matches,
-    const WebRequestRule::RequestData& request_data) const {
-  if (url_match_trigger == -1) {
-    // Invalid trigger -- indication that we should only check conditions
-    // without URL attributes.
-    for (std::vector<const WebRequestCondition*>::const_iterator it =
-         conditions_without_urls_.begin();
-         it != conditions_without_urls_.end(); ++it) {
-      if ((*it)->IsFulfilled(url_matches, request_data))
-        return true;
-    }
-    return false;
-  }
-
-  URLMatcherIdToCondition::const_iterator triggered =
-      match_id_to_condition_.find(url_match_trigger);
-  return (triggered != match_id_to_condition_.end() &&
-          triggered->second->IsFulfilled(url_matches, request_data));
-}
-
-void WebRequestConditionSet::GetURLMatcherConditionSets(
-    URLMatcherConditionSet::Vector* condition_sets) const {
-  for (Conditions::const_iterator i = conditions_.begin();
-       i != conditions_.end(); ++i) {
-    scoped_refptr<URLMatcherConditionSet> set =
-        (*i)->url_matcher_condition_set();
-    if (set.get())
-      condition_sets->push_back(set);
-  }
-}
-
-// static
-scoped_ptr<WebRequestConditionSet> WebRequestConditionSet::Create(
-    URLMatcherConditionFactory* url_matcher_condition_factory,
-    const AnyVector& conditions,
-    std::string* error) {
-  Conditions result;
-
-  for (AnyVector::const_iterator i = conditions.begin();
-       i != conditions.end(); ++i) {
-    CHECK(i->get());
-    scoped_ptr<WebRequestCondition> condition =
-        WebRequestCondition::Create(url_matcher_condition_factory,
-                                    (*i)->value(), error);
-    if (!error->empty())
-      return scoped_ptr<WebRequestConditionSet>(NULL);
-    result.push_back(make_linked_ptr(condition.release()));
-  }
-
-  URLMatcherIdToCondition match_id_to_condition;
-  std::vector<const WebRequestCondition*> conditions_without_urls;
-
-  for (Conditions::const_iterator i = result.begin(); i != result.end(); ++i) {
-    const URLMatcherConditionSet* set = (*i)->url_matcher_condition_set().get();
-    if (set) {
-      URLMatcherConditionSet::ID id = set->id();
-      match_id_to_condition[id] = i->get();
-    } else {
-      conditions_without_urls.push_back(i->get());
-    }
-  }
-
-  return make_scoped_ptr(new WebRequestConditionSet(
-      result, match_id_to_condition, conditions_without_urls));
-}
-
-bool WebRequestConditionSet::HasConditionsWithoutUrls() const {
-  return !conditions_without_urls_.empty();
-}
-
-WebRequestConditionSet::WebRequestConditionSet(
-    const Conditions& conditions,
-    const URLMatcherIdToCondition& match_id_to_condition,
-    const std::vector<const WebRequestCondition*>& conditions_without_urls)
-    : match_id_to_condition_(match_id_to_condition),
-      conditions_(conditions),
-      conditions_without_urls_(conditions_without_urls) {}
 
 }  // namespace extensions

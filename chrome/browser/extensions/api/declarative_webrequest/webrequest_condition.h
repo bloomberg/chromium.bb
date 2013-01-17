@@ -12,11 +12,30 @@
 
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
+#include "chrome/browser/extensions/api/declarative/declarative_rule.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
 #include "chrome/common/extensions/matcher/url_matcher.h"
+#include "net/http/http_response_headers.h"
 
 namespace extensions {
+
+// Container for information about a URLRequest to determine which
+// rules apply to the request.
+struct DeclarativeWebRequestData {
+  DeclarativeWebRequestData(net::URLRequest* request, RequestStage stage)
+      : request(request), stage(stage),
+        original_response_headers(NULL) {}
+  DeclarativeWebRequestData(
+      net::URLRequest* request, RequestStage stage,
+      const net::HttpResponseHeaders* original_response_headers)
+      : request(request), stage(stage),
+        original_response_headers(original_response_headers) {}
+  net::URLRequest* request;
+  RequestStage stage;
+  // Additional information about requests that is not
+  // available in all request stages.
+  const net::HttpResponseHeaders* original_response_headers;
+};
 
 // Representation of a condition in the Declarative WebRequest API. A condition
 // consists of several attributes. Each of these attributes needs to be
@@ -37,6 +56,8 @@ namespace extensions {
 // WebRequestConditionSet::GetURLMatcherConditionSets.
 class WebRequestCondition {
  public:
+  typedef DeclarativeWebRequestData MatchData;
+
   WebRequestCondition(
       scoped_refptr<URLMatcherConditionSet> url_matcher_conditions,
       const WebRequestConditionAttributes& condition_attributes);
@@ -52,20 +73,18 @@ class WebRequestCondition {
   // Returns whether the request matches this condition.  |url_matches| lists
   // the IDs that match the request's URL.
   bool IsFulfilled(const std::set<URLMatcherConditionSet::ID> &url_matches,
-                   const WebRequestRule::RequestData &request_data) const;
+                   const DeclarativeWebRequestData& request_data) const;
 
-  // Returns a URLMatcherConditionSet::ID which is the canonical representation
-  // for all URL patterns that need to be matched by this WebRequestCondition.
-  // This ID is registered in a URLMatcher that can inform us in case of a
-  // match.
-  URLMatcherConditionSet::ID url_matcher_condition_set_id() const {
-    DCHECK(url_matcher_conditions_.get());
-    return url_matcher_conditions_->id();
+  // True if this condition has a url filter.
+  bool has_url_matcher_condition_set() const {
+    return url_matcher_conditions_ != NULL;
   }
 
-  // Returns the set of conditions that are checked on the URL. May be NULL.
-  scoped_refptr<URLMatcherConditionSet> url_matcher_condition_set() const {
-    return url_matcher_conditions_;
+  // If this Condition has a url filter, appends it to |condition_sets|.
+  void GetURLMatcherConditionSets(
+      URLMatcherConditionSet::Vector* condition_sets) const {
+    if (url_matcher_conditions_)
+      condition_sets->push_back(url_matcher_conditions_);
   }
 
   // Returns the condition attributes checked by this condition.
@@ -93,59 +112,7 @@ class WebRequestCondition {
   DISALLOW_COPY_AND_ASSIGN(WebRequestCondition);
 };
 
-// This class stores a set of conditions that may be part of a WebRequestRule.
-// If any condition is fulfilled, the WebRequestActions of the WebRequestRule
-// can be triggered.
-class WebRequestConditionSet {
- public:
-  typedef std::vector<linked_ptr<json_schema_compiler::any::Any> > AnyVector;
-  typedef std::vector<linked_ptr<WebRequestCondition> > Conditions;
-
-  ~WebRequestConditionSet();
-
-  // Factory method that creates an WebRequestConditionSet according to the JSON
-  // array |conditions| passed by the extension API.
-  // Sets |error| and returns NULL in case of an error.
-  static scoped_ptr<WebRequestConditionSet> Create(
-      URLMatcherConditionFactory* url_matcher_condition_factory,
-      const AnyVector& conditions,
-      std::string* error);
-
-  const Conditions& conditions() const {
-    return conditions_;
-  }
-
-  // If |url_match_trigger| is a member of |url_matches|, then this returns
-  // whether the corresponding condition is fulfilled wrt. |request_data|. If
-  // |url_match_trigger| is -1, this function returns whether any of the
-  // conditions without URL attributes is satisfied.
-  bool IsFulfilled(
-      URLMatcherConditionSet::ID url_match_trigger,
-      const std::set<URLMatcherConditionSet::ID>& url_matches,
-      const WebRequestRule::RequestData& request_data) const;
-
-  // Appends the URLMatcherConditionSet from all conditions to |condition_sets|.
-  void GetURLMatcherConditionSets(
-      URLMatcherConditionSet::Vector* condition_sets) const;
-
-  // Returns whether there are some conditions without UrlFilter attributes.
-  bool HasConditionsWithoutUrls() const;
-
- private:
-  typedef std::map<URLMatcherConditionSet::ID, const WebRequestCondition*>
-      URLMatcherIdToCondition;
-
-  WebRequestConditionSet(
-      const Conditions& conditions,
-      const URLMatcherIdToCondition& match_id_to_condition,
-      const std::vector<const WebRequestCondition*>& conditions_without_urls);
-
-  const URLMatcherIdToCondition match_id_to_condition_;
-  const Conditions conditions_;
-  const std::vector<const WebRequestCondition*> conditions_without_urls_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebRequestConditionSet);
-};
+typedef DeclarativeConditionSet<WebRequestCondition> WebRequestConditionSet;
 
 }  // namespace extensions
 

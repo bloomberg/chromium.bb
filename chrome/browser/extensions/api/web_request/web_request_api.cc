@@ -19,7 +19,6 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/upload_data_presenter.h"
@@ -1648,7 +1647,7 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     helpers::EventResponseDeltas result =
         rules_registry->CreateDeltas(
             extension_info_map,
-            extensions::WebRequestRule::RequestData(
+            extensions::DeclarativeWebRequestData(
                 request, request_stage, original_response_headers),
             i->second);
 

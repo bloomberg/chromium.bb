@@ -12,6 +12,10 @@ namespace any {
 
 Any::Any() {}
 
+Any::Any(scoped_ptr<base::Value> from_value)
+    : value_(from_value.Pass()) {
+}
+
 Any::~Any() {}
 
 void Any::Init(const base::Value& from_value) {

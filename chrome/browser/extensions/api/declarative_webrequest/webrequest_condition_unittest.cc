@@ -10,7 +10,6 @@
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
 #include "chrome/common/extensions/matcher/url_matcher_constants.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/url_request/url_request_test_util.h"
@@ -70,7 +69,7 @@ TEST(WebRequestConditionTest, CreateCondition) {
   ASSERT_TRUE(result.get());
 
   URLMatcherConditionSet::Vector url_matcher_condition_set;
-  url_matcher_condition_set.push_back(result->url_matcher_condition_set());
+  result->GetURLMatcherConditionSets(&url_matcher_condition_set);
   matcher.AddConditionSets(url_matcher_condition_set);
   std::set<URLMatcherConditionSet::ID> url_match_ids;
 
@@ -83,7 +82,7 @@ TEST(WebRequestConditionTest, CreateCondition) {
       ResourceType::MAIN_FRAME, NULL, -1, -1);
   EXPECT_TRUE(result->IsFulfilled(
       url_match_ids,
-      WebRequestRule::RequestData(&match_request, ON_BEFORE_REQUEST)));
+      DeclarativeWebRequestData(&match_request, ON_BEFORE_REQUEST)));
 
   GURL https_url("https://www.example.com");
   net::TestURLRequest wrong_resource_type(https_url, NULL, &context);
@@ -94,7 +93,7 @@ TEST(WebRequestConditionTest, CreateCondition) {
       ResourceType::SUB_FRAME, NULL, -1, -1);
   EXPECT_FALSE(result->IsFulfilled(
       url_match_ids,
-      WebRequestRule::RequestData(&wrong_resource_type, ON_BEFORE_REQUEST)));
+      DeclarativeWebRequestData(&wrong_resource_type, ON_BEFORE_REQUEST)));
 }
 
 // Conditions without UrlFilter attributes need to be independent of URL
@@ -160,17 +159,17 @@ TEST(WebRequestConditionTest, NoUrlAttributes) {
   //    attributes are fulfilled.
   EXPECT_FALSE(condition_no_url_false->IsFulfilled(
       dummy_match_set,
-      WebRequestRule::RequestData(&https_request, ON_BEFORE_REQUEST)));
+      DeclarativeWebRequestData(&https_request, ON_BEFORE_REQUEST)));
 
   EXPECT_TRUE(condition_no_url_true->IsFulfilled(
       dummy_match_set,
-      WebRequestRule::RequestData(&https_request, ON_BEFORE_REQUEST)));
+      DeclarativeWebRequestData(&https_request, ON_BEFORE_REQUEST)));
 
   // 2. An empty condition (in particular, without UrlFilter attributes) is
   //    always fulfilled.
   EXPECT_TRUE(condition_empty->IsFulfilled(
       dummy_match_set,
-      WebRequestRule::RequestData(&https_request, ON_BEFORE_REQUEST)));
+      DeclarativeWebRequestData(&https_request, ON_BEFORE_REQUEST)));
 }
 
 TEST(WebRequestConditionTest, CreateConditionSet) {
@@ -231,7 +230,7 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   EXPECT_TRUE(result->IsFulfilled(
       *(url_match_ids.begin()),
       url_match_ids,
-      WebRequestRule::RequestData(&http_request, ON_BEFORE_REQUEST)));
+      DeclarativeWebRequestData(&http_request, ON_BEFORE_REQUEST)));
 
   GURL https_url("https://www.example.com");
   url_match_ids = matcher.MatchURL(https_url);
@@ -240,7 +239,7 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   EXPECT_TRUE(result->IsFulfilled(
       *(url_match_ids.begin()),
       url_match_ids,
-      WebRequestRule::RequestData(&https_request, ON_BEFORE_REQUEST)));
+      DeclarativeWebRequestData(&https_request, ON_BEFORE_REQUEST)));
 
   // Check that both, hostPrefix and hostSuffix are evaluated.
   GURL https_foo_url("https://foo.example.com");
@@ -250,7 +249,7 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   EXPECT_FALSE(result->IsFulfilled(
       -1,
       url_match_ids,
-      WebRequestRule::RequestData(&https_foo_request, ON_BEFORE_REQUEST)));
+      DeclarativeWebRequestData(&https_foo_request, ON_BEFORE_REQUEST)));
 }
 
 TEST(WebRequestConditionTest, TestPortFilter) {

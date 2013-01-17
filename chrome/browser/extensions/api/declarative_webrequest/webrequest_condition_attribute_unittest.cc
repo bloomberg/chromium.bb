@@ -9,8 +9,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/test/test_server.h"
@@ -90,14 +90,14 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
   content::ResourceRequestInfo::AllocateForTesting(&url_request_ok,
       ResourceType::MAIN_FRAME, NULL, -1, -1);
   EXPECT_TRUE(attribute->IsFulfilled(
-      WebRequestRule::RequestData(&url_request_ok, ON_BEFORE_REQUEST)));
+      DeclarativeWebRequestData(&url_request_ok, ON_BEFORE_REQUEST)));
 
   net::TestURLRequest url_request_fail(
       GURL("http://www.example.com"), NULL, &context);
   content::ResourceRequestInfo::AllocateForTesting(&url_request_ok,
       ResourceType::SUB_FRAME, NULL, -1, -1);
   EXPECT_FALSE(attribute->IsFulfilled(
-      WebRequestRule::RequestData(&url_request_fail, ON_BEFORE_REQUEST)));
+      DeclarativeWebRequestData(&url_request_fail, ON_BEFORE_REQUEST)));
 }
 
 TEST(WebRequestConditionAttributeTest, ContentType) {
@@ -129,11 +129,11 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute_include.get());
   EXPECT_FALSE(attribute_include->IsFulfilled(
-      WebRequestRule::RequestData(&url_request, ON_BEFORE_REQUEST,
-                                  url_request.response_headers())));
+      DeclarativeWebRequestData(&url_request, ON_BEFORE_REQUEST,
+                                url_request.response_headers())));
   EXPECT_TRUE(attribute_include->IsFulfilled(
-      WebRequestRule::RequestData(&url_request, ON_HEADERS_RECEIVED,
-                                  url_request.response_headers())));
+      DeclarativeWebRequestData(&url_request, ON_HEADERS_RECEIVED,
+                                url_request.response_headers())));
 
   scoped_ptr<WebRequestConditionAttribute> attribute_exclude =
       WebRequestConditionAttribute::Create(
@@ -141,8 +141,8 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute_exclude.get());
   EXPECT_FALSE(attribute_exclude->IsFulfilled(
-      WebRequestRule::RequestData(&url_request, ON_HEADERS_RECEIVED,
-                                  url_request.response_headers())));
+      DeclarativeWebRequestData(&url_request, ON_HEADERS_RECEIVED,
+                                url_request.response_headers())));
 
   content_types.Clear();
   content_types.Append(Value::CreateStringValue("something/invalid"));
@@ -152,8 +152,8 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute_unincluded.get());
   EXPECT_FALSE(attribute_unincluded->IsFulfilled(
-      WebRequestRule::RequestData(&url_request, ON_HEADERS_RECEIVED,
-                                  url_request.response_headers())));
+      DeclarativeWebRequestData(&url_request, ON_HEADERS_RECEIVED,
+                                url_request.response_headers())));
 
   scoped_ptr<WebRequestConditionAttribute> attribute_unexcluded =
       WebRequestConditionAttribute::Create(
@@ -161,8 +161,8 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(attribute_unexcluded.get());
   EXPECT_TRUE(attribute_unexcluded->IsFulfilled(
-      WebRequestRule::RequestData(&url_request, ON_HEADERS_RECEIVED,
-                                  url_request.response_headers())));
+      DeclarativeWebRequestData(&url_request, ON_HEADERS_RECEIVED,
+                                url_request.response_headers())));
 }
 
 // Testing WebRequestConditionAttributeThirdParty.
@@ -200,21 +200,21 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
       continue;
     const RequestStage stage = static_cast<RequestStage>(i);
     url_request.set_first_party_for_cookies(url_empty);
-    EXPECT_FALSE(third_party_attribute->IsFulfilled(WebRequestRule::RequestData(
+    EXPECT_FALSE(third_party_attribute->IsFulfilled(DeclarativeWebRequestData(
         &url_request, stage)));
-    EXPECT_TRUE(first_party_attribute->IsFulfilled(WebRequestRule::RequestData(
+    EXPECT_TRUE(first_party_attribute->IsFulfilled(DeclarativeWebRequestData(
         &url_request, stage)));
 
     url_request.set_first_party_for_cookies(url_b);
-    EXPECT_TRUE(third_party_attribute->IsFulfilled(WebRequestRule::RequestData(
+    EXPECT_TRUE(third_party_attribute->IsFulfilled(DeclarativeWebRequestData(
         &url_request, stage)));
-    EXPECT_FALSE(first_party_attribute->IsFulfilled(WebRequestRule::RequestData(
+    EXPECT_FALSE(first_party_attribute->IsFulfilled(DeclarativeWebRequestData(
         &url_request, stage)));
 
     url_request.set_first_party_for_cookies(url_a);
-    EXPECT_FALSE(third_party_attribute->IsFulfilled(WebRequestRule::RequestData(
+    EXPECT_FALSE(third_party_attribute->IsFulfilled(DeclarativeWebRequestData(
         &url_request, stage)));
-    EXPECT_TRUE(first_party_attribute->IsFulfilled(WebRequestRule::RequestData(
+    EXPECT_TRUE(first_party_attribute->IsFulfilled(DeclarativeWebRequestData(
         &url_request, stage)));
   }
 }
@@ -283,17 +283,17 @@ TEST(WebRequestConditionAttributeTest, Stages) {
   net::TestURLRequest url_request(url_empty, &delegate, &context);
 
   for (size_t i = 0; i < arraysize(active_stages); ++i) {
-    EXPECT_FALSE(empty_attribute->IsFulfilled(WebRequestRule::RequestData(
+    EXPECT_FALSE(empty_attribute->IsFulfilled(DeclarativeWebRequestData(
        &url_request, active_stages[i].first)));
 
     for (size_t j = 0; j < one_stage_attributes.size(); ++j) {
       EXPECT_EQ(
           i == j,
-          one_stage_attributes[j]->IsFulfilled(WebRequestRule::RequestData(
+          one_stage_attributes[j]->IsFulfilled(DeclarativeWebRequestData(
               &url_request, active_stages[i].first)));
     }
 
-    EXPECT_TRUE(attribute_with_all->IsFulfilled(WebRequestRule::RequestData(
+    EXPECT_TRUE(attribute_with_all->IsFulfilled(DeclarativeWebRequestData(
         &url_request, active_stages[i].first)));
   }
 }
@@ -386,7 +386,7 @@ void MatchAndCheck(const std::vector< std::vector<const std::string*> >& tests,
   ASSERT_EQ("", error);
   ASSERT_TRUE(attribute.get());
 
-  *result = attribute->IsFulfilled(WebRequestRule::RequestData(
+  *result = attribute->IsFulfilled(DeclarativeWebRequestData(
       url_request, stage, url_request->response_headers()));
 }
 

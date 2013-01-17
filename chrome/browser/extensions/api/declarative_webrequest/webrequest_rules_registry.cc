@@ -15,6 +15,12 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "net/url_request/url_request.h"
 
+namespace {
+const char kActionCannotBeExecuted[] = "An action can never be executed "
+    "because there are is no time in the request life-cycle during which the "
+    "conditions can be checked and the action can possibly be executed.";
+}  // namespace
+
 namespace extensions {
 
 WebRequestRulesRegistry::WebRequestRulesRegistry(Profile* profile,
@@ -26,7 +32,7 @@ WebRequestRulesRegistry::WebRequestRulesRegistry(Profile* profile,
 
 std::set<const WebRequestRule*>
 WebRequestRulesRegistry::GetMatches(
-    const WebRequestRule::RequestData& request_data) {
+    const DeclarativeWebRequestData& request_data) {
   typedef std::set<const WebRequestRule*> RuleSet;
   typedef std::set<URLMatcherConditionSet::ID> URLMatches;
 
@@ -57,7 +63,7 @@ WebRequestRulesRegistry::GetMatches(
 
 std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
     const ExtensionInfoMap* extension_info_map,
-    const WebRequestRule::RequestData& request_data,
+    const DeclarativeWebRequestData& request_data,
     bool crosses_incognito) {
   if (webrequest_rules_.empty())
     return std::list<LinkedPtrEventResponseDelta>();
@@ -107,8 +113,12 @@ std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
     if (priority_of_rule < current_min_priority)
       continue;
 
-    std::list<LinkedPtrEventResponseDelta> rule_result =
-        rule->CreateDeltas(extension_info_map, request_data, crosses_incognito);
+
+    std::list<LinkedPtrEventResponseDelta> rule_result;
+    WebRequestAction::ApplyInfo apply_info = {
+      extension_info_map, request_data, crosses_incognito, &rule_result
+    };
+    rule->Apply(&apply_info);
     result.splice(result.begin(), rule_result);
 
     min_priorities[extension_id] = std::max(current_min_priority,
@@ -133,7 +143,8 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
 
     scoped_ptr<WebRequestRule> webrequest_rule(
         WebRequestRule::Create(url_matcher_.condition_factory(), extension_id,
-                               extension_installation_time, *rule, &error));
+                               extension_installation_time, *rule,
+                               &CheckConsistency, &error));
     if (!error.empty()) {
       // We don't return here, because we want to clear temporary
       // condition sets in the url_matcher_.
@@ -257,6 +268,36 @@ base::Time WebRequestRulesRegistry::GetExtensionInstallationTime(
 
 void WebRequestRulesRegistry::ClearCacheOnNavigation() {
   extension_web_request_api_helpers::ClearCacheOnNavigation();
+}
+
+// static
+bool WebRequestRulesRegistry::CheckConsistency(
+    const WebRequestConditionSet* conditions,
+    const WebRequestActionSet* actions,
+    std::string* error) {
+  // Actions and conditions can be checked and executed in specific phases
+  // of each web request. We consider a rule inconsistent if there is an action
+  // that cannot be triggered by any condition.
+  for (WebRequestActionSet::Actions::const_iterator action_iter =
+           actions->actions().begin();
+       action_iter != actions->actions().end();
+       ++action_iter) {
+    bool found_matching_condition = false;
+    for (WebRequestConditionSet::Conditions::const_iterator condition_iter =
+             conditions->conditions().begin();
+         condition_iter != conditions->conditions().end() &&
+             !found_matching_condition;
+         ++condition_iter) {
+      // Test the intersection of bit masks, this is intentionally & and not &&.
+      if ((*action_iter)->GetStages() & (*condition_iter)->stages())
+        found_matching_condition = true;
+    }
+    if (!found_matching_condition) {
+      *error = kActionCannotBeExecuted;
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace extensions

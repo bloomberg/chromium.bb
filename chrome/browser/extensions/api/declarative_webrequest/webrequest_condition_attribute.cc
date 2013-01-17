@@ -11,6 +11,7 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "content/public/browser/resource_request_info.h"
@@ -151,7 +152,7 @@ int WebRequestConditionAttributeResourceType::GetStages() const {
 }
 
 bool WebRequestConditionAttributeResourceType::IsFulfilled(
-    const WebRequestRule::RequestData& request_data) const {
+    const DeclarativeWebRequestData& request_data) const {
   if (!(request_data.stage & GetStages()))
     return false;
   const content::ResourceRequestInfo* info =
@@ -222,7 +223,7 @@ int WebRequestConditionAttributeContentType::GetStages() const {
 }
 
 bool WebRequestConditionAttributeContentType::IsFulfilled(
-    const WebRequestRule::RequestData& request_data) const {
+    const DeclarativeWebRequestData& request_data) const {
   if (!(request_data.stage & GetStages()))
     return false;
   std::string content_type;
@@ -567,7 +568,7 @@ int WebRequestConditionAttributeRequestHeaders::GetStages() const {
 }
 
 bool WebRequestConditionAttributeRequestHeaders::IsFulfilled(
-    const WebRequestRule::RequestData& request_data) const {
+    const DeclarativeWebRequestData& request_data) const {
   if (!(request_data.stage & GetStages()))
     return false;
 
@@ -631,7 +632,7 @@ int WebRequestConditionAttributeResponseHeaders::GetStages() const {
 }
 
 bool WebRequestConditionAttributeResponseHeaders::IsFulfilled(
-    const WebRequestRule::RequestData& request_data) const {
+    const DeclarativeWebRequestData& request_data) const {
   if (!(request_data.stage & GetStages()))
     return false;
 
@@ -702,7 +703,7 @@ int WebRequestConditionAttributeThirdParty::GetStages() const {
 }
 
 bool WebRequestConditionAttributeThirdParty::IsFulfilled(
-    const WebRequestRule::RequestData& request_data) const {
+    const DeclarativeWebRequestData& request_data) const {
   if (!(request_data.stage & GetStages()))
     return false;
 
@@ -797,7 +798,7 @@ int WebRequestConditionAttributeStages::GetStages() const {
 }
 
 bool WebRequestConditionAttributeStages::IsFulfilled(
-    const WebRequestRule::RequestData& request_data) const {
+    const DeclarativeWebRequestData& request_data) const {
   // Note: removing '!=' triggers warning C4800 on the VS compiler.
   return (request_data.stage & GetStages()) != 0;
 }

@@ -6,17 +6,18 @@
 
 #include <vector>
 
+#include "base/json/json_reader.h"
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
-#include "chrome/common/extensions/matcher/url_matcher_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
+#include "chrome/common/extensions/matcher/url_matcher_constants.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -29,6 +30,8 @@ const char kRuleId4[] = "rule4";
 }  // namespace
 
 namespace extensions {
+
+using testing::HasSubstr;
 
 namespace helpers = extension_web_request_api_helpers;
 namespace keys = declarative_webrequest_constants;
@@ -317,7 +320,7 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
   net::TestURLRequestContext context;
   net::TestURLRequest http_request(http_url, NULL, &context);
   matches = registry->GetMatches(
-      WebRequestRule::RequestData(&http_request, ON_BEFORE_REQUEST));
+      DeclarativeWebRequestData(&http_request, ON_BEFORE_REQUEST));
   EXPECT_EQ(2u, matches.size());
 
   std::set<WebRequestRule::GlobalRuleId> matches_ids;
@@ -330,7 +333,7 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
   GURL foobar_url("http://www.foobar.com");
   net::TestURLRequest foobar_request(foobar_url, NULL, &context);
   matches = registry->GetMatches(
-      WebRequestRule::RequestData(&foobar_request, ON_BEFORE_REQUEST));
+      DeclarativeWebRequestData(&foobar_request, ON_BEFORE_REQUEST));
   EXPECT_EQ(1u, matches.size());
   WebRequestRule::GlobalRuleId expected_pair =
       std::make_pair(kExtensionId, kRuleId2);
@@ -458,7 +461,7 @@ TEST_F(WebRequestRulesRegistryTest, Precedences) {
   std::list<LinkedPtrEventResponseDelta> deltas =
       registry->CreateDeltas(
           NULL,
-          WebRequestRule::RequestData(&request, ON_BEFORE_REQUEST),
+          DeclarativeWebRequestData(&request, ON_BEFORE_REQUEST),
           false);
 
   // The second extension is installed later and will win for this reason
@@ -508,7 +511,7 @@ TEST_F(WebRequestRulesRegistryTest, Priorities) {
   std::list<LinkedPtrEventResponseDelta> deltas =
       registry->CreateDeltas(
           NULL,
-          WebRequestRule::RequestData(&request, ON_BEFORE_REQUEST),
+          DeclarativeWebRequestData(&request, ON_BEFORE_REQUEST),
           false);
 
   // The redirect by the first extension is ignored due to the ignore rule.
@@ -550,11 +553,51 @@ TEST_F(WebRequestRulesRegistryTest, GetMatchesCheckFulfilled) {
   net::TestURLRequestContext context;
   net::TestURLRequest http_request(http_url, NULL, &context);
   matches = registry->GetMatches(
-      WebRequestRule::RequestData(&http_request, ON_BEFORE_REQUEST));
+      DeclarativeWebRequestData(&http_request, ON_BEFORE_REQUEST));
   EXPECT_EQ(1u, matches.size());
   WebRequestRule::GlobalRuleId expected_pair = std::make_pair(kExtensionId,
                                                               kRuleId3);
   EXPECT_EQ(expected_pair, (*matches.begin())->id());
 }
+
+TEST_F(WebRequestRulesRegistryTest, CheckConsistency) {
+  // The contentType condition can only be evaluated during ON_HEADERS_RECEIVED
+  // but the redirect action can only be executed during ON_BEFORE_REQUEST.
+  // Therefore, this is an inconsistent rule that needs to be flagged.
+  const char kRule[] =
+      "{                                                                 \n"
+      "  \"id\": \"rule1\",                                              \n"
+      "  \"conditions\": [                                               \n"
+      "    {                                                             \n"
+      "      \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
+      "      \"url\": {\"hostSuffix\": \"foo.com\"},                     \n"
+      "      \"contentType\": [\"image/jpeg\"]                           \n"
+      "    }                                                             \n"
+      "  ],                                                              \n"
+      "  \"actions\": [                                                  \n"
+      "    {                                                             \n"
+      "      \"instanceType\": \"declarativeWebRequest.RedirectRequest\",\n"
+      "      \"redirectUrl\": \"http://bar.com\"                         \n"
+      "    }                                                             \n"
+      "  ],                                                              \n"
+      "  \"priority\": 200                                               \n"
+      "}                                                                 ";
+
+  scoped_ptr<Value> value(base::JSONReader::Read(kRule));
+  ASSERT_TRUE(value.get());
+
+  std::vector<linked_ptr<RulesRegistry::Rule> > rules;
+  rules.push_back(make_linked_ptr(new RulesRegistry::Rule));
+  ASSERT_TRUE(RulesRegistry::Rule::Populate(*value, rules.back().get()));
+
+  scoped_refptr<WebRequestRulesRegistry> registry(
+      new TestWebRequestRulesRegistry());
+
+  URLMatcher matcher;
+  std::string error = registry->AddRulesImpl(kExtensionId, rules);
+  EXPECT_THAT(error, HasSubstr("no time in the request life-cycle"));
+  EXPECT_TRUE(registry->IsEmpty());
+}
+
 
 }  // namespace extensions

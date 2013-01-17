@@ -19,6 +19,7 @@ namespace any {
 class Any {
  public:
   Any();
+  explicit Any(scoped_ptr<base::Value> from_value);
   ~Any();
 
   // Initializes the Value in this Any. Fails if already initialized.

@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
 #include "chrome/common/extensions/api/events.h"
 #include "webkit/glue/resource_type.h"
 
@@ -28,6 +27,7 @@ class URLRequest;
 namespace extensions {
 
 class HeaderMatcher;
+struct DeclarativeWebRequestData;
 
 // Base class for all condition attributes of the declarative Web Request API
 // except for condition attribute to test URLPatterns.
@@ -61,7 +61,7 @@ class WebRequestConditionAttribute {
 
   // Returns whether the condition is fulfilled for this request.
   virtual bool IsFulfilled(
-      const WebRequestRule::RequestData& request_data) const = 0;
+      const DeclarativeWebRequestData& request_data) const = 0;
 
   virtual Type GetType() const = 0;
 
@@ -97,7 +97,7 @@ class WebRequestConditionAttributeResourceType
   // Implementation of WebRequestConditionAttribute:
   virtual int GetStages() const OVERRIDE;
   virtual bool IsFulfilled(
-      const WebRequestRule::RequestData& request_data) const OVERRIDE;
+      const DeclarativeWebRequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
 
  private:
@@ -127,7 +127,7 @@ class WebRequestConditionAttributeContentType
   // Implementation of WebRequestConditionAttribute:
   virtual int GetStages() const OVERRIDE;
   virtual bool IsFulfilled(
-      const WebRequestRule::RequestData& request_data) const OVERRIDE;
+      const DeclarativeWebRequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
 
  private:
@@ -162,7 +162,7 @@ class WebRequestConditionAttributeRequestHeaders
   // Implementation of WebRequestConditionAttribute:
   virtual int GetStages() const OVERRIDE;
   virtual bool IsFulfilled(
-      const WebRequestRule::RequestData& request_data) const OVERRIDE;
+      const DeclarativeWebRequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
 
  private:
@@ -196,7 +196,7 @@ class WebRequestConditionAttributeResponseHeaders
   // Implementation of WebRequestConditionAttribute:
   virtual int GetStages() const OVERRIDE;
   virtual bool IsFulfilled(
-      const WebRequestRule::RequestData& request_data) const OVERRIDE;
+      const DeclarativeWebRequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
 
  private:
@@ -226,7 +226,7 @@ class WebRequestConditionAttributeThirdParty
   // Implementation of WebRequestConditionAttribute:
   virtual int GetStages() const OVERRIDE;
   virtual bool IsFulfilled(
-      const WebRequestRule::RequestData& request_data) const OVERRIDE;
+      const DeclarativeWebRequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
 
  private:
@@ -255,7 +255,7 @@ class WebRequestConditionAttributeStages
   // Implementation of WebRequestConditionAttribute:
   virtual int GetStages() const OVERRIDE;
   virtual bool IsFulfilled(
-      const WebRequestRule::RequestData& request_data) const OVERRIDE;
+      const DeclarativeWebRequestData& request_data) const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
 
  private:
