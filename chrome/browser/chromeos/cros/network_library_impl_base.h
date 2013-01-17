@@ -438,6 +438,9 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   // The current available network devices. Bitwise flag of ConnectionTypes.
   int available_devices_;
 
+  // The current uninitialized network devices. Bitwise flag of ConnectionTypes.
+  int uninitialized_devices_;
+
   // The current enabled network devices. Bitwise flag of ConnectionTypes.
   int enabled_devices_;
 
@@ -447,9 +450,6 @@ class NetworkLibraryImplBase : public NetworkLibrary {
 
   // True if we are currently scanning for wifi networks.
   bool wifi_scanning_;
-
-  // True if a cellular device has been powered.
-  bool cellular_initialized_;
 
   // Currently not implemented. TODO(stevenjb): implement or eliminate.
   bool offline_mode_;

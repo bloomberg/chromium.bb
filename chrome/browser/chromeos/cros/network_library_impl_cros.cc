@@ -169,9 +169,6 @@ void NetworkLibraryImplCros::UpdateNetworkDeviceStatus(
 
 bool NetworkLibraryImplCros::UpdateCellularDeviceStatus(NetworkDevice* device,
                                                         PropertyIndex index) {
-  if (!cellular_initialized_ && device->powered())
-    cellular_initialized_ = true;
-
   if (index == PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING) {
     if (IsCellularAlwaysInRoaming()) {
       if (!device->data_roaming_allowed())
@@ -655,6 +652,13 @@ bool NetworkLibraryImplCros::NetworkManagerStatusChanged(
       if (!value->GetAsList(&vlist))
         return false;
       UpdateAvailableTechnologies(vlist);
+      break;
+    }
+    case PROPERTY_INDEX_UNINITIALIZED_TECHNOLOGIES: {
+      const ListValue* vlist = NULL;
+      if (!value->GetAsList(&vlist))
+        return false;
+      UpdateTechnologies(vlist, &uninitialized_devices_);
       break;
     }
     case PROPERTY_INDEX_ENABLED_TECHNOLOGIES: {

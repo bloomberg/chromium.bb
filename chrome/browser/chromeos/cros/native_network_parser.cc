@@ -142,6 +142,8 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { flimflam::kTechnologyFamilyProperty, PROPERTY_INDEX_TECHNOLOGY_FAMILY },
   { flimflam::kTypeProperty, PROPERTY_INDEX_TYPE },
   { flimflam::kUIDataProperty, PROPERTY_INDEX_UI_DATA },
+  { shill::kUninitializedTechnologiesProperty,
+    PROPERTY_INDEX_UNINITIALIZED_TECHNOLOGIES },
   { flimflam::kUsageURLProperty, PROPERTY_INDEX_USAGE_URL },
   { flimflam::kOpenVPNClientCertIdProperty,
     PROPERTY_INDEX_OPEN_VPN_CLIENT_CERT_ID },

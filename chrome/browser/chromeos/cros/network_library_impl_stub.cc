@@ -60,8 +60,8 @@ void NetworkLibraryImplStub::Init() {
   if (IsEthernetEnabled())
     devices |= 1 << TYPE_ETHERNET;
   available_devices_ = devices;
-  enabled_devices_ = (1 << TYPE_CELLULAR);
-  cellular_initialized_ = false;
+  uninitialized_devices_ = (1 << TYPE_CELLULAR);
+  enabled_devices_ = (available_devices_ & (1 << TYPE_ETHERNET));
 
   if (IsInteractive()) {
     const int kWifiInitDelaySeconds = 5;
@@ -92,7 +92,8 @@ bool NetworkLibraryImplStub::IsCros() const {
 void NetworkLibraryImplStub::CompleteWifiInit() {
   VLOG(1) << "CompleteWifiInit()";
 
-  enabled_devices_ = available_devices_;
+  uninitialized_devices_ &= ~(1 << TYPE_WIFI);
+  enabled_devices_ |= (available_devices_ & (1 << TYPE_WIFI));
 
   // Profiles
   AddProfile("default", PROFILE_SHARED);
@@ -266,7 +267,10 @@ void NetworkLibraryImplStub::CompleteWifiInit() {
 void NetworkLibraryImplStub::CompleteCellularInit() {
   VLOG(1) << "CompleteCellularInit()";
 
-  cellular_initialized_ = true;
+  uninitialized_devices_ &= ~(1 << TYPE_CELLULAR);
+  uninitialized_devices_ &= ~(1 << TYPE_WIMAX);
+  enabled_devices_ |= (available_devices_ & (1 << TYPE_CELLULAR));
+  enabled_devices_ |= (available_devices_ & (1 << TYPE_WIMAX));
 
   base::ListValue supported_carriers;
   supported_carriers.Append(new StringValue("Generic CDMA Carrier 1"));

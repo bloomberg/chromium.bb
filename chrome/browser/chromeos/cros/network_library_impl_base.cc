@@ -62,10 +62,10 @@ NetworkLibraryImplBase::NetworkLibraryImplBase()
       active_wimax_(NULL),
       active_virtual_(NULL),
       available_devices_(0),
+      uninitialized_devices_(0),
       enabled_devices_(0),
       busy_devices_(0),
       wifi_scanning_(false),
-      cellular_initialized_(false),
       offline_mode_(false),
       is_locked_(false),
       sim_operation_(SIM_OPERATION_NONE),
@@ -454,7 +454,7 @@ bool NetworkLibraryImplBase::wifi_scanning() const {
 }
 
 bool NetworkLibraryImplBase::cellular_initializing() const {
-  return cellular_enabled() && !cellular_initialized_;
+  return (uninitialized_devices_ & (1 << TYPE_CELLULAR));
 }
 
 bool NetworkLibraryImplBase::offline_mode() const { return offline_mode_; }
