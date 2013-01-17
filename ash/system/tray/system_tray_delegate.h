@@ -31,6 +31,7 @@ struct ASH_EXPORT NetworkIconInfo {
   string16 name;
   string16 description;
   std::string service_path;
+  bool is_cellular;
 };
 
 struct ASH_EXPORT BluetoothDeviceInfo {

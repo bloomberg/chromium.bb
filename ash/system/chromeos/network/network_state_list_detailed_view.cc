@@ -373,6 +373,8 @@ void NetworkStateListDetailedView::UpdateHeaderButtons() {
       handler->TechnologyAvailable(flimflam::kTypeCellular));
   if (proxy_settings_)
     proxy_settings_->SetEnabled(handler->DefaultNetwork() != NULL);
+
+  static_cast<views::View*>(footer())->Layout();
 }
 
 void NetworkStateListDetailedView::UpdateNetworks(
@@ -417,6 +419,8 @@ void NetworkStateListDetailedView::RefreshNetworkList() {
     scroll_content()->RemoveAllChildViews(true);
     scanning_view_ = NULL;
   }
+
+  // TODO(stevenjb): Support cellular_initializing
 
   // Insert child views. Order is:
   // * Highlit networks (connected and connecting)
@@ -504,6 +508,8 @@ void NetworkStateListDetailedView::RefreshNetworkList() {
     service_path_map_.erase(*remove_it);
   }
 
+  // TODO(stevenjb): Support no wifi / cellular networks
+
   if (needs_relayout) {
     scroll_content()->SizeToPreferredSize();
     static_cast<views::View*>(scroller())->Layout();
@@ -554,7 +560,6 @@ void NetworkStateListDetailedView::UpdateNetworkExtra() {
     turn_on_wifi_->SetVisible(false);
     other_wifi_->SetVisible(true);
   }
-  turn_on_wifi_->parent()->Layout();
 
   bool show_other_mobile = false;
   if (handler->TechnologyAvailable(flimflam::kTypeCellular)) {
@@ -569,6 +574,9 @@ void NetworkStateListDetailedView::UpdateNetworkExtra() {
   } else {
     other_mobile_->SetVisible(false);
   }
+
+  // All these buttons have the same parent.
+  turn_on_wifi_->parent()->Layout();
 }
 
 void NetworkStateListDetailedView::UpdateNetworkIcons() {

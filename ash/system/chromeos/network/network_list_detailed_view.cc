@@ -70,6 +70,7 @@ void NetworkListDetailedView::UpdateHeaderButtons() {
   button_mobile_->SetToggled(!delegate->GetMobileEnabled());
   button_mobile_->SetVisible(delegate->GetMobileAvailable());
   UpdateSettingButton();
+  static_cast<views::View*>(footer())->Layout();
 }
 
 void NetworkListDetailedView::AppendNetworkEntries() {

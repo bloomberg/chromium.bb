@@ -515,6 +515,9 @@ Press Shift + Alt to switch.
       <message name="IDS_ASH_STATUS_TRAY_NO_NETWORKS" desc="The message to display in the network info bubble when it is otherwise empty.">
         No network information available
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NO_CELLULAR_NETWORKS" desc="The message to display in the network list when no cellular networks are available.">
+	No cellular network available
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING" desc="Shows a connecting network in the network list.">
 	<ph name="NETWORK">$1<ex>GoogleGuest</ex></ph>: Connecting...
       </message>

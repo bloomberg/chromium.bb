@@ -11,7 +11,8 @@ namespace ash {
 NetworkIconInfo::NetworkIconInfo()
     : connecting(false),
       connected(false),
-      tray_icon_visible(true) {
+      tray_icon_visible(true),
+      is_cellular(false) {
 }
 
 NetworkIconInfo::~NetworkIconInfo() {

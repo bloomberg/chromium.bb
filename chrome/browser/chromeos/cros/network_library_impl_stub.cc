@@ -262,6 +262,8 @@ void NetworkLibraryImplStub::CompleteWifiInit() {
         "  \"Certificates\": []"
         "}");
 //  LoadOncNetworks(test_blob, "", onc::ONC_SOURCE_USER_IMPORT, NULL);
+
+  SignalNetworkManagerObservers();
 }
 
 void NetworkLibraryImplStub::CompleteCellularInit() {
@@ -363,6 +365,8 @@ void NetworkLibraryImplStub::CompleteCellularInit() {
   wimax2->set_connected();
   wimax2->set_passphrase_required(false);
   AddStubNetwork(wimax2, PROFILE_NONE);
+
+  SignalNetworkManagerObservers();
 }
 
 void NetworkLibraryImplStub::AddStubNetwork(

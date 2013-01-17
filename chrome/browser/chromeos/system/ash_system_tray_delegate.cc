@@ -111,14 +111,16 @@ const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000; // 24 hours.
 // be no upcoming activity notifications that need to be pushed to UI.
 const int kGDataOperationRecheckDelayMs = 5000;
 
-ash::NetworkIconInfo CreateNetworkIconInfo(const Network* network,
-                                           NetworkMenu* network_menu) {
+ash::NetworkIconInfo CreateNetworkIconInfo(const Network* network) {
   ash::NetworkIconInfo info;
-  info.name = UTF8ToUTF16(network->name());
+  info.name = network->type() == TYPE_ETHERNET ?
+      l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET) :
+      UTF8ToUTF16(network->name());
   info.image = NetworkMenuIcon::GetImage(network, NetworkMenuIcon::COLOR_DARK);
   info.service_path = network->service_path();
   info.connecting = network->connecting();
   info.connected = network->connected();
+  info.is_cellular = network->type() == TYPE_CELLULAR;
   return info;
 }
 
@@ -974,13 +976,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         chromeos::CrosLibrary::Get()->GetNetworkLibrary();
     const Network* network = crosnet->connected_network();
     ash::NetworkIconInfo info;
-    if (network) {
-      info.name = network->type() == TYPE_ETHERNET ?
-          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET) :
-          UTF8ToUTF16(network->name());
-      info.connecting = network->connecting();
-      info.connected = network->connected();
-    }
+    if (network)
+      info = CreateNetworkIconInfo(network);
     info.image = network_icon_->GetIconAndText(&info.description);
     info.tray_icon_visible = network_icon_->ShouldShowIconInTray();
     GetSystemTrayNotifier()->NotifyRefreshNetwork(info);
@@ -1014,8 +1011,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (added->find(network) != added->end())
       return;
 
-    ash::NetworkIconInfo info = CreateNetworkIconInfo(network,
-                                                      network_menu_.get());
+    ash::NetworkIconInfo info = CreateNetworkIconInfo(network);
     switch (network->type()) {
       case TYPE_ETHERNET:
         if (info.name.empty()) {
