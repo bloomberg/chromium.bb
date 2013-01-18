@@ -175,10 +175,10 @@ class SmoothnessBenchmark(multi_page_benchmark.MultiPageBenchmark):
 
     load_timings = tab.EvaluateJavaScript("window.performance.timing")
     load_time_seconds = (
-      load_timings['loadEventStart'] -
+      float(load_timings['loadEventStart']) -
       load_timings['navigationStart']) / 1000
     dom_content_loaded_time_seconds = (
-      load_timings['domContentLoadedEventStart'] -
+      float(load_timings['domContentLoadedEventStart']) -
       load_timings['navigationStart']) / 1000
     results.Add('load_time', 'seconds', load_time_seconds)
     results.Add('dom_content_loaded_time', 'seconds',
