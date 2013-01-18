@@ -152,7 +152,7 @@ bool NativePanelTestingWin::VerifyAppIcon() const {
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return true;
 
-  HWND native_window = panel_view_->GetNativePanelHandle();
+  HWND native_window = panel_view_->GetNativePanelWindow();
   HICON app_icon = reinterpret_cast<HICON>(
       ::SendMessage(native_window, WM_GETICON, ICON_BIG, 0L));
   if (!app_icon)
@@ -454,7 +454,7 @@ void PanelView::PreventActivationByOS(bool prevent_activation) {
 #endif
 }
 
-gfx::NativeWindow PanelView::GetNativePanelHandle() {
+gfx::NativeWindow PanelView::GetNativePanelWindow() {
   return window_->GetNativeWindow();
 }
 

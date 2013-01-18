@@ -480,7 +480,7 @@ bool Panel::IsAlwaysOnTop() const {
 }
 
 gfx::NativeWindow Panel::GetNativeWindow() {
-  return native_panel_->GetNativePanelHandle();
+  return native_panel_->GetNativePanelWindow();
 }
 
 gfx::Rect Panel::GetRestoredBounds() const {

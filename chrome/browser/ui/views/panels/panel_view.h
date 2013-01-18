@@ -42,7 +42,7 @@ class PanelView : public NativePanel,
   virtual void DeactivatePanel() OVERRIDE;
   virtual bool IsPanelActive() const OVERRIDE;
   virtual void PreventActivationByOS(bool prevent_activation) OVERRIDE;
-  virtual gfx::NativeWindow GetNativePanelHandle() OVERRIDE;
+  virtual gfx::NativeWindow GetNativePanelWindow() OVERRIDE;
   virtual void UpdatePanelTitleBar() OVERRIDE;
   virtual void UpdatePanelLoadingAnimations(bool should_animate) OVERRIDE;
   virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;

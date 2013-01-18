@@ -820,7 +820,7 @@ void PanelGtk::PreventActivationByOS(bool prevent_activation) {
   gtk_window_set_accept_focus(window_, !prevent_activation);
 }
 
-gfx::NativeWindow PanelGtk::GetNativePanelHandle() {
+gfx::NativeWindow PanelGtk::GetNativePanelWindow() {
   return window_;
 }
 
@@ -1106,7 +1106,7 @@ bool GtkNativePanelTesting::VerifyActiveState(bool is_active) {
 }
 
 bool GtkNativePanelTesting::VerifyAppIcon() const {
-  GdkPixbuf* icon = gtk_window_get_icon(panel_gtk_->GetNativePanelHandle());
+  GdkPixbuf* icon = gtk_window_get_icon(panel_gtk_->GetNativePanelWindow());
   return icon &&
          gdk_pixbuf_get_width(icon) == panel::kPanelAppIconSize &&
          gdk_pixbuf_get_height(icon) == panel::kPanelAppIconSize;

@@ -28,7 +28,7 @@ class PanelViewTest : public BasePanelBrowserTest {
   }
 
   gfx::NativeWindow GetNativeWindow(Panel* panel) const {
-    return GetPanelView(panel)->GetNativePanelHandle();
+    return GetPanelView(panel)->GetNativePanelWindow();
   }
 };
 

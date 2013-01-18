@@ -143,7 +143,7 @@ void PanelCocoa::PreventActivationByOS(bool prevent_activation) {
   return;
 }
 
-gfx::NativeWindow PanelCocoa::GetNativePanelHandle() {
+gfx::NativeWindow PanelCocoa::GetNativePanelWindow() {
   return [controller_ window];
 }
 

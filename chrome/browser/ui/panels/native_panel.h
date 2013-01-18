@@ -41,7 +41,7 @@ class NativePanel {
   virtual void DeactivatePanel() = 0;
   virtual bool IsPanelActive() const = 0;
   virtual void PreventActivationByOS(bool prevent_activation) = 0;
-  virtual gfx::NativeWindow GetNativePanelHandle() = 0;
+  virtual gfx::NativeWindow GetNativePanelWindow() = 0;
   virtual void UpdatePanelTitleBar() = 0;
   virtual void UpdatePanelLoadingAnimations(bool should_animate) = 0;
   virtual void NotifyPanelOnUserChangedTheme() = 0;
