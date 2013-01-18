@@ -8,23 +8,33 @@
 #include <string>
 
 #include "base/logging.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkXfermode.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas.h"
 
 namespace {
 
-// Corner radius for the progress bar's border.
-const int kCornerRadius = 3;
-
 // Progress bar's border width.
 const int kBorderWidth = 1;
 
-const SkColor kBarColorStart = SkColorSetRGB(81, 138, 223);
-const SkColor kBarColorEnd = SkColorSetRGB(51, 103, 205);
-const SkColor kBackgroundColorStart = SkColorSetRGB(212, 212, 212);
-const SkColor kBackgroundColorEnd = SkColorSetRGB(252, 252, 252);
-const SkColor kBorderColor = SkColorSetRGB(144, 144, 144);
+// Corner radius for the progress bar's border.
+const int kCornerRadius = 2;
+
+// The width of the highlight at the right of the progress bar.
+const int kHighlightWidth = 18;
+
+const SkColor kBackgroundColor = SkColorSetRGB(230, 230, 230);
+const SkColor kBackgroundBorderColor = SkColorSetRGB(208, 208, 208);
+const SkColor kBarBorderColor = SkColorSetRGB(65, 137, 237);
+const SkColor kBarTopColor = SkColorSetRGB(110, 188, 249);
+const SkColor kBarColorStart = SkColorSetRGB(86, 167, 247);
+const SkColor kBarColorEnd = SkColorSetRGB(76, 148, 245);
+const SkColor kBarHighlightEnd = SkColorSetRGB(114, 206, 251);
+const SkColor kDisabledBarBorderColor = SkColorSetRGB(191, 191, 191);
+const SkColor kDisabledBarColorStart = SkColorSetRGB(224, 224, 224);
+const SkColor kDisabledBarColorEnd = SkColorSetRGB(212, 212, 212);
 
 void AddRoundRectPathWithPadding(int x, int y,
                                  int w, int h,
@@ -166,7 +176,7 @@ void ProgressBar::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 gfx::Size ProgressBar::GetPreferredSize() {
-  return gfx::Size(100, 16);
+  return gfx::Size(100, 11);
 }
 
 std::string ProgressBar::GetClassName() const {
@@ -181,87 +191,109 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
       (max_display_value_ - min_display_value_);
   const int progress_width = static_cast<int>(width() * capped_fraction + 0.5);
 
-#if defined(OS_CHROMEOS)
-  const SkColor background_colors[] = {
-    SkColorSetRGB(0xBB, 0xBB, 0xBB),
-    SkColorSetRGB(0xE7, 0xE7, 0xE7),
-    SkColorSetRGB(0xFE, 0xFE, 0xFE)
-  };
-
-  const SkScalar background_points[] = {
-    SkDoubleToScalar(0),
-    SkDoubleToScalar(0.1),
-    SkDoubleToScalar(1)
-  };
-  const SkColor background_border_color = SkColorSetRGB(0xA1, 0xA1, 0xA1);
-
   // Draw background.
   FillRoundRect(canvas,
                 0, 0, width(), height(),
                 kCornerRadius,
-                background_colors,
-                background_points,
-                arraysize(background_colors),
+                kBackgroundColor, kBackgroundColor,
                 false);
   StrokeRoundRect(canvas,
                   0, 0,
                   width(), height(),
                   kCornerRadius,
-                  background_border_color,
+                  kBackgroundBorderColor,
                   kBorderWidth);
 
   if (progress_width > 1) {
-    const SkColor bar_color_start = enabled() ?
-        SkColorSetRGB(100, 116, 147) :
-        SkColorSetRGB(229, 232, 237);
-    const SkColor bar_color_end = enabled() ?
-        SkColorSetRGB(65, 73, 87) :
-        SkColorSetRGB(224, 225, 227);
-
-    const SkColor bar_outer_color = enabled() ?
-        SkColorSetRGB(0x4A, 0x4A, 0x4A) :
-        SkColorSetARGB(0x80, 0x4A, 0x4A, 0x4A);
-
-    const SkColor bar_inner_border_color =
-        SkColorSetARGB(0x3F, 0xFF, 0xFF, 0xFF);  // 0.25 white
-    const SkColor bar_inner_shadow_color =
-        SkColorSetARGB(0x54, 0xFF, 0xFF, 0xFF);  // 0.33 white
-
-    // Draw bar background
-    FillRoundRect(canvas,
-                  0, 0, progress_width, height(),
-                  kCornerRadius,
-                  bar_color_start,
-                  bar_color_end,
-                  false);
-
-    // Draw inner stroke and shadow if wide enough.
-    if (progress_width > 2 * kBorderWidth) {
+    // Draw inner if wide enough.
+    if (progress_width > kBorderWidth * 2) {
       canvas->Save();
 
       SkPath inner_path;
       AddRoundRectPathWithPadding(
           0, 0, progress_width, height(),
           kCornerRadius,
-          SkIntToScalar(kBorderWidth),
+          0,
           &inner_path);
       canvas->ClipPath(inner_path);
 
-      // Draw bar inner stroke
-      StrokeRoundRect(canvas,
-                      kBorderWidth, kBorderWidth,
-                      progress_width - 2 * kBorderWidth,
-                      height() - 2 * kBorderWidth,
-                      kCornerRadius - kBorderWidth,
-                      bar_inner_border_color,
-                      kBorderWidth);
+      const SkColor bar_colors[] = {
+        kBarTopColor,
+        kBarTopColor,
+        kBarColorStart,
+        kBarColorEnd,
+        kBarColorEnd,
+      };
+      // We want a thin 1-pixel line for kBarTopColor.
+      SkScalar scalar_height = SkIntToScalar(height());
+      SkScalar highlight_width = SkScalarDiv(SK_Scalar1, scalar_height);
+      SkScalar border_width = SkScalarDiv(SkIntToScalar(kBorderWidth),
+                                          scalar_height);
+      const SkScalar bar_points[] = {
+        0,
+        border_width,
+        border_width + highlight_width,
+        SK_Scalar1 - border_width,
+        SK_Scalar1,
+      };
 
-      // Draw bar inner shadow
-      StrokeRoundRect(canvas,
-                      0, kBorderWidth, progress_width, height(),
-                      kCornerRadius,
-                      bar_inner_shadow_color,
-                      kBorderWidth);
+      const SkColor disabled_bar_colors[] = {
+        kDisabledBarColorStart,
+        kDisabledBarColorStart,
+        kDisabledBarColorEnd,
+        kDisabledBarColorEnd,
+      };
+
+      const SkScalar disabled_bar_points[] = {
+        0,
+        border_width,
+        SK_Scalar1 - border_width,
+        SK_Scalar1
+      };
+
+      // Do not start from (kBorderWidth, kBorderWidth) because it makes gaps
+      // between the inner and the border.
+      FillRoundRect(canvas,
+                    0, 0,
+                    progress_width, height(),
+                    kCornerRadius,
+                    enabled() ? bar_colors : disabled_bar_colors,
+                    enabled() ? bar_points : disabled_bar_points,
+                    enabled() ? arraysize(bar_colors) :
+                        arraysize(disabled_bar_colors),
+                    false);
+
+      if (enabled()) {
+        // Draw the highlight to the right.
+        const SkColor highlight_colors[] = {
+          SkColorSetA(kBarHighlightEnd, 0),
+          kBarHighlightEnd,
+          kBarHighlightEnd,
+        };
+        const SkScalar highlight_points[] = {
+          0,
+          SK_Scalar1 - SkScalarDiv(SkIntToScalar(kBorderWidth), scalar_height),
+          SK_Scalar1,
+        };
+        SkPaint paint;
+        paint.setStyle(SkPaint::kFill_Style);
+        paint.setFlags(SkPaint::kAntiAlias_Flag);
+
+        SkPoint p[2];
+        int highlight_left =
+            std::max(0, progress_width - kHighlightWidth - kBorderWidth);
+        p[0].iset(highlight_left, 0);
+        p[1].iset(progress_width, 0);
+        skia::RefPtr<SkShader> s =
+            skia::AdoptRef(SkGradientShader::CreateLinear(
+                p, highlight_colors, highlight_points,
+                arraysize(highlight_colors), SkShader::kClamp_TileMode, NULL));
+        paint.setShader(s.get());
+        paint.setXfermode(SkXfermode::Create(SkXfermode::kSrcOver_Mode));
+        canvas->DrawRect(gfx::Rect(highlight_left, 0,
+                                   kHighlightWidth + kBorderWidth, height()),
+                         paint);
+      }
 
       canvas->Restore();
     }
@@ -270,20 +302,9 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
     StrokeRoundRect(canvas,
                     0, 0, progress_width, height(),
                     kCornerRadius,
-                    bar_outer_color,
+                    enabled() ? kBarBorderColor : kDisabledBarBorderColor,
                     kBorderWidth);
   }
-#else
-  FillRoundRect(canvas, 0, 0, width(), height(), kCornerRadius,
-                kBackgroundColorStart, kBackgroundColorEnd, false);
-
-  if (progress_width > 1) {
-    FillRoundRect(canvas, 0, 0, progress_width, height(), kCornerRadius,
-                  kBarColorStart, kBarColorEnd, false);
-  }
-  StrokeRoundRect(canvas, 0, 0, width(), height(), kCornerRadius,
-                  kBorderColor, kBorderWidth);
-#endif
 }
 
 }  // namespace views
