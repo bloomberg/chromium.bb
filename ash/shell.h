@@ -285,6 +285,9 @@ class ASH_EXPORT Shell
   internal::TooltipController* tooltip_controller() {
     return tooltip_controller_.get();
   }
+  internal::TouchObserverHUD* touch_observer_hud() {
+    return touch_observer_hud_.get();
+  }
   internal::EventRewriterEventFilter* event_rewriter_filter() {
     return event_rewriter_filter_.get();
   }

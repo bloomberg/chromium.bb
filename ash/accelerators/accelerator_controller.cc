@@ -33,6 +33,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/touch/touch_observer_hud.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/partial_screenshot_view.h"
 #include "ash/wm/power_button_controller.h"
@@ -478,6 +479,12 @@ bool AcceleratorController::PerformAction(int action,
     case TOGGLE_WIFI:
       Shell::GetInstance()->system_tray_delegate()->ToggleWifi();
       return true;
+    case TOUCH_HUD_MODE_CHANGE:
+      if (Shell::GetInstance()->touch_observer_hud()) {
+        Shell::GetInstance()->touch_observer_hud()->ChangeToNextMode();
+        return true;
+      }
+      return false;
     case DISABLE_GPU_WATCHDOG:
       content::GpuDataManager::GetInstance()->DisableGpuWatchdog();
       return true;

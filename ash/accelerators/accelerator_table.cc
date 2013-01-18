@@ -86,6 +86,8 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, EXIT },
   { true, ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     TOGGLE_SPOKEN_FEEDBACK },
+  { true, ui::VKEY_I, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+    TOUCH_HUD_MODE_CHANGE },
 
   // When you change the shortcuts for NEW_INCOGNITO_WINDOW, NEW_WINDOW, or
   // NEW_TAB, you also need to modify

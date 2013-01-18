@@ -16,6 +16,7 @@ class Window;
 
 namespace views {
 class Label;
+class View;
 class Widget;
 }
 
@@ -31,6 +32,10 @@ class TouchObserverHUD : public ui::EventHandler,
   TouchObserverHUD();
   virtual ~TouchObserverHUD();
 
+  // Changes the display mode (e.g. scale, visibility). Calling this repeatedly
+  // cycles between a fixed number of display modes.
+  void ChangeToNextMode();
+
  private:
   void UpdateTouchPointLabel(int index);
 
@@ -44,6 +49,7 @@ class TouchObserverHUD : public ui::EventHandler,
 
   views::Widget* widget_;
   TouchHudCanvas* canvas_;
+  views::View* label_container_;
   views::Label* touch_labels_[kMaxTouchPoints];
   gfx::Point touch_positions_[kMaxTouchPoints];
   ui::EventType touch_status_[kMaxTouchPoints];
