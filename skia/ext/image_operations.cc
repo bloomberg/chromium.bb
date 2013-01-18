@@ -18,7 +18,6 @@
 #include "build/build_config.h"
 #include "skia/ext/convolver.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkFontHost.h"
 
@@ -344,17 +343,22 @@ ImageOperations::ResizeMethod ResizeMethodToAlgorithmMethod(
 SkBitmap ImageOperations::Resize(const SkBitmap& source,
                                  ResizeMethod method,
                                  int dest_width, int dest_height,
-                                 const SkIRect& dest_subset) {
-  if (method == ImageOperations::RESIZE_SUBPIXEL)
-    return ResizeSubpixel(source, dest_width, dest_height, dest_subset);
-  else
-    return ResizeBasic(source, method, dest_width, dest_height, dest_subset);
+                                 const SkIRect& dest_subset,
+                                 SkBitmap::Allocator* allocator) {
+  if (method == ImageOperations::RESIZE_SUBPIXEL) {
+    return ResizeSubpixel(source, dest_width, dest_height,
+                          dest_subset, allocator);
+  } else {
+    return ResizeBasic(source, method, dest_width, dest_height, dest_subset,
+                       allocator);
+  }
 }
 
 // static
 SkBitmap ImageOperations::ResizeSubpixel(const SkBitmap& source,
                                          int dest_width, int dest_height,
-                                         const SkIRect& dest_subset) {
+                                         const SkIRect& dest_subset,
+                                         SkBitmap::Allocator* allocator) {
   TRACE_EVENT2("skia", "ImageOperations::ResizeSubpixel",
                "src_pixels", source.width()*source.height(),
                "dst_pixels", dest_width*dest_height);
@@ -385,7 +389,7 @@ SkBitmap ImageOperations::ResizeSubpixel(const SkBitmap& source,
                      dest_subset.fLeft + dest_subset.width() * w,
                      dest_subset.fTop + dest_subset.height() * h };
   SkBitmap img = ResizeBasic(source, ImageOperations::RESIZE_LANCZOS3, width,
-                             height, subset);
+                             height, subset, allocator);
   const int row_words = img.rowBytes() / 4;
   if (w == 1 && h == 1)
     return img;
@@ -394,7 +398,7 @@ SkBitmap ImageOperations::ResizeSubpixel(const SkBitmap& source,
   SkBitmap result;
   result.setConfig(SkBitmap::kARGB_8888_Config, dest_subset.width(),
                    dest_subset.height());
-  result.allocPixels();
+  result.allocPixels(allocator, NULL);
   if (!result.readyToDraw())
     return img;
 
@@ -465,7 +469,8 @@ SkBitmap ImageOperations::ResizeSubpixel(const SkBitmap& source,
 SkBitmap ImageOperations::ResizeBasic(const SkBitmap& source,
                                       ResizeMethod method,
                                       int dest_width, int dest_height,
-                                      const SkIRect& dest_subset) {
+                                      const SkIRect& dest_subset,
+                                      SkBitmap::Allocator* allocator) {
   TRACE_EVENT2("skia", "ImageOperations::ResizeBasic",
                "src_pixels", source.width()*source.height(),
                "dst_pixels", dest_width*dest_height);
@@ -511,7 +516,7 @@ SkBitmap ImageOperations::ResizeBasic(const SkBitmap& source,
   SkBitmap result;
   result.setConfig(SkBitmap::kARGB_8888_Config,
                    dest_subset.width(), dest_subset.height());
-  result.allocPixels();
+  result.allocPixels(allocator, NULL);
   if (!result.readyToDraw())
     return SkBitmap();
 
@@ -533,9 +538,11 @@ SkBitmap ImageOperations::ResizeBasic(const SkBitmap& source,
 // static
 SkBitmap ImageOperations::Resize(const SkBitmap& source,
                                  ResizeMethod method,
-                                 int dest_width, int dest_height) {
+                                 int dest_width, int dest_height,
+                                 SkBitmap::Allocator* allocator) {
   SkIRect dest_subset = { 0, 0, dest_width, dest_height };
-  return Resize(source, method, dest_width, dest_height, dest_subset);
+  return Resize(source, method, dest_width, dest_height, dest_subset,
+                allocator);
 }
 
 }  // namespace skia
