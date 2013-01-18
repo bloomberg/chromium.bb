@@ -101,12 +101,13 @@
       'includes': [ '../../../build/protoc.gypi' ],
     },
     {
-      'target_name': 'cloud_policy_backend_header_compile',
+      'target_name': 'policy_proto_compile',
       'type': 'static_library',
       'sources': [
         '<(proto_rel_path)/chrome_device_policy.proto',
         '<(proto_rel_path)/device_management_backend.proto',
         '<(proto_rel_path)/device_management_local.proto',
+        '<(proto_rel_path)/install_attributes.proto',
         '<(proto_rel_path)/old_generic_format.proto',
       ],
       'variables': {
@@ -139,7 +140,7 @@
       'dependencies': [
         'cloud_policy_code_generate',
         'cloud_policy_proto_compile',
-        'cloud_policy_backend_header_compile',
+        'policy_proto_compile',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/third_party/protobuf/protobuf.gyp:protobuf_lite',
       ],

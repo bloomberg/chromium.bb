@@ -128,6 +128,8 @@ void BrowserPolicyConnector::Init() {
   chromeos::CryptohomeLibrary* cryptohome =
       chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
   install_attributes_.reset(new EnterpriseInstallAttributes(cryptohome));
+  install_attributes_->ReadCacheFile(
+      FilePath(policy::EnterpriseInstallAttributes::kCacheFilePath));
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kDisableCloudPolicyService)) {

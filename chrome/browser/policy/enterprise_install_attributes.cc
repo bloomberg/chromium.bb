@@ -4,8 +4,12 @@
 
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 
+#include <utility>
+
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
+#include "chrome/browser/policy/proto/install_attributes.pb.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace policy {
@@ -54,13 +58,91 @@ DeviceMode GetDeviceModeFromString(
   return DEVICE_MODE_NOT_SET;
 }
 
+bool ReadMapKey(const std::map<std::string, std::string>& map,
+                const std::string& key,
+                std::string* value) {
+  std::map<std::string, std::string>::const_iterator entry = map.find(key);
+  if (entry == map.end())
+    return false;
+
+  *value = entry->second;
+  return true;
+}
+
 }  // namespace
+
+// Cache file name.
+const FilePath::CharType EnterpriseInstallAttributes::kCacheFilePath[] =
+    FILE_PATH_LITERAL("/var/run/lockbox/install_attributes.pb");
 
 EnterpriseInstallAttributes::EnterpriseInstallAttributes(
     chromeos::CryptohomeLibrary* cryptohome)
     : cryptohome_(cryptohome),
       device_locked_(false),
       registration_mode_(DEVICE_MODE_PENDING) {}
+
+void EnterpriseInstallAttributes::ReadCacheFile(const FilePath& cache_file) {
+  if (device_locked_ || !file_util::PathExists(cache_file))
+    return;
+
+  device_locked_ = true;
+
+  char buf[16384];
+  int len = file_util::ReadFile(cache_file, buf, sizeof(buf));
+  if (len == -1 || len >= static_cast<int>(sizeof(buf))) {
+    PLOG(ERROR) << "Failed to read " << cache_file.value();
+    return;
+  }
+
+  cryptohome::SerializedInstallAttributes install_attrs_proto;
+  if (!install_attrs_proto.ParseFromArray(buf, len)) {
+    LOG(ERROR) << "Failed to parse install attributes cache";
+    return;
+  }
+
+  google::protobuf::RepeatedPtrField<
+      const cryptohome::SerializedInstallAttributes::Attribute>::iterator entry;
+  std::map<std::string, std::string> attr_map;
+  for (entry = install_attrs_proto.attributes().begin();
+       entry != install_attrs_proto.attributes().end();
+       ++entry) {
+    // The protobuf values unfortunately contain terminating null characters, so
+    // we have to sanitize the value here.
+    attr_map.insert(std::make_pair(entry->name(),
+                                   std::string(entry->value().c_str())));
+  }
+
+  DecodeInstallAttributes(attr_map);
+}
+
+void EnterpriseInstallAttributes::ReadImmutableAttributes() {
+  if (device_locked_)
+    return;
+
+  if (cryptohome_ && cryptohome_->InstallAttributesIsReady()) {
+    registration_mode_ = DEVICE_MODE_NOT_SET;
+    if (!cryptohome_->InstallAttributesIsInvalid() &&
+        !cryptohome_->InstallAttributesIsFirstInstall()) {
+      device_locked_ = true;
+
+      static const char* kEnterpriseAttributes[] = {
+        kAttrEnterpriseDeviceId,
+        kAttrEnterpriseDomain,
+        kAttrEnterpriseMode,
+        kAttrEnterpriseOwned,
+        kAttrEnterpriseUser,
+      };
+      std::map<std::string, std::string> attr_map;
+      for (size_t i = 0; i < arraysize(kEnterpriseAttributes); ++i) {
+        std::string value;
+        if (cryptohome_->InstallAttributesGet(kEnterpriseAttributes[i], &value))
+          attr_map[kEnterpriseAttributes[i]] = value;
+      }
+
+      DecodeInstallAttributes(attr_map);
+    }
+  }
+}
 
 EnterpriseInstallAttributes::LockResult EnterpriseInstallAttributes::LockDevice(
     const std::string& user,
@@ -109,9 +191,14 @@ EnterpriseInstallAttributes::LockResult EnterpriseInstallAttributes::LockDevice(
   }
 
   if (!cryptohome_->InstallAttributesFinalize() ||
-      cryptohome_->InstallAttributesIsFirstInstall() ||
-      GetRegistrationUser() != user) {
+      cryptohome_->InstallAttributesIsFirstInstall()) {
     LOG(ERROR) << "Failed locking.";
+    return LOCK_BACKEND_ERROR;
+  }
+
+  ReadImmutableAttributes();
+  if (GetRegistrationUser() != user) {
+    LOG(ERROR) << "Locked data doesn't match";
     return LOCK_BACKEND_ERROR;
   }
 
@@ -119,13 +206,10 @@ EnterpriseInstallAttributes::LockResult EnterpriseInstallAttributes::LockDevice(
 }
 
 bool EnterpriseInstallAttributes::IsEnterpriseDevice() {
-  ReadImmutableAttributes();
   return device_locked_ && !registration_user_.empty();
 }
 
 std::string EnterpriseInstallAttributes::GetRegistrationUser() {
-  ReadImmutableAttributes();
-
   if (!device_locked_)
     return std::string();
 
@@ -147,55 +231,40 @@ std::string EnterpriseInstallAttributes::GetDeviceId() {
 }
 
 DeviceMode EnterpriseInstallAttributes::GetMode() {
-  ReadImmutableAttributes();
   return registration_mode_;
 }
 
-void EnterpriseInstallAttributes::ReadImmutableAttributes() {
-  if (device_locked_)
-    return;
+void EnterpriseInstallAttributes::DecodeInstallAttributes(
+    const std::map<std::string, std::string>& attr_map) {
+  std::string enterprise_owned;
+  std::string enterprise_user;
+  if (ReadMapKey(attr_map, kAttrEnterpriseOwned, &enterprise_owned) &&
+      ReadMapKey(attr_map, kAttrEnterpriseUser, &enterprise_user) &&
+      enterprise_owned == "true" &&
+      !enterprise_user.empty()) {
+    registration_user_ = gaia::CanonicalizeEmail(enterprise_user);
 
-  if (cryptohome_ && cryptohome_->InstallAttributesIsReady()) {
-    registration_mode_ = DEVICE_MODE_NOT_SET;
-    if (!cryptohome_->InstallAttributesIsInvalid() &&
-        !cryptohome_->InstallAttributesIsFirstInstall()) {
-      device_locked_ = true;
-      std::string enterprise_owned;
-      std::string enterprise_user;
-      if (cryptohome_->InstallAttributesGet(kAttrEnterpriseOwned,
-                                            &enterprise_owned) &&
-          cryptohome_->InstallAttributesGet(kAttrEnterpriseUser,
-                                            &enterprise_user) &&
-          enterprise_owned == "true" &&
-          !enterprise_user.empty()) {
-        registration_user_ = gaia::CanonicalizeEmail(enterprise_user);
+    // Initialize the mode to the legacy enterprise mode here and update
+    // below if more information is present.
+    registration_mode_ = DEVICE_MODE_ENTERPRISE;
 
-        // Initialize the mode to the legacy enterprise mode here and update
-        // below if more information is present.
-        registration_mode_ = DEVICE_MODE_ENTERPRISE;
+    // If we could extract basic setting we should try to extract the
+    // extended ones too. We try to set these to defaults as good as
+    // as possible if present, which could happen for device enrolled in
+    // pre 19 revisions of the code, before these new attributes were added.
+    if (ReadMapKey(attr_map, kAttrEnterpriseDomain, &registration_domain_))
+      registration_domain_ = gaia::CanonicalizeDomain(registration_domain_);
+    else
+      registration_domain_ = gaia::ExtractDomainName(registration_user_);
 
-        // If we could extract basic setting we should try to extract the
-        // extended ones too. We try to set these to defaults as good as
-        // as possible if present, which could happen for device enrolled in
-        // pre 19 revisions of the code, before these new attributes were added.
-        if (cryptohome_->InstallAttributesGet(kAttrEnterpriseDomain,
-                                              &registration_domain_)) {
-          registration_domain_ = gaia::CanonicalizeDomain(registration_domain_);
-        } else {
-          registration_domain_ = gaia::ExtractDomainName(registration_user_);
-        }
-        if (!cryptohome_->InstallAttributesGet(kAttrEnterpriseDeviceId,
-                                               &registration_device_id_)) {
-          registration_device_id_.clear();
-        }
-        std::string mode;
-        if (cryptohome_->InstallAttributesGet(kAttrEnterpriseMode, &mode))
-          registration_mode_ = GetDeviceModeFromString(mode);
-      } else if (enterprise_user.empty() && enterprise_owned != "true") {
-        // |registration_user_| is empty on consumer devices.
-        registration_mode_ = DEVICE_MODE_CONSUMER;
-      }
-    }
+    ReadMapKey(attr_map, kAttrEnterpriseDeviceId, &registration_device_id_);
+
+    std::string mode;
+    if (ReadMapKey(attr_map, kAttrEnterpriseMode, &mode))
+      registration_mode_ = GetDeviceModeFromString(mode);
+  } else if (enterprise_user.empty() && enterprise_owned != "true") {
+    // |registration_user_| is empty on consumer devices.
+    registration_mode_ = DEVICE_MODE_CONSUMER;
   }
 }
 
