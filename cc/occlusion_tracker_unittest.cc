@@ -3122,5 +3122,112 @@ protected:
 
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestMinimumTrackingSize);
 
+template<class Types>
+class OcclusionTrackerTestViewportClipIsExternalOcclusion : public OcclusionTrackerTest<Types> {
+protected:
+    OcclusionTrackerTestViewportClipIsExternalOcclusion(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    void runMyTest()
+    {
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(400, 400));
+        typename Types::LayerType* small = this->createDrawingSurface(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(200, 200), false);
+        typename Types::LayerType* large = this->createDrawingLayer(small, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(400, 400), false);
+        small->setMasksToBounds(true);
+        this->calcDrawEtc(parent);
+
+        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 100, 100));
+
+        this->enterLayer(large, occlusion);
+
+        bool hasOcclusionFromOutsideTargetSurface = false;
+        EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), occlusion.unoccludedLayerContentRect(large, gfx::Rect(0, 0, 400, 400), &hasOcclusionFromOutsideTargetSurface));
+        EXPECT_TRUE(hasOcclusionFromOutsideTargetSurface);
+
+        hasOcclusionFromOutsideTargetSurface = false;
+        EXPECT_FALSE(occlusion.occludedLayer(large, gfx::Rect(0, 0, 400, 400), &hasOcclusionFromOutsideTargetSurface));
+        EXPECT_TRUE(hasOcclusionFromOutsideTargetSurface);
+
+        this->leaveLayer(large, occlusion);
+        this->visitLayer(small, occlusion);
+
+        hasOcclusionFromOutsideTargetSurface = false;
+        EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), occlusion.unoccludedLayerContentRect(small, gfx::Rect(0, 0, 200, 200), &hasOcclusionFromOutsideTargetSurface));
+        EXPECT_TRUE(hasOcclusionFromOutsideTargetSurface);
+
+        hasOcclusionFromOutsideTargetSurface = false;
+        EXPECT_FALSE(occlusion.occludedLayer(small, gfx::Rect(0, 0, 200, 200), &hasOcclusionFromOutsideTargetSurface));
+        EXPECT_TRUE(hasOcclusionFromOutsideTargetSurface);
+
+        this->enterContributingSurface(small, occlusion);
+
+        hasOcclusionFromOutsideTargetSurface = false;
+        EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), occlusion.unoccludedContributingSurfaceContentRect(small, false, gfx::Rect(0, 0, 200, 200), &hasOcclusionFromOutsideTargetSurface));
+        EXPECT_TRUE(hasOcclusionFromOutsideTargetSurface);
+    }
+};
+
+ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestViewportClipIsExternalOcclusion)
+
+template<class Types>
+class OcclusionTrackerTestLayerClipIsExternalOcclusion : public OcclusionTrackerTest<Types> {
+protected:
+    OcclusionTrackerTestLayerClipIsExternalOcclusion(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    void runMyTest()
+    {
+        typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, gfx::PointF(0, 0), gfx::Size(400, 400));
+        typename Types::LayerType* smallest = this->createDrawingLayer(parent, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(50, 50), false);
+        typename Types::LayerType* smaller = this->createDrawingSurface(smallest, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(100, 100), false);
+        typename Types::LayerType* small = this->createDrawingSurface(smaller, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(200, 200), false);
+        typename Types::LayerType* large = this->createDrawingLayer(small, this->identityMatrix, gfx::PointF(0, 0), gfx::Size(400, 400), false);
+        smallest->setMasksToBounds(true);
+        smaller->setMasksToBounds(true);
+        small->setMasksToBounds(true);
+        this->calcDrawEtc(parent);
+
+        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(gfx::Rect(0, 0, 1000, 1000));
+
+        this->enterLayer(large, occlusion);
+
+        // Clipping from the smaller layer doesn't cross the surface boundary. The layer is clipped by its target surface which is not outside its target.
+        // TODO(danakj): This will change if we clip the layer to its target surface's contentRect.
+        bool hasOcclusionFromOutsideTargetSurface = false;
+        EXPECT_RECT_EQ(gfx::Rect(0, 0, 200, 200), occlusion.unoccludedLayerContentRect(large, gfx::Rect(0, 0, 400, 400), &hasOcclusionFromOutsideTargetSurface));
+        EXPECT_FALSE(hasOcclusionFromOutsideTargetSurface);
+
+        hasOcclusionFromOutsideTargetSurface = false;
+        EXPECT_FALSE(occlusion.occludedLayer(large, gfx::Rect(0, 0, 400, 400), &hasOcclusionFromOutsideTargetSurface));
+        EXPECT_FALSE(hasOcclusionFromOutsideTargetSurface);
+
+        this->leaveLayer(large, occlusion);
+        this->visitLayer(small, occlusion);
+
+        // Clipping from the smaller layer doesn't cross the surface boundary.
+        hasOcclusionFromOutsideTargetSurface = false;
+        EXPECT_RECT_EQ(gfx::Rect(0, 0, 200, 200), occlusion.unoccludedLayerContentRect(small, gfx::Rect(0, 0, 200, 200), &hasOcclusionFromOutsideTargetSurface));
+        EXPECT_FALSE(hasOcclusionFromOutsideTargetSurface);
+
+        hasOcclusionFromOutsideTargetSurface = false;
+        EXPECT_FALSE(occlusion.occludedLayer(small, gfx::Rect(0, 0, 200, 200), &hasOcclusionFromOutsideTargetSurface));
+        EXPECT_FALSE(hasOcclusionFromOutsideTargetSurface);
+
+        this->enterContributingSurface(small, occlusion);
+
+        // The |small| surface is clipped from outside its target by |smallest|.
+        hasOcclusionFromOutsideTargetSurface = false;
+        EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 50), occlusion.unoccludedContributingSurfaceContentRect(small, false, gfx::Rect(0, 0, 200, 200), &hasOcclusionFromOutsideTargetSurface));
+        EXPECT_TRUE(hasOcclusionFromOutsideTargetSurface);
+
+        this->leaveContributingSurface(small, occlusion);
+        this->visitLayer(smaller, occlusion);
+        this->enterContributingSurface(smaller, occlusion);
+
+        // The |smaller| surface is clipped from inside its target by |smallest|.
+        hasOcclusionFromOutsideTargetSurface = false;
+        EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 50), occlusion.unoccludedContributingSurfaceContentRect(smaller, false, gfx::Rect(0, 0, 100, 100), &hasOcclusionFromOutsideTargetSurface));
+        EXPECT_FALSE(hasOcclusionFromOutsideTargetSurface);
+    }
+};
+
+ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestLayerClipIsExternalOcclusion)
+
 }  // namespace
 }  // namespace cc
