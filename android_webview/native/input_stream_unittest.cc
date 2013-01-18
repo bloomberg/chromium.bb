@@ -102,6 +102,6 @@ TEST_F(InputStreamTest, CheckContentsReadCorrectly) {
       DoReadCountedStreamTest(bytes_requested, bytes_requested, &bytes_read);
   EXPECT_EQ(bytes_requested, bytes_read);
   for (int i = 0; i < bytes_requested; ++i) {
-    EXPECT_EQ(i, buffer->data()[i]);
+    EXPECT_EQ(i, (unsigned char)buffer->data()[i]);
   }
 }
