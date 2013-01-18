@@ -13,6 +13,8 @@
 
 namespace {
 
+const CGFloat kBaselineAdjust = 1.0;
+
 // How far to offset the keyword token into the field.
 const NSInteger kResultsXOffset = 3;
 
@@ -22,7 +24,7 @@ const NSInteger kResultsTokenInset = 3;
 
 // How far to shift bounding box of hint down from top of field.
 // Assumes -setFlipped:YES.
-const NSInteger kResultsYOffset = 3;
+const NSInteger kResultsYOffset = 4;
 
 // How far the editor insets itself, for purposes of determining if
 // decorations need to be trimmed.
@@ -37,6 +39,10 @@ CGFloat WidthForResults(NSAttributedString* resultsString) {
 }  // namespace
 
 @implementation FindBarTextFieldCell
+
+- (CGFloat)baselineAdjust {
+  return kBaselineAdjust;
+}
 
 - (CGFloat)cornerRadius {
   return 4.0;
