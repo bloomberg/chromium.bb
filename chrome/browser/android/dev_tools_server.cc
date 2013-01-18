@@ -77,6 +77,10 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
     return NULL;
   }
 
+  TargetType GetTargetType(content::RenderViewHost*) {
+    return kTargetTypeTab;
+  }
+
  private:
   static void PopulatePageThumbnails() {
     Profile* profile =

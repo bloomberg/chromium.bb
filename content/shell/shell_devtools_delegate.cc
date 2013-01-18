@@ -73,4 +73,9 @@ RenderViewHost* ShellDevToolsDelegate::CreateNewTarget() {
   return shell->web_contents()->GetRenderViewHost();
 }
 
+DevToolsHttpHandlerDelegate::TargetType
+ShellDevToolsDelegate::GetTargetType(RenderViewHost*) {
+  return kTargetTypeTab;
+}
+
 }  // namespace content

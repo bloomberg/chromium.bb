@@ -397,6 +397,7 @@ struct DevToolsHttpHandlerImpl::PageInfo {
 
   std::string id;
   std::string url;
+  std::string type;
   bool attached;
   std::string title;
   std::string thumbnail_url;
@@ -431,7 +432,7 @@ DevToolsHttpHandlerImpl::PageList DevToolsHttpHandlerImpl::GeneratePageList() {
 
       RenderViewHost* host =
           RenderViewHost::From(const_cast<RenderWidgetHost*>(widget));
-      page_list.push_back(CreatePageInfo(host));
+      page_list.push_back(CreatePageInfo(host, delegate_->GetTargetType(host)));
     }
   }
   std::sort(page_list.begin(), page_list.end(), SortPageListByTime);
@@ -538,7 +539,9 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
                jsonp);
       return;
     }
-    PageInfo page_info = CreatePageInfo(rvh);
+    PageInfo page_info = CreatePageInfo(
+        rvh,
+        DevToolsHttpHandlerDelegate::kTargetTypeTab);
     std::string host = info.headers["Host"];
     scoped_ptr<DictionaryValue> dictionary(SerializePageInfo(page_info, host));
     SendJson(connection_id, net::HTTP_OK, dictionary.get(), "", jsonp);
@@ -828,7 +831,8 @@ void DevToolsHttpHandlerImpl::AcceptWebSocket(
 }
 
 DevToolsHttpHandlerImpl::PageInfo
-DevToolsHttpHandlerImpl::CreatePageInfo(RenderViewHost* rvh) {
+DevToolsHttpHandlerImpl::CreatePageInfo(RenderViewHost* rvh,
+    DevToolsHttpHandlerDelegate::TargetType type) {
   RenderViewHostDelegate* host_delegate = rvh->GetDelegate();
   scoped_refptr<DevToolsAgentHost> agent(DevToolsAgentHost::GetFor(rvh));
   DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
@@ -837,6 +841,14 @@ DevToolsHttpHandlerImpl::CreatePageInfo(RenderViewHost* rvh) {
   page_info.id = binding_->GetIdentifier(agent);
   page_info.attached = client_host != NULL;
   page_info.url = host_delegate->GetURL().spec();
+
+  switch (type) {
+    case DevToolsHttpHandlerDelegate::kTargetTypeTab:
+      page_info.type = "page";
+      break;
+    default:
+      page_info.type = "other";
+  }
 
   WebContents* web_contents = host_delegate->GetAsWebContents();
   if (web_contents) {
@@ -860,6 +872,7 @@ DictionaryValue* DevToolsHttpHandlerImpl::SerializePageInfo(
   DictionaryValue* dictionary = new DictionaryValue;
   dictionary->SetString("title", page_info.title);
   dictionary->SetString("url", page_info.url);
+  dictionary->SetString("type", page_info.type);
   dictionary->SetString("thumbnailUrl", page_info.thumbnail_url);
   dictionary->SetString("faviconUrl", page_info.favicon_url);
   if (!page_info.attached) {

@@ -61,6 +61,7 @@ class DummyDelegate : public DevToolsHttpHandlerDelegate {
   virtual FilePath GetDebugFrontendDir() OVERRIDE { return FilePath(); }
   virtual std::string GetPageThumbnailData(const GURL& url) { return ""; }
   virtual RenderViewHost* CreateNewTarget() { return NULL; }
+  virtual TargetType GetTargetType(RenderViewHost*) { return kTargetTypeTab; }
 };
 
 }

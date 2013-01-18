@@ -18,6 +18,11 @@ class RenderViewHost;
 
 class DevToolsHttpHandlerDelegate {
  public:
+  enum TargetType {
+    kTargetTypeTab = 0,
+    kTargetTypeOther,
+  };
+
   virtual ~DevToolsHttpHandlerDelegate() {}
 
   // Should return discovery page HTML that should list available tabs
@@ -36,6 +41,9 @@ class DevToolsHttpHandlerDelegate {
 
   // Creates new inspectable target and returns its render view host.
   virtual RenderViewHost* CreateNewTarget() = 0;
+
+  // Returns the type of the target.
+  virtual TargetType GetTargetType(RenderViewHost*) = 0;
 };
 
 }  // namespace content

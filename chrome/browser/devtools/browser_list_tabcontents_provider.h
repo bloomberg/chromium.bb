@@ -26,6 +26,7 @@ class BrowserListTabContentsProvider
   virtual FilePath GetDebugFrontendDir() OVERRIDE;
   virtual std::string GetPageThumbnailData(const GURL& url) OVERRIDE;
   virtual content::RenderViewHost* CreateNewTarget() OVERRIDE;
+  virtual TargetType GetTargetType(content::RenderViewHost*) OVERRIDE;
 
  private:
   Profile* profile_;

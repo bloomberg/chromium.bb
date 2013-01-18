@@ -30,6 +30,7 @@ class ShellDevToolsDelegate : public DevToolsHttpHandlerDelegate {
   virtual FilePath GetDebugFrontendDir() OVERRIDE;
   virtual std::string GetPageThumbnailData(const GURL& url) OVERRIDE;
   virtual RenderViewHost* CreateNewTarget() OVERRIDE;
+  virtual TargetType GetTargetType(RenderViewHost*) OVERRIDE;
 
   DevToolsHttpHandler* devtools_http_handler() {
     return devtools_http_handler_;

@@ -116,7 +116,8 @@ class DevToolsHttpHandlerImpl
   std::string GetFrontendURLInternal(const std::string rvh_id,
                                      const std::string& host);
 
-  PageInfo CreatePageInfo(RenderViewHost* rvh);
+  PageInfo CreatePageInfo(RenderViewHost* rvh,
+                          DevToolsHttpHandlerDelegate::TargetType type);
 
   base::DictionaryValue* SerializePageInfo(const PageInfo& page_info,
                                            const std::string& host);
