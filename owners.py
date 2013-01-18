@@ -121,7 +121,13 @@ class Database(object):
     files is a sequence of paths relative to (and under) self.root."""
     self._check_paths(files)
     self._load_data_needed_for(files)
-    return self._covering_set_of_owners_for(files)
+    suggested_owners = self._covering_set_of_owners_for(files)
+    if EVERYONE in suggested_owners:
+      if len(suggested_owners) > 1:
+        suggested_owners.remove(EVERYONE)
+      else:
+        suggested_owners = set(['<anyone>'])
+    return suggested_owners
 
   # TODO(dpranke): rename to objects_not_covered_by
   def directories_not_covered_by(self, files, reviewers):

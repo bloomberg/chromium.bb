@@ -259,7 +259,8 @@ class ReviewersForTest(_BaseTestCase):
     self.assertRaises(AssertionError, db.reviewers_for, ['/OWNERS'])
 
   def test_reviewers_for__wildcard_dir(self):
-    self.assert_reviewers_for(['DEPS'], [owners.EVERYONE])
+    self.assert_reviewers_for(['DEPS'], ['<anyone>'])
+    self.assert_reviewers_for(['DEPS', 'chrome/gpu/gpu_channel.h'], [ken])
 
   def test_reviewers_for__one_owner(self):
     self.assert_reviewers_for([
