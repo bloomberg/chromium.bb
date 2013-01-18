@@ -64,8 +64,10 @@ GpuChildThread::GpuChildThread(const std::string& channel_id)
 #if defined(OS_WIN)
   target_services_ = NULL;
 #endif
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU)) {
+  in_browser_process_ =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU);
+  if (in_browser_process_) {
     // For single process and in-process GPU mode, we need to load and
     // initialize the GL implementation and locate the GL entry points here.
     if (!gfx::GLSurface::InitializeOneOff()) {
@@ -125,8 +127,7 @@ void GpuChildThread::OnInitialize() {
 
   // We don't need to pipe log messages if we are running the GPU thread in
   // the browser process.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU))
+  if (!in_browser_process_)
     logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
 
   // Record initialization only after collecting the GPU info because that can
@@ -144,7 +145,8 @@ void GpuChildThread::OnInitialize() {
 
   // Ensure the browser process receives the GPU info before a reply to any
   // subsequent IPC it might send.
-  Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info_));
+  if (!in_browser_process_)
+    Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info_));
 }
 
 void GpuChildThread::StopWatchdog() {
@@ -159,8 +161,7 @@ void GpuChildThread::OnCollectGraphicsInfo() {
   // or single process/in-process gpu mode on Windows.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   DCHECK(command_line->HasSwitch(switches::kDisableGpuSandbox) ||
-         command_line->HasSwitch(switches::kSingleProcess) ||
-         command_line->HasSwitch(switches::kInProcessGPU));
+         in_browser_process_);
 #endif  // OS_WIN
 
   if (!gpu_info_collector::CollectContextGraphicsInfo(&gpu_info_))
@@ -178,8 +179,7 @@ void GpuChildThread::OnCollectGraphicsInfo() {
   Send(new GpuHostMsg_GraphicsInfoCollected(gpu_info_));
 
 #if defined(OS_WIN)
-  if (!command_line->HasSwitch(switches::kSingleProcess) &&
-      !command_line->HasSwitch(switches::kInProcessGPU)) {
+  if (!in_browser_process_) {
     // The unsandboxed GPU process fulfilled its duty.  Rest in peace.
     MessageLoop::current()->Quit();
   }

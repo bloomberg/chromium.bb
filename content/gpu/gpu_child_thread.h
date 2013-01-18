@@ -82,6 +82,9 @@ class GpuChildThread : public ChildThread {
   // Information about the GPU, such as device and vendor ID.
   GPUInfo gpu_info_;
 
+  // Whether the GPU thread is running in the browser process.
+  bool in_browser_process_;
+
   DISALLOW_COPY_AND_ASSIGN(GpuChildThread);
 };
 
