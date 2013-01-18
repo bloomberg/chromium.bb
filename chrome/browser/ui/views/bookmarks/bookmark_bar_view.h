@@ -25,16 +25,9 @@
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/drag_controller.h"
 
-class BookmarkBarInstructionsView;
 class BookmarkContextMenu;
 class Browser;
 class BrowserView;
-
-namespace chrome {
-namespace search {
-struct Mode;
-}
-}
 
 namespace content {
 class PageNavigator;
@@ -99,8 +92,7 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // Changes the state of the bookmark bar.
   void SetBookmarkBarState(BookmarkBar::State state,
-                           BookmarkBar::AnimateChangeType animate_type,
-                           const chrome::search::Mode& search_mode);
+                           BookmarkBar::AnimateChangeType animate_type);
 
   // How much we want the bookmark bar to overlap the toolbar.  If |return_max|
   // is true, we return the maximum overlap rather than the current overlap.
@@ -160,17 +152,10 @@ class BookmarkBarView : public DetachableToolbarView,
                                               Profile* profile,
                                               gfx::NativeView context);
 
-  // For instant extended API, if search mode is |MODE_NTP|, stack bookmark bar
-  // on top, so that it floats on top of the content view (in z-order) and below
-  // the "Most Visited" thumbnails (in the y-direction).
-  void MaybeStackAtTop();
-
   // DetachableToolbarView methods:
   virtual bool IsDetached() const OVERRIDE;
   virtual double GetAnimationValue() const OVERRIDE;
   virtual int GetToolbarOverlap() const OVERRIDE;
-  virtual int GetLeftMargin() const OVERRIDE;
-  virtual int GetRightMargin() const OVERRIDE;
 
   // View methods:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -400,7 +385,7 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // BookmarkBarInstructionsView that is visible if there are no bookmarks on
   // the bookmark bar.
-  BookmarkBarInstructionsView* instructions_;
+  views::View* instructions_;
 
   ButtonSeparatorView* bookmarks_separator_view_;
 

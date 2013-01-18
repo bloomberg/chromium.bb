@@ -15,8 +15,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -109,7 +107,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/safe_integer_conversions.h"
 #include "ui/gfx/sys_color_change_listener.h"
 #include "ui/views/controls/single_split_view.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -196,134 +193,6 @@ bool ShouldSaveOrRestoreWindowPos() {
   return true;
 }
 
-#if !defined(USE_AURA)
-// Draw the background to match the new tab page. The trick is to align it
-// properly because without Aura, the bookmark bar is not drawn as a semi
-// transparent layer on top of the ntp, instead, the ntp is cropped and the bar
-// is drawn below it. This code could live in ntp_background_util.cc, but won't
-// be needed once Aura is supported on Windows, so it is kept here.
-void PaintBottomBookmarkBarBackground(gfx::Canvas* canvas,
-                                      DetachableToolbarView* view,
-                                      ui::ThemeProvider* theme_provider,
-                                      int tab_contents_height) {
-  gfx::Rect area(0, 0, view->width(), view->height());
-  // Fill the background in case one of the early returns get hit below.
-  canvas->FillRect(
-      area, theme_provider->GetColor(ThemeService::COLOR_NTP_BACKGROUND));
-  if (!theme_provider->HasCustomImage(IDR_THEME_NTP_BACKGROUND))
-    return;
-  int alignment = 0;
-  if (!theme_provider->GetDisplayProperty(
-      ThemeService::NTP_BACKGROUND_ALIGNMENT, &alignment)) {
-    return;
-  }
-  // The tab contents height contains the view height whereas we use this value
-  // as if the two views where side by side...
-  tab_contents_height -= view->height();
-
-  int tiling = ThemeService::NO_REPEAT;
-  theme_provider->GetDisplayProperty(
-      ThemeService::NTP_BACKGROUND_TILING, &tiling);
-  gfx::ImageSkia* ntp_background =
-      theme_provider->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND);
-  DCHECK(ntp_background);
-  bool repeat_x = tiling == ThemeService::REPEAT ||
-                  tiling == ThemeService::REPEAT_X;
-  bool repeat_y = tiling == ThemeService::REPEAT ||
-                  tiling == ThemeService::REPEAT_Y;
-  // |src_?_pos| is an offset position within the source background image.
-  int src_x_pos = 0;
-  int src_y_pos = 0;
-  // |dest_?_pos| is an offset position within the destination view.
-  int dest_x_pos = 0;
-  int dest_y_pos = 0;
-  if (alignment & ThemeService::ALIGN_RIGHT) {
-    // When aligned to the right, drawing either starts at offset |src_x_pos|
-    // (when the image is larger than the view area, or when the image is
-    // repeated), or drawing starts at an offset of |dest_x_pos| within the
-    // view area.
-    if (area.width() < ntp_background->width() || repeat_x || repeat_y)
-      src_x_pos = area.width() - ntp_background->width();
-    else
-      dest_x_pos = area.width() - ntp_background->width();
-  } else if (alignment & ThemeService::ALIGN_LEFT) {
-    // noop, since the left of the image is aligned to the left of the view.
-  } else {  // ALIGN_CENTER
-    // Again, as for the right alignment, drawing either starts at an offset
-    // |src_x_pos| within the background image, or the image is drawn at an
-    // offset |dest_x_pos| within the view.
-    if (area.width() < ntp_background->width() || repeat_x || repeat_y) {
-      src_x_pos = gfx::ToRoundedInt(
-          (area.width() - ntp_background->width()) / 2.0);
-    } else {
-      dest_x_pos = gfx::ToRoundedInt(
-          (area.width() - ntp_background->width()) / 2.0);
-    }
-  }
-
-  if (alignment & ThemeService::ALIGN_BOTTOM) {
-    // When aligned to the bottom, drawing starts far enough so that the
-    // height of the view is filled with the bottom of the background image,
-    // always.
-    src_y_pos = area.height() - ntp_background->height();
-  } else if (alignment & ThemeService::ALIGN_TOP) {
-    // If the brackground doesn't reach to the bookmark bar, there is no
-    // need to draw anything.
-    if (tab_contents_height > ntp_background->height() &&
-        !(repeat_x || repeat_y)) {
-      return;
-    }
-    // Otherwise, drawing starts where the tab_contents end.
-    src_y_pos = -tab_contents_height;
-  } else {  // ALIGN_CENTER
-    // The center of the image must be at the center of the sum of the tab
-    // contents and the bookmark bar view height. So the top of the bar is
-    // aligned with tab contents height - start point of the image, where the
-    // start point of the image is (the center point of the bar and contents
-    // height) - half of the image height, so contents height -
-    // ((contents height + bar height) / 2.0 - image height / 2),
-    // and then the negative value to make it a proper offset.
-    if (area.height() < ntp_background->height() || repeat_x || repeat_y) {
-      src_y_pos = gfx::ToRoundedInt(
-          (area.height() - ntp_background->height() - tab_contents_height) /
-          2.0);
-    } else {
-      dest_y_pos = gfx::ToRoundedInt(
-          (area.height() - ntp_background->height() - tab_contents_height) /
-          2.0);
-    }
-  }
-
-  if (!(repeat_x || repeat_y)) {
-    canvas->Save();
-    canvas->Translate(gfx::Vector2d(src_x_pos, src_y_pos));
-    canvas->DrawImageInt(*ntp_background, dest_x_pos, dest_y_pos);
-    canvas->Restore();
-  } else {
-    // If repeating, |width| and |height| must be big enough to cover for all
-    // offsets and still fill the view area.
-    int width = area.width() + ntp_background->width();
-    int height = area.height() + ntp_background->height();
-    if (!repeat_x) {
-      // If not repeating, only the width of the image is needed.
-      width = ntp_background->width();
-    } else if (src_x_pos > 0) {
-      // Find the proper offset for the beginning of the repeats.
-      src_x_pos =
-          src_x_pos % ntp_background->width() - ntp_background->width();
-    }
-    // Same comments as for X above.
-    if (!repeat_y)
-      height = ntp_background->height();
-    else
-      src_y_pos = src_y_pos % ntp_background->height();
-
-    canvas->TileImageInt(
-        *ntp_background, src_x_pos, src_y_pos, width, height);
-  }
-}
-#endif  // !defined(USE_AURA
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -362,55 +231,6 @@ BookmarkExtensionBackground::BookmarkExtensionBackground(
 void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
                                         views::View* view) const {
   ui::ThemeProvider* tp = host_view_->GetThemeProvider();
-
-  // If search mode is |NTP| and bookmark bar is detached, it's floating on top
-  // of the content view (in z-order) and below the "Most Visited" thumbnails
-  // (in the y-direction).  It's visually nicer without the bookmark background,
-  // so utilize the existing background of content view, giving the impression
-  // that each bookmark button is part of the content view.
-  // For non-Aura builds, it's hard to layer with transparency, so the bottom of
-  // the bookmark bar is drawn like the content view would be drawn underneath.
-  if (browser_view_->browser()->search_model()->mode().is_ntp() &&
-      browser_->bookmark_bar_state() == BookmarkBar::DETACHED) {
-#if !defined(USE_AURA)
-    PaintBottomBookmarkBarBackground(
-        canvas, host_view_, tp, browser_view_->GetTabContentsContainerView()->
-            bounds().height());
-#endif
-    BookmarkModel* bookmark_model =
-        BookmarkModelFactory::GetForProfile(browser_->profile());
-    if (bookmark_model && bookmark_model->HasBookmarks()) {
-      canvas->Save();
-      // The bookmark bar has the same width as the contents but the margins
-      // must be taken into account when drawing the overlay / border.
-      int left_margin = host_view_->GetLeftMargin();
-      int width = host_view_->width() - host_view_->GetRightMargin() -
-          left_margin;
-      canvas->ClipRect(gfx::Rect(left_margin, 0, width, host_view_->height()));
-      // If a theme is being used, paint the theme background color with an
-      // alpha blend to make the the bookmark bar more legible;
-      // otherwise, use a transparent background.
-      if (tp->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
-        const U8CPU kBackgroundOpacity =
-            255 * chrome::search::kBookmarkBarThemeBackgroundAlphaFactor;
-        SkColor color = tp->GetColor(ThemeService::COLOR_NTP_BACKGROUND);
-        if (gfx::IsInvertedColorScheme())
-          color = color_utils::InvertColor(color);
-        if (SkColorGetA(color) > kBackgroundOpacity)
-          color = SkColorSetA(color, kBackgroundOpacity);
-        canvas->DrawColor(color);
-        DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
-      } else {
-        const SkColor kBorderColor =
-            chrome::search::GetBookmarkBarNoThemeSeparatorColor();
-        DetachableToolbarView::PaintHorizontalBorderWithColor(
-            canvas, host_view_, kBorderColor);
-      }
-      canvas->Restore();
-    }
-    return;
-  }
-
   int toolbar_overlap = host_view_->GetToolbarOverlap();
   // The client edge is drawn below the toolbar bounds.
   if (toolbar_overlap)
@@ -850,21 +670,10 @@ void BrowserView::BookmarkBarStateChanged(
     BookmarkBar::AnimateChangeType change_type) {
   if (bookmark_bar_view_.get()) {
     bookmark_bar_view_->SetBookmarkBarState(
-        browser_->bookmark_bar_state(), change_type,
-        browser_->search_model()->mode());
+        browser_->bookmark_bar_state(), change_type);
   }
-
   if (MaybeShowBookmarkBar(GetActiveWebContents()))
     Layout();
-
-  // If bookmark bar is detached in |NTP| mode, |BookmarkExtensionBackground|
-  // paints a separator above it; however, this separator doesn't separate the
-  // toolbar and bookmark bar because bookmark bar is at bottom of page.
-  // Force a repaint of toolbar to paint the separator below it.
-  if (browser_->search_model()->mode().is_ntp() &&
-      browser_->bookmark_bar_state() == BookmarkBar::DETACHED) {
-    toolbar_->SchedulePaint();
-  }
 }
 
 void BrowserView::UpdateDevTools() {
@@ -1051,7 +860,7 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
   }
 
   // When transitioning from animating to not animating we need to make sure the
-  // contents_container_ gets laid out. If we don't do this and the bounds
+  // contents_container_ gets layed out. If we don't do this and the bounds
   // haven't changed contents_container_ won't get a Layout out and we'll end up
   // with a gray rect because the clip wasn't updated.  Note that a reentrant
   // call never needs to do this, because after it returns, the normal call
@@ -1632,8 +1441,7 @@ void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
   if (bookmark_bar_view_.get()) {
     bookmark_bar_view_->SetBookmarkBarState(
         browser_->bookmark_bar_state(),
-        BookmarkBar::DONT_ANIMATE_STATE_CHANGE,
-        browser_->search_model()->mode());
+        BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
   }
   UpdateUIForContents(new_contents);
 
@@ -1655,8 +1463,6 @@ void BrowserView::ActiveTabChanged(content::WebContents* old_contents,
 
   // Update all the UI bits.
   UpdateTitleBar();
-
-  MaybeStackBookmarkBarAtTop();
 
   // Like the preview layer and the bookmark bar layer, the immersive mode
   // reveal view's layer may need to live above the web contents.
@@ -2013,8 +1819,6 @@ void BrowserView::Layout() {
   // The status bubble position requires that all other layout finish first.
   LayoutStatusBubble();
 
-  MaybeStackBookmarkBarAtTop();
-
   if (browser_->instant_controller() &&
       prev_content_height != contents_container_->height()) {
     browser_->instant_controller()->SetContentHeight(
@@ -2272,8 +2076,7 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
                                           browser_.get()));
       bookmark_bar_view_->SetBookmarkBarState(
           browser_->bookmark_bar_state(),
-          BookmarkBar::DONT_ANIMATE_STATE_CHANGE,
-          browser_->search_model()->mode());
+          BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
     }
     bookmark_bar_view_->SetPageNavigator(contents);
     new_bookmark_bar_view = bookmark_bar_view_.get();
@@ -2814,9 +2617,4 @@ void BrowserView::ActivateAppModalDialog() const {
   }
 
   AppModalDialogQueue::GetInstance()->ActivateModalDialog();
-}
-
-void BrowserView::MaybeStackBookmarkBarAtTop() {
-  if (bookmark_bar_view_.get())
-    bookmark_bar_view_->MaybeStackAtTop();
 }

@@ -35,14 +35,15 @@ void InstantPreviewControllerViews::PreviewStateChanged(
     bool draw_drop_shadow = !model.mode().is_ntp() &&
         !(contents_->IsPreviewFullHeight(model.height(), model.height_units()));
     content::WebContents* web_contents = model.GetPreviewContents();
-    contents_->SetPreview(preview_.get(), web_contents,
+    contents_->SetPreview(preview_.get(), web_contents, model.mode(),
                           model.height(), model.height_units(),
                           draw_drop_shadow);
     preview_->SetWebContents(web_contents);
   } else if (preview_) {
     // Hide the preview. SetWebContents() must happen before SetPreview().
     preview_->SetWebContents(NULL);
-    contents_->SetPreview(NULL, NULL, 100, INSTANT_SIZE_PERCENT, false);
+    contents_->SetPreview(NULL, NULL, model.mode(), 100, INSTANT_SIZE_PERCENT,
+                          false);
     preview_.reset();
   }
 

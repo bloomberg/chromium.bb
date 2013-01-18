@@ -30,10 +30,6 @@ class DetachableToolbarView : public views::AccessiblePaneView {
   // Gets the current amount of overlap atop the browser toolbar.
   virtual int GetToolbarOverlap() const = 0;
 
-  // Gets the Left/Right margins to use, if any.
-  virtual int GetLeftMargin() const = 0;
-  virtual int GetRightMargin() const = 0;
-
   // Paints the background (including the theme image behind content area) when
   // the bar/shelf is attached to the top toolbar.  |background_origin| is the
   // origin to use for painting the theme image.
@@ -54,15 +50,9 @@ class DetachableToolbarView : public views::AccessiblePaneView {
                                    double* roundness,
                                    views::View* view);
 
-  // Paint the horizontal border separating the shelf/bar from the page content,
-  // with COLOR_TOOLBAR_SEPARATOR.
+  // Paint the horizontal border separating the shelf/bar from the page content.
   static void PaintHorizontalBorder(gfx::Canvas* canvas,
                                     DetachableToolbarView* view);
-
-  // Similar to PaintHorizontalBorder but with the specified |border_color|.
-  static void PaintHorizontalBorderWithColor(gfx::Canvas* canvas,
-                                             DetachableToolbarView* view,
-                                             SkColor border_color);
 
   // Paint the background of the content area (the surface behind the
   // bookmarks). |rect| is the rectangle to paint the background within.

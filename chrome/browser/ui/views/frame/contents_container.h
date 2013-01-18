@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/common/instant_types.h"
+#include "chrome/common/search_types.h"
 #include "ui/views/view.h"
 
 namespace content {
@@ -42,6 +43,7 @@ class ContentsContainer : public views::View {
   // Sets the preview view. This does not delete the old.
   void SetPreview(views::WebView* preview,
                   content::WebContents* preview_web_contents,
+                  const chrome::search::Mode& search_mode,
                   int height,
                   InstantSizeUnits units,
                   bool draw_drop_shadow);
@@ -59,14 +61,6 @@ class ContentsContainer : public views::View {
 
   // Returns the bounds the preview would be shown at.
   gfx::Rect GetPreviewBounds() const;
-
-  // Set/Get an extra content height, so that room is left at the bottom of the
-  // contents view for other views to draw on top of the extended child web
-  // view. Note that this doesn't cause a layout invalidation, it's up to the
-  // caller to make sure that a Layout() will be done so that the
-  // |extra_content_height_| gets taken into account.
-  int extra_content_height() const { return extra_content_height_; }
-  void SetExtraContentHeight(int height);
 
   // Returns true if preview occupies full height of content page.
   bool IsPreviewFullHeight(int preview_height,
@@ -87,6 +81,7 @@ class ContentsContainer : public views::View {
   views::WebView* preview_;
   scoped_ptr<views::View> shadow_view_;
   content::WebContents* preview_web_contents_;
+  chrome::search::Mode search_mode_;
   bool draw_drop_shadow_;
 
   // The margin between the top and the active view. This is used to make the
@@ -96,9 +91,6 @@ class ContentsContainer : public views::View {
   // The desired height of the preview and units.
   int preview_height_;
   InstantSizeUnits preview_height_units_;
-
-  // Used to extend the child WebView beyond the contents view bottom bound.
-  int extra_content_height_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentsContainer);
 };

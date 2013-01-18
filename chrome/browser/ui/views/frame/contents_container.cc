@@ -82,8 +82,7 @@ ContentsContainer::ContentsContainer(views::WebView* active)
       draw_drop_shadow_(false),
       active_top_margin_(0),
       preview_height_(100),
-      preview_height_units_(INSTANT_SIZE_PERCENT),
-      extra_content_height_(0) {
+      preview_height_units_(INSTANT_SIZE_PERCENT) {
   AddChildView(active_);
 }
 
@@ -108,6 +107,7 @@ void ContentsContainer::MakePreviewContentsActiveContents() {
 
 void ContentsContainer::SetPreview(views::WebView* preview,
                                    content::WebContents* preview_web_contents,
+                                   const chrome::search::Mode& search_mode,
                                    int height,
                                    InstantSizeUnits units,
                                    bool draw_drop_shadow) {
@@ -121,8 +121,8 @@ void ContentsContainer::SetPreview(views::WebView* preview,
 #endif  // !defined(OS_WIN)
 
   if (preview_ == preview && preview_web_contents_ == preview_web_contents &&
-      preview_height_ == height && preview_height_units_ == units &&
-      draw_drop_shadow_ == draw_drop_shadow) {
+      search_mode_ == search_mode && preview_height_ == height &&
+      preview_height_units_ == units && draw_drop_shadow_ == draw_drop_shadow) {
     return;
   }
 
@@ -141,6 +141,7 @@ void ContentsContainer::SetPreview(views::WebView* preview,
   }
 
   preview_web_contents_ = preview_web_contents;
+  search_mode_ = search_mode;
   preview_height_ = height;
   preview_height_units_ = units;
   draw_drop_shadow_ = draw_drop_shadow;
@@ -190,12 +191,6 @@ gfx::Rect ContentsContainer::GetPreviewBounds() const {
   return gfx::Rect(screen_loc, size());
 }
 
-void ContentsContainer::SetExtraContentHeight(int height) {
-  if (height == extra_content_height_)
-    return;
-  extra_content_height_ = height;
-}
-
 bool ContentsContainer::IsPreviewFullHeight(
     int preview_height,
     InstantSizeUnits preview_height_units) const {
@@ -206,13 +201,15 @@ bool ContentsContainer::IsPreviewFullHeight(
 
 void ContentsContainer::Layout() {
   int content_y = active_top_margin_;
-  int content_height =
-      std::max(0, height() - content_y + extra_content_height_);
+  int content_height = std::max(0, height() - content_y);
 
   active_->SetBounds(0, content_y, width(), content_height);
 
   if (preview_) {
-    preview_->SetBounds(0, 0, width(),
+    // On NTP, preview starts where content starts vertically, in case there's
+    // a detached bookmark bar.
+    int y = search_mode_.is_ntp() ? content_y : 0;
+    preview_->SetBounds(0, y, width(),
                         PreviewHeightInPixels(height(), preview_height_,
                                               preview_height_units_));
     if (draw_drop_shadow_) {

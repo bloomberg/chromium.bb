@@ -2228,13 +2228,9 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
       state = BookmarkBar::HIDDEN;
   }
 
-  // Don't allow the bookmark bar to be shown in suggestions mode or
-  // for instant extended api, non-NTP modes when it's detached.
-  if (search_model_->mode().is_search_suggestions() ||
-      (chrome::search::IsInstantExtendedAPIEnabled(profile_) &&
-       !search_model_->mode().is_ntp() && state == BookmarkBar::DETACHED)) {
+  // Don't allow the bookmark bar to be shown in suggestions mode.
+  if (search_model_->mode().is_search_suggestions())
     state = BookmarkBar::HIDDEN;
-  }
 
   if (state == bookmark_bar_state_)
     return;
@@ -2254,8 +2250,7 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
   // Don't animate if mode is |NTP| because the bookmark is attached at top when
   // pref is on and detached at bottom when off.
   BookmarkBar::AnimateChangeType animate_type =
-      ((reason == BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE &&
-        !search_model_->mode().is_ntp()) ||
+      (reason == BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE ||
        reason == BOOKMARK_BAR_STATE_CHANGE_INSTANT_PREVIEW_STATE) ?
       BookmarkBar::ANIMATE_STATE_CHANGE :
       BookmarkBar::DONT_ANIMATE_STATE_CHANGE;

@@ -72,13 +72,8 @@ class BrowserViewLayout : public views::LayoutManager {
   // of the bottom of the control, for laying out the next control.
   virtual int LayoutToolbar(int top);
   virtual int LayoutBookmarkAndInfoBars(int top);
-  int LayoutBookmarkBarAtTop(int top);
+  int LayoutBookmarkBar(int top);
   int LayoutInfoBar(int top);
-
-  // If search mode is |MODE_NTP|, bookmark bar is detached and should be
-  // floating at bottom of content view in the y-direction, so lay it out as
-  // such.
-  void LayoutBookmarkBarAtBottom();
 
   // Layout the WebContents container, between the coordinates |top| and
   // |bottom|.

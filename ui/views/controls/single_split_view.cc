@@ -30,8 +30,7 @@ SingleSplitView::SingleSplitView(View* leading,
     : is_horizontal_(orientation == HORIZONTAL_SPLIT),
       divider_offset_(-1),
       resize_leading_on_bounds_change_(true),
-      listener_(listener),
-      leading_bottom_offset_(0) {
+      listener_(listener) {
   AddChildView(leading);
   AddChildView(trailing);
 #if defined(OS_WIN)
@@ -139,8 +138,7 @@ void SingleSplitView::CalculateChildrenBounds(
                   std::max(0, bounds.width() - divider_at - divider_size),
                   bounds.height());
   } else {
-    *leading_bounds = gfx::Rect(
-        0, 0, bounds.width(), divider_at - leading_bottom_offset_);
+    *leading_bounds = gfx::Rect(0, 0, bounds.width(), divider_at);
     *trailing_bounds =
         gfx::Rect(0, divider_at + divider_size, bounds.width(),
                   std::max(0, bounds.height() - divider_at - divider_size));
@@ -149,13 +147,6 @@ void SingleSplitView::CalculateChildrenBounds(
 
 void SingleSplitView::SetAccessibleName(const string16& name) {
   accessible_name_ = name;
-}
-
-void SingleSplitView::SetLeadingBottomOffset(int offset) {
-  if (leading_bottom_offset_ == offset)
-    return;
-  leading_bottom_offset_ = offset;
-  InvalidateLayout();
 }
 
 bool SingleSplitView::OnMousePressed(const ui::MouseEvent& event) {
@@ -177,8 +168,7 @@ bool SingleSplitView::OnMouseDragged(const ui::MouseEvent& event) {
     delta_offset *= -1;
   // Honor the minimum size when resizing.
   gfx::Size min = child_at(0)->GetMinimumSize();
-  int new_size = std::max(GetPrimaryAxisSize(min.width(),
-                          min.height() + leading_bottom_offset_),
+  int new_size = std::max(GetPrimaryAxisSize(min.width(), min.height()),
                           drag_info_.initial_divider_offset + delta_offset);
 
   // And don't let the view get bigger than our width.
@@ -220,8 +210,7 @@ bool SingleSplitView::IsPointInDivider(const gfx::Point& p) {
     divider_relative_offset =
         p.x() - child_at(base::i18n::IsRTL() ? 1 : 0)->width();
   } else {
-    divider_relative_offset =
-        p.y() - (child_at(0)->height() + leading_bottom_offset_);
+    divider_relative_offset = p.y() - child_at(0)->height();
   }
   return (divider_relative_offset >= 0 &&
       divider_relative_offset < kDividerSize);
