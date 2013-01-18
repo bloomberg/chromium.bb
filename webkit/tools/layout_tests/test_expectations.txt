@@ -31,3 +31,6 @@
 # Right?)
 #
 # EVERYTHING BELOW THIS LINE WILL BE DELETED AT EVERY WEBKIT DEPS ROLL
+
+webkit.org/b/107237 [ Debug ] fast/forms/associated-element-crash.html [ Crash ]
+webkit.org/b/107327 [ Debug ] html5lib/run-template.html [ Crash ]
