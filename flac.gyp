@@ -12,7 +12,7 @@
         {
           'target_name': 'libflac',
           'product_name': 'flac',
-          'type': '<(library)',
+          'type': 'static_library',
           'sources': [
             'include/FLAC/all.h',
             'include/FLAC/assert.h',
