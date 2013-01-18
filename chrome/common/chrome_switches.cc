@@ -91,10 +91,6 @@ const char kAppsGalleryDownloadURL[]        = "apps-gallery-download-url";
 const char kAppsGalleryInstallAutoConfirmForTests[] =
     "apps-gallery-install-auto-confirm-for-tests";
 
-// Allows the webstorePrivate APIs to return browser (aka sync) login tokens to
-// be used for auto-login in the Web Store (normally they do not).
-const char kAppsGalleryReturnTokens[]       = "apps-gallery-return-tokens";
-
 // The URL to use for the gallery link in the app launcher.
 const char kAppsGalleryURL[]                = "apps-gallery-url";
 

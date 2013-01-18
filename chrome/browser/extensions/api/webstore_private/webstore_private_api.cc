@@ -35,7 +35,6 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/error_utils.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -91,7 +90,6 @@ const char kIdKey[] = "id";
 const char kLocalizedNameKey[] = "localizedName";
 const char kLoginKey[] = "login";
 const char kManifestKey[] = "manifest";
-const char kTokenKey[] = "token";
 
 const char kCannotSpecifyIconDataAndUrlError[] =
     "You cannot specify both icon data and an icon url";
@@ -102,23 +100,13 @@ const char kNoPreviousBeginInstallWithManifestError[] =
     "* does not match a previous call to beginInstallWithManifest3";
 const char kUserCancelledError[] = "User cancelled install";
 
-// Helper to create a dictionary with login and token properties set from
-// the appropriate values in the passed-in |profile|.
+// Helper to create a dictionary with login properties set from the appropriate
+// values in the passed-in |profile|.
 DictionaryValue* CreateLoginResult(Profile* profile) {
   DictionaryValue* dictionary = new DictionaryValue();
   std::string username = profile->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
   dictionary->SetString(kLoginKey, username);
-  if (!username.empty()) {
-    CommandLine* cmdline = CommandLine::ForCurrentProcess();
-    TokenService* token_service = TokenServiceFactory::GetForProfile(profile);
-    if (cmdline->HasSwitch(switches::kAppsGalleryReturnTokens) &&
-        token_service->HasTokenForService(GaiaConstants::kGaiaService)) {
-      dictionary->SetString(kTokenKey,
-                            token_service->GetTokenForService(
-                                GaiaConstants::kGaiaService));
-    }
-  }
   return dictionary;
 }
 

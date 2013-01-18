@@ -31,7 +31,6 @@ const char kProfileDownloaderToken[] = "ProfileDownloader";
 const char kObfuscatedGaiaIdFetcherToken[] = "ObfuscatedGaiaIdFetcher";
 const char kOAuth2MintTokenFlowToken[] = "OAuth2MintTokenFlow";
 const char* kTokenPrefsArray[] = {
-  GaiaConstants::kGaiaService,
   GaiaConstants::kSyncService,
   GaiaConstants::kDeviceManagementService,
   GaiaConstants::kLSOService,

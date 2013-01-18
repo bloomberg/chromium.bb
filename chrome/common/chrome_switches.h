@@ -41,7 +41,6 @@ extern const char kAppNotifyChannelServerURL[];
 extern const char kAppsCheckoutURL[];
 extern const char kAppsGalleryDownloadURL[];
 extern const char kAppsGalleryInstallAutoConfirmForTests[];
-extern const char kAppsGalleryReturnTokens[];
 extern const char kAppsGalleryURL[];
 extern const char kAppsGalleryUpdateURL[];
 extern const char kAppsNewInstallBubble[];

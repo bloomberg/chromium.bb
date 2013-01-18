@@ -155,8 +155,7 @@
                 "name": "info",
                 "type": "object",
                 "properties": {
-                  "login": { "type": "string" },
-                  "token": { "type": "string", "optional": true }
+                  "login": { "type": "string" }
                 }
               }
             ]

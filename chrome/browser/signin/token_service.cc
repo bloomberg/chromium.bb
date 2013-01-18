@@ -33,7 +33,6 @@ namespace {
 
 // List of services that are capable of ClientLogin-based authentication.
 const char* kServices[] = {
-  GaiaConstants::kGaiaService,
   GaiaConstants::kSyncService,
   GaiaConstants::kDeviceManagementService,
   GaiaConstants::kLSOService
