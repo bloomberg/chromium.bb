@@ -6,3 +6,5 @@ WebCompositorInputHandlerImplTest.gestureFlingAnimates
 WebCompositorInputHandlerImplTest.gestureFlingTransferResets
 WebPageSerializerTest.HTMLNodes
 
+# crbug.com/170787
+ScrollingCoordinatorChromiumTest.*
