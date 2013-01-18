@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/websocket/websocket_errors.h"
+#include "net/websockets/websocket_errors.h"
+
+#include "base/logging.h"
 
 namespace net {
 
@@ -16,9 +18,8 @@ Error WebSocketErrorToNetError(WebSocketError error) {
       return ERR_MSG_TOO_BIG;
     default:
       NOTREACHED();
+      return ERR_UNEXPECTED;
   }
 }
 
 }  // namespace net
-
-#endif  // NET_WEBSOCKETS_WEBSOCKET_FRAME_H_

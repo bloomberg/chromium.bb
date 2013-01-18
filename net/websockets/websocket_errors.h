@@ -18,7 +18,7 @@ enum WebSocketError {
 };
 
 // Convert WebSocketError to net::Error defined in net/base/net_errors.h.
-Error WebSocketErrorToNetError(WebSocketError error);
+NET_EXPORT_PRIVATE Error WebSocketErrorToNetError(WebSocketError error);
 
 }  // namespace net
 
