@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 
 #include <string>
 
@@ -26,7 +26,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
-#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/cert_status_flags.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -115,7 +114,9 @@ void FillFormGroupFromOutputs(const DetailOutputMap& detail_outputs,
 
 }  // namespace
 
-AutofillDialogController::AutofillDialogController(
+AutofillDialogController::~AutofillDialogController() {}
+
+AutofillDialogControllerImpl::AutofillDialogControllerImpl(
     content::WebContents* contents,
     const FormData& form,
     const GURL& source_url,
@@ -141,12 +142,12 @@ AutofillDialogController::AutofillDialogController(
   invoked_from_same_origin_ = active_url.GetOrigin() == source_url_.GetOrigin();
 }
 
-AutofillDialogController::~AutofillDialogController() {
+AutofillDialogControllerImpl::~AutofillDialogControllerImpl() {
   if (popup_controller_)
     popup_controller_->Hide();
 }
 
-void AutofillDialogController::Show() {
+void AutofillDialogControllerImpl::Show() {
   bool has_types = false;
   bool has_sections = false;
   form_structure_.ParseFieldTypesFromAutocompleteAttributes(&has_types,
@@ -217,97 +218,39 @@ void AutofillDialogController::Show() {
   view_->Show();
 }
 
-string16 AutofillDialogController::DialogTitle() const {
+string16 AutofillDialogControllerImpl::DialogTitle() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_TITLE);
 }
 
-DialogNotification AutofillDialogController::Notification() const {
-  if (RequestingCreditCardInfo() && !TransmissionWillBeSecure()) {
-    return DialogNotification(
-        DialogNotification::SECURITY_WARNING,
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECURITY_WARNING));
-  }
-
-  if (!invoked_from_same_origin_) {
-    return DialogNotification(
-        DialogNotification::SECURITY_WARNING,
-        l10n_util::GetStringFUTF16(
-            IDS_AUTOFILL_DIALOG_SITE_WARNING, UTF8ToUTF16(source_url_.host())));
-  }
-
-  return DialogNotification();
-}
-
-string16 AutofillDialogController::LabelForSection(DialogSection section)
-    const {
-  switch (section) {
-    case SECTION_EMAIL:
-      return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_EMAIL);
-    case SECTION_CC:
-      return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_CC);
-    case SECTION_BILLING:
-      return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_BILLING);
-    case SECTION_SHIPPING:
-      return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_SHIPPING);
-    default:
-      NOTREACHED();
-      return string16();
-  }
-}
-
-string16 AutofillDialogController::UseBillingForShippingText() const {
+string16 AutofillDialogControllerImpl::UseBillingForShippingText() const {
   return l10n_util::GetStringUTF16(
       IDS_AUTOFILL_DIALOG_USE_BILLING_FOR_SHIPPING);
 }
 
-string16 AutofillDialogController::WalletOptionText() const {
+string16 AutofillDialogControllerImpl::WalletOptionText() const {
   // TODO(estade): real strings and l10n.
   return string16(ASCIIToUTF16("I love lamp."));
 }
 
-string16 AutofillDialogController::CancelButtonText() const {
+string16 AutofillDialogControllerImpl::CancelButtonText() const {
   return l10n_util::GetStringUTF16(IDS_CANCEL);
 }
 
-string16 AutofillDialogController::ConfirmButtonText() const {
+string16 AutofillDialogControllerImpl::ConfirmButtonText() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SUBMIT_BUTTON);
 }
 
-string16 AutofillDialogController::SignInText() const {
+string16 AutofillDialogControllerImpl::SignInText() const {
   // TODO(abodenha): real strings and l10n.
   return string16(ASCIIToUTF16("Sign in to use Google Wallet"));
 }
 
-string16 AutofillDialogController::CancelSignInText() const {
+string16 AutofillDialogControllerImpl::CancelSignInText() const {
   // TODO(abodenha): real strings and l10n.
   return string16(ASCIIToUTF16("Don't sign in."));
 }
 
-bool AutofillDialogController::ConfirmButtonEnabled() const {
-  // TODO(estade): implement.
-  return true;
-}
-
-bool AutofillDialogController::RequestingCreditCardInfo() const {
-  DCHECK_GT(form_structure_.field_count(), 0U);
-
-  for (size_t i = 0; i < form_structure_.field_count(); ++i) {
-    if (AutofillType(form_structure_.field(i)->type()).group() ==
-        AutofillType::CREDIT_CARD) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-bool AutofillDialogController::TransmissionWillBeSecure() const {
-  return source_url_.SchemeIs(chrome::kHttpsScheme) &&
-         !net::IsCertStatusError(ssl_status_.cert_status) &&
-         !net::IsCertStatusMinorError(ssl_status_.cert_status);
-}
-
-const DetailInputs& AutofillDialogController::RequestedFieldsForSection(
+const DetailInputs& AutofillDialogControllerImpl::RequestedFieldsForSection(
     DialogSection section) const {
   switch (section) {
     case SECTION_EMAIL:
@@ -324,7 +267,7 @@ const DetailInputs& AutofillDialogController::RequestedFieldsForSection(
   return requested_billing_fields_;
 }
 
-ui::ComboboxModel* AutofillDialogController::ComboboxModelForAutofillType(
+ui::ComboboxModel* AutofillDialogControllerImpl::ComboboxModelForAutofillType(
     AutofillFieldType type) {
   switch (type) {
     case CREDIT_CARD_EXP_MONTH:
@@ -338,12 +281,29 @@ ui::ComboboxModel* AutofillDialogController::ComboboxModelForAutofillType(
   }
 }
 
-ui::MenuModel* AutofillDialogController::MenuModelForSection(
+ui::MenuModel* AutofillDialogControllerImpl::MenuModelForSection(
     DialogSection section) {
   return SuggestionsMenuModelForSection(section);
 }
 
-string16 AutofillDialogController::SuggestionTextForSection(
+string16 AutofillDialogControllerImpl::LabelForSection(DialogSection section)
+    const {
+  switch (section) {
+    case SECTION_EMAIL:
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_EMAIL);
+    case SECTION_CC:
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_CC);
+    case SECTION_BILLING:
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_BILLING);
+    case SECTION_SHIPPING:
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_SHIPPING);
+    default:
+      NOTREACHED();
+      return string16();
+  }
+}
+
+string16 AutofillDialogControllerImpl::SuggestionTextForSection(
     DialogSection section) {
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
   std::string item_key = model->GetItemKeyAt(model->checked_item());
@@ -370,61 +330,13 @@ string16 AutofillDialogController::SuggestionTextForSection(
   return string16();
 }
 
-bool AutofillDialogController::InputIsValid(const DetailInput* input,
-                                            const string16& value) {
+bool AutofillDialogControllerImpl::InputIsValid(const DetailInput* input,
+                                                const string16& value) {
   // TODO(estade): do more complicated checks.
   return !value.empty();
 }
 
-void AutofillDialogController::ViewClosed(DialogAction action) {
-  if (action == ACTION_SUBMIT) {
-    FillOutputForSection(SECTION_EMAIL);
-    FillOutputForSection(SECTION_CC);
-    FillOutputForSection(SECTION_BILLING);
-    if (view_->UseBillingForShipping()) {
-      FillOutputForSectionWithComparator(
-          SECTION_BILLING,
-          base::Bind(DetailInputMatchesShippingField));
-      FillOutputForSectionWithComparator(
-          SECTION_CC,
-          base::Bind(DetailInputMatchesShippingField));
-    } else {
-      FillOutputForSection(SECTION_SHIPPING);
-    }
-    callback_.Run(&form_structure_);
-  } else {
-    callback_.Run(NULL);
-  }
-
-  delete this;
-}
-
-void AutofillDialogController::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(type, content::NOTIFICATION_NAV_ENTRY_COMMITTED);
-  content::LoadCommittedDetails* load_details =
-      content::Details<content::LoadCommittedDetails>(details).ptr();
-  if (wallet::IsSignInContinueUrl(load_details->entry->GetVirtualURL()))
-    EndSignInFlow();
-}
-
-void AutofillDialogController::StartSignInFlow() {
-  DCHECK(registrar_.IsEmpty());
-
-  content::Source<content::NavigationController> source(
-      &view_->ShowSignIn());
-  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
-}
-
-void AutofillDialogController::EndSignInFlow() {
-  DCHECK(!registrar_.IsEmpty());
-  registrar_.RemoveAll();
-  view_->HideSignIn();
-}
-
-void AutofillDialogController::UserEditedOrActivatedInput(
+void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
     const DetailInput* input,
     DialogSection section,
     gfx::NativeView parent_view,
@@ -490,16 +402,78 @@ void AutofillDialogController::UserEditedOrActivatedInput(
   section_showing_popup_ = section;
 }
 
-void AutofillDialogController::FocusMoved() {
+void AutofillDialogControllerImpl::FocusMoved() {
   HidePopup();
 }
 
-void AutofillDialogController::DidSelectSuggestion(int identifier) {
+void AutofillDialogControllerImpl::ViewClosed(DialogAction action) {
+  if (action == ACTION_SUBMIT) {
+    FillOutputForSection(SECTION_EMAIL);
+    FillOutputForSection(SECTION_CC);
+    FillOutputForSection(SECTION_BILLING);
+    if (view_->UseBillingForShipping()) {
+      FillOutputForSectionWithComparator(
+          SECTION_BILLING,
+          base::Bind(DetailInputMatchesShippingField));
+      FillOutputForSectionWithComparator(
+          SECTION_CC,
+          base::Bind(DetailInputMatchesShippingField));
+    } else {
+      FillOutputForSection(SECTION_SHIPPING);
+    }
+    callback_.Run(&form_structure_);
+  } else {
+    callback_.Run(NULL);
+  }
+
+  delete this;
+}
+
+DialogNotification AutofillDialogControllerImpl::CurrentNotification() const {
+  if (RequestingCreditCardInfo() && !TransmissionWillBeSecure()) {
+    return DialogNotification(
+        DialogNotification::SECURITY_WARNING,
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECURITY_WARNING));
+  }
+
+  if (!invoked_from_same_origin_) {
+    return DialogNotification(
+        DialogNotification::SECURITY_WARNING,
+        l10n_util::GetStringFUTF16(
+            IDS_AUTOFILL_DIALOG_SITE_WARNING, UTF8ToUTF16(source_url_.host())));
+  }
+
+  return DialogNotification();
+}
+
+void AutofillDialogControllerImpl::StartSignInFlow() {
+  DCHECK(registrar_.IsEmpty());
+
+  content::Source<content::NavigationController> source(
+      &view_->ShowSignIn());
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
+}
+
+void AutofillDialogControllerImpl::EndSignInFlow() {
+  DCHECK(!registrar_.IsEmpty());
+  registrar_.RemoveAll();
+  view_->HideSignIn();
+}
+
+Profile* AutofillDialogControllerImpl::profile() {
+  return profile_;
+}
+
+content::WebContents* AutofillDialogControllerImpl::web_contents() {
+  return contents_;
+}
+
+void AutofillDialogControllerImpl::DidSelectSuggestion(int identifier) {
   // TODO(estade): implement.
 }
 
-void AutofillDialogController::DidAcceptSuggestion(const string16& value,
-                                                   int identifier) {
+void AutofillDialogControllerImpl::DidAcceptSuggestion(const string16& value,
+                                                       int identifier) {
   const PersonalDataManager::GUIDPair& pair = popup_guids_[identifier];
 
   FormGroup* form_group = section_showing_popup_ == SECTION_CC ?
@@ -520,25 +494,36 @@ void AutofillDialogController::DidAcceptSuggestion(const string16& value,
   HidePopup();
 }
 
-void AutofillDialogController::RemoveSuggestion(const string16& value,
-                                                int identifier) {
+void AutofillDialogControllerImpl::RemoveSuggestion(const string16& value,
+                                                    int identifier) {
   // TODO(estade): implement.
 }
 
-void AutofillDialogController::ClearPreviewedForm() {
+void AutofillDialogControllerImpl::ClearPreviewedForm() {
   // TODO(estade): implement.
 }
 
-void AutofillDialogController::ControllerDestroyed() {
+void AutofillDialogControllerImpl::ControllerDestroyed() {
   popup_controller_ = NULL;
 }
 
-void AutofillDialogController::SuggestionItemSelected(
+void AutofillDialogControllerImpl::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(type, content::NOTIFICATION_NAV_ENTRY_COMMITTED);
+  content::LoadCommittedDetails* load_details =
+      content::Details<content::LoadCommittedDetails>(details).ptr();
+  if (wallet::IsSignInContinueUrl(load_details->entry->GetVirtualURL()))
+    EndSignInFlow();
+}
+
+void AutofillDialogControllerImpl::SuggestionItemSelected(
     const SuggestionsMenuModel& model) {
   view_->UpdateSection(SectionForSuggestionsMenuModel(model));
 }
 
-bool AutofillDialogController::HandleKeyPressEvent(
+bool AutofillDialogControllerImpl::HandleKeyPressEventInInput(
     const content::NativeWebKeyboardEvent& event) {
   if (popup_controller_)
     return popup_controller_->HandleKeyPressEvent(event);
@@ -546,7 +531,26 @@ bool AutofillDialogController::HandleKeyPressEvent(
   return false;
 }
 
-void AutofillDialogController::GenerateSuggestionsModels() {
+bool AutofillDialogControllerImpl::RequestingCreditCardInfo() const {
+  DCHECK_GT(form_structure_.field_count(), 0U);
+
+  for (size_t i = 0; i < form_structure_.field_count(); ++i) {
+    if (AutofillType(form_structure_.field(i)->type()).group() ==
+        AutofillType::CREDIT_CARD) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool AutofillDialogControllerImpl::TransmissionWillBeSecure() const {
+  return source_url_.SchemeIs(chrome::kHttpsScheme) &&
+         !net::IsCertStatusError(ssl_status_.cert_status) &&
+         !net::IsCertStatusMinorError(ssl_status_.cert_status);
+}
+
+void AutofillDialogControllerImpl::GenerateSuggestionsModels() {
   PersonalDataManager* manager = GetManager();
   const std::vector<CreditCard*>& cards = manager->credit_cards();
   for (size_t i = 0; i < cards.size(); ++i) {
@@ -581,7 +585,7 @@ void AutofillDialogController::GenerateSuggestionsModels() {
   suggested_shipping_.AddKeyedItem("", ASCIIToUTF16("Enter new shipping"));
 }
 
-bool AutofillDialogController::IsCompleteProfile(
+bool AutofillDialogControllerImpl::IsCompleteProfile(
     const AutofillProfile& profile) {
   const std::string app_locale = AutofillCountry::ApplicationLocale();
   for (size_t i = 0; i < requested_shipping_fields_.size(); ++i) {
@@ -594,8 +598,9 @@ bool AutofillDialogController::IsCompleteProfile(
   return true;
 }
 
-void AutofillDialogController::FillOutputForSectionWithComparator(
-    DialogSection section, const InputFieldComparator& compare) {
+void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
+    DialogSection section,
+    const InputFieldComparator& compare) {
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
   std::string guid = model->GetItemKeyAt(model->checked_item());
   PersonalDataManager* manager = GetManager();
@@ -654,12 +659,12 @@ void AutofillDialogController::FillOutputForSectionWithComparator(
   }
 }
 
-void AutofillDialogController::FillOutputForSection(DialogSection section) {
+void AutofillDialogControllerImpl::FillOutputForSection(DialogSection section) {
   FillOutputForSectionWithComparator(section,
                                      base::Bind(DetailInputMatchesField));
 }
 
-void AutofillDialogController::FillFormStructureForSection(
+void AutofillDialogControllerImpl::FillFormStructureForSection(
     const FormGroup& form_group,
     size_t variant,
     DialogSection section,
@@ -677,8 +682,8 @@ void AutofillDialogController::FillFormStructureForSection(
   }
 }
 
-SuggestionsMenuModel* AutofillDialogController::SuggestionsMenuModelForSection(
-    DialogSection section) {
+SuggestionsMenuModel* AutofillDialogControllerImpl::
+    SuggestionsMenuModelForSection(DialogSection section) {
   switch (section) {
     case SECTION_EMAIL:
       return &suggested_email_;
@@ -694,7 +699,7 @@ SuggestionsMenuModel* AutofillDialogController::SuggestionsMenuModelForSection(
   return NULL;
 }
 
-DialogSection AutofillDialogController::SectionForSuggestionsMenuModel(
+DialogSection AutofillDialogControllerImpl::SectionForSuggestionsMenuModel(
     const SuggestionsMenuModel& model) {
   if (&model == &suggested_email_)
     return SECTION_EMAIL;
@@ -709,16 +714,16 @@ DialogSection AutofillDialogController::SectionForSuggestionsMenuModel(
   return SECTION_SHIPPING;
 }
 
-PersonalDataManager* AutofillDialogController::GetManager() {
+PersonalDataManager* AutofillDialogControllerImpl::GetManager() {
   return PersonalDataManagerFactory::GetForProfile(profile_);
 }
 
-DetailInputs* AutofillDialogController::MutableRequestedFieldsForSection(
+DetailInputs* AutofillDialogControllerImpl::MutableRequestedFieldsForSection(
     DialogSection section) {
   return const_cast<DetailInputs*>(&RequestedFieldsForSection(section));
 }
 
-void AutofillDialogController::HidePopup() {
+void AutofillDialogControllerImpl::HidePopup() {
   if (popup_controller_) {
     popup_controller_->Hide();
     ControllerDestroyed();

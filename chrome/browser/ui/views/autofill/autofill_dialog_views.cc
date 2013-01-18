@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
@@ -335,8 +336,7 @@ string16 AutofillDialogViews::GetDialogButtonLabel(ui::DialogButton button)
 }
 
 bool AutofillDialogViews::IsDialogButtonEnabled(ui::DialogButton button) const {
-  return button == ui::DIALOG_BUTTON_OK ?
-      controller_->ConfirmButtonEnabled() : true;
+  return true;
 }
 
 bool AutofillDialogViews::Cancel() {
@@ -396,7 +396,7 @@ bool AutofillDialogViews::HandleKeyEvent(views::Textfield* sender,
 #else
   content::NativeWebKeyboardEvent event(copy.get());
 #endif
-  return controller_->HandleKeyPressEvent(event);
+  return controller_->HandleKeyPressEventInInput(event);
 }
 
 bool AutofillDialogViews::HandleMouseEvent(views::Textfield* sender,
@@ -489,7 +489,7 @@ views::View* AutofillDialogViews::CreateNotificationArea() {
 
 void AutofillDialogViews::UpdateNotificationArea() {
   DCHECK(notification_label_);
-  const DialogNotification& notification = controller_->Notification();
+  const DialogNotification& notification = controller_->CurrentNotification();
   notification_label_->parent()->background()->SetNativeControlColor(
       notification.GetBackgroundColor());
   notification_label_->SetText(notification.display_text());
