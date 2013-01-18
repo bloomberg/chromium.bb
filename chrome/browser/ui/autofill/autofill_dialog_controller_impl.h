@@ -55,6 +55,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // AutofillDialogController implementation.
   virtual string16 DialogTitle() const OVERRIDE;
+  virtual string16 EditSuggestionText() const OVERRIDE;
   virtual string16 UseBillingForShippingText() const OVERRIDE;
   virtual string16 WalletOptionText() const OVERRIDE;
   virtual string16 CancelButtonText() const OVERRIDE;
@@ -68,6 +69,7 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual ui::MenuModel* MenuModelForSection(DialogSection section) OVERRIDE;
   virtual string16 LabelForSection(DialogSection section) const OVERRIDE;
   virtual string16 SuggestionTextForSection(DialogSection section) OVERRIDE;
+  virtual void EditClickedForSection(DialogSection section) OVERRIDE;
   virtual bool InputIsValid(const DetailInput* input, const string16& value)
       OVERRIDE;
   virtual void UserEditedOrActivatedInput(const DetailInput* input,
@@ -202,6 +204,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   SuggestionsMenuModel suggested_cc_;
   SuggestionsMenuModel suggested_billing_;
   SuggestionsMenuModel suggested_shipping_;
+
+  // A map from DialogSection to editing state (true for editing, false for
+  // not editing). This only tracks if the user has clicked the edit link.
+  std::map<DialogSection, bool> section_editing_state_;
 
   // The GUIDs for the currently showing unverified profiles popup.
   std::vector<PersonalDataManager::GUIDPair> popup_guids_;

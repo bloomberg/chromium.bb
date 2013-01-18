@@ -10823,6 +10823,9 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_AUTOFILL_DIALOG_TITLE" desc="Title for imperative autofill dialog which asks user to input address + payment info.">
         Submit Payment Details
       </message>
+      <message name="IDS_AUTOFILL_DIALOG_EDIT" desc="Text of link in imperative autofill dialog which allows user to edit address + payment info.">
+        Edit
+      </message>
       <message name="IDS_AUTOFILL_DIALOG_SECURITY_WARNING" desc="Warning on imperative autofill dialog informing users that they're likely to transmit their credit card information insecurely.">
         Warning: this site has requested your payment details over an insecure connection.
       </message>

@@ -161,6 +161,25 @@ class AutofillDialogViews : public AutofillDialogView,
     DISALLOW_COPY_AND_ASSIGN(SectionContainer);
   };
 
+  // A view that contains a suggestion (such as a known address) and a link to
+  // edit the suggestion.
+  class SuggestionView : public views::View {
+   public:
+    SuggestionView(const string16& edit_label,
+                   views::LinkListener* edit_listener);
+    virtual ~SuggestionView();
+
+    // Sets the display text of the suggestion. TODO(estade): this needs to
+    // support credit card icons as well.
+    void SetSuggestionText(const string16& text);
+
+   private:
+    // The label that holds the suggestion description text.
+    views::Label* label_;
+
+    DISALLOW_COPY_AND_ASSIGN(SuggestionView);
+  };
+
   // A convenience struct for holding pointers to views within each detail
   // section. None of the member pointers are owned.
   struct DetailsGroup {
@@ -177,9 +196,9 @@ class AutofillDialogViews : public AutofillDialogView,
     TextfieldMap textfields;
     // The comboboxes in |manual_input|, tracked by their DetailInput.
     ComboboxMap comboboxes;
-    // The label that holds the text of the suggested data. This will be
+    // The view that holds the text of the suggested data. This will be
     // visible IFF |manual_input| is not visible.
-    views::Label* suggested_info;
+    SuggestionView* suggested_info;
     // The view that allows selecting other data suggestions.
     views::ImageButton* suggested_button;
   };
@@ -247,7 +266,7 @@ class AutofillDialogViews : public AutofillDialogView,
   // The top-level View for the dialog. Owned by the constrained window.
   views::View* contents_;
 
-  // An array of the DetailGroup structs.
+  // A DialogSection-keyed map of the DetailGroup structs.
   DetailGroupMap detail_groups_;
 
   // Somewhere to show notification messages about errors, warnings, or promos.
@@ -259,6 +278,9 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // Runs the suggestion menu (triggered by each section's |suggested_button|.
   scoped_ptr<views::MenuRunner> menu_runner_;
+
+  // The link that initiates the sign in flow.
+  views::Link* sign_in_link_;
 
   // View to host the signin dialog and related controls.
   views::View* sign_in_container_;

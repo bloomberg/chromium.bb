@@ -37,6 +37,7 @@ class AutofillDialogController {
   // Strings -------------------------------------------------------------------
 
   virtual string16 DialogTitle() const = 0;
+  virtual string16 EditSuggestionText() const = 0;
   virtual string16 UseBillingForShippingText() const = 0;
   virtual string16 WalletOptionText() const = 0;
   virtual string16 CancelButtonText() const = 0;
@@ -58,6 +59,7 @@ class AutofillDialogController {
   virtual ui::MenuModel* MenuModelForSection(DialogSection section) = 0;
   virtual string16 LabelForSection(DialogSection section) const = 0;
   virtual string16 SuggestionTextForSection(DialogSection section) = 0;
+  virtual void EditClickedForSection(DialogSection section) = 0;
   virtual bool InputIsValid(const DetailInput* input,
                             const string16& value) = 0;
   // Called when the user changes the contents of a text field or activates it

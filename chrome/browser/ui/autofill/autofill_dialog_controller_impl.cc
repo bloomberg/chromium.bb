@@ -222,6 +222,10 @@ string16 AutofillDialogControllerImpl::DialogTitle() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_TITLE);
 }
 
+string16 AutofillDialogControllerImpl::EditSuggestionText() const {
+  return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_EDIT);
+}
+
 string16 AutofillDialogControllerImpl::UseBillingForShippingText() const {
   return l10n_util::GetStringUTF16(
       IDS_AUTOFILL_DIALOG_USE_BILLING_FOR_SHIPPING);
@@ -305,6 +309,11 @@ string16 AutofillDialogControllerImpl::LabelForSection(DialogSection section)
 
 string16 AutofillDialogControllerImpl::SuggestionTextForSection(
     DialogSection section) {
+  // When the user has clicked 'edit', don't show a suggestion (even though
+  // there is a profile selected in the model).
+  if (section_editing_state_[section])
+    return string16();
+
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
   std::string item_key = model->GetItemKeyAt(model->checked_item());
   if (item_key.empty())
@@ -328,6 +337,36 @@ string16 AutofillDialogControllerImpl::SuggestionTextForSection(
   // TODO(estade): The FormGroup was likely deleted while menu was showing. We
   // should not let this happen.
   return string16();
+}
+
+void AutofillDialogControllerImpl::EditClickedForSection(
+    DialogSection section) {
+  SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
+  DetailInputs* inputs = MutableRequestedFieldsForSection(section);
+
+  if (section == SECTION_EMAIL) {
+    // TODO(estade): shouldn't need to make this check.
+    if (inputs->empty())
+      return;
+
+    (*inputs)[0].autofilled_value = model->GetLabelAt(model->checked_item());
+  } else {
+    std::string guid = model->GetItemKeyAt(model->checked_item());
+    DCHECK(!guid.empty());
+
+    FormGroup* form_group = section == SECTION_CC ?
+        static_cast<FormGroup*>(GetManager()->GetCreditCardByGUID(guid)) :
+        static_cast<FormGroup*>(GetManager()->GetProfileByGUID(guid));
+
+    // TODO(estade): we shouldn't let this happen.
+    if (!form_group)
+      return;
+
+    FillInputFromFormGroup(form_group, inputs);
+  }
+
+  section_editing_state_[section] = true;
+  view_->UpdateSection(section);
 }
 
 bool AutofillDialogControllerImpl::InputIsValid(const DetailInput* input,
@@ -520,7 +559,9 @@ void AutofillDialogControllerImpl::Observe(
 
 void AutofillDialogControllerImpl::SuggestionItemSelected(
     const SuggestionsMenuModel& model) {
-  view_->UpdateSection(SectionForSuggestionsMenuModel(model));
+  DialogSection section = SectionForSuggestionsMenuModel(model);
+  section_editing_state_[section] = false;
+  view_->UpdateSection(section);
 }
 
 bool AutofillDialogControllerImpl::HandleKeyPressEventInInput(
@@ -604,7 +645,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
   std::string guid = model->GetItemKeyAt(model->checked_item());
   PersonalDataManager* manager = GetManager();
-  if (!guid.empty()) {
+  if (!guid.empty() && !section_editing_state_[section]) {
     FormGroup* form_group = section == SECTION_CC ?
         static_cast<FormGroup*>(manager->GetCreditCardByGUID(guid)) :
         static_cast<FormGroup*>(manager->GetProfileByGUID(guid));
@@ -653,6 +694,9 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
     } else {
       AutofillProfile profile;
       FillFormGroupFromOutputs(output, &profile);
+      // TODO(estade): we should probably edit the existing profile in the cases
+      // where the input data is based on an existing profile (user clicked
+      // "Edit" or autofill popup filled in the form).
       manager->SaveImportedProfile(profile);
       FillFormStructureForSection(profile, 0, section, compare);
     }

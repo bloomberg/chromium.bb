@@ -203,6 +203,38 @@ ui::MouseEvent AutofillDialogViews::SectionContainer::ProxyEvent(
   return event_copy;
 }
 
+// AutofilDialogViews::SuggestionView ------------------------------------------
+
+AutofillDialogViews::SuggestionView::SuggestionView(
+    const string16& edit_label,
+    views::LinkListener* edit_listener)
+    : label_(new views::Label()) {
+  label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  AddChildView(label_);
+
+  // TODO(estade): The link needs to have a different color when hovered.
+  views::Link* edit_link = new views::Link(edit_label);
+  edit_link->set_listener(edit_listener);
+  edit_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  edit_link->SetUnderline(false);
+
+  // This container prevents the edit link from being horizontally stretched.
+  views::View* link_container = new views::View();
+  link_container->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+  link_container->AddChildView(edit_link);
+  AddChildView(link_container);
+
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+}
+
+AutofillDialogViews::SuggestionView::~SuggestionView() {}
+
+void AutofillDialogViews::SuggestionView::SetSuggestionText(
+    const string16& text) {
+  label_->SetText(text);
+}
+
 // AutofillDialogView ----------------------------------------------------------
 
 // static
@@ -220,6 +252,7 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
       contents_(NULL),
       notification_label_(NULL),
       use_billing_for_shipping_(NULL),
+      sign_in_link_(NULL),
       sign_in_container_(NULL),
       cancel_sign_in_(NULL),
       sign_in_webview_(NULL),
@@ -417,7 +450,20 @@ void AutofillDialogViews::OnDidChangeFocus(
     views::View* focused_now) {}
 
 void AutofillDialogViews::LinkClicked(views::Link* source, int event_flags) {
-  controller_->StartSignInFlow();
+  // Sign in link.
+  if (source == sign_in_link_) {
+    controller_->StartSignInFlow();
+    return;
+  }
+
+  // Edit links.
+  for (DetailGroupMap::iterator iter = detail_groups_.begin();
+       iter != detail_groups_.end(); ++iter) {
+    if (iter->second.suggested_info->Contains(source)) {
+      controller_->EditClickedForSection(iter->first);
+      return;
+    }
+  }
 }
 
 void AutofillDialogViews::InitChildViews() {
@@ -458,10 +504,10 @@ views::View* AutofillDialogViews::CreateMainContainer() {
   layout->StartRow(0, single_column_set);
   // TODO(abodenha) Create a chooser control to allow account selection.
   // See http://crbug.com/169858
-  views::Link* signin = new views::Link(controller_->SignInText());
-  signin->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-  signin->set_listener(this);
-  layout->AddView(signin);
+  sign_in_link_ = new views::Link(controller_->SignInText());
+  sign_in_link_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+  sign_in_link_->set_listener(this);
+  layout->AddView(sign_in_link_);
 
   layout->StartRow(0, single_column_set);
   layout->AddView(CreateNotificationArea());
@@ -560,8 +606,8 @@ views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
 
   views::View* manual_inputs = InitInputsView(section);
   info_view->AddChildView(manual_inputs);
-  views::Label* suggested_info = new views::Label();
-  suggested_info->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  SuggestionView* suggested_info =
+      new SuggestionView(controller_->EditSuggestionText(), this);
   info_view->AddChildView(suggested_info);
   layout->AddView(info_view);
 
@@ -651,7 +697,7 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
       controller_->SuggestionTextForSection(group.section);
   bool show_suggestions = !suggestion_text.empty();
   group.suggested_info->SetVisible(show_suggestions);
-  group.suggested_info->SetText(suggestion_text);
+  group.suggested_info->SetSuggestionText(suggestion_text);
 
   if (group.section == SECTION_SHIPPING) {
     bool show_checkbox = !show_suggestions;
