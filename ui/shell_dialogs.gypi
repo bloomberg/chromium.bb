@@ -43,7 +43,7 @@
         'shell_dialogs/selected_file_info.h',
       ],
       'include_dirs': [
-        '../../',
+        '../',
       ],
       'conditions': [
         ['use_aura==1', {
