@@ -34,9 +34,9 @@ TEST(BrokerProcess, CreateAndDestroy) {
 
   // Now we check that the broker has exited properly.
   int status = 0;
-  EXPECT_EQ(waitpid(broker_pid, &status, 0), broker_pid);
-  EXPECT_TRUE(WIFEXITED(status));
-  EXPECT_EQ(WEXITSTATUS(status), 0);
+  ASSERT_EQ(waitpid(broker_pid, &status, 0), broker_pid);
+  ASSERT_TRUE(WIFEXITED(status));
+  ASSERT_EQ(WEXITSTATUS(status), 0);
 }
 
 TEST(BrokerProcess, TestOpenNull) {
@@ -45,7 +45,7 @@ TEST(BrokerProcess, TestOpenNull) {
   ASSERT_TRUE(open_broker.Init(NULL));
 
   int fd = open_broker.Open(NULL, O_RDONLY);
-  EXPECT_EQ(fd, -EFAULT);
+  ASSERT_EQ(fd, -EFAULT);
 }
 
 void TestOpenFilePerms(bool fast_check_in_client) {
@@ -69,51 +69,55 @@ void TestOpenFilePerms(bool fast_check_in_client) {
 
   int fd = -1;
   fd = open_broker.Open(kR_WhiteListed, O_RDONLY);
-  EXPECT_EQ(fd, -ENOENT);
+  ASSERT_EQ(fd, -ENOENT);
   fd = open_broker.Open(kR_WhiteListed, O_WRONLY);
-  EXPECT_EQ(fd, -EPERM);
+  ASSERT_EQ(fd, -EPERM);
   fd = open_broker.Open(kR_WhiteListed, O_RDWR);
-  EXPECT_EQ(fd, -EPERM);
+  ASSERT_EQ(fd, -EPERM);
 
   fd = open_broker.Open(kW_WhiteListed, O_RDONLY);
-  EXPECT_EQ(fd, -EPERM);
+  ASSERT_EQ(fd, -EPERM);
   fd = open_broker.Open(kW_WhiteListed, O_WRONLY);
-  EXPECT_EQ(fd, -ENOENT);
+  ASSERT_EQ(fd, -ENOENT);
   fd = open_broker.Open(kW_WhiteListed, O_RDWR);
-  EXPECT_EQ(fd, -EPERM);
+  ASSERT_EQ(fd, -EPERM);
 
   fd = open_broker.Open(kRW_WhiteListed, O_RDONLY);
-  EXPECT_EQ(fd, -ENOENT);
+  ASSERT_EQ(fd, -ENOENT);
   fd = open_broker.Open(kRW_WhiteListed, O_WRONLY);
-  EXPECT_EQ(fd, -ENOENT);
+  ASSERT_EQ(fd, -ENOENT);
   fd = open_broker.Open(kRW_WhiteListed, O_RDWR);
-  EXPECT_EQ(fd, -ENOENT);
+  ASSERT_EQ(fd, -ENOENT);
 
   fd = open_broker.Open(k_NotWhitelisted, O_RDONLY);
-  EXPECT_EQ(fd, -EPERM);
+  ASSERT_EQ(fd, -EPERM);
   fd = open_broker.Open(k_NotWhitelisted, O_WRONLY);
-  EXPECT_EQ(fd, -EPERM);
+  ASSERT_EQ(fd, -EPERM);
   fd = open_broker.Open(k_NotWhitelisted, O_RDWR);
-  EXPECT_EQ(fd, -EPERM);
+  ASSERT_EQ(fd, -EPERM);
 
   // We have some extra sanity check for clearly wrong values.
   fd = open_broker.Open(kRW_WhiteListed, O_RDONLY|O_WRONLY|O_RDWR);
-  EXPECT_EQ(fd, -EPERM);
+  ASSERT_EQ(fd, -EPERM);
 
   // It makes no sense to allow O_CREAT in a 2-parameters open. Ensure this
   // is denied.
   fd = open_broker.Open(kRW_WhiteListed, O_RDWR|O_CREAT);
-  EXPECT_EQ(fd, -EPERM);
+  ASSERT_EQ(fd, -EPERM);
 }
 
 // Run the same thing twice. The second time, we make sure that no security
 // check is performed on the client.
 TEST(BrokerProcess, OpenFilePermsWithClientCheck) {
   TestOpenFilePerms(true /* fast_check_in_client */);
+  // Don't do anything here, so that ASSERT works in the subfunction as
+  // expected.
 }
 
 TEST(BrokerProcess, OpenOpenFilePermsNoClientCheck) {
   TestOpenFilePerms(false /* fast_check_in_client */);
+  // Don't do anything here, so that ASSERT works in the subfunction as
+  // expected.
 }
 
 
@@ -130,7 +134,7 @@ void TestOpenCpuinfo(bool fast_check_in_client) {
 
   int fd = -1;
   fd = open_broker->Open(kFileCpuInfo, O_RDWR);
-  EXPECT_EQ(fd, -EPERM);
+  ASSERT_EQ(fd, -EPERM);
 
   // Open cpuinfo via the broker.
   int cpuinfo_fd = open_broker->Open(kFileCpuInfo, O_RDONLY);
@@ -138,7 +142,7 @@ void TestOpenCpuinfo(bool fast_check_in_client) {
   char buf[3];
   memset(buf, 0, sizeof(buf));
   int read_len1 = read(cpuinfo_fd, buf, sizeof(buf));
-  EXPECT_GT(read_len1, 0);
+  ASSERT_GT(read_len1, 0);
 
   // Open cpuinfo directly.
   int cpuinfo_fd2 = open(kFileCpuInfo, O_RDONLY);
@@ -146,13 +150,13 @@ void TestOpenCpuinfo(bool fast_check_in_client) {
   char buf2[3];
   memset(buf2, 1, sizeof(buf2));
   int read_len2 = read(cpuinfo_fd2, buf2, sizeof(buf2));
-  EXPECT_GT(read_len1, 0);
+  ASSERT_GT(read_len1, 0);
 
   // The following is not guaranteed true, but will be in practice.
-  EXPECT_EQ(read_len1, read_len2);
+  ASSERT_EQ(read_len1, read_len2);
   // Compare the cpuinfo as returned by the broker with the one we opened
   // ourselves.
-  EXPECT_EQ(memcmp(buf, buf2, read_len1), 0);
+  ASSERT_EQ(memcmp(buf, buf2, read_len1), 0);
 
   if (fd >= 0)
     close(fd);
@@ -165,19 +169,23 @@ void TestOpenCpuinfo(bool fast_check_in_client) {
 
   // Now we check that the broker has exited properly.
   int status = 0;
-  EXPECT_EQ(waitpid(broker_pid, &status, 0), broker_pid);
-  EXPECT_TRUE(WIFEXITED(status));
-  EXPECT_EQ(WEXITSTATUS(status), 0);
+  ASSERT_EQ(waitpid(broker_pid, &status, 0), broker_pid);
+  ASSERT_TRUE(WIFEXITED(status));
+  ASSERT_EQ(WEXITSTATUS(status), 0);
 }
 
 // Run the same thing twice. The second time, we make sure that no security
 // check is performed on the client.
 TEST(BrokerProcess, OpenCpuinfoWithClientCheck) {
   TestOpenCpuinfo(true /* fast_check_in_client */);
+  // Don't do anything here, so that ASSERT works in the subfunction as
+  // expected.
 }
 
 TEST(BrokerProcess, OpenCpuinfoNoClientCheck) {
   TestOpenCpuinfo(false /* fast_check_in_client */);
+  // Don't do anything here, so that ASSERT works in the subfunction as
+  // expected.
 }
 
 TEST(BrokerProcess, OpenFileRW) {
@@ -235,8 +243,8 @@ TEST(BrokerProcess, OpenFileRW) {
   ASSERT_LT(ret, static_cast<ssize_t>(sizeof(tempfile_full_path)));
   ASSERT_EQ(unlink(tempfile_full_path), 0);
 
-  EXPECT_EQ(close(tempfile), 0);
-  EXPECT_EQ(close(tempfile2), 0);
+  ASSERT_EQ(close(tempfile), 0);
+  ASSERT_EQ(close(tempfile2), 0);
 }
 
 // Sandbox test because we could get a SIGPIPE.
@@ -283,10 +291,14 @@ void TestComplexFlags(bool fast_check_in_client) {
 
 TEST(BrokerProcess, ComplexFlagsWithClientCheck) {
   TestComplexFlags(true /* fast_check_in_client */);
+  // Don't do anything here, so that ASSERT works in the subfunction as
+  // expected.
 }
 
 TEST(BrokerProcess, ComplexFlagsNoClientCheck) {
   TestComplexFlags(false /* fast_check_in_client */);
+  // Don't do anything here, so that ASSERT works in the subfunction as
+  // expected.
 }
 
 }  // namespace sandbox
