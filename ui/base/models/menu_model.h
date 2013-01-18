@@ -43,16 +43,6 @@ class UI_EXPORT MenuModel {
   // triggering a custom rendering mode.
   virtual bool HasIcons() const = 0;
 
-  // Returns the index of the first item. This is 0 for most menus except the
-  // system menu on Windows. |native_menu| is the menu to locate the start index
-  // within. It is guaranteed to be reset to a clean default state.  Some
-  // callers of this method may pass NULL for native_menu.
-  // IMPORTANT: If the model implementation returns something _other_ than 0
-  //            here, it must offset the values for |index| it passes to the
-  //            methods below by this number - this is NOT done automatically!
-  // TODO(sky): remove this from MenuModel. It's confusing.
-  virtual int GetFirstItemIndex(gfx::NativeMenu native_menu) const;
-
   // Returns the number of items in the menu.
   virtual int GetItemCount() const = 0;
 
@@ -133,7 +123,8 @@ class UI_EXPORT MenuModel {
   // Retrieves the model and index that contains a specific command id. Returns
   // true if an item with the specified command id is found. |model| is inout,
   // and specifies the model to start searching from.
-  static bool GetModelAndIndexForCommandId(int command_id, MenuModel** model,
+  static bool GetModelAndIndexForCommandId(int command_id,
+                                           MenuModel** model,
                                            int* index);
 };
 

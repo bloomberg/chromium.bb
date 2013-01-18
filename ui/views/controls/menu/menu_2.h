@@ -62,7 +62,7 @@ class VIEWS_EXPORT Menu2 {
   void UpdateStates();
 
   // For submenus.
-  gfx::NativeMenu GetNativeMenu() const;
+  HMENU GetNativeMenu() const;
 
   // Get the result of the last call to RunMenuAt to determine whether an
   // item was selected, the user navigated to a next or previous menu, or

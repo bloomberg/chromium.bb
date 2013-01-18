@@ -72,8 +72,7 @@ class MenuModel;
 @interface MenuController (Protected)
 - (void)addItemToMenu:(NSMenu*)menu
               atIndex:(NSInteger)index
-            fromModel:(ui::MenuModel*)model
-           modelIndex:(int)modelIndex;
+            fromModel:(ui::MenuModel*)model;
 - (NSMenu*)menuFromModel:(ui::MenuModel*)model;
 // Returns the maximum width for the menu item. Returns -1 to indicate
 // that there's no maximum width.

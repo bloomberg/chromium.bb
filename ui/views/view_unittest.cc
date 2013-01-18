@@ -1558,7 +1558,6 @@ TEST_F(ViewTest, DISABLED_RerouteMouseWheelTest) {
 class MockMenuModel : public ui::MenuModel {
  public:
   MOCK_CONST_METHOD0(HasIcons, bool());
-  MOCK_CONST_METHOD1(GetFirstItemIndex, int(gfx::NativeMenu native_menu));
   MOCK_CONST_METHOD0(GetItemCount, int());
   MOCK_CONST_METHOD1(GetTypeAt, ItemType(int index));
   MOCK_CONST_METHOD1(GetSeparatorTypeAt, ui::MenuSeparatorType(int index));
@@ -1665,7 +1664,6 @@ class TestDialog : public DialogDelegate, public ButtonListener {
   void ExpectShowDropMenu() {
     if (mock_menu_model_) {
       EXPECT_CALL(*mock_menu_model_, HasIcons());
-      EXPECT_CALL(*mock_menu_model_, GetFirstItemIndex(_));
       EXPECT_CALL(*mock_menu_model_, GetItemCount());
       EXPECT_CALL(*mock_menu_model_, MenuClosed());
     }

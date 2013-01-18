@@ -205,8 +205,7 @@ class VIEWS_EXPORT MenuItemView : public View {
                                        const gfx::ImageSkia& icon);
 
   // Creates a menu item for the specified entry in the model and appends it as
-  // a child. |index| should be offset by GetFirstItemIndex() before calling
-  // this function.
+  // a child.
   MenuItemView* AppendMenuItemFromModel(ui::MenuModel* model,
                                         int index,
                                         int id);

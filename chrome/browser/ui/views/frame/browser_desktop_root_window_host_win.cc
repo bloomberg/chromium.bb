@@ -8,6 +8,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/system_menu_insertion_delegate_win.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "ui/base/theme_provider.h"
 #include "ui/views/controls/menu/native_menu_win.h"
@@ -44,10 +45,11 @@ BrowserDesktopRootWindowHostWin::~BrowserDesktopRootWindowHostWin() {
 
 views::NativeMenuWin* BrowserDesktopRootWindowHostWin::GetSystemMenu() {
   if (!system_menu_.get()) {
+    SystemMenuInsertionDelegateWin insertion_delegate;
     system_menu_.reset(
         new views::NativeMenuWin(browser_frame_->GetSystemMenuModel(),
                                  GetHWND()));
-    system_menu_->Rebuild();
+    system_menu_->Rebuild(&insertion_delegate);
   }
   return system_menu_.get();
 }

@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/system_menu_insertion_delegate_win.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -141,10 +142,11 @@ void BrowserFrameWin::CloseImmersiveFrame() {
 
 views::NativeMenuWin* BrowserFrameWin::GetSystemMenu() {
   if (!system_menu_.get()) {
+    SystemMenuInsertionDelegateWin insertion_delegate;
     system_menu_.reset(
         new views::NativeMenuWin(browser_frame_->GetSystemMenuModel(),
                                  GetNativeView()));
-    system_menu_->Rebuild();
+    system_menu_->Rebuild(&insertion_delegate);
   }
   return system_menu_.get();
 }

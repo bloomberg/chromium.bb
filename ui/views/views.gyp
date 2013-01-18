@@ -479,11 +479,6 @@
                 ['include', 'widget/desktop_aura/desktop_root_window_host_win.cc'],
               ],
             }],
-            ['OS!="win"', {
-              'sources/': [
-                ['exclude', 'controls/menu/menu_2.*'],
-              ],
-            }],
           ],
         }],
         ['use_aura==0', {
@@ -553,6 +548,9 @@
         }],
         ['OS!="win"', {
           'sources!': [
+            'controls/menu/menu_wrapper.h',
+            'controls/menu/menu_2.cc',
+            'controls/menu/menu_2.h',
             'win/fullscreen_handler.cc',
             'win/fullscreen_handler.h',
             'win/hwnd_message_handler.cc',

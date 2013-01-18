@@ -158,36 +158,30 @@ typedef jobject NativeEvent;
 typedef HFONT NativeFont;
 typedef HWND NativeEditView;
 typedef HDC NativeDrawingContext;
-typedef HMENU NativeMenu;
 typedef IAccessible* NativeViewAccessible;
 #elif defined(OS_IOS)
 typedef UIFont* NativeFont;
 typedef UITextField* NativeEditView;
 typedef CGContext* NativeDrawingContext;
-typedef void* NativeMenu;
 #elif defined(OS_MACOSX)
 typedef NSFont* NativeFont;
 typedef NSTextField* NativeEditView;
 typedef CGContext* NativeDrawingContext;
-typedef void* NativeMenu;
 typedef void* NativeViewAccessible;
 #elif defined(TOOLKIT_GTK)
 typedef PangoFontDescription* NativeFont;
 typedef GtkWidget* NativeEditView;
 typedef cairo_t* NativeDrawingContext;
-typedef GtkWidget* NativeMenu;
 typedef void* NativeViewAccessible;
 #elif defined(USE_AURA)
 typedef PangoFontDescription* NativeFont;
 typedef void* NativeEditView;
 typedef cairo_t* NativeDrawingContext;
-typedef void* NativeMenu;
 typedef void* NativeViewAccessible;
 #elif defined(OS_ANDROID)
 typedef void* NativeFont;
 typedef void* NativeEditView;
 typedef void* NativeDrawingContext;
-typedef void* NativeMenu;
 typedef void* NativeViewAccessible;
 #endif
 

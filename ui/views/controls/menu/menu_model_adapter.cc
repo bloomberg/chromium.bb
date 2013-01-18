@@ -182,18 +182,16 @@ void MenuModelAdapter::BuildMenuImpl(MenuItemView* menu, ui::MenuModel* model) {
   DCHECK(model);
   const int item_count = model->GetItemCount();
   for (int i = 0; i < item_count; ++i) {
-    const int index = i + model->GetFirstItemIndex(NULL);
-
     MenuItemView* item = menu->AppendMenuItemFromModel(
-        model, index, model->GetCommandIdAt(index));
+        model, i, model->GetCommandIdAt(i));
 
     if (item)
-      item->SetVisible(model->IsVisibleAt(index));
+      item->SetVisible(model->IsVisibleAt(i));
 
-    if (model->GetTypeAt(index) == ui::MenuModel::TYPE_SUBMENU) {
+    if (model->GetTypeAt(i) == ui::MenuModel::TYPE_SUBMENU) {
       DCHECK(item);
       DCHECK_EQ(MenuItemView::SUBMENU, item->GetType());
-      ui::MenuModel* submodel = model->GetSubmenuModelAt(index);
+      ui::MenuModel* submodel = model->GetSubmenuModelAt(i);
       DCHECK(submodel);
       BuildMenuImpl(item, submodel);
 

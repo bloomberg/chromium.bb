@@ -469,12 +469,12 @@ void NativeMenuWin::CancelMenu() {
   EndMenu();
 }
 
-void NativeMenuWin::Rebuild() {
+void NativeMenuWin::Rebuild(InsertionDelegate* delegate) {
   ResetNativeMenu();
   items_.clear();
 
   owner_draw_ = model_->HasIcons() || owner_draw_;
-  first_item_index_ = model_->GetFirstItemIndex(GetNativeMenu());
+  first_item_index_ = delegate ? delegate->GetInsertionIndex(menu_) : 0;
   for (int menu_index = first_item_index_;
         menu_index < first_item_index_ + model_->GetItemCount(); ++menu_index) {
     int model_index = menu_index - first_item_index_;
@@ -504,7 +504,7 @@ void NativeMenuWin::UpdateStates() {
   }
 }
 
-gfx::NativeMenu NativeMenuWin::GetNativeMenu() const {
+HMENU NativeMenuWin::GetNativeMenu() const {
   return menu_;
 }
 

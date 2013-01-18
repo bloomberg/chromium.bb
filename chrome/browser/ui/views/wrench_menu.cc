@@ -1019,44 +1019,38 @@ void WrenchMenu::Observe(int type,
 void WrenchMenu::PopulateMenu(MenuItemView* parent,
                               MenuModel* model,
                               int* next_id) {
-  int index_offset = model->GetFirstItemIndex(NULL);
   for (int i = 0, max = model->GetItemCount(); i < max; ++i) {
-    int index = i + index_offset;
-
     // The button container menu items have a special height which we have to
     // use instead of the normal height.
     int height = 0;
     if (use_new_menu_ &&
-        (model->GetCommandIdAt(index) == IDC_CUT ||
-         model->GetCommandIdAt(index) == IDC_ZOOM_MINUS))
+        (model->GetCommandIdAt(i) == IDC_CUT ||
+         model->GetCommandIdAt(i) == IDC_ZOOM_MINUS))
       height = kMenuItemContainingButtonsHeight;
 
     MenuItemView* item = AppendMenuItem(
-        parent, model, index, model->GetTypeAt(index), next_id, height);
+        parent, model, i, model->GetTypeAt(i), next_id, height);
 
-    if (model->GetTypeAt(index) == MenuModel::TYPE_SUBMENU)
-      PopulateMenu(item, model->GetSubmenuModelAt(index), next_id);
+    if (model->GetTypeAt(i) == MenuModel::TYPE_SUBMENU)
+      PopulateMenu(item, model->GetSubmenuModelAt(i), next_id);
 
-    switch (model->GetCommandIdAt(index)) {
+    switch (model->GetCommandIdAt(i)) {
       case IDC_CUT:
-        DCHECK_EQ(MenuModel::TYPE_COMMAND, model->GetTypeAt(index));
+        DCHECK_EQ(MenuModel::TYPE_COMMAND, model->GetTypeAt(i));
         DCHECK_LT(i + 2, max);
-        DCHECK_EQ(IDC_COPY, model->GetCommandIdAt(index + 1));
-        DCHECK_EQ(IDC_PASTE, model->GetCommandIdAt(index + 2));
+        DCHECK_EQ(IDC_COPY, model->GetCommandIdAt(i + 1));
+        DCHECK_EQ(IDC_PASTE, model->GetCommandIdAt(i + 2));
         item->SetTitle(l10n_util::GetStringUTF16(IDS_EDIT2));
-        item->AddChildView(
-            new CutCopyPasteView(
-                this, model, index, index + 1, index + 2));
+        item->AddChildView(new CutCopyPasteView(this, model, i, i + 1, i + 2));
         i += 2;
         break;
 
       case IDC_ZOOM_MINUS:
-        DCHECK_EQ(MenuModel::TYPE_COMMAND, model->GetTypeAt(index));
-        DCHECK_EQ(IDC_ZOOM_PLUS, model->GetCommandIdAt(index + 1));
-        DCHECK_EQ(IDC_FULLSCREEN, model->GetCommandIdAt(index + 2));
+        DCHECK_EQ(MenuModel::TYPE_COMMAND, model->GetTypeAt(i));
+        DCHECK_EQ(IDC_ZOOM_PLUS, model->GetCommandIdAt(i + 1));
+        DCHECK_EQ(IDC_FULLSCREEN, model->GetCommandIdAt(i + 2));
         item->SetTitle(l10n_util::GetStringUTF16(IDS_ZOOM_MENU2));
-        item->AddChildView(
-            new ZoomView(this, model, index, index + 1, index + 2));
+        item->AddChildView(new ZoomView(this, model, i, i + 1, i + 2));
         i += 2;
         break;
 
@@ -1075,7 +1069,7 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
             browser_->profile()));
         DCHECK(!recent_tabs_menu_model_delegate_.get());
         recent_tabs_menu_model_delegate_.reset(
-            new RecentTabsMenuModelDelegate(model->GetSubmenuModelAt(index),
+            new RecentTabsMenuModelDelegate(model->GetSubmenuModelAt(i),
                                             item));
         break;
 

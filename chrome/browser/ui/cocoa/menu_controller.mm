@@ -71,22 +71,12 @@
 - (NSMenu*)menuFromModel:(ui::MenuModel*)model {
   NSMenu* menu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
 
-  // The indices may not always start at zero (the windows system menu is one
-  // example where this is used) so just make sure we can handle it.
-  // SimpleMenuModel currently always starts at 0.
-  int firstItemIndex = model->GetFirstItemIndex(menu);
-  DCHECK(firstItemIndex == 0);
   const int count = model->GetItemCount();
-  for (int index = firstItemIndex; index < firstItemIndex + count; index++) {
-    int modelIndex = index - firstItemIndex;
-    if (model->GetTypeAt(modelIndex) == ui::MenuModel::TYPE_SEPARATOR) {
+  for (int index = 0; index < count; index++) {
+    if (model->GetTypeAt(index) == ui::MenuModel::TYPE_SEPARATOR)
       [self addSeparatorToMenu:menu atIndex:index];
-    } else {
-      [self addItemToMenu:menu
-                  atIndex:index
-                fromModel:model
-               modelIndex:modelIndex];
-    }
+    else
+      [self addItemToMenu:menu atIndex:index fromModel:model];
   }
 
   return menu;
@@ -110,10 +100,9 @@
 // associated with the entry in the model indentifed by |modelIndex|.
 - (void)addItemToMenu:(NSMenu*)menu
               atIndex:(NSInteger)index
-            fromModel:(ui::MenuModel*)model
-           modelIndex:(int)modelIndex {
-  string16 label16 = model->GetLabelAt(modelIndex);
-  int maxWidth = [self maxWidthForMenuModel:model modelIndex:modelIndex];
+            fromModel:(ui::MenuModel*)model {
+  string16 label16 = model->GetLabelAt(index);
+  int maxWidth = [self maxWidthForMenuModel:model modelIndex:index];
   if (maxWidth != -1)
     label16 = [MenuController elideMenuTitle:label16 toWidth:maxWidth];
 
@@ -125,15 +114,15 @@
 
   // If the menu item has an icon, set it.
   gfx::Image icon;
-  if (model->GetIconAt(modelIndex, &icon) && !icon.IsEmpty())
+  if (model->GetIconAt(index, &icon) && !icon.IsEmpty())
     [item setImage:icon.ToNSImage()];
 
-  ui::MenuModel::ItemType type = model->GetTypeAt(modelIndex);
+  ui::MenuModel::ItemType type = model->GetTypeAt(index);
   if (type == ui::MenuModel::TYPE_SUBMENU) {
     // Recursively build a submenu from the sub-model at this index.
     [item setTarget:nil];
     [item setAction:nil];
-    ui::MenuModel* submenuModel = model->GetSubmenuModelAt(modelIndex);
+    ui::MenuModel* submenuModel = model->GetSubmenuModelAt(index);
     NSMenu* submenu =
         [self menuFromModel:(ui::SimpleMenuModel*)submenuModel];
     [item setSubmenu:submenu];
@@ -143,12 +132,12 @@
     // the model so hierarchical menus check the correct index in the correct
     // model. Setting the target to |self| allows this class to participate
     // in validation of the menu items.
-    [item setTag:modelIndex];
+    [item setTag:index];
     [item setTarget:self];
     NSValue* modelObject = [NSValue valueWithPointer:model];
     [item setRepresentedObject:modelObject];  // Retains |modelObject|.
     ui::Accelerator accelerator;
-    if (model->GetAcceleratorAt(modelIndex, &accelerator)) {
+    if (model->GetAcceleratorAt(index, &accelerator)) {
       const ui::PlatformAcceleratorCocoa* platformAccelerator =
           static_cast<const ui::PlatformAcceleratorCocoa*>(
               accelerator.platform_accelerator());

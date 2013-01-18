@@ -96,20 +96,18 @@ namespace {
 ContextMenuModel* ConvertMenuModel(const ui::MenuModel* ui_model) {
   ContextMenuModel* new_model = new ContextMenuModel;
 
-  const int index_base = ui_model->GetFirstItemIndex(NULL);
   const int item_count = ui_model->GetItemCount();
   new_model->items.reserve(item_count);
   for (int i = 0; i < item_count; ++i) {
-    const int index = index_base + i;
-    if (ui_model->IsVisibleAt(index)) {
+    if (ui_model->IsVisibleAt(i)) {
       ContextMenuModel::Item item;
-      item.type = ui_model->GetTypeAt(index);
-      item.item_id = ui_model->GetCommandIdAt(index);
-      item.label = ui_model->GetLabelAt(index);
-      item.checked = ui_model->IsItemCheckedAt(index);
-      item.enabled = ui_model->IsEnabledAt(index);
+      item.type = ui_model->GetTypeAt(i);
+      item.item_id = ui_model->GetCommandIdAt(i);
+      item.label = ui_model->GetLabelAt(i);
+      item.checked = ui_model->IsItemCheckedAt(i);
+      item.enabled = ui_model->IsEnabledAt(i);
       if (item.type == ui::MenuModel::TYPE_SUBMENU)
-        item.submenu = ConvertMenuModel(ui_model->GetSubmenuModelAt(index));
+        item.submenu = ConvertMenuModel(ui_model->GetSubmenuModelAt(i));
 
       new_model->items.push_back(item);
     }

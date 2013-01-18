@@ -112,20 +112,18 @@ class ZoomLevelObserver : public content::NotificationObserver {
 
 - (void)addItemToMenu:(NSMenu*)menu
               atIndex:(NSInteger)index
-            fromModel:(ui::MenuModel*)model
-           modelIndex:(int)modelIndex {
+            fromModel:(ui::MenuModel*)model {
   // Non-button item types should be built as normal items.
-  ui::MenuModel::ItemType type = model->GetTypeAt(modelIndex);
+  ui::MenuModel::ItemType type = model->GetTypeAt(index);
   if (type != ui::MenuModel::TYPE_BUTTON_ITEM) {
     [super addItemToMenu:menu
                  atIndex:index
-               fromModel:model
-              modelIndex:modelIndex];
+               fromModel:model];
     return;
   }
 
   // Handle the special-cased menu items.
-  int command_id = model->GetCommandIdAt(modelIndex);
+  int command_id = model->GetCommandIdAt(index);
   scoped_nsobject<NSMenuItem> customItem(
       [[NSMenuItem alloc] initWithTitle:@""
                                  action:nil

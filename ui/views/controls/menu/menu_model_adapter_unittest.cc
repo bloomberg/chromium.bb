@@ -18,10 +18,6 @@ namespace {
 const int kRootIdBase = 100;
 const int kSubmenuIdBase = 200;
 
-// Offset to return for GetFirstItemIndex().  This is an arbitrary
-// number to ensure that we aren't assuming it is 0.
-const int kFirstItemIndex = 25;
-
 class MenuModelBase : public ui::MenuModel {
  public:
   explicit MenuModelBase(int command_id_base)
@@ -38,16 +34,12 @@ class MenuModelBase : public ui::MenuModel {
     return false;
   }
 
-  virtual int GetFirstItemIndex(gfx::NativeMenu native_menu) const OVERRIDE {
-    return kFirstItemIndex;
-  }
-
   virtual int GetItemCount() const OVERRIDE {
     return static_cast<int>(items_.size());
   }
 
   virtual ItemType GetTypeAt(int index) const OVERRIDE {
-    return items_[index - GetFirstItemIndex(NULL)].type;
+    return items_[index].type;
   }
 
   virtual ui::MenuSeparatorType GetSeparatorTypeAt(
@@ -56,11 +48,11 @@ class MenuModelBase : public ui::MenuModel {
   }
 
   virtual int GetCommandIdAt(int index) const OVERRIDE {
-    return index - GetFirstItemIndex(NULL) + command_id_base_;
+    return index + command_id_base_;
   }
 
   string16 GetLabelAt(int index) const OVERRIDE {
-    return items_[index - GetFirstItemIndex(NULL)].label;
+    return items_[index].label;
   }
 
   virtual bool IsItemDynamicAt(int index) const OVERRIDE {
@@ -102,7 +94,7 @@ class MenuModelBase : public ui::MenuModel {
   }
 
   virtual MenuModel* GetSubmenuModelAt(int index) const OVERRIDE {
-    return items_[index - GetFirstItemIndex(NULL)].submenu;
+    return items_[index].submenu;
   }
 
   virtual void HighlightChangedTo(int index) OVERRIDE {
@@ -257,7 +249,7 @@ TEST_F(MenuModelAdapterTest, BasicTest) {
 
     // Check activation.
     static_cast<views::MenuDelegate*>(&delegate)->ExecuteCommand(id);
-    EXPECT_EQ(i + kFirstItemIndex, model.last_activation());
+    EXPECT_EQ(i, model.last_activation());
     model.set_last_activation(-1);
   }
 
@@ -268,7 +260,7 @@ TEST_F(MenuModelAdapterTest, BasicTest) {
 
   for (int i = 0; i < subitem_container->child_count(); ++i) {
     MenuModelBase* submodel = static_cast<MenuModelBase*>(
-        model.GetSubmenuModelAt(3 + kFirstItemIndex));
+        model.GetSubmenuModelAt(3));
     EXPECT_TRUE(submodel);
 
     const MenuModelBase::Item& model_item = submodel->GetItemDefinition(i);
@@ -304,7 +296,7 @@ TEST_F(MenuModelAdapterTest, BasicTest) {
 
     // Check activation.
     static_cast<views::MenuDelegate*>(&delegate)->ExecuteCommand(id);
-    EXPECT_EQ(i + kFirstItemIndex, submodel->last_activation());
+    EXPECT_EQ(i, submodel->last_activation());
     submodel->set_last_activation(-1);
   }
 

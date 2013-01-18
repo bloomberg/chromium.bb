@@ -18,7 +18,7 @@ Menu2::Menu2(ui::MenuModel* model)
 
 Menu2::~Menu2() {}
 
-gfx::NativeMenu Menu2::GetNativeMenu() const {
+HMENU Menu2::GetNativeMenu() const {
   return wrapper_->GetNativeMenu();
 }
 
@@ -35,7 +35,7 @@ void Menu2::CancelMenu() {
 }
 
 void Menu2::Rebuild() {
-  wrapper_->Rebuild();
+  wrapper_->Rebuild(NULL);
 }
 
 void Menu2::UpdateStates() {

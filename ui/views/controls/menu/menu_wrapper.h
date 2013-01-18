@@ -23,6 +23,15 @@ class MenuListener;
 // An interface that wraps an object that implements a menu.
 class VIEWS_EXPORT MenuWrapper {
  public:
+  class InsertionDelegate {
+   public:
+    // Returns the index to insert items into the menu at.
+    virtual int GetInsertionIndex(HMENU native_menu) = 0;
+
+   protected:
+    virtual ~InsertionDelegate() {}
+  };
+
   // All of the possible actions that can result from RunMenuAt.
   enum MenuAction {
     MENU_ACTION_NONE,      // Menu cancelled, or never opened.
@@ -44,14 +53,14 @@ class VIEWS_EXPORT MenuWrapper {
 
   // Called when the model supplying data to this menu has changed, and the menu
   // must be rebuilt.
-  virtual void Rebuild() = 0;
+  virtual void Rebuild(InsertionDelegate* delegate) = 0;
 
   // Called when the states of the items in the menu must be updated from the
   // model.
   virtual void UpdateStates() = 0;
 
   // Retrieve a native menu handle.
-  virtual gfx::NativeMenu GetNativeMenu() const = 0;
+  virtual HMENU GetNativeMenu() const = 0;
 
   // Get the result of the last call to RunMenuAt to determine whether an
   // item was selected, the user navigated to a next or previous menu, or
