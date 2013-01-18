@@ -5,6 +5,7 @@
 #define INITGUID  // required for GUID_PROP_INPUTSCOPE
 #include "ui/base/ime/win/tsf_text_store.h"
 
+#include <InputScope.h>
 #include <OleCtl.h>
 
 #include "base/win/scoped_variant.h"
@@ -608,7 +609,7 @@ STDMETHODIMP TSFTextStore::RetrieveRequestedAttrs(
   attribute_buffer[0].dwOverlapId = 0;
   attribute_buffer[0].idAttr = GUID_PROP_INPUTSCOPE;
   attribute_buffer[0].varValue.vt = VT_UNKNOWN;
-  attribute_buffer[0].varValue.punkVal = new TSFInputScope(
+  attribute_buffer[0].varValue.punkVal = tsf_inputscope::CreateInputScope(
       text_input_client_->GetTextInputType());
   attribute_buffer[0].varValue.punkVal->AddRef();
   *attribute_buffer_copied = 1;
