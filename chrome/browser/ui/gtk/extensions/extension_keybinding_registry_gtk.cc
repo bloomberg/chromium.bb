@@ -7,7 +7,6 @@
 #include <gtk/gtk.h>
 
 #include "chrome/browser/extensions/api/commands/command_service.h"
-#include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
@@ -60,7 +59,7 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
     const extensions::Extension* extension,
     const std::string& command_name) {
   extensions::CommandService* command_service =
-      extensions::CommandServiceFactory::GetForProfile(profile_);
+      extensions::CommandService::Get(profile_);
   extensions::CommandMap commands;
   command_service->GetNamedCommands(
           extension->id(),

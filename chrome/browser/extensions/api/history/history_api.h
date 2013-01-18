@@ -10,11 +10,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/extensions/api/history.h"
 #include "content/public/browser/notification_registrar.h"
@@ -54,7 +54,7 @@ class HistoryEventRouter : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(HistoryEventRouter);
 };
 
-class HistoryAPI : public ProfileKeyedService,
+class HistoryAPI : public ProfileKeyedAPI,
                    public EventRouter::Observer {
  public:
   explicit HistoryAPI(Profile* profile);
@@ -63,11 +63,22 @@ class HistoryAPI : public ProfileKeyedService,
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<HistoryAPI>* GetFactoryInstance();
+
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
 
  private:
+  friend class ProfileKeyedAPIFactory<HistoryAPI>;
+
   Profile* profile_;
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() {
+    return "HistoryAPI";
+  }
+  static const bool kServiceIsNULLWhileTesting = true;
 
   // Created lazily upon OnListenerAdded.
   scoped_ptr<HistoryEventRouter> history_event_router_;

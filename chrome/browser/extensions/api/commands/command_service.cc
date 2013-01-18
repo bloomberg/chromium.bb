@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/commands/command_service.h"
 
+#include "base/lazy_instance.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
@@ -49,6 +50,19 @@ CommandService::CommandService(Profile* profile)
 }
 
 CommandService::~CommandService() {
+}
+
+static base::LazyInstance<ProfileKeyedAPIFactory<CommandService> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<CommandService>* CommandService::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
+// static
+CommandService* CommandService::Get(Profile* profile) {
+  return ProfileKeyedAPIFactory<CommandService>::GetForProfile(profile);
 }
 
 bool CommandService::GetBrowserActionCommand(

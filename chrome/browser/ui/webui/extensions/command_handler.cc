@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
-#include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -92,8 +91,7 @@ void CommandHandler::HandleSetExtensionCommandShortcut(
   }
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  CommandService* command_service =
-      CommandServiceFactory::GetForProfile(profile);
+  CommandService* command_service = CommandService::Get(profile);
   command_service->UpdateKeybindingPrefs(extension_id, command_name, keystroke);
 
   UpdateCommandDataOnPage();
@@ -109,8 +107,7 @@ void CommandHandler::GetAllCommands(base::DictionaryValue* commands) {
   ListValue* results = new ListValue;
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  CommandService* command_service =
-      CommandServiceFactory::GetForProfile(profile);
+  CommandService* command_service = CommandService::Get(profile);
 
   const ExtensionSet* extensions = extensions::ExtensionSystem::Get(profile)->
       extension_service()->extensions();

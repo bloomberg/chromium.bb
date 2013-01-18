@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 
 #include "chrome/browser/extensions/api/commands/command_service.h"
-#include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -43,7 +42,7 @@ void ExtensionKeybindingRegistryViews::AddExtensionKeybinding(
     return;
 
   extensions::CommandService* command_service =
-      extensions::CommandServiceFactory::GetForProfile(profile_);
+      extensions::CommandService::Get(profile_);
   // Add all the active keybindings (except page actions and browser actions,
   // which are handled elsewhere).
   extensions::CommandMap commands;

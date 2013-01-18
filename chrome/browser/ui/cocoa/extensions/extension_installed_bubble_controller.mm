@@ -10,7 +10,6 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
-#include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -296,7 +295,7 @@ class ExtensionLoadedNotificationObserver
 
 - (bool)hasActivePageAction:(extensions::Command*)command {
   extensions::CommandService* command_service =
-      extensions::CommandServiceFactory::GetForProfile(browser_->profile());
+      extensions::CommandService::Get(browser_->profile());
   if (type_ == extension_installed_bubble::kPageAction) {
     if (extension_->page_action_command() &&
         command_service->GetPageActionCommand(
@@ -313,7 +312,7 @@ class ExtensionLoadedNotificationObserver
 
 - (bool)hasActiveBrowserAction:(extensions::Command*)command {
   extensions::CommandService* command_service =
-      extensions::CommandServiceFactory::GetForProfile(browser_->profile());
+      extensions::CommandService::Get(browser_->profile());
   if (type_ == extension_installed_bubble::kBrowserAction) {
     if (extension_->browser_action_command() &&
         command_service->GetBrowserActionCommand(

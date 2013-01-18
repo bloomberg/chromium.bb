@@ -12,7 +12,6 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
-#include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
@@ -279,8 +278,7 @@ class InstalledBubbleContent : public views::View,
 
   bool GetKeybinding(extensions::Command* command) {
     extensions::CommandService* command_service =
-        extensions::CommandServiceFactory::GetForProfile(
-            browser_->profile());
+        extensions::CommandService::Get(browser_->profile());
     if (type_ == ExtensionInstalledBubble::BROWSER_ACTION) {
       return command_service->GetBrowserActionCommand(
           extension_id_,

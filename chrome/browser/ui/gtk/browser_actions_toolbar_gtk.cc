@@ -14,7 +14,6 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
-#include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -383,8 +382,7 @@ class BrowserActionButton : public content::NotificationObserver,
   // Connect the accelerator for the browser action popup.
   void ConnectBrowserActionPopupAccelerator() {
     extensions::CommandService* command_service =
-        extensions::CommandServiceFactory::GetForProfile(
-            toolbar_->browser()->profile());
+        extensions::CommandService::Get(toolbar_->browser()->profile());
     extensions::Command command;
     if (command_service->GetBrowserActionCommand(extension_->id(),
         extensions::CommandService::ACTIVE_ONLY,

@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/commands/commands.h"
 
 #include "chrome/browser/extensions/api/commands/command_service.h"
-#include "chrome/browser/extensions/api/commands/command_service_factory.h"
 
 namespace {
 
@@ -26,7 +25,7 @@ bool GetAllCommandsFunction::RunImpl() {
   ListValue* command_list = new ListValue();
 
   extensions::CommandService* command_service =
-      extensions::CommandServiceFactory::GetForProfile(profile_);
+      extensions::CommandService::Get(profile_);
 
   extensions::Command browser_action;
   bool active = false;

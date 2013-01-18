@@ -7,11 +7,11 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/file_path.h"
+#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/media_galleries_private/gallery_watch_manager.h"
-#include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api_factory.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_event_router.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_gallery_extension_notification_observer.h"
 #include "chrome/browser/extensions/event_names.h"
@@ -129,6 +129,21 @@ void MediaGalleriesPrivateAPI::Shutdown() {
       base::Bind(&HandleProfileShutdownOnFileThread, profile_));
 }
 
+static base::LazyInstance<ProfileKeyedAPIFactory<MediaGalleriesPrivateAPI> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<MediaGalleriesPrivateAPI>*
+    MediaGalleriesPrivateAPI::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
+// static
+MediaGalleriesPrivateAPI* MediaGalleriesPrivateAPI::Get(Profile* profile) {
+  return
+      ProfileKeyedAPIFactory<MediaGalleriesPrivateAPI>::GetForProfile(profile);
+}
+
 void MediaGalleriesPrivateAPI::OnListenerAdded(
     const EventListenerInfo& details) {
   // Try to initialize the event router for the listener. If
@@ -183,8 +198,7 @@ bool MediaGalleriesPrivateAddGalleryWatchFunction::RunImpl() {
 
 #if defined(OS_WIN)
   MediaGalleriesPrivateEventRouter* router =
-      MediaGalleriesPrivateAPIFactory::GetForProfile(
-          profile_)->GetEventRouter();
+      MediaGalleriesPrivateAPI::Get(profile_)->GetEventRouter();
   DCHECK(router);
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::FILE,

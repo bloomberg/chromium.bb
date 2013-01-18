@@ -16,19 +16,19 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/activity_log.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_factory.h"
-#include "chrome/browser/extensions/api/bookmarks/bookmark_api_factory.h"
-#include "chrome/browser/extensions/api/commands/command_service_factory.h"
+#include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api.h"
 #include "chrome/browser/extensions/api/dial/dial_api_factory.h"
 #include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
 #include "chrome/browser/extensions/api/extension_action/script_badge_api.h"
 #include "chrome/browser/extensions/api/file_handlers/file_handlers_api.h"
-#include "chrome/browser/extensions/api/font_settings/font_settings_api_factory.h"
-#include "chrome/browser/extensions/api/history/history_api_factory.h"
+#include "chrome/browser/extensions/api/font_settings/font_settings_api.h"
+#include "chrome/browser/extensions/api/history/history_api.h"
 #include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
 #include "chrome/browser/extensions/api/managed_mode/managed_mode_api.h"
 #include "chrome/browser/extensions/api/management/management_api.h"
-#include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api_factory.h"
+#include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/processes/processes_api.h"
@@ -254,15 +254,15 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #if defined(ENABLE_EXTENSIONS)
   extensions::ActivityLogFactory::GetInstance();
   extensions::AppRestoreServiceFactory::GetInstance();
-  extensions::BookmarkAPIFactory::GetInstance();
+  extensions::BookmarksAPI::GetFactoryInstance();
   extensions::BluetoothAPIFactory::GetInstance();
-  extensions::CommandServiceFactory::GetInstance();
+  extensions::CommandService::GetFactoryInstance();
   extensions::CookiesAPI::GetFactoryInstance();
   extensions::DialAPIFactory::GetInstance();
   extensions::ExtensionSystemFactory::GetInstance();
   extensions::FileHandlersAPI::GetFactoryInstance();
-  extensions::FontSettingsAPIFactory::GetInstance();
-  extensions::HistoryAPIFactory::GetInstance();
+  extensions::FontSettingsAPI::GetFactoryInstance();
+  extensions::HistoryAPI::GetFactoryInstance();
   extensions::IdleManagerFactory::GetInstance();
 #if defined(OS_CHROMEOS)
   extensions::InputImeAPI::GetFactoryInstance();
@@ -271,7 +271,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::ManagedModeAPI::GetFactoryInstance();
   extensions::ManagementAPI::GetFactoryInstance();
   extensions::ManifestURLParser::GetFactoryInstance();
-  extensions::MediaGalleriesPrivateAPIFactory::GetInstance();
+  extensions::MediaGalleriesPrivateAPI::GetFactoryInstance();
 #if defined(OS_CHROMEOS)
   extensions::MediaPlayerAPI::GetFactoryInstance();
 #endif

@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
@@ -210,6 +211,14 @@ HistoryAPI::~HistoryAPI() {
 
 void HistoryAPI::Shutdown() {
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+}
+
+static base::LazyInstance<ProfileKeyedAPIFactory<HistoryAPI> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<HistoryAPI>* HistoryAPI::GetFactoryInstance() {
+  return &g_factory.Get();
 }
 
 void HistoryAPI::OnListenerAdded(const EventListenerInfo& details) {

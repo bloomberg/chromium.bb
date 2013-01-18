@@ -25,7 +25,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
-#include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -2000,8 +1999,7 @@ void LocationBarViewGtk::PageActionViewGtk::ConnectPageActionAccelerator() {
   window_ = owner_->browser()->window()->GetNativeWindow();
 
   extensions::CommandService* command_service =
-      extensions::CommandServiceFactory::GetForProfile(
-          owner_->browser()->profile());
+      extensions::CommandService::Get(owner_->browser()->profile());
 
   extensions::Command command_page_action;
   if (command_service->GetPageActionCommand(

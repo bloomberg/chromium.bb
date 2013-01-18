@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
@@ -215,6 +216,14 @@ FontSettingsAPI::FontSettingsAPI(Profile* profile)
 }
 
 FontSettingsAPI::~FontSettingsAPI() {
+}
+
+static base::LazyInstance<ProfileKeyedAPIFactory<FontSettingsAPI> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<FontSettingsAPI>* FontSettingsAPI::GetFactoryInstance() {
+  return &g_factory.Get();
 }
 
 bool FontSettingsClearFontFunction::RunImpl() {

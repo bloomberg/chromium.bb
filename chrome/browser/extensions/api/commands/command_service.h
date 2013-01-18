@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_details.h"
@@ -32,7 +32,7 @@ namespace extensions {
 // This service keeps track of preferences related to extension commands
 // (assigning initial keybindings on install and removing them on deletion
 // and answers questions related to which commands are active.
-class CommandService : public ProfileKeyedService,
+class CommandService : public ProfileKeyedAPI,
                        public content::NotificationObserver {
  public:
   // An enum specifying whether to fetch all extension commands or only active
@@ -48,6 +48,12 @@ class CommandService : public ProfileKeyedService,
   // Constructs a CommandService object for the given profile.
   explicit CommandService(Profile* profile);
   virtual ~CommandService();
+
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<CommandService>* GetFactoryInstance();
+
+  // Convenience method to get the CommandService for a profile.
+  static CommandService* Get(Profile* profile);
 
   // Gets the command (if any) for the browser action of an extension given
   // its |extension_id|. The function consults the master list to see if
@@ -123,6 +129,14 @@ class CommandService : public ProfileKeyedService,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  friend class ProfileKeyedAPIFactory<CommandService>;
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() {
+    return "CommandService";
+  }
+  static const bool kServiceRedirectedInIncognito = true;
+
   // An enum specifying the types of icons that can have a command.
   enum ExtensionActionType {
     BROWSER_ACTION,

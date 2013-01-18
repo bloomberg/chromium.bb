@@ -9,6 +9,7 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/prefs/public/pref_service_base.h"
@@ -273,7 +274,7 @@ void BookmarkEventRouter::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
                 args.Pass());
 }
 
-BookmarkAPI::BookmarkAPI(Profile* profile) : profile_(profile) {
+BookmarksAPI::BookmarksAPI(Profile* profile) : profile_(profile) {
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
       this, keys::kOnBookmarkCreated);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
@@ -290,14 +291,22 @@ BookmarkAPI::BookmarkAPI(Profile* profile) : profile_(profile) {
       this, keys::kOnBookmarkImportEnded);
 }
 
-BookmarkAPI::~BookmarkAPI() {
+BookmarksAPI::~BookmarksAPI() {
 }
 
-void BookmarkAPI::Shutdown() {
+void BookmarksAPI::Shutdown() {
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
-void BookmarkAPI::OnListenerAdded(const EventListenerInfo& details) {
+static base::LazyInstance<ProfileKeyedAPIFactory<BookmarksAPI> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<BookmarksAPI>* BookmarksAPI::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
+void BookmarksAPI::OnListenerAdded(const EventListenerInfo& details) {
   bookmark_event_router_.reset(new BookmarkEventRouter(
       BookmarkModelFactory::GetForProfile(profile_)));
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
