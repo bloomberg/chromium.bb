@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/posix/unix_domain_socket.h"
+#include "base/posix/unix_domain_socket_linux.h"
 
 #include <errno.h>
-#include <unistd.h>
-#include <sys/uio.h>
 #include <sys/socket.h>
+#include <sys/uio.h>
+#include <unistd.h>
 
 #include "base/logging.h"
 #include "base/pickle.h"
@@ -21,9 +21,8 @@ bool UnixDomainSocket::SendMsg(int fd,
                                const void* buf,
                                size_t length,
                                const std::vector<int>& fds) {
-  struct msghdr msg;
-  memset(&msg, 0, sizeof(msg));
-  struct iovec iov = {const_cast<void*>(buf), length};
+  struct msghdr msg = {};
+  struct iovec iov = { const_cast<void*>(buf), length };
   msg.msg_iov = &iov;
   msg.msg_iovlen = 1;
 
@@ -32,7 +31,7 @@ bool UnixDomainSocket::SendMsg(int fd,
     const unsigned control_len = CMSG_SPACE(sizeof(int) * fds.size());
     control_buffer = new char[control_len];
 
-    struct cmsghdr *cmsg;
+    struct cmsghdr* cmsg;
     msg.msg_control = control_buffer;
     msg.msg_controllen = control_len;
     cmsg = CMSG_FIRSTHDR(&msg);
@@ -43,13 +42,11 @@ bool UnixDomainSocket::SendMsg(int fd,
     msg.msg_controllen = cmsg->cmsg_len;
   }
 
-  // When available, take advantage of MSG_NOSIGNAL to avoid
-  // a SIGPIPE if the other end breaks the connection.
-#if defined(MSG_NOSIGNAL)
+  // Avoid a SIGPIPE if the other end breaks the connection.
+  // Due to a bug in the Linux kernel (net/unix/af_unix.c) MSG_NOSIGNAL isn't
+  // regarded for SOCK_SEQPACKET in the AF_UNIX domain, but it is mandated by
+  // POSIX.
   const int flags = MSG_NOSIGNAL;
-#else
-  const int flags = 0;
-#endif
   const ssize_t r = HANDLE_EINTR(sendmsg(fd, &msg, flags));
   const bool ret = static_cast<ssize_t>(length) == r;
   delete[] control_buffer;
@@ -63,9 +60,8 @@ ssize_t UnixDomainSocket::RecvMsg(int fd,
                                   std::vector<int>* fds) {
   fds->clear();
 
-  struct msghdr msg;
-  memset(&msg, 0, sizeof(msg));
-  struct iovec iov = {buf, length};
+  struct msghdr msg = {};
+  struct iovec iov = { buf, length };
   msg.msg_iov = &iov;
   msg.msg_iovlen = 1;
 
@@ -117,7 +113,7 @@ ssize_t UnixDomainSocket::SendRecvMsg(int fd,
 
   // This socketpair is only used for the IPC and is cleaned up before
   // returning.
-  if (socketpair(AF_UNIX, SOCK_DGRAM, 0, fds) == -1)
+  if (socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds) == -1)
     return -1;
 
   std::vector<int> fd_vector;
@@ -130,6 +126,8 @@ ssize_t UnixDomainSocket::SendRecvMsg(int fd,
   close(fds[1]);
 
   fd_vector.clear();
+  // When porting to OSX keep in mind it doesn't support MSG_NOSIGNAL, so the
+  // sender might get a SIGPIPE.
   const ssize_t reply_len = RecvMsg(fds[0], reply, max_reply_len, &fd_vector);
   close(fds[0]);
   if (reply_len == -1)

@@ -153,7 +153,7 @@
               ],
               'sources': [
                 'nacl/nacl_helper_linux.cc',
-                '../base/posix/unix_domain_socket.cc',
+                '../base/posix/unix_domain_socket_linux.cc',
                 '../chrome/common/nacl_messages.cc',
                 '../chrome/common/nacl_types.cc',
                 '../content/common/child_process_sandbox_support_impl_shm_linux.cc',

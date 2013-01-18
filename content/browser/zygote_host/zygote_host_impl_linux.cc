@@ -20,7 +20,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/posix/unix_domain_socket.h"
+#include "base/posix/unix_domain_socket_linux.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"

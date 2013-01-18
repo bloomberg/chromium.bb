@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_POSIX_UNIX_DOMAIN_SOCKET_H_
-#define BASE_POSIX_UNIX_DOMAIN_SOCKET_H_
+#ifndef BASE_POSIX_UNIX_DOMAIN_SOCKET_LINUX_H_
+#define BASE_POSIX_UNIX_DOMAIN_SOCKET_LINUX_H_
 
 #include <stdint.h>
 #include <sys/types.h>
@@ -33,8 +33,10 @@ class BASE_EXPORT UnixDomainSocket {
                          std::vector<int>* fds);
 
   // Perform a sendmsg/recvmsg pair.
-  //   1. This process creates a UNIX DGRAM socketpair.
-  //   2. This proces writes a request to |fd| with an SCM_RIGHTS control
+  //   1. This process creates a UNIX SEQPACKET socketpair. Using
+  //      connection-oriented sockets (SEQPACKET or STREAM) is critical here,
+  //      because if one of the ends closes the other one must be notified.
+  //   2. This process writes a request to |fd| with an SCM_RIGHTS control
   //      message containing on end of the fresh socket pair.
   //   3. This process blocks reading from the other end of the fresh
   //      socketpair.
@@ -55,4 +57,4 @@ class BASE_EXPORT UnixDomainSocket {
                              const Pickle& request);
 };
 
-#endif  // BASE_POSIX_UNIX_DOMAIN_SOCKET_POSIX_H_
+#endif  // BASE_POSIX_UNIX_DOMAIN_SOCKET_LINUX_H_

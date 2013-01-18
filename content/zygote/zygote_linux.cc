@@ -11,11 +11,6 @@
 #include <sys/wait.h>
 
 #include "base/command_line.h"
-#include "ipc/ipc_switches.h"
-#include "content/public/common/sandbox_linux.h"
-#include "base/process_util.h"
-#include "content/public/common/result_codes.h"
-#include "ipc/ipc_channel.h"
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/linux_util.h"
@@ -23,16 +18,21 @@
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
-#include "base/posix/unix_domain_socket.h"
-#include "content/common/set_process_title.h"
+#include "base/posix/unix_domain_socket_linux.h"
+#include "base/process_util.h"
 #include "content/common/sandbox_linux.h"
+#include "content/common/set_process_title.h"
 #include "content/common/zygote_commands_linux.h"
 #include "content/public/common/content_descriptors.h"
+#include "content/public/common/result_codes.h"
+#include "content/public/common/sandbox_linux.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
+#include "ipc/ipc_channel.h"
+#include "ipc/ipc_switches.h"
 
 #if defined(CHROMIUM_SELINUX)
-#include <selinux/selinux.h>
 #include <selinux/context.h>
+#include <selinux/selinux.h>
 #endif
 
 // See http://code.google.com/p/chromium/wiki/LinuxZygote

@@ -5,7 +5,7 @@
 #include "content/common/child_process_sandbox_support_impl_linux.h"
 
 #include "base/pickle.h"
-#include "base/posix/unix_domain_socket.h"
+#include "base/posix/unix_domain_socket_linux.h"
 #include "content/common/sandbox_linux.h"
 
 namespace content {

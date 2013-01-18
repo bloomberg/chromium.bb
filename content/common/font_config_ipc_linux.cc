@@ -5,13 +5,13 @@
 #include "content/common/font_config_ipc_linux.h"
 
 #include <errno.h>
-#include <unistd.h>
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
+#include <unistd.h>
 
 #include "base/pickle.h"
-#include "base/posix/unix_domain_socket.h"
+#include "base/posix/unix_domain_socket_linux.h"
 
 namespace content {
 

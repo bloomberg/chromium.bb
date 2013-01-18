@@ -23,7 +23,7 @@
 #include "base/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
-#include "base/posix/unix_domain_socket.h"
+#include "base/posix/unix_domain_socket_linux.h"
 #include "base/rand_util.h"
 #include "chrome/nacl/nacl_listener.h"
 #include "crypto/nss_util.h"
