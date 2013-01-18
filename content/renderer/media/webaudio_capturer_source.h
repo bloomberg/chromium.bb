@@ -11,7 +11,7 @@
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_fifo.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAudioDestinationConsumer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 
 namespace content {
 
