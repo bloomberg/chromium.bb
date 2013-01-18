@@ -62,7 +62,7 @@ class StackFrameSymbolizer {
     ERROR,
     // This indicates error for which stack walk should be interrupted
     // and retried in future.
-    INTERRUPT,
+    INTERRUPT
   };
 
   StackFrameSymbolizer(SymbolSupplier* supplier,

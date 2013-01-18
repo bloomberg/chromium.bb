@@ -117,6 +117,7 @@ StackFrameSymbolizer::SymbolizerResult StackFrameSymbolizer::FillSourceLineInfo(
       BPLOG(ERROR) << "Unknown SymbolResult enum: " << symbol_result;
       return ERROR;
   }
+  return ERROR;
 }
 
 WindowsFrameInfo* StackFrameSymbolizer::FindWindowsFrameInfo(
