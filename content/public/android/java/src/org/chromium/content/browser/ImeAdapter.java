@@ -10,6 +10,7 @@ import android.os.ResultReceiver;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.Selection;
+import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
@@ -29,22 +30,13 @@ import org.chromium.base.JNINamespace;
  2. Native ImeAdapter notifies java side to clear composition text.
 
  The basic flow is:
- 1. Intercept dispatchKeyEventPreIme() to record the current key event, but do
-    nothing else.
- 2. When InputConnectionAdapter gets called with composition or result text:
-    a) If a key event has been recorded in dispatchKeyEventPreIme() and we
-       receive a result text with single character, then we probably need to
-       send the result text as a Char event rather than a ConfirmComposition
-       event. So we need to dispatch the recorded key event followed by a
-       synthetic Char event.
-    b) If we receive a composition text or a result text with more than one
-       characters, then no matter if we recorded a key event or not in
-       dispatchKeyEventPreIme(), we just need to dispatch a synthetic key
-       event with special keycode 229, and then dispatch the composition or
-       result text.
- 3. Intercept dispatchKeyEvent() method for key events not handled by IME, we
-    need to dispatch them to WebKit and check webkit's reply. Then inject a
-    new key event for further processing if WebKit didn't handle it.
+ 1. When InputConnectionAdapter gets called with composition or result text:
+    If we receive a composition text or a result text, then we just need to
+    dispatch a synthetic key event with special keycode 229, and then dispatch
+    the composition or result text.
+ 2. Intercept dispatchKeyEvent() method for key events not handled by IME, we
+    need to dispatch them to webkit and check webkit's reply. Then inject a
+    new key event for further processing if webkit didn't handle it.
 */
 @JNINamespace("content")
 class ImeAdapter {
@@ -117,7 +109,6 @@ class ImeAdapter {
 
     private int mNativeImeAdapterAndroid;
     private int mTextInputType;
-    private int mPreImeEventCount;
 
     private Context mContext;
     private SelectionHandleController mSelectionHandleController;
@@ -151,7 +142,6 @@ class ImeAdapter {
 
     ImeAdapter(Context context, SelectionHandleController selectionHandleController,
             InsertionHandleController insertionHandleController, ViewEmbedder embedder) {
-        mPreImeEventCount = 0;
         mContext = context;
         mSelectionHandleController = selectionHandleController;
         mInsertionHandleController = insertionHandleController;
@@ -264,14 +254,7 @@ class ImeAdapter {
         return isTextInputType(mTextInputType);
     }
 
-    void dispatchKeyEventPreIme(KeyEvent event) {
-        // We only register that a key was pressed, but we don't actually intercept
-        // it.
-        ++mPreImeEventCount;
-    }
-
     boolean dispatchKeyEvent(KeyEvent event) {
-        mPreImeEventCount = 0;
         return translateAndSendNativeEvents(event);
     }
 
@@ -303,26 +286,45 @@ class ImeAdapter {
             mInsertionHandleController.hideAndDisallowAutomaticShowing();
         }
         mViewEmbedder.onImeEvent(isFinish);
-        boolean hasSingleChar = mPreImeEventCount == 1 && text.length() == 1;
-        int keyCode = hasSingleChar ? text.codePointAt(0) : COMPOSITION_KEY_CODE;
-        int keyChar = hasSingleChar ? text.codePointAt(0) : 0;
+        int keyCode = shouldSendKeyEventWithKeyCode(text);
         long timeStampMs = System.currentTimeMillis();
-        nativeSendSyntheticKeyEvent(mNativeImeAdapterAndroid, sEventTypeRawKeyDown,
-                timeStampMs, keyCode,  keyChar);
-        if (hasSingleChar) {
-            nativeSendSyntheticKeyEvent(mNativeImeAdapterAndroid, sEventTypeChar,
-                    timeStampMs, text.codePointAt(0), text.codePointAt(0));
+
+        if (keyCode != COMPOSITION_KEY_CODE) {
+            sendKeyEventWithKeyCode(keyCode,
+                    KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE);
         } else {
+            nativeSendSyntheticKeyEvent(mNativeImeAdapterAndroid, sEventTypeRawKeyDown,
+                    timeStampMs, keyCode, 0);
             if (isCommit) {
                 nativeCommitText(mNativeImeAdapterAndroid, text);
             } else {
                 nativeSetComposingText(mNativeImeAdapterAndroid, text, newCursorPosition);
             }
+            nativeSendSyntheticKeyEvent(mNativeImeAdapterAndroid, sEventTypeKeyUp,
+                    timeStampMs, keyCode, 0);
         }
-        nativeSendSyntheticKeyEvent(mNativeImeAdapterAndroid, sEventTypeKeyUp,
-                timeStampMs, keyCode, keyChar);
-        mPreImeEventCount = 0;
+
         return true;
+    }
+
+    private int shouldSendKeyEventWithKeyCode(String text) {
+        if (text.length() != 1) return COMPOSITION_KEY_CODE;
+
+        if (text.equals("\n")) return KeyEvent.KEYCODE_ENTER;
+        else if (text.equals("\t")) return KeyEvent.KEYCODE_TAB;
+        else return COMPOSITION_KEY_CODE;
+    }
+
+    private void sendKeyEventWithKeyCode(int keyCode, int flags) {
+        long eventTime = System.currentTimeMillis();
+        translateAndSendNativeEvents(new KeyEvent(eventTime, eventTime,
+                KeyEvent.ACTION_DOWN, keyCode, 0, 0,
+                KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
+                flags));
+        translateAndSendNativeEvents(new KeyEvent(System.currentTimeMillis(), eventTime,
+                KeyEvent.ACTION_UP, keyCode, 0, 0,
+                KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
+                flags));
     }
 
     private boolean translateAndSendNativeEvents(KeyEvent event) {
@@ -559,8 +561,10 @@ class ImeAdapter {
                     mImeAdapter.dismissInput(true);
                     break;
             }
-
-            return super.performEditorAction(actionCode);
+            mImeAdapter.sendKeyEventWithKeyCode(KeyEvent.KEYCODE_ENTER,
+                    KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE
+                    | KeyEvent.FLAG_EDITOR_ACTION);
+            return true;
         }
 
         @Override
@@ -628,7 +632,8 @@ class ImeAdapter {
                     }
                 }
             }
-            return super.sendKeyEvent(event);
+            mImeAdapter.translateAndSendNativeEvents(event);
+            return true;
         }
 
         @Override
