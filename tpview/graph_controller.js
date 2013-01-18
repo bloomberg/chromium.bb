@@ -99,19 +99,19 @@ GraphController.prototype = {
     this.yMax = this.animYMax * (1 - easedX) + this.defaultYMax * easedX;
     this.draw();
     var self = this;
-    window.webkitRequestAnimationFrame(function(timestamp) {
+    window.requestAnimationFrame(function(timestamp) {
       self.stepAnimResetZoom(timestamp);
     })
   },
   animResetZoom: function() {
-    this.animStart = (new Date()).getTime();
+    this.animStart = window.performance.now ? performance.now() : Date.now();
     this.animStop = this.animStart + 200;
     this.animXMin = this.xMin;
     this.animXMax = this.xMax;
     this.animYMin = this.yMin;
     this.animYMax = this.yMax;
     var self = this;
-    window.webkitRequestAnimationFrame(function(timestamp) {
+    window.requestAnimationFrame(function(timestamp) {
       self.stepAnimResetZoom(timestamp);
     })
   },
