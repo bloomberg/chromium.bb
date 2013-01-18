@@ -56,6 +56,12 @@ def _GetPythonPath(paths):
     # Allow platform projects to be imported by name (e.g. crostestutils).
     os.path.join(constants.SOURCE_ROOT, 'src', 'platform'),
 
+    # Ideally we'd modify meta_path in pylint to handle our virtual chromite
+    # module, but that's not possible currently.  We'll have to deal with
+    # that at some point if we want `cros lint` to work when the dir is not
+    # named 'chromite'.
+    constants.SOURCE_ROOT,
+
     # Also allow scripts to import from their current directory.
   ] + list(set(os.path.dirname(x) for x in paths))
 
