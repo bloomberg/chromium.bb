@@ -7569,6 +7569,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OMNIBOX_KEYWORD_TEXT" desc="Text shown in the search button at the front of the omnibox when the user has selected a keyword">
         Search <ph name="SITE_NAME">$1<ex>google.com</ex></ph>:
       </message>
+      <message name="IDS_OMNIBOX_SEARCH_TOKEN_TEXT" desc="Text shown on the right of the omnibox when the omnibox has its URL replaced by query terms">
+        <ph name="SEARCH_PROVIDER_NAME">$1<ex>Google</ex></ph> Search
+      </message>
       <if expr="pp_ifdef('ios')">
         <message name="IDS_OMNIBOX_EMPTY_HINT" desc="The text displayed in the omnibox when it is empty.">
           Search or type URL

@@ -55,6 +55,11 @@ class LocationBarLayout {
   // Add a non-resizable decoration with standard padding.
   void AddDecoration(int height, int builtin_padding, views::View* view);
 
+  void AddSeparator(int y,
+                    int height,
+                    int padding_from_previous_item,
+                    views::View* separator);
+
   // First pass of decoration layout process. Pass the full width of the
   // location bar in |entry_width|. This pass will adjust it to account for
   // non-collapsible and non-resizable decorations.
@@ -73,7 +78,19 @@ class LocationBarLayout {
   // bar towards the middle.
   void LayoutPass3(gfx::Rect* bounds, int* available_width);
 
+  // Sets the padding between edit and the decoration beside it.
+  // This value must not be modified after LayoutPass1 has been called.
+  void set_item_edit_padding(int item_edit_padding) {
+    item_edit_padding_ = item_edit_padding;
+  }
+
  private:
+  typedef ScopedVector<LocationBarDecoration> Decorations;
+
+  void SetVisibilityForDecorations(int* available_width);
+  void HideUnneededSeparators(int* available_width);
+  void SetBoundsForDecorations(gfx::Rect* bounds);
+
   // LEFT_EDGE means decorations are added from left to right and stacked on
   // the left of the omnibox, RIGHT_EDGE means the opposite.
   Position position_;
@@ -85,7 +102,7 @@ class LocationBarLayout {
   int edge_edit_padding_;
 
   // The list of decorations to layout.
-  ScopedVector<LocationBarDecoration> decorations_;
+  Decorations decorations_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarLayout);
 };

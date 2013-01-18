@@ -1607,6 +1607,8 @@
         'browser/ui/views/location_bar/location_bar_decoration_view.h',
         'browser/ui/views/location_bar/location_bar_layout.cc',
         'browser/ui/views/location_bar/location_bar_layout.h',
+        'browser/ui/views/location_bar/location_bar_separator_view.cc',
+        'browser/ui/views/location_bar/location_bar_separator_view.h',
         'browser/ui/views/location_bar/location_bar_view.cc',
         'browser/ui/views/location_bar/location_bar_view.h',
         'browser/ui/views/location_bar/location_icon_view.cc',

@@ -38,6 +38,7 @@ class ExtensionAction;
 class GURL;
 class InstantController;
 class KeywordHintView;
+class LocationBarSeparatorView;
 class LocationIconView;
 class OpenPDFInReaderView;
 class PageActionWithBadgeView;
@@ -454,6 +455,12 @@ class LocationBarView : public LocationBar,
 
   // Shown if the selected url has a corresponding keyword.
   KeywordHintView* keyword_hint_view_;
+
+  // View responsible for showing text "<Search provider> Search", which appears
+  // when omnibox replaces the URL with its query terms and there's enough space
+  // in omnibox.
+  views::Label* search_token_view_;
+  LocationBarSeparatorView* search_token_separator_view_;
 
   // The content setting views.
   ContentSettingViews content_setting_views_;
