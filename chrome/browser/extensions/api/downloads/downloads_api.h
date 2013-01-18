@@ -147,6 +147,7 @@ class DownloadsAcceptDangerFunction : public AsyncExtensionFunction {
 
  protected:
   virtual ~DownloadsAcceptDangerFunction();
+  void DangerPromptCallback(bool accept, int download_id);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsAcceptDangerFunction);

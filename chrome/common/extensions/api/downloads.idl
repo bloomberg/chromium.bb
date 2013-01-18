@@ -396,10 +396,15 @@ namespace downloads {
     // TODO(benjhayden) Comment.
     [nodoc] static void setDestination(long downloadId, DOMString relativePath);
 
-    // Prompt the user to either accept or cancel a dangerous download.
-    // <code>acceptDanger()</code> does not automatically accept dangerous
-    // downloads.
-    [nodoc] static void acceptDanger(long downloadId);
+    // Prompt the user to accept a dangerous download. Does not automatically
+    // accept dangerous downloads. If the download is accepted, then an
+    // $ref:onChanged event will fire, otherwise nothing will happen.  When all
+    // the data is fetched into a temporary file and either the download is not
+    // dangerous or the danger has been accepted, then the temporary file is
+    // renamed to the target filename, the |state| changes to 'complete', and
+    // $ref:onChanged fires.
+    // |downloadId|: The identifier for the $ref.DownloadItem.
+    static void acceptDanger(long downloadId);
 
     // Initiate dragging the downloaded file to another application.
     static void drag(long downloadId);

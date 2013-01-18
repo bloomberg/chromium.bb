@@ -471,6 +471,7 @@ void DownloadsDOMHandler::ShowDangerPrompt(
   DownloadDangerPrompt* danger_prompt = DownloadDangerPrompt::Create(
       dangerous_item,
       GetWebUIWebContents(),
+      false,
       base::Bind(&DownloadsDOMHandler::DangerPromptAccepted,
                  weak_ptr_factory_.GetWeakPtr(), dangerous_item->GetId()),
       base::Closure());

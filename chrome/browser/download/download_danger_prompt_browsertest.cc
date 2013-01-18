@@ -85,6 +85,7 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
     prompt_ = DownloadDangerPrompt::Create(
         &download_,
         browser()->tab_strip_model()->GetActiveWebContents(),
+        false,
         base::Bind(&DownloadDangerPromptTest::PromptCallback, this,
                    DownloadDangerPrompt::ACCEPT),
         base::Bind(&DownloadDangerPromptTest::PromptCallback, this,

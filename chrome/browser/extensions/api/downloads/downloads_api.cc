@@ -25,6 +25,7 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/download/download_file_icon_extractor.h"
 #include "chrome/browser/download/download_query.h"
 #include "chrome/browser/download/download_service.h"
@@ -878,10 +879,40 @@ bool DownloadsAcceptDangerFunction::RunImpl() {
   scoped_ptr<extensions::api::downloads::AcceptDanger::Params> params(
       extensions::api::downloads::AcceptDanger::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  error_ = download_extension_errors::kNotImplementedError;
-  if (error_.empty())
-    RecordApiFunctions(DOWNLOADS_FUNCTION_ACCEPT_DANGER);
-  return error_.empty();
+  DownloadItem* download_item = GetDownloadIfInProgress(
+      profile(), include_incognito(), params->download_id);
+  content::WebContents* web_contents =
+      dispatcher()->delegate()->GetAssociatedWebContents();
+  if (!download_item ||
+      !download_item->IsDangerous() ||
+      !web_contents) {
+    error_ = download_extension_errors::kInvalidOperationError;
+    return false;
+  }
+  RecordApiFunctions(DOWNLOADS_FUNCTION_ACCEPT_DANGER);
+  // DownloadDangerPrompt displays a modal dialog using native widgets that the
+  // user must either accept or cancel. It cannot be scripted.
+  DownloadDangerPrompt::Create(
+      download_item,
+      web_contents,
+      true,
+      base::Bind(&DownloadsAcceptDangerFunction::DangerPromptCallback,
+                 this, true, params->download_id),
+      base::Bind(&DownloadsAcceptDangerFunction::DangerPromptCallback,
+                 this, false, params->download_id));
+  // DownloadDangerPrompt deletes itself
+  return true;
+}
+
+void DownloadsAcceptDangerFunction::DangerPromptCallback(
+    bool accept, int download_id) {
+  if (accept) {
+    DownloadItem* download_item = GetDownloadIfInProgress(
+        profile(), include_incognito(), download_id);
+    if (download_item)
+      download_item->DangerousDownloadValidated();
+  }
+  SendResponse(error_.empty());
 }
 
 DownloadsShowFunction::DownloadsShowFunction() {}

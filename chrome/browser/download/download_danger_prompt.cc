@@ -23,6 +23,7 @@ class DownloadDangerPromptImpl
  public:
   DownloadDangerPromptImpl(content::DownloadItem* item,
                            content::WebContents* web_contents,
+                           bool show_context,
                            const base::Closure& accepted,
                            const base::Closure& canceled);
   virtual ~DownloadDangerPromptImpl();
@@ -53,6 +54,7 @@ class DownloadDangerPromptImpl
   void PrepareToClose();
 
   content::DownloadItem* download_;
+  bool show_context_;
   base::Closure accepted_;
   base::Closure canceled_;
 
@@ -62,10 +64,12 @@ class DownloadDangerPromptImpl
 DownloadDangerPromptImpl::DownloadDangerPromptImpl(
     content::DownloadItem* download,
     content::WebContents* web_contents,
+    bool show_context,
     const base::Closure& accepted,
     const base::Closure& canceled)
     : TabModalConfirmDialogDelegate(web_contents),
       download_(download),
+      show_context_(show_context),
       accepted_(accepted),
       canceled_(canceled) {
   DCHECK(!accepted_.is_null());
@@ -104,11 +108,32 @@ string16 DownloadDangerPromptImpl::GetTitle() {
 }
 
 string16 DownloadDangerPromptImpl::GetMessage() {
-  return l10n_util::GetStringUTF16(IDS_PROMPT_CONFIRM_KEEP_DANGEROUS_DOWNLOAD);
+  if (!show_context_)
+    return l10n_util::GetStringUTF16(
+        IDS_PROMPT_CONFIRM_KEEP_DANGEROUS_DOWNLOAD);
+  switch (download_->GetDangerType()) {
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
+      return l10n_util::GetStringFUTF16(
+          IDS_PROMPT_DANGEROUS_DOWNLOAD,
+          download_->GetFileNameToReportUser().LossyDisplayName());
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL: // Fall through
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+      return l10n_util::GetStringFUTF16(
+          IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
+          download_->GetFileNameToReportUser().LossyDisplayName());
+    case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+      return l10n_util::GetStringFUTF16(
+          IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT,
+          download_->GetFileNameToReportUser().LossyDisplayName());
+    default:
+      NOTREACHED();
+      return string16();
+  }
 }
 
 string16 DownloadDangerPromptImpl::GetAcceptButtonTitle() {
-  return l10n_util::GetStringUTF16(IDS_CONFIRM_DOWNLOAD_AGAIN);
+  return l10n_util::GetStringUTF16(
+      show_context_ ? IDS_CONFIRM_DOWNLOAD : IDS_CONFIRM_DOWNLOAD_AGAIN);
 }
 
 void DownloadDangerPromptImpl::OnAccepted() {
@@ -144,10 +169,11 @@ void DownloadDangerPromptImpl::PrepareToClose() {
 DownloadDangerPrompt* DownloadDangerPrompt::Create(
     content::DownloadItem* item,
     content::WebContents* web_contents,
+    bool show_context,
     const base::Closure& accepted,
     const base::Closure& canceled) {
-  DownloadDangerPromptImpl* prompt =
-      new DownloadDangerPromptImpl(item, web_contents, accepted, canceled);
+  DownloadDangerPromptImpl* prompt = new DownloadDangerPromptImpl(
+      item, web_contents, show_context, accepted, canceled);
   // |prompt| will be deleted when the dialog is done.
   TabModalConfirmDialog::Create(prompt, web_contents);
   return prompt;
