@@ -71,7 +71,7 @@ define LIB_RULE
 all:$(NACL_SDK_ROOT)/lib/$(OSNAME)_host/$(CONFIG)/$(1).lib
 $(NACL_SDK_ROOT)/lib/$(OSNAME)_host/$(CONFIG)/$(1).lib : $(foreach src,$(2),$(OUTDIR)/$(basename $(src)).o)
 	$(MKDIR) -p $$(dir $$@)
-	$(HOST_LIB) $$@ $$^ $(WIN_LDFLAGS)
+	$(HOST_LIB) /OUT:$$@ $$^ $(WIN_LDFLAGS)
 endef
 
 
@@ -88,7 +88,7 @@ endef
 define LINKER_RULE
 all: $(1)
 $(1) : $(2) $(4)
-	$(HOST_LINK) /DLL /OUT:$(1) /PDB:$(1).pdb $(2) /DEBUG $(foreach path,$(5),/LIBPATH:$(path)) $(foreach lib,$(3),$(lib.lib)) $(6)
+	$(HOST_LINK) /DLL /OUT:$(1) /PDB:$(1).pdb $(2) /DEBUG $(foreach path,$(5),/LIBPATH:$(path)/$(OSNAME)_host/$(CONFIG)) $(foreach lib,$(3),$(lib).lib) $(6)
 endef
 
 

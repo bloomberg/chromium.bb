@@ -118,8 +118,8 @@ PEXE_LINK_RULES = {
 }
 
 WIN_LINK_RULES = {
-  'Debug': '<TAB>$(<LINK>) /DLL /OUT:$@ /PDB:$@.pdb $(<PROJ>_LDFLAGS) /DEBUG /LIBPATH:$(NACL_SDK_ROOT)/lib/win_x86_32_host/Debug $^ <LIBLIST> $(WIN_LDFLAGS)',
-  'Release': '<TAB>$(<LINK>) /DLL /OUT:$@ $(<PROJ>_LDFLAGS) /LIBPATH:$(NACL_SDK_ROOT)/lib/win_x86_32_host/Release $^ <LIBLIST> $(WIN_LDFLAGS)'
+  'Debug': '<TAB>$(<LINK>) /DLL /OUT:$@ /PDB:$@.pdb $(<PROJ>_LDFLAGS) /DEBUG /LIBPATH:$(NACL_SDK_ROOT)/lib/win_host/Debug $^ <LIBLIST> $(WIN_LDFLAGS)',
+  'Release': '<TAB>$(<LINK>) /DLL /OUT:$@ $(<PROJ>_LDFLAGS) /LIBPATH:$(NACL_SDK_ROOT)/lib/win_host/Release $^ <LIBLIST> $(WIN_LDFLAGS)'
 }
 
 
@@ -136,8 +136,12 @@ POSIX_LIB_RULES = {
 }
 
 WIN_LIB_RULES = {
-  'Debug': '<TAB>$(<LIB>) /OUT:$@ $^ $(WIN_LDFLAGS) <LIBLIST>',
-  'Release': '<TAB>$(<LIB>) /OUT:$@ $^ $(WIN_LDFLAGS) <LIBLIST>'
+  'Debug':
+      '<TAB>$(MKDIR) -p $(dir $@)\n'
+      '<TAB>$(<LIB>) /OUT:$@ $^ $(WIN_LDFLAGS) <LIBLIST>',
+  'Release':
+      '<TAB>$(MKDIR) -p $(dir $@)\n'
+	  '<TAB>$(<LIB>) /OUT:$@ $^ $(WIN_LDFLAGS) <LIBLIST>'
 }
 
 
@@ -171,7 +175,7 @@ WIN_TOOL = {
   'MAIN': '<tc>/<config>/<proj>.dll',
   'NMFMAIN': '<tc>/<config>/<proj>.dll',
   'SO': None,
-  'LIB': '$(NACL_SDK_ROOT)/lib/win_<ARCH>_host/<config>/<proj>.lib',
+  'LIB': '$(NACL_SDK_ROOT)/lib/win_host/<config>/<proj>.lib',
 }
 
 LINUX_TOOL = {

@@ -751,7 +751,7 @@ def BuildStepMakeAll(pepperdir, platform, directory, step_name,
 
     extra_args = []
     if not deps:
-      extra_args += 'IGNORE_DEPS=1'
+      extra_args += ['IGNORE_DEPS=1']
 
     buildbot_common.Run([make, '-j8', 'all_versions'] + extra_args,
                         cwd=os.path.abspath(make_dir), env=env)

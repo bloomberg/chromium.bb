@@ -37,7 +37,8 @@ TEST_LIBRARY_LIST = [
 
 
 def BuildStepBuildExamples(pepperdir, platform):
-  build_sdk.BuildStepMakeAll(pepperdir, platform, 'examples', 'Build Examples')
+  build_sdk.BuildStepMakeAll(pepperdir, platform, 'examples', 'Build Examples',
+                             deps=False)
 
 
 def BuildStepCopyTests(pepperdir, toolchains, build_experimental, clobber):
@@ -68,7 +69,8 @@ def BuildStepCopyTests(pepperdir, toolchains, build_experimental, clobber):
 def BuildStepBuildTests(pepperdir, platform):
   build_sdk.BuildStepMakeAll(pepperdir, platform, 'testlibs',
                              'Build Test Libraries')
-  build_sdk.BuildStepMakeAll(pepperdir, platform, 'tests', 'Build Tests')
+  build_sdk.BuildStepMakeAll(pepperdir, platform, 'tests', 'Build Tests',
+                             deps=False)
 
 
 def BuildStepRunPyautoTests(pepperdir, platform, pepper_ver):
