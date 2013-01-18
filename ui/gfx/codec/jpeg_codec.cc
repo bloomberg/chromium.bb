@@ -208,12 +208,16 @@ bool JPEGCodec::Encode(const unsigned char* input, ColorFormat format,
   CompressDestroyer destroyer;
   destroyer.SetManagedObject(&cinfo);
   output->clear();
+#if !defined(JCS_EXTENSIONS)
+  unsigned char* row_buffer = NULL;
+#endif
 
   // We set up the normal JPEG error routines, then override error_exit.
   // This must be done before the call to create_compress.
   CoderErrorMgr errmgr;
   cinfo.err = jpeg_std_error(&errmgr.pub);
   errmgr.pub.error_exit = ErrorExit;
+
   // Establish the setjmp return context for ErrorExit to use.
   if (setjmp(errmgr.setjmp_buffer)) {
     // If we get here, the JPEG code has signaled an error.
@@ -222,6 +226,9 @@ bool JPEGCodec::Encode(const unsigned char* input, ColorFormat format,
     // goto using a call to longjmp."  So we delete the CompressDestroyer's
     // object manually instead.
     destroyer.DestroyManagedObject();
+#if !defined(JCS_EXTENSIONS)
+    delete[] row_buffer;
+#endif
     return false;
   }
 
@@ -304,13 +311,13 @@ bool JPEGCodec::Encode(const unsigned char* input, ColorFormat format,
     }
 
     // output row after converting
-    unsigned char* row = new unsigned char[w * 3];
+    row_buffer = new unsigned char[w * 3];
 
     while (cinfo.next_scanline < cinfo.image_height) {
-      converter(&input[cinfo.next_scanline * row_byte_width], w, row);
-      jpeg_write_scanlines(&cinfo, &row, 1);
+      converter(&input[cinfo.next_scanline * row_byte_width], w, row_buffer);
+      jpeg_write_scanlines(&cinfo, &row_buffer, 1);
     }
-    delete[] row;
+    delete[] row_buffer;
   }
 #endif
 
