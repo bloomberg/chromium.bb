@@ -173,6 +173,18 @@ class SmoothnessBenchmark(multi_page_benchmark.MultiPageBenchmark):
     if not (rendering_stats_deltas['numFramesSentToScreen'] > 0):
       raise DidNotScrollException()
 
+    load_timings = tab.EvaluateJavaScript("window.performance.timing")
+    load_time_seconds = (
+      load_timings['loadEventStart'] -
+      load_timings['navigationStart']) / 1000
+    dom_content_loaded_time_seconds = (
+      load_timings['domContentLoadedEventStart'] -
+      load_timings['navigationStart']) / 1000
+    results.Add('load_time', 'seconds', load_time_seconds)
+    results.Add('dom_content_loaded_time', 'seconds',
+                dom_content_loaded_time_seconds)
+
+
     CalcFirstPaintTimeResults(results, tab)
     CalcScrollResults(rendering_stats_deltas, results)
     CalcPaintingResults(rendering_stats_deltas, results)
