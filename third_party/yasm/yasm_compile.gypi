@@ -68,6 +68,13 @@
           '-m', 'x86',
         ],
       }],
+      [ 'OS=="win" and target_arch=="x64"', {
+        'yasm_flags': [
+          '-DPREFIX',
+          '-fx64',
+          '-m', 'amd64',
+        ],
+      }],
 
       # Define output extension.
       ['OS=="win"', {
