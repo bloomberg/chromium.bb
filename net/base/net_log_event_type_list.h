@@ -1574,6 +1574,8 @@ EVENT_TYPE(DOWNLOAD_URL_REQUEST)
 //                     the filename specified in the final URL>,
 //     "danger_type": <NOT,FILE,URL,CONTENT,MAYBE_CONTENT>,
 //     "start_offset": <Where to start writing (defaults to 0)>,
+//     "has_user_gesture": <Whether or not we think the user initiated
+//                          the download>
 //   }
 // The END event will occur when the download is interrupted, canceled or
 // completed.

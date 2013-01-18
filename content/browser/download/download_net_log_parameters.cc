@@ -56,6 +56,7 @@ base::Value* ItemActivatedNetLogCallback(
                   download_danger_names[download_item->GetDangerType()]);
   dict->SetString("start_offset",
                   base::Int64ToString(download_item->GetReceivedBytes()));
+  dict->SetBoolean("has_user_gesture", download_item->HasUserGesture());
 
   return dict;
 }
