@@ -1829,7 +1829,7 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
       data_path.AppendASCII("chrome_100_percent.pak");
   f = base::CreatePlatformFile(chrome_resources_pak, flags, NULL, NULL);
   DCHECK(f != base::kInvalidPlatformFileValue);
-  mappings->push_back(FileDescriptorInfo(kAndroidUIResourcesPakDescriptor,
+  mappings->push_back(FileDescriptorInfo(kAndroidChrome100PercentPakDescriptor,
                                          FileDescriptor(f, true)));
 
   const std::string locale = GetApplicationLocale();
@@ -1838,6 +1838,13 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   f = base::CreatePlatformFile(locale_pak, flags, NULL, NULL);
   DCHECK(f != base::kInvalidPlatformFileValue);
   mappings->push_back(FileDescriptorInfo(kAndroidLocalePakDescriptor,
+                                         FileDescriptor(f, true)));
+
+  FilePath resources_pack_path;
+  PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
+  f = base::CreatePlatformFile(resources_pack_path, flags, NULL, NULL);
+  DCHECK(f != base::kInvalidPlatformFileValue);
+  mappings->push_back(FileDescriptorInfo(kAndroidUIResourcesPakDescriptor,
                                          FileDescriptor(f, true)));
 
 #if defined(USE_LINUX_BREAKPAD)

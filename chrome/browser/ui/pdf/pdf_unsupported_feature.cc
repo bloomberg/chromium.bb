@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/pdf/open_pdf_in_reader_prompt_delegate.h"
 #include "chrome/browser/ui/pdf/pdf_tab_helper.h"
 #include "chrome/common/chrome_content_client.h"
-#include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
@@ -39,6 +38,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/webui/jstemplate_builder.h"
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"

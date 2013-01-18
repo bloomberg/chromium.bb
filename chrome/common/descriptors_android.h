@@ -11,6 +11,7 @@ enum {
 #if defined(OS_ANDROID)
   kAndroidChromePakDescriptor = kContentIPCDescriptorMax + 1,
   kAndroidLocalePakDescriptor,
+  kAndroidChrome100PercentPakDescriptor,
   kAndroidUIResourcesPakDescriptor,
   kAndroidMinidumpDescriptor,
 #endif

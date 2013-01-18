@@ -608,6 +608,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
 
     int extra_pak_keys[] = {
       kAndroidChromePakDescriptor,
+      kAndroidChrome100PercentPakDescriptor,
       kAndroidUIResourcesPakDescriptor,
     };
     for (size_t i = 0; i < arraysize(extra_pak_keys); ++i) {
@@ -622,6 +623,11 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #else
     const std::string loaded_locale =
         ResourceBundle::InitSharedInstanceWithLocale(locale, NULL);
+
+    FilePath resources_pack_path;
+    PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
+    ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+        resources_pack_path, ui::SCALE_FACTOR_NONE);
 #endif
     CHECK(!loaded_locale.empty()) << "Locale could not be found for " <<
         locale;

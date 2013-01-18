@@ -6,8 +6,8 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
-#include "grit/common_resources.h"
 #include "grit/generated_resources.h"
+#include "grit/webui_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class MockChromeWebUIDataSource : public ChromeWebUIDataSource {
@@ -77,7 +77,7 @@ TEST_F(ChromeWebUIDataSourceTest, SomeStrings) {
 }
 
 TEST_F(ChromeWebUIDataSourceTest, DefaultResource) {
-  source()->set_default_resource(IDR_I18N_PROCESS_JS);
+  source()->set_default_resource(IDR_WEBUI_I18N_PROCESS_JS);
   source()->StartDataRequest("foobar" );
   std::string result(
       reinterpret_cast<const char*>(source()->result_data_->front()),
@@ -91,8 +91,8 @@ TEST_F(ChromeWebUIDataSourceTest, DefaultResource) {
 }
 
 TEST_F(ChromeWebUIDataSourceTest, NamedResource) {
-  source()->set_default_resource(IDR_I18N_PROCESS_JS);
-  source()->add_resource_path("foobar", IDR_I18N_TEMPLATE_JS);
+  source()->set_default_resource(IDR_WEBUI_I18N_PROCESS_JS);
+  source()->add_resource_path("foobar", IDR_WEBUI_I18N_TEMPLATE_JS);
   source()->StartDataRequest("foobar");
   std::string result(
       reinterpret_cast<const char*>(source()->result_data_->front()),

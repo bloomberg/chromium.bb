@@ -10,7 +10,6 @@
 #include "base/values.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
-#include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
@@ -20,6 +19,7 @@
 #include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/webui/jstemplate_builder.h"
 
 // Define the values of standard URLs.
 const char CloudPrintSetupSource::kInvalidPasswordHelpUrl[] =

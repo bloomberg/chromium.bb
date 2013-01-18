@@ -10,9 +10,9 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/string_util.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
-#include "chrome/common/jstemplate_builder.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/webui/jstemplate_builder.h"
 
 // Internal class to hide the fact that ChromeWebUIDataSource implements
 // content::URLDataSource.
