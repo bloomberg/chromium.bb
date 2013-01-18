@@ -1315,6 +1315,7 @@
         'test/base/empty_browser_test.cc',
         'test/base/in_process_browser_test_browsertest.cc',
         'test/base/tracing_browsertest.cc',
+        'test/data/chromeos/oobe_webui_browsertest.js',
         'test/data/webui/accessibility_audit_browsertest.js',
         'test/data/webui/assertions.js',
         'test/data/webui/async_gen.cc',
@@ -1424,6 +1425,11 @@
               ],
               'dependencies': [
                 'chrome.gyp:chrome_nacl_win64',
+              ],
+            }],
+            ['chromeos==0', {
+              'sources!': [
+                'test/data/chromeos/oobe_webui_browsertest.js',
               ],
             }],
           ],
