@@ -37,7 +37,6 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
-#include "chrome/browser/sync/sync_ui_util_mac.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -755,7 +754,9 @@ void RecordLastRunAppBundlePath() {
           }
           enable = lastProfile->IsSyncAccessible() &&
               [self keyWindowIsNotModal];
-          sync_ui_util::UpdateSyncItem(item, enable, lastProfile);
+          [BrowserWindowController updateSigninItem:item
+                                         shouldShow:enable
+                                     currentProfile:lastProfile];
           break;
         }
         case IDC_FEEDBACK:

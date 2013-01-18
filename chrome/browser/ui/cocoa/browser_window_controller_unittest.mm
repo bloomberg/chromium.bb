@@ -7,9 +7,17 @@
 #include "base/mac/mac_util.h"
 #import "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/browser/signin/signin_global_error.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_fake.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_mock.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_global_error.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
@@ -20,8 +28,31 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+using ::testing::Return;
+
+namespace {
+class FakeAuthStatusProvider : public SigninGlobalError::AuthStatusProvider {
+ public:
+  FakeAuthStatusProvider() : auth_error_(GoogleServiceAuthError::None()) {}
+
+  // AuthStatusProvider implementation.
+  GoogleServiceAuthError GetAuthStatus() const OVERRIDE { return auth_error_; }
+
+  void set_auth_error(const GoogleServiceAuthError& error) {
+    auth_error_ = error;
+  }
+
+ private:
+  GoogleServiceAuthError auth_error_;
+};
+
+}  // namespace
 
 @interface BrowserWindowController (JustForTesting)
 // Already defined in BWC.
@@ -630,6 +661,146 @@ TEST_F(BrowserWindowControllerTest, TestStatusBubblePositioning) {
 
   // Make sure that status bubble frame is moved.
   EXPECT_FALSE(NSEqualPoints(bubbleOrigin, bubbleOriginWithDevTools));
+}
+
+TEST_F(BrowserWindowControllerTest, TestSigninMenuItemNoErrors) {
+  scoped_nsobject<NSMenuItem> syncMenuItem(
+      [[NSMenuItem alloc] initWithTitle:@""
+                                 action:@selector(commandDispatch)
+                          keyEquivalent:@""]);
+  [syncMenuItem setTag:IDC_SHOW_SYNC_SETUP];
+
+  NSString* startSignin =
+    l10n_util::GetNSStringFWithFixup(
+        IDS_SYNC_MENU_PRE_SYNCED_LABEL,
+        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+
+  // Make sure shouldShow parameter is obeyed, and we get the default
+  // label if not signed in.
+  [BrowserWindowController updateSigninItem:syncMenuItem
+                                 shouldShow:YES
+                             currentProfile:profile()];
+
+  EXPECT_TRUE([[syncMenuItem title] isEqualTo:startSignin]);
+  EXPECT_FALSE([syncMenuItem isHidden]);
+
+  [BrowserWindowController updateSigninItem:syncMenuItem
+                                 shouldShow:NO
+                             currentProfile:profile()];
+  EXPECT_TRUE([[syncMenuItem title] isEqualTo:startSignin]);
+  EXPECT_TRUE([syncMenuItem isHidden]);
+
+  // Now sign in.
+  std::string username = "foo@example.com";
+  NSString* alreadySignedIn =
+    l10n_util::GetNSStringFWithFixup(IDS_SYNC_MENU_SYNCED_LABEL,
+                                     UTF8ToUTF16(username));
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile());
+  signin->SetAuthenticatedUsername(username);
+  ProfileSyncService* sync =
+    ProfileSyncServiceFactory::GetForProfile(profile());
+  sync->SetSyncSetupCompleted();
+  [BrowserWindowController updateSigninItem:syncMenuItem
+                                 shouldShow:YES
+                             currentProfile:profile()];
+  EXPECT_TRUE([[syncMenuItem title] isEqualTo:alreadySignedIn]);
+  EXPECT_FALSE([syncMenuItem isHidden]);
+}
+
+TEST_F(BrowserWindowControllerTest, TestSigninMenuItemAuthError) {
+  scoped_nsobject<NSMenuItem> syncMenuItem(
+      [[NSMenuItem alloc] initWithTitle:@""
+                                 action:@selector(commandDispatch)
+                          keyEquivalent:@""]);
+  [syncMenuItem setTag:IDC_SHOW_SYNC_SETUP];
+
+  // Now sign in.
+  std::string username = "foo@example.com";
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile());
+  signin->SetAuthenticatedUsername(username);
+  ProfileSyncService* sync =
+    ProfileSyncServiceFactory::GetForProfile(profile());
+  sync->SetSyncSetupCompleted();
+  // Force an auth error.
+  FakeAuthStatusProvider provider;
+  GoogleServiceAuthError error(
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  provider.set_auth_error(error);
+  signin->signin_global_error()->AddProvider(&provider);
+  [BrowserWindowController updateSigninItem:syncMenuItem
+                                 shouldShow:YES
+                             currentProfile:profile()];
+  NSString* authError =
+    l10n_util::GetNSStringWithFixup(IDS_SYNC_MENU_SYNC_ERROR_LABEL);
+  EXPECT_TRUE([[syncMenuItem title] isEqualTo:authError]);
+  EXPECT_FALSE([syncMenuItem isHidden]);
+
+  signin->signin_global_error()->RemoveProvider(&provider);
+}
+
+// If there's a separator after the signin menu item, make sure it is hidden/
+// shown when the signin menu item is.
+TEST_F(BrowserWindowControllerTest, TestSigninMenuItemWithSeparator) {
+  scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
+  NSMenuItem* signinMenuItem =
+      [menu addItemWithTitle:@""
+                      action:@selector(commandDispatch)
+               keyEquivalent:@""];
+  [signinMenuItem setTag:IDC_SHOW_SYNC_SETUP];
+  NSMenuItem* followingSeparator = [NSMenuItem separatorItem];
+  [menu addItem:followingSeparator];
+  [signinMenuItem setHidden:NO];
+  [followingSeparator setHidden:NO];
+
+  [BrowserWindowController updateSigninItem:signinMenuItem
+                                 shouldShow:NO
+                             currentProfile:profile()];
+
+  EXPECT_FALSE([followingSeparator isEnabled]);
+  EXPECT_TRUE([signinMenuItem isHidden]);
+  EXPECT_TRUE([followingSeparator isHidden]);
+
+  [BrowserWindowController updateSigninItem:signinMenuItem
+                                 shouldShow:YES
+                             currentProfile:profile()];
+
+  EXPECT_FALSE([followingSeparator isEnabled]);
+  EXPECT_FALSE([signinMenuItem isHidden]);
+  EXPECT_FALSE([followingSeparator isHidden]);
+}
+
+// If there's a non-separator item after the signin menu item, it should not
+// change state when the signin menu item is hidden/shown.
+TEST_F(BrowserWindowControllerTest, TestSigninMenuItemWithNonSeparator) {
+  scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
+  NSMenuItem* signinMenuItem =
+      [menu addItemWithTitle:@""
+                      action:@selector(commandDispatch)
+               keyEquivalent:@""];
+  [signinMenuItem setTag:IDC_SHOW_SYNC_SETUP];
+  NSMenuItem* followingNonSeparator =
+      [menu addItemWithTitle:@""
+                      action:@selector(commandDispatch)
+               keyEquivalent:@""];
+  [signinMenuItem setHidden:NO];
+  [followingNonSeparator setHidden:NO];
+
+  [BrowserWindowController updateSigninItem:signinMenuItem
+                                 shouldShow:NO
+                             currentProfile:profile()];
+
+  EXPECT_TRUE([followingNonSeparator isEnabled]);
+  EXPECT_TRUE([signinMenuItem isHidden]);
+  EXPECT_FALSE([followingNonSeparator isHidden]);
+
+  [followingNonSeparator setHidden:YES];
+  [BrowserWindowController updateSigninItem:signinMenuItem
+                                 shouldShow:YES
+                             currentProfile:profile()];
+
+  EXPECT_TRUE([followingNonSeparator isEnabled]);
+  EXPECT_FALSE([signinMenuItem isHidden]);
+  EXPECT_TRUE([followingNonSeparator isHidden]);
 }
 
 @interface BrowserWindowControllerFakeFullscreen : BrowserWindowController {

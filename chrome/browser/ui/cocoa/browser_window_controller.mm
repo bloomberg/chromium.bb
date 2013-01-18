@@ -12,6 +12,7 @@
 #include "base/mac/mac_util.h"
 #import "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -21,8 +22,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/sync_ui_util_mac.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sync_global_error.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -73,11 +78,16 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/mac/scoped_ns_disable_screen_updates.h"
+
+using l10n_util::GetStringUTF16;
+using l10n_util::GetNSStringWithFixup;
+using l10n_util::GetNSStringFWithFixup;
 
 // ORGANIZATION: This is a big file. It is (in principle) organized as follows
 // (in order):
@@ -212,6 +222,61 @@ enum {
 + (BrowserWindowController*)browserWindowControllerForView:(NSView*)view {
   NSWindow* window = [view window];
   return [BrowserWindowController browserWindowControllerForWindow:window];
+}
+
++ (void)updateSigninItem:(id)signinItem
+              shouldShow:(BOOL)showSigninMenuItem
+          currentProfile:(Profile*)profile {
+  DCHECK([signinItem isKindOfClass:[NSMenuItem class]]);
+  NSMenuItem* signinMenuItem = static_cast<NSMenuItem*>(signinItem);
+
+  // Look for a separator immediately after the menu item so it can be hidden
+  // or shown appropriately along with the signin menu item.
+  NSMenuItem* followingSeparator = nil;
+  NSMenu* menu = [signinItem menu];
+  if (menu) {
+    NSInteger signinItemIndex = [menu indexOfItem:signinMenuItem];
+    DCHECK_NE(signinItemIndex, -1);
+    if ((signinItemIndex + 1) < [menu numberOfItems]) {
+      NSMenuItem* menuItem = [menu itemAtIndex:(signinItemIndex + 1)];
+      if ([menuItem isSeparatorItem]) {
+        followingSeparator = menuItem;
+      }
+    }
+  }
+
+  // Figure out what string to display in the signin menu item - depending on
+  // the state of the signed-in services, this will be one of:
+  //   "Sign in to <product name>"
+  //   "Signed in as <username>"
+  //   "Signin Error"
+  ProfileSyncService* syncService = profile->IsSyncAccessible() ?
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+          profile->GetOriginalProfile()) : NULL;
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
+  std::string userName = signin->GetAuthenticatedUsername();
+  NSString* title = NULL;
+  if (userName.empty() || signin->AuthInProgress() ||
+      (syncService && !syncService->HasSyncSetupCompleted())) {
+    // Not signed in yet - display the default string.
+    title = GetNSStringFWithFixup(IDS_SYNC_MENU_PRE_SYNCED_LABEL,
+                                  GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+  } else if (signin->signin_global_error()->HasBadge()) {
+    // TODO(atwilson): Change this string to a generic signin error instead of
+    // a "Sync error" string once we allow signin without sync.
+    title = GetNSStringWithFixup(IDS_SYNC_MENU_SYNC_ERROR_LABEL);
+  } else if (syncService && syncService->sync_global_error() &&
+             syncService->sync_global_error()->HasBadge()) {
+    title = GetNSStringWithFixup(IDS_SYNC_MENU_SYNC_ERROR_LABEL);
+  } else {
+    // Signed in.
+    title = GetNSStringFWithFixup(IDS_SYNC_MENU_SYNCED_LABEL,
+                                  UTF8ToUTF16(userName));
+  }
+
+  [signinMenuItem setTitle:title];
+  [signinMenuItem setHidden:!showSigninMenuItem];
+  [followingSeparator setHidden:!showSigninMenuItem];
 }
 
 // Load the browser window nib and do any Cocoa-specific initialization.
@@ -1051,11 +1116,13 @@ enum {
           }
           break;
         }
-        case IDC_SHOW_SYNC_SETUP: {
+        case IDC_SHOW_SIGNIN: {
           Profile* original_profile =
               browser_->profile()->GetOriginalProfile();
           enable &= original_profile->IsSyncAccessible();
-          sync_ui_util::UpdateSyncItem(item, enable, original_profile);
+          [BrowserWindowController updateSigninItem:item
+                                         shouldShow:enable
+                                     currentProfile:original_profile];
           break;
         }
         default:
