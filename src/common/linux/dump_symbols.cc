@@ -62,6 +62,7 @@
 #include "common/linux/elf_symbols_to_module.h"
 #include "common/linux/file_id.h"
 #include "common/module.h"
+#include "common/scoped_ptr.h"
 #include "common/stabs_reader.h"
 #include "common/stabs_to_module.h"
 #include "common/using_std_string.h"
@@ -80,6 +81,7 @@ using google_breakpad::GetOffset;
 using google_breakpad::IsValidElf;
 using google_breakpad::Module;
 using google_breakpad::StabsToModule;
+using google_breakpad::scoped_ptr;
 
 //
 // FDWrapper
@@ -708,13 +710,15 @@ string BaseFileName(const string &filename) {
 }
 
 template<typename ElfClass>
-bool WriteSymbolFileElfClass(const typename ElfClass::Ehdr* elf_header,
+bool ReadSymbolDataElfClass(const typename ElfClass::Ehdr* elf_header,
                              const string& obj_filename,
                              const string& debug_dir,
                              bool cfi,
-                             std::ostream& sym_stream) {
+                             Module** out_module) {
   typedef typename ElfClass::Ehdr Ehdr;
   typedef typename ElfClass::Shdr Shdr;
+
+  *out_module = NULL;
 
   unsigned char identifier[16];
   if (!google_breakpad::FileID::ElfFileIdentifierFromMappedFile(elf_header,
@@ -741,9 +745,9 @@ bool WriteSymbolFileElfClass(const typename ElfClass::Ehdr* elf_header,
   string id = FormatIdentifier(identifier);
 
   LoadSymbolsInfo<ElfClass> info(debug_dir);
-  Module module(name, os, architecture, id);
+  scoped_ptr<Module> module(new Module(name, os, architecture, id));
   if (!LoadSymbols<ElfClass>(obj_filename, big_endian, elf_header,
-                             !debug_dir.empty(), &info, &module)) {
+                             !debug_dir.empty(), &info, module.get())) {
     const string debuglink_file = info.debuglink_file();
     if (debuglink_file.empty())
       return false;
@@ -781,13 +785,12 @@ bool WriteSymbolFileElfClass(const typename ElfClass::Ehdr* elf_header,
     }
 
     if (!LoadSymbols<ElfClass>(debuglink_file, debug_big_endian,
-                               debug_elf_header, false, &info, &module)) {
+                               debug_elf_header, false, &info, module.get())) {
       return false;
     }
   }
-  if (!module.Write(sym_stream, cfi))
-    return false;
 
+  *out_module = module.release();
   return true;
 }
 
@@ -796,11 +799,11 @@ bool WriteSymbolFileElfClass(const typename ElfClass::Ehdr* elf_header,
 namespace google_breakpad {
 
 // Not explicitly exported, but not static so it can be used in unit tests.
-bool WriteSymbolFileInternal(const uint8_t* obj_file,
-                             const string& obj_filename,
-                             const string& debug_dir,
-                             bool cfi,
-                             std::ostream& sym_stream) {
+bool ReadSymbolDataInternal(const uint8_t* obj_file,
+                            const string& obj_filename,
+                            const string& debug_dir,
+                            bool cfi,
+                            Module** module) {
 
   if (!IsValidElf(obj_file)) {
     fprintf(stderr, "Not a valid ELF file: %s\n", obj_filename.c_str());
@@ -809,14 +812,14 @@ bool WriteSymbolFileInternal(const uint8_t* obj_file,
 
   int elfclass = ElfClass(obj_file);
   if (elfclass == ELFCLASS32) {
-    return WriteSymbolFileElfClass<ElfClass32>(
+    return ReadSymbolDataElfClass<ElfClass32>(
         reinterpret_cast<const Elf32_Ehdr*>(obj_file), obj_filename, debug_dir,
-        cfi, sym_stream);
+        cfi, module);
   }
   if (elfclass == ELFCLASS64) {
-    return WriteSymbolFileElfClass<ElfClass64>(
+    return ReadSymbolDataElfClass<ElfClass64>(
         reinterpret_cast<const Elf64_Ehdr*>(obj_file), obj_filename, debug_dir,
-        cfi, sym_stream);
+        cfi, module);
   }
 
   return false;
@@ -826,13 +829,26 @@ bool WriteSymbolFile(const string &obj_file,
                      const string &debug_dir,
                      bool cfi,
                      std::ostream &sym_stream) {
+  Module* module;
+  if (!ReadSymbolData(obj_file, debug_dir, cfi, &module))
+    return false;
+
+  bool result = module->Write(sym_stream, cfi);
+  delete module;
+  return result;
+}
+
+bool ReadSymbolData(const string& obj_file,
+                    const string& debug_dir,
+                    bool cfi,
+                    Module** module) {
   MmapWrapper map_wrapper;
   void* elf_header = NULL;
   if (!LoadELF(obj_file, &map_wrapper, &elf_header))
     return false;
 
-  return WriteSymbolFileInternal(reinterpret_cast<uint8_t*>(elf_header),
-                                 obj_file, debug_dir, cfi, sym_stream);
+  return ReadSymbolDataInternal(reinterpret_cast<uint8_t*>(elf_header),
+                                obj_file, debug_dir, cfi, module);
 }
 
 }  // namespace google_breakpad

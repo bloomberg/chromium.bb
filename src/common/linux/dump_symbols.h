@@ -42,6 +42,8 @@
 
 namespace google_breakpad {
 
+class Module;
+
 // Find all the debugging information in OBJ_FILE, an ELF executable
 // or shared library, and write it to SYM_STREAM in the Breakpad symbol
 // file format.
@@ -52,6 +54,14 @@ bool WriteSymbolFile(const string &obj_file,
                      const string &debug_dir,
                      bool cfi,
                      std::ostream &sym_stream);
+
+// As above, but simply return the debugging information in MODULE
+// instead of writing it to a stream. The caller owns the resulting
+// Module object and must delete it when finished.
+bool ReadSymbolData(const string& obj_file,
+                    const string& debug_dir,
+                    bool cfi,
+                    Module** module);
 
 }  // namespace google_breakpad
 
