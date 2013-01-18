@@ -59,8 +59,8 @@ VirtualAudioInputStream::VirtualAudioInputStream(
     : audio_manager_(manager),
       message_loop_(message_loop),
       callback_(NULL),
-      buffer_duration_ms_(base::TimeDelta::FromMilliseconds(
-          params.frames_per_buffer() * base::Time::kMillisecondsPerSecond /
+      buffer_duration_(base::TimeDelta::FromMicroseconds(
+          params.frames_per_buffer() * base::Time::kMicrosecondsPerSecond /
           static_cast<float>(params.sample_rate()))),
       buffer_(new uint8[params.GetBytesPerBuffer()]),
       params_(params),
@@ -85,6 +85,7 @@ bool VirtualAudioInputStream::Open() {
 void VirtualAudioInputStream::Start(AudioInputCallback* callback) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   callback_ = callback;
+  next_read_time_ = base::Time::Now();
   on_more_data_cb_.Reset(base::Bind(&VirtualAudioInputStream::ReadAudio,
                                     base::Unretained(this)));
   audio_manager_->GetMessageLoop()->PostTask(FROM_HERE,
@@ -139,9 +140,21 @@ void VirtualAudioInputStream::ReadAudio() {
                     params_.GetBytesPerBuffer(),
                     1.0);
 
+  // Need to account for time spent here due to renderer side mixing as well as
+  // the imprecision of PostDelayedTask.
+  next_read_time_ += buffer_duration_;
+  base::Time now = base::Time::Now();
+  base::TimeDelta delay = next_read_time_ - now;
+  if (delay < base::TimeDelta()) {
+    // Reset the next read time if we end up getting too far behind. We'll just
+    // slow down playback to avoid using up all the CPU.
+    delay = buffer_duration_;
+    next_read_time_ = now;
+  }
+
   message_loop_->PostDelayedTask(FROM_HERE,
                                  on_more_data_cb_.callback(),
-                                 buffer_duration_ms_);
+                                 delay);
 }
 
 void VirtualAudioInputStream::Close() {

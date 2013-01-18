@@ -76,7 +76,8 @@ class MEDIA_EXPORT VirtualAudioInputStream : public AudioInputStream {
   AudioInputCallback* callback_;
 
   // Non-const for testing.
-  base::TimeDelta buffer_duration_ms_;
+  base::TimeDelta buffer_duration_;
+  base::Time next_read_time_;
   scoped_array<uint8> buffer_;
   AudioParameters params_;
   scoped_ptr<AudioBus> audio_bus_;
