@@ -66,6 +66,7 @@ ui::NativeTheme::ColorId text_color_id(bool has_focus, bool is_selected) {
 TreeView::TreeView()
     : model_(NULL),
       selected_node_(NULL),
+      editing_(false),
       editor_(NULL),
       focus_manager_(NULL),
       auto_expand_children_(false),
@@ -145,16 +146,20 @@ void TreeView::StartEditing(TreeModelNode* node) {
   SetSelectedNode(node);
   if (GetSelectedNode() != node)
     return;  // Selection failed for some reason, don't start editing.
-  DCHECK(!editor_);
-  editor_ = new Textfield;
-  // Add the editor immediately as GetPreferredSize returns the wrong thing if
-  // not parented.
-  AddChildView(editor_);
-  editor_->SetFont(font_);
-  empty_editor_size_ = editor_->GetPreferredSize();
+  DCHECK(!editing_);
+  editing_ = true;
+  if (!editor_) {
+    editor_ = new Textfield;
+    // Add the editor immediately as GetPreferredSize returns the wrong thing if
+    // not parented.
+    AddChildView(editor_);
+    editor_->SetFont(font_);
+    empty_editor_size_ = editor_->GetPreferredSize();
+    editor_->SetController(this);
+  }
   editor_->SetText(selected_node_->model_node()->GetTitle());
-  editor_->SetController(this);
   LayoutEditor();
+  editor_->SetVisible(true);
   SchedulePaintForNode(selected_node_);
   editor_->RequestFocus();
   editor_->SelectAll(false);
@@ -166,24 +171,22 @@ void TreeView::StartEditing(TreeModelNode* node) {
 }
 
 void TreeView::CancelEdit() {
-  if (!editor_)
+  if (!editing_)
     return;
 
+  // WARNING: don't touch |selected_node_|, it may be bogus.
+
+  editing_ = false;
   if (focus_manager_) {
     focus_manager_->RemoveFocusChangeListener(this);
     focus_manager_ = NULL;
   }
-  // WARNING: don't touch selected_node_, it may be bogus.
-  editor_->SetController(NULL);
-  RemoveChildView(editor_);
-  // Don't delete immediately as we may be servicing a callback from the editor.
-  MessageLoop::current()->DeleteSoon(FROM_HERE, editor_);
-  editor_ = NULL;
+  editor_->SetVisible(false);
   SchedulePaint();
 }
 
 void TreeView::CommitEdit() {
-  if (!editor_)
+  if (!editing_)
     return;
 
   DCHECK(selected_node_);
@@ -193,11 +196,11 @@ void TreeView::CommitEdit() {
 }
 
 TreeModelNode* TreeView::GetEditingNode() {
-  return editor_ ? selected_node_->model_node() : NULL;
+  return editing_ ? selected_node_->model_node() : NULL;
 }
 
 void TreeView::SetSelectedNode(TreeModelNode* model_node) {
-  if (editor_ || model_node != selected_node_)
+  if (editing_ || model_node != selected_node_)
     CancelEdit();
   if (model_node && model_->GetParent(model_node))
     Expand(model_->GetParent(model_node));
@@ -469,7 +472,7 @@ bool TreeView::OnKeyPressed(const ui::KeyEvent& event) {
 
   switch (event.key_code()) {
     case ui::VKEY_F2:
-      if (!editor_) {
+      if (!editing_) {
         TreeModelNode* selected_node = GetSelectedNode();
         if (selected_node && (!controller_ ||
                               controller_->CanEdit(this, selected_node))) {
@@ -617,7 +620,7 @@ void TreeView::UpdatePreferredSize() {
 }
 
 void TreeView::LayoutEditor() {
-  if (!editor_)
+  if (!editing_)
     return;
 
   DCHECK(selected_node_);
@@ -689,7 +692,7 @@ void TreeView::PaintRow(gfx::Canvas* canvas,
       icon, icon_x,
       bounds.y() + (bounds.height() - icon.height()) / 2);
 
-  if (!editor_ || node != selected_node_) {
+  if (!editing_ || node != selected_node_) {
     gfx::Rect text_bounds(bounds.x() + text_offset_, bounds.y(),
                           bounds.width() - text_offset_, bounds.height());
     if (base::i18n::IsRTL())

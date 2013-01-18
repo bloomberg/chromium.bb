@@ -327,7 +327,11 @@ class VIEWS_EXPORT TreeView : public View,
   // The selected node, may be NULL.
   InternalNode* selected_node_;
 
-  // Non-null when editing.
+  bool editing_;
+
+  // The editor; lazily created and never destroyed (well, until TreeView is
+  // destroyed). Hidden when no longer editing. We do this avoid destruction
+  // problems.
   Textfield* editor_;
 
   // Preferred size of |editor_| with no content.
