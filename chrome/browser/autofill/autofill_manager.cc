@@ -23,6 +23,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/api/sync/profile_sync_service_base.h"
+#include "chrome/browser/autofill/autocheckout_manager.h"
+#include "chrome/browser/autofill/autocheckout_infobar_delegate.h"
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 #include "chrome/browser/autofill/autofill_country.h"
@@ -200,6 +202,7 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
       download_manager_(delegate->GetBrowserContext(), this),
       disable_download_manager_requests_(false),
       autocomplete_history_manager_(web_contents),
+      autocheckout_manager_(this),
       metric_logger_(new AutofillMetrics),
       has_logged_autofill_enabled_(false),
       has_logged_address_suggestions_count_(false),
@@ -575,6 +578,18 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
         }
       }
     }
+
+    // If form is known to be at the start of the autofillable flow (i.e, when
+    // Autofill server said so), then trigger payments UI while also returning
+    // standard autofill suggestions to renderer process.
+    if (form_structure->IsStartOfAutofillableFlow()) {
+      AutocheckoutInfoBarDelegate::Create(
+          *metric_logger_,
+          form.origin,
+          form.ssl_status,
+          &autocheckout_manager_,
+          manager_delegate_->GetInfoBarService());
+    }
   }
 
   // Add the results from AutoComplete.  They come back asynchronously, so we
@@ -747,6 +762,10 @@ void AutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
 void AutofillManager::RemoveAutocompleteEntry(const string16& name,
                                               const string16& value) {
   autocomplete_history_manager_.OnRemoveAutocompleteEntry(name, value);
+}
+
+content::WebContents* AutofillManager::GetWebContents() {
+  return web_contents();
 }
 
 void AutofillManager::OnAddPasswordFormMapping(
@@ -947,6 +966,7 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
       download_manager_(delegate->GetBrowserContext(), this),
       disable_download_manager_requests_(true),
       autocomplete_history_manager_(web_contents),
+      autocheckout_manager_(this),
       metric_logger_(new AutofillMetrics),
       has_logged_autofill_enabled_(false),
       has_logged_address_suggestions_count_(false),

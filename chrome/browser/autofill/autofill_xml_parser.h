@@ -70,6 +70,10 @@ class AutofillQueryXmlParser : public AutofillXmlParser {
                          UploadRequired* upload_required,
                          std::string* experiment_id);
 
+  int current_page_number() const { return current_page_number_; }
+
+  int total_pages() const { return total_pages_; }
+
  private:
   // A callback for the beginning of a new <element>, called by Expat.
   // |context| is a parsing context used to resolve element/attribute names.
@@ -91,6 +95,12 @@ class AutofillQueryXmlParser : public AutofillXmlParser {
   // A flag indicating whether the client should upload Autofill data when this
   // form is submitted.
   UploadRequired* upload_required_;
+
+  // Page number of present page in multipage autofill flow.
+  int current_page_number_;
+
+  // Total number of pages in multipage autofill flow.
+  int total_pages_;
 
   // The server experiment to which this query response belongs.
   // For the default server implementation, this is empty.

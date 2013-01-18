@@ -16,7 +16,8 @@ FormData::FormData(const FormData& data)
       origin(data.origin),
       action(data.action),
       user_submitted(data.user_submitted),
-      fields(data.fields) {
+      fields(data.fields),
+      ssl_status(data.ssl_status) {
 }
 
 FormData::~FormData() {
@@ -28,7 +29,8 @@ bool FormData::operator==(const FormData& form) const {
           origin == form.origin &&
           action == form.action &&
           user_submitted == form.user_submitted &&
-          fields == form.fields);
+          fields == form.fields &&
+          ssl_status.Equals(form.ssl_status));
 }
 
 bool FormData::operator!=(const FormData& form) const {

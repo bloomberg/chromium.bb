@@ -21,12 +21,14 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "chrome/browser/api/sync/profile_sync_service_observer.h"
+#include "chrome/browser/autofill/autocheckout_manager.h"
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/common/autofill/autocheckout_status.h"
+#include "chrome/common/form_data.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/ssl_status.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
@@ -106,6 +108,9 @@ class AutofillManager : public content::WebContentsObserver,
 
   // Remove the specified Autocomplete entry.
   void RemoveAutocompleteEntry(const string16& name, const string16& value);
+
+  // Returns the present web_contents state.
+  content::WebContents* GetWebContents();
 
  protected:
   // Only test code should subclass AutofillManager.
@@ -335,6 +340,9 @@ class AutofillManager : public content::WebContentsObserver,
 
   // Handles single-field autocomplete form data.
   AutocompleteHistoryManager autocomplete_history_manager_;
+
+  // Handles autocheckout flows.
+  AutocheckoutManager autocheckout_manager_;
 
   // For logging UMA metrics. Overridden by metrics tests.
   scoped_ptr<const AutofillMetrics> metric_logger_;

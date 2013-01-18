@@ -236,6 +236,7 @@ void AutofillAgent::didRequestAutocomplete(WebKit::WebFrame* frame,
   HidePopups();
 
   in_flight_request_form_ = form;
+  // TODO(ramankk): Include SSLStatus within form_data and update the IPC.
   Send(new AutofillHostMsg_RequestAutocomplete(
       routing_id(),
       form_data,
@@ -713,6 +714,10 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
                                        data_list_icons,
                                        data_list_unique_ids));
 
+  // Add SSL Status in the formdata to let browser process alert user
+  // appropriately using browser UI.
+  form.ssl_status = render_view()->GetSSLStatusOfFrame(
+      element.document().frame());
   Send(new AutofillHostMsg_QueryFormFieldAutofill(routing_id(),
                                                   autofill_query_id_,
                                                   form,

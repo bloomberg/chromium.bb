@@ -154,6 +154,28 @@ TEST(AutofillQueryXmlParserTest, ParseExperimentId) {
   EXPECT_EQ(std::string("ServerSmartyPants"), experiment_id);
 }
 
+// Test XML response with autofill_flow information.
+TEST(AutofillQueryXmlParserTest, ParseAutofillFlow) {
+  std::vector<AutofillFieldType> field_types;
+  UploadRequired upload_required = USE_UPLOAD_RATES;
+  std::string experiment_id;
+
+  std::string xml = "<autofillqueryresponse>"
+                    "<field autofilltype=\"55\"/>"
+                    "<autofill_flow page_no=\"1\" total_pages=\"10\"/>"
+                    "</autofillqueryresponse>";
+
+  scoped_ptr<AutofillQueryXmlParser> parse_handler(
+      new AutofillQueryXmlParser(&field_types, &upload_required,
+                                 &experiment_id));
+  scoped_ptr<buzz::XmlParser> parser(new buzz::XmlParser(parse_handler.get()));
+  parser->Parse(xml.c_str(), xml.length(), true);
+  EXPECT_TRUE(parse_handler->succeeded());
+  EXPECT_EQ(1U, field_types.size());
+  EXPECT_EQ(1, parse_handler->current_page_number());
+  EXPECT_EQ(10, parse_handler->total_pages());
+}
+
 // Test badly formed XML queries.
 TEST(AutofillQueryXmlParserTest, ParseErrors) {
   std::vector<AutofillFieldType> field_types;

@@ -156,6 +156,8 @@ class AutofillMetrics {
 
   virtual void LogUserHappinessMetric(UserHappinessMetric metric) const;
 
+  virtual void LogAutocheckoutInfoBarMetric(InfoBarMetric metric) const;
+
   // This should be called when a form that has been Autofilled is submitted.
   // |duration| should be the time elapsed between form load and submission.
   virtual void LogFormFillDurationFromLoadWithAutofill(

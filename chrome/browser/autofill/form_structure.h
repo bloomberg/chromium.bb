@@ -124,6 +124,14 @@ class FormStructure {
   void ParseFieldTypesFromAutocompleteAttributes(bool* found_types,
                                                  bool* found_sections);
 
+  // Returns true if the autofill server says that the current page is start of
+  // the autofillable flow.
+  bool IsStartOfAutofillableFlow() const;
+
+  // Returns true if the autofill server says that the current page is in the
+  // autofillable flow.
+  bool IsInAutofillableFlow() const;
+
   const AutofillField* field(size_t index) const;
   AutofillField* field(size_t index);
   size_t field_count() const;
@@ -207,6 +215,14 @@ class FormStructure {
 
   // GET or POST.
   RequestMethod method_;
+
+  // Page number of the autofill flow this form belongs to (zero-indexed).
+  // If this form doesn't belong to any autofill flow, it is set to -1.
+  int current_page_number_;
+
+  // Total number of pages in the autofill flow. If this form doesn't belong
+  // to any autofill flow, it is set to -1.
+  int total_pages_;
 
   // Whether the form includes any field types explicitly specified by the site
   // author, via the |autocompletetype| attribute.

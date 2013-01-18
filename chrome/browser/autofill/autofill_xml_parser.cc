@@ -33,6 +33,8 @@ AutofillQueryXmlParser::AutofillQueryXmlParser(
     std::string* experiment_id)
     : field_types_(field_types),
       upload_required_(upload_required),
+      current_page_number_(-1),
+      total_pages_(-1),
       experiment_id_(experiment_id) {
   DCHECK(upload_required_);
   DCHECK(experiment_id_);
@@ -89,6 +91,18 @@ void AutofillQueryXmlParser::StartElement(buzz::XmlParseContext* context,
 
     // Record this field type.
     field_types_->push_back(field_type);
+  } else if (element.compare("autofill_flow") == 0) {
+    // |attrs| is a NULL-terminated list of (attribute, value) pairs.
+    while (*attrs) {
+      buzz::QName attribute_qname = context->ResolveQName(*attrs, true);
+      ++attrs;
+      const std::string& attribute_name = attribute_qname.LocalPart();
+      if (attribute_name.compare("page_no") == 0)
+        current_page_number_ = GetIntValue(context, *attrs);
+      else if (attribute_name.compare("total_pages") == 0)
+        total_pages_ = GetIntValue(context, *attrs);
+      ++attrs;
+    }
   }
 }
 

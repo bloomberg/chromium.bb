@@ -59,6 +59,13 @@ class FormStructureTest {
   static std::string Hash64Bit(const std::string& str) {
     return FormStructure::Hash64Bit(str);
   }
+
+  static void SetPageDetails(FormStructure* form,
+                             int page_number,
+                             int total_pages) {
+    form->current_page_number_ = page_number;
+    form->total_pages_ = total_pages;
+  }
 };
 
 TEST(FormStructureTest, FieldCount) {
@@ -85,6 +92,41 @@ TEST(FormStructureTest, FieldCount) {
 
   // All fields are counted.
   EXPECT_EQ(3U, form_structure.field_count());
+}
+
+TEST(FormStructureTest, AutofillFlowInfo) {
+  FormData form;
+  form.method = ASCIIToUTF16("post");
+
+  FormFieldData field;
+  field.label = ASCIIToUTF16("username");
+  field.name = ASCIIToUTF16("username");
+  field.form_control_type = "text";
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  EXPECT_FALSE(form_structure.IsStartOfAutofillableFlow());
+  EXPECT_FALSE(form_structure.IsInAutofillableFlow());
+
+  FormStructureTest::SetPageDetails(&form_structure, -1, 0);
+  EXPECT_FALSE(form_structure.IsStartOfAutofillableFlow());
+  EXPECT_FALSE(form_structure.IsInAutofillableFlow());
+
+  FormStructureTest::SetPageDetails(&form_structure, 0, 0);
+  EXPECT_FALSE(form_structure.IsStartOfAutofillableFlow());
+  EXPECT_FALSE(form_structure.IsInAutofillableFlow());
+
+  FormStructureTest::SetPageDetails(&form_structure, 0, 1);
+  EXPECT_TRUE(form_structure.IsStartOfAutofillableFlow());
+  EXPECT_TRUE(form_structure.IsInAutofillableFlow());
+
+  FormStructureTest::SetPageDetails(&form_structure, 1, 2);
+  EXPECT_FALSE(form_structure.IsStartOfAutofillableFlow());
+  EXPECT_TRUE(form_structure.IsInAutofillableFlow());
+
+  FormStructureTest::SetPageDetails(&form_structure, 2, 2);
+  EXPECT_FALSE(form_structure.IsStartOfAutofillableFlow());
+  EXPECT_FALSE(form_structure.IsInAutofillableFlow());
 }
 
 TEST(FormStructureTest, AutofillCount) {

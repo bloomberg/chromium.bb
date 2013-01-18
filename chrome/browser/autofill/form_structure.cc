@@ -229,6 +229,8 @@ FormStructure::FormStructure(const FormData& form)
       autofill_count_(0),
       upload_required_(USE_UPLOAD_RATES),
       server_experiment_id_("no server response"),
+      current_page_number_(-1),
+      total_pages_(-1),
       has_author_specified_types_(false) {
   // Copy the form fields.
   std::map<string16, size_t> unique_names;
@@ -429,6 +431,8 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
     FormStructure* form = *iter;
     form->upload_required_ = upload_required;
     form->server_experiment_id_ = experiment_id;
+    form->current_page_number_ = parse_handler.current_page_number();
+    form->total_pages_ = parse_handler.total_pages();
 
     for (std::vector<AutofillField*>::iterator field = form->fields_.begin();
          field != form->fields_.end(); ++field, ++current_type) {
@@ -1014,6 +1018,14 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes(
     else if (field_type_token == "tel-local-suffix")
       field->set_phone_part(AutofillField::PHONE_SUFFIX);
   }
+}
+
+bool FormStructure::IsStartOfAutofillableFlow() const {
+  return current_page_number_ == 0 && total_pages_ > 0;
+}
+
+bool FormStructure::IsInAutofillableFlow() const {
+  return current_page_number_ >= 0 && current_page_number_ < total_pages_;
 }
 
 void FormStructure::IdentifySections(bool has_author_specified_sections) {
