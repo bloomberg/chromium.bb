@@ -346,8 +346,10 @@ def BuildImage(buildroot, board, images_to_build, version='',
   _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 
-def BuildVMImageForTesting(buildroot, board, extra_env=None):
+def BuildVMImageForTesting(buildroot, board, extra_env=None, disk_layout=None):
   cmd = ['./image_to_vm.sh', '--board=%s' % board, '--test_image']
+  if disk_layout:
+    cmd += ['--disk_layout=%s' % disk_layout]
   _RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True)
 
 
@@ -549,7 +551,8 @@ def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
             log_content += line
         # Symbolize and demangle it.
         raw = cros_build_lib.RunCommandCaptureOutput(
-            ['asan_symbolize.py'], input=log_content, enter_chroot=True)
+            ['asan_symbolize.py'], input=log_content, enter_chroot=True,
+            extra_env = {'LLVM_SYMBOLIZER_PATH' : '/usr/bin/llvm-symbolizer'})
         cros_build_lib.RunCommand(['c++filt'],
                                   input=raw.output,
                                   cwd=buildroot, redirect_stderr=True,

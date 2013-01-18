@@ -403,6 +403,15 @@ _settings = dict(
 # grouped -- Whether this config belongs to a config group.
   grouped=False,
 
+# disk_layout -- layout of build_image resulting image.
+#                See scripts/build_library/legacy_disk_layout.json or
+#                overlay-<board>/scripts/disk_layout.json for possible values.
+  disk_layout=None,
+
+# disk_vm_layout -- layout of image_to_vm.sh resulting image. See
+#                   disk_layout for more info.
+  disk_vm_layout=None,
+
 # TODO(sosa): Collapse to one option.
 # ====================== Dev installer prebuilts options =======================
 
@@ -617,6 +626,14 @@ _cros_sdk = full.add_config('chromiumos-sdk',
   description='Build the SDK and all the cross-compilers',
 )
 
+asan = _config(
+  chroot_replace=True,
+  profile='asan',
+  useflags=['asan'],  # see profile for more
+  disk_layout='2gb-rootfs',
+  disk_vm_layout='2gb-rootfs-updatable',
+)
+
 _config.add_raw_config('refresh-packages',
   boards=['x86-generic', 'arm-generic'],
   build_type=constants.REFRESH_PACKAGES_TYPE,
@@ -741,6 +758,7 @@ chrome_pgo = chrome_pfq.derive(
   hw_tests_pool=constants.HWTEST_CHROME_PFQ_POOL,
   hw_tests_num=1,
   hw_tests_timeout=90 * 60,
+  disk_layout='2gb-rootfs',
 
   # TODO(petermayo): Remove once PGO is reliable again.
   important=False,
@@ -890,32 +908,28 @@ full.add_config('x32-generic-full',
 )
 
 incremental.add_config('x86-generic-asan',
+  asan,
   boards=['x86-generic'],
-  chroot_replace=True,
-  profile='asan',
   description='Build with Address Sanitizer (Clang)',
 )
 
 chromium_info.add_config('x86-generic-tot-asan-informational',
+  asan,
   boards=['x86-generic'],
-  chroot_replace=True,
-  profile='asan',
   description='Build with Address Sanitizer (Clang) on TOT',
 )
 
 incremental.add_config('amd64-generic-asan',
   amd64,
+  asan,
   boards=['amd64-generic'],
-  chroot_replace=True,
-  profile='asan',
   description='Build with Address Sanitizer (Clang)',
 )
 
 chromium_info.add_config('amd64-generic-tot-asan-informational',
   amd64,
+  asan,
   boards=['amd64-generic'],
-  chroot_replace=True,
-  profile='asan',
   description='Build with Address Sanitizer (Clang) on TOT',
 )
 

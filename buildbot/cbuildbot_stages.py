@@ -1031,7 +1031,6 @@ class BuildTargetStage(BoardSpecificBuilderStage):
   the images we want per the build spec."""
 
   option_name = 'build'
-  PGO_DISK_LAYOUT = '2gb-rootfs'
 
   def __init__(self, options, build_config, board, archive_stage, version):
     super(BuildTargetStage, self).__init__(options, build_config, board)
@@ -1075,10 +1074,6 @@ class BuildTargetStage(BoardSpecificBuilderStage):
     images_can_build = set(['base', 'dev', 'test'])
     images_to_build = set(self._build_config['images']).intersection(
         images_can_build)
-    disk_layout = None
-    if (self._build_config['useflags'] and
-        'pgo_generate' in self._build_config['useflags']):
-      disk_layout = self.PGO_DISK_LAYOUT
 
     rootfs_verification = self._build_config['rootfs_verification']
     commands.BuildImage(self._build_root,
@@ -1086,13 +1081,15 @@ class BuildTargetStage(BoardSpecificBuilderStage):
                         list(images_to_build),
                         rootfs_verification=rootfs_verification,
                         version=self._version,
-                        disk_layout=disk_layout,
+                        disk_layout=self._build_config['disk_layout'],
                         extra_env=self._env)
 
     if self._build_config['vm_tests']:
-      commands.BuildVMImageForTesting(self._build_root,
-                                      self._current_board,
-                                      extra_env=self._env)
+      commands.BuildVMImageForTesting(
+          self._build_root,
+          self._current_board,
+          disk_layout=self._build_config['disk_vm_layout'],
+          extra_env=self._env)
 
     # Update link to latest image.
     latest_image = os.readlink(self.GetImageDirSymlink('latest'))

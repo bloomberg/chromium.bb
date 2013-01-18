@@ -940,6 +940,7 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     self.build_config['nowithdebug'] = False
     self.build_config['hw_tests'] = ['bvt']
     self.build_config['chromeos_official'] = True
+    self.build_config['disk_layout'] = '2gb-rootfs'
 
     proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
 
@@ -971,7 +972,7 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
                         rootfs_verification=True,
                         disk_layout='2gb-rootfs', extra_env=proper_env)
     commands.BuildVMImageForTesting(self.build_root, self._current_board,
-                                    extra_env=proper_env)
+                                    disk_layout=None, extra_env=proper_env)
     tempfile.mkdtemp(prefix='autotest').AndReturn(fake_autotest_dir)
     commands.BuildAutotestTarballs(self.build_root, self._current_board,
                                    fake_autotest_dir).AndReturn(tarballs)
@@ -1064,6 +1065,7 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     self.build_config['skip_toolchain_update'] = False
     self.build_config['nowithdebug'] = False
     self.build_config['hw_tests'] = ['bvt']
+    self.build_config['disk_layout'] = '2gb-rootfs'
 
     proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
 
@@ -1090,10 +1092,11 @@ class BuildTargetStageTest(AbstractStageTest, cros_test_lib.MockTestCase):
     commands.BuildImage(self.build_root, self._current_board,
                         ['test', 'base', 'dev'],
                         rootfs_verification=True,
-                        version='', disk_layout=None,
+                        version='',
+                        disk_layout=self.build_config['disk_layout'],
                         extra_env=proper_env)
     commands.BuildVMImageForTesting(self.build_root, self._current_board,
-                                    extra_env=proper_env)
+                                    disk_layout=None, extra_env=proper_env)
     tempfile.mkdtemp(prefix='autotest').AndReturn(fake_autotest_dir)
     commands.BuildAutotestTarballs(self.build_root, self._current_board,
                                    fake_autotest_dir).AndReturn(tarballs)
