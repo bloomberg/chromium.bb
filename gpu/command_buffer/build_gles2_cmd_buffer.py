@@ -7427,60 +7427,6 @@ const size_t GLES2Util::enum_to_string_table_len_ =
       file.Write("}\n\n")
     file.Close()
 
-  def WritePepperGLES2NaClProxy(self, filename):
-    """Writes the Pepper OpenGLES interface implementation for NaCl."""
-    file = CWriter(filename)
-    file.Write(_LICENSE)
-    file.Write(_DO_NOT_EDIT_WARNING)
-
-    file.Write("#include \"native_client/src/shared/ppapi_proxy"
-        "/plugin_ppb_graphics_3d.h\"\n\n")
-
-    file.Write("#include \"gpu/command_buffer/client/gles2_implementation.h\"")
-    file.Write("\n#include \"ppapi/c/ppb_opengles2.h\"\n\n")
-
-    file.Write("using ppapi_proxy::PluginGraphics3D;\n")
-    file.Write("using ppapi_proxy::PluginResource;\n\n")
-    file.Write("namespace {\n\n")
-
-    for func in self.original_functions:
-      if not func.InAnyPepperExtension():
-        continue
-      args = func.MakeTypedOriginalArgString("")
-      if len(args) != 0:
-        args = ", " + args
-      file.Write("%s %s(PP_Resource context%s) {\n" %
-                 (func.return_type, func.name, args))
-      return_string = "return "
-      if func.return_type == "void":
-        return_string = ""
-      file.Write("  %sPluginGraphics3D::implFromResource(context)->"
-                 "%s(%s);\n" %
-                 (return_string,
-                  func.original_name,
-                  func.MakeOriginalArgString("")))
-      file.Write("}\n")
-
-    file.Write("\n} // namespace\n\n")
-
-    for interface in self.pepper_interfaces:
-      file.Write("const %s* "
-                 "PluginGraphics3D::GetOpenGLES%sInterface() {\n" %
-                 (interface.GetStructName(), interface.GetName()))
-
-      file.Write("  const static struct %s ppb_opengles = {\n" %
-                 interface.GetStructName())
-      file.Write("    &")
-      file.Write(",\n    &".join(
-        f.name for f in self.original_functions
-          if f.InPepperInterface(interface)))
-      file.Write("\n")
-      file.Write("  };\n")
-      file.Write("  return &ppb_opengles;\n")
-      file.Write("}\n")
-    file.Close()
-
-
 def main(argv):
   """This is the main function."""
   parser = OptionParser()
@@ -7536,11 +7482,6 @@ def main(argv):
     # To trigger this action, do "make ppapi_gles_implementation"
     gen.WritePepperGLES2Implementation(
         "ppapi/shared_impl/ppb_opengles2_shared.cc")
-
-  elif options.alternate_mode == "nacl_ppapi":
-    os.chdir("ppapi")
-    gen.WritePepperGLES2NaClProxy(
-        "native_client/src/shared/ppapi_proxy/plugin_opengles.cc")
 
   else:
     os.chdir("gpu/command_buffer")

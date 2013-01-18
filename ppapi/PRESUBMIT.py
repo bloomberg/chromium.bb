@@ -40,21 +40,6 @@ def RunUnittests(input_api, output_api):
   return results
 
 
-# If any .srpc files were changed, run run_srpcgen.py --diff_mode.
-def CheckSrpcChange(input_api, output_api):
-  if [True for filename in input_api.LocalPaths() if
-      os.path.splitext(filename)[1] == '.srpc']:
-    return RunCmdAndCheck([sys.executable,
-                           os.path.join(input_api.PresubmitLocalPath(),
-                                        'native_client', 'src',
-                                        'shared', 'ppapi_proxy',
-                                        'run_srpcgen.py'),
-                           '--diff_mode'],
-                          'PPAPI SRPC Diff detected: Run run_srpcgen.py.',
-                          output_api)
-  return []
-
-
 # Verify that the files do not contain a 'TODO' in them.
 RE_TODO = re.compile(r'\WTODO\W', flags=re.I)
 def CheckTODO(input_api, output_api):
@@ -125,8 +110,6 @@ def CheckUnversionedPPB(input_api, output_api):
 
 def CheckChange(input_api, output_api):
   results = []
-
-  results.extend(CheckSrpcChange(input_api, output_api))
 
   results.extend(RunUnittests(input_api, output_api))
 
