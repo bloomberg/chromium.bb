@@ -21,6 +21,7 @@ namespace cc {
 class DebugRectHistory;
 class FontAtlas;
 class FrameRateCounter;
+class PaintTimeCounter;
 
 class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
 public:
@@ -42,25 +43,47 @@ public:
     virtual bool layerIsAlwaysDamaged() const OVERRIDE;
 
 private:
+    struct Graph {
+        Graph(double indicatorValue, double startUpperBound);
+
+        // Eases the upper bound, which limits what is currently visible in the graph,
+        // so that the graph always scales to either it's max or defaultUpperBound.
+        static double updateUpperBound(Graph*);
+
+        double value;
+        double min;
+        double max;
+
+        double currentUpperBound;
+        const double defaultUpperBound;
+        const double indicator;
+    };
+
     HeadsUpDisplayLayerImpl(LayerTreeImpl* treeImpl, int id);
 
     virtual const char* layerTypeAsString() const OVERRIDE;
 
     void drawHudContents(SkCanvas*);
-    int drawFPSCounter(SkCanvas*, FrameRateCounter*);
-    void drawFPSCounterText(SkCanvas*, SkPaint&, FrameRateCounter*, SkRect);
-    void drawFPSCounterGraphAndHistogram(SkCanvas* canvas, SkPaint& paint, FrameRateCounter* fpsCounter, SkRect graphBounds, SkRect histogramBounds);
+
+    void drawTextLeftAligned(SkCanvas*, SkPaint*, const SkRect& bounds, const std::string& text);
+    void drawTextRightAligned(SkCanvas*, SkPaint*, const SkRect& bounds, const std::string& text);
+
+    void drawGraphBackground(SkCanvas*, SkPaint*, const SkRect& bounds);
+    void drawGraphLines(SkCanvas*, SkPaint*, const SkRect& bounds, const Graph&);
+
+    int drawFPSDisplay(SkCanvas*, FrameRateCounter*, const int& top);
+    int drawPaintTimeDisplay(SkCanvas*, PaintTimeCounter*, const int& top);
+
     void drawDebugRects(SkCanvas*, DebugRectHistory*);
 
     scoped_ptr<FontAtlas> m_fontAtlas;
     scoped_ptr<ScopedResource> m_hudTexture;
     scoped_ptr<SkCanvas> m_hudCanvas;
 
-    double m_averageFPS;
-    double m_minFPS;
-    double m_maxFPS;
+    Graph m_fpsGraph;
+    Graph m_paintTimeGraph;
 
-    base::TimeTicks textUpdateTime;
+    base::TimeTicks m_timeOfLastGraphUpdate;
 };
 
 }  // namespace cc

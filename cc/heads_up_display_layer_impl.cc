@@ -4,14 +4,13 @@
 
 #include "cc/heads_up_display_layer_impl.h"
 
-#include <limits>
-
 #include "base/stringprintf.h"
 #include "cc/debug_colors.h"
 #include "cc/debug_rect_history.h"
 #include "cc/font_atlas.h"
 #include "cc/frame_rate_counter.h"
 #include "cc/layer_tree_impl.h"
+#include "cc/paint_time_counter.h"
 #include "cc/quad_sink.h"
 #include "cc/renderer.h"
 #include "cc/texture_draw_quad.h"
@@ -48,11 +47,27 @@ static inline SkPaint createPaint()
     return paint;
 }
 
+HeadsUpDisplayLayerImpl::Graph::Graph(double indicatorValue, double startUpperBound)
+    : value(0)
+    , min(0)
+    , max(0)
+    , currentUpperBound(startUpperBound)
+    , defaultUpperBound(startUpperBound)
+    , indicator(indicatorValue)
+{
+}
+
+double HeadsUpDisplayLayerImpl::Graph::updateUpperBound(Graph* graph)
+{
+    double targetUpperBound = std::max(graph->max, graph->defaultUpperBound);
+    graph->currentUpperBound += (targetUpperBound - graph->currentUpperBound) * 0.5;
+    return graph->currentUpperBound;
+}
+
 HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(LayerTreeImpl* treeImpl, int id)
     : LayerImpl(treeImpl, id)
-    , m_averageFPS(0)
-    , m_minFPS(0)
-    , m_maxFPS(0)
+    , m_fpsGraph(60.0, 80.0)
+    , m_paintTimeGraph(16.0, 48.0)
 {
 }
 
@@ -159,34 +174,98 @@ void HeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
 {
     const LayerTreeDebugState& debugState = layerTreeImpl()->debug_state();
 
+    FrameRateCounter* fpsCounter = layerTreeImpl()->frame_rate_counter();
+    PaintTimeCounter* paintTimeCounter = layerTreeImpl()->paint_time_counter();
+
     if (debugState.showPlatformLayerTree) {
         SkPaint paint = createPaint();
-        paint.setColor(SkColorSetARGB(192, 0, 0, 0));
-        canvas->drawRect(SkRect::MakeXYWH(0, 0, bounds().width(), bounds().height()), paint);
+        drawGraphBackground(canvas, &paint, SkRect::MakeXYWH(0, 0, bounds().width(), bounds().height()));
     }
 
-    int platformLayerTreeTop = 0;
+    int top = 2;
 
-    if (debugState.showFPSCounter)
-        platformLayerTreeTop = drawFPSCounter(canvas, layerTreeImpl()->frame_rate_counter());
+    if (debugState.continuousPainting || debugState.showFPSCounter) {
+        // Update numbers not every frame so text is readable
+        base::TimeTicks now = base::TimeTicks::Now();
+        if (base::TimeDelta(now - m_timeOfLastGraphUpdate).InSecondsF() > 0.25) {
+            m_fpsGraph.value = fpsCounter->getAverageFPS();
+            fpsCounter->getMinAndMaxFPS(m_fpsGraph.min, m_fpsGraph.max);
+
+            base::TimeDelta latest, min, max;
+            latest = paintTimeCounter->GetPaintTimeOfRecentFrame(paintTimeCounter->HistorySize() - 1);
+            paintTimeCounter->GetMinAndMaxPaintTime(&min, &max);
+
+            m_paintTimeGraph.value = latest.InMillisecondsF();
+            m_paintTimeGraph.min = min.InMillisecondsF();
+            m_paintTimeGraph.max = max.InMillisecondsF();
+
+            m_timeOfLastGraphUpdate = now;
+        }
+
+        if (debugState.continuousPainting)
+            top = drawPaintTimeDisplay(canvas, paintTimeCounter, top);
+        // Don't show the FPS display when continuous painting is enabled, because it would show misleading numbers.
+        else if (debugState.showFPSCounter)
+            top = drawFPSDisplay(canvas, fpsCounter, top);
+    }
 
     if (debugState.showPlatformLayerTree && m_fontAtlas) {
         std::string layerTree = layerTreeImpl()->layer_tree_as_text();
-        m_fontAtlas->drawText(canvas, createPaint(), layerTree, gfx::Point(2, platformLayerTreeTop), bounds());
+        m_fontAtlas->drawText(canvas, createPaint(), layerTree, gfx::Point(2, top), bounds());
     }
 
     if (debugState.showHudRects())
         drawDebugRects(canvas, layerTreeImpl()->debug_rect_history());
 }
 
-int HeadsUpDisplayLayerImpl::drawFPSCounter(SkCanvas* canvas, FrameRateCounter* fpsCounter)
+void HeadsUpDisplayLayerImpl::drawTextLeftAligned(SkCanvas* canvas, SkPaint* paint, const SkRect& bounds, const std::string& text)
+{
+    if (!m_fontAtlas)
+        return;
+
+    m_fontAtlas->drawText(canvas, *paint, text, gfx::Point(bounds.left(), bounds.top()), gfx::Size(bounds.width(), bounds.height()));
+}
+
+void HeadsUpDisplayLayerImpl::drawTextRightAligned(SkCanvas* canvas, SkPaint* paint, const SkRect& bounds, const std::string& text)
+{
+    if (!m_fontAtlas)
+        return;
+
+    int textWidth = m_fontAtlas->textSize(text).width();
+
+    gfx::Point textPosition(bounds.right() - textWidth, bounds.top());
+    gfx::Size textArea(bounds.width(), bounds.height());
+
+    m_fontAtlas->drawText(canvas, *paint, text, textPosition, textArea);
+}
+
+void HeadsUpDisplayLayerImpl::drawGraphBackground(SkCanvas* canvas, SkPaint* paint, const SkRect& bounds)
+{
+    paint->setColor(SkColorSetARGB(215, 17, 17, 17));
+    canvas->drawRect(bounds, *paint);
+}
+
+void HeadsUpDisplayLayerImpl::drawGraphLines(SkCanvas* canvas, SkPaint* paint, const SkRect& bounds, const Graph& graph)
+{
+    // Draw top and bottom line.
+    paint->setColor(SkColorSetRGB(130, 130, 130));
+    canvas->drawLine(bounds.left(), bounds.top() - 1, bounds.right(), bounds.top() - 1, *paint);
+    canvas->drawLine(bounds.left(), bounds.bottom(), bounds.right(), bounds.bottom(), *paint);
+
+    // Draw indicator line.
+    paint->setColor(SkColorSetRGB(100, 100, 100));
+    const double indicatorTop = bounds.height() * (1 - graph.indicator / graph.currentUpperBound) - 1;
+    canvas->drawLine(bounds.left(), bounds.top() + indicatorTop, bounds.right(), bounds.top() + indicatorTop, *paint);
+}
+
+int HeadsUpDisplayLayerImpl::drawFPSDisplay(SkCanvas* canvas, FrameRateCounter* fpsCounter, const int& top)
 {
     const int padding = 4;
     const int gap = 6;
 
     const int fontHeight = m_fontAtlas.get() ? m_fontAtlas->fontHeight() : 0;
 
-    const int graphWidth = fpsCounter->timeStampHistorySize() - 3;
+    const int graphWidth = fpsCounter->timeStampHistorySize() - 2;
     const int graphHeight = 40;
 
     const int histogramWidth = 37;
@@ -195,74 +274,29 @@ int HeadsUpDisplayLayerImpl::drawFPSCounter(SkCanvas* canvas, FrameRateCounter* 
     const int height = fontHeight + graphHeight + 4 * padding + 2;
 
     const int left = bounds().width() - width - 2;
-    const int top = 2;
 
     SkPaint paint = createPaint();
-
-    // Draw background.
-    paint.setColor(SkColorSetARGB(215, 17, 17, 17));
-    canvas->drawRect(SkRect::MakeXYWH(left, top, width, height), paint);
+    drawGraphBackground(canvas, &paint, SkRect::MakeXYWH(left, top, width, height));
 
     SkRect textBounds = SkRect::MakeXYWH(left + padding, top + padding, graphWidth + histogramWidth + gap + 2, fontHeight);
     SkRect graphBounds = SkRect::MakeXYWH(left + padding, textBounds.bottom() + 2 * padding, graphWidth, graphHeight);
     SkRect histogramBounds = SkRect::MakeXYWH(graphBounds.right() + gap, graphBounds.top(), histogramWidth, graphHeight);
 
-    drawFPSCounterText(canvas, paint, fpsCounter, textBounds);
-    drawFPSCounterGraphAndHistogram(canvas, paint, fpsCounter, graphBounds, histogramBounds);
+    drawTextLeftAligned(canvas, &paint, textBounds, base::StringPrintf("FPS:%5.1f", m_fpsGraph.value));
+    drawTextRightAligned(canvas, &paint, textBounds, base::StringPrintf("%.0f-%.0f", m_fpsGraph.min, m_fpsGraph.max));
 
-    return top + height;
-}
-
-void HeadsUpDisplayLayerImpl::drawFPSCounterText(SkCanvas* canvas, SkPaint& paint, FrameRateCounter* fpsCounter, SkRect bounds)
-{
-    // Update FPS text - not every frame so text is readable
-    base::TimeTicks now = base::TimeTicks::Now();
-    if (base::TimeDelta(now - textUpdateTime).InSecondsF() > 0.25) {
-        m_averageFPS = fpsCounter->getAverageFPS();
-        textUpdateTime = now;
-    }
-
-    // Draw FPS text.
-    if (m_fontAtlas.get()) {
-        std::string fpsText = base::StringPrintf("FPS:%5.1f", m_averageFPS);
-        std::string minMaxText = base::StringPrintf("%.0f-%.0f", std::min( m_minFPS, m_maxFPS), m_maxFPS);
-
-        int minMaxWidth = m_fontAtlas->textSize(minMaxText).width();
-        gfx::Size textArea(bounds.width(), bounds.height());
-
-        paint.setColor(SK_ColorRED);
-        m_fontAtlas->drawText(canvas, paint, fpsText, gfx::Point(bounds.left(), bounds.top()), textArea);
-        m_fontAtlas->drawText(canvas, paint, minMaxText, gfx::Point(bounds.right() - minMaxWidth, bounds.top()), textArea);
-    }
-}
-
-void HeadsUpDisplayLayerImpl::drawFPSCounterGraphAndHistogram(SkCanvas* canvas, SkPaint& paint, FrameRateCounter* fpsCounter, SkRect graphBounds, SkRect histogramBounds)
-{
-    const double loFPS = 0;
-    const double hiFPS = std::max(m_maxFPS + 10.0, 80.0);
-
-    // Draw top and bottom line.
-    paint.setColor(SkColorSetRGB(130, 130, 130));
-    canvas->drawLine(graphBounds.left(), graphBounds.top() - 1, graphBounds.right(), graphBounds.top() - 1, paint);
-    canvas->drawLine(graphBounds.left(), graphBounds.bottom(), graphBounds.right(), graphBounds.bottom(), paint);
-
-    // Draw 60fps line.
-    const double top60 = graphBounds.top() + graphBounds.height() * (1 - ((60 - loFPS) / (hiFPS - loFPS))) - 1;
-    paint.setColor(SkColorSetRGB(100, 100, 100));
-    canvas->drawLine(graphBounds.left(), top60, graphBounds.right(), top60, paint);
+    const double upperBound = Graph::updateUpperBound(&m_fpsGraph);
+    drawGraphLines(canvas, &paint, graphBounds, m_fpsGraph);
 
     // Collect graph and histogram data.
     int x = 0;
     SkPath path;
 
-    m_minFPS = std::numeric_limits<double>::max();
-    m_maxFPS = 0;
-
     const int histogramSize = 20;
     double histogram[histogramSize] = {0};
     double maxBucketValue = 0;
 
-    for (size_t i = 1; i < fpsCounter->timeStampHistorySize() - 1; ++i) {
+    for (size_t i = 0; i < fpsCounter->timeStampHistorySize() - 1; ++i) {
         base::TimeDelta delta = fpsCounter->timeStampOfRecentFrame(i + 1) - fpsCounter->timeStampOfRecentFrame(i);
 
         // Skip this particular instantaneous frame rate if it is not likely to have been valid.
@@ -270,13 +304,8 @@ void HeadsUpDisplayLayerImpl::drawFPSCounterGraphAndHistogram(SkCanvas* canvas, 
 
             double fps = 1.0 / delta.InSecondsF();
 
-            m_minFPS = std::min(fps, m_minFPS);
-            m_maxFPS = std::max(fps, m_maxFPS);
-
             // Clamp the FPS to the range we want to plot visually.
-            double p = (fps - loFPS) / (hiFPS - loFPS);
-            if (p < 0)
-                p = 0;
+            double p = fps / upperBound;
             if (p > 1)
                 p = 1;
 
@@ -319,6 +348,53 @@ void HeadsUpDisplayLayerImpl::drawFPSCounterGraphAndHistogram(SkCanvas* canvas, 
     paint.setStrokeWidth(1);
 
     canvas->drawPath(path, paint);
+
+    return top + height + 2;
+}
+
+int HeadsUpDisplayLayerImpl::drawPaintTimeDisplay(SkCanvas* canvas, PaintTimeCounter* paintTimeCounter, const int& top)
+{
+    const int padding = 4;
+    const int fontHeight = m_fontAtlas.get() ? m_fontAtlas->fontHeight() : 0;
+
+    const int graphWidth = paintTimeCounter->HistorySize() * 2 - 1;
+    const int graphHeight = 40;
+
+    const int width = graphWidth + 2 * padding;
+    const int height = fontHeight + graphHeight + 4 * padding + 2 + fontHeight + padding;
+
+    const int left = bounds().width() - width - 2;
+
+    SkPaint paint = createPaint();
+    drawGraphBackground(canvas, &paint, SkRect::MakeXYWH(left, top, width, height));
+
+    SkRect textBounds = SkRect::MakeXYWH(left + padding, top + padding, graphWidth, fontHeight);
+    SkRect textBounds2 = SkRect::MakeXYWH(left + padding, textBounds.bottom() + padding, graphWidth, fontHeight);
+    SkRect graphBounds = SkRect::MakeXYWH(left + padding, textBounds2.bottom() + 2 * padding, graphWidth, graphHeight);
+
+    drawTextLeftAligned(canvas, &paint, textBounds, "Page paint time (ms)");
+    drawTextLeftAligned(canvas, &paint, textBounds2, base::StringPrintf("%5.1f", m_paintTimeGraph.value));
+    drawTextRightAligned(canvas, &paint, textBounds2, base::StringPrintf("%.1f-%.1f", m_paintTimeGraph.min, m_paintTimeGraph.max));
+
+    const double upperBound = Graph::updateUpperBound(&m_paintTimeGraph);
+    drawGraphLines(canvas, &paint, graphBounds, m_paintTimeGraph);
+
+    // Same green as used for paint times in the WebInspector Timeline
+    paint.setColor(SkColorSetRGB(95, 160, 80));
+    for (size_t i = 0; i < paintTimeCounter->HistorySize(); ++i) {
+        double pt = paintTimeCounter->GetPaintTimeOfRecentFrame(i).InMillisecondsF();
+
+        if (pt == 0.0)
+            continue;
+
+        double p = pt / upperBound;
+        if (p > 1)
+            p = 1;
+
+        canvas->drawRect(SkRect::MakeXYWH(graphBounds.left() + i * 2, graphBounds.bottom() - p * graphBounds.height(), 1, p * graphBounds.height()), paint);
+    }
+
+    return top + height + 2;
 }
 
 void HeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, DebugRectHistory* debugRectHistory)

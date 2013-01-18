@@ -250,6 +250,10 @@ FrameRateCounter* LayerTreeImpl::frame_rate_counter() const {
   return layer_tree_host_impl_->fpsCounter();
 }
 
+PaintTimeCounter* LayerTreeImpl::paint_time_counter() const {
+  return layer_tree_host_impl_->paintTimeCounter();
+}
+
 bool LayerTreeImpl::IsActiveTree() const {
   return layer_tree_host_impl_->activeTree() == this;
 }

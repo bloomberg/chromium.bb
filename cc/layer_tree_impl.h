@@ -29,6 +29,7 @@ class LayerTreeHostImpl;
 class LayerTreeImpl;
 class LayerTreeSettings;
 class OutputSurface;
+class PaintTimeCounter;
 class PinchZoomViewport;
 class ResourceProvider;
 class TileManager;
@@ -50,6 +51,7 @@ class CC_EXPORT LayerTreeImpl {
   ResourceProvider* resource_provider() const;
   TileManager* tile_manager() const;
   FrameRateCounter* frame_rate_counter() const;
+  PaintTimeCounter* paint_time_counter() const;
   bool IsActiveTree() const;
   bool IsPendingTree() const;
   LayerImpl* FindActiveTreeLayerById(int id);

@@ -25,7 +25,7 @@ LayerTreeDebugState::~LayerTreeDebugState() {
 }
 
 bool LayerTreeDebugState::showHudInfo() const {
-    return showFPSCounter || showPlatformLayerTree || showHudRects();
+    return showFPSCounter || showPlatformLayerTree || continuousPainting || showHudRects();
 }
 
 bool LayerTreeDebugState::showHudRects() const {
@@ -33,7 +33,7 @@ bool LayerTreeDebugState::showHudRects() const {
 }
 
 bool LayerTreeDebugState::hudNeedsFont() const {
-    return showFPSCounter || showPlatformLayerTree;
+    return showFPSCounter || showPlatformLayerTree || continuousPainting;
 }
 
 bool LayerTreeDebugState::equal(const LayerTreeDebugState& a, const LayerTreeDebugState& b) {
