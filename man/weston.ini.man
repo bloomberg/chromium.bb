@@ -1,0 +1,332 @@
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
+.TH weston.ini 5 "2013-01-17" "Weston __version__"
+.SH NAME
+weston.ini \- configuration file for
+.B Weston
+\- the reference Wayland
+compositor
+.SH INTRODUCTION
+.B Weston
+obtains configuration from its command line parameters and the configuration
+file described here.
+.SH DESCRIPTION
+.B Weston
+uses a configuration file called
+.I weston.ini
+for its setup.
+The
+.I weston.ini
+configuration file is searched for in one of the following places when the
+server is started:
+.PP
+.RS 4
+.nf
+.BR "$XDG_CONFIG_HOME/weston.ini   " "(if $XDG_CONFIG_HOME is set)"
+.BR "$HOME/.config/weston.ini      " "(if $HOME is set)"
+.BR "<current dir>/weston.ini      " "(if both variables were not set)"
+.fi
+.RE
+.PP
+where environment variable
+.B $HOME
+is the user's home directory, and
+.B $XDG_CONFIG_HOME
+is the user specific configuration directory.
+.PP
+The
+.I weston.ini
+file is composed of a number of sections which may be present in any order, or
+omitted to use default configuration values. Each section has the form:
+.PP
+.RS 4
+.nf
+.BI [ SectionHeader ]
+.RI Key1=Value1
+.RI Key2=Value2
+    ...
+.fi
+.RE
+.PP
+The spaces are significant.
+Comment lines are ignored:
+.PP
+.RS 4
+.nf
+.IR "#comment"
+.fi
+.RE
+.PP
+The section headers are:
+.PP
+.RS 4
+.nf
+.BR "core           " "The core modules"
+.BR "shell          " "Desktop customization"
+.BR "launcher       " "Add launcher to the panel"
+.BR "screensaver    " "Screensaver selection"
+.BR "output         " "Output configuration"
+.BR "input-method   " "Onscreen keyboard input"
+.BR "keyboard       " "Keyboard layouts"
+.BR "terminal       " "Terminal application options"
+.fi
+.RE
+.PP
+Possible value types are string, signed and unsigned 32-bit
+integer, and boolean. Strings must not be quoted, do not support any
+escape sequences, and run till the end of the line. Integers can
+be given in decimal (e.g. 123), octal (e.g. 0173), and hexadecimal
+(e.g. 0x7b) form. Boolean values can be only 'true' or 'false'.
+.RE
+.SH "CORE SECTION"
+The
+.B core
+section is used to select the startup compositor modules.
+.TP 7
+.BI "modules=" desktop-shell.so,xwayland.so
+specifies the modules to load (string). Available modules in the
+.IR "__weston_modules_dir__"
+directory are:
+.PP
+.RS 10
+.nf
+.BR desktop-shell.so
+.BR tablet-shell.so
+.BR xwayland.so
+.fi
+.RE
+.RS
+.PP
+
+.SH "SHELL SECTION"
+The
+.B shell
+section is used to customize the compositor. Some keys may not be handled by
+different shell plugins.
+.PP
+The entries that can appear in this section are:
+.TP 7
+.BI "background-image=" file
+sets the path for the background image file (string).
+.TP 7
+.BI "background-color=" 0xAARRGGBB
+sets the color of the background (unsigned integer). The hexadecimal
+digit pairs are in order alpha, red, green, and blue.
+.TP 7
+.BI "panel-color=" 0xAARRGGBB
+sets the color of the panel (unsigned integer). The hexadecimal
+digit pairs are in order transparency, red, green, and blue. Examples:
+.PP
+.RS 10
+.nf
+.BR "0xffff0000    " "Red"
+.BR "0xff00ff00    " "Green"
+.BR "0xff0000ff    " "Blue"
+.BR "0x00ffffff    " "Fully transparent"
+.fi
+.RE
+.TP 7
+.BI "locking=" true
+enables screen locking (boolean).
+.TP 7
+.BI "animation=" zoom
+sets the effect used for opening new windows (string). Can be
+.B zoom,
+.B fade.
+Otherwise, no animation is used.
+.TP 7
+.BI "binding-modifier=" ctrl
+sets the modifier key used for common bindings (string), such as moving
+surfaces, resizing, rotating, switching, closing and setting the transparency
+for windows, controlling the backlight and zooming the desktop. Possible values:
+ctrl, alt, super (default)
+.TP 7
+.BI "num-workspaces=" 6
+defines the number of workspaces (unsigned integer). The user can switch
+workspaces by using the
+binding+F1, F2 keys. If this key is not set, fall back to one workspace.
+.TP 7
+.BI "lockscreen-icon=" path
+sets the path to lock screen icon image (string). (tablet shell only)
+.TP 7
+.BI "lockscreen=" path
+sets the path to lock screen background image (string). (tablet shell only)
+.TP 7
+.BI "homescreen=" path
+sets the path to home screen background image (string). (tablet shell only)
+.RE
+.SH "LAUNCHER SECTION"
+There can be multiple launcher sections, one for each launcher.
+.TP 7
+.BI "icon=" icon
+sets the path to icon image (string). Svg images are not currently supported.
+.TP 7
+.BI "path=" program
+sets the path to the program that is run by clicking on this launcher (string).
+It is possible to pass arguments and environment variables to the program. For
+example:
+.nf
+.in +4n
+
+path=GDK_BACKEND=wayland gnome-terminal --full-screen
+.in
+.fi
+.PP
+.RE
+.SH "SCREENSAVER SECTION"
+The
+.B screensaver
+section is used to select and schedule a screensaver.
+The
+.B screensaver
+section is optional, as are all of the entries that may be specified in
+it.
+.TP 7
+.BI "path=" /usr/libexec/weston-screensaver
+This instructs the compositor to use the selected screensaver client on a given
+path (string). If this line is missing or commented out, the screensaver in
+.B "weston(1)"
+is disabled.
+.RE
+.TP 7
+.BI "duration=" 600
+The idle time in seconds until the screensaver disappears in order to save power
+(unsigned integer).
+.SH "OUTPUT SECTION"
+There can be multiple output sections, each corresponding to one output. It is
+currently only recognized by the drm and x11 backends.
+.TP 7
+.BI "name=" name
+sets a name for the output (string). The backend uses the name to
+identify the output. All X11 output names start with a letter X. The available
+output names for DRM backend are listed in the
+.B "weston-launch(1)"
+output.
+Examples of usage:
+.PP
+.RS 10
+.nf
+.BR "LVDS1    " "DRM backend, Laptop internal panel no.1"
+.BR "VGA1     " "DRM backend, VGA connector no.1"
+.BR "X1       " "X11 backend, X window no.1"
+.fi
+.RE
+.RS
+.PP
+See
+.B "weston-drm(7)"
+for more details.
+.RE
+.TP 7
+.BI "mode=" mode
+sets the output mode (string). The mode parameter is handled differently
+depending on the backend. On the X11 backend, it just sets the WIDTHxHEIGHT of
+the weston window.
+The DRM backend accepts different modes:
+.PP
+.RS 10
+.nf
+.BR "WIDTHxHEIGHT    " "Resolution size width and height in pixels"
+.BR "preferred       " "Uses the preferred mode"
+.BR "current         " "Uses the current crt controller mode"
+.BR "off             " "Disables the output"
+.fi
+.RE
+.RS
+.PP
+Optionally, an user may specify a modeline, such as:
+.PP
+.nf
+.in +4n
+.nf
+173.00  1920 2048 2248 2576  1080 1083 1088 1120 -hsync +vsync
+.fi
+.in
+.PP
+It consists of the refresh rate in Hz, horizontal and vertical resolution,
+options for horizontal and vertical synchronisation. The program
+.B "cvt(1)"
+can provide suitable modeline string.
+.RE
+.TP 7
+.BI "transform=" normal
+The transformation applied to screen output (string). The transform key can
+be one of the following 8 strings:
+.PP
+.RS 10
+.nf
+.BR  "normal        " "Normal output."
+.BR  "90            " "90 degrees clockwise."
+.BR  "180           " "Upside down."
+.BR  "270           " "90 degrees counter clockwise."
+.BR  "flipped       " "Horizontally flipped"
+.BR  "flipped-90    " "Flipped and 90 degrees clockwise"
+.BR  "flipped-180   " "Flipped upside down"
+.BR  "flipped-270   " "Flipped and 90 degrees counter clockwise"
+.fi
+.RE
+.SH "INPUT-METHOD SECTION"
+.TP 7
+.BI "path=" "/usr/libexec/weston-keyboard"
+sets the path of the on screen keyboard input method (string).
+.RE
+.RE
+.SH "KEYBOARD SECTION"
+This section contains the following keys:
+.TP 7
+.BI "keymap_rules=" "evdev"
+sets the keymap rules file (string). Used to map layout and model to input
+device.
+.RE
+.RE
+.TP 7
+.BI "keymap_model=" "pc105"
+sets the keymap model (string). See the Models section in
+.B "xkeyboard-config(7)."
+.RE
+.RE
+.TP 7
+.BI "keymap_layout=" "us,de,gb"
+sets the comma separated list of keyboard layout codes (string). See the
+Layouts section in
+.B "xkeyboard-config(7)."
+.RE
+.RE
+.TP 7
+.BI "keymap_variant=" "euro,,intl"
+sets the comma separated list of keyboard layout variants (string). The number
+of variants must be the same as the number of layouts above. See the Layouts
+section in
+.B "xkeyboard-config(7)."
+.RE
+.RE
+.TP 7
+.BI "keymap_options=" "grp:alt_shift_toggle,grp_led:scroll"
+sets the keymap options (string). See the Options section in
+.B "xkeyboard-config(7)."
+.RE
+.RE
+.SH "TERMINAL SECTION"
+Contains settings for the weston terminal application (weston-terminal). It
+allows to customize the font and shell of the command line interface.
+.TP 7
+.BI "font=" "DejaVu Sans Mono"
+sets the font of the terminal (string). For a good experience it is recommend
+to use monospace fonts. In case the font is not found, the default one is used.
+.RE
+.RE
+.TP 7
+.BI "font-size=" "14"
+sets the size of the terminal font (unsigned integer).
+.RE
+.RE
+.TP 7
+.BI "term=" "xterm-256color"
+The terminal shell (string). Sets the $TERM variable.
+.RE
+.RE
+.SH "SEE ALSO"
+.BR weston (1),
+.BR weston-launch (1),
+.BR weston-drm (7),
+.BR xkeyboard-config (7)
