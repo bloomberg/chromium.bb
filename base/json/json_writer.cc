@@ -170,18 +170,15 @@ void JSONWriter::BuildJSONString(const Value* const node, int depth) {
 
         const DictionaryValue* dict =
           static_cast<const DictionaryValue*>(node);
-        for (DictionaryValue::key_iterator key_itr = dict->begin_keys();
-             key_itr != dict->end_keys();
-             ++key_itr) {
-          const Value* value = NULL;
-          bool result = dict->GetWithoutPathExpansion(*key_itr, &value);
-          DCHECK(result);
-
-          if (omit_binary_values_ && value->GetType() == Value::TYPE_BINARY) {
+        bool first_entry = true;
+        for (DictionaryValue::Iterator itr(*dict); !itr.IsAtEnd();
+             itr.Advance(), first_entry = false) {
+          if (omit_binary_values_ &&
+              itr.value().GetType() == Value::TYPE_BINARY) {
             continue;
           }
 
-          if (key_itr != dict->begin_keys()) {
+          if (!first_entry) {
             json_string_->append(",");
             if (pretty_print_)
               json_string_->append(kPrettyPrintLineEnding);
@@ -189,13 +186,13 @@ void JSONWriter::BuildJSONString(const Value* const node, int depth) {
 
           if (pretty_print_)
             IndentLine(depth + 1);
-          AppendQuotedString(*key_itr);
+          AppendQuotedString(itr.key());
           if (pretty_print_) {
             json_string_->append(": ");
           } else {
             json_string_->append(":");
           }
-          BuildJSONString(value, depth + 1);
+          BuildJSONString(&itr.value(), depth + 1);
         }
 
         if (pretty_print_) {

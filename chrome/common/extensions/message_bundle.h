@@ -13,6 +13,7 @@
 
 namespace base {
 class DictionaryValue;
+class Value;
 }
 
 namespace extensions {
@@ -126,7 +127,7 @@ class MessageBundle {
   // They replace all $PLACEHOLDERS$ with their value, and return just key/value
   // of the message.
   bool GetMessageValue(const std::string& key,
-                       const base::DictionaryValue& catalog,
+                       const base::Value& name_value,
                        std::string* value,
                        std::string* error) const;
 

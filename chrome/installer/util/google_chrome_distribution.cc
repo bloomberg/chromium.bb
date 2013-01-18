@@ -298,15 +298,15 @@ bool GoogleChromeDistribution::BuildUninstallMetricsString(
   DCHECK(NULL != metrics);
   bool has_values = false;
 
-  for (DictionaryValue::key_iterator iter(uninstall_metrics_dict->begin_keys());
-       iter != uninstall_metrics_dict->end_keys(); ++iter) {
+  for (DictionaryValue::Iterator iter(*uninstall_metrics_dict); !iter.IsAtEnd();
+       iter.Advance()) {
     has_values = true;
     metrics->append(L"&");
-    metrics->append(UTF8ToWide(*iter));
+    metrics->append(UTF8ToWide(iter.key()));
     metrics->append(L"=");
 
     std::string value;
-    uninstall_metrics_dict->GetStringWithoutPathExpansion(*iter, &value);
+    iter.value().GetAsString(&value);
     metrics->append(UTF8ToWide(value));
   }
 

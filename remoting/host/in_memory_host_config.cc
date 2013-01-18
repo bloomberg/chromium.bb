@@ -10,7 +10,7 @@
 namespace remoting {
 
 InMemoryHostConfig::InMemoryHostConfig()
-    : values_(new DictionaryValue()) {
+    : values_(new base::DictionaryValue()) {
 }
 
 InMemoryHostConfig::~InMemoryHostConfig() {}
@@ -47,14 +47,14 @@ void InMemoryHostConfig::SetBoolean(const std::string& path, bool in_value) {
 bool InMemoryHostConfig::CopyFrom(const base::DictionaryValue* dictionary) {
   bool result = true;
 
-  for (DictionaryValue::key_iterator key(dictionary->begin_keys());
-       key != dictionary->end_keys(); ++key) {
+  for (base::DictionaryValue::Iterator it(*dictionary); !it.IsAtEnd();
+       it.Advance()) {
     std::string str_value;
     bool bool_value;
-    if (dictionary->GetString(*key, &str_value)) {
-      SetString(*key, str_value);
-    } else if (dictionary->GetBoolean(*key, &bool_value)) {
-      SetBoolean(*key, bool_value);
+    if (it.value().GetAsString(&str_value)) {
+      SetString(it.key(), str_value);
+    } else if (it.value().GetAsBoolean(&bool_value)) {
+      SetBoolean(it.key(), bool_value);
     } else {
       result = false;
     }

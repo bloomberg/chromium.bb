@@ -899,10 +899,10 @@ std::set<FilePath> Extension::GetBrowserImages() const {
   // Theme images.
   DictionaryValue* theme_images = GetThemeImages();
   if (theme_images) {
-    for (DictionaryValue::key_iterator it = theme_images->begin_keys();
-         it != theme_images->end_keys(); ++it) {
+    for (DictionaryValue::Iterator it(*theme_images); !it.IsAtEnd();
+         it.Advance()) {
       std::string val;
-      if (theme_images->GetStringWithoutPathExpansion(*it, &val))
+      if (it.value().GetAsString(&val))
         image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(val)));
     }
   }
@@ -2003,12 +2003,12 @@ bool Extension::LoadCommands(string16* error) {
     }
 
     int command_index = 0;
-    for (DictionaryValue::key_iterator iter = commands->begin_keys();
-         iter != commands->end_keys(); ++iter) {
+    for (DictionaryValue::Iterator iter(*commands); !iter.IsAtEnd();
+         iter.Advance()) {
       ++command_index;
 
-      DictionaryValue* command = NULL;
-      if (!commands->GetDictionary(*iter, &command)) {
+      const DictionaryValue* command = NULL;
+      if (!iter.value().GetAsDictionary(&command)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidKeyBindingDictionary,
             base::IntToString(command_index));
@@ -2016,7 +2016,7 @@ bool Extension::LoadCommands(string16* error) {
       }
 
       scoped_ptr<extensions::Command> binding(new extensions::Command());
-      if (!binding->Parse(command, *iter, command_index, error))
+      if (!binding->Parse(command, iter.key(), command_index, error))
         return false;  // |error| already set.
 
       std::string command_name = binding->command_name();
@@ -2206,45 +2206,43 @@ bool Extension::LoadRequirements(string16* error) {
     return false;
   }
 
-  for (DictionaryValue::key_iterator it = requirements_value->begin_keys();
-       it != requirements_value->end_keys(); ++it) {
-    DictionaryValue* requirement_value;
-    if (!requirements_value->GetDictionaryWithoutPathExpansion(
-        *it, &requirement_value)) {
+  for (DictionaryValue::Iterator it(*requirements_value); !it.IsAtEnd();
+       it.Advance()) {
+    const DictionaryValue* requirement_value;
+    if (!it.value().GetAsDictionary(&requirement_value)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidRequirement, *it);
+          errors::kInvalidRequirement, it.key());
       return false;
     }
 
-    if (*it == "plugins") {
-      for (DictionaryValue::key_iterator plugin_it =
-              requirement_value->begin_keys();
-           plugin_it != requirement_value->end_keys(); ++plugin_it) {
+    if (it.key() == "plugins") {
+      for (DictionaryValue::Iterator plugin_it(*requirement_value);
+           !plugin_it.IsAtEnd(); plugin_it.Advance()) {
         bool plugin_required = false;
-        if (!requirement_value->GetBoolean(*plugin_it, &plugin_required)) {
+        if (!plugin_it.value().GetAsBoolean(&plugin_required)) {
           *error = ErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidRequirement, *it);
+              errors::kInvalidRequirement, it.key());
           return false;
         }
-        if (*plugin_it == "npapi") {
+        if (plugin_it.key() == "npapi") {
           requirements_.npapi = plugin_required;
         } else {
           *error = ErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidRequirement, *it);
+              errors::kInvalidRequirement, it.key());
           return false;
         }
       }
-    } else if (*it == "3D") {
-      ListValue* features = NULL;
+    } else if (it.key() == "3D") {
+      const ListValue* features = NULL;
       if (!requirement_value->GetListWithoutPathExpansion("features",
                                                           &features) ||
           !features) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidRequirement, *it);
+            errors::kInvalidRequirement, it.key());
         return false;
       }
 
-      for (base::ListValue::iterator feature_it = features->begin();
+      for (base::ListValue::const_iterator feature_it = features->begin();
            feature_it != features->end();
            ++feature_it) {
         std::string feature;
@@ -2255,7 +2253,7 @@ bool Extension::LoadRequirements(string16* error) {
             requirements_.css3d = true;
           } else {
             *error = ErrorUtils::FormatErrorMessageUTF16(
-                errors::kInvalidRequirement, *it);
+                errors::kInvalidRequirement, it.key());
             return false;
           }
         }
@@ -2657,10 +2655,10 @@ bool Extension::LoadThemeImages(const DictionaryValue* theme_value,
   const DictionaryValue* images_value = NULL;
   if (theme_value->GetDictionary(keys::kThemeImages, &images_value)) {
     // Validate that the images are all strings
-    for (DictionaryValue::key_iterator iter = images_value->begin_keys();
-         iter != images_value->end_keys(); ++iter) {
+    for (DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
+         iter.Advance()) {
       std::string val;
-      if (!images_value->GetString(*iter, &val)) {
+      if (!iter.value().GetAsString(&val)) {
         *error = ASCIIToUTF16(errors::kInvalidThemeImages);
         return false;
       }
@@ -2675,13 +2673,13 @@ bool Extension::LoadThemeColors(const DictionaryValue* theme_value,
   const DictionaryValue* colors_value = NULL;
   if (theme_value->GetDictionary(keys::kThemeColors, &colors_value)) {
     // Validate that the colors are RGB or RGBA lists
-    for (DictionaryValue::key_iterator iter = colors_value->begin_keys();
-         iter != colors_value->end_keys(); ++iter) {
+    for (DictionaryValue::Iterator iter(*colors_value); !iter.IsAtEnd();
+         iter.Advance()) {
       const ListValue* color_list = NULL;
       double alpha = 0.0;
       int color = 0;
       // The color must be a list
-      if (!colors_value->GetListWithoutPathExpansion(*iter, &color_list) ||
+      if (!iter.value().GetAsList(&color_list) ||
           // And either 3 items (RGB) or 4 (RGBA)
           ((color_list->GetSize() != 3) &&
            ((color_list->GetSize() != 4) ||
@@ -2708,11 +2706,11 @@ bool Extension::LoadThemeTints(const DictionaryValue* theme_value,
     return true;
 
   // Validate that the tints are all reals.
-  for (DictionaryValue::key_iterator iter = tints_value->begin_keys();
-       iter != tints_value->end_keys(); ++iter) {
+  for (DictionaryValue::Iterator iter(*tints_value); !iter.IsAtEnd();
+       iter.Advance()) {
     const ListValue* tint_list = NULL;
     double v = 0.0;
-    if (!tints_value->GetListWithoutPathExpansion(*iter, &tint_list) ||
+    if (!iter.value().GetAsList(&tint_list) ||
         tint_list->GetSize() != 3 ||
         !tint_list->GetDouble(0, &v) ||
         !tint_list->GetDouble(1, &v) ||

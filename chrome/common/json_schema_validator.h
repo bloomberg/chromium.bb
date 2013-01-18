@@ -86,7 +86,7 @@ class JSONSchemaValidator {
   static const char kInvalidType[];
 
   // Classifies a Value as one of the JSON schema primitive types.
-  static std::string GetJSONSchemaType(base::Value* value);
+  static std::string GetJSONSchemaType(const base::Value* value);
 
   // Utility methods to format error messages. The first method can have one
   // wildcard represented by '*', which is replaced with s1. The second method
@@ -140,10 +140,10 @@ class JSONSchemaValidator {
   // Validates a JSON value. Returns true if the instance is valid, false
   // otherwise. If false is returned any errors are available from the errors()
   // getter.
-  bool Validate(base::Value* instance);
+  bool Validate(const base::Value* instance);
 
  private:
-  typedef std::map<std::string, base::DictionaryValue*> TypeMap;
+  typedef std::map<std::string, const base::DictionaryValue*> TypeMap;
 
   // Each of the below methods handle a subset of the validation process. The
   // path paramater is the path to |instance| from the root of the instance tree
@@ -152,51 +152,57 @@ class JSONSchemaValidator {
   // Validates any instance node against any schema node. This is called for
   // every node in the instance tree, and it just decides which of the more
   // detailed methods to call.
-  void Validate(base::Value* instance, base::DictionaryValue* schema,
+  void Validate(const base::Value* instance,
+                const base::DictionaryValue* schema,
                 const std::string& path);
 
   // Validates a node against a list of possible schemas. If any one of the
   // schemas match, the node is valid.
-  void ValidateChoices(base::Value* instance, base::ListValue* choices,
+  void ValidateChoices(const base::Value* instance,
+                       const base::ListValue* choices,
                        const std::string& path);
 
   // Validates a node against a list of exact primitive values, eg 42, "foobar".
-  void ValidateEnum(base::Value* instance, base::ListValue* choices,
+  void ValidateEnum(const base::Value* instance,
+                    const base::ListValue* choices,
                     const std::string& path);
 
   // Validates a JSON object against an object schema node.
-  void ValidateObject(base::DictionaryValue* instance,
-                      base::DictionaryValue* schema,
+  void ValidateObject(const base::DictionaryValue* instance,
+                      const base::DictionaryValue* schema,
                       const std::string& path);
 
   // Validates a JSON array against an array schema node.
-  void ValidateArray(base::ListValue* instance, base::DictionaryValue* schema,
+  void ValidateArray(const base::ListValue* instance,
+                     const base::DictionaryValue* schema,
                      const std::string& path);
 
   // Validates a JSON array against an array schema node configured to be a
   // tuple. In a tuple, there is one schema node for each item expected in the
   // array.
-  void ValidateTuple(base::ListValue* instance, base::DictionaryValue* schema,
+  void ValidateTuple(const base::ListValue* instance,
+                     const base::DictionaryValue* schema,
                      const std::string& path);
 
   // Validate a JSON string against a string schema node.
-  void ValidateString(base::StringValue* instance,
-                      base::DictionaryValue* schema,
+  void ValidateString(const base::StringValue* instance,
+                      const base::DictionaryValue* schema,
                       const std::string& path);
 
   // Validate a JSON number against a number schema node.
-  void ValidateNumber(base::Value* instance,
-                      base::DictionaryValue* schema,
+  void ValidateNumber(const base::Value* instance,
+                      const base::DictionaryValue* schema,
                       const std::string& path);
 
   // Validates that the JSON node |instance| has |expected_type|.
-  bool ValidateType(base::Value* instance, const std::string& expected_type,
+  bool ValidateType(const base::Value* instance,
+                    const std::string& expected_type,
                     const std::string& path);
 
   // Returns true if |schema| will allow additional items of any type.
   bool SchemaAllowsAnyAdditionalItems(
-      base::DictionaryValue* schema,
-      base::DictionaryValue** addition_items_schema);
+      const base::DictionaryValue* schema,
+      const base::DictionaryValue** addition_items_schema);
 
   // The root schema node.
   base::DictionaryValue* schema_root_;

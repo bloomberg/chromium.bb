@@ -127,21 +127,20 @@ Error* CapabilitiesParser::Parse() {
         &CapabilitiesParser::ParseExcludeSwitches;
   }
 
-  DictionaryValue::key_iterator key_iter = options->begin_keys();
-  for (; key_iter != options->end_keys(); ++key_iter) {
-    if (parser_map.find(*key_iter) == parser_map.end()) {
+  for (DictionaryValue::Iterator iter(*options); !iter.IsAtEnd();
+       iter.Advance()) {
+    if (parser_map.find(iter.key()) == parser_map.end()) {
       if (!legacy_options)
         return new Error(kBadRequest,
-                         "Unrecognized chrome capability: " +  *key_iter);
+                         "Unrecognized chrome capability: " + iter.key());
       continue;
     }
-    const Value* option = NULL;
-    options->GetWithoutPathExpansion(*key_iter, &option);
-    Error* error = (this->*parser_map[*key_iter])(option);
+    const Value* option = &iter.value();
+    Error* error = (this->*parser_map[iter.key()])(option);
     if (error) {
       error->AddDetails(base::StringPrintf(
           "Error occurred while processing capability '%s'",
-          (*key_iter).c_str()));
+          iter.key().c_str()));
       return error;
     }
   }
@@ -235,20 +234,18 @@ Error* CapabilitiesParser::ParseLoggingPrefs(const base::Value* option) {
   if (!option->GetAsDictionary(&logging_prefs))
     return CreateBadInputError("loggingPrefs", Value::TYPE_DICTIONARY, option);
 
-  DictionaryValue::key_iterator key_iter = logging_prefs->begin_keys();
-  for (; key_iter != logging_prefs->end_keys(); ++key_iter) {
+  for (DictionaryValue::Iterator iter(*logging_prefs); !iter.IsAtEnd();
+       iter.Advance()) {
     LogType log_type;
-    if (!LogType::FromString(*key_iter, &log_type))
+    if (!LogType::FromString(iter.key(), &log_type))
       continue;
 
-    const Value* level_value;
-    logging_prefs->Get(*key_iter, &level_value);
     std::string level_name;
-    if (!level_value->GetAsString(&level_name)) {
+    if (!iter.value().GetAsString(&level_name)) {
       return CreateBadInputError(
-          std::string("loggingPrefs.") + *key_iter,
+          std::string("loggingPrefs.") + iter.key(),
           Value::TYPE_STRING,
-          level_value);
+          &iter.value());
     }
     caps_->log_levels[log_type.type()] = LogLevelFromString(level_name);
   }

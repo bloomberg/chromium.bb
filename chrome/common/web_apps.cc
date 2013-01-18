@@ -288,16 +288,16 @@ bool ParseWebAppFromDefinitionFile(Value* definition_value,
   std::vector<WebApplicationInfo::IconInfo> icons;
   DictionaryValue* icons_value = NULL;
   if (definition->GetDictionary("icons", &icons_value)) {
-    for (DictionaryValue::key_iterator iter = icons_value->begin_keys();
-         iter != icons_value->end_keys(); ++iter) {
+    for (DictionaryValue::Iterator iter(*icons_value); !iter.IsAtEnd();
+         iter.Advance()) {
       // Ignore unknown properties. Better for forward compat.
       int size = 0;
-      if (!base::StringToInt(*iter, &size) || size < 0 || size > 128)
+      if (!base::StringToInt(iter.key(), &size) || size < 0 || size > 128)
         continue;
 
       std::string icon_url_string;
       GURL icon_url;
-      if (!icons_value->GetString(*iter, &icon_url_string) ||
+      if (!iter.value().GetAsString(&icon_url_string) ||
           !(icon_url = web_app->manifest_url.Resolve(
               icon_url_string)).is_valid()) {
         *error = UTF8ToUTF16(

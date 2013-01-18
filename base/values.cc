@@ -18,11 +18,11 @@ namespace {
 // Make a deep copy of |node|, but don't include empty lists or dictionaries
 // in the copy. It's possible for this function to return NULL and it
 // expects |node| to always be non-NULL.
-Value* CopyWithoutEmptyChildren(Value* node) {
+Value* CopyWithoutEmptyChildren(const Value* node) {
   DCHECK(node);
   switch (node->GetType()) {
     case Value::TYPE_LIST: {
-      ListValue* list = static_cast<ListValue*>(node);
+      const ListValue* list = static_cast<const ListValue*>(node);
       ListValue* copy = new ListValue;
       for (ListValue::const_iterator it = list->begin(); it != list->end();
            ++it) {
@@ -38,16 +38,12 @@ Value* CopyWithoutEmptyChildren(Value* node) {
     }
 
     case Value::TYPE_DICTIONARY: {
-      DictionaryValue* dict = static_cast<DictionaryValue*>(node);
+      const DictionaryValue* dict = static_cast<const DictionaryValue*>(node);
       DictionaryValue* copy = new DictionaryValue;
-      for (DictionaryValue::key_iterator it = dict->begin_keys();
-           it != dict->end_keys(); ++it) {
-        Value* child = NULL;
-        bool rv = dict->GetWithoutPathExpansion(*it, &child);
-        DCHECK(rv);
-        Value* child_copy = CopyWithoutEmptyChildren(child);
+      for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
+        Value* child_copy = CopyWithoutEmptyChildren(&it.value());
         if (child_copy)
-          copy->SetWithoutPathExpansion(*it, child_copy);
+          copy->SetWithoutPathExpansion(it.key(), child_copy);
       }
       if (!copy->empty())
         return copy;

@@ -74,13 +74,13 @@ bool MessageBundle::Init(const CatalogVector& locale_catalogs,
   for (CatalogVector::const_reverse_iterator it = locale_catalogs.rbegin();
        it != locale_catalogs.rend(); ++it) {
     DictionaryValue* catalog = (*it).get();
-    for (DictionaryValue::key_iterator key_it = catalog->begin_keys();
-         key_it != catalog->end_keys(); ++key_it) {
-      std::string key(StringToLowerASCII(*key_it));
-      if (!IsValidName(*key_it))
+    for (DictionaryValue::Iterator message_it(*catalog); !message_it.IsAtEnd();
+         message_it.Advance()) {
+      std::string key(StringToLowerASCII(message_it.key()));
+      if (!IsValidName(message_it.key()))
         return BadKeyMessage(key, error);
       std::string value;
-      if (!GetMessageValue(*key_it, *catalog, &value, error))
+      if (!GetMessageValue(message_it.key(), message_it.value(), &value, error))
         return false;
       // Keys are not case-sensitive.
       dictionary_[key] = value;
@@ -130,12 +130,12 @@ bool MessageBundle::AppendReservedMessagesForLocale(
 }
 
 bool MessageBundle::GetMessageValue(const std::string& key,
-                                    const DictionaryValue& catalog,
+                                    const Value& name_value,
                                     std::string* value,
                                     std::string* error) const {
   // Get the top level tree for given key (name part).
   const DictionaryValue* name_tree;
-  if (!catalog.GetDictionaryWithoutPathExpansion(key, &name_tree)) {
+  if (!name_value.GetAsDictionary(&name_tree)) {
     *error = base::StringPrintf("Not a valid tree for key %s.", key.c_str());
     return false;
   }
@@ -173,14 +173,13 @@ bool MessageBundle::GetPlaceholders(const DictionaryValue& name_tree,
     return false;
   }
 
-  for (DictionaryValue::key_iterator key_it = placeholders_tree->begin_keys();
-       key_it != placeholders_tree->end_keys(); ++key_it) {
+  for (DictionaryValue::Iterator it(*placeholders_tree); !it.IsAtEnd();
+       it.Advance()) {
     const DictionaryValue* placeholder;
-    const std::string& content_key(*key_it);
+    const std::string& content_key(it.key());
     if (!IsValidName(content_key))
       return BadKeyMessage(content_key, error);
-    if (!placeholders_tree->GetDictionaryWithoutPathExpansion(content_key,
-                                                              &placeholder)) {
+    if (!it.value().GetAsDictionary(&placeholder)) {
       *error = base::StringPrintf("Invalid placeholder %s for key %s",
                                   content_key.c_str(),
                                   name_key.c_str());

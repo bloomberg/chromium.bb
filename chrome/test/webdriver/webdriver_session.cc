@@ -1924,21 +1924,17 @@ Error* Session::InitForWebsiteTesting() {
 }
 
 Error* Session::SetPrefs() {
-  DictionaryValue::key_iterator iter = capabilities_.prefs->begin_keys();
-  for (; iter != capabilities_.prefs->end_keys(); ++iter) {
-    Value* value;
-    capabilities_.prefs->GetWithoutPathExpansion(*iter, &value);
-    Error* error = SetPreference(*iter, true /* is_user_pref */,
-                                 value->DeepCopy());
+  for (DictionaryValue::Iterator iter(*capabilities_.prefs); !iter.IsAtEnd();
+       iter.Advance()) {
+    Error* error = SetPreference(iter.key(), true /* is_user_pref */,
+                                 iter.value().DeepCopy());
     if (error)
       return error;
   }
-  iter = capabilities_.local_state->begin_keys();
-  for (; iter != capabilities_.local_state->end_keys(); ++iter) {
-    Value* value;
-    capabilities_.local_state->GetWithoutPathExpansion(*iter, &value);
-    Error* error = SetPreference(*iter, false /* is_user_pref */,
-                                 value->DeepCopy());
+  for (DictionaryValue::Iterator iter(*capabilities_.local_state);
+       !iter.IsAtEnd(); iter.Advance()) {
+    Error* error = SetPreference(iter.key(), false /* is_user_pref */,
+                                 iter.value().DeepCopy());
     if (error)
       return error;
   }

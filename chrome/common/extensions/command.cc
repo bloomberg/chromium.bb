@@ -202,7 +202,7 @@ ui::Accelerator Command::StringToAccelerator(const std::string& accelerator) {
   return parsed;
 }
 
-bool Command::Parse(DictionaryValue* command,
+bool Command::Parse(const DictionaryValue* command,
                     const std::string& command_name,
                     int index,
                     string16* error) {
@@ -213,16 +213,16 @@ bool Command::Parse(DictionaryValue* command,
   SuggestionMap suggestions;
 
   // First try to parse the |suggested_key| as a dictionary.
-  DictionaryValue* suggested_key_dict;
+  const DictionaryValue* suggested_key_dict;
   if (command->GetDictionary(keys::kSuggestedKey, &suggested_key_dict)) {
-    DictionaryValue::key_iterator iter = suggested_key_dict->begin_keys();
-    for ( ; iter != suggested_key_dict->end_keys(); ++iter) {
+    for (DictionaryValue::Iterator iter(*suggested_key_dict); !iter.IsAtEnd();
+         iter.Advance()) {
       // For each item in the dictionary, extract the platforms specified.
       std::string suggested_key_string;
-      if (suggested_key_dict->GetString(*iter, &suggested_key_string) &&
+      if (iter.value().GetAsString(&suggested_key_string) &&
           !suggested_key_string.empty()) {
         // Found a platform, add it to the suggestions list.
-        suggestions[*iter] = suggested_key_string;
+        suggestions[iter.key()] = suggested_key_string;
       } else {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidKeyBinding,

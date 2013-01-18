@@ -36,11 +36,9 @@ bool SpdyHeaderBlockFromNetLogParam(
     return false;
   }
 
-  for (base::DictionaryValue::key_iterator it = header_dict->begin_keys();
-       it != header_dict->end_keys();
-       ++it) {
-    std::string value;
-    if (!header_dict->GetString(*it, &(*headers)[*it])) {
+  for (base::DictionaryValue::Iterator it(*header_dict); !it.IsAtEnd();
+       it.Advance()) {
+    if (!it.value().GetAsString(&(*headers)[it.key()])) {
       headers->clear();
       return false;
     }

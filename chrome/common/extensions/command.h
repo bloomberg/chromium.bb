@@ -37,7 +37,7 @@ class Command {
   static ui::Accelerator StringToAccelerator(const std::string& accelerator);
 
   // Parse the command.
-  bool Parse(base::DictionaryValue* command,
+  bool Parse(const base::DictionaryValue* command,
              const std::string& command_name,
              int index,
              string16* error);

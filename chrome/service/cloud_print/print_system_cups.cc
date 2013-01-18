@@ -562,13 +562,11 @@ bool PrintSystemCUPS::ParsePrintTicket(
   options->clear();
   DictionaryValue* ticket_dict =
       static_cast<DictionaryValue*>(ticket_value.get());
-  DictionaryValue::key_iterator it(ticket_dict->begin_keys());
-  for (; it != ticket_dict->end_keys(); ++it) {
-    const std::string& key = *it;
+  for (DictionaryValue::Iterator it(*ticket_dict); !it.IsAtEnd();
+       it.Advance()) {
     std::string value;
-    if (ticket_dict->GetString(key, &value)) {
-      (*options)[key] = value;
-    }
+    if (it.value().GetAsString(&value))
+      (*options)[it.key()] = value;
   }
 
   return true;

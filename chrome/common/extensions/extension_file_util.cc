@@ -263,10 +263,10 @@ bool ValidateExtension(const Extension* extension,
   if (extension->is_theme()) {
     DictionaryValue* images_value = extension->GetThemeImages();
     if (images_value) {
-      for (DictionaryValue::key_iterator iter = images_value->begin_keys();
-           iter != images_value->end_keys(); ++iter) {
+      for (DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
+           iter.Advance()) {
         std::string val;
-        if (images_value->GetStringWithoutPathExpansion(*iter, &val)) {
+        if (iter.value().GetAsString(&val)) {
           FilePath image_path = extension->path().Append(
               FilePath::FromUTF8Unsafe(val));
           if (!file_util::PathExists(image_path)) {

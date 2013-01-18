@@ -103,28 +103,18 @@ void WriteValue(Message* m, const Value* value, int recursion) {
 
       WriteParam(m, static_cast<int>(dict->size()));
 
-      for (DictionaryValue::key_iterator it = dict->begin_keys();
-           it != dict->end_keys(); ++it) {
-        const Value* subval;
-        if (dict->GetWithoutPathExpansion(*it, &subval)) {
-          WriteParam(m, *it);
-          WriteValue(m, subval, recursion + 1);
-        } else {
-          NOTREACHED() << "DictionaryValue iterators are filthy liars.";
-        }
+      for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
+        WriteParam(m, it.key());
+        WriteValue(m, &it.value(), recursion + 1);
       }
       break;
     }
     case Value::TYPE_LIST: {
       const ListValue* list = static_cast<const ListValue*>(value);
       WriteParam(m, static_cast<int>(list->GetSize()));
-      for (size_t i = 0; i < list->GetSize(); ++i) {
-        const Value* subval;
-        if (list->Get(i, &subval)) {
-          WriteValue(m, subval, recursion + 1);
-        } else {
-          NOTREACHED() << "ListValue::GetSize is a filthy liar.";
-        }
+      for (ListValue::const_iterator it = list->begin(); it != list->end();
+           ++it) {
+        WriteValue(m, *it, recursion + 1);
       }
       break;
     }

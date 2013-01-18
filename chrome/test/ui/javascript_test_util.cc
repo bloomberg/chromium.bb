@@ -30,37 +30,17 @@ bool JsonDictionaryToMap(const std::string& json,
 
   DictionaryValue* dict = static_cast<DictionaryValue*>(root.get());
 
-  for (DictionaryValue::key_iterator it = dict->begin_keys();
-       it != dict->end_keys(); ++it) {
-    Value* value = NULL;
-    bool succeeded = dict->GetWithoutPathExpansion(*it, &value);
-
-    EXPECT_TRUE(succeeded);
-    if (!succeeded)
-      continue;
-
-    const std::string& key(*it);
+  for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
+    double double_result;
     std::string result;
-
-    switch (value->GetType()) {
-      case Value::TYPE_STRING:
-        succeeded = value->GetAsString(&result);
-        break;
-      case Value::TYPE_DOUBLE: {
-        double double_result;
-        succeeded = value->GetAsDouble(&double_result);
-        if (succeeded)
-          result = base::DoubleToString(double_result);
-        break;
-      }
-      default:
-        NOTREACHED() << "Value type not supported!";
-        return false;
+    if (it.value().GetAsString(&result)) {
+    } else if (it.value().GetAsDouble(&double_result)) {
+      result = base::DoubleToString(double_result);
+    } else {
+      NOTREACHED() << "Value type not supported!";
+      return false;
     }
-
-    EXPECT_TRUE(succeeded);
-    if (succeeded)
-      results->insert(std::make_pair(key, result));
+    results->insert(std::make_pair(it.key(), result));
   }
 
   return true;

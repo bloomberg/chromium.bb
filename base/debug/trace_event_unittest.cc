@@ -242,17 +242,12 @@ bool TraceEventTestFixture::FindNonMatchingValue(const char* key,
 }
 
 bool IsStringInDict(const char* string_to_match, const DictionaryValue* dict) {
-  for (DictionaryValue::key_iterator ikey = dict->begin_keys();
-       ikey != dict->end_keys(); ++ikey) {
-    const Value* child = NULL;
-    if (!dict->GetWithoutPathExpansion(*ikey, &child))
-      continue;
-
-    if ((*ikey).find(string_to_match) != std::string::npos)
+  for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
+    if (it.key().find(string_to_match) != std::string::npos)
       return true;
 
     std::string value_str;
-    child->GetAsString(&value_str);
+    it.value().GetAsString(&value_str);
     if (value_str.find(string_to_match) != std::string::npos)
       return true;
   }

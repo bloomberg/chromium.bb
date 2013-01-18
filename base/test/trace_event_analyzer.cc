@@ -79,27 +79,24 @@ bool TraceEvent::SetFromJSON(const base::Value* event_value) {
   }
 
   // For each argument, copy the type and create a trace_analyzer::TraceValue.
-  base::DictionaryValue::key_iterator keyi = args->begin_keys();
-  for (; keyi != args->end_keys(); ++keyi) {
+  for (base::DictionaryValue::Iterator it(*args); !it.IsAtEnd();
+       it.Advance()) {
     std::string str;
     bool boolean = false;
     int int_num = 0;
     double double_num = 0.0;
-    const Value* value = NULL;
-    if (args->GetWithoutPathExpansion(*keyi, &value)) {
-      if (value->GetAsString(&str))
-        arg_strings[*keyi] = str;
-      else if (value->GetAsInteger(&int_num))
-        arg_numbers[*keyi] = static_cast<double>(int_num);
-      else if (value->GetAsBoolean(&boolean))
-        arg_numbers[*keyi] = static_cast<double>(boolean ? 1 : 0);
-      else if (value->GetAsDouble(&double_num))
-        arg_numbers[*keyi] = double_num;
-      else {
-        LOG(ERROR) << "Value type of argument is not supported: " <<
-                      static_cast<int>(value->GetType());
-        return false;  // Invalid trace event JSON format.
-      }
+    if (it.value().GetAsString(&str))
+      arg_strings[it.key()] = str;
+    else if (it.value().GetAsInteger(&int_num))
+      arg_numbers[it.key()] = static_cast<double>(int_num);
+    else if (it.value().GetAsBoolean(&boolean))
+      arg_numbers[it.key()] = static_cast<double>(boolean ? 1 : 0);
+    else if (it.value().GetAsDouble(&double_num))
+      arg_numbers[it.key()] = double_num;
+    else {
+      LOG(ERROR) << "Value type of argument is not supported: " <<
+          static_cast<int>(it.value().GetType());
+      return false;  // Invalid trace event JSON format.
     }
   }
 

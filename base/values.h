@@ -369,7 +369,10 @@ class BASE_EXPORT DictionaryValue : public Value {
    public:
     explicit Iterator(const DictionaryValue& target);
 
+    // DEPRECATED: use !IsAtEnd() instead.
     bool HasNext() const { return it_ != target_.dictionary_.end(); }
+
+    bool IsAtEnd() const { return it_ == target_.dictionary_.end(); }
     void Advance() { ++it_; }
 
     const std::string& key() const { return it_->first; }
