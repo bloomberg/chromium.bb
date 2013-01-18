@@ -19,7 +19,7 @@ using base::PlatformFileInfo;
 
 namespace fileapi {
 
-typedef IsolatedContext::FileInfo FileInfo;
+typedef IsolatedContext::MountPointInfo FileInfo;
 
 namespace {
 

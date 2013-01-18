@@ -5,6 +5,8 @@
 {
   'variables': {
     'webkit_fileapi_sources': [
+      '../fileapi/external_mount_points.cc',
+      '../fileapi/external_mount_points.h',
       '../fileapi/file_observers.h',
       '../fileapi/file_permission_policy.cc',
       '../fileapi/file_permission_policy.h',
@@ -70,10 +72,13 @@
       '../fileapi/media/mtp_device_file_system_config.h',
       '../fileapi/media/native_media_file_util.cc',
       '../fileapi/media/native_media_file_util.h',
+      '../fileapi/mount_points.cc',
+      '../fileapi/mount_points.h',
       '../fileapi/native_file_util.cc',
       '../fileapi/native_file_util.h',
       '../fileapi/obfuscated_file_util.cc',
       '../fileapi/obfuscated_file_util.h',
+      '../fileapi/remote_file_system_proxy.h',
       '../fileapi/sandbox_file_stream_writer.cc',
       '../fileapi/sandbox_file_stream_writer.h',
       '../fileapi/sandbox_mount_point_provider.cc',
@@ -120,7 +125,6 @@
       '../chromeos/fileapi/file_util_async.h',
       '../chromeos/fileapi/remote_file_system_operation.cc',
       '../chromeos/fileapi/remote_file_system_operation.h',
-      '../chromeos/fileapi/remote_file_system_proxy.h',
       '../chromeos/fileapi/remote_file_stream_writer.cc',
       '../chromeos/fileapi/remote_file_stream_writer.h',
     ],

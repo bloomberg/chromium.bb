@@ -4,21 +4,22 @@
 
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
+#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_observers.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 
 namespace fileapi {
 
 bool RegisterSyncableFileSystem(const std::string& service_name) {
-  return IsolatedContext::GetInstance()->RegisterExternalFileSystem(
+  return ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       service_name, kFileSystemTypeSyncable, FilePath());
 }
 
 bool RevokeSyncableFileSystem(const std::string& service_name) {
-  return IsolatedContext::GetInstance()->RevokeFileSystem(service_name);
+  return ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+      service_name);
 }
 
 GURL GetSyncableFileSystemRootURI(const GURL& origin,

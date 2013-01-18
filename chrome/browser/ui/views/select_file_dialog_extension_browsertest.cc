@@ -28,6 +28,7 @@
 #include "content/public/test/test_utils.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/selected_file_info.h"
+#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 
@@ -119,7 +120,12 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
     fileapi::ExternalFileSystemMountPointProvider* provider =
         BrowserContext::GetDefaultStoragePartition(browser()->profile())->
             GetFileSystemContext()->external_provider();
-    provider->AddLocalMountPoint(path);
+
+    // The Downloads mount point already exists so it must be removed before
+    // adding the test mount point (which will also be mapped as Downloads).
+    fileapi::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+        path.BaseName().AsUTF8Unsafe());
+    EXPECT_TRUE(provider->AddLocalMountPoint(path));
   }
 
   void CheckJavascriptErrors() {

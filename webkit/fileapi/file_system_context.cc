@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "base/single_thread_task_runner.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_options.h"
@@ -75,7 +76,11 @@ FileSystemContext::FileSystemContext(
   }
 #if defined(OS_CHROMEOS)
   external_provider_.reset(
-      new chromeos::CrosMountPointProvider(special_storage_policy));
+      new chromeos::CrosMountPointProvider(
+          special_storage_policy,
+          // TODO(tbarzic): Switch this to |external_mount_points_|.
+          fileapi::ExternalMountPoints::GetSystemInstance(),
+          fileapi::ExternalMountPoints::GetSystemInstance()));
 #endif
 }
 
@@ -243,6 +248,7 @@ FileSystemOperation* FileSystemContext::CreateFileSystemOperation(
       *error_code = base::PLATFORM_FILE_ERROR_INVALID_URL;
     return NULL;
   }
+
   FileSystemMountPointProvider* mount_point_provider =
       GetMountPointProvider(url.type());
   if (!mount_point_provider) {

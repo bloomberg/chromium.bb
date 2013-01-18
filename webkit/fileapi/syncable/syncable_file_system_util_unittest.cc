@@ -8,7 +8,7 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/fileapi/isolated_context.h"
+#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/syncable/canned_syncable_file_system.h"
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
 

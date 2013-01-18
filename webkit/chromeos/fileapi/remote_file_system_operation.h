@@ -5,9 +5,9 @@
 #ifndef WEBKIT_CHROMEOS_FILEAPI_REMOTE_FILE_SYSTEM_OPERATION_H_
 #define WEBKIT_CHROMEOS_FILEAPI_REMOTE_FILE_SYSTEM_OPERATION_H_
 
-#include "webkit/chromeos/fileapi/remote_file_system_proxy.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_writer_delegate.h"
+#include "webkit/fileapi/remote_file_system_proxy.h"
 
 namespace base {
 class Value;

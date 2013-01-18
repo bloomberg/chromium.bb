@@ -156,10 +156,10 @@ bool GetFilePathOfFileEntry(const std::string& filesystem_name,
   FilePath relative_path = FilePath::FromUTF8Unsafe(filesystem_path);
   FilePath virtual_path = context->CreateVirtualRootPath(filesystem_id)
       .Append(relative_path);
-  if (!context->CrackIsolatedPath(virtual_path,
-                                  &filesystem_id,
-                                  NULL,
-                                  file_path)) {
+  if (!context->CrackVirtualPath(virtual_path,
+                                 &filesystem_id,
+                                 NULL,
+                                 file_path)) {
     *error = kInvalidParameters;
     return false;
   }

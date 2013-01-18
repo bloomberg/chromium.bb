@@ -16,60 +16,25 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/fileapi/mount_points.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
 
-// Manages isolated filesystem namespaces.
-// This context class is a singleton and access to the context is
-// thread-safe (protected with a lock).
-//
-// There are two types of filesystems managed by this context:
-// isolated and external.
-// The former is transient while the latter is persistent.
-//
-// * Transient isolated file systems have no name and are identified by
-//   string 'filesystem ID', which usually just looks like random value.
-//   This type of filesystem can be created on the fly and may go away
-//   when it has no references from renderers.
-//   Files in an isolated filesystem are registered with corresponding names
-//   and identified by a filesystem URL like:
+// Manages isolated filesystem mount points which have no well-known names
+// and are identified by a string 'filesystem ID', which usually just looks
+// like random value.
+// This type of filesystem can be created on the fly and may go away when it has
+// no references from renderers.
+// Files in an isolated filesystem are registered with corresponding names and
+// identified by a filesystem URL like:
 //
 //   filesystem:<origin>/isolated/<filesystem_id>/<name>/relative/path
 //
-// * Persistent external file systems are identified by 'mount name'
-//   and are persisted until RevokeFileSystem is called.
-//   Files in an external filesystem are identified by a filesystem URL like:
-//
-//   filesystem:<origin>/external/<mount_name>/relative/path
-//
-// A filesystem instance is represented by IsolatedContext::Instance, and
-// managed as a map instance_map_ which maps from filesystem ID (or name)
-// to the instance.
-//
 // Some methods of this class are virtual just for mocking.
 //
-// TODO(kinuko): This should have a better name since this handles both
-// isolated and external file systems.
-//
-class WEBKIT_STORAGE_EXPORT IsolatedContext {
+class WEBKIT_STORAGE_EXPORT IsolatedContext : public MountPoints {
  public:
-  struct WEBKIT_STORAGE_EXPORT FileInfo {
-    FileInfo();
-    FileInfo(const std::string& name, const FilePath& path);
-
-    // The name to be used to register the file. The registered file can
-    // be referred by a virtual path /<filesystem_id>/<name>.
-    // The name should NOT contain a path separator '/'.
-    std::string name;
-
-    // The path of the file.
-    FilePath path;
-
-    // For STL operation.
-    bool operator<(const FileInfo& that) const { return name < that.name; }
-  };
-
   class WEBKIT_STORAGE_EXPORT FileInfoSet {
    public:
     FileInfoSet();
@@ -86,10 +51,10 @@ class WEBKIT_STORAGE_EXPORT IsolatedContext {
     // is not valid and could not be added.
     bool AddPathWithName(const FilePath& path, const std::string& name);
 
-    const std::set<FileInfo>& fileset() const { return fileset_; }
+    const std::set<MountPointInfo>& fileset() const { return fileset_; }
 
    private:
-    std::set<FileInfo> fileset_;
+    std::set<MountPointInfo> fileset_;
   };
 
   // The instance is lazily created per browser process.
@@ -133,30 +98,14 @@ class WEBKIT_STORAGE_EXPORT IsolatedContext {
                                         const FilePath& path,
                                         std::string* register_name);
 
-  // Registers a new named external filesystem.
-  // The |path| is registered as the root path of the mount point which
-  // is identified by a URL "filesystem:.../external/mount_name".
-  //
-  // For example, if the path "/media/removable" is registered with
-  // the mount_name "removable", a filesystem URL like
-  // "filesystem:.../external/removable/a/b" will be resolved as
-  // "/media/removable/a/b".
-  //
-  // The |mount_name| should NOT contain a path separator '/'.
-  // Returns false if the given name is already registered.
-  //
-  // An external file system registered by this method can be revoked
-  // by calling RevokeFileSystem with |mount_name|.
-  bool RegisterExternalFileSystem(const std::string& mount_name,
-                                  FileSystemType type,
-                                  const FilePath& path);
-
-  // Returns a set of FilePath (of <mount_name, path>) registered as external.
-  std::vector<FileInfo> GetExternalMountPoints() const;
-
-  // Revokes the filesystem |filesystem_id|.
-  // Returns false if the |filesystem_id| is not (no longer) registered.
-  bool RevokeFileSystem(const std::string& filesystem_id);
+  // MountPoints override.
+  virtual bool RevokeFileSystem(const std::string& filesystem_id) OVERRIDE;
+  virtual bool GetRegisteredPath(const std::string& filesystem_id,
+                                 FilePath* path) const OVERRIDE;
+  virtual bool CrackVirtualPath(const FilePath& virtual_path,
+                                std::string* filesystem_id,
+                                FileSystemType* type,
+                                FilePath* path) const OVERRIDE;
 
   // Revokes all filesystem(s) registered for the given path.
   // This is assumed to be called when the registered path becomes
@@ -173,41 +122,17 @@ class WEBKIT_STORAGE_EXPORT IsolatedContext {
 
   // Removes a reference to a filesystem specified by the given filesystem_id.
   // If the reference count reaches 0 the isolated context gets destroyed.
-  // It is ok to call this on the filesystem that has been already deleted
+  // It is OK to call this on the filesystem that has been already deleted
   // (e.g. by RevokeFileSystemByPath).
   void RemoveReference(const std::string& filesystem_id);
 
-  // Cracks the given |virtual_path| (which is the path part of a filesystem URL
-  // without '/isolated' or '/external' prefix) and populates the
-  // |id_or_name|, |type|, and |path| if the <id_or_name> part embedded in
-  // the |virtual_path| (i.e. the first component of the |virtual_path|) is a
-  // valid registered filesystem ID or mount name for an isolated or external
-  // filesystem.
-  //
-  // Returns false if the given virtual_path or the cracked id_or_name
-  // is not valid.
-  //
-  // Note that |path| is set to empty paths if the filesystem type is isolated
-  // and |virtual_path| has no <relative_path> part (i.e. pointing to the
-  // virtual root).
-  bool CrackIsolatedPath(const FilePath& virtual_path,
-                         std::string* id_or_name,
-                         FileSystemType* type,
-                         FilePath* path) const;
-
-  // Returns a set of dragged FileInfo's registered for the |filesystem_id|.
+  // Returns a set of dragged MountPointInfos registered for the
+  // |filesystem_id|.
   // The filesystem_id must be pointing to a dragged file system
   // (i.e. must be the one registered by RegisterDraggedFileSystem).
   // Returns false if the |filesystem_id| is not valid.
   bool GetDraggedFileInfo(const std::string& filesystem_id,
-                          std::vector<FileInfo>* files) const;
-
-  // Returns the file path registered for the |filesystem_id|.
-  // The filesystem_id must NOT be pointing to a dragged file system
-  // (i.e. must be the one registered by RegisterFileSystemForPath).
-  // Returns false if the |filesystem_id| is not valid.
-  bool GetRegisteredPath(const std::string& filesystem_id,
-                         FilePath* path) const;
+                          std::vector<MountPointInfo>* files) const;
 
   // Returns the virtual root path that looks like /<filesystem_id>.
   FilePath CreateVirtualRootPath(const std::string& filesystem_id) const;
@@ -225,7 +150,7 @@ class WEBKIT_STORAGE_EXPORT IsolatedContext {
 
   // Obtain an instance of this class via GetInstance().
   IsolatedContext();
-  ~IsolatedContext();
+  virtual ~IsolatedContext();
 
   // Unregisters a file system of given |filesystem_id|. Must be called with
   // lock_ held.  Returns true if the file system is unregistered.
@@ -241,20 +166,6 @@ class WEBKIT_STORAGE_EXPORT IsolatedContext {
   PathToID path_to_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(IsolatedContext);
-};
-
-// Registers a scoped external filesystem which gets revoked when it scopes out.
-class WEBKIT_STORAGE_EXPORT ScopedExternalFileSystem {
- public:
-  ScopedExternalFileSystem(const std::string& mount_name,
-                           FileSystemType type,
-                           const FilePath& path);
-  ~ScopedExternalFileSystem();
-
-  FilePath GetVirtualRootPath() const;
-
- private:
-  const std::string mount_name_;
 };
 
 }  // namespace fileapi

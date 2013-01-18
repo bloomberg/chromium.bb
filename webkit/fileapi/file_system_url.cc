@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "net/base/escape.h"
+#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
@@ -158,7 +159,11 @@ void FileSystemURL::MayCrackIsolatedPath() {
   if (is_valid_ && IsolatedContext::IsIsolatedType(type_)) {
     // If the type is isolated, crack the path further to get the 'real'
     // filesystem type and path.
-    is_valid_ = IsolatedContext::GetInstance()->CrackIsolatedPath(
+    is_valid_ = ExternalMountPoints::GetSystemInstance()->CrackVirtualPath(
+        virtual_path_, &filesystem_id_, &type_, &path_);
+    if (is_valid_)
+      return;
+    is_valid_ = IsolatedContext::GetInstance()->CrackVirtualPath(
         virtual_path_, &filesystem_id_, &type_, &path_);
   }
 }

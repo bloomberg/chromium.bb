@@ -19,7 +19,7 @@
 
 namespace fileapi {
 
-typedef IsolatedContext::FileInfo FileInfo;
+typedef IsolatedContext::MountPointInfo FileInfo;
 
 namespace {
 
@@ -95,7 +95,7 @@ TEST_F(IsolatedContextTest, RegisterAndRevokeTest) {
     std::string cracked_id;
     FilePath cracked_path;
     FileSystemType cracked_type;
-    ASSERT_TRUE(isolated_context()->CrackIsolatedPath(
+    ASSERT_TRUE(isolated_context()->CrackVirtualPath(
         virtual_path, &cracked_id, &cracked_type, &cracked_path));
     ASSERT_EQ(kTestPaths[i].NormalizePathSeparators().value(),
               cracked_path.value());
@@ -191,11 +191,11 @@ TEST_F(IsolatedContextTest, CrackWithRelativePaths) {
       FilePath cracked_path;
     FileSystemType cracked_type;
       if (!relatives[j].valid) {
-        ASSERT_FALSE(isolated_context()->CrackIsolatedPath(
+        ASSERT_FALSE(isolated_context()->CrackVirtualPath(
             virtual_path, &cracked_id, &cracked_type, &cracked_path));
         continue;
       }
-      ASSERT_TRUE(isolated_context()->CrackIsolatedPath(
+      ASSERT_TRUE(isolated_context()->CrackVirtualPath(
           virtual_path, &cracked_id, &cracked_type, &cracked_path));
       ASSERT_EQ(kTestPaths[i].Append(relatives[j].path)
                     .NormalizePathSeparators().value(),
@@ -214,7 +214,7 @@ TEST_F(IsolatedContextTest, TestWithVirtualRoot) {
   // as "/" of the isolated filesystem is a pure virtual directory
   // that has no corresponding platform directory.
   FilePath virtual_path = isolated_context()->CreateVirtualRootPath(id_);
-  ASSERT_TRUE(isolated_context()->CrackIsolatedPath(
+  ASSERT_TRUE(isolated_context()->CrackVirtualPath(
       virtual_path, &cracked_id, NULL, &cracked_path));
   ASSERT_EQ(FPL(""), cracked_path.value());
   ASSERT_EQ(id_, cracked_id);
@@ -223,7 +223,7 @@ TEST_F(IsolatedContextTest, TestWithVirtualRoot) {
   // included in the kTestPaths).
   virtual_path = isolated_context()->CreateVirtualRootPath(
       id_).AppendASCII("foo");
-  ASSERT_FALSE(isolated_context()->CrackIsolatedPath(
+  ASSERT_FALSE(isolated_context()->CrackVirtualPath(
       virtual_path, &cracked_id, NULL, &cracked_path));
 }
 

@@ -7,12 +7,19 @@
 #include "base/file_path.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
 #define FPL FILE_PATH_LITERAL
+
+#if defined(FILE_PATH_USES_DRIVE_LETTERS)
+#define DRIVE FPL("C:")
+#else
+#define DRIVE FPL("/a/")
+#endif
 
 namespace fileapi {
 
@@ -214,8 +221,10 @@ TEST(FileSystemURLTest, DebugString) {
             NormalizedUTF8Path(kPath),
             kURL1.DebugString());
 
-  const FilePath kRoot(FPL("root"));
-  ScopedExternalFileSystem scoped_fs("foo", kFileSystemTypeNativeLocal, kRoot);
+  const FilePath kRoot(DRIVE FPL("/root"));
+  ScopedExternalFileSystem scoped_fs("foo",
+                                     kFileSystemTypeNativeLocal,
+                                     kRoot.NormalizePathSeparators());
   const FileSystemURL kURL2(kOrigin, kFileSystemTypeExternal,
                             scoped_fs.GetVirtualRootPath().Append(kPath));
   EXPECT_EQ("filesystem:http://example.com/external/" +

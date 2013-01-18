@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_PROXY_H_
 
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
-#include "webkit/chromeos/fileapi/remote_file_system_proxy.h"
+#include "webkit/fileapi/remote_file_system_proxy.h"
 
 namespace fileapi {
 class FileSystemURL;
