@@ -63,8 +63,7 @@ void LogSuccess(const Extension* extension,
   } else {
     extensions::ActivityLog* activity_log =
         extensions::ActivityLog::GetInstance(profile);
-    if (activity_log->HasObservers(extension))
-      activity_log->LogAPIAction(extension, api_name, args.get(), "");
+    activity_log->LogAPIAction(extension, api_name, args.get(), "");
   }
 }
 
@@ -87,12 +86,11 @@ void LogFailure(const Extension* extension,
   } else {
     extensions::ActivityLog* activity_log =
         extensions::ActivityLog::GetInstance(profile);
-    if (activity_log->HasObservers(extension))
-      activity_log->LogBlockedAction(extension,
-                                     api_name,
-                                     args.get(),
-                                     reason,
-                                     "");
+    activity_log->LogBlockedAction(extension,
+                                   api_name,
+                                   args.get(),
+                                   reason,
+                                   "");
   }
 }
 

@@ -52,6 +52,10 @@ class ActivityLog : public ProfileKeyedService,
   // use GetInstance instead.
   static ActivityLog* GetInstance(Profile* profile);
 
+  // Currently, we only want to record actions if the user has opted in to the
+  // ActivityLog feature.
+  bool IsLoggingEnabled();
+
   // Add/remove observer.
   void AddObserver(const Extension* extension, Observer* observer);
   void RemoveObserver(const Extension* extension,
@@ -145,9 +149,9 @@ class ActivityLog : public ProfileKeyedService,
   // The database wrapper that does the actual database I/O.
   scoped_refptr<extensions::ActivityDatabase> db_;
 
-  // Whether to log activity to stdout. This is set by checking the
-  // enable-extension-activity-logging switch.
+  // Whether to log activity to stdout or the UI. These are set by switches.
   bool log_activity_to_stdout_;
+  bool log_activity_to_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivityLog);
 };

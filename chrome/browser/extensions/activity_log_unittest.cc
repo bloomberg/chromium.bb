@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -34,6 +35,8 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     extension_service_ = static_cast<TestExtensionSystem*>(
         ExtensionSystem::Get(profile_))->CreateExtensionService(
             &command_line, FilePath(), false);
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableExtensionActivityUI);
     db_thread_.Start();
   }
 
@@ -57,6 +60,11 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
   content::TestBrowserThread file_thread_;
 };
 
+TEST_F(ActivityLogTest, Enabled) {
+  ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
+  ASSERT_TRUE(activity_log->IsLoggingEnabled());
+}
+
 TEST_F(ActivityLogTest, ConstructAndLog) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile_);
   scoped_refptr<const Extension> extension =
@@ -71,6 +79,7 @@ TEST_F(ActivityLogTest, ConstructAndLog) {
   for (int i = 0; i < 30; i++) {
     // Run this a bunch of times and hope that if something goes wrong with
     // threading, 30 times is enough to cause it to fail.
+    ASSERT_TRUE(activity_log->IsLoggingEnabled());
     activity_log->LogAPIAction(extension,
                                std::string("tabs.testMethod"),
                                args.get(),

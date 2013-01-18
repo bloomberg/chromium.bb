@@ -99,15 +99,18 @@ bool ActivityLogFactory::ServiceRedirectedInIncognito() const {
 
 // Use GetInstance instead of directly creating an ActivityLog.
 ActivityLog::ActivityLog(Profile* profile) {
+  // enable-extension-activity-logging and enable-extension-activity-ui
   log_activity_to_stdout_ = CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kEnableExtensionActivityLogging);
+  log_activity_to_ui_ = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEnableExtensionActivityUI);
 
   // If the database cannot be initialized for some reason, we keep
   // chugging along but nothing will get recorded. If the UI is
   // available, things will still get sent to the UI even if nothing
   // is being written to the database.
   db_ = new ActivityDatabase();
-#if defined(ENABLE_EXTENSIONS)
+  if (!IsLoggingEnabled()) return;
   FilePath base_dir = profile->GetPath();
   FilePath database_name = base_dir.Append(
       chrome::kExtensionActivityLogFilename);
@@ -116,7 +119,6 @@ ActivityLog::ActivityLog(Profile* profile) {
   db_->SetErrorDelegate(error_delegate);
   ScheduleAndForget(&ActivityDatabase::Init,
                     database_name);
-#endif
 }
 
 ActivityLog::~ActivityLog() {
@@ -127,12 +129,16 @@ ActivityLog* ActivityLog::GetInstance(Profile* profile) {
   return ActivityLogFactory::GetForProfile(profile);
 }
 
+bool ActivityLog::IsLoggingEnabled() {
+  return (log_activity_to_stdout_ || log_activity_to_ui_);
+}
+
 void ActivityLog::AddObserver(const Extension* extension,
                               ActivityLog::Observer* observer) {
+  if (!IsLoggingEnabled()) return;
   if (observers_.count(extension) == 0) {
     observers_[extension] = new ObserverListThreadSafe<Observer>;
   }
-
   observers_[extension]->AddObserver(observer);
 }
 
@@ -143,16 +149,11 @@ void ActivityLog::RemoveObserver(const Extension* extension,
   }
 }
 
-bool ActivityLog::HasObservers(const Extension* extension) const {
-  // We also return true if extension activity logging is enabled since in that
-  // case this class is observing all extensions.
-  return observers_.count(extension) > 0 || log_activity_to_stdout_;
-}
-
 void ActivityLog::LogAPIAction(const Extension* extension,
                                const std::string& name,
                                const ListValue* args,
                                const std::string& extra) {
+  if (!IsLoggingEnabled()) return;
   std::string verb, manager;
   bool matches = RE2::FullMatch(name, "(.*?)\\.(.*)", &manager, &verb);
   if (matches) {
@@ -174,9 +175,8 @@ void ActivityLog::LogAPIAction(const Extension* extension,
                            ActivityLog::ACTIVITY_EXTENSION_API_CALL,
                            call_signature);
     }
-    if (log_activity_to_stdout_) {
+    if (log_activity_to_stdout_)
       LOG(INFO) << action->PrettyPrintForDebug();
-    }
   } else {
     LOG(ERROR) << "Unknown API call! " << name;
   }
@@ -187,6 +187,7 @@ void ActivityLog::LogBlockedAction(const Extension* extension,
                                    const ListValue* args,
                                    const char* reason,
                                    const std::string& extra) {
+  if (!IsLoggingEnabled()) return;
   std::string blocked_call = MakeCallSignature(blocked_name, args);
   scoped_refptr<BlockedAction> action = new BlockedAction(extension->id(),
                                                           base::Time::Now(),
@@ -202,9 +203,8 @@ void ActivityLog::LogBlockedAction(const Extension* extension,
                          ActivityLog::ACTIVITY_EXTENSION_API_BLOCK,
                          blocked_call);
   }
-  if (log_activity_to_stdout_) {
+  if (log_activity_to_stdout_)
     LOG(INFO) << action->PrettyPrintForDebug();
-  }
 }
 
 void ActivityLog::LogUrlAction(const Extension* extension,
@@ -213,6 +213,7 @@ void ActivityLog::LogUrlAction(const Extension* extension,
                                const string16& url_title,
                                const std::string& technical_message,
                                const std::string& extra) {
+  if (!IsLoggingEnabled()) return;
   scoped_refptr<UrlAction> action = new UrlAction(
     extension->id(),
     base::Time::Now(),
@@ -231,9 +232,8 @@ void ActivityLog::LogUrlAction(const Extension* extension,
                          ActivityLog::ACTIVITY_CONTENT_SCRIPT,
                          action->PrettyPrintForDebug());
   }
-  if (log_activity_to_stdout_) {
+  if (log_activity_to_stdout_)
     LOG(INFO) << action->PrettyPrintForDebug();
-  }
 }
 
 void ActivityLog::OnScriptsExecuted(
@@ -241,6 +241,7 @@ void ActivityLog::OnScriptsExecuted(
     const ExecutingScriptsMap& extension_ids,
     int32 on_page_id,
     const GURL& on_url) {
+  if (!IsLoggingEnabled()) return;
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   const ExtensionService* extension_service =
@@ -250,7 +251,7 @@ void ActivityLog::OnScriptsExecuted(
   for (ExecutingScriptsMap::const_iterator it = extension_ids.begin();
        it != extension_ids.end(); ++it) {
     const Extension* extension = extensions->GetByID(it->first);
-    if (!extension || !HasObservers(extension))
+    if (!extension)
       continue;
 
     // If OnScriptsExecuted is fired because of tabs.executeScript, the list
