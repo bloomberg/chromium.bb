@@ -41,6 +41,7 @@ import datetime
 import logging
 import optparse
 import pprint
+import re
 import simplejson
 import socket
 import sys
@@ -280,10 +281,11 @@ class _RemoteInspectorThread(threading.Thread):
   the lower-level work of socket communication.
   """
 
-  def __init__(self, tab_index, tab_filter, verbose, show_socket_messages):
+  def __init__(self, url, tab_index, tab_filter, verbose, show_socket_messages):
     """Initialize.
 
     Args:
+      url: The base URL to connent to.
       tab_index: The integer index of the tab in the remote Chrome instance to
           use for snapshotting.
       tab_filter: When specified, is run over tabs of the remote Chrome
@@ -309,7 +311,8 @@ class _RemoteInspectorThread(threading.Thread):
 
     # Create a DevToolsSocket client and wait for it to complete the remote
     # debugging protocol handshake with the remote Chrome instance.
-    result = self._IdentifyDevToolsSocketConnectionInfo(tab_index, tab_filter)
+    result = self._IdentifyDevToolsSocketConnectionInfo(
+        url, tab_index, tab_filter)
     self._client = _DevToolsSocketClient(
         verbose, show_socket_messages, result['host'], result['port'],
         result['path'])
@@ -511,7 +514,7 @@ class _RemoteInspectorThread(threading.Thread):
     if request.method == 'Profiler.takeHeapSnapshot':
       # We always want detailed v8 heap snapshot information.
       request.params = {'detailed': True}
-    elif request.method == 'Profiler.getProfile':
+    elif request.method == 'Profiler.getHeapSnapshot':
       # To actually request the snapshot data from a previously-taken snapshot,
       # we need to specify the unique uid of the snapshot we want.
       # The relevant uid should be contained in the last
@@ -519,13 +522,20 @@ class _RemoteInspectorThread(threading.Thread):
       last_req = self._GetLatestRequestOfType(request,
                                               'Profiler.takeHeapSnapshot')
       if last_req and 'uid' in last_req.results:
+        request.params = {'uid': last_req.results['uid']}
+    elif request.method == 'Profiler.getProfile':
+      # TODO(eustas): Remove this case after M27 is released.
+      last_req = self._GetLatestRequestOfType(request,
+                                              'Profiler.takeHeapSnapshot')
+      if last_req and 'uid' in last_req.results:
         request.params = {'type': 'HEAP', 'uid': last_req.results['uid']}
 
   @staticmethod
-  def _IdentifyDevToolsSocketConnectionInfo(tab_index, tab_filter):
+  def _IdentifyDevToolsSocketConnectionInfo(url, tab_index, tab_filter):
     """Identifies DevToolsSocket connection info from a remote Chrome instance.
 
     Args:
+      url: The base URL to connent to.
       tab_index: The integer index of the tab in the remote Chrome instance to
           which to connect.
       tab_filter: When specified, is run over tabs of the remote Chrome instance
@@ -543,9 +553,7 @@ class _RemoteInspectorThread(threading.Thread):
       RuntimeError: When DevToolsSocket connection info cannot be identified.
     """
     try:
-      # TODO(dennisjeffrey): Do not assume port 9222.  The port should be passed
-      # as input to this function.
-      f = urllib2.urlopen('http://localhost:9222/json')
+      f = urllib2.urlopen(url + '/json')
       result = f.read()
       logging.debug(result)
       result = simplejson.loads(result)
@@ -844,9 +852,15 @@ class RemoteInspectorClient(object):
     self._remote_inspector_thread = None
     self._remote_inspector_driver_thread = None
 
+    # TODO(dennisjeffrey): Do not assume port 9222. The port should be passed
+    # as input to this function.
+    url = 'http://localhost:9222'
+
+    self._webkit_version = self._GetWebkitVersion(url)
+
     # Start up a thread for long-term communication with the remote inspector.
     self._remote_inspector_thread = _RemoteInspectorThread(
-        tab_index, tab_filter, verbose, show_socket_messages)
+        url, tab_index, tab_filter, verbose, show_socket_messages)
     self._remote_inspector_thread.start()
     # At this point, a connection has already been made to the remote inspector.
 
@@ -883,12 +897,18 @@ class RemoteInspectorClient(object):
                                      # Only if |include_summary| is True.
       }
     """
+    # TODO(eustas): Remove this hack after M27 is released.
+    if self._IsWebkitVersionNotOlderThan(537, 27):
+      get_heap_snapshot_method = 'Profiler.getHeapSnapshot'
+    else:
+      get_heap_snapshot_method = 'Profiler.getProfile'
+
     HEAP_SNAPSHOT_MESSAGES = [
       ('Page.getResourceTree', {}),
       ('Debugger.enable', {}),
       ('Profiler.clearProfiles', {}),
       ('Profiler.takeHeapSnapshot', {}),
-      ('Profiler.getProfile', {}),
+      (get_heap_snapshot_method, {}),
     ]
 
     self._current_heap_snapshot = []
@@ -1208,3 +1228,70 @@ class RemoteInspectorClient(object):
       return '%.2f KB' % (num_bytes / 1024.0)
     else:
       return '%.2f MB' % (num_bytes / 1048576.0)
+
+  @staticmethod
+  def _GetWebkitVersion(endpoint):
+    """Fetches Webkit version information from a remote Chrome instance.
+
+    Args:
+      endpoint: The base URL to connent to.
+
+    Returns:
+      A dictionary containing Webkit version information:
+      {
+        'major': integer,
+        'minor': integer,
+      }
+
+    Raises:
+      RuntimeError: When Webkit version info can't be fetched or parsed.
+    """
+    try:
+      f = urllib2.urlopen(endpoint + '/json/version')
+      result = f.read();
+      result = simplejson.loads(result)
+    except urllib2.URLError, e:
+      raise RuntimeError(
+          'Error accessing Chrome instance debugging port: ' + str(e))
+
+    if 'WebKit-Version' not in result:
+      raise RuntimeError('WebKit-Version is not specified.')
+
+    parsed = re.search('^(\d+)\.(\d+)', result['WebKit-Version'])
+    if parsed is None:
+      raise RuntimeError('WebKit-Version cannot be parsed.')
+
+    try:
+      info = {
+        'major': int(parsed.group(1)),
+        'minor': int(parsed.group(2)),
+      }
+    except ValueError:
+      raise RuntimeError('WebKit-Version cannot be parsed.')
+
+    return info
+
+  def _IsWebkitVersionNotOlderThan(self, major, minor):
+    """Compares remote Webkit version with specified one.
+
+    Args:
+      major: Major Webkit version.
+      minor: Minor Webkit version.
+
+    Returns:
+      True if remote Webkit version is same or newer than specified,
+      False otherwise.
+
+    Raises:
+      RuntimeError: If remote Webkit version hasn't been fetched yet.
+    """
+    if not hasattr(self, '_webkit_version'):
+      raise RuntimeError('WebKit version has not been fetched yet.')
+    version = self._webkit_version
+
+    if version['major'] < major:
+      return False
+    elif version['major'] == major and version['minor'] < minor:
+      return False
+    else:
+      return True
