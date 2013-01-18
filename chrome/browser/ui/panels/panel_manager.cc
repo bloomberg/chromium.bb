@@ -293,12 +293,7 @@ void PanelManager::EndResizingByMouse(bool cancelled) {
 }
 
 void PanelManager::OnPanelExpansionStateChanged(Panel* panel) {
-  // For panels outside of the docked collection changing state is a no-op.
-  // But since this method may be called for panels in other collections
-  // we need to check this condition.
-  if (panel->collection() == docked_collection_.get())
-    docked_collection_->OnPanelExpansionStateChanged(panel);
-
+  panel->collection()->OnPanelExpansionStateChanged(panel);
 }
 
 void PanelManager::MovePanelToCollection(

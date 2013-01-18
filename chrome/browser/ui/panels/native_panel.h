@@ -114,6 +114,9 @@ class NativePanelTesting {
   // Verifies, on a deepest possible level, if the native panel is really
   // showing a correct app icon (taskbar icon).
   virtual bool VerifyAppIcon() const = 0;
+  // Verifies, on a deepest possible level, if the native panel is really
+  // minimized by the system.
+  virtual bool VerifySystemMinimizeState() const = 0;
 
   virtual bool IsWindowSizeKnown() const = 0;
   virtual bool IsAnimatingBounds() const = 0;
