@@ -167,20 +167,59 @@ class Operand(object):
 
 class Instruction(object):
 
+  __slots__ = [
+      'name',
+      'operands',
+      'opcodes',
+      'attributes']
+
   @staticmethod
-  def Parse(s):
+  def Parse(line):
+    """Parse one line of def file and return initialized Instruction object.
+
+    Args:
+      line: One line of def file (two or three columns separated by
+          COLUMN_SEPARATOR). First column defines instruction name and operands,
+          second one - opcodes and encoding details, third (optional)
+          one - instruction attributes.
+
+    Returns:
+      Fully initialized Instruction object.
+    """
+
     instruction = Instruction()
 
+    columns = line.split(COLUMN_SEPARATOR)
+
+    # Third column is optional.
+    assert 2 <= len(columns) <= 3, line
+    name_and_operands_column = columns[0]
+    opcodes_column = columns[1]
+    if len(columns) == 3:
+      attributes = columns[2].split()
+    else:
+      attributes = []
+
+    instruction.ParseNameAndOperands(name_and_operands_column)
+    instruction.ParseOpcodes(opcodes_column)
+
+    for attribute in attributes:
+      assert attribute in SUPPORTED_ATTRIBUTES, attribute
+    instruction.attributes = attributes
+
+    return instruction
+
+  def ParseNameAndOperands(self, s):
     # If instruction name is quoted, it is allowed to contain spaces.
     if s.startswith('"'):
       i = s.index('"', 1)
-      instruction.name = s[1:i]
+      self.name = s[1:i]
       operands = s[i+1:].split()
     else:
       operands = s.split()
-      instruction.name = operands.pop(0)
+      self.name = operands.pop(0)
 
-    instruction.operands = []
+    self.operands = []
     for i, op in enumerate(operands):
       # By default one- and two-operand instructions are assumed to read all
       # operands and store result to the last one, while instructions with
@@ -191,9 +230,31 @@ class Instruction(object):
         default_rw = Operand.READ_WRITE if last else Operand.READ
       else:
         default_rw = Operand.WRITE if last else Operand.READ
-      instruction.operands.append(Operand.Parse(op, default_rw=default_rw))
+      self.operands.append(Operand.Parse(op, default_rw=default_rw))
 
-    return instruction
+  def ParseOpcodes(self, opcodes_column):
+    opcodes = opcodes_column.split()
+
+    # TODO(shcherbina): Just remove these 'opcodes' from .def files once
+    # gen_dfa.py is enabled. We can't do that right now because old gen_dfa
+    # uses them, even though they are redundant.
+    opcodes = [opcode for opcode in opcodes if opcode not in ['/r', '/m', '/s']]
+
+    opcode_regex = re.compile(
+        r'0x[0-9a-f]{2}|'  # raw bytes
+        r'data16|'
+        r'rexw|'  # REX prefix with W-bit set
+        r'/[0-7]|'  # opcode stored in ModRM byte
+        r'/|'  # precedes 3DNow! opcode map
+        r'RXB\.([01][0-9A-F]|[01]{5})|'  # VEX-specific, 5 bits (hex or binary)
+        r'[xW01]\.(src|src1|dest|cntl|1111)\.[Lx01]\.[01]{2}'  # VEX-specific
+    )
+
+    assert len(opcodes) > 0
+    for opcode in opcodes:
+      assert opcode_regex.match(opcode), opcode
+
+    self.opcodes = opcodes
 
   def __str__(self):
     return ' '.join([self.name] + map(str, self.operands))
@@ -221,37 +282,8 @@ def ParseDefFile(filename):
     line = line.strip()
     if line == '':
       continue
-    columns = line.split(COLUMN_SEPARATOR)
 
-    # Third column is optional.
-    assert 2 <= len(columns) <= 3, line
-    instruction_and_operands = columns[0]
-    opcodes = columns[1].split()
-    if len(columns) == 3:
-      attributes = columns[2].split()
-    else:
-      attributes = []
-
-    Instruction.Parse(instruction_and_operands)
-
-    opcode_regex = re.compile(
-        r'0x[0-9a-f]{2}|'  # raw bytes
-        r'data16|'
-        r'rexw|'  # REX prefix with W-bit set
-        r'/[0-7]|'  # opcode stored in ModRM byte
-        r'/r|'  # register operand
-        r'/m|'  # memory operand
-        r'/s|'  # segment register operand
-        r'/|'  # precedes 3DNow! opcode map
-        r'RXB\.([01][0-9A-F]|[01]{5})|'  # VEX-specific, 5 bits (hex or binary)
-        r'[xW01]\.(src|src1|dest|cntl|1111)\.[Lx01]\.[01]{2}'  # VEX-specific
-    )
-
-    for opcode in opcodes:
-      assert opcode_regex.match(opcode), opcode
-
-    for attribute in attributes:
-      assert attribute in SUPPORTED_ATTRIBUTES, attribute
+    Instruction.Parse(line)
 
 
 def GenerateLegacyPrefixes(required_prefixes, optional_prefixes):

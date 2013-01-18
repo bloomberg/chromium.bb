@@ -59,7 +59,8 @@ class TestOperand(unittest.TestCase):
 class TestInstruction(unittest.TestCase):
 
   def test_add(self):
-    instr = gen_dfa.Instruction.Parse('add G E')
+    instr = gen_dfa.Instruction()
+    instr.ParseNameAndOperands('add G E')
     self.assertEquals(instr.name, 'add')
     self.assertEquals(len(instr.operands), 2)
 
