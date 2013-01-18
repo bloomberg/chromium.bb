@@ -168,7 +168,7 @@ bool NativePanelTestingWin::VerifyAppIcon() const {
 
 bool NativePanelTestingWin::VerifySystemMinimizeState() const {
 #if defined(OS_WIN) && !defined(USE_AURA)
-  HWND native_window = panel_view_->GetNativePanelHandle();
+  HWND native_window = panel_view_->GetNativePanelWindow();
   WINDOWPLACEMENT placement;
   if (!::GetWindowPlacement(native_window, &placement))
     return false;
