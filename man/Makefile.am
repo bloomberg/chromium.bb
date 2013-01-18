@@ -17,7 +17,8 @@ MANPAGES_ALIASES = \
 	drm-ttm.7
 
 XML_FILES = \
-	${patsubst %.1,%.xml,${patsubst %.3,%.xml,${patsubst %.5,%.xml,${patsubs %.7,%.xml,$(MANPAGES)}}}}
+	$(patsubst %.1,%.xml,$(patsubst %.3,%.xml,$(patsubst %.5,%.xml,$(patsubst %.7,%.xml,$(MANPAGES)))))
+
 EXTRA_DIST = $(XML_FILES)
 CLEANFILES = $(MANPAGES) $(MANPAGES_ALIASES) .man_fixup
 man_MANS =
