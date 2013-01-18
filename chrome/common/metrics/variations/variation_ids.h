@@ -149,15 +149,25 @@ enum VariationID {
   SUGGEST_TRIAL_STARTED_2013_Q1_ID_MIN = 3310060,
   SUGGEST_TRIAL_STARTED_2013_Q1_ID_MAX = 3310079,
 
+  // Name: InstantExtended field trial on Beta channel.
+  // Range: 3310080 - 3310085
+  EXTENDED_INSTANT_ID_BETA_GROUP_1   = 3310080,
+  EXTENDED_INSTANT_ID_BETA_CONTROL_1 = 3310081,
+  EXTENDED_INSTANT_ID_BETA_GROUP_2   = 3310082,
+  EXTENDED_INSTANT_ID_BETA_CONTROL_2 = 3310083,
+  EXTENDED_INSTANT_ID_BETA_GROUP_3   = 3310084,
+  EXTENDED_INSTANT_ID_BETA_CONTROL_3 = 3310085,
+
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3310080,
+  NEXT_ID = 3310086,
 
   // USABLE IDs END HERE.
   //
   // The largest possible Chrome variation ID in the reserved range. When
-  // defining your variation IDs, DO NOT exceed this value.
+  // defining your variation IDs, DO NOT exceed this value - GWS will ignore
+  // your experiment!
   MAXIMUM_ID = 3399999,
 };
 
