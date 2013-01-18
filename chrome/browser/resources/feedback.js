@@ -334,6 +334,7 @@ function setupSavedScreenshots(screenshots) {
     selectedThumbnailDivId = '';
     selectedThumbnailId = '';
   } else {
+    $('saved-screenshots').textContent = '';
     for (i = 0; i < screenshots.length; ++i)
       addScreenshot('saved-screenshots', screenshots[i]);
 
