@@ -643,9 +643,15 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None,
   # Only trigger if there is at least one python file affected.
   def rel_path(regex):
     """Modifies a regex for a subject to accept paths relative to root."""
-    if input_api.os_path.samefile(
-        input_api.PresubmitLocalPath(), input_api.change.RepositoryRoot()):
+    def samefile(a, b):
+      # Default implementation for platforms lacking os.path.samefile
+      # (like Windows).
+      return input_api.os_path.abspath(a) == input_api.os_path.abspath(b)
+    samefile = getattr(input_api.os_path, 'samefile', samefile)
+    if samefile(input_api.PresubmitLocalPath(),
+                input_api.change.RepositoryRoot()):
       return regex
+
     prefix = input_api.os_path.join(input_api.os_path.relpath(
         input_api.PresubmitLocalPath(), input_api.change.RepositoryRoot()), '')
     return input_api.re.escape(prefix) + regex
