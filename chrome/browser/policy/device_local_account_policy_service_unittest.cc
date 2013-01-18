@@ -245,6 +245,33 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, DevicePolicyChange) {
   Mock::VerifyAndClearExpectations(&service_observer_);
 }
 
+TEST_F(DeviceLocalAccountPolicyServiceTest, DuplicateAccounts) {
+  InstallDevicePolicy();
+  DeviceLocalAccountPolicyBroker* broker =
+      service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
+  ASSERT_TRUE(broker);
+
+  // Add a second entry with a duplicate account name to device policy.
+  device_policy_.payload().mutable_device_local_accounts()->add_account()->
+      set_id(PolicyBuilder::kFakeUsername);
+  device_policy_.Build();
+  device_settings_test_helper_.set_device_local_account_policy_blob(
+      PolicyBuilder::kFakeUsername, device_local_account_policy_.GetBlob());
+  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+
+  EXPECT_CALL(service_observer_, OnDeviceLocalAccountsChanged());
+  EXPECT_CALL(service_observer_, OnPolicyUpdated(PolicyBuilder::kFakeUsername));
+  device_settings_service_.PropertyChangeComplete(true);
+  FlushDeviceSettings();
+  Mock::VerifyAndClearExpectations(&service_observer_);
+
+  // Make sure the broker is accessible and policy got loaded.
+  broker = service_.GetBrokerForAccount(PolicyBuilder::kFakeUsername);
+  ASSERT_TRUE(broker);
+  EXPECT_EQ(PolicyBuilder::kFakeUsername, broker->account_id());
+  EXPECT_TRUE(broker->core()->store()->policy());
+}
+
 TEST_F(DeviceLocalAccountPolicyServiceTest, FetchPolicy) {
   device_settings_test_helper_.set_device_local_account_policy_blob(
       PolicyBuilder::kFakeUsername, device_local_account_policy_.GetBlob());

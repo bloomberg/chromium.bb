@@ -165,12 +165,19 @@ void DeviceLocalAccountPolicyService::UpdateAccountList(
   RepeatedPtrField<em::DeviceLocalAccountInfoProto>::const_iterator entry;
   for (entry = accounts.begin(); entry != accounts.end(); ++entry) {
     if (entry->has_id()) {
-      // Reuse the existing broker if present.
-      DeviceLocalAccountPolicyBroker*& broker = policy_brokers_[entry->id()];
+      // Sanity check for whether this account ID has already been processed.
       DeviceLocalAccountPolicyBroker*& new_broker =
           new_policy_brokers[entry->id()];
-      new_broker = broker;
-      broker = NULL;
+      if (new_broker) {
+        LOG(WARNING) << "Duplicate public account " << entry->id();
+        continue;
+      }
+
+      // Reuse the existing broker if present.
+      DeviceLocalAccountPolicyBroker*& existing_broker =
+          policy_brokers_[entry->id()];
+      new_broker = existing_broker;
+      existing_broker = NULL;
 
       // Fire up the cloud connection for fetching policy for the account from
       // the cloud if this is an enterprise-managed device.
