@@ -21,6 +21,7 @@ class AppSpecifics;
 class AutofillProfileSpecifics;
 class AutofillSpecifics;
 class BookmarkSpecifics;
+class ClientConfigParams;
 class ClientToServerMessage;
 class ClientToServerResponse;
 class DatatypeAssociationStats;
@@ -204,6 +205,9 @@ base::DictionaryValue* DebugInfoToValue(
 
 base::DictionaryValue* SyncCycleCompletedEventInfoToValue(
     const sync_pb::SyncCycleCompletedEventInfo& proto);
+
+base::DictionaryValue* ClientConfigParamsToValue(
+    const sync_pb::ClientConfigParams& proto);
 
 }  // namespace syncer
 

@@ -539,6 +539,7 @@ DictionaryValue* CommitMessageToValue(
              SyncEntitiesToValue(proto.entries(), include_specifics));
   SET_STR(cache_guid);
   SET_REP(extensions_activity, ChromiumExtensionActivityToValue);
+  SET(config_params, ClientConfigParamsToValue);
   return value;
 }
 
@@ -718,6 +719,13 @@ base::DictionaryValue* SyncCycleCompletedEventInfoToValue(
   SET_INT32(num_updates_downloaded);
   SET_INT32(num_reflected_updates_downloaded);
   SET(caller_info, GetUpdatesCallerInfoToValue);
+  return value;
+}
+
+base::DictionaryValue* ClientConfigParamsToValue(
+    const sync_pb::ClientConfigParams& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_INT32_REP(enabled_type_ids);
   return value;
 }
 

@@ -97,6 +97,17 @@ void BuildCommitCommand::AddExtensionsActivityToMessage(
   }
 }
 
+void BuildCommitCommand::AddClientConfigParamsToMessage(
+    SyncSession* session, sync_pb::CommitMessage* message) {
+  const ModelSafeRoutingInfo& routing_info = session->routing_info();
+  sync_pb::ClientConfigParams* config_params = message->mutable_config_params();
+  for (std::map<ModelType, ModelSafeGroup>::const_iterator iter =
+          routing_info.begin(); iter != routing_info.end(); ++iter) {
+    int field_number = GetSpecificsFieldNumberFromModelType(iter->first);
+    config_params->mutable_enabled_type_ids()->Add(field_number);
+  }
+}
+
 namespace {
 void SetEntrySpecifics(MutableEntry* meta_entry,
                        sync_pb::SyncEntity* sync_entry) {
@@ -116,6 +127,7 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
   commit_message->set_cache_guid(
       session->write_transaction()->directory()->cache_guid());
   AddExtensionsActivityToMessage(session, commit_message);
+  AddClientConfigParamsToMessage(session, commit_message);
 
   // Cache previously computed position values.  Because |commit_ids|
   // is already in sibling order, we should always hit this map after

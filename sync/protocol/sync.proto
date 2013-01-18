@@ -362,6 +362,12 @@ message ChromiumExtensionsActivity {
   optional uint32 bookmark_writes_since_last_commit = 2;
 };
 
+// Client specific configuration information.
+message ClientConfigParams {
+  // The set of data types this client has enabled.
+ repeated int32 enabled_type_ids = 1;
+};
+
 message CommitMessage {
   repeated SyncEntity entries = 1;
 
@@ -370,6 +376,13 @@ message CommitMessage {
   optional string cache_guid = 2;
 
   repeated ChromiumExtensionsActivity extensions_activity = 3;
+
+  // The configuration of this client at commit time. Used by the server to
+  // make commit-time decisions about how to process datatypes that might
+  // involve server-side interaction, and e.g require explicit user intent for
+  // syncing a particular data type regardless of whether a commit for that
+  // datatype is currently being sent up.
+  optional ClientConfigParams config_params = 4;
 };
 
 message DataTypeProgressMarker {

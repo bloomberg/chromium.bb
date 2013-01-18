@@ -53,6 +53,11 @@ class SYNC_EXPORT_PRIVATE BuildCommitCommand : public SyncerCommand {
 
   void AddExtensionsActivityToMessage(sessions::SyncSession* session,
                                       sync_pb::CommitMessage* message);
+
+  // Fills the config_params field of |message|.
+  void AddClientConfigParamsToMessage(sessions::SyncSession* session,
+                                      sync_pb::CommitMessage* message);
+
   // Helper for computing position.  Find the numeric position value
   // of the closest already-synced entry.  |direction| must be one of
   // NEXT_ID or PREV_ID; this parameter controls the search direction.
