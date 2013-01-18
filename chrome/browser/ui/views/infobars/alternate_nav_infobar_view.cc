@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/event_disposition.h"
-#include "chrome/browser/infobars/alternate_nav_infobar_delegate.h"
+#include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 

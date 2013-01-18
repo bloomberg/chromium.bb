@@ -6,10 +6,10 @@
 
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/infobars/alternate_nav_infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #include "chrome/browser/ui/cocoa/event_utils.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar.h"
+#include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 #include "webkit/glue/window_open_disposition.h"
 
 @implementation AlternateNavInfoBarController

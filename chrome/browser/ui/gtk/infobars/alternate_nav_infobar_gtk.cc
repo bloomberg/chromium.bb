@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/gtk/infobars/alternate_nav_infobar_gtk.h"
 
-#include "chrome/browser/infobars/alternate_nav_infobar_delegate.h"
 #include "chrome/browser/ui/gtk/event_utils.h"
+#include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 
 // AlternateNavInfoBarDelegate -------------------------------------------------
 
