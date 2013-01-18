@@ -501,7 +501,7 @@ struct FuzzTraits<gfx::Rect> {
 class PickleCracker : public Pickle {
  public:
   static void CopyMessageID(PickleCracker *dst, PickleCracker *src) {
-    memcpy(dst->payload(), src->payload(), sizeof(int));
+    memcpy(dst->mutable_payload(), src->payload(), sizeof(int));
   }
 };
 

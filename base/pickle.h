@@ -278,24 +278,21 @@ class BASE_EXPORT Pickle {
 
   // The payload is the pickle data immediately following the header.
   size_t payload_size() const { return header_->payload_size; }
+
   const char* payload() const {
     return reinterpret_cast<const char*>(header_) + header_size_;
   }
 
- protected:
-  char* payload() {
-    return reinterpret_cast<char*>(header_) + header_size_;
-  }
-
   // Returns the address of the byte immediately following the currently valid
   // header + payload.
-  char* end_of_payload() {
-    // We must have a valid header_.
-    return payload() + payload_size();
-  }
   const char* end_of_payload() const {
     // This object may be invalid.
     return header_ ? payload() + payload_size() : NULL;
+  }
+
+ protected:
+  char* mutable_payload() {
+    return reinterpret_cast<char*>(header_) + header_size_;
   }
 
   size_t capacity() const {

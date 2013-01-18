@@ -165,8 +165,7 @@ bool NativeMessageProcessHost::WriteMessage(MessageType type,
   // Make sure that the pickle doesn't do any unexpected padding.
   CHECK(8 + message.length() == pickle.payload_size());
 
-  if (!WriteData(write_file_, const_cast<const Pickle*>(&pickle)->payload(),
-                 pickle.payload_size())) {
+  if (!WriteData(write_file_, pickle.payload(), pickle.payload_size())) {
     LOG(ERROR) << "Error writing message to the native client.";
     return false;
   }

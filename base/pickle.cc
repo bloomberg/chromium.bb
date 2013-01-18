@@ -318,7 +318,7 @@ char* Pickle::BeginWrite(size_t length) {
 #endif
 
   header_->payload_size = static_cast<uint32>(new_size);
-  return payload() + offset;
+  return mutable_payload() + offset;
 }
 
 void Pickle::EndWrite(char* dest, int length) {
