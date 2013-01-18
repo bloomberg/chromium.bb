@@ -729,13 +729,15 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
 
   if (proxy_info_.is_https()) {
     InitSSLConfig(proxy_info_.proxy_server().host_port_pair(),
-                  &proxy_ssl_config_);
+                  &proxy_ssl_config_,
+                  true /* is a proxy server */);
     // Disable revocation checking for HTTPS proxies since the revocation
     // requests are probably going to need to go through the proxy too.
     proxy_ssl_config_.rev_checking_enabled = false;
   }
   if (using_ssl_) {
-    InitSSLConfig(origin_, &server_ssl_config_);
+    InitSSLConfig(origin_, &server_ssl_config_,
+                  false /* not a proxy server */);
   }
 
   if (IsPreconnecting()) {
@@ -1090,7 +1092,8 @@ bool HttpStreamFactoryImpl::Job::IsHttpsProxyAndHttpUrl() const {
 // proxy info and other factors.
 void HttpStreamFactoryImpl::Job::InitSSLConfig(
     const HostPortPair& origin_server,
-    SSLConfig* ssl_config) const {
+    SSLConfig* ssl_config,
+    bool is_proxy) const {
   if (proxy_info_.is_https() && ssl_config->send_client_cert) {
     // When connecting through an HTTPS proxy, disable TLS False Start so
     // that client authentication errors can be distinguished between those
@@ -1127,6 +1130,19 @@ void HttpStreamFactoryImpl::Job::InitSSLConfig(
   }
   UMA_HISTOGRAM_ENUMERATION("Net.ConnectionUsedSSLVersionFallback",
                             fallback, FALLBACK_MAX);
+
+  // We also wish to measure the amount of fallback connections for a host that
+  // we know implements TLS up to 1.2. Ideally there would be no fallback here
+  // but high numbers of SSLv3 would suggest that SSLv3 fallback is being
+  // caused by network middleware rather than buggy HTTPS servers.
+  const std::string& host = origin_server.host();
+  if (!is_proxy &&
+      host.size() >= 10 &&
+      host.compare(host.size() - 10, 10, "google.com") == 0 &&
+      (host.size() == 10 || host[host.size()-11] == '.')) {
+    UMA_HISTOGRAM_ENUMERATION("Net.GoogleConnectionUsedSSLVersionFallback",
+                              fallback, FALLBACK_MAX);
+  }
 
   if (request_info_.load_flags & LOAD_VERIFY_EV_CERT)
     ssl_config->verify_ev_cert = true;

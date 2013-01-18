@@ -162,10 +162,11 @@ class HttpStreamFactoryImpl::Job {
 
   bool IsHttpsProxyAndHttpUrl() const;
 
-// Sets several fields of ssl_config for the given origin_server based on the
-// proxy info and other factors.
+  // Sets several fields of ssl_config for the given origin_server based on the
+  // proxy info and other factors.
   void InitSSLConfig(const HostPortPair& origin_server,
-                     SSLConfig* ssl_config) const;
+                     SSLConfig* ssl_config,
+                     bool is_proxy) const;
 
   // AlternateProtocol API
   void MarkBrokenAlternateProtocolAndFallback();
