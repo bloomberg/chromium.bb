@@ -3073,16 +3073,6 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
     vertex_array_manager_.reset();
   }
 
-  if (group_) {
-    group_->Destroy(this, have_context);
-    group_ = NULL;
-  }
-
-  if (context_.get()) {
-    context_->ReleaseCurrent(NULL);
-    context_ = NULL;
-  }
-
   offscreen_target_frame_buffer_.reset();
   offscreen_target_color_texture_.reset();
   offscreen_target_color_render_buffer_.reset();
@@ -3092,6 +3082,16 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   offscreen_saved_color_texture_.reset();
   offscreen_resolved_frame_buffer_.reset();
   offscreen_resolved_color_texture_.reset();
+
+  if (group_) {
+    group_->Destroy(this, have_context);
+    group_ = NULL;
+  }
+
+  if (context_.get()) {
+    context_->ReleaseCurrent(NULL);
+    context_ = NULL;
+  }
 
 #if defined(OS_MACOSX)
   for (TextureToIOSurfaceMap::iterator it = texture_to_io_surface_map_.begin();

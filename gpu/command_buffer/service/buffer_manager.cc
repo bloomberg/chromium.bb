@@ -19,7 +19,6 @@ BufferManager::BufferManager(MemoryTracker* memory_tracker)
       allow_buffers_on_multiple_targets_(false),
       buffer_info_count_(0),
       have_context_(true) {
-  memory_tracker_->UpdateMemRepresented();
 }
 
 BufferManager::~BufferManager() {
@@ -31,7 +30,6 @@ void BufferManager::Destroy(bool have_context) {
   have_context_ = have_context;
   buffer_infos_.clear();
   DCHECK_EQ(0u, memory_tracker_->GetMemRepresented());
-  memory_tracker_->UpdateMemRepresented();
 }
 
 void BufferManager::CreateBufferInfo(GLuint client_id, GLuint service_id) {
@@ -63,7 +61,6 @@ void BufferManager::StartTracking(BufferManager::BufferInfo* /* buffer */) {
 void BufferManager::StopTracking(BufferManager::BufferInfo* buffer) {
   memory_tracker_->TrackMemFree(buffer->size());
   --buffer_info_count_;
-  memory_tracker_->UpdateMemRepresented();
 }
 
 BufferManager::BufferInfo::BufferInfo(BufferManager* manager, GLuint service_id)
@@ -229,7 +226,6 @@ void BufferManager::SetInfo(
                 info->target() == GL_ELEMENT_ARRAY_BUFFER ||
                 allow_buffers_on_multiple_targets_);
   memory_tracker_->TrackMemAlloc(info->size());
-  memory_tracker_->UpdateMemRepresented();
 }
 
 bool BufferManager::SetTarget(BufferManager::BufferInfo* info, GLenum target) {

@@ -84,8 +84,6 @@ void TextureManager::Destroy(bool have_context) {
 
   DCHECK_EQ(0u, memory_tracker_managed_->GetMemRepresented());
   DCHECK_EQ(0u, memory_tracker_unmanaged_->GetMemRepresented());
-  memory_tracker_managed_->UpdateMemRepresented();
-  memory_tracker_unmanaged_->UpdateMemRepresented();
 }
 
 TextureManager::TextureInfo::TextureInfo(TextureManager* manager,
@@ -481,10 +479,8 @@ GLenum TextureManager::TextureInfo::SetParameter(
         return GL_INVALID_ENUM;
       }
       manager_->GetMemTracker(pool_)->TrackMemFree(estimated_size());
-      manager_->GetMemTracker(pool_)->UpdateMemRepresented();
       pool_ = param;
       manager_->GetMemTracker(pool_)->TrackMemAlloc(estimated_size());
-      manager_->GetMemTracker(pool_)->UpdateMemRepresented();
       break;
     case GL_TEXTURE_WRAP_S:
       if (!feature_info->validators()->texture_wrap_mode.IsValid(param)) {
@@ -729,9 +725,6 @@ TextureManager::TextureManager(
 }
 
 bool TextureManager::Initialize() {
-  memory_tracker_managed_->UpdateMemRepresented();
-  memory_tracker_unmanaged_->UpdateMemRepresented();
-
   // TODO(gman): The default textures have to be real textures, not the 0
   // texture because we simulate non shared resources on top of shared
   // resources and all contexts that share resource share the same default
@@ -930,7 +923,6 @@ void TextureManager::SetLevelInfo(
       feature_info_, target, level, internal_format, width, height, depth,
       border, format, type, cleared);
   GetMemTracker(info->pool_)->TrackMemAlloc(info->estimated_size());
-  GetMemTracker(info->pool_)->UpdateMemRepresented();
 
   num_uncleared_mips_ += info->num_uncleared_mips();
   if (!info->CanRender(feature_info_)) {
@@ -1085,7 +1077,6 @@ bool TextureManager::MarkMipmapsGenerated(TextureManager::TextureInfo* info) {
   GetMemTracker(info->pool_)->TrackMemFree(info->estimated_size());
   bool result = info->MarkMipmapsGenerated(feature_info_);
   GetMemTracker(info->pool_)->TrackMemAlloc(info->estimated_size());
-  GetMemTracker(info->pool_)->UpdateMemRepresented();
 
   num_uncleared_mips_ += info->num_uncleared_mips();
   if (!info->CanRender(feature_info_)) {
@@ -1146,7 +1137,6 @@ void TextureManager::StopTracking(TextureManager::TextureInfo* texture) {
   num_uncleared_mips_ -= texture->num_uncleared_mips();
   DCHECK_GE(num_uncleared_mips_, 0);
   GetMemTracker(texture->pool_)->TrackMemFree(texture->estimated_size());
-  GetMemTracker(texture->pool_)->UpdateMemRepresented();
 }
 
 MemoryTypeTracker* TextureManager::GetMemTracker(GLenum tracking_pool) {

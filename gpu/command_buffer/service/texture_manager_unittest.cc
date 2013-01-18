@@ -445,7 +445,8 @@ TEST_F(TextureInfoMemoryTrackerTest, EstimatedSize) {
   EXPECT_MEMORY_ALLOCATION_CHANGE(0, 128, MemoryTracker::kUnmanaged);
   manager_->SetLevelInfo(info_,
       GL_TEXTURE_2D, 0, GL_RGBA, 8, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-  EXPECT_MEMORY_ALLOCATION_CHANGE(128, 256, MemoryTracker::kUnmanaged);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(128, 0, MemoryTracker::kUnmanaged);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 256, MemoryTracker::kUnmanaged);
   manager_->SetLevelInfo(info_,
       GL_TEXTURE_2D, 2, GL_RGBA, 8, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
   // Add expectation for texture deletion.
@@ -517,7 +518,8 @@ TEST_F(TextureInfoMemoryTrackerTest, MarkMipmapsGenerated) {
   EXPECT_MEMORY_ALLOCATION_CHANGE(0, 64, MemoryTracker::kUnmanaged);
   manager_->SetLevelInfo(info_,
       GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-  EXPECT_MEMORY_ALLOCATION_CHANGE(64, 84, MemoryTracker::kUnmanaged);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(64, 0, MemoryTracker::kUnmanaged);
+  EXPECT_MEMORY_ALLOCATION_CHANGE(0, 84, MemoryTracker::kUnmanaged);
   EXPECT_TRUE(manager_->MarkMipmapsGenerated(info_));
   EXPECT_MEMORY_ALLOCATION_CHANGE(84, 0, MemoryTracker::kUnmanaged);
   EXPECT_MEMORY_ALLOCATION_CHANGE(0, 0, MemoryTracker::kUnmanaged);

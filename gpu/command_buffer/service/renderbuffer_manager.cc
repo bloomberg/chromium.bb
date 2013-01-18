@@ -24,7 +24,6 @@ RenderbufferManager::RenderbufferManager(
       num_uncleared_renderbuffers_(0),
       renderbuffer_info_count_(0),
       have_context_(true) {
-  memory_tracker_->UpdateMemRepresented();
 }
 
 RenderbufferManager::~RenderbufferManager() {
@@ -64,7 +63,6 @@ void RenderbufferManager::Destroy(bool have_context) {
   have_context_ = have_context;
   renderbuffer_infos_.clear();
   DCHECK_EQ(0u, memory_tracker_->GetMemRepresented());
-  memory_tracker_->UpdateMemRepresented();
 }
 
 void RenderbufferManager::StartTracking(RenderbufferInfo* /* renderbuffer */) {
@@ -77,7 +75,6 @@ void RenderbufferManager::StopTracking(RenderbufferInfo* renderbuffer) {
     --num_uncleared_renderbuffers_;
   }
   memory_tracker_->TrackMemFree(renderbuffer->EstimatedSize());
-  memory_tracker_->UpdateMemRepresented();
 }
 
 void RenderbufferManager::SetInfo(
@@ -90,7 +87,6 @@ void RenderbufferManager::SetInfo(
   memory_tracker_->TrackMemFree(renderbuffer->EstimatedSize());
   renderbuffer->SetInfo(samples, internalformat, width, height);
   memory_tracker_->TrackMemAlloc(renderbuffer->EstimatedSize());
-  memory_tracker_->UpdateMemRepresented();
   if (!renderbuffer->cleared()) {
     ++num_uncleared_renderbuffers_;
   }
