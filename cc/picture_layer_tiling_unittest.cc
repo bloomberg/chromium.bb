@@ -127,5 +127,12 @@ TEST_F(PictureLayerTilingIteratorTest, IteratorEmptyRect) {
   EXPECT_FALSE(iter);
 }
 
+TEST_F(PictureLayerTilingIteratorTest, NonIntersectingRect) {
+  Initialize(gfx::Size(100, 100), 1, gfx::Size(800, 600));
+  gfx::Rect non_intersecting(1000, 1000, 50, 50);
+  PictureLayerTiling::Iterator iter(tiling_.get(), 1, non_intersecting);
+  EXPECT_FALSE(iter);
+}
+
 }  // namespace
 }  // namespace cc

@@ -33,7 +33,8 @@ void PictureLayerTilingSet::CloneAll(
   tilings_.reserve(other.tilings_.size());
   for (size_t i = 0; i < other.tilings_.size(); ++i) {
     tilings_.push_back(other.tilings_[i]->Clone());
-    tilings_.back()->SetLayerBounds(LayerBounds());
+    // Intentionally use this set's layer bounds, as it may have changed.
+    tilings_.back()->SetLayerBounds(layer_bounds_);
     tilings_.back()->SetClient(client_);
     tilings_.back()->Invalidate(invalidation);
   }

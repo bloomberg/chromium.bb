@@ -254,6 +254,7 @@ void PictureLayerImpl::SyncFromActiveLayer() {
 
 void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
   tilings_.CloneAll(other->tilings_, invalidation_);
+  DCHECK(bounds() == tilings_.LayerBounds());
 }
 
 void PictureLayerImpl::SyncTiling(

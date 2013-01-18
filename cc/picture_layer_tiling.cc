@@ -163,6 +163,11 @@ PictureLayerTiling::Iterator::Iterator(const PictureLayerTiling* tiling,
 
   gfx::Rect content_rect =
       gfx::ToEnclosingRect(gfx::ScaleRect(dest_rect_, dest_to_content_scale_));
+  // IndexFromSrcCoord clamps to valid tile ranges, so it's necessary to
+  // check for non-intersection first.
+  content_rect.Intersect(gfx::Rect(tiling_->tiling_data_.total_size()));
+  if (content_rect.IsEmpty())
+    return;
 
   left_ = tiling_->tiling_data_.TileXIndexFromSrcCoord(content_rect.x());
   top_ = tiling_->tiling_data_.TileYIndexFromSrcCoord(content_rect.y());
