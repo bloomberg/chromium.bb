@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fcntl.h>
+#include <signal.h>
 #include <stdio.h>
 #include <sys/resource.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 #include "base/file_util.h"
+#include "base/third_party/valgrind/valgrind.h"
 #include "sandbox/linux/tests/unit_tests.h"
 
 namespace {
@@ -20,6 +24,40 @@ namespace sandbox {
 static const int kExpectedValue = 42;
 static const int kIgnoreThisTest = 43;
 static const int kExitWithAssertionFailure = 1;
+static const int kExitForTimeout = 2;
+
+static void SigAlrmHandler(int) {
+    const char failure_message[] = "Timeout reached!\n";
+    // Make sure that we never block here.
+    if (!fcntl(2, F_SETFL,  O_NONBLOCK)) {
+      if (write(2, failure_message, sizeof(failure_message) - 1) < 0) {
+      }
+    }
+    _exit(kExitForTimeout);
+}
+
+// Set a timeout with a handler that will automatically fail the
+// test.
+static void SetProcessTimeout(int time_in_seconds) {
+  struct sigaction act = {};
+  act.sa_handler = SigAlrmHandler;
+  SANDBOX_ASSERT(sigemptyset(&act.sa_mask) == 0);
+  act.sa_flags = 0;
+
+  struct sigaction old_act;
+  SANDBOX_ASSERT(sigaction(SIGALRM, &act, &old_act) == 0);
+
+  // We don't implemenet signal chaining, so make sure that nothing else
+  // is expecting to handle SIGALRM.
+  SANDBOX_ASSERT((old_act.sa_flags & SA_SIGINFO) == 0);
+  SANDBOX_ASSERT(old_act.sa_handler == SIG_DFL);
+  sigset_t sigalrm_set;
+  SANDBOX_ASSERT(sigemptyset(&sigalrm_set) == 0);
+  SANDBOX_ASSERT(sigaddset(&sigalrm_set, SIGALRM) == 0);
+  SANDBOX_ASSERT(sigprocmask(SIG_UNBLOCK, &sigalrm_set, NULL) == 0);
+  SANDBOX_ASSERT(alarm(time_in_seconds) == 0);  // There should be no previous
+                                                // alarm.
+}
 
 void UnitTests::RunTestInProcess(UnitTests::Test test, void *arg,
                                  DeathCheck death, const void *death_aux) {
@@ -39,6 +77,12 @@ void UnitTests::RunTestInProcess(UnitTests::Test test, void *arg,
     SANDBOX_ASSERT(dup2(fds[1], 2) == 2);
     SANDBOX_ASSERT(!close(fds[0]));
     SANDBOX_ASSERT(!close(fds[1]));
+
+    // Don't set a timeout if running on Valgrind, since it's generally much
+    // slower.
+    if (!RUNNING_ON_VALGRIND) {
+      SetProcessTimeout(10 /* seconds */);
+    }
 
     // Disable core files. They are not very useful for our individual test
     // cases.
