@@ -38,6 +38,10 @@ class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
     // Returns an empty string if there are no more results.
     virtual FilePath Next() = 0;
 
+    // These methods return metadata for the file most recently returned by
+    // Next(). If Next() has never been called, or if Next() most recently
+    // returned an empty string, then return the default values of 0,
+    // "null time", and false, respectively.
     virtual int64 Size() = 0;
     virtual base::Time LastModifiedTime() = 0;
     virtual bool IsDirectory() = 0;
