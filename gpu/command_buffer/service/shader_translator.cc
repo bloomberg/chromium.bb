@@ -128,7 +128,14 @@ bool ShaderTranslator::Translate(const char* shader) {
   bool success = false;
   int compile_options =
       SH_OBJECT_CODE | SH_ATTRIBUTES_UNIFORMS |
-      SH_MAP_LONG_VARIABLE_NAMES | SH_CLAMP_INDIRECT_ARRAY_BOUNDS;
+      SH_MAP_LONG_VARIABLE_NAMES;
+
+#if !defined(OS_WIN)
+  // Cannot reliably clamp an array index in HLSL.
+  // https://code.google.com/p/angleproject/issues/detail?id=399
+  compile_options |= SH_CLAMP_INDIRECT_ARRAY_BOUNDS;
+#endif
+
   if (needs_built_in_function_emulation_)
     compile_options |= SH_EMULATE_BUILT_IN_FUNCTIONS;
   if (ShCompile(compiler_, &shader, 1, compile_options)) {
