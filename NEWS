@@ -29,7 +29,8 @@ new tables the long awaited table for UEB is finally here.
     information.
 *** New Braille tables
     - Inuktitut grade 1, thanks to Greg Kearney.
-    - UEB grade 1 and 2, thanks to Joseph Lee.
+    - UEB grade 1 and 2, thanks to Joseph Lee. These tables replace
+      the old UEB tables (UEBC-g1.utb and UEBC-g2.ctb).
     - Korean table thanks to Joseph Lee
 
 ** Braille Table Improvements
