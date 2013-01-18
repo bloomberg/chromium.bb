@@ -35,7 +35,7 @@
             },
           },
         }, {
-          'type': '<(library)',
+          'type': 'static_library',
           'sources': [
             'src/libusb/core.c',
             'src/libusb/descriptor.c',
