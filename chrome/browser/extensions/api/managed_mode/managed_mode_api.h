@@ -34,7 +34,7 @@ class ManagedModeEventRouter {
 
 class GetManagedModeFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("managedModePrivate.get")
+  DECLARE_EXTENSION_FUNCTION("managedModePrivate.get", MANAGEDMODEPRIVATE_GET)
 
  protected:
   virtual ~GetManagedModeFunction();
@@ -45,7 +45,8 @@ class GetManagedModeFunction : public SyncExtensionFunction {
 
 class EnterManagedModeFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("managedModePrivate.enter")
+  DECLARE_EXTENSION_FUNCTION("managedModePrivate.enter",
+                             MANAGEDMODEPRIVATE_ENTER)
 
  protected:
   virtual ~EnterManagedModeFunction();
@@ -61,7 +62,8 @@ class EnterManagedModeFunction : public AsyncExtensionFunction {
 
 class GetPolicyFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("managedModePrivate.getPolicy")
+  DECLARE_EXTENSION_FUNCTION("managedModePrivate.getPolicy",
+                             MANAGEDMODEPRIVATE_GETPOLICY)
 
  protected:
   virtual ~GetPolicyFunction();
@@ -72,7 +74,8 @@ class GetPolicyFunction : public SyncExtensionFunction {
 
 class SetPolicyFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("managedModePrivate.setPolicy")
+  DECLARE_EXTENSION_FUNCTION("managedModePrivate.setPolicy",
+                             MANAGEDMODEPRIVATE_SETPOLICY)
 
  protected:
   virtual ~SetPolicyFunction();

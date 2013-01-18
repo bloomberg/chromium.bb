@@ -13,7 +13,8 @@ namespace extensions {
 // call relative to browser UI thread.
 class SystemInfoStorageGetFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.systemInfo.storage.get");
+  DECLARE_EXTENSION_FUNCTION("experimental.systemInfo.storage.get",
+                             EXPERIMENTAL_SYSTEMINFO_STORAGE_GET)
   SystemInfoStorageGetFunction();
 
  private:

@@ -28,7 +28,7 @@ class GetInputMethodFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  DECLARE_EXTENSION_FUNCTION_NAME("inputMethodPrivate.get");
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.get", INPUTMETHODPRIVATE_GET)
 };
 
 class InputMethodAPI : public ProfileKeyedService,

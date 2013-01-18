@@ -29,7 +29,7 @@ class GetChromeosInfoFunction : public AsyncExtensionFunction {
   // Returns a newly allocate value, or null.
   base::Value* GetValue(const std::string& property_name);
 
-  DECLARE_EXTENSION_FUNCTION_NAME("chromeosInfoPrivate.get");
+  DECLARE_EXTENSION_FUNCTION("chromeosInfoPrivate.get", CHROMEOSINFOPRIVATE_GET)
 };
 
 }  // namespace extensions

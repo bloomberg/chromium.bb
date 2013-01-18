@@ -153,7 +153,8 @@ class FileBrowserHandlerInternalSelectFileFunction
   // files.
   std::vector<std::pair<FilePath, int> > permissions_to_grant_;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserHandlerInternal.selectFile");
+  DECLARE_EXTENSION_FUNCTION("fileBrowserHandlerInternal.selectFile",
+                             FILEBROWSERHANDLERINTERNAL_SELECTFILE)
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_HANDLER_API_H_

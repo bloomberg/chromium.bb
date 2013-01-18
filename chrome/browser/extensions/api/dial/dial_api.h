@@ -81,7 +81,7 @@ class DialDiscoverNowFunction : public AsyncApiFunction {
   virtual bool Respond() OVERRIDE;
 
  private:
-  DECLARE_EXTENSION_FUNCTION_NAME("dial.discoverNow")
+  DECLARE_EXTENSION_FUNCTION("dial.discoverNow", DIAL_DISCOVERNOW)
 
   // Pointer to the DIAL API for this profile. We get this on the UI thread.
   DialAPI* dial_;

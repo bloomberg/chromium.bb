@@ -41,7 +41,7 @@ class DebuggerFunction : public AsyncExtensionFunction {
 // Implements the debugger.attach() extension function.
 class DebuggerAttachFunction : public DebuggerFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("debugger.attach")
+  DECLARE_EXTENSION_FUNCTION("debugger.attach", DEBUGGER_ATTACH)
 
   DebuggerAttachFunction();
 
@@ -55,7 +55,7 @@ class DebuggerAttachFunction : public DebuggerFunction {
 // Implements the debugger.detach() extension function.
 class DebuggerDetachFunction : public DebuggerFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("debugger.detach")
+  DECLARE_EXTENSION_FUNCTION("debugger.detach", DEBUGGER_DETACH)
 
   DebuggerDetachFunction();
 
@@ -69,7 +69,7 @@ class DebuggerDetachFunction : public DebuggerFunction {
 // Implements the debugger.sendCommand() extension function.
 class DebuggerSendCommandFunction : public DebuggerFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("debugger.sendCommand")
+  DECLARE_EXTENSION_FUNCTION("debugger.sendCommand", DEBUGGER_SENDCOMMAND)
 
   DebuggerSendCommandFunction();
   void SendResponseBody(base::DictionaryValue* result);

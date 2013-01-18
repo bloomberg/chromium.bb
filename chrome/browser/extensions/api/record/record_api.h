@@ -107,7 +107,8 @@ class RunPageCyclerFunction : public AsyncExtensionFunction {
 
 class RecordCaptureURLsFunction : public RunPageCyclerFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.record.captureURLs");
+  DECLARE_EXTENSION_FUNCTION("experimental.record.captureURLs",
+                             EXPERIMENTAL_RECORD_CAPTUREURLS)
 
   RecordCaptureURLsFunction();
   explicit RecordCaptureURLsFunction(ProcessStrategy* strategy);
@@ -127,7 +128,8 @@ class RecordCaptureURLsFunction : public RunPageCyclerFunction {
 
 class RecordReplayURLsFunction : public RunPageCyclerFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.record.replayURLs");
+  DECLARE_EXTENSION_FUNCTION("experimental.record.replayURLs",
+                             EXPERIMENTAL_RECORD_REPLAYURLS)
 
   RecordReplayURLsFunction();
   explicit RecordReplayURLsFunction(ProcessStrategy* strategy);

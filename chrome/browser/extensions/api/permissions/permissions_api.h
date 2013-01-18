@@ -17,7 +17,7 @@ class ExtensionService;
 // chrome.permissions.contains
 class PermissionsContainsFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("permissions.contains")
+  DECLARE_EXTENSION_FUNCTION("permissions.contains", PERMISSIONS_CONTAINS)
 
  protected:
   virtual ~PermissionsContainsFunction() {}
@@ -29,7 +29,7 @@ class PermissionsContainsFunction : public SyncExtensionFunction {
 // chrome.permissions.getAll
 class PermissionsGetAllFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("permissions.getAll")
+  DECLARE_EXTENSION_FUNCTION("permissions.getAll", PERMISSIONS_GETALL)
 
  protected:
   virtual ~PermissionsGetAllFunction() {}
@@ -41,7 +41,7 @@ class PermissionsGetAllFunction : public SyncExtensionFunction {
 // chrome.permissions.remove
 class PermissionsRemoveFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("permissions.remove")
+  DECLARE_EXTENSION_FUNCTION("permissions.remove", PERMISSIONS_REMOVE)
 
  protected:
   virtual ~PermissionsRemoveFunction() {}
@@ -54,7 +54,7 @@ class PermissionsRemoveFunction : public SyncExtensionFunction {
 class PermissionsRequestFunction : public AsyncExtensionFunction,
                                    public ExtensionInstallPrompt::Delegate {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("permissions.request")
+  DECLARE_EXTENSION_FUNCTION("permissions.request", PERMISSIONS_REQUEST)
 
   PermissionsRequestFunction();
 

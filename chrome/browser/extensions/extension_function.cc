@@ -6,6 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/window_controller.h"
@@ -71,7 +72,8 @@ ExtensionFunction::ExtensionFunction()
       include_incognito_(false),
       user_gesture_(false),
       args_(NULL),
-      bad_message_(false) {
+      bad_message_(false),
+      histogram_value_(extensions::functions::UNKNOWN) {
 }
 
 ExtensionFunction::~ExtensionFunction() {
@@ -117,6 +119,9 @@ void ExtensionFunction::SetError(const std::string& error) {
 }
 
 void ExtensionFunction::Run() {
+  UMA_HISTOGRAM_ENUMERATION("Extensions.FunctionCalls", histogram_value(),
+                            extensions::functions::ENUM_BOUNDARY);
+
   if (!RunImpl())
     SendResponse(false);
 }

@@ -16,7 +16,7 @@ namespace extensions {
 
 class TabCaptureCaptureFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("tabCapture.capture");
+  DECLARE_EXTENSION_FUNCTION("tabCapture.capture", TABCAPTURE_CAPTURE)
 
  protected:
   virtual ~TabCaptureCaptureFunction() {}
@@ -27,7 +27,8 @@ class TabCaptureCaptureFunction : public SyncExtensionFunction {
 
 class TabCaptureGetCapturedTabsFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("tabCapture.getCapturedTabs");
+  DECLARE_EXTENSION_FUNCTION("tabCapture.getCapturedTabs",
+                             TABCAPTURE_GETCAPTUREDTABS)
 
  protected:
   virtual ~TabCaptureGetCapturedTabsFunction() {}

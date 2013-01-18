@@ -10,7 +10,7 @@
 class I18nGetAcceptLanguagesFunction : public SyncExtensionFunction {
   virtual ~I18nGetAcceptLanguagesFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("i18n.getAcceptLanguages")
+  DECLARE_EXTENSION_FUNCTION("i18n.getAcceptLanguages", I18N_GETACCEPTLANGUAGES)
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_I18N_I18N_API_H_

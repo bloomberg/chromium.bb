@@ -11,7 +11,7 @@ namespace extensions {
 
 class ContextMenusCreateFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.create")
+  DECLARE_EXTENSION_FUNCTION("contextMenus.create", CONTEXTMENUS_CREATE)
 
  protected:
   virtual ~ContextMenusCreateFunction() {}
@@ -22,7 +22,7 @@ class ContextMenusCreateFunction : public SyncExtensionFunction {
 
 class ContextMenusUpdateFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.update")
+  DECLARE_EXTENSION_FUNCTION("contextMenus.update", CONTEXTMENUS_UPDATE)
 
  protected:
   virtual ~ContextMenusUpdateFunction() {}
@@ -33,7 +33,7 @@ class ContextMenusUpdateFunction : public SyncExtensionFunction {
 
 class ContextMenusRemoveFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.remove")
+  DECLARE_EXTENSION_FUNCTION("contextMenus.remove", CONTEXTMENUS_REMOVE)
 
  protected:
   virtual ~ContextMenusRemoveFunction() {}
@@ -44,7 +44,7 @@ class ContextMenusRemoveFunction : public SyncExtensionFunction {
 
 class ContextMenusRemoveAllFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.removeAll")
+  DECLARE_EXTENSION_FUNCTION("contextMenus.removeAll", CONTEXTMENUS_REMOVEALL)
 
  protected:
   virtual ~ContextMenusRemoveAllFunction() {}

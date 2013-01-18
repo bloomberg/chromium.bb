@@ -42,7 +42,8 @@ class SpeechInputAsyncFunction : public AsyncExtensionFunction,
 // Implements experimental.speechInput.start.
 class StartSpeechInputFunction : public SpeechInputAsyncFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.speechInput.start");
+  DECLARE_EXTENSION_FUNCTION("experimental.speechInput.start",
+                             EXPERIMENTAL_SPEECHINPUT_START)
 
   StartSpeechInputFunction();
 
@@ -57,7 +58,8 @@ class StartSpeechInputFunction : public SpeechInputAsyncFunction {
 // Implements experimental.speechInput.stop.
 class StopSpeechInputFunction : public SpeechInputAsyncFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.speechInput.stop");
+  DECLARE_EXTENSION_FUNCTION("experimental.speechInput.stop",
+                             EXPERIMENTAL_SPEECHINPUT_STOP)
 
   StopSpeechInputFunction();
 
@@ -72,7 +74,8 @@ class StopSpeechInputFunction : public SpeechInputAsyncFunction {
 // Implements experimental.speechInput.isRecording.
 class IsRecordingSpeechInputFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.speechInput.isRecording");
+  DECLARE_EXTENSION_FUNCTION("experimental.speechInput.isRecording",
+                             EXPERIMENTAL_SPEECHINPUT_ISRECORDING)
 
   // Called back from SpeechInputExtensionManager in the UI thread.
   void SetIsRecordingResult(bool result);

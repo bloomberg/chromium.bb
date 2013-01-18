@@ -12,7 +12,8 @@ namespace extensions {
 
 class SystemInfoDisplayGetFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.systemInfo.display.get");
+  DECLARE_EXTENSION_FUNCTION("experimental.systemInfo.display.get",
+                             EXPERIMENTAL_SYSTEMINFO_DISPLAY_GET)
 
  protected:
   virtual ~SystemInfoDisplayGetFunction() {}

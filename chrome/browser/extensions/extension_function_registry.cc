@@ -273,7 +273,7 @@ bool ExtensionFunctionRegistry::OverrideFunction(
   if (iter == factories_.end()) {
     return false;
   } else {
-    iter->second = factory;
+    iter->second.factory_ = factory;
     return true;
   }
 }
@@ -282,7 +282,18 @@ ExtensionFunction* ExtensionFunctionRegistry::NewFunction(
     const std::string& name) {
   FactoryMap::iterator iter = factories_.find(name);
   DCHECK(iter != factories_.end());
-  ExtensionFunction* function = iter->second();
+  ExtensionFunction* function = iter->second.factory_();
   function->set_name(name);
+  function->set_histogram_value(iter->second.histogram_value_);
   return function;
+}
+
+ExtensionFunctionRegistry::FactoryEntry::FactoryEntry()
+    : factory_(0), histogram_value_(extensions::functions::UNKNOWN) {
+}
+
+ExtensionFunctionRegistry::FactoryEntry::FactoryEntry(
+    ExtensionFunctionFactory factory,
+    extensions::functions::HistogramValue histogram_value)
+    : factory_(factory), histogram_value_(histogram_value) {
 }

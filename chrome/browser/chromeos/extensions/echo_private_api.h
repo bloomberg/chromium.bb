@@ -17,6 +17,7 @@ class GetRegistrationCodeFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  DECLARE_EXTENSION_FUNCTION_NAME("echoPrivate.getRegistrationCode");
+  DECLARE_EXTENSION_FUNCTION("echoPrivate.getRegistrationCode",
+                             ECHOPRIVATE_GETREGISTRATIONCODE)
 };
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_ECHO_PRIVATE_API_H_

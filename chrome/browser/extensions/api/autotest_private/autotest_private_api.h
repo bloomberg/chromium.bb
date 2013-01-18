@@ -15,7 +15,7 @@ namespace extensions {
 
 class AutotestPrivateLogoutFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("autotestPrivate.logout");
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.logout", AUTOTESTPRIVATE_LOGOUT)
 
  private:
   virtual ~AutotestPrivateLogoutFunction() {}
@@ -24,7 +24,7 @@ class AutotestPrivateLogoutFunction : public SyncExtensionFunction {
 
 class AutotestPrivateRestartFunction: public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("autotestPrivate.restart");
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.restart", AUTOTESTPRIVATE_RESTART)
 
  private:
   virtual ~AutotestPrivateRestartFunction() {}
@@ -33,7 +33,8 @@ class AutotestPrivateRestartFunction: public SyncExtensionFunction {
 
 class AutotestPrivateShutdownFunction: public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("autotestPrivate.shutdown");
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.shutdown",
+                             AUTOTESTPRIVATE_SHUTDOWN)
 
  private:
   virtual ~AutotestPrivateShutdownFunction() {}
@@ -42,7 +43,8 @@ class AutotestPrivateShutdownFunction: public SyncExtensionFunction {
 
 class AutotestPrivateLoginStatusFunction: public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("autotestPrivate.loginStatus");
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.loginStatus",
+                             AUTOTESTPRIVATE_LOGINSTATUS)
 
  private:
   virtual ~AutotestPrivateLoginStatusFunction() {}

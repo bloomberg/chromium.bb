@@ -79,7 +79,8 @@ class WebSocketProxyPrivate
 class WebSocketProxyPrivateGetURLForTCPFunction
     : public WebSocketProxyPrivate {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("webSocketProxyPrivate.getURLForTCP")
+  DECLARE_EXTENSION_FUNCTION("webSocketProxyPrivate.getURLForTCP",
+                             WEBSOCKETPROXYPRIVATE_GETURLFORTCP)
 
   WebSocketProxyPrivateGetURLForTCPFunction();
 
@@ -97,7 +98,8 @@ class WebSocketProxyPrivateGetURLForTCPFunction
 class WebSocketProxyPrivateGetPassportForTCPFunction
     : public WebSocketProxyPrivate {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("webSocketProxyPrivate.getPassportForTCP")
+  DECLARE_EXTENSION_FUNCTION("webSocketProxyPrivate.getPassportForTCP",
+                             WEBSOCKETPROXYPRIVATE_GETPASSPORTFORTCP)
 
   WebSocketProxyPrivateGetPassportForTCPFunction();
 

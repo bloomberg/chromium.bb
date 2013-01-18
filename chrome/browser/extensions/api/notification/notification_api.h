@@ -27,7 +27,8 @@ class NotificationShowFunction : public ApiFunction {
  private:
   scoped_ptr<api::experimental_notification::Show::Params> params_;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.notification.show")
+  DECLARE_EXTENSION_FUNCTION("experimental.notification.show",
+                             EXPERIMENTAL_NOTIFICATION_SHOW)
 };
 
 }  // namespace extensions

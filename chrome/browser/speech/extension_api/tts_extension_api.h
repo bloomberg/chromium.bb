@@ -20,28 +20,28 @@ class TtsSpeakFunction
  private:
   virtual ~TtsSpeakFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("tts.speak")
+  DECLARE_EXTENSION_FUNCTION("tts.speak", TTS_SPEAK)
 };
 
 class TtsStopSpeakingFunction : public SyncExtensionFunction {
  private:
   virtual ~TtsStopSpeakingFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("tts.stop")
+  DECLARE_EXTENSION_FUNCTION("tts.stop", TTS_STOP)
 };
 
 class TtsIsSpeakingFunction : public SyncExtensionFunction {
  private:
   virtual ~TtsIsSpeakingFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("tts.isSpeaking")
+  DECLARE_EXTENSION_FUNCTION("tts.isSpeaking", TTS_ISSPEAKING)
 };
 
 class TtsGetVoicesFunction : public SyncExtensionFunction {
  private:
   virtual ~TtsGetVoicesFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("tts.getVoices")
+  DECLARE_EXTENSION_FUNCTION("tts.getVoices", TTS_GETVOICES)
 };
 
 class TtsAPI : public ProfileKeyedAPI {

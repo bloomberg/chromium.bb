@@ -17,7 +17,7 @@ namespace extensions {
 
 class ContentSettingsClearFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("contentSettings.clear")
+  DECLARE_EXTENSION_FUNCTION("contentSettings.clear", CONTENTSETTINGS_CLEAR)
 
  protected:
   virtual ~ContentSettingsClearFunction() {}
@@ -28,7 +28,7 @@ class ContentSettingsClearFunction : public SyncExtensionFunction {
 
 class ContentSettingsGetFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("contentSettings.get")
+  DECLARE_EXTENSION_FUNCTION("contentSettings.get", CONTENTSETTINGS_GET)
 
  protected:
   virtual ~ContentSettingsGetFunction() {}
@@ -39,7 +39,7 @@ class ContentSettingsGetFunction : public SyncExtensionFunction {
 
 class ContentSettingsSetFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("contentSettings.set")
+  DECLARE_EXTENSION_FUNCTION("contentSettings.set", CONTENTSETTINGS_SET)
 
  protected:
   virtual ~ContentSettingsSetFunction() {}
@@ -51,7 +51,8 @@ class ContentSettingsSetFunction : public SyncExtensionFunction {
 class ContentSettingsGetResourceIdentifiersFunction
     : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("contentSettings.getResourceIdentifiers")
+  DECLARE_EXTENSION_FUNCTION("contentSettings.getResourceIdentifiers",
+                             CONTENTSETTINGS_GETRESOURCEIDENTIFIERS)
 
  protected:
   virtual ~ContentSettingsGetResourceIdentifiersFunction() {}

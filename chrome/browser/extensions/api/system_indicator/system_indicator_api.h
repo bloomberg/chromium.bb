@@ -12,7 +12,7 @@ namespace extensions {
 
 class SystemIndicatorSetIconFunction : public ExtensionActionSetIconFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("systemIndicator.setIcon")
+  DECLARE_EXTENSION_FUNCTION("systemIndicator.setIcon", SYSTEMINDICATOR_SETICON)
 
  protected:
   virtual ~SystemIndicatorSetIconFunction() {}
@@ -20,7 +20,7 @@ class SystemIndicatorSetIconFunction : public ExtensionActionSetIconFunction {
 
 class SystemIndicatorEnableFunction : public ExtensionActionShowFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("systemIndicator.enable")
+  DECLARE_EXTENSION_FUNCTION("systemIndicator.enable", SYSTEMINDICATOR_ENABLE)
 
  protected:
   virtual ~SystemIndicatorEnableFunction() {}
@@ -28,7 +28,7 @@ class SystemIndicatorEnableFunction : public ExtensionActionShowFunction {
 
 class SystemIndicatorDisableFunction : public ExtensionActionHideFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("systemIndicator.disable");
+  DECLARE_EXTENSION_FUNCTION("systemIndicator.disable", SYSTEMINDICATOR_DISABLE)
 
  protected:
   virtual ~SystemIndicatorDisableFunction() {}

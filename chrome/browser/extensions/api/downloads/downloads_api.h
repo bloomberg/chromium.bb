@@ -48,7 +48,7 @@ extern const char kNotImplementedError[];
 
 class DownloadsDownloadFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("downloads.download");
+  DECLARE_EXTENSION_FUNCTION("downloads.download", DOWNLOADS_DOWNLOAD)
   DownloadsDownloadFunction();
   virtual bool RunImpl() OVERRIDE;
 
@@ -63,7 +63,7 @@ class DownloadsDownloadFunction : public AsyncExtensionFunction {
 
 class DownloadsSearchFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("downloads.search");
+  DECLARE_EXTENSION_FUNCTION("downloads.search", DOWNLOADS_SEARCH)
   DownloadsSearchFunction();
   virtual bool RunImpl() OVERRIDE;
 
@@ -76,7 +76,7 @@ class DownloadsSearchFunction : public SyncExtensionFunction {
 
 class DownloadsPauseFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("downloads.pause");
+  DECLARE_EXTENSION_FUNCTION("downloads.pause", DOWNLOADS_PAUSE)
   DownloadsPauseFunction();
   virtual bool RunImpl() OVERRIDE;
 
@@ -89,7 +89,7 @@ class DownloadsPauseFunction : public SyncExtensionFunction {
 
 class DownloadsResumeFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("downloads.resume");
+  DECLARE_EXTENSION_FUNCTION("downloads.resume", DOWNLOADS_RESUME)
   DownloadsResumeFunction();
   virtual bool RunImpl() OVERRIDE;
 
@@ -102,7 +102,7 @@ class DownloadsResumeFunction : public SyncExtensionFunction {
 
 class DownloadsCancelFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("downloads.cancel");
+  DECLARE_EXTENSION_FUNCTION("downloads.cancel", DOWNLOADS_CANCEL)
   DownloadsCancelFunction();
   virtual bool RunImpl() OVERRIDE;
 
@@ -115,7 +115,7 @@ class DownloadsCancelFunction : public SyncExtensionFunction {
 
 class DownloadsEraseFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("downloads.erase");
+  DECLARE_EXTENSION_FUNCTION("downloads.erase", DOWNLOADS_ERASE)
   DownloadsEraseFunction();
   virtual bool RunImpl() OVERRIDE;
 
@@ -128,7 +128,8 @@ class DownloadsEraseFunction : public SyncExtensionFunction {
 
 class DownloadsSetDestinationFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("downloads.setDestination");
+  DECLARE_EXTENSION_FUNCTION("downloads.setDestination",
+                             DOWNLOADS_SETDESTINATION)
   DownloadsSetDestinationFunction();
   virtual bool RunImpl() OVERRIDE;
 
@@ -141,7 +142,7 @@ class DownloadsSetDestinationFunction : public AsyncExtensionFunction {
 
 class DownloadsAcceptDangerFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("downloads.acceptDanger");
+  DECLARE_EXTENSION_FUNCTION("downloads.acceptDanger", DOWNLOADS_ACCEPTDANGER)
   DownloadsAcceptDangerFunction();
   virtual bool RunImpl() OVERRIDE;
 
@@ -155,7 +156,7 @@ class DownloadsAcceptDangerFunction : public AsyncExtensionFunction {
 
 class DownloadsShowFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("downloads.show");
+  DECLARE_EXTENSION_FUNCTION("downloads.show", DOWNLOADS_SHOW)
   DownloadsShowFunction();
   virtual bool RunImpl() OVERRIDE;
 
@@ -168,7 +169,7 @@ class DownloadsShowFunction : public AsyncExtensionFunction {
 
 class DownloadsOpenFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("downloads.open");
+  DECLARE_EXTENSION_FUNCTION("downloads.open", DOWNLOADS_OPEN)
   DownloadsOpenFunction();
   virtual bool RunImpl() OVERRIDE;
 
@@ -181,7 +182,7 @@ class DownloadsOpenFunction : public SyncExtensionFunction {
 
 class DownloadsDragFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("downloads.drag");
+  DECLARE_EXTENSION_FUNCTION("downloads.drag", DOWNLOADS_DRAG)
   DownloadsDragFunction();
   virtual bool RunImpl() OVERRIDE;
 
@@ -194,7 +195,7 @@ class DownloadsDragFunction : public AsyncExtensionFunction {
 
 class DownloadsGetFileIconFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("downloads.getFileIcon");
+  DECLARE_EXTENSION_FUNCTION("downloads.getFileIcon", DOWNLOADS_GETFILEICON)
   DownloadsGetFileIconFunction();
   virtual bool RunImpl() OVERRIDE;
   void SetIconExtractorForTesting(DownloadFileIconExtractor* extractor);

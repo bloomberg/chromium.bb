@@ -29,7 +29,8 @@ class TerminalPrivateFunction : public AsyncExtensionFunction {
 // Opens new terminal process. Returns the new process id.
 class OpenTerminalProcessFunction : public TerminalPrivateFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("terminalPrivate.openTerminalProcess")
+  DECLARE_EXTENSION_FUNCTION("terminalPrivate.openTerminalProcess",
+                             TERMINALPRIVATE_OPENTERMINALPROCESS)
 
   OpenTerminalProcessFunction();
 
@@ -49,7 +50,8 @@ class OpenTerminalProcessFunction : public TerminalPrivateFunction {
 // Send input to the terminal process specified by the pid sent as an argument.
 class SendInputToTerminalProcessFunction : public TerminalPrivateFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("terminalPrivate.sendInput")
+  DECLARE_EXTENSION_FUNCTION("terminalPrivate.sendInput",
+                             TERMINALPRIVATE_SENDINPUT)
 
  protected:
   virtual ~SendInputToTerminalProcessFunction();
@@ -65,7 +67,8 @@ class SendInputToTerminalProcessFunction : public TerminalPrivateFunction {
 // Closes terminal process with given pid.
 class CloseTerminalProcessFunction : public TerminalPrivateFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("terminalPrivate.closeTerminalProcess")
+  DECLARE_EXTENSION_FUNCTION("terminalPrivate.closeTerminalProcess",
+                             TERMINALPRIVATE_CLOSETERMINALPROCESS)
 
  protected:
   virtual ~CloseTerminalProcessFunction();
@@ -80,7 +83,8 @@ class CloseTerminalProcessFunction : public TerminalPrivateFunction {
 // Called by extension when terminal size changes.
 class OnTerminalResizeFunction : public TerminalPrivateFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("terminalPrivate.onTerminalResize")
+  DECLARE_EXTENSION_FUNCTION("terminalPrivate.onTerminalResize",
+                             TERMINALPRIVATE_ONTERMINALRESIZE)
 
  protected:
   virtual ~OnTerminalResizeFunction();

@@ -19,7 +19,7 @@ class AlarmsCreateFunction : public SyncExtensionFunction {
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("alarms.create");
+  DECLARE_EXTENSION_FUNCTION("alarms.create", ALARMS_CREATE)
  private:
   TimeProvider now_;
 };
@@ -30,7 +30,7 @@ class AlarmsGetFunction : public SyncExtensionFunction {
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("alarms.get");
+  DECLARE_EXTENSION_FUNCTION("alarms.get", ALARMS_GET)
 };
 
 class AlarmsGetAllFunction : public SyncExtensionFunction {
@@ -39,7 +39,7 @@ class AlarmsGetAllFunction : public SyncExtensionFunction {
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("alarms.getAll");
+  DECLARE_EXTENSION_FUNCTION("alarms.getAll", ALARMS_GETALL)
 };
 
 class AlarmsClearFunction : public SyncExtensionFunction {
@@ -48,7 +48,7 @@ class AlarmsClearFunction : public SyncExtensionFunction {
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("alarms.clear");
+  DECLARE_EXTENSION_FUNCTION("alarms.clear", ALARMS_CLEAR)
 };
 
 class AlarmsClearAllFunction : public SyncExtensionFunction {
@@ -57,7 +57,7 @@ class AlarmsClearAllFunction : public SyncExtensionFunction {
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("alarms.clearAll");
+  DECLARE_EXTENSION_FUNCTION("alarms.clearAll", ALARMS_CLEARALL)
 };
 
 } //  namespace extensions

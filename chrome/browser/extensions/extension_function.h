@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "chrome/browser/extensions/extension_function_histogram_value.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
@@ -63,8 +64,14 @@ class WindowController;
     return false; \
   } while (0)
 
-#define DECLARE_EXTENSION_FUNCTION_NAME(name) \
-  public: static const char* function_name() { return name; }
+// Declares a callable extension function with the given |name|. You must also
+// supply a unique |histogramvalue| used for histograms of extension function
+// invocation (add new ones at the end of the enum in
+// extension_function_histogram_value.h).
+#define DECLARE_EXTENSION_FUNCTION(name, histogramvalue) \
+  public: static const char* function_name() { return name; } \
+  public: static extensions::functions::HistogramValue histogram_value() \
+    { return extensions::functions::histogramvalue; }
 
 // Traits that describe how ExtensionFunction should be deleted. This just calls
 // the virtual "Destruct" method on ExtensionFunction, allowing derived classes
@@ -165,6 +172,12 @@ class ExtensionFunction
   void set_user_gesture(bool user_gesture) { user_gesture_ = user_gesture; }
   bool user_gesture() const { return user_gesture_; }
 
+  void set_histogram_value(
+      extensions::functions::HistogramValue histogram_value) {
+    histogram_value_ = histogram_value; }
+  extensions::functions::HistogramValue histogram_value() const {
+    return histogram_value_; }
+
  protected:
   friend struct ExtensionFunctionDeleteTraits;
 
@@ -238,6 +251,10 @@ class ExtensionFunction
   // Any class that gets a malformed message should set this to true before
   // returning.  The calling renderer process will be killed.
   bool bad_message_;
+
+  // The sample value to record with the histogram API when the function
+  // is invoked.
+  extensions::functions::HistogramValue histogram_value_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionFunction);
 };

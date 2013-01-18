@@ -43,7 +43,8 @@ class WebstorePrivateApi {
 class InstallBundleFunction : public AsyncExtensionFunction,
                               public extensions::BundleInstaller::Delegate {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.installBundle");
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.installBundle",
+                             WEBSTOREPRIVATE_INSTALLBUNDLE)
 
   InstallBundleFunction();
 
@@ -71,7 +72,8 @@ class BeginInstallWithManifestFunction
       public ExtensionInstallPrompt::Delegate,
       public WebstoreInstallHelper::Delegate {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.beginInstallWithManifest3");
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.beginInstallWithManifest3",
+                             WEBSTOREPRIVATE_BEGININSTALLWITHMANIFEST3)
 
   // Result codes for the return value. If you change this, make sure to
   // update the description for the beginInstallWithManifest3 callback in
@@ -150,7 +152,8 @@ class CompleteInstallFunction
     : public AsyncExtensionFunction,
       public WebstoreInstaller::Delegate {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.completeInstall");
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.completeInstall",
+                             WEBSTOREPRIVATE_COMPLETEINSTALL)
 
   // WebstoreInstaller::Delegate:
   virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
@@ -167,7 +170,8 @@ class CompleteInstallFunction
 
 class GetBrowserLoginFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.getBrowserLogin");
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.getBrowserLogin",
+                             WEBSTOREPRIVATE_GETBROWSERLOGIN)
 
  protected:
   virtual ~GetBrowserLoginFunction() {}
@@ -178,7 +182,8 @@ class GetBrowserLoginFunction : public SyncExtensionFunction {
 
 class GetStoreLoginFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.getStoreLogin");
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.getStoreLogin",
+                             WEBSTOREPRIVATE_GETSTORELOGIN)
 
  protected:
   virtual ~GetStoreLoginFunction() {}
@@ -189,7 +194,8 @@ class GetStoreLoginFunction : public SyncExtensionFunction {
 
 class SetStoreLoginFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.setStoreLogin");
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.setStoreLogin",
+                             WEBSTOREPRIVATE_SETSTORELOGIN)
 
  protected:
   virtual ~SetStoreLoginFunction() {}
@@ -200,7 +206,8 @@ class SetStoreLoginFunction : public SyncExtensionFunction {
 
 class GetWebGLStatusFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.getWebGLStatus");
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.getWebGLStatus",
+                             WEBSTOREPRIVATE_GETWEBGLSTATUS)
 
   GetWebGLStatusFunction();
 

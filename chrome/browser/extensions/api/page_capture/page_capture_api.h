@@ -61,7 +61,7 @@ class PageCaptureSaveAsMHTMLFunction : public AsyncExtensionFunction {
   // The file containing the MHTML.
   scoped_refptr<webkit_blob::ShareableFileReference> mhtml_file_;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("pageCapture.saveAsMHTML")
+  DECLARE_EXTENSION_FUNCTION("pageCapture.saveAsMHTML", PAGECAPTURE_SAVEASMHTML)
 };
 
 }  // namespace extensions

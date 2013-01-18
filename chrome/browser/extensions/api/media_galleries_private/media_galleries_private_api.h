@@ -71,7 +71,8 @@ class MediaGalleriesPrivateAPI : public ProfileKeyedAPI,
 class MediaGalleriesPrivateAddGalleryWatchFunction
     : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("mediaGalleriesPrivate.addGalleryWatch");
+  DECLARE_EXTENSION_FUNCTION("mediaGalleriesPrivate.addGalleryWatch",
+                             MEDIAGALLERIESPRIVATE_ADDGALLERYWATCH);
 
  protected:
   virtual ~MediaGalleriesPrivateAddGalleryWatchFunction();
@@ -89,7 +90,8 @@ class MediaGalleriesPrivateAddGalleryWatchFunction
 class MediaGalleriesPrivateRemoveGalleryWatchFunction
     : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("mediaGalleriesPrivate.removeGalleryWatch");
+  DECLARE_EXTENSION_FUNCTION("mediaGalleriesPrivate.removeGalleryWatch",
+                             MEDIAGALLERIESPRIVATE_REMOVEGALLERYWATCH);
 
  protected:
   virtual ~MediaGalleriesPrivateRemoveGalleryWatchFunction();

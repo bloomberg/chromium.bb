@@ -85,7 +85,8 @@ namespace api {
 
 class DeveloperPrivateAutoUpdateFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("developerPrivate.autoUpdate");
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.autoUpdate",
+                             DEVELOPERPRIVATE_AUTOUPDATE)
 
  protected:
   virtual ~DeveloperPrivateAutoUpdateFunction();
@@ -96,7 +97,8 @@ class DeveloperPrivateAutoUpdateFunction : public SyncExtensionFunction {
 
 class DeveloperPrivateGetItemsInfoFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("developerPrivate.getItemsInfo");
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.getItemsInfo",
+                             DEVELOPERPRIVATE_GETITEMSINFO)
 
  protected:
   virtual ~DeveloperPrivateGetItemsInfoFunction();
@@ -137,7 +139,8 @@ class DeveloperPrivateGetItemsInfoFunction : public SyncExtensionFunction {
 
 class DeveloperPrivateInspectFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("developerPrivate.inspect");
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.inspect",
+                             DEVELOPERPRIVATE_INSPECT)
 
  protected:
   virtual ~DeveloperPrivateInspectFunction();
@@ -148,7 +151,8 @@ class DeveloperPrivateInspectFunction : public SyncExtensionFunction {
 
 class DeveloperPrivateAllowFileAccessFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("developerPrivate.allowFileAccess");
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.allowFileAccess",
+                             DEVELOPERPRIVATE_ALLOWFILEACCESS);
 
  protected:
   virtual ~DeveloperPrivateAllowFileAccessFunction();
@@ -159,7 +163,8 @@ class DeveloperPrivateAllowFileAccessFunction : public SyncExtensionFunction {
 
 class DeveloperPrivateReloadFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("developerPrivate.reload");
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.reload",
+                             DEVELOPERPRIVATE_RELOAD);
 
  protected:
   virtual ~DeveloperPrivateReloadFunction();
@@ -172,7 +177,8 @@ class DeveloperPrivateEnableFunction
     : public SyncExtensionFunction,
       public base::SupportsWeakPtr<DeveloperPrivateEnableFunction> {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("developerPrivate.enable");
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.enable",
+                             DEVELOPERPRIVATE_ENABLE);
 
   DeveloperPrivateEnableFunction();
 
@@ -207,7 +213,8 @@ class DeveloperPrivateChooseEntryFunction : public SyncExtensionFunction,
 class DeveloperPrivateLoadUnpackedFunction
     : public DeveloperPrivateChooseEntryFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("developerPrivate.loadUnpacked");
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.loadUnpacked",
+                             DEVELOPERPRIVATE_LOADUNPACKED);
 
  protected:
   virtual ~DeveloperPrivateLoadUnpackedFunction();
@@ -221,7 +228,8 @@ class DeveloperPrivateLoadUnpackedFunction
 
 class DeveloperPrivateGetStringsFunction : public SyncExtensionFunction {
   public:
-   DECLARE_EXTENSION_FUNCTION_NAME("developerPrivate.getStrings");
+   DECLARE_EXTENSION_FUNCTION("developerPrivate.getStrings",
+                              DEVELOPERPRIVATE_GETSTRINGS);
 
   protected:
    virtual ~DeveloperPrivateGetStringsFunction();

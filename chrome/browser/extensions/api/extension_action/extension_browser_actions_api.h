@@ -15,7 +15,7 @@
 
 class BrowserActionSetIconFunction : public ExtensionActionSetIconFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setIcon")
+  DECLARE_EXTENSION_FUNCTION("browserAction.setIcon", BROWSERACTION_SETICON)
 
  protected:
   virtual ~BrowserActionSetIconFunction() {}
@@ -23,7 +23,7 @@ class BrowserActionSetIconFunction : public ExtensionActionSetIconFunction {
 
 class BrowserActionSetTitleFunction : public ExtensionActionSetTitleFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setTitle")
+  DECLARE_EXTENSION_FUNCTION("browserAction.setTitle", BROWSERACTION_SETTITLE)
 
  protected:
   virtual ~BrowserActionSetTitleFunction() {}
@@ -31,7 +31,7 @@ class BrowserActionSetTitleFunction : public ExtensionActionSetTitleFunction {
 
 class BrowserActionSetPopupFunction : public ExtensionActionSetPopupFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setPopup")
+  DECLARE_EXTENSION_FUNCTION("browserAction.setPopup", BROWSERACTION_SETPOPUP)
 
  protected:
   virtual ~BrowserActionSetPopupFunction() {}
@@ -39,7 +39,7 @@ class BrowserActionSetPopupFunction : public ExtensionActionSetPopupFunction {
 
 class BrowserActionGetTitleFunction : public ExtensionActionGetTitleFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.getTitle")
+  DECLARE_EXTENSION_FUNCTION("browserAction.getTitle", BROWSERACTION_GETTITLE)
 
  protected:
   virtual ~BrowserActionGetTitleFunction() {}
@@ -47,7 +47,7 @@ class BrowserActionGetTitleFunction : public ExtensionActionGetTitleFunction {
 
 class BrowserActionGetPopupFunction : public ExtensionActionGetPopupFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.getPopup")
+  DECLARE_EXTENSION_FUNCTION("browserAction.getPopup", BROWSERACTION_GETPOPUP)
 
  protected:
   virtual ~BrowserActionGetPopupFunction() {}
@@ -56,7 +56,8 @@ class BrowserActionGetPopupFunction : public ExtensionActionGetPopupFunction {
 class BrowserActionSetBadgeTextFunction
     : public ExtensionActionSetBadgeTextFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setBadgeText")
+  DECLARE_EXTENSION_FUNCTION("browserAction.setBadgeText",
+                             BROWSERACTION_SETBADGETEXT)
 
  protected:
   virtual ~BrowserActionSetBadgeTextFunction() {}
@@ -65,7 +66,8 @@ class BrowserActionSetBadgeTextFunction
 class BrowserActionSetBadgeBackgroundColorFunction
     : public ExtensionActionSetBadgeBackgroundColorFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setBadgeBackgroundColor")
+  DECLARE_EXTENSION_FUNCTION("browserAction.setBadgeBackgroundColor",
+                             BROWSERACTION_SETBADGEBACKGROUNDCOLOR)
 
  protected:
   virtual ~BrowserActionSetBadgeBackgroundColorFunction() {}
@@ -74,7 +76,8 @@ class BrowserActionSetBadgeBackgroundColorFunction
 class BrowserActionGetBadgeTextFunction
     : public ExtensionActionGetBadgeTextFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.getBadgeText")
+  DECLARE_EXTENSION_FUNCTION("browserAction.getBadgeText",
+                             BROWSERACTION_GETBADGETEXT)
 
  protected:
   virtual ~BrowserActionGetBadgeTextFunction() {}
@@ -83,7 +86,8 @@ class BrowserActionGetBadgeTextFunction
 class BrowserActionGetBadgeBackgroundColorFunction
     : public ExtensionActionGetBadgeBackgroundColorFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.getBadgeBackgroundColor")
+  DECLARE_EXTENSION_FUNCTION("browserAction.getBadgeBackgroundColor",
+                             BROWSERACTION_GETBADGEBACKGROUNDCOLOR)
 
  protected:
   virtual ~BrowserActionGetBadgeBackgroundColorFunction() {}
@@ -91,7 +95,7 @@ class BrowserActionGetBadgeBackgroundColorFunction
 
 class BrowserActionEnableFunction : public ExtensionActionShowFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.enable")
+  DECLARE_EXTENSION_FUNCTION("browserAction.enable", BROWSERACTION_ENABLE)
 
  protected:
   virtual ~BrowserActionEnableFunction() {}
@@ -99,7 +103,7 @@ class BrowserActionEnableFunction : public ExtensionActionShowFunction {
 
 class BrowserActionDisableFunction : public ExtensionActionHideFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.disable")
+  DECLARE_EXTENSION_FUNCTION("browserAction.disable", BROWSERACTION_DISABLE)
 
  protected:
   virtual ~BrowserActionDisableFunction() {}

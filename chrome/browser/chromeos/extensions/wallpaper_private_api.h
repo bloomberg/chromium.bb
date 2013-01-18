@@ -14,7 +14,8 @@
 // Wallpaper manager strings.
 class WallpaperStringsFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("wallpaperPrivate.getStrings");
+  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getStrings",
+                             WALLPAPERPRIVATE_GETSTRINGS)
 
  protected:
   virtual ~WallpaperStringsFunction() {}
@@ -50,7 +51,8 @@ class WallpaperFunctionBase : public AsyncExtensionFunction {
 
 class WallpaperSetWallpaperIfExistFunction : public WallpaperFunctionBase {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("wallpaperPrivate.setWallpaperIfExist");
+  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.setWallpaperIfExist",
+                             WALLPAPERPRIVATE_SETWALLPAPERIFEXIST)
 
   WallpaperSetWallpaperIfExistFunction();
 
@@ -81,7 +83,8 @@ class WallpaperSetWallpaperIfExistFunction : public WallpaperFunctionBase {
 
 class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("wallpaperPrivate.setWallpaper");
+  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.setWallpaper",
+                             WALLPAPERPRIVATE_SETWALLPAPER)
 
   WallpaperSetWallpaperFunction();
 
@@ -123,7 +126,8 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
 
 class WallpaperSetCustomWallpaperFunction : public WallpaperFunctionBase {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("wallpaperPrivate.setCustomWallpaper");
+  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.setCustomWallpaper",
+                             WALLPAPERPRIVATE_SETCUSTOMWALLPAPER)
 
   WallpaperSetCustomWallpaperFunction();
 
@@ -148,7 +152,8 @@ class WallpaperSetCustomWallpaperFunction : public WallpaperFunctionBase {
 
 class WallpaperMinimizeInactiveWindowsFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("wallpaperPrivate.minimizeInactiveWindows");
+  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.minimizeInactiveWindows",
+                             WALLPAPERPRIVATE_MINIMIZEINACTIVEWINDOWS)
 
   WallpaperMinimizeInactiveWindowsFunction();
 
@@ -161,7 +166,8 @@ class WallpaperMinimizeInactiveWindowsFunction : public AsyncExtensionFunction {
 
 class WallpaperRestoreMinimizedWindowsFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("wallpaperPrivate.restoreMinimizedWindows");
+  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.restoreMinimizedWindows",
+                             WALLPAPERPRIVATE_RESTOREMINIMIZEDWINDOWS)
 
   WallpaperRestoreMinimizedWindowsFunction();
 
@@ -174,7 +180,8 @@ class WallpaperRestoreMinimizedWindowsFunction : public AsyncExtensionFunction {
 
 class WallpaperGetThumbnailFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("wallpaperPrivate.getThumbnail");
+  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getThumbnail",
+                             WALLPAPERPRIVATE_GETTHUMBNAIL)
 
   WallpaperGetThumbnailFunction();
 
@@ -207,7 +214,8 @@ class WallpaperGetThumbnailFunction : public AsyncExtensionFunction {
 
 class WallpaperSaveThumbnailFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("wallpaperPrivate.saveThumbnail");
+  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.saveThumbnail",
+                             WALLPAPERPRIVATE_SAVETHUMBNAIL)
 
   WallpaperSaveThumbnailFunction();
 
@@ -234,7 +242,8 @@ class WallpaperSaveThumbnailFunction : public AsyncExtensionFunction {
 
 class WallpaperGetOfflineWallpaperListFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("wallpaperPrivate.getOfflineWallpaperList");
+  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getOfflineWallpaperList",
+                             WALLPAPERPRIVATE_GETOFFLINEWALLPAPERLIST)
   WallpaperGetOfflineWallpaperListFunction();
 
  protected:

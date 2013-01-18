@@ -111,7 +111,7 @@ class PreferenceFunction : public SyncExtensionFunction {
 
 class GetPreferenceFunction : public PreferenceFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("types.ChromeSetting.get")
+  DECLARE_EXTENSION_FUNCTION("types.ChromeSetting.get", TYPES_CHROMESETTING_GET)
 
  protected:
   virtual ~GetPreferenceFunction();
@@ -122,7 +122,7 @@ class GetPreferenceFunction : public PreferenceFunction {
 
 class SetPreferenceFunction : public PreferenceFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("types.ChromeSetting.set")
+  DECLARE_EXTENSION_FUNCTION("types.ChromeSetting.set", TYPES_CHROMESETTING_SET)
 
  protected:
   virtual ~SetPreferenceFunction();
@@ -133,7 +133,8 @@ class SetPreferenceFunction : public PreferenceFunction {
 
 class ClearPreferenceFunction : public PreferenceFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("types.ChromeSetting.clear")
+  DECLARE_EXTENSION_FUNCTION("types.ChromeSetting.clear",
+                             TYPES_CHROMESETTING_CLEAR)
 
  protected:
   virtual ~ClearPreferenceFunction();

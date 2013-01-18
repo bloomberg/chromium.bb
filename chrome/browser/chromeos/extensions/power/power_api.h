@@ -13,7 +13,8 @@ namespace power {
 // Implementation of the chrome.experimental.power.requestKeepAwake API.
 class RequestKeepAwakeFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.power.requestKeepAwake")
+  DECLARE_EXTENSION_FUNCTION("experimental.power.requestKeepAwake",
+                             EXPERIMENTAL_POWER_REQUESTKEEPAWAKE)
 
  protected:
   virtual ~RequestKeepAwakeFunction() {}
@@ -25,7 +26,8 @@ class RequestKeepAwakeFunction : public SyncExtensionFunction {
 // Implementation of the chrome.experimental.power.releaseKeepAwake API.
 class ReleaseKeepAwakeFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.power.releaseKeepAwake")
+  DECLARE_EXTENSION_FUNCTION("experimental.power.releaseKeepAwake",
+                             EXPERIMENTAL_POWER_RELEASEKEEPAWAKE)
 
  protected:
   virtual ~ReleaseKeepAwakeFunction() {}

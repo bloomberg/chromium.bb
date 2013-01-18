@@ -20,7 +20,8 @@ namespace extensions {
 class SyncFileSystemDeleteFileSystemFunction
     : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("syncFileSystem.deleteFileSystem");
+  DECLARE_EXTENSION_FUNCTION("syncFileSystem.deleteFileSystem",
+                             SYNCFILESYSTEM_DELETEFILESYSTEM)
 
  protected:
   virtual ~SyncFileSystemDeleteFileSystemFunction() {}
@@ -34,7 +35,8 @@ class SyncFileSystemDeleteFileSystemFunction
 class SyncFileSystemGetFileSyncStatusFunction
     : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("syncFileSystem.getFileSyncStatus");
+  DECLARE_EXTENSION_FUNCTION("syncFileSystem.getFileSyncStatus",
+                             SYNCFILESYSTEM_GETFILESYNCSTATUS)
 
  protected:
   virtual ~SyncFileSystemGetFileSyncStatusFunction() {}
@@ -48,7 +50,8 @@ class SyncFileSystemGetFileSyncStatusFunction
 class SyncFileSystemGetUsageAndQuotaFunction
     : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("syncFileSystem.getUsageAndQuota");
+  DECLARE_EXTENSION_FUNCTION("syncFileSystem.getUsageAndQuota",
+                             SYNCFILESYSTEM_GETUSAGEANDQUOTA)
 
  protected:
   virtual ~SyncFileSystemGetUsageAndQuotaFunction() {}
@@ -63,7 +66,8 @@ class SyncFileSystemGetUsageAndQuotaFunction
 class SyncFileSystemRequestFileSystemFunction
     : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("syncFileSystem.requestFileSystem");
+  DECLARE_EXTENSION_FUNCTION("syncFileSystem.requestFileSystem",
+                             SYNCFILESYSTEM_REQUESTFILESYSTEM)
 
  protected:
   virtual ~SyncFileSystemRequestFileSystemFunction() {}

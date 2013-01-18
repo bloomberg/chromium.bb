@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "chrome/browser/extensions/extension_function_histogram_value.h"
+
 class ExtensionFunction;
 
 // A factory function for creating new ExtensionFunction instances.
@@ -44,11 +46,22 @@ class ExtensionFunctionRegistry {
 
   template<class T>
   void RegisterFunction() {
-    factories_[T::function_name()] = &NewExtensionFunction<T>;
+    ExtensionFunctionFactory factory = &NewExtensionFunction<T>;
+    factories_[T::function_name()] =
+        FactoryEntry(factory, T::histogram_value());
   }
 
- private:
-  typedef std::map<std::string, ExtensionFunctionFactory> FactoryMap;
+  struct FactoryEntry {
+   public:
+    explicit FactoryEntry();
+    explicit FactoryEntry(ExtensionFunctionFactory factory,
+      extensions::functions::HistogramValue histogram_value);
+
+    ExtensionFunctionFactory factory_;
+    extensions::functions::HistogramValue histogram_value_;
+  };
+
+  typedef std::map<std::string, FactoryEntry> FactoryMap;
   FactoryMap factories_;
 };
 

@@ -11,7 +11,7 @@ namespace extensions {
 
 class AppWindowCreateFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("app.window.create");
+  DECLARE_EXTENSION_FUNCTION("app.window.create", APP_WINDOW_CREATE)
 
   void SendDelayedResponse();
 

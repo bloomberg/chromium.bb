@@ -11,7 +11,7 @@ namespace extensions {
 
 class AppNotifyFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.app.notify");
+  DECLARE_EXTENSION_FUNCTION("experimental.app.notify", EXPERIMENTAL_APP_NOTIFY)
 
  protected:
   virtual ~AppNotifyFunction() {}
@@ -20,7 +20,8 @@ class AppNotifyFunction : public SyncExtensionFunction {
 
 class AppClearAllNotificationsFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.app.clearAllNotifications");
+  DECLARE_EXTENSION_FUNCTION("experimental.app.clearAllNotifications",
+                             EXPERIMENTAL_APP_CLEARALLNOTIFICATIONS)
 
  protected:
   virtual ~AppClearAllNotificationsFunction() {}

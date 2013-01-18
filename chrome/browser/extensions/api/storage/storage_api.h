@@ -54,7 +54,7 @@ class SettingsFunction : public AsyncExtensionFunction {
 
 class StorageGetFunction : public SettingsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("storage.get");
+  DECLARE_EXTENSION_FUNCTION("storage.get", STORAGE_GET)
 
  protected:
   virtual ~StorageGetFunction() {}
@@ -65,7 +65,7 @@ class StorageGetFunction : public SettingsFunction {
 
 class StorageSetFunction : public SettingsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("storage.set");
+  DECLARE_EXTENSION_FUNCTION("storage.set", STORAGE_SET)
 
  protected:
   virtual ~StorageSetFunction() {}
@@ -80,7 +80,7 @@ class StorageSetFunction : public SettingsFunction {
 
 class StorageRemoveFunction : public SettingsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("storage.remove");
+  DECLARE_EXTENSION_FUNCTION("storage.remove", STORAGE_REMOVE)
 
  protected:
   virtual ~StorageRemoveFunction() {}
@@ -95,7 +95,7 @@ class StorageRemoveFunction : public SettingsFunction {
 
 class StorageClearFunction : public SettingsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("storage.clear");
+  DECLARE_EXTENSION_FUNCTION("storage.clear", STORAGE_CLEAR)
 
  protected:
   virtual ~StorageClearFunction() {}
@@ -110,7 +110,7 @@ class StorageClearFunction : public SettingsFunction {
 
 class StorageGetBytesInUseFunction : public SettingsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("storage.getBytesInUse");
+  DECLARE_EXTENSION_FUNCTION("storage.getBytesInUse", STORAGE_GETBYTESINUSE)
 
  protected:
   virtual ~StorageGetBytesInUseFunction() {}

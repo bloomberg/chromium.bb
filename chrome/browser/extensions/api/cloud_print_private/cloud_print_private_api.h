@@ -38,7 +38,8 @@ class CloudPrintTestsDelegate {
 
 class CloudPrintPrivateSetupConnectorFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("cloudPrintPrivate.setupConnector");
+  DECLARE_EXTENSION_FUNCTION("cloudPrintPrivate.setupConnector",
+                             CLOUDPRINTPRIVATE_SETUPCONNECTOR)
 
   CloudPrintPrivateSetupConnectorFunction();
 
@@ -51,7 +52,8 @@ class CloudPrintPrivateSetupConnectorFunction : public AsyncExtensionFunction {
 
 class CloudPrintPrivateGetHostNameFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("cloudPrintPrivate.getHostName");
+  DECLARE_EXTENSION_FUNCTION("cloudPrintPrivate.getHostName",
+                             CLOUDPRINTPRIVATE_GETHOSTNAME)
 
   CloudPrintPrivateGetHostNameFunction();
 
@@ -64,7 +66,8 @@ class CloudPrintPrivateGetHostNameFunction : public AsyncExtensionFunction {
 
 class CloudPrintPrivateGetPrintersFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("cloudPrintPrivate.getPrinters");
+  DECLARE_EXTENSION_FUNCTION("cloudPrintPrivate.getPrinters",
+                             CLOUDPRINTPRIVATE_GETPRINTERS)
 
   CloudPrintPrivateGetPrintersFunction();
 

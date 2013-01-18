@@ -37,7 +37,8 @@ class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
                                      public ExtensionInstallPrompt::Delegate,
                                      public LoginUIService::Observer {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.identity.getAuthToken");
+  DECLARE_EXTENSION_FUNCTION("experimental.identity.getAuthToken",
+                             EXPERIMENTAL_IDENTITY_GETAUTHTOKEN)
 
   IdentityGetAuthTokenFunction();
 
@@ -95,7 +96,8 @@ class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
 class IdentityLaunchWebAuthFlowFunction : public AsyncExtensionFunction,
                                           public WebAuthFlow::Delegate {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.identity.launchWebAuthFlow");
+  DECLARE_EXTENSION_FUNCTION("experimental.identity.launchWebAuthFlow",
+                             EXPERIMENTAL_IDENTITY_LAUNCHWEBAUTHFLOW)
 
   IdentityLaunchWebAuthFlowFunction();
 

@@ -152,7 +152,8 @@ class GetProcessIdForTabFunction : public AsyncExtensionFunction,
   // Storage for the tab ID parameter.
   int tab_id_;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.processes.getProcessIdForTab")
+  DECLARE_EXTENSION_FUNCTION("experimental.processes.getProcessIdForTab",
+                             EXPERIMENTAL_PROCESSES_GETPROCESSIDFORTAB)
 };
 
 // Extension function that allows terminating Chrome subprocesses, by supplying
@@ -181,7 +182,8 @@ class TerminateFunction : public AsyncExtensionFunction,
   // Storage for the process ID parameter.
   int process_id_;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.processes.terminate")
+  DECLARE_EXTENSION_FUNCTION("experimental.processes.terminate",
+                             EXPERIMENTAL_PROCESSES_TERMINATE)
 };
 
 // Extension function which returns a set of Process objects, containing the
@@ -210,7 +212,8 @@ class GetProcessInfoFunction : public AsyncExtensionFunction,
   bool memory_;
 #endif
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.processes.getProcessInfo")
+  DECLARE_EXTENSION_FUNCTION("experimental.processes.getProcessInfo",
+                             EXPERIMENTAL_PROCESSES_GETPROCESSINFO)
 };
 
 }  // namespace extensions

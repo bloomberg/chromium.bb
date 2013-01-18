@@ -11,7 +11,8 @@ namespace extensions {
 
 class DiscoverySuggestFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.discovery.suggest");
+  DECLARE_EXTENSION_FUNCTION("experimental.discovery.suggest",
+                             EXPERIMENTAL_DISCOVERY_SUGGEST)
 
  protected:
   virtual ~DiscoverySuggestFunction() {}
@@ -20,7 +21,8 @@ class DiscoverySuggestFunction : public SyncExtensionFunction {
 
 class DiscoveryRemoveSuggestionFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.discovery.removeSuggestion");
+  DECLARE_EXTENSION_FUNCTION("experimental.discovery.removeSuggestion",
+                             EXPERIMENTAL_DISCOVERY_REMOVESUGGESTION)
 
  protected:
   virtual ~DiscoveryRemoveSuggestionFunction() {}
@@ -29,7 +31,8 @@ class DiscoveryRemoveSuggestionFunction : public SyncExtensionFunction {
 
 class DiscoveryClearAllSuggestionsFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.discovery.clearAllSuggestions");
+  DECLARE_EXTENSION_FUNCTION("experimental.discovery.clearAllSuggestions",
+                             EXPERIMENTAL_DISCOVERY_CLEARALLSUGGESTIONS)
 
  protected:
   virtual ~DiscoveryClearAllSuggestionsFunction() {}

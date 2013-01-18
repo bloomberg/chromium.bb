@@ -125,7 +125,8 @@ class HistoryFunctionWithCallback : public HistoryFunction {
 
 class HistoryGetMostVisitedFunction : public HistoryFunctionWithCallback {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.history.getMostVisited");
+  DECLARE_EXTENSION_FUNCTION("experimental.history.getMostVisited",
+                             EXPERIMENTAL_HISTORY_GETMOSTVISITED)
 
  protected:
   virtual ~HistoryGetMostVisitedFunction() {}
@@ -140,7 +141,7 @@ class HistoryGetMostVisitedFunction : public HistoryFunctionWithCallback {
 
 class HistoryGetVisitsFunction : public HistoryFunctionWithCallback {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("history.getVisits");
+  DECLARE_EXTENSION_FUNCTION("history.getVisits", HISTORY_GETVISITS)
 
  protected:
   virtual ~HistoryGetVisitsFunction() {}
@@ -157,7 +158,7 @@ class HistoryGetVisitsFunction : public HistoryFunctionWithCallback {
 
 class HistorySearchFunction : public HistoryFunctionWithCallback {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("history.search");
+  DECLARE_EXTENSION_FUNCTION("history.search", HISTORY_SEARCH)
 
  protected:
   virtual ~HistorySearchFunction() {}
@@ -172,7 +173,7 @@ class HistorySearchFunction : public HistoryFunctionWithCallback {
 
 class HistoryAddUrlFunction : public HistoryFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("history.addUrl");
+  DECLARE_EXTENSION_FUNCTION("history.addUrl", HISTORY_ADDURL)
 
  protected:
   virtual ~HistoryAddUrlFunction() {}
@@ -183,7 +184,7 @@ class HistoryAddUrlFunction : public HistoryFunction {
 
 class HistoryDeleteAllFunction : public HistoryFunctionWithCallback {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("history.deleteAll");
+  DECLARE_EXTENSION_FUNCTION("history.deleteAll", HISTORY_DELETEALL)
 
  protected:
   virtual ~HistoryDeleteAllFunction() {}
@@ -198,7 +199,7 @@ class HistoryDeleteAllFunction : public HistoryFunctionWithCallback {
 
 class HistoryDeleteUrlFunction : public HistoryFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("history.deleteUrl");
+  DECLARE_EXTENSION_FUNCTION("history.deleteUrl", HISTORY_DELETEURL)
 
  protected:
   virtual ~HistoryDeleteUrlFunction() {}
@@ -209,7 +210,7 @@ class HistoryDeleteUrlFunction : public HistoryFunction {
 
 class HistoryDeleteRangeFunction : public HistoryFunctionWithCallback {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("history.deleteRange");
+  DECLARE_EXTENSION_FUNCTION("history.deleteRange", HISTORY_DELETERANGE)
 
  protected:
   virtual ~HistoryDeleteRangeFunction() {}

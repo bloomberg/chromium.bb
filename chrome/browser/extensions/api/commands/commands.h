@@ -10,7 +10,7 @@
 class GetAllCommandsFunction : public SyncExtensionFunction {
   virtual ~GetAllCommandsFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("commands.getAll")
+  DECLARE_EXTENSION_FUNCTION("commands.getAll", COMMANDS_GETALL)
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_COMMANDS_COMMANDS_H_

@@ -58,7 +58,8 @@ namespace api {
 
 class BluetoothGetAdapterStateFunction : public BluetoothExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.getAdapterState")
+  DECLARE_EXTENSION_FUNCTION("bluetooth.getAdapterState",
+                             BLUETOOTH_GETADAPTERSTATE)
 
  protected:
   virtual ~BluetoothGetAdapterStateFunction() {}
@@ -69,7 +70,7 @@ class BluetoothGetAdapterStateFunction : public BluetoothExtensionFunction {
 
 class BluetoothGetDevicesFunction : public BluetoothExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.getDevices")
+  DECLARE_EXTENSION_FUNCTION("bluetooth.getDevices", BLUETOOTH_GETDEVICES)
 
   BluetoothGetDevicesFunction();
 
@@ -91,7 +92,7 @@ class BluetoothGetDevicesFunction : public BluetoothExtensionFunction {
 
 class BluetoothGetServicesFunction : public BluetoothExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.getServices")
+  DECLARE_EXTENSION_FUNCTION("bluetooth.getServices", BLUETOOTH_GETSERVICES)
 
  protected:
   virtual ~BluetoothGetServicesFunction() {}
@@ -108,7 +109,7 @@ class BluetoothGetServicesFunction : public BluetoothExtensionFunction {
 
 class BluetoothConnectFunction : public BluetoothExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.connect")
+  DECLARE_EXTENSION_FUNCTION("bluetooth.connect", BLUETOOTH_CONNECT)
 
  protected:
   virtual ~BluetoothConnectFunction() {}
@@ -125,7 +126,7 @@ class BluetoothConnectFunction : public BluetoothExtensionFunction {
 
 class BluetoothDisconnectFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.disconnect")
+  DECLARE_EXTENSION_FUNCTION("bluetooth.disconnect", BLUETOOTH_DISCONNECT)
 
  protected:
   virtual ~BluetoothDisconnectFunction() {}
@@ -136,7 +137,7 @@ class BluetoothDisconnectFunction : public SyncExtensionFunction {
 
 class BluetoothReadFunction : public AsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.read")
+  DECLARE_EXTENSION_FUNCTION("bluetooth.read", BLUETOOTH_READ)
   BluetoothReadFunction();
 
  protected:
@@ -154,7 +155,7 @@ class BluetoothReadFunction : public AsyncApiFunction {
 
 class BluetoothWriteFunction : public AsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.write")
+  DECLARE_EXTENSION_FUNCTION("bluetooth.write", BLUETOOTH_WRITE)
   BluetoothWriteFunction();
 
  protected:
@@ -174,7 +175,8 @@ class BluetoothWriteFunction : public AsyncApiFunction {
 class BluetoothSetOutOfBandPairingDataFunction
     : public BluetoothExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.setOutOfBandPairingData")
+  DECLARE_EXTENSION_FUNCTION("bluetooth.setOutOfBandPairingData",
+                             BLUETOOTH_SETOUTOFBANDPAIRINGDATA)
 
  protected:
   virtual ~BluetoothSetOutOfBandPairingDataFunction() {}
@@ -189,7 +191,8 @@ class BluetoothSetOutOfBandPairingDataFunction
 class BluetoothGetLocalOutOfBandPairingDataFunction
     : public BluetoothExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.getLocalOutOfBandPairingData")
+  DECLARE_EXTENSION_FUNCTION("bluetooth.getLocalOutOfBandPairingData",
+                             BLUETOOTH_GETLOCALOUTOFBANDPAIRINGDATA)
 
  protected:
   virtual ~BluetoothGetLocalOutOfBandPairingDataFunction() {}
@@ -204,7 +207,8 @@ class BluetoothGetLocalOutOfBandPairingDataFunction
 
 class BluetoothStartDiscoveryFunction : public BluetoothExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.startDiscovery")
+  DECLARE_EXTENSION_FUNCTION("bluetooth.startDiscovery",
+                             BLUETOOTH_STARTDISCOVERY)
 
  protected:
   virtual ~BluetoothStartDiscoveryFunction() {}
@@ -219,7 +223,7 @@ class BluetoothStartDiscoveryFunction : public BluetoothExtensionFunction {
 
 class BluetoothStopDiscoveryFunction : public BluetoothExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.stopDiscovery")
+  DECLARE_EXTENSION_FUNCTION("bluetooth.stopDiscovery", BLUETOOTH_STOPDISCOVERY)
 
  protected:
   virtual ~BluetoothStopDiscoveryFunction() {}

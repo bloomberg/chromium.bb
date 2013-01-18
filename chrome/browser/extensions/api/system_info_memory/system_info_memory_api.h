@@ -12,7 +12,8 @@ namespace extensions {
 
 class SystemInfoMemoryGetFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.systemInfo.memory.get");
+  DECLARE_EXTENSION_FUNCTION("experimental.systemInfo.memory.get",
+                             EXPERIMENTAL_SYSTEMINFO_MEMORY_GET)
   SystemInfoMemoryGetFunction();
 
  private:

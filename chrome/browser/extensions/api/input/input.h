@@ -17,8 +17,9 @@ namespace extensions {
 // synthetic event distribution code to this Function.
 class SendKeyboardEventInputFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.input.virtualKeyboard.sendKeyboardEvent");
+  DECLARE_EXTENSION_FUNCTION(
+      "experimental.input.virtualKeyboard.sendKeyboardEvent",
+      EXPERIMENTAL_INPUT_VIRTUALKEYBOARD_SENDKEYBOARDEVENT);
 
  protected:
   virtual ~SendKeyboardEventInputFunction() {}

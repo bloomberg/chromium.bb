@@ -13,7 +13,7 @@ namespace extensions {
 
 class GetTopSitesFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("topSites.get")
+  DECLARE_EXTENSION_FUNCTION("topSites.get", TOPSITES_GET)
 
   GetTopSitesFunction();
 

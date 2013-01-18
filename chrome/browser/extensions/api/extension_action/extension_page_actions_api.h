@@ -19,7 +19,8 @@ class PageActionsFunction : public SyncExtensionFunction {
 // Implement chrome.pageActions.enableForTab().
 class EnablePageActionsFunction : public PageActionsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("pageActions.enableForTab")
+  DECLARE_EXTENSION_FUNCTION("pageActions.enableForTab",
+                             PAGEACTIONS_ENABLEFORTAB)
 
  protected:
   virtual ~EnablePageActionsFunction() {}
@@ -31,7 +32,8 @@ class EnablePageActionsFunction : public PageActionsFunction {
 // Implement chrome.pageActions.disableForTab().
 class DisablePageActionsFunction : public PageActionsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("pageActions.disableForTab")
+  DECLARE_EXTENSION_FUNCTION("pageActions.disableForTab",
+                             PAGEACTIONS_DISABLEFORTAB)
 
  protected:
   virtual ~DisablePageActionsFunction() {}
@@ -46,7 +48,7 @@ class DisablePageActionsFunction : public PageActionsFunction {
 
 class PageActionShowFunction : public ExtensionActionShowFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("pageAction.show")
+  DECLARE_EXTENSION_FUNCTION("pageAction.show", PAGEACTION_SHOW)
 
  protected:
   virtual ~PageActionShowFunction() {}
@@ -54,7 +56,7 @@ class PageActionShowFunction : public ExtensionActionShowFunction {
 
 class PageActionHideFunction : public ExtensionActionHideFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("pageAction.hide")
+  DECLARE_EXTENSION_FUNCTION("pageAction.hide", PAGEACTION_HIDE)
 
  protected:
   virtual ~PageActionHideFunction() {}
@@ -62,7 +64,7 @@ class PageActionHideFunction : public ExtensionActionHideFunction {
 
 class PageActionSetIconFunction : public ExtensionActionSetIconFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("pageAction.setIcon")
+  DECLARE_EXTENSION_FUNCTION("pageAction.setIcon", PAGEACTION_SETICON)
 
  protected:
   virtual ~PageActionSetIconFunction() {}
@@ -70,7 +72,7 @@ class PageActionSetIconFunction : public ExtensionActionSetIconFunction {
 
 class PageActionSetTitleFunction : public ExtensionActionSetTitleFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("pageAction.setTitle")
+  DECLARE_EXTENSION_FUNCTION("pageAction.setTitle", PAGEACTION_SETTITLE)
 
  protected:
   virtual ~PageActionSetTitleFunction() {}
@@ -78,7 +80,7 @@ class PageActionSetTitleFunction : public ExtensionActionSetTitleFunction {
 
 class PageActionSetPopupFunction : public ExtensionActionSetPopupFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("pageAction.setPopup")
+  DECLARE_EXTENSION_FUNCTION("pageAction.setPopup", PAGEACTION_SETPOPUP)
 
  protected:
   virtual ~PageActionSetPopupFunction() {}
@@ -86,7 +88,7 @@ class PageActionSetPopupFunction : public ExtensionActionSetPopupFunction {
 
 class PageActionGetTitleFunction : public ExtensionActionGetTitleFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("pageAction.getTitle")
+  DECLARE_EXTENSION_FUNCTION("pageAction.getTitle", PAGEACTION_GETTITLE)
 
  protected:
   virtual ~PageActionGetTitleFunction() {}
@@ -94,7 +96,7 @@ class PageActionGetTitleFunction : public ExtensionActionGetTitleFunction {
 
 class PageActionGetPopupFunction : public ExtensionActionGetPopupFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("pageAction.getPopup")
+  DECLARE_EXTENSION_FUNCTION("pageAction.getPopup", PAGEACTION_GETPOPUP)
 
  protected:
   virtual ~PageActionGetPopupFunction() {}

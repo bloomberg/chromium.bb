@@ -13,7 +13,7 @@ namespace extensions {
 // Implementation of the chrome.idle.queryState API.
 class IdleQueryStateFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("idle.queryState")
+  DECLARE_EXTENSION_FUNCTION("idle.queryState", IDLE_QUERYSTATE)
 
  protected:
   virtual ~IdleQueryStateFunction() {}
@@ -28,7 +28,8 @@ class IdleQueryStateFunction : public AsyncExtensionFunction {
 // Implementation of the chrome.idle.setDetectionInterval API.
 class IdleSetDetectionIntervalFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("idle.setDetectionInterval");
+  DECLARE_EXTENSION_FUNCTION("idle.setDetectionInterval",
+                             IDLE_SETDETECTIONINTERVAL)
 
  protected:
   virtual ~IdleSetDetectionIntervalFunction() {}

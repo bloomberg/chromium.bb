@@ -11,7 +11,8 @@ namespace extensions {
 
 class SystemInfoCpuGetFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.systemInfo.cpu.get");
+  DECLARE_EXTENSION_FUNCTION("experimental.systemInfo.cpu.get",
+                             EXPERIMENTAL_SYSTEMINFO_CPU_GET)
   SystemInfoCpuGetFunction();
 
  private:

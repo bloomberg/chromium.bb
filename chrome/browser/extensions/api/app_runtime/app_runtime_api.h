@@ -64,7 +64,8 @@ class AppEventRouter {
 
 class AppRuntimePostIntentResponseFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("app.runtime.postIntentResponse");
+  DECLARE_EXTENSION_FUNCTION("app.runtime.postIntentResponse",
+                             APP_RUNTIME_POSTINTENTRESPONSE)
 
  protected:
   virtual ~AppRuntimePostIntentResponseFunction() {}

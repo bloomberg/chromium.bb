@@ -24,7 +24,7 @@ class TestExtensionFunction : public SyncExtensionFunction {
 
 class TestNotifyPassFunction : public TestExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("test.notifyPass")
+  DECLARE_EXTENSION_FUNCTION("test.notifyPass", UNKNOWN)
 
  protected:
   virtual ~TestNotifyPassFunction();
@@ -35,7 +35,7 @@ class TestNotifyPassFunction : public TestExtensionFunction {
 
 class TestFailFunction : public TestExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("test.notifyFail")
+  DECLARE_EXTENSION_FUNCTION("test.notifyFail", UNKNOWN)
 
  protected:
   virtual ~TestFailFunction();
@@ -46,7 +46,7 @@ class TestFailFunction : public TestExtensionFunction {
 
 class TestLogFunction : public TestExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("test.log")
+  DECLARE_EXTENSION_FUNCTION("test.log", UNKNOWN)
 
  protected:
   virtual ~TestLogFunction();
@@ -57,7 +57,7 @@ class TestLogFunction : public TestExtensionFunction {
 
 class TestResetQuotaFunction : public TestExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("test.resetQuota")
+  DECLARE_EXTENSION_FUNCTION("test.resetQuota", UNKNOWN)
 
  protected:
   virtual ~TestResetQuotaFunction();
@@ -68,7 +68,7 @@ class TestResetQuotaFunction : public TestExtensionFunction {
 
 class TestCreateIncognitoTabFunction : public TestExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("test.createIncognitoTab")
+  DECLARE_EXTENSION_FUNCTION("test.createIncognitoTab", UNKNOWN)
 
  protected:
   virtual ~TestCreateIncognitoTabFunction();
@@ -79,7 +79,7 @@ class TestCreateIncognitoTabFunction : public TestExtensionFunction {
 
 class TestSendMessageFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("test.sendMessage")
+  DECLARE_EXTENSION_FUNCTION("test.sendMessage", UNKNOWN)
 
   // Sends a reply back to the calling extension. Many extensions don't need
   // a reply and will just ignore it.
@@ -94,7 +94,7 @@ class TestSendMessageFunction : public AsyncExtensionFunction {
 
 class TestGetConfigFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("test.getConfig")
+  DECLARE_EXTENSION_FUNCTION("test.getConfig", UNKNOWN)
 
   // Set the dictionary returned by chrome.test.getConfig().
   // Does not take ownership of |value|.

@@ -13,7 +13,8 @@ namespace extensions {
 
 class FileSystemGetDisplayPathFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("fileSystem.getDisplayPath");
+  DECLARE_EXTENSION_FUNCTION("fileSystem.getDisplayPath",
+                             FILESYSTEM_GETDISPLAYPATH)
 
  protected:
   virtual ~FileSystemGetDisplayPathFunction() {}
@@ -48,7 +49,8 @@ class FileSystemEntryFunction : public AsyncExtensionFunction {
 
 class FileSystemGetWritableEntryFunction : public FileSystemEntryFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("fileSystem.getWritableEntry");
+  DECLARE_EXTENSION_FUNCTION("fileSystem.getWritableEntry",
+                             FILESYSTEM_GETWRITABLEENTRY)
 
  protected:
   virtual ~FileSystemGetWritableEntryFunction() {}
@@ -57,7 +59,8 @@ class FileSystemGetWritableEntryFunction : public FileSystemEntryFunction {
 
 class FileSystemIsWritableEntryFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("fileSystem.isWritableEntry");
+  DECLARE_EXTENSION_FUNCTION("fileSystem.isWritableEntry",
+                             FILESYSTEM_ISWRITABLEENTRY)
 
  protected:
   virtual ~FileSystemIsWritableEntryFunction() {}
@@ -71,7 +74,7 @@ class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
   static void SkipPickerAndAlwaysCancelForTest();
   static void StopSkippingPickerForTest();
 
-  DECLARE_EXTENSION_FUNCTION_NAME("fileSystem.chooseEntry");
+  DECLARE_EXTENSION_FUNCTION("fileSystem.chooseEntry", FILESYSTEM_CHOOSEENTRY)
 
   typedef std::vector<linked_ptr<extensions::api::file_system::AcceptOption> >
       AcceptOptions;

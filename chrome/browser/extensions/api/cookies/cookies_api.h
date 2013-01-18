@@ -89,7 +89,7 @@ class CookiesFunction : public AsyncExtensionFunction {
 // Implements the cookies.get() extension function.
 class CookiesGetFunction : public CookiesFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("cookies.get")
+  DECLARE_EXTENSION_FUNCTION("cookies.get", COOKIES_GET)
 
   CookiesGetFunction();
 
@@ -112,7 +112,7 @@ class CookiesGetFunction : public CookiesFunction {
 // Implements the cookies.getAll() extension function.
 class CookiesGetAllFunction : public CookiesFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("cookies.getAll")
+  DECLARE_EXTENSION_FUNCTION("cookies.getAll", COOKIES_GETALL)
 
   CookiesGetAllFunction();
 
@@ -135,7 +135,7 @@ class CookiesGetAllFunction : public CookiesFunction {
 // Implements the cookies.set() extension function.
 class CookiesSetFunction : public CookiesFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("cookies.set")
+  DECLARE_EXTENSION_FUNCTION("cookies.set", COOKIES_SET)
 
   CookiesSetFunction();
 
@@ -158,7 +158,7 @@ class CookiesSetFunction : public CookiesFunction {
 // Implements the cookies.remove() extension function.
 class CookiesRemoveFunction : public CookiesFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("cookies.remove")
+  DECLARE_EXTENSION_FUNCTION("cookies.remove", COOKIES_REMOVE)
 
   CookiesRemoveFunction();
 
@@ -181,7 +181,8 @@ class CookiesRemoveFunction : public CookiesFunction {
 // Implements the cookies.getAllCookieStores() extension function.
 class CookiesGetAllCookieStoresFunction : public CookiesFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("cookies.getAllCookieStores")
+  DECLARE_EXTENSION_FUNCTION("cookies.getAllCookieStores",
+                             COOKIES_GETALLCOOKIESTORES)
 
  protected:
   virtual ~CookiesGetAllCookieStoresFunction() {}

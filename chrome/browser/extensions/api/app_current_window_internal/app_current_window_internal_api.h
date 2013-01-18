@@ -25,7 +25,8 @@ class AppCurrentWindowInternalExtensionFunction : public SyncExtensionFunction {
 class AppCurrentWindowInternalFocusFunction
     : public AppCurrentWindowInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("app.currentWindowInternal.focus");
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.focus",
+                             APP_CURRENTWINDOWINTERNAL_FOCUS)
 
  protected:
   virtual ~AppCurrentWindowInternalFocusFunction() {}
@@ -35,7 +36,8 @@ class AppCurrentWindowInternalFocusFunction
 class AppCurrentWindowInternalMaximizeFunction
     : public AppCurrentWindowInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("app.currentWindowInternal.maximize");
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.maximize",
+                             APP_CURRENTWINDOWINTERNAL_MAXIMIZE)
 
  protected:
   virtual ~AppCurrentWindowInternalMaximizeFunction() {}
@@ -45,7 +47,8 @@ class AppCurrentWindowInternalMaximizeFunction
 class AppCurrentWindowInternalMinimizeFunction
     : public AppCurrentWindowInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("app.currentWindowInternal.minimize");
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.minimize",
+                             APP_CURRENTWINDOWINTERNAL_MINIMIZE)
 
  protected:
   virtual ~AppCurrentWindowInternalMinimizeFunction() {}
@@ -55,7 +58,8 @@ class AppCurrentWindowInternalMinimizeFunction
 class AppCurrentWindowInternalRestoreFunction
     : public AppCurrentWindowInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("app.currentWindowInternal.restore");
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.restore",
+                             APP_CURRENTWINDOWINTERNAL_RESTORE)
 
  protected:
   virtual ~AppCurrentWindowInternalRestoreFunction() {}
@@ -65,7 +69,8 @@ class AppCurrentWindowInternalRestoreFunction
 class AppCurrentWindowInternalDrawAttentionFunction
     : public AppCurrentWindowInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("app.currentWindowInternal.drawAttention");
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.drawAttention",
+                             APP_CURRENTWINDOWINTERNAL_DRAWATTENTION)
 
  protected:
   virtual ~AppCurrentWindowInternalDrawAttentionFunction() {}
@@ -75,7 +80,8 @@ class AppCurrentWindowInternalDrawAttentionFunction
 class AppCurrentWindowInternalClearAttentionFunction
     : public AppCurrentWindowInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("app.currentWindowInternal.clearAttention");
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.clearAttention",
+                             APP_CURRENTWINDOWINTERNAL_CLEARATTENTION)
 
  protected:
   virtual ~AppCurrentWindowInternalClearAttentionFunction() {}
@@ -85,7 +91,8 @@ class AppCurrentWindowInternalClearAttentionFunction
 class AppCurrentWindowInternalShowFunction
     : public AppCurrentWindowInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("app.currentWindowInternal.show");
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.show",
+                             APP_CURRENTWINDOWINTERNAL_SHOW)
 
  protected:
   virtual ~AppCurrentWindowInternalShowFunction() {}
@@ -95,7 +102,8 @@ class AppCurrentWindowInternalShowFunction
 class AppCurrentWindowInternalHideFunction
     : public AppCurrentWindowInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("app.currentWindowInternal.hide");
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.hide",
+                             APP_CURRENTWINDOWINTERNAL_HIDE)
 
  protected:
   virtual ~AppCurrentWindowInternalHideFunction() {}
@@ -105,7 +113,8 @@ class AppCurrentWindowInternalHideFunction
 class AppCurrentWindowInternalSetBoundsFunction
     : public AppCurrentWindowInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("app.currentWindowInternal.setBounds");
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setBounds",
+                             APP_CURRENTWINDOWINTERNAL_SETBOUNDS)
  protected:
   virtual ~AppCurrentWindowInternalSetBoundsFunction() {}
   virtual bool RunWithWindow(ShellWindow* window) OVERRIDE;
@@ -114,7 +123,8 @@ class AppCurrentWindowInternalSetBoundsFunction
 class AppCurrentWindowInternalSetIconFunction
     : public AppCurrentWindowInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("app.currentWindowInternal.setIcon");
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setIcon",
+                             APP_CURRENTWINDOWINTERNAL_SETICON)
 
  protected:
   virtual ~AppCurrentWindowInternalSetIconFunction() {}

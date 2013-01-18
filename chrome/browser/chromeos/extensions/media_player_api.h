@@ -21,7 +21,7 @@ class MediaPlayerEventRouter;
 // Implements the chrome.mediaPlayerPrivate.play method.
 class PlayMediaplayerFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("mediaPlayerPrivate.play");
+  DECLARE_EXTENSION_FUNCTION("mediaPlayerPrivate.play", MEDIAPLAYERPRIVATE_PLAY)
 
  protected:
   virtual ~PlayMediaplayerFunction() {}
@@ -33,7 +33,8 @@ class PlayMediaplayerFunction : public SyncExtensionFunction {
 // Implements the chrome.mediaPlayerPrivate.getPlaylist method.
 class GetPlaylistMediaplayerFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("mediaPlayerPrivate.getPlaylist");
+  DECLARE_EXTENSION_FUNCTION("mediaPlayerPrivate.getPlaylist",
+                             MEDIAPLAYERPRIVATE_GETPLAYLIST)
 
  protected:
   virtual ~GetPlaylistMediaplayerFunction() {}
@@ -45,7 +46,8 @@ class GetPlaylistMediaplayerFunction : public SyncExtensionFunction {
 // Implements the chrome.mediaPlayerPrivate.setWindowHeight method.
 class SetWindowHeightMediaplayerFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("mediaPlayerPrivate.setWindowHeight");
+  DECLARE_EXTENSION_FUNCTION("mediaPlayerPrivate.setWindowHeight",
+                             MEDIAPLAYERPRIVATE_SETWINDOWHEIGHT)
 
  protected:
   virtual ~SetWindowHeightMediaplayerFunction() {}
@@ -57,7 +59,8 @@ class SetWindowHeightMediaplayerFunction : public SyncExtensionFunction {
 // Implements the chrome.mediaPlayerPrivate.closeWindow method.
 class CloseWindowMediaplayerFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("mediaPlayerPrivate.closeWindow");
+  DECLARE_EXTENSION_FUNCTION("mediaPlayerPrivate.closeWindow",
+                             MEDIAPLAYERPRIVATE_CLOSEWINDOW)
 
  protected:
   virtual ~CloseWindowMediaplayerFunction() {}

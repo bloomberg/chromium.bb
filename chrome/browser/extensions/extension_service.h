@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/app_shortcut_manager.h"
 #include "chrome/browser/extensions/app_sync_bundle.h"
 #include "chrome/browser/extensions/blacklist.h"
+#include "chrome/browser/extensions/extension_function_histogram_value.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -663,7 +664,7 @@ class ExtensionService
       const extensions::Extension* e, const char* histogram);
 
   // Open a dev tools window for the background page for the given extension,
-  // starting the background page first if necesary.
+  // starting the background page first if necessary.
   void InspectBackgroundPage(const extensions::Extension* extension);
 
 #if defined(UNIT_TEST)

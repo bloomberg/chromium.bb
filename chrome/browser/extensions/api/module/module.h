@@ -13,7 +13,8 @@ class ExtensionPrefs;
 
 class SetUpdateUrlDataFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("extension.setUpdateUrlData");
+  DECLARE_EXTENSION_FUNCTION("extension.setUpdateUrlData",
+                             EXTENSION_SETUPDATEURLDATA)
 
  protected:
   virtual ~SetUpdateUrlDataFunction() {}
@@ -27,7 +28,8 @@ class SetUpdateUrlDataFunction : public SyncExtensionFunction {
 
 class IsAllowedIncognitoAccessFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("extension.isAllowedIncognitoAccess");
+  DECLARE_EXTENSION_FUNCTION("extension.isAllowedIncognitoAccess",
+                             EXTENSION_ISALLOWEDINCOGNITOACCESS)
 
  protected:
   virtual ~IsAllowedIncognitoAccessFunction() {}
@@ -38,7 +40,8 @@ class IsAllowedIncognitoAccessFunction : public SyncExtensionFunction {
 
 class IsAllowedFileSchemeAccessFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("extension.isAllowedFileSchemeAccess");
+  DECLARE_EXTENSION_FUNCTION("extension.isAllowedFileSchemeAccess",
+                             EXTENSION_ISALLOWEDFILESCHEMEACCESS)
 
  protected:
   virtual ~IsAllowedFileSchemeAccessFunction() {}

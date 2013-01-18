@@ -15,7 +15,8 @@
 
 class RlzRecordProductEventFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.rlz.recordProductEvent")
+  DECLARE_EXTENSION_FUNCTION("experimental.rlz.recordProductEvent",
+                             EXPERIMENTAL_RLZ_RECORDPRODUCTEVENT)
 
  protected:
   virtual ~RlzRecordProductEventFunction() {}
@@ -26,7 +27,8 @@ class RlzRecordProductEventFunction : public SyncExtensionFunction {
 
 class RlzGetAccessPointRlzFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.rlz.getAccessPointRlz")
+  DECLARE_EXTENSION_FUNCTION("experimental.rlz.getAccessPointRlz",
+                             EXPERIMENTAL_RLZ_GETACCESSPOINTRLZ)
 
  protected:
   virtual ~RlzGetAccessPointRlzFunction() {}
@@ -37,7 +39,8 @@ class RlzGetAccessPointRlzFunction : public SyncExtensionFunction {
 
 class RlzSendFinancialPingFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.rlz.sendFinancialPing")
+  DECLARE_EXTENSION_FUNCTION("experimental.rlz.sendFinancialPing",
+                             EXPERIMENTAL_RLZ_SENDFINANCIALPING)
 
   RlzSendFinancialPingFunction();
 
@@ -63,7 +66,8 @@ class RlzSendFinancialPingFunction : public AsyncExtensionFunction {
 
 class RlzClearProductStateFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.rlz.clearProductState")
+  DECLARE_EXTENSION_FUNCTION("experimental.rlz.clearProductState",
+                             EXPERIMENTAL_RLZ_CLEARPRODUCTSTATE)
 
  protected:
   virtual ~RlzClearProductStateFunction() {}

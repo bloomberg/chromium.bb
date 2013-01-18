@@ -18,7 +18,8 @@ namespace extensions {
 class MediaGalleriesGetMediaFileSystemsFunction
     : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("mediaGalleries.getMediaFileSystems")
+  DECLARE_EXTENSION_FUNCTION("mediaGalleries.getMediaFileSystems",
+                             MEDIAGALLERIES_GETMEDIAFILESYSTEMS)
 
  protected:
   virtual ~MediaGalleriesGetMediaFileSystemsFunction();
@@ -43,8 +44,9 @@ class MediaGalleriesGetMediaFileSystemsFunction
 
 class MediaGalleriesAssembleMediaFileFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.mediaGalleries.assembleMediaFile")
+  DECLARE_EXTENSION_FUNCTION(
+      "experimental.mediaGalleries.assembleMediaFile",
+      EXPERIMENTAL_MEDIAGALLERIES_ASSEMBLEMEDIAFILE)
 
  protected:
   virtual ~MediaGalleriesAssembleMediaFileFunction();

@@ -14,7 +14,8 @@ namespace extensions {
 
 class MetricsRecordUserActionFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("metricsPrivate.recordUserAction")
+  DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordUserAction",
+                             METRICSPRIVATE_RECORDUSERACTION)
 
  protected:
   virtual ~MetricsRecordUserActionFunction() {}
@@ -35,7 +36,8 @@ class MetricsHistogramHelperFunction : public SyncExtensionFunction {
 
 class MetricsRecordValueFunction : public MetricsHistogramHelperFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("metricsPrivate.recordValue")
+  DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordValue",
+                             METRICSPRIVATE_RECORDVALUE)
 
  protected:
   virtual ~MetricsRecordValueFunction() {}
@@ -46,7 +48,8 @@ class MetricsRecordValueFunction : public MetricsHistogramHelperFunction {
 
 class MetricsRecordPercentageFunction : public MetricsHistogramHelperFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("metricsPrivate.recordPercentage")
+  DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordPercentage",
+                             METRICSPRIVATE_RECORDPERCENTAGE)
 
  protected:
   virtual ~MetricsRecordPercentageFunction() {}
@@ -57,7 +60,8 @@ class MetricsRecordPercentageFunction : public MetricsHistogramHelperFunction {
 
 class MetricsRecordCountFunction : public MetricsHistogramHelperFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("metricsPrivate.recordCount")
+  DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordCount",
+                             METRICSPRIVATE_RECORDCOUNT)
 
  protected:
   virtual ~MetricsRecordCountFunction() {}
@@ -68,7 +72,8 @@ class MetricsRecordCountFunction : public MetricsHistogramHelperFunction {
 
 class MetricsRecordSmallCountFunction : public MetricsHistogramHelperFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("metricsPrivate.recordSmallCount")
+  DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordSmallCount",
+                             METRICSPRIVATE_RECORDSMALLCOUNT)
 
  protected:
   virtual ~MetricsRecordSmallCountFunction() {}
@@ -79,7 +84,8 @@ class MetricsRecordSmallCountFunction : public MetricsHistogramHelperFunction {
 
 class MetricsRecordMediumCountFunction : public MetricsHistogramHelperFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("metricsPrivate.recordMediumCount")
+  DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordMediumCount",
+                             METRICSPRIVATE_RECORDMEDIUMCOUNT)
 
  protected:
   virtual ~MetricsRecordMediumCountFunction() {}
@@ -90,7 +96,8 @@ class MetricsRecordMediumCountFunction : public MetricsHistogramHelperFunction {
 
 class MetricsRecordTimeFunction : public MetricsHistogramHelperFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("metricsPrivate.recordTime")
+  DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordTime",
+                             METRICSPRIVATE_RECORDTIME)
 
  protected:
   virtual ~MetricsRecordTimeFunction() {}
@@ -101,7 +108,8 @@ class MetricsRecordTimeFunction : public MetricsHistogramHelperFunction {
 
 class MetricsRecordMediumTimeFunction : public MetricsHistogramHelperFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("metricsPrivate.recordMediumTime")
+  DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordMediumTime",
+                             METRICSPRIVATE_RECORDMEDIUMTIME)
 
  protected:
   virtual ~MetricsRecordMediumTimeFunction() {}
@@ -112,7 +120,8 @@ class MetricsRecordMediumTimeFunction : public MetricsHistogramHelperFunction {
 
 class MetricsRecordLongTimeFunction : public MetricsHistogramHelperFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("metricsPrivate.recordLongTime")
+  DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordLongTime",
+                             METRICSPRIVATE_RECORDLONGTIME)
 
  protected:
   virtual ~MetricsRecordLongTimeFunction() {}

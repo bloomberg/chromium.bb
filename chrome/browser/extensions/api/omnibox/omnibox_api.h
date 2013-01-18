@@ -69,7 +69,7 @@ class ExtensionOmniboxEventRouter {
 
 class OmniboxSendSuggestionsFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("omnibox.sendSuggestions");
+  DECLARE_EXTENSION_FUNCTION("omnibox.sendSuggestions", OMNIBOX_SENDSUGGESTIONS)
 
  protected:
   virtual ~OmniboxSendSuggestionsFunction() {}
@@ -132,7 +132,8 @@ class OmniboxAPI : public ProfileKeyedAPI,
 
 class OmniboxSetDefaultSuggestionFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("omnibox.setDefaultSuggestion");
+  DECLARE_EXTENSION_FUNCTION("omnibox.setDefaultSuggestion",
+                             OMNIBOX_SETDEFAULTSUGGESTION)
 
  protected:
   virtual ~OmniboxSetDefaultSuggestionFunction() {}

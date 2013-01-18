@@ -36,7 +36,7 @@ class AsyncManagementFunction : public AsyncExtensionFunction {
 
 class ManagementGetAllFunction : public ManagementFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("management.getAll");
+  DECLARE_EXTENSION_FUNCTION("management.getAll", MANAGEMENT_GETALL)
 
  protected:
   virtual ~ManagementGetAllFunction() {}
@@ -47,7 +47,7 @@ class ManagementGetAllFunction : public ManagementFunction {
 
 class ManagementGetFunction : public ManagementFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("management.get");
+  DECLARE_EXTENSION_FUNCTION("management.get", MANAGEMENT_GET)
 
  protected:
   virtual ~ManagementGetFunction() {}
@@ -58,7 +58,8 @@ class ManagementGetFunction : public ManagementFunction {
 
 class ManagementGetPermissionWarningsByIdFunction : public ManagementFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("management.getPermissionWarningsById");
+  DECLARE_EXTENSION_FUNCTION("management.getPermissionWarningsById",
+                             MANAGEMENT_GETPERMISSIONWARNINGSBYID)
 
  protected:
   virtual ~ManagementGetPermissionWarningsByIdFunction() {}
@@ -70,8 +71,9 @@ class ManagementGetPermissionWarningsByIdFunction : public ManagementFunction {
 class ManagementGetPermissionWarningsByManifestFunction
     : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "management.getPermissionWarningsByManifest");
+  DECLARE_EXTENSION_FUNCTION(
+      "management.getPermissionWarningsByManifest",
+      MANAGEMENT_GETPERMISSIONWARNINGSBYMANIFEST);
 
   // Called when utility process finishes.
   void OnParseSuccess(base::DictionaryValue* parsed_manifest);
@@ -86,7 +88,7 @@ class ManagementGetPermissionWarningsByManifestFunction
 
 class ManagementLaunchAppFunction : public ManagementFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("management.launchApp");
+  DECLARE_EXTENSION_FUNCTION("management.launchApp", MANAGEMENT_LAUNCHAPP)
 
  protected:
   virtual ~ManagementLaunchAppFunction() {}
@@ -98,7 +100,7 @@ class ManagementLaunchAppFunction : public ManagementFunction {
 class ManagementSetEnabledFunction : public AsyncManagementFunction,
                            public ExtensionInstallPrompt::Delegate {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("management.setEnabled");
+  DECLARE_EXTENSION_FUNCTION("management.setEnabled", MANAGEMENT_SETENABLED)
 
   ManagementSetEnabledFunction();
 
@@ -122,7 +124,7 @@ class ManagementSetEnabledFunction : public AsyncManagementFunction,
 class ManagementUninstallFunction : public AsyncManagementFunction,
                           public ExtensionUninstallDialog::Delegate {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("management.uninstall");
+  DECLARE_EXTENSION_FUNCTION("management.uninstall", MANAGEMENT_UNINSTALL)
 
   ManagementUninstallFunction();
   static void SetAutoConfirmForTest(bool should_proceed);

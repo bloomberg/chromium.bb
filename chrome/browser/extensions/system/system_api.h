@@ -14,7 +14,8 @@ namespace extensions {
 
 class GetIncognitoModeAvailabilityFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("systemPrivate.getIncognitoModeAvailability")
+  DECLARE_EXTENSION_FUNCTION("systemPrivate.getIncognitoModeAvailability",
+                             SYSTEMPRIVATE_GETINCOGNITOMODEAVAILABILITY)
 
  protected:
   virtual ~GetIncognitoModeAvailabilityFunction() {}
@@ -26,7 +27,8 @@ class GetIncognitoModeAvailabilityFunction : public SyncExtensionFunction {
 // API function which returns the status of system update.
 class GetUpdateStatusFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("systemPrivate.getUpdateStatus")
+  DECLARE_EXTENSION_FUNCTION("systemPrivate.getUpdateStatus",
+                             SYSTEMPRIVATE_GETUPDATESTATUS)
 
  protected:
   virtual ~GetUpdateStatusFunction() {}

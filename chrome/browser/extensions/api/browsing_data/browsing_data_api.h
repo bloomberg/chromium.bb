@@ -87,7 +87,8 @@ class BrowsingDataExtensionFunction : public AsyncExtensionFunction,
 
 class RemoveAppCacheFunction : public BrowsingDataExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeAppcache")
+  DECLARE_EXTENSION_FUNCTION("browsingData.removeAppcache",
+                             BROWSINGDATA_REMOVEAPPCACHE)
 
  protected:
   virtual ~RemoveAppCacheFunction() {}
@@ -98,7 +99,7 @@ class RemoveAppCacheFunction : public BrowsingDataExtensionFunction {
 
 class RemoveBrowsingDataFunction : public BrowsingDataExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.remove")
+  DECLARE_EXTENSION_FUNCTION("browsingData.remove", BROWSINGDATA_REMOVE)
 
  protected:
   virtual ~RemoveBrowsingDataFunction() {}
@@ -109,7 +110,8 @@ class RemoveBrowsingDataFunction : public BrowsingDataExtensionFunction {
 
 class RemoveCacheFunction : public BrowsingDataExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeCache")
+  DECLARE_EXTENSION_FUNCTION("browsingData.removeCache",
+                             BROWSINGDATA_REMOVECACHE)
 
  protected:
   virtual ~RemoveCacheFunction() {}
@@ -120,7 +122,8 @@ class RemoveCacheFunction : public BrowsingDataExtensionFunction {
 
 class RemoveCookiesFunction : public BrowsingDataExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeCookies")
+  DECLARE_EXTENSION_FUNCTION("browsingData.removeCookies",
+                             BROWSINGDATA_REMOVECOOKIES)
 
  protected:
   virtual ~RemoveCookiesFunction() {}
@@ -131,7 +134,8 @@ class RemoveCookiesFunction : public BrowsingDataExtensionFunction {
 
 class RemoveDownloadsFunction : public BrowsingDataExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeDownloads")
+  DECLARE_EXTENSION_FUNCTION("browsingData.removeDownloads",
+                             BROWSINGDATA_REMOVEDOWNLOADS)
 
  protected:
   virtual ~RemoveDownloadsFunction() {}
@@ -142,7 +146,8 @@ class RemoveDownloadsFunction : public BrowsingDataExtensionFunction {
 
 class RemoveFileSystemsFunction : public BrowsingDataExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeFileSystems")
+  DECLARE_EXTENSION_FUNCTION("browsingData.removeFileSystems",
+                             BROWSINGDATA_REMOVEFILESYSTEMS)
 
  protected:
   virtual ~RemoveFileSystemsFunction() {}
@@ -153,7 +158,8 @@ class RemoveFileSystemsFunction : public BrowsingDataExtensionFunction {
 
 class RemoveFormDataFunction : public BrowsingDataExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeFormData")
+  DECLARE_EXTENSION_FUNCTION("browsingData.removeFormData",
+                             BROWSINGDATA_REMOVEFORMDATA)
 
  protected:
   virtual ~RemoveFormDataFunction() {}
@@ -164,7 +170,8 @@ class RemoveFormDataFunction : public BrowsingDataExtensionFunction {
 
 class RemoveHistoryFunction : public BrowsingDataExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeHistory")
+  DECLARE_EXTENSION_FUNCTION("browsingData.removeHistory",
+                             BROWSINGDATA_REMOVEHISTORY)
 
  protected:
   virtual ~RemoveHistoryFunction() {}
@@ -175,7 +182,8 @@ class RemoveHistoryFunction : public BrowsingDataExtensionFunction {
 
 class RemoveIndexedDBFunction : public BrowsingDataExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeIndexedDB")
+  DECLARE_EXTENSION_FUNCTION("browsingData.removeIndexedDB",
+                             BROWSINGDATA_REMOVEINDEXEDDB)
 
  protected:
   virtual ~RemoveIndexedDBFunction() {}
@@ -186,7 +194,8 @@ class RemoveIndexedDBFunction : public BrowsingDataExtensionFunction {
 
 class RemoveLocalStorageFunction : public BrowsingDataExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeLocalStorage")
+  DECLARE_EXTENSION_FUNCTION("browsingData.removeLocalStorage",
+                             BROWSINGDATA_REMOVELOCALSTORAGE)
 
  protected:
   virtual ~RemoveLocalStorageFunction() {}
@@ -197,7 +206,8 @@ class RemoveLocalStorageFunction : public BrowsingDataExtensionFunction {
 
 class RemovePluginDataFunction : public BrowsingDataExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removePluginData")
+  DECLARE_EXTENSION_FUNCTION("browsingData.removePluginData",
+                             BROWSINGDATA_REMOVEPLUGINDATA)
 
  protected:
   virtual ~RemovePluginDataFunction() {}
@@ -208,7 +218,8 @@ class RemovePluginDataFunction : public BrowsingDataExtensionFunction {
 
 class RemovePasswordsFunction : public BrowsingDataExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removePasswords")
+  DECLARE_EXTENSION_FUNCTION("browsingData.removePasswords",
+                             BROWSINGDATA_REMOVEPASSWORDS)
 
  protected:
   virtual ~RemovePasswordsFunction() {}
@@ -219,7 +230,8 @@ class RemovePasswordsFunction : public BrowsingDataExtensionFunction {
 
 class RemoveWebSQLFunction : public BrowsingDataExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("browsingData.removeWebSQL")
+  DECLARE_EXTENSION_FUNCTION("browsingData.removeWebSQL",
+                             BROWSINGDATA_REMOVEWEBSQL)
 
  protected:
   virtual ~RemoveWebSQLFunction() {}

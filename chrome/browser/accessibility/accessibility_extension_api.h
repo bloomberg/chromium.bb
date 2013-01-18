@@ -74,24 +74,27 @@ class ExtensionAccessibilityEventRouter : public content::NotificationObserver {
 class SetAccessibilityEnabledFunction : public SyncExtensionFunction {
   virtual ~SetAccessibilityEnabledFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.accessibility.setAccessibilityEnabled")
+  DECLARE_EXTENSION_FUNCTION(
+      "experimental.accessibility.setAccessibilityEnabled",
+      EXPERIMENTAL_ACCESSIBILITY_SETACCESSIBILITYENABLED)
 };
 
 // API function that returns the most recent focused control.
 class GetFocusedControlFunction : public SyncExtensionFunction {
   virtual ~GetFocusedControlFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.accessibility.getFocusedControl")
+  DECLARE_EXTENSION_FUNCTION(
+      "experimental.accessibility.getFocusedControl",
+      EXPERIMENTAL_ACCESSIBILITY_GETFOCUSEDCONTROL)
 };
 
 // API function that returns alerts being shown on the give tab.
 class GetAlertsForTabFunction : public SyncExtensionFunction {
   virtual ~GetAlertsForTabFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.accessibility.getAlertsForTab")
+  DECLARE_EXTENSION_FUNCTION(
+      "experimental.accessibility.getAlertsForTab",
+      EXPERIMENTAL_ACCESSIBILITY_GETALERTSFORTAB)
 };
 
 #endif  // CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_H_

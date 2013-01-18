@@ -37,7 +37,7 @@ class SerialAsyncApiFunction : public AsyncApiFunction {
 
 class SerialGetPortsFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("serial.getPorts")
+  DECLARE_EXTENSION_FUNCTION("serial.getPorts", SERIAL_GETPORTS)
 
   SerialGetPortsFunction();
 
@@ -52,7 +52,7 @@ class SerialGetPortsFunction : public SerialAsyncApiFunction {
 
 class SerialOpenFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("serial.open")
+  DECLARE_EXTENSION_FUNCTION("serial.open", SERIAL_OPEN)
 
   SerialOpenFunction();
 
@@ -79,7 +79,7 @@ class SerialOpenFunction : public SerialAsyncApiFunction {
 
 class SerialCloseFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("serial.close")
+  DECLARE_EXTENSION_FUNCTION("serial.close", SERIAL_CLOSE)
 
   SerialCloseFunction();
 
@@ -97,7 +97,7 @@ class SerialCloseFunction : public SerialAsyncApiFunction {
 
 class SerialReadFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("serial.read")
+  DECLARE_EXTENSION_FUNCTION("serial.read", SERIAL_READ)
 
   SerialReadFunction();
 
@@ -115,7 +115,7 @@ class SerialReadFunction : public SerialAsyncApiFunction {
 
 class SerialWriteFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("serial.write")
+  DECLARE_EXTENSION_FUNCTION("serial.write", SERIAL_WRITE)
 
   SerialWriteFunction();
 
@@ -135,7 +135,7 @@ class SerialWriteFunction : public SerialAsyncApiFunction {
 
 class SerialFlushFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("serial.flush")
+  DECLARE_EXTENSION_FUNCTION("serial.flush", SERIAL_FLUSH)
 
   SerialFlushFunction();
 
@@ -153,7 +153,8 @@ class SerialFlushFunction : public SerialAsyncApiFunction {
 
 class SerialGetControlSignalsFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("serial.getControlSignals")
+  DECLARE_EXTENSION_FUNCTION("serial.getControlSignals",
+                             SERIAL_GETCONTROLSIGNALS)
 
   SerialGetControlSignalsFunction();
 
@@ -172,7 +173,8 @@ class SerialGetControlSignalsFunction : public SerialAsyncApiFunction {
 
 class SerialSetControlSignalsFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("serial.setControlSignals")
+  DECLARE_EXTENSION_FUNCTION("serial.setControlSignals",
+                             SERIAL_SETCONTROLSIGNALS)
 
   SerialSetControlSignalsFunction();
 

@@ -64,7 +64,8 @@ class ClipboardBookmarkManagerFunction : public extensions::BookmarksFunction {
 
 class CopyBookmarkManagerFunction : public ClipboardBookmarkManagerFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.copy");
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.copy",
+                             BOOKMARKMANAGERPRIVATE_COPY)
 
  protected:
   virtual ~CopyBookmarkManagerFunction() {}
@@ -75,7 +76,8 @@ class CopyBookmarkManagerFunction : public ClipboardBookmarkManagerFunction {
 
 class CutBookmarkManagerFunction : public ClipboardBookmarkManagerFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.cut");
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.cut",
+                             BOOKMARKMANAGERPRIVATE_CUT)
 
  protected:
   virtual ~CutBookmarkManagerFunction() {}
@@ -86,7 +88,8 @@ class CutBookmarkManagerFunction : public ClipboardBookmarkManagerFunction {
 
 class PasteBookmarkManagerFunction : public extensions::BookmarksFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.paste");
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.paste",
+                             BOOKMARKMANAGERPRIVATE_PASTE)
 
  protected:
   virtual ~PasteBookmarkManagerFunction() {}
@@ -97,7 +100,8 @@ class PasteBookmarkManagerFunction : public extensions::BookmarksFunction {
 
 class CanPasteBookmarkManagerFunction : public extensions::BookmarksFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.canPaste");
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.canPaste",
+                             BOOKMARKMANAGERPRIVATE_CANPASTE)
 
  protected:
   virtual ~CanPasteBookmarkManagerFunction() {}
@@ -109,7 +113,8 @@ class CanPasteBookmarkManagerFunction : public extensions::BookmarksFunction {
 class SortChildrenBookmarkManagerFunction
     : public extensions::BookmarksFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.sortChildren");
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.sortChildren",
+                             BOOKMARKMANAGERPRIVATE_SORTCHILDREN)
 
  protected:
   virtual ~SortChildrenBookmarkManagerFunction() {}
@@ -120,7 +125,8 @@ class SortChildrenBookmarkManagerFunction
 
 class BookmarkManagerGetStringsFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.getStrings");
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.getStrings",
+                             BOOKMARKMANAGERPRIVATE_GETSTRINGS)
 
  protected:
   virtual ~BookmarkManagerGetStringsFunction() {}
@@ -131,7 +137,8 @@ class BookmarkManagerGetStringsFunction : public AsyncExtensionFunction {
 
 class StartDragBookmarkManagerFunction : public extensions::BookmarksFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.startDrag");
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.startDrag",
+                             BOOKMARKMANAGERPRIVATE_STARTDRAG)
 
  protected:
   virtual ~StartDragBookmarkManagerFunction() {}
@@ -142,7 +149,8 @@ class StartDragBookmarkManagerFunction : public extensions::BookmarksFunction {
 
 class DropBookmarkManagerFunction : public extensions::BookmarksFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.drop");
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.drop",
+                             BOOKMARKMANAGERPRIVATE_DROP)
 
  protected:
   virtual ~DropBookmarkManagerFunction() {}
@@ -153,7 +161,8 @@ class DropBookmarkManagerFunction : public extensions::BookmarksFunction {
 
 class GetSubtreeBookmarkManagerFunction : public extensions::BookmarksFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.getSubtree");
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.getSubtree",
+                             BOOKMARKMANAGERPRIVATE_GETSUBTREE)
 
  protected:
   virtual ~GetSubtreeBookmarkManagerFunction() {}
@@ -164,7 +173,8 @@ class GetSubtreeBookmarkManagerFunction : public extensions::BookmarksFunction {
 
 class CanEditBookmarkManagerFunction : public extensions::BookmarksFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.canEdit");
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.canEdit",
+                             BOOKMARKMANAGERPRIVATE_CANEDIT)
 
  protected:
   virtual ~CanEditBookmarkManagerFunction() {}
@@ -175,7 +185,8 @@ class CanEditBookmarkManagerFunction : public extensions::BookmarksFunction {
 
 class RecordLaunchBookmarkFunction : public extensions::BookmarksFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.recordLaunch")
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.recordLaunch",
+                             BOOKMARKMANAGERPRIVATE_RECORDLAUNCH)
 
  protected:
   virtual ~RecordLaunchBookmarkFunction() {}
@@ -186,7 +197,8 @@ class RecordLaunchBookmarkFunction : public extensions::BookmarksFunction {
 
 class CanOpenNewWindowsBookmarkFunction : public extensions::BookmarksFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("bookmarkManagerPrivate.canOpenNewWindows");
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.canOpenNewWindows",
+                             BOOKMARKMANAGERPRIVATE_CANOPENNEWWINDOWS)
 
  protected:
   virtual ~CanOpenNewWindowsBookmarkFunction() {}

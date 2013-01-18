@@ -34,7 +34,7 @@ class ScriptBadgeAPI : public ProfileKeyedAPI {
 
 class ScriptBadgeSetPopupFunction : public ExtensionActionSetPopupFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("scriptBadge.setPopup")
+  DECLARE_EXTENSION_FUNCTION("scriptBadge.setPopup", SCRIPTBADGE_SETPOPUP)
 
  protected:
   virtual ~ScriptBadgeSetPopupFunction() {}
@@ -42,7 +42,7 @@ class ScriptBadgeSetPopupFunction : public ExtensionActionSetPopupFunction {
 
 class ScriptBadgeGetPopupFunction : public ExtensionActionGetPopupFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("scriptBadge.getPopup")
+  DECLARE_EXTENSION_FUNCTION("scriptBadge.getPopup", SCRIPTBADGE_GETPOPUP)
 
  protected:
   virtual ~ScriptBadgeGetPopupFunction() {}
@@ -51,7 +51,8 @@ class ScriptBadgeGetPopupFunction : public ExtensionActionGetPopupFunction {
 // scriptBadge.getAttention(tabId)
 class ScriptBadgeGetAttentionFunction : public ExtensionActionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("scriptBadge.getAttention")
+  DECLARE_EXTENSION_FUNCTION("scriptBadge.getAttention",
+                             SCRIPTBADGE_GETATTENTION)
 
   virtual bool RunExtensionAction() OVERRIDE;
 
