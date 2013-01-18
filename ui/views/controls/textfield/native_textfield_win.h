@@ -271,6 +271,10 @@ class NativeTextfieldWin
   // Generates the contents of the context menu.
   void BuildContextMenu();
 
+  // Returns true if normal processing of the current mouse press event should
+  // occur.
+  bool ShouldProcessMouseEvent();
+
   static HMODULE loaded_libarary_module_;
 
   // The Textfield this object is bound to.

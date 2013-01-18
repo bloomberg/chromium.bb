@@ -34,6 +34,8 @@ class TextfieldExample : public ExampleBase,
                                const string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(Textfield* sender,
                               const ui::KeyEvent& key_event) OVERRIDE;
+  virtual bool HandleMouseEvent(Textfield* sender,
+                                const ui::MouseEvent& mouse_event) OVERRIDE;
 
   // ButtonListener:
   virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;

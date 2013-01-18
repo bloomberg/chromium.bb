@@ -74,6 +74,12 @@ bool TextfieldExample::HandleKeyEvent(Textfield* sender,
   return false;
 }
 
+bool TextfieldExample::HandleMouseEvent(Textfield* sender,
+                                        const ui::MouseEvent& mouse_event) {
+  PrintStatus("HandleMouseEvent click count=%d", mouse_event.GetClickCount());
+  return false;
+}
+
 void TextfieldExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == show_password_) {
     PrintStatus("Password [%s]", UTF16ToUTF8(password_->text()).c_str());

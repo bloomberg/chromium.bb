@@ -828,6 +828,9 @@ void NativeTextfieldWin::OnLButtonDblClk(UINT keys, const CPoint& point) {
   double_click_point_ = point;
   double_click_time_ = GetCurrentMessage()->time;
 
+  if (!ShouldProcessMouseEvent())
+    return;
+
   ScopedFreeze freeze(this, GetTextObjectModel());
   OnBeforePossibleChange();
   DefWindowProc(WM_LBUTTONDBLCLK, keys,
@@ -843,6 +846,9 @@ void NativeTextfieldWin::OnLButtonDown(UINT keys, const CPoint& point) {
       IsDoubleClick(double_click_point_, point,
                     GetCurrentMessage()->time - double_click_time_);
   tracking_double_click_ = false;
+
+  if (!ShouldProcessMouseEvent())
+    return;
 
   ScopedFreeze freeze(this, GetTextObjectModel());
   OnBeforePossibleChange();
@@ -1016,6 +1022,10 @@ void NativeTextfieldWin::OnNonLButtonDown(UINT keys, const CPoint& point) {
   // x-buttons (which usually means "thumb buttons") are pressed, so we only
   // call this for M and R down.
   tracking_double_click_ = false;
+
+  if (!ShouldProcessMouseEvent())
+    return;
+
   SetMsgHandled(false);
 }
 
@@ -1283,6 +1293,18 @@ void NativeTextfieldWin::BuildContextMenu() {
   context_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
   context_menu_contents_->AddItemWithStringId(IDS_APP_SELECT_ALL,
                                               IDS_APP_SELECT_ALL);
+}
+
+bool NativeTextfieldWin::ShouldProcessMouseEvent() {
+  TextfieldController* controller = textfield_->GetController();
+  if (!controller)
+    return true;
+  MSG msg(*GetCurrentMessage());
+  // ATL doesn't set the |time| field.
+  if (!msg.time)
+    msg.time = GetMessageTime();
+  ui::MouseEvent mouse_event(msg);
+  return !controller->HandleMouseEvent(textfield_, mouse_event);
 }
 
 }  // namespace views
