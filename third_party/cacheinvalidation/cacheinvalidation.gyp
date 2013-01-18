@@ -67,6 +67,8 @@
         'src/google/cacheinvalidation/impl/digest-store.h',
         'src/google/cacheinvalidation/impl/exponential-backoff-delay-generator.cc',
         'src/google/cacheinvalidation/impl/exponential-backoff-delay-generator.h',
+        'src/google/cacheinvalidation/impl/invalidation-client-core.cc',
+        'src/google/cacheinvalidation/impl/invalidation-client-core.h',
         'src/google/cacheinvalidation/impl/invalidation-client-factory.cc',
         'src/google/cacheinvalidation/impl/invalidation-client-impl.cc',
         'src/google/cacheinvalidation/impl/invalidation-client-impl.h',

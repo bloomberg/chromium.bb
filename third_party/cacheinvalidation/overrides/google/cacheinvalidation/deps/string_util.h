@@ -10,8 +10,15 @@
 
 namespace invalidation {
 
-using base::IntToString;
 using base::StringAppendV;
+
+inline std::string SimpleItoa(int v) {
+  return base::IntToString(v);
+}
+
+inline std::string SimpleItoa(int64 v) {
+  return base::Int64ToString(v);
+}
 
 }  // namespace invalidation
 

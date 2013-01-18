@@ -33,7 +33,7 @@ class PushClientChannelTest : public ::testing::Test {
 
   virtual ~PushClientChannelTest() {}
 
-  void OnIncomingMessage(const std::string& incoming_message) {
+  void OnIncomingMessage(std::string incoming_message) {
     last_message_ = incoming_message;
   }
 
