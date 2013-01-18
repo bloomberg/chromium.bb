@@ -543,23 +543,6 @@ HRESULT LaunchChildForUninstall() {
   return S_OK;
 }
 
-HRESULT UninstallPreviousVersion() {
-  base::win::RegKey key;
-  if (key.Open(HKEY_LOCAL_MACHINE, kUninstallRegistry,
-               KEY_QUERY_VALUE) != ERROR_SUCCESS) {
-    // Not installed.
-    return S_OK;
-  }
-  string16 install_path;
-  key.ReadValue(L"InstallLocation", &install_path);
-  FilePath installer_source(install_path);
-  installer_source = installer_source.Append(kInstallerName);
-  if (file_util::PathExists(installer_source)) {
-    return DoLaunchUninstall(installer_source, true);
-  }
-  return S_OK;
-}
-
 HRESULT DoUnregister() {
   return UnregisterVirtualDriver();
 }
@@ -588,9 +571,17 @@ HRESULT DoUninstall() {
 }
 
 HRESULT DoInstall(const FilePath& install_path) {
-  HRESULT result = DoUninstall();
+  HRESULT result = UnregisterVirtualDriver();
   if (FAILED(result)) {
-    LOG(ERROR) << "Unable to uninstall.";
+    LOG(ERROR) << "Unable to unregister.";
+    return result;
+  }
+  FilePath old_install_path;
+  GetCurrentInstallPath(&old_install_path);
+  if (!old_install_path.value().empty() &&
+      install_path != old_install_path) {
+    if (file_util::DirectoryExists(old_install_path))
+      file_util::Delete(old_install_path, true);
   }
   SetupUninstall(install_path);
   result = RegisterVirtualDriver(install_path);
