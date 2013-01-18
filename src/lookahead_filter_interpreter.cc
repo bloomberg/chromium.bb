@@ -36,12 +36,14 @@ LookaheadFilterInterpreter::LookaheadFilterInterpreter(
                                 15.0),
       quick_move_thresh_(prop_reg, "Quick Move Distance Thresh", 3.0),
       co_move_ratio_(prop_reg, "Drumroll Co Move Ratio", 1.2),
-      suppress_immediate_tapdown_(prop_reg, "Suppress Immediate Tapdown", 1) {
+      suppress_immediate_tapdown_(prop_reg, "Suppress Immediate Tapdown", 1),
+      delay_on_possible_liftoff_(prop_reg, "Delay On Possible Liftoff", 0),
+      liftoff_speed_increase_threshold_(prop_reg, "Liftoff Speed Factor", 5.0) {
   InitName();
 }
 
 Gesture* LookaheadFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
-                                                   stime_t* timeout) {
+                                                       stime_t* timeout) {
   // Push back into queue
   if (free_list_.Empty()) {
     Err("Can't accept new hwstate b/c we're out of nodes!");
@@ -283,11 +285,45 @@ void LookaheadFilterInterpreter::AssignTrackingIds() {
     }
     separated_fingers.clear();
   }
-  if (!separated_fingers.empty() || new_finger_present) {
+
+  if (!separated_fingers.empty() || new_finger_present ||
+      (delay_on_possible_liftoff_.val_ && hs && prev_hs && prev2_hs &&
+       LiftoffJumpStarting(*hs, *prev_hs, *prev2_hs))) {
     // Possibly add some extra delay to correct, incase this separation
-    // shouldn't have occurred.
+    // shouldn't have occurred or if the finger may be lifting from the pad.
     tail->due_ += ExtraVariableDelay();
   }
+}
+
+bool LookaheadFilterInterpreter::LiftoffJumpStarting(
+    const HardwareState& hs,
+    const HardwareState& prev_hs,
+    const HardwareState& prev2_hs) const {
+  for (size_t i = 0; i < hs.finger_cnt; i++) {
+    const FingerState* fs = &hs.fingers[i];
+    const FingerState* prev_fs = prev_hs.GetFingerState(fs->tracking_id);
+    if (!prev_fs)
+      continue;
+    if (fs->pressure > prev_fs->pressure) {
+      // Pressure increasing. Likely not liftoff.
+      continue;
+    }
+    const FingerState* prev2_fs = prev2_hs.GetFingerState(fs->tracking_id);
+    if (!prev2_fs)
+      continue;
+
+    float dist_sq_new = DistSq(*fs, *prev_fs);
+    float dist_sq_old = DistSq(*prev_fs, *prev2_fs);
+    float dt_new = hs.timestamp - prev_hs.timestamp;
+    float dt_old = prev_hs.timestamp - prev2_hs.timestamp;
+
+    if (dt_old * dt_old * dist_sq_new >
+        dt_new * dt_new * dist_sq_old *
+        liftoff_speed_increase_threshold_.val_ *
+        liftoff_speed_increase_threshold_.val_)
+      return true;
+  }
+  return false;
 }
 
 Gesture LookaheadFilterInterpreter::TapDownOccurringGesture(stime_t now) const {

@@ -84,6 +84,11 @@ class LookaheadFilterInterpreter : public FilterInterpreter {
   // For drumroll. Edits a QState node's fingerstate to have a new tracking id.
   void SeparateFinger(QState* node, FingerState* fs, short input_id);
 
+  // Looks for a finger possibly lifting off the pad. If found, returns true.
+  bool LiftoffJumpStarting(const HardwareState& hs,
+                           const HardwareState& prev_hs,
+                           const HardwareState& prev2_hs) const;
+
   // Returns a new tracking id for a contact.
   short NextTrackingId();
 
@@ -147,6 +152,11 @@ class LookaheadFilterInterpreter : public FilterInterpreter {
   // Temporary property to turn on/off the generation of TapDown gestures
   // (i.e., stop flinging gestures).
   BoolProperty suppress_immediate_tapdown_;
+  // If we should add extra delay when we think a finger may be lifting off.
+  BoolProperty delay_on_possible_liftoff_;
+  // If looking for a possible liftoff-move, the speed a finger is moving
+  // relative to the previous speed, such that it's a possible leave.
+  DoubleProperty liftoff_speed_increase_threshold_;
 };
 
 }  // namespace gestures
