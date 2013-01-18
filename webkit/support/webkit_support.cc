@@ -171,6 +171,9 @@ class TestEnvironment {
         new TestWebKitPlatformSupport(unit_test_mode,
                                       shadow_platform_delegate));
 
+    // TODO(darin): Uncomment this once DRT calls ResetTestEnvironment().
+    //WebKit::setIDBFactory(webkit_platform_support_->idbFactory());
+
 #if defined(OS_ANDROID)
     // Make sure we have enough decoding resources for layout tests.
     // The current maximum number of media elements in a layout test is 8.
@@ -183,6 +186,13 @@ class TestEnvironment {
 
   ~TestEnvironment() {
     SimpleResourceLoaderBridge::Shutdown();
+  }
+
+  void Reset() {
+#if defined(OS_ANDROID)
+    media_player_manager_->ReleaseMediaResources();
+#endif
+    WebKit::setIDBFactory(webkit_platform_support_->idbFactory());
   }
 
   TestWebKitPlatformSupport* webkit_platform_support() const {
@@ -372,6 +382,10 @@ void TearDownTestEnvironment() {
   test_environment = NULL;
   AfterShutdown();
   logging::CloseLogFile();
+}
+
+void ResetTestEnvironment() {
+  test_environment->Reset();
 }
 
 WebKit::WebKitPlatformSupport* GetWebKitPlatformSupport() {

@@ -65,6 +65,7 @@ void SetUpTestEnvironment(WebKit::Platform* shadow_platform_delegate);
 void SetUpTestEnvironmentForUnitTests(
     WebKit::Platform* shadow_platform_delegate);
 void TearDownTestEnvironment();
+void ResetTestEnvironment();
 
 // Returns a pointer to a WebKitPlatformSupport implementation for
 // DumpRenderTree.  Needs to call SetUpTestEnvironment() before this.
@@ -88,6 +89,7 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
     const WebKit::WebURL& url,
     WebKit::WebMediaPlayerClient* client);
 
+// DEPRECATED: Use ResetTestEnvironment() instead.
 #if defined(OS_ANDROID)
 void ReleaseMediaResources();
 #endif
