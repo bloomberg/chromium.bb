@@ -7300,16 +7300,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Blocked Displaying/Running Insecure Content info bar -->
       <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT" desc="Message shown when a website has asked chrome to display mixed content.  The message is followed by a learn more link and an allow button.">
-        This page has insecure content.
+        This page includes script from unauthenticated sources.
       </message>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_ALLOW_INSECURE_CONTENT_BUTTON" desc="Button to allow insecure content to be displayed">
-          Load Anyway
+          Load unsafe script
         </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_ALLOW_INSECURE_CONTENT_BUTTON" desc="Button to allow insecure content to be displayed">
-          Load anyway
+          Load unsafe script
         </message>
       </if>
       <if expr="not pp_ifdef('android') and pp_ifdef('use_titlecase')">
