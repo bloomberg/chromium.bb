@@ -24,6 +24,9 @@ const char kEnablePartialSwap[]             = "enable-partial-swap";
 
 const char kEnablePerTilePainting[]         = "enable-per-tile-painting";
 
+// Try to finish display pipeline before vsync tick
+const char kEnableRightAlignedScheduling[] = "enable-right-aligned-scheduling";
+
 const char kEnableTopControlsPositionCalculation[] =
     "enable-top-controls-position-calculation";
 

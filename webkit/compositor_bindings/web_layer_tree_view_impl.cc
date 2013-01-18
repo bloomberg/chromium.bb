@@ -42,6 +42,7 @@ bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSetti
     settings.acceleratePainting = webSettings.acceleratePainting;
     settings.renderVSyncEnabled = webSettings.renderVSyncEnabled;
     settings.perTilePaintingEnabled = webSettings.perTilePaintingEnabled;
+    settings.rightAlignedSchedulingEnabled = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnableRightAlignedScheduling);
     settings.acceleratedAnimationEnabled = webSettings.acceleratedAnimationEnabled;
     settings.pageScalePinchZoomEnabled = webSettings.pageScalePinchZoomEnabled;
     settings.refreshRate = webSettings.refreshRate;

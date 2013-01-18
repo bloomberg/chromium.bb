@@ -853,6 +853,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kEnableCompositorFrameMessage,
     cc::switches::kEnableImplSidePainting,
     cc::switches::kEnablePartialSwap,
+    cc::switches::kEnableRightAlignedScheduling,
     cc::switches::kEnableTopControlsPositionCalculation,
     cc::switches::kNumRasterThreads,
     cc::switches::kShowPropertyChangedRects,

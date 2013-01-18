@@ -23,6 +23,7 @@ class CC_EXPORT LayerTreeSettings {
   bool renderVSyncEnabled;
   bool perTilePaintingEnabled;
   bool partialSwapEnabled;
+  bool rightAlignedSchedulingEnabled;
   bool acceleratedAnimationEnabled;
   bool pageScalePinchZoomEnabled;
   bool backgroundColorInsteadOfCheckerboard;
