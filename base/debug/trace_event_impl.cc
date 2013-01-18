@@ -572,9 +572,6 @@ void TraceLog::SetDisabled() {
   for (int i = 0; i < g_category_index; i++)
     g_category_enabled[i] = 0;
   AddThreadNameMetadataEvents();
-#if defined(OS_ANDROID)
-  AddClockSyncMetadataEvents();
-#endif
 }
 
 void TraceLog::SetEnabled(bool enabled) {

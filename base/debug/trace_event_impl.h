@@ -359,7 +359,6 @@ class BASE_EXPORT TraceLog {
                     const char** arg_names,
                     const unsigned char* arg_types,
                     const unsigned long long* arg_values);
-  void AddClockSyncMetadataEvents();
   static void ApplyATraceEnabledFlag(unsigned char* category_enabled);
 #endif
 

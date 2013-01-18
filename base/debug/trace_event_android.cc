@@ -7,8 +7,6 @@
 #include <fcntl.h>
 
 #include "base/debug/trace_event.h"
-#include "base/file_util.h"
-#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
 
@@ -87,51 +85,6 @@ void TraceLog::SendToATrace(char phase,
       // Do nothing.
       break;
   }
-}
-
-void TraceLog::AddClockSyncMetadataEvents() {
-  // Since Android does not support sched_setaffinity, we cannot establish clock
-  // sync unless the scheduler clock is set to global. If the trace_clock file
-  // can't be read, we will assume the kernel doesn't support tracing and do
-  // nothing.
-  std::string clock_mode;
-  if (!file_util::ReadFileToString(
-      FilePath("/sys/kernel/debug/tracing/trace_clock"), &clock_mode))
-    return;
-
-  if (clock_mode != "local [global]\n") {
-    DLOG(WARNING) <<
-        "The kernel's tracing clock must be set to global in order for " <<
-        "trace_event to be synchronized with . Do this by\n" <<
-        "  echo global > /sys/kerel/debug/tracing/trace_clock";
-    return;
-  }
-
-  int atrace_fd = g_atrace_fd;
-  if (atrace_fd == -1) {
-    // This function may be called when atrace is not enabled.
-    atrace_fd = open(kATraceMarkerFile, O_WRONLY | O_APPEND);
-    if (atrace_fd == -1) {
-      LOG(WARNING) << "Couldn't open " << kATraceMarkerFile;
-      return;
-    }
-  }
-
-  // Android's kernel trace system has a trace_marker feature: this is a file on
-  // debugfs that takes the written data and pushes it onto the trace
-  // buffer. So, to establish clock sync, we write our monotonic clock into that
-  // trace buffer.
-  TimeTicks now = TimeTicks::NowFromSystemTraceTime();
-  double now_in_seconds = now.ToInternalValue() / 1000000.0;
-  std::string marker = StringPrintf(
-      "trace_event_clock_sync: parent_ts=%f\n", now_in_seconds);
-  if (write(atrace_fd, marker.c_str(), marker.size()) != 0) {
-    DLOG(WARNING) << "Couldn't write to " << kATraceMarkerFile << ": "
-                  << strerror(errno);
-  }
-
-  if (g_atrace_fd == -1)
-    close(atrace_fd);
 }
 
 // Must be called with lock_ locked.
