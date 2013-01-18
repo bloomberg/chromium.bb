@@ -60,8 +60,17 @@ class IdlSchemaTest(unittest.TestCase):
     self.assertEquals({
         'x': {'name': 'x', 'type': 'integer', 'enum': [1,2],
               'description': 'This comment tests "double-quotes".'},
-        'y': {'name': 'y', 'type': 'string'}},
+        'y': {'name': 'y', 'type': 'string'},
+        'z': {'name': 'z', 'type': 'string'},
+        'a': {'name': 'a', 'type': 'string'},
+        'b': {'name': 'b', 'type': 'string'},
+        'c': {'name': 'c', 'type': 'string'}},
       getType(self.idl_basics, 'MyType1')['properties'])
+
+  def testMemberOrdering(self):
+    self.assertEquals(
+        ['x', 'y', 'z', 'a', 'b', 'c'],
+        getType(self.idl_basics, 'MyType1')['properties'].keys())
 
   def testEnum(self):
     schema = self.idl_basics

@@ -9,6 +9,7 @@ import os.path
 import re
 import sys
 
+from json_parse import OrderedDict
 import schema_util
 
 # This file is a peer to json_schema.py. Each of these files understands a
@@ -70,7 +71,7 @@ def ProcessComment(comment):
   parent_comment = (parent_comment.strip().replace('\n\n', '<br/><br/>')
                                           .replace('\n', ''))
 
-  params = {}
+  params = OrderedDict()
   for (cur_param, next_param) in itertools.izip_longest(parameter_starts,
                                                         parameter_starts[1:]):
     param_name = cur_param.group(1)
@@ -124,7 +125,7 @@ class Dictionary(object):
     self.node = dictionary_node
 
   def process(self, callbacks):
-    properties = {}
+    properties = OrderedDict()
     for node in self.node.children:
       if node.cls == 'Member':
         k, v = Member(node).process(callbacks)
@@ -147,13 +148,13 @@ class Member(object):
     self.node = member_node
 
   def process(self, callbacks):
-    properties = {}
+    properties = OrderedDict()
     name = self.node.GetName()
     for property_name in ('OPTIONAL', 'nodoc', 'nocompile'):
       if self.node.GetProperty(property_name):
         properties[property_name.lower()] = True
     is_function = False
-    parameter_comments = {}
+    parameter_comments = OrderedDict()
     for node in self.node.children:
       if node.cls == 'Comment':
         (parent_comment, parameter_comments) = ProcessComment(node.GetName())
@@ -183,7 +184,7 @@ class Typeref(object):
   function parameter, converts into a Python dictionary that the JSON schema
   compiler expects to see.
   '''
-  def __init__(self, typeref, parent, additional_properties={}):
+  def __init__(self, typeref, parent, additional_properties=OrderedDict()):
     self.typeref = typeref
     self.parent = parent
     self.additional_properties = additional_properties
@@ -200,7 +201,7 @@ class Typeref(object):
     for sibling in self.parent.GetChildren():
       if sibling.cls == 'Array' and sibling.GetName() == self.parent.GetName():
         properties['type'] = 'array'
-        properties['items'] = {}
+        properties['items'] = OrderedDict()
         properties = properties['items']
         break
 
@@ -217,7 +218,7 @@ class Typeref(object):
     elif self.typeref == 'object':
       properties['type'] = 'object'
       if 'additionalProperties' not in properties:
-        properties['additionalProperties'] = {}
+        properties['additionalProperties'] = OrderedDict()
       properties['additionalProperties']['type'] = 'any'
       instance_of = self.parent.GetProperty('instanceOf')
       if instance_of:
@@ -283,7 +284,7 @@ class Namespace(object):
     self.events = []
     self.functions = []
     self.types = []
-    self.callbacks = {}
+    self.callbacks = OrderedDict()
     self.permissions = permissions or []
 
   def process(self):

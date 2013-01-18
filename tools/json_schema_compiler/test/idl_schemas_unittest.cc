@@ -46,6 +46,10 @@ TEST(IdlCompiler, Basics) {
   DictionaryValue* tmp = new DictionaryValue();
   tmp->SetInteger("x", 17);
   tmp->SetString("y", "hello");
+  tmp->SetString("z", "zstring");
+  tmp->SetString("a", "astring");
+  tmp->SetString("b", "bstring");
+  tmp->SetString("c", "cstring");
   list.Append(tmp);
   scoped_ptr<Function3::Params> f3_params = Function3::Params::Create(list);
   EXPECT_EQ(17, f3_params->arg.x);
@@ -101,6 +105,10 @@ TEST(IdlCompiler, OptionalArguments) {
   DictionaryValue* tmp = new DictionaryValue();
   tmp->SetInteger("x", 17);
   tmp->SetString("y", "hello");
+  tmp->SetString("z", "zstring");
+  tmp->SetString("a", "astring");
+  tmp->SetString("b", "bstring");
+  tmp->SetString("c", "cstring");
   list.Append(tmp);
   f9_params = Function9::Params::Create(list);
   ASSERT_TRUE(f9_params->arg.get() != NULL);
