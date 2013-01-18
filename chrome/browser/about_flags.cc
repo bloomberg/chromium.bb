@@ -789,13 +789,6 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kTouchOptimizedUIChoices)
   },
   {
-    "enable-scaling-in-image-skia-operations",
-    IDS_FLAGS_ENABLE_SCALING_IN_IMAGE_SKIA_OPERATIONS_NAME,
-    IDS_FLAGS_ENABLE_SCALING_IN_IMAGE_SKIA_OPERATIONS_DESCRIPTION,
-    kOsCrOS | kOsWin,
-    SINGLE_VALUE_TYPE(gfx::switches::kEnableScalingInImageSkiaOperations)
-  },
-  {
     "enable-webkit-text-subpixel-positioning",
     IDS_FLAGS_ENABLE_WEBKIT_TEXT_SUBPIXEL_POSITIONING_NAME,
     IDS_FLAGS_ENABLE_WEBKIT_TEXT_SUBPIXEL_POSITIONING_DESCRIPTION,
