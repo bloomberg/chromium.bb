@@ -12,4 +12,8 @@ bool FakeLayerTreeHostImplClient::reduceContentsTextureMemoryOnImplThread(
   return false;
 }
 
+bool FakeLayerTreeHostImplClient::isInsideDraw() {
+  return false;
+}
+
 }  // namespace cc

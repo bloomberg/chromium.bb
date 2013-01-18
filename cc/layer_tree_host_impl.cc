@@ -473,9 +473,6 @@ bool LayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
     // in the future.
     bool drawFrame = true;
 
-    // Make sure we have the most recent info regarding which textures have been uploaded.
-    checkForCompletedSetPixels();
-
     LayerIteratorType end = LayerIteratorType::end(frame.renderSurfaceLayerList);
     for (LayerIteratorType it = LayerIteratorType::begin(frame.renderSurfaceLayerList); it != end; ++it) {
         RenderPass::Id targetRenderPassId = it.targetRenderSurfaceLayer()->renderSurface()->renderPassId();
@@ -725,6 +722,12 @@ void LayerTreeHostImpl::ScheduleManageTiles()
       m_client->setNeedsManageTilesOnImplThread();
 }
 
+void LayerTreeHostImpl::DidUploadVisibleHighResolutionTile()
+{
+    if (m_client)
+        m_client->didUploadVisibleHighResolutionTileOnImplTread();
+}
+
 bool LayerTreeHostImpl::shouldClearRootRenderPass() const
 {
     return m_settings.shouldClearRootRenderPass;
@@ -851,7 +854,14 @@ const RendererCapabilities& LayerTreeHostImpl::rendererCapabilities() const
 bool LayerTreeHostImpl::swapBuffers()
 {
     DCHECK(m_renderer);
-    return m_renderer->swapBuffers();
+    bool result = m_renderer->swapBuffers();
+
+    if (m_settings.implSidePainting &&
+        !activeTree()->AreVisibleResourcesReady()) {
+        m_client->didSwapUseIncompleteTextureOnImplThread();
+    }
+
+    return result;
 }
 
 const gfx::Size& LayerTreeHostImpl::deviceViewportSize() const
@@ -925,18 +935,17 @@ void LayerTreeHostImpl::createPendingTree()
     m_client->onHasPendingTreeStateChanged(pendingTree());
 }
 
-void LayerTreeHostImpl::checkForCompletedSetPixels()
+void LayerTreeHostImpl::checkForCompletedTextures()
 {
+    DCHECK(!m_client->isInsideDraw()) << "Checking for completed textures within a draw may trigger spurious redraws.";
     if (m_tileManager)
-        m_tileManager->CheckForCompletedSetPixels();
+        m_tileManager->CheckForCompletedTextures();
 }
 
 void LayerTreeHostImpl::activatePendingTreeIfNeeded()
 {
     if (!pendingTree())
         return;
-
-    checkForCompletedSetPixels();
 
     // It's always fine to activate to an empty tree.  Otherwise, only
     // activate once all visible resources in pending tree are ready.

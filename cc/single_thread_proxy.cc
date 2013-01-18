@@ -4,6 +4,7 @@
 
 #include "cc/single_thread_proxy.h"
 
+#include "base/auto_reset.h"
 #include "base/debug/trace_event.h"
 #include "cc/draw_quad.h"
 #include "cc/layer_tree_host.h"
@@ -26,6 +27,7 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layerTreeHost)
     , m_outputSurfaceLost(false)
     , m_rendererInitialized(false)
     , m_nextFrameIsNewlyCommittedFrame(false)
+    , m_insideDraw(false)
     , m_totalCommitCount(0)
 {
     TRACE_EVENT0("cc", "SingleThreadProxy::SingleThreadProxy");
@@ -270,6 +272,18 @@ void SingleThreadProxy::setNeedsRedrawOnImplThread()
     m_layerTreeHost->scheduleComposite();
 }
 
+void SingleThreadProxy::didSwapUseIncompleteTextureOnImplThread()
+{
+    // implSidePainting only.
+    NOTREACHED();
+}
+
+void SingleThreadProxy::didUploadVisibleHighResolutionTileOnImplTread()
+{
+    // implSidePainting only.
+    NOTREACHED();
+}
+
 void SingleThreadProxy::setNeedsCommitOnImplThread()
 {
     m_layerTreeHost->scheduleComposite();
@@ -308,6 +322,11 @@ void SingleThreadProxy::sendManagedMemoryStats()
         m_layerTreeHost->contentsTextureManager()->memoryVisibleBytes(),
         m_layerTreeHost->contentsTextureManager()->memoryVisibleAndNearbyBytes(),
         m_layerTreeHost->contentsTextureManager()->memoryUseBytes());
+}
+
+bool SingleThreadProxy::isInsideDraw()
+{
+    return m_insideDraw;
 }
 
 // Called by the legacy scheduling path (e.g. where render_widget does the scheduling)
@@ -357,6 +376,7 @@ bool SingleThreadProxy::doComposite()
     DCHECK(!m_outputSurfaceLost);
     {
         DebugScopedSetImplThread impl(this);
+        base::AutoReset<bool> markInside(&m_insideDraw, true);
 
         if (!m_layerTreeHostImpl->visible())
             return false;

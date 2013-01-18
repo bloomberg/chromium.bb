@@ -50,12 +50,15 @@ public:
     virtual void onCanDrawStateChanged(bool canDraw) = 0;
     virtual void onHasPendingTreeStateChanged(bool hasPendingTree) = 0;
     virtual void setNeedsRedrawOnImplThread() = 0;
+    virtual void didSwapUseIncompleteTextureOnImplThread() = 0;
+    virtual void didUploadVisibleHighResolutionTileOnImplTread() = 0;
     virtual void setNeedsCommitOnImplThread() = 0;
     virtual void setNeedsManageTilesOnImplThread() = 0;
     virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) = 0;
     // Returns true if resources were deleted by this call.
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) = 0;
     virtual void sendManagedMemoryStats() = 0;
+    virtual bool isInsideDraw() = 0;
 };
 
 // LayerTreeHostImpl owns the LayerImpl tree as well as associated rendering state
@@ -131,6 +134,7 @@ public:
 
     // TileManagerClient implementation.
     virtual void ScheduleManageTiles() OVERRIDE;
+    virtual void DidUploadVisibleHighResolutionTile() OVERRIDE;
 
     // OutputSurfaceClient implementation.
     virtual void OnVSyncParametersChanged(base::TimeTicks timebase, base::TimeDelta interval) OVERRIDE;
@@ -163,7 +167,7 @@ public:
     LayerTreeImpl* pendingTree() { return m_pendingTree.get(); }
     const LayerTreeImpl* pendingTree() const { return m_pendingTree.get(); }
     void createPendingTree();
-    void checkForCompletedSetPixels();
+    void checkForCompletedTextures();
     virtual void activatePendingTreeIfNeeded();
 
     // Shortcuts to layers on the active tree.

@@ -72,6 +72,12 @@ void Scheduler::setNeedsRedraw()
     processScheduledActions();
 }
 
+void Scheduler::didSwapUseIncompleteTexture()
+{
+    m_stateMachine.didSwapUseIncompleteTexture();
+    processScheduledActions();
+}
+
 void Scheduler::setNeedsForcedRedraw()
 {
     m_stateMachine.setNeedsForcedRedraw();
@@ -176,6 +182,9 @@ void Scheduler::processScheduledActions()
             break;
         case SchedulerStateMachine::ACTION_COMMIT:
             m_client->scheduledActionCommit();
+            break;
+        case SchedulerStateMachine::ACTION_CHECK_FOR_NEW_TEXTURES:
+            m_client->scheduledActionCheckForCompletedTextures();
             break;
         case SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED:
             m_client->scheduledActionActivatePendingTreeIfNeeded();

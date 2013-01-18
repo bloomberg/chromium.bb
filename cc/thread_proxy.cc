@@ -4,6 +4,7 @@
 
 #include "cc/thread_proxy.h"
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "cc/delay_based_time_source.h"
@@ -53,6 +54,7 @@ ThreadProxy::ThreadProxy(LayerTreeHost* layerTreeHost, scoped_ptr<Thread> implTh
     , m_textureAcquisitionCompletionEventOnImplThread(0)
     , m_nextFrameIsNewlyCommittedFrameOnImplThread(false)
     , m_renderVSyncEnabled(layerTreeHost->settings().renderVSyncEnabled)
+    , m_insideDraw(false)
     , m_totalCommitCount(0)
     , m_deferCommits(false)
 {
@@ -405,6 +407,11 @@ void ThreadProxy::sendManagedMemoryStats()
         m_layerTreeHost->contentsTextureManager()->memoryUseBytes());
 }
 
+bool ThreadProxy::isInsideDraw()
+{
+    return m_insideDraw;
+}
+
 void ThreadProxy::setNeedsRedraw()
 {
     DCHECK(isMainThread());
@@ -439,6 +446,20 @@ void ThreadProxy::setNeedsRedrawOnImplThread()
     DCHECK(isImplThread());
     TRACE_EVENT0("cc", "ThreadProxy::setNeedsRedrawOnImplThread");
     m_schedulerOnImplThread->setNeedsRedraw();
+}
+
+void ThreadProxy::didSwapUseIncompleteTextureOnImplThread()
+{
+   DCHECK(isImplThread());
+   TRACE_EVENT0("cc", "ThreadProxy::didSwapUseIncompleteTextureOnImplThread");
+   m_schedulerOnImplThread->didSwapUseIncompleteTexture();
+}
+
+void ThreadProxy::didUploadVisibleHighResolutionTileOnImplTread()
+{
+   DCHECK(isImplThread());
+   TRACE_EVENT0("cc", "ThreadProxy::didUploadVisibleHighResolutionTileOnImplTread");
+   m_schedulerOnImplThread->setNeedsRedraw();
 }
 
 void ThreadProxy::mainThreadHasStoppedFlinging()
@@ -729,8 +750,17 @@ void ThreadProxy::scheduledActionCommit()
     m_schedulerOnImplThread->setVisible(m_layerTreeHostImpl->visible());
 }
 
+void ThreadProxy::scheduledActionCheckForCompletedTextures()
+{
+    DCHECK(isImplThread());
+    TRACE_EVENT0("cc", "ThreadProxy::scheduledActionCheckForCompletedTextures");
+    m_layerTreeHostImpl->checkForCompletedTextures();
+}
+
 void ThreadProxy::scheduledActionActivatePendingTreeIfNeeded()
 {
+    DCHECK(isImplThread());
+    TRACE_EVENT0("cc", "ThreadProxy::scheduledActionActivatePendingTreeIfNeeded");
     m_layerTreeHostImpl->activatePendingTreeIfNeeded();
 }
 
@@ -743,6 +773,9 @@ void ThreadProxy::scheduledActionBeginContextRecreation()
 ScheduledActionDrawAndSwapResult ThreadProxy::scheduledActionDrawAndSwapInternal(bool forcedDraw)
 {
     TRACE_EVENT0("cc", "ThreadProxy::scheduledActionDrawAndSwap");
+
+    base::AutoReset<bool> markInside(&m_insideDraw, true);
+
     ScheduledActionDrawAndSwapResult result;
     result.didDraw = false;
     result.didSwap = false;

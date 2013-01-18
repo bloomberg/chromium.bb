@@ -63,17 +63,21 @@ public:
     virtual void onCanDrawStateChanged(bool canDraw) OVERRIDE;
     virtual void onHasPendingTreeStateChanged(bool hasPendingTree) OVERRIDE;
     virtual void setNeedsRedrawOnImplThread() OVERRIDE;
+    virtual void didSwapUseIncompleteTextureOnImplThread() OVERRIDE;
+    virtual void didUploadVisibleHighResolutionTileOnImplTread() OVERRIDE;
     virtual void setNeedsCommitOnImplThread() OVERRIDE;
     virtual void setNeedsManageTilesOnImplThread() OVERRIDE;
     virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) OVERRIDE;
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE;
     virtual void sendManagedMemoryStats() OVERRIDE;
+    virtual bool isInsideDraw() OVERRIDE;
 
     // SchedulerClient implementation
     virtual void scheduledActionBeginFrame() OVERRIDE;
     virtual ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() OVERRIDE;
     virtual ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced() OVERRIDE;
     virtual void scheduledActionCommit() OVERRIDE;
+    virtual void scheduledActionCheckForCompletedTextures() OVERRIDE;
     virtual void scheduledActionActivatePendingTreeIfNeeded() OVERRIDE;
     virtual void scheduledActionBeginContextRecreation() OVERRIDE;
     virtual void scheduledActionAcquireLayerTexturesForMainThread() OVERRIDE;
@@ -190,6 +194,8 @@ private:
     bool m_nextFrameIsNewlyCommittedFrameOnImplThread;
 
     bool m_renderVSyncEnabled;
+
+    bool m_insideDraw;
 
     base::TimeDelta m_totalCommitTime;
     size_t m_totalCommitCount;

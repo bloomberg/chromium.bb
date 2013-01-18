@@ -67,6 +67,8 @@ public:
         , m_hasPendingTree(false)
         , m_didRequestCommit(false)
         , m_didRequestRedraw(false)
+        , m_didSwapUseIncompleteTexture(false)
+        , m_didUploadVisibleHighResolutionTile(false)
         , m_reduceMemoryResult(true)
     {
         media::InitializeMediaLibraryForTesting();
@@ -93,11 +95,14 @@ public:
     virtual void onCanDrawStateChanged(bool canDraw) OVERRIDE { m_onCanDrawStateChangedCalled = true; }
     virtual void onHasPendingTreeStateChanged(bool hasPendingTree) OVERRIDE { m_hasPendingTree = hasPendingTree; }
     virtual void setNeedsRedrawOnImplThread() OVERRIDE { m_didRequestRedraw = true; }
+    virtual void didSwapUseIncompleteTextureOnImplThread() OVERRIDE { m_didSwapUseIncompleteTexture = true; }
+    virtual void didUploadVisibleHighResolutionTileOnImplTread() OVERRIDE { m_didUploadVisibleHighResolutionTile = true; }
     virtual void setNeedsCommitOnImplThread() OVERRIDE { m_didRequestCommit = true; }
     virtual void setNeedsManageTilesOnImplThread() OVERRIDE { }
     virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, base::Time wallClockTime) OVERRIDE { }
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE { return m_reduceMemoryResult; }
     virtual void sendManagedMemoryStats() OVERRIDE { }
+    virtual bool isInsideDraw() OVERRIDE { return false; }
 
     void setReduceMemoryResult(bool reduceMemoryResult) { m_reduceMemoryResult = reduceMemoryResult; }
 
@@ -223,6 +228,8 @@ protected:
     bool m_hasPendingTree;
     bool m_didRequestCommit;
     bool m_didRequestRedraw;
+    bool m_didSwapUseIncompleteTexture;
+    bool m_didUploadVisibleHighResolutionTile;
     bool m_reduceMemoryResult;
 };
 

@@ -20,6 +20,8 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   virtual void onCanDrawStateChanged(bool) OVERRIDE { }
   virtual void onHasPendingTreeStateChanged(bool) OVERRIDE { }
   virtual void setNeedsRedrawOnImplThread() OVERRIDE { }
+  virtual void didSwapUseIncompleteTextureOnImplThread() OVERRIDE { }
+  virtual void didUploadVisibleHighResolutionTileOnImplTread() OVERRIDE { }
   virtual void setNeedsCommitOnImplThread() OVERRIDE { }
   virtual void setNeedsManageTilesOnImplThread() OVERRIDE { }
   virtual void postAnimationEventsToMainThreadOnImplThread(
@@ -27,6 +29,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
       base::Time) OVERRIDE { }
   virtual bool reduceContentsTextureMemoryOnImplThread(size_t, int) OVERRIDE;
   virtual void sendManagedMemoryStats() OVERRIDE { }
+  virtual bool isInsideDraw() OVERRIDE;
 };
 
 }  // namespace cc

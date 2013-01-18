@@ -89,7 +89,7 @@ TileManager::~TileManager() {
   // This should finish all pending tasks and release any uninitialized
   // resources.
   raster_worker_pool_.reset();
-  CheckForCompletedSetPixels();
+  CheckForCompletedTextures();
   DCHECK(tiles_with_pending_set_pixels_.size() == 0);
   DCHECK(tiles_.size() == 0);
 }
@@ -237,7 +237,7 @@ void TileManager::ManageTiles() {
   DispatchMoreTasks();
 }
 
-void TileManager::CheckForCompletedSetPixels() {
+void TileManager::CheckForCompletedTextures() {
   while (!tiles_with_pending_set_pixels_.empty()) {
     Tile* tile = tiles_with_pending_set_pixels_.front();
     DCHECK(tile->managed_state().resource);
@@ -247,6 +247,10 @@ void TileManager::CheckForCompletedSetPixels() {
           tile->managed_state().resource->id())) {
       break;
     }
+
+    if (tile->priority(ACTIVE_TREE).distance_to_visible_in_pixels == 0 &&
+        tile->priority(ACTIVE_TREE).resolution == HIGH_RESOLUTION)
+      client_->DidUploadVisibleHighResolutionTile();
 
     // It's now safe to release the pixel buffer.
     resource_pool_->resource_provider()->releasePixelBuffer(

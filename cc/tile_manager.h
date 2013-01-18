@@ -25,6 +25,7 @@ class TileVersion;
 class CC_EXPORT TileManagerClient {
  public:
   virtual void ScheduleManageTiles() = 0;
+  virtual void DidUploadVisibleHighResolutionTile() = 0;
 
  protected:
   virtual ~TileManagerClient() {}
@@ -82,7 +83,7 @@ class CC_EXPORT TileManager {
   void SetGlobalState(const GlobalStateThatImpactsTilePriority& state);
 
   void ManageTiles();
-  void CheckForCompletedSetPixels();
+  void CheckForCompletedTextures();
   void GetMemoryStats(size_t* memoryRequiredBytes,
                       size_t* memoryNiceToHaveBytes,
                       size_t* memoryUsedBytes);
