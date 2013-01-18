@@ -233,9 +233,13 @@ void ChromeTestSuite::Initialize() {
   // output, it'll pass regardless of the system language.
   ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
   FilePath resources_pack_path;
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   PathService::Get(base::DIR_MODULE, &resources_pack_path);
   resources_pack_path =
       resources_pack_path.Append(FILE_PATH_LITERAL("resources.pak"));
+#else
+  PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
+#endif
   ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       resources_pack_path, ui::SCALE_FACTOR_NONE);
 
