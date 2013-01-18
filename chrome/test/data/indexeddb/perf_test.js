@@ -32,6 +32,8 @@ var tests = [
   [testCreateKeysInStores, 1,     1000,  1],
 // Create many large items in a single object store.
   [testCreateKeysInStores, 1000,   1,    10000],
+// Read one item per transaction.
+  [testRandomReadsAndWrites, 1000, 1, 0, 1000, kDontUseIndex],
 // Read a few random items in each of many transactions.
   [testRandomReadsAndWrites, 1000,  5,    0,  100, kDontUseIndex],
 // Read many random items in each of a few transactions.

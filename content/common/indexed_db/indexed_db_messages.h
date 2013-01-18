@@ -66,6 +66,20 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryDeleteDatabase_Params)
   IPC_STRUCT_MEMBER(string16, name)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCreateTransaction_Params)
+  IPC_STRUCT_MEMBER(int32, ipc_thread_id)
+  // The database the object store belongs to.
+  IPC_STRUCT_MEMBER(int32, ipc_database_id)
+  // The transaction id as minted by the frontend.
+  IPC_STRUCT_MEMBER(int64, transaction_id)
+  // To get to WebIDBDatabaseCallbacks.
+  IPC_STRUCT_MEMBER(int32, ipc_database_response_id)
+  // The scope of the transaction.
+  IPC_STRUCT_MEMBER(std::vector<int64>, object_store_ids)
+  // The transaction mode.
+  IPC_STRUCT_MEMBER(int32, mode)
+IPC_STRUCT_END()
+
 // Used to create an object store.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCreateObjectStore_Params)
   // The database the object store belongs to.
@@ -411,6 +425,17 @@ IPC_MESSAGE_CONTROL4(IndexedDBMsg_DatabaseCallbacksIntVersionChange,
                      int32, /* ipc_database_id */
                      int64, /* old_version */
                      int64) /* new_version */
+// IDBTransactionCallback message handlers.
+IPC_MESSAGE_CONTROL5(IndexedDBMsg_DatabaseCallbacksAbort,
+                     int32, /* ipc_thread_id */
+                     int32, /* ipc_database_id */
+                     int64, /* transaction_id */
+                     int, /* code */
+                     string16) /* message */
+IPC_MESSAGE_CONTROL3(IndexedDBMsg_DatabaseCallbacksComplete,
+                     int32, /* ipc_thread_id */
+                     int32, /* ipc_database_id */
+                     int64) /* transaction_id */
 
 // Indexed DB messages sent from the renderer to the browser.
 
@@ -503,13 +528,17 @@ IPC_MESSAGE_CONTROL3(IndexedDBHostMsg_DatabaseDeleteObjectStore,
 
 // WebIDBDatabase::createTransaction() message.
 // TODO: make this message async.
-IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_DatabaseCreateTransaction,
+IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_DatabaseCreateTransactionOld,
                             int32, /* ipc_thread_id */
                             int32, /* ipc_database_id */
                             int64, /* transaction_id */
                             std::vector<int64>, /* object_stores */
                             int32, /* mode */
                             int32) /* ipc_transaction_id */
+
+
+IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseCreateTransaction,
+                     IndexedDBHostMsg_DatabaseCreateTransaction_Params)
 
 // WebIDBDatabase::close() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseClose,
@@ -568,6 +597,16 @@ IPC_MESSAGE_CONTROL4(IndexedDBHostMsg_DatabaseDeleteIndex,
                      int64, /* transaction_id */
                      int64, /* object_store_id */
                      int64) /* index_id */
+
+// WebIDBDatabase::abort() message.
+IPC_MESSAGE_CONTROL2(IndexedDBHostMsg_DatabaseAbort,
+                     int32, /* ipc_database_id */
+                     int64) /* transaction_id */
+
+// WebIDBDatabase::commit() message.
+IPC_MESSAGE_CONTROL2(IndexedDBHostMsg_DatabaseCommit,
+                     int32, /* ipc_database_id */
+                     int64) /* transaction_id */
 
 // WebIDBIndex::openObjectCursor() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_IndexOpenObjectCursor,

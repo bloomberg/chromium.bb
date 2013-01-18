@@ -37,6 +37,11 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
       long long transaction_id,
       const WebKit::WebVector<long long>& scope,
       unsigned short mode);
+  virtual void createTransaction(
+      long long transaction_id,
+      WebKit::WebIDBDatabaseCallbacks* callbacks,
+      const WebKit::WebVector<long long>& scope,
+      unsigned short mode);
   virtual void close();
   virtual void get(long long transactionId,
                    long long objectStoreId,
@@ -90,6 +95,9 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
   virtual void deleteIndex(long long transactionId, long
                            long objectStoreId,
                            long long indexId);
+  virtual void abort(long long transaction_id);
+  virtual void commit(long long transaction_id);
+
  private:
   int32 ipc_database_id_;
 };

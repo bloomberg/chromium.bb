@@ -24,6 +24,10 @@ class IndexedDBDatabaseCallbacks : public WebKit::WebIDBDatabaseCallbacks {
                                long long new_version);
   virtual void onVersionChange(const WebKit::WebString& requested_version);
 
+  virtual void onAbort(long long host_transaction_id,
+                       const WebKit::WebIDBDatabaseError&);
+  virtual void onComplete(long long host_transaction_id);
+
  private:
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
   int ipc_thread_id_;

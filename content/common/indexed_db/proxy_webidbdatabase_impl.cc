@@ -129,13 +129,28 @@ WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::createTransaction(
       object_stores.push_back(object_store_ids[i]);
 
   int ipc_transaction_id;
-  IndexedDBDispatcher::Send(new IndexedDBHostMsg_DatabaseCreateTransaction(
+  IndexedDBDispatcher::Send(new IndexedDBHostMsg_DatabaseCreateTransactionOld(
       WorkerTaskRunner::Instance()->CurrentWorkerId(),
       ipc_database_id_, transaction_id, object_stores, mode,
       &ipc_transaction_id));
   if (!transaction_id)
     return NULL;
   return new RendererWebIDBTransactionImpl(ipc_transaction_id);
+}
+
+void RendererWebIDBDatabaseImpl::createTransaction(
+    long long transaction_id,
+    WebKit::WebIDBDatabaseCallbacks* callbacks,
+    const WebVector<long long>& object_store_ids,
+    unsigned short mode)
+{
+  IndexedDBDispatcher* dispatcher =
+      IndexedDBDispatcher::ThreadSpecificInstance();
+  dispatcher->RequestIDBDatabaseCreateTransaction(ipc_database_id_,
+                                                  transaction_id,
+                                                  callbacks,
+                                                  object_store_ids,
+                                                  mode);
 }
 
 void RendererWebIDBDatabaseImpl::close() {
@@ -301,4 +316,15 @@ void RendererWebIDBDatabaseImpl::deleteIndex(
           transaction_id,
           object_store_id, index_id));
 }
+
+void RendererWebIDBDatabaseImpl::abort(long long transaction_id) {
+  IndexedDBDispatcher::Send(new IndexedDBHostMsg_DatabaseAbort(
+      ipc_database_id_, transaction_id));
+}
+
+void RendererWebIDBDatabaseImpl::commit(long long transaction_id) {
+  IndexedDBDispatcher::Send(new IndexedDBHostMsg_DatabaseCommit(
+      ipc_database_id_, transaction_id));
+}
+
 }  // namespace content

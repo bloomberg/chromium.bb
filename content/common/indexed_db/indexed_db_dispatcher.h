@@ -116,6 +116,13 @@ class CONTENT_EXPORT IndexedDBDispatcher
   void RequestIDBDatabaseClose(
       int32 ipc_database_id);
 
+  void RequestIDBDatabaseCreateTransaction(
+      int32 ipc_database_id,
+      int64 transaction_id,
+      WebKit::WebIDBDatabaseCallbacks* database_callbacks_ptr,
+      WebKit::WebVector<long long> object_store_ids,
+      unsigned short mode);
+
   void RequestIDBDatabaseGet(
       int32 ipc_database_id,
       int64 transaction_id,
@@ -237,11 +244,19 @@ class CONTENT_EXPORT IndexedDBDispatcher
                        int32 ipc_transaction_id,
                        int32 ipc_database_id,
                        int64 old_version);
+  void OnAbortOld(int32 ipc_thread_id,
+                  int32 ipc_transaction_id,
+                  int code,
+                  const string16& message);
   void OnAbort(int32 ipc_thread_id,
-               int32 ipc_transaction_id,
+               int32 ipc_database_id,
+               int64 transaction_id,
                int code,
                const string16& message);
-  void OnComplete(int32 ipc_thread_id, int32 ipc_transaction_id);
+  void OnCompleteOld(int32 ipc_thread_id, int32 ipc_transaction_id);
+  void OnComplete(int32 ipc_thread_id,
+                  int32 ipc_database_id,
+                  int64 transaction_id);
   void OnForcedClose(int32 ipc_thread_id, int32 ipc_database_id);
   void OnVersionChange(int32 ipc_thread_id,
                        int32 ipc_database_id,

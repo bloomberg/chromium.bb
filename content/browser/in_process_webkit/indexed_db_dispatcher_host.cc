@@ -164,8 +164,17 @@ int32 IndexedDBDispatcherHost::Add(WebIDBTransaction* idb_transaction,
   int32 id = transaction_dispatcher_host_->map_.Add(idb_transaction);
   idb_transaction->setCallbacks(
       new IndexedDBTransactionCallbacks(this, ipc_thread_id, id));
-  transaction_dispatcher_host_->transaction_url_map_[id] = url;
+  transaction_dispatcher_host_->old_transaction_url_map_[id] = url;
   return id;
+}
+
+void IndexedDBDispatcherHost::RegisterTransactionId(
+    int64 host_transaction_id,
+    const GURL& url)
+{
+  if (!database_dispatcher_host_)
+    return;
+  database_dispatcher_host_->transaction_url_map_[host_transaction_id] = url;
 }
 
 int64 IndexedDBDispatcherHost::HostTransactionId(int64 transaction_id) {
@@ -179,6 +188,13 @@ int64 IndexedDBDispatcherHost::HostTransactionId(int64 transaction_id) {
                  Process_ID_must_fit_in_32_bits);
 
   return transaction_id | (static_cast<uint64>(pid) << 32);
+}
+
+int64 IndexedDBDispatcherHost::RendererTransactionId(
+    int64 host_transaction_id) {
+  DCHECK(host_transaction_id >> 32 == base::GetProcId(peer_handle())) <<
+      "Invalid renderer target for transaction id";
+  return host_transaction_id & 0xffffffff;
 }
 
 WebIDBCursor* IndexedDBDispatcherHost::GetCursorFromId(int32 ipc_cursor_id) {
@@ -211,16 +227,18 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
 
-  int64 transaction_id = HostTransactionId(params.transaction_id);
+  int64 host_transaction_id = HostTransactionId(params.transaction_id);
 
   // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
   // created) if this origin is already over quota.
   Context()->GetIDBFactory()->open(
       params.name,
       params.version,
-      transaction_id,
+      host_transaction_id,
       new IndexedDBCallbacksDatabase(this, params.ipc_thread_id,
-                                     params.ipc_response_id, origin_url),
+                                     params.ipc_response_id,
+                                     host_transaction_id,
+                                     origin_url),
       new IndexedDBDatabaseCallbacks(this, params.ipc_thread_id,
                                      params.ipc_database_response_id),
       origin, NULL, webkit_base::FilePathToWebString(indexed_db_path));
@@ -242,7 +260,13 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
 
 void IndexedDBDispatcherHost::TransactionComplete(int32 ipc_transaction_id) {
   Context()->TransactionComplete(
-      transaction_dispatcher_host_->transaction_url_map_[ipc_transaction_id]);
+      transaction_dispatcher_host_->
+        old_transaction_url_map_[ipc_transaction_id]);
+}
+
+void IndexedDBDispatcherHost::TransactionIdComplete(int64 host_transaction_id) {
+  Context()->TransactionComplete(
+      database_dispatcher_host_->transaction_url_map_[host_transaction_id]);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -304,6 +328,8 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
                         OnDeleteObjectStore)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateTransaction,
                         OnCreateTransaction)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCreateTransactionOld,
+                        OnCreateTransactionOld)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseClose, OnClose)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDestroyed, OnDestroyed)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseGet, OnGet)
@@ -320,6 +346,10 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
                         OnCreateIndex)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDeleteIndex,
                         OnDeleteIndex)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseAbort,
+                        OnAbort)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseCommit,
+                        OnCommit)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -377,13 +407,14 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(
   if (!database)
     return;
 
+  int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
   database->createObjectStore(
-      parent_->HostTransactionId(params.transaction_id),
+      host_transaction_id,
       params.object_store_id,
       params.name, params.key_path, params.auto_increment);
   if (parent_->Context()->IsOverQuota(
       database_url_map_[params.ipc_database_id])) {
-    database->abort(params.transaction_id);
+    database->abort(host_transaction_id);
   }
 }
 
@@ -401,7 +432,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteObjectStore(
                               object_store_id);
 }
 
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransaction(
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransactionOld(
     int32 ipc_thread_id,
     int32 ipc_database_id,
     int64 transaction_id,
@@ -413,16 +444,38 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransaction(
   if (!database)
       return;
 
-  WebVector<long long> object_stores(object_store_ids.size());
-  for (size_t i = 0; i < object_store_ids.size(); ++i)
-      object_stores[i] = object_store_ids[i];
+  WebVector<long long> object_stores(object_store_ids);
 
-  transaction_id = parent_->HostTransactionId(transaction_id);
+  int64 host_transaction_id = parent_->HostTransactionId(transaction_id);
 
   WebIDBTransaction* transaction = database->createTransaction(
-      transaction_id, object_stores, mode);
+      host_transaction_id, object_stores, mode);
+  parent_->RegisterTransactionId(host_transaction_id,
+                                 database_url_map_[ipc_database_id]);
   *ipc_transaction_id = parent_->Add(transaction, ipc_thread_id,
                                      database_url_map_[ipc_database_id]);
+}
+
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransaction(
+    const IndexedDBHostMsg_DatabaseCreateTransaction_Params& params) {
+  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
+      &map_, params.ipc_database_id);
+  if (!database)
+      return;
+
+  WebVector<long long> object_stores(params.object_store_ids.size());
+  for (size_t i = 0; i < params.object_store_ids.size(); ++i)
+      object_stores[i] = params.object_store_ids[i];
+
+  int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
+
+  database->createTransaction(
+      host_transaction_id,
+      new IndexedDBDatabaseCallbacks(parent_, params.ipc_thread_id,
+                                     params.ipc_database_response_id),
+      object_stores, params.mode);
+  parent_->RegisterTransactionId(host_transaction_id,
+                                 database_url_map_[params.ipc_database_id]);
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClose(
@@ -474,7 +527,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
                                         params.ipc_response_id));
 
   WebVector<unsigned char> value(params.value);
-  database->put(parent_->HostTransactionId(params.transaction_id),
+  int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
+  database->put(host_transaction_id,
                 params.object_store_id,
                 &value, params.key,
                 params.put_mode, callbacks.release(),
@@ -484,8 +538,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
       &parent_->database_dispatcher_host_->transaction_size_map_;
   // Size can't be big enough to overflow because it represents the
   // actual bytes passed through IPC.
-  int64 transaction_id = parent_->HostTransactionId(params.transaction_id);
-  (*map)[transaction_id] += params.value.size();
+  (*map)[host_transaction_id] += params.value.size();
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetIndexKeys(
@@ -592,6 +645,41 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClear(
                   object_store_id, callbacks.release());
 }
 
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnAbort(
+    int32 ipc_database_id,
+    int64 transaction_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
+      &map_, ipc_database_id);
+  if (!database)
+    return;
+
+  database->abort(parent_->HostTransactionId(transaction_id));
+}
+
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCommit(
+    int32 ipc_database_id,
+    int64 transaction_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
+      &map_, ipc_database_id);
+  if (!database)
+    return;
+
+  int64 host_transaction_id = parent_->HostTransactionId(transaction_id);
+  // TODO(dgrogan): Tell the page the transaction aborted because of quota.
+  // http://crbug.com/113118
+  // TODO(alecflett) move the map to the parent DispatcherHost (parent_)
+  if (parent_->Context()->WouldBeOverQuota(
+          transaction_url_map_[host_transaction_id],
+          transaction_size_map_[host_transaction_id])) {
+      database->abort(host_transaction_id);
+      return;
+  }
+
+  database->commit(host_transaction_id);
+}
+
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateIndex(
     const IndexedDBHostMsg_DatabaseCreateIndex_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
@@ -600,8 +688,9 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateIndex(
   if (!database)
     return;
 
+  int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
   database->createIndex(
-      parent_->HostTransactionId(params.transaction_id),
+      host_transaction_id,
       params.object_store_id,
       params.index_id,
       params.name,
@@ -610,7 +699,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateIndex(
       params.multi_entry);
   if (parent_->Context()->IsOverQuota(
       database_url_map_[params.ipc_database_id])) {
-    database->abort(params.transaction_id);
+    database->abort(host_transaction_id);
   }
 }
 
@@ -804,7 +893,7 @@ void IndexedDBDispatcherHost::TransactionDispatcherHost::OnCommit(
   // TODO(dgrogan): Tell the page the transaction aborted because of quota.
   // http://crbug.com/113118
   if (parent_->Context()->WouldBeOverQuota(
-      transaction_url_map_[ipc_transaction_id],
+      old_transaction_url_map_[ipc_transaction_id],
       transaction_ipc_size_map_[ipc_transaction_id])) {
     idb_transaction->abort();
     return;
@@ -828,7 +917,7 @@ void IndexedDBDispatcherHost::TransactionDispatcherHost::OnDestroyed(
   // TODO(dgrogan): This doesn't seem to be happening with some version change
   // transactions. Possibly introduced with integer version support.
   transaction_ipc_size_map_.erase(ipc_object_id);
-  transaction_url_map_.erase(ipc_object_id);
+  old_transaction_url_map_.erase(ipc_object_id);
   parent_->DestroyObject(&map_, ipc_object_id);
 }
 

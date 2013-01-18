@@ -45,8 +45,10 @@ IndexedDBCallbacksDatabase::IndexedDBCallbacksDatabase(
     IndexedDBDispatcherHost* dispatcher_host,
     int32 ipc_thread_id,
     int32 ipc_response_id,
+    int64 host_transaction_id,
     const GURL& origin_url)
     : IndexedDBCallbacksBase(dispatcher_host, ipc_thread_id, ipc_response_id),
+      host_transaction_id_(host_transaction_id),
       origin_url_(origin_url),
       ipc_database_id_(kDatabaseNotAdded) {
 }
@@ -74,6 +76,7 @@ void IndexedDBCallbacksDatabase::onUpgradeNeeded(
   int32 ipc_transaction_id = dispatcher_host()->Add(transaction,
                                                     ipc_thread_id(),
                                                     origin_url_);
+  dispatcher_host()->RegisterTransactionId(host_transaction_id_, origin_url_);
   int32 ipc_database_id = dispatcher_host()->Add(database, ipc_thread_id(),
                                                  origin_url_);
   ipc_database_id_ = ipc_database_id;
@@ -85,11 +88,11 @@ void IndexedDBCallbacksDatabase::onUpgradeNeeded(
 }
 
 void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(
-    WebKit::WebIDBCursor* idb_object,
+    WebKit::WebIDBCursor* idb_cursor,
     const WebKit::WebIDBKey& key,
     const WebKit::WebIDBKey& primaryKey,
     const WebKit::WebSerializedScriptValue& value) {
-  int32 ipc_object_id = dispatcher_host()->Add(idb_object);
+  int32 ipc_object_id = dispatcher_host()->Add(idb_cursor);
   IndexedDBMsg_CallbacksSuccessIDBCursor_Params params;
   params.ipc_thread_id = ipc_thread_id();
   params.ipc_response_id = ipc_response_id();

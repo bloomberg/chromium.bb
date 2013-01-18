@@ -44,4 +44,22 @@ void IndexedDBDatabaseCallbacks::onVersionChange(
                                                       requested_version));
 }
 
+void IndexedDBDatabaseCallbacks::onAbort(
+    long long host_transaction_id,
+    const WebKit::WebIDBDatabaseError& error) {
+    dispatcher_host_->Send(
+        new IndexedDBMsg_DatabaseCallbacksAbort(
+            ipc_thread_id_, ipc_database_id_,
+            dispatcher_host_->RendererTransactionId(host_transaction_id),
+            error.code(), error.message()));
+}
+
+void IndexedDBDatabaseCallbacks::onComplete(long long host_transaction_id) {
+    dispatcher_host_->TransactionIdComplete(host_transaction_id);
+    dispatcher_host_->Send(
+        new IndexedDBMsg_DatabaseCallbacksComplete(
+            ipc_thread_id_, ipc_database_id_,
+            dispatcher_host_->RendererTransactionId(host_transaction_id)));
+}
+
 }  // namespace content

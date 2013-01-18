@@ -19,6 +19,7 @@ struct IndexedDBHostMsg_DatabaseCount_Params;
 struct IndexedDBHostMsg_DatabaseCreateIndex_Params;
 struct IndexedDBHostMsg_DatabaseCreateObjectStoreOld_Params;
 struct IndexedDBHostMsg_DatabaseCreateObjectStore_Params;
+struct IndexedDBHostMsg_DatabaseCreateTransaction_Params;
 struct IndexedDBHostMsg_DatabaseDeleteRange_Params;
 struct IndexedDBHostMsg_DatabaseGet_Params;
 struct IndexedDBHostMsg_DatabaseOpenCursor_Params;
@@ -66,6 +67,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
                                  bool* message_was_ok) OVERRIDE;
 
   void TransactionComplete(int32 ipc_transaction_id);
+  void TransactionIdComplete(int64 host_transaction_id);
 
   // A shortcut for accessing our context.
   IndexedDBContextImpl* Context() { return indexed_db_context_; }
@@ -81,9 +83,12 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
             const GURL& origin_url);
   int32 Add(WebKit::WebDOMStringList* domStringList);
 
+  void RegisterTransactionId(int64 host_transaction_id, const GURL& origin_url);
+
   WebKit::WebIDBCursor* GetCursorFromId(int32 ipc_cursor_id);
 
   int64 HostTransactionId(int64 transaction_id);
+  int64 RendererTransactionId(int64 host_transaction_id);
 
  private:
   virtual ~IndexedDBDispatcherHost();
@@ -111,6 +116,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   // Used in nested classes.
   typedef std::map<int32, GURL> WebIDBObjectIDToURLMap;
   typedef std::map<int32, uint64> WebIDBTransactionIPCIDToSizeMap;
+
+  typedef std::map<int64, GURL> TransactionIDToURLMap;
   typedef std::map<int64, uint64> WebIDBTransactionIDToSizeMap;
 
   class DatabaseDispatcherHost {
@@ -128,12 +135,14 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnDeleteObjectStore(int32 ipc_database_id,
                              int64 transaction_id,
                              int64 object_store_id);
-    void OnCreateTransaction(int32 ipc_thread_id,
-                             int32 ipc_database_id,
-                             int64 transaction_id,
-                             const std::vector<int64>& scope,
-                             int32 mode,
-                             int32* ipc_transaction_id);
+    void OnCreateTransactionOld(int32 ipc_thread_id,
+                                int32 ipc_database_id,
+                                int64 transaction_id,
+                                const std::vector<int64>& scope,
+                                int32 mode,
+                                int32* ipc_transaction_id);
+    void OnCreateTransaction(
+        const IndexedDBHostMsg_DatabaseCreateTransaction_Params&);
     void OnOpen(int32 ipc_database_id, int32 ipc_thread_id,
                 int32 ipc_response_id);
     void OnClose(int32 ipc_database_id);
@@ -165,10 +174,13 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
                        int64 object_store_id,
                        int64 index_id);
 
+    void OnAbort(int32 ipc_database_id, int64 transaction_id);
+    void OnCommit(int32 ipc_database_id, int64 transaction_id);
     IndexedDBDispatcherHost* parent_;
     IDMap<WebKit::WebIDBDatabase, IDMapOwnPointer> map_;
     WebIDBObjectIDToURLMap database_url_map_;
     WebIDBTransactionIDToSizeMap transaction_size_map_;
+    TransactionIDToURLMap transaction_url_map_;
   };
 
   class CursorDispatcherHost {
@@ -221,7 +233,7 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     IndexedDBDispatcherHost* parent_;
     typedef IDMap<WebKit::WebIDBTransaction, IDMapOwnPointer> MapType;
     MapType map_;
-    WebIDBObjectIDToURLMap transaction_url_map_;
+    WebIDBObjectIDToURLMap old_transaction_url_map_;
     WebIDBTransactionIPCIDToSizeMap transaction_ipc_size_map_;
   };
 
