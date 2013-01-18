@@ -254,8 +254,7 @@ void ManagedModeURLFilter::SetDefaultFilteringBehavior(
 }
 
 void ManagedModeURLFilter::LoadWhitelists(
-    ScopedVector<ManagedModeSiteList> site_lists,
-    const base::Closure& continuation) {
+    ScopedVector<ManagedModeSiteList> site_lists) {
   DCHECK(CalledOnValidThread());
 
   base::PostTaskAndReplyWithResult(
@@ -264,12 +263,11 @@ void ManagedModeURLFilter::LoadWhitelists(
       base::Bind(&LoadWhitelistsOnBlockingPoolThread,
                  base::Passed(&site_lists)),
       base::Bind(&ManagedModeURLFilter::SetContents,
-                 weak_ptr_factory_.GetWeakPtr(), continuation));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ManagedModeURLFilter::SetFromPatterns(
-    const std::vector<std::string>& patterns,
-    const base::Closure& continuation) {
+    const std::vector<std::string>& patterns) {
   DCHECK(CalledOnValidThread());
 
   base::PostTaskAndReplyWithResult(
@@ -277,7 +275,7 @@ void ManagedModeURLFilter::SetFromPatterns(
       FROM_HERE,
       base::Bind(&CreateWhitelistFromPatterns, patterns),
       base::Bind(&ManagedModeURLFilter::SetContents,
-                 weak_ptr_factory_.GetWeakPtr(), continuation));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ManagedModeURLFilter::SetManualLists(scoped_ptr<ListValue> whitelist,
@@ -320,9 +318,16 @@ void ManagedModeURLFilter::AddURLPatternToManualList(
     url_manual_list_block_->Block(&list);
 }
 
-void ManagedModeURLFilter::SetContents(const base::Closure& continuation,
-                                       scoped_ptr<Contents> contents) {
+void ManagedModeURLFilter::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ManagedModeURLFilter::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void ManagedModeURLFilter::SetContents(scoped_ptr<Contents> contents) {
   DCHECK(CalledOnValidThread());
   contents_ = contents.Pass();
-  continuation.Run();
+  FOR_EACH_OBSERVER(Observer, observers_, OnSiteListUpdated());
 }

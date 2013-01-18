@@ -126,6 +126,7 @@ class ManagedMode : public chrome::BrowserListObserver,
   FRIEND_TEST_ALL_PREFIXES(ExtensionApiTest, ManagedModeOnChange);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            ManagedModeProhibitsModification);
+  FRIEND_TEST_ALL_PREFIXES(ManagedModeContentPackTest, InstallContentPacks);
 
   static ManagedMode* GetInstance();
 
@@ -138,8 +139,8 @@ class ManagedMode : public chrome::BrowserListObserver,
 
   void LeaveManagedModeImpl();
 
-  const ManagedModeURLFilter* GetURLFilterForIOThreadImpl();
-  const ManagedModeURLFilter* GetURLFilterForUIThreadImpl();
+  ManagedModeURLFilter* GetURLFilterForIOThreadImpl();
+  ManagedModeURLFilter* GetURLFilterForUIThreadImpl();
 
   void FinalizeEnter(bool result);
 

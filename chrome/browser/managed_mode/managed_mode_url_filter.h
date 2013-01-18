@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
 #include "chrome/browser/managed_mode/managed_mode_site_list.h"
@@ -32,6 +33,11 @@ class ManagedModeURLFilter : public base::NonThreadSafe {
     BLOCK
   };
 
+  class Observer {
+   public:
+    virtual void OnSiteListUpdated() = 0;
+  };
+
   struct Contents;
 
   ManagedModeURLFilter();
@@ -52,13 +58,11 @@ class ManagedModeURLFilter : public base::NonThreadSafe {
   // Asynchronously loads the specified site lists from disk and updates the
   // filter to recognize each site on them.
   // Calls |continuation| when the filter has been updated.
-  void LoadWhitelists(ScopedVector<ManagedModeSiteList> site_lists,
-                      const base::Closure& continuation);
+  void LoadWhitelists(ScopedVector<ManagedModeSiteList> site_lists);
 
   // Set the list of matched patterns to the passed in list.
   // This method is only used for testing.
-  void SetFromPatterns(const std::vector<std::string>& patterns,
-                       const base::Closure& continuation);
+  void SetFromPatterns(const std::vector<std::string>& patterns);
 
   // Sets the manual lists.
   void SetManualLists(scoped_ptr<ListValue> whitelist,
@@ -69,9 +73,13 @@ class ManagedModeURLFilter : public base::NonThreadSafe {
   void AddURLPatternToManualList(const bool is_whitelist,
                                  const std::string& url_pattern);
 
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
  private:
-  void SetContents(const base::Closure& callback,
-                   scoped_ptr<Contents> url_matcher);
+  void SetContents(scoped_ptr<Contents> url_matcher);
+
+  ObserverList<Observer> observers_;
 
   base::WeakPtrFactory<ManagedModeURLFilter> weak_ptr_factory_;
   FilteringBehavior default_behavior_;

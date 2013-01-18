@@ -39,7 +39,7 @@ class ManagedMode::URLFilterContext {
       : task_runner_(task_runner) {}
   ~URLFilterContext() {}
 
-  const ManagedModeURLFilter* url_filter() const {
+  ManagedModeURLFilter* url_filter() {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
     return &url_filter_;
   }
@@ -61,8 +61,7 @@ class ManagedMode::URLFilterContext {
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&ManagedModeURLFilter::LoadWhitelists,
                                       base::Unretained(&url_filter_),
-                                      base::Passed(&site_lists),
-                                      base::Bind(&base::DoNothing)));
+                                      base::Passed(&site_lists)));
   }
 
   void SetManualLists(scoped_ptr<ListValue> whitelist,
@@ -234,11 +233,11 @@ const ManagedModeURLFilter* ManagedMode::GetURLFilterForUIThread() {
   return GetInstance()->GetURLFilterForUIThreadImpl();
 }
 
-const ManagedModeURLFilter* ManagedMode::GetURLFilterForIOThreadImpl() {
+ManagedModeURLFilter* ManagedMode::GetURLFilterForIOThreadImpl() {
   return io_url_filter_context_->url_filter();
 }
 
-const ManagedModeURLFilter* ManagedMode::GetURLFilterForUIThreadImpl() {
+ManagedModeURLFilter* ManagedMode::GetURLFilterForUIThreadImpl() {
   return ui_url_filter_context_->url_filter();
 }
 
@@ -409,20 +408,30 @@ ManagedMode::~ManagedMode() {
 void ManagedMode::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
-  // Return early if we don't have any queued callbacks.
-  if (callbacks_.empty())
-    return;
-
   switch (type) {
     case chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST: {
-      FinalizeEnter(false);
+      if (!callbacks_.empty())
+        FinalizeEnter(false);
       return;
     }
     case chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED: {
       Browser* browser = content::Source<Browser>(source).ptr();
-      if (browsers_to_close_.find(browser) != browsers_to_close_.end())
+      if (!callbacks_.empty() && browsers_to_close_.find(browser) !=
+                                 browsers_to_close_.end())
         FinalizeEnter(false);
       return;
+    }
+    case chrome::NOTIFICATION_EXTENSION_LOADED:
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+      if (!managed_profile_)
+        break;
+
+      const extensions::Extension* extension =
+          content::Details<const extensions::Extension>(details).ptr();
+      if (!extension->GetContentPackSiteList().empty())
+        UpdateManualListsImpl();
+
+      break;
     }
     default:
       NOTREACHED();
@@ -460,6 +469,10 @@ void ManagedMode::SetInManagedMode(Profile* newly_managed_profile) {
     DCHECK(!managed_profile_ || managed_profile_ == newly_managed_profile);
     extensions::ExtensionSystem::Get(
         newly_managed_profile)->management_policy()->RegisterProvider(this);
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+                   content::Source<Profile>(newly_managed_profile));
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                   content::Source<Profile>(newly_managed_profile));
     pref_change_registrar_.reset(new PrefChangeRegistrar());
     pref_change_registrar_->Init(newly_managed_profile->GetPrefs());
     pref_change_registrar_->Add(
@@ -470,6 +483,10 @@ void ManagedMode::SetInManagedMode(Profile* newly_managed_profile) {
   } else {
     extensions::ExtensionSystem::Get(
         managed_profile_)->management_policy()->UnregisterProvider(this);
+    registrar_.Remove(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+                      content::Source<Profile>(managed_profile_));
+    registrar_.Remove(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                      content::Source<Profile>(managed_profile_));
     pref_change_registrar_.reset();
   }
 
@@ -497,8 +514,21 @@ void ManagedMode::SetInManagedMode(Profile* newly_managed_profile) {
 
 ScopedVector<ManagedModeSiteList> ManagedMode::GetActiveSiteLists() {
   DCHECK(managed_profile_);
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(managed_profile_)->extension_service();
+  const ExtensionSet* extensions = extension_service->extensions();
   ScopedVector<ManagedModeSiteList> site_lists;
-  // TODO(bauerb): Get site lists from all extensions.
+  for (ExtensionSet::const_iterator it = extensions->begin();
+       it != extensions->end(); ++it) {
+    const extensions::Extension* extension = *it;
+    if (!extension_service->IsExtensionEnabled(extension->id()))
+      continue;
+
+    ExtensionResource site_list = extension->GetContentPackSiteList();
+    if (!site_list.empty())
+      site_lists.push_back(new ManagedModeSiteList(extension->id(), site_list));
+  }
+
   return site_lists.Pass();
 }
 

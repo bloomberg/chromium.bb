@@ -1,17 +1,23 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
+#include "chrome/browser/managed_mode/managed_mode_url_filter.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/interstitial_page.h"
@@ -20,11 +26,128 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/test_utils.h"
+#include "googleurl/src/gurl.h"
 
 using content::InterstitialPage;
-using content::WebContents;
+using content::MessageLoopRunner;
 using content::NavigationController;
 using content::NavigationEntry;
+using content::WebContents;
+
+namespace {
+
+class ManagedModeURLFilterObserver : public ManagedModeURLFilter::Observer {
+ public:
+  explicit ManagedModeURLFilterObserver(ManagedModeURLFilter* url_filter)
+      : url_filter_(url_filter) {
+    Reset();
+    url_filter_->AddObserver(this);
+  }
+
+  ~ManagedModeURLFilterObserver() {
+    url_filter_->RemoveObserver(this);
+  }
+
+  void Wait() {
+    message_loop_runner_->Run();
+    Reset();
+  }
+
+  // ManagedModeURLFilter::Observer
+  virtual void OnSiteListUpdated() OVERRIDE {
+    message_loop_runner_->Quit();
+  }
+
+ private:
+  void Reset() {
+    message_loop_runner_ = new MessageLoopRunner;
+  }
+
+  ManagedModeURLFilter* url_filter_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+};
+
+}  // namespace
+
+class ManagedModeContentPackTest : public ExtensionBrowserTest {
+ public:
+  ManagedModeContentPackTest() {}
+  virtual ~ManagedModeContentPackTest() {}
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    PrefService* prefs = browser()->profile()->GetPrefs();
+    prefs->SetInteger(prefs::kDefaultManagedModeFilteringBehavior,
+                      ManagedModeURLFilter::WARN);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ManagedModeContentPackTest, InstallContentPacks) {
+  ManagedMode* managed_mode = ManagedMode::GetInstance();
+  ManagedModeURLFilter* url_filter =
+      managed_mode->GetURLFilterForUIThreadImpl();
+  ManagedModeURLFilterObserver observer(url_filter);
+
+  GURL example_url("http://example.com");
+  GURL moose_url("http://moose.org");
+  EXPECT_EQ(ManagedModeURLFilter::ALLOW,
+            url_filter->GetFilteringBehaviorForURL(example_url));
+
+  managed_mode->SetInManagedMode(browser()->profile());
+  observer.Wait();
+
+  EXPECT_EQ(ManagedModeURLFilter::WARN,
+            url_filter->GetFilteringBehaviorForURL(example_url));
+
+  // Load a content pack.
+  const extensions::Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("managed_mode/content_pack"));
+  ASSERT_TRUE(extension) << "Failed to load extension.";
+  observer.Wait();
+
+  ScopedVector<ManagedModeSiteList> site_lists =
+      managed_mode->GetActiveSiteLists();
+  ASSERT_EQ(1u, site_lists.size());
+  std::vector<ManagedModeSiteList::Site> sites;
+  site_lists[0]->GetSites(&sites);
+  ASSERT_EQ(3u, sites.size());
+  EXPECT_EQ(ASCIIToUTF16("YouTube"), sites[0].name);
+  EXPECT_EQ(ASCIIToUTF16("Homestar Runner"), sites[1].name);
+  EXPECT_EQ(string16(), sites[2].name);
+
+  EXPECT_EQ(ManagedModeURLFilter::ALLOW,
+            url_filter->GetFilteringBehaviorForURL(example_url));
+  EXPECT_EQ(ManagedModeURLFilter::WARN,
+            url_filter->GetFilteringBehaviorForURL(moose_url));
+
+  // Load a second content pack.
+  extension = LoadExtension(
+      test_data_dir_.AppendASCII("managed_mode/content_pack_2"));
+  ASSERT_TRUE(extension) << "Failed to load extension.";
+  observer.Wait();
+
+  site_lists = managed_mode->GetActiveSiteLists();
+  ASSERT_EQ(2u, site_lists.size());
+  sites.clear();
+  site_lists[0]->GetSites(&sites);
+  site_lists[1]->GetSites(&sites);
+  ASSERT_EQ(4u, sites.size());
+  // The site lists might be returned in any order, so we put them into a set.
+  std::set<std::string> site_names;
+  for (std::vector<ManagedModeSiteList::Site>::const_iterator it =
+      sites.begin(); it != sites.end(); ++it) {
+    site_names.insert(UTF16ToUTF8(it->name));
+  }
+  EXPECT_TRUE(site_names.count("YouTube") == 1u);
+  EXPECT_TRUE(site_names.count("Homestar Runner") == 1u);
+  EXPECT_TRUE(site_names.count(std::string()) == 1u);
+  EXPECT_TRUE(site_names.count("Moose") == 1u);
+
+  EXPECT_EQ(ManagedModeURLFilter::ALLOW,
+            url_filter->GetFilteringBehaviorForURL(example_url));
+  EXPECT_EQ(ManagedModeURLFilter::ALLOW,
+            url_filter->GetFilteringBehaviorForURL(moose_url));
+}
 
 // TODO(sergiu): Make the webkit error message disappear when navigating to an
 // interstitial page. The message states: "Not allowed to load local resource:

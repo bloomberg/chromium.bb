@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "sites": [
+    {
+      "name": "Moose",
+      "whitelist": [
+        "moose.org"
+      ]
+    }
+  ]
+}
