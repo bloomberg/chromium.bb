@@ -51,9 +51,11 @@ class PopupBubbleContentsView : public views::View {
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
     AddChildView(content_);
 
-    content_->SetPaintToLayer(true);
-    content_->SetFillsBoundsOpaquely(false);
-    content_->layer()->SetMasksToBounds(true);
+    if (get_use_acceleration_when_possible()) {
+      content_->SetPaintToLayer(true);
+      content_->SetFillsBoundsOpaquely(false);
+      content_->layer()->SetMasksToBounds(true);
+    }
   }
 
   void Update(const NotificationList::Notifications& popup_notifications) {

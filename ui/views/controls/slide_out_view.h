@@ -28,7 +28,7 @@ class VIEWS_EXPORT SlideOutView : public views::View,
  private:
   enum SlideDirection {
     SLIDE_LEFT,
-    SLIDE_RIGHT
+    SLIDE_RIGHT,
   };
 
   // Restores the transform and opacity of the view.

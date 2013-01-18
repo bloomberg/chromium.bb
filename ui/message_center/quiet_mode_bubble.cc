@@ -55,8 +55,12 @@ QuietModeBubble::QuietModeBubble(views::View* anchor_view,
   bubble_ = new views::BubbleDelegateView(
       anchor_view, views::BubbleBorder::BOTTOM_RIGHT);
   bubble_->set_notify_enter_exit_on_child(true);
-  bubble_->SetPaintToLayer(true);
-  bubble_->SetFillsBoundsOpaquely(true);
+
+  if (views::View::get_use_acceleration_when_possible()) {
+    bubble_->SetPaintToLayer(true);
+    bubble_->SetFillsBoundsOpaquely(true);
+  }
+
   bubble_->set_parent_window(parent_window);
   bubble_->set_margins(gfx::Insets());
   InitializeBubbleContents();
