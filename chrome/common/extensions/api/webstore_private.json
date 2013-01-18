@@ -190,32 +190,6 @@
         ]
       },
       {
-        "name": "promptBrowserLogin",
-        "description": "Causes the browser to bring up the browser login UI.",
-        "parameters": [
-          {
-            "name": "preferred_email",
-            "type": "string",
-            "description": "The email address to use to pre-populate the login dialog (can be an empty string)."
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "optional": "true",
-            "parameters": [
-              {
-                "name": "info",
-                "type": "object",
-                "properties": {
-                  "login": { "type": "string", "optional": true },
-                  "token": { "type": "string", "optional": true }
-                }
-              }
-            ]
-          }
-        ]
-      },
-      {
         "name": "getWebGLStatus",
         "description": "Invokes a callback that returns whether WebGL is blacklisted or not.",
         "parameters": [
