@@ -277,7 +277,7 @@ pid_t FindThreadIDWithSyscall(pid_t pid, const std::string& expected_data,
   }
   closedir(task);
 
-  scoped_array<char> syscall_data(new char[expected_data.length()]);
+  scoped_ptr<char[]> syscall_data(new char[expected_data.length()]);
   for (std::vector<pid_t>::const_iterator
        i = tids.begin(); i != tids.end(); ++i) {
     const pid_t current_tid = *i;

@@ -188,7 +188,7 @@ bool CodepageToUTF16(const std::string& encoded,
   size_t uchar_max_length = encoded.length() + 1;
 
   SetUpErrorHandlerForToUChars(on_error, converter, &status);
-  scoped_array<char16> buffer(new char16[uchar_max_length]);
+  scoped_ptr<char16[]> buffer(new char16[uchar_max_length]);
   int actual_size = ucnv_toUChars(converter, buffer.get(),
       static_cast<int>(uchar_max_length), encoded.data(),
       static_cast<int>(encoded.length()), &status);
@@ -253,7 +253,7 @@ bool CodepageToWide(const std::string& encoded,
   size_t wchar_max_length = encoded.length() + 1;
 
   SetUpErrorHandlerForToUChars(on_error, converter, &status);
-  scoped_array<wchar_t> buffer(new wchar_t[wchar_max_length]);
+  scoped_ptr<wchar_t[]> buffer(new wchar_t[wchar_max_length]);
   int actual_size = ucnv_toAlgorithmic(utf32_platform_endian(), converter,
       reinterpret_cast<char*>(buffer.get()),
       static_cast<int>(wchar_max_length) * sizeof(wchar_t), encoded.data(),
@@ -282,7 +282,7 @@ bool ConvertToUtf8AndNormalize(const std::string& text,
   UErrorCode status = U_ZERO_ERROR;
   size_t max_length = utf16.length() + 1;
   string16 normalized_utf16;
-  scoped_array<char16> buffer(new char16[max_length]);
+  scoped_ptr<char16[]> buffer(new char16[max_length]);
   int actual_length = unorm_normalize(
       utf16.c_str(), utf16.length(), UNORM_NFC, 0,
       buffer.get(), static_cast<int>(max_length), &status);

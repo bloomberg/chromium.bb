@@ -252,7 +252,7 @@ bool GetProcessIntegrityLevel(ProcessHandle process, IntegrityLevel *level) {
       GetLastError() != ERROR_INSUFFICIENT_BUFFER)
     return false;
 
-  scoped_array<char> token_label_bytes(new char[token_info_length]);
+  scoped_ptr<char[]> token_label_bytes(new char[token_info_length]);
   if (!token_label_bytes.get())
     return false;
 
@@ -921,7 +921,7 @@ bool EnableLowFragmentationHeap() {
   // Gives us some extra space in the array in case a thread is creating heaps
   // at the same time we're querying them.
   static const int MARGIN = 8;
-  scoped_array<HANDLE> heaps(new HANDLE[number_heaps + MARGIN]);
+  scoped_ptr<HANDLE[]> heaps(new HANDLE[number_heaps + MARGIN]);
   number_heaps = GetProcessHeaps(number_heaps + MARGIN, heaps.get());
   if (!number_heaps)
     return false;

@@ -95,7 +95,7 @@ TEST(SecurityTest, ALLOC_TEST(MemoryAllocationRestrictionsNew)) {
 
 TEST(SecurityTest, ALLOC_TEST(MemoryAllocationRestrictionsNewArray)) {
   if (!IsTcMallocBypassed()) {
-    scoped_array<char> ptr(new (nothrow) char[kTooBigAllocSize]);
+    scoped_ptr<char[]> ptr(new (nothrow) char[kTooBigAllocSize]);
     ASSERT_TRUE(ptr == NULL);
   }
 }

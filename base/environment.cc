@@ -66,7 +66,7 @@ class EnvironmentImpl : public base::Environment {
     if (value_length == 0)
       return false;
     if (result) {
-      scoped_array<wchar_t> value(new wchar_t[value_length]);
+      scoped_ptr<wchar_t[]> value(new wchar_t[value_length]);
       ::GetEnvironmentVariable(UTF8ToWide(variable_name).c_str(), value.get(),
                                value_length);
       *result = WideToUTF8(value.get());

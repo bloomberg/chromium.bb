@@ -549,8 +549,8 @@ bool LaunchProcess(const std::vector<std::string>& argv,
   fd_shuffle1.reserve(fd_shuffle_size);
   fd_shuffle2.reserve(fd_shuffle_size);
 
-  scoped_array<char*> argv_cstr(new char*[argv.size() + 1]);
-  scoped_array<char*> new_environ;
+  scoped_ptr<char*[]> argv_cstr(new char*[argv.size() + 1]);
+  scoped_ptr<char*[]> new_environ;
   if (options.environ)
     new_environ.reset(AlterEnvironment(*options.environ, GetEnvironment()));
 
@@ -1012,7 +1012,7 @@ static GetAppOutputInternalResult GetAppOutputInternal(
   int pipe_fd[2];
   pid_t pid;
   InjectiveMultimap fd_shuffle1, fd_shuffle2;
-  scoped_array<char*> argv_cstr(new char*[argv.size() + 1]);
+  scoped_ptr<char*[]> argv_cstr(new char*[argv.size() + 1]);
 
   fd_shuffle1.reserve(3);
   fd_shuffle2.reserve(3);

@@ -101,7 +101,7 @@ TEST(PickleTest, EncodeDecode) {
 
 // Tests that we can handle really small buffers.
 TEST(PickleTest, SmallBuffer) {
-  scoped_array<char> buffer(new char[1]);
+  scoped_ptr<char[]> buffer(new char[1]);
 
   // We should not touch the buffer.
   Pickle pickle(buffer.get(), 1);
@@ -185,7 +185,7 @@ TEST(PickleTest, FindNext) {
 
 TEST(PickleTest, FindNextWithIncompleteHeader) {
   size_t header_size = sizeof(Pickle::Header);
-  scoped_array<char> buffer(new char[header_size - 1]);
+  scoped_ptr<char[]> buffer(new char[header_size - 1]);
   memset(buffer.get(), 0x1, header_size - 1);
 
   const char* start = buffer.get();
@@ -215,7 +215,7 @@ TEST(PickleTest, GetReadPointerAndAdvance) {
 
 TEST(PickleTest, Resize) {
   size_t unit = Pickle::kPayloadUnit;
-  scoped_array<char> data(new char[unit]);
+  scoped_ptr<char[]> data(new char[unit]);
   char* data_ptr = data.get();
   for (size_t i = 0; i < unit; i++)
     data_ptr[i] = 'G';

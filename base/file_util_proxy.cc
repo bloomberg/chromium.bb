@@ -152,7 +152,7 @@ class ReadHelper {
   }
 
  private:
-  scoped_array<char> buffer_;
+  scoped_ptr<char[]> buffer_;
   int bytes_to_read_;
   int bytes_read_;
   DISALLOW_COPY_AND_ASSIGN(ReadHelper);
@@ -181,7 +181,7 @@ class WriteHelper {
   }
 
  private:
-  scoped_array<char> buffer_;
+  scoped_ptr<char[]> buffer_;
   int bytes_to_write_;
   int bytes_written_;
   DISALLOW_COPY_AND_ASSIGN(WriteHelper);

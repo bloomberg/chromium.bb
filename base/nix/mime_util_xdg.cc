@@ -160,7 +160,7 @@ class IconTheme {
 
   // store the subdirs of this theme and array index of |info_array_|.
   std::map<std::string, int> subdirs_;
-  scoped_array<SubDirInfo> info_array_;  // List of sub-directories.
+  scoped_ptr<SubDirInfo[]> info_array_;  // List of sub-directories.
   std::string inherits_;  // Name of the theme this one inherits from.
 };
 

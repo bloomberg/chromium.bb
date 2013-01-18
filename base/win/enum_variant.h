@@ -41,7 +41,7 @@ class BASE_EXPORT EnumVariant
  private:
   ~EnumVariant();
 
-  scoped_array<VARIANT> items_;
+  scoped_ptr<VARIANT[]> items_;
   unsigned long count_;
   unsigned long current_index_;
 };

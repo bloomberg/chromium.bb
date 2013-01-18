@@ -441,7 +441,7 @@ TEST_F(ProcessUtilTest, CalcFreeMemory) {
 
   // Allocate 20M and check again. It should have gone down.
   const int kAllocMB = 20;
-  scoped_array<char> alloc(new char[kAllocMB * 1024 * 1024]);
+  scoped_ptr<char[]> alloc(new char[kAllocMB * 1024 * 1024]);
   size_t expected_total = free_mem1.total - kAllocMB;
   size_t expected_largest = free_mem1.largest;
 

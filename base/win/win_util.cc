@@ -83,7 +83,7 @@ bool GetUserSidString(std::wstring* user_sid) {
   base::win::ScopedHandle token_scoped(token);
 
   DWORD size = sizeof(TOKEN_USER) + SECURITY_MAX_SID_SIZE;
-  scoped_array<BYTE> user_bytes(new BYTE[size]);
+  scoped_ptr<BYTE[]> user_bytes(new BYTE[size]);
   TOKEN_USER* user = reinterpret_cast<TOKEN_USER*>(user_bytes.get());
 
   if (!::GetTokenInformation(token, TokenUser, user, size, &size))

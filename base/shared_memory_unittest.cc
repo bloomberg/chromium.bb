@@ -249,8 +249,8 @@ TEST(SharedMemoryTest, MultipleThreads) {
   int threadcounts[] = { 1, kNumThreads };
   for (size_t i = 0; i < arraysize(threadcounts); i++) {
     int numthreads = threadcounts[i];
-    scoped_array<PlatformThreadHandle> thread_handles;
-    scoped_array<MultipleThreadMain*> thread_delegates;
+    scoped_ptr<PlatformThreadHandle[]> thread_handles;
+    scoped_ptr<MultipleThreadMain*[]> thread_delegates;
 
     thread_handles.reset(new PlatformThreadHandle[numthreads]);
     thread_delegates.reset(new MultipleThreadMain*[numthreads]);
@@ -309,8 +309,8 @@ TEST(SharedMemoryTest, AnonymousPrivate) {
   bool rv;
   const uint32 kDataSize = 8192;
 
-  scoped_array<SharedMemory> memories(new SharedMemory[count]);
-  scoped_array<int*> pointers(new int*[count]);
+  scoped_ptr<SharedMemory[]> memories(new SharedMemory[count]);
+  scoped_ptr<int*[]> pointers(new int*[count]);
   ASSERT_TRUE(memories.get());
   ASSERT_TRUE(pointers.get());
 

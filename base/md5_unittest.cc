@@ -67,7 +67,7 @@ TEST(MD5, MD5SumOneByteData) {
 
 TEST(MD5, MD5SumLongData) {
   const int length = 10 * 1024 * 1024 + 1;
-  scoped_array<char> data(new char[length]);
+  scoped_ptr<char[]> data(new char[length]);
 
   for (int i = 0; i < length; ++i)
     data[i] = i & 0xFF;
@@ -109,7 +109,7 @@ TEST(MD5, ContextWithLongData) {
   MD5Init(&ctx);
 
   const int length = 10 * 1024 * 1024 + 1;
-  scoped_array<char> data(new char[length]);
+  scoped_ptr<char[]> data(new char[length]);
 
   for (int i = 0; i < length; ++i)
     data[i] = i & 0xFF;
