@@ -30,8 +30,8 @@
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "ui/surface/transport_dib.h"
-#include "webkit/glue/webdropdata.h"
 #include "webkit/glue/resource_type.h"
+#include "webkit/glue/webdropdata.h"
 
 #if defined(OS_MACOSX)
 #include "content/browser/browser_plugin/browser_plugin_popup_menu_helper_mac.h"
