@@ -86,7 +86,8 @@ void CommandBufferHelper::FreeResources() {
 }
 
 void CommandBufferHelper::FreeRingBuffer() {
-  GPU_CHECK_EQ(put_, get_offset());
+  GPU_CHECK((put_ == get_offset()) ||
+      error::IsError(command_buffer_->GetLastState().error));
   FreeResources();
 }
 
@@ -168,10 +169,9 @@ int32 CommandBufferHelper::InsertToken() {
 // Waits until the current token value is greater or equal to the value passed
 // in argument.
 void CommandBufferHelper::WaitForToken(int32 token) {
-  if (!usable()) {
+  if (!usable() || !HaveRingBuffer()) {
     return;
   }
-  GPU_DCHECK(HaveRingBuffer());
   // Return immediately if corresponding InsertToken failed.
   if (token < 0)
     return;
