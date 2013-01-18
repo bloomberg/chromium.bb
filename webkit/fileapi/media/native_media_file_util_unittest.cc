@@ -23,7 +23,7 @@
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 
-using namespace fileapi;
+namespace fileapi {
 
 namespace {
 
@@ -313,6 +313,13 @@ TEST_F(NativeMediaFileUtilTest, CopyDestFiltering) {
     ASSERT_TRUE(file_util::WriteFile(src_path, kDummyData, strlen(kDummyData)));
 
     for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+      if (loop_count == 0 && kFilteringTestCases[i].is_directory) {
+        // These directories do not exist in this case, so Copy() will not
+        // treat them as directories. Thus invalidating these test cases.
+        // Continue now to avoid creating a new |operation| below that goes
+        // unused.
+        continue;
+      }
       FileSystemURL root_url(origin(), type(), root_path());
       FileSystemOperation* operation = NewOperation(root_url);
 
@@ -323,10 +330,8 @@ TEST_F(NativeMediaFileUtilTest, CopyDestFiltering) {
           "CopyDestFiltering run %d test %" PRIuS, loop_count, i);
       base::PlatformFileError expectation;
       if (loop_count == 0) {
-        // These directories do not exist in this case, so Copy() will not
-        // treat them as directories. Thus invalidating these test cases.
-        if (kFilteringTestCases[i].is_directory)
-          continue;
+        // The destination path is a file here. The directory case has been
+        // handled above.
         // If the destination path does not exist and is not visible, then
         // creating it would be a security violation.
         expectation =
@@ -409,6 +414,14 @@ TEST_F(NativeMediaFileUtilTest, MoveDestFiltering) {
     }
 
     for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+      if (loop_count == 0 && kFilteringTestCases[i].is_directory) {
+        // These directories do not exist in this case, so Copy() will not
+        // treat them as directories. Thus invalidating these test cases.
+        // Continue now to avoid creating a new |operation| below that goes
+        // unused.
+        continue;
+      }
+
       // Create the source file for every test case because it might get moved.
       FilePath src_path = root_path().AppendASCII("foo.jpg");
       FileSystemURL src_url(origin(), type(), src_path);
@@ -426,10 +439,8 @@ TEST_F(NativeMediaFileUtilTest, MoveDestFiltering) {
           "MoveDestFiltering run %d test %" PRIuS, loop_count, i);
       base::PlatformFileError expectation;
       if (loop_count == 0) {
-        // These directories do not exist in this case, so Move() will not
-        // treat them as directories. Thus invalidating these test cases.
-        if (kFilteringTestCases[i].is_directory)
-          continue;
+        // The destination path is a file here. The directory case has been
+        // handled above.
         // If the destination path does not exist and is not visible, then
         // creating it would be a security violation.
         expectation =
@@ -580,3 +591,5 @@ TEST_F(NativeMediaFileUtilTest, TouchFileFiltering) {
     }
   }
 }
+
+}  // namespace fileapi
