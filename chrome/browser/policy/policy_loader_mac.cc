@@ -17,7 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chrome/browser/preferences_mac.h"
+#include "chrome/browser/policy/preferences_mac.h"
 #include "chrome/common/chrome_paths.h"
 #include "policy/policy_constants.h"
 

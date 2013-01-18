@@ -13,7 +13,7 @@
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_loader_mac.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chrome/browser/preferences_mock_mac.h"
+#include "chrome/browser/policy/preferences_mock_mac.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

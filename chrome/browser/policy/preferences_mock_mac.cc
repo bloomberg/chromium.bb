@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/preferences_mock_mac.h"
+#include "chrome/browser/policy/preferences_mock_mac.h"
 
 MockPreferences::MockPreferences() {
   values_.reset(CFDictionaryCreateMutable(kCFAllocatorDefault,

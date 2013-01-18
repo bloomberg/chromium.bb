@@ -44,7 +44,7 @@
 #include "chrome/browser/policy/policy_loader_win.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/policy/policy_loader_mac.h"
-#include "chrome/browser/preferences_mac.h"
+#include "chrome/browser/policy/preferences_mac.h"
 #elif defined(OS_POSIX)
 #include "chrome/browser/policy/config_dir_policy_loader.h"
 #endif
