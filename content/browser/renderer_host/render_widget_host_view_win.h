@@ -413,6 +413,12 @@ class RenderWidgetHostViewWin
   // current |text_input_type_|.
   void UpdateIMEState();
 
+  // Sets the appropriate input scope for given |text_input_type| if TSF-aware
+  // is not required. Does nothing if TSF-aware is required (and TSF text store
+  // is responsible for managing input scope). Currently input scope will only
+  // take effect on Vista+.
+  void UpdateInputScopeIfNecessary(ui::TextInputType text_input_type);
+
   // The associated Model.  While |this| is being Destroyed,
   // |render_widget_host_| is NULL and the Windows message loop is run one last
   // time. Message handlers must check for a NULL |render_widget_host_|.

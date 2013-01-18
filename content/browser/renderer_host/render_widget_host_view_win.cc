@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
 
+#include <InputScope.h>
+
 #include <algorithm>
 #include <map>
 #include <stack>
@@ -53,6 +55,7 @@
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/win/tsf_input_scope.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/base/ui_base_switches.h"
@@ -638,9 +641,12 @@ void RenderWidgetHostViewWin::TextInputStateChanged(
     const ViewHostMsg_TextInputState_Params& params) {
   if (text_input_type_ != params.type ||
       can_compose_inline_ != params.can_compose_inline) {
+    const bool text_input_type_changed = (text_input_type_ != params.type);
     text_input_type_ = params.type;
     can_compose_inline_ = params.can_compose_inline;
     UpdateIMEState();
+    if (text_input_type_changed)
+      UpdateInputScopeIfNecessary(text_input_type_);
   }
 }
 
@@ -740,6 +746,9 @@ void RenderWidgetHostViewWin::Destroy() {
   render_widget_host_ = NULL;
   being_destroyed_ = true;
   CleanupCompositorWindow();
+
+  // This releases the resources associated with input scope.
+  UpdateInputScopeIfNecessary(ui::TEXT_INPUT_TYPE_NONE);
 
   if (is_fullscreen_ && win8::IsSingleWindowMetroMode()) {
     MetroCloseFrameWindow close_frame_window =
@@ -2986,6 +2995,17 @@ void RenderWidgetHostViewWin::UpdateIMEState() {
   } else {
     ime_input_.DisableIME(m_hWnd);
   }
+}
+
+void RenderWidgetHostViewWin::UpdateInputScopeIfNecessary(
+    ui::TextInputType text_input_type) {
+  // The text store is responsible for handling input scope when TSF-aware is
+  // required.
+  if (!base::win::IsTSFAwareRequired())
+    return;
+
+  ui::tsf_inputscope::SetInputScopeForTsfUnawareWindow(m_hWnd,
+                                                       text_input_type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
