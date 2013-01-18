@@ -388,7 +388,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
             worker_data->worker_route_id));
     DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
         agent_host,
-        window_->devtools_client_host());
+        window_->GetDevToolsClientHostForTest());
     RenderViewHost* client_rvh = window_->GetRenderViewHost();
     WebContents* client_contents = WebContents::FromRenderViewHost(client_rvh);
     if (client_contents->IsLoading()) {

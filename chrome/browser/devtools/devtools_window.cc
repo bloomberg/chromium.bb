@@ -138,7 +138,7 @@ DevToolsWindow* DevToolsWindow::OpenDevToolsWindowForWorker(
     window = DevToolsWindow::CreateDevToolsWindowForWorker(profile);
     DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
         worker_agent,
-        window->frontend_host_);
+        window->frontend_host_.get());
   }
   window->Show(DEVTOOLS_TOGGLE_ACTION_SHOW);
   return window;
@@ -217,8 +217,8 @@ DevToolsWindow::DevToolsWindow(WebContents* web_contents,
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       width_(-1),
       height_(-1) {
-  frontend_host_ = DevToolsClientHost::CreateDevToolsFrontendHost(web_contents,
-                                                                  this);
+  frontend_host_.reset(
+      DevToolsClientHost::CreateDevToolsFrontendHost(web_contents, this));
   file_helper_.reset(new DevToolsFileHelper(web_contents, profile));
 
   g_instances.Get().push_back(this);
@@ -312,6 +312,10 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
   }
 
   ScheduleAction(action);
+}
+
+DevToolsClientHost* DevToolsWindow::GetDevToolsClientHostForTest() {
+  return frontend_host_.get();
 }
 
 int DevToolsWindow::GetWidth(int container_width) {
@@ -543,7 +547,7 @@ void DevToolsWindow::Observe(int type,
       // of window.Close event.
       // Notify manager that this DevToolsClientHost no longer exists and
       // initiate self-destuct here.
-      DevToolsManager::GetInstance()->ClientHostClosing(frontend_host_);
+      DevToolsManager::GetInstance()->ClientHostClosing(frontend_host_.get());
       UpdateBrowserToolbar();
       delete this;
     }
@@ -687,7 +691,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
         inspected_rvh->GetProcess()->GetBrowserContext());
     DevToolsDockSide dock_side = GetDockSideFromPrefs(profile);
     window = Create(profile, inspected_rvh, dock_side, false);
-    manager->RegisterDevToolsClientHostFor(agent, window->frontend_host_);
+    manager->RegisterDevToolsClientHostFor(agent, window->frontend_host_.get());
     do_open = true;
   }
 
@@ -712,7 +716,7 @@ DevToolsWindow* DevToolsWindow::AsDevToolsWindow(
   DevToolsWindowList& instances = g_instances.Get();
   for (DevToolsWindowList::iterator it = instances.begin();
        it != instances.end(); ++it) {
-    if ((*it)->frontend_host_ == client_host)
+    if ((*it)->frontend_host_.get() == client_host)
       return *it;
   }
   return NULL;
@@ -745,7 +749,7 @@ void DevToolsWindow::ActivateWindow() {
 
 void DevToolsWindow::CloseWindow() {
   DCHECK(IsDocked());
-  DevToolsManager::GetInstance()->ClientHostClosing(frontend_host_);
+  DevToolsManager::GetInstance()->ClientHostClosing(frontend_host_.get());
   InspectedContentsClosing();
 }
 

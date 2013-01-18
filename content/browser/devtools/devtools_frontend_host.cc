@@ -31,8 +31,7 @@ void DevToolsClientHost::SetupDevToolsFrontendClient(
 DevToolsFrontendHost::DevToolsFrontendHost(
     WebContentsImpl* web_contents,
     DevToolsFrontendHostDelegate* delegate)
-    : RenderViewHostObserver(web_contents->GetRenderViewHost()),
-      web_contents_(web_contents),
+    : WebContentsObserver(web_contents),
       delegate_(delegate) {
 }
 
@@ -43,7 +42,7 @@ DevToolsFrontendHost::~DevToolsFrontendHost() {
 void DevToolsFrontendHost::DispatchOnInspectorFrontend(
     const std::string& message) {
   RenderViewHostImpl* target_host =
-      static_cast<RenderViewHostImpl*>(web_contents_->GetRenderViewHost());
+      static_cast<RenderViewHostImpl*>(web_contents()->GetRenderViewHost());
   target_host->Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
       target_host->GetRoutingID(),
       message));

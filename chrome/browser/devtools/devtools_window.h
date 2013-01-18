@@ -89,7 +89,8 @@ class DevToolsWindow : private content::NotificationObserver,
   content::WebContents* web_contents() { return web_contents_; }
   Browser* browser() { return browser_; }  // For tests.
   DevToolsDockSide dock_side() { return dock_side_; }
-  content::DevToolsClientHost* devtools_client_host() { return frontend_host_; }
+
+  content::DevToolsClientHost* GetDevToolsClientHostForTest();
 
   // Returns preferred devtools window width for given |container_width|. It
   // tries to use the saved window width, or, if none exists, 1/3 of the
@@ -209,7 +210,7 @@ class DevToolsWindow : private content::NotificationObserver,
   bool is_loaded_;
   DevToolsToggleAction action_on_load_;
   content::NotificationRegistrar registrar_;
-  content::DevToolsClientHost* frontend_host_;
+  scoped_ptr<content::DevToolsClientHost> frontend_host_;
   base::WeakPtrFactory<DevToolsWindow> weak_factory_;
   scoped_ptr<DevToolsFileHelper> file_helper_;
   int width_;
