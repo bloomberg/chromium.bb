@@ -20,4 +20,4 @@ class ImageDecodingBenchmarkUnitTest(
 
     results0 = all_results.page_results[0]
     self.assertTrue('ImageDecoding_avg' in results0)
-    self.assertGreater(results0['ImageDecoding_avg'], 0)
+    self.assertTrue(results0['ImageDecoding_avg'] > 0)
