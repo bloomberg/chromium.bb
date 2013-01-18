@@ -51,21 +51,21 @@ void FixRateSender::OnIncomingLoss(int /*number_of_lost_packets*/) {
 
 void FixRateSender::SentPacket(QuicPacketSequenceNumber /*sequence_number*/,
                                size_t bytes,
-                               bool retransmit) {
+                               bool is_retransmission) {
   fix_rate_leaky_bucket_.Add(bytes);
   paced_sender_.SentPacket(bytes);
-  if (!retransmit) {
+  if (!is_retransmission) {
     bytes_in_flight_ += bytes;
   }
 }
 
-QuicTime::Delta FixRateSender::TimeUntilSend(bool /*retransmit*/) {
+QuicTime::Delta FixRateSender::TimeUntilSend(bool /*is_retransmission*/) {
   if (CongestionWindow() > fix_rate_leaky_bucket_.BytesPending()) {
     if (CongestionWindow() <= bytes_in_flight_) {
       // We need an ack before we send more.
       return QuicTime::Delta::Infinite();
     }
-    QuicTime::Delta zero_time;
+    QuicTime::Delta zero_time(QuicTime::Delta::Zero());
     return paced_sender_.TimeUntilSend(zero_time);
   }
   QuicTime::Delta time_remaining = fix_rate_leaky_bucket_.TimeRemaining();

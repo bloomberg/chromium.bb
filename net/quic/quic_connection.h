@@ -22,6 +22,7 @@
 
 #include "base/hash_tables.h"
 #include "net/base/ip_endpoint.h"
+#include "net/quic/congestion_control/quic_congestion_manager.h"
 #include "net/quic/quic_fec_group.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
@@ -34,8 +35,6 @@ class QuicConnection;
 class QuicEncrypter;
 class QuicFecGroup;
 class QuicRandom;
-class QuicReceiptMetricsCollector;
-class QuicSendScheduler;
 
 namespace test {
 class QuicConnectionPeer;
@@ -93,12 +92,12 @@ class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
   virtual int WritePacketToWire(const QuicEncryptedPacket& packet,
                                 int* error) = 0;
 
-  // Sets up an alarm to resend the packet with the given sequence number if we
-  // haven't gotten an ack in the expected time frame.  Implementations must
-  // invoke MaybeResendPacketForRTO when the alarm fires.  Implementations must
-  // also handle the case where |this| is deleted before the alarm fires.
-  virtual void SetResendAlarm(QuicPacketSequenceNumber sequence_number,
-                              QuicTime::Delta delay) = 0;
+  // Sets up an alarm to retransmit a packet if we haven't received an ack
+  // in the expected time frame.  Implementations must invoke
+  // OnRetransmissionAlarm when the alarm fires.  Implementations must also
+  // handle the case where |this| is deleted before the alarm fires.  If the
+  // alarm is already set, this call is a no-op.
+  virtual void SetRetransmissionAlarm(QuicTime::Delta delay) = 0;
 
   // Sets an alarm to send packets after |delay_in_us|.  Implementations must
   // invoke OnCanWrite when the alarm fires.  Implementations must also
@@ -146,15 +145,17 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   QuicConsumedData SendStreamData(QuicStreamId id,
                                   base::StringPiece data,
                                   QuicStreamOffset offset,
-                                  bool fin,
-                                  QuicPacketSequenceNumber* last_packet);
+                                  bool fin);
+
   // Send a stream reset frame to the peer.
   virtual void SendRstStream(QuicStreamId id,
                              QuicErrorCode error,
                              QuicStreamOffset offset);
-  // Sends a connection close frame to the peer, and notifies the visitor of
-  // the close.
+  // Sends a connection close frame to the peer, and closes the connection by
+  // calling CloseConnection(notifying the visitor as it does so).
   virtual void SendConnectionClose(QuicErrorCode error);
+  // Notifies the visitor of the close and marks the connection as disconnected.
+  void CloseConnection(QuicErrorCode error, bool from_peer);
 
   // Processes an incoming UDP packet (consisting of a QuicEncryptedPacket) from
   // the peer.  If processing this packet permits a packet to be revived from
@@ -197,14 +198,14 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   // Updates the internal state concerning which packets have been acked.
   void RecordPacketReceived(const QuicPacketHeader& header);
 
-  // Called by a ResendAlarm when the timer goes off.  If the peer appears to be
-  // sending truncated acks, this returns false to indicate failure, otherwise
-  // it calls MaybeResendPacket and returns true.
-  bool MaybeResendPacketForRTO(QuicPacketSequenceNumber sequence_number);
+  // Called by a RetransmissionAlarm when the timer goes off.  If the peer
+  // appears to be sending truncated acks, this returns false to indicate
+  // failure, otherwise it calls MaybeRetransmitPacket and returns true.
+  bool MaybeRetransmitPacketForRTO(QuicPacketSequenceNumber sequence_number);
 
-  // Called to resend a packet, in the case a packet was sufficiently nacked by
-  // the peer, or not acked within the time out window.
-  void MaybeResendPacket(QuicPacketSequenceNumber sequence_number);
+  // Called to retransmit a packet, in the case a packet was sufficiently
+  // nacked by the peer, or not acked within the time out window.
+  void MaybeRetransmitPacket(QuicPacketSequenceNumber sequence_number);
 
   QuicPacketCreator::Options* options() { return packet_creator_.options(); }
 
@@ -229,19 +230,23 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   // Sets up a packet with an QuicAckFrame and sends it out.
   void SendAck();
 
+  // Called when an RTO fires.  Returns the time when this alarm
+  // should next fire, or 0 if no retransmission alarm should be set.
+  QuicTime OnRetransmissionTimeout();
+
  protected:
-  // Send a packet to the peer.  If should_resend is true, this packet contains
-  // data, and contents will be resent with a new sequence number if we don't
-  // get an ack.  If force is true, then the packet will be sent immediately and
-  // the send scheduler will not be consulted.  If is_retransmit is true, this
-  // packet is being retransmitted with a new sequence number.  Always takes
-  // ownership of packet.
+  // Send a packet to the peer.  If should_retransmit is true, this packet
+  // contains data, and contents will be retransmitted with a new sequence
+  // number if we don't get an ack.  If force is true, then the packet will
+  // be sent immediately and the send scheduler will not be consulted.  If
+  // is_retransmission is true, this packet is being retransmitted with a new
+  // sequence number.  Always takes ownership of packet.
   // TODO(wtc): none of the callers check the return value.
   virtual bool SendPacket(QuicPacketSequenceNumber number,
                           QuicPacket* packet,
-                          bool should_resend,
+                          bool should_retransmit,
                           bool force,
-                          bool is_retransmit);
+                          bool is_retransmission);
 
   // Make sure an ack we got from our peer is sane.
   bool ValidateAckFrame(const QuicAckFrame& incoming_ack);
@@ -272,18 +277,18 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   struct QueuedPacket {
     QueuedPacket(QuicPacketSequenceNumber sequence_number,
                  QuicPacket* packet,
-                 bool resend,
-                 bool retransmit)
+                 bool should_retransmit,
+                 bool is_retransmission)
         : sequence_number(sequence_number),
           packet(packet),
-          resend(resend),
-          retransmit(retransmit) {
+          should_retransmit(should_retransmit),
+          is_retransmission(is_retransmission) {
     }
 
     QuicPacketSequenceNumber sequence_number;
     QuicPacket* packet;
-    bool resend;
-    bool retransmit;
+    bool should_retransmit;
+    bool is_retransmission;
   };
 
   struct UnackedPacket {
@@ -301,17 +306,19 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   typedef base::hash_map<QuicPacketSequenceNumber,
       UnackedPacket*> UnackedPacketMap;
   typedef std::map<QuicFecGroupNumber, QuicFecGroup*> FecGroupMap;
+  typedef std::list<std::pair<QuicPacketSequenceNumber, QuicTime> >
+      RetransmissionTimeouts;
 
-  // The amount of time we wait before resending a packet.
-  static const QuicTime::Delta DefaultResendTime() {
+  // The amount of time we wait before retransmitting a packet.
+  static const QuicTime::Delta DefaultRetransmissionTime() {
     return QuicTime::Delta::FromMilliseconds(500);
   }
 
   static void DeleteUnackedPacket(UnackedPacket* unacked);
-  static bool ShouldResend(const QuicFrame& frame);
+  static bool ShouldRetransmit(const QuicFrame& frame);
 
   // Checks if a packet can be written now, and sets the timer if necessary.
-  bool CanWrite(bool is_retransmit);
+  bool CanWrite(bool is_retransmission);
 
   // Writes as much queued data as possible.  The connection must not be
   // blocked when this is called.
@@ -356,13 +363,24 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   QuicPacketSequenceNumber peer_largest_observed_packet_;
   QuicPacketSequenceNumber peer_least_packet_awaiting_ack_;
 
-  // When new packets are created which may be resent, they are added
+  // When new packets are created which may be retransmitted, they are added
   // to this map, which contains owning pointers to the contained frames.
   UnackedPacketMap unacked_packets_;
 
+  // List of packets that we might need to retransmission, and the time at
+  // which we should retransmission them.  This is currently a FIFO queue which
+  // means we will never fire an RTO for packet 2 if we are waiting to fire
+  // the RTO for packet 1.  This logic is likely suboptimal but it will
+  // change when it moves to the SendScheduler so it is fine for now.
+  RetransmissionTimeouts retransmission_timeouts_;
+
+  // True while OnRetransmissionTimeout is running to prevent
+  // SetRetransmissionAlarm from being called erroneously.
+  bool handling_retransmission_timeout_;
+
   // When packets could not be sent because the socket was not writable,
   // they are added to this list.  All corresponding frames are in
-  // unacked_packets_ if they are to be resent.
+  // unacked_packets_ if they are to be retransmitted.
   QueuedPacketList queued_packets_;
 
   // Pending control frames, besides the ack and congestion control frames.
@@ -383,10 +401,9 @@ class NET_EXPORT_PRIVATE QuicConnection : public QuicFramerVisitorInterface {
   // The time that we got or tried to send a packet for this connection.
   QuicTime time_of_last_packet_;
 
-  scoped_ptr<QuicReceiptMetricsCollector> collector_;
-
-  // Scheduler which drives packet send rate.
-  scoped_ptr<QuicSendScheduler> scheduler_;
+  // Congestion manager which controls the rate the connection sends packets
+  // as well as collecting and generating congestion feedback.
+  QuicCongestionManager congestion_manager_;
 
   // True by default.  False if we've received or sent an explicit connection
   // close.

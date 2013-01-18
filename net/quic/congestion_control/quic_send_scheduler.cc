@@ -67,11 +67,11 @@ int QuicSendScheduler::UpdatePacketHistory() {
 
 void QuicSendScheduler::SentPacket(QuicPacketSequenceNumber sequence_number,
                                    size_t bytes,
-                                   bool retransmit) {
+                                   bool is_retransmission) {
   int bucket = UpdatePacketHistory();
   packet_history_[bucket] += bytes;
-  send_algorithm_->SentPacket(sequence_number, bytes, retransmit);
-  if (!retransmit) {
+  send_algorithm_->SentPacket(sequence_number, bytes, is_retransmission);
+  if (!is_retransmission) {
     pending_packets_[sequence_number] =
         new PendingPacket(bytes, clock_->Now());
   }
@@ -125,8 +125,8 @@ void QuicSendScheduler::OnIncomingAckFrame(const QuicAckFrame& ack_frame) {
   }
 }
 
-QuicTime::Delta QuicSendScheduler::TimeUntilSend(bool retransmit) {
-  return send_algorithm_->TimeUntilSend(retransmit);
+QuicTime::Delta QuicSendScheduler::TimeUntilSend(bool is_retransmission) {
+  return send_algorithm_->TimeUntilSend(is_retransmission);
 }
 
 size_t QuicSendScheduler::AvailableCongestionWindow() {

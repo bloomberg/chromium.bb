@@ -39,12 +39,12 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   // Note: this function must be called for every packet sent to the wire.
   virtual void SentPacket(QuicPacketSequenceNumber sequence_number,
                           size_t bytes,
-                          bool retransmit) = 0;
+                          bool is_retransmission) = 0;
 
   // Calculate the time until we can send the next packet.
   // Usage: When this returns 0, CongestionWindow returns the number of bytes
   // of the congestion window.
-  virtual QuicTime::Delta TimeUntilSend(bool retransmit) = 0;
+  virtual QuicTime::Delta TimeUntilSend(bool is_retransmission) = 0;
 
   // The current available congestion window in bytes.
   virtual size_t AvailableCongestionWindow() = 0;

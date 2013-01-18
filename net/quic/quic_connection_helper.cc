@@ -15,13 +15,6 @@
 
 namespace net {
 
-// Limit the number of packets we send per resend-alarm so we eventually cede.
-// 10 is arbitrary.
-const size_t kMaxPacketsPerResendAlarm = 10;
-
-// The time to wait if an RTO alarm fires but is ignored due to truncated acks.
-const int kExtraRTODelayUs = 500 * 1000;
-
 QuicConnectionHelper::QuicConnectionHelper(base::TaskRunner* task_runner,
                                            const QuicClock* clock,
                                            QuicRandom* random_generator,
@@ -33,10 +26,10 @@ QuicConnectionHelper::QuicConnectionHelper(base::TaskRunner* task_runner,
       random_generator_(random_generator),
       send_alarm_registered_(false),
       timeout_alarm_registered_(false),
-      resend_alarm_registered_(false),
-      resend_alarm_running_(false),
+      retransmission_alarm_registered_(false),
+      retransmission_alarm_running_(false),
       ack_alarm_registered_(false),
-      ack_alarm_time_(QuicTime()) {
+      ack_alarm_time_(QuicTime::Zero()) {
 }
 
 QuicConnectionHelper::~QuicConnectionHelper() {
@@ -78,19 +71,14 @@ int QuicConnectionHelper::WritePacketToWire(
   return rv;
 }
 
-void QuicConnectionHelper::SetResendAlarm(
-    QuicPacketSequenceNumber sequence_number,
-    QuicTime::Delta delay) {
-  if (!resend_alarm_registered_ &&
-      !resend_alarm_running_) {
-    resend_alarm_registered_ = true;
+void QuicConnectionHelper::SetRetransmissionAlarm(QuicTime::Delta delay) {
+  if (!retransmission_alarm_registered_) {
     task_runner_->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&QuicConnectionHelper::OnResendAlarm,
+        base::Bind(&QuicConnectionHelper::OnRetransmissionAlarm,
                    weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMicroseconds(delay.ToMicroseconds()));
   }
-  resend_times_[sequence_number] = clock_->Now().Add(delay);
 }
 
 void QuicConnectionHelper::SetAckAlarm(QuicTime::Delta delay) {
@@ -106,7 +94,7 @@ void QuicConnectionHelper::SetAckAlarm(QuicTime::Delta delay) {
 }
 
 void QuicConnectionHelper::ClearAckAlarm() {
-  ack_alarm_time_ = QuicTime();
+  ack_alarm_time_ = QuicTime::Zero();
 }
 
 void QuicConnectionHelper::SetSendAlarm(QuicTime::Delta delay) {
@@ -149,41 +137,11 @@ void QuicConnectionHelper::GetPeerAddress(IPEndPoint* peer_address) {
   socket_->GetPeerAddress(peer_address);
 }
 
-void QuicConnectionHelper::OnResendAlarm() {
-  // This guards against registering the alarm later than we should.
-  //
-  // If we have packet A and B in the list and we call MaybeResendPacketForRTO
-  // on A, that may trigger a call to SetResendAlarm if A is resent as C.  In
-  // that case we don't want to register the alarm under SetResendAlarm; we
-  // want to set it to the RTO of B at the end of this method.
-  resend_alarm_registered_ = false;
-  resend_alarm_running_ = true;
-
-  for (size_t i = 0; i < kMaxPacketsPerResendAlarm; ++i) {
-    if (resend_times_.empty() ||
-        resend_times_.begin()->second > clock_->Now()) {
-      break;
-    }
-    QuicPacketSequenceNumber sequence_number = resend_times_.begin()->first;
-    if (!connection_->MaybeResendPacketForRTO(sequence_number)) {
-      DLOG(INFO) << "MaybeResendPacketForRTO failed: adding an extra delay.";
-      SetResendAlarm(sequence_number,
-                     QuicTime::Delta::FromMicroseconds(kExtraRTODelayUs));
-      break;
-    }
-    resend_times_.erase(sequence_number);
+void QuicConnectionHelper::OnRetransmissionAlarm() {
+  QuicTime when = connection_->OnRetransmissionTimeout();
+  if (!when.IsInitialized()) {
+    SetRetransmissionAlarm(clock_->Now().Subtract(when));
   }
-
-  // Nothing from here on does external calls.
-  resend_alarm_running_ = false;
-  if (resend_times_.empty()) {
-    return;
-  }
-
-  // We have packet remaining.  Reschedule for the RTO of the oldest packet
-  // on the list.
-  SetResendAlarm(resend_times_.begin()->first,
-                 resend_times_.begin()->second.Subtract(clock_->Now()));
 }
 
 void QuicConnectionHelper::OnSendAlarm() {
@@ -211,7 +169,7 @@ void QuicConnectionHelper::OnAckAlarm() {
     return;
   }
 
-  ack_alarm_time_ = QuicTime();
+  ack_alarm_time_ = QuicTime::Zero();
   connection_->SendAck();
 }
 

@@ -9,7 +9,10 @@ namespace net {
 CryptoHandshakeMessage::CryptoHandshakeMessage() {}
 CryptoHandshakeMessage::~CryptoHandshakeMessage() {}
 
-QuicClientCryptoConfig::QuicClientCryptoConfig() : version(0) {
+QuicClientCryptoConfig::QuicClientCryptoConfig()
+    : version(0),
+      idle_connection_state_lifetime(QuicTime::Delta::Zero()),
+      keepalive_timeout(QuicTime::Delta::Zero()) {
 }
 
 QuicClientCryptoConfig::~QuicClientCryptoConfig() {}
@@ -36,7 +39,7 @@ void QuicClientCryptoConfig::SetDefaults() {
   idle_connection_state_lifetime = QuicTime::Delta::FromMilliseconds(300000);
 
   // Keepalive timeout.
-  keepalive_timeout = QuicTime::Delta();  // Don't send keepalive probes.
+  keepalive_timeout = QuicTime::Delta::Zero();  // Don't send keepalive probes.
 }
 
 }  // namespace net

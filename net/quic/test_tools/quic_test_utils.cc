@@ -103,9 +103,9 @@ PacketSavingConnection::~PacketSavingConnection() {
 
 bool PacketSavingConnection::SendPacket(QuicPacketSequenceNumber number,
                                         QuicPacket* packet,
-                                        bool should_resend,
+                                        bool should_retransmit,
                                         bool force,
-                                        bool is_retransmit) {
+                                        bool is_retransmission) {
   packets_.push_back(packet);
   return true;
 }
@@ -210,9 +210,10 @@ QuicPacket* ConstructHandshakePacket(QuicGuid guid, CryptoTag tag) {
                          QuicEncrypter::Create(kNULL));
 
   QuicPacketHeader header;
-  header.guid = guid;
+  header.public_header.guid = guid;
+  header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
   header.packet_sequence_number = 1;
-  header.flags = PACKET_FLAGS_NONE;
+  header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
   header.fec_group = 0;
 
   QuicStreamFrame stream_frame(kCryptoStreamId, false, 0,
@@ -240,9 +241,10 @@ QuicPacket* ConstructClientHelloPacket(QuicGuid guid,
                          QuicEncrypter::Create(kNULL));
 
   QuicPacketHeader header;
-  header.guid = guid;
+  header.public_header.guid = guid;
+  header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
   header.packet_sequence_number = 1;
-  header.flags = PACKET_FLAGS_NONE;
+  header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
   header.fec_group = 0;
 
   QuicStreamFrame stream_frame(kCryptoStreamId, false, 0,

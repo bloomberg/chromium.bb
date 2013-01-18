@@ -139,8 +139,7 @@ class MockHelper : public QuicConnectionHelperInterface {
   QuicRandom* GetRandomGenerator();
   MOCK_METHOD2(WritePacketToWire, int(const QuicEncryptedPacket& packet,
                                       int* error));
-  MOCK_METHOD2(SetResendAlarm, void(QuicPacketSequenceNumber sequence_number,
-                                    QuicTime::Delta delay));
+  MOCK_METHOD1(SetRetransmissionAlarm, void(QuicTime::Delta delay));
   MOCK_METHOD1(SetAckAlarm, void(QuicTime::Delta delay));
   MOCK_METHOD1(SetSendAlarm, void(QuicTime::Delta delay));
   MOCK_METHOD1(SetTimeoutAlarm, void(QuicTime::Delta delay));
@@ -183,9 +182,9 @@ class PacketSavingConnection : public MockConnection {
 
   virtual bool SendPacket(QuicPacketSequenceNumber number,
                           QuicPacket* packet,
-                          bool should_resend,
+                          bool should_retransmit,
                           bool force,
-                          bool is_retransmit) OVERRIDE;
+                          bool is_retransmission) OVERRIDE;
 
   std::vector<QuicPacket*> packets_;
 
@@ -209,7 +208,8 @@ class MockSession : public QuicSession {
   MOCK_METHOD0(CreateOutgoingReliableStream, ReliableQuicStream*());
   MOCK_METHOD4(WriteData, QuicConsumedData(QuicStreamId id,
                                            base::StringPiece data,
-                                           QuicStreamOffset offset, bool fin));
+                                           QuicStreamOffset offset,
+                                           bool fin));
   MOCK_METHOD0(IsHandshakeComplete, bool());
 
  private:

@@ -162,7 +162,7 @@ class QuicHttpStreamTest : public ::testing::Test {
     scheduler_ = new MockScheduler();
     collector_ = new TestCollector(NULL);
     EXPECT_CALL(*scheduler_, TimeUntilSend(_)).
-        WillRepeatedly(testing::Return(QuicTime::Delta()));
+        WillRepeatedly(testing::Return(QuicTime::Delta::Zero()));
     helper_ = new QuicConnectionHelper(runner_.get(), &clock_,
                                        &random_generator_, socket);
     connection_ = new TestQuicConnection(guid_, peer_addr_, helper_);
@@ -234,10 +234,11 @@ class QuicHttpStreamTest : public ::testing::Test {
 
  private:
   void InitializeHeader(QuicPacketSequenceNumber sequence_number) {
-    header_.guid = guid_;
+    header_.public_header.guid = guid_;
+    header_.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
     header_.packet_sequence_number = sequence_number;
-    header_.flags = PACKET_FLAGS_NONE;
     header_.fec_group = 0;
+    header_.private_flags = PACKET_PRIVATE_FLAGS_NONE;
   }
 
   QuicEncryptedPacket* ConstructPacket(const QuicPacketHeader& header,

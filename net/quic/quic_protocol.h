@@ -32,20 +32,7 @@ typedef uint64 QuicGuid;
 typedef uint32 QuicStreamId;
 typedef uint64 QuicStreamOffset;
 typedef uint64 QuicPacketSequenceNumber;
-typedef uint8 QuicFecGroupNumber;
-
-// A struct for functions which consume data payloads and fins.
-// The first member of the pair indicates bytes consumed.
-// The second member of the pair indicates if an incoming fin was consumed.
-struct QuicConsumedData {
-  QuicConsumedData(size_t bytes_consumed, bool fin_consumed)
-      : bytes_consumed(bytes_consumed),
-        fin_consumed(fin_consumed) {
-  }
-  size_t bytes_consumed;
-  bool fin_consumed;
-};
-
+typedef QuicPacketSequenceNumber QuicFecGroupNumber;
 
 // TODO(rch): Consider Quic specific names for these constants.
 const size_t kMaxPacketSize = 1200;  // Maximum size in bytes of a QUIC packet.
@@ -53,20 +40,40 @@ const size_t kMaxPacketSize = 1200;  // Maximum size in bytes of a QUIC packet.
 // Maximum number of open streams per connection.
 const size_t kDefaultMaxStreamsPerConnection = 100;
 
-// Size in bytes of the packet header common across all packets.
-const size_t kPacketHeaderSize = 16;
+// Number of bytes reserved for guid in the packet header.
+const size_t kQuicGuidSize = 8;
+// Number of bytes reserved for public flags in the packet header.
+const size_t kPublicFlagsSize = 1;
+// Number of bytes reserved for sequence number in the packet header.
+const size_t kSequenceNumberSize = 6;
+// Number of bytes reserved for private flags in the packet header.
+const size_t kPrivateFlagsSize = 1;
+// Number of bytes reserved for FEC group in the packet header.
+const size_t kFecGroupSize = 1;
+
+// Size in bytes of the data or fec packet header.
+const size_t kPacketHeaderSize = kQuicGuidSize + kPublicFlagsSize +
+    kPrivateFlagsSize + kSequenceNumberSize + kFecGroupSize;
+
+// Index into the guid offset in the header.
+const size_t kGuidOffset = 0;
+// Index into the flags offset in the header.
+const size_t kPublicFlagsOffset = kQuicGuidSize;
+
+// Index into the sequence number offset in the header.
+const size_t kSequenceNumberOffset = kPublicFlagsOffset + kPublicFlagsSize;
+// Index into the private flags offset in the data packet header.
+const size_t kPrivateFlagsOffset = kSequenceNumberOffset + kSequenceNumberSize;
+// Index into the fec group offset in the header.
+const size_t kFecGroupOffset = kPrivateFlagsOffset + kPrivateFlagsSize;
+
 // Index of the first byte in a QUIC packet of FEC protected data.
 const size_t kStartOfFecProtectedData = kPacketHeaderSize;
 // Index of the first byte in a QUIC packet of encrypted data.
-const size_t kStartOfEncryptedData = kPacketHeaderSize - 1;
+const size_t kStartOfEncryptedData = kPacketHeaderSize - kPrivateFlagsSize -
+    kFecGroupSize;
 // Index of the first byte in a QUIC packet which is hashed.
 const size_t kStartOfHashData = 0;
-// Index into the sequence number offset in the header.
-const int kSequenceNumberOffset = 8;
-// Index into the flags offset in the header.
-const int kFlagsOffset = 14;
-// Index into the fec group offset in the header.
-const int kFecGroupOffset = 15;
 
 // Size in bytes of all stream frame fields.
 const size_t kMinStreamFrameLength = 15;
@@ -78,13 +85,16 @@ const QuicStreamId kMaxStreamIdDelta = 100;
 // TODO(rch): ensure that this is not usable by any other streams.
 const QuicStreamId kCryptoStreamId = 1;
 
+// Value which indicates this packet is not FEC protected.
+const uint8 kNoFecOffset = 0xFF;
+
 typedef std::pair<QuicPacketSequenceNumber, QuicPacket*> PacketPair;
 
 const int64 kDefaultTimeoutUs = 600000000;  // 10 minutes.
 
 enum QuicFrameType {
-  STREAM_FRAME = 0,
-  PDU_FRAME,
+  PADDING_FRAME = 0,
+  STREAM_FRAME,
   ACK_FRAME,
   CONGESTION_FEEDBACK_FRAME,
   RST_STREAM_FRAME,
@@ -92,11 +102,21 @@ enum QuicFrameType {
   NUM_FRAME_TYPES
 };
 
-enum QuicPacketFlags {
-  PACKET_FLAGS_NONE = 0,
-  PACKET_FLAGS_FEC = 1,  // Payload is FEC as opposed to frames.
+enum QuicPacketPublicFlags {
+  PACKET_PUBLIC_FLAGS_NONE = 0,
+  PACKET_PUBLIC_FLAGS_VERSION = 1,
+  PACKET_PUBLIC_FLAGS_RST = 2,  // Packet is a public reset packet.
+  PACKET_PUBLIC_FLAGS_MAX = 3  // Both bit set.
+};
 
-  PACKET_FLAGS_MAX = PACKET_FLAGS_FEC
+enum QuicPacketPrivateFlags {
+  PACKET_PRIVATE_FLAGS_NONE = 0,
+  PACKET_PRIVATE_FLAGS_FEC = 1,  // Payload is FEC as opposed to frames.
+  PACKET_PRIVATE_FLAGS_MAX = PACKET_PRIVATE_FLAGS_FEC
+};
+
+enum QuicVersion {
+  QUIC_VERSION_1 = 0
 };
 
 enum QuicErrorCode {
@@ -161,13 +181,26 @@ enum QuicErrorCode {
 
 };
 
-struct NET_EXPORT_PRIVATE QuicPacketHeader {
-  // Includes the ConnectionHeader and CongestionMonitoredHeader
-  // from the design docs, as well as some elements of DecryptedData.
+struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
+  // Universal header. All QuicPacket headers will have a guid and public flags.
+  // TODO(satyamshekhar): Support versioning as per Protocol Negotiation Doc.
   QuicGuid guid;
+  QuicPacketPublicFlags flags;
+};
+
+// Header for Data or FEC packets.
+struct QuicPacketHeader {
+  QuicPacketHeader() {}
+  explicit QuicPacketHeader(const QuicPacketPublicHeader& header)
+      : public_header(header) {}
+  QuicPacketPublicHeader public_header;
+  QuicPacketPrivateFlags private_flags;
   QuicPacketSequenceNumber packet_sequence_number;
-  QuicPacketFlags flags;
   QuicFecGroupNumber fec_group;
+};
+
+// A padding frame contains no payload.
+struct NET_EXPORT_PRIVATE QuicPaddingFrame {
 };
 
 struct NET_EXPORT_PRIVATE QuicStreamFrame {
@@ -308,6 +341,10 @@ struct NET_EXPORT_PRIVATE QuicConnectionCloseFrame {
 
 struct NET_EXPORT_PRIVATE QuicFrame {
   QuicFrame() {}
+  explicit QuicFrame(QuicPaddingFrame* padding_frame)
+      : type(PADDING_FRAME),
+        padding_frame(padding_frame) {
+  }
   explicit QuicFrame(QuicStreamFrame* stream_frame)
       : type(STREAM_FRAME),
         stream_frame(stream_frame) {
@@ -331,6 +368,7 @@ struct NET_EXPORT_PRIVATE QuicFrame {
 
   QuicFrameType type;
   union {
+    QuicPaddingFrame* padding_frame;
     QuicStreamFrame* stream_frame;
     QuicAckFrame* ack_frame;
     QuicCongestionFeedbackFrame* congestion_feedback_frame;
@@ -346,6 +384,9 @@ struct NET_EXPORT_PRIVATE QuicFecData {
 
   bool operator==(const QuicFecData& other) const;
 
+  // The FEC group number is also the sequence number of the first
+  // FEC protected packet.  The last protected packet's sequence number will
+  // be one less than the sequence number of the FEC packet.
   QuicFecGroupNumber fec_group;
   QuicPacketSequenceNumber min_protected_packet_sequence_number;
   // The last protected packet's sequence number will be one
@@ -388,11 +429,17 @@ class NET_EXPORT_PRIVATE QuicData {
 
 class NET_EXPORT_PRIVATE QuicPacket : public QuicData {
  public:
-  QuicPacket(
-      char* buffer, size_t length, bool owns_buffer, QuicPacketFlags flags)
-      : QuicData(buffer, length, owns_buffer),
-        buffer_(buffer),
-        flags_(flags) { }
+  static QuicPacket* NewDataPacket(char* buffer,
+                               size_t length,
+                               bool owns_buffer) {
+    return new QuicPacket(buffer, length, owns_buffer, false);
+  }
+
+  static QuicPacket* NewFecPacket(char* buffer,
+                                  size_t length,
+                                  bool owns_buffer) {
+    return new QuicPacket(buffer, length, owns_buffer, true);
+  }
 
   base::StringPiece FecProtectedData() const {
     return base::StringPiece(data() + kStartOfFecProtectedData,
@@ -408,15 +455,18 @@ class NET_EXPORT_PRIVATE QuicPacket : public QuicData {
                              length() - kStartOfEncryptedData);
   }
 
-  bool IsFecPacket() const {
-    return flags_ == PACKET_FLAGS_FEC;
-  }
+  bool is_fec_packet() const { return is_fec_packet_; }
 
   char* mutable_data() { return buffer_; }
 
  private:
+  QuicPacket(char* buffer, size_t length, bool owns_buffer, bool is_fec_packet)
+      : QuicData(buffer, length, owns_buffer),
+        buffer_(buffer),
+        is_fec_packet_(is_fec_packet) { }
+
   char* buffer_;
-  const QuicPacketFlags flags_;
+  const bool is_fec_packet_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicPacket);
 };
@@ -435,6 +485,18 @@ class NET_EXPORT_PRIVATE QuicEncryptedPacket : public QuicData {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicEncryptedPacket);
+};
+
+// A struct for functions which consume data payloads and fins.
+// The first member of the pair indicates bytes consumed.
+// The second member of the pair indicates if an incoming fin was consumed.
+struct QuicConsumedData {
+  QuicConsumedData(size_t bytes_consumed, bool fin_consumed)
+      : bytes_consumed(bytes_consumed),
+        fin_consumed(fin_consumed) {
+  }
+  size_t bytes_consumed;
+  bool fin_consumed;
 };
 
 }  // namespace net

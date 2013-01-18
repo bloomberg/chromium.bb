@@ -64,6 +64,9 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
   TestConnectionHelper(MockClock* clock, MockRandom* random_generator)
       : clock_(clock),
         random_generator_(random_generator),
+        retransmission_alarm_(QuicTime::Zero()),
+        send_alarm_(QuicTime::Zero()),
+        timeout_alarm_(QuicTime::Zero()),
         blocked_(false) {
   }
 
@@ -100,9 +103,8 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
     return packet.length();
   }
 
-  virtual void SetResendAlarm(QuicPacketSequenceNumber sequence_number,
-                              QuicTime::Delta delay) {
-    resend_alarms_[sequence_number] = clock_->Now().Add(delay);
+  virtual void SetRetransmissionAlarm(QuicTime::Delta delay) {
+    retransmission_alarm_ = clock_->Now().Add(delay);
   }
 
   virtual void SetSendAlarm(QuicTime::Delta delay) {
@@ -118,14 +120,14 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
   }
 
   virtual void UnregisterSendAlarmIfRegistered() {
-    send_alarm_ = QuicTime();
+    send_alarm_ = QuicTime::Zero();
   }
 
   virtual void SetAckAlarm(QuicTime::Delta delay) {}
   virtual void ClearAckAlarm() {}
 
-  const map<QuicPacketSequenceNumber, QuicTime>& resend_alarms() const {
-    return resend_alarms_;
+  QuicTime retransmission_alarm() const {
+    return retransmission_alarm_;
   }
 
   QuicTime timeout_alarm() const { return timeout_alarm_; }
@@ -141,7 +143,7 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
  private:
   MockClock* clock_;
   MockRandom* random_generator_;
-  map<QuicPacketSequenceNumber, QuicTime> resend_alarms_;
+  QuicTime retransmission_alarm_;
   QuicTime send_alarm_;
   QuicTime timeout_alarm_;
   QuicPacketHeader header_;
@@ -174,11 +176,11 @@ class TestConnection : public QuicConnection {
 
   bool SendPacket(QuicPacketSequenceNumber sequence_number,
                   QuicPacket* packet,
-                  bool should_resend,
+                  bool should_retransmit,
                   bool force,
-                  bool is_retransmit) {
+                  bool is_retransmission) {
     return QuicConnection::SendPacket(
-        sequence_number, packet, should_resend, force, is_retransmit);
+        sequence_number, packet, should_retransmit, force, is_retransmission);
   }
 
  private:
@@ -202,7 +204,7 @@ class QuicConnectionTest : public ::testing::Test {
     // Simplify tests by not sending feedback unless specifically configured.
     SetFeedback(NULL);
     EXPECT_CALL(*scheduler_, TimeUntilSend(_)).WillRepeatedly(Return(
-        QuicTime::Delta()));
+        QuicTime::Delta::Zero()));
     EXPECT_CALL(*collector_,
                 RecordIncomingPacket(_, _, _, _)).Times(AnyNumber());
     EXPECT_CALL(*scheduler_, SentPacket(_, _, _)).Times(AnyNumber());
@@ -262,13 +264,13 @@ class QuicConnectionTest : public ::testing::Test {
     // redundancy.
     scoped_ptr<QuicPacket> data_packet(ConstructDataPacket(number, 1));
 
-    header_.guid = guid_;
+    header_.public_header.guid = guid_;
+    header_.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+    header_.private_flags = PACKET_PRIVATE_FLAGS_FEC;
     header_.packet_sequence_number = number;
-    header_.flags = PACKET_FLAGS_FEC;
-    header_.fec_group = 1;
+    header_.fec_group = min_protected_packet;
     QuicFecData fec_data;
-    fec_data.min_protected_packet_sequence_number = min_protected_packet;
-    fec_data.fec_group = 1;
+    fec_data.fec_group = header_.fec_group;
     // Since all data packets in this test have the same payload, the
     // redundancy is either equal to that payload or the xor of that payload
     // with itself, depending on the number of packets.
@@ -291,7 +293,11 @@ class QuicConnectionTest : public ::testing::Test {
                             QuicStreamOffset offset, bool fin,
                             QuicPacketSequenceNumber* last_packet) {
     EXPECT_CALL(*scheduler_, SentPacket(_, _, _));
-    connection_.SendStreamData(id, data, offset, fin, last_packet);
+    connection_.SendStreamData(id, data, offset, fin);
+    if (last_packet != NULL) {
+      *last_packet =
+          QuicConnectionPeer::GetPacketCreator(&connection_)->sequence_number();
+    }
     EXPECT_CALL(*scheduler_, SentPacket(_, _, _)).Times(AnyNumber());
   }
 
@@ -321,9 +327,10 @@ class QuicConnectionTest : public ::testing::Test {
 
   QuicPacket* ConstructDataPacket(QuicPacketSequenceNumber number,
                                   QuicFecGroupNumber fec_group) {
-    header_.guid = guid_;
+    header_.public_header.guid = guid_;
+    header_.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+    header_.private_flags = PACKET_PRIVATE_FLAGS_NONE;
     header_.packet_sequence_number = number;
-    header_.flags = PACKET_FLAGS_NONE;
     header_.fec_group = fec_group;
 
     QuicFrames frames;
@@ -602,7 +609,7 @@ TEST_F(QuicConnectionTest, BasicSending) {
   EXPECT_EQ(9u, last_ack()->sent_info.least_unacked);
 }
 
-TEST_F(QuicConnectionTest, ResendOnNack) {
+TEST_F(QuicConnectionTest, RetransmitOnNack) {
   QuicPacketSequenceNumber last_packet;
   SendStreamDataToPeer(1, "foo", 0, false, &last_packet);  // Packet 1
   SendStreamDataToPeer(1, "foos", 3, false, &last_packet);  // Packet 2
@@ -612,8 +619,8 @@ TEST_F(QuicConnectionTest, ResendOnNack) {
   expected_acks.insert(1);
   EXPECT_CALL(visitor_, OnAck(ContainerEq(expected_acks)));
 
-  // Client acks one but not two or three.  Right now we only resend on explicit
-  // nack, so it should not trigger resend.
+  // Client acks one but not two or three.  Right now we only retransmit on
+  // explicit nack, so it should not trigger a retransimission.
   QuicAckFrame ack_one(1, 0);
   ProcessAckPacket(&ack_one);
   ProcessAckPacket(&ack_one);
@@ -630,8 +637,8 @@ TEST_F(QuicConnectionTest, ResendOnNack) {
   ProcessAckPacket(&nack_two);
   ProcessAckPacket(&nack_two);
 
-  // The third nack should trigger resend.
-  EXPECT_CALL(*scheduler_, SentPacket(_, 37, true)).Times(1);
+  // The third nack should trigger a retransimission.
+  EXPECT_CALL(*scheduler_, SentPacket(_, 38, true)).Times(1);
   ProcessAckPacket(&nack_two);
 }
 
@@ -658,11 +665,11 @@ TEST_F(QuicConnectionTest, LimitPacketsPerNack) {
   // The second call will trigger an ack.
   EXPECT_CALL(*scheduler_, SentPacket(_, _, _)).Times(1);
   ProcessAckPacket(&nack);
-  // The third call should trigger resending 10 packets.
+  // The third call should trigger retransmitting 10 packets.
   EXPECT_CALL(*scheduler_, SentPacket(_, _, _)).Times(10);
   ProcessAckPacket(&nack);
 
-  // The fourth call should trigger resending the 11th packet and an ack.
+  // The fourth call should trigger retransmitting the 11th packet and an ack.
   EXPECT_CALL(*scheduler_, SentPacket(_, _, _)).Times(2);
   ProcessAckPacket(&nack);
 }
@@ -764,26 +771,25 @@ TEST_F(QuicConnectionTest, ReviveMissingPacketAfterDataPackets) {
   ProcessFecProtectedPacket(5, true);
 }
 
-TEST_F(QuicConnectionTest, TestResend) {
+TEST_F(QuicConnectionTest, TestRetransmit) {
   // TODO(rch): make this work
   // FLAGS_fake_packet_loss_percentage = 100;
-  const QuicTime::Delta kDefaultResendTime =
+  const QuicTime::Delta kDefaultRetransmissionTime =
       QuicTime::Delta::FromMilliseconds(500);
 
-  QuicTime default_resend_time = clock_.Now().Add(kDefaultResendTime);
+  QuicTime default_retransmission_time = clock_.Now().Add(
+      kDefaultRetransmissionTime);
 
   QuicAckFrame* outgoing_ack = QuicConnectionPeer::GetOutgoingAck(&connection_);
   SendStreamDataToPeer(1, "foo", 0, false, NULL);
   EXPECT_EQ(1u, outgoing_ack->sent_info.least_unacked);
 
   EXPECT_EQ(1u, last_header()->packet_sequence_number);
-  EXPECT_EQ(1u, helper_->resend_alarms().size());
-  EXPECT_EQ(default_resend_time,
-            helper_->resend_alarms().find(1)->second);
-  // Simulate the resend alarm firing
-  clock_.AdvanceTime(kDefaultResendTime);
+  EXPECT_EQ(default_retransmission_time, helper_->retransmission_alarm());
+  // Simulate the retransimission alarm firing
+  clock_.AdvanceTime(kDefaultRetransmissionTime);
   EXPECT_CALL(*scheduler_, SentPacket(_, _, _));
-  connection_.MaybeResendPacket(1);
+  connection_.MaybeRetransmitPacket(1);
   EXPECT_EQ(2u, last_header()->packet_sequence_number);
   EXPECT_EQ(2u, outgoing_ack->sent_info.least_unacked);
 }
@@ -792,7 +798,7 @@ TEST_F(QuicConnectionTest, TestResend) {
 TEST_F(QuicConnectionTest, DISABLED_TestQueued) {
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
   helper_->set_blocked(true);
-  connection_.SendStreamData(1, "foo", 0, false, NULL);
+  connection_.SendStreamData(1, "foo", 0, false);
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
 
   // Attempt to send all packets, but since we're actually still
@@ -876,7 +882,7 @@ TEST_F(QuicConnectionTest, TimeoutAfterSend) {
   // When we send a packet, the timeout will change to 5000 + kDefaultTimeout.
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(5));
 
-  // Send an ack so we don't set the resend alarm.
+  // Send an ack so we don't set the retransimission alarm.
   SendAckPacketToPeer();
   EXPECT_EQ(default_timeout, helper_->timeout_alarm());
 
@@ -900,12 +906,12 @@ TEST_F(QuicConnectionTest, TimeoutAfterSend) {
   EXPECT_FALSE(connection_.connected());
 }
 
-// TODO(ianswett): Add scheduler tests when resend is false.
+// TODO(ianswett): Add scheduler tests when should_retransmit is false.
 TEST_F(QuicConnectionTest, SendScheduler) {
   // Test that if we send a packet without delay, it is not queued.
   QuicPacket* packet = ConstructDataPacket(1, 0);
   EXPECT_CALL(*scheduler_, TimeUntilSend(false)).WillOnce(testing::Return(
-      QuicTime::Delta()));
+      QuicTime::Delta::Zero()));
   EXPECT_CALL(*scheduler_, SentPacket(_, _, _));
   connection_.SendPacket(1, packet, true, false, false);
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
@@ -935,7 +941,7 @@ TEST_F(QuicConnectionTest, DISABLED_SendSchedulerEAGAIN) {
   QuicPacket* packet = ConstructDataPacket(1, 0);
   helper_->set_blocked(true);
   EXPECT_CALL(*scheduler_, TimeUntilSend(false)).WillOnce(testing::Return(
-      QuicTime::Delta()));
+      QuicTime::Delta::Zero()));
   EXPECT_CALL(*scheduler_, SentPacket(1, _, _)).Times(0);
   connection_.SendPacket(1, packet, true, false, false);
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
@@ -952,7 +958,7 @@ TEST_F(QuicConnectionTest, SendSchedulerDelayThenSend) {
   // Advance the clock to fire the alarm, and configure the scheduler
   // to permit the packet to be sent.
   EXPECT_CALL(*scheduler_, TimeUntilSend(false)).WillOnce(testing::Return(
-      QuicTime::Delta()));
+      QuicTime::Delta::Zero()));
   clock_.AdvanceTime(QuicTime::Delta::FromMicroseconds(1));
   EXPECT_CALL(*scheduler_, SentPacket(_, _, _));
   EXPECT_CALL(visitor_, OnCanWrite());
@@ -971,7 +977,7 @@ TEST_F(QuicConnectionTest, SendSchedulerDelayThenRetransmit) {
   // Advance the clock to fire the alarm, and configure the scheduler
   // to permit the packet to be sent.
   EXPECT_CALL(*scheduler_, TimeUntilSend(true)).WillOnce(testing::Return(
-      QuicTime::Delta()));
+      QuicTime::Delta::Zero()));
 
   // Ensure the scheduler is notified this is a retransmit.
   EXPECT_CALL(*scheduler_, SentPacket(1, _, true));
@@ -1001,11 +1007,11 @@ TEST_F(QuicConnectionTest, SendSchedulerDelayThenAckAndSend) {
   connection_.SendPacket(1, packet, true, false, false);
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
 
-  // Now send non-retransmitting information, that we're not going to resend 3.
-  // The far end should stop waiting for it.
+  // Now send non-retransmitting information, that we're not going to
+  // retransmit 3. The far end should stop waiting for it.
   QuicAckFrame frame(0, 1);
   EXPECT_CALL(*scheduler_, TimeUntilSend(false)).WillRepeatedly(testing::Return(
-      QuicTime::Delta()));
+      QuicTime::Delta::Zero()));
   EXPECT_CALL(*scheduler_, SentPacket(_, _, _));
   EXPECT_CALL(visitor_, OnCanWrite());
   ProcessAckPacket(&frame);
@@ -1022,8 +1028,8 @@ TEST_F(QuicConnectionTest, SendSchedulerDelayThenAckAndHold) {
   connection_.SendPacket(1, packet, true, false, false);
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
 
-  // Now send non-resending information, that we're not going to resend 3.
-  // The far end should stop waiting for it.
+  // Now send non-retransmitting information, that we're not going to
+  // retransmit 3.  The far end should stop waiting for it.
   QuicAckFrame frame(0, 1);
   EXPECT_CALL(*scheduler_, TimeUntilSend(false)).WillOnce(testing::Return(
       QuicTime::Delta::FromMicroseconds(1)));
@@ -1055,9 +1061,9 @@ TEST_F(QuicConnectionTest, TestQueueLimitsOnSendStreamData) {
   // Queue the first packet.
   EXPECT_CALL(*scheduler_, TimeUntilSend(false)).WillOnce(testing::Return(
       QuicTime::Delta::FromMicroseconds(10)));
-  EXPECT_EQ(6u, connection_.SendStreamData(
-      1, "EnoughDataToQueue", 0, false, NULL).bytes_consumed);
-  EXPECT_EQ(6u, connection_.NumQueuedPackets());
+  EXPECT_EQ(1u, connection_.SendStreamData(
+      1, "EnoughDataToQueue", 0, false).bytes_consumed);
+  EXPECT_EQ(1u, connection_.NumQueuedPackets());
 }
 
 TEST_F(QuicConnectionTest, LoopThroughSendingPackets) {
@@ -1069,7 +1075,7 @@ TEST_F(QuicConnectionTest, LoopThroughSendingPackets) {
   // Queue the first packet.
   EXPECT_CALL(*scheduler_, SentPacket(_, _, _)).Times(17);
   EXPECT_EQ(17u, connection_.SendStreamData(
-                1, "EnoughDataToQueue", 0, false, NULL).bytes_consumed);
+                1, "EnoughDataToQueue", 0, false).bytes_consumed);
 }
 
 }  // namespace

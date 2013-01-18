@@ -98,6 +98,11 @@ bool QuicDataWriter::WriteBytes(const void* data, size_t data_len) {
   return true;
 }
 
+void QuicDataWriter::WritePadding() {
+  memset(buffer_ + length_, 0x00, capacity_ - length_);
+  length_ = capacity_;
+}
+
 bool QuicDataWriter::WriteUInt8ToOffset(uint8 value, size_t offset) {
   DCHECK_LT(offset, capacity_);
   int latched_length = length_;

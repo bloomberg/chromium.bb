@@ -53,7 +53,7 @@ class QuicFecGroupTest : public ::testing::Test {
         if (packet == lost_packet) {
           ASSERT_FALSE(group.IsFinished());
           QuicFecData fec;
-          fec.min_protected_packet_sequence_number = 0;
+          fec.fec_group = 0;
           fec.redundancy = StringPiece(redundancy.get(), strlen(kData[0]));
           ASSERT_TRUE(group.UpdateFec(num_packets, fec));
         } else {
@@ -79,7 +79,7 @@ class QuicFecGroupTest : public ::testing::Test {
       ASSERT_FALSE(group.IsFinished());
       // Attempt to revive the missing packet.
       QuicFecData fec;
-      fec.min_protected_packet_sequence_number = 0;
+      fec.fec_group = 0;
       fec.redundancy = StringPiece(redundancy.get(), strlen(kData[0]));
 
       ASSERT_TRUE(group.UpdateFec(num_packets, fec));
@@ -134,7 +134,7 @@ TEST_F(QuicFecGroupTest, UpdateFecIfReceivedPacketIsNotCovered) {
   group.Update(header, data1);
 
   QuicFecData fec;
-  fec.min_protected_packet_sequence_number = 1;
+  fec.fec_group = 1;
   fec.redundancy = redundancy;
 
   ASSERT_FALSE(group.UpdateFec(2, fec));
@@ -182,7 +182,7 @@ TEST_F(QuicFecGroupTest, ProtectsPacketsBeforeWithSeveralPackets) {
 
 TEST_F(QuicFecGroupTest, ProtectsPacketsBeforeWithFecData) {
   QuicFecData fec;
-  fec.min_protected_packet_sequence_number = 2;
+  fec.fec_group = 2;
   fec.redundancy = kData[0];
 
   QuicFecGroup group;

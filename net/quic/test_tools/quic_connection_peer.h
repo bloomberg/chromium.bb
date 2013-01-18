@@ -12,6 +12,7 @@ namespace net {
 struct QuicAckFrame;
 class QuicConnection;
 class QuicConnectionVisitorInterface;
+class QuicPacketCreator;
 class QuicReceiptMetricsCollector;
 class QuicSendScheduler;
 
@@ -32,6 +33,8 @@ class QuicConnectionPeer {
 
   static QuicConnectionVisitorInterface* GetVisitor(
       QuicConnection* connection);
+
+  static QuicPacketCreator* GetPacketCreator(QuicConnection* connection);
 
   static bool GetReceivedTruncatedAck(QuicConnection* connection);
 

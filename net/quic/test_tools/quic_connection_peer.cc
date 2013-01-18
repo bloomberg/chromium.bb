@@ -4,6 +4,7 @@
 
 #include "net/quic/test_tools/quic_connection_peer.h"
 
+#include "net/quic/congestion_control/quic_congestion_manager.h"
 #include "net/quic/congestion_control/quic_receipt_metrics_collector.h"
 #include "net/quic/congestion_control/quic_send_scheduler.h"
 #include "net/quic/quic_connection.h"
@@ -19,13 +20,13 @@ void QuicConnectionPeer::SendAck(QuicConnection* connection) {
 // static
 void QuicConnectionPeer::SetCollector(QuicConnection* connection,
                                       QuicReceiptMetricsCollector* collector) {
-  connection->collector_.reset(collector);
+  connection->congestion_manager_.collector_.reset(collector);
 }
 
 // static
 void QuicConnectionPeer::SetScheduler(QuicConnection* connection,
                                       QuicSendScheduler* scheduler) {
-  connection->scheduler_.reset(scheduler);
+  connection->congestion_manager_.scheduler_.reset(scheduler);
 }
 
 // static
@@ -37,6 +38,12 @@ QuicAckFrame* QuicConnectionPeer::GetOutgoingAck(QuicConnection* connection) {
 QuicConnectionVisitorInterface* QuicConnectionPeer::GetVisitor(
     QuicConnection* connection) {
   return connection->visitor_;
+}
+
+// static
+QuicPacketCreator* QuicConnectionPeer::GetPacketCreator(
+    QuicConnection* connection) {
+  return &connection->packet_creator_;
 }
 
 bool QuicConnectionPeer::GetReceivedTruncatedAck(QuicConnection* connection) {

@@ -54,7 +54,7 @@ TEST_F(QuicSendSchedulerTest, FixedRatePacing) {
   feedback.fix_rate.bitrate_in_bytes_per_second = 100000;
   sender_->OnIncomingQuicCongestionFeedbackFrame(feedback);
 
-  QuicTime acc_advance_time;
+  QuicTime acc_advance_time(QuicTime::Zero());
   for (int i = 1; i <= 100; ++i) {
     EXPECT_TRUE(sender_->TimeUntilSend(false).IsZero());
     EXPECT_EQ(kMaxPacketSize, sender_->AvailableCongestionWindow());
@@ -174,7 +174,7 @@ TEST_F(QuicSendSchedulerTest, Pacing) {
   feedback.fix_rate.bitrate_in_bytes_per_second = 1000000;
   sender_->OnIncomingQuicCongestionFeedbackFrame(feedback);
 
-  QuicTime acc_advance_time;
+  QuicTime acc_advance_time(QuicTime::Zero());
   for (int i = 1; i <= 100;) {
     EXPECT_TRUE(sender_->TimeUntilSend(false).IsZero());
     EXPECT_EQ(kMaxPacketSize * 2, sender_->AvailableCongestionWindow());

@@ -27,19 +27,18 @@ class NET_EXPORT_PRIVATE QuicReceiptMetricsCollector {
 
   virtual ~QuicReceiptMetricsCollector();
 
-  // Should be called for each ACK packet to decide if we need to attach a
-  // QuicCongestionFeedbackFrame block.
+  // Should be called before sending an ACK packet, to decide if we need
+  // to attach a QuicCongestionFeedbackFrame block.
   // Returns false if no QuicCongestionFeedbackFrame block is needed.
-  // Otherwise fills in feedback and return true.
+  // Otherwise fills in feedback and returns true.
   virtual bool GenerateCongestionFeedback(
       QuicCongestionFeedbackFrame* feedback);
 
   // Should be called for each incoming packet.
-  // bytes: is the packet size in bytes including IP headers.
-  // sequence_number: is the unique sequence number from the QUIC packet header.
-  // timestamp: is the sent timestamp from the QUIC packet header.
-  // TODO(pwestin) which type should we use for timestamp?
-  // revived: is set if the packet is lost and then recovered with help of a
+  // bytes: the packet size in bytes including IP headers.
+  // sequence_number: the unique sequence number from the QUIC packet header.
+  // timestamp: the arrival time of the packet.
+  // revived: true if the packet was lost and then recovered with help of a
   // FEC packet.
   virtual void RecordIncomingPacket(size_t bytes,
                                     QuicPacketSequenceNumber sequence_number,

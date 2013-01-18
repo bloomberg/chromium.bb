@@ -19,12 +19,31 @@
 
 using base::hash_set;
 using base::StringPiece;
+using std::make_pair;
 using std::map;
 using std::string;
 using std::vector;
 
 namespace net {
 namespace test {
+
+const QuicPacketSequenceNumber kEpoch = GG_UINT64_C(1) << 48;
+const QuicPacketSequenceNumber kMask = kEpoch - 1;
+
+class QuicFramerPeer {
+ public:
+  static QuicPacketSequenceNumber CalculatePacketSequenceNumberFromWire(
+      QuicFramer* framer,
+      QuicPacketSequenceNumber packet_sequence_number) {
+    return framer->CalculatePacketSequenceNumberFromWire(
+        packet_sequence_number);
+  }
+  static void SetLastSequenceNumber(
+      QuicFramer* framer,
+      QuicPacketSequenceNumber packet_sequence_number) {
+    framer->last_sequence_number_ = packet_sequence_number;
+  }
+};
 
 class TestEncrypter : public QuicEncrypter {
  public:
@@ -232,6 +251,19 @@ class QuicFramerTest : public ::testing::Test {
     EXPECT_EQ(keys, ack->received_info.largest_observed);
   }
 
+  void CheckCalculatePacketSequenceNumber(
+      QuicPacketSequenceNumber expected_sequence_number,
+      QuicPacketSequenceNumber last_sequence_number) {
+    QuicPacketSequenceNumber wire_sequence_number =
+        expected_sequence_number & kMask;
+    QuicFramerPeer::SetLastSequenceNumber(&framer_, last_sequence_number);
+    EXPECT_EQ(expected_sequence_number,
+              QuicFramerPeer::CalculatePacketSequenceNumberFromWire(
+                  &framer_, wire_sequence_number))
+        << "last_sequence_number: " << last_sequence_number
+        << "wire_sequence_number: " << wire_sequence_number;
+  }
+
   test::TestEncrypter* encrypter_;
   test::TestDecrypter* decrypter_;
   QuicFramer framer_;
@@ -239,6 +271,105 @@ class QuicFramerTest : public ::testing::Test {
   IPEndPoint self_address_;
   IPEndPoint peer_address_;
 };
+
+TEST_F(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearEpochStart) {
+  // A few quick manual sanity checks
+  CheckCalculatePacketSequenceNumber(GG_UINT64_C(1), GG_UINT64_C(0));
+  CheckCalculatePacketSequenceNumber(kEpoch + 1, kMask);
+  CheckCalculatePacketSequenceNumber(kEpoch, kMask);
+
+  // Cases where the last number was close to the start of the range
+  for (uint64 last = 0; last < 10; last++) {
+    // Small numbers should not wrap (even if they're out of order).
+    for (uint64 j = 0; j < 10; j++) {
+      CheckCalculatePacketSequenceNumber(j, last);
+    }
+
+    // Large numbers should not wrap either (because we're near 0 already).
+    for (uint64 j = 0; j < 10; j++) {
+      CheckCalculatePacketSequenceNumber(kEpoch - 1 - j, last);
+    }
+  }
+}
+
+TEST_F(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearEpochEnd) {
+  // Cases where the last number was close to the end of the range
+  for (uint64 i = 0; i < 10; i++) {
+    QuicPacketSequenceNumber last = kEpoch - i;
+
+    // Small numbers should wrap.
+    for (uint64 j = 0; j < 10; j++) {
+      CheckCalculatePacketSequenceNumber(kEpoch + j, last);
+    }
+
+    // Large numbers should not (even if they're out of order).
+    for (uint64 j = 0; j < 10; j++) {
+      CheckCalculatePacketSequenceNumber(kEpoch - 1 - j, last);
+    }
+  }
+}
+
+// Next check where we're in a non-zero epoch to verify we handle
+// reverse wrapping, too.
+TEST_F(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearPrevEpoch) {
+  const uint64 prev_epoch = 1 * kEpoch;
+  const uint64 cur_epoch = 2 * kEpoch;
+  // Cases where the last number was close to the start of the range
+  for (uint64 i = 0; i < 10; i++) {
+    uint64 last = cur_epoch + i;
+    // Small number should not wrap (even if they're out of order).
+    for (uint64 j = 0; j < 10; j++) {
+      CheckCalculatePacketSequenceNumber(cur_epoch + j, last);
+    }
+
+    // But large numbers should reverse wrap.
+    for (uint64 j = 0; j < 10; j++) {
+      uint64 num = kEpoch - 1 - j;
+      CheckCalculatePacketSequenceNumber(prev_epoch + num, last);
+    }
+  }
+}
+
+TEST_F(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearNextEpoch) {
+  const uint64 cur_epoch = 2 * kEpoch;
+  const uint64 next_epoch = 3 * kEpoch;
+  // Cases where the last number was close to the end of the range
+  for (uint64 i = 0; i < 10; i++) {
+    QuicPacketSequenceNumber last = next_epoch - 1 - i;
+
+    // Small numbers should wrap.
+    for (uint64 j = 0; j < 10; j++) {
+      CheckCalculatePacketSequenceNumber(next_epoch + j, last);
+    }
+
+    // but large numbers should not (even if they're out of order).
+    for (uint64 j = 0; j < 10; j++) {
+      uint64 num = kEpoch - 1 - j;
+      CheckCalculatePacketSequenceNumber(cur_epoch + num, last);
+    }
+  }
+}
+
+TEST_F(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearNextMax) {
+  const uint64 max_number = std::numeric_limits<uint64>::max();
+  const uint64 max_epoch = max_number & ~kMask;
+
+  // Cases where the last number was close to the end of the range
+  for (uint64 i = 0; i < 10; i++) {
+    QuicPacketSequenceNumber last = max_number - i;
+
+    // Small numbers should not wrap (because they have nowhere to go.
+    for (uint64 j = 0; j < 10; j++) {
+      CheckCalculatePacketSequenceNumber(max_epoch + j, last);
+    }
+
+    // Large numbers should not wrap either.
+    for (uint64 j = 0; j < 10; j++) {
+      uint64 num = kEpoch - 1 - j;
+      CheckCalculatePacketSequenceNumber(max_epoch + num, last);
+    }
+  }
+}
 
 TEST_F(QuicFramerTest, EmptyPacket) {
   char packet[] = { 0x00 };
@@ -252,13 +383,15 @@ TEST_F(QuicFramerTest, LargePacket) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x00,
-    // fec group
-    0x00,
+    // first fec protected packet offset
+    0xFF,
     // frame count
     0x01,
   };
@@ -270,7 +403,8 @@ TEST_F(QuicFramerTest, LargePacket) {
 
   ASSERT_TRUE(visitor_.header_.get());
   // Make sure we've parsed the packet header, so we can send an error.
-  EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210), visitor_.header_->guid);
+  EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
+            visitor_.header_->public_header.guid);
   // Make sure the correct error is propogated.
   EXPECT_EQ(QUIC_PACKET_TOO_LARGE, framer_.error());
 }
@@ -280,39 +414,99 @@ TEST_F(QuicFramerTest, PacketHeader) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x00,
-    // fec group
-    0x00,
+    // first fec protected packet offset
+    0xFF,
   };
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
   EXPECT_FALSE(framer_.ProcessPacket(self_address_, peer_address_, encrypted));
-
   EXPECT_EQ(QUIC_INVALID_FRAME_DATA, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210), visitor_.header_->guid);
+  EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
+            visitor_.header_->public_header.guid);
+  EXPECT_EQ(0x00, visitor_.header_->public_header.flags);
+  EXPECT_EQ(0x00, visitor_.header_->private_flags);
   EXPECT_EQ(GG_UINT64_C(0x123456789ABC),
             visitor_.header_->packet_sequence_number);
-  EXPECT_EQ(0x00, visitor_.header_->flags);
-  EXPECT_EQ(0x00, visitor_.header_->fec_group);
+  EXPECT_EQ(0x00u, visitor_.header_->fec_group);
 
   // Now test framing boundaries
-  for (int i = 0; i < 16; ++i) {
+  for (size_t i = 0; i < kPacketHeaderSize; ++i) {
     string expected_error;
-    if (i < 8) {
+    if (i < kPublicFlagsOffset) {
       expected_error = "Unable to read GUID.";
-    } else if (i < 14) {
+    } else if (i < kSequenceNumberOffset) {
+      expected_error = "Unable to read public flags.";
+    } else if (i < kPrivateFlagsOffset) {
       expected_error = "Unable to read sequence number.";
-    } else if (i < 15) {
-      expected_error = "Unable to read flags.";
-    } else if (i < 16) {
-      expected_error = "Unable to read fec group.";
+    } else if (i < kFecGroupOffset) {
+      expected_error = "Unable to read private flags.";
+    } else {
+      expected_error = "Unable to read first fec protected packet offset.";
     }
     CheckProcessingFails(packet, i, expected_error, QUIC_INVALID_PACKET_HEADER);
+  }
+}
+
+TEST_F(QuicFramerTest, PaddingFrame) {
+  unsigned char packet[] = {
+    // guid
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // public flags
+    0x00,
+    // packet sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags
+    0x00,
+    // first fec protected packet offset
+    0xFF,
+
+    // frame count
+    0x01,
+    // frame type (padding frame)
+    0x00,
+    // Ignored data (which in this case is a stream frame)
+    0x01,
+    0x04, 0x03, 0x02, 0x01,
+    0x01,
+    0x54, 0x76, 0x10, 0x32,
+    0xDC, 0xFE, 0x98, 0xBA,
+    0x0c, 0x00,
+    'h',  'e',  'l',  'l',
+    'o',  ' ',  'w',  'o',
+    'r',  'l',  'd',  '!',
+  };
+
+  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
+  EXPECT_TRUE(framer_.ProcessPacket(self_address_, peer_address_, encrypted));
+  EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  ASSERT_EQ(peer_address_, visitor_.peer_address_);
+  ASSERT_EQ(self_address_, visitor_.self_address_);
+
+  ASSERT_EQ(0u, visitor_.stream_frames_.size());
+  EXPECT_EQ(0u, visitor_.ack_frames_.size());
+
+  // Now test framing boundaries
+  for (size_t i = 0; i < 2; ++i) {
+    string expected_error;
+    if (i < 1) {
+      expected_error = "Unable to read frame count.";
+    } else if (i < 2) {
+      expected_error = "Unable to read frame type.";
+    }
+    CheckProcessingFails(packet, i + kPacketHeaderSize, expected_error,
+                         QUIC_INVALID_FRAME_DATA);
   }
 }
 
@@ -321,18 +515,20 @@ TEST_F(QuicFramerTest, StreamFrame) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x00,
-    // fec group
-    0x00,
+    // first fec protected packet offset
+    0xFF,
 
     // frame count
     0x01,
     // frame type (stream frame)
-    0x00,
+    0x01,
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // fin
@@ -394,18 +590,20 @@ TEST_F(QuicFramerTest, RejectPacket) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x00,
-    // fec group
-    0x00,
+    // first fec protected packet offset
+    0xFF,
 
     // frame count
     0x01,
     // frame type (stream frame)
-    0x00,
+    0x01,
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // fin
@@ -438,7 +636,7 @@ TEST_F(QuicFramerTest, RevivedStreamFrame) {
     // frame count
     0x01,
     // frame type (stream frame)
-    0x00,
+    0x01,
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // fin
@@ -455,9 +653,10 @@ TEST_F(QuicFramerTest, RevivedStreamFrame) {
   };
 
   QuicPacketHeader header;
-  header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+  header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
-  header.flags = PACKET_FLAGS_NONE;
   header.fec_group = 0;
 
   // Do not encrypt the payload because the revived payload is post-encryption.
@@ -468,12 +667,13 @@ TEST_F(QuicFramerTest, RevivedStreamFrame) {
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_EQ(1, visitor_.revived_packets_);
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210), visitor_.header_->guid);
+  EXPECT_EQ(GG_UINT64_C(0xFEDCBA9876543210),
+            visitor_.header_->public_header.guid);
+  EXPECT_EQ(0x00, visitor_.header_->public_header.flags);
+  EXPECT_EQ(0x00, visitor_.header_->private_flags);
   EXPECT_EQ(GG_UINT64_C(0x123456789ABC),
             visitor_.header_->packet_sequence_number);
-  EXPECT_EQ(0x00, visitor_.header_->flags);
-  EXPECT_EQ(0x00, visitor_.header_->fec_group);
-
+  EXPECT_EQ(0x00u, visitor_.header_->fec_group);
 
   ASSERT_EQ(1u, visitor_.stream_frames_.size());
   EXPECT_EQ(0u, visitor_.ack_frames_.size());
@@ -489,18 +689,20 @@ TEST_F(QuicFramerTest, StreamFrameInFecGroup) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x12, 0x34,
-    // flags
+    // private flags
     0x00,
-    // fec group
+    // first fec protected packet offset
     0x02,
 
     // frame count
     0x01,
     // frame type (stream frame)
-    0x00,
+    0x01,
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // fin
@@ -522,7 +724,8 @@ TEST_F(QuicFramerTest, StreamFrameInFecGroup) {
   EXPECT_TRUE(CheckDecryption(StringPiece(AsChars(packet), arraysize(packet))));
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_EQ(2, visitor_.header_->fec_group);
+  EXPECT_EQ(GG_UINT64_C(0x341256789ABA),
+            visitor_.header_->fec_group);
   EXPECT_EQ(string(AsChars(packet) + kStartOfFecProtectedData,
                    arraysize(packet) - kStartOfFecProtectedData),
             visitor_.fec_protected_payload_);
@@ -542,13 +745,15 @@ TEST_F(QuicFramerTest, AckFrame) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x00,
-    // fec group
-    0x00,
+    // first fec protected packet offset
+    0xFF,
 
     // frame count
     0x01,
@@ -609,13 +814,15 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameTCP) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x00,
-    // fec group
-    0x00,
+    // first fec protected packet offset
+    0xFF,
 
     // frame count
     0x01,
@@ -669,13 +876,15 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x00,
-    // fec group
-    0x00,
+    // first fec protected packet offset
+    0xFF,
 
     // frame count
     0x01,
@@ -768,13 +977,15 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameFixRate) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x00,
-    // fec group
-    0x00,
+    // first fec protected packet offset
+    0xFF,
 
     // frame count
     0x01,
@@ -824,13 +1035,15 @@ TEST_F(QuicFramerTest, CongestionFeedbackFrameInvalidFeedback) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x00,
-    // fec group
-    0x00,
+    // first fec protected packet offset
+    0xFF,
 
     // frame count
     0x01,
@@ -851,13 +1064,15 @@ TEST_F(QuicFramerTest, RstStreamFrame) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x00,
-    // fec group
-    0x00,
+    // first fec protected packet offset
+    0xFF,
 
     // frame count
     0x01,
@@ -916,14 +1131,15 @@ TEST_F(QuicFramerTest, ConnectionCloseFrame) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x00,
-    // fec group
-    0x00,
-
+    // first fec protected packet offset
+    0xFF,
 
     // frame count
     0x01,
@@ -1001,17 +1217,16 @@ TEST_F(QuicFramerTest, FecPacket) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags (FEC)
+    // private flags (FEC)
     0x01,
-    // fec group
+    // first fec protected packet offset
     0x01,
 
-    // first protected packet
-    0xBB, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
     // redundancy
     'a',  'b',  'c',  'd',
     'e',  'f',  'g',  'h',
@@ -1030,16 +1245,61 @@ TEST_F(QuicFramerTest, FecPacket) {
   EXPECT_EQ(0u, visitor_.ack_frames_.size());
   ASSERT_EQ(1, visitor_.fec_count_);
   const QuicFecData& fec_data = *visitor_.fec_data_[0];
-  EXPECT_EQ(GG_UINT64_C(0x0123456789ABB),
-            fec_data.min_protected_packet_sequence_number);
+  EXPECT_EQ(GG_UINT64_C(0x0123456789ABB), fec_data.fec_group);
   EXPECT_EQ("abcdefghijklmnop", fec_data.redundancy);
+}
+
+TEST_F(QuicFramerTest, ConstructPaddingFramePacket) {
+  QuicPacketHeader header;
+  header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+  header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
+  header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
+  header.fec_group = 0;
+
+  QuicPaddingFrame padding_frame;
+
+  QuicFrames frames;
+  frames.push_back(QuicFrame(&padding_frame));
+
+  unsigned char packet[kMaxPacketSize] = {
+    // guid
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // public flags
+    0x00,
+    // packet sequence number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12,
+    // private flags
+    0x00,
+    // first fec protected packet offset
+    0xFF,
+
+    // frame count
+    0x01,
+    // frame type (padding frame)
+    0x00,
+  };
+
+  //  unsigned char packet[kMaxPacketSize];
+  memset(packet + kPacketHeaderSize + 1, 0x00,
+         kMaxPacketSize - kPacketHeaderSize - 1);
+
+  scoped_ptr<QuicPacket> data(framer_.ConstructFrameDataPacket(header, frames));
+  ASSERT_TRUE(data != NULL);
+
+  test::CompareCharArraysWithHexError("constructed packet",
+                                      data->data(), data->length(),
+                                      AsChars(packet), arraysize(packet));
 }
 
 TEST_F(QuicFramerTest, ConstructStreamFramePacket) {
   QuicPacketHeader header;
-  header.guid = GG_UINT64_C(0xFEDCBA9876543210);
-  header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
-  header.flags = PACKET_FLAGS_NONE;
+  header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+  header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
+  header.packet_sequence_number = GG_UINT64_C(0x77123456789ABC);
   header.fec_group = 0;
 
   QuicStreamFrame stream_frame;
@@ -1055,18 +1315,20 @@ TEST_F(QuicFramerTest, ConstructStreamFramePacket) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x00,
-    // fec group
-    0x00,
+    // first fec protected packet offset
+    0xFF,
 
     // frame count
     0x01,
     // frame type (stream frame)
-    0x00,
+    0x01,
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // fin
@@ -1092,15 +1354,17 @@ TEST_F(QuicFramerTest, ConstructStreamFramePacket) {
 
 TEST_F(QuicFramerTest, ConstructAckFramePacket) {
   QuicPacketHeader header;
-  header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+  header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
-  header.flags = PACKET_FLAGS_NONE;
   header.fec_group = 0;
 
   QuicAckFrame ack_frame;
-  ack_frame.received_info.largest_observed = GG_UINT64_C(0x0123456789ABF);
-  ack_frame.received_info.missing_packets.insert(GG_UINT64_C(0x0123456789ABE));
-  ack_frame.sent_info.least_unacked = GG_UINT64_C(0x0123456789AA0);
+  ack_frame.received_info.largest_observed = GG_UINT64_C(0x770123456789ABF);
+  ack_frame.received_info.missing_packets.insert(
+      GG_UINT64_C(0x770123456789ABE));
+  ack_frame.sent_info.least_unacked = GG_UINT64_C(0x770123456789AA0);
 
   QuicFrames frames;
   frames.push_back(QuicFrame(&ack_frame));
@@ -1109,13 +1373,15 @@ TEST_F(QuicFramerTest, ConstructAckFramePacket) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x00,
-    // fec group
-    0x00,
+    // first fec protected packet offset
+    0xFF,
 
     // frame count
     0x01,
@@ -1144,9 +1410,10 @@ TEST_F(QuicFramerTest, ConstructAckFramePacket) {
 
 TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketTCP) {
   QuicPacketHeader header;
-  header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+  header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
-  header.flags = PACKET_FLAGS_NONE;
   header.fec_group = 0;
 
   QuicCongestionFeedbackFrame congestion_feedback_frame;
@@ -1161,13 +1428,15 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketTCP) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x00,
-    // fec group
-    0x00,
+    // first fec protected packet offset
+    0xFF,
 
     // frame count
     0x01,
@@ -1191,22 +1460,24 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketTCP) {
 
 TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketInterArrival) {
   QuicPacketHeader header;
-  header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+  header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
-  header.flags = PACKET_FLAGS_NONE;
   header.fec_group = 0;
 
   QuicCongestionFeedbackFrame frame;
   frame.type = kInterArrival;
-  frame.inter_arrival.accumulated_number_of_lost_packets
-      = 0x0302;
-  frame.inter_arrival.received_packet_times[GG_UINT64_C(0x0123456789ABA)] =
-      QuicTime::FromMicroseconds(GG_UINT64_C(0x07E1D2C3B4A59687));
-  frame.inter_arrival.received_packet_times[GG_UINT64_C(0x0123456789ABB)] =
-      QuicTime::FromMicroseconds(GG_UINT64_C(0x07E1D2C3B4A59688));
-  frame.inter_arrival.received_packet_times[GG_UINT64_C(0x0123456789ABD)] =
-      QuicTime::FromMicroseconds(GG_UINT64_C(0x07E1D2C3B4A59689));
-
+  frame.inter_arrival.accumulated_number_of_lost_packets = 0x0302;
+  frame.inter_arrival.received_packet_times.insert(
+      make_pair(GG_UINT64_C(0x0123456789ABA),
+                QuicTime::FromMicroseconds(GG_UINT64_C(0x07E1D2C3B4A59687))));
+  frame.inter_arrival.received_packet_times.insert(
+      make_pair(GG_UINT64_C(0x0123456789ABB),
+                QuicTime::FromMicroseconds(GG_UINT64_C(0x07E1D2C3B4A59688))));
+  frame.inter_arrival.received_packet_times.insert(
+      make_pair(GG_UINT64_C(0x0123456789ABD),
+                QuicTime::FromMicroseconds(GG_UINT64_C(0x07E1D2C3B4A59689))));
   QuicFrames frames;
   frames.push_back(QuicFrame(&frame));
 
@@ -1214,13 +1485,15 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketInterArrival) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x00,
-    // fec group
-    0x00,
+    // first fec protected packet offset
+    0xFF,
 
     // frame count
     0x01,
@@ -1258,9 +1531,10 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketInterArrival) {
 
 TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketFixRate) {
   QuicPacketHeader header;
-  header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+  header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
-  header.flags = PACKET_FLAGS_NONE;
   header.fec_group = 0;
 
   QuicCongestionFeedbackFrame congestion_feedback_frame;
@@ -1275,13 +1549,15 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketFixRate) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x00,
-    // fec group
-    0x00,
+    // first fec protected packet offset
+    0xFF,
 
     // frame count
     0x01,
@@ -1303,9 +1579,10 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketFixRate) {
 
 TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketInvalidFeedback) {
   QuicPacketHeader header;
-  header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+  header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
-  header.flags = PACKET_FLAGS_NONE;
   header.fec_group = 0;
 
   QuicCongestionFeedbackFrame congestion_feedback_frame;
@@ -1321,9 +1598,10 @@ TEST_F(QuicFramerTest, ConstructCongestionFeedbackFramePacketInvalidFeedback) {
 
 TEST_F(QuicFramerTest, ConstructRstFramePacket) {
   QuicPacketHeader header;
-  header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+  header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
-  header.flags = PACKET_FLAGS_NONE;
   header.fec_group = 0;
 
   QuicRstStreamFrame rst_frame;
@@ -1336,13 +1614,15 @@ TEST_F(QuicFramerTest, ConstructRstFramePacket) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x00,
-    // fec group
-    0x00,
+    // first fec protected packet offset
+    0xFF,
 
     // frame count
     0x01,
@@ -1377,9 +1657,10 @@ TEST_F(QuicFramerTest, ConstructRstFramePacket) {
 
 TEST_F(QuicFramerTest, ConstructCloseFramePacket) {
   QuicPacketHeader header;
-  header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+  header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
-  header.flags = PACKET_FLAGS_NONE;
   header.fec_group = 0;
 
   QuicConnectionCloseFrame close_frame;
@@ -1398,13 +1679,15 @@ TEST_F(QuicFramerTest, ConstructCloseFramePacket) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x00,
-    // fec group
-    0x00,
+    // first fec protected packet offset
+    0xFF,
 
     // frame count
     0x01,
@@ -1444,31 +1727,30 @@ TEST_F(QuicFramerTest, ConstructCloseFramePacket) {
 
 TEST_F(QuicFramerTest, ConstructFecPacket) {
   QuicPacketHeader header;
-  header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+  header.private_flags = PACKET_PRIVATE_FLAGS_FEC;
   header.packet_sequence_number = (GG_UINT64_C(0x123456789ABC));
-  header.flags = PACKET_FLAGS_FEC;
-  header.fec_group = 1;
+  header.fec_group = GG_UINT64_C(0x123456789ABB);;
 
   QuicFecData fec_data;
   fec_data.fec_group = 1;
-  fec_data.min_protected_packet_sequence_number =
-      GG_UINT64_C(0x123456789ABB);
   fec_data.redundancy = "abcdefghijklmnop";
 
   unsigned char packet[] = {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x01,
-    // fec group
+    // first fec protected packet offset
     0x01,
-    // first protected packet
-    0xBB, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
+
     // redundancy
     'a',  'b',  'c',  'd',
     'e',  'f',  'g',  'h',
@@ -1489,16 +1771,16 @@ TEST_F(QuicFramerTest, EncryptPacket) {
     // guid
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
-    // packet id
+    // public flags
+    0x00,
+    // packet sequence number
     0xBC, 0x9A, 0x78, 0x56,
     0x34, 0x12,
-    // flags
+    // private flags
     0x01,
-    // fec group
+    // first fec protected packet offset
     0x01,
-    // first protected packet
-    0xBB, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
+
     // redundancy
     'a',  'b',  'c',  'd',
     'e',  'f',  'g',  'h',
@@ -1506,8 +1788,9 @@ TEST_F(QuicFramerTest, EncryptPacket) {
     'm',  'n',  'o',  'p',
   };
 
-  QuicPacket raw(AsChars(packet), arraysize(packet), false, PACKET_FLAGS_NONE);
-  scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(raw));
+  scoped_ptr<QuicPacket> raw(
+      QuicPacket::NewDataPacket(AsChars(packet), arraysize(packet), false));
+  scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(*raw));
 
   ASSERT_TRUE(encrypted.get() != NULL);
   EXPECT_TRUE(CheckEncryption(StringPiece(AsChars(packet), arraysize(packet))));
@@ -1534,11 +1817,13 @@ TEST_F(QuicFramerTest, DISABLED_CalculateLargestReceived) {
   EXPECT_EQ(4u, QuicFramer::CalculateLargestObserved(missing, missing.find(2)));
 }
 
-TEST_F(QuicFramerTest, Truncation) {
+// TODO(rch) enable after landing the revised truncation CL.
+TEST_F(QuicFramerTest, DISABLED_Truncation) {
   QuicPacketHeader header;
-  header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
+  header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
+  header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
   header.packet_sequence_number = GG_UINT64_C(0x123456789ABC);
-  header.flags = PACKET_FLAGS_NONE;
   header.fec_group = 0;
 
   QuicConnectionCloseFrame close_frame;

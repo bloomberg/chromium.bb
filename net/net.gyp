@@ -664,6 +664,8 @@
         'quic/congestion_control/leaky_bucket.h',
         'quic/congestion_control/paced_sender.cc',
         'quic/congestion_control/paced_sender.h',
+        'quic/congestion_control/quic_congestion_manager.cc',
+        'quic/congestion_control/quic_congestion_manager.h',
         'quic/congestion_control/quic_receipt_metrics_collector.cc',
         'quic/congestion_control/quic_receipt_metrics_collector.h',
         'quic/congestion_control/quic_send_scheduler.cc',

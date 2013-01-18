@@ -31,8 +31,8 @@ class NET_EXPORT_PRIVATE FixRateSender : public SendAlgorithmInterface {
   virtual void OnIncomingLoss(int number_of_lost_packets) OVERRIDE;
   virtual void SentPacket(QuicPacketSequenceNumber equence_number,
                           size_t bytes,
-                          bool retransmit) OVERRIDE;
-  virtual QuicTime::Delta TimeUntilSend(bool retransmit) OVERRIDE;
+                          bool is_retransmission) OVERRIDE;
+  virtual QuicTime::Delta TimeUntilSend(bool is_retransmission) OVERRIDE;
   virtual size_t AvailableCongestionWindow() OVERRIDE;
   virtual int BandwidthEstimate() OVERRIDE;
   // End implementation of SendAlgorithmInterface.

@@ -46,6 +46,8 @@ class NET_EXPORT_PRIVATE QuicDataWriter {
   bool WriteUInt128(uint128 value);
   bool WriteStringPiece16(base::StringPiece val);
   bool WriteBytes(const void* data, size_t data_len);
+  // Fills the remaining buffer with null characters.
+  void WritePadding();
 
   // Methods for editing the payload at a specific offset, where the
   // offset must be within the writer's capacity.

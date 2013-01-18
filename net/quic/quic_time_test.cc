@@ -14,13 +14,14 @@ class QuicTimeDeltaTest : public ::testing::Test {
 };
 
 TEST_F(QuicTimeDeltaTest, Zero) {
-  EXPECT_TRUE(QuicTime::Delta().IsZero());
+  EXPECT_TRUE(QuicTime::Delta::Zero().IsZero());
+  EXPECT_FALSE(QuicTime::Delta::Zero().IsInfinite());
   EXPECT_FALSE(QuicTime::Delta::FromMilliseconds(1).IsZero());
 }
 
 TEST_F(QuicTimeDeltaTest, Infinite) {
   EXPECT_TRUE(QuicTime::Delta::Infinite().IsInfinite());
-  EXPECT_FALSE(QuicTime::Delta().IsInfinite());
+  EXPECT_FALSE(QuicTime::Delta::Zero().IsInfinite());
   EXPECT_FALSE(QuicTime::Delta::FromMilliseconds(1).IsInfinite());
 }
 
@@ -34,7 +35,7 @@ TEST_F(QuicTimeDeltaTest, FromTo) {
 
 TEST_F(QuicTimeDeltaTest, Add) {
   EXPECT_EQ(QuicTime::Delta::FromMicroseconds(2000),
-            QuicTime::Delta().Add(QuicTime::Delta::FromMilliseconds(2)));
+            QuicTime::Delta::Zero().Add(QuicTime::Delta::FromMilliseconds(2)));
 }
 
 TEST_F(QuicTimeDeltaTest, Subtract) {
@@ -49,7 +50,7 @@ class QuicTimeTest : public ::testing::Test {
 };
 
 TEST_F(QuicTimeTest, Initialized) {
-  EXPECT_FALSE(QuicTime().IsInitialized());
+  EXPECT_FALSE(QuicTime::Zero().IsInitialized());
   EXPECT_TRUE(QuicTime::FromMilliseconds(1).IsInitialized());
 }
 

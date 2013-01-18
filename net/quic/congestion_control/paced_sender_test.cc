@@ -18,7 +18,8 @@ const int kHundredKBytesPerS = 100000;
 class PacedSenderTest : public ::testing::Test {
  protected:
   PacedSenderTest()
-      : paced_sender_(new PacedSender(&clock_, kHundredKBytesPerS)) {
+      : zero_time_(QuicTime::Delta::Zero()),
+        paced_sender_(new PacedSender(&clock_, kHundredKBytesPerS)) {
   }
 
   const QuicTime::Delta zero_time_;

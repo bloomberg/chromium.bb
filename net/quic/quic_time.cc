@@ -11,12 +11,12 @@ namespace net {
 // Highest number of microseconds that DateTimeOffset can hold.
 const int64 kQuicInfiniteTimeUs = GG_INT64_C(0x7fffffffffffffff) / 10;
 
-QuicTime::Delta::Delta()
-    : delta_(base::TimeDelta::FromMicroseconds(0)) {
-}
-
 QuicTime::Delta::Delta(base::TimeDelta delta)
     : delta_(delta) {
+}
+
+QuicTime::Delta QuicTime::Delta::Zero() {
+  return QuicTime::Delta::FromMicroseconds(0);
 }
 
 QuicTime::Delta QuicTime::Delta::Infinite() {
@@ -61,8 +61,9 @@ QuicTime::Delta QuicTime::Delta::Subtract(const Delta& delta) const {
                                            delta.ToMicroseconds());
 }
 
-
-QuicTime::QuicTime() {
+// static
+QuicTime QuicTime::Zero() {
+  return QuicTime::FromMilliseconds(0);
 }
 
 QuicTime::QuicTime(base::TimeTicks ticks)

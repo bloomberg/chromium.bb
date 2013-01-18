@@ -50,9 +50,10 @@ class QuicStreamFactoryTest : public ::testing::Test {
       QuicPacketSequenceNumber num,
       QuicStreamId stream_id) {
     QuicPacketHeader header;
-    header.guid = 0xDEADBEEF;
+    header.public_header.guid = 0xDEADBEEF;
+    header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
     header.packet_sequence_number = num;
-    header.flags = PACKET_FLAGS_NONE;
+    header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
     header.fec_group = 0;
 
     QuicRstStreamFrame rst(stream_id, 0, QUIC_NO_ERROR);
@@ -64,9 +65,10 @@ class QuicStreamFactoryTest : public ::testing::Test {
       QuicPacketSequenceNumber largest_received,
       QuicPacketSequenceNumber least_unacked) {
     QuicPacketHeader header;
-    header.guid = 0xDEADBEEF;
+    header.public_header.guid = 0xDEADBEEF;
+    header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
     header.packet_sequence_number = 2;
-    header.flags = PACKET_FLAGS_NONE;
+    header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
     header.fec_group = 0;
 
     QuicAckFrame ack(largest_received, least_unacked);
@@ -90,9 +92,10 @@ class QuicStreamFactoryTest : public ::testing::Test {
   scoped_ptr<QuicEncryptedPacket> ConstructFeedbackPacket(
       QuicPacketSequenceNumber sequence_number) {
     QuicPacketHeader header;
-    header.guid = 0xDEADBEEF;
+    header.public_header.guid = 0xDEADBEEF;
+    header.public_header.flags = PACKET_PUBLIC_FLAGS_NONE;
     header.packet_sequence_number = sequence_number;
-    header.flags = PACKET_FLAGS_NONE;
+    header.private_flags = PACKET_PRIVATE_FLAGS_NONE;
     header.fec_group = 0;
 
     QuicCongestionFeedbackFrame frame;

@@ -34,7 +34,7 @@ class FixRateTest : public ::testing::Test {
 
 TEST_F(FixRateTest, ReceiverAPI) {
   QuicCongestionFeedbackFrame feedback;
-  QuicTime timestamp;
+  QuicTime timestamp(QuicTime::Zero());
   receiver_->SetBitrate(300000);  // Bytes per second.
   receiver_->RecordIncomingPacket(1, 1, timestamp, false);
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
@@ -75,7 +75,7 @@ TEST_F(FixRateTest, FixRatePacing) {
   receiver_->SetBitrate(240000);  // Bytes per second.
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
   sender_->OnIncomingQuicCongestionFeedbackFrame(feedback);
-  QuicTime acc_advance_time;
+  QuicTime acc_advance_time(QuicTime::Zero());
   QuicPacketSequenceNumber sequence_number = 0;
   for (int i = 0; i < num_packets; i += 2) {
     EXPECT_TRUE(sender_->TimeUntilSend(false).IsZero());

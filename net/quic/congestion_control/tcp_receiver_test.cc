@@ -21,7 +21,7 @@ class QuicTcpReceiverTest : public ::testing::Test {
 
 TEST_F(QuicTcpReceiverTest, SimpleReceiver) {
   QuicCongestionFeedbackFrame feedback;
-  QuicTime timestamp;
+  QuicTime timestamp(QuicTime::Zero());
   receiver_->RecordIncomingPacket(1, 1, timestamp, false);
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
   EXPECT_EQ(kTCP, feedback.type);

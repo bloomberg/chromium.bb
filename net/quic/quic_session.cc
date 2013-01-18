@@ -78,8 +78,9 @@ bool QuicSession::OnPacket(const IPEndPoint& self_address,
                            const IPEndPoint& peer_address,
                            const QuicPacketHeader& header,
                            const vector<QuicStreamFrame>& frames) {
-  if (header.guid != connection()->guid()) {
-    DLOG(INFO) << "Got packet header for invalid GUID: " << header.guid;
+  if (header.public_header.guid != connection()->guid()) {
+    DLOG(INFO) << "Got packet header for invalid GUID: "
+               << header.public_header.guid;
     return false;
   }
   for (size_t i = 0; i < frames.size(); ++i) {
@@ -151,7 +152,7 @@ QuicConsumedData QuicSession::WriteData(QuicStreamId id,
                                         bool fin) {
   // TODO(wtc): type mismatch -- connection_->SendStreamData() returns a
   // size_t.
-  return connection_->SendStreamData(id, data, offset, fin, NULL);
+  return connection_->SendStreamData(id, data, offset, fin);
 }
 
 void QuicSession::SendRstStream(QuicStreamId id,

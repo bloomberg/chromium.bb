@@ -18,6 +18,10 @@
 
 namespace net {
 
+namespace test {
+class QuicFramerPeer;
+}  // namespace test
+
 class QuicDataReader;
 class QuicDataWriter;
 class QuicDecrypter;
@@ -164,15 +168,24 @@ class NET_EXPORT_PRIVATE QuicFramer {
   const std::string& detailed_error() { return detailed_error_; }
 
  private:
+  friend class test::QuicFramerPeer;
+
+  bool ProcessDataPacket(const QuicPacketPublicHeader& public_header,
+                         const IPEndPoint& self_address,
+                         const IPEndPoint& peer_address,
+                         const QuicEncryptedPacket& packet);
+
   bool WritePacketHeader(const QuicPacketHeader& header,
-                         QuicDataWriter* builder);
+                         QuicDataWriter* writer);
+
+  bool ProcessPublicHeader(QuicPacketPublicHeader* header);
 
   bool ProcessPacketHeader(QuicPacketHeader* header,
                            const QuicEncryptedPacket& packet);
 
+  bool ProcessPacketSequenceNumber(QuicPacketSequenceNumber* sequence_number);
   bool ProcessFrameData();
   bool ProcessStreamFrame();
-  bool ProcessPDUFrame();
   bool ProcessAckFrame(QuicAckFrame* frame);
   bool ProcessReceivedInfo(ReceivedPacketInfo* received_info);
   bool ProcessSentInfo(SentPacketInfo* sent_info);
@@ -183,8 +196,17 @@ class NET_EXPORT_PRIVATE QuicFramer {
 
   bool DecryptPayload(const QuicEncryptedPacket& packet);
 
+  // Returns the full packet sequence number from the truncated
+  // wire format version and the last seen packet sequence number.
+  QuicPacketSequenceNumber CalculatePacketSequenceNumberFromWire(
+      QuicPacketSequenceNumber packet_sequence_number) const;
+
   // Computes the wire size in bytes of the payload of |frame|.
   size_t ComputeFramePayloadLength(const QuicFrame& frame);
+
+  bool AppendPacketSequenceNumber(
+      QuicPacketSequenceNumber packet_sequence_number,
+      QuicDataWriter* writer);
 
   bool AppendStreamFramePayload(const QuicStreamFrame& frame,
                                 QuicDataWriter* builder);
@@ -213,6 +235,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   QuicFramerVisitorInterface* visitor_;
   QuicFecBuilderInterface* fec_builder_;
   QuicErrorCode error_;
+  QuicPacketSequenceNumber last_sequence_number_;
   // Buffer containing decrypted payload data during parsing.
   scoped_ptr<QuicData> decrypted_;
   // Decrypter used to decrypt packets during parsing.

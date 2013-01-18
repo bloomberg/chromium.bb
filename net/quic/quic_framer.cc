@@ -12,17 +12,41 @@
 #include "net/quic/quic_utils.h"
 
 using base::StringPiece;
+using std::make_pair;
 using std::map;
 using std::numeric_limits;
 
 namespace net {
 
-bool kQuicAllowOversizedPacketsForTest = false;
+namespace {
+
+// Mask to select the lowest 48 bits of a sequence number.
+const QuicPacketSequenceNumber kSequenceNumberMask =
+    GG_UINT64_C(0x0000FFFFFFFFFFFF);
+
+// Returns the absolute value of the difference between |a| and |b|.
+QuicPacketSequenceNumber Delta(QuicPacketSequenceNumber a,
+                               QuicPacketSequenceNumber b) {
+  // Since these are unsigned numbers, we can't just return abs(a - b)
+  if (a < b) {
+    return b - a;
+  }
+  return a - b;
+}
+
+QuicPacketSequenceNumber ClosestTo(QuicPacketSequenceNumber target,
+                                   QuicPacketSequenceNumber a,
+                                   QuicPacketSequenceNumber b) {
+  return (Delta(target, a) < Delta(target, b)) ? a : b;
+}
+
+}  // namespace
 
 QuicFramer::QuicFramer(QuicDecrypter* decrypter, QuicEncrypter* encrypter)
     : visitor_(NULL),
       fec_builder_(NULL),
       error_(QUIC_NO_ERROR),
+      last_sequence_number_(0),
       decrypter_(decrypter),
       encrypter_(encrypter) {
 }
@@ -59,6 +83,14 @@ QuicPacket* QuicFramer::ConstructMaxFrameDataPacket(
   len += 1;  // frame count
   bool truncating = false;
   for (size_t i = 0; i < frames.size(); ++i) {
+    if (frames[i].type == PADDING_FRAME) {
+      // PADDING implies end of packet so make sure we don't have
+      // more frames on the list.
+      DCHECK_EQ(i, frames.size() - 1);
+      len = max_plaintext_size;
+      *num_consumed = i + 1;
+      break;
+    }
     size_t frame_len = 1;  // Space for the 8 bit type.
     frame_len += ComputeFramePayloadLength(frames[i]);
     if (len + frame_len > max_plaintext_size) {
@@ -104,15 +136,15 @@ QuicPacket* QuicFramer::ConstructMaxFrameDataPacket(
     }
 
     switch (frame.type) {
+      case PADDING_FRAME:
+        writer.WritePadding();
+        break;
       case STREAM_FRAME:
         if (!AppendStreamFramePayload(*frame.stream_frame,
                                          &writer)) {
           return NULL;
         }
         break;
-      case PDU_FRAME:
-        RaiseError(QUIC_INVALID_FRAME_DATA);
-        return NULL;
       case ACK_FRAME:
         if (!AppendAckFramePayload(*frame.ack_frame, &writer)) {
           return NULL;
@@ -143,8 +175,8 @@ QuicPacket* QuicFramer::ConstructMaxFrameDataPacket(
   }
 
   DCHECK(truncating || len == writer.length());
-  QuicPacket* packet = new QuicPacket(writer.take(), len, true,
-                                      PACKET_FLAGS_NONE);
+  QuicPacket* packet = QuicPacket::NewDataPacket(writer.take(), len, true);
+
   if (fec_builder_) {
     fec_builder_->OnBuiltFecProtectedPayload(header,
                                              packet->FecProtectedData());
@@ -155,10 +187,7 @@ QuicPacket* QuicFramer::ConstructMaxFrameDataPacket(
 
 QuicPacket* QuicFramer::ConstructFecPacket(const QuicPacketHeader& header,
                                            const QuicFecData& fec) {
-  // Compute the length of the packet.  We use "magic numbers" here because
-  // sizeof(member_) is not necessairly the same as sizeof(member_wire_format).
   size_t len = kPacketHeaderSize;
-  len += 6;  // first protected packet sequence number
   len += fec.redundancy.length();
 
   QuicDataWriter writer(len);
@@ -167,33 +196,51 @@ QuicPacket* QuicFramer::ConstructFecPacket(const QuicPacketHeader& header,
     return NULL;
   }
 
-  if (!writer.WriteUInt48(fec.min_protected_packet_sequence_number)) {
-    return NULL;
-  }
-
   if (!writer.WriteBytes(fec.redundancy.data(), fec.redundancy.length())) {
     return NULL;
   }
 
-  return new QuicPacket(writer.take(), len, true, PACKET_FLAGS_FEC);
+  return QuicPacket::NewFecPacket(writer.take(), len, true);
 }
 
+// TODO(satyamshekhar): Framer doesn't need addresses. Get rid of them.
 bool QuicFramer::ProcessPacket(const IPEndPoint& self_address,
                                const IPEndPoint& peer_address,
                                const QuicEncryptedPacket& packet) {
   DCHECK(!reader_.get());
   reader_.reset(new QuicDataReader(packet.data(), packet.length()));
+
+  // First parse the public header.
+  QuicPacketPublicHeader public_header;
+  if (!ProcessPublicHeader(&public_header)) {
+    DLOG(WARNING) << "Unable to process header.";
+    reader_.reset(NULL);
+    return RaiseError(QUIC_INVALID_PACKET_HEADER);
+  }
+
+  if (!ProcessDataPacket(public_header, self_address, peer_address, packet)) {
+    reader_.reset(NULL);
+    return false;
+  };
+
+  reader_.reset(NULL);
+  return true;
+}
+
+bool QuicFramer::ProcessDataPacket(
+    const QuicPacketPublicHeader& public_header,
+    const IPEndPoint& self_address,
+    const IPEndPoint& peer_address,
+    const QuicEncryptedPacket& packet) {
   visitor_->OnPacket(self_address, peer_address);
 
-  // First parse the packet header.
-  QuicPacketHeader header;
+  QuicPacketHeader header(public_header);
   if (!ProcessPacketHeader(&header, packet)) {
-    DLOG(WARNING) << "Unable to process header.";
+    DLOG(WARNING) << "Unable to process data packet header.";
     return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
 
   if (!visitor_->OnPacketHeader(header)) {
-    reader_.reset(NULL);
     return true;
   }
 
@@ -203,7 +250,7 @@ bool QuicFramer::ProcessPacket(const IPEndPoint& self_address,
   }
 
   // Handle the payload.
-  if ((header.flags & PACKET_FLAGS_FEC) == 0) {
+  if ((header.private_flags & PACKET_PRIVATE_FLAGS_FEC) == 0) {
     if (header.fec_group != 0) {
       StringPiece payload = reader_->PeekRemainingPayload();
       visitor_->OnFecProtectedPayload(payload);
@@ -216,18 +263,11 @@ bool QuicFramer::ProcessPacket(const IPEndPoint& self_address,
   } else {
     QuicFecData fec_data;
     fec_data.fec_group = header.fec_group;
-    if (!reader_->ReadUInt48(
-            &fec_data.min_protected_packet_sequence_number)) {
-      set_detailed_error("Unable to read first protected packet.");
-      return RaiseError(QUIC_INVALID_FEC_DATA);
-    }
-
     fec_data.redundancy = reader_->ReadRemainingPayload();
     visitor_->OnFecData(fec_data);
   }
 
   visitor_->OnPacketComplete();
-  reader_.reset(NULL);
   return true;
 }
 
@@ -258,69 +298,140 @@ bool QuicFramer::ProcessRevivedPacket(const QuicPacketHeader& header,
 
 bool QuicFramer::WritePacketHeader(const QuicPacketHeader& header,
                                    QuicDataWriter* writer) {
-  if (!writer->WriteUInt64(header.guid)) {
+  if (!writer->WriteUInt64(header.public_header.guid)) {
     return false;
   }
 
-  if (!writer->WriteUInt48(header.packet_sequence_number)) {
+  uint8 flags =static_cast<uint8>(header.public_header.flags);
+  if (!writer->WriteBytes(&flags, 1)) {
     return false;
   }
 
-  uint8 flags = static_cast<uint8>(header.flags);
+  if (!AppendPacketSequenceNumber(header.packet_sequence_number, writer)) {
+    return false;
+  }
+
+  flags = static_cast<uint8>(header.private_flags);
   if (!writer->WriteBytes(&flags, 1)) {
      return false;
   }
 
-  if (!writer->WriteBytes(&header.fec_group, 1)) {
+  // Offset from the current packet sequence number to the first fec
+  // protected packet, or kNoFecOffset to signal no FEC protection.
+  uint8 first_fec_protected_packet_offset = kNoFecOffset;
+
+  // The FEC group number is the sequence number of the first fec
+  // protected packet, or 0 if this packet is not protected.
+  if (header.fec_group != 0) {
+    DCHECK_GE(header.packet_sequence_number, header.fec_group);
+    DCHECK_GT(255u, header.packet_sequence_number - header.fec_group);
+    first_fec_protected_packet_offset =
+        header.packet_sequence_number - header.fec_group;
+  }
+  if (!writer->WriteBytes(&first_fec_protected_packet_offset, 1)) {
     return false;
   }
 
   return true;
 }
 
-bool QuicFramer::ProcessPacketHeader(QuicPacketHeader* header,
-                                     const QuicEncryptedPacket& packet) {
-  if (!reader_->ReadUInt64(&header->guid)) {
+QuicPacketSequenceNumber QuicFramer::CalculatePacketSequenceNumberFromWire(
+    QuicPacketSequenceNumber packet_sequence_number) const {
+  // The new sequence number might have wrapped to the next epoc, or
+  // it might have reverse wrapped to the previous epoch, or it might
+  // remain in the same epoch.  Select the sequence number closest to the
+  // previous sequence number.
+  QuicPacketSequenceNumber epoch = last_sequence_number_ & ~kSequenceNumberMask;
+  QuicPacketSequenceNumber prev_epoch = epoch - (GG_UINT64_C(1) << 48);
+  QuicPacketSequenceNumber next_epoch = epoch + (GG_UINT64_C(1) << 48);
+
+  return ClosestTo(last_sequence_number_,
+                   epoch + packet_sequence_number,
+                   ClosestTo(last_sequence_number_,
+                             prev_epoch + packet_sequence_number,
+                             next_epoch + packet_sequence_number));
+}
+
+bool QuicFramer::ProcessPublicHeader(QuicPacketPublicHeader* public_header) {
+  if (!reader_->ReadUInt64(&public_header->guid)) {
     set_detailed_error("Unable to read GUID.");
     return false;
   }
 
-  if (!reader_->ReadUInt48(&header->packet_sequence_number)) {
-    set_detailed_error("Unable to read sequence number.");
-    return false;
-  }
-  if (header->packet_sequence_number == 0u) {
-    set_detailed_error("Packet sequence numbers cannot be 0.");
+  uint8 public_flags;
+  if (!reader_->ReadBytes(&public_flags, 1)) {
+    set_detailed_error("Unable to read public flags.");
     return false;
   }
 
-  unsigned char flags;
-  if (!reader_->ReadBytes(&flags, 1)) {
-    set_detailed_error("Unable to read flags.");
-    return false;
-  }
-
-  if (flags > PACKET_FLAGS_MAX) {
+  if (public_flags > PACKET_PUBLIC_FLAGS_MAX) {
     set_detailed_error("Illegal flags value.");
     return false;
   }
 
-  header->flags = static_cast<QuicPacketFlags>(flags);
+  public_header->flags = static_cast<QuicPacketPublicFlags>(public_flags);
+  return true;
+}
+
+bool QuicFramer::ProcessPacketHeader(
+    QuicPacketHeader* header,
+    const QuicEncryptedPacket& packet) {
+  if (!ProcessPacketSequenceNumber(&header->packet_sequence_number)) {
+    set_detailed_error("Unable to read sequence number.");
+    return false;
+  }
+
+  if (header->packet_sequence_number == 0u) {
+    set_detailed_error("Packet sequence numbers cannot be 0.");
+    return false;
+  }
 
   if (!DecryptPayload(packet)) {
     DLOG(WARNING) << "Unable to decrypt payload.";
     return RaiseError(QUIC_DECRYPTION_FAILURE);
   }
 
-  if (!reader_->ReadBytes(&header->fec_group, 1)) {
-    set_detailed_error("Unable to read fec group.");
+  uint8 private_flags;
+  if (!reader_->ReadBytes(&private_flags, 1)) {
+    set_detailed_error("Unable to read private flags.");
     return false;
   }
 
+  if (private_flags > PACKET_PRIVATE_FLAGS_MAX) {
+    set_detailed_error("Illegal private flags value.");
+    return false;
+  }
+
+  header->private_flags = static_cast<QuicPacketPrivateFlags>(private_flags);
+
+  uint8 first_fec_protected_packet_offset;
+  if (!reader_->ReadBytes(&first_fec_protected_packet_offset, 1)) {
+    set_detailed_error("Unable to read first fec protected packet offset.");
+    return false;
+  }
+  header->fec_group = first_fec_protected_packet_offset == kNoFecOffset ? 0 :
+      header->packet_sequence_number - first_fec_protected_packet_offset;
+
+  // Set the last sequence number after we have decrypted the packet
+  // so we are confident is not attacker controlled.
+  last_sequence_number_ = header->packet_sequence_number;
+  return true;
+}
+
+bool QuicFramer::ProcessPacketSequenceNumber(
+    QuicPacketSequenceNumber* sequence_number) {
+  QuicPacketSequenceNumber wire_sequence_number;
+  if (!reader_->ReadUInt48(&wire_sequence_number)) {
+    return false;
+  }
+
+  *sequence_number =
+      CalculatePacketSequenceNumberFromWire(wire_sequence_number);
   return true;
 }
 
 bool QuicFramer::ProcessFrameData() {
+  // TODO(ianswett): remove frame_count
   uint8 frame_count;
   if (!reader_->ReadBytes(&frame_count, 1)) {
     set_detailed_error("Unable to read frame count.");
@@ -334,13 +445,11 @@ bool QuicFramer::ProcessFrameData() {
       return RaiseError(QUIC_INVALID_FRAME_DATA);
     }
     switch (frame_type) {
+      case PADDING_FRAME:
+        // We're done with the packet
+        return true;
       case STREAM_FRAME:
         if (!ProcessStreamFrame()) {
-          return RaiseError(QUIC_INVALID_FRAME_DATA);
-        }
-        break;
-      case PDU_FRAME:
-        if (!ProcessPDUFrame()) {
           return RaiseError(QUIC_INVALID_FRAME_DATA);
         }
         break;
@@ -410,10 +519,6 @@ bool QuicFramer::ProcessStreamFrame() {
   return true;
 }
 
-bool QuicFramer::ProcessPDUFrame() {
-  return false;
-}
-
 bool QuicFramer::ProcessAckFrame(QuicAckFrame* frame) {
   if (!ProcessSentInfo(&frame->sent_info)) {
     return false;
@@ -426,7 +531,7 @@ bool QuicFramer::ProcessAckFrame(QuicAckFrame* frame) {
 }
 
 bool QuicFramer::ProcessReceivedInfo(ReceivedPacketInfo* received_info) {
-  if (!reader_->ReadUInt48(&received_info->largest_observed)) {
+  if (!ProcessPacketSequenceNumber(&received_info->largest_observed)) {
      set_detailed_error("Unable to read largest observed.");
      return false;
   }
@@ -439,7 +544,7 @@ bool QuicFramer::ProcessReceivedInfo(ReceivedPacketInfo* received_info) {
 
   for (int i = 0; i < num_missing_packets; ++i) {
     QuicPacketSequenceNumber sequence_number;
-    if (!reader_->ReadUInt48(&sequence_number)) {
+    if (!ProcessPacketSequenceNumber(&sequence_number)) {
       set_detailed_error("Unable to read sequence number in missing packets.");
       return false;
     }
@@ -450,7 +555,7 @@ bool QuicFramer::ProcessReceivedInfo(ReceivedPacketInfo* received_info) {
 }
 
 bool QuicFramer::ProcessSentInfo(SentPacketInfo* sent_info) {
-  if (!reader_->ReadUInt48(&sent_info->least_unacked)) {
+  if (!ProcessPacketSequenceNumber(&sent_info->least_unacked)) {
     set_detailed_error("Unable to read least unacked.");
     return false;
   }
@@ -486,7 +591,7 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
 
       if (num_received_packets > 0u) {
         uint64 smallest_received;
-        if (!reader_->ReadUInt48(&smallest_received)) {
+        if (!ProcessPacketSequenceNumber(&smallest_received)) {
           set_detailed_error("Unable to read smallest received.");
           return false;
         }
@@ -497,8 +602,9 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
           return false;
         }
 
-        inter_arrival->received_packet_times[smallest_received] =
-            QuicTime::FromMicroseconds(time_received_us);
+        inter_arrival->received_packet_times.insert(
+            make_pair(smallest_received,
+                      QuicTime::FromMicroseconds(time_received_us)));
 
         for (int i = 0; i < num_received_packets - 1; ++i) {
           uint16 sequence_delta;
@@ -515,8 +621,9 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
             return false;
           }
           QuicPacketSequenceNumber packet = smallest_received + sequence_delta;
-          inter_arrival->received_packet_times[packet] =
-              QuicTime::FromMicroseconds(time_received_us + time_delta_us);
+          inter_arrival->received_packet_times.insert(
+              make_pair(packet, QuicTime::FromMicroseconds(time_received_us +
+                                                           time_delta_us)));
         }
       }
       break;
@@ -655,9 +762,6 @@ size_t QuicFramer::ComputeFramePayloadLength(const QuicFrame& frame) {
       len += 2;  // space for the 16 bit length
       len += frame.stream_frame->data.size();
       break;
-    case PDU_FRAME:
-      DLOG(INFO) << "PDU_FRAME not yet supported";
-      break;  // Need to support this eventually :>
     case ACK_FRAME: {
       const QuicAckFrame& ack = *frame.ack_frame;
       len += 6;  // largest observed packet sequence number
@@ -720,6 +824,12 @@ size_t QuicFramer::ComputeFramePayloadLength(const QuicFrame& frame) {
   return len;
 }
 
+bool QuicFramer::AppendPacketSequenceNumber(
+    QuicPacketSequenceNumber packet_sequence_number,
+    QuicDataWriter* writer) {
+  return writer->WriteUInt48(packet_sequence_number & kSequenceNumberMask);
+}
+
 bool QuicFramer::AppendStreamFramePayload(
     const QuicStreamFrame& frame,
     QuicDataWriter* writer) {
@@ -763,12 +873,13 @@ QuicPacketSequenceNumber QuicFramer::CalculateLargestObserved(
 bool QuicFramer::AppendAckFramePayload(
     const QuicAckFrame& frame,
     QuicDataWriter* writer) {
-  if (!writer->WriteUInt48(frame.sent_info.least_unacked)) {
+  if (!AppendPacketSequenceNumber(frame.sent_info.least_unacked, writer)) {
     return false;
   }
 
   size_t largest_observed_offset = writer->length();
-  if (!writer->WriteUInt48(frame.received_info.largest_observed)) {
+  if (!AppendPacketSequenceNumber(frame.received_info.largest_observed,
+                                  writer)) {
     return false;
   }
 
@@ -783,11 +894,12 @@ bool QuicFramer::AppendAckFramePayload(
   SequenceSet::const_iterator it = frame.received_info.missing_packets.begin();
   int num_missing_packets_written = 0;
   for (; it != frame.received_info.missing_packets.end(); ++it) {
-    if (!writer->WriteUInt48(*it)) {
+    if (!AppendPacketSequenceNumber(*it, writer)) {
       // We are truncating.  Overwrite largest_observed.
       QuicPacketSequenceNumber largest_observed =
           CalculateLargestObserved(frame.received_info.missing_packets, --it);
-      writer->WriteUInt48ToOffset(largest_observed, largest_observed_offset);
+      writer->WriteUInt48ToOffset(largest_observed & kSequenceNumberMask,
+                                  largest_observed_offset);
       writer->WriteUInt8ToOffset(num_missing_packets_written,
                                  num_missing_packets_offset);
       return true;
@@ -831,7 +943,7 @@ bool QuicFramer::AppendQuicCongestionFeedbackFramePayload(
             inter_arrival.received_packet_times.begin();
 
         QuicPacketSequenceNumber lowest_sequence = it->first;
-        if (!writer->WriteUInt48(lowest_sequence)) {
+        if (!AppendPacketSequenceNumber(lowest_sequence, writer)) {
           return false;
         }
 

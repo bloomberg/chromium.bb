@@ -54,25 +54,25 @@ class NET_EXPORT_PRIVATE QuicSendScheduler {
                     CongestionFeedbackType congestion_type);
   virtual ~QuicSendScheduler();
 
-  // Called when we have received an ack frame from remote peer.
-  virtual void OnIncomingAckFrame(const QuicAckFrame& ack_frame);
+  // Called when we have received an ack frame from peer.
+  virtual void OnIncomingAckFrame(const QuicAckFrame& frame);
 
-  // Called when we have received an congestion feedback frame from remote peer.
+  // Called when a congestion feedback frame is received from peer.
   virtual void OnIncomingQuicCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& congestion_feedback_frame);
+      const QuicCongestionFeedbackFrame& frame);
 
-  // Inform that we sent x bytest to the wire, and if that was a retransmission.
-  // Note: this function must be called for every packet sent to the wire.
+  // Called when we have sent bytes to the peer.  This informs the manager both
+  // the number of bytes sent and if they were retransmitted.
   virtual void SentPacket(QuicPacketSequenceNumber sequence_number,
                           size_t bytes,
-                          bool retransmit);
+                          bool is_retransmission);
 
   // Calculate the time until we can send the next packet to the wire.
   // Note 1: When kUnknownWaitTime is returned, there is no need to poll
   // TimeUntilSend again until we receive an OnIncomingAckFrame event.
   // Note 2: Send algorithms may or may not use |retransmit| in their
   // calculations.
-  virtual QuicTime::Delta TimeUntilSend(bool retransmit);
+  virtual QuicTime::Delta TimeUntilSend(bool is_retransmission);
 
   // Returns the current available congestion window in bytes, the number of
   // bytes that can be sent now.

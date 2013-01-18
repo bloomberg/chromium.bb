@@ -111,10 +111,11 @@ QuicConsumedData ReliableQuicStream::WriteOrBuffer(StringPiece data, bool fin) {
 
   if (queued_data_.empty()) {
     consumed_data = WriteDataInternal(string(data.data(), data.length()), fin);
+    DCHECK_LE(consumed_data.bytes_consumed, data.length());
   }
 
-  // if there's unconsumed data or an unconsumed fin, queue it.
-  if (consumed_data.bytes_consumed != data.length() ||
+  // If there's unconsumed data or an unconsumed fin, queue it.
+  if (consumed_data.bytes_consumed < data.length() ||
       (fin && !consumed_data.fin_consumed)) {
     queued_data_.push_back(
         string(data.data() + consumed_data.bytes_consumed,

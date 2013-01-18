@@ -22,24 +22,17 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
  public:
   // Options for controlling how packets are created.
   struct Options {
-    Options() {
-      Clear();
-    }
-    void Clear() {
-      memset(this, 0, sizeof(Options));
-      max_packet_length = kMaxPacketSize;
-      max_num_packets = std::numeric_limits<size_t>::max();
+    Options()
+        : max_packet_length(kMaxPacketSize),
+          random_reorder(false),
+          max_packets_per_fec_group(0) {
     }
 
     // TODO(alyssar, rch) max frames/packet
     size_t max_packet_length;
-    // The maximum number of packets we'd like to serialize.
-    // If the data can't be fully serialized, DataToStream will only consume as
-    // much data as fits into this many packets.
-    size_t max_num_packets;
     bool random_reorder;   // Inefficient: rewrite if used at scale.
-    // TODO(rch) should probably be max packets per group.
-    bool use_fec;
+    // 0 indicates fec is disabled.
+    size_t max_packets_per_fec_group;
   };
 
   QuicPacketCreator(QuicGuid guid, QuicFramer* framer);
@@ -52,24 +45,33 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
 
   typedef std::pair<QuicPacketSequenceNumber, QuicPacket*> PacketPair;
 
+  // Checks if it's time to send an FEC packet.  |force_close| forces this to
+  // return true if an fec group is open.
+  bool ShouldSendFec(bool force_close) const;
+
+  // Starts a new FEC group with the next serialized packet, if FEC is enabled.
+  void MaybeStartFEC();
+
+  // Converts a raw payload to a frame.  Returns the number of bytes consumed
+  // from data.  If data is empty and fin is true, the expected behavior is to
+  // consume the fin but return 0.
+  size_t CreateStreamFrame(QuicStreamId id,
+                           base::StringPiece data,
+                           QuicStreamOffset offset,
+                           bool fin,
+                           QuicFrames* frames);
+
   // Serializes all frames into a single packet.  All frames must fit into a
   // single packet.
   PacketPair SerializeAllFrames(const QuicFrames& frames);
 
   // Serializes as many non-fec frames as can fit into a single packet.
   // num_serialized is set to the number of frames serialized into the packet.
-  PacketPair SerializeFrames(const QuicFrames& frames, size_t* num_serialized);
+  PacketPair SerializeFrames(const QuicFrames& frames,
+                             size_t* num_serialized);
 
-  // Converts a raw payload to a series of QuicPackets and matching frames in
-  // those packets.  Returns the number of bytes consumed from data.
-  // If data is empty and fin is true, the expected behavior is to consume the
-  // fin but return 0.
-  size_t DataToStream(QuicStreamId id,
-                      base::StringPiece data,
-                      QuicStreamOffset offset,
-                      bool fin,
-                      std::vector<PacketPair>* packets,
-                      QuicFrames* packetized_frames);
+  // Packetize FEC data.
+  PacketPair SerializeFec();
 
   PacketPair CloseConnection(QuicConnectionCloseFrame* close_frame);
 
@@ -87,7 +89,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
 
  private:
   void FillPacketHeader(QuicFecGroupNumber fec_group,
-                        QuicPacketFlags flags,
+                        QuicPacketPrivateFlags flags,
                         QuicPacketHeader* header);
 
   Options options_;

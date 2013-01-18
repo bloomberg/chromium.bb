@@ -24,7 +24,7 @@ class QuicReceiptMetricsCollectorTest : public ::testing::Test {
 TEST_F(QuicReceiptMetricsCollectorTest, FixedRateReceiverAPI) {
   SetUpCongestionType(kFixRate);
   QuicCongestionFeedbackFrame feedback;
-  QuicTime timestamp;
+  QuicTime timestamp(QuicTime::Zero());
   receiver_->RecordIncomingPacket(1, 1, timestamp, false);
   ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
   EXPECT_EQ(kFixRate, feedback.type);

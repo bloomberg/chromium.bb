@@ -10,10 +10,11 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using base::StringPiece;
+using std::string;
+using std::vector;
 using testing::InSequence;
 using testing::_;
-using std::vector;
-using std::string;
 
 namespace net {
 namespace test {
@@ -31,21 +32,16 @@ class QuicPacketCreatorTest : public ::testing::Test {
     framer_.set_visitor(&framer_visitor_);
   }
   ~QuicPacketCreatorTest() {
-    STLDeleteValues(&packets_);
     for (QuicFrames::iterator it = frames_.begin(); it != frames_.end(); ++it) {
       QuicConnection::DeleteEnclosedFrame(&(*it));
     }
   }
 
-  void ProcessPackets() {
-    for (size_t i = 0; i < packets_.size(); ++i) {
-      scoped_ptr<QuicEncryptedPacket> encrypted(
-          framer_.EncryptPacket(*packets_[i].second));
-      framer_.ProcessPacket(IPEndPoint(), IPEndPoint(), *encrypted);
-    }
+  void ProcessPacket(QuicPacket* packet) {
+    scoped_ptr<QuicEncryptedPacket> encrypted(framer_.EncryptPacket(*packet));
+    framer_.ProcessPacket(IPEndPoint(), IPEndPoint(), *encrypted);
   }
 
-  vector<QuicPacketCreator::PacketPair> packets_;
   QuicFrames frames_;
   QuicFramer framer_;
   testing::StrictMock<MockFramerVisitor> framer_visitor_;
@@ -56,172 +52,97 @@ class QuicPacketCreatorTest : public ::testing::Test {
   QuicPacketCreator utils_;
 };
 
-TEST_F(QuicPacketCreatorTest, DataToStreamBasic) {
-  size_t bytes_consumed = utils_.DataToStream(
-      id_, data_, 0, true, &packets_, &frames_);
+TEST_F(QuicPacketCreatorTest, SerializeFrame) {
+  frames_.push_back(QuicFrame(new QuicStreamFrame(
+      0u, false, 0u, StringPiece(""))));
+  PacketPair pair = utils_.SerializeAllFrames(frames_);
 
-  ASSERT_EQ(1u, packets_.size());
-  ASSERT_EQ(1u, utils_.sequence_number());
-  ASSERT_EQ(data_.size(), bytes_consumed);
-
-  InSequence s;
-  EXPECT_CALL(framer_visitor_, OnPacket(_, _));
-  EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
-  EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
-  EXPECT_CALL(framer_visitor_, OnPacketComplete());
-
-  ProcessPackets();
+  {
+    InSequence s;
+    EXPECT_CALL(framer_visitor_, OnPacket(_, _));
+    EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
+    EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
+    EXPECT_CALL(framer_visitor_, OnPacketComplete());
+  }
+  ProcessPacket(pair.second);
+  delete pair.second;
 }
 
-TEST_F(QuicPacketCreatorTest, DataToStreamFec) {
-  utils_.options()->use_fec = true;
-  size_t bytes_consumed = utils_.DataToStream(
-      id_, data_, 0, true, &packets_, &frames_);
+TEST_F(QuicPacketCreatorTest, SerializeFrames) {
+  frames_.push_back(QuicFrame(new QuicAckFrame(0u, 0u)));
+  frames_.push_back(QuicFrame(new QuicStreamFrame(
+      0u, false, 0u, StringPiece(""))));
+  frames_.push_back(QuicFrame(new QuicStreamFrame(
+      0u, true, 0u, StringPiece(""))));
+  PacketPair pair = utils_.SerializeAllFrames(frames_);
 
-  ASSERT_EQ(2u, packets_.size());
-  ASSERT_EQ(2u, utils_.sequence_number());
-  ASSERT_EQ(data_.size(), bytes_consumed);
-
-  InSequence s;
-  EXPECT_CALL(framer_visitor_, OnPacket(_, _));
-  EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
-  EXPECT_CALL(framer_visitor_, OnFecProtectedPayload(_));
-  EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
-  EXPECT_CALL(framer_visitor_, OnPacketComplete());
-
-  EXPECT_CALL(framer_visitor_, OnPacket(_, _));
-  EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
-  EXPECT_CALL(framer_visitor_, OnFecData(_));
-  EXPECT_CALL(framer_visitor_, OnPacketComplete());
-
-  ProcessPackets();
+  {
+    InSequence s;
+    EXPECT_CALL(framer_visitor_, OnPacket(_, _));
+    EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
+    EXPECT_CALL(framer_visitor_, OnAckFrame(_));
+    EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
+    EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
+    EXPECT_CALL(framer_visitor_, OnPacketComplete());
+  }
+  ProcessPacket(pair.second);
+  delete pair.second;
 }
 
-TEST_F(QuicPacketCreatorTest, DataToStreamFecHandled) {
-  utils_.options()->use_fec = true;
-  size_t bytes_consumed = utils_.DataToStream(
-      id_, data_, 0, true, &packets_, &frames_);
-  ASSERT_EQ(data_.size(), bytes_consumed);
+TEST_F(QuicPacketCreatorTest, SerializeWithFEC) {
+  utils_.options()->max_packets_per_fec_group = 6;
+  utils_.MaybeStartFEC();
 
-  ASSERT_EQ(2u, packets_.size());
-  ASSERT_EQ(2u, utils_.sequence_number());
+  frames_.push_back(QuicFrame(new QuicStreamFrame(
+      0u, false, 0u, StringPiece(""))));
+  PacketPair pair = utils_.SerializeAllFrames(frames_);
 
-  QuicFecData fec_data;
-  fec_data.fec_group = 1;
-  fec_data.min_protected_packet_sequence_number = 1;
-  fec_data.redundancy = packets_[0].second->FecProtectedData();
+  {
+    InSequence s;
+    EXPECT_CALL(framer_visitor_, OnPacket(_, _));
+    EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
+    EXPECT_CALL(framer_visitor_, OnFecProtectedPayload(_));
+    EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
+    EXPECT_CALL(framer_visitor_, OnPacketComplete());
+  }
+  ProcessPacket(pair.second);
+  delete pair.second;
 
-  InSequence s;
-  // Data packet
-  EXPECT_CALL(framer_visitor_, OnPacket(_, _));
-  EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
-  EXPECT_CALL(framer_visitor_, OnFecProtectedPayload(_));
-  EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
-  EXPECT_CALL(framer_visitor_, OnPacketComplete());
+  ASSERT_FALSE(utils_.ShouldSendFec(false));
+  ASSERT_TRUE(utils_.ShouldSendFec(true));
 
-  // FEC packet
-  EXPECT_CALL(framer_visitor_, OnPacket(_, _));
-  EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
-  EXPECT_CALL(framer_visitor_, OnFecData(fec_data));
-  EXPECT_CALL(framer_visitor_, OnPacketComplete());
+  pair = utils_.SerializeFec();
+  ASSERT_EQ(2u, pair.first);
 
-  ProcessPackets();
-
-  // Revived data packet
-  EXPECT_CALL(framer_visitor_, OnRevivedPacket());
-  EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
-  EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
-  EXPECT_CALL(framer_visitor_, OnPacketComplete());
-
-  QuicPacketHeader header;
-  framer_.ProcessRevivedPacket(header, fec_data.redundancy);
+  {
+    InSequence s;
+    EXPECT_CALL(framer_visitor_, OnPacket(_, _));
+    EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
+    EXPECT_CALL(framer_visitor_, OnFecData(_));
+    EXPECT_CALL(framer_visitor_, OnPacketComplete());
+  }
+  ProcessPacket(pair.second);
+  delete pair.second;
 }
 
-TEST_F(QuicPacketCreatorTest, DataToStreamSkipFin) {
-  size_t bytes_consumed = utils_.DataToStream(
-      id_, data_, 0, false, &packets_, &frames_);
-  ASSERT_EQ(data_.size(), bytes_consumed);
+TEST_F(QuicPacketCreatorTest, CloseConnection) {
+  QuicConnectionCloseFrame frame;
+  frame.error_code = QUIC_NO_ERROR;
+  frame.ack_frame = QuicAckFrame(0u, 0u);
 
-  ASSERT_EQ(1u, packets_.size());
+  PacketPair pair = utils_.CloseConnection(&frame);
+  ASSERT_EQ(1u, pair.first);
   ASSERT_EQ(1u, utils_.sequence_number());
 
   InSequence s;
   EXPECT_CALL(framer_visitor_, OnPacket(_, _));
   EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
-  EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
+  EXPECT_CALL(framer_visitor_, OnAckFrame(_));
+  EXPECT_CALL(framer_visitor_, OnConnectionCloseFrame(_));
   EXPECT_CALL(framer_visitor_, OnPacketComplete());
 
-  ProcessPackets();
-}
-
-TEST_F(QuicPacketCreatorTest, NoData) {
-  data_ = "";
-
-  size_t bytes_consumed = utils_.DataToStream(
-      id_, data_, 0, true, &packets_, &frames_);
-  ASSERT_EQ(data_.size(), bytes_consumed);
-
-  ASSERT_EQ(1u, packets_.size());
-  ASSERT_EQ(1u, utils_.sequence_number());
-
-  InSequence s;
-  EXPECT_CALL(framer_visitor_, OnPacket(_, _));
-  EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
-  EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
-  EXPECT_CALL(framer_visitor_, OnPacketComplete());
-
-  ProcessPackets();
-}
-
-TEST_F(QuicPacketCreatorTest, MultiplePackets) {
-  size_t ciphertext_size = NullEncrypter().GetCiphertextSize(2);
-  utils_.options()->max_packet_length =
-      ciphertext_size + QuicUtils::StreamFramePacketOverhead(1);
-
-  size_t bytes_consumed = utils_.DataToStream(
-      id_, data_, 0, true, &packets_, &frames_);
-  ASSERT_EQ(data_.size(), bytes_consumed);
-
-  ASSERT_EQ(2u, packets_.size());
-  ASSERT_EQ(2u, utils_.sequence_number());
-
-  InSequence s;
-  EXPECT_CALL(framer_visitor_, OnPacket(_, _));
-  EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
-  EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
-  EXPECT_CALL(framer_visitor_, OnPacketComplete());
-
-  EXPECT_CALL(framer_visitor_, OnPacket(_, _));
-  EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
-  EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
-  EXPECT_CALL(framer_visitor_, OnPacketComplete());
-
-  ProcessPackets();
-}
-
-TEST_F(QuicPacketCreatorTest, MultiplePacketsWithLimits) {
-  const size_t kPayloadBytesPerPacket = 2;
-
-  size_t ciphertext_size = NullEncrypter().GetCiphertextSize(
-      kPayloadBytesPerPacket);
-  utils_.options()->max_packet_length =
-      ciphertext_size + QuicUtils::StreamFramePacketOverhead(1);
-  utils_.options()->max_num_packets = 1;
-
-  size_t bytes_consumed = utils_.DataToStream(
-      id_, data_, 0, true, &packets_, &frames_);
-  ASSERT_EQ(kPayloadBytesPerPacket, bytes_consumed);
-
-  ASSERT_EQ(1u, packets_.size());
-  ASSERT_EQ(1u, utils_.sequence_number());
-
-  InSequence s;
-  EXPECT_CALL(framer_visitor_, OnPacket(_, _));
-  EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
-  EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
-  EXPECT_CALL(framer_visitor_, OnPacketComplete());
-
-  ProcessPackets();
+  ProcessPacket(pair.second);
+  delete pair.second;
 }
 
 }  // namespace

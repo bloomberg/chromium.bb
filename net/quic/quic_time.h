@@ -23,13 +23,13 @@ class NET_EXPORT_PRIVATE QuicTime {
   // time, stored in microsecond resolution.
   class NET_EXPORT_PRIVATE Delta {
    public:
-    // Default constructor initializes to 0.
-    Delta();
-
     explicit Delta(base::TimeDelta delta);
 
     // Create a object with infinite offset time.
     static Delta Infinite();
+
+    // Create a object with infinite offset time.
+    static Delta Zero();
 
     // Converts a number of milliseconds to a time offset.
     static Delta FromMilliseconds(int64 ms);
@@ -60,10 +60,11 @@ class NET_EXPORT_PRIVATE QuicTime {
     friend class QuicTime;
   };
 
-  // Default constructor initializes to time 0.
-  QuicTime();
-
   explicit QuicTime(base::TimeTicks ticks);
+
+  // Creates a new QuicTime with an internal value of 0.  IsInitialized()
+  // will return true for these times.
+  static QuicTime Zero();
 
   // Create a new QuicTime holding the time_ms.
   static QuicTime FromMilliseconds(int64 time_ms);

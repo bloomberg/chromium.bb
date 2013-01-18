@@ -30,7 +30,7 @@ TcpCubicSender::TcpCubicSender(const QuicClock* clock, bool reno)
       end_sequence_number_(0),
       congestion_window_(kInitialCongestionWindow),
       slowstart_threshold_(kMaxCongestionWindow),
-      delay_min_() {
+      delay_min_(QuicTime::Delta::Zero()) {
 }
 
 void TcpCubicSender::OnIncomingQuicCongestionFeedbackFrame(
@@ -81,11 +81,12 @@ void TcpCubicSender::OnIncomingLoss(int /*number_of_lost_packets*/) {
 }
 
 void TcpCubicSender::SentPacket(QuicPacketSequenceNumber sequence_number,
-    size_t bytes, bool retransmit) {
-  if (!retransmit) {
+                                size_t bytes,
+                                bool is_retransmission) {
+  if (!is_retransmission) {
     bytes_in_flight_ += bytes;
   }
-  if (!retransmit && update_end_sequence_number_) {
+  if (!is_retransmission && update_end_sequence_number_) {
     end_sequence_number_ = sequence_number;
     if (AvailableCongestionWindow() == 0) {
       update_end_sequence_number_ = false;
@@ -94,15 +95,15 @@ void TcpCubicSender::SentPacket(QuicPacketSequenceNumber sequence_number,
   }
 }
 
-QuicTime::Delta TcpCubicSender::TimeUntilSend(bool retransmit) {
-  if (retransmit) {
-    // For TCP we can always send a retransmit immediately.
-    return QuicTime::Delta();
+QuicTime::Delta TcpCubicSender::TimeUntilSend(bool is_retransmission) {
+  if (is_retransmission) {
+    // For TCP we can always send a retransmission immediately.
+    return QuicTime::Delta::Zero();
   }
   if (AvailableCongestionWindow() == 0) {
     return QuicTime::Delta::Infinite();
   }
-  return QuicTime::Delta();
+  return QuicTime::Delta::Zero();
 }
 
 size_t TcpCubicSender::AvailableCongestionWindow() {
@@ -126,7 +127,7 @@ int TcpCubicSender::BandwidthEstimate() {
 }
 
 void TcpCubicSender::Reset() {
-  delay_min_ = QuicTime::Delta();  // Reset to 0.
+  delay_min_ = QuicTime::Delta::Zero();
   hybrid_slow_start_.Restart();
 }
 

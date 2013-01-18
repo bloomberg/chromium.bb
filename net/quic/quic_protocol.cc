@@ -157,10 +157,6 @@ bool QuicFecData::operator==(const QuicFecData& other) const {
   if (fec_group != other.fec_group) {
     return false;
   }
-  if (min_protected_packet_sequence_number !=
-      other.min_protected_packet_sequence_number) {
-    return false;
-  }
   if (redundancy != other.redundancy) {
     return false;
   }

@@ -70,7 +70,9 @@ const uint32 cube_root_table[] = {
 }  // namespace
 
 Cubic::Cubic(const QuicClock* clock)
-    : clock_(clock) {
+    : clock_(clock),
+      epoch_(QuicTime::Zero()),
+      last_update_time_(QuicTime::Zero()) {
   Reset();
 }
 
@@ -103,8 +105,8 @@ uint32 Cubic::CubeRoot(uint64 a) {
 }
 
 void Cubic::Reset() {
-  epoch_ = QuicTime();  // Reset time.
-  last_update_time_ = QuicTime();  // Reset time.
+  epoch_ = QuicTime::Zero();  // Reset time.
+  last_update_time_ = QuicTime::Zero();  // Reset time.
   last_congestion_window_ = 0;
   last_max_congestion_window_ = 0;
   acked_packets_count_ = 0;
@@ -124,7 +126,7 @@ QuicTcpCongestionWindow Cubic::CongestionWindowAfterPacketLoss(
   } else {
     last_max_congestion_window_ = current_congestion_window;
   }
-  epoch_ = QuicTime();  // Reset time.
+  epoch_ = QuicTime::Zero();  // Reset time.
   return (current_congestion_window * kBeta) >> 10;
 }
 
