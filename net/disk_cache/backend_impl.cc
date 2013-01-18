@@ -1062,6 +1062,8 @@ void BackendImpl::ModifyStorageSize(int32 old_size, int32 new_size) {
   else
     AddStorageSize(new_size - old_size);
 
+  FlushIndex();
+
   // Update the usage statistics.
   stats_.ModifyStorageStats(old_size, new_size);
 }

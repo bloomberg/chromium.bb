@@ -37,13 +37,6 @@ public class WebKitHitTestTest extends AndroidWebViewTestBase {
 
     @Override
     public void tearDown() throws Exception {
-        // TODO(boliu): This is to work around disk cache corruption bug on
-        // unclean shutdown (crbug.com/154805).
-        try {
-          clearCacheOnUiThread(mAwContents, true);
-        } catch (Throwable e) {
-          throw new Exception(e);
-        }
         if (mWebServer != null) {
             mWebServer.shutdown();
         }

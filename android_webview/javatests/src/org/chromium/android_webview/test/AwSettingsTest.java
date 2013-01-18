@@ -1011,7 +1011,6 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
             super(awContents, contentViewClient, true);
             mIndex = index;
             mWebServer = webServer;
-            AwSettingsTest.this.clearCacheOnUiThread(mAwContents, true);
         }
 
         @Override

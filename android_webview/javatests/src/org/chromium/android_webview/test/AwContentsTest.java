@@ -220,10 +220,6 @@ public class AwContentsTest extends AndroidWebViewTestBase {
         AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
 
-        // TODO(boliu): This is to work around disk cache corruption bug on
-        // unclean shutdown (crbug.com/154805).
-        clearCacheOnUiThread(awContents, true);
-
         final String data = "download data";
         final String contentDisposition = "attachment;filename=\"download.txt\"";
         final String mimeType = "text/plain";
@@ -264,10 +260,6 @@ public class AwContentsTest extends AndroidWebViewTestBase {
     public void testUpdateVisitedHistoryCallback() throws Throwable {
         AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
-
-        // TODO(boliu): This is to work around disk cache corruption bug on
-        // unclean shutdown (crbug.com/154805).
-        clearCacheOnUiThread(awContents, true);
 
         final String path = "/testUpdateVisitedHistoryCallback.html";
         final String html = "testUpdateVisitedHistoryCallback";
