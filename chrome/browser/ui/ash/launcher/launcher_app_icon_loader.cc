@@ -6,18 +6,22 @@
 
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/image/image_skia_operations.h"
 
 namespace {
 
 const extensions::Extension* GetExtensionByID(Profile* profile,
                                               const std::string& id) {
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   if (!service)
     return NULL;
-  return service->extensions()->GetByID(id);
+  return service->GetInstalledExtension(id);
 }
 
 }  // namespace
@@ -71,11 +75,37 @@ void LauncherAppIconLoader::ClearImage(const std::string& id) {
   }
 }
 
+void LauncherAppIconLoader::UpdateImage(const std::string& id) {
+  for (ImageToExtensionIDMap::iterator i = map_.begin();
+       i != map_.end(); ++i) {
+    if (i->second == id) {
+      BuildImage(i->second, i->first->image_skia());
+      break;
+    }
+  }
+}
+
 void LauncherAppIconLoader::OnExtensionIconImageChanged(
     extensions::IconImage* image) {
   ImageToExtensionIDMap::iterator i = map_.find(image);
   if (i == map_.end())
     return;  // The image has been removed, do nothing.
 
-  host_->SetAppImage(i->second, image->image_skia());
+  BuildImage(i->second, i->first->image_skia());
 }
+
+void LauncherAppIconLoader::BuildImage(const std::string& id,
+                                       const gfx::ImageSkia& icon) {
+  gfx::ImageSkia image = icon;
+
+  const ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  const bool enabled = service->IsExtensionEnabledForLauncher(id);
+  if (!enabled) {
+    const color_utils::HSL shift = {-1, 0, 0.6};
+    image = gfx::ImageSkiaOperations::CreateHSLShiftedImage(image, shift);
+  }
+
+  host_->SetAppImage(id, image);
+}
+

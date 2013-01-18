@@ -6,7 +6,6 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
-#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sorting.h"
@@ -17,8 +16,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -60,10 +57,6 @@ enum CommandId {
   LAUNCH_TYPE_LAST,
 };
 
-ExtensionService* GetExtensionService(Profile* profile) {
-  return extensions::ExtensionSystem::Get(profile)->extension_service();
-}
-
 // ExtensionUninstaller decouples ExtensionAppItem from the extension uninstall
 // flow. It shows extension uninstall dialog and wait for user to confirm or
 // cancel the uninstall.
@@ -93,7 +86,8 @@ class ExtensionUninstaller : public ExtensionUninstallDialog::Delegate {
  private:
   // Overridden from ExtensionUninstallDialog::Delegate:
   virtual void ExtensionUninstallAccepted() OVERRIDE {
-    ExtensionService* service = GetExtensionService(profile_);
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(profile_)->extension_service();
     const Extension* extension = service->GetInstalledExtension(extension_id_);
     if (extension) {
       service->UninstallExtension(extension_id_,
@@ -157,7 +151,9 @@ class TabOverlayImageSource : public gfx::CanvasImageSource {
 extensions::ExtensionPrefs::LaunchType GetExtensionLaunchType(
     Profile* profile,
     const Extension* extension) {
-  return GetExtensionService(profile)->extension_prefs()->
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  return service->extension_prefs()->
       GetLaunchType(extension, extensions::ExtensionPrefs::LAUNCH_DEFAULT);
 }
 
@@ -165,18 +161,15 @@ void SetExtensionLaunchType(
     Profile* profile,
     const std::string& extension_id,
     extensions::ExtensionPrefs::LaunchType launch_type) {
-  GetExtensionService(profile)->extension_prefs()->SetLaunchType(extension_id,
-                                                                 launch_type);
-}
-
-bool IsExtensionEnabled(Profile* profile, const std::string& extension_id) {
-  ExtensionService* service = GetExtensionService(profile);
-  return service->IsExtensionEnabled(extension_id) &&
-      !service->GetTerminatedExtension(extension_id);
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  service->extension_prefs()->SetLaunchType(extension_id, launch_type);
 }
 
 ExtensionSorting* GetExtensionSorting(Profile* profile) {
-  return GetExtensionService(profile)->extension_prefs()->extension_sorting();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  return service->extension_prefs()->extension_sorting();
 }
 
 bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
@@ -265,7 +258,9 @@ void ExtensionAppItem::Move(const ExtensionAppItem* prev,
 void ExtensionAppItem::UpdateIcon() {
   gfx::ImageSkia icon = icon_->image_skia();
 
-  const bool enabled = IsExtensionEnabled(profile_, extension_id_);
+  const ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  const bool enabled = service->IsExtensionEnabledForLauncher(extension_id_);
   if (!enabled) {
     const color_utils::HSL shift = {-1, 0, 0.6};
     icon = gfx::ImageSkiaOperations::CreateHSLShiftedImage(icon, shift);
@@ -281,8 +276,9 @@ void ExtensionAppItem::UpdateIcon() {
 }
 
 const Extension* ExtensionAppItem::GetExtension() const {
-  const Extension* extension = GetExtensionService(profile_)->
-      GetInstalledExtension(extension_id_);
+  const ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  const Extension* extension = service->GetInstalledExtension(extension_id_);
   return extension;
 }
 
@@ -333,7 +329,9 @@ void ExtensionAppItem::StartExtensionUninstall() {
 }
 
 bool ExtensionAppItem::RunExtensionEnableFlow() {
-  if (IsExtensionEnabled(profile_, extension_id_))
+  const ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  if (service->IsExtensionEnabledForLauncher(extension_id_))
     return false;
 
   if (!extension_enable_flow_) {
@@ -341,17 +339,19 @@ bool ExtensionAppItem::RunExtensionEnableFlow() {
 
     extension_enable_flow_.reset(new ExtensionEnableFlow(
         profile_, extension_id_, this));
-    extension_enable_flow_->Start();
+    extension_enable_flow_->StartForNativeWindow(
+        controller_->GetAppListWindow());
   }
   return true;
 }
 
 void ExtensionAppItem::Launch(int event_flags) {
-  if (RunExtensionEnableFlow())
-    return;
-
+  // |extension| could be NULL when it is being unloaded for updating.
   const Extension* extension = GetExtension();
   if (!extension)
+    return;
+
+  if (RunExtensionEnableFlow())
     return;
 
   controller_->LaunchApp(profile_, extension, event_flags);
@@ -361,12 +361,6 @@ void ExtensionAppItem::OnExtensionIconImageChanged(
     extensions::IconImage* image) {
   DCHECK(icon_.get() == image);
   UpdateIcon();
-}
-
-ExtensionInstallPrompt* ExtensionAppItem::CreateExtensionInstallPrompt() {
-  return new ExtensionInstallPrompt(profile_,
-                                    controller_->GetAppListWindow(),
-                                    this);
 }
 
 void ExtensionAppItem::ExtensionEnableFlowFinished() {
@@ -380,13 +374,6 @@ void ExtensionAppItem::ExtensionEnableFlowFinished() {
 void ExtensionAppItem::ExtensionEnableFlowAborted(bool user_initiated) {
   extension_enable_flow_.reset();
   controller_->OnCloseExtensionPrompt();
-}
-
-content::WebContents* ExtensionAppItem::OpenURL(
-    const content::OpenURLParams& params) {
-  Browser* browser = chrome::FindOrCreateTabbedBrowser(
-      profile_, chrome::GetActiveDesktop());
-  return browser->OpenURL(params);
 }
 
 bool ExtensionAppItem::IsItemForCommandIdDynamic(int command_id) const {
@@ -426,8 +413,11 @@ bool ExtensionAppItem::IsCommandIdEnabled(int command_id) const {
   if (command_id == TOGGLE_PIN) {
     return controller_->CanPin();
   } else if (command_id == OPTIONS) {
+    const ExtensionService* service =
+        extensions::ExtensionSystem::Get(profile_)->extension_service();
     const Extension* extension = GetExtension();
-    return IsExtensionEnabled(profile_, extension_id_) && extension &&
+    return service->IsExtensionEnabledForLauncher(extension_id_) &&
+           extension &&
            !extensions::ManifestURL::GetOptionsPage(extension).is_empty();
   } else if (command_id == UNINSTALL) {
     const Extension* extension = GetExtension();
@@ -493,11 +483,12 @@ void ExtensionAppItem::ExecuteCommand(int command_id) {
 }
 
 void ExtensionAppItem::Activate(int event_flags) {
-  if (RunExtensionEnableFlow())
-    return;
-
+  // |extension| could be NULL when it is being unloaded for updating.
   const Extension* extension = GetExtension();
   if (!extension)
+    return;
+
+  if (RunExtensionEnableFlow())
     return;
 
   controller_->ActivateApp(profile_, extension, event_flags);
@@ -539,9 +530,7 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
     extension_menu_items_->AppendExtensionItems(extension_id_, string16(),
                                                 &index);
 
-    // TODO(xiyuan): Remove enabled check when launcher supports disabled
-    // and terminated apps.
-    if (controller_->CanPin() && IsExtensionEnabled(profile_, extension_id_)) {
+    if (controller_->CanPin()) {
       context_menu_model_->AddSeparatorIfNecessary(ui::NORMAL_SEPARATOR);
       context_menu_model_->AddItemWithStringId(
           TOGGLE_PIN,

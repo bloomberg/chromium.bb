@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
-#include "chrome/browser/ui/ash/extension_utils.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_icon_loader.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_tab_helper.h"
@@ -33,6 +33,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -448,15 +450,33 @@ bool ChromeLauncherControllerPerBrowser::IsPlatformApp(ash::LauncherID id) {
 }
 
 void ChromeLauncherControllerPerBrowser::LaunchApp(const std::string& app_id,
-                                         int event_flags) {
+                                                   int event_flags) {
+  // |extension| could be NULL when it is being unloaded for updating.
   const Extension* extension = GetExtensionForAppID(app_id);
-  extension_utils::OpenExtension(GetProfileForNewWindows(),
-                                 extension,
-                                 event_flags);
+  if (!extension)
+    return;
+
+  const ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  if (!service->IsExtensionEnabledForLauncher(app_id)) {
+    // Do nothing if there is already a running enable flow.
+    if (extension_enable_flow_)
+      return;
+
+    extension_enable_flow_.reset(
+        new ExtensionEnableFlow(profile_, app_id, this));
+    extension_enable_flow_->StartForNativeWindow(NULL);
+    return;
+  }
+
+  application_launch::OpenApplication(application_launch::LaunchParams(
+      GetProfileForNewWindows(),
+      extension,
+      event_flags));
 }
 
 void ChromeLauncherControllerPerBrowser::ActivateApp(const std::string& app_id,
-                                           int event_flags) {
+                                                     int event_flags) {
   if (app_id == extension_misc::kChromeAppId) {
     OnBrowserShortcutClicked(event_flags);
     return;
@@ -858,16 +878,29 @@ void ChromeLauncherControllerPerBrowser::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
+      if (IsAppPinned(extension->id())) {
+        // Clear and re-fetch to ensure icon is up-to-date.
+        app_icon_loader_->ClearImage(extension->id());
+        app_icon_loader_->FetchImage(extension->id());
+      }
+
       UpdateAppLaunchersFromPref();
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
-      const content::Details<extensions::UnloadedExtensionInfo> unload_info(
+      const content::Details<extensions::UnloadedExtensionInfo>& unload_info(
           details);
       const Extension* extension = unload_info->extension;
-      if (IsAppPinned(extension->id()))
-        DoUnpinAppsWithID(extension->id());
-      app_icon_loader_->ClearImage(extension->id());
+      if (IsAppPinned(extension->id())) {
+        if (unload_info->reason == extension_misc::UNLOAD_REASON_UNINSTALL) {
+          DoUnpinAppsWithID(extension->id());
+          app_icon_loader_->ClearImage(extension->id());
+        } else {
+          app_icon_loader_->UpdateImage(extension->id());
+        }
+      }
       break;
     }
     default:
@@ -917,6 +950,16 @@ void ChromeLauncherControllerPerBrowser::OnAppSyncUIStatusChanged() {
     model_->SetStatus(ash::LauncherModel::STATUS_LOADING);
   else
     model_->SetStatus(ash::LauncherModel::STATUS_NORMAL);
+}
+
+void ChromeLauncherControllerPerBrowser::ExtensionEnableFlowFinished() {
+  LaunchApp(extension_enable_flow_->extension_id(), ui::EF_NONE);
+  extension_enable_flow_.reset();
+}
+
+void ChromeLauncherControllerPerBrowser::ExtensionEnableFlowAborted(
+    bool user_initiated) {
+  extension_enable_flow_.reset();
 }
 
 void ChromeLauncherControllerPerBrowser::PersistPinnedState() {

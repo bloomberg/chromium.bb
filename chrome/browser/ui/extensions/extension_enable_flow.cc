@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 
 using extensions::Extension;
@@ -15,13 +16,29 @@ ExtensionEnableFlow::ExtensionEnableFlow(Profile* profile,
                                          ExtensionEnableFlowDelegate* delegate)
     : profile_(profile),
       extension_id_(extension_id),
-      delegate_(delegate) {
+      delegate_(delegate),
+      parent_contents_(NULL),
+      parent_window_(NULL) {
 }
 
 ExtensionEnableFlow::~ExtensionEnableFlow() {
 }
 
-void ExtensionEnableFlow::Start() {
+void ExtensionEnableFlow::StartForWebContents(
+    content::WebContents* parent_contents) {
+  parent_contents_ = parent_contents;
+  parent_window_ = NULL;
+  Run();
+}
+
+void ExtensionEnableFlow::StartForNativeWindow(
+    gfx::NativeWindow parent_window) {
+  parent_contents_ = NULL;
+  parent_window_ = parent_window;
+  Run();
+}
+
+void ExtensionEnableFlow::Run() {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   const Extension* extension = service->GetExtensionById(extension_id_, true);
@@ -47,9 +64,14 @@ void ExtensionEnableFlow::Start() {
     return;
   }
 
-  if (!prompt_)
-    prompt_.reset(delegate_->CreateExtensionInstallPrompt());
+  CreatePrompt();
   prompt_->ConfirmReEnable(this, extension);
+}
+
+void ExtensionEnableFlow::CreatePrompt() {
+  prompt_.reset(parent_contents_ ?
+      new ExtensionInstallPrompt(parent_contents_) :
+      new ExtensionInstallPrompt(profile_, parent_window_, this));
 }
 
 void ExtensionEnableFlow::InstallUIProceed() {
@@ -57,10 +79,12 @@ void ExtensionEnableFlow::InstallUIProceed() {
       extensions::ExtensionSystem::Get(profile_)->extension_service();
 
   // The extension can be uninstalled in another window while the UI was
-  // showing. Do nothing in that case.
+  // showing. Treat it as a cancellation and notify |delegate_|.
   const Extension* extension = service->GetExtensionById(extension_id_, true);
-  if (!extension)
+  if (!extension) {
+    delegate_->ExtensionEnableFlowAborted(true);
     return;
+  }
 
   service->GrantPermissionsAndEnableExtension(extension,
                                               prompt_->record_oauth2_grant());
@@ -70,4 +94,11 @@ void ExtensionEnableFlow::InstallUIProceed() {
 void ExtensionEnableFlow::InstallUIAbort(bool user_initiated) {
   delegate_->ExtensionEnableFlowAborted(user_initiated);
   // |delegate_| may delete us.
+}
+
+content::WebContents* ExtensionEnableFlow::OpenURL(
+    const content::OpenURLParams& params) {
+  Browser* browser = chrome::FindOrCreateTabbedBrowser(
+      profile_, chrome::GetActiveDesktop());
+  return browser->OpenURL(params);
 }

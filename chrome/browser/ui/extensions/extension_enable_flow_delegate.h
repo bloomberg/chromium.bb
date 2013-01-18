@@ -9,10 +9,6 @@ class ExtensionInstallPrompt;
 
 class ExtensionEnableFlowDelegate {
  public:
-  // Invoked to create an ExtensionInstallPrompt for the flow to use. Caller
-  // takes ownership of the return ExtensionInstallPrompt;
-  virtual ExtensionInstallPrompt* CreateExtensionInstallPrompt() = 0;
-
   // Invoked when |flow| is finished successfully.
   virtual void ExtensionEnableFlowFinished() = 0;
 

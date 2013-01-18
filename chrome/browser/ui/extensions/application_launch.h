@@ -40,6 +40,12 @@ struct LaunchParams {
                const extensions::Extension* extension,
                WindowOpenDisposition disposition);
 
+  // Helper to create LaunchParams using event flags that allows user to
+  // override the user-configured container using modifier keys.
+  LaunchParams(Profile* profile,
+               const extensions::Extension* extension,
+               int event_flags);
+
   // The profile to load the application from.
   Profile* profile;
 

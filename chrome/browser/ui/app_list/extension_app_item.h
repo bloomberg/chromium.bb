@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
-#include "content/public/browser/page_navigator.h"
 #include "sync/api/string_ordinal.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -28,7 +27,6 @@ class Extension;
 class ExtensionAppItem : public ChromeAppListItem,
                          public extensions::IconImage::Observer,
                          public ExtensionEnableFlowDelegate,
-                         public content::PageNavigator,
                          public ui::SimpleMenuModel::Delegate {
  public:
   ExtensionAppItem(Profile* profile,
@@ -78,13 +76,8 @@ class ExtensionAppItem : public ChromeAppListItem,
       extensions::IconImage* image) OVERRIDE;
 
   // Overridden from ExtensionEnableFlowDelegate:
-  virtual ExtensionInstallPrompt* CreateExtensionInstallPrompt() OVERRIDE;
   virtual void ExtensionEnableFlowFinished() OVERRIDE;
   virtual void ExtensionEnableFlowAborted(bool user_initiated) OVERRIDE;
-
-  // Overridden from content::PageNavigator:
-  virtual content::WebContents* OpenURL(
-      const content::OpenURLParams& params) OVERRIDE;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;

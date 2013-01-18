@@ -88,6 +88,11 @@ class ChromeLauncherController
 
     // Clears the image for the specified id.
     virtual void ClearImage(const std::string& id) = 0;
+
+    // Updates the image for the specified id. This is called to re-create
+    // app icon with latest app state (enabled or disabled/terminiated).
+    // SetAppImage() is called when done.
+    virtual void UpdateImage(const std::string& id) = 0;
   };
 
   ChromeLauncherController() {}

@@ -6,8 +6,10 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "chrome/browser/event_disposition.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -100,8 +102,10 @@ WebContents* OpenApplicationWindow(
       container == extension_misc::LAUNCH_WINDOW) {
     // In ash, LAUNCH_FULLSCREEN launches in a maximized app window and
     // LAUNCH_WINDOW launches in a normal app window.
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(profile)->extension_service();
     ExtensionPrefs::LaunchType launch_type =
-        profile->GetExtensionService()->extension_prefs()->GetLaunchType(
+        service->extension_prefs()->GetLaunchType(
             extension, ExtensionPrefs::LAUNCH_DEFAULT);
     if (launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN)
       params.initial_show_state = ui::SHOW_STATE_MAXIMIZED;
@@ -161,7 +165,8 @@ WebContents* OpenApplicationTab(Profile* profile,
   }
 
   // Check the prefs for overridden mode.
-  ExtensionService* extension_service = profile->GetExtensionService();
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   DCHECK(extension_service);
 
   ExtensionPrefs::LaunchType launch_type =
@@ -249,13 +254,40 @@ LaunchParams::LaunchParams(Profile* profile,
       disposition(disposition),
       override_url(),
       command_line(NULL) {
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
   DCHECK(service);
 
   // Look up the app preference to find out the right launch container. Default
   // is to launch as a regular tab.
   container = service->extension_prefs()->GetLaunchContainer(
       extension, extensions::ExtensionPrefs::LAUNCH_REGULAR);
+}
+
+LaunchParams::LaunchParams(Profile* profile,
+                           const extensions::Extension* extension,
+                           int event_flags)
+    : profile(profile),
+      extension(extension),
+      container(extension_misc::LAUNCH_NONE),
+      disposition(chrome::DispositionFromEventFlags(event_flags)),
+      override_url(),
+      command_line(NULL) {
+  if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
+    container = extension_misc::LAUNCH_TAB;
+  } else if (disposition == NEW_WINDOW) {
+    container = extension_misc::LAUNCH_WINDOW;
+  } else {
+    ExtensionService* service =
+        extensions::ExtensionSystem::Get(profile)->extension_service();
+    DCHECK(service);
+
+    // Look at preference to find the right launch container.  If no preference
+    // is set, launch as a regular tab.
+    container = service->extension_prefs()->GetLaunchContainer(
+        extension, extensions::ExtensionPrefs::LAUNCH_DEFAULT);
+    disposition = NEW_FOREGROUND_TAB;
+  }
 }
 
 WebContents* OpenApplication(const LaunchParams& params) {
@@ -265,7 +297,8 @@ WebContents* OpenApplication(const LaunchParams& params) {
   const GURL& override_url = params.override_url;
 
   WebContents* tab = NULL;
-  ExtensionPrefs* prefs = profile->GetExtensionService()->extension_prefs();
+  ExtensionPrefs* prefs = extensions::ExtensionSystem::Get(profile)->
+      extension_service()->extension_prefs();
   prefs->SetActiveBit(extension->id(), true);
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunchContainer", container, 100);

@@ -94,6 +94,8 @@ class AppIconLoaderImpl : public ChromeLauncherController::AppIconLoader {
   }
   virtual void ClearImage(const std::string& id) OVERRIDE {
   }
+  virtual void UpdateImage(const std::string& id) OVERRIDE {
+  }
 
  private:
   int fetch_count_;

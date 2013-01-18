@@ -29,6 +29,7 @@ class LauncherAppIconLoader : public ChromeLauncherController::AppIconLoader,
   // AppIconLoader overrides:
   virtual void FetchImage(const std::string& id) OVERRIDE;
   virtual void ClearImage(const std::string& id) OVERRIDE;
+  virtual void UpdateImage(const std::string& id) OVERRIDE;
 
   // extensions::IconImage::Observer overrides:
   virtual void OnExtensionIconImageChanged(
@@ -36,6 +37,9 @@ class LauncherAppIconLoader : public ChromeLauncherController::AppIconLoader,
 
  private:
   typedef std::map<extensions::IconImage*, std::string> ImageToExtensionIDMap;
+
+  // Builds image for given |id| and |icon|.
+  void BuildImage(const std::string& id, const gfx::ImageSkia& icon);
 
   Profile* profile_;
 

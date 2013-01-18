@@ -24,7 +24,7 @@ const extensions::Extension* GetExtensionByID(Profile* profile,
   ExtensionService* service = profile->GetExtensionService();
   if (!service)
     return NULL;
-  return service->extensions()->GetByID(id);
+  return service->GetInstalledExtension(id);
 }
 
 }  // namespace

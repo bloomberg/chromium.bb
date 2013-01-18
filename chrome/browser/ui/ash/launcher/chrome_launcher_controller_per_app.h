@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shell_window_launcher_controller.h"
+#include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/aura/window_observer.h"
@@ -32,6 +33,7 @@
 class AppSyncUIState;
 class Browser;
 class BrowserLauncherItemControllerTest;
+class ExtensionEnableFlow;
 class LauncherItemController;
 class Profile;
 class TabContents;
@@ -62,7 +64,8 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
                                        public ChromeLauncherController,
                                        public content::NotificationObserver,
                                        public PrefServiceSyncableObserver,
-                                       public AppSyncUIStateObserver {
+                                       public AppSyncUIStateObserver,
+                                       public ExtensionEnableFlowDelegate {
  public:
   ChromeLauncherControllerPerApp(Profile* profile, ash::LauncherModel* model);
   virtual ~ChromeLauncherControllerPerApp();
@@ -265,8 +268,12 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
   // Overridden from PrefServiceSyncableObserver:
   virtual void OnIsSyncingChanged() OVERRIDE;
 
-  // Overridden from AppSyncUIStateObserver
+  // Overridden from AppSyncUIStateObserver:
   virtual void OnAppSyncUIStatusChanged() OVERRIDE;
+
+  // Overridden from ExtensionEnableFlowDelegate:
+  virtual void ExtensionEnableFlowFinished() OVERRIDE;
+  virtual void ExtensionEnableFlowAborted(bool user_initiated) OVERRIDE;
 
   // Get the list of all running incarnations of this item.
   ChromeLauncherAppMenuItems* GetApplicationList(
@@ -387,6 +394,8 @@ class ChromeLauncherControllerPerApp : public ash::LauncherModelObserver,
   PrefChangeRegistrar pref_change_registrar_;
 
   AppSyncUIState* app_sync_ui_state_;
+
+  scoped_ptr<ExtensionEnableFlow> extension_enable_flow_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerPerApp);
 };

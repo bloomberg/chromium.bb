@@ -896,6 +896,12 @@ bool ExtensionService::IsExternalExtensionUninstalled(
   return extension_prefs_->IsExternalExtensionUninstalled(extension_id);
 }
 
+bool ExtensionService::IsExtensionEnabledForLauncher(
+    const std::string& extension_id) const {
+  return IsExtensionEnabled(extension_id) &&
+      !GetTerminatedExtension(extension_id);
+}
+
 void ExtensionService::EnableExtension(const std::string& extension_id) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
