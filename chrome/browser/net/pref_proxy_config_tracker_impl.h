@@ -28,10 +28,9 @@ class ChromeProxyConfigService
       public net::ProxyConfigService::Observer {
  public:
   // Takes ownership of the passed |base_service|.
-  // If |wait_for_first_update| is true, GetLatestProxyConfig returns
-  // ConfigAvailability::CONFIG_PENDING until UpdateProxyConfig has been called.
-  explicit ChromeProxyConfigService(net::ProxyConfigService* base_service,
-                                    bool wait_for_first_update);
+  // GetLatestProxyConfig returns ConfigAvailability::CONFIG_PENDING until
+  // UpdateProxyConfig has been called.
+  explicit ChromeProxyConfigService(net::ProxyConfigService* base_service);
   virtual ~ChromeProxyConfigService();
 
   // ProxyConfigService implementation:

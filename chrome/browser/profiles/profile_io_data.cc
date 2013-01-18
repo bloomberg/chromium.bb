@@ -178,7 +178,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       protocol_handler_registry->CreateJobInterceptorFactory();
 
   ChromeProxyConfigService* proxy_config_service =
-      ProxyServiceFactory::CreateProxyConfigService(true);
+      ProxyServiceFactory::CreateProxyConfigService();
   params->proxy_config_service.reset(proxy_config_service);
   profile->GetProxyConfigTracker()->SetChromeProxyConfigService(
       proxy_config_service);

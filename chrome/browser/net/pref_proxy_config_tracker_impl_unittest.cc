@@ -85,7 +85,7 @@ class PrefProxyConfigTrackerImplTestBase : public TESTBASE {
         new TestProxyConfigService(fixed_config_,
                                    net::ProxyConfigService::CONFIG_VALID);
     proxy_config_service_.reset(
-        new ChromeProxyConfigService(delegate_service_, true));
+        new ChromeProxyConfigService(delegate_service_));
     proxy_config_tracker_.reset(new PrefProxyConfigTrackerImpl(pref_service));
     proxy_config_tracker_->SetChromeProxyConfigService(
         proxy_config_service_.get());

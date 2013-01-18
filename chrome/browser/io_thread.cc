@@ -413,8 +413,7 @@ IOThread::~IOThread() {
   // be multiply constructed.
   BrowserThread::SetDelegate(BrowserThread::IO, NULL);
 
-  if (pref_proxy_config_tracker_.get())
-    pref_proxy_config_tracker_->DetachFromPrefService();
+  pref_proxy_config_tracker_->DetachFromPrefService();
   DCHECK(!globals_);
 }
 
@@ -845,14 +844,10 @@ void IOThread::InitSystemRequestContext() {
   // If we're in unit_tests, IOThread may not be run.
   if (!BrowserThread::IsMessageLoopValid(BrowserThread::IO))
     return;
-  bool wait_for_first_update = (pref_proxy_config_tracker_.get() != NULL);
   ChromeProxyConfigService* proxy_config_service =
-      ProxyServiceFactory::CreateProxyConfigService(wait_for_first_update);
+      ProxyServiceFactory::CreateProxyConfigService();
   system_proxy_config_service_.reset(proxy_config_service);
-  if (pref_proxy_config_tracker_.get()) {
-    pref_proxy_config_tracker_->SetChromeProxyConfigService(
-        proxy_config_service);
-  }
+  pref_proxy_config_tracker_->SetChromeProxyConfigService(proxy_config_service);
   system_url_request_context_getter_ =
       new SystemURLRequestContextGetter(this);
   // Safe to post an unretained this pointer, since IOThread is

@@ -19,11 +19,10 @@ using content::BrowserThread;
 //============================= ChromeProxyConfigService =======================
 
 ChromeProxyConfigService::ChromeProxyConfigService(
-    net::ProxyConfigService* base_service,
-    bool wait_for_first_update)
+    net::ProxyConfigService* base_service)
     : base_service_(base_service),
       pref_config_state_(ProxyPrefs::CONFIG_UNSET),
-      pref_config_read_pending_(wait_for_first_update),
+      pref_config_read_pending_(true),
       registered_observer_(false) {
 }
 

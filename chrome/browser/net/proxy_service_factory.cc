@@ -27,8 +27,7 @@
 using content::BrowserThread;
 
 // static
-ChromeProxyConfigService* ProxyServiceFactory::CreateProxyConfigService(
-    bool wait_for_first_update) {
+ChromeProxyConfigService* ProxyServiceFactory::CreateProxyConfigService() {
   // The linux gconf-based proxy settings getter relies on being initialized
   // from the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -52,7 +51,7 @@ ChromeProxyConfigService* ProxyServiceFactory::CreateProxyConfigService(
       BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::FILE));
 #endif  // !defined(OS_CHROMEOS)
 
-  return new ChromeProxyConfigService(base_service, wait_for_first_update);
+  return new ChromeProxyConfigService(base_service);
 }
 
 #if defined(OS_CHROMEOS)
