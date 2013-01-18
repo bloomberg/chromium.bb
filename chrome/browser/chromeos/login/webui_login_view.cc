@@ -336,6 +336,11 @@ bool WebUILoginView::IsPopupOrPanel(const WebContents* source) const {
 }
 
 bool WebUILoginView::TakeFocus(content::WebContents* source, bool reverse) {
+  // In case of blocked UI (ex.: sign in is in progress)
+  // we should not process focus change events.
+  if (!forward_keyboard_event_)
+    return false;
+
   ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
   if (tray && tray->GetWidget()->IsVisible()) {
     tray->SetNextFocusableView(this);
