@@ -9,6 +9,7 @@
 #define CHROME_BROWSER_SAFE_BROWSING_DATABASE_MANAGER_H_
 
 #include <deque>
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -47,20 +48,31 @@ class SafeBrowsingDatabaseManager
  public:
   class Client;
 
-  // Bundle of SafeBrowsing state for one URL or hash prefix check.
+  // Bundle of SafeBrowsing state while performing a URL or hash prefix check.
   struct SafeBrowsingCheck {
-    SafeBrowsingCheck();
+    // |check_type| should correspond to the type of item that is being
+    // checked, either a URL or a binary hash/URL. We store this for two
+    // purposes: to know which of Client's methods to call when a result is
+    // known, and for logging purposes. It *isn't* used to predict the response
+    // list type, that is information that the server gives us.
+    SafeBrowsingCheck(const std::vector<GURL>& urls,
+                      const std::vector<SBFullHash>& full_hashes,
+                      Client* client,
+                      safe_browsing_util::ListType check_type);
     ~SafeBrowsingCheck();
 
-    // Either |urls| or |prefix| is used to lookup database.
+    // Either |urls| or |full_hashes| is used to lookup database. |*_results|
+    // are parallel vectors containing the results. They are initialized to
+    // contain SB_THREAT_TYPE_SAFE.
     std::vector<GURL> urls;
-    scoped_ptr<SBFullHash> full_hash;
+    std::vector<SBThreatType> url_results;
+    std::vector<SBFullHash> full_hashes;
+    std::vector<SBThreatType> full_hash_results;
 
     Client* client;
     bool need_get_hash;
     base::TimeTicks start;  // When check was sent to SB service.
-    SBThreatType threat_type;
-    bool is_download;  // If this check for download url or hash.
+    safe_browsing_util::ListType check_type;  // See comment in constructor.
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> full_hits;
 
@@ -188,6 +200,7 @@ class SafeBrowsingDatabaseManager
 
   // Clients that we've queued up for checking later once the database is ready.
   struct QueuedCheck {
+    safe_browsing_util::ListType check_type;
     Client* client;
     GURL url;
     base::TimeTicks start;  // When check was queued.
@@ -295,12 +308,10 @@ class SafeBrowsingDatabaseManager
   void SafeBrowsingCheckDone(SafeBrowsingCheck* check);
 
   // Helper function to set |check| with default values and start a safe
-  // browsing check with timeout of |timeout_ms|. |task| will be called upon
+  // browsing check with timeout of |timeout|. |task| will be called on
   // success, otherwise TimeoutCallback will be called.
-  void StartDownloadCheck(SafeBrowsingCheck* check,
-                          Client* client,
-                          const base::Closure& task,
-                          int64 timeout_ms);
+  void StartSafeBrowsingCheck(SafeBrowsingCheck* check,
+                              const base::Closure& task);
 
   // SafeBrowsingProtocolManageDelegate override
   virtual void ResetDatabase() OVERRIDE;
@@ -361,12 +372,8 @@ class SafeBrowsingDatabaseManager
 
   std::deque<QueuedCheck> queued_checks_;
 
-  // When download url check takes this long, client's callback will be called
-  // without waiting for the result.
-  int64 download_urlcheck_timeout_ms_;
-
-  // Similar to |download_urlcheck_timeout_ms_|, but for download hash checks.
-  int64 download_hashcheck_timeout_ms_;
+  // Timeout to use for safe browsing checks.
+  base::TimeDelta check_timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDatabaseManager);
 };

@@ -134,6 +134,34 @@ void GetDownloadUrlPrefixes(const std::vector<GURL>& urls,
     prefixes->push_back(full_hashes[i].prefix);
 }
 
+// Helper function to compare addprefixes in |store| with |prefixes|.
+// The |list_bit| indicates which list (url or hash) to compare.
+//
+// Returns true if there is a match, |*prefix_hits| (if non-NULL) will contain
+// the actual matching prefixes.
+bool MatchAddPrefixes(SafeBrowsingStore* store,
+                      int list_bit,
+                      const std::vector<SBPrefix>& prefixes,
+                      std::vector<SBPrefix>* prefix_hits) {
+  prefix_hits->clear();
+  bool found_match = false;
+
+  SBAddPrefixes add_prefixes;
+  store->GetAddPrefixes(&add_prefixes);
+  for (SBAddPrefixes::const_iterator iter = add_prefixes.begin();
+       iter != add_prefixes.end(); ++iter) {
+    for (size_t j = 0; j < prefixes.size(); ++j) {
+      const SBPrefix& prefix = prefixes[j];
+      if (prefix == iter->prefix &&
+          GetListIdBit(iter->chunk_id) == list_bit) {
+        prefix_hits->push_back(prefix);
+        found_match = true;
+      }
+    }
+  }
+  return found_match;
+}
+
 // Find the entries in |full_hashes| with prefix in |prefix_hits|, and
 // add them to |full_hits| if not expired.  "Not expired" is when
 // either |last_update| was recent enough, or the item has been
@@ -164,7 +192,9 @@ void GetCachedFullHashesForBrowse(const std::vector<SBPrefix>& prefix_hits,
         const int list_bit = GetListIdBit(hiter->chunk_id);
         DCHECK(list_bit == safe_browsing_util::MALWARE ||
                list_bit == safe_browsing_util::PHISH);
-        if (!safe_browsing_util::GetListName(list_bit, &result.list_name))
+        const safe_browsing_util::ListType list_id =
+            static_cast<safe_browsing_util::ListType>(list_bit);
+        if (!safe_browsing_util::GetListName(list_id, &result.list_name))
           continue;
         result.add_chunk_id = DecodeChunkId(hiter->chunk_id);
         result.hash = hiter->full_hash;
@@ -379,7 +409,9 @@ SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew()
       download_store_(NULL),
       csd_whitelist_store_(NULL),
       download_whitelist_store_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(reset_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(reset_factory_(this)),
+      corruption_detected_(false),
+      change_detected_(false) {
   DCHECK(browse_store_.get());
   DCHECK(!download_store_.get());
   DCHECK(!csd_whitelist_store_.get());
@@ -555,27 +587,6 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
   return true;
 }
 
-bool SafeBrowsingDatabaseNew::MatchDownloadAddPrefixes(
-    int list_bit,
-    const std::vector<SBPrefix>& prefixes,
-    std::vector<SBPrefix>* prefix_hits) {
-  prefix_hits->clear();
-
-  SBAddPrefixes add_prefixes;
-  download_store_->GetAddPrefixes(&add_prefixes);
-  for (SBAddPrefixes::const_iterator iter = add_prefixes.begin();
-       iter != add_prefixes.end(); ++iter) {
-    for (size_t j = 0; j < prefixes.size(); ++j) {
-      const SBPrefix& prefix = prefixes[j];
-      if (prefix == iter->prefix &&
-          GetListIdBit(iter->chunk_id) == list_bit) {
-        prefix_hits->push_back(prefix);
-      }
-    }
-  }
-  return !prefix_hits->empty();
-}
-
 bool SafeBrowsingDatabaseNew::ContainsDownloadUrl(
     const std::vector<GURL>& urls,
     std::vector<SBPrefix>* prefix_hits) {
@@ -587,9 +598,10 @@ bool SafeBrowsingDatabaseNew::ContainsDownloadUrl(
 
   std::vector<SBPrefix> prefixes;
   GetDownloadUrlPrefixes(urls, &prefixes);
-  return MatchDownloadAddPrefixes(safe_browsing_util::BINURL % 2,
-                                  prefixes,
-                                  prefix_hits);
+  return MatchAddPrefixes(download_store_.get(),
+                          safe_browsing_util::BINURL % 2,
+                          prefixes,
+                          prefix_hits);
 }
 
 bool SafeBrowsingDatabaseNew::ContainsDownloadHashPrefix(
@@ -600,11 +612,11 @@ bool SafeBrowsingDatabaseNew::ContainsDownloadHashPrefix(
   if (!download_store_.get())
     return false;
 
-  std::vector<SBPrefix> prefixes(1, prefix);
   std::vector<SBPrefix> prefix_hits;
-  return MatchDownloadAddPrefixes(safe_browsing_util::BINHASH % 2,
-                                  prefixes,
-                                  &prefix_hits);
+  return MatchAddPrefixes(download_store_.get(),
+                          safe_browsing_util::BINHASH % 2,
+                          std::vector<SBPrefix>(1, prefix),
+                          &prefix_hits);
 }
 
 bool SafeBrowsingDatabaseNew::ContainsCsdWhitelistedUrl(const GURL& url) {
@@ -688,8 +700,9 @@ void SafeBrowsingDatabaseNew::InsertAdd(int chunk_id, SBPrefix host,
 
 // Helper to iterate over all the entries in the hosts in |chunks| and
 // add them to the store.
-void SafeBrowsingDatabaseNew::InsertAddChunks(const int list_id,
-                                              const SBChunkList& chunks) {
+void SafeBrowsingDatabaseNew::InsertAddChunks(
+    const safe_browsing_util::ListType list_id,
+    const SBChunkList& chunks) {
   DCHECK_EQ(creation_loop_, MessageLoop::current());
 
   SafeBrowsingStore* store = GetStore(list_id);
@@ -762,8 +775,9 @@ void SafeBrowsingDatabaseNew::InsertSub(int chunk_id, SBPrefix host,
 
 // Helper to iterate over all the entries in the hosts in |chunks| and
 // add them to the store.
-void SafeBrowsingDatabaseNew::InsertSubChunks(int list_id,
-                                              const SBChunkList& chunks) {
+void SafeBrowsingDatabaseNew::InsertSubChunks(
+    safe_browsing_util::ListType list_id,
+    const SBChunkList& chunks) {
   DCHECK_EQ(creation_loop_, MessageLoop::current());
 
   SafeBrowsingStore* store = GetStore(list_id);
@@ -796,7 +810,8 @@ void SafeBrowsingDatabaseNew::InsertChunks(const std::string& list_name,
 
   const base::TimeTicks before = base::TimeTicks::Now();
 
-  const int list_id = safe_browsing_util::GetListId(list_name);
+  const safe_browsing_util::ListType list_id =
+      safe_browsing_util::GetListId(list_name);
   DVLOG(2) << list_name << ": " << list_id;
 
   SafeBrowsingStore* store = GetStore(list_id);
@@ -823,7 +838,8 @@ void SafeBrowsingDatabaseNew::DeleteChunks(
     return;
 
   const std::string& list_name = chunk_deletes.front().list_name;
-  const int list_id = safe_browsing_util::GetListId(list_name);
+  const safe_browsing_util::ListType list_id =
+      safe_browsing_util::GetListId(list_name);
 
   SafeBrowsingStore* store = GetStore(list_id);
   if (!store) return;
@@ -1007,11 +1023,8 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
     return;
   }
 
-  // for download
   UpdateDownloadStore();
-  // for browsing
   UpdateBrowseStore();
-  // for csd and download whitelists.
   UpdateWhitelistStore(csd_whitelist_filename_,
                        csd_whitelist_store_.get(),
                        &csd_whitelist_);
@@ -1264,6 +1277,7 @@ bool SafeBrowsingDatabaseNew::Delete() {
   const bool r6 = file_util::Delete(prefix_set_filename_, false);
   if (!r6)
     RecordFailure(FAILURE_DATABASE_PREFIX_SET_DELETE);
+
   return r1 && r2 && r3 && r4 && r5 && r6;
 }
 

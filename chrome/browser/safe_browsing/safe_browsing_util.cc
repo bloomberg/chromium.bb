@@ -164,8 +164,8 @@ const char kBinHashList[] = "goog-badbin-digestvar-disabled";
 const char kCsdWhiteList[] = "goog-csdwhite-sha256";
 const char kDownloadWhiteList[] = "goog-downloadwhite-digest256";
 
-int GetListId(const std::string& name) {
-  int id;
+ListType GetListId(const std::string& name) {
+  ListType id;
   if (name == safe_browsing_util::kMalwareList) {
     id = MALWARE;
   } else if (name == safe_browsing_util::kPhishingList) {
@@ -184,7 +184,7 @@ int GetListId(const std::string& name) {
   return id;
 }
 
-bool GetListName(int list_id, std::string* list) {
+bool GetListName(ListType list_id, std::string* list) {
   switch (list_id) {
     case MALWARE:
       *list = safe_browsing_util::kMalwareList;
@@ -490,13 +490,16 @@ GURL GeneratePhishingReportUrl(const std::string& report_page,
   return google_util::AppendGoogleLocaleParam(report_url);
 }
 
-void StringToSBFullHash(const std::string& hash_in, SBFullHash* hash_out) {
+SBFullHash StringToSBFullHash(const std::string& hash_in) {
   DCHECK_EQ(crypto::kSHA256Length, hash_in.size());
-  memcpy(hash_out->full_hash, hash_in.data(), crypto::kSHA256Length);
+  SBFullHash hash_out;
+  memcpy(hash_out.full_hash, hash_in.data(), crypto::kSHA256Length);
+  return hash_out;
 }
 
 std::string SBFullHashToString(const SBFullHash& hash) {
   DCHECK_EQ(crypto::kSHA256Length, sizeof(hash.full_hash));
   return std::string(hash.full_hash, sizeof(hash.full_hash));
 }
+
 }  // namespace safe_browsing_util

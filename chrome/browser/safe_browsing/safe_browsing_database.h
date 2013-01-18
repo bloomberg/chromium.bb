@@ -272,7 +272,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // csd_whitelist_store_ based on list_id.
   SafeBrowsingStore* GetStore(int list_id);
 
-    // Deletes the files on disk.
+  // Deletes the files on disk.
   bool Delete();
 
   // Load the prefix set off disk, if available.
@@ -303,24 +303,17 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
 
   // Helpers for InsertChunks().
   void InsertAdd(int chunk, SBPrefix host, const SBEntry* entry, int list_id);
-  void InsertAddChunks(int list_id, const SBChunkList& chunks);
+  void InsertAddChunks(safe_browsing_util::ListType list_id,
+                       const SBChunkList& chunks);
   void InsertSub(int chunk, SBPrefix host, const SBEntry* entry, int list_id);
-  void InsertSubChunks(int list_id, const SBChunkList& chunks);
+  void InsertSubChunks(safe_browsing_util::ListType list_id,
+                       const SBChunkList& chunks);
 
   void UpdateDownloadStore();
   void UpdateBrowseStore();
   void UpdateWhitelistStore(const FilePath& store_filename,
                             SafeBrowsingStore* store,
                             SBWhitelist* whitelist);
-
-  // Helper function to compare addprefixes in download_store_ with |prefixes|.
-  // The |list_bit| indicates which list (download url or download hash)
-  // to compare.
-  // Returns true if there is a match, |*prefix_hits| will contain the actual
-  // matching prefixes.
-  bool MatchDownloadAddPrefixes(int list_bit,
-                                const std::vector<SBPrefix>& prefixes,
-                                std::vector<SBPrefix>* prefix_hits);
 
   // Used to verify that various calls are made from the thread the
   // object was created on.

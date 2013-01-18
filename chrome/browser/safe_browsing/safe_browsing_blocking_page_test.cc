@@ -17,6 +17,7 @@
 #include "chrome/browser/safe_browsing/malware_details.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -68,11 +69,13 @@ class FakeSafeBrowsingDatabaseManager :  public SafeBrowsingDatabaseManager {
   }
 
   void OnCheckBrowseURLDone(const GURL& gurl, Client* client) {
-    SafeBrowsingDatabaseManager::SafeBrowsingCheck check;
-    check.urls.push_back(gurl);
-    check.client = client;
-    check.threat_type = badurls[gurl.spec()];
-    client->OnSafeBrowsingResult(check);
+    SafeBrowsingDatabaseManager::SafeBrowsingCheck sb_check(
+        std::vector<GURL>(1, gurl),
+        std::vector<SBFullHash>(),
+        client,
+        safe_browsing_util::MALWARE);
+    sb_check.url_results[0] = badurls[gurl.spec()];
+    client->OnSafeBrowsingResult(sb_check);
   }
 
   void SetURLThreatType(const GURL& url, SBThreatType threat_type) {

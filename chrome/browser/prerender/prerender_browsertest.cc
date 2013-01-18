@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <deque>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/path_service.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -53,6 +55,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/url_request/url_request_context.h"
@@ -499,11 +502,13 @@ class FakeSafeBrowsingDatabaseManager :  public SafeBrowsingDatabaseManager {
   virtual ~FakeSafeBrowsingDatabaseManager() {}
 
   void OnCheckBrowseURLDone(const GURL& gurl, Client* client) {
-    SafeBrowsingDatabaseManager::SafeBrowsingCheck check;
-    check.urls.push_back(gurl);
-    check.client = client;
-    check.threat_type = threat_type_;
-    client->OnSafeBrowsingResult(check);
+    SafeBrowsingDatabaseManager::SafeBrowsingCheck sb_check(
+        std::vector<GURL>(1, gurl),
+        std::vector<SBFullHash>(),
+        client,
+        safe_browsing_util::MALWARE);
+    sb_check.url_results[0] = threat_type_;
+    client->OnSafeBrowsingResult(sb_check);
   }
 
   GURL url_;

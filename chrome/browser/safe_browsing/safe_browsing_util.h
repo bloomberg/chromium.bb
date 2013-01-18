@@ -302,10 +302,10 @@ enum ListType {
 };
 
 // Maps a list name to ListType.
-int GetListId(const std::string& name);
-// Maps a ListId to list name. Return false if fails.
-bool GetListName(int list_id, std::string* list);
+ListType GetListId(const std::string& name);
 
+// Maps a ListId to list name. Return false if fails.
+bool GetListName(ListType list_id, std::string* list);
 
 // Canonicalizes url as per Google Safe Browsing Specification.
 // See section 6.1 in
@@ -342,8 +342,9 @@ GURL GeneratePhishingReportUrl(const std::string& report_page,
                                const std::string& url_to_report,
                                bool is_client_side_detection);
 
-void StringToSBFullHash(const std::string& hash_in, SBFullHash* hash_out);
+SBFullHash StringToSBFullHash(const std::string& hash_in);
 std::string SBFullHashToString(const SBFullHash& hash_out);
+
 }  // namespace safe_browsing_util
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_UTIL_H_

@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/string_split.h"
 #include "base/test/thread_test_helper.h"
+#include "base/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -130,7 +131,6 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
   virtual void CacheHashResults(const std::vector<SBPrefix>& prefixes,
       const std::vector<SBFullHashResult>& full_hits) {
     // Do nothing for the cache.
-    return;
   }
 
   // Fill up the database with test URL.
@@ -216,8 +216,7 @@ class TestProtocolManager :  public SafeBrowsingProtocolManager {
   TestProtocolManager(SafeBrowsingProtocolManagerDelegate* delegate,
                       net::URLRequestContextGetter* request_context_getter,
                       const SafeBrowsingProtocolConfig& config)
-      : SafeBrowsingProtocolManager(delegate, request_context_getter, config),
-        delay_ms_(0) {
+      : SafeBrowsingProtocolManager(delegate, request_context_getter, config) {
     create_count_++;
   }
 
@@ -237,7 +236,7 @@ class TestProtocolManager :  public SafeBrowsingProtocolManager {
     BrowserThread::PostDelayedTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(InvokeFullHashCallback, callback, full_hashes_),
-        base::TimeDelta::FromMilliseconds(delay_ms_));
+        delay_);
   }
 
   // Prepare the GetFullHash results for the next request.
@@ -246,8 +245,8 @@ class TestProtocolManager :  public SafeBrowsingProtocolManager {
     full_hashes_.push_back(full_hash_result);
   }
 
-  void IntroduceDelay(int64 ms) {
-    delay_ms_ = ms;
+  void IntroduceDelay(const base::TimeDelta& delay) {
+    delay_ = delay;
   }
 
   static int create_count() {
@@ -260,7 +259,7 @@ class TestProtocolManager :  public SafeBrowsingProtocolManager {
 
  private:
   std::vector<SBFullHashResult> full_hashes_;
-  int64 delay_ms_;
+  base::TimeDelta delay_;
   static int create_count_;
   static int delete_count_;
 };
@@ -329,7 +328,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
                                       const std::string& list_name,
                                       int add_chunk_id,
                                       SBFullHashResult* full_hash) {
-    safe_browsing_util::StringToSBFullHash(full_digest, &full_hash->hash);
+    full_hash->hash = safe_browsing_util::StringToSBFullHash(full_digest);
     full_hash->list_name = list_name;
     full_hash->add_chunk_id = add_chunk_id;
   }
@@ -379,13 +378,12 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   }
 
   // This will setup the binary digest prefix in database and prepare protocol
-  // manager to response with |full_hash| for get full hash request.
+  // manager to respond with the result hash.
   void SetupResponseForDigest(const std::string& digest,
                               const SBFullHashResult& hash_result) {
     TestSafeBrowsingDatabase* db = db_factory_.GetDb();
-    SBFullHash full_hash;
-    safe_browsing_util::StringToSBFullHash(digest, &full_hash);
-    db->AddDownloadPrefix(full_hash.prefix);
+    db->AddDownloadPrefix(
+        safe_browsing_util::StringToSBFullHash(digest).prefix);
 
     TestProtocolManager* pm = pm_factory_.GetProtocolManager();
     pm->SetGetFullHashResponse(hash_result);
@@ -397,24 +395,17 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     return interstitial_page != NULL;
   }
 
-  void IntroduceGetHashDelay(int64 ms) {
-    pm_factory_.GetProtocolManager()->IntroduceDelay(ms);
+  void IntroduceGetHashDelay(const base::TimeDelta& delay) {
+    pm_factory_.GetProtocolManager()->IntroduceDelay(delay);
   }
 
-  int64 DownloadUrlCheckTimeout(SafeBrowsingService* sb_service) {
-    return sb_service->database_manager()->download_urlcheck_timeout_ms_;
+  base::TimeDelta GetCheckTimeout(SafeBrowsingService* sb_service) {
+    return sb_service->database_manager()->check_timeout_;
   }
 
-  int64 DownloadHashCheckTimeout(SafeBrowsingService* sb_service) {
-    return sb_service->database_manager()->download_hashcheck_timeout_ms_;
-  }
-
-  void SetDownloadUrlCheckTimeout(SafeBrowsingService* sb_service, int64 ms) {
-    sb_service->database_manager()->download_urlcheck_timeout_ms_ = ms;
-  }
-
-  void SetDownloadHashCheckTimeout(SafeBrowsingService* sb_service, int64 ms) {
-    sb_service->database_manager()->download_hashcheck_timeout_ms_ = ms;
+  void SetCheckTimeout(SafeBrowsingService* sb_service,
+                       const base::TimeDelta& delay) {
+    sb_service->database_manager()->check_timeout_ = delay;
   }
 
   void CreateCSDService() {
@@ -694,18 +685,17 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlTimedOut) {
   // Now introducing delays and we should hit timeout.
   //
   SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
-  const int64 kOneSec = 1000;
-  const int64 kOneMs = 1;
-  int64 default_urlcheck_timeout = DownloadUrlCheckTimeout(sb_service);
-  IntroduceGetHashDelay(kOneSec);
-  SetDownloadUrlCheckTimeout(sb_service, kOneMs);
+  base::TimeDelta default_urlcheck_timeout =
+      GetCheckTimeout(sb_service);
+  IntroduceGetHashDelay(base::TimeDelta::FromSeconds(1));
+  SetCheckTimeout(sb_service, base::TimeDelta::FromMilliseconds(1));
   client->CheckDownloadUrl(badbin_urls);
 
   // There should be a timeout and the hash would be considered as safe.
   EXPECT_EQ(SB_THREAT_TYPE_SAFE, client->GetThreatType());
 
   // Need to set the timeout back to the default value.
-  SetDownloadHashCheckTimeout(sb_service, default_urlcheck_timeout);
+  SetCheckTimeout(sb_service, default_urlcheck_timeout);
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadHashTimedOut) {
@@ -726,18 +716,17 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadHashTimedOut) {
   // Now introducing delays and we should hit timeout.
   //
   SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
-  const int64 kOneSec = 1000;
-  const int64 kOneMs = 1;
-  int64 default_hashcheck_timeout = DownloadHashCheckTimeout(sb_service);
-  IntroduceGetHashDelay(kOneSec);
-  SetDownloadHashCheckTimeout(sb_service, kOneMs);
+  base::TimeDelta default_hashcheck_timeout =
+      GetCheckTimeout(sb_service);
+  IntroduceGetHashDelay(base::TimeDelta::FromSeconds(1));
+  SetCheckTimeout(sb_service, base::TimeDelta::FromMilliseconds(1));
   client->CheckDownloadHash(full_hash);
 
   // There should be a timeout and the hash would be considered as safe.
   EXPECT_EQ(SB_THREAT_TYPE_SAFE, client->GetThreatType());
 
   // Need to set the timeout back to the default value.
-  SetDownloadHashCheckTimeout(sb_service, default_hashcheck_timeout);
+  SetCheckTimeout(sb_service, default_hashcheck_timeout);
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
