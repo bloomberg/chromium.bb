@@ -105,6 +105,7 @@
       'type': 'static_library',
       'sources': [
         '<(proto_rel_path)/chrome_device_policy.proto',
+        '<(proto_rel_path)/chrome_extension_policy.proto',
         '<(proto_rel_path)/device_management_backend.proto',
         '<(proto_rel_path)/device_management_local.proto',
         '<(proto_rel_path)/install_attributes.proto',
