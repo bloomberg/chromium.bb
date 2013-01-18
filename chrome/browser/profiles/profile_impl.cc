@@ -76,6 +76,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/startup_metric_utils.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
@@ -377,13 +378,23 @@ ProfileImpl::ProfileImpl(
   DCHECK(create_mode == CREATE_MODE_ASYNCHRONOUS ||
          create_mode == CREATE_MODE_SYNCHRONOUS);
   bool async_prefs = create_mode == CREATE_MODE_ASYNCHRONOUS;
-  prefs_.reset(chrome_prefs::CreateProfilePrefs(
-      GetPrefFilePath(),
-      sequenced_task_runner,
-      policy_service_.get(),
-      new ExtensionPrefStore(
-          ExtensionPrefValueMapFactory::GetForProfile(this), false),
-      async_prefs));
+
+  {
+    // On startup, preference loading is always synchronous so a scoped timer
+    // will work here.
+    startup_metric_utils::ScopedSlowStartupUMA
+        scoped_timer("Startup.SlowStartupPreferenceLoading");
+    prefs_.reset(chrome_prefs::CreateProfilePrefs(
+        GetPrefFilePath(),
+        sequenced_task_runner,
+        policy_service_.get(),
+        new ExtensionPrefStore(
+            ExtensionPrefValueMapFactory::GetForProfile(this), false),
+        async_prefs));
+  }
+
+  startup_metric_utils::ScopedSlowStartupUMA
+      scoped_timer("Startup.SlowStartupFinalProfileInit");
   if (async_prefs) {
     // Wait for the notification that prefs has been loaded
     // (successfully or not).  Note that we can use base::Unretained
