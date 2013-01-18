@@ -174,8 +174,11 @@ class InstantController {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(InstantTest, OmniboxFocusLoadsInstant);
+  FRIEND_TEST_ALL_PREFIXES(InstantTest, SetWithTemplateURL);
   FRIEND_TEST_ALL_PREFIXES(InstantTest, NonInstantSearchProvider);
   FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantLoaderRefresh);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ExtendedModeIsOn);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OmniboxFocusLoadsInstant);
 
   // Helper for OmniboxFocusChanged. Commit or discard the preview.
   void OmniboxLostFocus(gfx::NativeView view_gaining_focus);

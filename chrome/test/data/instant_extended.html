@@ -1,0 +1,41 @@
+<html>
+  <head>
+    <script>
+
+var apiHandle;
+var onnativesuggestioncalls = 0;
+var onsubmitcalls = 0;
+
+function getApiHandle() {
+  if (window.navigator && window.navigator.searchBox)
+    return window.navigator.searchBox;
+  if (window.chrome && window.chrome.searchBox)
+    return window.chrome.searchBox;
+  return null;
+}
+
+function handleNativeSuggestions() {
+  onnativesuggestioncalls++;
+  apiHandle.show(2 /* QUERY_SUGGESTIONS */, 300);
+}
+
+function handleSubmit() {
+  onsubmitcalls++;
+}
+
+function setUp() {
+  apiHandle = getApiHandle();
+  apiHandle.onnativesuggestions = handleNativeSuggestions;
+  apiHandle.onsubmit = handleSubmit;
+  if (apiHandle.value)
+    handleNativeSuggestions();
+}
+
+setUp();
+
+    </script>
+  </head>
+  <body>
+    <h1>Instant</h1>
+  </body>
+</html>
