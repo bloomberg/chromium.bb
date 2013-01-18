@@ -49,6 +49,7 @@ SRC_DIR = os.path.dirname(SDK_DIR)
 NACL_DIR = os.path.join(SRC_DIR, 'native_client')
 OUT_DIR = os.path.join(SRC_DIR, 'out')
 PPAPI_DIR = os.path.join(SRC_DIR, 'ppapi')
+NACLPORTS_DIR = os.path.join(OUT_DIR, 'naclports')
 
 # Add SDK make tools scripts to the python path.
 sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
@@ -61,6 +62,9 @@ import oshelpers
 GSTORE = 'https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/'
 MAKE = 'nacl_sdk/make_3_81/make.exe'
 CYGTAR = os.path.join(NACL_DIR, 'build', 'cygtar.py')
+
+NACLPORTS_URL = 'https://naclports.googlecode.com/svn/trunk/src'
+NACLPORTS_REV = 674
 
 options = None
 
@@ -187,7 +191,7 @@ def BuildStepCopyTextFiles(pepperdir, pepper_ver, revision):
 def BuildStepUntarToolchains(pepperdir, platform, arch, toolchains):
   buildbot_common.BuildStep('Untar Toolchains')
   tcname = platform + '_' + arch
-  tmpdir = os.path.join(SRC_DIR, 'out', 'tc_temp')
+  tmpdir = os.path.join(OUT_DIR, 'tc_temp')
   buildbot_common.RemoveDir(tmpdir)
   buildbot_common.MakeDir(tmpdir)
 
@@ -425,7 +429,7 @@ def GypNinjaInstall(pepperdir, platform, toolchains):
       buildbot_common.CopyFile(os.path.join(lib_dir, 'crt1.o'), dst_dir)
 
 
-def GypNinjaBuild_Nacl(platform, rel_out_dir):
+def GypNinjaBuild_NaCl(platform, rel_out_dir):
   gyp_py = os.path.join(NACL_DIR, 'build', 'gyp_nacl')
   nacl_core_sdk_gyp = os.path.join(NACL_DIR, 'build', 'nacl_core_sdk.gyp')
   all_gyp = os.path.join(NACL_DIR, 'build', 'all.gyp')
@@ -523,7 +527,7 @@ def NinjaBuild(targets, out_dir):
 def BuildStepBuildToolchains(pepperdir, platform, pepper_ver, toolchains):
   buildbot_common.BuildStep('SDK Items')
 
-  GypNinjaBuild_Nacl(platform, 'gypbuild')
+  GypNinjaBuild_NaCl(platform, 'gypbuild')
 
   tcname = platform + '_x86'
   newlibdir = os.path.join(pepperdir, 'toolchain', tcname + '_newlib')
@@ -862,6 +866,54 @@ def BuildStepArchiveSDKTools():
                             step_link=False)
 
 
+def BuildStepSyncNaClPorts():
+  """Pull the pinned revision of naclports from SVN."""
+  buildbot_common.BuildStep('Sync naclports')
+  if not os.path.exists(NACLPORTS_DIR):
+    # chedckout new copy of naclports
+    cmd = ['svn', 'checkout', '-q', '-r', str(NACLPORTS_REV), NACLPORTS_URL,
+           'naclports']
+    buildbot_common.Run(cmd, cwd=os.path.dirname(NACLPORTS_DIR))
+  else:
+    # sync existing copy to pinned revision.
+    cmd = ['svn', 'update', '-r', str(NACLPORTS_REV)]
+    buildbot_common.Run(cmd, cwd=NACLPORTS_DIR)
+
+
+def BuildStepBuildNaClPorts(pepper_ver, pepperdir):
+  """Build selected naclports in all configurations."""
+  # TODO(sbc): currently naclports doesn't know anything about
+  # Debug builds so the Debug subfolders are all empty.
+  bundle_dir = os.path.join(NACLPORTS_DIR, 'out', 'sdk_bundle')
+
+  env = dict(os.environ)
+  env['NACL_SDK_ROOT'] = pepperdir
+  env['NACLPORTS_NO_ANNOTATE'] = "1"
+
+  build_script = 'build_tools/bots/linux/nacl-linux-sdk-bundle.sh'
+  buildbot_common.BuildStep('Build naclports')
+  buildbot_common.Run([build_script], env=env, cwd=NACLPORTS_DIR)
+
+  out_dir = os.path.join(bundle_dir, 'pepper_XX')
+  out_dir_final = os.path.join(bundle_dir, 'pepper_%s' % pepper_ver)
+  buildbot_common.Move(out_dir, out_dir_final)
+
+
+def BuildStepTarNaClPorts(pepper_ver, tarfile):
+  """Create tar archive containing headers and libs from naclports build."""
+  buildbot_common.BuildStep('Tar naclports Bundle')
+  buildbot_common.MakeDir(os.path.dirname(tarfile))
+  pepper_dir = 'pepper_%s' % pepper_ver
+  archive_dirs = [os.path.join(pepper_dir, 'ports', 'lib'),
+                  os.path.join(pepper_dir, 'ports', 'include')]
+
+  ports_out = os.path.join(NACLPORTS_DIR, 'out', 'sdk_bundle')
+  cmd = [sys.executable, CYGTAR, '-C', ports_out, '-cjf', tarfile]
+  cmd += archive_dirs
+  buildbot_common.Run(cmd, cwd=NACL_DIR)
+
+
+
 def main(args):
   parser = optparse.OptionParser()
   parser.add_option('--run-tests',
@@ -877,6 +929,8 @@ def main(args):
       action='store_true')
   parser.add_option('--release', help='PPAPI release version.',
       dest='release', default=None)
+  parser.add_option('--build-ports',
+      help='Build naclport bundle.', action='store_true')
   parser.add_option('--experimental',
       help='build experimental examples and libraries', action='store_true',
       dest='build_experimental')
@@ -899,6 +953,7 @@ def main(args):
     options.run_tests = True
     options.run_pyauto_tests = True
     options.archive = True
+    options.build_ports = True
 
   if buildbot_common.IsSDKTrybot():
     options.run_tests = True
@@ -911,11 +966,12 @@ def main(args):
 
   pepper_ver = str(int(build_utils.ChromeMajorVersion()))
   pepper_old = str(int(build_utils.ChromeMajorVersion()) - 1)
-  pepperdir = os.path.join(SRC_DIR, 'out', 'pepper_' + pepper_ver)
-  pepperdir_old = os.path.join(SRC_DIR, 'out', 'pepper_' + pepper_old)
+  pepperdir = os.path.join(OUT_DIR, 'pepper_' + pepper_ver)
+  pepperdir_old = os.path.join(OUT_DIR, 'pepper_' + pepper_old)
   clnumber = build_utils.ChromeRevision()
   tarname = 'naclsdk_' + platform + '.tar.bz2'
   tarfile = os.path.join(OUT_DIR, tarname)
+
 
   if options.release:
     pepper_ver = options.release
@@ -949,6 +1005,13 @@ def main(args):
   if not options.skip_tar:
     BuildStepTarBundle(pepper_ver, tarfile)
 
+  if options.build_ports and platform == 'linux':
+    ports_tarfile = os.path.join(OUT_DIR, 'naclports.tar.bz2')
+    BuildStepSyncNaClPorts()
+    BuildStepBuildNaClPorts(pepper_ver, pepperdir)
+    if not options.skip_tar:
+      BuildStepTarNaClPorts(pepper_ver, ports_tarfile)
+
   if options.run_tests:
     BuildStepTestSDK()
 
@@ -956,6 +1019,8 @@ def main(args):
   if options.archive:
     BuildStepArchiveBundle(pepper_ver, clnumber, tarfile)
     BuildStepArchiveSDKTools()
+    if platform == 'linux':
+      BuildStepArchiveBundle(pepper_ver, clnumber, ports_tarfile)
 
   return 0
 
