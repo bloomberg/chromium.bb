@@ -340,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, MinimizeButtonVisibility) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, ClickMinimizeButton) {
+IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest, DISABLED_ClickMinimizeButton) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create 2 stacked panels.
