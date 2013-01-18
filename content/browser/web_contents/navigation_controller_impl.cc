@@ -219,7 +219,8 @@ NavigationControllerImpl::NavigationControllerImpl(
       needs_reload_(false),
       is_initial_navigation_(true),
       pending_reload_(NO_RELOAD),
-      get_timestamp_callback_(base::Bind(&base::Time::Now)) {
+      get_timestamp_callback_(base::Bind(&base::Time::Now)),
+      screenshot_count_(0) {
   DCHECK(browser_context_);
 }
 
@@ -528,15 +529,89 @@ void NavigationControllerImpl::OnScreenshotTaken(
   if (!success) {
     LOG(ERROR) << "Taking snapshot was unsuccessful for "
                << unique_id;
-    entry->SetScreenshotPNGData(std::vector<unsigned char>());
+    ClearScreenshot(entry);
     return;
   }
 
   std::vector<unsigned char> data;
-  if (gfx::PNGCodec::EncodeBGRASkBitmap(bitmap->GetBitmap(), true, &data))
+  if (gfx::PNGCodec::EncodeBGRASkBitmap(bitmap->GetBitmap(), true, &data)) {
+    if (!entry->screenshot())
+      ++screenshot_count_;
     entry->SetScreenshotPNGData(data);
-  else
+    PurgeScreenshotsIfNecessary();
+  } else {
+    ClearScreenshot(entry);
+  }
+  CHECK_GE(screenshot_count_, 0);
+}
+
+void NavigationControllerImpl::ClearScreenshot(NavigationEntryImpl* entry) {
+  if (entry->screenshot()) {
+    --screenshot_count_;
     entry->SetScreenshotPNGData(std::vector<unsigned char>());
+  }
+}
+
+void NavigationControllerImpl::PurgeScreenshotsIfNecessary() {
+  // Allow only a certain number of entries to keep screenshots.
+  const int kMaxScreenshots = 10;
+  if (screenshot_count_ < kMaxScreenshots)
+    return;
+
+  const int current = GetCurrentEntryIndex();
+  const int num_entries = GetEntryCount();
+  int available_slots = kMaxScreenshots;
+  if (NavigationEntryImpl::FromNavigationEntry(
+          GetEntryAtIndex(current))->screenshot())
+    --available_slots;
+
+  // Keep screenshots closer to the current navigation entry, and purge the ones
+  // that are farther away from it. So in each step, look at the entries at
+  // each offset on both the back and forward history, and start counting them
+  // to make sure that the correct number of screenshots are kept in memory.
+  // Note that it is possible for some entries to be missing screenshots (e.g.
+  // when taking the screenshot failed for some reason). So there may be a state
+  // where there are a lot of entries in the back history, but none of them has
+  // any screenshot. In such cases, keep the screenshots for |kMaxScreenshots|
+  // entries in the forward history list.
+  int back = current - 1;
+  int forward = current + 1;
+  while (available_slots > 0 && (back >= 0 || forward < num_entries)) {
+    if (back >= 0) {
+      NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
+          GetEntryAtIndex(back));
+      if (entry->screenshot())
+        --available_slots;
+      --back;
+    }
+
+    if (available_slots > 0 && forward < num_entries) {
+      NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
+          GetEntryAtIndex(forward));
+      if (entry->screenshot())
+        --available_slots;
+      ++forward;
+    }
+  }
+
+  // Purge any screenshot at |back| or lower indices, and |forward| or higher
+  // indices.
+
+  while (screenshot_count_ > kMaxScreenshots && back >= 0) {
+    NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
+        GetEntryAtIndex(back));
+    ClearScreenshot(entry);
+    --back;
+  }
+
+  while (screenshot_count_ > kMaxScreenshots && forward < num_entries) {
+    NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
+        GetEntryAtIndex(forward));
+    ClearScreenshot(entry);
+    ++forward;
+  }
+  CHECK_GE(screenshot_count_, 0);
+  CHECK_LE(screenshot_count_, kMaxScreenshots);
 }
 
 bool NavigationControllerImpl::CanGoBack() const {

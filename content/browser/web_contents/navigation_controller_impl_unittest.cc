@@ -35,6 +35,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_notification_tracker.h"
 #include "net/base/net_util.h"
+#include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/glue_serialize.h"
 
@@ -3016,6 +3017,81 @@ TEST_F(NavigationControllerTest, BackNavigationDoesNotClearFavicon) {
   EXPECT_TRUE(entry);
   EXPECT_EQ(kUrl1, entry->GetURL());
   EXPECT_TRUE(DoImagesMatch(favicon_image, entry->GetFavicon().image));
+}
+
+// The test crashes on android: http://crbug.com/170449
+#if defined(OS_ANDROID)
+#define MAYBE_PurgeScreenshot DISABLED_PurgeScreenshot
+#else
+#define MAYBE_PurgeScreenshot PurgeScreenshot
+#endif
+// Tests that screenshot are purged correctly.
+TEST_F(NavigationControllerTest, MAYBE_PurgeScreenshot) {
+  NavigationControllerImpl& controller = controller_impl();
+
+  // Prepare some data to use as screenshot for each navigation.
+  skia::PlatformBitmap bitmap;
+  ASSERT_TRUE(bitmap.Allocate(1, 1, false));
+  NavigationEntryImpl* entry;
+
+  // Navigate enough times to make sure that some screenshots are purged.
+  for (int i = 0; i < 12; ++i) {
+    const GURL url(base::StringPrintf("http://foo%d/", i));
+    NavigateAndCommit(url);
+    EXPECT_EQ(i, controller.GetCurrentEntryIndex());
+
+    entry = NavigationEntryImpl::FromNavigationEntry(
+        controller.GetActiveEntry());
+    controller.OnScreenshotTaken(entry->GetUniqueID(), &bitmap, true);
+    EXPECT_TRUE(entry->screenshot());
+  }
+  NavigateAndCommit(GURL("https://foo/"));
+  EXPECT_EQ(13, controller.GetEntryCount());
+
+  for (int i = 0; i < 2; ++i) {
+    entry = NavigationEntryImpl::FromNavigationEntry(
+        controller.GetEntryAtIndex(i));
+    EXPECT_FALSE(entry->screenshot()) << "Screenshot " << i << " not purged";
+  }
+
+  for (int i = 2; i < controller.GetEntryCount() - 1; ++i) {
+    entry = NavigationEntryImpl::FromNavigationEntry(
+        controller.GetEntryAtIndex(i));
+    EXPECT_TRUE(entry->screenshot()) << "Screenshot not found for " << i;
+  }
+
+  // Navigate to index 5 and then try to assign screenshot to all entries.
+  controller.GoToIndex(5);
+  contents()->CommitPendingNavigation();
+  EXPECT_EQ(5, controller.GetCurrentEntryIndex());
+  for (int i = 0; i < controller.GetEntryCount() - 1; ++i) {
+    entry = NavigationEntryImpl::FromNavigationEntry(
+        controller.GetEntryAtIndex(i));
+    controller.OnScreenshotTaken(entry->GetUniqueID(), &bitmap, true);
+  }
+
+  for (int i = 10; i <= 12; ++i) {
+    entry = NavigationEntryImpl::FromNavigationEntry(
+        controller.GetEntryAtIndex(i));
+    EXPECT_FALSE(entry->screenshot()) << "Screenshot " << i << " not purged";
+    controller.OnScreenshotTaken(entry->GetUniqueID(), &bitmap, true);
+  }
+
+  // Navigate to index 7 and assign screenshot to all entries.
+  controller.GoToIndex(7);
+  contents()->CommitPendingNavigation();
+  EXPECT_EQ(7, controller.GetCurrentEntryIndex());
+  for (int i = 0; i < controller.GetEntryCount() - 1; ++i) {
+    entry = NavigationEntryImpl::FromNavigationEntry(
+        controller.GetEntryAtIndex(i));
+    controller.OnScreenshotTaken(entry->GetUniqueID(), &bitmap, true);
+  }
+
+  for (int i = 0; i < 2; ++i) {
+    entry = NavigationEntryImpl::FromNavigationEntry(
+        controller.GetEntryAtIndex(i));
+    EXPECT_FALSE(entry->screenshot()) << "Screenshot " << i << " not purged";
+  }
 }
 
 /* TODO(brettw) These test pass on my local machine but fail on the XP buildbot

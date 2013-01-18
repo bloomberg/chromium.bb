@@ -210,6 +210,8 @@ class CONTENT_EXPORT NavigationControllerImpl
   friend class RestoreHelper;
   friend class WebContentsImpl;  // For invoking OnReservedPageIDRange.
 
+  FRIEND_TEST_ALL_PREFIXES(NavigationControllerTest,
+                           PurgeScreenshot);
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, Basic);
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, SingleDuplicate);
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, ManyDuplicates);
@@ -325,6 +327,15 @@ class CONTENT_EXPORT NavigationControllerImpl
                          skia::PlatformBitmap* bitmap,
                          bool success);
 
+  // Removes the screenshot for the entry (and updates the count as
+  // appropriate).
+  void ClearScreenshot(NavigationEntryImpl* entry);
+
+  // The screenshots in the NavigationEntryImpls can accumulate and consume a
+  // large amount of memory. This function makes sure that the memory
+  // consumption is within a certain limit.
+  void PurgeScreenshotsIfNecessary();
+
   // ---------------------------------------------------------------------------
 
   // The user browser context associated with this controller.
@@ -398,6 +409,10 @@ class CONTENT_EXPORT NavigationControllerImpl
   // A callback that gets called before taking the screenshot of the page. This
   // is used only for testing.
   base::Callback<void(RenderViewHost*)> take_screenshot_callback_;
+
+  // Keeps track of the number of the number of NavigationEntryImpls that have
+  // screenshots.
+  int screenshot_count_;
 
   // Used to smooth out timestamps from |get_timestamp_callback_|.
   // Without this, whenever there is a run of redirects or
