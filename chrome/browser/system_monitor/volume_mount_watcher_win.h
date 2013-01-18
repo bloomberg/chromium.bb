@@ -25,6 +25,11 @@ class VolumeMountWatcherWin
  public:
   VolumeMountWatcherWin();
 
+  // Returns the volume file path of the drive specified by the |drive_number|.
+  // |drive_number| inputs of 0 - 25 are valid. Returns an empty file path if
+  // the |drive_number| is invalid.
+  static FilePath DriveNumberToFilePath(int drive_number);
+
   // Must be called after the file thread is created.
   void Init();
 

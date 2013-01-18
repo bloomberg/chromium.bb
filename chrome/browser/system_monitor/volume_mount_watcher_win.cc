@@ -46,13 +46,6 @@ uint32 GetVolumeBitMaskFromBroadcastHeader(LPARAM data) {
   return 0;
 }
 
-FilePath DriveNumberToFilePath(int drive_number) {
-  DCHECK_LT(drive_number, 26);
-  string16 path(L"_:\\");
-  path[0] = L'A' + drive_number;
-  return FilePath(path);
-}
-
 // Returns true if |data| represents a logical volume structure.
 bool IsLogicalVolumeStructure(LPARAM data) {
   DEV_BROADCAST_HDR* broadcast_hdr =
@@ -109,6 +102,15 @@ bool GetDeviceDetails(const FilePath& device_path, string16* device_location,
 namespace chrome {
 
 VolumeMountWatcherWin::VolumeMountWatcherWin() {
+}
+
+// static
+FilePath VolumeMountWatcherWin::DriveNumberToFilePath(int drive_number) {
+  if (drive_number < 0 || drive_number > 25)
+    return FilePath();
+  string16 path(L"_:\\");
+  path[0] = L'A' + drive_number;
+  return FilePath(path);
 }
 
 void VolumeMountWatcherWin::Init() {

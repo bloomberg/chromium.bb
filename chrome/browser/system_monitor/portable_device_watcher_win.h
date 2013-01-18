@@ -24,6 +24,10 @@ class FilePath;
 
 namespace chrome {
 
+namespace test {
+class TestPortableDeviceWatcherWin;
+}
+
 // This class watches the portable device mount points and sends notifications
 // to base::SystemMonitor about the attached/detached media transfer protocol
 // (MTP) devices. This is a singleton class instantiated by
@@ -83,7 +87,7 @@ class PortableDeviceWatcherWin {
                                      string16* storage_object_id);
 
  private:
-  friend class TestPortableDeviceWatcherWin;
+  friend class test::TestPortableDeviceWatcherWin;
 
   // Key: MTP device storage unique id.
   // Value: Metadata for the given storage.
@@ -96,13 +100,13 @@ class PortableDeviceWatcherWin {
 
   // Helpers to enumerate existing MTP storage devices.
   virtual void EnumerateAttachedDevices();
-  virtual void OnDidEnumerateAttachedDevices(const Devices* devices,
-                                             const bool result);
+  void OnDidEnumerateAttachedDevices(const Devices* devices,
+                                     const bool result);
 
   // Helpers to handle device attach event.
   virtual void HandleDeviceAttachEvent(const string16& pnp_device_id);
-  virtual void OnDidHandleDeviceAttachEvent(
-      const DeviceDetails* device_details, const bool result);
+  void OnDidHandleDeviceAttachEvent(const DeviceDetails* device_details,
+                                    const bool result);
 
   // Handles the detach event of the device specified by |pnp_device_id|.
   void HandleDeviceDetachEvent(const string16& pnp_device_id);

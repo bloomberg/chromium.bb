@@ -15,6 +15,10 @@ class FilePath;
 
 namespace chrome {
 
+namespace test {
+class TestRemovableDeviceNotificationsWindowWin;
+}
+
 class PortableDeviceWatcherWin;
 class VolumeMountWatcherWin;
 
@@ -42,7 +46,7 @@ class RemovableDeviceNotificationsWindowWin
 
  private:
   class PortableDeviceNotifications;
-  friend class TestRemovableDeviceNotificationsWindowWin;
+  friend class test::TestRemovableDeviceNotificationsWindowWin;
 
   // To support unit tests, this constructor takes |volume_mount_watcher| and
   // |portable_device_watcher| objects. These params are either constructed in
