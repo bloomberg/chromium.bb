@@ -134,14 +134,6 @@ const char kHostedAppCrxId[] = "kbmnembihfiondgfjekmnmcbddelicoi";
 const FilePath::CharType kGoodCrxManifestName[] =
     FILE_PATH_LITERAL("good_update_manifest.xml");
 
-const char* kURLs[] = {
-  "http://aaa.com/empty.html",
-  "http://bbb.com/empty.html",
-  "http://ccc.com/empty.html",
-  "http://ddd.com/empty.html",
-  "http://eee.com/empty.html",
-};
-
 // Filters requests to the hosts in |urls| and redirects them to the test data
 // dir through URLRequestMockHTTPJobs.
 void RedirectHostsToTestData(const char* const urls[], size_t size) {
@@ -1544,6 +1536,11 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisableAudioOutput) {
 
 namespace {
 
+static const char* kRestoredURLs[] = {
+  "http://aaa.com/empty.html",
+  "http://bbb.com/empty.html",
+};
+
 bool IsNonSwitchArgument(const CommandLine::StringType& s) {
   return s.empty() || s[0] != '-';
 }
@@ -1585,7 +1582,7 @@ class RestoreOnStartupPolicyTest
                            command_line->argv().begin()));
 
     // Redirect the test URLs to the test data directory.
-    RedirectHostsToTestData(kURLs, arraysize(kURLs));
+    RedirectHostsToTestData(kRestoredURLs, arraysize(kRestoredURLs));
   }
 
   void HomepageIsNotNTP() {
@@ -1601,10 +1598,10 @@ class RestoreOnStartupPolicyTest
         base::Value::CreateBooleanValue(false));
     policies.Set(
         key::kHomepageLocation, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        base::Value::CreateStringValue(kURLs[1]));
+        base::Value::CreateStringValue(kRestoredURLs[1]));
     provider_.UpdateChromePolicy(policies);
 
-    expected_urls_.push_back(GURL(kURLs[1]));
+    expected_urls_.push_back(GURL(kRestoredURLs[1]));
   }
 
   void HomepageIsNTP() {
@@ -1626,9 +1623,9 @@ class RestoreOnStartupPolicyTest
   void ListOfURLs() {
     // Verifies that policy can set the startup pages to a list of URLs.
     base::ListValue urls;
-    for (size_t i = 0; i < arraysize(kURLs); ++i) {
-      urls.Append(base::Value::CreateStringValue(kURLs[i]));
-      expected_urls_.push_back(GURL(kURLs[i]));
+    for (size_t i = 0; i < arraysize(kRestoredURLs); ++i) {
+      urls.Append(base::Value::CreateStringValue(kRestoredURLs[i]));
+      expected_urls_.push_back(GURL(kRestoredURLs[i]));
     }
     PolicyMap policies;
     policies.Set(
@@ -1658,8 +1655,8 @@ class RestoreOnStartupPolicyTest
         base::Value::CreateIntegerValue(SessionStartupPref::kPrefValueLast));
     provider_.UpdateChromePolicy(policies);
     // This should restore the tabs opened at PRE_RunTest below.
-    for (size_t i = 0; i < arraysize(kURLs); ++i)
-      expected_urls_.push_back(GURL(kURLs[i]));
+    for (size_t i = 0; i < arraysize(kRestoredURLs); ++i)
+      expected_urls_.push_back(GURL(kRestoredURLs[i]));
   }
 
   std::vector<GURL> expected_urls_;
@@ -1669,12 +1666,12 @@ IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, PRE_RunTest) {
   // Open some tabs to verify if they are restored after the browser restarts.
   // Most policy settings override this, except kPrefValueLast which enforces
   // a restore.
-  ui_test_utils::NavigateToURL(browser(), GURL(kURLs[0]));
-  for (size_t i = 1; i < arraysize(kURLs); ++i) {
+  ui_test_utils::NavigateToURL(browser(), GURL(kRestoredURLs[0]));
+  for (size_t i = 1; i < arraysize(kRestoredURLs); ++i) {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    chrome::AddSelectedTabWithURL(browser(), GURL(kURLs[i]),
+    chrome::AddSelectedTabWithURL(browser(), GURL(kRestoredURLs[i]),
                                   content::PAGE_TRANSITION_LINK);
     observer.Wait();
   }
@@ -1689,9 +1686,6 @@ IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, RunTest) {
   }
 }
 
-#if !defined(OS_WIN)
-// http://crbug.com/170779 Timing out regularly on XP waterfall.
-
 INSTANTIATE_TEST_CASE_P(
     RestoreOnStartupPolicyTestInstance,
     RestoreOnStartupPolicyTest,
@@ -1700,8 +1694,6 @@ INSTANTIATE_TEST_CASE_P(
                     &RestoreOnStartupPolicyTest::ListOfURLs,
                     &RestoreOnStartupPolicyTest::NTP,
                     &RestoreOnStartupPolicyTest::Last));
-
-#endif
 
 // Similar to PolicyTest but sets a couple of policies before the browser is
 // started.
