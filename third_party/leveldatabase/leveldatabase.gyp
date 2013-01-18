@@ -31,7 +31,7 @@
   'targets': [
     {
       'target_name': 'leveldatabase',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base',
         # base::LazyInstance is a template that pulls in dynamic_annotations so
@@ -164,7 +164,7 @@
     },
     {
       'target_name': 'leveldb_testutil',
-      'type': '<(library)',
+      'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base',
         'leveldatabase',
