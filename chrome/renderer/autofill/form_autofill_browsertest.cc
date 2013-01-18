@@ -216,7 +216,9 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutofilled) {
 
 // We should be able to extract a radio or a checkbox field that has been
 // autofilled.
-TEST_F(FormAutofillTest, WebFormControlElementToClickableFormField) {
+// TODO(ramankk): Enable this test once IsCheckable is enabled in
+// IsAutofillableInputElement function in form_autofill_util.
+TEST_F(FormAutofillTest, DISABLED_WebFormControlElementToClickableFormField) {
   LoadHTML("<INPUT type=\"checkbox\" id=\"checkbox\" value=\"mail\"/>"
            "<INPUT type=\"radio\" id=\"radio\" value=\"male\"/>");
 
@@ -237,8 +239,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToClickableFormField) {
   expected.is_checkable = true;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
 
-  // TODO(ramankk): Uncomment after testing the regression, crbug/170064.
-  /* web_element = frame->document().getElementById("radio");
+  web_element = frame->document().getElementById("radio");
   element = web_element.to<WebInputElement>();
   element.setAutofilled(true);
   WebFormControlElementToFormField(element, autofill::EXTRACT_VALUE, &result);
@@ -247,7 +248,7 @@ TEST_F(FormAutofillTest, WebFormControlElementToClickableFormField) {
   expected.form_control_type = "radio";
   expected.is_autofilled = true;
   expected.is_checkable = true;
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, result); */
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
 }
 
 // We should be able to extract a <select> field.
