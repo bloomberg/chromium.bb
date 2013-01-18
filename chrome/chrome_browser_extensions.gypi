@@ -446,6 +446,8 @@
         'browser/extensions/api/webstore_private/webstore_private_api.h',
         'browser/extensions/app_host_installer_win.cc',
         'browser/extensions/app_host_installer_win.h',
+        'browser/extensions/app_launcher.cc',
+        'browser/extensions/app_launcher.h',
         'browser/extensions/app_notification.cc',
         'browser/extensions/app_notification.h',
         'browser/extensions/app_notification_manager.cc',

@@ -4,10 +4,12 @@
 
 #include "chrome/browser/extensions/extension_install_ui_default.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/api/infobars/infobar_service.h"
+#include "chrome/browser/extensions/app_launcher.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
@@ -101,6 +103,31 @@ void ErrorInfobarDelegate::Create(InfoBarService* infobar_service,
       new ErrorInfobarDelegate(infobar_service, browser, error)));
 }
 
+void OnAppLauncherEnabledCompleted(const extensions::Extension* extension,
+                                   Browser* browser,
+                                   SkBitmap* icon,
+                                   bool use_bubble,
+                                   bool use_launcher) {
+#if defined(ENABLE_APP_LIST)
+  if (use_launcher) {
+    chrome::ShowAppList();
+
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
+        content::Source<Profile>(browser->profile()),
+        content::Details<const std::string>(&extension->id()));
+    return;
+  }
+#endif
+
+  if (use_bubble) {
+    chrome::ShowExtensionInstalledBubble(extension, browser, *icon);
+    return;
+  }
+
+  ExtensionInstallUI::OpenAppInstalledUI(browser, extension->id());
+}
+
 }  // namespace
 
 ExtensionInstallUIDefault::ExtensionInstallUIDefault(Profile* profile)
@@ -152,16 +179,18 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
     chrome::AddBlankTabAt(browser, -1, true);
   browser->window()->Show();
 
-  bool use_bubble_for_apps = false;
+  if (extension->is_app()) {
+    bool use_bubble = false;
 
 #if defined(TOOLKIT_VIEWS)
-  CommandLine* cmdline = CommandLine::ForCurrentProcess();
-  use_bubble_for_apps = (use_app_installed_bubble_ ||
-                         cmdline->HasSwitch(switches::kAppsNewInstallBubble));
+    CommandLine* cmdline = CommandLine::ForCurrentProcess();
+    use_bubble = (use_app_installed_bubble_ ||
+                  cmdline->HasSwitch(switches::kAppsNewInstallBubble));
 #endif
 
-  if (extension->is_app() && !use_bubble_for_apps) {
-    ExtensionInstallUI::OpenAppInstalledUI(browser, extension->id());
+    extensions::GetIsAppLauncherEnabled(
+        base::Bind(&OnAppLauncherEnabledCompleted, extension, browser, icon,
+                   use_bubble));
     return;
   }
 
@@ -199,27 +228,23 @@ ExtensionInstallUI* ExtensionInstallUI::Create(Profile* profile) {
 // static
 void ExtensionInstallUI::OpenAppInstalledUI(Browser* browser,
                                             const std::string& app_id) {
-  if (NewTabUI::ShouldShowApps()) {
-    chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
-        browser, GURL(chrome::kChromeUINewTabURL)));
-    chrome::Navigate(&params);
+#if defined(OS_CHROMEOS)
+  chrome::ShowAppList();
 
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
-        content::Source<WebContents>(params.target_contents),
-        content::Details<const std::string>(&app_id));
-  } else {
-#if defined(ENABLE_APP_LIST)
-    chrome::ShowAppList();
-
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
-        content::Source<Profile>(browser->profile()),
-        content::Details<const std::string>(&app_id));
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
+      content::Source<Profile>(browser->profile()),
+      content::Details<const std::string>(&app_id));
 #else
-    NOTREACHED();
+  chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
+      browser, GURL(chrome::kChromeUINewTabURL)));
+  chrome::Navigate(&params);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
+      content::Source<WebContents>(params.target_contents),
+      content::Details<const std::string>(&app_id));
 #endif
-  }
 }
 
 // static
