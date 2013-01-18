@@ -31,7 +31,7 @@
         video.addEventListener('pause', function() {
           video.addEventListener('seeked', function() {
             if (!firstVideoSeek) {
-              console.log('One video seeked.');
+              setDocTitle('One video seeked.');
               firstVideoSeek = true;
               return;
             }
