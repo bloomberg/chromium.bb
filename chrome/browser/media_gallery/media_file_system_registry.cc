@@ -368,6 +368,9 @@ class ExtensionGalleriesHost
           MediaFileSystemRegistry::kDeviceIdKey,
           base::Uint64ToString(transient_device_id));
     }
+    dict_value.SetStringWithoutPathExpansion(
+        "DEPRECATED",
+        "This JSON string is deprecated, use getMediaFileSystemMetadata.");
 
     std::string json_string;
     base::JSONWriter::Write(&dict_value, &json_string);
