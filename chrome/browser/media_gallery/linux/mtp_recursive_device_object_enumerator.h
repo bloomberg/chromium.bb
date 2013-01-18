@@ -24,7 +24,7 @@ namespace chrome {
 
 class MTPDeviceObjectEnumerator;
 
-// Recursively enumerate each file entry from a given media file entry set.
+// Recursively enumerate file entries from a given media file entry set.
 class MTPRecursiveDeviceObjectEnumerator
     : public fileapi::FileSystemFileUtil::AbstractFileEnumerator {
  public:
@@ -45,10 +45,11 @@ class MTPRecursiveDeviceObjectEnumerator
  private:
   typedef uint32_t DirectoryEntryId;
 
-  // Returns an enumerator to traverse the subdirectory objects. If there
-  // is no subdirectory, returns NULL. The caller owns the returned
-  // MTPDeviceObjectEnumerator.
-  scoped_ptr<MTPDeviceObjectEnumerator> GetSubdirectoryEnumerator();
+  // Returns an enumerator for the next non-empty, untraversed subdirectory
+  // from |untraversed_directory_entry_ids_|.
+  // Returns NULL if all subdirectories have been traversed.
+  // The caller owns the returned MTPDeviceObjectEnumerator.
+  scoped_ptr<MTPDeviceObjectEnumerator> GetNextSubdirectoryEnumerator();
 
   // Stores the device handle that was used to open the device.
   const std::string device_handle_;
@@ -60,10 +61,7 @@ class MTPRecursiveDeviceObjectEnumerator
   // Enumerator to access current directory Id/path entries.
   scoped_ptr<MTPDeviceObjectEnumerator> current_enumerator_;
 
-  scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
-      empty_enumerator_;
-
-  // Queue of untraversed directories.
+  // Queue of untraversed subdirectories.
   std::queue<DirectoryEntryId> untraversed_directory_entry_ids_;
 
   // |media_task_runner_| can wait on this event until the requested operation

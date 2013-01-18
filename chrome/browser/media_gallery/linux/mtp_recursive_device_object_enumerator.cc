@@ -25,8 +25,6 @@ MTPRecursiveDeviceObjectEnumerator::MTPRecursiveDeviceObjectEnumerator(
   DCHECK(on_shutdown_event_);
   DCHECK(!entries.empty());
   current_enumerator_.reset(new MTPDeviceObjectEnumerator(entries));
-  empty_enumerator_.reset(
-      new fileapi::FileSystemFileUtil::EmptyFileEnumerator());
 }
 
 MTPRecursiveDeviceObjectEnumerator::~MTPRecursiveDeviceObjectEnumerator() {
@@ -38,11 +36,19 @@ FilePath MTPRecursiveDeviceObjectEnumerator::Next() {
     return FilePath();
   }
 
-  if (!current_enumerator_)
-    return FilePath();
+  if (!current_enumerator_->HasMoreEntries()) {
+    scoped_ptr<MTPDeviceObjectEnumerator> next_enumerator =
+        GetNextSubdirectoryEnumerator();
+    if (next_enumerator) {
+      current_enumerator_ = next_enumerator.Pass();
+    } else {
+      // If there's no |next_enumerator|, then |current_enumerator_| is the
+      // last enumerator and it remains in its end state. Thus it is retained
+      // to act as an EmptyFileEnumerator. Return early since this is the end.
+      return FilePath();
+    }
+  }
 
-  if (!current_enumerator_->HasMoreEntries())
-    current_enumerator_ = GetSubdirectoryEnumerator();
 
   if (IsDirectory()) {
     // If the current entry is a directory, add it to
@@ -51,27 +57,23 @@ FilePath MTPRecursiveDeviceObjectEnumerator::Next() {
     if (current_enumerator_->GetEntryId(&dir_entry_id))
       untraversed_directory_entry_ids_.push(dir_entry_id);
   }
-  return current_enumerator_ ?
-      current_enumerator_->Next() : empty_enumerator_->Next();
+  return current_enumerator_->Next();
 }
 
 int64 MTPRecursiveDeviceObjectEnumerator::Size() {
-  return current_enumerator_ ?
-      current_enumerator_->Size() : empty_enumerator_->Size();
+  return current_enumerator_->Size();
 }
 
 bool MTPRecursiveDeviceObjectEnumerator::IsDirectory() {
-  return current_enumerator_ ?
-      current_enumerator_->IsDirectory() : empty_enumerator_->IsDirectory();
+  return current_enumerator_->IsDirectory();
 }
 
 base::Time MTPRecursiveDeviceObjectEnumerator::LastModifiedTime() {
-  return current_enumerator_ ? current_enumerator_->LastModifiedTime() :
-      empty_enumerator_->LastModifiedTime();
+  return current_enumerator_->LastModifiedTime();
 }
 
-scoped_ptr<MTPDeviceObjectEnumerator> MTPRecursiveDeviceObjectEnumerator::
-GetSubdirectoryEnumerator() {
+scoped_ptr<MTPDeviceObjectEnumerator>
+MTPRecursiveDeviceObjectEnumerator::GetNextSubdirectoryEnumerator() {
   while (!untraversed_directory_entry_ids_.empty()) {
     // Create a MTPReadDirectoryWorker object to enumerate sub directories.
     DirectoryEntryId dir_entry_id = untraversed_directory_entry_ids_.front();
