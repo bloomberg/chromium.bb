@@ -103,7 +103,7 @@ deps = {
     (Var("googlecode_url") % "grit-i18n") + "/trunk@102",
 
   "src/tools/gyp":
-    (Var("googlecode_url") % "gyp") + "/trunk@1563",
+    (Var("googlecode_url") % "gyp") + "/trunk@1564",
 
   "src/tools/swarm_client":
     "/trunk/tools/swarm_client@176418",
