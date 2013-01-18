@@ -134,6 +134,14 @@ message SystemProfileProto {
         optional float overall_score = 3;
       }
       optional PerformanceStatistics performance_statistics = 5;
+      
+      // The GL_VENDOR string. An example of a gl_vendor string is 
+      // "Imagination Technologies". "" if we are not using OpenGL.
+      optional string gl_vendor = 6;
+      
+      // The GL_RENDERER string. An example of a gl_renderer string is 
+      // "PowerVR SGX 540". "" if we are not using OpenGL.
+      optional string gl_renderer = 7;
     }
     optional Graphics gpu = 8;
   }

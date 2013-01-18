@@ -56,6 +56,8 @@ extern char g_client_id[];
 extern char g_extension_ids[];
 extern char g_gpu_vendor_id[];
 extern char g_gpu_device_id[];
+extern char g_gpu_gl_vendor[];
+extern char g_gpu_gl_renderer[];
 extern char g_gpu_driver_ver[];
 extern char g_gpu_ps_ver[];
 extern char g_gpu_vs_ver[];

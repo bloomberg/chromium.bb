@@ -846,6 +846,8 @@ void MetricsLog::RecordEnvironmentProto(
   gpu_performance->set_graphics_score(gpu_info.performance_stats.graphics);
   gpu_performance->set_gaming_score(gpu_info.performance_stats.gaming);
   gpu_performance->set_overall_score(gpu_info.performance_stats.overall);
+  gpu->set_gl_vendor(gpu_info.gl_vendor);
+  gpu->set_gl_renderer(gpu_info.gl_renderer);
 
   const gfx::Size display_size = GetScreenSize();
   hardware->set_primary_screen_width(display_size.width());

@@ -1063,15 +1063,26 @@ void HandleCrashDump(const BreakpadInfo& info) {
 
   // If GPU info is known, send it.
   if (*child_process_logging::g_gpu_vendor_id) {
+#if !defined(OS_ANDROID)
     static const char vendor_msg[] = "gpu-venid";
     static const char device_msg[] = "gpu-devid";
+#endif
+    static const char gl_vendor_msg[] = "gpu-gl-vendor";
+    static const char gl_renderer_msg[] = "gpu-gl-renderer";
     static const char driver_msg[] = "gpu-driver";
     static const char psver_msg[] = "gpu-psver";
     static const char vsver_msg[] = "gpu-vsver";
 
+#if !defined(OS_ANDROID)
     writer.AddPairString(vendor_msg, child_process_logging::g_gpu_vendor_id);
     writer.AddBoundary();
     writer.AddPairString(device_msg, child_process_logging::g_gpu_device_id);
+    writer.AddBoundary();
+#endif
+    writer.AddPairString(gl_vendor_msg, child_process_logging::g_gpu_gl_vendor);
+    writer.AddBoundary();
+    writer.AddPairString(gl_renderer_msg,
+                         child_process_logging::g_gpu_gl_renderer);
     writer.AddBoundary();
     writer.AddPairString(driver_msg, child_process_logging::g_gpu_driver_ver);
     writer.AddBoundary();
