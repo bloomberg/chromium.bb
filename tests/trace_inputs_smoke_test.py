@@ -453,7 +453,7 @@ class TraceInputsImport(TraceInputsBase):
       resultcode, output = tracer.trace(cmd, cwd, tracename, True)
       return (tracename, resultcode, output)
 
-    with run_test_cases.ThreadPool(parallel, 0) as pool:
+    with run_test_cases.ThreadPool(parallel, parallel, 0) as pool:
       pool.tasks.progress = FakeProgress()
       api = self.trace_inputs.get_api()
       with api.get_tracer(self.log) as tracer:

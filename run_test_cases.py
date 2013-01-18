@@ -746,7 +746,7 @@ def run_test_cases(
         print >> sys.stderr, 'Can\'t parse --gtest_output=%s' % gtest_output
         return 1
 
-    with ThreadPool(jobs, len(test_cases)) as pool:
+    with ThreadPool(jobs, jobs, len(test_cases)) as pool:
       runner = Runner(
           cmd, cwd, timeout, pool.tasks.progress, retries, decider, verbose,
           pool.add_task)

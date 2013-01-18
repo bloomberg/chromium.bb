@@ -314,22 +314,44 @@ class ThreadPool(object):
   """
   QUEUE_CLASS = Queue.PriorityQueue
 
-  def __init__(self, num_threads, queue_size=0):
-    logging.debug('Creating ThreadPool')
+  def __init__(self, initial_threads, max_threads, queue_size):
+    logging.debug(
+        'ThreadPool(%d, %d, %d)', initial_threads, max_threads, queue_size)
+    assert initial_threads <= max_threads
+    # Update this check once 256 cores CPU are common.
+    assert max_threads <= 256
+
     self.tasks = self.QUEUE_CLASS(queue_size)
-    self._workers = [
-      threading.Thread(target=self._run, name='worker-%d' % i)
-      for i in range(num_threads)
-    ]
+    self._max_threads = max_threads
 
-    self._lock = threading.Lock()
+    # Mutables.
+    self._num_of_added_tasks_lock = threading.Lock()
     self._num_of_added_tasks = 0
+    self._outputs_lock = threading.Lock()
     self._outputs = []
+    self._exceptions_lock = threading.Lock()
     self._exceptions = []
+    # Number of threads in wait state.
+    self._ready_lock = threading.Lock()
+    self._ready = 0
+    self._workers_lock = threading.Lock()
+    self._workers = []
+    for _ in range(initial_threads):
+      self._add_worker()
 
-    for w in self._workers:
-      w.daemon = True
-      w.start()
+  def _add_worker(self):
+    """Adds one worker thread if there isn't too many. Thread-safe."""
+    # Better to take the lock two times than hold it for too long.
+    with self._workers_lock:
+      if len(self._workers) >= self._max_threads:
+        return False
+    worker = threading.Thread(target=self._run)
+    with self._workers_lock:
+      if len(self._workers) >= self._max_threads:
+        return False
+      self._workers.append(worker)
+    worker.daemon = True
+    worker.start()
 
   def add_task(self, func, *args, **kwargs):
     """Adds a task, a function to be executed by a worker.
@@ -337,29 +359,39 @@ class ThreadPool(object):
     The function's return value will be stored in the the worker's thread local
     outputs list.
     """
-    with self._lock:
+    priority = 0
+    with self._ready_lock:
+      start_new_worker = not self._ready
+    with self._num_of_added_tasks_lock:
       self._num_of_added_tasks += 1
       index = self._num_of_added_tasks
-    self.tasks.put((index, func, args, kwargs))
+    self.tasks.put((priority, index, func, args, kwargs))
+    if start_new_worker:
+      self._add_worker()
 
   def _run(self):
-    """Runs until a None task is queued."""
+    """Worker thread loop. Runs until a None task is queued."""
     while True:
-      task = self.tasks.get()
-      if task is None:
-        # We're done.
-        return
       try:
-        # The first item is the index.
-        _, func, args, kwargs = task
+        with self._ready_lock:
+          self._ready += 1
+        task = self.tasks.get()
+      finally:
+        with self._ready_lock:
+          self._ready -= 1
+      try:
+        if task is None:
+          # We're done.
+          return
+        _priority, _index, func, args, kwargs = task
         out = func(*args, **kwargs)
-        with self._lock:
+        with self._outputs_lock:
           self._outputs.append(out)
       except Exception as e:
-        logging.error('Caught exception! %s' % e)
         exc_info = sys.exc_info()
-        with self._lock:
+        with self._exceptions_lock:
           self._exceptions.append(exc_info)
+        logging.error('Caught exception! %s' % e)
       finally:
         self.tasks.task_done()
 
@@ -370,11 +402,13 @@ class ThreadPool(object):
     """
     # TODO(maruel): Stop waiting as soon as an exception is caught.
     self.tasks.join()
-    if self._exceptions:
-      e = self._exceptions.pop(0)
-      raise e[0], e[1], e[2]
-    out = self._outputs
-    self._outputs = []
+    with self._exceptions_lock:
+      if self._exceptions:
+        e = self._exceptions.pop(0)
+        raise e[0], e[1], e[2]
+    with self._outputs_lock:
+      out = self._outputs
+      self._outputs = []
     return out
 
   def close(self):

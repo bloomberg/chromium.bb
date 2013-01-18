@@ -267,8 +267,8 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
 
   # Create a pool of workers to zip and upload any files missing from
   # the server.
-  zipping_pool = run_isolated.ThreadPool(
-      num_threads=run_test_cases.num_processors())
+  num_threads = run_test_cases.num_processors()
+  zipping_pool = run_isolated.ThreadPool(num_threads, num_threads, 0)
   remote_uploader = UploadRemote(namespace, base_url)
 
   # Starts the zip and upload process for a given query. The query is assumed

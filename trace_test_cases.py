@@ -87,7 +87,7 @@ def trace_test_cases(cmd, cwd_dir, test_cases, jobs, logname):
   api.clean_trace(logname)
 
   threads = jobs or multiprocessing.cpu_count()
-  with run_test_cases.ThreadPool(threads, len(test_cases)) as pool:
+  with run_test_cases.ThreadPool(threads, threads, len(test_cases)) as pool:
     with api.get_tracer(logname) as tracer:
       function = Tracer(tracer, cmd, cwd_dir, pool.tasks.progress).map
       for test_case in test_cases:
