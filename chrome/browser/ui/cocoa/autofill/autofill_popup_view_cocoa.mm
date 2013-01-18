@@ -18,10 +18,6 @@
 
 namespace {
 
-NSColor* BorderColor() {
-  return [NSColor colorForControlTint:[NSColor currentControlTint]];
-}
-
 NSColor* SeparatorColor() {
   return [NSColor colorWithCalibratedWhite:220 / 255.0 alpha:1];
 }
@@ -96,23 +92,8 @@ NSColor* HighlightColor() {
   if (!controller_)
     return;
 
-  // TODO(isherman): Is there a better way to leave room for the border?
-  // TODO(isherman): Drawing the border as part of the content view means that
-  // the rest of the content has to be careful not to overlap the border.
-  // Should the border be part of the window instead?  If not, should the rest
-  // of the view be a subview?  Or should I just draw the window content
-  // carefully?
-  // TODO(isherman): We should consider using asset-based drawing for the
-  // border, creating simple bitmaps for the view's border and background, and
-  // drawing them using NSDrawNinePartImage().
-  NSRect borderRect = NSInsetRect([self bounds], 0.5, 0.5);
-  NSBezierPath* border = [NSBezierPath bezierPathWithRect:borderRect];
-
   [[NSColor whiteColor] set];
-  [border fill];
-
-  [BorderColor() set];
-  [border stroke];
+  [NSBezierPath fillRect:[self bounds]];
 
   for (size_t i = 0; i < controller_->names().size(); ++i) {
     // Skip rows outside of the dirty rect.
