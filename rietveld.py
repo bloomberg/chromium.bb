@@ -246,7 +246,7 @@ class Rietveld(object):
     tail = '…\n(message too large)'
     if len(message) > max_message:
       message = message[:max_message-len(tail)] + tail
-    logging.info('issue %d; comment: %s' % (issue, message.strip()))
+    logging.info('issue %d; comment: %s' % (issue, message.strip()[:300]))
     return self.post('/%d/publish' % issue, [
         ('xsrf_token', self.xsrf_token()),
         ('message', message),
