@@ -21,7 +21,8 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
               gfx::Rect opaque_rect,
               unsigned resource_id,
               bool premultiplied_alpha,
-              const gfx::RectF& uv_rect,
+              gfx::PointF uv_top_left,
+              gfx::PointF uv_bottom_right,
               const float vertex_opacity[4],
               bool flipped);
 
@@ -32,13 +33,15 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
               bool needs_blending,
               unsigned resource_id,
               bool premultiplied_alpha,
-              const gfx::RectF& uv_rect,
+              gfx::PointF uv_top_left,
+              gfx::PointF uv_bottom_right,
               const float vertex_opacity[4],
               bool flipped);
 
   unsigned resource_id;
   bool premultiplied_alpha;
-  gfx::RectF uv_rect;
+  gfx::PointF uv_top_left;
+  gfx::PointF uv_bottom_right;
   float vertex_opacity[4];
   bool flipped;
 

@@ -82,7 +82,7 @@ TEST(NinePatchLayerImplTest, verifyDrawQuads)
     for (size_t i = 0; i < quads.size(); ++i) {
         DrawQuad* quad = quads[i];
         const TextureDrawQuad* texQuad = TextureDrawQuad::MaterialCast(quad);
-        gfx::RectF texRect = texQuad->uv_rect;
+        gfx::RectF texRect = gfx::BoundingRect(texQuad->uv_top_left, texQuad->uv_bottom_right);
         texRect.Scale(bitmapSize.width(), bitmapSize.height());
         texRemaining.Subtract(Region(ToRoundedIntRect(texRect)));
     }
@@ -135,7 +135,7 @@ TEST(NinePatchLayerImplTest, verifyDrawQuadsForSqueezedLayer)
     for (size_t i = 0; i < quads.size(); ++i) {
         DrawQuad* quad = quads[i];
         const TextureDrawQuad* texQuad = TextureDrawQuad::MaterialCast(quad);
-        gfx::RectF texRect = texQuad->uv_rect;
+        gfx::RectF texRect = gfx::BoundingRect(texQuad->uv_top_left, texQuad->uv_bottom_right);
         texRect.Scale(bitmapSize.width(), bitmapSize.height());
         texRemaining.Subtract(Region(ToRoundedIntRect(texRect)));
     }

@@ -18,7 +18,8 @@ TextureLayerImpl::TextureLayerImpl(LayerTreeImpl* treeImpl, int id, bool usesMai
     , m_externalTextureResource(0)
     , m_premultipliedAlpha(true)
     , m_flipped(true)
-    , m_uvRect(0, 0, 1, 1)
+    , m_uvTopLeft(0.f, 0.f)
+    , m_uvBottomRight(1.f, 1.f)
     , m_hasPendingMailbox(false)
     , m_usesMailbox(usesMailbox)
 {
@@ -87,7 +88,7 @@ void TextureLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQu
     gfx::Rect quadRect(gfx::Point(), contentBounds());
     gfx::Rect opaqueRect(contentsOpaque() ? quadRect : gfx::Rect());
     scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::Create();
-    quad->SetNew(sharedQuadState, quadRect, opaqueRect, m_externalTextureResource, m_premultipliedAlpha, m_uvRect, m_vertexOpacity, m_flipped);
+    quad->SetNew(sharedQuadState, quadRect, opaqueRect, m_externalTextureResource, m_premultipliedAlpha, m_uvTopLeft, m_uvBottomRight, m_vertexOpacity, m_flipped);
 
     // Perform explicit clipping on a quad to avoid setting a scissor later.
     if (sharedQuadState->is_clipped && quad->PerformClipping())
