@@ -250,6 +250,22 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_TextfieldSelectionColor,
     kColorId_TextfieldSelectionBackgroundFocused,
     kColorId_TextfieldSelectionBackgroundUnfocused,
+    // Tree
+    kColorId_TreeBackground,
+    kColorId_TreeText,
+    kColorId_TreeSelectedText,
+    kColorId_TreeSelectedTextUnfocused,
+    kColorId_TreeSelectionBackgroundFocused,
+    kColorId_TreeSelectionBackgroundUnfocused,
+    kColorId_TreeArrow,
+    // Table
+    kColorId_TableBackground,
+    kColorId_TableText,
+    kColorId_TableSelectedText,
+    kColorId_TableSelectedTextUnfocused,
+    kColorId_TableSelectionBackgroundFocused,
+    kColorId_TableSelectionBackgroundUnfocused,
+    kColorId_TableGroupingIndicatorColor,
     // TODO(benrg): move other hardcoded colors here.
   };
 

@@ -28,6 +28,11 @@
 #include "ui/gfx/rect.h"
 #include "ui/native_theme/common_theme.h"
 
+// This was removed from Winvers.h but is still used.
+#if !defined(COLOR_MENUHIGHLIGHT)
+#define COLOR_MENUHIGHLIGHT 29
+#endif
+
 namespace {
 
 // TODO: Obtain the correct colors using GetSysColor.
@@ -49,6 +54,8 @@ const SkColor kFocusedMenuItemBackgroundColor = SkColorSetRGB(246, 249, 253);
 const SkColor kMenuSeparatorColor = SkColorSetARGB(50, 0, 0, 0);
 // Textfield:
 const SkColor kTextfieldSelectionBackgroundUnfocused = SK_ColorLTGRAY;
+// Table:
+const SkColor kTreeSelectionBackgroundUnfocused = SkColorSetRGB(240, 240, 240);
 
 // Windows system color IDs cached and updated by the native theme.
 const int kSystemColors[] = {
@@ -60,6 +67,8 @@ const int kSystemColors[] = {
   COLOR_SCROLLBAR,
   COLOR_WINDOW,
   COLOR_WINDOWTEXT,
+  COLOR_BTNFACE,
+  COLOR_MENUHIGHLIGHT,
 };
 
 void SetCheckerboardShader(SkPaint* paint, const RECT& align_rect) {
@@ -115,6 +124,14 @@ RECT InsetRect(const RECT* rect, int size) {
   gfx::Rect result(*rect);
   result.Inset(size, size);
   return result.ToRECT();
+}
+
+// Returns true if using a high contrast theme.
+bool UsingHighContrastTheme() {
+  HIGHCONTRAST result;
+  result.cbSize = sizeof(HIGHCONTRAST);
+  return SystemParametersInfo(SPI_GETHIGHCONTRAST, result.cbSize, &result, 0) &&
+      (result.dwFlags & HCF_HIGHCONTRASTON) == HCF_HIGHCONTRASTON;
 }
 
 }  // namespace
@@ -448,10 +465,8 @@ void NativeThemeWin::PaintDirect(SkCanvas* canvas,
 
 SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   SkColor color;
-  if (IsNewMenuStyleEnabled() &&
-      CommonThemeGetSystemColor(color_id, &color)) {
+  if (IsNewMenuStyleEnabled() && CommonThemeGetSystemColor(color_id, &color))
     return color;
-  }
 
   switch (color_id) {
     // Windows
@@ -514,8 +529,43 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
     case kColorId_TextfieldSelectionBackgroundUnfocused:
       return kTextfieldSelectionBackgroundUnfocused;
 
+    // Tree
+    // NOTE: these aren't right for all themes, but as close as I could get.
+    case kColorId_TreeBackground:
+      return system_colors_[COLOR_WINDOW];
+    case kColorId_TreeText:
+      return system_colors_[COLOR_WINDOWTEXT];
+    case kColorId_TreeSelectedText:
+      return system_colors_[COLOR_HIGHLIGHTTEXT];
+    case kColorId_TreeSelectedTextUnfocused:
+      return system_colors_[COLOR_BTNTEXT];
+    case kColorId_TreeSelectionBackgroundFocused:
+      return system_colors_[COLOR_HIGHLIGHT];
+    case kColorId_TreeSelectionBackgroundUnfocused:
+      return system_colors_[UsingHighContrastTheme() ?
+                              COLOR_MENUHIGHLIGHT : COLOR_BTNFACE];
+    case kColorId_TreeArrow:
+      return system_colors_[COLOR_WINDOWTEXT];
+
+    // Table
+    case kColorId_TableBackground:
+      return system_colors_[COLOR_WINDOW];
+    case kColorId_TableText:
+      return system_colors_[COLOR_WINDOWTEXT];
+    case kColorId_TableSelectedText:
+      return system_colors_[COLOR_HIGHLIGHTTEXT];
+    case kColorId_TableSelectedTextUnfocused:
+      return system_colors_[COLOR_BTNTEXT];
+    case kColorId_TableSelectionBackgroundFocused:
+      return system_colors_[COLOR_HIGHLIGHT];
+    case kColorId_TableSelectionBackgroundUnfocused:
+      return system_colors_[UsingHighContrastTheme() ?
+                              COLOR_MENUHIGHLIGHT : COLOR_BTNFACE];
+    case kColorId_TableGroupingIndicatorColor:
+      return system_colors_[COLOR_GRAYTEXT];
+
     default:
-      NOTREACHED() << "Invalid color_id: " << color_id;
+      NOTREACHED();
       break;
   }
   return kInvalidColorIdColor;
