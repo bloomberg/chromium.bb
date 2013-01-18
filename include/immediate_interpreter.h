@@ -383,13 +383,12 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   // If we are currently pointing, scrolling, etc.
   GestureType current_gesture_type_;
+  // Previous value of current_gesture_type_
+  GestureType prev_gesture_type_;
 
   // Cache for distance between fingers at start of pinch gesture
   float two_finger_start_distance_;
 
-  // If the last time we were called, we did a scroll, it contains the ids
-  // of the scrolling fingers. Otherwise it's empty.
-  set<short, kMaxGesturingFingers> prev_scroll_fingers_;
   ScrollEventBuffer scroll_buffer_;
 
   // Set to true when a scroll is blocked b/c of high pressure change. Cleared

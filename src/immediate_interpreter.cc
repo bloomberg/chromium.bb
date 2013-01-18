@@ -460,6 +460,7 @@ Gesture* ImmediateInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   SetPrevState(*hwstate);
   prev_gs_fingers_ = gs_fingers;
   prev_result_ = result_;
+  prev_gesture_type_ = current_gesture_type_;
   return result_.type != kGestureTypeNull ? &result_ : NULL;
 }
 
@@ -652,8 +653,8 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
     case kGestureTypeScroll:
       // If a scrolling finger just left, do fling
       for (set<short, kMaxGesturingFingers>::const_iterator
-               it = prev_scroll_fingers_.begin(),
-               e = prev_scroll_fingers_.end();
+               it = prev_gs_fingers_.begin(),
+               e = prev_gs_fingers_.end();
            it != e; ++it) {
         if (!hwstate.GetFingerState(*it)) {
           current_gesture_type_ = kGestureTypeFling;
@@ -1849,9 +1850,9 @@ void ImmediateInterpreter::FillResultGesture(
         return;
       }
 
-      if (prev_scroll_fingers_ != fingers)
+      if (prev_gesture_type_ != kGestureTypeScroll ||
+          prev_gs_fingers_ != fingers)
         scroll_buffer_.Clear();
-      prev_scroll_fingers_ = fingers;
       if (!fling_buffer_suppress_zero_length_scrolls_.val_ ||
           !FloatEq(dx, 0.0) || !FloatEq(dy, 0.0))
         scroll_buffer_.Insert(dx, dy,
@@ -1935,7 +1936,6 @@ void ImmediateInterpreter::FillResultGesture(
   }
   if (current_gesture_type_ != kGestureTypeScroll) {
     scroll_buffer_.Clear();
-    prev_scroll_fingers_.clear();
   }
 }
 
