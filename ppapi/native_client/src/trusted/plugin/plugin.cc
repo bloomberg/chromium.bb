@@ -414,6 +414,8 @@ bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
     // while on other platforms, the error is detected below, when we attempt to
     // start the proxy. Report a module initialization error here, to make it
     // less confusing for developers.
+    NaClLog(LOG_ERROR, "LoadNaClModuleContinuationIntern: "
+            "StartSrpcServices failed\n");
     error_info->SetReport(ERROR_START_PROXY_MODULE,
                           "could not initialize module.");
     return false;
@@ -428,6 +430,8 @@ bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
         static_cast<float>(NaClGetTimeOfDayMicroseconds() - init_time_)
             / NACL_MICROS_PER_MILLI);
   } else if (ipc_result == PP_NACL_ERROR_MODULE) {
+    NaClLog(LOG_ERROR, "LoadNaClModuleContinuationIntern: "
+            "Got PP_NACL_ERROR_MODULE\n");
     error_info->SetReport(ERROR_START_PROXY_MODULE,
                           "could not initialize module.");
     return false;
