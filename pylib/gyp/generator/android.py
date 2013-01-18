@@ -298,6 +298,15 @@ class AndroidMkWriter(object):
                    '$(GYP_ABS_ANDROID_TOP_DIR)/$(gyp_shared_intermediate_dir)' %
                    main_output)
 
+      # Android's envsetup.sh adds a number of directories to the path including
+      # the built host binary directory. This causes actions/rules invoked by
+      # gyp to sometimes use these instead of system versions, e.g. bison.
+      # The built host binaries may not be suitable, and can cause errors.
+      # So, we remove them from the PATH using the ANDROID_BUILD_PATHS variable
+      # set by envsetup.
+      self.WriteLn('%s: export PATH := $(subst $(ANDROID_BUILD_PATHS),,$(PATH))'
+                   % main_output)
+
       for input in inputs:
         assert ' ' not in input, (
             "Spaces in action input filenames not supported (%s)"  % input)
@@ -390,6 +399,10 @@ class AndroidMkWriter(object):
         self.WriteLn('%s: gyp_shared_intermediate_dir := '
                      '$(GYP_ABS_ANDROID_TOP_DIR)/$(gyp_shared_intermediate_dir)'
                      % main_output)
+
+        # See explanation in WriteActions.
+        self.WriteLn('%s: export PATH := '
+                     '$(subst $(ANDROID_BUILD_PATHS),,$(PATH))' % main_output)
 
         main_output_deps = self.LocalPathify(rule_source)
         if inputs:
