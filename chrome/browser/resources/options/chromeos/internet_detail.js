@@ -567,7 +567,7 @@ cr.define('options.internet', function() {
       }
   };
 
-  DetailsInternetPage.updateCarrier = function(carrier) {
+  DetailsInternetPage.updateCarrier = function() {
     DetailsInternetPage.showCarrierChangeSpinner(false);
   };
 

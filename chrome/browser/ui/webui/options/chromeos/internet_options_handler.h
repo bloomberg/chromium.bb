@@ -152,7 +152,7 @@ class InternetOptionsHandler
   // if it's up.
   void UpdateConnectionData(const chromeos::Network* network);
   // Updates the carrier change status.
-  void UpdateCarrier(bool success);
+  void UpdateCarrier();
   // Adds observers for wireless networks, if any, so that we can dynamically
   // display the correct icon for that network's signal strength and, in the
   // case of cellular networks, network technology and roaming status.

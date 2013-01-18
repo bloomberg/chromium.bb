@@ -538,9 +538,14 @@ void Activate(std::string service_path) {
     NOTREACHED();
     return;
   }
+
   if (network->type() != chromeos::TYPE_CELLULAR)
     return;
-  static_cast<chromeos::CellularNetwork*>(network)->StartActivation();
+
+  chromeos::CellularNetwork* cellular =
+      static_cast<chromeos::CellularNetwork*>(network);
+  if (cellular->activation_state() != chromeos::ACTIVATION_STATE_ACTIVATED)
+    cellular->StartActivation();
 }
 
 // Check if the current cellular device can be activated by directly calling
@@ -951,7 +956,13 @@ void InternetOptionsHandler::CarrierStatusCallback(
     const std::string& service_path,
     chromeos::NetworkMethodErrorType error,
     const std::string& error_message) {
-  UpdateCarrier(error == chromeos::NETWORK_METHOD_ERROR_NONE);
+  if ((error == chromeos::NETWORK_METHOD_ERROR_NONE) &&
+      UseDirectActivation()) {
+    Activate(service_path);
+    UpdateConnectionData(cros_->FindNetworkByPath(service_path));
+  }
+
+  UpdateCarrier();
 }
 
 
@@ -1026,9 +1037,8 @@ void InternetOptionsHandler::UpdateConnectionData(
       kUpdateConnectionDataFunction, dictionary);
 }
 
-void InternetOptionsHandler::UpdateCarrier(bool success) {
-  base::FundamentalValue success_value(success);
-  web_ui()->CallJavascriptFunction(kUpdateCarrierFunction, success_value);
+void InternetOptionsHandler::UpdateCarrier() {
+  web_ui()->CallJavascriptFunction(kUpdateCarrierFunction);
 }
 
 void InternetOptionsHandler::OnNetworkManagerChanged(
