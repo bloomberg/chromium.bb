@@ -75,7 +75,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "4.11",
+  "version": "4.12",
   "entries": [
     {
       "id": 1,
@@ -196,6 +196,7 @@
         }
       ],
       "blacklist": [
+        "accelerated_2d_canvas",
         "accelerated_video",
         "accelerated_video_decode",
         "3d_css",
