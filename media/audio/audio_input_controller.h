@@ -146,6 +146,17 @@ class MEDIA_EXPORT AudioInputController
       // External synchronous writer for audio controller.
       SyncWriter* sync_writer);
 
+  // Factory method for creating an AudioInputController for low-latency mode,
+  // taking ownership of |stream|.  The stream will be opened on the audio
+  // thread, and when that is done, the event handler will receive an
+  // OnCreated() call from that same thread.
+  static scoped_refptr<AudioInputController> CreateForStream(
+      AudioManager* audio_manager,
+      EventHandler* event_handler,
+      AudioInputStream* stream,
+      // External synchronous writer for audio controller.
+      SyncWriter* sync_writer);
+
   // Starts recording using the created audio input stream.
   // This method is called on the creator thread.
   virtual void Record();
@@ -195,6 +206,7 @@ class MEDIA_EXPORT AudioInputController
   // Methods called on the audio thread (owned by the AudioManager).
   void DoCreate(AudioManager* audio_manager, const AudioParameters& params,
                 const std::string& device_id);
+  void DoCreateForStream(AudioInputStream* stream_to_control);
   void DoRecord();
   void DoClose();
   void DoReportError(int code);

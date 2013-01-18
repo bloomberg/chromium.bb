@@ -5,6 +5,7 @@
 #include "media/audio/audio_manager_base.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/message_loop_proxy.h"
 #include "base/threading/thread.h"
@@ -122,8 +123,10 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
     NOTIMPLEMENTED();
     return NULL;
 #else
-    stream = VirtualAudioOutputStream::MakeStream(this, params, message_loop_,
-        virtual_audio_input_stream_);
+    stream = new VirtualAudioOutputStream(
+        params, message_loop_, virtual_audio_input_stream_,
+        base::Bind(&AudioManagerBase::ReleaseVirtualOutputStream,
+                   base::Unretained(this)));
 #endif
   } else if (audio_output_disabled) {
     stream = FakeAudioOutputStream::MakeFakeStream(this, params);
@@ -168,8 +171,10 @@ AudioInputStream* AudioManagerBase::MakeAudioInputStream(
     // TODO(justinlin): Currently, audio mirroring will only work for the first
     // request. Subsequent requests will not get audio.
     if (!virtual_audio_input_stream_) {
-      virtual_audio_input_stream_ =
-          VirtualAudioInputStream::MakeStream(this, params, message_loop_);
+      virtual_audio_input_stream_ = new VirtualAudioInputStream(
+          params, message_loop_,
+          base::Bind(&AudioManagerBase::ReleaseVirtualInputStream,
+                     base::Unretained(this)));
       stream = virtual_audio_input_stream_;
       DVLOG(1) << "Virtual audio input stream created.";
 
@@ -294,27 +299,36 @@ void AudioManagerBase::ReleaseOutputStream(AudioOutputStream* stream) {
   // TODO(xians) : Have a clearer destruction path for the AudioOutputStream.
   // For example, pass the ownership to AudioManager so it can delete the
   // streams.
-  num_output_streams_--;
+  --num_output_streams_;
   delete stream;
 }
 
 void AudioManagerBase::ReleaseInputStream(AudioInputStream* stream) {
   DCHECK(stream);
   // TODO(xians) : Have a clearer destruction path for the AudioInputStream.
-
-  if (virtual_audio_input_stream_ == stream) {
-    DVLOG(1) << "Virtual audio input stream stopping.";
-    virtual_audio_input_stream_->Stop();
-    virtual_audio_input_stream_ = NULL;
-
-    // Make all VirtualAudioOutputStreams unregister from the
-    // VirtualAudioInputStream and recreate themselves as regular audio streams
-    // to return sound to hardware.
-    NotifyAllOutputDeviceChangeListeners();
-  }
-
-  num_input_streams_--;
+  --num_input_streams_;
   delete stream;
+}
+
+void AudioManagerBase::ReleaseVirtualInputStream(
+    VirtualAudioInputStream* stream) {
+  DCHECK_EQ(virtual_audio_input_stream_, stream);
+
+  virtual_audio_input_stream_ = NULL;
+
+  // Notify listeners to re-create output streams.  This will cause all
+  // outstanding VirtualAudioOutputStreams pointing at the
+  // VirtualAudioInputStream to be closed and destroyed.  Once this has
+  // happened, there will be no other references to the input stream, and it
+  // will then be safe to delete it.
+  NotifyAllOutputDeviceChangeListeners();
+
+  ReleaseInputStream(stream);
+}
+
+void AudioManagerBase::ReleaseVirtualOutputStream(
+    VirtualAudioOutputStream* stream) {
+  ReleaseOutputStream(stream);
 }
 
 void AudioManagerBase::IncreaseActiveInputStreamCount() {

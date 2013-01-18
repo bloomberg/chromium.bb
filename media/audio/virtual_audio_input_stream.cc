@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "media/audio/virtual_audio_output_stream.h"
 
 namespace media {
@@ -47,17 +48,11 @@ class LoopbackAudioConverter : public AudioConverter::InputCallback {
   DISALLOW_COPY_AND_ASSIGN(LoopbackAudioConverter);
 };
 
-VirtualAudioInputStream* VirtualAudioInputStream::MakeStream(
-    AudioManagerBase* manager, const AudioParameters& params,
-    base::MessageLoopProxy* message_loop) {
-  return new VirtualAudioInputStream(manager, params, message_loop);
-}
-
 VirtualAudioInputStream::VirtualAudioInputStream(
-    AudioManagerBase* manager, const AudioParameters& params,
-    base::MessageLoopProxy* message_loop)
-    : audio_manager_(manager),
-      message_loop_(message_loop),
+    const AudioParameters& params, base::MessageLoopProxy* message_loop,
+    const AfterCloseCallback& after_close_cb)
+    : message_loop_(message_loop),
+      after_close_cb_(after_close_cb),
       callback_(NULL),
       buffer_duration_(base::TimeDelta::FromMicroseconds(
           params.frames_per_buffer() * base::Time::kMicrosecondsPerSecond /
@@ -66,7 +61,9 @@ VirtualAudioInputStream::VirtualAudioInputStream(
       params_(params),
       audio_bus_(AudioBus::Create(params_)),
       mixer_(params_, params_, false),
-      num_attached_outputs_streams_(0) {
+      num_attached_output_streams_(0) {
+  DCHECK(params_.IsValid());
+  DCHECK(message_loop_);
 }
 
 VirtualAudioInputStream::~VirtualAudioInputStream() {
@@ -74,10 +71,11 @@ VirtualAudioInputStream::~VirtualAudioInputStream() {
        it != converters_.end(); ++it)
     delete it->second;
 
-  DCHECK_EQ(0, num_attached_outputs_streams_);
+  DCHECK_EQ(0, num_attached_output_streams_);
 }
 
 bool VirtualAudioInputStream::Open() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
   memset(buffer_.get(), 0, params_.GetBytesPerBuffer());
   return true;
 }
@@ -88,8 +86,7 @@ void VirtualAudioInputStream::Start(AudioInputCallback* callback) {
   next_read_time_ = base::Time::Now();
   on_more_data_cb_.Reset(base::Bind(&VirtualAudioInputStream::ReadAudio,
                                     base::Unretained(this)));
-  audio_manager_->GetMessageLoop()->PostTask(FROM_HERE,
-                                             on_more_data_cb_.callback());
+  message_loop_->PostTask(FROM_HERE, on_more_data_cb_.callback());
 }
 
 void VirtualAudioInputStream::Stop() {
@@ -112,7 +109,7 @@ void VirtualAudioInputStream::AddOutputStream(
     mixer_.AddInput(converter->second);
   }
   converter->second->AddInput(stream);
-  ++num_attached_outputs_streams_;
+  ++num_attached_output_streams_;
 }
 
 void VirtualAudioInputStream::RemoveOutputStream(
@@ -122,7 +119,8 @@ void VirtualAudioInputStream::RemoveOutputStream(
   DCHECK(converters_.find(output_params) != converters_.end());
   converters_[output_params]->RemoveInput(stream);
 
-  --num_attached_outputs_streams_;
+  --num_attached_output_streams_;
+  DCHECK_LE(0, num_attached_output_streams_);
 }
 
 void VirtualAudioInputStream::ReadAudio() {
@@ -159,12 +157,21 @@ void VirtualAudioInputStream::ReadAudio() {
 
 void VirtualAudioInputStream::Close() {
   DCHECK(message_loop_->BelongsToCurrentThread());
+
   if (callback_) {
     DCHECK(on_more_data_cb_.IsCancelled());
     callback_->OnClose(this);
     callback_ = NULL;
   }
-  audio_manager_->ReleaseInputStream(this);
+
+  // If a non-null AfterCloseCallback was provided to the constructor, invoke it
+  // here.  The callback is moved to a stack-local first since |this| could be
+  // destroyed during Run().
+  if (!after_close_cb_.is_null()) {
+    const AfterCloseCallback cb = after_close_cb_;
+    after_close_cb_.Reset();
+    cb.Run(this);
+  }
 }
 
 double VirtualAudioInputStream::GetMaxVolume() {

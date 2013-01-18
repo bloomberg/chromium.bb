@@ -4,30 +4,24 @@
 
 #include "media/audio/virtual_audio_output_stream.h"
 
-#include "base/message_loop.h"
-#include "media/audio/audio_manager_base.h"
+#include "base/message_loop_proxy.h"
 #include "media/audio/virtual_audio_input_stream.h"
 
 namespace media {
 
-// static
-VirtualAudioOutputStream* VirtualAudioOutputStream::MakeStream(
-    AudioManagerBase* manager, const AudioParameters& params,
-    base::MessageLoopProxy* message_loop, VirtualAudioInputStream* target) {
-  return new VirtualAudioOutputStream(manager, params, message_loop, target);
-}
-
 VirtualAudioOutputStream::VirtualAudioOutputStream(
-    AudioManagerBase* manager, const AudioParameters& params,
-    base::MessageLoopProxy* message_loop, VirtualAudioInputStream* target)
-    : audio_manager_(manager), message_loop_(message_loop), callback_(NULL),
-      params_(params), target_input_stream_(target), volume_(1.0f),
-      attached_(false) {
+    const AudioParameters& params, base::MessageLoopProxy* message_loop,
+    VirtualAudioInputStream* target, const AfterCloseCallback& after_close_cb)
+    : params_(params), message_loop_(message_loop),
+      target_input_stream_(target), after_close_cb_(after_close_cb),
+      callback_(NULL), volume_(1.0f) {
+  DCHECK(params_.IsValid());
+  DCHECK(message_loop_);
+  DCHECK(target);
 }
 
 VirtualAudioOutputStream::~VirtualAudioOutputStream() {
   DCHECK(!callback_);
-  DCHECK(!attached_);
 }
 
 bool VirtualAudioOutputStream::Open() {
@@ -37,30 +31,41 @@ bool VirtualAudioOutputStream::Open() {
 
 void VirtualAudioOutputStream::Start(AudioSourceCallback* callback)  {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(!attached_);
+  DCHECK(!callback_);
   callback_ = callback;
   target_input_stream_->AddOutputStream(this, params_);
-  attached_ = true;
 }
 
 void VirtualAudioOutputStream::Stop() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(attached_);
-  callback_ = NULL;
-  target_input_stream_->RemoveOutputStream(this, params_);
-  attached_ = false;
+  if (callback_) {
+    callback_ = NULL;
+    target_input_stream_->RemoveOutputStream(this, params_);
+  }
 }
 
 void VirtualAudioOutputStream::Close() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  audio_manager_->ReleaseOutputStream(this);
+
+  Stop();
+
+  // If a non-null AfterCloseCallback was provided to the constructor, invoke it
+  // here.  The callback is moved to a stack-local first since |this| could be
+  // destroyed during Run().
+  if (!after_close_cb_.is_null()) {
+    const AfterCloseCallback cb = after_close_cb_;
+    after_close_cb_.Reset();
+    cb.Run(this);
+  }
 }
 
 void VirtualAudioOutputStream::SetVolume(double volume) {
+  DCHECK(message_loop_->BelongsToCurrentThread());
   volume_ = volume;
 }
 
 void VirtualAudioOutputStream::GetVolume(double* volume) {
+  DCHECK(message_loop_->BelongsToCurrentThread());
   *volume = volume_;
 }
 

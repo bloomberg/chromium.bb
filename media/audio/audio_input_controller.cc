@@ -101,6 +101,32 @@ scoped_refptr<AudioInputController> AudioInputController::CreateLowLatency(
   return controller;
 }
 
+// static
+scoped_refptr<AudioInputController> AudioInputController::CreateForStream(
+    AudioManager* audio_manager,
+    EventHandler* event_handler,
+    AudioInputStream* stream,
+    SyncWriter* sync_writer) {
+  DCHECK(audio_manager);
+  DCHECK(sync_writer);
+  DCHECK(stream);
+
+  // Create the AudioInputController object and ensure that it runs on
+  // the audio-manager thread.
+  scoped_refptr<AudioInputController> controller(new AudioInputController(
+      event_handler, sync_writer));
+  controller->message_loop_ = audio_manager->GetMessageLoop();
+
+  if (!controller->message_loop_->PostTask(
+          FROM_HERE,
+          base::Bind(&AudioInputController::DoCreateForStream, controller,
+                     stream))) {
+    controller = NULL;
+  }
+
+  return controller;
+}
+
 void AudioInputController::Record() {
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &AudioInputController::DoRecord, this));
@@ -128,8 +154,15 @@ void AudioInputController::DoCreate(AudioManager* audio_manager,
                                     const AudioParameters& params,
                                     const std::string& device_id) {
   DCHECK(message_loop_->BelongsToCurrentThread());
+  DoCreateForStream(audio_manager->MakeAudioInputStream(params, device_id));
+}
 
-  stream_ = audio_manager->MakeAudioInputStream(params, device_id);
+void AudioInputController::DoCreateForStream(
+    AudioInputStream* stream_to_control) {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+
+  DCHECK(!stream_);
+  stream_ = stream_to_control;
 
   if (!stream_) {
     // TODO(satish): Define error types.

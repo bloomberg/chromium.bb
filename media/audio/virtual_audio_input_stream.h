@@ -12,9 +12,12 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_converter.h"
+
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace media {
 
@@ -26,10 +29,15 @@ class VirtualAudioOutputStream;
 // audio until this VirtualAudioInputStream is stopped and closed.
 class MEDIA_EXPORT VirtualAudioInputStream : public AudioInputStream {
  public:
-  static VirtualAudioInputStream* MakeStream(
-      AudioManagerBase* manager,
-      const AudioParameters& params,
-      base::MessageLoopProxy* message_loop);
+  // Callback invoked just after VirtualAudioInputStream is closed.
+  typedef base::Callback<void(VirtualAudioInputStream* vais)>
+      AfterCloseCallback;
+
+  // Construct a target for audio loopback which mixes multiple data streams
+  // into a single stream having the given |params|.
+  VirtualAudioInputStream(const AudioParameters& params,
+                          base::MessageLoopProxy* message_loop,
+                          const AfterCloseCallback& after_close_cb);
 
   virtual ~VirtualAudioInputStream();
 
@@ -55,24 +63,20 @@ class MEDIA_EXPORT VirtualAudioInputStream : public AudioInputStream {
   virtual void RemoveOutputStream(VirtualAudioOutputStream* stream,
                                   const AudioParameters& output_params);
 
- protected:
+ private:
   friend class VirtualAudioInputStreamTest;
-  FRIEND_TEST_ALL_PREFIXES(AudioOutputControllerTest,
-                           VirtualStreamsTriggerDeviceChange);
 
   typedef std::map<AudioParameters, LoopbackAudioConverter*> AudioConvertersMap;
-
-  VirtualAudioInputStream(AudioManagerBase* manager,
-                          const AudioParameters& params,
-                          base::MessageLoopProxy* message_loop);
 
   // When Start() is called on this class, we continuously schedule this
   // callback to render audio using any attached VirtualAudioOutputStreams until
   // Stop() is called.
   void ReadAudio();
 
-  AudioManagerBase* audio_manager_;
-  base::MessageLoopProxy* message_loop_;
+  base::MessageLoopProxy* const message_loop_;
+
+  AfterCloseCallback after_close_cb_;
+
   AudioInputCallback* callback_;
 
   // Non-const for testing.
@@ -92,7 +96,7 @@ class MEDIA_EXPORT VirtualAudioInputStream : public AudioInputStream {
   AudioConverter mixer_;
 
   // Number of currently attached VirtualAudioOutputStreams.
-  int num_attached_outputs_streams_;
+  int num_attached_output_streams_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualAudioInputStream);
 };

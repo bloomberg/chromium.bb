@@ -28,6 +28,7 @@ namespace media {
 
 class AudioOutputDispatcher;
 class VirtualAudioInputStream;
+class VirtualAudioOutputStream;
 
 // AudioManagerBase provides AudioManager functions common for all platforms.
 class MEDIA_EXPORT AudioManagerBase : public AudioManager {
@@ -63,6 +64,12 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   // Called internally by the audio stream when it has been closed.
   virtual void ReleaseOutputStream(AudioOutputStream* stream);
   virtual void ReleaseInputStream(AudioInputStream* stream);
+
+  // Called internally by the browser-wide VirtualAudioInputStream after it has
+  // been closed.  Notifies all AudioDeviceListeners to re-create output
+  // streams and then deletes |stream|.
+  virtual void ReleaseVirtualInputStream(VirtualAudioInputStream* stream);
+  virtual void ReleaseVirtualOutputStream(VirtualAudioOutputStream* stream);
 
   void IncreaseActiveInputStreamCount();
   void DecreaseActiveInputStreamCount();

@@ -308,6 +308,7 @@
         'browser/renderer_host/media/video_capture_controller_unittest.cc',
         'browser/renderer_host/media/video_capture_host_unittest.cc',
         'browser/renderer_host/media/video_capture_manager_unittest.cc',
+        'browser/renderer_host/media/web_contents_audio_input_stream_unittest.cc',
         'browser/renderer_host/media/web_contents_video_capture_device_unittest.cc',
         'browser/renderer_host/pepper/browser_ppapi_host_test.cc',
         'browser/renderer_host/pepper/browser_ppapi_host_test.h',

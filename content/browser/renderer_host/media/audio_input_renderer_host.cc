@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_input_sync_writer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/browser/renderer_host/media/web_contents_audio_input_stream.h"
 #include "content/browser/renderer_host/media/web_contents_capture_util.h"
 #include "content/common/media/audio_messages.h"
 
@@ -194,6 +195,7 @@ bool AudioInputRendererHost::OnMessageReceived(const IPC::Message& message,
 
   return handled;
 }
+
 void AudioInputRendererHost::OnStartDevice(int stream_id, int session_id) {
   VLOG(1) << "AudioInputRendererHost::OnStartDevice(stream_id="
           << stream_id << ", session_id = " << session_id << ")";
@@ -225,10 +227,6 @@ void AudioInputRendererHost::OnCreateStream(
     audio_params.Reset(media::AudioParameters::AUDIO_FAKE,
                        params.channel_layout(), params.sample_rate(),
                        params.bits_per_sample(), params.frames_per_buffer());
-  } else if (WebContentsCaptureUtil::IsWebContentsDeviceId(device_id)) {
-    audio_params.Reset(media::AudioParameters::AUDIO_VIRTUAL,
-                       params.channel_layout(), params.sample_rate(),
-                       params.bits_per_sample(), params.frames_per_buffer());
   }
 
   uint32 buffer_size = audio_params.GetBytesPerBuffer();
@@ -256,16 +254,25 @@ void AudioInputRendererHost::OnCreateStream(
 
   // If we have successfully created the SyncWriter then assign it to the
   // entry and construct an AudioInputController.
-  // TODO(henrika): replace CreateLowLatency() with Create() as soon
-  // as satish has ensured that Speech Input also uses the default low-
-  // latency path. See crbug.com/112472 for details.
   entry->writer.reset(writer.release());
-  entry->controller = media::AudioInputController::CreateLowLatency(
-      audio_manager_,
-      this,
-      audio_params,
-      device_id,
-      entry->writer.get());
+  if (WebContentsCaptureUtil::IsWebContentsDeviceId(device_id)) {
+    entry->controller = media::AudioInputController::CreateForStream(
+        audio_manager_,
+        this,
+        WebContentsAudioInputStream::Create(
+            device_id, audio_params, audio_manager_->GetMessageLoop()),
+        entry->writer.get());
+  } else {
+    // TODO(henrika): replace CreateLowLatency() with Create() as soon
+    // as satish has ensured that Speech Input also uses the default low-
+    // latency path. See crbug.com/112472 for details.
+    entry->controller = media::AudioInputController::CreateLowLatency(
+        audio_manager_,
+        this,
+        audio_params,
+        device_id,
+        entry->writer.get());
+  }
 
   if (!entry->controller) {
     SendErrorMessage(stream_id);

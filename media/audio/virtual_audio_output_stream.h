@@ -5,10 +5,14 @@
 #ifndef MEDIA_AUDIO_VIRTUAL_AUDIO_OUTPUT_STREAM_H_
 #define MEDIA_AUDIO_VIRTUAL_AUDIO_OUTPUT_STREAM_H_
 
-#include "base/message_loop_proxy.h"
+#include "base/callback.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_converter.h"
+
+namespace base {
+class MessageLoopProxy;
+}
 
 namespace media {
 
@@ -24,11 +28,16 @@ class MEDIA_EXPORT VirtualAudioOutputStream
     : public AudioOutputStream,
       public AudioConverter::InputCallback {
  public:
-  static VirtualAudioOutputStream* MakeStream(
-      AudioManagerBase* manager,
-      const AudioParameters& params,
-      base::MessageLoopProxy* message_loop,
-      VirtualAudioInputStream* target);
+  // Callback invoked just after VirtualAudioOutputStream is closed.
+  typedef base::Callback<void(VirtualAudioOutputStream* vaos)>
+      AfterCloseCallback;
+
+  // Construct an audio loopback pathway to the given |target| (not owned).
+  // |target| must outlive this instance.
+  VirtualAudioOutputStream(const AudioParameters& params,
+                           base::MessageLoopProxy* message_loop,
+                           VirtualAudioInputStream* target,
+                           const AfterCloseCallback& after_close_cb);
 
   virtual ~VirtualAudioOutputStream();
 
@@ -40,28 +49,22 @@ class MEDIA_EXPORT VirtualAudioOutputStream
   virtual void GetVolume(double* volume) OVERRIDE;
   virtual void Close() OVERRIDE;
 
- protected:
-  VirtualAudioOutputStream(AudioManagerBase* manager,
-                           const AudioParameters& params,
-                           base::MessageLoopProxy* message_loop,
-                           VirtualAudioInputStream* target);
-
  private:
   // AudioConverter::InputCallback:
   virtual double ProvideInput(AudioBus* audio_bus,
                               base::TimeDelta buffer_delay) OVERRIDE;
 
-  AudioManagerBase* audio_manager_;
-  base::MessageLoopProxy* message_loop_;
-  AudioSourceCallback* callback_;
-  AudioParameters params_;
-
+  const AudioParameters params_;
+  base::MessageLoopProxy* const message_loop_;
   // Pointer to the VirtualAudioInputStream to attach to when Start() is called.
   // This pointer should always be valid because VirtualAudioInputStream should
   // outlive this class.
-  VirtualAudioInputStream* target_input_stream_;
+  VirtualAudioInputStream* const target_input_stream_;
+
+  AfterCloseCallback after_close_cb_;
+
+  AudioSourceCallback* callback_;
   double volume_;
-  bool attached_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualAudioOutputStream);
 };
