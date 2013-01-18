@@ -9,7 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "ppapi/shared_impl/resource.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
 struct PP_Var;

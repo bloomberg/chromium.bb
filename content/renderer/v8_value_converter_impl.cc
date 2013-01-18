@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebArrayBuffer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebArrayBufferView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebArrayBufferView.h"
 #include "v8/include/v8.h"
 
 using base::BinaryValue;

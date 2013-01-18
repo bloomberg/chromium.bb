@@ -11,7 +11,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/web_intents_host.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDeliveredIntentClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "webkit/glue/web_intent_data.h"
 
 namespace content {
