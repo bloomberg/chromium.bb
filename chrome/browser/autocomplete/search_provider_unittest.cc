@@ -813,8 +813,9 @@ TEST_F(SearchProviderTest, UpdateKeywordDescriptions) {
 }
 
 // Verifies Navsuggest results don't set a TemplateURL, which instant relies on.
-// Also verifies that just the *first* navigational result is listed as a match.
-TEST_F(SearchProviderTest, NavSuggest) {
+// Also verifies that just the *first* navigational result is listed as a match
+// if suggested relevance scores were not sent.
+TEST_F(SearchProviderTest, NavSuggestNoSuggestedRelevanceScores) {
   QueryForInput(ASCIIToUTF16("a.c"), string16(), false);
 
   // Make sure the default providers suggest service was queried.
@@ -870,7 +871,7 @@ TEST_F(SearchProviderTest, SuggestRelevance) {
   EXPECT_GT(match_a2.relevance, match_a3.relevance);
 }
 
-// Verifies that suggest experiment results are added properly.
+// Verifies that suggest results with relevance scores are added properly.
 TEST_F(SearchProviderTest, SuggestRelevanceExperiment) {
   const std::string kNotApplicable("Not Applicable");
   struct {
@@ -883,7 +884,7 @@ TEST_F(SearchProviderTest, SuggestRelevanceExperiment) {
     { "[\"a\",[\"http://b.com\", \"http://c.com\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
         "\"google:suggestrelevance\":[1, 2]}]",
-      { "a", "c.com", kNotApplicable, kNotApplicable } },
+      { "a", "c.com", "b.com", kNotApplicable } },
 
     // Ensure that verbatimrelevance scores reorder or suppress what-you-typed.
     // Negative values will have no effect; the calculated value will be used.
@@ -966,7 +967,7 @@ TEST_F(SearchProviderTest, SuggestRelevanceExperiment) {
        "{\"google:suggesttype\":[\"NAVIGATION\", \"NAVIGATION\"],"
         "\"google:suggestrelevance\":[1, 2],"
         "\"google:verbatimrelevance\":0}]",
-      { "a", "a2.com", kNotApplicable, kNotApplicable } },
+      { "a", "a2.com", "a1.com", kNotApplicable } },
 
     // Ensure that all suggestions are considered, regardless of order.
     { "[\"a\",[\"b\", \"c\", \"d\", \"e\", \"f\", \"g\", \"h\"],[],[],"
@@ -980,7 +981,7 @@ TEST_F(SearchProviderTest, SuggestRelevanceExperiment) {
                                 "\"NAVIGATION\", \"NAVIGATION\","
                                 "\"NAVIGATION\"],"
         "\"google:suggestrelevance\":[1, 2, 3, 4, 5, 6, 7]}]",
-      { "a", "h.com", kNotApplicable, kNotApplicable } },
+      { "a", "h.com", "g.com", "f.com" } },
 
     // Ensure that incorrectly sized suggestion relevance lists are ignored.
     { "[\"a\",[\"a1\", \"a2\"],[],[],{\"google:suggestrelevance\":[1]}]",
@@ -1034,12 +1035,12 @@ TEST_F(SearchProviderTest, SuggestRelevanceExperiment) {
       EXPECT_EQ(ASCIIToUTF16(cases[i].matches[j]), matches[j].contents);
     // Ensure that no expected matches are missing.
     for (; j < ARRAYSIZE_UNSAFE(cases[i].matches); ++j)
-      EXPECT_EQ(kNotApplicable, cases[i].matches[j]);
+      EXPECT_EQ(kNotApplicable, cases[i].matches[j]) << "Case # " << i;
   }
 }
 
 // Verifies suggest experiment behavior for URL input.
-TEST_F(SearchProviderTest, SuggestRelevanceExperimentUrlInput) {
+TEST_F(SearchProviderTest, SuggestRelevanceScoringUrlInput) {
   const std::string kNotApplicable("Not Applicable");
   struct {
     const std::string input;
@@ -1134,8 +1135,8 @@ TEST_F(SearchProviderTest, SuggestRelevanceExperimentUrlInput) {
   }
 }
 
-// Verifies suggest experiment behavior for REQUESTED_URL input w/|desired_tld|.
-TEST_F(SearchProviderTest, SuggestRelevanceExperimentRequestedUrlInput) {
+// Verifies suggest scoring behavior for REQUESTED_URL input w/|desired_tld|.
+TEST_F(SearchProviderTest, SuggestRelevanceScoringRequestedUrlInput) {
   const std::string kNotApplicable("Not Applicable");
   struct {
     const std::string input;
