@@ -2,3 +2,7 @@ ben@chromium.org
 derat@chromium.org
 jamescook@chromium.org
 sky@chromium.org
+
+per-file root_window_controller.*=oshima@chromium.org
+per-file screen_ash.*=oshima@chromium.org
+per-file extended_desktop_unittest.*=oshima@chromium.org
