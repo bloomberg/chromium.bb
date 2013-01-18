@@ -40,9 +40,11 @@ namespace developerPrivate {
     boolean allow_activity;
     boolean allow_file_access;
     boolean wants_file_access;
-    boolean enabled_incognito;
+    boolean incognito_enabled;
     boolean is_unpacked;
     boolean allow_reload;
+    boolean terminated;
+    boolean allow_incognito;
     DOMString icon;
 
     // Path of an unpacked extension.
@@ -68,6 +70,7 @@ namespace developerPrivate {
 
   callback BooleanCallback = void (boolean result);
   callback ItemsInfoCallback = void (ItemInfo[] result);
+  callback GetStringsCallback = void (object result);
 
   interface Functions {
     // Runs auto update for extensions and apps immediately.
@@ -86,6 +89,27 @@ namespace developerPrivate {
     // Opens an inspect window for given |options|
     static void inspect(InspectOptions options,
                         BooleanCallback callback);
+
+    // Enable / Disable file access for a given |itemId|
+    static void allowFileAccess(DOMString itemId,
+                                boolean allow,
+                                BooleanCallback callback);
+
+    // Reloads a given item with |itemId|.
+    static void reload(DOMString itemId, BooleanCallback callback);
+
+    // Enable / Disable a given item with id |itemId|.
+    static void enable(DOMString itemId,
+                       boolean enable,
+                       BooleanCallback callback);
+
+    // Load a user selected unpacked item.
+    static void loadUnpacked(BooleanCallback callback);
+
+    // Gets localized translated strings for apps_debugger. It returns the
+    // strings as a dictionary mapping from string identifier to the
+    // translated string to use in the apps_debugger app UI.
+    static void getStrings(GetStringsCallback callback);
   };
 
 };

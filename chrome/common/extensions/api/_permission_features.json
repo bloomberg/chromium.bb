@@ -24,7 +24,8 @@
   "developerPrivate": {
     "channel": "dev",
     "extension_types": ["packaged_app"],
-    "location": "component"
+    "location": "component",
+    "whitelist": "lphgohfeebnhcpiohjndkgbhhkoapkjc" // Apps Debugger
   },
   "appNotifications": {
     "channel": "stable",

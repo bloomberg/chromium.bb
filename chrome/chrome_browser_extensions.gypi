@@ -166,6 +166,8 @@
         'browser/extensions/api/developer_private/developer_private_api.h',
         'browser/extensions/api/developer_private/developer_private_api_factory.cc',
         'browser/extensions/api/developer_private/developer_private_api_factory.h',
+        'browser/extensions/api/developer_private/entry_picker.cc',
+        'browser/extensions/api/developer_private/entry_picker.h',
         'browser/extensions/api/dial/dial_api.cc',
         'browser/extensions/api/dial/dial_api.h',
         'browser/extensions/api/dial/dial_api_factory.cc',

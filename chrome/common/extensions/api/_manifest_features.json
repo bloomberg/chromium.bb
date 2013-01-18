@@ -20,7 +20,8 @@
       "nckgahadagoaajjgafhacjanaoiihapd",  // Google Talk prod
       "eggnbpckecmjlblplehfpjjdhhidfdoj",  // Google Talk beta
       "ppleadejekpmccmnpjdimmlfljlkdfej",  // Google Talk alpha
-      "ljclpkphhpbpinifbeabbhlfddcpfdde"   // Google Talk debug
+      "ljclpkphhpbpinifbeabbhlfddcpfdde",   // Google Talk debug
+      "lphgohfeebnhcpiohjndkgbhhkoapkjc" // Apps Debugger
     ]
   },
   "app.background": {
