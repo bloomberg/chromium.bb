@@ -17,6 +17,7 @@ namespace plugin {
 PnaclTranslateThread::PnaclTranslateThread() : llc_subprocess_active_(false),
                                                ld_subprocess_active_(false),
                                                done_(false),
+                                               time_stats_(),
                                                manifest_(NULL),
                                                ld_manifest_(NULL),
                                                obj_file_(NULL),
@@ -130,6 +131,7 @@ void PnaclTranslateThread::DoTranslate() {
 
   {
     nacl::MutexLocker ml(&subprocess_mu_);
+    int64_t llc_start_time = NaClGetTimeOfDayMicroseconds();
     llc_subprocess_.reset(
       StartSubprocess(PnaclUrls::GetLlcUrl(), manifest_, &error_info));
     if (llc_subprocess_ == NULL) {
@@ -139,12 +141,15 @@ void PnaclTranslateThread::DoTranslate() {
       return;
     }
     llc_subprocess_active_ = true;
+    time_stats_.pnacl_llc_load_time =
+        (NaClGetTimeOfDayMicroseconds() - llc_start_time);
     // Run LLC.
     PluginReverseInterface* llc_reverse =
         llc_subprocess_->service_runtime()->rev_interface();
     llc_reverse->AddTempQuotaManagedFile(obj_file_->identifier());
   }
 
+  int64_t compile_start_time = NaClGetTimeOfDayMicroseconds();
   if (!llc_subprocess_->InvokeSrpcMethod("StreamInit",
                                          "h",
                                          &params,
@@ -209,6 +214,9 @@ void PnaclTranslateThread::DoTranslate() {
     }
     return;
   }
+  time_stats_.pnacl_compile_time =
+      (NaClGetTimeOfDayMicroseconds() - compile_start_time);
+
   // LLC returns values that are used to determine how linking is done.
   int is_shared_library = (params.outs()[0]->u.ival != 0);
   nacl::string soname = params.outs()[1]->arrays.str;
@@ -249,6 +257,7 @@ bool PnaclTranslateThread::RunLdSubprocess(int is_shared_library,
   {
     // Create LD process
     nacl::MutexLocker ml(&subprocess_mu_);
+    int64_t ld_start_time = NaClGetTimeOfDayMicroseconds();
     ld_subprocess_.reset(
       StartSubprocess(PnaclUrls::GetLdUrl(), ld_manifest_, &error_info));
     if (ld_subprocess_ == NULL) {
@@ -258,10 +267,14 @@ bool PnaclTranslateThread::RunLdSubprocess(int is_shared_library,
       return false;
     }
     ld_subprocess_active_ = true;
+    time_stats_.pnacl_ld_load_time =
+        (NaClGetTimeOfDayMicroseconds() - ld_start_time);
     PluginReverseInterface* ld_reverse =
         ld_subprocess_->service_runtime()->rev_interface();
     ld_reverse->AddTempQuotaManagedFile(nexe_file_->identifier());
   }
+
+  int64_t link_start_time = NaClGetTimeOfDayMicroseconds();
   // Run LD.
   if (!ld_subprocess_->InvokeSrpcMethod("RunWithDefaultCommandLine",
                                        "hhiss",
@@ -275,6 +288,8 @@ bool PnaclTranslateThread::RunLdSubprocess(int is_shared_library,
                     "link failed.");
     return false;
   }
+  time_stats_.pnacl_link_time =
+      NaClGetTimeOfDayMicroseconds() - link_start_time;
   PLUGIN_PRINTF(("PnaclCoordinator: link (translator=%p) succeeded\n",
                  this));
   // Shut down the ld subprocess.

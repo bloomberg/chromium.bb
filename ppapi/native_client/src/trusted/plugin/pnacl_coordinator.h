@@ -241,6 +241,10 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   // True if compilation is off_the_record.
   bool off_the_record_;
 
+  // State for timing and size information for UMA stats.
+  int64_t pnacl_init_time_;
+  size_t pexe_size_;  // Count as we stream -- will converge to pexe size.
+
   // The helper thread used to do translations via SRPC.
   // Keep this last in declaration order to ensure the other variables
   // haven't been destroyed yet when its destructor runs.

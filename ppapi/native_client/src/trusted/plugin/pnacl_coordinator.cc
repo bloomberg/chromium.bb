@@ -17,10 +17,12 @@
 #include "native_client/src/trusted/plugin/pnacl_translate_thread.h"
 #include "native_client/src/trusted/plugin/service_runtime.h"
 #include "native_client/src/trusted/plugin/temporary_file.h"
+#include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
+#include "ppapi/c/private/ppb_uma_private.h"
 #include "ppapi/cpp/file_io.h"
 
 namespace {
@@ -171,6 +173,95 @@ class PnaclLDManifest : public Manifest {
 };
 
 //////////////////////////////////////////////////////////////////////
+//  UMA stat helpers.
+//////////////////////////////////////////////////////////////////////
+
+namespace {
+
+// Assume translation time metrics *can be* large.
+// Up to 12 minutes.
+const int64_t kTimeLargeMin = 10;          // in ms
+const int64_t kTimeLargeMax = 720000;      // in ms
+const uint32_t kTimeLargeBuckets = 100;
+
+const int32_t kSizeKBMin = 1;
+const int32_t kSizeKBMax = 512*1024;       // very large .pexe / .nexe.
+const uint32_t kSizeKBBuckets = 100;
+
+const int32_t kRatioMin = 10;
+const int32_t kRatioMax = 10*100;          // max of 10x difference.
+const uint32_t kRatioBuckets = 100;
+
+const int32_t kKBPSMin = 1;
+const int32_t kKBPSMax = 30*1000;          // max of 30 MB / sec.
+const uint32_t kKBPSBuckets = 100;
+
+const PPB_UMA_Private* GetUMAInterface() {
+  pp::Module *module = pp::Module::Get();
+  DCHECK(module);
+  return static_cast<const PPB_UMA_Private*>(
+      module->GetBrowserInterface(PPB_UMA_PRIVATE_INTERFACE));
+}
+
+void HistogramTime(const std::string& name, int64_t ms) {
+  if (ms < 0) return;
+
+  const PPB_UMA_Private* ptr = GetUMAInterface();
+  if (ptr == NULL) return;
+
+  ptr->HistogramCustomTimes(pp::Var(name).pp_var(),
+                            ms,
+                            kTimeLargeMin, kTimeLargeMax,
+                            kTimeLargeBuckets);
+}
+
+void HistogramSizeKB(const std::string& name, int32_t kb) {
+  if (kb < 0) return;
+
+  const PPB_UMA_Private* ptr = GetUMAInterface();
+  if (ptr == NULL) return;
+
+  ptr->HistogramCustomCounts(pp::Var(name).pp_var(),
+                             kb,
+                             kSizeKBMin, kSizeKBMax,
+                             kSizeKBBuckets);
+}
+
+void HistogramRatio(const std::string& name, int64_t a, int64_t b) {
+  if (a < 0 || b <= 0) return;
+
+  const PPB_UMA_Private* ptr = GetUMAInterface();
+  if (ptr == NULL) return;
+
+  ptr->HistogramCustomCounts(pp::Var(name).pp_var(),
+                             100 * a / b,
+                             kRatioMin, kRatioMax,
+                             kRatioBuckets);
+}
+
+void HistogramKBPerSec(const std::string& name, double kb, double s) {
+  if (kb < 0.0 || s <= 0.0) return;
+
+  const PPB_UMA_Private* ptr = GetUMAInterface();
+  if (ptr == NULL) return;
+
+  ptr->HistogramCustomCounts(pp::Var(name).pp_var(),
+                             static_cast<int64_t>(kb / s),
+                             kKBPSMin, kKBPSMax,
+                             kKBPSBuckets);
+}
+
+void HistogramEnumerateTranslationCache(bool hit) {
+  const PPB_UMA_Private* ptr = GetUMAInterface();
+  if (ptr == NULL) return;
+  ptr->HistogramEnumeration(pp::Var("NaCl.Perf.PNaClCache.IsHit").pp_var(),
+                            hit, 2);
+}
+
+}  // namespace
+
+
+//////////////////////////////////////////////////////////////////////
 //  The coordinator class.
 //////////////////////////////////////////////////////////////////////
 
@@ -189,6 +280,7 @@ PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
   PnaclCoordinator* coordinator =
       new PnaclCoordinator(plugin, pexe_url,
                            cache_identity, translate_notify_callback);
+  coordinator->pnacl_init_time_ = NaClGetTimeOfDayMicroseconds();
   coordinator->off_the_record_ =
       plugin->nacl_interface()->IsOffTheRecord();
   PLUGIN_PRINTF(("PnaclCoordinator::BitcodeToNative (manifest=%p, "
@@ -251,7 +343,9 @@ PnaclCoordinator::PnaclCoordinator(
     pexe_url_(pexe_url),
     cache_identity_(cache_identity),
     error_already_reported_(false),
-    off_the_record_(false) {
+    off_the_record_(false),
+    pnacl_init_time_(0),
+    pexe_size_(0) {
   PLUGIN_PRINTF(("PnaclCoordinator::PnaclCoordinator (this=%p, plugin=%p)\n",
                  static_cast<void*>(this), static_cast<void*>(plugin)));
   callback_factory_.Initialize(this);
@@ -323,6 +417,35 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
   if (pp_error != PP_OK) {
     ExitWithError();
     return;
+  }
+
+  // If there are no errors, report stats from this thread (the main thread).
+  const plugin::PnaclTimeStats& time_stats = translate_thread_->GetTimeStats();
+  HistogramTime("NaCl.Perf.PNaClLoadTime.LoadCompiler",
+                time_stats.pnacl_llc_load_time / NACL_MICROS_PER_MILLI);
+  HistogramTime("NaCl.Perf.PNaClLoadTime.CompileTime",
+                time_stats.pnacl_compile_time / NACL_MICROS_PER_MILLI);
+  HistogramKBPerSec("NaCl.Perf.PNaClLoadTime.CompileKBPerSec",
+                    pexe_size_ / 1024.0,
+                    time_stats.pnacl_compile_time / 1000000.0);
+  HistogramTime("NaCl.Perf.PNaClLoadTime.LoadLinker",
+                time_stats.pnacl_ld_load_time / NACL_MICROS_PER_MILLI);
+  HistogramTime("NaCl.Perf.PNaClLoadTime.LinkTime",
+                time_stats.pnacl_link_time / NACL_MICROS_PER_MILLI);
+  HistogramSizeKB("NaCl.Perf.Size.Pexe",
+                  static_cast<int64_t>(pexe_size_ / 1024));
+
+  struct nacl_abi_stat stbuf;
+  struct NaClDesc* desc = temp_nexe_file_->read_wrapper()->desc();
+  int stat_ret;
+  if (0 != (stat_ret = (*((struct NaClDescVtbl const *) desc->base.vtbl)->
+                        Fstat)(desc, &stbuf))) {
+    PLUGIN_PRINTF(("PnaclCoordinator::TranslateFinished can't stat nexe.\n"));
+  } else {
+    size_t nexe_size = stbuf.nacl_abi_st_size;
+    HistogramSizeKB("NaCl.Perf.Size.PNaClTranslatedNexe",
+                    static_cast<int64_t>(nexe_size / 1024));
+    HistogramRatio("NaCl.Perf.Size.PexeNexeSizePct", pexe_size_, nexe_size);
   }
 
   // The nexe is written to the temp_nexe_file_.  We must Reset() the file
@@ -527,8 +650,12 @@ void PnaclCoordinator::NexeFileWasRenamed(int32_t pp_error) {
 
   cached_nexe_file_->FinishRename();
 
-  // TODO(dschuff,jvoung): We could have a UMA stat for the size of
-  // the cached nexes, to know how much cache we are using.
+  int64_t total_time = NaClGetTimeOfDayMicroseconds() - pnacl_init_time_;
+  HistogramTime("NaCl.Perf.PNaClLoadTime.TotalUncachedTime",
+                total_time / NACL_MICROS_PER_MILLI);
+  HistogramKBPerSec("NaCl.Perf.PNaClLoadTime.TotalUncachedKBPerSec",
+                    pexe_size_ / 1024.0,
+                    total_time / 1000000.0);
 
   // Open the cache file for reading.
   pp::CompletionCallback cb =
@@ -681,11 +808,13 @@ void PnaclCoordinator::CachedFileDidOpen(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::CachedFileDidOpen (pp_error=%"
                  NACL_PRId32")\n", pp_error));
   if (pp_error == PP_OK) {
+    HistogramEnumerateTranslationCache(true);
     NexeReadDidOpen(PP_OK);
     return;
   }
   // Otherwise, the cache file is missing, or the cache simply
   // cannot be created (e.g., incognito mode), so we must translate.
+  HistogramEnumerateTranslationCache(false);
 
   // Create the translation thread object immediately. This ensures that any
   // pieces of the file that get downloaded before the compilation thread
@@ -745,6 +874,10 @@ void PnaclCoordinator::BitcodeStreamGotData(int32_t pp_error,
                  NACL_PRId32", data=%p)\n", pp_error, data ? &(*data)[0] : 0));
   DCHECK(translate_thread_.get());
   translate_thread_->PutBytes(data, pp_error);
+  // If pp_error > 0, then it represents the number of bytes received.
+  if (data && pp_error > 0) {
+    pexe_size_ += pp_error;
+  }
 }
 
 StreamCallback PnaclCoordinator::GetCallback() {

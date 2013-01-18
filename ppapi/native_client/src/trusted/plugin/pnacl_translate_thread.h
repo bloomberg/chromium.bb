@@ -31,6 +31,13 @@ class Plugin;
 class PnaclResources;
 class TempFile;
 
+struct PnaclTimeStats {
+  int64_t pnacl_llc_load_time;
+  int64_t pnacl_compile_time;
+  int64_t pnacl_ld_load_time;
+  int64_t pnacl_link_time;
+};
+
 class PnaclTranslateThread {
  public:
   PnaclTranslateThread();
@@ -57,6 +64,8 @@ class PnaclTranslateThread {
 
   // Send bitcode bytes to the translator. Called from the main thread.
   void PutBytes(std::vector<char>* data, int count);
+
+  const PnaclTimeStats& GetTimeStats() const { return time_stats_; }
 
  private:
   // Starts an individual llc or ld subprocess used for translation.
@@ -103,6 +112,8 @@ class PnaclTranslateThread {
   // Whether all data has been downloaded and copied to translation thread.
   // Associated with buffer_cond_
   bool done_;
+
+  PnaclTimeStats time_stats_;
 
   // Data about the translation files, owned by the coordinator
   const Manifest* manifest_;
