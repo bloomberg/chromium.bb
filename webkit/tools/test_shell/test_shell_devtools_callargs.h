@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 
 class TestShellDevToolsCallArgs {
  public:

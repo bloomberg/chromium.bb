@@ -14,7 +14,7 @@
 #include "net/socket_stream/socket_stream_job.h"
 #include "net/websockets/websocket_job.h"
 #include "net/url_request/url_request_context.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSocketStreamHandle.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSocketStreamHandle.h"
 #include "webkit/glue/websocketstreamhandle_bridge.h"
 #include "webkit/glue/websocketstreamhandle_delegate.h"
 

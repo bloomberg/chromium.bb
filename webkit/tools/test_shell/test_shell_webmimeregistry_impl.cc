@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/string_util.h"
 #include "net/base/mime_util.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 
 using WebKit::WebString;
 using WebKit::WebMimeRegistry;

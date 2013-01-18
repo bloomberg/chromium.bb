@@ -10,7 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/id_map.h"
 #include "base/memory/weak_ptr.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFileSystem.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_types.h"

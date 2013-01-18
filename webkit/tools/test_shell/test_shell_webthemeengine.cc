@@ -19,10 +19,10 @@
 #include <windows.h>
 
 #include "base/logging.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
-#include "webkit/tools/test_shell/test_shell_webthemecontrol.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCanvas.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/skia/include/core/SkRect.h"
+#include "webkit/tools/test_shell/test_shell_webthemecontrol.h"
 
 // We define this for clarity, although there really should be a DFCS_NORMAL
 // in winuser.h.

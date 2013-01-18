@@ -4,7 +4,7 @@
 
 #include "webkit/tools/test_shell/simple_webcookiejar_impl.h"
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
 using WebKit::WebString;

@@ -13,9 +13,9 @@
 #include <map>
 
 #include "base/string16.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebClipboard.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebDragData.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebImage.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebClipboard.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebDragData.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebImage.h"
 
 class MockWebClipboardImpl : public WebKit::WebClipboard {
  public:
