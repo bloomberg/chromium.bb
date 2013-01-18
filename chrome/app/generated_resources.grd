@@ -2715,12 +2715,12 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         Anti-virus software failed unexpectedly while scanning this file.
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_FILE_TOO_SHORT"
-	       desc="A download resumption was attempted, but the file didn't exist or wasn't as large as expected">
-	File truncated
+              desc="A download resumption was attempted, but the file didn't exist or wasn't as large as expected">
+       File truncated
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_FILE_TOO_SHORT"
-	       desc="Download page message: A download resumption was attempted, but the file didn't exist or wasn't as large as expected">
-	Destination file was truncated or removed since last download.
+              desc="Download page message: A download resumption was attempted, but the file didn't exist or wasn't as large as expected">
+       Destination file was truncated or removed since last download.
       </message>
       <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_NETWORK_TIMEOUT"
                desc="Network Timeout.">
@@ -9355,6 +9355,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_CONFIG" desc="When a webpage fails to load, in some cases we suggest checking the proxy server configuration, or disabling the proxy server.">
           If you use a proxy server, check your proxy settings or contact your
           network administrator to make sure the proxy server is working.
+          <ph name="PLATFORM_TEXT">$1</ph>
         </message>
       </if>
       <if expr="not pp_ifdef('android') and not pp_ifdef('ios')">

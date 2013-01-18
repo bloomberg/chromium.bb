@@ -865,7 +865,7 @@ For Chromium, processes used to display diagnostics information (such as this "a
         If this does not resolve the issue, we recommend selecting this option
         again for improved performance.
       </message>
-      <if expr="is_macosx">
+      <if expr="is_macosx and not pp_ifdef('ios')">
         <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Mac OSX instructions for disabling use of a proxy server.">
           Go to
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
@@ -896,7 +896,11 @@ For Chromium, processes used to display diagnostics information (such as this "a
           is set to &quot;Direct&quot;.
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos') and is_posix and not is_macosx">
+      <if expr="pp_ifdef('android') or pp_ifdef('ios')">
+        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Instructions for disabling use of a proxy server (leave empty for Android and iOS).">
+        </message>
+      </if>
+      <if expr="not pp_ifdef('chromeos') and is_posix and not is_macosx and not pp_ifdef('android') and not pp_ifdef('ios')">
         <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Linux instructions for disabling use of a proxy server.">
           Go to
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>

@@ -589,9 +589,9 @@ Google Chrome is unable to recover your settings.
         <message name="IDS_FLAGS_RELAUNCH_NOTICE" desc="Notifies the user that he needs to restart Chrome OS. Shown next to a button that says 'Restart Now'.">
           Your changes will take effect the next time you restart your device.
         </message>
-	<message name="IDS_FLAGS_CHROME_CAPTIVE_PORTAL_DETECTOR" desc="Description for the option of Captive Portal detector.">
+        <message name="IDS_FLAGS_CHROME_CAPTIVE_PORTAL_DETECTOR" desc="Description for the option of Captive Portal detector.">
           Chrome Captive Portal detector
-	</message>
+        </message>
       </if>
       <message name="IDS_FLAGS_SHOW_APP_LIST_SHORTCUT_NAME" desc="Name for the flag to show the Chrome app list shortcut in the taskbar.">
         Show Chrome Apps Launcher.
@@ -789,7 +789,7 @@ For Google Chrome, processes used to display diagnostics information (such as th
         If this does not resolve the issue, we recommend selecting this option
         again for improved performance.
       </message>
-      <if expr="is_macosx">
+      <if expr="is_macosx and not pp_ifdef('ios')">
         <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Mac OSX instructions for disabling use of a proxy server.">
           Go to
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
@@ -820,7 +820,11 @@ For Google Chrome, processes used to display diagnostics information (such as th
           is set to &quot;Direct&quot;.
         </message>
       </if>
-      <if expr="not pp_ifdef('chromeos') and is_posix and not is_macosx">
+      <if expr="pp_ifdef('android') or pp_ifdef('ios')">
+        <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Instructions for disabling use of a proxy server (leave empty for Android and iOS).">
+        </message>
+      </if>
+      <if expr="not pp_ifdef('chromeos') and is_posix and not is_macosx and not pp_ifdef('android') and not pp_ifdef('ios')">
         <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Linux instructions for disabling use of a proxy server.">
           Go to
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
