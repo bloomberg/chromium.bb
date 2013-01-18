@@ -35,9 +35,7 @@ StreamParserBuffer::StreamParserBuffer(const uint8* data, int data_size,
       is_keyframe_(is_keyframe),
       decode_timestamp_(kNoTimestamp()),
       config_id_(kInvalidConfigId) {
-  if (data) {
-    SetDuration(kNoTimestamp());
-  }
+  SetDuration(kNoTimestamp());
 }
 
 StreamParserBuffer::~StreamParserBuffer() {

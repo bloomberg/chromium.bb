@@ -309,7 +309,7 @@ void FFmpegVideoDecoder::DecodeBuffer(
   }
 
   // Any successful decode counts!
-  if (!buffer->IsEndOfStream() && buffer->GetDataSize() > 0) {
+  if (buffer->GetDataSize()) {
     PipelineStatistics statistics;
     statistics.video_bytes_decoded = buffer->GetDataSize();
     statistics_cb_.Run(statistics);
@@ -336,27 +336,22 @@ bool FFmpegVideoDecoder::Decode(
     scoped_refptr<VideoFrame>* video_frame) {
   DCHECK(video_frame);
 
-  // Reset frame to default values.
-  avcodec_get_frame_defaults(av_frame_);
-
   // Create a packet for input data.
   // Due to FFmpeg API changes we no longer have const read-only pointers.
   AVPacket packet;
   av_init_packet(&packet);
-  if (buffer->IsEndOfStream()) {
-    packet.data = NULL;
-    packet.size = 0;
-  } else {
-    packet.data = const_cast<uint8*>(buffer->GetData());
-    packet.size = buffer->GetDataSize();
+  packet.data = const_cast<uint8*>(buffer->GetData());
+  packet.size = buffer->GetDataSize();
 
-    // Let FFmpeg handle presentation timestamp reordering.
-    codec_context_->reordered_opaque = buffer->GetTimestamp().InMicroseconds();
+  // Let FFmpeg handle presentation timestamp reordering.
+  codec_context_->reordered_opaque = buffer->GetTimestamp().InMicroseconds();
 
-    // This is for codecs not using get_buffer to initialize
-    // |av_frame_->reordered_opaque|
-    av_frame_->reordered_opaque = codec_context_->reordered_opaque;
-  }
+  // Reset frame to default values.
+  avcodec_get_frame_defaults(av_frame_);
+
+  // This is for codecs not using get_buffer to initialize
+  // |av_frame_->reordered_opaque|
+  av_frame_->reordered_opaque = codec_context_->reordered_opaque;
 
   int frame_decoded = 0;
   int result = avcodec_decode_video2(codec_context_,
@@ -365,7 +360,10 @@ bool FFmpegVideoDecoder::Decode(
                                      &packet);
   // Log the problem if we can't decode a video frame and exit early.
   if (result < 0) {
-    LOG(ERROR) << "Error decoding video: " << buffer->AsHumanReadableString();
+    LOG(ERROR) << "Error decoding a video frame with timestamp: "
+               << buffer->GetTimestamp().InMicroseconds() << " us, duration: "
+               << buffer->GetDuration().InMicroseconds() << " us, packet size: "
+               << buffer->GetDataSize() << " bytes";
     *video_frame = NULL;
     return false;
   }
