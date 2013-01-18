@@ -121,8 +121,9 @@ class TestPackage(object):
     ok_tests = []
     failed_tests = []
     crashed_tests = []
-    timed_out = False
+    timed_out_tests = []
     overall_fail = False
+    overall_timed_out = False
 
     # Test case statuses.
     re_run = re.compile('\[ RUN      \] ?(.*)\r\n')
@@ -138,6 +139,8 @@ class TestPackage(object):
 
     try:
       while True:
+        full_test_name = None
+
         found = p.expect([re_run, re_passed, re_runner_fail],
                          timeout=self.timeout)
         if found == 1:  # re_passed
@@ -166,7 +169,9 @@ class TestPackage(object):
     except pexpect.TIMEOUT:
       logging.error('Test terminated after %d second timeout.',
                     self.timeout)
-      timed_out = True
+      overall_timed_out = True
+      if full_test_name:
+        timed_out_tests += [BaseTestResult(full_test_name, p.before)]
     finally:
       p.close()
 
@@ -179,5 +184,6 @@ class TestPackage(object):
 
     # Create TestResults and return
     return TestResults.FromRun(ok=ok_tests, failed=failed_tests,
-                               crashed=crashed_tests, timed_out=timed_out,
-                               overall_fail=overall_fail)
+                               crashed=crashed_tests, timed_out=timed_out_tests,
+                               overall_fail=overall_fail,
+                               overall_timed_out=overall_timed_out)
