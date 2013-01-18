@@ -204,7 +204,7 @@ string16 AutoLoginInfoBarDelegate::GetButtonLabel(
 bool AutoLoginInfoBarDelegate::Accept() {
   // AutoLoginRedirector deletes itself.
   new AutoLoginRedirector(&owner()->GetWebContents()->GetController(),
-                          params_.args);
+                          params_.header.args);
   RecordHistogramAction(HISTOGRAM_ACCEPTED);
   button_pressed_ = true;
   return true;

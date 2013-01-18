@@ -1173,7 +1173,6 @@
         'browser/ui/ash/launcher/chrome_launcher_controller_per_browser_unittest.cc',
         'browser/ui/ash/launcher/launcher_context_menu_unittest.cc',
         'browser/ui/ash/window_positioner_unittest.cc',
-        'browser/ui/auto_login_prompter_unittest.cc',
         'browser/ui/autofill/autofill_popup_controller_unittest.cc',
         'browser/ui/bookmarks/bookmark_context_menu_controller_unittest.cc',
         'browser/ui/bookmarks/bookmark_prompt_controller_unittest.cc',
@@ -1655,6 +1654,9 @@
         '../webkit/glue/web_intent_service_data_unittest.cc',
         '../webkit/quota/mock_storage_client.cc',
         '../webkit/quota/mock_storage_client.h',
+
+        # TODO(boliu): Move this to component unit test target.
+        '../components/auto_login_parser/auto_login_parser_unittest.cc',
       ],
       'conditions': [
         ['OS!="ios"', {

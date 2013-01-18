@@ -37,9 +37,6 @@ class AutoLoginPrompter : public content::NotificationObserver {
                                     int child_id,
                                     int route_id);
 
-  // Returns whether parsing succeeded.
-  static bool ParseAutoLoginHeader(const std::string& input, Params* output);
-
  private:
   friend class AutoLoginPrompterTest;
 
