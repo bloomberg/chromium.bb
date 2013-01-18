@@ -363,7 +363,9 @@ void CandidateView::Init(int shortcut_column_width,
 
   // Set candidate column type and width.
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        0, column_type, candidate_column_width, 0);
+                        1, views::GridLayout::USE_PREF, 0,
+                        orientation_ == ibus::IBusLookupTable::VERTICAL ?
+                        candidate_column_width : 0);
   column_set->AddPaddingColumn(0, padding_column_width);
 
   // Set annotation column type and width.
@@ -803,7 +805,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
   if (orientation == ibus::IBusLookupTable::VERTICAL) {
     column_set->AddColumn(views::GridLayout::FILL,
                           views::GridLayout::FILL,
-                          0, views::GridLayout::USE_PREF, 0, 0);
+                          1, views::GridLayout::USE_PREF, 0, 0);
   } else {
     for (int i = 0; i < page_size; ++i) {
       column_set->AddColumn(views::GridLayout::FILL,
@@ -846,7 +848,9 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
     layout->AddView(candidate_row,
                     1,  // Column span.
                     1,  // Row span.
-                    views::GridLayout::CENTER,  // Horizontal alignment.
+                    // Horizontal alignment.
+                    orientation == ibus::IBusLookupTable::VERTICAL ?
+                    views::GridLayout::FILL : views::GridLayout::CENTER,
                     views::GridLayout::CENTER,  // Vertical alignment.
                     -1,  // Preferred width, not specified.
                     kColumnHeight);  // Preferred height.
