@@ -9,10 +9,36 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_frame_view.h"
 
 namespace views {
+
+namespace {
+
+// Create a widget to host the dialog.
+Widget* CreateDialogWidgetImpl(DialogDelegateView* dialog_delegate_view,
+                               gfx::NativeWindow context,
+                               gfx::NativeWindow parent) {
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params;
+  params.delegate = dialog_delegate_view;
+  if (DialogDelegate::UseNewStyle()) {
+    // TODO(msw): Avoid Windows native controls or support dialog transparency
+    //            with a separate border Widget, like BubbleDelegateView.
+    params.transparent = views::View::get_use_acceleration_when_possible();
+    params.remove_standard_frame = true;
+  }
+  params.context = context;
+  params.parent = parent;
+  params.top_level = true;
+  widget->Init(params);
+  return widget;
+}
+
+}  // namespace
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // DialogDelegate:
@@ -125,10 +151,15 @@ ui::AccessibilityTypes::Role DialogDelegate::GetAccessibleWindowRole() const {
 ////////////////////////////////////////////////////////////////////////////////
 // DialogDelegateView:
 
-DialogDelegateView::DialogDelegateView() {
-}
+DialogDelegateView::DialogDelegateView() {}
 
-DialogDelegateView::~DialogDelegateView() {
+DialogDelegateView::~DialogDelegateView() {}
+
+// static
+Widget* DialogDelegateView::CreateDialogWidget(DialogDelegateView* dialog,
+                                               gfx::NativeWindow context,
+                                               gfx::NativeWindow parent) {
+  return CreateDialogWidgetImpl(dialog, context, parent);
 }
 
 Widget* DialogDelegateView::GetWidget() {

@@ -118,7 +118,7 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // Creates a Window and adds the BookmarkEditorView to it. When the window is
   // closed the BookmarkEditorView is deleted.
-  void Show(gfx::NativeWindow parent_window);
+  void Show(gfx::NativeWindow parent);
 
   // Closes the dialog.
   void Close();

@@ -66,10 +66,10 @@ void ShowPageInfoBubble(views::View* anchor_view,
 FindBar* CreateFindBar(BrowserView* browser_view);
 
 // Shows the Task Manager.
-void ShowTaskManager(chrome::HostDesktopType desktop_type);
+void ShowTaskManager(Browser* browser);
 
 // Shows the Task Manager, highlighting the background pages.
-void ShowBackgroundPages(chrome::HostDesktopType desktop_type);
+void ShowBackgroundPages(Browser* browser);
 
 // Shows a dialog box that allows a search engine to be edited. |template_url|
 // is the search engine being edited. If it is NULL, then the dialog will add a

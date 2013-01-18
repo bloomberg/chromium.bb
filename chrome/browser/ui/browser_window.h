@@ -201,10 +201,10 @@ class BrowserWindow : public BaseWindow {
   virtual void ShowUpdateChromeDialog() = 0;
 
   // Shows the Task manager.
-  virtual void ShowTaskManager(chrome::HostDesktopType desktop_type) = 0;
+  virtual void ShowTaskManager() = 0;
 
   // Shows task information related to background pages.
-  virtual void ShowBackgroundPages(chrome::HostDesktopType desktop_type) = 0;
+  virtual void ShowBackgroundPages() = 0;
 
   // Shows the Bookmark bubble. |url| is the URL being bookmarked,
   // |already_bookmarked| is true if the url is already bookmarked.

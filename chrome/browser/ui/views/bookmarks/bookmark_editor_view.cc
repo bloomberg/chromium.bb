@@ -25,6 +25,7 @@
 #include "ui/base/events/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/button/chrome_style.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -43,9 +44,6 @@ namespace {
 
 // Background color of text field when URL is invalid.
 const SkColor kErrorColor = SkColorSetRGB(0xFF, 0xBC, 0xBC);
-
-// Preferred width of the tree.
-const int kTreeWidth = 300;
 
 }  // namespace
 
@@ -137,20 +135,18 @@ bool BookmarkEditorView::AreAcceleratorsEnabled(ui::DialogButton button) {
 }
 
 void BookmarkEditorView::Layout() {
-  // Let the grid layout manager lay out most of the dialog...
   GetLayoutManager()->Layout(this);
 
   if (!show_tree_)
     return;
 
-  // Manually lay out the New Folder button in the same row as the OK/Cancel
-  // buttons...
+  // Manually align the New Folder button with the Save and Cancel buttons.
+  gfx::Size size = new_folder_button_->GetPreferredSize();
   gfx::Rect parent_bounds = parent()->GetContentsBounds();
-  gfx::Size prefsize = new_folder_button_->GetPreferredSize();
-  int button_y =
-      parent_bounds.bottom() - prefsize.height() - views::kButtonVEdgeMargin;
-  new_folder_button_->SetBounds(
-      views::kPanelHorizMargin, button_y, prefsize.width(), prefsize.height());
+  int x = views::DialogDelegate::UseNewStyle() ? 0 : views::kPanelHorizMargin;
+  int y = views::DialogDelegate::UseNewStyle() ? GetLocalBounds().bottom() :
+      parent_bounds.bottom() - size.height() - views::kButtonVEdgeMargin;
+  new_folder_button_->SetBounds(x, y, size.width(), size.height());
 }
 
 gfx::Size BookmarkEditorView::GetPreferredSize() {
@@ -250,8 +246,8 @@ void BookmarkEditorView::ExecuteCommand(int command_id) {
   }
 }
 
-void BookmarkEditorView::Show(gfx::NativeWindow parent_window) {
-  views::Widget::CreateWindowWithParent(this, parent_window);
+void BookmarkEditorView::Show(gfx::NativeWindow parent) {
+  views::DialogDelegateView::CreateDialogWidget(this, NULL, parent);
   UserInputChanged();
   if (show_tree_ && bb_model_->IsLoaded())
     ExpandAndSelect();
@@ -318,12 +314,15 @@ void BookmarkEditorView::Init() {
 
     new_folder_button_.reset(new views::NativeTextButton(this,
         l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON)));
+    if (DialogDelegate::UseNewStyle())
+      views::ApplyChromeStyle(new_folder_button_.get());
     new_folder_button_->set_owned_by_client();
     new_folder_button_->SetEnabled(false);
   }
 
-  // Yummy layout code.
   GridLayout* layout = GridLayout::CreatePanel(this);
+  if (views::DialogDelegate::UseNewStyle())
+    layout->SetInsets(gfx::Insets());
   SetLayoutManager(layout);
 
   const int labels_column_set_id = 0;
@@ -338,8 +337,13 @@ void BookmarkEditorView::Init() {
                         GridLayout::USE_PREF, 0, 0);
 
   column_set = layout->AddColumnSet(single_column_view_set_id);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::FIXED, kTreeWidth, 0);
+  if (views::DialogDelegate::UseNewStyle()) {
+    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                          GridLayout::USE_PREF, 0, 0);
+  } else {
+    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                          GridLayout::FIXED, 300, 0);
+  }
 
   column_set = layout->AddColumnSet(buttons_column_set_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 0,
@@ -353,13 +357,12 @@ void BookmarkEditorView::Init() {
   column_set->LinkColumnSizes(0, 2, 4, -1);
 
   layout->StartRow(0, labels_column_set_id);
-
   layout->AddView(title_label_);
   layout->AddView(title_tf_);
 
   if (details_.GetNodeType() != BookmarkNode::FOLDER) {
     url_label_ = new views::Label(
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_URL_LABEL));
+        l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_URL_LABEL));
 
     url_tf_ = new views::Textfield;
     PrefServiceBase* prefs = profile_ ?

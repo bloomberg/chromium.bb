@@ -50,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerNotificationBrowserTest,
   EXPECT_EQ(0, model()->ResourceCount());
 
   // Show the task manager.
-  browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  browser()->window()->ShowTaskManager();
   // Expect to see the browser and the New Tab Page renderer.
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
 

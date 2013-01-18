@@ -888,9 +888,9 @@ bool CanOpenTaskManager() {
 void OpenTaskManager(Browser* browser, bool highlight_background_resources) {
   content::RecordAction(UserMetricsAction("TaskManager"));
   if (highlight_background_resources)
-    browser->window()->ShowBackgroundPages(browser->host_desktop_type());
+    browser->window()->ShowBackgroundPages();
   else
-    browser->window()->ShowTaskManager(browser->host_desktop_type());
+    browser->window()->ShowTaskManager();
 }
 
 void OpenFeedbackDialog(Browser* browser) {

@@ -100,10 +100,10 @@ void TaskManagerBrowserTestUtil::ShowTaskManagerAndWaitForReady(
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TASK_MANAGER_WINDOW_READY,
       content::Source<TaskManagerModel>(TaskManager::GetInstance()->model()));
-  browser->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  browser->window()->ShowTaskManager();
   observer.Wait();
 #else
-  browser->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  browser->window()->ShowTaskManager();
 #endif  // defined(USE_AURA)
 }
 

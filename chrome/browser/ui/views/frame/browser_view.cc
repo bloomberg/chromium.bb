@@ -1097,19 +1097,19 @@ void BrowserView::ShowUpdateChromeDialog() {
   UpdateRecommendedMessageBox::Show(GetWidget()->GetNativeWindow());
 }
 
-void BrowserView::ShowTaskManager(chrome::HostDesktopType desktop_type) {
+void BrowserView::ShowTaskManager() {
 #if defined(USE_AURA)
   TaskManagerDialog::Show();
 #else
-  chrome::ShowTaskManager(desktop_type);
+  chrome::ShowTaskManager(browser());
 #endif  // defined(USE_AURA)
 }
 
-void BrowserView::ShowBackgroundPages(chrome::HostDesktopType desktop_type) {
+void BrowserView::ShowBackgroundPages() {
 #if defined(USE_AURA)
   TaskManagerDialog::ShowBackgroundPages();
 #else
-  chrome::ShowBackgroundPages(desktop_type);
+  chrome::ShowBackgroundPages(browser());
 #endif  // defined(USE_AURA)
 }
 

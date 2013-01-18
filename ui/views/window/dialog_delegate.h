@@ -119,6 +119,11 @@ class VIEWS_EXPORT DialogDelegateView : public DialogDelegate,
   DialogDelegateView();
   virtual ~DialogDelegateView();
 
+  // Create a |dialog| window Widget with the specified |context| or |parent|.
+  static Widget* CreateDialogWidget(DialogDelegateView* dialog,
+                                    gfx::NativeWindow context,
+                                    gfx::NativeWindow parent);
+
   // Overridden from DialogDelegate:
   virtual Widget* GetWidget() OVERRIDE;
   virtual const Widget* GetWidget() const OVERRIDE;

@@ -80,7 +80,7 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
 
     // Show the task manager. This populates the model, and helps with debugging
     // (you see the task manager).
-    browser()->window()->ShowTaskManager(chrome::HOST_DESKTOP_TYPE_NATIVE);
+    browser()->window()->ShowTaskManager();
 
     // New Tab Page.
     TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
