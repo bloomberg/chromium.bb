@@ -18,7 +18,7 @@
   'targets': [
     {
       'target_name': 'libjpeg',
-      'type': '<(library)',
+      'type': 'static_library',
       'include_dirs': [
         '.',
       ],
