@@ -651,18 +651,20 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
       break;
 
     case kGestureTypeScroll:
-      // If a scrolling finger just left, do fling
+    case kGestureTypeSwipe:
+      // If a gesturing finger just left, do fling/lift
       for (set<short, kMaxGesturingFingers>::const_iterator
                it = prev_gs_fingers_.begin(),
                e = prev_gs_fingers_.end();
            it != e; ++it) {
         if (!hwstate.GetFingerState(*it)) {
-          current_gesture_type_ = kGestureTypeFling;
+          current_gesture_type_ =
+              current_gesture_type_ == kGestureTypeScroll ?
+              kGestureTypeFling : kGestureTypeSwipeLift;
           return;
         }
       }
       // fallthrough
-    case kGestureTypeSwipe:
     case kGestureTypeSwipeLift:
     case kGestureTypeFling:
     case kGestureTypeMove:
@@ -1922,6 +1924,12 @@ void ImmediateInterpreter::FillResultGesture(
           sum_delta[0] / finger_cnt[0] : 0.0,
           (swipe_is_vertical_ && finger_cnt[1]) ?
           sum_delta[1] / finger_cnt[1] : 0.0);
+      break;
+    }
+    case kGestureTypeSwipeLift: {
+      result_ = Gesture(kGestureSwipeLift,
+                        prev_state_.timestamp,
+                        hwstate.timestamp);
       break;
     }
 
