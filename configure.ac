@@ -13,7 +13,6 @@ AM_SILENT_RULES([yes])
 
 # Check for programs
 AC_PROG_CC
-AC_PROG_CXX
 AC_PROG_SED
 
 # Initialize libtool
@@ -257,14 +256,11 @@ PKG_CHECK_MODULES(SETBACKLIGHT, [libudev libdrm], enable_setbacklight=yes, enabl
 AM_CONDITIONAL(BUILD_SETBACKLIGHT, test "x$enable_setbacklight" = "xyes")
 
 if test "x$GCC" = "xyes"; then
-	my_common_gcc_flags="-Wall -Wextra -Wno-unused-parameter \
-		-Wno-missing-field-initializers -g -fvisibility=hidden"
-	GCC_CFLAGS="$my_common_gcc_flags \
+	GCC_CFLAGS="-Wall -Wextra -Wno-unused-parameter \
+		-Wno-missing-field-initializers -g -fvisibility=hidden \
 		-Wstrict-prototypes -Wmissing-prototypes"
-	GCC_CXXFLAGS="$my_common_gcc_flags"
 fi
 AC_SUBST(GCC_CFLAGS)
-AC_SUBST(GCC_CXXFLAGS)
 
 if test "x$WESTON_NATIVE_BACKEND" = "x"; then
 	WESTON_NATIVE_BACKEND="drm-backend.so"
