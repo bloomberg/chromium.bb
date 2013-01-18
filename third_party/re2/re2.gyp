@@ -100,6 +100,13 @@
               're2/stringpiece.h',
               're2/variadic_function.h',
             ],
+            'shim_generator_additional_args': [
+              # Chromium copy of re2 is patched to rename POSIX to POSIX_SYNTAX
+              # because of collision issues that break the build.
+              # Upstream refuses to make changes:
+              # http://code.google.com/p/re2/issues/detail?id=73 .
+              '--define', 'POSIX=POSIX_SYNTAX',
+            ],
           },
           'includes': [
             '../../build/shim_headers.gypi',

@@ -27,6 +27,7 @@ SHIM_TEMPLATE = """
 def GeneratorMain(argv):
   parser = optparse.OptionParser()
   parser.add_option('--headers-root', action='append')
+  parser.add_option('--define', action='append')
   parser.add_option('--output-directory')
   parser.add_option('--use-include-next', action='store_true')
   parser.add_option('--outputs', action='store_true')
@@ -66,6 +67,15 @@ def GeneratorMain(argv):
         with open(os.path.join(target_directory, header_filename), 'w') as f:
           f.write(SHIM_TEMPLATE)
 
+          if options.define:
+            for define in options.define:
+              key, value = define.split('=', 1)
+              # This non-standard push_macro extension is supported
+              # by compilers we support (GCC, clang).
+              f.write('#pragma push_macro("%s")\n' % key)
+              f.write('#undef %s\n' % key)
+              f.write('#define %s %s\n' % (key, value))
+
           if include_before:
             for header in include_before.split(':'):
               f.write('#include %s\n' % header)
@@ -78,6 +88,13 @@ def GeneratorMain(argv):
           if include_after:
             for header in include_after.split(':'):
               f.write('#include %s\n' % header)
+
+          if options.define:
+            for define in options.define:
+              key, value = define.split('=', 1)
+              # This non-standard pop_macro extension is supported
+              # by compilers we support (GCC, clang).
+              f.write('#pragma pop_macro("%s")\n' % key)
 
 
 def DoMain(argv):
