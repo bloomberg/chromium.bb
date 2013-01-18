@@ -10,7 +10,7 @@
       }, {
         'compile_suid_client': 0,
       }],
-      ['((OS=="linux" or (OS=="android" and target_arch=="arm")) and '
+      ['((OS=="linux" or OS=="android") and '
              '(target_arch=="ia32" or target_arch=="x64" or '
               'target_arch=="arm"))', {
         'compile_seccomp_bpf': 1,
@@ -127,6 +127,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        'sandbox_services_headers',
       ],
       'include_dirs': [
         '../..',
@@ -161,6 +162,21 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+    },
+    { 'target_name': 'sandbox_services_headers',
+      'type': 'none',
+      'sources': [
+        'services/android_arm_ucontext.h',
+        'services/android_ucontext.h',
+        'services/android_i386_ucontext.h',
+        'services/arm_linux_syscalls.h',
+        'services/linux_syscalls.h',
+        'services/x86_32_linux_syscalls.h',
+        'services/x86_64_linux_syscalls.h',
       ],
       'include_dirs': [
         '..',

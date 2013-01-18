@@ -11,13 +11,6 @@
 // We also need greg_t for the sandbox, include it in this header as well.
 typedef unsigned long greg_t;
 
-// sigset_t from arch/arm/include/asm/signal.h in the Linux kernel.
-typedef struct {
-  unsigned long sig[64 / 8 / sizeof(long)];  // Always 64 bits (yes we assume
-                                             // 8 bits per char).
-} android_header_sigset_t;  // Change name to avoid collissions if sigset_t
-                            // gets defined in newer Android headers.
-
 //typedef unsigned long sigset_t;
 typedef struct ucontext {
   unsigned long   uc_flags;
@@ -26,7 +19,7 @@ typedef struct ucontext {
   struct sigcontext uc_mcontext;
   sigset_t    uc_sigmask;
   /* Allow for uc_sigmask growth.  Glibc uses a 1024-bit sigset_t.  */
-  int     __not_used[32 - (sizeof (android_header_sigset_t) / sizeof (int))];
+  int     __not_used[32 - (sizeof (sigset_t) / sizeof (int))];
   /* Last for extensibility.  Eight byte aligned because some
      coprocessors require eight byte alignment.  */
   unsigned long   uc_regspace[128] __attribute__((__aligned__(8)));
