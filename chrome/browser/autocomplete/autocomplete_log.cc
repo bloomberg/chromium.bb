@@ -12,7 +12,7 @@ AutocompleteLog::AutocompleteLog(
     SessionID::id_type tab_id,
     metrics::OmniboxEventProto::PageClassification current_page_classification,
     base::TimeDelta elapsed_time_since_user_first_modified_omnibox,
-    size_t inline_autocompleted_length,
+    size_t completed_length,
     base::TimeDelta elapsed_time_since_last_change_to_default_match,
     const AutocompleteResult& result)
     : text(text),
@@ -23,7 +23,7 @@ AutocompleteLog::AutocompleteLog(
       current_page_classification(current_page_classification),
       elapsed_time_since_user_first_modified_omnibox(
           elapsed_time_since_user_first_modified_omnibox),
-      inline_autocompleted_length(inline_autocompleted_length),
+      completed_length(completed_length),
       elapsed_time_since_last_change_to_default_match(
           elapsed_time_since_last_change_to_default_match),
       result(result),

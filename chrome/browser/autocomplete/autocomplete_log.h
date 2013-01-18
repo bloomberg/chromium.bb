@@ -28,7 +28,7 @@ struct AutocompleteLog {
       metrics::OmniboxEventProto::PageClassification
           current_page_classification,
       base::TimeDelta elapsed_time_since_user_first_modified_omnibox,
-      size_t inline_autocompleted_length,
+      size_t completed_length,
       base::TimeDelta elapsed_time_since_last_change_to_default_match,
       const AutocompleteResult& result);
   ~AutocompleteLog();
@@ -64,9 +64,10 @@ struct AutocompleteLog {
   // unit tests), this elapsed time is set to -1 milliseconds.
   base::TimeDelta elapsed_time_since_user_first_modified_omnibox;
 
-  // Inline autocompleted length (if displayed).  Set to string16::npos
-  // if not available.
-  size_t inline_autocompleted_length;
+  // The number of extra characters the user would have to manually type
+  // if she/he were not given the opportunity to select this match.  Set to
+  // string16::npos if not available.
+  size_t completed_length;
 
   // The amount of time since the last time the default (i.e., inline)
   // match changed.  This will certainly be less than

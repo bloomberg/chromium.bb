@@ -575,7 +575,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         -1,  // don't yet know tab ID; set later if appropriate
         ClassifyPage(controller_->GetWebContents()->GetURL()),
         now - time_user_first_modified_omnibox_,
-        string16::npos,  // inline autocomplete length; possibly set later
+        string16::npos,  // completed_length; possibly set later
         now - autocomplete_controller_->last_time_default_match_changed(),
         result());
     DCHECK(user_input_in_progress_ ||
@@ -590,8 +590,13 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         << "default match changed.";
     if (index != OmniboxPopupModel::kNoMatch)
       log.selected_index = index;
-    else if (!has_temporary_text_)
-      log.inline_autocompleted_length = inline_autocomplete_text_.length();
+    if (match.inline_autocomplete_offset != string16::npos) {
+      DCHECK_GE(match.fill_into_edit.length(),
+                match.inline_autocomplete_offset);
+      log.completed_length =
+          match.fill_into_edit.length() - match.inline_autocomplete_offset;
+    }
+
     if (disposition == CURRENT_TAB) {
       // If we know the destination is being opened in the current tab,
       // we can easily get the tab ID.  (If it's being opened in a new

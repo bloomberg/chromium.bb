@@ -980,8 +980,8 @@ void MetricsLog::RecordOmniboxOpenedURL(const AutocompleteLog& log) {
     WriteIntAttribute("numterms", num_terms);
     WriteIntAttribute("selectedindex", static_cast<int>(log.selected_index));
     WriteIntAttribute("completedlength",
-                      log.inline_autocompleted_length != string16::npos ?
-                      static_cast<int>(log.inline_autocompleted_length) : 0);
+                      log.completed_length != string16::npos ?
+                      static_cast<int>(log.completed_length) : 0);
     if (log.elapsed_time_since_user_first_modified_omnibox !=
         base::TimeDelta::FromMilliseconds(-1)) {
       // Only upload the typing duration if it is set/valid.
@@ -1017,8 +1017,8 @@ void MetricsLog::RecordOmniboxOpenedURL(const AutocompleteLog& log) {
   omnibox_event->set_just_deleted_text(log.just_deleted_text);
   omnibox_event->set_num_typed_terms(num_terms);
   omnibox_event->set_selected_index(log.selected_index);
-  if (log.inline_autocompleted_length != string16::npos)
-    omnibox_event->set_completed_length(log.inline_autocompleted_length);
+  if (log.completed_length != string16::npos)
+    omnibox_event->set_completed_length(log.completed_length);
   if (log.elapsed_time_since_user_first_modified_omnibox !=
       base::TimeDelta::FromMilliseconds(-1)) {
     // Only upload the typing duration if it is set/valid.
