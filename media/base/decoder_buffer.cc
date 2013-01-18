@@ -48,43 +48,65 @@ scoped_refptr<DecoderBuffer> DecoderBuffer::CreateEOSBuffer() {
 }
 
 base::TimeDelta DecoderBuffer::GetTimestamp() const {
+  DCHECK(!IsEndOfStream());
   return timestamp_;
 }
 
 void DecoderBuffer::SetTimestamp(const base::TimeDelta& timestamp) {
+  DCHECK(!IsEndOfStream());
   timestamp_ = timestamp;
 }
 
 base::TimeDelta DecoderBuffer::GetDuration() const {
+  DCHECK(!IsEndOfStream());
   return duration_;
 }
 
 void DecoderBuffer::SetDuration(const base::TimeDelta& duration) {
+  DCHECK(!IsEndOfStream());
   duration_ = duration;
 }
 
 const uint8* DecoderBuffer::GetData() const {
+  DCHECK(!IsEndOfStream());
   return data_.get();
 }
 
 uint8* DecoderBuffer::GetWritableData() const {
+  DCHECK(!IsEndOfStream());
   return data_.get();
 }
 
 int DecoderBuffer::GetDataSize() const {
+  DCHECK(!IsEndOfStream());
   return size_;
 }
 
 const DecryptConfig* DecoderBuffer::GetDecryptConfig() const {
+  DCHECK(!IsEndOfStream());
   return decrypt_config_.get();
 }
 
 void DecoderBuffer::SetDecryptConfig(scoped_ptr<DecryptConfig> decrypt_config) {
+  DCHECK(!IsEndOfStream());
   decrypt_config_ = decrypt_config.Pass();
 }
 
 bool DecoderBuffer::IsEndOfStream() const {
   return data_ == NULL;
+}
+
+std::string DecoderBuffer::AsHumanReadableString() {
+  if (IsEndOfStream()) {
+    return "end of stream";
+  }
+
+  std::ostringstream s;
+  s << "timestamp: " << timestamp_.InMicroseconds()
+    << " duration: " << duration_.InMicroseconds()
+    << " size: " << size_
+    << " encrypted: " << (decrypt_config_ != NULL);
+  return s.str();
 }
 
 }  // namespace media

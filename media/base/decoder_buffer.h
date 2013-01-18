@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_DECODER_BUFFER_H_
 #define MEDIA_BASE_DECODER_BUFFER_H_
 
+#include <string>
+
 #include "base/memory/aligned_memory.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -23,6 +25,8 @@ class DecryptConfig;
 // allocated using FFmpeg with particular alignment and padding requirements.
 //
 // Also includes decoder specific functionality for decryption.
+//
+// NOTE: It is illegal to call any method when IsEndOfStream() is true.
 class MEDIA_EXPORT DecoderBuffer
     : public base::RefCountedThreadSafe<DecoderBuffer> {
  public:
@@ -43,8 +47,10 @@ class MEDIA_EXPORT DecoderBuffer
   // padded and aligned as necessary.  |data| must not be NULL and |size| >= 0.
   static scoped_refptr<DecoderBuffer> CopyFrom(const uint8* data, int size);
 
-  // Create a DecoderBuffer indicating we've reached end of stream.  GetData()
-  // and GetWritableData() will return NULL and GetDataSize() will return 0.
+  // Create a DecoderBuffer indicating we've reached end of stream.
+  //
+  // Calling any method other than IsEndOfStream() on the resulting buffer
+  // is disallowed.
   static scoped_refptr<DecoderBuffer> CreateEOSBuffer();
 
   base::TimeDelta GetTimestamp() const;
@@ -63,6 +69,9 @@ class MEDIA_EXPORT DecoderBuffer
 
   // If there's no data in this buffer, it represents end of stream.
   bool IsEndOfStream() const;
+
+  // Returns a human-readable string describing |*this|.
+  std::string AsHumanReadableString();
 
  protected:
   friend class base::RefCountedThreadSafe<DecoderBuffer>;
