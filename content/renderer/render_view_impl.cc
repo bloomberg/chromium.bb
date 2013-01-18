@@ -2754,6 +2754,8 @@ void RenderViewImpl::didDisownOpener(WebKit::WebFrame* frame) {
 }
 
 void RenderViewImpl::frameDetached(WebFrame* frame) {
+  Send(new ViewHostMsg_FrameDetached(routing_id_, frame->identifier()));
+
   if (is_loading_) {
     pending_frame_tree_update_ = true;
     // Make sure observers are notified, even if we return right away.

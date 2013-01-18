@@ -104,6 +104,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                                    PageTransition transition,
                                    int64 source_frame_id) {}
 
+  virtual void FrameDetached(RenderViewHost* render_view_host,
+                             int64 frame_id) {}
+
   virtual void WasShown() {}
 
   virtual void AppCacheAccessed(const GURL& manifest_url,

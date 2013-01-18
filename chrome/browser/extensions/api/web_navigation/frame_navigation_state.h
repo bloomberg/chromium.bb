@@ -57,6 +57,9 @@ class FrameNavigationState {
                   bool is_error_page,
                   bool is_iframe_srcdoc);
 
+  // Marks the frame as detached and stops tracking it.
+  void FrameDetached(FrameID frame_id);
+
   // Stops tracking all frames but the frame with |id_to_skip| for a given
   // RenderViewHost.
   void StopTrackingFramesInRVH(content::RenderViewHost* render_view_host,

@@ -620,6 +620,27 @@ void WebNavigationTabObserver::DidOpenRequestedURL(
       url);
 }
 
+void WebNavigationTabObserver::FrameDetached(
+    content::RenderViewHost* render_view_host,
+    int64 frame_num) {
+  if (render_view_host != render_view_host_ &&
+      render_view_host != pending_render_view_host_) {
+    return;
+  }
+  FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
+  if (navigation_state_.CanSendEvents(frame_id) &&
+      !navigation_state_.GetNavigationCompleted(frame_id)) {
+    helpers::DispatchOnErrorOccurred(
+        web_contents(),
+        render_view_host->GetProcess()->GetID(),
+        navigation_state_.GetUrl(frame_id),
+        frame_num,
+        navigation_state_.IsMainFrame(frame_id),
+        net::ERR_ABORTED);
+  }
+  navigation_state_.FrameDetached(frame_id);
+}
+
 void WebNavigationTabObserver::WebContentsDestroyed(content::WebContents* tab) {
   g_tab_observer.Get().erase(tab);
   registrar_.RemoveAll();

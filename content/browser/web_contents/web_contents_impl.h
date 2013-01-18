@@ -574,6 +574,7 @@ class CONTENT_EXPORT WebContentsImpl
                             const std::vector<SkBitmap>& bitmaps);
   void OnUpdateFaviconURL(int32 page_id,
                           const std::vector<FaviconURL>& candidates);
+  void OnFrameDetached(int64 frame_id);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished

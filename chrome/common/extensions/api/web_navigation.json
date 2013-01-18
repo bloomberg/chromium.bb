@@ -89,7 +89,7 @@
                     },
                     "url": {
                       "type": "string",
-                      "description": "The URL currently associated with this frame, if the frame identified by the frameId existed at one point in the given tab. The fact that an URL is associated with a given frameId does not imply that the corresponding frame still exists."
+                      "description": "The URL currently associated with this frame."
                     }
                   }
                 }

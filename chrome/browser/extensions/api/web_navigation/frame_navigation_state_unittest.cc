@@ -161,4 +161,45 @@ TEST(FrameNavigationStateTest, SrcDoc) {
   EXPECT_TRUE(navigation_state.IsValidUrl(srcdoc));
 }
 
+// Test that an individual frame can be detached.
+TEST(FrameNavigationStateTest, DetachFrame) {
+  FrameNavigationState navigation_state;
+  const FrameNavigationState::FrameID frame_id0(-1, fake_rvh);
+  const FrameNavigationState::FrameID frame_id1(23, fake_rvh);
+  const FrameNavigationState::FrameID frame_id2(42, fake_rvh);
+  const GURL url1("http://www.google.com/");
+  const GURL url2("http://mail.google.com/");
+
+  // Create a main frame.
+  EXPECT_FALSE(navigation_state.CanSendEvents(frame_id1));
+  EXPECT_FALSE(navigation_state.IsValidFrame(frame_id1));
+  navigation_state.TrackFrame(frame_id1, frame_id0, url1, true, false, false);
+  navigation_state.SetNavigationCommitted(frame_id1);
+  EXPECT_TRUE(navigation_state.CanSendEvents(frame_id1));
+  EXPECT_TRUE(navigation_state.IsValidFrame(frame_id1));
+
+  // Add a sub frame.
+  EXPECT_FALSE(navigation_state.CanSendEvents(frame_id2));
+  EXPECT_FALSE(navigation_state.IsValidFrame(frame_id2));
+  navigation_state.TrackFrame(frame_id2, frame_id1, url2, false, false, false);
+  navigation_state.SetNavigationCommitted(frame_id2);
+  EXPECT_TRUE(navigation_state.CanSendEvents(frame_id2));
+  EXPECT_TRUE(navigation_state.IsValidFrame(frame_id2));
+
+  // Check frame state.
+  EXPECT_TRUE(navigation_state.IsMainFrame(frame_id1));
+  EXPECT_EQ(url1, navigation_state.GetUrl(frame_id1));
+  EXPECT_FALSE(navigation_state.IsMainFrame(frame_id2));
+  EXPECT_EQ(url2, navigation_state.GetUrl(frame_id2));
+  EXPECT_EQ(frame_id1, navigation_state.GetMainFrameID());
+
+  // Drop one frame.
+  navigation_state.FrameDetached(frame_id2);
+  EXPECT_TRUE(navigation_state.IsMainFrame(frame_id1));
+  EXPECT_EQ(url1, navigation_state.GetUrl(frame_id1));
+  EXPECT_EQ(frame_id1, navigation_state.GetMainFrameID());
+  EXPECT_FALSE(navigation_state.CanSendEvents(frame_id2));
+  EXPECT_FALSE(navigation_state.IsValidFrame(frame_id2));
+}
+
 }  // namespace extensions

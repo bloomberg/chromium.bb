@@ -2378,3 +2378,7 @@ IPC_SYNC_MESSAGE_CONTROL2_0(ViewHostMsg_PreCacheFontCharacters,
                             LOGFONT /* font_data */,
                             string16 /* characters */)
 #endif
+
+// Notifies the browser that the frame with the given id was detached.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_FrameDetached,
+                    int64 /* frame_id */)

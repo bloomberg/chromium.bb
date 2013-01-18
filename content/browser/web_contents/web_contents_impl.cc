@@ -751,6 +751,7 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenDateTimeDialog,
                         OnOpenDateTimeDialog)
 #endif
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FrameDetached, OnFrameDetached)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   message_source_ = NULL;
@@ -2412,6 +2413,11 @@ void WebContentsImpl::OnUpdateFaviconURL(
     const std::vector<FaviconURL>& candidates) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidUpdateFaviconURL(page_id, candidates));
+}
+
+void WebContentsImpl::OnFrameDetached(int64 frame_id) {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    FrameDetached(message_source_, frame_id));
 }
 
 void WebContentsImpl::DidBlock3DAPIs(const GURL& url,
