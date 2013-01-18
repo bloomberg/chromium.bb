@@ -1061,21 +1061,15 @@ void ContentViewCoreImpl::AddJavascriptInterface(
     jobject /* obj */,
     jobject object,
     jstring name,
-    jclass safe_annotation_clazz,
-    jobject retained_object_set) {
+    jclass safe_annotation_clazz) {
   ScopedJavaLocalRef<jobject> scoped_object(env, object);
   ScopedJavaLocalRef<jclass> scoped_clazz(env, safe_annotation_clazz);
-  JavaObjectWeakGlobalRef weak_retained_object_set(env, retained_object_set);
 
   // JavaBoundObject creates the NPObject with a ref count of 1, and
   // JavaBridgeDispatcherHostManager takes its own ref.
-  JavaBridgeDispatcherHostManager* java_bridge =
-      web_contents_->java_bridge_dispatcher_host_manager();
-  java_bridge->SetRetainedObjectSet(weak_retained_object_set);
-  NPObject* bound_object = JavaBoundObject::Create(scoped_object, scoped_clazz,
-                                                   java_bridge->AsWeakPtr());
-  java_bridge->AddNamedObject(ConvertJavaStringToUTF16(env, name),
-                              bound_object);
+  NPObject* bound_object = JavaBoundObject::Create(scoped_object, scoped_clazz);
+  web_contents_->java_bridge_dispatcher_host_manager()->AddNamedObject(
+      ConvertJavaStringToUTF16(env, name), bound_object);
   WebKit::WebBindings::releaseObject(bound_object);
 }
 

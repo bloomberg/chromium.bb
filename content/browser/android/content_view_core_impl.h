@@ -189,8 +189,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                               jobject obj,
                               jobject object,
                               jstring name,
-                              jclass safe_annotation_clazz,
-                              jobject retained_object_set);
+                              jclass safe_annotation_clazz);
   void RemoveJavascriptInterface(JNIEnv* env, jobject obj, jstring name);
   int GetNavigationHistory(JNIEnv* env, jobject obj, jobject context);
   void GetDirectedNavigationHistory(JNIEnv* env,

@@ -12,13 +12,10 @@
 #include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/java/java_method.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
 namespace content {
-
-class JavaBridgeDispatcherHostManager;
 
 // Wrapper around a Java object.
 //
@@ -35,11 +32,9 @@ class JavaBoundObject {
   // propagates to all Objects that get implicitly exposed as return values as
   // well. Returns an NPObject with a ref count of one which owns the
   // JavaBoundObject.
-  // See also comment below for |manager_|.
   static NPObject* Create(
       const base::android::JavaRef<jobject>& object,
-      const base::android::JavaRef<jclass>& safe_annotation_clazz,
-      const base::WeakPtr<JavaBridgeDispatcherHostManager>& manager);
+      base::android::JavaRef<jclass>& safe_annotation_clazz);
 
   virtual ~JavaBoundObject();
 
@@ -57,21 +52,13 @@ class JavaBoundObject {
  private:
   explicit JavaBoundObject(
       const base::android::JavaRef<jobject>& object,
-      const base::android::JavaRef<jclass>& safe_annotation_clazz,
-      const base::WeakPtr<JavaBridgeDispatcherHostManager>& manager_);
+      base::android::JavaRef<jclass>& safe_annotation_clazz);
 
   void EnsureMethodsAreSetUp() const;
 
   // The weak ref to the underlying Java object that this JavaBoundObject
   // instance represents.
   JavaObjectWeakGlobalRef java_object_;
-
-  // Keep a pointer back to the JavaBridgeDispatcherHostManager so that we
-  // can notify it when this JavaBoundObject is destroyed. JavaBoundObjects
-  // may outlive the manager so keep a WeakPtr. Note the WeakPtr may only be
-  // dereferenced on the UI thread.
-  base::WeakPtr<JavaBridgeDispatcherHostManager> manager_;
-
   // Map of public methods, from method name to Method instance. Multiple
   // entries will be present for overloaded methods. Note that we can't use
   // scoped_ptr in STL containers as we can't copy it.
