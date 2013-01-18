@@ -86,9 +86,7 @@ module_LTLIBRARIES =				\
 	$(wayland_backend)			\
 	$(headless_backend)
 
-# Do not install, since the binary produced via autotools is unusable.
-# The real backend is built by the Android build system.
-noinst_LTLIBRARIES = $(android_backend)
+noinst_LTLIBRARIES =
 
 if INSTALL_RPI_COMPOSITOR
 module_LTLIBRARIES += $(rpi_backend)
@@ -143,24 +141,6 @@ wayland_backend_la_CFLAGS =			\
 	$(WAYLAND_COMPOSITOR_CFLAGS)		\
 	$(GCC_CFLAGS)
 wayland_backend_la_SOURCES = compositor-wayland.c
-endif
-
-if ENABLE_ANDROID_COMPOSITOR
-android_backend = android-backend.la
-android_backend_la_LDFLAGS = -module -avoid-version
-android_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(ANDROID_COMPOSITOR_LIBS)
-android_backend_la_CFLAGS =			\
-	$(GCC_CFLAGS)				\
-	$(COMPOSITOR_CFLAGS)			\
-	$(ANDROID_COMPOSITOR_CFLAGS)
-android_backend_la_CXXFLAGS = $(GCC_CXXFLAGS) $(COMPOSITOR_CFLAGS)
-android_backend_la_SOURCES =			\
-	compositor-android.c			\
-	evdev.c					\
-	evdev.h					\
-	evdev-touchpad.c			\
-	android-framebuffer.cpp			\
-	android-framebuffer.h
 endif
 
 if ENABLE_RPI_COMPOSITOR

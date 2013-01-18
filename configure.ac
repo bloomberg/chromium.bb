@@ -126,17 +126,6 @@ AM_CONDITIONAL(ENABLE_HEADLESS_COMPOSITOR,
 	       test x$enable_headless_compositor = xyes)
 
 
-AC_ARG_ENABLE(android-compositor,
-	      AS_HELP_STRING([--disable-android-compositor],
-	                     [do not build-test the Android 4.0 backend]),,
-	      enable_android_compositor=yes)
-AM_CONDITIONAL(ENABLE_ANDROID_COMPOSITOR, test x$enable_android_compositor = xyes -a x$enable_egl = xyes)
-if test x$enable_android_compositor = xyes -a x$enable_egl = xyes; then
-  AC_DEFINE([BUILD_ANDROID_COMPOSITOR], [1], [Build the compositor for Android 4.0])
-  PKG_CHECK_MODULES(ANDROID_COMPOSITOR, [mtdev >= 1.1.0])
-fi
-
-
 AC_ARG_ENABLE(rpi-compositor,
 	      AS_HELP_STRING([--disable-rpi-compositor],
 	                     [do not build the Raspberry Pi backend]),,
