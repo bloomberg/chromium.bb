@@ -101,7 +101,6 @@ def GetBotStepMap():
         None),
       B('try-fyi-tests', std_test_steps, T(std_tests, ['--experimental']),
         None),
-      B('webkit-latest-tests', std_test_steps, T(['unit']), None),
       B('webkit-latest-webkit-tests', std_test_steps,
         T(['webkit_layout', 'webkit']), None),
 
@@ -118,6 +117,7 @@ def GetBotStepMap():
       ('try-clang-builder', 'main-clang-builder'),
       ('try-fyi-builder-dbg', 'fyi-builder-dbg'),
       ('try-tests', 'main-tests'),
+      ('webkit-latest-tests', 'main-tests'),
   ]
   for to_id, from_id in copy_map:
     assert to_id not in bot_map
