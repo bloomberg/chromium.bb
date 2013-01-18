@@ -408,7 +408,7 @@ are declared in build/common.gypi.
         Remove selected items
       </message>
       <message name="IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG" desc="Title of the button that will open the clear browsing data dialog.">
-        Clear all browsing data...
+        Clear browsing data...
       </message>
       <message name="IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING" desc="Warning shown before deleting">
         Are you sure you want to delete these pages from your history?
