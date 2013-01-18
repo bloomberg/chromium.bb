@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
@@ -521,8 +520,7 @@ void CheckAppListTaskbarShortcutOnFileThread(const FilePath& user_data_dir,
       .AddExtension(installer::kLnkExt));
   const bool should_show =
       CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kShowAppListShortcut) ||
-      chrome_launcher_support::IsAppLauncherPresent();
+          switches::kShowAppListShortcut);
 
   // This will not reshow a shortcut if it has been unpinned manually by the
   // user, as that will not delete the shortcut file.
