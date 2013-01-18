@@ -11,7 +11,7 @@ vars = {
     'git_url':
          'https://chromium.googlesource.com',
     'webkit_rev':
-         '@492119092ffb1707a9997d642fd2ddd6adc9841a'
+         '@baa155feaf0bfad4ec113e26bacba8c92116370b'
 }
 
 deps = {
@@ -132,7 +132,7 @@ deps = {
     'src/tools/grit':
         Var('git_url') + '/external/grit-i18n.git@2de007ecdc529c1019a90e12e47bdb6694f0a01c',
     'src/tools/gyp':
-        Var('git_url') + '/external/gyp.git@da4eb6493589791252c488509b4c45c238d2455a',
+        Var('git_url') + '/external/gyp.git@a31f072f1af2ce491aa13b144b08259f2fa8728e',
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@6be0a66a1ebd7ebc5abc1b2f405a945f6d871521',
     'src/tools/swarm_client':
