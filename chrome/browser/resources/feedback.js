@@ -95,6 +95,13 @@ function enableScreenshots() {
  */
 function onFileSelected(evtFileSelected) {
   var file = evtFileSelected.target.files[0];
+  if (!file) {
+    // User canceled file selection.
+    $('attach-file-checkbox').checked = false;
+    attachFileBinaryData = null;
+    return;
+  }
+
   if (file.size > MAX_ATTACH_FILE_SIZE) {
     $('attach-error').hidden = false;
 
