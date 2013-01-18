@@ -642,6 +642,9 @@ const char kEnableStackedTabStrip[]         = "enable-stacked-tab-strip";
 // Enables experimental suggestions pane in New Tab page.
 const char kEnableSuggestionsTabPage[]      = "enable-suggestions-ntp";
 
+// Enables syncing of dictionary.
+const char kEnableSyncDictionary[] = "enable-sync-dictionary";
+
 // Enables context menu for selecting groups of tabs.
 const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";
 

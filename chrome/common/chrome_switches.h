@@ -179,6 +179,7 @@ extern const char kEnableSpdyCredentialFrames[];
 extern const char kEnableSpellingAutoCorrect[];
 extern const char kEnableStackedTabStrip[];
 extern const char kEnableSuggestionsTabPage[];
+extern const char kEnableSyncDictionary[];
 extern const char kEnableTabGroupsContextMenu[];
 extern const char kEnableWatchdog[];
 extern const char kEnableWebSocketOverSpdy[];

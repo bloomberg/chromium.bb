@@ -1195,7 +1195,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableOverscrollHistoryNavigation)
   },
 #endif
-
   {
     "enable-touch-drag-drop",
     IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_NAME,
@@ -1230,6 +1229,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_RTC_DATACHANNELS_DESCRIPTION,
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableDataChannels)
+  },
+  {
+    "enable-sync-dictionary",
+    IDS_FLAGS_ENABLE_SYNC_DICTIONARY_NAME,
+    IDS_FLAGS_ENABLE_SYNC_DICTIONARY_DESCRIPTION,
+    kOsWin | kOsCrOS | kOsLinux,
+    SINGLE_VALUE_TYPE(switches::kEnableSyncDictionary)
   },
 };
 
