@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/safe_numerics.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "win8/metro_driver/chrome_app_view.h"
 #include "win8/metro_driver/winrt_utils.h"
@@ -472,7 +473,9 @@ void MetroSetPrintPageContent(size_t page_number,
       NULL, TRUE, metafile_stream.GetAddressOf());
   if (metafile_stream.Get() != NULL) {
     ULONG bytes_written = 0;
-    hr = metafile_stream->Write(data, data_size, &bytes_written);
+    hr = metafile_stream->Write(data,
+                                base::checked_numeric_cast<ULONG>(data_size),
+                                &bytes_written);
     LOG_IF(ERROR, FAILED(hr)) << "Failed to Write to Stream " << std::hex << hr;
     DCHECK(bytes_written == data_size);
 

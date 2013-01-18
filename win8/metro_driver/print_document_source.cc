@@ -8,6 +8,7 @@
 #include <windows.graphics.display.h>
 
 #include "base/logging.h"
+#include "base/safe_numerics.h"
 
 
 namespace {
@@ -250,8 +251,9 @@ STDMETHODIMP PrintDocumentSource::Paginate(uint32 page,
   // A page_count of 0 means abort...
   if (page_count == 0)
     return S_FALSE;
-  hr = dxgi_preview_target_->SetJobPageCount(PageCountType::FinalPageCount,
-                                             page_count);
+  hr = dxgi_preview_target_->SetJobPageCount(
+           PageCountType::FinalPageCount,
+           base::checked_numeric_cast<UINT32>(page_count));
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to SetJobPageCount " << std::hex << hr;
     return hr;
