@@ -50,6 +50,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/startup_metric_utils.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -519,6 +520,9 @@ void ProfileIOData::LazyInitialize() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (initialized_)
     return;
+
+  startup_metric_utils::ScopedSlowStartupUMA
+      scoped_timer("Startup.SlowStartupProfileIODataInit");
 
   // TODO(jhawkins): Remove once crbug.com/102004 is fixed.
   CHECK(initialized_on_UI_thread_);
