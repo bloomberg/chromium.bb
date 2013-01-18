@@ -69,7 +69,7 @@ class GPU_EXPORT BufferManager {
 
    private:
     friend class BufferManager;
-    friend class BufferManagerTest;
+    friend class BufferManagerTestBase;
     friend class base::RefCounted<BufferInfo>;
 
     // Represents a range in a buffer.
