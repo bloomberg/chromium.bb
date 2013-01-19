@@ -242,3 +242,17 @@ TEST(PathTest, Invalid) {
   test.Append("../../../foo");
   EXPECT_EQ("../foo", test.Join());
 }
+
+TEST(PathTest, Range) {
+  Path p("/an/absolute/path");
+
+  // p's parts should be ["/", "an", "absolute", "path"].
+  EXPECT_EQ("/an/absolute/path", p.Range(0, 4));
+  EXPECT_EQ("an/absolute/path", p.Range(1, 4));
+  EXPECT_EQ("absolute/path", p.Range(2, 4));
+  EXPECT_EQ("path", p.Range(3, 4));
+
+  EXPECT_EQ("/an/absolute", p.Range(0, 3));
+  EXPECT_EQ("an/absolute", p.Range(1, 3));
+  EXPECT_EQ("absolute", p.Range(2, 3));
+}

@@ -65,6 +65,7 @@ protected:
 
   friend class MountDev;
   friend class MountHtml5Fs;
+  friend class MountHttp;
   friend class MountMem;
   friend class MountNodeDir;
 };

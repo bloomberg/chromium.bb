@@ -283,6 +283,13 @@ static PP_Bool Instance_DidCreate(PP_Instance instance,
       0,  /* mountflags */
       "type=PERSISTENT,expected_size=1048576");  /* data */
 
+  mount(
+      "",  /* source. Use relative URL */
+      "/http",  /* target */
+      "httpfs",  /* filesystemtype */
+      0,  /* mountflags */
+      "");  /* data */
+
   pthread_create(&g_handle_message_thread, NULL, &HandleMessageThread, NULL);
   InitializeMessageQueue();
 

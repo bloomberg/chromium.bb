@@ -69,3 +69,26 @@ BEGIN_INTERFACE(VarInterface, PPB_Var, PPB_VAR_INTERFACE)
   METHOD2(VarInterface, struct PP_Var, VarFromUtf8, const char *, uint32_t)
   METHOD2(VarInterface, const char*, VarToUtf8, PP_Var, uint32_t*)
 END_INTERFACE(VarInterface, PPB_Var)
+
+BEGIN_INTERFACE(URLLoaderInterface, PPB_URLLoader, PPB_URLLOADER_INTERFACE)
+  METHOD1(URLLoaderInterface, PP_Resource, Create, PP_Instance)
+  METHOD3(URLLoaderInterface, int32_t, Open, PP_Resource, PP_Resource,
+          PP_CompletionCallback)
+  METHOD1(URLLoaderInterface, PP_Resource, GetResponseInfo, PP_Resource)
+  METHOD4(URLLoaderInterface, int32_t, ReadResponseBody, PP_Resource, void*,
+          int32_t, PP_CompletionCallback)
+  METHOD1(URLLoaderInterface, void, Close, PP_Resource)
+END_INTERFACE(URLLoaderInterface, PPB_URLLoader)
+
+BEGIN_INTERFACE(URLRequestInfoInterface, PPB_URLRequestInfo,
+                PPB_URLREQUESTINFO_INTERFACE)
+  METHOD1(URLRequestInfoInterface, PP_Resource, Create, PP_Instance)
+  METHOD3(URLRequestInfoInterface, PP_Bool, SetProperty, PP_Resource,
+          PP_URLRequestProperty, PP_Var)
+END_INTERFACE(URLRequestInfoInterface, PPB_URLRequestInfo)
+
+BEGIN_INTERFACE(URLResponseInfoInterface, PPB_URLResponseInfo,
+                PPB_URLRESPONSEINFO_INTERFACE)
+  METHOD2(URLResponseInfoInterface, PP_Var, GetProperty, PP_Resource,
+          PP_URLResponseProperty)
+END_INTERFACE(URLResponseInfoInterface, PPB_URLResponseInfo)

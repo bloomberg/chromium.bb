@@ -9,17 +9,17 @@
 ScopedResource::ScopedResource(PepperInterface* ppapi, PP_Resource resource)
     : ppapi_(ppapi),
       resource_(resource) {
-  ppapi_->AddRefResource(resource_);
-}
-
-ScopedResource::ScopedResource(PepperInterface* ppapi, PP_Resource resource,
-                               NoAddRef)
-    : ppapi_(ppapi),
-      resource_(resource) {
 }
 
 ScopedResource::~ScopedResource() {
-  ppapi_->ReleaseResource(resource_);
+  if (resource_)
+    ppapi_->ReleaseResource(resource_);
+}
+
+PP_Resource ScopedResource::Release() {
+  PP_Resource result = resource_;
+  resource_ = 0;
+  return result;
 }
 
 int PPErrorToErrno(int32_t err) {

@@ -78,6 +78,22 @@ void nacl_mounts_init_ppapi(PP_Instance instance,
  *       "expected_size": The expected file-system size. Note that this does
  *           not request quota -- you must do that from JavaScript.
  *
+ *   "httpfs": A filesystem that reads from a URL via HTTP.
+ *     source: The root URL to read from. All paths read from this filesystem
+ *             will be appended to this root.
+ *             e.g. If source == "http://example.com/path", reading from
+ *             "foo/bar.txt" will attempt to read from the URL
+ *             "http://example.com/path/foo/bar.txt".
+ *     data: A string of parameters:
+ *       "allow_cross_origin_request": If "true", then reads from this
+ *           filesystem will follow the CORS standard for cross-origin requests.
+ *           See http://www.w3.org/TR/access-control.
+ *       "allow_credentials": If "true", credentials are sent with cross-origin
+ *           requests. If false, no credentials are sent with the request and
+ *           cookies are ignored in the response.
+ *       All other key/value pairs are assumed to be headers to use with
+ *       HTTP requests.
+ *
  *
  * @param[in] source Depends on the filesystem type. See above.
  * @param[in] target The absolute path to mount the filesystem.

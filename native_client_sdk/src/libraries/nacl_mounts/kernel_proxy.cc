@@ -14,6 +14,7 @@
 #include "nacl_mounts/mount.h"
 #include "nacl_mounts/mount_dev.h"
 #include "nacl_mounts/mount_html5fs.h"
+#include "nacl_mounts/mount_http.h"
 #include "nacl_mounts/mount_mem.h"
 #include "nacl_mounts/mount_node.h"
 #include "nacl_mounts/osstat.h"
@@ -48,6 +49,7 @@ void KernelProxy::Init(PepperInterface* ppapi) {
   factories_["memfs"] = MountMem::Create<MountMem>;
   factories_["dev"] = MountDev::Create<MountDev>;
   factories_["html5fs"] = MountHtml5Fs::Create<MountHtml5Fs>;
+  factories_["httpfs"] = MountHttp::Create<MountHttp>;
 
   // Create memory mount at root
   StringMap_t smap;

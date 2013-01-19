@@ -140,6 +140,14 @@ function startsWith(s, prefix) {
 
 function logMessage(msg) {
   var logEl = document.getElementById('log');
+
+  // Perform some basic escaping.
+  msg = msg.replace(/&/g, '&amp;')
+           .replace(/</g, '&lt;')
+           .replace(/>/g, '&gt;')
+           .replace(/"/g, '&quot;')
+           .replace(/'/g, '&apos;');
+
   logEl.innerHTML += msg + '<br>';
 }
 

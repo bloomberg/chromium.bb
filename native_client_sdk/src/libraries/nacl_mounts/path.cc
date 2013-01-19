@@ -146,14 +146,17 @@ std::string Path::Range(const StringArray_t& paths, size_t start, size_t end) {
 
   if (end > paths.size()) end = paths.size();
 
+  // If this is an absolute path, paths[0] == "/". In this case, we don't want
+  // to add an additional / separator.
   if (start == 0 && end > 0 && paths[0] == "/") {
-    if (end == 1) return std::string("/");
+    out_path += "/";
     index++;
   }
 
   for (; index < end; index++) {
-    if (index) out_path += "/";
     out_path += paths[index];
+    if (index < end - 1)
+      out_path += "/";
   }
 
   return out_path;

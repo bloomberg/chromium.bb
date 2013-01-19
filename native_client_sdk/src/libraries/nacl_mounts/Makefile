@@ -42,7 +42,7 @@ TARGET=nacl_mounts
 #
 SOURCES:=kernel_handle.cc kernel_intercept.cc kernel_object.cc kernel_proxy.cc
 SOURCES+=kernel_wrap_glibc.cc kernel_wrap_newlib.cc kernel_wrap_win.cc
-SOURCES+=mount.cc mount_dev.cc mount_html5fs.cc mount_mem.cc
+SOURCES+=mount.cc mount_dev.cc mount_html5fs.cc mount_http.cc mount_mem.cc
 SOURCES+=mount_node.cc mount_node_dir.cc mount_node_html5fs.cc mount_node_mem.cc
 SOURCES+=nacl_mounts.cc path.cc pepper_interface.cc real_pepper_interface.cc
 

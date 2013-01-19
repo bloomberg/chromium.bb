@@ -76,24 +76,21 @@ int MountNodeHtml5Fs::GetDents(size_t offs, struct dirent* pdir, size_t size) {
     return -1;
   }
 
-  PP_Resource directory_reader_resource =
-      mount_->ppapi()->GetDirectoryReaderInterface()->Create(fileref_resource_);
-  if (!directory_reader_resource) {
+  ScopedResource directory_reader(
+      mount_->ppapi(),
+      mount_->ppapi()->GetDirectoryReaderInterface()->Create(
+          fileref_resource_));
+  if (!directory_reader.pp_resource()) {
     errno = ENOSYS;
     return -1;
   }
-
-  ScopedResource scoped_directory_reader(
-      mount_->ppapi(),
-      directory_reader_resource,
-      ScopedResource::NoAddRef());
 
   std::vector<struct dirent> dirents;
   PP_DirectoryEntry_Dev directory_entry = {0};
   while (1) {
     int32_t result =
         mount_->ppapi()->GetDirectoryReaderInterface()->GetNextEntry(
-            directory_reader_resource, &directory_entry,
+            directory_reader.pp_resource(), &directory_entry,
             PP_BlockUntilComplete());
     if (result != PP_OK) {
       errno = PPErrorToErrno(result);

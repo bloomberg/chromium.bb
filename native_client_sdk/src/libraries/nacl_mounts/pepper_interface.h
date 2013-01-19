@@ -17,6 +17,9 @@
 #include <ppapi/c/ppb_file_system.h>
 #include <ppapi/c/ppb_messaging.h>
 #include <ppapi/c/ppb_messaging.h>
+#include <ppapi/c/ppb_url_loader.h>
+#include <ppapi/c/ppb_url_request_info.h>
+#include <ppapi/c/ppb_url_response_info.h>
 #include <ppapi/c/ppb_var.h>
 
 #include <utils/macros.h>
@@ -79,11 +82,14 @@ class PepperInterface {
 
 class ScopedResource {
  public:
-  struct NoAddRef {};
-
+  // Does not AddRef by default.
   ScopedResource(PepperInterface* ppapi, PP_Resource resource);
-  ScopedResource(PepperInterface* ppapi, PP_Resource resource, NoAddRef);
   ~ScopedResource();
+
+  PP_Resource pp_resource() { return resource_; }
+
+  // Return the resource without decrementing its refcount.
+  PP_Resource Release();
 
  private:
   PepperInterface* ppapi_;

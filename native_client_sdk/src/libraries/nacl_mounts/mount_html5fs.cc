@@ -69,18 +69,16 @@ int MountHtml5Fs::Mkdir(const Path& path, int permissions) {
     return -1;
   }
 
-  PP_Resource fileref_resource = ppapi()->GetFileRefInterface()->Create(
-      filesystem_resource_, path.Join().c_str());
-  if (!fileref_resource) {
+  ScopedResource fileref_resource(
+      ppapi(), ppapi()->GetFileRefInterface()->Create(filesystem_resource_,
+                                                      path.Join().c_str()));
+  if (!fileref_resource.pp_resource()) {
     errno = EINVAL;
     return -1;
   }
 
-  ScopedResource scoped_resource(ppapi_, fileref_resource,
-                                 ScopedResource::NoAddRef());
-
   int32_t result = ppapi()->GetFileRefInterface()->MakeDirectory(
-      fileref_resource, PP_FALSE, PP_BlockUntilComplete());
+      fileref_resource.pp_resource(), PP_FALSE, PP_BlockUntilComplete());
   if (result != PP_OK) {
     errno = PPErrorToErrno(result);
     return -1;
@@ -99,18 +97,16 @@ int MountHtml5Fs::Remove(const Path& path) {
     return -1;
   }
 
-  PP_Resource fileref_resource = ppapi()->GetFileRefInterface()->Create(
-      filesystem_resource_, path.Join().c_str());
-  if (!fileref_resource) {
+  ScopedResource fileref_resource(
+      ppapi(), ppapi()->GetFileRefInterface()->Create(filesystem_resource_,
+                                                      path.Join().c_str()));
+  if (!fileref_resource.pp_resource()) {
     errno = EINVAL;
     return -1;
   }
 
-  ScopedResource scoped_resource(ppapi_, fileref_resource,
-                                 ScopedResource::NoAddRef());
-
   int32_t result = ppapi()->GetFileRefInterface()->Delete(
-      fileref_resource,
+      fileref_resource.pp_resource(),
       PP_BlockUntilComplete());
   if (result != PP_OK) {
     errno = PPErrorToErrno(result);
