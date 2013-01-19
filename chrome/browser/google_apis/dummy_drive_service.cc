@@ -47,7 +47,7 @@ void DummyDriveService::GetResourceEntry(
 void DummyDriveService::GetAccountMetadata(
     const GetAccountMetadataCallback& callback) {}
 
-void DummyDriveService::GetApplicationInfo(const GetDataCallback& callback) {}
+void DummyDriveService::GetAppList(const GetAppListCallback& callback) {}
 
 void DummyDriveService::DeleteResource(const GURL& edit_url,
                                        const EntryActionCallback& callback) {}

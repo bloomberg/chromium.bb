@@ -9,6 +9,7 @@
 #include "base/json/json_reader.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -52,7 +53,7 @@ class DriveSchedulerTest : public testing::Test {
         "gdata/root_feed.json");
     fake_drive_service_->LoadAccountMetadataForWapi(
         "gdata/account_metadata.json");
-    fake_drive_service_->LoadApplicationInfoForDriveApi(
+    fake_drive_service_->LoadAppListForDriveApi(
         "drive/applist.json");
 
     scheduler_.reset(new DriveScheduler(profile_.get(),
@@ -111,20 +112,21 @@ class DriveSchedulerTest : public testing::Test {
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
 };
 
-TEST_F(DriveSchedulerTest, GetApplicationInfo) {
+TEST_F(DriveSchedulerTest, GetAppList) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  scoped_ptr<base::Value> value;
+  scoped_ptr<google_apis::AppList> app_list;
 
-  scheduler_->GetApplicationInfo(
-      base::Bind(&google_apis::test_util::CopyResultsFromGetDataCallback,
-                 &error,
-                 &value));
+  scheduler_->GetAppList(
+      base::Bind(
+          &google_apis::test_util::CopyResultsFromGetAppListCallback,
+          &error,
+          &app_list));
   google_apis::test_util::RunBlockingPoolTask();
 
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
-  ASSERT_TRUE(value);
+  ASSERT_TRUE(app_list);
 }
 
 TEST_F(DriveSchedulerTest, GetAccountMetadata) {

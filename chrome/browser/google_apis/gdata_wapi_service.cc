@@ -311,8 +311,7 @@ void GDataWapiService::GetAccountMetadata(
           base::Bind(&ParseAccounetMetadataAndRun, callback)));
 }
 
-void GDataWapiService::GetApplicationInfo(
-    const GetDataCallback& callback) {
+void GDataWapiService::GetAppList(const GetAppListCallback& callback) {
   // For WAPI, AccountMetadata includes Drive application information, and
   // this function is not used.
   NOTREACHED();

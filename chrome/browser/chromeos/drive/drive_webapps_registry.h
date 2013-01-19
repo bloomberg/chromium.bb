@@ -64,8 +64,7 @@ class DriveWebAppsRegistry {
       const std::string& web_store_id);
   virtual void UpdateFromFeed(
       const google_apis::AccountMetadataFeed& metadata);
-  virtual void UpdateFromApplicationList(
-      const google_apis::AppList& applist);
+  virtual void UpdateFromAppList(const google_apis::AppList& applist);
 
  private:
   // Defines WebApp application details that are associated with a given

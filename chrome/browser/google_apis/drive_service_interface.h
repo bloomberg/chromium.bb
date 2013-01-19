@@ -17,6 +17,7 @@ class Profile;
 
 namespace google_apis {
 
+class AppList;
 class AccountMetadataFeed;
 class ResourceList;
 class OperationRegistry;
@@ -73,6 +74,11 @@ typedef base::Callback<void(GDataErrorCode error,
 typedef base::Callback<void(GDataErrorCode error,
                             scoped_ptr<AccountMetadataFeed> account_metadata)>
     GetAccountMetadataCallback;
+
+// Callback used for GetApplicationInfo().
+typedef base::Callback<void(GDataErrorCode erro,
+                            scoped_ptr<AppList> app_list)>
+    GetAppListCallback;
 
 // Callback used for AuthorizeApp(). |open_url| is used to open the target
 // file with the authorized app.
@@ -164,7 +170,7 @@ class DriveServiceInterface {
   // Gets the application information from the server.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
-  virtual void GetApplicationInfo(const GetDataCallback& callback) = 0;
+  virtual void GetAppList(const GetAppListCallback& callback) = 0;
 
   // Deletes a resource identified by its |edit_url|.
   // Upon completion, invokes |callback| with results on the calling thread.

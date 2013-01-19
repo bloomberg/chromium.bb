@@ -45,8 +45,7 @@ class MockDriveService : public DriveServiceInterface {
           const GetResourceEntryCallback& callback));
   MOCK_METHOD1(GetAccountMetadata,
       void(const GetAccountMetadataCallback& callback));
-  MOCK_METHOD1(GetApplicationInfo,
-      void(const GetDataCallback& callback));
+  MOCK_METHOD1(GetAppList, void(const GetAppListCallback& callback));
   MOCK_METHOD2(DeleteResource,
       void(const GURL& edit_url,
           const EntryActionCallback& callback));

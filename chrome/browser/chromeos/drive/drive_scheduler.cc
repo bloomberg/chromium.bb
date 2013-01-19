@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/rand_util.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -86,13 +87,13 @@ void DriveScheduler::GetAccountMetadata(
   StartJobLoop();
 }
 
-void DriveScheduler::GetApplicationInfo(
-    const google_apis::GetDataCallback& callback) {
+void DriveScheduler::GetAppList(
+    const google_apis::GetAppListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_GET_APPLICATION_INFO));
-  new_job->get_data_callback = callback;
+  scoped_ptr<QueueEntry> new_job(new QueueEntry(TYPE_GET_APP_LIST));
+  new_job->get_app_list_callback = callback;
 
   QueueJob(new_job.Pass());
 
@@ -310,9 +311,9 @@ void DriveScheduler::DoJobLoop() {
     }
     break;
 
-    case TYPE_GET_APPLICATION_INFO: {
-      drive_service_->GetApplicationInfo(
-          base::Bind(&DriveScheduler::OnGetDataJobDone,
+    case TYPE_GET_APP_LIST: {
+      drive_service_->GetAppList(
+          base::Bind(&DriveScheduler::OnGetAppListJobDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      job_id));
     }
@@ -561,9 +562,12 @@ void DriveScheduler::OnGetAccountMetadataJobDone(
   job_info->get_account_metadata_callback.Run(error, account_metadata.Pass());
 }
 
-void DriveScheduler::OnGetDataJobDone(int job_id,
-                                      google_apis::GDataErrorCode error,
-                                      scoped_ptr<base::Value> feed_data) {
+void DriveScheduler::OnGetAppListJobDone(
+    int job_id,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<google_apis::AppList> app_list) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   DriveFileError drive_error(util::GDataToDriveFileError(error));
 
   scoped_ptr<QueueEntry> job_info = OnJobDone(job_id, drive_error);
@@ -572,8 +576,7 @@ void DriveScheduler::OnGetDataJobDone(int job_id,
     return;
 
   // Handle the callback.
-  DCHECK(!job_info->get_data_callback.is_null());
-  job_info->get_data_callback.Run(error, feed_data.Pass());
+  job_info->get_app_list_callback.Run(error, app_list.Pass());
 }
 
 void DriveScheduler::OnEntryActionJobDone(int job_id,

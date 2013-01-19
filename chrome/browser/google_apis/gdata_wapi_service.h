@@ -71,7 +71,7 @@ class GDataWapiService : public DriveServiceInterface,
       const GetResourceEntryCallback& callback) OVERRIDE;
   virtual void GetAccountMetadata(
       const GetAccountMetadataCallback& callback) OVERRIDE;
-  virtual void GetApplicationInfo(const GetDataCallback& callback) OVERRIDE;
+  virtual void GetAppList(const GetAppListCallback& callback) OVERRIDE;
   virtual void DeleteResource(const GURL& edit_url,
                               const EntryActionCallback& callback) OVERRIDE;
   virtual void DownloadHostedDocument(

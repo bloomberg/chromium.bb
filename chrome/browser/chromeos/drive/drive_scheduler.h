@@ -30,7 +30,7 @@ class DriveScheduler
   // Enum representing the type of job.
   enum JobType {
     TYPE_GET_ACCOUNT_METADATA,
-    TYPE_GET_APPLICATION_INFO,
+    TYPE_GET_APP_LIST,
     TYPE_GET_RESOURCE_LIST,
     TYPE_GET_RESOURCE_ENTRY,
     TYPE_DELETE_RESOURCE,
@@ -90,9 +90,9 @@ class DriveScheduler
   void GetAccountMetadata(
       const google_apis::GetAccountMetadataCallback& callback);
 
-  // Adds a GetApplicationInfo operation to the queue.
+  // Adds a GetAppList operation to the queue.
   // |callback| must not be null.
-  void GetApplicationInfo(const google_apis::GetDataCallback& callback);
+  void GetAppList(const google_apis::GetAppListCallback& callback);
 
   // Adds a GetResourceList operation to the queue.
   // |callback| must not be null.
@@ -204,11 +204,6 @@ class DriveScheduler
     GURL parent_content_url;
     FilePath::StringType directory_name;
 
-    // Callback for operations that take a GetDataCallback.
-    // Used by:
-    //   TYPE_GET_APPLICATION_INFO,
-    google_apis::GetDataCallback get_data_callback;
-
     // Callback for operations that take a GetResourceListCallback.
     // Used by:
     //   TYPE_GET_RESOURCE_LIST
@@ -225,6 +220,11 @@ class DriveScheduler
     // Used by:
     //   TYPE_GET_ACCOUNT_METADATA,
     google_apis::GetAccountMetadataCallback get_account_metadata_callback;
+
+    // Callback for operations that take a GetAppListCallback.
+    // Used by:
+    //   TYPE_GET_APP_LIST,
+    google_apis::GetAppListCallback get_app_list_callback;
 
     // Callback for operations that take a EntryActionCallback.
     // Used by:
@@ -289,10 +289,11 @@ class DriveScheduler
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::AccountMetadataFeed> account_metadata);
 
-  // Callback for job finishing with a GetDataCallback.
-  void OnGetDataJobDone(int job_id,
-                        google_apis::GDataErrorCode error,
-                        scoped_ptr<base::Value> feed_data);
+  // Callback for job finishing with a GetAppListCallback.
+  void OnGetAppListJobDone(
+      int job_id,
+      google_apis::GDataErrorCode error,
+      scoped_ptr<google_apis::AppList> app_list);
 
   // Callback for job finishing with a EntryActionCallback.
   void OnEntryActionJobDone(int job_id, google_apis::GDataErrorCode error);

@@ -267,8 +267,8 @@ void DriveFeedLoader::ReloadFromServerIfNeeded(
     // Drive v2 needs a separate application list fetch operation.
     // TODO(haruki): Application list rarely changes and is not necessarily
     // refreshed as often as files.
-    scheduler_->GetApplicationInfo(
-        base::Bind(&DriveFeedLoader::OnGetApplicationList,
+    scheduler_->GetAppList(
+        base::Bind(&DriveFeedLoader::OnGetAppList,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -337,19 +337,16 @@ void DriveFeedLoader::CompareChangestampsAndLoadIfNeeded(
   LoadFromServer(load_params.Pass());
 }
 
-void DriveFeedLoader::OnGetApplicationList(google_apis::GDataErrorCode status,
-                                           scoped_ptr<base::Value> json) {
+void DriveFeedLoader::OnGetAppList(google_apis::GDataErrorCode status,
+                                   scoped_ptr<google_apis::AppList> app_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DriveFileError error = util::GDataToDriveFileError(status);
   if (error != DRIVE_FILE_OK)
     return;
 
-  if (json.get()) {
-    scoped_ptr<google_apis::AppList> applist(
-        google_apis::AppList::CreateFrom(*json));
-    if (applist.get())
-      webapps_registry_->UpdateFromApplicationList(*applist.get());
+  if (app_list.get()) {
+    webapps_registry_->UpdateFromAppList(*app_list);
   }
 }
 

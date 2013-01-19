@@ -10,6 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -81,7 +82,7 @@ bool FakeDriveService::LoadAccountMetadataForWapi(
   return account_metadata_value_;
 }
 
-bool FakeDriveService::LoadApplicationInfoForDriveApi(
+bool FakeDriveService::LoadAppListForDriveApi(
     const std::string& relative_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   app_info_value_ = test_util::LoadJSONFile(relative_path);
@@ -263,13 +264,12 @@ void FakeDriveService::GetAccountMetadata(
                  base::Passed(&account_metadata)));
 }
 
-void FakeDriveService::GetApplicationInfo(
-    const GetDataCallback& callback) {
+void FakeDriveService::GetAppList(const GetAppListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   if (offline_) {
-    scoped_ptr<base::Value> null;
+    scoped_ptr<AppList> null;
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(callback,
@@ -278,14 +278,10 @@ void FakeDriveService::GetApplicationInfo(
     return;
   }
 
-  scoped_ptr<base::Value> copied_app_info_value(
-      app_info_value_->DeepCopy());
+  scoped_ptr<AppList> app_list(AppList::CreateFrom(*app_info_value_));
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback,
-                 HTTP_SUCCESS,
-                 base::Passed(&copied_app_info_value)));
-
+      base::Bind(callback, HTTP_SUCCESS, base::Passed(&app_list)));
 }
 
 void FakeDriveService::DeleteResource(

@@ -218,7 +218,7 @@ void DriveWebAppsRegistry::UpdateFromFeed(
   }
 }
 
-void DriveWebAppsRegistry::UpdateFromApplicationList(
+void DriveWebAppsRegistry::UpdateFromAppList(
     const google_apis::AppList& applist) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

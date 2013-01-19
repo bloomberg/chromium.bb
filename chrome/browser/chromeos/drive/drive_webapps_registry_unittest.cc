@@ -134,7 +134,7 @@ TEST_F(DriveWebAppsRegistryTest, LoadAndFindDriveWebApps) {
       google_apis::AppList::CreateFrom(*document));
   ASSERT_TRUE(app_list.get());
   scoped_ptr<DriveWebAppsRegistry> web_apps(new DriveWebAppsRegistry);
-  web_apps->UpdateFromApplicationList(*app_list.get());
+  web_apps->UpdateFromAppList(*app_list.get());
 
   // Find by primary extension 'exe'.
   ScopedVector<DriveWebAppInfo> ext_results;

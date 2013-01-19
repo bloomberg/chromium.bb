@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_server/http_server.h"
 #include "chrome/common/chrome_paths.h"
@@ -124,6 +125,15 @@ void CopyResultsFromGetAccountMetadataCallback(
     GDataErrorCode error_in,
     scoped_ptr<AccountMetadataFeed> account_metadata_in) {
   account_metadata_out->swap(account_metadata_in);
+  *error_out = error_in;
+}
+
+void CopyResultsFromGetAppListCallback(
+    GDataErrorCode* error_out,
+    scoped_ptr<AppList>* app_list_out,
+    GDataErrorCode error_in,
+    scoped_ptr<AppList> app_list_in) {
+  *app_list_out = app_list_in.Pass();
   *error_out = error_in;
 }
 

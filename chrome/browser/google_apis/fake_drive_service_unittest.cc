@@ -8,6 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -252,38 +253,38 @@ TEST_F(FakeDriveServiceTest, GetAccountMetadata_Offline) {
   EXPECT_FALSE(account_metadata);
 }
 
-TEST_F(FakeDriveServiceTest, GetApplicationInfo) {
-  ASSERT_TRUE(fake_service_.LoadApplicationInfoForDriveApi(
+TEST_F(FakeDriveServiceTest, GetAppList) {
+  ASSERT_TRUE(fake_service_.LoadAppListForDriveApi(
       "drive/applist.json"));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<base::Value> app_info;
-  fake_service_.GetApplicationInfo(
-      base::Bind(&test_util::CopyResultsFromGetDataCallback,
+  scoped_ptr<AppList> app_list;
+  fake_service_.GetAppList(
+      base::Bind(&test_util::CopyResultsFromGetAppListCallback,
                  &error,
-                 &app_info));
+                 &app_list));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
 
-  ASSERT_TRUE(app_info);
+  ASSERT_TRUE(app_list);
 }
 
-TEST_F(FakeDriveServiceTest, GetApplicationInfo_Offline) {
-  ASSERT_TRUE(fake_service_.LoadApplicationInfoForDriveApi(
+TEST_F(FakeDriveServiceTest, GetAppList_Offline) {
+  ASSERT_TRUE(fake_service_.LoadAppListForDriveApi(
       "drive/applist.json"));
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<base::Value> app_info;
-  fake_service_.GetApplicationInfo(
-      base::Bind(&test_util::CopyResultsFromGetDataCallback,
+  scoped_ptr<AppList> app_list;
+  fake_service_.GetAppList(
+      base::Bind(&test_util::CopyResultsFromGetAppListCallback,
                  &error,
-                 &app_info));
+                 &app_list));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(GDATA_NO_CONNECTION, error);
-  EXPECT_FALSE(app_info);
+  EXPECT_FALSE(app_list);
 }
 
 TEST_F(FakeDriveServiceTest, GetResourceEntry_ExistingFile) {
