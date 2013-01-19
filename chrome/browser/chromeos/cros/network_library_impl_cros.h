@@ -209,8 +209,6 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   // Map of monitored devices.
   NetworkWatcherMap monitored_devices_;
 
-  base::Time wifi_scan_request_time_;
-
   DISALLOW_COPY_AND_ASSIGN(NetworkLibraryImplCros);
 };
 

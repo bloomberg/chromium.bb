@@ -136,6 +136,8 @@ class HoverHighlightView : public ActionableView {
     return text_label_;
   }
 
+  bool hover() const { return hover_; }
+
  private:
   // Overridden from ActionableView.
   virtual bool PerformAction(const ui::Event& event) OVERRIDE;

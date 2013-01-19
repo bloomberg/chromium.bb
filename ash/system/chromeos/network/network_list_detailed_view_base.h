@@ -55,6 +55,9 @@ class NetworkListDetailedViewBase : public NetworkDetailedView,
   virtual void ClickedOn(views::View* sender) OVERRIDE;
 
  private:
+  typedef std::map<views::View*, std::string> NetworkMap;
+  typedef std::map<std::string, HoverHighlightView*> ServicePathMap;
+
   virtual void AppendHeaderButtons() = 0;
   virtual void UpdateHeaderButtons() = 0;
   virtual void AppendNetworkEntries() = 0;
@@ -70,9 +73,14 @@ class NetworkListDetailedViewBase : public NetworkDetailedView,
 
   void Update();
   void CreateItems();
-  void UpdateAvailableNetworkList();
   void AppendHeaderEntry(int header_string_id);
   void AppendNetworkExtra();
+  void UpdateAvailableNetworkList();
+  bool CreateOrUpdateInfoLabel(
+      int index, const string16& text, views::Label** label);
+  bool UpdateNetworkChild(
+      int index, bool highlight, const NetworkIconInfo* info);
+  bool OrderChild(views::View* view, int index);
   void RefreshNetworkList();
   // Adds a settings entry when logged in, and an entry for changing proxy
   // settings otherwise.
@@ -85,8 +93,8 @@ class NetworkListDetailedViewBase : public NetworkDetailedView,
   user::LoginStatus login_;
   std::vector<NetworkIconInfo> network_list_;
   int header_string_id_;
-  std::map<views::View*, std::string> network_map_;
-  std::map<std::string, HoverHighlightView*> service_path_map_;
+  NetworkMap network_map_;
+  ServicePathMap service_path_map_;
   TrayPopupHeaderButton* info_icon_;
   TrayPopupLabelButton* settings_;
   TrayPopupLabelButton* proxy_settings_;

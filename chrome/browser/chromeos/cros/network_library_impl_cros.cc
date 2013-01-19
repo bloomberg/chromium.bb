@@ -155,6 +155,10 @@ void NetworkLibraryImplCros::UpdateNetworkDeviceStatus(
       VLOG(1) << "UpdateNetworkDeviceStatus: Failed to update: "
               << path << "." << key;
     }
+    if (device->type() == TYPE_WIFI && device->scanning() != wifi_scanning_) {
+      wifi_scanning_ = device->scanning();
+      NotifyNetworkManagerChanged(false);  // Not forced.
+    }
     // Notify only observers on device property change.
     NotifyNetworkDeviceChanged(device, index);
     // If a device's power state changes, new properties may become defined.
@@ -446,12 +450,8 @@ bool NetworkLibraryImplCros::IsCellularAlwaysInRoaming() {
 }
 
 void NetworkLibraryImplCros::RequestNetworkScan() {
-  if (wifi_enabled() && !wifi_scanning_) {
-    VLOG(1) << "Wifi network scan requested";
-    wifi_scanning_ = true;
-    wifi_scan_request_time_ = base::Time::Now();
+  if (wifi_enabled())
     CrosRequestNetworkScan(flimflam::kTypeWifi);
-  }
 
   if (wimax_enabled())
     CrosRequestNetworkScan(flimflam::kTypeWimax);
@@ -844,20 +844,6 @@ void NetworkLibraryImplCros::UpdateNetworkServiceList(
     }
   }
 
-  if (wifi_enabled()) {
-    if (wifi_scanning_) {
-      // If we haven't requested a scan recently, set scanning to false.
-      const int kMaxScanTimeSeconds = 15;
-      base::TimeDelta dtime = base::Time::Now() - wifi_scan_request_time_;
-      if (dtime.InSeconds() > kMaxScanTimeSeconds) {
-        VLOG(1) << "Wifi scan timeout";
-        wifi_scanning_ = false;  // Timeout, assume no wifi networks found
-      }
-    }
-  } else {
-    wifi_scanning_ = false;
-  }
-
   // Iterate through list of remaining networks that are no longer in the
   // list and delete them or update their status and re-add them to the list.
   for (NetworkMap::iterator iter = old_network_map.begin();
@@ -965,10 +951,6 @@ Network* NetworkLibraryImplCros::ParseNetwork(
     //              << service_path;
   }
 
-  if (wifi_scanning_ && network->type() == TYPE_WIFI) {
-    VLOG(1) << "Wifi scan completed";
-    wifi_scanning_ = false;
-  }
   VLOG(2) << "ParseNetwork: " << network->name()
           << " path: " << network->service_path()
           << " profile: " << network->profile_path_;
@@ -1231,6 +1213,9 @@ void NetworkLibraryImplCros::ParseNetworkDevice(const std::string& device_path,
   // Re-synchronize the roaming setting with the device property if required.
   if (device && device->type() == TYPE_CELLULAR)
     UpdateCellularDeviceStatus(device, PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING);
+
+  if (device && device->type() == TYPE_WIFI)
+    wifi_scanning_ = device->scanning();
 
   NotifyNetworkManagerChanged(false);  // Not forced.
   AddNetworkDeviceObserver(device_path, network_device_observer_.get());

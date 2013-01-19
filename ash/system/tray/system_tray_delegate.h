@@ -24,6 +24,8 @@ struct ASH_EXPORT NetworkIconInfo {
   NetworkIconInfo();
   ~NetworkIconInfo();
 
+  bool highlight() { return connected || connecting; }
+
   bool connecting;
   bool connected;
   bool tray_icon_visible;
