@@ -12,6 +12,8 @@
 
 #include <GL/gl.h>
 #include <GL/glext.h>
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
 
 #include "base/logging.h"
 #include "build/build_config.h"
@@ -50,39 +52,8 @@
 typedef struct osmesa_context *OSMesaContext;
 typedef void (*OSMESAproc)();
 
-#if !defined(OS_MACOSX)
-
 // Forward declare EGL types.
-typedef uint64 EGLTimeKHR;
-typedef unsigned int EGLBoolean;
-typedef unsigned int EGLenum;
-typedef int EGLint;
 typedef uint64 EGLuint64CHROMIUM;
-typedef void *EGLConfig;
-typedef void *EGLContext;
-typedef void *EGLDisplay;
-typedef void *EGLImageKHR;
-typedef void *EGLSurface;
-typedef void *EGLClientBuffer;
-typedef void *EGLSyncKHR;
-typedef void (*__eglMustCastToProperFunctionPointerType)(void);
-typedef void* GLeglImageOES;
-
-#if defined(OS_WIN)
-typedef HDC     EGLNativeDisplayType;
-typedef HBITMAP EGLNativePixmapType;
-typedef HWND    EGLNativeWindowType;
-#elif defined(OS_ANDROID)
-typedef void                       *EGLNativeDisplayType;
-typedef struct egl_native_pixmap_t *EGLNativePixmapType;
-typedef struct ANativeWindow       *EGLNativeWindowType;
-#else
-typedef Display *EGLNativeDisplayType;
-typedef Pixmap   EGLNativePixmapType;
-typedef Window   EGLNativeWindowType;
-#endif
-
-#endif  // !OS_MACOSX
 
 #include "gl_bindings_autogen_gl.h"
 #include "gl_bindings_autogen_osmesa.h"

@@ -4,9 +4,6 @@
 
 #include "content/common/gpu/image_transport_surface.h"
 
-// Out of order because it has conflicts with other includes on Windows.
-#include "third_party/angle/include/EGL/egl.h"
-
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"

@@ -244,11 +244,6 @@ void GLES2DecoderTestBase::InitDecoder(
 
   context_->MakeCurrent(surface_);
 
-  // From <EGL/egl.h>.
-  const int32 EGL_ALPHA_SIZE = 0x3021;
-  const int32 EGL_DEPTH_SIZE = 0x3025;
-  const int32 EGL_STENCIL_SIZE = 0x3026;
-
   int32 attributes[] = {
     EGL_ALPHA_SIZE, request_alpha ? 8 : 0,
     EGL_DEPTH_SIZE, request_depth ? 24 : 0,

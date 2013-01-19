@@ -11,11 +11,8 @@
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
 #include "ui/gl/egl_util.h"
-#include "ui/gl/gl_surface_egl.h"
-
-// This header must come after the above third-party include, as
-// it brings in #defines that cause conflicts.
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_surface_egl.h"
 
 #if defined(USE_X11)
 extern "C" {

@@ -15,8 +15,6 @@
 #include "base/shared_memory.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "third_party/angle/include/EGL/egl.h"
-#include "third_party/angle/include/EGL/eglext.h"
 #include "ui/gl/async_pixel_transfer_delegate.h"
 #include "ui/gl/async_pixel_transfer_delegate_stub.h"
 #include "ui/gl/egl_util.h"

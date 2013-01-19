@@ -15,20 +15,9 @@
 #include "base/time.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/vsync_provider.h"
-
-typedef void* EGLConfig;
-typedef void* EGLDisplay;
-typedef void* EGLSurface;
-
-#if defined(OS_ANDROID)
-typedef void* EGLNativeDisplayType;
-#elif defined(OS_WIN)
-typedef HDC EGLNativeDisplayType;
-#else
-typedef struct _XDisplay* EGLNativeDisplayType;
-#endif
 
 namespace gfx {
 
