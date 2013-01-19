@@ -1650,7 +1650,8 @@
             ['exclude', '^browser/ui/views/'],
           ],
         }],
-        ['target_arch!="arm"', {
+        ['OS!="android" and OS!="ios"', {
+          # npapi test plugin doesn't build on android or ios
           'dependencies': [
             # build time dependency.
             '../v8/tools/gyp/v8.gyp:v8_shell#host',

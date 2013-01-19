@@ -843,7 +843,8 @@
                 'browser/plugin_browsertest.cc',
               ],
             }],
-            ['target_arch!="arm"', {
+            ['OS!="android" and OS!="ios"', {
+              # npapi test plugin doesn't build on android or ios
               'dependencies': [
                 # Runtime dependencies
                 '../webkit/webkit.gyp:copy_npapi_test_plugin',
