@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DISABLED_QueryLastFocusedWindowTabs) {
   }
 }
 
-#if defined(OS_WIN) && defined(USE_AURA)  // http://crbug.com/154081
+#if defined(OS_WIN)  // http://crbug.com/154081 && http://crbug.com/171080
 #define MAYBE_TabCurrentWindow DISABLED_TabCurrentWindow
 #else
 #define MAYBE_TabCurrentWindow TabCurrentWindow
