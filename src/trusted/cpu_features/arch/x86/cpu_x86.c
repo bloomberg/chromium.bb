@@ -165,7 +165,7 @@
 #define CPUID_ECX_TBM        0x00200000  /* Trailing bit manipulations */
 #define CPUID_ECX_TOPOLOGY   0x00400000  /* Topology extensions support */
 /* 0xFF800000 reserved */
-
+#define CPUID_NONE           0x00000000 /* bogus value */
 
 typedef enum {
   CFReg_EAX_I=0,  /* eax == 1 */
@@ -179,54 +179,32 @@ typedef enum {
   CFReg_EAX_A,    /* eax == 0x80000001 */
   CFReg_EBX_A,    /* eax == 0x80000001 */
   CFReg_ECX_A,    /* eax == 0x80000001 */
-  CFReg_EDX_A     /* eax == 0x80000001 */
+  CFReg_EDX_A,    /* eax == 0x80000001 */
+  CFReg_NONE      /* bogus value */
 } CPUFeatureReg;
 
+enum {
+  kFeatureFixedOff,
+  kFeatureFixedOn
+};
+
 typedef struct cpufeature {
-  CPUFeatureReg reg;
+  uint8_t reg;
+  uint8_t fixedFeature;
   uint32_t mask;
   const char *name;
 } CPUFeature;
 
 static const CPUFeature CPUFeatureDescriptions[(int)NaClCPUFeatureX86_Max] = {
-  {0, 0, "CPUID supported"},
-  {0, 0, "CPU supported"},
-  {CFReg_EDX_A, CPUID_EDX_3DN, "3DNow"},
-  {CFReg_ECX_I, CPUID_ECX_AES, "AES"},
-  {CFReg_ECX_I, CPUID_ECX_AVX, "AVX"},
-  {CFReg_EBX_7, CPUID_EBX_BMI1, "BMI1"},
-  {CFReg_EDX_I, CPUID_EDX_CLFLUSH, "CLFLUSH"},
-  {CFReg_ECX_I, CPUID_ECX_CLMUL, "CLMUL"},
-  {CFReg_EDX_I, CPUID_EDX_CMOV, "CMOV"},
-  {CFReg_ECX_I, CPUID_ECX_CX16, "CMPXCHG16B"},
-  {CFReg_EDX_I, CPUID_EDX_CX8, "CMPXCHG8B"},
-  {CFReg_EDX_A, CPUID_EDX_E3DN, "E3DNow"},
-  {CFReg_EDX_A, CPUID_EDX_EMMX, "EMMX"},
-  {CFReg_ECX_I, CPUID_ECX_F16C, "F16C"},
-  {CFReg_ECX_I, CPUID_ECX_FMA, "FMA"},
-  {CFReg_ECX_A, CPUID_ECX_FMA4, "FMA4"},
-  {CFReg_EDX_I, CPUID_EDX_FXSR, "FXSAVE/FXRSTOR"},
-  {CFReg_EDX_A, CPUID_ECX_LAHF, "LAHF"},
-  {CFReg_EDX_A, CPUID_EDX_LM, "LongMode"},
-  {CFReg_ECX_A, CPUID_ECX_LWP, "LWP"},
-  {CFReg_ECX_A, CPUID_ECX_ABM, "LZCNT"},
-  {CFReg_EDX_I, CPUID_EDX_MMX, "MMX"},
-  {CFReg_ECX_I, CPUID_ECX_MON, "MONITOR/MWAIT"},
-  {CFReg_ECX_I, CPUID_ECX_MOVBE, "MOVBE"},
-  {CFReg_ECX_I, CPUID_ECX_OSXSAVE, "OSXSAVE"},
-  {CFReg_ECX_I, CPUID_ECX_POPCNT, "POPCNT"},
-  {CFReg_ECX_A, CPUID_ECX_PRE, "3DNowPrefetch"},
-  {CFReg_EDX_I, CPUID_EDX_SSE, "SSE"},
-  {CFReg_EDX_I, CPUID_EDX_SSE2, "SSE2"},
-  {CFReg_ECX_I, CPUID_ECX_SSE3, "SSE3"},
-  {CFReg_ECX_I, CPUID_ECX_SSE41, "SSE41"},
-  {CFReg_ECX_I, CPUID_ECX_SSE42, "SSE42"},
-  {CFReg_ECX_A, CPUID_ECX_SSE4A, "SSE4A"},
-  {CFReg_ECX_I, CPUID_ECX_SSSE3, "SSSE3"},
-  {CFReg_ECX_A, CPUID_ECX_TBM, "TBM"},
-  {CFReg_EDX_I, CPUID_EDX_TSC, "RDTSC"},
-  {CFReg_EDX_I, CPUID_EDX_x87, "x87"},
-  {CFReg_ECX_A, CPUID_ECX_XOP, "XOP"},
+#define NACL_X86_CPU_FEATURE(id, reg, idx, fix, ven, str)       \
+  {                                                             \
+    NACL_CONCAT(CFReg_, reg),                                   \
+    NACL_CONCAT(kFeature, fix),                                 \
+    NACL_CONCAT(CPUID_, idx),                                   \
+    str,                                                        \
+  },
+#include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86_features.h"
+#undef NACL_X86_CPU_FEATURE
 };
 
 #define /* static const int */ kVendorIDLength 13
@@ -541,53 +519,12 @@ void NaClGetCurrentCPUFeaturesX86(NaClCPUFeatures *f) {
   GetCPUFeatures(&cpu_data, features);
 }
 
-/* This array defines the CPU feature model for fixed-feature CPU
- * mode. We currently require the same set of features for both
- * 32- and 64-bit x86 CPUs, intended to be supported by most/all
- * post-Pentium III CPUs. This set may be something we need to
+/* The CPUFeaturesDescriptions struct defines the CPU feature model for
+ * fixed-feature CPU mode. We currently require the same set of features
+ * for both 32- and 64-bit x86 CPUs, intended to be supported by
+ * most/all post-Pentium III CPUs. This set may be something we need to
  * revisit in the future.
  */
-const int kFixedFeatureCPUModel[NaClCPUFeatureX86_Max] = {
-  1, /* NaClCPUFeatureX86_CPUIDSupported */
-  1, /* NaClCPUFeatureX86_CPUSupported */
-  0, /* NaClCPUFeatureX86_3DNOW */  /* AMD-specific */
-  0, /* NaClCPUFeatureX86_AES */
-  0, /* NaClCPUFeatureX86_AVX */
-  0, /* NaClCPUFeatureX86_BMI1 */
-  1, /* NaClCPUFeatureX86_CLFLUSH */
-  0, /* NaClCPUFeatureX86_CLMUL */
-  1, /* NaClCPUFeatureX86_CMOV */
-  1, /* NaClCPUFeatureX86_CX16 */
-  1, /* NaClCPUFeatureX86_CX8 */
-  0, /* NaClCPUFeatureX86_E3DNOW */ /* AMD-specific */
-  0, /* NaClCPUFeatureX86_EMMX */   /* AMD-specific */
-  0, /* NaClCPUFeatureX86_F16C */
-  0, /* NaClCPUFeatureX86_FMA */
-  0, /* NaClCPUFeatureX86_FMA4 */ /* AMD-specific */
-  1, /* NaClCPUFeatureX86_FXSR */
-  0, /* NaClCPUFeatureX86_LAHF */
-  0, /* NaClCPUFeatureX86_LM */
-  0, /* NaClCPUFeatureX86_LWP */ /* AMD-specific */
-  0, /* NaClCPUFeatureX86_LZCNT */  /* AMD-specific */
-  0, /* NaClCPUFeatureX86_MMX */
-  0, /* NaClCPUFeatureX86_MON */
-  0, /* NaClCPUFeatureX86_MOVBE */
-  0, /* NaClCPUFeatureX86_OSXSAVE */
-  0, /* NaClCPUFeatureX86_POPCNT */
-  0, /* NaClCPUFeatureX86_PRE */ /* AMD-specific */
-  1, /* NaClCPUFeatureX86_SSE */
-  1, /* NaClCPUFeatureX86_SSE2 */
-  1, /* NaClCPUFeatureX86_SSE3 */
-  0, /* NaClCPUFeatureX86_SSE41 */
-  0, /* NaClCPUFeatureX86_SSE42 */
-  0, /* NaClCPUFeatureX86_SSE4A */  /* AMD-specific */
-  0, /* NaClCPUFeatureX86_SSSE3 */
-  0, /* NaClCPUFeatureX86_TBM */ /* AMD-specific */
-  1, /* NaClCPUFeatureX86_TSC */
-  0, /* NaClCPUFeatureX86_x87 */
-  0  /* NaClCPUFeatureX86_XOP */ /* AMD-specific */
-};
-
 int NaClFixCPUFeaturesX86(NaClCPUFeatures *f) {
   /* TODO(jfb) Use a safe cast in this interface. */
   NaClCPUFeaturesX86 *features = (NaClCPUFeaturesX86 *) f;
@@ -595,7 +532,7 @@ int NaClFixCPUFeaturesX86(NaClCPUFeatures *f) {
   int rvalue = 1;
 
   for (fid = 0; fid < NaClCPUFeatureX86_Max; fid++) {
-    if (kFixedFeatureCPUModel[fid]) {
+    if (CPUFeatureDescriptions[fid].fixedFeature) {
       if (!NaClGetCPUFeatureX86(features, fid)) {
         /* This CPU is missing a required feature. */
         NaClLog(LOG_ERROR,

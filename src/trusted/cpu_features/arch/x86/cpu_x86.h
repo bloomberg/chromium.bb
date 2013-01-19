@@ -12,55 +12,20 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_CPU_FEATURES_ARCH_X86_CPU_X86_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_CPU_FEATURES_ARCH_X86_CPU_X86_H_
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/validator/ncvalidate.h"
 
 
 EXTERN_C_BEGIN
 
-/* The list of features we can get from the CPUID instruction.
- * Do not modify this enum without making similar modifications to
- * CPUFeatureDescriptions in cpu_x86.c.
- */
+/* List of features supported by x86 CPUs. */
 typedef enum {
-  NaClCPUFeatureX86_CPUIDSupported,
-  NaClCPUFeatureX86_CPUSupported,  /* CPU is one we support. */
-  NaClCPUFeatureX86_3DNOW, /* AMD-specific */
-  NaClCPUFeatureX86_AES,
-  NaClCPUFeatureX86_AVX,
-  NaClCPUFeatureX86_BMI1,
-  NaClCPUFeatureX86_CLFLUSH,
-  NaClCPUFeatureX86_CLMUL,
-  NaClCPUFeatureX86_CMOV,
-  NaClCPUFeatureX86_CX16,
-  NaClCPUFeatureX86_CX8,
-  NaClCPUFeatureX86_E3DNOW, /* AMD-specific */
-  NaClCPUFeatureX86_EMMX, /* AMD-specific */
-  NaClCPUFeatureX86_F16C,
-  NaClCPUFeatureX86_FMA,
-  NaClCPUFeatureX86_FMA4, /* AMD-specific */
-  NaClCPUFeatureX86_FXSR,
-  NaClCPUFeatureX86_LAHF,
-  NaClCPUFeatureX86_LM,
-  NaClCPUFeatureX86_LWP, /* AMD-specific */
-  NaClCPUFeatureX86_LZCNT, /* AMD-specific */
-  NaClCPUFeatureX86_MMX,
-  NaClCPUFeatureX86_MON,
-  NaClCPUFeatureX86_MOVBE,
-  NaClCPUFeatureX86_OSXSAVE,
-  NaClCPUFeatureX86_POPCNT,
-  NaClCPUFeatureX86_PRE, /* AMD-specific */
-  NaClCPUFeatureX86_SSE,
-  NaClCPUFeatureX86_SSE2,
-  NaClCPUFeatureX86_SSE3,
-  NaClCPUFeatureX86_SSE41,
-  NaClCPUFeatureX86_SSE42,
-  NaClCPUFeatureX86_SSE4A, /* AMD-specific */
-  NaClCPUFeatureX86_SSSE3,
-  NaClCPUFeatureX86_TBM, /* AMD-specific */
-  NaClCPUFeatureX86_TSC,
-  NaClCPUFeatureX86_x87,
-  NaClCPUFeatureX86_XOP, /* AMD-specific */
+#define NACL_X86_CPU_FEATURE(id, reg, idx, fix, ven, str)       \
+  NACL_CONCAT(NaClCPUFeatureX86_, id),
+#include "native_client/src/trusted/cpu_features/arch/x86/cpu_x86_features.h"
+#undef NACL_X86_CPU_FEATURE
+  /* Leave the following as the last entry. */
   NaClCPUFeatureX86_Max
 } NaClCPUFeatureX86ID;
 
